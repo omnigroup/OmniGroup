@@ -8,11 +8,12 @@
 #import <OmniFileStore/OFSDocumentStoreLocalDirectoryScope.h>
 
 #import <OmniFileStore/OFSURL.h>
+#import <OmniFileStore/OFSDocumentStore.h>
 #import <OmniFileStore/OFSDocumentStoreScope-Subclass.h>
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
+#import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 
-//#import "OFSDocumentStoreFileItem-Internal.h"
-//#import "OFSDocumentStoreItem-Internal.h"
 #import "OFSDocumentStoreScope-Internal.h"
 
 RCS_ID("$Id$");
@@ -44,7 +45,7 @@ RCS_ID("$Id$");
     static NSURL *documentDirectoryURL = nil; // Avoid trying the creation on each call.
     
     if (!documentDirectoryURL) {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         documentDirectoryURL = [[[NSFileManager defaultManager] URLForDirectory:NSDocumentDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error] copy];
         if (!documentDirectoryURL) {
             NSLog(@"Error creating user documents directory: %@", [error toPropertyList]);
@@ -56,9 +57,27 @@ RCS_ID("$Id$");
     return documentDirectoryURL;
 }
 
++ (NSURL *)trashDirectoryURL;
+{
+    static NSURL *trashDirectoryURL = nil; // Avoid trying the creation on each call.
+    
+    if (!trashDirectoryURL) {
+        __autoreleasing NSError *error = nil;
+        NSURL *appSupportURL = [[[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error] copy];
+        if (!appSupportURL) {
+            NSLog(@"Error creating trash directory: %@", [error toPropertyList]);
+        }
+        
+        trashDirectoryURL = [[appSupportURL URLByAppendingPathComponent:@"Trash" isDirectory:YES] URLByAppendingPathComponent:@"Documents" isDirectory:YES];
+        [[NSFileManager defaultManager] createDirectoryAtURL:trashDirectoryURL withIntermediateDirectories:YES attributes:nil error:NULL];
+    }
+    
+    return trashDirectoryURL;
+}
+
 #endif
 
-- (id)initWithDirectoryURL:(NSURL *)directoryURL documentStore:(OFSDocumentStore *)documentStore;
+- (id)initWithDirectoryURL:(NSURL *)directoryURL isTrash:(BOOL)isTrash documentStore:(OFSDocumentStore *)documentStore;
 {
     OBPRECONDITION(directoryURL);
     OBPRECONDITION([[directoryURL absoluteString] hasSuffix:@"/"]);
@@ -67,6 +86,7 @@ RCS_ID("$Id$");
         return nil;
     
     _directoryURL = [directoryURL copy];
+    _isTrash = isTrash;
     
     _filePresenterQueue = [[NSOperationQueue alloc] init];
     _filePresenterQueue.name = @"OFSDocumentStoreLocalDirectoryScope NSFilePresenter notifications";
@@ -78,7 +98,12 @@ RCS_ID("$Id$");
 #endif
     
     [self _scanItemsWithCompletionHandler:nil];
-    
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    if (_isTrash)
+        [OFSDocumentStoreScope setTrashScope:self];
+#endif
+
     return self;
 }
 
@@ -90,7 +115,7 @@ RCS_ID("$Id$");
 
 #pragma mark - OFSDocumentStoreConcreteScope
 
-- (NSURL *)documentsURL:(NSError **)outError;
+- (NSURL *)documentsURL;
 {
     return _directoryURL;
 }
@@ -111,45 +136,44 @@ RCS_ID("$Id$");
     OBPRECONDITION(fileItem.scope == self);
     OBPRECONDITION([NSThread isMainThread]); // Synchronize with updating of fileItems, and this is the queue we'll invoke the completion handler on.
     
-    // capture scope (might not be necessary since we aren't currently asynchronous here).
+    // capture scope
     completionHandler = [completionHandler copy];
     
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    if (!_isTrash) {
+        OFSDocumentStoreScope *trashScope = self.documentStore.trashScope;
+        if (trashScope != nil) {
+            [trashScope moveFileItems:[NSSet setWithObject:fileItem] completionHandler:^(OFSDocumentStoreFileItem *failingFileItem, NSError *errorOrNil) {
+                completionHandler(errorOrNil);
+            }];
+            return;
+        }
+    }
+#endif
+
     [self performAsynchronousFileAccessUsingBlock:^{
-        // Passing nil for the presenter so that the file item gets its normal deletion accommodation request (it should then send us -_fileItemHasAccommodatedDeletion:).
+        // Passing nil for the presenter so that we get our normal deletion notification via file coordination.
         NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
         
-        NSError *error = nil;
-        __block BOOL success = NO;
-        __block NSError *innerError = nil;
-        
-        [coordinator coordinateWritingItemAtURL:fileItem.fileURL options:NSFileCoordinatorWritingForDeleting error:&error byAccessor:^(NSURL *newURL){
+        __autoreleasing NSError *error = nil;
+        BOOL success = [coordinator removeItemAtURL:fileItem.fileURL error:&error byAccessor:^BOOL(NSURL *newURL, NSError **outError){
             DEBUG_STORE(@"  coordinator issued URL to delete %@", newURL);
             
-            NSError *deleteError = nil;
+            __autoreleasing NSError *deleteError = nil;
             if (![[NSFileManager defaultManager] removeItemAtURL:newURL error:&deleteError]) {
                 NSLog(@"Error deleting %@: %@", [newURL absoluteString], [deleteError toPropertyList]);
-                innerError = deleteError;
-                return;
+                if (outError)
+                    *outError = deleteError;
+                return NO;
             }
             
-            // Recommended calling convention for this API (since it returns void) is to set a __block variable to success...
-            success = YES;
+            return YES;
         }];
         
-        
-        if (!success) {
-            OBASSERT(error || innerError);
-            if (innerError)
-                error = innerError;
-        } else
-            error = nil;
-        
+        NSError *strongError = (success ? nil : error);
         if (completionHandler) {
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                if (error)
-                    completionHandler(error);
-                else
-                    completionHandler(innerError);
+                completionHandler(strongError);
             }];
         }
     }];
@@ -255,14 +279,28 @@ RCS_ID("$Id$");
 
 #pragma mark - OFSDocumentStoreScope subclass
 
+- (NSInteger)documentScopeGroupRank;
+{
+    if (_isTrash)
+        return 999;
+    else
+        return 100;
+}
+
 - (NSString *)identifier;
 {
-    return @"local";
+    if (_isTrash)
+        return @"trash";
+    else
+        return @"local";
 }
 
 - (NSString *)displayName;
 {
-    return NSLocalizedStringFromTableInBundle(@"Local Documents", @"OmniFileStore", OMNI_BUNDLE, @"Document store scope display name");
+    if (_isTrash)
+        return NSLocalizedStringFromTableInBundle(@"Trash", @"OmniFileStore", OMNI_BUNDLE, @"Document store scope display name");
+    else
+        return NSLocalizedStringFromTableInBundle(@"Local Documents", @"OmniFileStore", OMNI_BUNDLE, @"Document store scope display name");
 }
 
 - (NSString *)moveToActionLabelWhenInList:(BOOL)inList;
@@ -308,7 +346,7 @@ static void _updatePercent(OFSDocumentStoreFileItem *fileItem, NSString *binding
     fileItem.fileModificationDate = fileModificationDate;
     fileItem.userModificationDate = fileModificationDate;
     
-    UPDATE_LOCAL_FLAG(HasUnresolvedConflicts);
+    UPDATE_LOCAL_FLAG(HasDownloadQueued);
     UPDATE_LOCAL_FLAG(IsDownloaded);
     UPDATE_LOCAL_FLAG(IsDownloading);
     UPDATE_LOCAL_FLAG(IsUploaded);
@@ -320,29 +358,23 @@ static void _updatePercent(OFSDocumentStoreFileItem *fileItem, NSString *binding
     OBPOSTCONDITION(fileItem.isDownloaded); // should still be downloaded...
 }
 
-- (NSMutableSet *)copyCurrentlyUsedFileNamesInFolderNamed:(NSString *)folderName ignoringFileURL:(NSURL *)fileURLToIgnore;
+- (NSMutableSet *)copyCurrentlyUsedFileNamesInFolderAtURL:(NSURL *)folderURL ignoringFileURL:(NSURL *)fileURLToIgnore;
 {
     // Collecting the names asynchronously from filesystem edits will yield out of date results. We still have race conditions with cloud services adding/removing files since coordinated reads of whole Documents directories does nothing to block writers.
     OBPRECONDITION([self isRunningOnActionQueue]);
     
-    NSURL *folderURL = _directoryURL;
-    if (![NSString isEmptyString:folderName]) {
-        OBFinishPorting;
-#if 0
-        folderURL = [folderURL URLByAppendingPathComponent:folderName];
-        OBASSERT(OFSIsFolder(folderURL));
-#endif
-    }
+    if (!folderURL)
+        folderURL = _directoryURL;
     
     NSMutableSet *usedFileNames = [[NSMutableSet alloc] init];
     
     fileURLToIgnore = [fileURLToIgnore URLByStandardizingPath];
     
-    OBFinishPortingLater("Use the set of known package extensions from the OFXAgent somehow");
+    // <bug:///88352> (Need to deal with remotely defined package extensions when scanning our document store scopes)
     OFSScanPathExtensionIsPackage isPackage = OFSIsPackageWithKnownPackageExtensions(nil);
 
     OFSScanDirectory(folderURL, NO/*shouldRecurse*/, OFSScanDirectoryExcludeInboxItemsFilter(), isPackage, ^(NSFileManager *fileManager, NSURL *fileURL){
-        if (fileURLToIgnore && [fileURLToIgnore isEqual:[fileURL URLByStandardizingPath]])
+        if (fileURLToIgnore && OFURLEqualsURL(fileURLToIgnore, [fileURL URLByStandardizingPath]))
             return;
         [usedFileNames addObject:[fileURL lastPathComponent]];
     });
@@ -406,8 +438,8 @@ static void _updatePercent(OFSDocumentStoreFileItem *fileItem, NSString *binding
                 NSURL *fileURL = fileInfo.fileURL;
                 
                 if (!fileItem) {
-                    NSNumber *isDirectory = nil;
-                    NSError *resourceError = nil;
+                    __autoreleasing NSNumber *isDirectory = nil;
+                    __autoreleasing NSError *resourceError = nil;
                     if (![fileURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&resourceError]) {
                         NSLog(@"Error getting directory key for %@: %@", fileURL, [resourceError toPropertyList]);
                         isDirectory = @([[fileURL absoluteString] hasSuffix:@"/"]);
@@ -448,7 +480,7 @@ static void _updatePercent(OFSDocumentStoreFileItem *fileItem, NSString *binding
         [[NSFileManager defaultManager] logPropertiesOfTreeAtURL:_directoryURL];
 #endif
         
-        OBFinishPortingLater("How do we get the flexible list of path extensions from the sync agent here?");
+        // <bug:///88352> (Need to deal with remotely defined package extensions when scanning our document store scopes)
         OFSScanPathExtensionIsPackage isPackage = OFSIsPackageWithKnownPackageExtensions(nil);
 
         OFSScanDirectory(_directoryURL, YES/*shouldRecurse*/, OFSScanDirectoryExcludeInboxItemsFilter(), isPackage, itemBlock);

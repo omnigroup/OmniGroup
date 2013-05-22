@@ -612,7 +612,9 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
                 if (![algo isEqualToString:@"md5"])  /* MD5 doesn't really count any more. */
                     didVerify = YES;
             } else {
+#ifdef DEBUG
                 NSLog(@"%@: (%@): Unknown hash algorithm \"%@\"", [self class], _title, algo);
+#endif
             }
         }
         

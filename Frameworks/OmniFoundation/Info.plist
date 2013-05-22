@@ -34,6 +34,20 @@
 				<array/>
 				<key>OFScratchDirectory</key>
 				<string>NSTemporaryDirectory</string>
+				<key>OFCompletionMatchScoreForFullMatch</key>
+				<integer>100</integer>
+				<key>OFCompletionMatchScoreForPhraseStart</key>
+				<integer>20</integer>
+				<key>OFCompletionMatchScoreForPhraseEnd</key>
+				<integer>5</integer>
+				<key>OFCompletionMatchScoreForConsecutiveCharacter</key>
+				<integer>25</integer>
+				<key>OFCompletionMatchScoreForConsecutiveWord</key>
+				<integer>10</integer>
+				<key>OFCompletionMatchScoreForWordStart</key>
+				<integer>10</integer>
+				<key>OFCompletionMatchScoreForCapitalLetter</key>
+				<integer>15</integer>
 				<key>RelativeDateFormatterDefaultHour</key>
 				<integer>23</integer>
 				<key>RelativeDateFormatterDefaultMinute</key>

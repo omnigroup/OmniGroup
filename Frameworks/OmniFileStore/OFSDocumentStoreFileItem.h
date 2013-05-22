@@ -45,8 +45,6 @@ extern NSString * const OFSDocumentStoreFileItemInfoKey;
 - (BOOL)requestDownload:(NSError **)outError;
 @property(readonly,assign,nonatomic) BOOL downloadRequested;
 
-@property(nonatomic,readonly,getter=isBeingDeleted) BOOL beingDeleted; // YES when this file item has received -accommodatePresentedItemDeletionWithCompletionHandler:.
-
 @property(assign,nonatomic) BOOL selected;
 @property(assign,nonatomic) BOOL draggingSource;
 

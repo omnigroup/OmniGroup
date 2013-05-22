@@ -173,7 +173,7 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFSDoc
     BOOL exists = ([existingPreviewFileNames member:previewFilename] != nil);
     BOOL empty;
     if (exists) {
-        NSError *attributesError = nil;
+        __autoreleasing NSError *attributesError = nil;
         
         // Don't ask the URL via getResourceValue:forKey:error: since that can return a cached value. We might have just written the image during preview generation after previously having looked up the empty placeholder that is written prior to preview generation.
         NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[[previewURL absoluteURL] path] error:&attributesError];
@@ -227,7 +227,7 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFSDoc
     // Do a bulk lookup of what preview URLs exist (we expect that this method is called few times with all the known file items)
     NSSet *existingPreviewFileNames;
     {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         NSURL *previewDirectoryURL = [self _previewDirectoryURL];
         NSArray *previewURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:previewDirectoryURL
                                                              includingPropertiesForKeys:[NSArray arrayWithObjects:NSURLFileSizeKey, nil]
@@ -309,13 +309,13 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFSDoc
     [self afterAsynchronousPreviewOperation:^{
         NSURL *previewDirectoryURL = [self _previewDirectoryURL];
         
-        NSError *removeError;
+        __autoreleasing NSError *removeError;
         if (![[NSFileManager defaultManager] removeItemAtURL:previewDirectoryURL error:&removeError])
             NSLog(@"Unable to remove preview directory: %@", [removeError toPropertyList]);
         
         [OUIDocumentPreview flushPreviewImageCache];
 
-        NSError *createError;
+        __autoreleasing NSError *createError;
         if (![[NSFileManager defaultManager] createDirectoryAtURL:previewDirectoryURL withIntermediateDirectories:NO attributes:nil error:&createError])
             NSLog(@"Unable to create preview directory: %@", [createError toPropertyList]);
         if (completionHandler)
@@ -343,8 +343,7 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFSDoc
         if (writeImages) {
             // Do the JPEG compression and writing on a background queue. If there is an error writing the image, this means we will cache the passed in version which won't have been written, though.
 
-            if (image)
-                CFRetain(image); // Nail this down while we wait for the writing to finish
+            CGImageRetain(image); // Nail this down while we wait for the writing to finish
             
             [PreviewCacheReadWriteQueue addOperationWithBlock:^{
                 NSData *jpgData = nil;
@@ -356,7 +355,7 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFSDoc
                 if (!jpgData)
                     jpgData = [NSData data];
                 
-                NSError *writeError = nil;
+                __autoreleasing NSError *writeError = nil;
                 if (![jpgData writeToURL:previewURL options:NSDataWritingAtomic error:&writeError]) {
                     NSLog(@"Error writing preview to %@: %@", previewURL, [writeError toPropertyList]);
                 }
@@ -376,14 +375,18 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFSDoc
                 DiscardHiddenPreviewsTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_discardHiddenPreviewsTimerFired:) userInfo:nil repeats:NO];
             }
             
+            CGImageRetain(image); // Nail this down while we wait for the preview cache operation to finish
+
             dispatch_async(PreviewCacheOperationQueue, ^{
 #ifdef OMNI_ASSERTIONS_ON
                 {
-                    // We should either have nothing in our cache, or should have some form of placeholder. We shouldn't be replacing valid previews (those should get a new date and thus a new cache key).
+                    // If the incomming image is not nil, we should either have nothing in our cache, or should have some form of placeholder. We shouldn't be replacing valid previews (those should get a new date and thus a new cache key).
                     OUIDocumentPreview *existingPreview = [PreviewFileNameToPreview objectForKey:previewFilename];
-                    OBASSERT(existingPreview == nil || // nothing in the cache
-                             existingPreview.exists == NO || // cached missing value
-                             existingPreview.empty); // cached empty file
+                    OBASSERT_IF(image,
+                                (existingPreview == nil || // nothing in the cache
+                                 existingPreview.exists == NO || // cached missing value
+                                 existingPreview.empty), // cached empty file
+                                @"We should not have an existingPreview if we hav been giving an imageRef.");
                 }
 #endif
                 
@@ -395,6 +398,8 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFSDoc
                 preview.image = image;
                 DEBUG_PREVIEW_CACHE(@"  yielded generated image to preview");
             
+                CGImageRelease(image);
+
                 [PreviewFileNameToPreview setObject:preview forKey:previewFilename];
             });
         }
@@ -468,7 +473,7 @@ static void _removeUsedPreviewFileURLs(Class self, NSMutableSet *unusedPreviewFi
 + (void)deletePreviewsNotUsedByFileItems:(id <NSFastEnumeration>)fileItems;
 {
     NSURL *previewDirectoryURL = [self _previewDirectoryURL];
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     NSArray *existingPreviewURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:previewDirectoryURL includingPropertiesForKeys:[NSArray array] options:0 error:&error];
     if (!existingPreviewURLs) {
         NSLog(@"Error finding existing previews: %@", [error toPropertyList]);
@@ -488,7 +493,7 @@ static void _removeUsedPreviewFileURLs(Class self, NSMutableSet *unusedPreviewFi
     DEBUG_PREVIEW_CACHE(@"Removing unused previews: %@", unusedPreviewFilenames);
     
     for (NSString *previewFilename in unusedPreviewFilenames) {
-        NSError *removeError = nil;
+        __autoreleasing NSError *removeError = nil;
         NSURL *unusedPreviewURL = [previewDirectoryURL URLByAppendingPathComponent:previewFilename];
         if (![[NSFileManager defaultManager] removeItemAtURL:unusedPreviewURL error:&removeError])
             NSLog(@"Error removing %@: %@", [unusedPreviewURL absoluteString], [removeError toPropertyList]);
@@ -653,7 +658,7 @@ static void _copyPreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
         return;
     
     // Copy the file (if any)
-    NSError *copyError = nil;
+    __autoreleasing NSError *copyError = nil;
     if (![defaultManager copyItemAtURL:sourcePreviewFileURL toURL:targetPreviewFileURL error:&copyError]) {
         if (![copyError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:EEXIST])
             NSLog(@"Error copying preview from %@ to %@: %@", sourcePreviewFileURL, targetPreviewFileURL, [copyError toPropertyList]);
@@ -694,7 +699,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     DEBUG_PREVIEW_CACHE(@"  to %@ %@ -- %@", targetFileURL, [targetDate xmlString], targetPreviewFileURL);
     
     // Move the file (if any)
-    NSError *moveError = nil;
+    __autoreleasing NSError *moveError = nil;
     if (![[NSFileManager defaultManager] moveItemAtURL:sourcePreviewFileURL toURL:targetPreviewFileURL error:&moveError]) {
         if (![moveError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) // Preview not written yet? Maybe we have a rename of a file racing with writing a generated preview for the first name?
             NSLog(@"Error moving preview from %@ to %@: %@", sourcePreviewFileURL, targetPreviewFileURL, [moveError toPropertyList]);
@@ -768,7 +773,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     // Don't ask the URL via getResourceValue:forKey:error: since that can return a cached value. We might have just written the image during preview generation after previously having looked up the empty placeholder that is written prior to preview generation.
 
     BOOL exists = YES;
-    NSError *attributesError = nil;
+    __autoreleasing NSError *attributesError = nil;
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[[previewURL absoluteURL] path] error:&attributesError];
     if (!attributes) {
         if ([attributesError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] ||
@@ -1024,7 +1029,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         
         NSFileManager *manager = [NSFileManager defaultManager];
         NSURL *caches = [manager URLForDirectory:NSCachesDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
@@ -1038,7 +1043,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
                 firstUpdate = NO;
                 
                 NSLog(@"Removing all previews!");
-                NSError *removeError;
+                __autoreleasing NSError *removeError;
                 if (![manager removeItemAtURL:previewDirectoryURL error:&removeError]) {
                     if (![removeError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) {
                         NSLog(@"Unable to remove preview directory: %@", [removeError toPropertyList]);

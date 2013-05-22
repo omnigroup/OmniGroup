@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,7 +48,9 @@
 - (NSDictionary *)lockFileAtPath:(NSString *)path overridingExistingLock:(BOOL)override created:(BOOL *)outCreated error:(NSError **)outError;
 - (void)unlockFileAtPath:(NSString *)path;
 
-//
+// Special directories
+- (NSURL *)specialDirectory:(OSType)whatDirectoryType forFileSystemContainingPath:(NSString *)path create:(BOOL)createIfMissing error:(NSError **)outError;
+- (NSURL *)trashDirectoryURLForURL:(NSURL *)fileURL error:(NSError **)outError;
 
 - (NSNumber *)posixPermissionsForMode:(unsigned int)mode;
 - (NSNumber *)defaultFilePermissions;

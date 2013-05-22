@@ -17,83 +17,120 @@
 
 RCS_ID("$Id$");
 
-@interface OFCompletionMatch (/*Private*/)
-- (id)initWithString:(NSString *)aString;
-- (OFCompletionMatch *)_preretainedSequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(int)aScore NS_RETURNS_RETAINED;
-- (OFCompletionMatch *)_preretainedSequenceByAddingScore:(int)aScore NS_RETURNS_RETAINED;
+static NSInteger OFCompletionMatchScoreFullMatch = 0;
+static NSInteger OFCompletionMatchScorePhraseStart = 0;
+static NSInteger OFCompletionMatchScoreePhraseEnd = 0;
+static NSInteger OFCompletionMatchScoreConsecutiveCharacter = 0;
+static NSInteger OFCompletionMatchScoreConsecutiveWord = 0;
+static NSInteger OFCompletionMatchScoreWordStart = 0;
+static NSInteger OFCompletionMatchScoreCapitalLetter = 0;
+
+static OFCharacterSet *_WhitespaceOFCharacterSet = nil;
+static OFCharacterSet *_UppercaseLetterOFCharacterSet = nil;
+
+@interface OFCompletionMatch () {
+  @private
+    NSString *_string;
+    OFIndexPath *_wordIndexPath;
+    OFIndexPath *_characterIndexPath;
+    NSInteger _score;
+}
+
+- (id)initWithString:(NSString *)string;
+- (OFCompletionMatch *)_preretainedSequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(NSInteger)score NS_RETURNS_RETAINED;
+- (OFCompletionMatch *)_preretainedSequenceByAddingScore:(NSInteger)score NS_RETURNS_RETAINED;
+
 @end
 
 @implementation OFCompletionMatch
 
-static void filterScoreInit(void);
-
 static BOOL calculateIndexesOfLastMatchesInName(
-    NSUInteger filterStartIndex,
-    NSUInteger filterLength,
-    NSString *filter,
-    NSUInteger nameCharacterStartIndex,
-    NSUInteger nameLength,
-    NSString *nameLowercase,
-    NSUInteger *lastMatchIndexes);
+                NSUInteger filterStartIndex,
+                NSUInteger filterLength,
+                NSString *filter,
+                NSUInteger nameCharacterStartIndex,
+                NSUInteger nameLength,
+                NSString *nameLowercase,
+                NSUInteger *lastMatchIndexes);
 
-static void filterIntoResults(NSUInteger filterIndex,
-                              NSUInteger filterLength,
-                              NSString *filter,
-                              NSUInteger *lastMatchIndexes,
-                              BOOL wasInWhitespace,
-                              NSUInteger nameWordIndex,
-                              NSUInteger nameCharacterIndex,
-                              NSUInteger nameLength,
-                              NSString *nameLowercase,
-                              NSString *nameOriginalCase,
-                              OFCompletionMatch *completionMatch,
-                              NSMutableArray *results);
+static void filterIntoResults(
+                NSUInteger filterIndex,
+                NSUInteger filterLength,
+                NSString *filter,
+                NSUInteger *lastMatchIndexes,
+                BOOL wasInWhitespace,
+                NSUInteger nameWordIndex,
+                NSUInteger nameCharacterIndex,
+                NSUInteger nameLength,
+                NSString *nameLowercase,
+                NSString *nameOriginalCase,
+                OFCompletionMatch *completionMatch,
+                NSMutableArray *results);
 
-+ (OFCompletionMatch *)bestOfMatches:(NSArray *)matches;
++ (void)initialize;
 {
-    OFCompletionMatch *bestMatch = nil;
-    NSUInteger matchIndex, matchCount = [matches count];
-    for (matchIndex = 0; matchIndex < matchCount; matchIndex++) {
-        OFCompletionMatch *match = [matches objectAtIndex:matchIndex];
-        if (bestMatch == nil || [match score] > [bestMatch score])
-            bestMatch = match;
-    }
-    return bestMatch;
+    OBINITIALIZE;
+
+    _WhitespaceOFCharacterSet = [[OFCharacterSet whitespaceOFCharacterSet] retain];
+    _UppercaseLetterOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:[NSCharacterSet uppercaseLetterCharacterSet]];
+    
+    OFPreferenceWrapper *preferences = [OFPreferenceWrapper sharedPreferenceWrapper];
+    OFCompletionMatchScoreFullMatch = [preferences integerForKey:@"OFCompletionMatchScoreForFullMatch"];
+    OFCompletionMatchScorePhraseStart = [preferences integerForKey:@"OFCompletionMatchScoreForPhraseStart"];
+    OFCompletionMatchScoreePhraseEnd = [preferences integerForKey:@"OFCompletionMatchScoreForPhraseEnd"];
+    OFCompletionMatchScoreConsecutiveCharacter = [preferences integerForKey:@"OFCompletionMatchScoreForConsecutiveCharacter"];
+    OFCompletionMatchScoreConsecutiveWord = [preferences integerForKey:@"OFCompletionMatchScoreForConsecutiveWord"];
+    OFCompletionMatchScoreWordStart = [preferences integerForKey:@"OFCompletionMatchScoreForWordStart"];
+    OFCompletionMatchScoreCapitalLetter = [preferences integerForKey:@"OFCompletionMatchScoreForCapitalLetter"];
 }
 
-static NSInteger sortByScore(id match1, id match2, void *context)
++ (OFCompletionMatch *)bestMatchFromMatches:(NSArray *)matches;
 {
-    int score1 = [match1 score];
-    int score2 = [match2 score];
-    if (score1 > score2)
-	return NSOrderedAscending;
-    else if (score1 < score2)
-	return NSOrderedDescending;
-    else
-        return NSOrderedSame;
+    OFCompletionMatch *bestMatch = nil;
+    
+    for (OFCompletionMatch *match in matches) {
+        if (bestMatch == nil || [match score] > [bestMatch score]) {
+            bestMatch = match;
+        }
+    }
+
+    return bestMatch;
 }
 
 + (NSArray *)matchesForFilter:(NSString *)filter inArray:(NSArray *)candidates shouldSort:(BOOL)shouldSort shouldUnique:(BOOL)shouldUnique;
 {
     NSMutableArray *results = [NSMutableArray array];
     NSMutableArray *matches = shouldUnique ? [[NSMutableArray alloc] init] : nil;
-    NSUInteger candidateIndex, candidateCount = [candidates count];
-    for (candidateIndex = 0; candidateIndex < candidateCount; candidateIndex++) {
-        NSString *candidate = [candidates objectAtIndex:candidateIndex];
+
+    for (NSString *candidate in candidates) {
         if (shouldUnique) {
 	    [self addMatchesForFilter:filter inString:candidate toResults:matches];
-            OFCompletionMatch *bestMatch = [self bestOfMatches:matches];
-            if (bestMatch != nil)
+            OFCompletionMatch *bestMatch = [self bestMatchFromMatches:matches];
+            if (bestMatch != nil) {
                 [results addObject:bestMatch];
+            }
 	    [matches removeAllObjects];
         } else {
             [self addMatchesForFilter:filter inString:candidate toResults:results];
         }
     }
+
     [matches release];
     
-    if (shouldSort)
-        [results sortUsingFunction:sortByScore context:NULL];
+    if (shouldSort) {
+        [results sortUsingComparator:^NSComparisonResult(OFCompletionMatch *match1, OFCompletionMatch *match2) {
+            NSInteger score1 = match1.score;
+            NSInteger score2 = match2.score;
+
+            if (score1 > score2) {
+                return NSOrderedAscending;
+            } else if (score1 < score2) {
+                return NSOrderedDescending;
+            }
+            
+            return NSOrderedSame;
+        }];
+    }
 
     return results;
 }
@@ -107,7 +144,6 @@ static NSInteger sortByScore(id match1, id match2, void *context)
 
 + (void)addMatchesForFilter:(NSString *)filter inString:(NSString *)name toResults:(NSMutableArray *)results;
 {
-    filterScoreInit();
     NSUInteger filterLength = [filter length];
     NSUInteger lastMatchIndexes[filterLength];
     NSUInteger nameLength = [name length];
@@ -119,29 +155,31 @@ static NSInteger sortByScore(id match1, id match2, void *context)
     }
 }
 
-+ (OFCompletionMatch *)completionMatchWithString:(NSString *)aString;
++ (OFCompletionMatch *)completionMatchWithString:(NSString *)string;
 {
-    return [[[self alloc] initWithString:aString] autorelease];
+    return [[[self alloc] initWithString:string] autorelease];
 }
 
-- (id)initWithString:(NSString *)aString wordIndexPath:(OFIndexPath *)wordIndexPath characterIndexPath:(OFIndexPath *)characterIndexPath score:(int)aScore;
+- (id)initWithString:(NSString *)string wordIndexPath:(OFIndexPath *)wordIndexPath characterIndexPath:(OFIndexPath *)characterIndexPath score:(NSInteger)score;
 {
-    _string = [aString retain];
+    _string = [string retain];
     _wordIndexPath = [wordIndexPath retain];
     _characterIndexPath = [characterIndexPath retain];
-    _score = aScore;
+    _score = score;
     return self;
 }
 
-- (id)initWithString:(NSString *)aString;
+- (id)initWithString:(NSString *)string;
 {
     OFIndexPath *emptyPath = [OFIndexPath emptyIndexPath];
-    return [self initWithString:aString wordIndexPath:emptyPath characterIndexPath:emptyPath score:0];
+    return [self initWithString:string wordIndexPath:emptyPath characterIndexPath:emptyPath score:0];
 }
 
 - (id)init;
 {
     OBRejectUnusedImplementation(self, _cmd);
+    [self release];
+    return nil;
 }
 
 - (void)dealloc;
@@ -149,27 +187,28 @@ static NSInteger sortByScore(id match1, id match2, void *context)
     [_string release];
     [_wordIndexPath release];
     [_characterIndexPath release];
+
     [super dealloc];
 }
 
-- (OFCompletionMatch *)_preretainedSequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(int)aScore;
+- (OFCompletionMatch *)_preretainedSequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(NSInteger)score;
 {
-    return [[[self class] alloc] initWithString:_string wordIndexPath:[_wordIndexPath indexPathByAddingIndex:wordIndex] characterIndexPath:[_characterIndexPath indexPathByAddingIndex:characterIndex] score:_score + aScore];
+    return [[[self class] alloc] initWithString:_string wordIndexPath:[_wordIndexPath indexPathByAddingIndex:wordIndex] characterIndexPath:[_characterIndexPath indexPathByAddingIndex:characterIndex] score:_score + score];
 }
 
-- (OFCompletionMatch *)sequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(int)aScore;
+- (OFCompletionMatch *)sequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(NSInteger)score;
 {
-    return [[[[self class] alloc] initWithString:_string wordIndexPath:[_wordIndexPath indexPathByAddingIndex:wordIndex] characterIndexPath:[_characterIndexPath indexPathByAddingIndex:characterIndex] score:_score + aScore] autorelease];
+    return [[[[self class] alloc] initWithString:_string wordIndexPath:[_wordIndexPath indexPathByAddingIndex:wordIndex] characterIndexPath:[_characterIndexPath indexPathByAddingIndex:characterIndex] score:_score + score] autorelease];
 }
 
-- (OFCompletionMatch *)_preretainedSequenceByAddingScore:(int)aScore;
+- (OFCompletionMatch *)_preretainedSequenceByAddingScore:(NSInteger)score;
 {
-    return [[[self class] alloc] initWithString:_string wordIndexPath:_wordIndexPath characterIndexPath:_characterIndexPath score:_score + aScore];
+    return [[[self class] alloc] initWithString:_string wordIndexPath:_wordIndexPath characterIndexPath:_characterIndexPath score:_score + score];
 }
 
-- (OFCompletionMatch *)sequenceByAddingScore:(int)aScore;
+- (OFCompletionMatch *)sequenceByAddingScore:(NSInteger)score;
 {
-    return [[[[self class] alloc] initWithString:_string wordIndexPath:_wordIndexPath characterIndexPath:_characterIndexPath score:_score + aScore] autorelease];
+    return [[[[self class] alloc] initWithString:_string wordIndexPath:_wordIndexPath characterIndexPath:_characterIndexPath score:_score + score] autorelease];
 }
 
 - (NSString *)string;
@@ -187,7 +226,7 @@ static NSInteger sortByScore(id match1, id match2, void *context)
     return _characterIndexPath;
 }
 
-- (int)score;
+- (NSInteger)score;
 {
     return _score;
 }
@@ -206,29 +245,32 @@ static NSInteger sortByScore(id match1, id match2, void *context)
     return [_characterIndexPath indexAtPosition:indexPathLength - 1];
 }
 
-- (void)setAttributes:(NSDictionary *)attributes onAttributedString:(NSMutableAttributedString *)attributedString startingAtIndex:(int)start;
+- (NSAttributedString *)attributedStringWithTextAttributes:(NSDictionary *)textAttributes matchAttributes:(NSDictionary *)matchAttributes;
 {
-    NSUInteger indexIndex, indexCount = [_characterIndexPath length];
-    NSUInteger *indexes = malloc(sizeof(NSUInteger) * indexCount);
-    [_characterIndexPath getIndexes:indexes];
-    for (indexIndex = 0; indexIndex < indexCount; indexIndex++)
-        [attributedString setAttributes:attributes range:NSMakeRange(indexes[indexIndex] + start, 1)];
-    free(indexes);
-}
-
-static NSString *_quoteNull(NSString *string)
-{
-    return string;
+    OBPRECONDITION(textAttributes != NULL);
+    OBPRECONDITION(matchAttributes != NULL);
+    
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:self.string attributes:textAttributes];
+    
+    [_characterIndexPath enumerateIndexesUsingBlock:^(NSUInteger index, BOOL *stop) {
+        [attributedString addAttributes:matchAttributes range:NSMakeRange(index, 1)];
+    }];
+    
+    return [attributedString autorelease];
 }
 
 - (NSString *)stringBySurroundingMatchRangesWithPrefix:(NSString *)prefix suffix:(NSString *)suffix transformSubstrings:(OFCompletionMatchTransformSubstring)transformSubstrings;
 {
-    if (transformSubstrings == NULL)
-        transformSubstrings = _quoteNull;
+    if (transformSubstrings == NULL) {
+        transformSubstrings = ^(NSString *string) {
+            return string;
+        };
+    }
     
     NSUInteger indexCount = [_characterIndexPath length];
-    if (indexCount == 0)
+    if (indexCount == 0) {
         return transformSubstrings(_string);
+    }
     
     BOOL inHighlight = NO;
     NSUInteger *indexes = malloc(sizeof(NSUInteger) * (indexCount + 1));
@@ -236,7 +278,7 @@ static NSString *_quoteNull(NSString *string)
     indexes[indexCount] = NSNotFound;
     NSUInteger indexIndex = 0, nextHighlightIndex = indexes[indexIndex++];
     
-    NSMutableString *debugString = [NSMutableString string];
+    NSMutableString *resultString = [NSMutableString string];
     NSUInteger stringIndex = 0, stringLength = [_string length];
     
     for (stringIndex = 0; stringIndex < stringLength; stringIndex++) {
@@ -244,31 +286,34 @@ static NSString *_quoteNull(NSString *string)
         if (stringIndex == nextHighlightIndex) {
             nextHighlightIndex = indexes[indexIndex++];
             if (!inHighlight) {
-                [debugString appendString:prefix];
+                [resultString appendString:prefix];
                 inHighlight = YES;
             }
         } else {
             if (inHighlight) {
-                [debugString appendString:suffix];
+                [resultString appendString:suffix];
                 inHighlight = NO;
             }
         }
-        [debugString appendString:transformSubstrings(currentCharacterString)];
+        [resultString appendString:transformSubstrings(currentCharacterString)];
     }
-    if (inHighlight)
-        [debugString appendString:suffix];
-    free(indexes);
-    return debugString;
-}
 
-static NSString *_quoteXML(NSString *string)
-{
-    return [OFXMLCreateStringWithEntityReferencesInCFEncoding(string, OFXMLBasicEntityMask, nil/*newlineReplacement*/, NSUTF8StringEncoding) autorelease];
+    if (inHighlight) {
+        [resultString appendString:suffix];
+    }
+
+    free(indexes);
+
+    return resultString;
 }
 
 - (NSString *)xmlStringWithMatchingSpanClass:(NSString *)className;
 {
-    return [self stringBySurroundingMatchRangesWithPrefix:[NSString stringWithFormat:@"<span class=\"%@\">", className] suffix:@"</span>" transformSubstrings:_quoteXML];
+    OFCompletionMatchTransformSubstring transform = ^(NSString *string) {
+        return [OFXMLCreateStringWithEntityReferencesInCFEncoding(string, OFXMLBasicEntityMask, nil/*newlineReplacement*/, NSUTF8StringEncoding) autorelease];
+    };
+
+    return [self stringBySurroundingMatchRangesWithPrefix:[NSString stringWithFormat:@"<span class=\"%@\">", className] suffix:@"</span>" transformSubstrings:transform];
 }
     
 - (NSString *)debugString;
@@ -279,52 +324,38 @@ static NSString *_quoteXML(NSString *string)
 - (NSDictionary *)debugDictionary;
 {
     NSMutableDictionary *debugDictionary = [super debugDictionary];
+
     @try {
         [debugDictionary setObject:[self debugString] forKey:@"debugString" defaultObject:nil];
     } @catch (NSException *exception) {
+        NSLog(@"Exception caught in %s: %@", __func__, exception);
     }
+
     [debugDictionary setObject:_string forKey:@"_string" defaultObject:nil];
     [debugDictionary setObject:_wordIndexPath forKey:@"_wordIndexPath" defaultObject:nil];
     [debugDictionary setObject:_characterIndexPath forKey:@"_characterIndexPath" defaultObject:nil];
-    [debugDictionary setObject:[NSNumber numberWithInt:_score] forKey:@"_score"];
+    [debugDictionary setObject:[NSNumber numberWithInteger:_score] forKey:@"_score"];
+
     return debugDictionary;
 }
 
-static int CompletionScoreFullMatch, CompletionScorePhraseStart, CompletionScorePhraseEnd, CompletionScoreConsecutiveCharacter, CompletionScoreConsecutiveWord, CompletionScoreWordStart, CompletionScoreCapitalLetter;
-static OFCharacterSet *whitespaceOFCharacterSet, *uppercaseLetterOFCharacterSet;
-
-static void filterScoreInit(void)
-{
-    if (whitespaceOFCharacterSet != nil)
-        return;
-
-    whitespaceOFCharacterSet = [[OFCharacterSet whitespaceOFCharacterSet] retain];
-    uppercaseLetterOFCharacterSet = [[OFCharacterSet alloc] initWithCharacterSet:[NSCharacterSet uppercaseLetterCharacterSet]];
-    
-    OFPreferenceWrapper *preferences = [OFPreferenceWrapper sharedPreferenceWrapper];
-    CompletionScoreFullMatch = [preferences intForKey:@"OFCompletionMatchScoreForFullMatch"];
-    CompletionScorePhraseStart = [preferences intForKey:@"OFCompletionMatchScoreForPhraseStart"];
-    CompletionScorePhraseEnd = [preferences intForKey:@"OFCompletionMatchScoreForPhraseEnd"];
-    CompletionScoreConsecutiveCharacter = [preferences intForKey:@"OFCompletionMatchScoreForConsecutiveCharacter"];
-    CompletionScoreConsecutiveWord = [preferences intForKey:@"OFCompletionMatchScoreForConsecutiveWord"];
-    CompletionScoreWordStart = [preferences intForKey:@"OFCompletionMatchScoreForWordStart"];
-    CompletionScoreCapitalLetter = [preferences intForKey:@"OFCompletionMatchScoreForCapitalLetter"];
-}
-
 static BOOL calculateIndexesOfLastMatchesInName(
-    NSUInteger filterStartIndex,
-    NSUInteger filterLength,
-    NSString *filter,
-    NSUInteger nameCharacterStartIndex,
-    NSUInteger nameLength,
-    NSString *nameLowercase,
-    NSUInteger *lastMatchIndexes)
+                NSUInteger filterStartIndex,
+                NSUInteger filterLength,
+                NSString *filter,
+                NSUInteger nameCharacterStartIndex,
+                NSUInteger nameLength,
+                NSString *nameLowercase,
+                NSUInteger *lastMatchIndexes)
 {
     NSUInteger filterIndex = filterLength;
     NSUInteger nameCharacterIndex = nameLength;
+
 checkFilter:
-    if (filterIndex == filterStartIndex)
-        return YES; // We've matched all the characters in the filter
+    if (filterIndex == filterStartIndex) {
+        // We've matched all the characters in the filter
+        return YES;
+    }
 
     unichar filterChar = [filter characterAtIndex:--filterIndex];
     OBASSERT(filterIndex >= filterStartIndex);
@@ -344,82 +375,99 @@ checkFilter:
 
 #define ALTERNATE_RESULT_LIMIT 100 // Don't look for more than 100 possible scores for any particular name
 
-static void filterIntoResults(NSUInteger filterIndex,
-                              NSUInteger filterLength,
-                              NSString *filter,
-                              NSUInteger *lastMatchIndexes,
-                              BOOL wasInWhitespace,
-                              NSUInteger nameWordIndex,
-                              NSUInteger nameCharacterIndex,
-                              NSUInteger nameLength,
-                              NSString *nameLowercase,
-                              NSString *nameOriginalCase,
-                              OFCompletionMatch *completionMatch,
-                              NSMutableArray *results)
+static void filterIntoResults(
+                NSUInteger filterIndex,
+                NSUInteger filterLength,
+                NSString *filter,
+                NSUInteger *lastMatchIndexes,
+                BOOL wasInWhitespace,
+                NSUInteger nameWordIndex,
+                NSUInteger nameCharacterIndex,
+                NSUInteger nameLength,
+                NSString *nameLowercase,
+                NSString *nameOriginalCase,
+                OFCompletionMatch *completionMatch,
+                NSMutableArray *results)
 {
     if (filterIndex == filterLength) {
         // We've matched all the characters in the filter
-        int bonusScore = 0;
-        if (nameCharacterIndex == nameLength)
-            bonusScore += CompletionScorePhraseEnd;
+        NSInteger bonusScore = 0;
+        if (nameCharacterIndex == nameLength) {
+            bonusScore += OFCompletionMatchScoreePhraseEnd;
+        }
 
-        if (filterLength == nameLength)
-            bonusScore += CompletionScoreFullMatch;
+        if (filterLength == nameLength) {
+            bonusScore += OFCompletionMatchScoreFullMatch;
+        }
+
 	OFCompletionMatch *newMatch = [completionMatch _preretainedSequenceByAddingScore:bonusScore];
         [results addObject:newMatch];
 	[newMatch release];
         return;
     }
 
-    if (nameCharacterIndex == nameLength)
-        return; // No more characters to search
+    if (nameCharacterIndex == nameLength) {
+        // No more characters to search
+        return;
+    }
 
     unichar nameChar = [nameLowercase characterAtIndex:nameCharacterIndex];
     unichar filterChar = [filter characterAtIndex:filterIndex];
-    BOOL nowInWhitespace = OFCharacterSetHasMember(whitespaceOFCharacterSet, nameChar);
+    BOOL nowInWhitespace = OFCharacterSetHasMember(_WhitespaceOFCharacterSet, nameChar);
     NSUInteger lastMatchIndex = lastMatchIndexes[filterIndex];
 
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    while (nameCharacterIndex <= lastMatchIndex && [results count] < ALTERNATE_RESULT_LIMIT) {
-        BOOL wordStart = wasInWhitespace && !nowInWhitespace;
-        if (wordStart)
-            nameWordIndex++;
-        if (nameChar == filterChar) {
-            int aScore = 0;
-            if (nameCharacterIndex == 0) {
-                aScore += CompletionScorePhraseStart;
-            } else {
-                OBASSERT(nameCharacterIndex > 0); // These tests rely on looking at previous characters
-                if (filterIndex > 0) {
-                    NSUInteger lastCharacterIndex = [completionMatch lastCharacterIndex];
-                    if (lastCharacterIndex + 1 == nameCharacterIndex)
-                        aScore += CompletionScoreConsecutiveCharacter;
+    @autoreleasepool {
+        while (nameCharacterIndex <= lastMatchIndex && [results count] < ALTERNATE_RESULT_LIMIT) {
+            BOOL wordStart = wasInWhitespace && !nowInWhitespace;
+            if (wordStart) {
+                nameWordIndex++;
+            }
+
+            if (nameChar == filterChar) {
+                NSInteger score = 0;
+                if (nameCharacterIndex == 0) {
+                    score += OFCompletionMatchScorePhraseStart;
+                } else {
+                    OBASSERT(nameCharacterIndex > 0); // These tests rely on looking at previous characters
+                    if (filterIndex > 0) {
+                        NSUInteger lastCharacterIndex = [completionMatch lastCharacterIndex];
+                        if (lastCharacterIndex + 1 == nameCharacterIndex) {
+                            score += OFCompletionMatchScoreConsecutiveCharacter;
+                        }
+
+                        if (wordStart) {
+                            NSUInteger lastWordIndex = [completionMatch lastWordIndex];
+                            if (lastWordIndex + 1 == nameWordIndex) {
+                                score += OFCompletionMatchScoreConsecutiveWord;
+                            } else {
+                                score--; // Skipped a word
+                            }
+                        }
+                    }
+
                     if (wordStart) {
-                        NSUInteger lastWordIndex = [completionMatch lastWordIndex];
-                        if (lastWordIndex + 1 == nameWordIndex)
-                            aScore += CompletionScoreConsecutiveWord;
-                        else
-                            aScore--; // Skipped a word
+                        score += OFCompletionMatchScoreWordStart;
                     }
                 }
-                if (wordStart)
-                    aScore += CompletionScoreWordStart;
+
+                if (OFCharacterSetHasMember(_UppercaseLetterOFCharacterSet, [nameOriginalCase characterAtIndex:nameCharacterIndex])) {
+                    score += OFCompletionMatchScoreCapitalLetter;
+                }
+                    
+                OFCompletionMatch *newMatch = [completionMatch _preretainedSequenceByAddingWordIndex:nameWordIndex characterIndex:nameCharacterIndex withScore:score];
+                filterIntoResults(filterIndex + 1, filterLength, filter, lastMatchIndexes, nowInWhitespace, nameWordIndex, nameCharacterIndex + 1, nameLength, nameLowercase, nameOriginalCase, newMatch, results);
+                [newMatch release];
             }
-            if (OFCharacterSetHasMember(uppercaseLetterOFCharacterSet, [nameOriginalCase characterAtIndex:nameCharacterIndex]))
-                aScore += CompletionScoreCapitalLetter;
-	    
-	    OFCompletionMatch *newMatch = [completionMatch _preretainedSequenceByAddingWordIndex:nameWordIndex characterIndex:nameCharacterIndex withScore:aScore];
-            filterIntoResults(filterIndex + 1, filterLength, filter, lastMatchIndexes, nowInWhitespace, nameWordIndex, nameCharacterIndex + 1, nameLength, nameLowercase, nameOriginalCase, newMatch, results);
-	    [newMatch release];
-        }
-        nameCharacterIndex++;
-        if (nameCharacterIndex < nameLength) {
-            nameChar = [nameLowercase characterAtIndex:nameCharacterIndex];
-            wasInWhitespace = nowInWhitespace;
-            nowInWhitespace = OFCharacterSetHasMember(whitespaceOFCharacterSet, nameChar);
+            
+            nameCharacterIndex++;
+
+            if (nameCharacterIndex < nameLength) {
+                nameChar = [nameLowercase characterAtIndex:nameCharacterIndex];
+                wasInWhitespace = nowInWhitespace;
+                nowInWhitespace = OFCharacterSetHasMember(_WhitespaceOFCharacterSet, nameChar);
+            }
         }
     }
-    [pool drain];
 }
 
 @end

@@ -7,6 +7,8 @@
 //
 // $Id$
 
+#import <Security/Security.h>
+
 // IT IS INSECURE TO ENABLE THIS: Your credentials will be logged; use only test accounts.
 #if 0 && defined(DEBUG)
     #define DEBUG_CREDENTIALS(format, ...) NSLog(@"CREDENTIALS: " format, ## __VA_ARGS__)
@@ -20,3 +22,6 @@ void _OFLogSecError(const char *caller, const char *function, OSStatus err) OB_H
 #define OFLogSecError(function, err) _OFLogSecError(__PRETTY_FUNCTION__, function, err)
 
 NSURLCredential *_OFCredentialFromUserAndPassword(NSString *user, NSString *password) OB_HIDDEN;
+
+SecTrustRef _OFTrustForChallenge(NSURLAuthenticationChallenge *challenge) OB_HIDDEN;
+NSData *_OFDataForLeafCertificateInChallenge(NSURLAuthenticationChallenge *challenge) OB_HIDDEN;

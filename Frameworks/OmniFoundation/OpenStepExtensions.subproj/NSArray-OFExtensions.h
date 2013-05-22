@@ -44,6 +44,7 @@
 - (void)makeObjectsPerformSelector:(SEL)aSelector withBool:(BOOL)aBool;
 
 - (NSArray *)numberedArrayDescribedBySelector:(SEL)aSelector;
+- (NSArray *)arrayByInsertingObject:(id)anObject atIndex:(NSUInteger)index;
 - (NSArray *)arrayByRemovingObject:(id)anObject;
 - (NSArray *)arrayByRemovingObjectIdenticalTo:(id)anObject;
 - (NSDictionary *)indexBySelector:(SEL)aSelector;

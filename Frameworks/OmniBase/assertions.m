@@ -13,8 +13,6 @@
 #import "OBBacktraceBuffer.h"
 #import <unistd.h> // For getpid()
 
-OB_REQUIRE_ARC
-
 RCS_ID("$Id$")
 
 #ifdef OMNI_ASSERTIONS_ON
@@ -59,7 +57,7 @@ void OBInvokeAssertionFailureHandler(const char *type, const char *expression, c
         va_list args;
         va_start(args, fmt);
         
-        reason = [[NSString alloc] initWithFormat:fmt arguments:args];
+        reason = OB_AUTORELEASE([[NSString alloc] initWithFormat:fmt arguments:args]);
         
         va_end(args);
     }

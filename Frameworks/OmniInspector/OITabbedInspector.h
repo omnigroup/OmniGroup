@@ -27,6 +27,7 @@
     BOOL _singleSelection;
     BOOL _shouldInspectNothing;
     BOOL _autoSelection;
+    NSString *_currentInspectionIdentifier;
 }
 
 // API

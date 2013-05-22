@@ -1,4 +1,4 @@
-// Copyright 2005-2007, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2007, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,6 +48,7 @@ RCS_ID("$Id$")
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [_tabControllers release];
     [_trackingRectTags release];
+    [_currentInspectionIdentifier release];
     [super dealloc];
 }
 
@@ -562,7 +563,16 @@ RCS_ID("$Id$")
             NSLog(@"%ld - %@", [inspectionSet insertionOrderForObject:object], [object shortDescription]);
         }
     }
-    
+
+    NSString *inspectionIdentifier = [[OIInspectorRegistry sharedInspector] inspectionIdentifierForCurrentInspectionSet];
+    if (_currentInspectionIdentifier || inspectionIdentifier) {
+        // do not change the selected tab if the inspectionIdentifier has not changed.
+        if ([inspectionIdentifier isEqualToString:_currentInspectionIdentifier])
+            return;
+        [_currentInspectionIdentifier release];
+        _currentInspectionIdentifier = [inspectionIdentifier copy];
+    }
+
     NSArray *tabIdentifiers = [self tabIdentifiers];
     
     for (id object in sortedObjects) {

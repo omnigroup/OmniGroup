@@ -42,6 +42,8 @@ RCS_ID("$Id$");
     _tableView.delegate = self;
     _tableView.dataSource = self;
     _tableView.scrollEnabled = NO; // Hopefully will never have that many account types...
+    _tableView.backgroundColor = [UIColor clearColor];
+    _tableView.backgroundView = nil;
 
     self.view = _tableView;
 }
@@ -82,8 +84,9 @@ RCS_ID("$Id$");
     static NSString *reuseIdentifier = @"AddAccount";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
     if (!cell) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:reuseIdentifier];
         cell.textLabel.text = accountType.addAccountTitle;
+        cell.detailTextLabel.text = accountType.addAccountDescription;
         cell.imageView.image = [UIImage imageNamed:@"OUIGreenPlusButton.png"];
     }
     
@@ -110,7 +113,7 @@ RCS_ID("$Id$");
     OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initWithAccount:nil ofType:accountType];
     setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError *errorOrNil){
         OFXServerAccount *account = errorOrNil ? nil : vc.account;
-        OBASSERT(account == nil || [[[OFXServerAccountRegistry defaultAccountRegistry] validImportExportAccounts] containsObject:account]);
+        OBASSERT(account == nil || [[[OFXServerAccountRegistry defaultAccountRegistry] validCloudSyncAccounts] containsObject:account]);
         [[OUIDocumentAppController controller] _didAddSyncAccount:account];
     };
     

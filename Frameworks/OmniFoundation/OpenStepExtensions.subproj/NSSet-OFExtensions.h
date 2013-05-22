@@ -22,7 +22,10 @@
 - (void)applyFunction:(CFSetApplierFunction)applier context:(void *)context;
 
 - (id)any:(OFPredicateBlock)predicate;
+- (BOOL)all:(OFPredicateBlock)predicate;
+
 - (NSSet *)select:(OFPredicateBlock)predicate;
 
 @end
 
+#define OFSetByGettingProperty(set, cls, prop) [(set) setByPerformingBlock:^id(cls *item){ return item.prop; }]

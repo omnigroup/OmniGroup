@@ -386,42 +386,86 @@ BOOL OADebugTargetSelection = NO;
     return YES;
 }
 
+static NSWindow *_documentWindowClaimingSheet(NSWindow *sheet)
+{
+    // Apple has a private method -[NSWindow _documentWindow]. Since that's not available to us, we search all the app's windows, looking for one that claims the sheet in question.
+    OBASSERT([sheet isSheet]); // Not actually dangerous, but I doubt it's ever even convenient to ask us about a window that isn't actually a sheet.
+    NSArray *windows = [NSApp windows];
+    for (NSWindow *window in windows) {
+        if ([window isSheet]) {
+            continue;
+        }
+        NSWindow *attachedSheet = [window attachedSheet];
+        // It may not ever be a good idea, but it's possible for a sheet to be presented on another sheet, so we have to accommodate that possibility.
+        do {
+            if (attachedSheet == sheet) {
+                return window;
+            }
+            attachedSheet = [attachedSheet attachedSheet];
+        } while (attachedSheet != nil);
+    }
+    return nil;
+}
+
+static BOOL _windowIsDismissedSheet(NSWindow *window)
+{
+    // While there is no direct API for determining if a sheet has been dismissed, once it has been dismissed it no other window will claim it as their attachedSheet.
+    return (window.isSheet && (_documentWindowClaimingSheet(window) == nil));
+}
+
+static BOOL _applySearchToWindow(NSWindow *window, SEL theAction, id theTarget, id sender, OAResponderChainApplier applier)
+{
+    // If the window is a dismissed sheet, don't search it. This comes up frequently because -[NSApplication keyWindow] will return a sheet that has been dismissed and is in the process of animating out. We of course don't want to target a dismissed sheet to begin with, but there can also be a big penalty for messaging a dismissed sheet: a dismissed Powerbox sheet in a sandboxed app (such as the Save sheet) is taking about 1/3 of a second to respond to our messages, so we were seeing ~five-second pauses after exiting a Powerbox sheet, which turned out to be us messaging the dismissed sheet for multiple toolbar items and so forth as we validated them.
+    if ((window != nil) && !_windowIsDismissedSheet(window)) {
+        // Search the responder chain - unless the window has an attached sheet, in which case the sheet "blocks" the responder chain
+        BOOL windowHasAttachedSheet = (window.attachedSheet != nil);
+        if (!windowHasAttachedSheet) {
+            NSResponder *firstResponder = window.firstResponder;
+            if ((firstResponder != nil) && ![firstResponder applyToResponderChain:applier]) {
+                return NO; // Don't continue searching
+            }
+        }
+        
+        // Try the window object itself. This may have been tried as part of the responder chain above, but in case not, we have to check it here.
+        if (!applier(window)) {
+            return NO; // Don't continue searching
+        }
+
+        // If the window has an attached sheet, we won't have tried the responder chain above and thus won't have checked the supplemental target, so we need to check it here. (But note that NSWindow's supplemental target check changes if the window has an attached sheet - it won't offer either the delegate or window controller as the responsible target in that case, even if they implement the action in question.)
+        if (windowHasAttachedSheet) {
+            id supplementalTarget = [window supplementalTargetForAction:theAction sender:sender];
+            if ((supplementalTarget != nil) && !applier(supplementalTarget)) {
+                return NO; // Don't continue searching
+            }
+        }
+    }
+    
+    return YES; // Continue searching, because we haven't found the target yet
+}
+
 // Does the full search documented for -targetForAction:to:from:
 static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, id sender, OAResponderChainApplier applier)
 {
-    NSWindow *mainWindow = [self mainWindow];
-    NSWindow *keyWindow = [self keyWindow];
-    
-    // a modal key window should go through its responder chain, self, and delegate, but not the mainWindow, application or document controller.
-    if (keyWindow && keyWindow == [self modalWindow]) {
-        [keyWindow.firstResponder applyToResponderChain:applier]; 
-        return;
-    }    
-
-    // Try *just* the first responder on the key window, if it is different from the main window.
-    if (keyWindow.firstResponder && keyWindow != mainWindow && !applier(keyWindow.firstResponder))
-        return;
-
-    // NSApp class reference: "If the delegate cannot handle the message and the main window is different from the key window, NSApp begins searching again with the first responder in the main window".  Experimentally, this is not true if the key window is a sheet.  That makes sense since if the sheet is key, the window it covers is the mainWindow and the sheet conceptually blocks actions to it.  However with super's implementation, mainWindow is the chosen target for toggleUsingSmallToolbarIcons:.  NSWindow responds to toggleUsingSmallToolbarIcons by sending its toolbar a setSizeMode:. The NSToolbarConfigSheet is a window but does not _have_ a toolbar. It is key but not main. Therefore the keywindow's responder chain must not be responsible if it's a sheet. However, if the keyWindow has a first responder that's, say, a text field, paste: must be valid.  So here we try the sheets' firstResponder, then the mainWindow itself (_not_ its responder chain), then the keyWindow's responder chain, and if nobody has eaten it by then, the main window's first responder chain (then the document controller and the app itself)..
-    if (keyWindow != mainWindow && [keyWindow isSheet] && ![self modalWindow] && !applier(mainWindow)) {
+    // Try the key window
+    NSWindow *keyWindow = self.keyWindow;
+    if (!_applySearchToWindow(keyWindow, theAction, theTarget, sender, applier)) {
         return;
     }
     
-    // Follow the normal set of fallbacks as documented for this method on NSApplication.  Terminate if the applier stops (which might be due to finding a target or might be due to one of the candidates claiming the action but refusing to do it).
-    if (keyWindow.firstResponder && ![keyWindow.firstResponder applyToResponderChain:applier])
+    // Try the main window (if it is not the same window as the key window)
+    NSWindow *mainWindow = self.mainWindow;
+    if ((mainWindow != keyWindow) && !_applySearchToWindow(mainWindow, theAction, theTarget, sender, applier)) {
         return;
-    
-    if (keyWindow != mainWindow) {
-         if (![keyWindow isSheet] && ![self modalWindow] && mainWindow.firstResponder && ![mainWindow.firstResponder applyToResponderChain:applier])
-            return;
     }
-
+    
+    if (![self applyToResponderChain:applier]) {
+        return;
+    }
+    
     // This isn't ideal since this forces an NSDocumentController to be created.  AppKit presumably has some magic to avoid this...  We could avoid this if there are no registered document types, if that becomes an issue.
     NSDocumentController *documentController = [NSDocumentController sharedDocumentController];
     if (documentController && ![documentController applyToResponderChain:applier])
         return;
-    
-    [self applyToResponderChain:applier];
 }
 
 - (id)targetForAction:(SEL)theAction;
@@ -452,7 +496,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_10_7 <= MAC_OS_X_VERSION_MIN_REQUIRED
         // Use the supplementalTargetForAction mechanism that was introduced in 10.7 to look for delegates and other helper objects attached to responders, but still use our OATargetSelection approach of requiring objects to override responsibleTargetForAction if they wish to terminate the search.
-        if (!responsible && [object isKindOfClass:[NSResponder class]] && ![object respondsToSelector:@selector(remoteResponderChainPerformSelector:)]) {
+        if (!responsible && [object isKindOfClass:[NSResponder class]]) {
             DEBUG_TARGET_SELECTION(@"      ... trying supplementalTarget");
             responsible = [(NSResponder *)object supplementalTargetForAction:theAction sender:sender];
             if (responsible)
@@ -464,6 +508,16 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         if (responsible) {
             // Someone claimed to be responsible for the action.  The sender will re-validate with any appropriate means and might still get refused, but we should stop iterating.
             DEBUG_TARGET_SELECTION(@"      ... got responsible target: %@", responsible);
+
+            if (([responsible isKindOfClass:[NSWindow class]]) && [(NSWindow *)responsible isSheet]) {
+                NSWindow *documentWindow = _documentWindowClaimingSheet(responsible);
+                OBASSERT(documentWindow != nil); // responsible is a sheet; we better be able to find its document window
+                if ((documentWindow != nil) && [documentWindow responsibleTargetForAction:theAction sender:sender]) {
+                    responsible = documentWindow;
+                    DEBUG_TARGET_SELECTION(@"          ... responsible target overridden by its document window: %@", responsible);
+                }
+            }
+
             target = responsible;
             return NO; // stop the search
         }
@@ -1087,7 +1141,7 @@ static id _selfIfValidElseNil(id self, SEL validateSelector, id sender)
     if (![super applyToResponderChain:applier])
         return NO;
     
-    // Beginning in 10.7, as a first approximation, the delegate is returned via supplementalTargetForAction:sender:. However, if the delegate is an NSResponder, then NSWindow seems to chase the responder chain and return the first object that implements the action. We apply our mechanism here. It's redundant in some cases, but let's us run the applier against the full chain.
+    // Beginning in 10.7, as a first approximation, the delegate is returned via supplementalTargetForAction:sender:. However, if the delegate is an NSResponder, then NSWindow seems to chase the responder chain and return the first object that implements the action. We apply our mechanism here. It's redundant in some cases, but lets us run the applier against the full chain.
     id delegate = (id)self.delegate;
     if (delegate)
         DEBUG_TARGET_SELECTION(@"---> checking NSWindow delegate ");

@@ -7,7 +7,7 @@
 
 #import <OmniUI/OUIOverlayView.h>
 
-#import "OUITextLayout.h"
+#import <OmniUI/OUITextLayout.h>
 #import <Foundation/NSAttributedString.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE

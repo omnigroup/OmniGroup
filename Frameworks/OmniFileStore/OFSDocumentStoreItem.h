@@ -17,7 +17,7 @@ extern NSString * const OFSDocumentStoreItemUserModificationDateBinding;
 extern NSString * const OFSDocumentStoreItemReadyBinding;
 
 // KVO properties that will mirror the OFXFileMetadata properties (or have sensible defaults for local documents).
-extern NSString * const OFSDocumentStoreItemHasUnresolvedConflictsBinding;
+extern NSString * const OFSDocumentStoreItemHasDownloadQueuedBinding;
 extern NSString * const OFSDocumentStoreItemIsDownloadedBinding;
 extern NSString * const OFSDocumentStoreItemIsDownloadingBinding;
 extern NSString * const OFSDocumentStoreItemIsUploadedBinding;
@@ -40,7 +40,7 @@ extern NSString * const OFSDocumentStoreItemPercentUploadedBinding;
 - (NSString *)name;
 - (NSDate *)userModificationDate;
 
-@property(nonatomic,readonly) BOOL hasUnresolvedConflicts;
+@property(nonatomic,readonly) BOOL hasDownloadQueued;
 @property(nonatomic,readonly) BOOL isDownloaded;
 @property(nonatomic,readonly) BOOL isDownloading;
 @property(nonatomic,readonly) BOOL isUploaded;

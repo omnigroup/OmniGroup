@@ -115,6 +115,10 @@
 		49B035B1161D02CE0097E384 /* OAGearTemplate@2x.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 49B035AF161D02CE0097E384 /* OAGearTemplate@2x.tiff */; };
 		49EF503D15F6EAD000254849 /* OALabelField.h in Headers */ = {isa = PBXBuildFile; fileRef = 49EF503B15F6EAD000254849 /* OALabelField.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49EF503E15F6EAD000254849 /* OALabelField.m in Sources */ = {isa = PBXBuildFile; fileRef = 49EF503C15F6EAD000254849 /* OALabelField.m */; };
+		4A5F17B3172772F5001A60E5 /* OAWebPageViewer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A5F17B4172772F5001A60E5 /* OAWebPageViewer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */; };
+		4A5F17B5172772F5001A60E5 /* OAWebPageViewer.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4A5F17B2172772F5001A60E5 /* OAWebPageViewer.xib */; };
+		4A5F17B71727772C001A60E5 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A5F17B61727772C001A60E5 /* WebKit.framework */; };
 		4A785F590B040C3A00B513F3 /* OAPopupDatePicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A785F570B040C3A00B513F3 /* OAPopupDatePicker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A785F5A0B040C3A00B513F3 /* OAPopupDatePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A785F580B040C3A00B513F3 /* OAPopupDatePicker.m */; };
 		4A785F630B040CF500B513F3 /* OADatePickerTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A785F610B040CF500B513F3 /* OADatePickerTextField.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -417,6 +421,10 @@
 		4AE460D911D20CA800215084 /* OSAKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AE460D811D20CA800215084 /* OSAKit.framework */; };
 		4D7B031B16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4D7B031916A9DA7F006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png */; };
 		4D7B031C16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4D7B031A16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png */; };
+		4DFEA4981728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
+		4DFEA4991728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
+		4DFEA49A17285B8C00149B1F /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4DFEA49B17285B8D00149B1F /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50A5C89608C5505500B1C5E4 /* NSEvent-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 50A5C89408C5505500B1C5E4 /* NSEvent-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50A5C89708C5505500B1C5E4 /* NSEvent-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */; };
 		5F25681B1606CBE5008265EA /* Automator.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F25681A1606CBE5008265EA /* Automator.framework */; };
@@ -492,6 +500,7 @@
 		A2C0C3B10E3596E600773D47 /* WhiteAlpha.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37E0E3596E600773D47 /* WhiteAlpha.xml */; };
 		E228439B115D622F00948C13 /* OAStepperTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = E228439A115D622F00948C13 /* OAStepperTextField.m */; };
 		E228439E115D623700948C13 /* OAStepperTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = E228439D115D623700948C13 /* OAStepperTextField.h */; };
+		E234124E1718D0D80009F48E /* OAAction@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E234124D1718D0D80009F48E /* OAAction@2x.png */; };
 		E235B46415CC771600E162D6 /* OATrackingLoop.h in Headers */ = {isa = PBXBuildFile; fileRef = E235B46215CC771600E162D6 /* OATrackingLoop.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E235B46515CC771600E162D6 /* OATrackingLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B46315CC771600E162D6 /* OATrackingLoop.m */; };
 		E235B69F15CC836000E162D6 /* OAToolbarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = E235B69D15CC836000E162D6 /* OAToolbarButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -803,6 +812,10 @@
 		4A0AC9D105F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject-NSDraggingInfo-OAExtensions.m"; sourceTree = "<group>"; };
 		4A5714CD08B0436100B772DA /* Info-OAUnitTests.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-OAUnitTests.plist"; sourceTree = SOURCE_ROOT; };
 		4A5714D308B0439D00B772DA /* Info-OAPatternColorPicker.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-OAPatternColorPicker.plist"; sourceTree = SOURCE_ROOT; };
+		4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAWebPageViewer.h; sourceTree = "<group>"; };
+		4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAWebPageViewer.m; sourceTree = "<group>"; };
+		4A5F17B2172772F5001A60E5 /* OAWebPageViewer.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OAWebPageViewer.xib; sourceTree = "<group>"; };
+		4A5F17B61727772C001A60E5 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
 		4A785F570B040C3A00B513F3 /* OAPopupDatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPopupDatePicker.h; sourceTree = "<group>"; };
 		4A785F580B040C3A00B513F3 /* OAPopupDatePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPopupDatePicker.m; sourceTree = "<group>"; };
 		4A785F5F0B040CAE00B513F3 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OAPopupDatePicker.nib; sourceTree = "<group>"; };
@@ -835,6 +848,7 @@
 		4AE460D811D20CA800215084 /* OSAKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OSAKit.framework; path = /System/Library/Frameworks/OSAKit.framework; sourceTree = "<absolute>"; };
 		4D7B031916A9DA7F006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorCircleXOff@2x.png"; sourceTree = "<group>"; };
 		4D7B031A16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorCircleXOn@2x.png"; sourceTree = "<group>"; };
+		4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFontDescriptorTests.m; sourceTree = "<group>"; };
 		50A5C89408C5505500B1C5E4 /* NSEvent-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = "NSEvent-OAExtensions.h"; sourceTree = "<group>"; };
 		50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = "NSEvent-OAExtensions.m"; sourceTree = "<group>"; };
 		5BEAF23E01FF6D7D0297A15C /* OADocumentPositioningView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADocumentPositioningView.h; sourceTree = "<group>"; };
@@ -1012,6 +1026,7 @@
 		E20CCE8D058021200097A12E /* OAAction.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAAction.png; sourceTree = "<group>"; };
 		E228439A115D622F00948C13 /* OAStepperTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAStepperTextField.m; sourceTree = "<group>"; };
 		E228439D115D623700948C13 /* OAStepperTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAStepperTextField.h; sourceTree = "<group>"; };
+		E234124D1718D0D80009F48E /* OAAction@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAAction@2x.png"; sourceTree = "<group>"; };
 		E235B46215CC771600E162D6 /* OATrackingLoop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATrackingLoop.h; sourceTree = "<group>"; };
 		E235B46315CC771600E162D6 /* OATrackingLoop.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATrackingLoop.m; sourceTree = "<group>"; };
 		E235B69D15CC836000E162D6 /* OAToolbarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAToolbarButton.h; sourceTree = "<group>"; };
@@ -1061,6 +1076,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A5F17B71727772C001A60E5 /* WebKit.framework in Frameworks */,
 				5F25681B1606CBE5008265EA /* Automator.framework in Frameworks */,
 				4AA1E7EE08AA764600E2FF6B /* OmniBase.framework in Frameworks */,
 				4AA1E7EF08AA764600E2FF6B /* OmniFoundation.framework in Frameworks */,
@@ -1133,6 +1149,7 @@
 		00E51EF2FE8AB2E911C9CC38 /* OmniAppKit */ = {
 			isa = PBXGroup;
 			children = (
+				4A5F17B61727772C001A60E5 /* WebKit.framework */,
 				5F25681A1606CBE5008265EA /* Automator.framework */,
 				00E51FB7FE8AB2E911C9CC38 /* OmniSourceLicense.html */,
 				4AA1EBCC08AA772700E2FF6B /* Configurations */,
@@ -1241,6 +1258,7 @@
 			isa = PBXGroup;
 			children = (
 				E20CCE8D058021200097A12E /* OAAction.png */,
+				E234124D1718D0D80009F48E /* OAAction@2x.png */,
 				0CCB227F004327677F000001 /* OABackArrow.png */,
 				0CCB227E004327677F000001 /* OAForwardArrow.png */,
 				49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */,
@@ -1336,6 +1354,7 @@
 		34508D58050FA7A70097A113 /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */,
 				3475A09D0DE235EA00FB73CC /* OBTestCase.h */,
 				3475A09E0DE235EA00FB73CC /* OBTestCase.m */,
 				3475A0A10DE235FE00FB73CC /* OFTestCase.h */,
@@ -1521,6 +1540,9 @@
 				348A508C05715F0A0097A113 /* OAVectorCell.m */,
 				94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */,
 				94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */,
+				4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */,
+				4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */,
+				4A5F17B2172772F5001A60E5 /* OAWebPageViewer.xib */,
 			);
 			name = Widgets;
 			path = Widgets.subproj;
@@ -2363,6 +2385,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3401164411E518720016ADB3 /* OATestCase.h in Headers */,
+				4DFEA49B17285B8D00149B1F /* OAFontDescriptor.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2545,6 +2568,7 @@
 				273647A21641D0AF00036839 /* OASolidColorView.h in Headers */,
 				272A315B1666BABB00110B0B /* OANoExpansionFrameTextFieldCell.h in Headers */,
 				2779DDBC16BB328500A2BC8F /* OAViewPicker.h in Headers */,
+				4A5F17B3172772F5001A60E5 /* OAWebPageViewer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2557,6 +2581,7 @@
 				3475A09F0DE235EA00FB73CC /* OBTestCase.h in Headers */,
 				3475A0A30DE235FE00FB73CC /* OFTestCase.h in Headers */,
 				3E80E9F71614EFC20078A123 /* OAGradientBoxSeparator.h in Headers */,
+				4DFEA49A17285B8C00149B1F /* OAFontDescriptor.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2807,6 +2832,8 @@
 				4D7B031B16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png in Resources */,
 				4D7B031C16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png in Resources */,
 				342D1D8F16C9584100692117 /* OAFindPanel.xib in Resources */,
+				E234124E1718D0D80009F48E /* OAAction@2x.png in Resources */,
+				4A5F17B5172772F5001A60E5 /* OAWebPageViewer.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2939,6 +2966,7 @@
 				3401164111E5186D0016ADB3 /* OATextStorageMergedEditTests.m in Sources */,
 				3401164211E5186D0016ADB3 /* OATextStorageEditTests.m in Sources */,
 				3401164311E518710016ADB3 /* OATestCase.m in Sources */,
+				4DFEA4991728518800149B1F /* OAFontDescriptorTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3116,6 +3144,7 @@
 				272A315E1666BAFF00110B0B /* OANoExpansionFrameTextFieldCell.m in Sources */,
 				2779DD8716BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m in Sources */,
 				2779DDBE16BB338400A2BC8F /* OAViewPicker.m in Sources */,
+				4A5F17B4172772F5001A60E5 /* OAWebPageViewer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3130,6 +3159,7 @@
 				3475A0A40DE235FE00FB73CC /* OFTestCase.m in Sources */,
 				3401162111E516EC0016ADB3 /* OATextStorageEditTests.m in Sources */,
 				3401162211E516EC0016ADB3 /* OATextStorageMergedEditTests.m in Sources */,
+				4DFEA4981728518800149B1F /* OAFontDescriptorTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

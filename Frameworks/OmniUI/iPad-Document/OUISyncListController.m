@@ -59,7 +59,7 @@ RCS_ID("$Id$");
         .size.height = 32
     }];
     
-    _connectingProgress = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    _connectingProgress = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
     _connectingProgress.frame = (CGRect){
         .origin.x = 2,
         .origin.y = 6,
@@ -74,9 +74,9 @@ RCS_ID("$Id$");
         .size.width = 132,
         .size.height = 32
     }];
-    _connectingLabel.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.0];
+    _connectingLabel.backgroundColor = [UIColor clearColor];
     _connectingLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:20.0];
-    _connectingLabel.textColor = [UIColor colorWithWhite:0.47 alpha:1.0];
+    _connectingLabel.textColor = [UIColor whiteColor];
     [_connectingView addSubview:_connectingLabel];
     
     [self _updateNavigationButtons];
@@ -314,8 +314,6 @@ RCS_ID("$Id$");
 {
     self.navigationItem.titleView = nil;
     _connectingProgress.hidden = YES;
-    
-    self.title = _isExporting ? _serverAccount.exportTitle : _serverAccount.importTitle;
 }
 
 - (void)_goBack:(id)sender;

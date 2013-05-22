@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,10 @@
 RCS_ID("$Id$")
 
 @implementation OFMultiValueDictionary
+{
+    CFMutableDictionaryRef dictionary;
+    short dictionaryFlags;
+}
 
 #define DictKeysStandard  0   // dictionary is an NSMutableDictionary
 #define DictKeysOFCaseInsensitiveStrings  1  // dictionary uses OFCaseInsensitiveStringKeyDictionaryCallbacks
@@ -20,10 +24,10 @@ RCS_ID("$Id$")
 
 - init;
 {
-    return [self initWithKeyCallBacks: NULL];
+    return [self initWithKeyCallBacks:NULL];
 }
 
-- initWithCaseInsensitiveKeys: (BOOL) caseInsensitivity;
+- initWithCaseInsensitiveKeys:(BOOL)caseInsensitivity;
 {
     if (caseInsensitivity)
         return [self initWithKeyCallBacks:&OFCaseInsensitiveStringKeyDictionaryCallbacks];
@@ -32,7 +36,7 @@ RCS_ID("$Id$")
 }
 
 // The designated initializer
-- initWithKeyCallBacks: (const CFDictionaryKeyCallBacks *) keyBehavior;
+- initWithKeyCallBacks:(const CFDictionaryKeyCallBacks *)keyBehavior;
 {
     if (!(self = [super init]))
         return nil;
@@ -113,26 +117,14 @@ RCS_ID("$Id$")
     [valueArray addObjectsFromArray:moreObjects];
 }
 
-struct binsortContext {
-    SEL sortKey;
-    OFMultiValueDictionary *into;
-};
-
-static void addObjectBySelector(const void *value, void *context)
+- (void)addObjects:(NSArray *)manyObjects keyedByBlock:(OFObjectToObjectBlock)keyBlock;
 {
-    id <NSObject> anObject = (void *)value;
-    OFMultiValueDictionary *self = ((struct binsortContext *)context)->into;
-    id aKey = [anObject performSelector: ((struct binsortContext *)context)->sortKey ];
-    if (aKey == nil)
-        OBRejectInvalidCall(self, @selector(addObjects:keyedBySelector:), @"Attempt to insert value with nil key");
-    [[self _arrayForKey:aKey alloc:1] addObject:anObject];
-}
-
-- (void)addObjects:(NSArray *)manyObjects keyedBySelector:(SEL)aSelector;
-{
-    struct binsortContext context = { aSelector, self };
-    CFArrayApplyFunction((CFArrayRef)manyObjects, CFRangeMake(0, [manyObjects count]),
-                         &addObjectBySelector, &context);
+    for (id object in manyObjects) {
+        id key = keyBlock(object);
+        if (key == nil)
+            OBRejectInvalidCall(self, _cmd, @"Attempt to insert value with nil key");
+        [[self _arrayForKey:key alloc:1] addObject:object];
+    }
 }
 
 - (void)setObjects:(NSArray *)replacementObjects forKey:(id)aKey;
@@ -379,27 +371,19 @@ static void duplicateFunction(const void *key, const void *value, void *context)
 
 @implementation NSArray (OFMultiValueDictionary)
 
-- (OFMultiValueDictionary *)groupBySelector:(SEL)aSelector;
+- (OFMultiValueDictionary *)groupByKeyBlock:(OFObjectToObjectBlock)keyBlock;
 {
     OFMultiValueDictionary *dictionary = [[[OFMultiValueDictionary alloc] init] autorelease];
-    NSUInteger objectIndex, count = [self count];
-    
-    for (objectIndex = 0; objectIndex < count; objectIndex++) {
-        id currentObject = [self objectAtIndex:objectIndex];
-        [dictionary addObject:currentObject forKey:[currentObject performSelector:aSelector]];
-    }
+    for (id object in self)
+        [dictionary addObject:object forKey:keyBlock(object)];
     return dictionary;
 }
 
-- (OFMultiValueDictionary *)groupBySelector:(SEL)aSelector withObject:(id)anObject;
+- (OFMultiValueDictionary *)groupByKeyBlock:(id (^)(id object, id arg))keyBlock withObject:(id)argument;
 {
     OFMultiValueDictionary *dictionary = [[[OFMultiValueDictionary alloc] init] autorelease];
-    NSUInteger objectIndex, count = [self count];
-    
-    for (objectIndex = 0; objectIndex < count; objectIndex++) {
-        id currentObject = [self objectAtIndex:objectIndex];
-        [dictionary addObject:currentObject forKey:[currentObject performSelector:aSelector withObject:anObject]];
-    }
+    for (id object in self)
+        [dictionary addObject:object forKey:keyBlock(object, argument)];
     return dictionary;
 }
 

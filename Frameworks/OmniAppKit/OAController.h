@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,7 @@
 - (IBAction)showAboutPanel:(id)sender;
 - (IBAction)hideAboutPanel:(id)sender;
 - (IBAction)sendFeedback:(id)sender;
+- (IBAction)showMessageOfTheDay:(id)sender;
 
 - (void)getFeedbackAddress:(NSString **)feedbackAddress andSubject:(NSString **)subjectLine;
 - (void)sendFeedbackEmailTo:(NSString *)feedbackAddress subject:(NSString *)subjectLine body:(NSString *)body;
@@ -35,5 +36,7 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
 - (void)applicationWillTerminate:(NSNotification *)notification;
+
+- (void)checkMessageOfTheDay; // This will display the message of the day if it has changed since the last time it was displayed.
 
 @end

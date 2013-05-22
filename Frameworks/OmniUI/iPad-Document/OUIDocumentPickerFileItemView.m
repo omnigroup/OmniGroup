@@ -92,10 +92,7 @@ static id _commonInit(OUIDocumentPickerFileItemView *self)
     
     // Badge Status
     NSString *badgeStatus = nil;
-    if (fileItem.hasUnresolvedConflicts) {
-        badgeStatus = NSLocalizedStringFromTableInBundle(@"In conflict", @"OmniUIDocument", OMNI_BUNDLE, @"In conflict accessibility label.");
-    }
-    else if (fileItem.isDownloaded == NO) {
+    if (fileItem.isDownloaded == NO) {
         badgeStatus = NSLocalizedStringFromTableInBundle(@"Not downloaded", @"OmniUIDocument", OMNI_BUNDLE, @"Not downloaded accessibility label.");
     }
     else if (fileItem.isUploaded == NO) {

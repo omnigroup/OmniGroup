@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,4 +7,4 @@
 //
 // $Id$
 
-extern CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collectHardwareInformation, NSString *licenseType, bool reportMode);
+extern CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collectHardwareInformation, bool collectOpenGLInformation, NSString *licenseType, bool reportMode);

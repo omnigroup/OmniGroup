@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2009, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2009, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,10 +6,20 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/OFHeap.h>
+#import <OmniBase/OBUtilities.h>
 
 RCS_ID("$Id$")
 
 @implementation OFHeap
+{
+    // In ARC, stores into a '__strong id *' will release the old value and retain the new one. But, -dealloc doesn't know how to clean up the array. We could write nils to all the slots to do the releases, which would save us the effort of doing retains/releases elsewhere, but would mean we had to do writes in -dealloc. Unclear that it matters too much.
+    // If we do use __strong, then growing the array is harder. We can't use realloc naively since the new space in the array could be non-nil.
+    // For now, we'll manage references ourselves since we do a lot of swap operations storing into the array, which would cause spurious retain/releases.
+    __unsafe_unretained id *_objects;
+    
+    NSUInteger _count, _capacity;
+    NSComparator _comparator;
+}
 
 - init;
 {
@@ -30,19 +40,18 @@ RCS_ID("$Id$")
 
 - (void) dealloc;
 {
-    [self removeAllObjects];
-    [_comparator release];
+    for (NSUInteger objectIndex = 0; objectIndex < _count; objectIndex++)
+        OBStrongRelease(_objects[objectIndex]);
     if (_objects)
         free(_objects);
-    [super dealloc];
 }
 
-- (NSUInteger) count;
+- (NSUInteger)count;
 {
     return _count;
 }
 
-#define LESSTHAN(a, b)  (_comparator(_objects[a], _objects[b]) == NSOrderedAscending)
+#define LESSTHAN(a, b) (_comparator(_objects[a], _objects[b]) == NSOrderedAscending)
 
 #define PARENT(a)     ((a - 1) >> 1)
 #define LEFTCHILD(a)  ((a << 1) + 1)
@@ -54,10 +63,11 @@ RCS_ID("$Id$")
 
     if (_count == _capacity) {
         _capacity = 2 * (_capacity + 1); // might be zero
-        _objects = NSReallocateCollectable(_objects, sizeof(*_objects) * _capacity, NSScannedOption);
+        _objects = (__unsafe_unretained id *)realloc(_objects, sizeof(*_objects) * _capacity);
     }
 
-    _objects[_count] = [anObject retain];
+    OBStrongRetain(anObject);
+    _objects[_count] = anObject;
 
     upFrom = _count;
 
@@ -77,12 +87,13 @@ RCS_ID("$Id$")
 - (id)removeObject;
 {
     NSUInteger root, left, right, swapWith;
-    id result;
 
     if (!_count)
 	return nil;
 
-    result = _objects[0];
+    id result = _objects[0]; // ARC should give it a reference here and autorelease it below
+    OBStrongRelease(result); // Account for the one still in _objects[0]
+    
     _objects[0] = _objects[--_count];
     root = 0;
     while (YES) {
@@ -97,7 +108,7 @@ RCS_ID("$Id$")
 	root = swapWith;
     }
 
-    return [result autorelease];
+    return result;
 }
 
 - (id)removeObjectLessThanObject:(id)object;
@@ -110,10 +121,8 @@ RCS_ID("$Id$")
 
 - (void)removeAllObjects;
 {
-    while (_count--)
-        [_objects[_count] release];
-
-    // Don't leave this at -1
+    for (NSUInteger objectIndex = 0; objectIndex < _count; objectIndex++)
+        OBStrongRelease(_objects[objectIndex]);
     _count = 0;
 }
 
@@ -132,7 +141,6 @@ RCS_ID("$Id$")
     for (NSUInteger i = 0; i < _count; i++)
         [objectDescriptions addObject: [_objects[i] debugDictionary]];
     [dict setObject: objectDescriptions forKey: @"objects"];
-    [objectDescriptions release];
     
     return dict;
 }

@@ -9,14 +9,20 @@
 
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSURL.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
+#import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
+#import <OmniFoundation/NSString-OFConversion.h>
 #import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/OFMultiValueDictionary.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFStringScanner.h>
 #import <OmniFoundation/OFUtilities.h>
+#import <OmniFoundation/OFXMLDocument.h>
+#import <OmniFoundation/OFXMLWhitespaceBehavior.h>
+#import <OmniFoundation/OFXMLElement.h>
+#import <OmniFoundation/OFXMLCursor.h>
+#import <OmniFoundation/OFXMLString.h>
 #import <Security/SecTrust.h>
 
 RCS_ID("$Id$");
@@ -304,10 +310,9 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     [self _finish];
 }
 
+#if 0 // As far as I can tell, this never gets called (maybe since we implement -connection:willSendRequestForAuthenticationChallenge:.
 - (BOOL)connectionShouldUseCredentialStorage:(NSURLConnection *)connection;
 {
-    OBFinishPorting;
-#if 0
     OFSFileManager *fileManager = _weak_fileManager;
     OBASSERT(fileManager, "File manager deallocated before operations finished");
     
@@ -316,8 +321,8 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         return [delegate fileManagerShouldUseCredentialStorage:fileManager];
     else
         return YES;
-#endif
 }
+#endif
 
 - (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
@@ -350,7 +355,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     
     NSURLCredential *credential = nil;
     
-    if ([challengeMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+    if ([challengeMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {        
         SecTrustRef trustRef;
         if ((trustRef = [protectionSpace serverTrust]) != NULL) {
             
@@ -372,21 +377,22 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
             }
             if (oserr == noErr && evaluationResult == kSecTrustResultRecoverableTrustFailure) {
                 // The situation we're interested in is "recoverable failure": this indicates that the evaluation failed, but might succeed if we prod it a little.
-                // For now, we're just replicating the behavior of the old WebKit API: if a hostname is in OFSDAVFileManager's whitelist, we disable all certificate checks.
-                if (!OFIsTrustedHost([protectionSpace host])) {
-                    // Our caller may choose to pop up UI or it might choose to immediately mark the host as trusted.
+                BOOL hasTrust = OFHasTrustForChallenge(challenge);
+                if (!hasTrust) {
+                    // Our caller may choose to pop up UI or it might choose to immediately mark the certificate as trusted.
                     if (_validateCertificateForChallenge)
                         _validateCertificateForChallenge(self, challenge);
+                    hasTrust = OFHasTrustForChallenge(challenge);
                 }
 
-                if (OFIsTrustedHost([protectionSpace host])) {
+                if (hasTrust) {
                     credential = [NSURLCredential credentialForTrust:trustRef];
                     if (OFSFileManagerDebug > 2)
                         NSLog(@"credential = %@", credential);
                     [[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
                     return;
                 } else {
-                    // The delegate didn't opt to immediately mark the host trusted. It is presumably giving up or prompting the user and will retry the operation later.
+                    // The delegate didn't opt to immediately mark the certificate trusted. It is presumably giving up or prompting the user and will retry the operation later.
                     // We'd prefer to cancel here, but if we do, we deadlock (in the NSOperationQueue-based scheduling).
                     //[[challenge sender] cancelAuthenticationChallenge:challenge];
                     [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
@@ -559,8 +565,16 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
         /* We treat 3xx codes as errors here (in addition to the 4xx and 5xx codes) because any redirection should have been handled at a lower level, by NSURLConnection. If we do end up with a 3xx response, we can't treat it as a success anyway, because the response body of a 3xx is not the entity we requested --- it's usually a little server-generated HTML snippet saying "click here if the redirect didn't work". */
         _shouldCollectDetailsForError = YES;
     }
-    
-    OBASSERT(_isRead(self) || statusCode == OFS_HTTP_CREATED || statusCode == OFS_HTTP_NO_CONTENT || statusCode >= 400 /* Some sort of error (e.g. missing file or permission denied) */);
+    if (statusCode == OFS_HTTP_MULTI_STATUS && ![[_request HTTPMethod] isEqual:@"PROPFIND"]) {
+        // PROPFIND is supposed to return OFS_HTTP_MULTI_STATUS, but if we get it for COPY/DELETE/MOVE, then it is an error
+        // The response will be a DAV multistatus that we will turn into an error.
+        _shouldCollectDetailsForError = YES;
+    } else {
+        OBASSERT(_isRead(self) ||
+                 statusCode == OFS_HTTP_CREATED ||
+                 statusCode == OFS_HTTP_NO_CONTENT ||
+                 statusCode >= 400 /* Some sort of error (e.g. missing file or permission denied) */);
+    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data;
@@ -658,12 +672,77 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
 
 #pragma mark - Private
 
+- (NSError *)_generateErrorFromMultiStatus;
+{
+    // The error data we've collected should be a DAV multistatus describing why the operation didn't happen.
+    __autoreleasing NSError *error;
+    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:_errorData whitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior] error:&error];
+    if (!doc)
+        return nil; // -_generateErrorForResponse will just report a generic error with the original error data unparsed.
+    
+    OFXMLCursor *cursor = [doc cursor];
+    if (![[cursor name] isEqualToString:@"multistatus"])
+        return nil;
+    
+    // There will be multiple <response> elements, but we'll just take the first. The last may actually be better since Apache reports parent directories first.
+    if (![cursor openNextChildElementNamed:@"response"])
+        return nil;
+    
+
+    OFXMLElement *child;
+    
+    NSString *encodedPath;
+    if ((child = [[cursor currentElement] firstChildNamed:@"href"]))
+        encodedPath = OFCharacterDataFromElement(child);
+    
+    NSString *statusLine;
+    if ((child = [[cursor currentElement] firstChildNamed:@"status"]))
+        statusLine = OFCharacterDataFromElement(child);
+    
+    if (!encodedPath || !statusLine)
+        return nil;
+    
+    // I don't see any obvious CF/NS function to parse a HTTP status line...
+    NSUInteger statusCode;
+    {
+        NSArray *components = [statusLine componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+        if ([components count] != 3)
+            return nil;
+        
+        NSString *statusCodeString = components[1];
+        if ([statusCodeString rangeOfCharacterFromSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]].length > 0)
+            return nil;
+        statusCode = [statusCodeString unsignedLongValue];
+    }
+
+    return [NSError errorWithDomain:OFSDAVHTTPErrorDomain code:statusCode userInfo:nil];
+}
+
+- (NSString *)_localizedStringForStatusCode:(NSInteger)statusCode;
+{
+    switch (statusCode) {
+        case OFS_HTTP_INSUFFICIENT_STORAGE:
+            return NSLocalizedStringFromTableInBundle(@"insufficient storage", @"OmniFileStore", OMNI_BUNDLE, @"Text for HTTP error code 507 (insufficient storage)"); // We can do better than "server error", which is what +[NSHTTPURLResponse localizedStringForStatusCode:] returns
+        default:
+            return [NSHTTPURLResponse localizedStringForStatusCode:statusCode];
+    }
+}
+
 - (NSError *)_generateErrorForResponse;
 {
     NSInteger statusCode = [_response statusCode];
-    NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to perform WebDAV operation.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
-    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [[_request URL] host], [NSHTTPURLResponse localizedStringForStatusCode:statusCode], statusCode, [_request HTTPMethod], [[_request URL] path]];
-    NSMutableDictionary *info = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedRecoverySuggestionErrorKey, nil];
+    
+    NSMutableDictionary *info = [NSMutableDictionary new];
+
+    if (statusCode == OFS_HTTP_MULTI_STATUS && _errorData) {
+        // Nil if we can't parse out a status code from the multistatus response. We'll still have a wrapping OFS_HTTP_MULTI_STATUS error.
+        NSError *underlyingError = [self _generateErrorFromMultiStatus];
+        if (underlyingError)
+            info[NSUnderlyingErrorKey] = underlyingError;
+    }
+    
+    info[NSLocalizedDescriptionKey] = NSLocalizedStringFromTableInBundle(@"Unable to perform WebDAV operation.", @"OmniFileStore", OMNI_BUNDLE, @"error description");
+    info[NSLocalizedRecoverySuggestionErrorKey] = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\".", @"OmniFileStore", OMNI_BUNDLE, @"error reason"), [[_request URL] host], [self _localizedStringForStatusCode:statusCode], statusCode, [_request HTTPMethod], [[_request URL] path]];
     
     // We should always have a response and request when generating the error.
     // There is at least one case in the field where this is not true, and we are aborting due to an unhandled exception trying to stuff nil into the error dictionary. (See <bug:///84169> (Crash (unhandled exception) writing ICS file to sync server))
@@ -701,7 +780,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
             }
             
             // Record the Content-Type
-            [info setObject:contentType forKey:@"errorDataContentType"];
+            [info setObject:contentType forKey:OFSDAVHTTPErrorDataContentTypeKey];
             OFMultiValueDictionary *parameters = [[OFMultiValueDictionary alloc] init];
             [[self class] _parseContentTypeHeaderValue:contentType intoDictionary:parameters valueChars:nil];
             NSString *encodingName = [parameters firstObjectForKey:@"charset"];
@@ -717,12 +796,12 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
                 str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)_errorData, kCFStringEncodingWindowsLatin1);
                 if (!str) {
                     NSLog(@"Error content cannot be turned into string using encoding '%@' (%ld)", encodingName, (long)encoding);
-                    [info setObject:_errorData forKey:@"errorData"];
+                    [info setObject:_errorData forKey:OFSDAVHTTPErrorDataKey];
                     break;
                 }
             }
             
-            [info setObject:(__bridge id)str forKey:@"errorString"];
+            [info setObject:(__bridge id)str forKey:OFSDAVHTTPErrorStringKey];
             CFRelease(str);
         } while (0);
     }
@@ -761,8 +840,17 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     // Do this before calling the 'did finish' hook so that we are marked as finished when the target (possibly) calls our -resultData.
     _finished = YES;
     
-    if (_didFinish)
-        _didFinish(self, _error);
+    // Clear all our block pointers to help avoid retain cycles, now that we are done and need to go away.
+    typeof(_didFinish) didFinish = _didFinish;
+    _validateCertificateForChallenge = nil;
+    _findCredentialsForChallenge = nil;
+    _didFinish = nil;
+    _didReceiveBytes = nil;
+    _didReceiveData = nil;
+    _didSendBytes = nil;
+    
+    if (didFinish)
+        didFinish(self, _error);
 }
 
 

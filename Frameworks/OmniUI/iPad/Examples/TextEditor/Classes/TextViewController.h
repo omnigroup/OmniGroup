@@ -19,4 +19,6 @@
 @property(retain,nonatomic) IBOutlet UIToolbar *toolbar;
 @property(retain,nonatomic) IBOutlet OUIEditableFrame *editor;
 
+@property(nonatomic) BOOL forPreviewGeneration;
+
 @end

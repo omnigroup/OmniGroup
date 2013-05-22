@@ -64,6 +64,7 @@ typedef NSInteger OALineBreakMode;
 - (id)initWithType:(OATextTabType)type location:(CGFloat)location;
 - (CGFloat)location;
 - (OATextTabType)tabStopType;
+- (OATextAlignment)alignment;
 @end
 
 @interface OAParagraphStyle : OFObject <NSCopying, NSMutableCopying>

@@ -7,8 +7,6 @@
 
 #import <OmniFoundation/OFCredentials.h>
 
-#import <Security/Security.h>
-
 #import "OFCredentials-Internal.h"
 
 RCS_ID("$Id$")
@@ -167,3 +165,49 @@ void OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier)
         }
     });
 }
+
+static void _OFAccessTrustedCertificateDataSet(void (^accessor)(NSMutableSet *))
+{
+    static NSMutableSet *trustedDatas;
+    static dispatch_once_t onceToken;
+    static dispatch_queue_t accessQueue;
+    dispatch_once(&onceToken, ^{
+        trustedDatas = [[NSMutableSet alloc] init];
+        accessQueue = dispatch_queue_create("com.omnigroup.OmniFoundation.OFCredentials.TrustedCertificateDataAccess", DISPATCH_QUEUE_SERIAL);
+    });
+    
+    dispatch_sync(accessQueue, ^{
+        accessor(trustedDatas);
+    });
+}
+
+void OFAddTrustForChallenge(NSURLAuthenticationChallenge *challenge, OFCertificateTrustDuration duration)
+{
+    OBPRECONDITION(duration == OFCertificateTrustDurationSession, @"For persistent trust, use SFCertificateTrustPanel.");
+    
+    NSData *data = _OFDataForLeafCertificateInChallenge(challenge);
+    if (!data)
+        return;
+    
+    _OFAccessTrustedCertificateDataSet(^(NSMutableSet *trustedCertificateDatas){
+        [trustedCertificateDatas addObject:data];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:OFCertificateTrustUpdatedNotification object:nil];
+        });
+    });
+}
+
+BOOL OFHasTrustForChallenge(NSURLAuthenticationChallenge *challenge)
+{
+    NSData *data = _OFDataForLeafCertificateInChallenge(challenge);
+    if (!data)
+        return NO;
+    
+    __block BOOL trusted;
+    _OFAccessTrustedCertificateDataSet(^(NSMutableSet *trustedCertificateDatas){
+        trusted = ([trustedCertificateDatas member:data] != nil);
+    });
+    
+    return trusted;
+}
+

@@ -63,6 +63,9 @@
 - (id)willRebuildViewController;
 - (void)didRebuildViewController:(id)state;
 
+// Support for a bar button item to add to your document view controller to show OmniPresence progress
+- (UIBarButtonItem *)omniPresenceBarButtonItem;
+
 // Support for previews
 + (NSString *)placeholderPreviewImageNameForFileURL:(NSURL *)fileURL landscape:(BOOL)landscape;
 + (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;

@@ -7,9 +7,4 @@
 //
 // $Id$
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    #define OFX_USE_SECURITY_SCOPED_BOOKMARKS 1
-#else
-    #define OFX_USE_SECURITY_SCOPED_BOOKMARKS 0
-#endif
-
+// Nothing configurable at the moment.

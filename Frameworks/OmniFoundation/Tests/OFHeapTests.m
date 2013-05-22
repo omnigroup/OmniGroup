@@ -1,4 +1,4 @@
-// Copyright 2002-2009, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2009, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,18 @@
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
+
+@interface OFHeapTestObject : NSObject
+@end
+@implementation OFHeapTestObject
+
+//- (void)dealloc;
+//{
+//    NSLog(@"Deallocated");
+//    [super dealloc];
+//}
+
+@end
 
 @interface OFHeapTests : OFTestCase
 @end
@@ -88,6 +100,28 @@ RCS_ID("$Id$");
 
         [heap release];
     }
+}
+
+- (void)testLifetime;
+{
+    // Make sure ARC handles the guts of OFHeap correctly, when dereferencing a __unsafe_unretained id * into a regular id.
+    OFHeap *heap = [OFHeap new];
+    
+    @autoreleasepool {
+        OFHeapTestObject *object = [OFHeapTestObject new];
+        [heap addObject:object];
+        [object release];
+    }
+    
+    //NSLog(@"starting remove");
+    @autoreleasepool {
+        OFHeapTestObject *object = [heap removeObject];
+        [object class]; // Make sure we don't get a zombie here.
+        //NSLog(@"object = %@", object);
+    }
+    //NSLog(@"finished remove");
+    
+    [heap release];
 }
 
 @end

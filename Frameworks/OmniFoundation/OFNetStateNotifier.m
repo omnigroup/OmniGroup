@@ -161,8 +161,8 @@ NSInteger OFNetStateNotifierDebug;
     [aNetService setDelegate:nil];
     
     if ([_resolvingServices containsObject:aNetService]) {
-        [aNetService stop]; // If we were still resolving
         [_resolvingServices removeObject:aNetService];
+        [aNetService stop]; // If we were still resolving
         OBASSERT([_serviceToEntry objectForKey:aNetService] == nil);
     } else {
         OBASSERT([_serviceToEntry objectForKey:aNetService] != nil);
@@ -195,7 +195,7 @@ NSInteger OFNetStateNotifierDebug;
     [sender setDelegate:nil];
     
     // We assume that NSNetServices participating in this protocol will never change their peer group (the sender should go away and a different one should come back).
-    NSString *errorString;
+    __autoreleasing NSString *errorString;
     NSDictionary *txtRecord = OFNetStateTXTRecordDictionaryFromData([sender TXTRecordData], YES, &errorString);
     if (!txtRecord) {
         NSLog(@"Unable to unarchive TXT record: %@", errorString);
@@ -227,7 +227,9 @@ NSInteger OFNetStateNotifierDebug;
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION([_resolvingServices indexOfObject:sender] != NSNotFound);
 
+#ifdef DEBUG
     NSLog(@"%@: Error resolving service %@: %@", [self shortDescription], sender, errorDict);
+#endif
     
     [_resolvingServices removeObject:sender];
 }
@@ -256,7 +258,7 @@ NSInteger OFNetStateNotifierDebug;
     
     DEBUG_NOTIFIER(1, @"service did update TXT record %@", sender);
     
-    NSString *errorString;
+    __autoreleasing NSString *errorString;
     NSDictionary *txtRecord = OFNetStateTXTRecordDictionaryFromData(data, YES, &errorString);
     if (!txtRecord) {
         NSLog(@"Unable to unarchive TXT record: %@", errorString);

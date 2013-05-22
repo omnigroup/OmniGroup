@@ -1,4 +1,4 @@
-// Copyright 2011 The Omni Group.  All rights reserved.
+// Copyright 2011-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,7 +6,9 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 
-#import "OUIRotationGestureRecognizer.h"
+#import <OmniUI/OUIRotationGestureRecognizer.h>
+
+#import <UIKit/UIGestureRecognizerSubclass.h>
 
 RCS_ID("$Id$");
 

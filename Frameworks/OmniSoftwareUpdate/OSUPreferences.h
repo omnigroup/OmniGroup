@@ -1,4 +1,4 @@
-// Copyright 2001-2006,2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2006,2009-2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,7 @@
 + (OFPreference *)automaticSoftwareUpdateCheckEnabled;
 + (OFPreference *)checkInterval;
 + (OFPreference *)includeHardwareDetails;
++ (OFPreference *)includeOpenGLDetails;
 + (OFPreference *)ignoredUpdates;
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE // Not including OSUItem on iOS currently

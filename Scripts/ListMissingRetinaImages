@@ -18,15 +18,15 @@ def usage
     exit 1
 end
 
-@@IgnorePatterns = []
-@@ApplicationPaths = []
+$IgnorePatterns = []
+$ApplicationPaths = []
 
 GetoptLong.new(
   [ "--ignore", "-I", GetoptLong::REQUIRED_ARGUMENT ]
 ).each do |opt,arg|
     case opt
     when "--ignore"
-        @@IgnorePatterns << Regexp.new(arg.to_s)
+        $IgnorePatterns << Regexp.new(arg.to_s)
     else
         usage
     end
@@ -49,7 +49,7 @@ ARGV.each {|appPath|
     
     Find.find(appPath.to_s) {|f|
         next unless f =~ /\.(png|jpeg|jpg)$/
-        next if @@IgnorePatterns.detect {|pattern| pattern.match(f) }
+        next if $IgnorePatterns.detect {|pattern| pattern.match(f) }
         
         base = File.basename(f, File.extname(f))
     

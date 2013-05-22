@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSRegularExpression.h>
+#import <OmniBase/macros.h>
 
 @class OFRegularExpressionMatch;
 @class OFStringScanner;
@@ -28,8 +29,8 @@
     do { \
         static dispatch_once_t onceToken; \
         dispatch_once(&onceToken, ^{ \
-            NSError *expressionError = nil; \
-            name = [[NSRegularExpression alloc] initWithPattern:pattern options:0 error:&expressionError]; \
+            OB_AUTORELEASING NSError *expressionError = nil; \
+            name = [[NSRegularExpression alloc] initWithPattern:pattern options:NSRegularExpressionAnchorsMatchLines error:&expressionError]; \
             if (!name) { \
                 NSLog(@"Error creating regular expression '%@' from pattern: %@ --> %@", @#name, pattern, [expressionError toPropertyList]); \
             } \

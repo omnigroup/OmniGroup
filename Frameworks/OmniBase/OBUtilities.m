@@ -14,8 +14,6 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/macros.h>
 
-OB_REQUIRE_ARC
-
 RCS_ID("$Id$")
 
 
@@ -232,6 +230,7 @@ NSString *OBFormatObjectDescription(id anObject, NSString *fmt, ...)
     suffix = [[NSString alloc] initWithFormat:fmt arguments:varg];
     va_end(varg);
     result = [NSString stringWithFormat:@"<%@:%p %@>", NSStringFromClass([anObject class]), anObject, suffix];
+    OB_RELEASE(suffix);
     
     return result;
 }

@@ -258,6 +258,48 @@
                ReferencedContainer = "container:../Frameworks/OmniNetworking/OmniNetworking.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34EE20D014F0354300722491"
+               BuildableName = "OBUnitTests.octest"
+               BlueprintName = "OBUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniBase/OmniBase.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34AFADA7164B1401009E39AB"
+               BuildableName = "OFXUnitTests.octest"
+               BlueprintName = "OFXUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniFileExchange/OmniFileExchange.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "349F978E15DEA87B00D7677C"
+               BuildableName = "OFSUnitTests.octest"
+               BlueprintName = "OFSUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniFileStore/OmniFileStore.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -319,7 +361,7 @@
    </TestAction>
    <LaunchAction
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Debug"

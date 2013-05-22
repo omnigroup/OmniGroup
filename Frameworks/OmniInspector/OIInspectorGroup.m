@@ -184,7 +184,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
     float inspectorWidth = [[OIInspectorRegistry sharedInspector] inspectorWidth];
     NSString *defaultPositionString = [[OFPreferenceWrapper sharedPreferenceWrapper] objectForKey:@"OIInspectorDefaultTopLeftPosition"];
     // If a default position has been specified, use it
-    if (defaultPositionString) {
+    if ([defaultPositionString length]) {
         topLeft = NSPointFromString(defaultPositionString);
         // interpret y as a distance from the top of the screen, not from the bottom
         topLeft.y = NSMaxY(mainScreenVisibleRect) - topLeft.y;

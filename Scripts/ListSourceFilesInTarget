@@ -15,58 +15,58 @@ require 'getoptlong'
 $: << File.dirname(__FILE__) + "/rubylib"
 require 'xcodeproj'
 
-@@prog = File.basename(__FILE__)
+$prog = File.basename(__FILE__)
 def usage
   msg = <<EOS
-usage: #{@@prog} [--attribute attr1,attr2] target ext1,ext2 foo.xcodeproj
+usage: #{$prog} [--attribute attr1,attr2] target ext1,ext2 foo.xcodeproj
 EOS
   STDERR.print msg
   exit 1
 end
 
-@@RequiredAttributes = []
+$RequiredAttributes = []
 
 GetoptLong.new(
   [ "--attribute", "-A", GetoptLong::REQUIRED_ARGUMENT ]
 ).each do |opt,arg|
   case opt
   when "--attribute"
-    @@RequiredAttributes << arg
+    $RequiredAttributes << arg
   else
     usage()
   end
 end
 
 usage unless ARGV.length == 3
-@@TargetName = ARGV[0]
-@@Extensions = ARGV[1].split(",").map {|e| ".#{e}"} # We take 'h', but File.extname returns '.h'
-@@Project = Xcode::Project.new(ARGV[2])
+$TargetName = ARGV[0]
+$Extensions = ARGV[1].split(",").map {|e| ".#{e}"} # We take 'h', but File.extname returns '.h'
+$Project = Xcode::Project.new(ARGV[2])
 
 
-@@MatchingFiles = []
+$MatchingFiles = []
 def do_target(target)
   fail "Not a native target" unless target['isa'] == 'PBXNativeTarget'
 
   cwd = Pathname.new(".").realpath
   
-  @@Project.each_file_in_target(target) {|buildFileID, buildFile, fileRefID, fileRef|
+  $Project.each_file_in_target(target) {|buildFileID, buildFile, fileRefID, fileRef|
       name = fileRef['name'] || fileRef['path']
       ext = File.extname(name) # "foo.h" -> ".h"
-      next unless @@Extensions.index(ext)
+      next unless $Extensions.index(ext)
 
-      next unless @@RequiredAttributes.all? {|attr| build_file_has_attribute?(buildFile, attr) }
+      next unless $RequiredAttributes.all? {|attr| build_file_has_attribute?(buildFile, attr) }
 
-      fullpath = @@Project.resolvepath(fileRefID)
-      @@MatchingFiles << Pathname.new(fullpath).relative_path_from(cwd).cleanpath().to_s + "\n"
+      fullpath = $Project.resolvepath(fileRefID)
+      $MatchingFiles << Pathname.new(fullpath).relative_path_from(cwd).cleanpath().to_s + "\n"
   }
 end
 
-@@Project.each_target {|target|
-    if target['name'] == @@TargetName
+$Project.each_target {|target|
+    if target['name'] == $TargetName
       do_target(target)
     end
 }
 
-@@MatchingFiles.sort!
-@@MatchingFiles.uniq!
-@@MatchingFiles.each {|f| print f }
+$MatchingFiles.sort!
+$MatchingFiles.uniq!
+$MatchingFiles.each {|f| print f }

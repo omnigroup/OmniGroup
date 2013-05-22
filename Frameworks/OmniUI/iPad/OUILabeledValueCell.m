@@ -85,6 +85,7 @@ RCS_ID("$Id$");
     _style = style;
     self.opaque = NO;
     self.contentMode = UIViewContentModeRedraw;
+    self.labelAlignment = (self.style == OUILabeledValueCellStyleOmniFocusForiPhoneLegacy) ? NSTextAlignmentRight : NSTextAlignmentLeft;
     return self;
 }
 
@@ -221,8 +222,7 @@ RCS_ID("$Id$");
 
     CGRect labelRect = [self labelRect];
     UIFont *labelFont = [[self class] labelFontForStyle:self.style];
-    NSTextAlignment alignment = (self.style == OUILabeledValueCellStyleOmniFocusForiPhoneLegacy) ? NSTextAlignmentRight : NSTextAlignmentLeft;
-    [self.label drawInRect:labelRect withFont:labelFont lineBreakMode:NSLineBreakByWordWrapping alignment:alignment];
+    [self.label drawInRect:labelRect withFont:labelFont lineBreakMode:NSLineBreakByWordWrapping alignment:self.labelAlignment];
     
     NSString *value = _value; // Must access iVar here, don't want to pull value from subclass, which substitutes an editable field
     NSString *valueString = value ? value : [self valuePlaceholder];

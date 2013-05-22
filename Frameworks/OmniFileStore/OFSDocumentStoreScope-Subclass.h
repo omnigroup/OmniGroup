@@ -16,7 +16,7 @@
 extern NSString *OFSDocumentStoreScopeCacheKeyForURL(NSURL *url);
 extern NSDate *OFSDocumentStoreScopeModificationDateForFileURL(NSFileManager *fileManager, NSURL *fileURL);
 
-#define kOFSDocumentStoreFileItemDefault_HasUnresolvedConflicts (NO)
+#define kOFSDocumentStoreFileItemDefault_HasDownloadQueued (NO)
 #define kOFSDocumentStoreFileItemDefault_IsDownloaded (YES)
 #define kOFSDocumentStoreFileItemDefault_IsDownloading (NO)
 #define kOFSDocumentStoreFileItemDefault_IsUploaded (YES)
@@ -41,8 +41,7 @@ extern NSDate *OFSDocumentStoreScopeModificationDateForFileURL(NSFileManager *fi
 
 // Subclasses must implement
 - (void)updateFileItem:(OFSDocumentStoreFileItem *)fileItem withMetadata:(id)metadata fileModificationDate:(NSDate *)fileModificationDate;
-- (NSMutableDictionary *)copyCurrentlyUsedFileNamesByFolderName; // NSMutableDictionary of folder name -> set of names, "" for the top-level folder
-- (NSMutableSet *)copyCurrentlyUsedFileNamesInFolderNamed:(NSString *)folderName ignoringFileURL:(NSURL *)fileURLToIgnore;
+- (NSMutableSet *)copyCurrentlyUsedFileNamesInFolderAtURL:(NSURL *)folderURL ignoringFileURL:(NSURL *)fileURLToIgnore;
 
 #ifdef OMNI_ASSERTIONS_ON
 - (BOOL)isRunningOnActionQueue;
@@ -57,7 +56,7 @@ extern NSDate *OFSDocumentStoreScopeModificationDateForFileURL(NSFileManager *fi
 @property(nonatomic,copy) id scopeInfo;
 
 // Redeclare the properties from <OFSDocumentStoreItem> as writable so that scopes can update their file items.
-@property(nonatomic) BOOL hasUnresolvedConflicts;
+@property(nonatomic) BOOL hasDownloadQueued;
 @property(nonatomic) BOOL isDownloaded;
 @property(nonatomic) BOOL isDownloading;
 @property(nonatomic) BOOL isUploaded;

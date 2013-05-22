@@ -15,6 +15,7 @@
 #import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 
 #import "OFSFileOperation.h"
 
@@ -105,7 +106,7 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
     
     BOOL shouldContainExtension = ![NSString isEmptyString:extension];
     
-    NSString *name;
+    __autoreleasing NSString *name;
     NSUInteger counter;
     NSString *urlName = [baseName stringByDeletingPathExtension];
     
@@ -128,7 +129,7 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
             
             NSURL *urlCheck = isFileURL ? OFSFileURLRelativeToDirectoryURL(directoryURL, fileName) : OFSURLRelativeToDirectoryURL(directoryURL, [fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
 
-            NSError *error = nil;
+            __autoreleasing NSError *error = nil;
             OFSFileInfo *fileCheck = [self fileInfoAtURL:urlCheck error:&error];  // all OFSFileManagers implement OFSConcreteFileManager, so this should be safe
             if (error) {
                 NSLog(@"%@", error);
@@ -169,12 +170,20 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 
 - (NSURL *)createDirectoryAtURLIfNeeded:(NSURL *)requestedDirectoryURL error:(NSError **)outError;
 {
+    __autoreleasing NSError *directoryInfoError = nil;
+
     // Assume it exists...
-    OFSFileInfo *directoryInfo = [self fileInfoAtURL:requestedDirectoryURL error:outError];
+    OFSFileInfo *directoryInfo = [self fileInfoAtURL:requestedDirectoryURL error:&directoryInfoError];
     if (directoryInfo && directoryInfo.exists && directoryInfo.isDirectory) // If there is a flat file, fall through to the MKCOL to get a 409 Conflict filled in
         return directoryInfo.originalURL;
     
-    if (OFSURLEqualToURLIgnoringTrailingSlash(requestedDirectoryURL, _baseURL)) {
+    if (outError != NULL)
+        *outError = directoryInfoError;
+
+    if (directoryInfo == nil && ([directoryInfoError causedByUnreachableHost] || [directoryInfoError causedByPermissionFailure]))
+        return nil; // If we're not connected to the Internet, then no other error is particularly relevant
+
+    if (OFURLEqualToURLIgnoringTrailingSlash(requestedDirectoryURL, _baseURL)) {
         OFSErrorWithInfo(outError, OFSCannotCreateDirectory,
                          @"Unable to create remote directory for container",
                          ([NSString stringWithFormat:@"Account base URL doesn't exist at %@", _baseURL]), nil);
@@ -188,7 +197,7 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
     
     // Try to avoid extra redirects
     NSURL *createdDirectoryURL = [parentURL URLByAppendingPathComponent:[requestedDirectoryURL lastPathComponent] isDirectory:YES];
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     
     createdDirectoryURL = [self createDirectoryAtURL:createdDirectoryURL attributes:nil error:&error];
     if (createdDirectoryURL)
@@ -197,7 +206,7 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
     if ([error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_METHOD_NOT_ALLOWED] ||
         [error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_CONFLICT]) {
         // Might be racing against another creator.
-        NSError *infoError;
+        __autoreleasing NSError *infoError;
         directoryInfo = [self fileInfoAtURL:requestedDirectoryURL error:&infoError];
         if (directoryInfo && directoryInfo.exists && directoryInfo.isDirectory) // If there is a flat file, fall through to the MKCOL to get a 409 Conflict filled in
             return directoryInfo.originalURL;

@@ -12,6 +12,7 @@
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniFileExchange/OFXServerAccountValidator.h>
+#import <OmniFileStore/Errors.h>
 #import <OmniUI/OUICertificateTrustAlert.h>
 #import <OmniUI/OUIAppController.h>
 
@@ -78,11 +79,11 @@ RCS_ID("$Id$")
         strongSelf->_accountValidator = nil;
         
         if (errorOrNil) {
-            if ([errorOrNil hasUnderlyingErrorDomain:OFXErrorDomain code:OFXServerAccountCertificateTrustIssue]) {
-                NSURLAuthenticationChallenge *challenge = [[errorOrNil userInfo] objectForKey:OFXServerAccountValidationCertificateTrustChallengeErrorKey];
+            if ([errorOrNil hasUnderlyingErrorDomain:OFSErrorDomain code:OFSCertificateNotTrusted]) {
+                NSURLAuthenticationChallenge *challenge = [[errorOrNil userInfo] objectForKey:OFSCertificateTrustChallengeErrorKey];
                 OUICertificateTrustAlert *certAlert = [[OUICertificateTrustAlert alloc] initForChallenge:challenge];
-                certAlert.trustBlock = ^(OFHostTrustDuration trustDuration) {
-                    OFAddTrustedHost([[challenge protectionSpace] host], trustDuration);
+                certAlert.trustBlock = ^(OFCertificateTrustDuration trustDuration) {
+                    OFAddTrustForChallenge(challenge, trustDuration);
                     [strongSelf startValidation]; // ... and try again!
                 };
                 certAlert.cancelBlock = ^{
@@ -98,7 +99,7 @@ RCS_ID("$Id$")
             // Determine if this is a new account or if we are changing the configuration on an existing one. We have to be careful of the case where our first attempt fails (invalid credentials, server down). In this case, _account will be non-nil on entry to this method.
             OFXServerAccountRegistry *registry = [OFXServerAccountRegistry defaultAccountRegistry];
             if ([[registry allAccounts] containsObject:account] == NO) {
-                NSError *addError = nil;
+                __autoreleasing NSError *addError = nil;
                 if (![registry addAccount:account error:&addError]) {
                     [strongSelf finishWithError:addError];
                     return;

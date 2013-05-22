@@ -11,8 +11,22 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #endif
 #import <OmniFoundation/OFUTI.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 
 RCS_ID("$Id$")
+
+static NSInteger OFSPackageDebug = NSIntegerMax;
+
+static void initialize(void) __attribute__((constructor));
+static void initialize(void)
+{
+    OBInitializeDebugLogLevel(OFSPackageDebug);
+}
+
+#define DEBUG_PACKAGE(level, format, ...) do { \
+    if (OFSPackageDebug >= (level)) \
+        NSLog(@"PACKAGE: " format, ## __VA_ARGS__); \
+    } while (0)
 
 #if 0
 NSString * const OFSDocumentStoreFolderPathExtension = @"folder";
@@ -72,9 +86,45 @@ OFSScanDirectoryFilter OFSScanDirectoryExcludeInboxItemsFilter(void)
 
 BOOL OFSShouldIgnoreURLDuringScan(NSURL *fileURL)
 {
-    if ([[fileURL lastPathComponent] caseInsensitiveCompare:@".DS_Store"] == NSOrderedSame)
+    NSString *fileName = [fileURL lastPathComponent];
+    if ([fileName caseInsensitiveCompare:@".DS_Store"] == NSOrderedSame)
+        return YES;
+    if ([fileName caseInsensitiveCompare:@"Icon\r"] == NSOrderedSame)
         return YES;
     return NO;
+}
+
+static BOOL OFSURLIsStillBeingCreatedOrHasGoneMissing(NSURL *fileURL)
+{
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    return NO; // Don't bother with all these attribute lookups when they don't matter
+#else
+    // Skip files that are still being copied in and aren't ready to look at (pretend they aren't there at all). Large copies in Finder will flag the file with kMagicBusyCreationDate. In this case, we'll get called again (and again likely) until the file is uploaded. NSFileBusy is documented, but I can't find any way to get it set.
+    // kMagicBusyCreationDate is 0x4F3AFDB0
+    // 1904-01-01 00:00:00 +0000
+    static NSTimeInterval FileMagicBusyCreationTimeInterval = -3061152000;
+    
+    // For whole folders of files, Finder uses "1984-01-24 08:00:00 +0000". It doesn't seem to set the kFirstMagicBusyFiletype/kLastMagicBusyFiletype in the document or folder case, as far as I've seen.
+    static NSTimeInterval FolderMagicBusyCreationTimeInterval = -534528000;
+    
+    
+    __autoreleasing NSError *resourceError = nil;
+    __autoreleasing NSDate *creationDate;
+    
+    // For individual file/document copies, Finder marks the creation date.
+    if (![fileURL getResourceValue:&creationDate forKey:NSURLCreationDateKey error:&resourceError]) {
+        if ([resourceError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) {
+            // Gone missing.
+            return YES;
+        } else
+            NSLog(@"Unable to determine if %@ is being created: %@", fileURL, [resourceError toPropertyList]);
+        return NO;
+    }
+    
+    NSTimeInterval creationTimeInterval = [creationDate timeIntervalSinceReferenceDate];
+    
+    return (creationTimeInterval == FileMagicBusyCreationTimeInterval || creationTimeInterval == FolderMagicBusyCreationTimeInterval);
+#endif
 }
 
 // We no longer use an NSFileCoordinator when scanning the documents directory. NSFileCoordinator doesn't make writers of documents wait if there is a coordinator of their containing directory, so this doesn't help. We *could*, as we find documents, do a coordinated read on each document to make sure we get its most recent timestamp, but this seems wasteful in most cases.
@@ -93,7 +143,11 @@ void OFSScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
         NSURL *scanDirectoryURL = [scanDirectoryURLs lastObject]; // We're building a set, and it's faster to remove the last object than the first
         [scanDirectoryURLs removeLastObject];
         
-        NSError *contentsError = nil;
+        // It is important to skip busy-creation folders too since the documents inside them don't get any magic timestamp (so we could end up looking at a partial document).
+        if (OFSURLIsStillBeingCreatedOrHasGoneMissing(scanDirectoryURL))
+            continue;
+        
+        __autoreleasing NSError *contentsError = nil;
         NSArray *fileURLs = [fileManager contentsOfDirectoryAtURL:scanDirectoryURL includingPropertiesForKeys:[NSArray arrayWithObject:NSURLIsDirectoryKey] options:0 error:&contentsError];
         if (!fileURLs)
             NSLog(@"Unable to scan documents in %@: %@", scanDirectoryURL, [contentsError toPropertyList]);
@@ -105,8 +159,8 @@ void OFSScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
             
             // We do NOT use UTIs for determining if a folder is a file package (meaning we should treat it as a document). We might not have UTIs registered in this app for all the document types that might be present (a newer app version might have placed something in the container that an older version doesn't understand, and Launch Service might go insane and not even correctly report the UTIs in our Info.plist). Instead, any folder that has an extension that isn't OFSDocumentStoreFolderPathExtension is considered a package.
             // This does mean that folders *must* have the special extension, or no extension, or we'll treat them like file packages. This may be why iWork uses this approach, otherwise a user might create a folder called "2012.01 Presentations" and suddenly the app might think it was a file package from some future version.
-            NSNumber *isDirectoryValue = nil;
-            NSError *resourceError = nil;
+            __autoreleasing NSNumber *isDirectoryValue = nil;
+            __autoreleasing NSError *resourceError = nil;
             if (![fileURL getResourceValue:&isDirectoryValue forKey:NSURLIsDirectoryKey error:&resourceError])
                 NSLog(@"Unable to determine if %@ is a directory: %@", fileURL, [resourceError toPropertyList]);
             
@@ -125,6 +179,7 @@ void OFSScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
                     isPackage = NO;
                 else if (pathExtensionIsPackage) {
                     isPackage = pathExtensionIsPackage(pathExtension);
+                    DEBUG_PACKAGE(1, @"\"%@\" package:%d", pathExtension, isPackage);
                 } else {
                     OBASSERT_NOT_REACHED("Cannot tell if a path extension is a package... should we allow this at all?");
                     isPackage = NO;
@@ -140,6 +195,8 @@ void OFSScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
                 }
             }
             
+            if (OFSURLIsStillBeingCreatedOrHasGoneMissing(fileURL))
+                continue;
             itemHandler(fileManager, fileURL);
         }
     }
@@ -147,6 +204,8 @@ void OFSScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
 
 OFSScanPathExtensionIsPackage OFSIsPackageWithKnownPackageExtensions(NSSet *packageExtensions)
 {
+    DEBUG_PACKAGE(1, @"Creating block with extensions %@", [[packageExtensions allObjects] sortedArrayUsingSelector:@selector(compare:)]);
+
     // Don't cache the list of package extensions forever. Installing a new application between sync operations might make a file that previously existed turn into a package.
     NSMutableDictionary *extensionToIsPackage = [NSMutableDictionary new];
     
@@ -179,8 +238,8 @@ OFSScanPathExtensionIsPackage OFSIsPackageWithKnownPackageExtensions(NSSet *pack
 
 BOOL OFSGetBoolResourceValue(NSURL *url, NSString *key, BOOL *outValue, NSError **outError)
 {
-    NSError *error = nil;
-    NSNumber *numberValue = nil;
+    __autoreleasing NSError *error = nil;
+    __autoreleasing NSNumber *numberValue = nil;
     if (![url getResourceValue:&numberValue forKey:key error:&error]) {
         NSLog(@"Error getting resource key %@ for %@: %@", key, url, [error toPropertyList]);
         if (outError)
@@ -200,13 +259,21 @@ static void _assertPlainURL(NSURL *url)
     OBPRECONDITION([NSString isEmptyString:[url query]]);
 }
 
-static NSString *_standardizedPathForURL(NSURL *url)
+static NSString *_standardizedPathForURL(NSURL *url, BOOL followFinalSymlink)
 {
     OBASSERT([url isFileURL]);
     NSString *urlPath = [[url absoluteURL] path];
-    
-    NSString *path = [[urlPath stringByResolvingSymlinksInPath] stringByStandardizingPath];
-    
+
+    NSString *path;
+    if (!followFinalSymlink) {
+        // We don't always want to resolve symlinks in the last path component, or we can't tell symlinks apart from the things they point at
+        NSString *standardizedParentPath = [[urlPath stringByDeletingLastPathComponent] stringByStandardizingPath];
+        path = [standardizedParentPath stringByAppendingPathComponent:[urlPath lastPathComponent]];
+    } else {
+        // When the container is a symlink, however, we do want to resolve it
+        path = [[urlPath stringByResolvingSymlinksInPath] stringByStandardizingPath];
+    }
+
     // In some cases this doesn't normalize /private/var/mobile and /var/mobile to the same thing.
     path = [path stringByRemovingPrefix:@"/var/mobile/"];
     path = [path stringByRemovingPrefix:@"/private/var/mobile/"];
@@ -225,8 +292,8 @@ BOOL OFSURLContainsURL(NSURL *containerURL, NSURL *url)
     // -[NSFileManager contentsOfDirectoryAtURL:...], when given something in file://localhost/var/mobile/... will return file URLs with non-standarized paths like file://localhost/private/var/mobile/...  Terrible.
     OBASSERT([containerURL isFileURL]);
     
-    NSString *urlPath = _standardizedPathForURL(url);
-    NSString *containerPath = _standardizedPathForURL(containerURL);
+    NSString *urlPath = _standardizedPathForURL(url, YES);
+    NSString *containerPath = _standardizedPathForURL(containerURL, NO);
     
     if (![containerPath hasSuffix:@"/"])
         containerPath = [containerPath stringByAppendingString:@"/"];
@@ -253,11 +320,24 @@ NSString *OFSFileURLRelativePath(NSURL *baseURL, NSURL *fileURL)
     return localRelativePath;
 }
 
+BOOL OFSURLIsStandardizedOrMissing(NSURL *url)
+{
+    OBPRECONDITION([url isFileURL]);
+    
+    NSError *error;
+    if (![url checkResourceIsReachableAndReturnError:&error]) {
+        if ([error causedByMissingFile])
+            return YES; // -URLByStandardizingPath won't do anything useful in this case.
+    }
+
+    return OFURLEqualsURL([url URLByStandardizingPath], url);
+}
+
 BOOL OFSURLIsStandardized(NSURL *url)
 {
     OBPRECONDITION([url isFileURL]);
     OBPRECONDITION([url checkResourceIsReachableAndReturnError:NULL]); // Don't ask to standardize URLs that don't exist -- -URLByStandardizingPath returns incorrect results in that case
-    return OFSURLEqualsURL([url URLByStandardizingPath], url);
+    return OFURLEqualsURL([url URLByStandardizingPath], url);
 }
 
 
@@ -267,7 +347,7 @@ NSURL *OFSURLRelativeToDirectoryURL(NSURL *baseURL, NSString *quotedFileName)
         return nil;
     
     NSMutableString *urlString = [[baseURL absoluteString] mutableCopy];
-    NSRange pathRange = OFSURLRangeOfPath(urlString);
+    NSRange pathRange = OFURLRangeOfPath(urlString);
     
     if ([urlString rangeOfString:@"/" options:NSAnchoredSearch|NSBackwardsSearch range:pathRange].length == 0) {
         [urlString insertString:@"/" atIndex:NSMaxRange(pathRange)];
@@ -293,66 +373,13 @@ NSURL *OFSDirectoryURLForURL(NSURL *url)
     return parentURL;
 }
 
-NSURL *OFSURLWithTrailingSlash(NSURL *baseURL)
-{
-    if (baseURL == nil)
-        return nil;
-    
-    if ([[baseURL path] hasSuffix:@"/"])
-        return baseURL;
-    
-    NSString *baseURLString = [baseURL absoluteString];
-    NSRange pathRange = OFSURLRangeOfPath(baseURLString);
-    
-    if (pathRange.length && [baseURLString rangeOfString:@"/" options:NSAnchoredSearch|NSBackwardsSearch range:pathRange].length > 0)
-        return baseURL;
-    
-    NSMutableString *newString = [baseURLString mutableCopy];
-    [newString insertString:@"/" atIndex:NSMaxRange(pathRange)];
-    NSURL *newURL = [NSURL URLWithString:newString];
-    
-    return newURL;
-}
-
-BOOL OFSURLEqualsURL(NSURL *URL1, NSURL *URL2)
-{
-    if (URL1 == URL2)
-        return YES;
-    if (!URL1 || !URL2)
-        return NO;
-    
-    URL1 = [URL1 absoluteURL];
-    URL2 = [URL2 absoluteURL];
-    
-    // This assumes that -path keeps the trailing slash and that we want slash differences to be significant (might want to change that).
-    if (OFNOTEQUAL([URL1 path], [URL2 path]))
-        return NO;
-    
-    // Some other bits should maybe be URL-decoded before comparison too. Also, we should maybe just assert that all the goofy stuff is nil for OFS-used URLs.
-    return
-    OFISEQUAL(URL1.scheme, URL2.scheme) &&
-    OFISEQUAL(URL1.port, URL2.port) &&
-    OFISEQUAL(URL1.user, URL2.user) &&
-    OFISEQUAL(URL1.password, URL2.password) &&
-    OFISEQUAL(URL1.fragment, URL2.fragment) &&
-    OFISEQUAL(URL1.parameterString, URL2.parameterString) &&
-    OFISEQUAL(URL1.query, URL2.query);
-}
-
-BOOL OFSURLEqualToURLIgnoringTrailingSlash(NSURL *URL1, NSURL *URL2)
-{
-    if (OFSURLEqualsURL(URL1, URL2))
-        return YES;
-    return OFSURLEqualsURL(OFSURLWithTrailingSlash(URL1), OFSURLWithTrailingSlash(URL2));
-}
-
 NSURL *OFSURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash, BOOL removeSlash)
 {
     OBASSERT(![quotedSuffix containsString:@"/"]);
     OBASSERT(!(addSlash && removeSlash));
     
     NSMutableString *urlString = [[baseURL absoluteString] mutableCopy];
-    NSRange pathRange = OFSURLRangeOfPath(urlString);
+    NSRange pathRange = OFURLRangeOfPath(urlString);
     
     // Can't apply an affix to an empty name. Well, we could, but that would just push the problem off to some other part of XMLData.
     if (!pathRange.length) {
@@ -381,7 +408,7 @@ BOOL OFSURLRangeOfLastPathComponent(NSString *urlString, NSRange *lastComponentR
     if (!urlString)
         return NO;
     
-    NSRange pathRange = OFSURLRangeOfPath(urlString);
+    NSRange pathRange = OFURLRangeOfPath(urlString);
     if (!pathRange.length)
         return NO;
     
@@ -411,58 +438,6 @@ BOOL OFSURLRangeOfLastPathComponent(NSString *urlString, NSRange *lastComponentR
     
     return YES;
 }
-
-NSRange OFSURLRangeOfPath(NSString *rfc1808URL)
-{
-    if (!rfc1808URL) {
-        return (NSRange){NSNotFound, 0};
-    }
-    
-    NSRange colon = [rfc1808URL rangeOfString:@":"];
-    if (!colon.length) {
-        return (NSRange){NSNotFound, 0};
-    }
-    
-    NSUInteger len = [rfc1808URL length];
-#define Suffix(pos) (NSRange){(pos), len - (pos)}
-    
-    // The fragment identifier is significant anywhere after the colon (and forbidden before the colon, but whatever)
-    NSRange terminator = [rfc1808URL rangeOfString:@"#" options:0 range:Suffix(NSMaxRange(colon))];
-    if (terminator.length)
-        len = terminator.location;
-    
-    // According to RFC1808, the ? and ; characters do not have special meaning within the host specifier.
-    // But the host specifier is an optional part (again, according to the RFC), so we need to only optionally skip it.
-    NSRange pathRange;
-    NSRange slashes = [rfc1808URL rangeOfString:@"//" options:NSAnchoredSearch range:Suffix(NSMaxRange(colon))];
-    if (slashes.length) {
-        NSRange firstPathSlash = [rfc1808URL rangeOfString:@"/" options:0 range:Suffix(NSMaxRange(slashes))];
-        if (!firstPathSlash.length) {
-            // A URL of the form foo://bar.com
-            return (NSRange){ len, 0 };
-        } else {
-            pathRange.location = firstPathSlash.location;
-        }
-    } else {
-        // The first character after the colon may or may not be a slash; RFC1808 allows relative paths there.
-        pathRange.location = NSMaxRange(colon);
-    }
-    
-    pathRange.length = len - pathRange.location;
-    
-    // Strip any query
-    terminator = [rfc1808URL rangeOfString:@"?" options:0 range:pathRange];
-    if (terminator.length)
-        pathRange.length = terminator.location - pathRange.location;
-    
-    // Strip any parameter-string
-    [rfc1808URL rangeOfString:@";" options:0 range:pathRange];
-    if (terminator.length)
-        pathRange.length = terminator.location - pathRange.location;
-    
-    return pathRange;
-}
-
 
 // This is a sort of simple 3-way-merge of URLs which we use to rewrite the Destination: header of a MOVE request if the server responds with a redirect of the source URL.
 // Generally we're just MOVEing something to rename it within its containing collection. So this function checks to see if that is true, and if so, returns a new Destination: URL which represents the same rewrite within the new collection pointed to by the redirect.

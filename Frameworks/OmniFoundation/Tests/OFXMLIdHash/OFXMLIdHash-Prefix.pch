@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'OFXMLIdHash' target in the 'OFXMLIdHash' project
+//
+
+#import <Foundation/Foundation.h>
+#import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>

@@ -11,9 +11,7 @@
 
 @interface OFSDocumentStoreScope ()
 
-- (NSMutableSet *)_copyCurrentlyUsedFileNamesInFolderNamed:(NSString *)folderName;
-
-- (void)_fileItemHasAccommodatedDeletion:(OFSDocumentStoreFileItem *)fileItem;
+- (NSMutableSet *)_copyCurrentlyUsedFileNamesInFolderAtURL:(NSURL *)folderURL;
 
 - (void)_fileItemContentsChanged:(OFSDocumentStoreFileItem *)fileItem;
 

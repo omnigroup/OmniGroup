@@ -18,11 +18,6 @@
 
 - (void)_takeValuesFromPropertyList:(NSDictionary *)propertyList;
 
-#if OFX_USE_SECURITY_SCOPED_BOOKMARKS
-// Returns nil if the localDocumentsURL is not yet security scoped (we are a new account).
-@property(nonatomic,readonly) NSURL *localDocumentsBookmarkURL;
-#endif
-
 @end
 
 NSString * const OFXAccountPropertListKey OB_HIDDEN;

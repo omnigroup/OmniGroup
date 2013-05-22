@@ -101,7 +101,7 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
     self.preflightSuccessful = NO;
 
     if ([self _unpackInstallerArguments:arguments error:&error]) {
-        reply = Block_copy(reply);
+        reply = [[reply copy] autorelease];
         
         [self checkPrivilegedHelperToolVersionWithReply:^(BOOL versionMismatch) {
             NSData *authorizationData = nil;
@@ -110,7 +110,6 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
 
             if (![self _installUpdateWithOptions:OSUInstallerServiceUpdateOptionDryRun requiresPrivilegedInstall:&requiresPrivilegedInstall error:&error]) {
                 reply(NO, error, nil);
-                Block_release(reply);
                 return;
             }
 
@@ -196,7 +195,6 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
                     };
                     error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:userInfo];
                     reply(NO, error, nil);
-                    Block_release(reply);
                     return;
                 }
                 
@@ -210,7 +208,6 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
                     };
                     error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:userInfo];
                     reply(NO, error, nil);
-                    Block_release(reply);
                     return;
                 }
 
@@ -224,20 +221,17 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
                 
                 if (shouldInstallOrUpdateTool && ![self updatePrivilegedHelperToolWithAuthorizationData:authorizationData error:&error]) {
                     reply(NO, error, nil);
-                    Block_release(reply);
                     return;
                 }
             }
 
             if (![self _prepareTrampolineTool:&error]) {
                 reply(NO, error, nil);
-                Block_release(reply);
                 return;
             }
             
             self.preflightSuccessful = YES;
             reply(YES, nil, authorizationData);
-            Block_release(reply);
         }];
     } else {
         self.preflightSuccessful = NO;
@@ -316,20 +310,18 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
         connection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(OSUInstallerPrivilegedHelper)];
         [connection resume];
 
-        reply = Block_copy(reply);
+        reply = [[reply copy] autorelease];
         
         id <OSUInstallerPrivilegedHelper> remoteProxy = [connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
             // Clear our connection to the privileged helper before sending the reply so that the connection ref-counting in the helper works correctly.
             [connection invalidate];
             reply(YES);
-            Block_release(reply);
         }];
         
         [remoteProxy getVersionWithReply:^(NSUInteger version) {
             // Clear our connection to the privileged helper before sending the reply so that the connection ref-counting in the helper works correctly.
             [connection invalidate];
             reply(version != OSUInstallerPrivilegedHelperVersion);
-            Block_release(reply);
         }];
     } else {
         reply(YES);

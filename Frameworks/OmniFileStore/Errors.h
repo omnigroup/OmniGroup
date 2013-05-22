@@ -22,6 +22,7 @@ enum {
     OFSCannotDelete,
     OFSFilenameAlreadyInUse,
     OFSNoSuchFile,
+    OFSCertificateNotTrusted,
     
     OFSCannotMoveItemFromInbox,
     OFSInvalidZipArchive,
@@ -30,9 +31,11 @@ enum {
     // DAV
     OFSDAVFileManagerCannotAuthenticate,
     OFSDAVFileManagerConformanceFailed,
+    OFSDAVOperationInvalidMultiStatusResponse,
 };
 
 extern NSString * const OFSErrorDomain;
+extern BOOL OFSShouldOfferToReportError(NSError *error);
 
 #define OFSErrorWithInfo(error, code, description, suggestion, ...) _OBError(error, OFSErrorDomain, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
 #define OFSError(error, code, description, reason) OFSErrorWithInfo((error), (code), (description), (reason), nil)
@@ -45,6 +48,10 @@ extern NSString * const OFSURLErrorFailingURLStringErrorKey;    // > 4.0 use NSU
 
 // Codes are HTTP error codes.  You'd think Foundation would define such a domain...
 extern NSString * const OFSDAVHTTPErrorDomain;
+
+extern NSString * const OFSDAVHTTPErrorDataKey;
+extern NSString * const OFSDAVHTTPErrorDataContentTypeKey;
+extern NSString * const OFSDAVHTTPErrorStringKey;
 
 typedef enum {
     // Based on <apache2/httpd.h>
@@ -98,3 +105,11 @@ typedef enum {
     OFS_HTTP_INSUFFICIENT_STORAGE = 507,
     OFS_HTTP_NOT_EXTENDED = 510,
 } OFSDAVHTTPErrorCode;
+
+@interface NSError (OFSExtensions)
++ (NSError *)certificateTrustErrorForChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (BOOL)causedByPermissionFailure;
+@end
+
+// User info key that contains the NSURLAuthenticationChallenge passed when a certificate trust issue was encountered
+#define OFSCertificateTrustChallengeErrorKey (@"Challenge")

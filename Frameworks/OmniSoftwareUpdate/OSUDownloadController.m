@@ -663,6 +663,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         }
         
         if (code == NSURLErrorTimedOut ||
+            code == NSURLErrorCannotFindHost ||
             code == NSURLErrorCannotConnectToHost ||
             code == NSURLErrorDNSLookupFailed ||
             code == NSURLErrorNotConnectedToInternet) {

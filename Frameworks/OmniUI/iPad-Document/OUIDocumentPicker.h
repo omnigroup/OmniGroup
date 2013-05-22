@@ -27,8 +27,18 @@
 @property(nonatomic,retain) OFSDocumentStoreScope *selectedScope;
 
 @property(nonatomic,retain) IBOutlet UIToolbar *toolbar;
+@property(nonatomic, strong) IBOutlet UIToolbar *bottomToolbar;
 @property(nonatomic,retain) IBOutlet OUIDocumentPickerScrollView *mainScrollView;
 @property(nonatomic,retain) IBOutlet OUIDocumentPickerScrollView *groupScrollView;
+
+@property (strong, nonatomic) IBOutlet UIView *trashControls;
+@property (strong, nonatomic) IBOutlet UIButton *emptyTrashButton;
+- (IBAction)emptyTrash:(id)sender;
+
+@property (strong, nonatomic) IBOutlet UIView *emptyPickerView;
+@property (strong, nonatomic) IBOutlet UIView *emptyPickerViewMoveView;
+@property (strong, nonatomic) IBOutlet UIButton *emptyPickerViewMoveButton;
+- (IBAction)moveAllDocumentsToCloudButtonTapped:(id)sender;
 
 @property(nonatomic,readonly) OUIDocumentPickerScrollView *activeScrollView;
 
@@ -65,7 +75,6 @@
 - (void)emailExportType:(NSString *)exportType;
 - (void)sendEmailWithFileWrapper:(NSFileWrapper *)fileWrapper forExportType:(NSString *)exportType;
 
-+ (OFPreference *)scopePreference; // valid is the identifier of a OFSDocumentStoreScope
 + (OFPreference *)filterPreference; // value is the identifier of an OUIDocumentPickerFilter returned by the delegate's -documentPickerAvailableFilters:
 + (OFPreference *)sortPreference;
 
@@ -75,9 +84,11 @@
 - (void)selectedFilterChanged;
 - (void)selectedSortChanged;
 
-- (void)addAfterDocumentStoreInitializationAction:(void (^)(OUIDocumentPicker *blockSelf))action;
+- (void)addDocumentStoreInitializationAction:(void (^)(OUIDocumentPicker *blockSelf))action; // Note: performed immediately once the document store is initialized
 
 - (NSString *)mainToolbarTitle;
 - (void)updateTitle;
+
+@property(nonatomic,readonly) NSError *selectedScopeError;
 
 @end

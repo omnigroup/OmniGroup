@@ -22,7 +22,7 @@
 {
     NSURL *file = [self.remoteBaseURL URLByAppendingPathComponent:@"file"];
     
-    NSError *error;
+    __autoreleasing NSError *error;
     NSString *lock = [self.fileManager lockURL:file error:&error];
     OBShouldNotError(lock);
 }
@@ -31,7 +31,7 @@
 {
     NSURL *file = [self.remoteBaseURL URLByAppendingPathComponent:@"file"];
     
-    NSError *error;
+    __autoreleasing NSError *error;
     NSString *lock1 = [self.fileManager lockURL:file error:&error];
     OBShouldNotError(lock1);
     
@@ -45,7 +45,7 @@
 {
     NSURL *file = [self.remoteBaseURL URLByAppendingPathComponent:@"file"];
     
-    NSError *error;
+    __autoreleasing NSError *error;
     NSString *lock1 = [self.fileManager lockURL:file error:&error];
     OBShouldNotError(lock1);
     
@@ -62,7 +62,7 @@
 - (void)testUnlockWithoutLock;
 {
     // Make a file (so we don't get a 'Not Found' error when unlocking, but whatever the 'hey there is no matching lock' error would be).
-    NSError *error;
+    __autoreleasing NSError *error;
     NSURL *file = [self.remoteBaseURL URLByAppendingPathComponent:@"file"];
     OBShouldNotError([self.fileManager writeData:[NSData data] toURL:file atomically:NO error:&error]);
     
@@ -75,7 +75,7 @@
 
 - (void)testLockAndThenDoubleUnlock;
 {
-    NSError *error;
+    __autoreleasing NSError *error;
     NSURL *file = [self.remoteBaseURL URLByAppendingPathComponent:@"file"];
     OBShouldNotError([self.fileManager writeData:[NSData data] toURL:file atomically:NO error:&error]);
     
@@ -94,7 +94,7 @@
 
 - (void)testReplaceLockedCollection;
 {
-    NSError *error;
+    __autoreleasing NSError *error;
     NSURL *dir1 = [self.remoteBaseURL URLByAppendingPathComponent:@"dir1" isDirectory:YES];
     NSURL *dir2 = [self.remoteBaseURL URLByAppendingPathComponent:@"dir2" isDirectory:YES];
     
@@ -114,7 +114,7 @@
     NSURL *dir1 = [self.remoteBaseURL URLByAppendingPathComponent:@"dir-1" isDirectory:YES];
     NSURL *dir2 = [self.remoteBaseURL URLByAppendingPathComponent:@"dir-2" isDirectory:YES];
     
-    NSError *error;
+    __autoreleasing NSError *error;
     dir1 = [self.fileManager createDirectoryAtURLIfNeeded:dir1 error:&error];
     OBShouldNotError(dir1);
     
@@ -131,7 +131,7 @@
     NSURL *dir1 = [self.remoteBaseURL URLByAppendingPathComponent:@"dir-1" isDirectory:YES];
     NSURL *dir2 = [self.remoteBaseURL URLByAppendingPathComponent:@"dir-2" isDirectory:YES];
     
-    NSError *error;
+    __autoreleasing NSError *error;
     dir1 = [self.fileManager createDirectoryAtURLIfNeeded:dir1 error:&error];
     OBShouldNotError(dir1);
     

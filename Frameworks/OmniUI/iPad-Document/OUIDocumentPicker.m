@@ -19,6 +19,7 @@
 #import <OmniFileStore/OFSDocumentStoreScope.h>
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManager.h>
+#import <OmniFileExchange/OmniFileExchange.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
@@ -45,6 +46,8 @@
 #import <OmniUIDocument/OUIDocumentPickerGroupItemView.h>
 #import <OmniUIDocument/OUIDocumentPickerScrollView.h>
 #import <OmniUIDocument/OUIDocumentPreview.h>
+#import <OmniUIDocument/OUIDocumentViewController.h>
+#import <OmniUIDocument/OUIToolbarTitleButton.h>
 #import <OmniUI/OUIDragGestureRecognizer.h>
 #import <OmniUI/OUIFeatures.h>
 #import <OmniUIDocument/OUIMainViewController.h>
@@ -53,6 +56,8 @@
 #import <OmniUI/UITableView-OUIExtensions.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUnzip/OUZipArchive.h>
+#import <OmniFoundation/OmniFoundation.h>
+#import <OmniBase/OmniBase.h>
 
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentPicker-Internal.h"
@@ -64,7 +69,6 @@
 #import "OUIExportOptionsView.h"
 #import "OUIDocumentAppController-Internal.h"
 #import "OUISyncMenuController.h"
-#import "OUIToolbarTitleButton.h"
 
 RCS_ID("$Id$");
 
@@ -108,6 +112,13 @@ static NSString * const OpenGroupItemsBinding = @"openGroupItems";
     
     UIToolbar *_toolbar;
     
+    OFXAgentActivity *_agentActivity;
+    UIBarButtonItem *_omniPresenceBarButtonItem;
+    
+    NSTimer *_omniPresenceAnimationTimer;
+    NSUInteger _omniPresenceAnimationState;
+    BOOL _omniPresenceAnimationLastLoop;
+    
     UIBarButtonItem *_duplicateDocumentBarButtonItem;
     UIBarButtonItem *_exportBarButtonItem;
     UIBarButtonItem *_deleteBarButtonItem;
@@ -150,11 +161,22 @@ static id _commonInit(OUIDocumentPicker *self)
     return _commonInit(self);
 }
 
+static void _startObservingAgentActivity(OUIDocumentPicker *self, OFXAgentActivity *activity)
+{
+    [activity addObserver:self forKeyPath:OFValidateKeyPath(activity, isActive) options:0 context:&SyncActivityContext];
+    [activity addObserver:self forKeyPath:OFValidateKeyPath(activity, accountUUIDsWithErrors) options:0 context:&SyncActivityContext];
+}
+
+static void _stopObservingAgentActivity(OUIDocumentPicker *self, OFXAgentActivity *activity)
+{
+    [activity removeObserver:self forKeyPath:OFValidateKeyPath(activity, isActive) context:&SyncActivityContext];
+    [activity removeObserver:self forKeyPath:OFValidateKeyPath(activity, accountUUIDsWithErrors) context:&SyncActivityContext];
+}
+
 - (void)dealloc;
 {
     OBPRECONDITION(_dragSession == nil, "it retains us anyway, so we can't get here otherwise");
 
-    [OFPreference removeObserver:self forPreference:[[self class] scopePreference]];
     [OFPreference removeObserver:self forPreference:[[self class] filterPreference]];
     [OFPreference removeObserver:self forPreference:[[self class] sortPreference]];
     
@@ -163,6 +185,12 @@ static id _commonInit(OUIDocumentPicker *self)
     
     [_topItemsBinding invalidate];
     [_openGroupItemsBinding invalidate];
+    
+    if (_agentActivity) {
+        _stopObservingAgentActivity(self, _agentActivity);
+        _agentActivity = nil;
+    }
+        
 }
 
 #pragma mark -
@@ -194,7 +222,22 @@ static id _commonInit(OUIDocumentPicker *self)
 }
 - (void)setSelectedScope:(OFSDocumentStoreScope *)scope;
 {
+    self.emptyPickerView.hidden = YES; // Any time we change scope, we hide our overlay
+
     _documentStoreFilter.scope = scope;
+
+    OFPreference *scopePreference = [[self class] _scopePreference];
+    [scopePreference setStringValue:scope.identifier];
+
+    [self scrollToTopAnimated:NO];
+    
+    // The delegate likely wants to update the title displayed in the document picker toolbar.
+    [self updateTitle];
+
+    // And we might need to show or hide the OmniPresence "sync now" button
+    [self _updateToolbarItemsAnimated:NO];
+    [self _updateOmniPresenceToolbarIcon];
+    [self _updateViewControls];
 }
 
 - (OUIDocumentPickerScrollView *)activeScrollView;
@@ -202,6 +245,47 @@ static id _commonInit(OUIDocumentPicker *self)
     if ([_groupScrollView window])
         return _groupScrollView;
     return _mainScrollView;
+}
+
+- (OFSDocumentStoreScope *)_localDocumentsScope;
+{
+    for (OFSDocumentStoreScope *scope in _documentStore.scopes) {
+        if (![scope isKindOfClass:[OFXDocumentStoreScope class]])
+            return scope;
+    }
+
+    return nil;
+}
+
+- (IBAction)emptyTrash:(id)sender;
+{
+    OUIWithoutAnimating(^{
+        [self clearSelection:YES];
+
+        for (OFSDocumentStoreFileItem *fileItem in _documentStore.trashScope.fileItems)
+            fileItem.selected = YES;
+
+        [self.view layoutIfNeeded];
+    });
+
+    [self setEditing:YES animated:YES];
+    [self deleteDocument:self.emptyTrashButton];
+}
+
+- (IBAction)moveAllDocumentsToCloudButtonTapped:(id)sender;
+{
+    [self _beginIgnoringDocumentsDirectoryUpdates];
+    [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+    NSSet *fileItems = [[self _localDocumentsScope] fileItems];
+    [_documentStore moveFileItems:fileItems toScope:self.selectedScope completionHandler:^(OFSDocumentStoreFileItem *failingItem, NSError *errorOrNil) {
+        [self clearSelection:YES];
+        [self _endIgnoringDocumentsDirectoryUpdates];
+        [self _performDelayedItemPropagationWithCompletionHandler:^{
+            [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+            if (failingItem)
+                OUI_PRESENT_ALERT(errorOrNil);
+        }];
+    }];
 }
 
 @synthesize openInMapCache = _openInMapCache;
@@ -362,7 +446,7 @@ static id _commonInit(OUIDocumentPicker *self)
     
     for (OFSDocumentStoreFileItem *fileItem in selectedFileItems) {
         // The queue is concurrent, so we need to remember all the enqueued blocks and make them dependencies of our completion
-        [fileItem.scope addDocumentInFolderNamed:nil fromURL:fileItem.fileURL option:OFSDocumentStoreAddByRenaming completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error) {
+        [fileItem.scope addDocumentInFolderAtURL:nil fromURL:fileItem.fileURL option:OFSDocumentStoreAddByRenaming completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error) {
             OBASSERT([NSThread isMainThread]); // gets enqueued on the main thread, but even if it was invoked on the background serial queue, this would be OK as long as we don't access the mutable arrays until all the blocks are done
             
             if (!duplicateFileItem) {
@@ -378,7 +462,9 @@ static id _commonInit(OUIDocumentPicker *self)
             // Copy the previews for the original file item to be the previews for the duplicate.
             [OUIDocumentPreview cachePreviewImagesForFileURL:duplicateFileItem.fileURL date:duplicateFileItem.fileModificationDate
                                     byDuplicatingFromFileURL:fileItem.fileURL date:fileItem.fileModificationDate];
-
+            
+            // Copy document view state
+            [OUIDocumentAppController moveDocumentStateFromURL:fileItem.fileURL toURL:duplicateFileItem.fileURL deleteOriginal:NO];
         }];
     }
     
@@ -421,13 +507,6 @@ static id _commonInit(OUIDocumentPicker *self)
     
     // Validate each item
     for (OFSDocumentStoreFileItem *fileItem in selectedFileItems) {
-        
-        // Make sure the item is in non-conflict state.
-        if (fileItem.hasUnresolvedConflicts) {
-            OBFinishPorting; // We don't have iCloud now. Should we remove this property (if we always auto-resolve conflicts)?
-            
-            return;
-        }
         
         // Make sure the item is fully downloaded.
         if (!fileItem.isDownloaded) {
@@ -484,7 +563,7 @@ static id _commonInit(OUIDocumentPicker *self)
         case 1: /* Replace */
         {
             [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
-            [scope addDocumentInFolderNamed:nil fromURL:documentURL option:OFSDocumentStoreAddByReplacing completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error) {
+            [scope addDocumentInFolderAtURL:nil fromURL:documentURL option:OFSDocumentStoreAddByReplacing completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error) {
                 if (!duplicateFileItem) {
                     OUI_PRESENT_ERROR(error);
                     [[UIApplication sharedApplication] endIgnoringInteractionEvents];
@@ -501,7 +580,7 @@ static id _commonInit(OUIDocumentPicker *self)
         {
             [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
 
-            [scope addDocumentInFolderNamed:nil fromURL:documentURL option:OFSDocumentStoreAddByRenaming completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error) {
+            [scope addDocumentInFolderAtURL:nil fromURL:documentURL option:OFSDocumentStoreAddByRenaming completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error) {
                 if (!duplicateFileItem) {
                     OUI_PRESENT_ERROR(error);
                     [[UIApplication sharedApplication] endIgnoringInteractionEvents];
@@ -539,7 +618,7 @@ static id _commonInit(OUIDocumentPicker *self)
     OFSDocumentStoreScope *scope = _documentStoreFilter.scope;
     OBASSERT(scope);
     
-    [scope addDocumentInFolderNamed:nil fromURL:url option:OFSDocumentStoreAddNormally completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error) {
+    [scope addDocumentInFolderAtURL:nil fromURL:url option:OFSDocumentStoreAddNormally completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error) {
         if (!duplicateFileItem) {
             OUI_PRESENT_ERROR(error);
             [[UIApplication sharedApplication] endIgnoringInteractionEvents];
@@ -560,7 +639,7 @@ static id _commonInit(OUIDocumentPicker *self)
     NSString *localizedBaseName = [[OUIDocumentAppController controller] localizedNameForSampleDocumentNamed:[fileName stringByDeletingPathExtension]];
     
     OFSDocumentStoreScope *scope = self.selectedScope;
-    [scope addDocumentInFolderNamed:nil baseName:localizedBaseName fromURL:url option:OFSDocumentStoreAddByRenaming completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error) {
+    [scope addDocumentInFolderAtURL:nil baseName:localizedBaseName fromURL:url option:OFSDocumentStoreAddByRenaming completionHandler:^(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error) {
         
         if (!duplicateFileItem) {
             [[UIApplication sharedApplication] endIgnoringInteractionEvents];
@@ -664,7 +743,7 @@ static id _commonInit(OUIDocumentPicker *self)
     
     NSString *tempDirectory = NSTemporaryDirectory();
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OFSFileManager *tempFileManager = [[OFSFileManager alloc] initWithBaseURL:[NSURL fileURLWithPath:tempDirectory isDirectory:YES] delegate:nil error:&error];
     if (error) {
         OUI_PRESENT_ERROR(error);
@@ -739,7 +818,7 @@ static id _commonInit(OUIDocumentPicker *self)
         // NOTE: This is important for OO3 where the exporter has the ability to rewrite the document w/o hidden columns, in sorted order, with summary values (and eventually maybe with filtering). If we want to support untransformed exporting through the OO XML exporter, it will need to be configurable via settings on the OOXSLPlugin it uses. For now it assumes all 'exports' want all the transformations.
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
                        ^{
-                           NSError *error = nil;
+                           __autoreleasing NSError *error = nil;
                            NSFileWrapper *fileWrapper = [[NSFileWrapper alloc] initWithURL:fileItem.fileURL options:0 error:&error];
                            
                            if (completionHandler) {
@@ -754,7 +833,7 @@ static id _commonInit(OUIDocumentPicker *self)
     // If the delegate doesn't implement the new file wrapper export API, try the older NSData API
     NSData *fileData = nil;
     NSString *pathExtension = nil;
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     
     if (UTTypeConformsTo((__bridge CFStringRef)exportType, kUTTypePDF) && [delegate respondsToSelector:@selector(documentPicker:PDFDataForFileItem:error:)]) {
         fileData = [delegate documentPicker:self PDFDataForFileItem:fileItem error:&error];
@@ -1019,28 +1098,26 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     if ([_documentStore.scopes count] > 1) {
         NSMutableArray *otherScopes = [_documentStore.scopes mutableCopy];
         [otherScopes removeObject:self.selectedScope];
+        [otherScopes removeObject:_documentStore.trashScope];
+        [otherScopes sortUsingSelector:@selector(compareDocumentScope:)];
         
-        [otherScopes sortUsingComparator:^NSComparisonResult(OFSDocumentStoreScope *scope1, OFSDocumentStoreScope *scope2) {
-            // Put the local scope last
-            BOOL isLocal1 = ([scope1 isKindOfClass:[OFSDocumentStoreLocalDirectoryScope class]]);
-            BOOL isLocal2 = ([scope2 isKindOfClass:[OFSDocumentStoreLocalDirectoryScope class]]);
-            if (isLocal1 ^ isLocal2) {
-                return isLocal1 ? NSOrderedAscending : NSOrderedDescending;
+        switch ([otherScopes count]) {
+            case 0:
+                // Nowhere to move
+                break;
+            case 1:
+            {
+                OFSDocumentStoreScope *otherScope = otherScopes[0];
+                [actionSheet addButtonWithTitle:[otherScope moveToActionLabelWhenInList:NO] forAction:^{
+                    [self _moveSelectedDocumentsToScope:otherScope];
+                }];
+                break;
             }
-            
-            // Otherwise, sort scopes by their display name
-            return [scope1.displayName localizedStandardCompare:scope2.displayName];
-        }];
-        
-        if ([otherScopes count] == 1) {
-            OFSDocumentStoreScope *otherScope = [otherScopes lastObject];
-            [actionSheet addButtonWithTitle:[otherScope moveToActionLabelWhenInList:NO] forAction:^{
-                [self _moveSelectedDocumentsToScope:otherScope];
-            }];
-        } else {
-            [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Move to...", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet button title") forAction:^{
-                [self _showMoveMenuWithScopes:otherScopes fromSender:sender];
-            }];
+            default:
+                [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Move to...", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet button title") forAction:^{
+                    [self _showMoveMenuWithScopes:otherScopes fromSender:sender];
+                }];
+                break;
         }
     }
 
@@ -1052,13 +1129,6 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     OFSDocumentStoreFileItem *fileItem = self.singleSelectedFileItem;
     if (!fileItem){
         OBASSERT_NOT_REACHED("Make this button be disabled");
-        return;
-    }
-
-    // Make sure selected item is in non-conflict state.
-    if (fileItem.hasUnresolvedConflicts) {
-        OBFinishPorting; // We no longer have iCloud; should we get rid of this property if we always auto-resolve conflicts?
-
         return;
     }
 
@@ -1235,7 +1305,7 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
         emailType = OFUTIForFileExtensionPreferringNative(@"zip", NO);
         NSString *zipPath = [NSTemporaryDirectory() stringByAppendingPathComponent:emailName];
         @autoreleasepool {
-            NSError *error = nil;
+            __autoreleasing NSError *error = nil;
             if (![OUZipArchive createZipFile:zipPath fromFileWrappers:[NSArray arrayWithObject:fileWrapper] error:&error]) {
                 OUI_PRESENT_ERROR(error);
                 return;
@@ -1317,14 +1387,14 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
 
     //- (NSData *)documentPicker:(OUIDocumentPicker *)picker copyAsImageDataForFileItem:(OFSDocumentStoreFileItem *)fileItem error:(NSError **)outError;
     if (canMakeCopyAsImageSpecificPDF) {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         NSData *pdfData = [delegate documentPicker:self copyAsImageDataForFileItem:fileItem error:&error];
         if (!pdfData)
             OUI_PRESENT_ERROR(error);
         else
             [items addObject:[NSDictionary dictionaryWithObject:pdfData forKey:(id)kUTTypePDF]];
     } else if (canMakePDF) {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         NSData *pdfData = [delegate documentPicker:self PDFDataForFileItem:fileItem error:&error];
         if (!pdfData)
             OUI_PRESENT_ERROR(error);
@@ -1334,7 +1404,7 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     
     // Don't put more than one image format on the pasteboard, because both will get pasted into iWork.  <bug://bugs/61070>
     if (!canMakeCopyAsImageSpecificPDF &&!canMakePDF && canMakePNG) {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         NSData *pngData = [delegate documentPicker:self PNGDataForFileItem:fileItem error:&error];
         if (!pngData) {
             OUI_PRESENT_ERROR(error);
@@ -1379,7 +1449,7 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     OUI_PRESENT_ERROR(error);
 }
 
-+ (OFPreference *)scopePreference;
++ (OFPreference *)_scopePreference;
 {
     static OFPreference *scopePreference;
     static dispatch_once_t onceToken;
@@ -1437,33 +1507,22 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     }
 }
 
-- (void)selectedScopeChanged;
+- (void)_loadScopeFromPreference;
 {
     OBPRECONDITION(_documentStore);
     OBPRECONDITION(_documentStoreFilter);
     
-    OFPreference *scopePreference = [[self class] scopePreference];
+    OFPreference *scopePreference = [[self class] _scopePreference];
     NSString *identifier = [scopePreference stringValue];
     NSArray *availableScopes = _documentStore.scopes;
     
     OFSDocumentStoreScope *scope = [availableScopes first:^BOOL(OFSDocumentStoreScope *scope) {
         return [scope.identifier isEqualToString:identifier];
     }];
-    if (!scope && [availableScopes count] > 0) {
-        scope = [availableScopes objectAtIndex:0];
-        
-        // Fix the preference for other readers to know what we eneded up using. We'll get called reentrantly here now.
-        [scopePreference setStringValue:scope.identifier];
-    }
-    
-    [self scrollToTopAnimated:NO];
-    
-    [self addAfterDocumentStoreInitializationAction:^(OUIDocumentPicker *blockSelf){
-        blockSelf->_documentStoreFilter.scope = scope;
+
+    [self addDocumentStoreInitializationAction:^(OUIDocumentPicker *blockSelf){
+        blockSelf.selectedScope = scope;
     }];
-    
-    // The delegate likely wants to update the title displayed in the document picker toolbar.
-    [self updateTitle];
 }
 
 - (void)selectedFilterChanged;
@@ -1486,14 +1545,9 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     
     [self scrollToTopAnimated:NO];
     
-    // If we can do this right now, we should, to avoid displaying and then applying a filter, prompting fears of lost data
-    if (!_documentStore) {
-        [self addAfterDocumentStoreInitializationAction:^(OUIDocumentPicker *blockSelf){
-            blockSelf->_documentStoreFilter.filterPredicate = filter.predicate;
-        }];
-    } else {
-        _documentStoreFilter.filterPredicate = filter.predicate;
-    }
+    [self addDocumentStoreInitializationAction:^(OUIDocumentPicker *blockSelf){
+        blockSelf->_documentStoreFilter.filterPredicate = filter.predicate;
+    }];
 
     // The delegate likely wants to update the title displayed in the document picker toolbar.
     [self updateTitle];
@@ -1508,20 +1562,19 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     _groupScrollView.itemSort = sort;
 }
 
-- (void)addAfterDocumentStoreInitializationAction:(void (^)(OUIDocumentPicker *blockSelf))action;
+- (void)filterSegmentChanged:(id)sender;
 {
-    if (_documentStore) { // if it's already here, just run the action!
-        __weak OUIDocumentPicker *weakSelf = self;
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            // I'm not sure if this needs to be mainQueue or if I could directly call the block itself, but playing it safe for proof of concept here.
-            OUIDocumentPicker *strongSelf = weakSelf;
-            if (!strongSelf)
-                return;
-            action(strongSelf);
-        }];
-        return;
-    }
-        
+    OUIDocumentPickerFilter *filter = [[self availableFilters] objectAtIndex:((UISegmentedControl *)sender).selectedSegmentIndex];
+    [[[self class] filterPreference] setStringValue:filter.identifier];
+}
+
+- (void)sortSegmentChanged:(id)sender;
+{
+    [[[self class] sortPreference] setEnumeratedValue:((UISegmentedControl *)sender).selectedSegmentIndex];
+}
+
+- (void)addDocumentStoreInitializationAction:(void (^)(OUIDocumentPicker *blockSelf))action;
+{
     if (!_afterDocumentStoreInitializationActions)
         _afterDocumentStoreInitializationActions = [[NSMutableArray alloc] init];
     [_afterDocumentStoreInitializationActions addObject:[action copy]];
@@ -1532,6 +1585,9 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
 
 - (NSString *)mainToolbarTitle;
 {
+    if ([_documentStore.scopes count] > 1)
+        return self.selectedScope.displayName;
+
     id <OUIDocumentPickerDelegate> delegate = _weak_delegate;
     if ([delegate respondsToSelector:@selector(documentPickerMainToolbarTitle:)]) {
         return [delegate documentPickerMainToolbarTitle:self];
@@ -1550,6 +1606,19 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     [_appTitleToolbarButton layoutIfNeeded];
 }
 
+- (NSError *)selectedScopeError;
+{
+    OFSDocumentStoreScope *selectedScope = self.selectedScope;
+    
+    if (![selectedScope isKindOfClass:[OFXDocumentStoreScope class]])
+        return nil;
+    OFXDocumentStoreScope *scope = (OFXDocumentStoreScope *)selectedScope;
+    
+    OFXAgentActivity *agentActivity = [OUIDocumentAppController controller].agentActivity;
+    OFXAccountActivity *accountActivity = [agentActivity activityForAccount:scope.account];
+    return accountActivity.lastError;
+}
+
 #pragma mark -
 #pragma mark UIViewController subclass
 
@@ -1561,16 +1630,16 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
 
     BOOL landscape = UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
     
-    CGRect viewBounds = self.view.bounds;
-    _mainScrollView.frame = viewBounds;
+    // This isn't necessary and it makes the scroll view extend behind the bottom toolbar.
+    // CGRect viewBounds = self.view.bounds;
+    // _mainScrollView.frame = viewBounds;
+    
     _mainScrollView.landscape = landscape;
     
     _groupScrollView.landscape = landscape;
     [_groupScrollView removeFromSuperview]; // We'll put it back when opening a group
     
-    OFPreference *scopePreference = [[self class] scopePreference];
-    [OFPreference addObserver:self selector:@selector(selectedScopeChanged) forPreference:scopePreference];
-    [self selectedScopeChanged];
+    [self _loadScopeFromPreference];
     
     OFPreference *sortPreference = [[self class] sortPreference];
     [OFPreference addObserver:self selector:@selector(selectedSortChanged) forPreference:sortPreference];
@@ -1581,7 +1650,9 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     [self selectedFilterChanged];
     
     [self _setupTopItemsBinding];
-
+    
+    [self _setupBottomToolbar];
+    
     // We sign up for this notification in -viewDidLoad, instead of -viewWillAppear: since we want to receive it when we are off screen (previews can be updated when a document is closing and we never get on screen -- for example if a document is open and another document is opened via tapping on Mail).
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     [center addObserver:self selector:@selector(_previewsUpdateForFileItemNotification:) name:OUIDocumentPreviewsUpdatedForFileItemNotification object:nil];
@@ -1662,10 +1733,19 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
         }
     }
     
+    [self _updateViewControls];
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(_applicationDidEnterBackground:)
                                                  name:UIApplicationDidEnterBackgroundNotification
                                                object:nil];
+}
+
+- (void)viewDidAppear:(BOOL)animated;
+{
+    [super viewDidAppear:animated];
+
+    [self _updateViewControls];
 }
 
 - (void)viewWillDisappear:(BOOL)animated;
@@ -1698,7 +1778,7 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     // This doesn't update our UIToolbar, but OUIDocumentRenameViewController will use it to go back to the toolbar items we should be using.
     [super setToolbarItems:toolbarItems animated:animated];
     
-    // The remain view controller overrides our toolbar's items. Might need a more general check for "has some other view controller taken over the toolbar" (or maybe such controller should have their own toolbar).
+    // The rename view controller overrides our toolbar's items. Might need a more general check for "has some other view controller taken over the toolbar" (or maybe such controller should have their own toolbar).
     if (_renameViewController == nil) {
         [_toolbar setItems:toolbarItems animated:animated];
     }
@@ -1880,14 +1960,6 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
             addItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"New Document", @"OmniUIDocument", OMNI_BUNDLE, @"New Document toolbar item accessibility label.");
             [toolbarItems addObject:addItem];
         }
-        
-        if ([[OFPreferenceWrapper sharedPreferenceWrapper] boolForKey:@"OUIImportEnabled"]) {
-            UIBarButtonItem *importItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarButtonImport.png"] 
-                                                                            style:UIBarButtonItemStylePlain 
-                                                                           target:controller action:@selector(showSyncMenu:)];
-            importItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"Import toolbar item accessibility label.");
-            [toolbarItems addObject:importItem];
-        }
     }
     
     [toolbarItems addObject:[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL]];
@@ -1924,6 +1996,28 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
         
         [toolbarItems addObject:selectionItem];
     } else {
+        if ([self.selectedScope isKindOfClass:[OFXDocumentStoreScope class]]) {
+#ifdef OMNI_ASSERTIONS_ON
+            OFXDocumentStoreScope *scope = (OFXDocumentStoreScope *)self.selectedScope;
+#endif
+            if (!_omniPresenceBarButtonItem) {
+                _omniPresenceBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OmniPresenceToolbarIcon.png"] style:UIBarButtonItemStylePlain target:controller action:@selector(manualSync:)];
+                _omniPresenceBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Sync Now", @"OmniUIDocument", OMNI_BUNDLE, @"Presence toolbar item accessibility label.");
+            }
+            
+            if (!_agentActivity) {
+                _agentActivity = [OUIDocumentAppController controller].agentActivity;
+                _startObservingAgentActivity(self, _agentActivity);
+            }
+            [self _updateOmniPresenceToolbarIcon];
+            
+            OBASSERT(scope.syncAgent == _agentActivity.agent);
+            [toolbarItems addObject:_omniPresenceBarButtonItem];
+        } else {
+            _stopObservingAgentActivity(self, _agentActivity);
+            _agentActivity = nil;
+        }
+
         if (!_appTitleToolbarItem) {
             OBASSERT(_appTitleToolbarButton == nil);
             
@@ -1985,6 +2079,55 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     }
 }
 
+- (void)_setupBottomToolbar
+{
+    NSMutableArray *bottomToolbarItems = [NSMutableArray array];
+    
+    // Sort
+    {
+        // Make sure to keep these in sync with the OUIDocumentPickerItemSort enum.
+        NSArray *sortTitles = @[
+                                NSLocalizedStringFromTableInBundle(@"Sort by date", @"OmniUIDocument", OMNI_BUNDLE, @"sort by date"),
+                                NSLocalizedStringFromTableInBundle(@"Sort by title", @"OmniUIDocument", OMNI_BUNDLE, @"sort by title")
+                                ];
+        UISegmentedControl *sortSegmentedControl = [[UISegmentedControl alloc] initWithItems:sortTitles];
+        [sortSegmentedControl addTarget:self action:@selector(sortSegmentChanged:) forControlEvents:UIControlEventValueChanged];
+        sortSegmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
+        sortSegmentedControl.selectedSegmentIndex = [[[self class] sortPreference] enumeratedValue];
+        
+        UIBarButtonItem *sortsItem = [[UIBarButtonItem alloc] initWithCustomView:sortSegmentedControl];
+        [bottomToolbarItems addObject:sortsItem];
+    }
+
+    // Filter
+    NSArray *availableFilters = [self availableFilters];
+    if ([availableFilters count] > 0) {
+        // First add flexy spacer to move the filters item all the way right.
+        UIBarButtonItem *flexySpacer = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+        [bottomToolbarItems addObject:flexySpacer];
+        
+        
+        // Now time to add the actual filter items.
+        NSString *identifier = [[[self class] filterPreference] stringValue];
+        NSUInteger selectedIndex = [availableFilters indexOfObjectPassingTest:^BOOL(OUIDocumentPickerFilter *filter, NSUInteger idx, BOOL *stop) {
+            return [filter.identifier isEqualToString:identifier];
+        }];
+        
+        NSArray *filterTitles = [availableFilters valueForKey:@"title"];
+        UISegmentedControl *filtersSegmentedControl = [[UISegmentedControl alloc] initWithItems:filterTitles];
+        [filtersSegmentedControl addTarget:self action:@selector(filterSegmentChanged:) forControlEvents:UIControlEventValueChanged];
+        filtersSegmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
+        filtersSegmentedControl.selectedSegmentIndex = selectedIndex;
+        
+        UIBarButtonItem *filtersItem = [[UIBarButtonItem alloc] initWithCustomView:filtersSegmentedControl];
+        [bottomToolbarItems addObject:filtersItem];
+    }
+    
+    
+    [self.bottomToolbar setItems:bottomToolbarItems
+                        animated:NO];
+}
+
 - (IBAction)_showViewSettings:(UIView *)sender;
 {
     if (!self.canPerformActions)
@@ -1992,9 +2135,8 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     
     OBASSERT(_renameViewController == nil); // Can't be renaming now; no need to try to stop.
     
-    OBFinishPortingLater("Need to find out when our selected scope is removed from the document store and reset our preference");
     OUIDocumentPickerSettings *settings = [[OUIDocumentPickerSettings alloc] init];
-    settings.availableScopes = _documentStore.scopes;
+    settings.availableScopes = [_documentStore.scopes sortedArrayUsingSelector:@selector(compareDocumentScope:)];
     settings.availableFilters = self.availableFilters;
     [settings showFromView:sender];
 }
@@ -2343,6 +2485,80 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
         _ignoreDocumentsDirectoryUpdates--;
 }
 
+- (void)_setupClearButton:(UIButton *)button;
+{
+    UIImage *backgroundImage = [[UIImage imageNamed:@"OUIContentAreaButtonClear.png"] resizableImageWithCapInsets:(UIEdgeInsets) {
+        .top = 0.0f,
+        .right = 7.0f,
+        .bottom = 0.0f,
+        .left = 7.0f
+    }];
+    [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [button setBackgroundImage:backgroundImage forState:UIControlStateNormal];
+}
+
+- (void)_updateViewControls;
+{
+    BOOL isEmpty = self.selectedScope.fileItems.count == 0;
+
+    // "Empty Trash" control
+    BOOL trashControlsAreVisible = self.trashControls.superview != nil;
+    BOOL trashControlsShouldBeVisible = self.selectedScope.isTrash && !isEmpty;
+    if (trashControlsAreVisible != trashControlsShouldBeVisible) {
+        if (trashControlsShouldBeVisible) {
+            [self _setupClearButton:self.emptyTrashButton];
+            CGRect bounds = self.view.bounds;
+            CGFloat controlHeight = CGRectGetHeight(self.trashControls.frame);
+            CGRect controlFrame, scrollFrame;
+            CGRectDivide(bounds, &controlFrame, &scrollFrame, controlHeight, CGRectMinYEdge);
+
+            [self.trashControls setFrame:controlFrame];
+            [self.mainScrollView setFrame:scrollFrame];
+            [self.view addSubview:self.trashControls];
+        } else {
+            [self.trashControls removeFromSuperview];
+            [self.mainScrollView setFrame:self.view.bounds];
+        }
+    }
+
+    // Empty view overlay hints
+    BOOL emptyOverlayShouldBeVisible = isEmpty;
+    if (emptyOverlayShouldBeVisible) {
+        BOOL showMoveButton = !self.selectedScope.isTrash && [[[self _localDocumentsScope] fileItems] count] != 0;
+        self.emptyPickerViewMoveView.hidden = !showMoveButton;
+
+        if (self.view.superview != nil && (self.emptyPickerView.superview == nil || self.emptyPickerView.hidden)) {
+            if (![UIView areAnimationsEnabled]) {
+                // Don't show the empty hints until we can fade them in
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    [self _updateViewControls];
+                }];
+            } else {
+                [self _setupClearButton:self.emptyPickerViewMoveButton];
+                CGRect newFrame = (CGRect){
+                    .origin = self.view.bounds.origin,
+                    .size.width = self.view.bounds.size.width,
+                    .size.height = self.view.bounds.size.height - self.bottomToolbar.frame.size.height
+                };
+                self.emptyPickerView.frame = newFrame;
+                OUIWithoutAnimating(^{
+                    self.emptyPickerView.alpha = 0.0;
+                    self.emptyPickerView.hidden = YES;
+                });
+                [self.view addSubview:self.emptyPickerView];
+                [self.view setNeedsLayout];
+                [UIView animateWithDuration:1.0 delay:1.0 options:UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionOverrideInheritedDuration animations:^{
+                    self.emptyPickerView.alpha = 1.0;
+                    self.emptyPickerView.hidden = NO;
+                } completion:NULL];
+            }
+        }
+
+    } else {
+        self.emptyPickerView.hidden = YES;
+    }
+}
+
 @synthesize topItems = _topItems;
 - (void)setTopItems:(NSSet *)topItems;
 {
@@ -2350,10 +2566,11 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
         return;
     
     _topItems = [[NSSet alloc] initWithSet:topItems];
-    
+
     if (_ignoreDocumentsDirectoryUpdates == 0) {
         [self _propagateItems:_topItems toScrollView:_mainScrollView withCompletionHandler:nil];
         [self _updateToolbarItemsEnabledness];
+        [self _updateViewControls];
     }
 }
 
@@ -2461,15 +2678,11 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
 - (void)_flushAfterDocumentStoreInitializationActions;
 {
     if (_documentStore) {
-        __weak OUIDocumentPicker *weakSelf = self;
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            OUIDocumentPicker *strongSelf = weakSelf;
-            if (!strongSelf)
-                return;
-            for (void (^action)(OUIDocumentPicker *blockSelf) in _afterDocumentStoreInitializationActions)
-                action(strongSelf);
-        }];
+        NSArray *actions = _afterDocumentStoreInitializationActions;
+        _afterDocumentStoreInitializationActions = nil; // Don't perform these more than once
+
+        for (void (^action)(OUIDocumentPicker *blockSelf) in actions)
+            action(self);
     }
 }
 
@@ -2482,5 +2695,81 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     
     return (self.parentViewController != nil); // will still be the inner controller while scrolling to the new doc
 }
+
+- (void)_updateOmniPresenceAnimationState;
+{
+    _omniPresenceAnimationState++;
+    if (_omniPresenceAnimationState > 3) {
+        if (_omniPresenceAnimationLastLoop) {
+            [_omniPresenceAnimationTimer invalidate];
+            _omniPresenceAnimationTimer = nil;
+            _omniPresenceAnimationState = 0;
+            [_omniPresenceBarButtonItem setImage:[UIImage imageNamed:@"OmniPresenceToolbarIcon.png"]];
+            return;
+        }
+        _omniPresenceAnimationState = 1;
+    }
+    [_omniPresenceBarButtonItem setImage:[UIImage imageNamed:[NSString stringWithFormat:@"OmniPresenceToolbarIconAnimation-%lu.png", _omniPresenceAnimationState]]];
+}
+
+- (void)_rescheduleAnimationTimer;
+{
+    NSTimeInterval newTimeInterval = (_omniPresenceAnimationLastLoop ? 0.15 : 0.45);
+    NSDate *newFireDate = nil;
+    if (_omniPresenceAnimationTimer != nil) {
+        NSTimeInterval oldTimeInterval = [_omniPresenceAnimationTimer timeInterval];
+        if (oldTimeInterval == newTimeInterval)
+            return; // No change needed
+
+        NSDate *oldFireDate = [_omniPresenceAnimationTimer fireDate];
+        newFireDate = [oldFireDate dateByAddingTimeInterval:newTimeInterval - oldTimeInterval];
+    }
+    [_omniPresenceAnimationTimer invalidate];
+    _omniPresenceAnimationTimer = [NSTimer scheduledTimerWithTimeInterval:newTimeInterval target:self selector:@selector(_updateOmniPresenceAnimationState) userInfo:nil repeats:YES];
+    if (newFireDate != nil)
+        [_omniPresenceAnimationTimer setFireDate:newFireDate];
+}
+
+- (void)_updateOmniPresenceToolbarIcon;
+{
+    OFXAgentActivity *agentActivity = [OUIDocumentAppController controller].agentActivity;
+    NSError *selectedScopeError = self.selectedScopeError;
+    
+    if (selectedScopeError != nil) {
+        [_omniPresenceAnimationTimer invalidate];
+        _omniPresenceAnimationTimer = nil;
+        if ([selectedScopeError causedByUnreachableHost]) {
+            [_omniPresenceBarButtonItem setImage:[UIImage imageNamed:@"OmniPresenceToolbarIcon-Offline.png"]];
+        } else {
+            [_omniPresenceBarButtonItem setImage:[UIImage imageNamed:@"OmniPresenceToolbarIcon-Error.png"]];
+        }
+    } else if (agentActivity.isActive) {
+        if (!_omniPresenceAnimationTimer) {
+            _omniPresenceAnimationState = 0;
+            _omniPresenceAnimationLastLoop = NO;
+            [self _updateOmniPresenceAnimationState];
+            [self _rescheduleAnimationTimer];
+        }
+    } else {
+        if (_omniPresenceAnimationTimer) {
+            _omniPresenceAnimationLastLoop = YES;
+            [self _rescheduleAnimationTimer];
+        } else
+            [_omniPresenceBarButtonItem setImage:[UIImage imageNamed:@"OmniPresenceToolbarIcon.png"]];
+    }
+}
+
+static unsigned SyncActivityContext;
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+{
+    if (object == _agentActivity && context == &SyncActivityContext) {
+        [self _updateOmniPresenceToolbarIcon];
+        return;
+    }
+    
+    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
+
 
 @end

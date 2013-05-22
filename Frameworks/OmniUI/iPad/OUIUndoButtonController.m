@@ -5,10 +5,10 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIUndoButtonController.h"
-#import "OUIUndoButtonPopoverHelper.h"
+#import <OmniUI/OUIUndoButtonController.h>
 
-#import "OUIUndoButton.h"
+#import <OmniUI/OUIUndoButton.h>
+#import <OmniUI/OUIUndoButtonPopoverHelper.h>
 
 RCS_ID("$Id$");
 

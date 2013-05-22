@@ -20,7 +20,7 @@ NSString * const OFSDocumentStoreItemUserModificationDateBinding = @"userModific
 
 NSString * const OFSDocumentStoreItemReadyBinding = @"ready";
 
-NSString * const OFSDocumentStoreItemHasUnresolvedConflictsBinding = @"hasUnresolvedConflicts";
+NSString * const OFSDocumentStoreItemHasDownloadQueuedBinding = @"hasDownloadQueued";
 NSString * const OFSDocumentStoreItemIsDownloadedBinding = @"isDownloaded";
 NSString * const OFSDocumentStoreItemIsDownloadingBinding = @"isDownloading";
 NSString * const OFSDocumentStoreItemIsUploadedBinding = @"isUploaded";

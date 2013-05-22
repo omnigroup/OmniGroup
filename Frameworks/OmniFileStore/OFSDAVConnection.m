@@ -18,6 +18,7 @@
 #import <OmniFoundation/OFXMLString.h>
 #import <OmniFoundation/OFXMLElement.h>
 #import <OmniFoundation/NSString-OFConversion.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniFoundation/NSProcessInfo-OFExtensions.h>
@@ -192,7 +193,7 @@ static NSString *OFSDAVDepthName(OFSDAVDepth depth)
     // Build the propfind request.  Can do this dynamically but for now we have a static request...
     NSData *requestXML;
     {
-        NSError *error;
+        __autoreleasing NSError *error;
         OFXMLDocument *requestDocument = [[OFXMLDocument alloc] initWithRootElementName:@"propfind"
                                                                            namespaceURL:[NSURL URLWithString:DAVNamespaceString]
                                                                      whitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior]
@@ -277,9 +278,9 @@ static NSString *OFSDAVDepthName(OFSDAVDepth depth)
         // We'll get back a <multistatus> with multiple <response> elements, each having <href> and <propstat>
         OFXMLCursor *cursor = [doc cursor];
         if (![[cursor name] isEqualToString:@"multistatus"]) {
-            // TODO: Log error
-            OBFinishPorting; // Log an error
-            NSError *error;
+            __autoreleasing NSError *error;
+            NSString *reason = [NSString stringWithFormat:@"Expected “multistatus” but found “%@” in PROPFIND result from %@.", cursor.name, [request shortDescription]];
+            OFSError(&error, OFSDAVOperationInvalidMultiStatusResponse, @"Expected “multistatus” element missing in PROPFIND result.", reason);
             completionHandler(nil, error);
             return;
         }
@@ -431,7 +432,7 @@ static NSString *OFSDAVDepthName(OFSDAVDepth depth)
 #ifdef OMNI_ASSERTIONS_ON
         {
             NSURL *foundURL = [fileInfo originalURL];
-            if (!OFSURLEqualsURL(url, foundURL)) {
+            if (!OFURLEqualsURL(url, foundURL)) {
                 // The URLs will legitimately not be equal if we got a redirect -- don't spuriously warn in that case.
                 if (OFNOTEQUAL([OFSFileInfo nameForURL:url], [OFSFileInfo nameForURL:foundURL])) {
                     OBASSERT_NOT_REACHED("Any issues with encoding normalization or whatnot?");
@@ -582,7 +583,7 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
 
 - (void)copyURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 {
-    // TODO: COPY can return 207 if there is an error copying a sub-resource
+    // TODO: COPY can return OFS_HTTP_MULTI_STATUS if there is an error copying a sub-resource
     [self _moveOrCopy:@"COPY" sourceURL:sourceURL toURL:destURL overwrite:overwrite predicate:^(NSMutableURLRequest *request, NSURL *copySourceURL, NSURL *copyDestURL) {
         OFSAddIfPredicateForURLAndETag(request, copySourceURL, ETag);
     } completionHandler:completionHandler];
@@ -625,9 +626,15 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
 
 - (void)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 {
+    // No predicate needed. The default for Overwrite: F is to return a precondition failure if the destination exists
+    [self _moveOrCopy:@"MOVE" sourceURL:sourceURL toURL:destURL overwrite:NO predicate:nil completionHandler:completionHandler];
+}
+
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL ifURLExists:(NSURL *)tagURL completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
+{
     [self _moveOrCopy:@"MOVE" sourceURL:sourceURL toURL:destURL overwrite:NO predicate:^(NSMutableURLRequest *request, NSURL *moveSourceURL, NSURL *moveDestURL) {
-        // "If-None-Match: *" applies to the URL in the command, not the one in the Destination header, but we can write this as a tagged condition list with the "If" header.
-        NSString *ifValue = [NSString stringWithFormat:@"<%@> (Not [*])", [moveDestURL absoluteString]];
+        // If-Match applies to teh URL in the command, but we want to be able to check an arbitrary header (not even the one in the Destination header). We can write this as a tagged condition list with the "If" header.
+        NSString *ifValue = [NSString stringWithFormat:@"<%@> ([*])", [tagURL absoluteString]];
         [request setValue:ifValue forHTTPHeaderField:@"If"];
     } completionHandler:completionHandler];
 }
@@ -641,7 +648,7 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
     
     NSData *requestXML;
     {
-        NSError *error;
+        __autoreleasing NSError *error;
         OFXMLDocument *requestDocument = [[OFXMLDocument alloc] initWithRootElementName:@"lockinfo"
                                                                            namespaceURL:[NSURL URLWithString:DAVNamespaceString]
                                                                      whitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior]
@@ -749,8 +756,10 @@ static void OFSDAVAddUserAgentStringToRequest(OFSDAVConnection *manager, NSMutab
 - (NSMutableURLRequest *)_requestForURL:(NSURL *)url;
 {
     static const NSURLRequestCachePolicy DefaultCachePolicy = NSURLRequestUseProtocolCachePolicy;
-    
-    return [NSMutableURLRequest requestWithURL:url cachePolicy:DefaultCachePolicy timeoutInterval:[self _timeoutForURL:url]];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:DefaultCachePolicy timeoutInterval:[self _timeoutForURL:url]];
+    if (_shouldDisableCellularAccess)
+        [request setAllowsCellularAccess:NO];
+    return request;
 }
 
 - (NSTimeInterval)_timeoutForURL:(NSURL *)url;
@@ -824,15 +833,25 @@ static void OFSDAVAddUserAgentStringToRequest(OFSDAVConnection *manager, NSMutab
         NSString *resultLocationString = [operation valueForResponseHeader:@"Location"];
         if (![NSString isEmptyString:resultLocationString]) {
             resultLocation = [NSURL URLWithString:resultLocationString];
-            OBASSERT(resultLocation, @"Location header couldn't be parsed as a URL, %@", resultLocationString);
             
-            // If we couldn't parse the Location header, try the Destination header (for COPY/MOVE). Apache 2.4.3 doesn't properly URI encode the Location header <See https://issues.apache.org/bugzilla/show_bug.cgi?id=54611> (though our patched version does), but hopefully the location we *asked* to move it to will be valid. Note this won't help for PUT <https://issues.apache.org/bugzilla/show_bug.cgi?id=54367> since it doesn't have a destination header. But in this case we'll fall through and use the original URI.
-            NSString *destinationHeader = [request valueForHTTPHeaderField:@"Destination"];
-            if (![NSString isEmptyString:destinationHeader]) {
-                resultLocation = [NSURL URLWithString:destinationHeader];
+            // This fails so often on stock Apache that I'm turning it off.
+            // Apache 2.4.3 doesn't properly URI encode the Location header <See https://issues.apache.org/bugzilla/show_bug.cgi?id=54611> (though our patched version does), but hopefully the location we *asked* to move it to will be valid. Note this won't help for PUT <https://issues.apache.org/bugzilla/show_bug.cgi?id=54367> since it doesn't have a destination header. But in this case we'll fall through and use the original URI.
+            // OBASSERT(resultLocation, @"Location header couldn't be parsed as a URL, %@", resultLocationString);
+            
+            // If we couldn't parse the Location header, try the Destination header (for COPY/MOVE).
+            if (!resultLocation) {
+                NSString *destinationHeader = [request valueForHTTPHeaderField:@"Destination"];
+                if (![NSString isEmptyString:destinationHeader]) {
+                    resultLocation = [NSURL URLWithString:destinationHeader];
+                }
             }
         }
-        
+
+        if ([[resultLocation host] isEqualToString:@"localhost"] && ![[[request URL] host] isEqualToString:@"localhost"]) {
+            // Work around a bug in OS X Server's WebDAV hosting on 10.8.3 where the proxying server passes back Location headers which are unreachable from the outside world rather than rewriting them into its own namespace.  (It doesn't ever make sense to redirect a WebDAV request to localhost from somewhere other than localhost.)  Hopefully the Location headers in question are always predictable!  Fixes <bug:///87276> (Syncs after initial sync fail on 10.8.3 WebDAV server (error -1004, kCFURLErrorCannotConnectToHost)).
+            resultLocation = nil;
+        }
+
         if (!resultLocation) {
             // Otherwise use the original URL, looking up any redirection that happened on it.
             resultLocation = request.URL;
@@ -863,8 +882,8 @@ typedef void (^OFSDAVConnectionDocumentCompletionHandler)(OFXMLDocument *documen
             return;
         }
         
-        NSError *error = nil;
         OFXMLDocument *doc = nil;
+        NSError *documentError = nil;
         NSTimeInterval start = 0;
         @autoreleasepool {
             // It was found and we got data back.  Parse the response.
@@ -874,7 +893,10 @@ typedef void (^OFSDAVConnectionDocumentCompletionHandler)(OFXMLDocument *documen
             if (OFSFileManagerDebug > 1)
                 start = [NSDate timeIntervalSinceReferenceDate];
             
+            __autoreleasing NSError *error = nil;
             doc = [[OFXMLDocument alloc] initWithData:responseData whitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior] error:&error];
+            if (!doc)
+                documentError = error; // strongify this to live past the pool
         }
         
         if (OFSFileManagerDebug > 1) {
@@ -885,8 +907,8 @@ typedef void (^OFSDAVConnectionDocumentCompletionHandler)(OFXMLDocument *documen
         }
 
         if (!doc) {
-            NSLog(@"Unable to decode XML from WebDAV response: %@", [error toPropertyList]);
-            completionHandler(nil, nil, error);
+            NSLog(@"Unable to decode XML from WebDAV response: %@", [documentError toPropertyList]);
+            completionHandler(nil, nil, documentError);
         } else
             completionHandler(doc, operation, nil);
     }];

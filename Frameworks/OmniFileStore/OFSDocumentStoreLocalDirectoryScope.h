@@ -13,10 +13,12 @@
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 + (NSURL *)userDocumentsDirectoryURL;
++ (NSURL *)trashDirectoryURL;
 #endif
 
-- (id)initWithDirectoryURL:(NSURL *)directoryURL documentStore:(OFSDocumentStore *)documentStore;
+- (id)initWithDirectoryURL:(NSURL *)directoryURL isTrash:(BOOL)isTrash documentStore:(OFSDocumentStore *)documentStore;
 
 @property(nonatomic,readonly) NSURL *directoryURL;
+@property(nonatomic,readonly) BOOL isTrash;
 
 @end

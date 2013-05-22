@@ -11,8 +11,15 @@
 
 RCS_ID("$Id$")
 
-@implementation OFIndexPath
-{
+// OFIndexPath is a NSIndexPath workalike.
+//
+// It doesn't have the thread safety and pathological performance problems NSIndexPath suffers due to uniquing.
+//
+// These issues appear to be resolved on OS X 10.8 and later, and iOS 6.0 and later.
+// When our base system requirements allow, we can consider deprecating OFIndexPath.
+
+@implementation OFIndexPath {
+  @private
     OFIndexPath *_parent;
     NSUInteger _index, _length;
 }
@@ -82,6 +89,21 @@ static void _getIndexes(OFIndexPath *indexPath, NSUInteger *indexes, NSUInteger 
 - (void)getIndexes:(NSUInteger *)indexes;
 {
     _getIndexes(self, indexes, _length);
+}
+
+- (void)enumerateIndexesUsingBlock:(void (^)(NSUInteger index, BOOL *stop))block;
+{
+    NSUInteger indexes[_length];
+
+    _getIndexes(self, indexes, _length);
+    
+    for (NSUInteger i = 0; i < _length; i++) {
+        BOOL stop = NO;
+        block(indexes[i], &stop);
+        if (stop) {
+            break;
+        }
+    }
 }
 
 - (NSComparisonResult)_compare:(OFIndexPath *)otherObject orderParentsFirst:(BOOL)shouldOrderParentsFirst;

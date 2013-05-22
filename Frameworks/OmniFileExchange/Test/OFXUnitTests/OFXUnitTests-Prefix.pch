@@ -1,0 +1,13 @@
+//
+// Prefix header for all source files of the 'OFSUnitTests' target in the 'OFSUnitTests' project
+//
+
+#import <OmniFoundation/OmniFoundation.h>
+#import <OmniBase/OmniBase.h>
+#import <Foundation/Foundation.h>
+
+#import <OmniFileExchange/OFXAgent.h>
+#import <OmniFileExchange/OFXServerAccount.h>
+#import <OmniFileExchange/OFXServerAccountRegistry.h>
+#import <OmniFileExchange/OFXServerAccountType.h>
+#import <OmniFileExchange/OFXFileMetadata.h>

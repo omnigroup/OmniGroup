@@ -11,12 +11,16 @@
 #import <OmniFileStore/OFSDAVFileManager.h>
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFoundation/OFRandom.h>
+#import <OmniFoundation/NSData-OFCompression.h>
 
-RCS_ID("$Id$");
+static NSString * const rcs_id = @"$Id$";
 
 /*
  These get run for server conformance validation as well as being hooked up as unit tests by OFSDAVDynamicTestCase.
  */
+
+// Our ETag tests are off since stock Apache 2.4.x fails them. See <https://github.com/omnigroup/Apache/> for patches that make these work better. At some point we gave up on ETags though since there are no guarantees about what will make them change.
+#define TEST_ETAG_SUPPORT 0
 
 NSString * const OFSDAVConformanceFailureErrors = @"com.omnigroup.OmniFileExchange.ConformanceFailureErrors";
 
@@ -39,7 +43,7 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
         NSString *fileAndLine = [[NSString alloc] initWithFormat:@"%s:%d", file, line];
         OFSErrorWithInfo(outError, OFSDAVFileManagerConformanceFailed, description, reason, NSUnderlyingErrorKey, originalError,
                          OBFileNameAndNumberErrorKey, fileAndLine,
-                         @"rcsid", @"$Id$", nil);
+                         @"rcsid", rcs_id, nil);
     }
     return NO;
 }
@@ -131,22 +135,29 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
     return self;
 }
 
-- (void)_finishWithErrors:(NSArray *)errors;
+- (void)_finishWithError:(NSError *)error;
 {
     if (_finished) {
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            __autoreleasing NSError *error;
-            if ([errors count] > 0) {
-                NSString *description = NSLocalizedStringFromTableInBundle(@"WebDAV server failed conformance test.", @"OmniFileStore", OMNI_BUNDLE, @"Error description");
-                NSArray *recoverySuggestions = [errors arrayByPerformingBlock:^(NSError *anError) {
-                    return [anError localizedRecoverySuggestion];
-                }];
-                OFSErrorWithInfo(&error, OFSDAVFileManagerConformanceFailed, description, [recoverySuggestions componentsJoinedByString:@" "], OFSDAVConformanceFailureErrors, errors, nil);
-            }
             typeof(_finished) finished = _finished; // break retain cycles
             _finished = nil;
             finished(error);
         }];
+    }
+}
+
+- (void)_finishWithErrors:(NSArray *)errors;
+{
+    if (_finished) {
+        __autoreleasing NSError *error;
+        if ([errors count] > 0) {
+            NSString *description = NSLocalizedStringFromTableInBundle(@"WebDAV server failed conformance test.", @"OmniFileStore", OMNI_BUNDLE, @"Error description");
+            NSArray *recoverySuggestions = [errors arrayByPerformingBlock:^(NSError *anError) {
+                return [anError localizedRecoverySuggestion];
+            }];
+            OFSErrorWithInfo(&error, OFSDAVFileManagerConformanceFailed, description, [recoverySuggestions componentsJoinedByString:@" "], OFSDAVConformanceFailureErrors, errors, nil);
+        }
+        [self _finishWithError:error];
     }
 }
 
@@ -161,16 +172,14 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
         // If we've tested this server before, clean up the old stuff
         if (![_fileManager deleteURL:mainTestDirectory error:&mainError]) {
             if (![mainError hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_NOT_FOUND]) {
-                [errors addObject:mainError];
-                [self _finishWithErrors:errors];
+                [self _finishWithError:mainError];
                 return;
             }
         }
 
         mainError = nil;
         if (![_fileManager createDirectoryAtURL:mainTestDirectory attributes:nil error:&mainError]) {
-            [errors addObject:mainError];
-            [self _finishWithErrors:errors];
+            [self _finishWithError:mainError];
             return;
         }
         
@@ -206,6 +215,10 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
 {
     return YES;
 }
+
+#pragma mark - ETag tests
+
+#if TEST_ETAG_SUPPORT
 
 - (BOOL)testGetDataFailingDueToModifyingWithETagPrecondition:(NSError **)outError;
 {
@@ -308,7 +321,7 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
         
         
         OFSFileInfo *dirInfo;
-        OFSDAVRequire(dirInfo = [_fileManager fileInfoAtURL:dirA error:&error], @"Error getting info for directory");
+        OFSDAVRequire(dirInfo = [_fileManager fileInfoAtURL:dirA error:&error], @"Error getting info for directory.");
         ETagA1 = dirInfo.ETag;
         
         // Add something to the directory to change its ETag
@@ -465,6 +478,31 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
     return YES;
 }
 
+- (BOOL)testDeleteWithETag:(NSError **)outError;
+{
+    [self _updateStatus:@"Testing deletion with ETag predicate."];
+    
+    NSURL *dir = [_baseURL URLByAppendingPathComponent:@"dir" isDirectory:YES];
+    
+    NSError *error;
+    OFSDAVRequire(dir = [_fileManager createDirectoryAtURL:dir attributes:nil error:&error], @"Error creating directory.");
+    
+    OFSFileInfo *fileInfo;
+    OFSDAVRequire(fileInfo = [_fileManager fileInfoAtURL:dir error:&error], @"Error getting info for directory.");
+    
+    // Add something to the directory to change its ETag
+    OFSDAVRequire([_fileManager writeData:[NSData data] toURL:[dir URLByAppendingPathComponent:@"file"] atomically:NO error:&error], @"Error writing file to directory.");
+    
+    OFSDAVReject([_fileManager deleteURL:dir withETag:fileInfo.ETag error:&error], @"Delete with the old ETag should fail");
+    
+    OFSDAVRequire(fileInfo = [_fileManager fileInfoAtURL:dir error:&error], @"Error getting updated info for directory.");
+    OFSDAVRequire([_fileManager deleteURL:dir withETag:fileInfo.ETag error:&error], @"Delete with the new ETag should succeed.");
+    
+    return YES;
+}
+
+#endif
+
 // This is slow, but we'd like to have some confidence that the ETag of a directory reliably changes when new files are added.
 #if 0
 - (BOOL)testCollectionETagDistributionVsAddMultipleFiles:(NSError **)outError;
@@ -599,33 +637,12 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
 }
 #endif
 
-- (BOOL)testDeleteWithETag:(NSError **)outError;
-{
-    [self _updateStatus:@"Testing deletion with ETag predicate."];
-
-    NSURL *dir = [_baseURL URLByAppendingPathComponent:@"dir" isDirectory:YES];
-    
-    NSError *error;
-    OFSDAVRequire(dir = [_fileManager createDirectoryAtURL:dir attributes:nil error:&error], @"Error creating directory.");
-    
-    OFSFileInfo *fileInfo;
-    OFSDAVRequire(fileInfo = [_fileManager fileInfoAtURL:dir error:&error], @"Error getting info for directory.");
-    
-    // Add something to the directory to change its ETag
-    OFSDAVRequire([_fileManager writeData:[NSData data] toURL:[dir URLByAppendingPathComponent:@"file"] atomically:NO error:&error], @"Error writing file to directory.");
-    
-    OFSDAVReject([_fileManager deleteURL:dir withETag:fileInfo.ETag error:&error], @"Delete with the old ETag should fail");
-    
-    OFSDAVRequire(fileInfo = [_fileManager fileInfoAtURL:dir error:&error], @"Error getting updated info for directory.");
-    OFSDAVRequire([_fileManager deleteURL:dir withETag:fileInfo.ETag error:&error], @"Delete with the new ETag should succeed.");
-    
-    return YES;
-}
+#pragma mark - Other tests
 
 // Replacing a child of a collection isn't guaranteed to update the ETag of the collection, but it must update the date modified.
 - (BOOL)testReplacedCollectionUpdatesModificationDate:(NSError **)outError;
 {
-    NSError *error;
+    __autoreleasing NSError *error;
     
     // Make a 'document'
     DAV_mkdir(parent);
@@ -644,62 +661,167 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
     sleep(1); // Server times have 1s resolution
     
     // Replace the original document
-    OFSDAVRequire([_fileManager moveURL:parent_tmp_doc toURL:parent_doc withDestinationETag:parent_doc_info.ETag overwrite:YES error:&error], @"Error replacing document.");
+    OFSDAVRequire([_fileManager moveURL:parent_tmp_doc toURL:parent_doc withDestinationETag:parent_doc_info.ETag overwrite:YES error:&error], @"Should be able to move a file over an existing file when overwrite is enabled.");
 
     // Check that the modification date of the parent has changed.
     NSDate *originalDate = parent_info.lastModifiedDate;
     DAV_update_info(parent);
-    OFSDAVRequire(OFNOTEQUAL(originalDate, parent_info.lastModifiedDate), @"Parent directory modification date should have changed.");
+    OFSDAVRequire(OFNOTEQUAL(originalDate, parent_info.lastModifiedDate), @"When a file is moved into a directory and replaces another file, the directory's modification date should change.");
     
     return YES;
 }
 
 - (BOOL)testServerDateMovesForward:(NSError **)outError;
 {
-    NSError *error;
+    __autoreleasing NSError *error;
     
     DAV_mkdir(dir);
     
     OFSFileInfo *info;
-    NSDate *originalDate;
+    __autoreleasing NSDate *originalDate;
     OFSDAVRequire(info = [_fileManager fileInfoAtURL:dir serverDate:&originalDate error:&error], @"Error getting directory info.");
-    OFSDAVRequire(originalDate, @"Server didn't return date");
+    OFSDAVRequire(originalDate, @"Server responses should include a Date header with the server's date and time.");
     
     sleep(1);
     
-    NSDate *laterDate;
+    __autoreleasing NSDate *laterDate;
     OFSDAVRequire(info = [_fileManager fileInfoAtURL:dir serverDate:&laterDate error:&error], @"Error getting directory info.");
     
-    OFSDAVRequire([laterDate isAfterDate:originalDate], @"Server date not moving forward");
-    OFSDAVRequire(laterDate, @"Server didn't return date");
-    
+    OFSDAVRequire(laterDate, @"Server responses should include a Date header with the server's date and time.");
+    OFSDAVRequire([laterDate isAfterDate:originalDate], @"The date returned by a server's Date header should move forward every second.");
+
     return YES;
 }
 
-- (BOOL)testMoveIfMissing:(NSError **)outError;
+- (BOOL)testMoveFileIfMissing:(NSError **)outError;
 {
     NSURL *main = _baseURL;
     
-    NSError *error;
+    __autoreleasing NSError *error;
     DAV_write_at(main, a, [NSData data]);
     DAV_write_at(main, b, [NSData data]);
     
     NSURL *main_c = [main URLByAppendingPathComponent:@"c" isDirectory:NO];
     
-    OFSDAVRequire([_fileManager moveURL:main_a toMissingURL:main_c error:&error], @"c is missing, so this should work");
-    OFSDAVReject([_fileManager moveURL:main_b toMissingURL:main_c error:&error], @"c is not missing, so this should fail");
+    OFSDAVRequire([_fileManager moveURL:main_a toMissingURL:main_c error:&error], @"Move without overwrite should succeed when moving a plain file to an empty location.");
+    OFSDAVReject([_fileManager moveURL:main_b toMissingURL:main_c error:&error], @"Move without overwrite should fail when moving a plain file to a location that is already in use.");
     
-    OFSDAVRequire([error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_PRECONDITION_FAILED], @"Error should have specified precondition failure but had domain %@, code %ld.", error.domain, error.code);
+    OFSDAVRequire([error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_PRECONDITION_FAILED], @"Moving a file to a location which already exists should return a precondition error (%d) rather than an error in domain %@ with code %ld.", OFS_HTTP_PRECONDITION_FAILED, error.domain, error.code);
     
     return YES;
 }
+
+- (BOOL)testMoveCollectionIfMissing:(NSError **)outError;
+{
+    NSURL *main = _baseURL;
+    
+    __autoreleasing NSError *error;
+    DAV_mkdir(a);
+    DAV_mkdir(b);
+    
+    NSURL *c = [main URLByAppendingPathComponent:@"c" isDirectory:YES];
+    
+    OFSDAVRequire([_fileManager moveURL:a toMissingURL:c error:&error], @"Move without overwrite should succeed when moving a directory to an empty location.");
+    OFSDAVReject([_fileManager moveURL:b toMissingURL:c error:&error], @"Move without overwrite should fail when moving a directory to a location that is already in use.");
+    
+    OFSDAVRequire([error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_PRECONDITION_FAILED], @"Moving a directory to a location which already exists should return a precondition error (%d) rather than an error in domain %@ with code %ld.", OFS_HTTP_PRECONDITION_FAILED, error.domain, error.code);
+    
+    return YES;
+}
+
+- (BOOL)testMoveFileToDeeplyMissingCollection:(NSError **)outError;
+{
+    NSURL *main = _baseURL;
+    __autoreleasing NSError *error;
+    
+    DAV_write_at(main, a, [NSData data]);
+    
+    NSURL *dirB = [main URLByAppendingPathComponent:@"b" isDirectory:YES];
+    NSURL *destB = [dirB URLByAppendingPathComponent:@"file" isDirectory:NO];
+    
+    NSURL *dirC = [dirB URLByAppendingPathComponent:@"c" isDirectory:YES];
+    NSURL *destC = [dirC URLByAppendingPathComponent:@"file" isDirectory:NO];
+    
+    // Apache returns OFS_HTTP_INTERNAL_SERVER_ERROR for both these ><
+    OFSDAVReject([_fileManager moveURL:main_a toMissingURL:destB error:&error], @"Should not be able to move a file inside a missing collection.");
+    OFSDAVReject([_fileManager moveURL:main_a toMissingURL:destC error:&error], @"Should not be able to move a file inside a deeply missing collection.");
+    
+    return YES;
+}
+
+- (BOOL)testMoveCollectionToDeeplyMissingCollection:(NSError **)outError;
+{
+    NSURL *main = _baseURL;
+    __autoreleasing NSError *error;
+    
+    DAV_mkdir(a);
+    
+    NSURL *dirB = [main URLByAppendingPathComponent:@"b" isDirectory:YES];
+    NSURL *destB = [dirB URLByAppendingPathComponent:@"file" isDirectory:NO];
+    
+    NSURL *dirC = [dirB URLByAppendingPathComponent:@"c" isDirectory:YES];
+    NSURL *destC = [dirC URLByAppendingPathComponent:@"file" isDirectory:NO];
+    
+    // Apache returns OFS_HTTP_INTERNAL_SERVER_ERROR for both these ><
+    OFSDAVReject([_fileManager moveURL:a toMissingURL:destB error:&error], @"Should not be able to move a collection inside a missing collection.");
+    OFSDAVReject([_fileManager moveURL:a toMissingURL:destC error:&error], @"Should not be able to move a collection inside a deeply missing collection.");
+    
+    return YES;
+}
+
+// <bug:///87588> (Some Apache configurations return headers such that NSURLConnection decompresses gzip data)
+// This can be caused by this Apache module writing headers so that NSURLConnection decides it should decompress the gzip data.
+//
+//   LoadModule mime_magic_module libexec/apache2/mod_mime_magic.so
+//
+- (BOOL)testDownloadingCompressedDataStaysCompressed:(NSError **)outError;
+{
+    __autoreleasing NSError *error;
+    NSData *xmlData = [@"<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n<!DOCTYPE outline PUBLIC \"-//omnigroup.com//DTD OUTLINE 3.0//EN\" \"http://www.omnigroup.com/namespace/OmniOutliner/xmloutline-v3.dtd\">" dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSData *compressedData;
+    OFSDAVRequire(compressedData = [xmlData compressedData:&error], @"[Internal error: data compression should succeed.]");;
+    
+    NSURL *main = _baseURL;
+    DAV_write_at(main, file, compressedData);
+    
+    NSData *readData;
+    OFSDAVRequire((readData = [_fileManager dataWithContentsOfURL:main_file error:&error]), @"Fetch of compressed data should work.");
+    OFSDAVRequire([compressedData isEqualToData:readData], @"Server should not automatically assign a compressed MIME type, because it triggers automatic decompression when the file is retrieved.");
+    
+    return YES;
+}
+
+// This doesn't work in Apache. They only validate the If headers vs a small set of resources, not including those only mentioned in the If headers. To me the spec says they should, but fixing this is likely to be hard enough that we'll just avoid using it: "Additionally, the mere fact that a state token appears in an If header means that it has been "submitted" with the request. In general, this is used to indicate that the client has knowledge of that state token. The semantics for submitting a state token depend on its type (for lock tokens, please refer to Section 6).
+#if 0
+// <http://www.webdav.org/specs/rfc4918.html#rfc.section.10.4> "The If request header is intended to have similar functionality to the If-Match header defined in Section 14.24 of [RFC2616]"
+// <http://tools.ietf.org/html/rfc2616#section-14.24> "or if "*" is given and any current entity exists for that resource, then the server MAY perform the requested method as if the If-Match header field did not exist."
+- (BOOL)testReplaceCollectionIfContainsGivenFile:(NSError **)outError;
+{
+    __autoreleasing NSError *error;
+
+    // Make sure we have URL encoded characters
+    NSURL *src = [_baseURL URLByAppendingPathComponent:@"src dir" isDirectory:YES];
+    OFSDAVRequire(src = [_fileManager createDirectoryAtURL:src attributes:nil error:&error], @"Error creating source directory.");
+    NSURL *dst = [_baseURL URLByAppendingPathComponent:@"dst dir" isDirectory:YES];
+    OFSDAVRequire(dst = [_fileManager createDirectoryAtURL:dst attributes:nil error:&error], @"Error creating destination directory.");
+
+    NSURL *dst_tag_missing = [dst URLByAppendingPathComponent:@"tag file" isDirectory:NO];
+    OFSDAVReject([_fileManager moveURL:src toURL:dst ifURLExists:dst_tag_missing error:&error], @"dst/tag is missing, so this should fail");
+    
+    DAV_write_at(dst, tag, [NSData data]);
+    OFSDAVRequire([_fileManager moveURL:src toURL:dst ifURLExists:dst_tag_missing error:&error], @"dst/tag is now present, so this should work");
+    
+    return YES;
+}
+#endif
 
 // Support for testing the failure path.
 - (BOOL)testFail:(NSError **)outError;
 {
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"OFSDAVConformanceTestFailIntentionally"]) {
-        NSError *error;
-        OFSDAVRequire(NO, @"Failing intentionally");
+        __autoreleasing NSError *error;
+        OFSDAVRequire(NO, @"Failing intentionally to test failure path because OFSDAVConformanceTestFailIntentionally is set.");
     }
     
     return YES;

@@ -12,12 +12,14 @@
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFCharacterScanner.h>
 #import <OmniFoundation/OFCharacterSet.h>
+#import <OmniFoundation/OFCompletionMatch.h>
 #import <OmniFoundation/OFDataBuffer.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniFoundation/OFExtent.h>
 #import <OmniFoundation/OFHTTPState.h>
 #import <OmniFoundation/OFHTTPStateMachine.h>
+#import <OmniFoundation/OFIndexPath.h>
 #import <OmniFoundation/OFKnownKeyDictionaryTemplate.h>
 #import <OmniFoundation/OFMultiValueDictionary.h>
 #import <OmniFoundation/OFMutableKnownKeyDictionary.h>
@@ -62,7 +64,6 @@
     #import <OmniFoundation/OFMessageQueuePriorityProtocol.h>
     #import <OmniFoundation/OFMultipleOptionErrorRecovery.h>
     #import <OmniFoundation/OFObject-Queue.h>
-    #import <OmniFoundation/OFQueue.h>
     #import <OmniFoundation/OFQueueProcessor.h>
     #import <OmniFoundation/OFReadWriteLock.h>
     #import <OmniFoundation/OFResourceFork.h>
@@ -126,6 +127,7 @@
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
+#import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
 #import <OmniFoundation/NSIndexSet-OFExtensions.h>
 #import <OmniFoundation/NSInvocation-OFExtensions.h>
 #import <OmniFoundation/NSMutableArray-OFExtensions.h>
@@ -142,6 +144,7 @@
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/NSUndoManager-OFExtensions.h>
 #import <OmniFoundation/NSUserDefaults-OFExtensions.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     #import <OmniFoundation/NSBundle-OFExtensions.h>
     #import <OmniFoundation/NSCalendarDate-OFExtensions.h>

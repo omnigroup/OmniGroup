@@ -25,4 +25,8 @@
 // Should commit any partial edits to be included in the save. This may be called multiple times before the save, so it should be careful to be safe under this circumstance.
 - (void)documentWillSave;
 
+// state restoration
+- (NSDictionary *)documentViewState;
+- (void)restoreDocumentViewState:(NSDictionary *)viewState;
+
 @end

@@ -343,6 +343,59 @@ static int permissionsMask = 0022;
 }
 
 //
+- (NSURL *)specialDirectory:(OSType)whatDirectoryType forFileSystemContainingPath:(NSString *)path create:(BOOL)createIfMissing error:(NSError **)outError;
+{
+    FSRef ref;
+    OSStatus err;
+    
+    // The file in question might not exist yet.  This loop assumes that it will terminate due to '/' always being valid.
+    NSString *attempt = path;
+    while (YES) {
+        const char *posixPath = [self fileSystemRepresentationWithPath:attempt];
+        err = FSPathMakeRefWithOptions((const unsigned char *)posixPath, kFSPathMakeRefDoNotFollowLeafSymlink, &ref, NULL);
+        if (err == noErr)
+            break;
+        attempt = [attempt stringByDeletingLastPathComponent];
+    }
+    
+    // Find the path's volume number.
+    FSCatalogInfo catalogInfo;
+    err = FSGetCatalogInfo(&ref, kFSCatInfoVolume, &catalogInfo, NULL, NULL, NULL);
+    if (err != noErr) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]; // underlying error
+        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to get catalog info for '%@' (for '%@')", attempt, path]), nil);
+        return nil;
+    }
+    
+    // Actually look up the folder.
+    FSRef folderRef;
+    err = FSFindFolder(catalogInfo.volume, whatDirectoryType, createIfMissing? kCreateFolder : kDontCreateFolder, &folderRef);
+    if (err != noErr) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]; // underlying error
+        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to find temporary items directory for '%@'", attempt]), nil);
+        return nil;
+    }
+    
+    CFURLRef temporaryItemsURL;
+    temporaryItemsURL = CFURLCreateFromFSRef(kCFAllocatorDefault, &folderRef);
+    if (!temporaryItemsURL) {
+        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to create URL to temporary items directory for '%@'", attempt]), nil);
+        return nil;
+    }
+    
+    NSURL *resultURL = [NSMakeCollectable(temporaryItemsURL) autorelease];
+    
+    return [resultURL URLByStandardizingPath];
+}
+
+- (NSURL *)trashDirectoryURLForURL:(NSURL *)fileURL error:(NSError **)outError;
+{
+    OBPRECONDITION([fileURL isFileURL]);
+    
+    return [self specialDirectory:kTrashFolderType forFileSystemContainingPath:[fileURL path] create:NO error:outError];
+}
 
 - (NSNumber *)posixPermissionsForMode:(unsigned int)mode;
 {
@@ -713,11 +766,6 @@ errorReturn:
     OBPRECONDITION(outSandboxed != NULL);
     if (error != NULL) {
         *error = nil;
-    }
-    
-    if (![OFVersionNumber isOperatingSystemLionOrLater]) {
-        *outSandboxed = NO;
-        return YES;
     }
     
     // Test for sandbox entitlement

@@ -1,4 +1,4 @@
-// Copyright 2007, 2010, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2007, 2010, 2012, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,4 +10,5 @@
 #import <OmniAppKit/OASendFeedbackErrorRecovery.h>
 
 @interface OSUSendFeedbackErrorRecovery : OASendFeedbackErrorRecovery
++ (BOOL)shouldOfferToReportError:(NSError *)error;
 @end

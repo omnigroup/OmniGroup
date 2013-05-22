@@ -1,4 +1,4 @@
-// Copyright 1997-2005,2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005,2007, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,12 @@ RCS_ID("$Id$")
 
 @implementation NSAttributedString (OFExtensions)
 
-- initWithString:(NSString *)string attributeName:(NSString *)attributeName attributeValue:(id)attributeValue;
++ (BOOL)isEmptyAttributedString:(NSAttributedString *)attributedString;
+{
+    return (attributedString == nil || [NSString isEmptyString:attributedString.string]);
+}
+
+- (id)initWithString:(NSString *)string attributeName:(NSString *)attributeName attributeValue:(id)attributeValue;
 {
     NSAttributedString *returnValue;
     NSDictionary *attributes;

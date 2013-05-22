@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -133,26 +133,24 @@ RCS_ID("$Id$")
 static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t length)
 {
     // Since we read forward, we'll catch a early NUL with digit or specific character checks.
+    CFGregorianDate date;
     unsigned offset = 0;
-    unsigned year, month, day;
-    READ_4UINT(year);
+    READ_4UINT(date.year);
     READ_CHAR('-');
-    READ_2UINT(month);
+    READ_2UINT(date.month);
     READ_CHAR('-');
-    READ_2UINT(day);
+    READ_2UINT(date.day);
     
     READ_CHAR('T'); // RFC 3339 allows 't' here too, but we don't right now.
-    unsigned hour, minute, second;
-    READ_2UINT(hour);
+    READ_2UINT(date.hour);
     READ_CHAR(':');
-    READ_2UINT(minute);
+    READ_2UINT(date.minute);
     READ_CHAR(':');
-    READ_2UINT(second);
+    READ_2UINT(date.second); // Just the integer part ... fractional part comes next
     
     // Everything to this point is fixed width.
     OBASSERT(offset == 19);
     
-    NSTimeInterval secondFraction = 0.0;
     if (buf[offset] == '.') {
         offset++; // skip the decimal.
         
@@ -173,16 +171,15 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
         }
         
         offset += digitIndex;
-        secondFraction = (NSTimeInterval)fractionNumerator / (NSTimeInterval)fractionDenominator;
+
+        date.second += (NSTimeInterval)fractionNumerator / (NSTimeInterval)fractionDenominator;
     }
     
-    void (^releaseCalendarBlock)(void) = NULL;
-    NSCalendar *calendar;
+    NSTimeZone *timeZone;
     if (buf[offset] == 'Z') { // RFC 3339 allows 'z' here too, but we don't right now.
         if (buf[offset + 1] != 0)
             BAD_INIT; // Crud after the 'Z'.
-        calendar = [NSDate gregorianUTCCalendar];
-        OBASSERT([calendar timeZone] == [NSDate UTCTimeZone]); // Should have been set in the creation.
+        timeZone = [NSDate UTCTimeZone];
     } else if (buf[offset] == '-' || buf[offset] == '+') {
         BOOL negate = (buf[offset] == '-');
         offset++;
@@ -193,37 +190,27 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
         READ_2UINT(tzMinute);
         
         // This isn't going to perform as well as the Z case.
-        calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-        releaseCalendarBlock = ^{
-            [calendar release];
-        };
-        
         NSInteger tzOffset = tzHour*3600+tzMinute*60;
         if (negate)
             tzOffset = -tzOffset;
         
-        [calendar setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:tzOffset]];
+        timeZone = [NSTimeZone timeZoneForSecondsFromGMT:tzOffset];
     } else {
         // Unrecognized cruft where the timezone should have been.
         BAD_INIT;
     }
     
+    if (!CFGregorianDateIsValid(date, kCFGregorianAllUnits)) {
+        BAD_INIT;
+    }
+        
+    // NOTE: CFCalendarComposeAbsoluteTime is not thread-safe and doesn't deal with floating-point seconds, but CFGregorianDateGetAbsoluteTime is and has nicer API for what we need.
     // TODO: Leap seconds can cause the maximum allowed second value to be 58 or 60 depending on whether the adjustment is +/-1.  RFC 3339 has a table of some leap seconds up to 1998 that we could test with.
-    // NOTE: This API doesn't deal with floating seconds.  Avoid some rounding error by passing in zero seconds and converting adding on the seconds an milliseconds to the result together.
-    CFAbsoluteTime absoluteTime;
-    const char *components = "yMdHms";
-    Boolean success = CFCalendarComposeAbsoluteTime((CFCalendarRef)calendar, &absoluteTime, components, year, month, day, hour, minute, 0/*seconds*/);
-    if (releaseCalendarBlock != NULL)
-        releaseCalendarBlock();
-    if (!success)
-        BAD_INIT; // Bad components, most likely?  Month of 13 or the like.
+    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (CFTimeZoneRef)timeZone);
     
     DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
-    
-    NSTimeInterval seconds = second + secondFraction;
-    DEBUG_XML_STRING(@"seconds: %f", seconds);
-    
-    NSDate *result = [self initWithTimeIntervalSinceReferenceDate:absoluteTime + seconds];
+        
+    NSDate *result = [self initWithTimeIntervalSinceReferenceDate:absoluteTime];
     DEBUG_XML_STRING(@"result: %@ %f", result, [result timeIntervalSinceReferenceDate]);
     
     return result;
@@ -276,10 +263,10 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
 {
     // We expect exactly the length above, or an empty string.
     static const unsigned OFXMLDateStringLength = 10;
-    static NSCalendar *cachedCalendar = nil;
-    if (!cachedCalendar) {
-        cachedCalendar = [[NSCalendar currentCalendar] retain];
-        OBASSERT(cachedCalendar);
+    static NSTimeZone *cachedTimeZone;
+    if (!cachedTimeZone) {
+        cachedTimeZone = [[NSTimeZone localTimeZone] retain];
+        OBASSERT(cachedTimeZone);
     }
     
     NSUInteger length = [xmlString length];
@@ -295,15 +282,15 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
     }
     
     // TODO: Not checking the delimiters or digit-ness of number ranges yet.
+    CFGregorianDate date = {0};
+    date.year = _parse4Digits(buf, 0);
+    date.month = _parse2Digits(buf, 5);
+    date.day = _parse2Digits(buf, 8);
     
-    unsigned year = _parse4Digits(buf, 0);
-    unsigned month = _parse2Digits(buf, 5);
-    unsigned day = _parse2Digits(buf, 8);
-    
-    CFAbsoluteTime absoluteTime;
-    const char *components = "yMd";
-    if (!CFCalendarComposeAbsoluteTime((CFCalendarRef)cachedCalendar, &absoluteTime, components, year, month, day))
+    if (!CFGregorianDateIsValid(date, kCFGregorianAllUnits)) {
         BAD_INIT;
+    }
+    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (CFTimeZoneRef)cachedTimeZone);
 
     DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
     
@@ -314,24 +301,18 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
     return result;
 }
 
-static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString *formatString, BOOL currentCalendar)
+static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString *formatString, BOOL currentTimeZone)
 {
     DEBUG_XML_STRING(@"%s: input: %@ %f", __PRETTY_FUNCTION__, self, [self timeIntervalSinceReferenceDate]);
     
-    CFCalendarRef gregorianUTCCalendar = (CFCalendarRef)(currentCalendar ? [NSCalendar currentCalendar] : [NSDate gregorianUTCCalendar]);
+    CFTimeZoneRef timeZone = (CFTimeZoneRef)(currentTimeZone ? [NSTimeZone localTimeZone] : [NSDate UTCTimeZone]);
     CFAbsoluteTime timeInterval = CFDateGetAbsoluteTime((CFDateRef)self);
     
-    // Extract the non-millisecond portion.
-    unsigned year, month, day, hour, minute, second;
-    const char *components = "yMdHms"; // signature of CFCalendarComposeAbsoluteTime is fixed in newer headers to take signed instead of unsigned, avoiding need for the cast.
-    if (!CFCalendarDecomposeAbsoluteTime(gregorianUTCCalendar, timeInterval, components, &year, &month, &day, &hour, &minute, &second)) {
-        OBRejectInvalidCall(self, _cmd, @"Cannot decompose date %@!", self);
-        return nil;
-    }
-    DEBUG_XML_STRING(@"components: year:%d month:%d day:%d hour:%d minute:%d second:%d", year, month, day, hour, minute, second);
+    CFGregorianDate date = CFAbsoluteTimeGetGregorianDate(timeInterval, timeZone);
+    DEBUG_XML_STRING(@"components: year:%d month:%d day:%d hour:%d minute:%d second:%f", date.year, date.month, date.day, date.hour, date.minute, date.second);
     
-    // Figure out the milliseconds that got dropped
-    NSTimeInterval fractionalSeconds = timeInterval - floor(timeInterval);
+    // Figure out the milliseconds portion
+    NSTimeInterval fractionalSeconds = date.second - floor(date.second);
     OBASSERT(fractionalSeconds >= 0.0);
     DEBUG_XML_STRING(@"fractionalSeconds: %f", fractionalSeconds);
     
@@ -340,13 +321,10 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
     if (milliseconds >= 1000) {
         milliseconds = 0;
         timeInterval += 1.0;
-        if (!CFCalendarDecomposeAbsoluteTime(gregorianUTCCalendar, timeInterval, components, &year, &month, &day, &hour, &minute, &second)) {
-            OBRejectInvalidCall(self, _cmd, @"Cannot decompose time interval %f", timeInterval);
-            return nil;
-        }
+        date = CFAbsoluteTimeGetGregorianDate(timeInterval, timeZone);
     }
     
-    NSString *result = [NSString stringWithFormat:formatString, year, month, day, hour, minute, second, milliseconds];
+    NSString *result = [NSString stringWithFormat:formatString, date.year, date.month, date.day, date.hour, date.minute, (unsigned)floor(date.second), milliseconds];
     DEBUG_XML_STRING(@"result: %@", result);
     return result;
 }
@@ -368,10 +346,10 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 {
     // We expect exactly the length above, or an empty string.
     static const unsigned OFDateStringLength = 8;
-    static NSCalendar *cachedCalendar = nil;
-    if (!cachedCalendar) {
-        cachedCalendar = [[NSCalendar currentCalendar] retain];
-        OBASSERT(cachedCalendar);
+    static NSTimeZone *cachedTimeZone;
+    if (!cachedTimeZone) {
+        cachedTimeZone = [[NSTimeZone localTimeZone] retain];
+        OBASSERT(cachedTimeZone);
     }
     
     NSUInteger length = [aString length];
@@ -386,13 +364,17 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 	BAD_INIT;
     }
     
-    unsigned year = _parse4Digits(buf, 0);
-    unsigned month = _parse2Digits(buf, 4);
-    unsigned day = _parse2Digits(buf, 6);
-    CFAbsoluteTime absoluteTime;
-    const char *components = "yMd";
-    if (!CFCalendarComposeAbsoluteTime((CFCalendarRef)cachedCalendar, &absoluteTime, components, year, month, day,  0))
-        BAD_INIT;
+    CFGregorianDate date = {0};
+    date.year = _parse4Digits(buf, 0);
+    date.month = _parse2Digits(buf, 4);
+    date.day = _parse2Digits(buf, 6);
+    
+    if (!CFGregorianDateIsValid(date, kCFGregorianAllUnits)) {
+        OBASSERT_NOT_REACHED("Invalid component in ICS date");
+	BAD_INIT;
+    }
+        
+    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (CFTimeZoneRef)cachedTimeZone);
 
     DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
     
@@ -413,11 +395,10 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 {
     // We expect exactly the length above, or an empty string.
     static const unsigned OFDateStringLength = 16;
-    static NSCalendar *cachedCalendar = nil;
-    if (!cachedCalendar) {
-        cachedCalendar = [[NSCalendar currentCalendar] retain];
-        [cachedCalendar setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
-        OBASSERT(cachedCalendar);
+    static NSTimeZone *cachedTimeZone;
+    if (!cachedTimeZone) {
+        cachedTimeZone = [[[self class] UTCTimeZone] retain];
+        OBASSERT(cachedTimeZone);
     }
     
     NSUInteger length = [aString length];
@@ -434,16 +415,18 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 	BAD_INIT;
     }
     
-    unsigned year = _parse4Digits(buf, 0);
-    unsigned month = _parse2Digits(buf, 4);
-    unsigned day = _parse2Digits(buf, 6);
-    unsigned hour = _parse2Digits(buf, 9);
-    unsigned minute = _parse2Digits(buf, 11);
-    unsigned second = _parse2Digits(buf, 13);
-    CFAbsoluteTime absoluteTime;
-    const char *components = "yMdHms";
-    if (!CFCalendarComposeAbsoluteTime((CFCalendarRef)cachedCalendar, &absoluteTime, components, year, month, day, hour, minute, second))
+    CFGregorianDate date = {0};
+    date.year = _parse4Digits(buf, 0);
+    date.month = _parse2Digits(buf, 4);
+    date.day = _parse2Digits(buf, 6);
+    date.hour = _parse2Digits(buf, 9);
+    date.minute = _parse2Digits(buf, 11);
+    date.second = _parse2Digits(buf, 13);
+    
+    if (!CFGregorianDateIsValid(date, kCFGregorianAllUnits))
         BAD_INIT;
+
+    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (CFTimeZoneRef)cachedTimeZone);
 
     DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
     

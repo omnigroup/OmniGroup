@@ -101,37 +101,23 @@ static NSString *OFSyncClientHostIdentifier(NSString *domain)
     static dispatch_once_t once = 0;
     
     dispatch_once(&once, ^{
-        NSArray *cachesDirectoryPaths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-        OBASSERT([cachesDirectoryPaths count] > 0);
+        __autoreleasing NSError *error = nil;
+        NSArray *libraryDirectoryPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask,YES);
+        OBASSERT([libraryDirectoryPaths count] > 0);
         
-        NSError *error = nil;
-        NSString *cachesPath = [[cachesDirectoryPaths objectAtIndex:0] stringByAppendingPathComponent:[[NSBundle mainBundle] bundleIdentifier]];
-        NSString *legacySyncClientIdentifierFilePath = [cachesPath stringByAppendingPathComponent:domain];
-        NSString *syncClientIdentifierFilePath = legacySyncClientIdentifierFilePath;
+        // See Technical Q&A QA1699 suggests "Private Documents" - http://developer.apple.com/library/ios/#qa/qa1699/_index.html
+        NSString *privateDocumentsPath = [[libraryDirectoryPaths objectAtIndex:0] stringByAppendingPathComponent:@"Private Documents"];
+        NSString *syncClientIdentifierFilePath = [privateDocumentsPath stringByAppendingPathComponent:domain];
         
-        // Look for the file in the legacy location
         syncClientHostID = [[NSString alloc] initWithContentsOfFile:syncClientIdentifierFilePath usedEncoding:NULL error:&error];
-        
-        // Look for it in the "modern" location if not found, and we're on iOS 5 or later
-        if (!syncClientHostID && [OFVersionNumber isOperatingSystemiOS50OrLater]) {
-            NSArray *libraryDirectoryPaths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask,YES);
-            OBASSERT([libraryDirectoryPaths count] > 0);
-            
-            // See Technical Q&A QA1699 suggests "Private Documents" - http://developer.apple.com/library/ios/#qa/qa1699/_index.html
-            NSString *privateDocumentsPath = [[libraryDirectoryPaths objectAtIndex:0] stringByAppendingPathComponent:@"Private Documents"];
-            syncClientIdentifierFilePath = [privateDocumentsPath stringByAppendingPathComponent:domain];
-            
-            syncClientHostID = [[NSString alloc] initWithContentsOfFile:syncClientIdentifierFilePath usedEncoding:NULL error:&error];
-        }
-        
+
         // Create the SyncClientIdentifier file if necessary
         if (!syncClientHostID) {
             if (!([[error domain] isEqualToString:NSCocoaErrorDomain] && [error code] == NSFileReadNoSuchFileError))
                 NSLog(@"Error reading UUID file: %@", error);
-            
-            CFUUIDRef uuid = CFUUIDCreate(kCFAllocatorDefault);
-            syncClientHostID = [CFBridgingRelease(CFUUIDCreateString(kCFAllocatorDefault, uuid)) copy];
-            CFRelease(uuid);
+
+            OBASSERT([NSUUID UUID] != Nil, "Requires OS X 10.8 or iOS 6.0 or later");
+            syncClientHostID = [[[NSUUID UUID] UUIDString] copy];
             
             BOOL success = NO;
             NSString *parentDirectory = [syncClientIdentifierFilePath stringByDeletingLastPathComponent];

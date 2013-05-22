@@ -1,4 +1,4 @@
-// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -117,7 +117,67 @@ RCS_ID("$Id$")
     shouldBeEqual(name.name, @"empty2");
 }
 
+- (void)testCopyString;
+{
+    NSError *error = nil;
+    NSString *xml = @"<root>some text</root>";
+    
+    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OBShouldNotError(reader != nil);
+    
+    OBShouldNotError([reader openElement:&error]);
+    
+    NSString *str = nil;
+    BOOL endedElement = NO;
+    OBShouldNotError([reader copyString:&str endingElement:&endedElement error:&error]);
+    
+    shouldBeEqual(str, @"some text");
+    should(endedElement);
+    
+    [str release];
+}
+
+- (void)testCopyStringWithCDATA;
+{
+    NSError *error = nil;
+    NSString *xml = @"<root><![CDATA[some]]><![CDATA[text]]></root>";
+    
+    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OBShouldNotError(reader != nil);
+    
+    OBShouldNotError([reader openElement:&error]);
+    
+    NSString *str = nil;
+    BOOL endedElement = NO;
+    OBShouldNotError([reader copyString:&str endingElement:&endedElement error:&error]);
+    
+    shouldBeEqual(str, @"sometext");
+    should(endedElement);
+    
+    [str release];
+}
+
 - (void)testCopyStringWithEmbeddedElements;
+{
+    NSError *error = nil;
+    NSString *xml = @"<root>a<empty1/>b<foo>c</foo></root>";
+    
+    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OBShouldNotError(reader != nil);
+    
+    OBShouldNotError([reader openElement:&error]);
+    
+    NSString *str = nil;
+    BOOL endedElement = NO;
+    OBShouldNotError([reader copyString:&str endingElement:&endedElement error:&error]);
+    
+    shouldBeEqual(str, @"a");
+    shouldnt(endedElement);
+    
+    [str release];
+}
+
+- (void)testCopyStringToEndWithEmbeddedElements;
 {
     NSError *error = nil;
     NSString *xml = @"<root>a<empty1/>b<foo>c</foo></root>";
@@ -130,6 +190,29 @@ RCS_ID("$Id$")
     
     shouldBeEqual(str, @"abc");
 
+    [str release];
+}
+
+- (void)testCopyStringToEndFromMiddleOfElement;
+{
+    NSError *error = nil;
+    NSString *xml = @"<root>a<empty/>b</root>";
+    
+    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OBShouldNotError(reader != nil);
+    
+    OBShouldNotError([reader openElement:&error]); // open <root>
+    
+    OFXMLQName *nextQName = nil;
+    OBShouldNotError([reader findNextElement:&nextQName error:&error]); // find <empty/>
+    
+    OBShouldNotError([reader skipCurrentElement:&error]); // skip <empty/>
+    
+    NSString *str = nil;
+    OBShouldNotError([reader copyStringContentsToEndOfElement:&str error:&error]);
+    
+    shouldBeEqual(str, @"b"); // only string contents after <empty/>
+    
     [str release];
 }
 

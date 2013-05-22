@@ -81,11 +81,6 @@
 		4A40EC1008AB009A00E1769D /* OSUCheckTool.m in Sources */ = {isa = PBXBuildFile; fileRef = 34821F010634074F0097A113 /* OSUCheckTool.m */; };
 		4A40EC1208AB009A00E1769D /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F140634086B0097A113 /* CoreFoundation.framework */; };
 		4A40EC1908AB009A00E1769D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
-		4A6474C40CE50BAC00F6EE03 /* OSUMessageOfTheDay.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6474C20CE50BAC00F6EE03 /* OSUMessageOfTheDay.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A6474C50CE50BAC00F6EE03 /* OSUMessageOfTheDay.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6474C30CE50BAC00F6EE03 /* OSUMessageOfTheDay.m */; };
-		4A6474D30CE50D0C00F6EE03 /* OAController-OSUExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A6474D10CE50D0C00F6EE03 /* OAController-OSUExtensions.h */; };
-		4A6474D40CE50D0C00F6EE03 /* OAController-OSUExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6474D20CE50D0C00F6EE03 /* OAController-OSUExtensions.m */; };
-		4A64766C0CE518C500F6EE03 /* OSUMessageOfTheDay.nib in Resources */ = {isa = PBXBuildFile; fileRef = 4A6474C70CE50BBD00F6EE03 /* OSUMessageOfTheDay.nib */; };
 		4AA5E8F7148D5F7F00633311 /* OSUDownloadController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AA5E8F5148D5F7F00633311 /* OSUDownloadController.xib */; };
 		4AA5E8FB148D601500633311 /* OSUAvailableUpdateController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AA5E8F9148D601500633311 /* OSUAvailableUpdateController.xib */; };
 		4AA5E8FE148D608F00633311 /* OSUController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4AA5E8FC148D608F00633311 /* OSUController.xib */; };
@@ -260,15 +255,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		5F049AEA16DE74C5004F398B /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 1;
-		};
 		5F049B0716DE7D5E004F398B /* Copy Helpers */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -389,11 +375,6 @@
 		4A40EC0A08AB009A00E1769D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4A40EC0B08AB009A00E1769D /* OmniSoftwareUpdate.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniSoftwareUpdate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A40EC1F08AB009A00E1769D /* OmniSoftwareUpdateCheck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OmniSoftwareUpdateCheck; sourceTree = BUILT_PRODUCTS_DIR; };
-		4A6474C20CE50BAC00F6EE03 /* OSUMessageOfTheDay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUMessageOfTheDay.h; sourceTree = "<group>"; };
-		4A6474C30CE50BAC00F6EE03 /* OSUMessageOfTheDay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUMessageOfTheDay.m; sourceTree = "<group>"; };
-		4A6474C70CE50BBD00F6EE03 /* OSUMessageOfTheDay.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = OSUMessageOfTheDay.nib; sourceTree = "<group>"; };
-		4A6474D10CE50D0C00F6EE03 /* OAController-OSUExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAController-OSUExtensions.h"; sourceTree = "<group>"; };
-		4A6474D20CE50D0C00F6EE03 /* OAController-OSUExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OAController-OSUExtensions.m"; sourceTree = "<group>"; };
 		4AA5E8F6148D5F7F00633311 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/OSUDownloadController.xib; sourceTree = "<group>"; };
 		4AA5E8FA148D601500633311 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/OSUAvailableUpdateController.xib; sourceTree = "<group>"; };
 		4AA5E8FD148D608F00633311 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/OSUController.xib; sourceTree = "<group>"; };
@@ -722,7 +703,6 @@
 				32DBCF5E0370ADEE00C91783 /* OmniSoftwareUpdate_Prefix.h */,
 				34EDDEC80C6127FD009E2E27 /* OSUErrors.h */,
 				34F300701263A6850044AB52 /* OSUErrors.m */,
-				4A6474C10CE50B9700F6EE03 /* Message of the Day */,
 				34821EFD063407360097A113 /* Checking */,
 				08FB77AEFE84172EC02AAC07 /* Preferences */,
 				089C1665FE841158C02AAC07 /* Resources */,
@@ -771,18 +751,6 @@
 			name = Configurations;
 			path = ../../Configurations;
 			sourceTree = SOURCE_ROOT;
-		};
-		4A6474C10CE50B9700F6EE03 /* Message of the Day */ = {
-			isa = PBXGroup;
-			children = (
-				4A6474C70CE50BBD00F6EE03 /* OSUMessageOfTheDay.nib */,
-				4A6474C20CE50BAC00F6EE03 /* OSUMessageOfTheDay.h */,
-				4A6474C30CE50BAC00F6EE03 /* OSUMessageOfTheDay.m */,
-				4A6474D10CE50D0C00F6EE03 /* OAController-OSUExtensions.h */,
-				4A6474D20CE50D0C00F6EE03 /* OAController-OSUExtensions.m */,
-			);
-			name = "Message of the Day";
-			sourceTree = "<group>";
 		};
 		5F049AEE16DE74C5004F398B /* Launch Trampoline Tool */ = {
 			isa = PBXGroup;
@@ -929,8 +897,6 @@
 				6AC963510C6A756600256B9C /* OSUThinBorderView.h in Headers */,
 				34BC77810C6BAEBF006EFE2E /* OSUItemTableView.h in Headers */,
 				6A950E4F0C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.h in Headers */,
-				4A6474C40CE50BAC00F6EE03 /* OSUMessageOfTheDay.h in Headers */,
-				4A6474D30CE50D0C00F6EE03 /* OAController-OSUExtensions.h in Headers */,
 				A28CF96B0F953213002F72C6 /* OSUChooseLocationErrorRecovery.h in Headers */,
 				A2E26F170FD5D887008F0B93 /* OSUTextField.h in Headers */,
 				A2D3F57C0FF98D92001AB2C5 /* OSUAppcastSignature.h in Headers */,
@@ -1039,7 +1005,6 @@
 			buildPhases = (
 				5F049AE816DE74C5004F398B /* Sources */,
 				5F049AE916DE74C5004F398B /* Frameworks */,
-				5F049AEA16DE74C5004F398B /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -1231,7 +1196,6 @@
 				4A40EBF608AB009A00E1769D /* Preferences.strings in Resources */,
 				4A40EBF808AB009A00E1769D /* HardwareDescription.html in Resources */,
 				34B627C60C6A5B9F00A34AA2 /* NoReleaseNotesAvailable.html in Resources */,
-				4A64766C0CE518C500F6EE03 /* OSUMessageOfTheDay.nib in Resources */,
 				34D5FE681264EFD700FDFEBB /* OSUPreferences.xib in Resources */,
 				4AA5E8F7148D5F7F00633311 /* OSUDownloadController.xib in Resources */,
 				4AA5E8FB148D601500633311 /* OSUAvailableUpdateController.xib in Resources */,
@@ -1369,8 +1333,6 @@
 				6AC963520C6A756600256B9C /* OSUThinBorderView.m in Sources */,
 				34BC77820C6BAEBF006EFE2E /* OSUItemTableView.m in Sources */,
 				6A950E500C8DCAA500C807DD /* OSUSendFeedbackErrorRecovery.m in Sources */,
-				4A6474C50CE50BAC00F6EE03 /* OSUMessageOfTheDay.m in Sources */,
-				4A6474D40CE50D0C00F6EE03 /* OAController-OSUExtensions.m in Sources */,
 				A28CF96C0F953213002F72C6 /* OSUChooseLocationErrorRecovery.m in Sources */,
 				A2E26F180FD5D887008F0B93 /* OSUTextField.m in Sources */,
 				A2D3F52C0FF9841A001AB2C5 /* OSUAppcastSignature.m in Sources */,

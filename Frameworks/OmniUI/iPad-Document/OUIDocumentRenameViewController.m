@@ -18,6 +18,7 @@
 #import <OmniUIDocument/OUIMainViewController.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OUIShieldView.h>
 //#import <OmniQuartz/CALayer-OQExtensions.h>
 
 #import "OUIDocumentPicker-Internal.h"
@@ -206,6 +207,9 @@ RCS_ID("$Id$");
  */
 
 @interface OUIDocumentRenameViewController () <UITextFieldDelegate, NSFilePresenter>
+
+@property (nonatomic, strong) OUIShieldView *shieldView;
+
 - (void)_setupPreviewWithOrientation:(UIInterfaceOrientation)orientation;
 - (void)_cancel;
 - (void)_done:(id)sender;
@@ -224,7 +228,7 @@ RCS_ID("$Id$");
     NSURL *_presentedFileURL; // Remember the original file URL in case there is an incoming rename; we want to be able to respond to NSFilePresenter -presentedItemURL correctly in this case.
     
     BOOL _isRegisteredAsFilePresenter;
-    BOOL _registeredForNotifications;
+    BOOL _didMoveToParentAlready;
 
     BOOL _receivedKeyboardWillResize;
     BOOL _textFieldEditing;
@@ -271,12 +275,15 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
-    OBPRECONDITION(_registeredForNotifications == NO);
+    OBPRECONDITION(_didMoveToParentAlready == NO);
     
-    if (_registeredForNotifications) {
+    if (_didMoveToParentAlready) {
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
         [center removeObserver:self name:OUIMainViewControllerDidBeginResizingForKeyboard object:nil];
         [center removeObserver:self name:OUIMainViewControllerDidFinishResizingForKeyboard object:nil];
+        
+        [self.shieldView removeFromSuperview];
+        self.shieldView = nil;
     }
     
     OBASSERT(_renamingFileItemView == nil);
@@ -359,8 +366,6 @@ RCS_ID("$Id$");
     
     [view addSubview:_nameTextField];
     
-    OBFinishPortingLater("Add shield view that only passes through events for the text field.");
-    
     self.view = view;
 }
 
@@ -375,8 +380,6 @@ RCS_ID("$Id$");
                 title = [delegate documentPicker:_picker toolbarPromptForRenamingFileItem:_fileItem];
             if (!title)
                 title = NSLocalizedStringFromTableInBundle(@"Rename Document", @"OmniUIDocument", OMNI_BUNDLE, @"toolbar prompt while renaming a document");
-            
-            OBFinishPortingLater("Use a \"center these words on screen\" toolbar item.");
             
             UIBarButtonItem *leftSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL];
             UIBarButtonItem *titleItem = [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL];
@@ -412,12 +415,28 @@ RCS_ID("$Id$");
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     
     // Due to a bug in iOS 5, didMoveToParentViewController: currently gets called twice. Don't sign up for notifications extra times.
-    if (parent && !_registeredForNotifications) {
-        _registeredForNotifications = YES;
+    if (parent && !_didMoveToParentAlready) {
+        _didMoveToParentAlready = YES;
         [center addObserver:self selector:@selector(_didBeginResizingForKeyboard:) name:OUIMainViewControllerDidBeginResizingForKeyboard object:nil];
         [center addObserver:self selector:@selector(_didFinishResizingForKeyboard:) name:OUIMainViewControllerDidFinishResizingForKeyboard object:nil];
-    } else if (!parent && _registeredForNotifications) {
-        _registeredForNotifications = NO;
+        
+        // Add shieldview now that we know who our window is.
+        OBASSERT_NULL(_shieldView);
+        
+        UITapGestureRecognizer *shieldViewTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_shieldViewTapped:)];
+        NSArray *passthroughViews = @[_nameTextField];
+        
+        UIWindow *window = self.view.window;
+        OBASSERT_NOTNULL(window);
+        
+        self.shieldView = [OUIShieldView shieldViewWithView:window];
+        [self.shieldView addGestureRecognizer:shieldViewTapRecognizer];
+        self.shieldView.passthroughViews = passthroughViews;
+        
+        [window addSubview:self.shieldView];
+
+    } else if (!parent && _didMoveToParentAlready) {
+        _didMoveToParentAlready = NO;
         [center removeObserver:self name:OUIMainViewControllerDidBeginResizingForKeyboard object:nil];
         [center removeObserver:self name:OUIMainViewControllerDidFinishResizingForKeyboard object:nil];
     }
@@ -488,6 +507,16 @@ RCS_ID("$Id$");
     [self _setupPreviewWithOrientation:toInterfaceOrientation];
 }
 
+- (void)_shieldViewTapped:(UIGestureRecognizer *)recognizer;
+{
+    if (recognizer.state == UIGestureRecognizerStateEnded) {
+        [self.shieldView removeFromSuperview];
+        self.shieldView = nil;
+        
+        [self _done:nil];
+    }
+}
+
 #pragma mark -
 #pragma mark UITextField delegate
 
@@ -516,6 +545,10 @@ RCS_ID("$Id$");
             // The keyboard might not cause our view to resize if it is undocked/split. Our layout method is what animates the preview back into place, and importantly, puts the alpha back on the document picker's scroll view.
             [self.view setNeedsLayout];
         }
+        
+        // Make sure to remove the shield view.
+        [self.shieldView removeFromSuperview];
+        self.shieldView = nil;
         
         RENAME_DEBUG(@"Bail on empty/same name");
         return YES;
@@ -693,6 +726,10 @@ RCS_ID("$Id$");
     RENAME_DEBUG(@"-_done: calling -endEditing:");
     RENAME_DEBUG(@"  _isAttemptingRename %d", _receivedKeyboardWillResize);
     RENAME_DEBUG(@"  _receivedKeyboardWillResize %d", _receivedKeyboardWillResize);
+    
+    // Remove the shieldView
+    [self.shieldView removeFromSuperview];
+    self.shieldView = nil;
 
     // Make sure this isn't spuriously set by a software keyboard being toggled in/out with a hardware keyboard attached
     _receivedKeyboardWillResize = NO;

@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIMultiSegmentStackedSlicesInspectorPane.h"
+#import <OmniUI/OUIMultiSegmentStackedSlicesInspectorPane.h>
 
 #import <OmniUI/OUIInspector.h>
 

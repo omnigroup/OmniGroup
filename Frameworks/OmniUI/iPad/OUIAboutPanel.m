@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIAboutPanel.h"
+#import <OmniUI/OUIAboutPanel.h>
 
 #import <OmniUI/OUIAppController.h>
 
@@ -124,13 +124,6 @@ RCS_ID("$Id$");
         return;
     
     NSLog(@"No target found for menu action %@", NSStringFromSelector(action));
-}
-
-- (IBAction)viewInAppStore:(id)sender {
-    NSString *appStoreURLString = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIAppStoreURL"];
-    if (appStoreURLString.length) {
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:appStoreURLString]];
-    }
 }
 
 - (IBAction)tappedLogoImage:(id)sender {

@@ -1,4 +1,4 @@
-// Copyright 2003-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,6 +108,11 @@ NSString * const OATabColumnTerminatorsAttributeName = @"NSTabColumnTerminatorsA
             OBASSERT_NOT_REACHED("Unknown alignemnt");
             return OALeftTextAlignment;
     }
+}
+
+- (OATextAlignment)alignment;
+{
+    return _alignment;
 }
 
 @end

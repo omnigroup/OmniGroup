@@ -7,6 +7,7 @@
 
 #import "OUIMainViewControllerBackgroundView.h"
 
+#import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUIDocument/OUIMainViewController.h>
 
 RCS_ID("$Id$");
@@ -47,10 +48,16 @@ static const CGFloat kToolbarHeight = 44;
     
     _toolbar = toolbar;
     
-    if (_toolbar) {
-        OBASSERT(_toolbar.superview == nil);
-        [_toolbar setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleBottomMargin];
-        [self addSubview:_toolbar];
+    if (toolbar != nil) {
+        OBASSERT(toolbar.superview == nil);
+        [toolbar setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleBottomMargin];
+        OUIWithoutAnimating(^{
+            CGRect toolbarFrame = toolbar.frame;
+            toolbarFrame.size.width = CGRectGetWidth(_contentView.bounds);
+            toolbar.frame = toolbarFrame;
+            [toolbar layoutIfNeeded];
+        });
+        [self addSubview:toolbar];
     }
     
     [self setNeedsLayout];

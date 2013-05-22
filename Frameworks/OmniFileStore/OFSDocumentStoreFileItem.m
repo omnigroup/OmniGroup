@@ -49,7 +49,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     NSURL *_fileURL;
     
     // ivars for properties in the OFSDocumentStoreItem protocol
-    BOOL _hasUnresolvedConflicts;
+    BOOL _hasDownloadQueued;
     BOOL _isDownloaded;
     BOOL _isDownloading;
     BOOL _isUploaded;
@@ -111,7 +111,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     OBASSERT(_fileType);
         
     // Reasonable values for local documents that will never get updated by a sync container agent.
-    _hasUnresolvedConflicts = kOFSDocumentStoreFileItemDefault_HasUnresolvedConflicts;
+    _hasDownloadQueued = kOFSDocumentStoreFileItemDefault_HasDownloadQueued;
     _isDownloaded = kOFSDocumentStoreFileItemDefault_IsDownloaded;
     _isDownloading = kOFSDocumentStoreFileItemDefault_IsDownloading;
     _isUploaded = kOFSDocumentStoreFileItemDefault_IsUploaded;
@@ -201,15 +201,6 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     return [NSSet setWithObjects:OFSDocumentStoreFileItemFileURLBinding, nil];
 }
 
-- (BOOL)isBeingDeleted;
-{
-    OBFinishPortingLater("Report correct value for -isBeingDeleted, or remove it");
-    return NO;
-#if 0
-    return _edits.hasAccommodatedDeletion;
-#endif
-}
-
 - (NSComparisonResult)compare:(OFSDocumentStoreFileItem *)otherItem;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -226,7 +217,8 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     }
 
     // Then compare name and if the names are equal, duplication counters.
-    NSString *name1, *name2;
+    __autoreleasing NSString *name1;
+    __autoreleasing NSString *name2;
     NSUInteger counter1, counter2;
     
     [self.name splitName:&name1 andCounter:&counter1];
@@ -271,7 +263,7 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     return YES;
 }
 
-@synthesize hasUnresolvedConflicts = _hasUnresolvedConflicts;
+@synthesize hasDownloadQueued = _hasDownloadQueued;
 @synthesize isDownloaded = _isDownloaded;
 @synthesize isDownloading = _isDownloading;
 @synthesize isUploaded = _isUploaded;
@@ -305,125 +297,6 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
     return [self.scope requestDownloadOfFileItem:self error:outError];
 }
 
-// OBFinishPorting -- this is moving to OFSDocumentStoreLocalDirectoryScope
-#if 0
-#pragma mark - NSFilePresenter protocol
-
-- (NSURL *)presentedItemURL;
-{
-    NSURL *url = self.fileURL;
-    OBASSERT(url);
-    return url;
-}
-
-- (NSOperationQueue *)presentedItemOperationQueue;
-{
-    OBPRECONDITION(_presentedItemOperationQueue); // Otherwise NSFileCoordinator may try to enqueue blocks and they'll never get started, yielding mysterious deadlocks.
-    return _presentedItemOperationQueue;
-}
-
-// Writer notifications can come in random/bad order (for example a 'did change' when the file has really already been deleted and we are about to get an 'accomodate').
-- (void)relinquishPresentedItemToWriter:(void (^)(void (^reacquirer)(void)))writer;
-{
-    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
-    OBPRECONDITION(_edits);
-
-    [_edits presenter:self relinquishToWriter:writer];
-}
-
-- (void)accommodatePresentedItemDeletionWithCompletionHandler:(void (^)(NSError *errorOrNil))completionHandler;
-{
-    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
-    OBPRECONDITION(_edits); // Since we should always get -relinquishPresentedItemToWriter: for deletion
-    
-    [_edits presenter:self accommodateDeletion:^(OFSDocumentStoreFileItem *_self){
-        [_self.scope _fileItemHasAccommodatedDeletion:self];
-    }];
-    
-    if (completionHandler)
-        completionHandler(nil);
-}
-
-- (void)presentedItemDidMoveToURL:(NSURL *)newURL;
-{
-    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
-    OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
-    OBPRECONDITION(newURL);
-    OBPRECONDITION([newURL isFileURL]);
-    OBPRECONDITION(_edits);
-
-    DEBUG_FILE_ITEM(@"presentedItemDidMoveToURL: %@", newURL);
-    
-    // See -presentedItemURL's documentation about it being called from various threads. This method should only be called from our presenter queue.
-    @synchronized(self) {
-        if (OFISEQUAL(_filePresenterURL, newURL))
-            return;
-        NSURL *oldURL = [_filePresenterURL copy];
-        
-        // This can get called from various threads
-        _filePresenterURL = [newURL copy];
-
-        // NOTE: OFFilePresenterEditsDidMove will call this directly if not in a writer block, otherwise when we reacquire
-        [_edits presenter:self didMoveFromURL:oldURL toURL:newURL handler:^(OFSDocumentStoreFileItem *_self, NSURL *originalURL){
-            // Might be called delayed, out of the enclosing @synchronized if we are in a writer block.
-            @synchronized(self) {
-                [_self _synchronized_processItemDidMoveFromURL:oldURL];
-            }
-        }];
-    }
-}
-
-// This gets called for local coordinated writes and for unsolicited incoming edits from sync. From the header, "Your NSFileProvider may be sent this message without being sent -relinquishPresentedItemToWriter: first. Make your application do the best it can in that case."
-- (void)presentedItemDidChange;
-{
-    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
-    OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
-    OBPRECONDITION(_edits);
-
-    DEBUG_FILE_ITEM(@"presentedItemDidChange");
-
-    [_edits presenter:self changed:^(OFSDocumentStoreFileItem *_self){
-        [_self _queueContentsChanged];
-    }];
-}
-
-- (void)presentedItemDidGainVersion:(NSFileVersion *)version;
-{
-    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
-    OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
-
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    // Only conflict versions happen on iOS; so we shouldn't hit this at all
-    OBASSERT_NOT_REACHED("We no longer use iCloud and have no way of creating our own NSFileVersions, so this should never happen");
-#else
-    // On the Mac, cmd-S makes a non-conflict version... that's OK.
-    OBASSERT(version.conflict == NO, "We no longer use iCloud and have no way of creating our own NSFileVersions, so this should never happen");
-#endif
-}
-
-- (void)presentedItemDidLoseVersion:(NSFileVersion *)version;
-{
-    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
-    OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
-
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    // Only conflict versions happen on iOS; so we shouldn't hit this at all
-    OBASSERT_NOT_REACHED("We no longer use iCloud and have no way of creating our own NSFileVersions, so this should never happen");
-#else
-    // On the Mac, cmd-S makes a non-conflict version... that's OK.
-    OBASSERT(version.conflict == NO, "We no longer use iCloud and have no way of creating our own NSFileVersions, so this should never happen");
-#endif
-}
-
-- (void)presentedItemDidResolveConflictVersion:(NSFileVersion *)version;
-{
-    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
-    OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
-
-    OBASSERT_NOT_REACHED("We no longer use iCloud and have no way of creating our own NSFileVersions, so this should never happen");
-}
-#endif
-
 #pragma mark - Debugging
 
 - (NSString *)shortDescription;
@@ -432,23 +305,6 @@ NSString * const OFSDocumentStoreFileItemInfoKey = @"fileItem";
 }
 
 #pragma mark - Internal
-
-- (void)_invalidateAfterWriter;
-{
-    OBFinishPorting;
-#if 0
-    OBPRECONDITION(_edits);
-
-    // The _edits.relinquishToWriter is maintained on this queue, so dispatch before we check it.
-    [_presentedItemOperationQueue addOperationWithBlock:^{
-        [_edits presenter:self invalidateAfterWriter:^(OFSDocumentStoreFileItem *_self){
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [_self _invalidate];
-            }];
-        }];
-    }];
-#endif
-}
 
 // Called by our scope when it notices we've been moved.
 - (void)didMoveToURL:(NSURL *)fileURL;
@@ -509,7 +365,7 @@ static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *fileM
         NSURL *fileURL = self.fileURL;
         
         // We use the file modification date rather than a date embedded inside the file since the latter would cause duplicated documents to not sort to the front as a new document (until you modified them, at which point they'd go flying to the beginning).
-        NSError *attributesError = nil;
+        __autoreleasing NSError *attributesError = nil;
         NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[[fileURL absoluteURL] path]  error:&attributesError];
         if (!attributes)
             NSLog(@"Error getting attributes for %@ -- %@", [fileURL absoluteString], [attributesError toPropertyList]);
@@ -532,67 +388,6 @@ static void _notifyDateAndFileType(OFSDocumentStoreFileItem *self, NSDate *fileM
         
         _notifyDateAndFileType(self, modificationDate, fileType);
     }];
-}
-
-- (void)_synchronized_processItemDidMoveFromURL:(NSURL *)oldURL;
-{
-    OBFinishPorting; // Move stuff to OFSDocumentStoreLocalDirectoryScope
-#if 0
-    // Called either from -presentedItemDidMoveToURL: if we aren't inside of a writer block, or from the reacquire block in our -relinquishPresentedItemToWriter:. The caller should @synchronized(self) {...} around this since it accesses the _filePresenterURL, which needs to be accessible from the our operation queue and the main queue.
-    
-    // When we get deleted via sync, our on-disk representation could get moved into a dead zone. Don't present that to the user briefly. Also, don't try to look at the time stamp on the dead file or poke it with a stick in any fashion.
-    if (_edits.hasAccommodatedDeletion) {
-        DEBUG_FILE_ITEM(@"Deleted; ignoring move");
-        
-        // Try to make sure we actually are getting moved to the ubd dead zone
-        OBASSERT([[_filePresenterURL absoluteString] containsString:@"/.ubd/"]);
-        OBASSERT([[_filePresenterURL absoluteString] containsString:@"/dead-"]);
-    } else {
-        DEBUG_FILE_ITEM(@"Handling move from %@ / %@ to %@", oldURL, oldDate, _filePresenterURL);
-        
-#ifdef OMNI_ASSERTIONS_ON
-        BOOL probablyInvalid = NO;
-#endif
-        NSNumber *isDirectory = nil;
-        NSError *resourceError = nil;
-        if (![_filePresenterURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&resourceError]) {
-            // If we get EPERM, it is most likely because the iCloud Documents & Data was turned off while the app was backgrounded. In this case, when foregrounded, we get a -relinquishPresentedItemToWriter: with a -presentedItemDidMoveToURL: into something like <file://localhost/var/mobile/Library/Mobile%20Documents.1181216313/...> We do *not* get told, sadly, that we've been deleted and these messages come through before the finish of the new scan.
-            if ([resourceError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:EPERM]) {
-#ifdef OMNI_ASSERTIONS_ON
-                probablyInvalid = YES;
-#endif
-            } else
-                NSLog(@"Error getting directory key for %@: %@", _filePresenterURL, [resourceError toPropertyList]);
-        }
-        _fileType = [OFUTIForFileExtensionPreferringNative([_filePresenterURL pathExtension], isDirectory) copy];
-        OBASSERT(_fileType);
-        
-        OBFinishPortingLater("It would be better to use a content hash in our previews, but that would be slow...");
-        __block NSDate *fileModificationDate;
-        __block NSError *attributesError;
-        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:self];
-        [coordinator coordinateReadingItemAtURL:_filePresenterURL options:0 error:&attributesError byAccessor:^(NSURL *newURL) {
-            fileModificationDate = [[NSFileManager defaultManager] attributesOfItemAtPath:[[newURL absoluteURL] path] error:&attributesError].fileModificationDate;
-        }];
-        if (!fileModificationDate)
-            NSLog(@"Error getting file modification date for %@: %@", _filePresenterURL, [attributesError toPropertyList]);
-
-        // Update KVO on the main thread.
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            // On iOS, this lets the document preview be moved.
-            OFSDocumentStoreScope *scope = self.scope; // Weak pointer might have been cleared already on shutdown
-            if (scope) {
-                [scope fileWithURL:oldURL andDate:fileModificationDate didMoveToURL:_filePresenterURL];
-            } else {
-                OBASSERT(probablyInvalid == YES);
-            }
-            
-            [self willChangeValueForKey:OFSDocumentStoreFileItemDisplayedFileURLBinding];
-            _displayedFileURL = [_filePresenterURL copy];
-            [self didChangeValueForKey:OFSDocumentStoreFileItemDisplayedFileURLBinding];
-        }];
-    }
-#endif
 }
 
 @end

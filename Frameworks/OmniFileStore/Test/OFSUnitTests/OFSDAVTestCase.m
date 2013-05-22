@@ -25,13 +25,10 @@
     
     NSURL *remoteBaseURL = self.accountRemoteBaseURL;
     
-    NSError *error;
+    __autoreleasing NSError *error;
     OFSDAVFileManager *fileManager = [[OFSDAVFileManager alloc] initWithBaseURL:remoteBaseURL delegate:self error:&error];
     OBShouldNotError(fileManager);
     STAssertTrue([fileManager isKindOfClass:[OFSDAVFileManager class]], @"Wrong URL scheme");
-    
-    // Accept all certificates for these tests.
-    OFAddTrustedHost([remoteBaseURL host], OFHostTrustDurationSession);
     
     // Make sure we start with a clean directory. Use a unique id in case we are testing locks (where we have to restart the server or wait for the lock to timeout).
     NSString *testName = self.name;
@@ -68,7 +65,7 @@
 - (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
     if ([challenge previousFailureCount] <= 2) {
-        NSURLCredential *credential = self.accountCredential;
+        NSURLCredential *credential = [self accountCredentialWithPersistence:NSURLCredentialPersistenceForSession];
         OBASSERT(credential);
         return credential;
     }
@@ -77,7 +74,8 @@
 
 - (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
-    OBFinishPorting;
+    // Trust all certificates for these tests.
+    OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
 }
 
 @end

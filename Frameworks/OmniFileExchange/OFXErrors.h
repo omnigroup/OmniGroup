@@ -13,17 +13,26 @@ enum {
     // OFXServerAccountType account validation
     OFXServerAccountCannotLoad = 1,
     OFXServerAccountNotConfigured,
-    OFXServerAccountCertificateTrustIssue,
     
     OFXLocalAccountDocumentsDirectoryMissing,
+    OFXCannotResolveLocalDocumentsURL,
+    OFXUnableToLockAccount,
     OFXAgentNotStarted,
     OFXFileNotContainedInAnyAccount,
     OFXNoFileForURL,
     OFXAccountRepositoryCorrupt,
     OFXAccountRepositoryTooNew,
+    OFXAccountRepositoryTooOld,
+    OFXFileShadowed,
+    OFXFileUpdatedWhileDeleting,
+    OFXFileItemDetectedRemoteEdit,
+    OFXFileDeletedWhileDownloading,
     
     // Syncing
-    OFXAccountCannotBeAdded,
+    OFXCloudScanFailed,
+    OFXAccountScanFailed,
+    OFXLocalAccountDirectoryNotUsable,
+    OFXAccountUnableToStoreClientInfo,
     OFXAccountUnableToCreateContainer,
     OFXAccountUnableToRecordFileContents,
     OFXAccountUnableToReadFileItem,
@@ -43,7 +52,3 @@ extern NSString * const OFXErrorDomain;
 
 #define OFXErrorWithInfo(error, code, description, suggestion, ...) _OBError(error, OFXErrorDomain, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
 #define OFXError(error, code, description, reason) OFXErrorWithInfo((error), (code), (description), (reason), nil)
-
-// User info key that contains the NSURLAuthenticationChallenge passed when a certificate trust issue was encountered
-#define OFXServerAccountValidationCertificateTrustChallengeErrorKey (@"Challenge")
-

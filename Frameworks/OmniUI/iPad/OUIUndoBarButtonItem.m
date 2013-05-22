@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,10 +6,10 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIUndoBarButtonItem.h>
-#import <OmniUI/OUIUndoButtonPopoverHelper.h>
 
-#import "OUIUndoButton.h"
-#import "OUIUndoButtonController.h"
+#import <OmniUI/OUIUndoButtonPopoverHelper.h>
+#import <OmniUI/OUIUndoButton.h>
+#import <OmniUI/OUIUndoButtonController.h>
 
 RCS_ID("$Id$");
 
@@ -71,8 +71,8 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     
     [self->_undoButton addTarget:self action:@selector(_touchDown:) forControlEvents:UIControlEventTouchDown];
 
-    self->_tapRecoginizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_undoButtonTap:)];
-    [self->_undoButton addGestureRecognizer:self->_tapRecoginizer];
+    self->_tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_undoButtonTap:)];
+    [self->_undoButton addGestureRecognizer:self->_tapRecognizer];
 
     self->_longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_undoButtonPressAndHold:)];
     [self->_undoButton addGestureRecognizer:self->_longPressRecognizer];
@@ -103,8 +103,8 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     
     [_undoButton removeTarget:self action:@selector(_touchDown:) forControlEvents:UIControlEventTouchDown];
     
-    [_undoButton removeGestureRecognizer:_tapRecoginizer];
-    [_tapRecoginizer release];
+    [_undoButton removeGestureRecognizer:_tapRecognizer];
+    [_tapRecognizer release];
     
     [_longPressRecognizer release];
     [_undoButton removeGestureRecognizer:_longPressRecognizer];
@@ -203,15 +203,15 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     
     if (_canUndo) {
         // Tap should undo, press and hold should give menu
-        _tapRecoginizer.enabled = YES;
+        _tapRecognizer.enabled = YES;
         _longPressRecognizer.enabled = YES;
     } else if (_canRedo) {
         // Touch-down should do menu
-        _tapRecoginizer.enabled = NO;
+        _tapRecognizer.enabled = NO;
         _longPressRecognizer.enabled = NO; // our touch-down will do it.
     } else {
         // Nothing
-        _tapRecoginizer.enabled = NO;
+        _tapRecognizer.enabled = NO;
         _longPressRecognizer.enabled = NO;
     }
     

@@ -98,7 +98,7 @@ static void _OFControllerCheckTerminated(void)
     return controllingBundle;
 }
 
-+ (id)sharedController;
++ (instancetype)sharedController;
 {
     // Don't set up the shared controller in +initialize.  The issue is that the superclass +initialize will always get called first and the fallback code to use the receiving class will always get OFController.  In a command line tool you don't have a bundle plist, but you can subclass OFController and make sure +sharedController is called on it first.
     if (sharedController == nil) {
@@ -138,6 +138,10 @@ static void _OFControllerCheckTerminated(void)
         assert(_stillSettingUpSharedController == YES);
         _stillSettingUpSharedController = NO;
     }
+    
+    OBASSERT([sharedController isKindOfClass:self]);
+    if (![sharedController isKindOfClass:self])
+        return nil;
     
     return sharedController;
 }
@@ -498,9 +502,20 @@ static void _OFControllerCheckTerminated(void)
                             OBShortObjectDescription(object), NSStringFromSelector(selector), fileName, line, description];
         [description release];
         
-        [self crashWithReport:report];
+        BOOL crash = YES;
+        
+        // NSRemoteSavePanel sometimes fails an assertion when it turns on the "hide extension" checkbox on by itself. Seems harmless?
+        if (selector == @selector(connection:didReceiveRequest:) && [NSStringFromClass([object class]) isEqualToString:@"NSRemoteSavePanel"])
+            crash = NO;
+        
+        // Bringing up security options for print-to-pdf in a sandboxed app causes a harmless failure. <bug:///87161>
+        if (selector == @selector(sendEvent:) && [NSStringFromClass([object class]) isEqualToString:@"NSAccessoryWindow"])
+            crash = NO;
+        
+        if (crash)
+            [self crashWithReport:report];
     }
-    
+
     handlingAssertion = NO;
 }
 

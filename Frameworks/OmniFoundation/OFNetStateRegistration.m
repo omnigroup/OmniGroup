@@ -63,8 +63,8 @@ RCS_ID("$Id$")
  
  */
 
-// When mDNSResponder starts complaining, it starts by delaying our announcement by one second. But, if we keep up a constant stream of one second updates, it will still complain. Experimentally, we can do two second updates for several seconds in a row.
-static const NSTimeInterval kCoalesceTimeInterval = 2;
+// When mDNSResponder starts complaining, it starts by delaying our announcement by one second. But, if we keep up a constant stream of updates, it will still complain at longer and longer coalescing intervals. Experimentally, we can do three second updates for a sustainted period and not get mDNSResponder complaints (obviously this could change in the future).
+static const NSTimeInterval kCoalesceTimeInterval = 3;
 
 @implementation OFNetStateRegistration
 {
@@ -135,9 +135,6 @@ static NSString * const OFNetStateRegistrationGroupTerminator = @" ";
     
     DEBUG_REGISTRATION(2, @"invalidating");
     
-    NSTimer *delayedUpdateTimer = _delayedUpdateTimer;
-    _delayedUpdateTimer = nil;
-    
     NSNetService *service = _service;
     _service = nil;
     
@@ -146,7 +143,9 @@ static NSString * const OFNetStateRegistrationGroupTerminator = @" ";
     _socket = -1;
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [delayedUpdateTimer invalidate];
+        [_delayedUpdateTimer invalidate];
+        _delayedUpdateTimer = nil;
+        
         [service stop];
         [service removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         
@@ -259,6 +258,7 @@ NSString * const OFNetStateRegistrationVersionKey = @"v";
 
 - (void)_performDelayedTXTDataUpdate:(NSTimer *)timer;
 {
+    OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(_delayedUpdateTimer == timer);
     
     DEBUG_REGISTRATION(1, @"Performing delayed TXT record update");
@@ -300,7 +300,7 @@ static void _updateTXTRecord(OFNetStateRegistration *self, NSNetService *service
     OBPRECONDITION(!_service);
     OBPRECONDITION(_socket < 0);
     
-    NSError *error;
+    __autoreleasing NSError *error;
     _socket = [[self class] _createSocketBoundToLocalPort:&_port requestedPort:0 error:&error];
     if (_socket < 0) {
         // One possible failure is NSPOSIXErrorDomain+EPERM for sandboxed applications

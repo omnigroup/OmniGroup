@@ -239,12 +239,12 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         NSRect closeImagePoint = NSMakeRect(nextElementX, NSMinY(bounds) + 1.0f, closeImage.size.width, closeImage.size.height);
         
         [closeImage drawFlippedInRect:closeImagePoint operation:NSCompositeSourceOver];
-        nextElementX += 20.0f;
     }
+    nextElementX += 20.0f;
     
     if (drawAll && [self _allowToggleExpandedness]) {
         NSImage *disclosureImage = isExpanded ? _expandedImage : _collapsedImage;
-        NSRect disclosureImageRect = NSMakeRect(nextElementX, NSMinY(bounds) + 3.0f, disclosureImage.size.width, disclosureImage.size.height);
+        NSRect disclosureImageRect = NSMakeRect(nextElementX, rint(NSMidY(bounds) - [disclosureImage size].height / 2.0f) - 1, disclosureImage.size.width, disclosureImage.size.height);
 
         [disclosureImage drawFlippedInRect:disclosureImageRect operation:NSCompositeSourceOver];
 

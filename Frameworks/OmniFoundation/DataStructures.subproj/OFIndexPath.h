@@ -22,6 +22,7 @@
 - (NSUInteger)length;
 
 - (void)getIndexes:(NSUInteger *)indexes;
+- (void)enumerateIndexesUsingBlock:(void (^)(NSUInteger index, BOOL *stop))block;
 
 - (NSComparisonResult)compare:(OFIndexPath *)otherObject;
 - (NSComparisonResult)parentsLastCompare:(OFIndexPath *)otherObject;

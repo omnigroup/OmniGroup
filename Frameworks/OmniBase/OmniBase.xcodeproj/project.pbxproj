@@ -174,7 +174,7 @@
 		A27426261293799F00674569 /* OBPatchTrap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBPatchTrap.h; sourceTree = "<group>"; };
 		A27426271293799F00674569 /* OBPatchTrap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBPatchTrap.m; sourceTree = "<group>"; };
 		A2E007850E5CA926007709A5 /* OBBacktraceBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBBacktraceBuffer.h; sourceTree = "<group>"; };
-		BFE2186805ED3B330097A147 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BFE2186805ED3B330097A147 /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; path = Info.plist; sourceTree = "<group>"; };
 		BFE2186905ED3B330097A147 /* OmniBase_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniBase_Prefix.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 

@@ -8,10 +8,12 @@
 #import <OmniFoundation/OFCredentials.h>
 
 #import <Security/Security.h>
-#import <OmniFoundation/OFPreference.h>
+#import <Security/SecTrust.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <Foundation/NSURLCredential.h>
-#import <Foundation/NSOperation.h>
+#import <Foundation/NSURLAuthenticationChallenge.h>
+#import <Foundation/NSURLProtectionSpace.h>
+#import <Foundation/NSURLError.h>
 
 #import "OFCredentials-Internal.h"
 
@@ -55,98 +57,100 @@ NSString *OFMakeServiceIdentifier(NSURL *originalURL, NSString *username, NSStri
     return [NSString stringWithFormat:@"%@|%@|%@", urlString, username, realm];
 }
 
-static NSString * const OFTrustedSyncHostPreference = @"OFTrustedHosts";
-
-NSString * const OFCertificateTrustUpdatedNotification = @"OFCertificateTrustUpdatedNotification";
-
-/*
- TODO: Use one mechanism provided by Security.framework to store certificate trust.
- 
- On the Mac, we have SecTrustSettingsSetTrustSettings() and friends, but this isn't on iOS at all.
- On iOS we have SecTrustCopyExceptions() and SecTrustSetExceptions(), but these aren't available on the Mac until 10.8.
- 
- We could maybe add a hybrid API here, but it would be nicer to wait until we require 10.8 and then have API built around SecTrustSetExceptions().
- 
- */
-static NSMutableSet *SessionTrustedHosts = nil;
-
-BOOL OFIsTrustedHost(NSString *host)
+SecTrustRef _OFTrustForChallenge(NSURLAuthenticationChallenge *challenge)
 {
-    if ([SessionTrustedHosts member:host] || [[[OFPreference preferenceForKey:OFTrustedSyncHostPreference] arrayValue] containsObject:host])
-        return YES;
-    
-    // Useful for test cases run vs local web server
-    if (getenv("OFAutomaticallyTrustAllHosts"))
-        return YES;
-    
-    return NO;
+    NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
+    NSString *challengeMethod = [protectionSpace authenticationMethod];
+    if (![challengeMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+        OBASSERT_NOT_REACHED("Unexpected challenge method");
+        return nil;
+    }
+    return [protectionSpace serverTrust];
 }
 
-void OFAddTrustedHost(NSString *host, OFHostTrustDuration duration)
+NSData *_OFDataForLeafCertificateInChallenge(NSURLAuthenticationChallenge *challenge)
 {
-    BOOL changed = NO;
+    SecTrustRef trustRef = _OFTrustForChallenge(challenge);
+    if (!trustRef) {
+        OBASSERT(trustRef);
+        return nil;
+    }
+
+    if (SecTrustGetCertificateCount(trustRef) == 0) {
+        OBASSERT(SecTrustGetCertificateCount(trustRef) > 0, "Malformed SecTrustRef?");
+        return nil;
+    }
     
-    switch (duration) {
-        case OFHostTrustDurationSession:
-            if (!SessionTrustedHosts)
-                SessionTrustedHosts = [[NSMutableSet alloc] init];
-            if (![SessionTrustedHosts member:host]) {
-                [SessionTrustedHosts addObject:host];
-                changed = YES;
-            }
-            break;
-        case OFHostTrustDurationAlways: {
-            OFPreference *pref = [OFPreference preferenceForKey:OFTrustedSyncHostPreference];
-            if (![[pref arrayValue] containsObject:host]) {
-                NSMutableArray *hosts = [[pref arrayValue] mutableCopy];
-                if (!hosts)
-                    hosts = [[NSMutableArray alloc] init];
-                
-                [hosts addObject:host];
-                [pref setArrayValue:hosts];
-                [hosts release];
-                changed = YES;
-            }
-            break;
-        }
+    // Leaf is always at index 0
+    SecCertificateRef leafCertificate = SecTrustGetCertificateAtIndex(trustRef, 0);
+    CFDataRef certificateData = SecCertificateCopyData(leafCertificate);
+    return CFBridgingRelease(certificateData);
+}
+
+NSString * const OFCertificateTrustUpdatedNotification = @"OFCertificateTrustUpdated";
+
+static NSInteger _OFURLErrorCodeForTrustRef(NSURLAuthenticationChallenge *challenge)
+{
+    NSError *error = [[challenge error] underlyingErrorWithDomain:NSURLErrorDomain];
+    if (error) {
+        // NSURLAuthenticationChallenge often (always?) seems to not actually fill out this error
+        return [error code];
+    }
+    
+    // SecTrustCopyProperties is not defined on iOS
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    SecTrustRef trustRef = _OFTrustForChallenge(challenge);
+    NSArray *trustProperties = CFBridgingRelease(SecTrustCopyProperties(trustRef));
+    OBASSERT([trustProperties count] > 0, "Trust should have been evaluated already for us to get on this error handling path");
+    
+    for (NSDictionary *property in trustProperties) {
+        NSString *errorReason = property[(NSString *)kSecPropertyTypeError];
+        
+        // Constants for these? For now, looking in <Security/cssmerr.h> for things that seem to map to the codes/strings we had already.
+        if ([errorReason isEqualToString:@"CSSMERR_TP_INVALID_ANCHOR_CERT"])
+            return NSURLErrorServerCertificateHasUnknownRoot;
+
+        if ([errorReason isEqualToString:@"CSSMERR_TP_CERT_NOT_VALID_YET"])
+            return NSURLErrorServerCertificateNotYetValid;
+        
+        if ([errorReason isEqualToString:@"CSSMERR_TP_CERT_EXPIRED"])
+            return NSURLErrorServerCertificateHasBadDate;
+        
+        if (errorReason)
+            NSLog(@"_OFURLErrorCodeForTrustRef -- unknown error reason \"%@\".", errorReason);
+    }
+#endif
+    
+    // Generic fallback...
+    return NSURLErrorSecureConnectionFailed;
+}
+
+NSString *OFCertificateTrustPromptForChallenge(NSURLAuthenticationChallenge *challenge)
+{
+    NSError *error = [[challenge error] underlyingErrorWithDomain:NSURLErrorDomain];
+
+    NSString *failedURLString = [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey];
+    if ([NSString isEmptyString:failedURLString])
+        failedURLString = [[challenge protectionSpace] host];
+
+    NSInteger errorCode = _OFURLErrorCodeForTrustRef(challenge);
+    
+    switch (errorCode) {
+        case NSURLErrorServerCertificateHasUnknownRoot:
+            return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?", @"OmniFoundation", OMNI_BUNDLE, @"server certificate has unknown root"), failedURLString];
+            
+        case NSURLErrorServerCertificateNotYetValid:
+            return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?", @"OmniFoundation", OMNI_BUNDLE, @"server certificate not yet valid"), failedURLString];
+            
+        case NSURLErrorServerCertificateHasBadDate:
+            return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?", @"OmniFoundation", OMNI_BUNDLE, @"server certificate out of date"), failedURLString];
+            
+        case NSURLErrorServerCertificateUntrusted:
+            return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?", @"OmniFoundation", OMNI_BUNDLE, @"server certificate untrusted"), failedURLString];
+            
+        case NSURLErrorClientCertificateRejected:
         default:
-            OBASSERT_NOT_REACHED("Unknown host trust duration");
-            break;
-    }
-    
-    if (changed) {
-        [[NSUserDefaults standardUserDefaults] synchronize]; // useful for commandline tools that might exit w/o doing this.
-        
-        // We can get called on a background queue used by NSURLConnection.
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:OFCertificateTrustUpdatedNotification object:nil];
-        }];
+            return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?", @"OmniFoundation", OMNI_BUNDLE, @"server certificate rejected"), failedURLString];
     }
 }
 
-void OFRemoveTrustedHost(NSString *host)
-{
-    BOOL changed = NO;
-    
-    if ([SessionTrustedHosts member:host]) {
-        [SessionTrustedHosts removeObject:host];
-        changed = YES;
-    }
-    
-    OFPreference *pref = [OFPreference preferenceForKey:OFTrustedSyncHostPreference];
-    if ([[pref arrayValue] containsObject:host]) {
-        NSMutableArray *hosts = [[pref arrayValue] mutableCopy];
-        [hosts removeObject:host];
-        [pref setArrayValue:hosts];
-        [hosts release];
-        changed = YES;
-    }
-    
-    if (changed) {
-        [[NSUserDefaults standardUserDefaults] synchronize]; // useful for commandline tools that might exit w/o doing this.
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:OFCertificateTrustUpdatedNotification object:nil];
-        }];
-    }
-}

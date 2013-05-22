@@ -157,7 +157,7 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
     if (!cls)
         return;
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OUIDocument *document = [[cls alloc] initWithExistingFileItem:self->_currentPreviewUpdatingFileItem error:&error];
     if (!document) {
         NSLog(@"Error opening document at %@ to rebuild its preview: %@", fileURL, [error toPropertyList]);
@@ -262,8 +262,6 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
         DEBUG_PREVIEW_GENERATION(@"Preview update task expired!");
     }];
     OBASSERT(_previewUpdatingBackgroundTaskIdentifier != UIBackgroundTaskInvalid);
-    
-    OBASSERT(_currentPreviewUpdatingFileItem.beingDeleted == NO);
     
     DEBUG_PREVIEW_GENERATION(@"Starting preview update for %@ at %@", _currentPreviewUpdatingFileItem.fileURL, [_currentPreviewUpdatingFileItem.fileModificationDate xmlString]);
     

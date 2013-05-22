@@ -103,7 +103,7 @@ void OFDiffData(SenTestCase *testCase, NSData *expected, NSData *actual)
 {
     NSString *name = [testCase name];
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     NSString *expectedPath = [[NSFileManager defaultManager] scratchFilenameNamed:[@"expected-" stringByAppendingString:name] error:&error];
     if (!expectedPath) {
         NSLog(@"Unable to create scratch path: %@", [error toPropertyList]);
@@ -153,14 +153,10 @@ static BOOL _addRelativePaths(NSMutableSet *relativePaths, NSString *base, OFDif
     return YES;
 }
 
-
-static BOOL OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path2, BOOL requireSame, OFDiffFilesPathFilter pathFilter)
+static BOOL _OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path2, BOOL requireSame, OFDiffFilesPathFilter pathFilter)
 {
-    OBPRECONDITION(path1);
-    OBPRECONDITION(path2);
-    
-    NSError *error = nil;
-    
+    __autoreleasing NSError *error = nil;
+
     // Collect all the files, as relative paths from the two inputs
     NSMutableSet *files1 = [NSMutableSet set];
     OBShouldNotError(_addRelativePaths(files1, path1, pathFilter, &error));
@@ -232,7 +228,7 @@ static BOOL OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path2
                     STFail(@"Unable to read data");
                 return NO;
             }
-
+            
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
             if (OFNOTEQUAL(data1, data2)) {
                 OB_RELEASE(data1);
@@ -278,6 +274,35 @@ static BOOL OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path2
     }
     
     return YES;
+}
+
+static BOOL OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path2, BOOL requireSame, OFDiffFilesPathFilter pathFilter)
+{
+    OBPRECONDITION(path1);
+    OBPRECONDITION(path2);
+    OBPRECONDITION(OFNOTEQUAL(path1, path2), @"Why compare the file against itself?");
+        
+    // Use file coordination to prevent incoming edits from confusing us with partially changed file state (like an incoming rename from OmniPresence during our unit tests).
+    // This can potentially hang, though, if some other code in the unit test has a file presenter that will get called and will block on the main queue somehow.
+    NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+    NSURL *fileURL1 = [NSURL fileURLWithPath:path1];
+    NSURL *fileURL2 = [NSURL fileURLWithPath:path2];
+    
+    __block BOOL result = NO;
+    
+    NSArray *readFileURLs = [NSArray arrayWithObjects:fileURL1, fileURL2, nil];
+    __autoreleasing NSError *error;
+    BOOL success = [coordinator prepareToReadItemsAtURLs:readFileURLs withChanges:YES error:&error byAccessor:^BOOL(NSError **outPrepareError){
+        return [coordinator readItemAtURL:fileURL1 withChanges:YES error:outPrepareError byAccessor:^BOOL(NSURL *newURL1, NSError **outRead1Error) {
+            return [coordinator readItemAtURL:fileURL2 withChanges:YES error:outRead1Error byAccessor:^BOOL(NSURL *newURL2, NSError **outRead2Error) {
+                result = _OFCheckFilesSame(self, [[newURL1 absoluteURL] path], [[newURL2 absoluteURL] path], requireSame, pathFilter);
+                return YES;
+            }];
+        }];
+    }];
+
+    STAssertTrue(success, @"File coordination failed");
+    return result;
 }
 
 BOOL OFSameFiles(SenTestCase *self, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter)

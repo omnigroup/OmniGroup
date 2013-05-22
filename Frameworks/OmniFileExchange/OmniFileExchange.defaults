@@ -3,8 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>OFXMaximumAutomaticDownloadSize</key>
-	<integer>262144</integer>
+	<integer>250000</integer>
 	<key>OFXSyncClientIdentifier</key>
 	<string/>
+	<key>OFXCellularSyncEnabled</key>
+	<false/>
 </dict>
 </plist>

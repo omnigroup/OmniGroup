@@ -178,7 +178,7 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
 {
     [self _foreground_enableInterfaceAfterExportConversion];
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OUIWebDAVSyncListController *syncListController = [[OUIWebDAVSyncListController alloc] initWithServerAccount:_serverAccount exporting:YES error:&error];
     if (!syncListController) {
         OUI_PRESENT_ERROR(error);
@@ -220,7 +220,7 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
         NSString *tempZipPath = [tempPath stringByAppendingPathExtension:@"zip"];
         
         @autoreleasepool {
-            NSError *error = nil;
+            __autoreleasing NSError *error = nil;
             if (![OUZipArchive createZipFile:tempZipPath fromFileWrappers:[NSArray arrayWithObject:fileWrapper] error:&error]) {
                 OUI_PRESENT_ERROR(error);
                 return;
@@ -233,7 +233,7 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
         tempURL = [NSURL fileURLWithPath:tempPath isDirectory:[fileWrapper isDirectory]];
         
         // Get a FileManager for our Temp Directory.
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         OFSFileManager *tempFileManager = [[OFSFileManager alloc] initWithBaseURL:tempURL delegate:self error:&error];
         if (error) {
             OUI_PRESENT_ERROR(error);
