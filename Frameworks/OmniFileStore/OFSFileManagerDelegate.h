@@ -14,6 +14,7 @@
 
 @protocol OFSFileManagerDelegate <NSObject>
 @optional
+- (BOOL)fileManagerShouldAllowCellularAccess:(OFSFileManager *)manager;
 - (BOOL)fileManagerShouldUseCredentialStorage:(OFSFileManager *)manager;
 - (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
 - (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;

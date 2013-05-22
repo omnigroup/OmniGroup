@@ -8,6 +8,7 @@
 #import "TextViewController.h"
 
 #import <OmniUI/OUIEditableFrame.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 
 #import <QuartzCore/QuartzCore.h>
@@ -29,12 +30,7 @@ RCS_ID("$Id$");
 @implementation TextViewController
 {
     RTFDocument *_nonretained_document;
-    UIToolbar *_toolbar;
-    OUIEditableFrame *_editor;
 }
-
-@synthesize toolbar = _toolbar;
-@synthesize editor = _editor;
 
 - init;
 {
@@ -69,25 +65,32 @@ RCS_ID("$Id$");
 {
     [super viewDidLoad];
 
-    _toolbar.items = [[OUIDocumentAppController controller] toolbarItemsForDocument:self.document];
-    
+    OUIWithoutAnimating(^{
+        // Don't steal the toolbar items from any possibly open document
+        if (!self.forPreviewGeneration) {
+            _toolbar.items = [[OUIDocumentAppController controller] toolbarItemsForDocument:self.document];
+            [_toolbar layoutIfNeeded];
+        }
+        
 #if 0
-    self.view.layer.borderColor = [[UIColor blueColor] CGColor];
-    self.view.layer.borderWidth = 2;
-    
-    _editor.layer.borderColor = [[UIColor colorWithRed:0.33 green:1.0 blue:0.33 alpha:1.0] CGColor];
-    _editor.layer.borderWidth = 4;
+        self.view.layer.borderColor = [[UIColor blueColor] CGColor];
+        self.view.layer.borderWidth = 2;
+        
+        _editor.layer.borderColor = [[UIColor colorWithRed:0.33 green:1.0 blue:0.33 alpha:1.0] CGColor];
+        _editor.layer.borderWidth = 4;
 #endif
-    
-    _editor.textInset = UIEdgeInsetsMake(4, 4, 4, 4);
-    _editor.delegate = self;
-    
-    _editor.attributedText = _nonretained_document.text;
-    [self _updateEditorFrame];
-    
-    [self adjustScaleTo:1];
-    [self adjustContentInset];
-    [self _scrollTextSelectionToVisibleWithAnimation:NO];
+        
+        _editor.textInset = UIEdgeInsetsMake(4, 4, 4, 4);
+        _editor.delegate = self;
+        
+        OBASSERT(_nonretained_document);
+        _editor.attributedText = _nonretained_document.text;
+        [self _updateEditorFrame];
+        
+        [self adjustScaleTo:1];
+        [self adjustContentInset];
+        [self _scrollTextSelectionToVisibleWithAnimation:NO];
+    });
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;

@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -202,7 +202,7 @@ RCS_ID("$Id$");
     
     a = [NSArray arrayWithObjects:@"one", @"THREE", @"FOUR", @"five", @"two", @"three", @"four", @"Two", @"Three", @"Four", @"five", nil];
     
-    grouped = [a groupBySelector:@selector(lowercaseString)];
+    grouped = [a groupByKeyBlock:^(NSString *string){ return [string lowercaseString]; }];
     shouldBeEqual(([NSSet setWithArray:[grouped allKeys]]), 
                   ([NSSet setWithObjects:@"one", @"two", @"three", @"four", @"five", nil]));
     shouldBeEqual(([grouped arrayForKey:@"one"]), 
@@ -216,7 +216,7 @@ RCS_ID("$Id$");
     shouldBeEqual(([grouped arrayForKey:@"five"]), 
                   ([NSArray arrayWithObjects:@"five", @"five", nil]));
 
-    grouped = [a groupBySelector:@selector(stringByTrimmingCharactersInSet:) withObject:[NSCharacterSet characterSetWithCharactersInString:@"Ttoe"]];
+    grouped = [a groupByKeyBlock:^(NSString *string){ return [string stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"Ttoe"]]; }];
     shouldBeEqual(([NSSet setWithArray:[grouped allKeys]]), 
                   ([NSSet setWithObjects:@"n", @"HREE", @"FOUR", @"fiv", @"four", @"w", @"hr", @"Four", nil]));
     shouldBeEqual(([grouped arrayForKey:@"n"]), 

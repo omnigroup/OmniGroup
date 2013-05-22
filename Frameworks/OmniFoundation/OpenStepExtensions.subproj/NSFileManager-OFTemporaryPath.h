@@ -20,10 +20,6 @@
 - (NSString *)temporaryPathForWritingToPath:(NSString *)path allowOriginalDirectory:(BOOL)allowOriginalDirectory create:(BOOL)create error:(NSError **)outError;
 - (NSString *)temporaryDirectoryForFileSystemContainingPath:(NSString *)path error:(NSError **)outError;
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-- (NSURL *)specialDirectory:(OSType)whatDirectoryType forFileSystemContainingPath:(NSString *)path create:(BOOL)createIfMissing error:(NSError **)outError;
-#endif
-
 - (NSString *)tempFilenameFromTemplate:(NSString *)inputString
                               andRange:(NSRange)replaceRange;
 // Create a unique temp filename from a template filename, given a range within the template filename which identifies where the unique portion of the filename is to lie.

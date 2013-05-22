@@ -62,9 +62,14 @@ NSString * const OFXWebDAVServerAccountTypeIdentifier = @"com.omnigroup.OmniFile
     return NSLocalizedStringFromTableInBundle(@"Add WebDAV Server", @"OmniFileExchange", OMNI_BUNDLE, @"Add server account type");
 }
 
+- (NSString *)addAccountDescription;
+{
+    return NSLocalizedStringFromTableInBundle(@"Use your own WebDAV space.", @"OmniFileExchange", OMNI_BUNDLE, @"Add server account description");
+}
+
 - (NSString *)setUpAccountTitle;
 {
-    return NSLocalizedStringFromTableInBundle(@"Set Up WebDAV Server", @"OmniFileExchange", OMNI_BUNDLE, @"Set up server account title");
+    return NSLocalizedStringFromTableInBundle(@"WebDAV Server", @"OmniFileExchange", OMNI_BUNDLE, @"Set up server account title");
 }
 
 - (id <OFXServerAccountValidator>)validatorWithAccount:(OFXServerAccount *)account username:(NSString *)username password:(NSString *)password;

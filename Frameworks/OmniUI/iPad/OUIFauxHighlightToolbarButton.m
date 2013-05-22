@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIFauxHighlightToolbarButton.h"
+#import <OmniUI/OUIFauxHighlightToolbarButton.h>
 
 RCS_ID("$Id$");
 

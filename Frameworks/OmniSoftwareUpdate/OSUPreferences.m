@@ -23,6 +23,7 @@ typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
 static OFPreference *automaticSoftwareUpdateCheckEnabled = nil;
 static OFPreference *checkInterval = nil;
 static OFPreference *includeHardwareDetails = nil;
+static OFPreference *includeOpenGLDetails = nil;
 static OFPreference *updatesToIgnore = nil;
 static OFPreference *visibleTracks = nil;
 
@@ -34,6 +35,7 @@ static OFPreference *visibleTracks = nil;
     automaticSoftwareUpdateCheckEnabled = [[OFPreference preferenceForKey:@"AutomaticSoftwareUpdateCheckEnabled"] retain];
     checkInterval = [[OFPreference preferenceForKey:@"OSUCheckInterval"] retain];
     includeHardwareDetails = [[OFPreference preferenceForKey:@"OSUIncludeHardwareDetails"] retain];
+    includeOpenGLDetails = [[OFPreference preferenceForKey:@"OSUIncludeOpenGLDetails"] retain];
     updatesToIgnore = [[OFPreference preferenceForKey:@"OSUIgnoredUpdates"] retain];
     visibleTracks = [[OFPreference preferenceForKey:@"OSUVisibleTracks"] retain];
 }
@@ -51,6 +53,11 @@ static OFPreference *visibleTracks = nil;
 + (OFPreference *)includeHardwareDetails;
 {
     return includeHardwareDetails;
+}
+
++ (OFPreference *)includeOpenGLDetails;
+{
+    return includeOpenGLDetails;
 }
 
 + (OFPreference *)ignoredUpdates;

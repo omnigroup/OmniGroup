@@ -108,7 +108,7 @@ RCS_ID("$Id$");
         // This deals with read-only files given to us in the Inbox on iOS. <bug:///60499> (OmniGraphSketcher needs to handle read-only files)
         {
             NSFileManager *fileManager = [NSFileManager defaultManager];
-            NSError *attributesError = nil;
+            __autoreleasing NSError *attributesError = nil;
             NSDictionary *attributes = [fileManager attributesOfItemAtPath:[[itemToMoveURL absoluteURL] path] error:&attributesError];
             if (!attributes) {
                 // Hopefully non-fatal, but worrisome. We'll log it at least....
@@ -126,7 +126,7 @@ RCS_ID("$Id$");
         }
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [scope addDocumentInFolderNamed:nil fromURL:itemToMoveURL option:OFSDocumentStoreAddByRenaming completionHandler:finishedBlock];
+            [scope addDocumentInFolderAtURL:nil fromURL:itemToMoveURL option:OFSDocumentStoreAddByRenaming completionHandler:finishedBlock];
         }];
     }];
 }
@@ -135,13 +135,13 @@ RCS_ID("$Id$");
 {
     // clean up by nuking the Inbox.
     __block BOOL success = NO;
-    NSError *coordinatorError = nil;
+    __autoreleasing NSError *coordinatorError = nil;
     NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
     
     NSURL *inboxURL = [[OFSDocumentStoreLocalDirectoryScope userDocumentsDirectoryURL] URLByAppendingPathComponent:OFSDocumentInteractionInboxFolderName isDirectory:YES];
     
     [coordinator coordinateWritingItemAtURL:inboxURL  options:NSFileCoordinatorWritingForDeleting error:&coordinatorError byAccessor:^(NSURL *newURL) {
-        NSError *deleteError = nil;
+        __autoreleasing NSError *deleteError = nil;
         if (![[NSFileManager defaultManager] removeItemAtURL:newURL error:&deleteError]) {
             // Deletion of zip file failed.
             NSLog(@"Deletion of inbox file failed: %@", [deleteError toPropertyList]);

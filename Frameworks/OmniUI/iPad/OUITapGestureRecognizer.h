@@ -1,4 +1,4 @@
-// Copyright 2010-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import "OUIGestureRecognizer.h"
+#import <OmniUI/OUIGestureRecognizer.h>
 
 /*
  This works like a UITapGestureRecognizer, except that it updates the likelihood property (of OUIGestureRecognizer) when the tap gesture begins. This is useful for fake buttons that should change their image at the start of a tap. Implement the gesture:likelihoodDidChange: delegate method to detect start and end of taps. Note that the likelihood resets to 0 when the tap ends, whether by success or failure.

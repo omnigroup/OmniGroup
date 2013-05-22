@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,9 @@ RCS_ID("$Id$");
 
 - (void)setUseRelativeDayNames:(BOOL)useRelativeDayNames;
 {
+    // We either want our relative formatting or the system's, not both
+    OBASSERT_IF(useRelativeDayNames, [self doesRelativeDateFormatting] == NO);
+    
     _useRelativeDayNames = useRelativeDayNames;
 }
 

@@ -39,11 +39,11 @@ ExcludePatterns.freeze
 ResourcesRoot = "#{ENV["CONFIGURATION_BUILD_DIR"]}/Resources"
 
 # Xcode runs its special pngcrush for iOS device builds.
-@@PNGCrush = nil
+$PNGCrush = nil
 if ENV['PLATFORM_NAME'] == 'iphoneos'
-    @@PNGCrush = ENV['PLATFORM_DEVELOPER_BIN_DIR'] + "/pngcrush"
-    if !File.exists?(@@PNGCrush)
-        @@PNGCrush = nil
+    $PNGCrush = ENV['PLATFORM_DEVELOPER_BIN_DIR'] + "/pngcrush"
+    if !File.exists?($PNGCrush)
+        $PNGCrush = nil
     end
 end
 
@@ -72,11 +72,11 @@ end
 AppDir = "#{ENV["TARGET_BUILD_DIR"]}/#{ENV["UNLOCALIZED_RESOURCES_FOLDER_PATH"]}"
 
 # Keep track of the source file for each destination path. This will allow us to error out if two resources would be merged to the same destination
-@@SourcePathByDestinationPath = {}
+$SourcePathByDestinationPath = {}
 
 # We use this to copy, sort, and convert encodings. This is a Mac tool, so CONFIGURATION_BUILD_DIR needs to have any iOS suffix expunged
-@@FixStringsFile="#{ENV['CONFIGURATION_BUILD_DIR'].sub(/-iphone[^\/]*/, "")}/FixStringsFile"
-fail "FixStringsFile not found at #{@@FixStringsFile}!" if !File.exists?(@@FixStringsFile)
+$FixStringsFile="#{ENV['CONFIGURATION_BUILD_DIR'].sub(/-iphone[^\/]*/, "")}/FixStringsFile"
+fail "FixStringsFile not found at #{$FixStringsFile}!" if !File.exists?($FixStringsFile)
 
 StaticLibraryResourceDirectories.each {|dirname|
   STDERR.print "scanning #{dirname} ...\n"
@@ -121,9 +121,9 @@ StaticLibraryResourceDirectories.each {|dirname|
       end
       
       # Error if there are two source files that would map to the same destination
-      previous_source = @@SourcePathByDestinationPath[dest_file]
+      previous_source = $SourcePathByDestinationPath[dest_file]
       fail "Both '#{previous_source}' and '#{source}' would map to the same destination!\n" unless previous_source.nil?
-      @@SourcePathByDestinationPath[dest_file] = source
+      $SourcePathByDestinationPath[dest_file] = source
       
       source_mtime = File.new(source).mtime
       dest_mtime = File.exists?(dest_file) ? File.new(dest_file).mtime : nil
@@ -148,14 +148,14 @@ StaticLibraryResourceDirectories.each {|dirname|
       when /\.strings$/
         output_encoding=ENV["STRINGS_FILE_OUTPUT_ENCODING"].downcase
         ENV["ICONV"] = "/usr/bin/iconv"
-        `set -x; "#{@@FixStringsFile}" --outputencoding #{output_encoding} "#{source}" --outdir "#{File.dirname(dest_file)}"`
+        `set -x; "#{$FixStringsFile}" --outputencoding #{output_encoding} "#{source}" --outdir "#{File.dirname(dest_file)}"`
         fail unless $?.exitstatus == 0
       when /\.plist$/, /\.defaults$/
         `set -x; /usr/bin/plutil -convert binary1 "#{source}" -o "#{dest_file}"`
         fail unless $?.exitstatus == 0
       when /\.png/
-          if @@PNGCrush
-              `set -x; '#{@@PNGCrush}' -q -iphone '#{source}' '#{dest_file}'`
+          if $PNGCrush
+              `set -x; '#{$PNGCrush}' -q -iphone '#{source}' '#{dest_file}'`
           else
               FileUtils.cp_r(source, dest_file)
           end

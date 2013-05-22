@@ -9,6 +9,8 @@
 
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 #import <AppKit/NSLayoutConstraint.h> // for NSEdgeInsets
+#import <Foundation/NSGeometry.h> // for NSInsetRect
+#import <Foundation/NSString.h> // for +stringWithFormat:
 
 #import <math.h>
 #import <tgmath.h>
@@ -73,4 +75,14 @@ static inline NSRect OAInsetRectByEdgeInsets(NSRect rect, NSEdgeInsets insets, B
         rect.origin.y += insets.bottom;
     
     return rect;
+}
+
+static inline NSRect OAInsetRectBySize(NSRect rect, NSSize size)
+{
+    return NSInsetRect(rect, size.width, size.height);
+}
+
+static inline NSString * __attribute__((overloadable)) OAToString(NSEdgeInsets insets)
+{
+    return [NSString stringWithFormat:@"{top=%f, left=%f, bottom=%f, right=%f}", insets.top, insets.left, insets.bottom, insets.right];
 }

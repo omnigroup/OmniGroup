@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,6 @@
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
-#import <OmniFoundation/OFObject.h>
 
 #import <CoreFoundation/CoreFoundation.h>
 #import <CoreServices/CoreServices.h> // for Debugging.h
@@ -229,12 +228,12 @@ uint32_t OFLocalIPv4Address(void)
 
 NSString *OFISOLanguageCodeForEnglishName(NSString *languageName)
 {
-    return [[NSBundle bundleForClass:[OFObject class]] localizedStringForKey:languageName value:@"" table:@"EnglishToISO"];
+    return [OMNI_BUNDLE localizedStringForKey:languageName value:@"" table:@"EnglishToISO"];
 }
 
 NSString *OFLocalizedNameForISOLanguageCode(NSString *languageCode)
 {
-    return [[NSBundle bundleForClass:[OFObject class]] localizedStringForKey:languageCode value:@"" table:@"Language"];
+    return [OMNI_BUNDLE localizedStringForKey:languageCode value:@"" table:@"Language"];
 }
 
 #pragma clang diagnostic push

@@ -7,14 +7,15 @@
 
 #import "OAController.h"
 
-#import "OAAboutPanelController.h"
-#import "OAInternetConfig.h"
-
 #import <Foundation/Foundation.h>
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSPanel.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
+
+#import "OAAboutPanelController.h"
+#import "OAInternetConfig.h"
+#import "OAWebPageViewer.h"
 
 RCS_ID("$Id$")
 
@@ -75,7 +76,7 @@ RCS_ID("$Id$")
     if (![NSString isEmptyString:buildRevision])
         buildVersion = [NSString stringWithFormat:@"%@ r%@", buildVersion, buildRevision];
 
-#ifdef MAC_APP_STORE
+#if defined(MAC_APP_STORE) && MAC_APP_STORE
     buildVersionSuffix = @" Mac App Store";
 #endif
     
@@ -154,6 +155,51 @@ RCS_ID("$Id$")
 - (IBAction)sendFeedback:(id)sender;
 {
     [self sendFeedbackEmailWithBody:nil];
+}
+
+- (NSString *)_messageOfTheDayPath;
+{
+    return [[NSBundle mainBundle] pathForResource:@"MessageOfTheDay" ofType:@"html"];
+}
+
+- (IBAction)showMessageOfTheDay:(id)sender;
+{
+    NSString *path = [self _messageOfTheDayPath];
+    if (path == nil)
+        return;
+
+    OAWebPageViewer *viewer = [OAWebPageViewer sharedViewerNamed:@"Release Notes"];
+
+    // Allow @media {...} in the release notes to display differently when we are showing the content
+    [viewer setMediaStyle:@"release-notes"];
+
+    [viewer loadPath:path];
+}
+
+- (void)checkMessageOfTheDay;
+{
+    NSString *path = [self _messageOfTheDayPath];
+    if (path == nil)
+        return;
+
+    NSData *motdData = [NSData dataWithContentsOfFile:path];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSData *seenSignature = [defaults objectForKey:@"OAMessageOfTheDaySignature"];
+    if (motdData) {
+        NSData *newSignature = NSMakeCollectable(OFDataCreateSHA1Digest(kCFAllocatorDefault, (CFDataRef)motdData));
+	if (OFNOTEQUAL(newSignature, seenSignature)) {
+	    [defaults setObject:newSignature forKey:@"OAMessageOfTheDaySignature"];
+
+            // 10.5 9A410; the default policy guy has a zombie reference that gets hit sometimes.  Radar 5229858.  Setting our own policy doesn't help either.
+            [defaults synchronize]; // in case WebKit is crashy, let's only crash once.
+            
+            // Don't show the message of the day on first launch, unless specified in the defaults (the idea being to not clutter up the first-time user experience).
+            if (seenSignature || [defaults boolForKey:@"OAShowMessageOfTheDayOnFirstLaunch"]) {
+                [self showMessageOfTheDay:nil];
+            }
+	}
+        [newSignature release];
+    }
 }
 
 @end

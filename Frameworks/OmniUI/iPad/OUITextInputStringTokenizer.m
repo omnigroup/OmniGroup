@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,10 +8,10 @@
 #import "OUITextInputStringTokenizer.h"
 
 #import <OmniUI/OUIEditableFrame.h>
+#import <OmniUI/OUEFTextRange.h>
 #import <OmniBase/rcsid.h>
 
 #import "OUEFTextPosition.h"
-#import "OUEFTextRange.h"
 
 RCS_ID("$Id$");
 

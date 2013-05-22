@@ -138,11 +138,6 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "OFAutomaticallyTrustAllHosts"
-            value = "YES"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
             key = "OFSFileManagerDebug"
             value = "10"
             isEnabled = "NO">

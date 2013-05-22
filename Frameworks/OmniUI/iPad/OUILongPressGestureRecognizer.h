@@ -1,4 +1,4 @@
-// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 // Consider using an OUIDragGestureRecognizer instead, with -requiresHoldToComplete set to YES and holdDuration set to 0.5.
 
-#import "OUIGestureRecognizer.h"
+#import <OmniUI/OUIGestureRecognizer.h>
 
 @interface OUILongPressGestureRecognizer : OUIGestureRecognizer {
 @private

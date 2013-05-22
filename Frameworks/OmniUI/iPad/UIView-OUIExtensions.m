@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,8 +56,8 @@ static BOOL _viewsCompatible(UIView *self, UIView *otherView)
             return YES;
         
         // Not sure what UIKit does in this case. It might just not do any transform, but until we need it we'll stick to requiring a window.
-        UIView *root = _rootView(self);
-        OBASSERT([root isKindOfClass:[UIWindow class]]);
+//      UIView *root = _rootView(self);
+//      OBASSERT([root isKindOfClass:[UIWindow class]]);
 #endif
         return YES;
     }

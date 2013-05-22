@@ -54,7 +54,7 @@ NSString * const OFSDocumentStoreGroupItemFileItemsBinding = @"fileItems";
     return date;
 }
 
-- (BOOL)hasUnresolvedConflicts;
+- (BOOL)hasDownloadQueued;
 {
     return NO;
 }

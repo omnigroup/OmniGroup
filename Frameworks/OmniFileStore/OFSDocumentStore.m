@@ -88,8 +88,6 @@ OBDEPRECATED_METHOD(-documentStore:scannedFileItems:); // -documentStore:addedFi
 {
     DEBUG_STORE(@"Application did enter background");
 
-    OBFinishPortingLater("Determine if we should poke OFXAgent here -- used to poke ubiquity");
-
     /*
      NOTE: We used to temporarily remove the file items as file presenters here. This hits race conditions though.
      In particular, if a document is open and edited and the app is backgrounded, the save will send -relinquishPresentedItemToWriter: to the file item. The save is async and thus this method could get called while it was ongoing. Removing the file item as a presenter while it was in the middle of -relinquishPresentedItemToWriter: would make the reacquire block never get called!
@@ -101,8 +99,6 @@ OBDEPRECATED_METHOD(-documentStore:scannedFileItems:); // -documentStore:addedFi
 {
     DEBUG_STORE(@"Application will enter foreground");
     
-    OBFinishPortingLater("Determine if we should poke OFXAgent here -- used to poke ubiquity");
-
     if (completionHandler)
         completionHandler();
 }
@@ -161,6 +157,11 @@ static unsigned ScopeContext;
     [scope addObserver:self forKeyPath:OFValidateKeyPath(scope, hasFinishedInitialScan) options:0 context:&ScopeContext];
     [scope addObserver:self forKeyPath:OFValidateKeyPath(scope, fileItems) options:0 context:&ScopeContext];
 
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    if ([scope isTrash])
+        _trashScope = scope;
+#endif
+
     NSArray *scopes = [_scopes arrayByAddingObject:scope];
     [self willChangeValueForKey:OFValidateKeyPath(self, scopes)];
     _scopes = [scopes copy];
@@ -201,8 +202,10 @@ static unsigned ScopeContext;
     // Return the first working scope. Callers can remember a different scope in a preference (and we presume the more important a scope is to the caller, the closer to the front of the array it is).
 
     for (OFSDocumentStoreScope *candidate in _scopes)
-        if ([candidate documentsURL:NULL])
+        if (candidate.documentsURL)
             return candidate;
+        else
+            OBASSERT_NOT_REACHED("We should no longer have scopes with nil docuemnt URLs");
     
     OBASSERT_NOT_REACHED("No usable scopes registered");
     return nil;
@@ -281,10 +284,9 @@ static unsigned ScopeContext;
     }];
 }
 
+#if 0
 - (void)moveDocumentFromURL:(NSURL *)fromURL toScope:(OFSDocumentStoreScope *)scope inFolderNamed:(NSString *)folderName completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
 {
-    OBFinishPorting;
-#if 0
     OBPRECONDITION([NSThread isMainThread]); // We'll invoke the completion handler on the main thread
     
     if (!completionHandler)
@@ -356,13 +358,12 @@ static unsigned ScopeContext;
                 _addItemAndNotifyHandler(self, completionHandler, nil, NO, error);
         }];
     }];
-#endif
 }
+#endif
 
+#if 0
 - (void)moveItemsAtURLs:(NSSet *)urls toCloudFolderInScope:(OFSDocumentStoreScope *)ubiquitousScope withName:(NSString *)folderNameOrNil completionHandler:(void (^)(NSDictionary *movedURLs, NSDictionary *errorURLs))completionHandler;
 {
-    OBFinishPorting; // Make this work and remove references to ubiquity
-#if 0
     OBPRECONDITION([NSThread isMainThread]);
     OBASSERT(ubiquitousScope);
     
@@ -450,8 +451,8 @@ static unsigned ScopeContext;
     }];
     
     DEBUG_CLOUD(@"-moveItemsAtURLs:... is returning");
-#endif
 }
+#endif
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 - (void)moveFileItems:(NSSet *)fileItems toScope:(OFSDocumentStoreScope *)scope completionHandler:(void (^)(OFSDocumentStoreFileItem *failingItem, NSError *errorOrNil))completionHandler;
@@ -462,7 +463,7 @@ static unsigned ScopeContext;
     completionHandler = [completionHandler copy];
         
     for (OFSDocumentStoreFileItem *fileItem in fileItems) {
-        NSError *error;
+        __autoreleasing NSError *error;
         OBASSERT(fileItem.scope != scope, "Don't try to move items within the same scope");
         if (![fileItem.scope prepareToMoveFileItem:fileItem toScope:scope error:&error]) {
             if (completionHandler)
@@ -480,12 +481,11 @@ static unsigned ScopeContext;
 
 #endif
 
-
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#if 0
 - (void)makeGroupWithFileItems:(NSSet *)fileItems completionHandler:(void (^)(OFSDocumentStoreGroupItem *group, NSError *error))completionHandler;
 {
     OBFinishPorting;
-#if 0
     OBPRECONDITION([NSThread isMainThread]); // Synchronize with document store notifications about updating items
     
     OBFinishPortingLater("Should we rescan before finding an available path, or depend on the caller to know things are up to date?");
@@ -507,9 +507,10 @@ static unsigned ScopeContext;
     NSString *folderName = _availableName(folderFilenames, baseName, OFSDocumentStoreFolderPathExtension, &counter);
     
     [self moveItems:fileItems toFolderNamed:folderName completionHandler:completionHandler];
-#endif
 }
+#endif
 
+#if 0
 - (void)moveItems:(NSSet *)fileItems toFolderNamed:(NSString *)folderName completionHandler:(void (^)(OFSDocumentStoreGroupItem *group, NSError *error))completionHandler;
 {
     // Disabled for now. This needs to be updated for the renaming changes, to do the coordinated moves on the background queue, and to wait for the individual moves to fire before firing the group completion handler (if possible).
@@ -517,7 +518,6 @@ static unsigned ScopeContext;
     if (completionHandler)
         completionHandler(nil, [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil]);
                           
-#if 0
     OBPRECONDITION([NSThread isMainThread]); // Synchronize with document store notifications about updating items, and this is the queue we'll invoke the completion handler on.
     
     OBFinishPortingLater("Can we rename OmniPresence items that aren't yet fully (or at all) downloaded?");
@@ -564,8 +564,8 @@ static unsigned ScopeContext;
         if (completionHandler)
             completionHandler(group, nil);
     }];
-#endif
 }
+#endif
 
 #endif
 
@@ -630,18 +630,6 @@ static unsigned ScopeContext;
     }
 }
 
-
-- (BOOL)hasDocuments;
-{
-    OBFinishPorting;
-#if 0
-    OBPRECONDITION(_fileItems != nil); // Don't call this API until after -startScanningDocuments
-    OBPRECONDITION([NSThread isMainThread]); // Synchronize with document store notifications about updating items
-    
-    return [_fileItems count] != 0;
-#endif
-}
-
 - (OFSDocumentStoreFileItem *)fileItemWithURL:(NSURL *)url;
 {
     // We have a union of the scanned items, but it is better to let the scopes handle this than to have the logic in two spots.
@@ -652,37 +640,6 @@ static unsigned ScopeContext;
     }
     return nil;
 }
-
-- (OFSDocumentStoreFileItem *)fileItemNamed:(NSString *)name;
-{
-    OBFinishPorting;
-#if 0
-    OBPRECONDITION(_fileItems != nil); // Don't call this API until after -startScanningDocuments
-    OBPRECONDITION([NSThread isMainThread]); // Synchronize with document store notifications about updating items
-    
-    for (OFSDocumentStoreFileItem *fileItem in _fileItems)
-        if ([fileItem.name isEqual:name])
-            return fileItem;
-
-    return nil;
-#endif
-}
-
-#if 0
-// This must be thread safe.
-- (OFSDocumentStoreScope *)scopeForFileURL:(NSURL *)fileURL;
-{
-    if (!fileURL)
-        return nil;
-    
-    for (OFSDocumentStoreScope *scope in _scopes) {
-        if ([scope isFileInContainer:fileURL])
-            return scope;
-    }
-    
-    return self.defaultScope;
-}
-#endif
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 - (NSString *)documentTypeForNewFiles;
@@ -719,7 +676,7 @@ static unsigned ScopeContext;
         }
         
         OBFinishPortingLater("Allow creating documents in folders");
-        NSURL *newDocumentURL = [scope urlForNewDocumentInFolderNamed:nil baseName:baseName fileType:documentType];
+        NSURL *newDocumentURL = [scope urlForNewDocumentInFolderAtURL:nil baseName:baseName fileType:documentType];
 
         [delegate createNewDocumentAtURL:newDocumentURL completionHandler:^(NSError *errorOrNil){
             if (actionHandler) {

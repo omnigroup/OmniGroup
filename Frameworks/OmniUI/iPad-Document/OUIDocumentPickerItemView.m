@@ -115,7 +115,6 @@ static unsigned ItemContext;
     [item addObserver:self forKeyPath:OFSDocumentStoreItemUserModificationDateBinding options:0 context:&ItemContext];
     [item addObserver:self forKeyPath:OFSDocumentStoreItemReadyBinding options:0 context:&ItemContext];
     
-    [item addObserver:self forKeyPath:OFSDocumentStoreItemHasUnresolvedConflictsBinding options:0 context:&ItemContext];
     [item addObserver:self forKeyPath:OFSDocumentStoreItemIsDownloadedBinding options:0 context:&ItemContext];
     [item addObserver:self forKeyPath:OFSDocumentStoreItemIsDownloadingBinding options:0 context:&ItemContext];
     [item addObserver:self forKeyPath:OFSDocumentStoreItemIsUploadedBinding options:0 context:&ItemContext];
@@ -130,7 +129,6 @@ static unsigned ItemContext;
     [item removeObserver:self forKeyPath:OFSDocumentStoreItemUserModificationDateBinding context:&ItemContext];
     [item removeObserver:self forKeyPath:OFSDocumentStoreItemReadyBinding context:&ItemContext];
 
-    [item removeObserver:self forKeyPath:OFSDocumentStoreItemHasUnresolvedConflictsBinding context:&ItemContext];
     [item removeObserver:self forKeyPath:OFSDocumentStoreItemIsDownloadedBinding context:&ItemContext];
     [item removeObserver:self forKeyPath:OFSDocumentStoreItemIsDownloadingBinding context:&ItemContext];
     [item removeObserver:self forKeyPath:OFSDocumentStoreItemIsUploadedBinding context:&ItemContext];
@@ -496,13 +494,12 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
         else if (OFISEQUAL(keyPath, OFSDocumentStoreItemReadyBinding)) {
             if (self.window)
                 [self loadPreviews];
-        } else if (OFISEQUAL(keyPath, OFSDocumentStoreItemHasUnresolvedConflictsBinding) ||
-                 OFISEQUAL(keyPath, OFSDocumentStoreItemIsDownloadedBinding) ||
-                 OFISEQUAL(keyPath, OFSDocumentStoreItemIsDownloadingBinding) ||
-                 OFISEQUAL(keyPath, OFSDocumentStoreItemIsUploadedBinding) ||
-                 OFISEQUAL(keyPath, OFSDocumentStoreItemIsUploadingBinding) ||
-                 OFISEQUAL(keyPath, OFSDocumentStoreItemPercentDownloadedBinding) ||
-                 OFISEQUAL(keyPath, OFSDocumentStoreItemPercentUploadedBinding)) {
+        } else if (OFISEQUAL(keyPath, OFSDocumentStoreItemIsDownloadedBinding) ||
+                   OFISEQUAL(keyPath, OFSDocumentStoreItemIsDownloadingBinding) ||
+                   OFISEQUAL(keyPath, OFSDocumentStoreItemIsUploadedBinding) ||
+                   OFISEQUAL(keyPath, OFSDocumentStoreItemIsUploadingBinding) ||
+                   OFISEQUAL(keyPath, OFSDocumentStoreItemPercentDownloadedBinding) ||
+                   OFISEQUAL(keyPath, OFSDocumentStoreItemPercentUploadedBinding)) {
             [self _updateStatus];
         }
         else
@@ -544,10 +541,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 - (void)_updateStatus;
 {
     UIImage *statusImage = nil;
-    if (_item.hasUnresolvedConflicts) {
-        statusImage = [UIImage imageNamed:@"OUIDocumentStatusConflictingVersions.png"];
-        OBASSERT(statusImage);
-    } else if (_item.isDownloaded == NO) {
+    if (_item.isDownloaded == NO) {
         statusImage = [UIImage imageNamed:@"OUIDocumentStatusNotDownloaded.png"];
         OBASSERT(statusImage);
     } else if (_item.isUploaded == NO) {

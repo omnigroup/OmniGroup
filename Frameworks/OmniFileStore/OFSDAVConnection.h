@@ -28,6 +28,7 @@ typedef NS_ENUM(NSUInteger, OFSDAVDepth) {
 
 @property(nonatomic,copy) void (^validateCertificateForChallenge)(OFSDAVConnection *connection, NSURLAuthenticationChallenge *challenge);
 @property(nonatomic,copy) NSURLCredential *(^findCredentialsForChallenge)(OFSDAVConnection *connection, NSURLAuthenticationChallenge *challenge);
+@property(nonatomic) BOOL shouldDisableCellularAccess;
 
 - (void)deleteURL:(NSURL *)url withETag:(NSString *)ETag completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;
 
@@ -50,6 +51,7 @@ typedef NS_ENUM(NSUInteger, OFSDAVDepth) {
 - (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 - (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 - (void)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
+- (void)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL ifURLExists:(NSURL *)tagURL completionHandler:(OFSDAVConnectionURLCompletionHandler)completionHandler;
 
 - (void)lockURL:(NSURL *)url completionHandler:(OFSDAVConnectionStringCompletionHandler)completionHandler;
 - (void)unlockURL:(NSURL *)url token:(NSString *)lockToken completionHandler:(OFSDAVConnectionBasicCompletionHandler)completionHandler;

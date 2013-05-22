@@ -13,30 +13,58 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniFileExchange/OFXErrors.h>
 
-extern NSInteger OFXSyncDebug;
+OB_HIDDEN extern NSInteger OFXFileCoordinatonDebug;
+#define DEBUG_FILE_COORDINATION(level, format, ...) do { \
+    if (OFXFileCoordinatonDebug >= (level)) \
+        NSLog(@"FILE COORD %@: " format, [self shortDescription], ## __VA_ARGS__); \
+    } while (0)
 
+OB_HIDDEN extern NSInteger OFXSyncDebug;
 #define DEBUG_SYNC(level, format, ...) do { \
     if (OFXSyncDebug >= (level)) \
         NSLog(@"SYNC %@: " format, [self shortDescription], ## __VA_ARGS__); \
     } while (0)
 
-extern NSInteger OFXLocalRelativePathDebug;
+OB_HIDDEN extern NSInteger OFXScanDebug;
+#define DEBUG_SCAN(level, format, ...) do { \
+    if (OFXScanDebug >= (level)) \
+        NSLog(@"SCAN %@: " format, [self shortDescription], ## __VA_ARGS__); \
+    } while (0)
 
+OB_HIDDEN extern NSInteger OFXLocalRelativePathDebug;
 #define DEBUG_LOCAL_RELATIVE_PATH(level, format, ...) do { \
     if (OFXLocalRelativePathDebug >= (level)) \
-        NSLog(@"PATH %@: " format, [self shortDescription], ## __VA_ARGS__); \
+        NSLog(@"PATH %@: " format, [self debugName], ## __VA_ARGS__); \
     } while (0)
 
-extern NSInteger OFXTransferDebug;
+OB_HIDDEN extern NSInteger OFXTransferDebug;
 #define DEBUG_TRANSFER(level, format, ...) do { \
     if (OFXTransferDebug >= (level)) \
-        NSLog(@"TRANSFER %@: " format, [self shortDescription], ## __VA_ARGS__); \
+        NSLog(@"TRANSFER %@ %@: " format, [self debugName], [self shortDescription], ## __VA_ARGS__); \
     } while (0)
 
-extern NSInteger OFXMetadataDebug;
+OB_HIDDEN extern NSInteger OFXConflictDebug;
+#define DEBUG_CONFLICT(level, format, ...) do { \
+    if (YES || OFXConflictDebug >= (level)) \
+        NSLog(@"CONFLICT %@ %@: " format, [self debugName], [self shortDescription], ## __VA_ARGS__); \
+    } while (0)
+
+OB_HIDDEN extern NSInteger OFXMetadataDebug;
 #define DEBUG_METADATA(level, format, ...) do { \
     if (OFXMetadataDebug >= (level)) \
         NSLog(@"METADATA %@: " format, [self shortDescription], ## __VA_ARGS__); \
+    } while (0)
+
+OB_HIDDEN extern NSInteger OFXContentDebug;
+#define DEBUG_CONTENT(level, format, ...) do { \
+    if (OFXContentDebug >= (level)) \
+        NSLog(@"CONTENT %@: " format, [self shortDescription], ## __VA_ARGS__); \
+    } while (0)
+
+OB_HIDDEN extern NSInteger OFXActivityDebug;
+#define DEBUG_ACTIVITY(level, format, ...) do { \
+    if (OFXActivityDebug >= (level)) \
+        NSLog(@"ACTIVITY %@: " format, [self shortDescription], ## __VA_ARGS__); \
     } while (0)
 
 #import "OFXTrace.h"

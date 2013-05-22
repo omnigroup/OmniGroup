@@ -1,4 +1,4 @@
-// Copyright 2011 The Omni Group.  All rights reserved.
+// Copyright 2011-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,8 +7,7 @@
 //
 // $Id$
 
-#import <UIKit/UIGestureRecognizerSubclass.h>
-#import "OUIGestureRecognizer.h"
+#import <OmniUI/OUIGestureRecognizer.h>
 
 @interface OUIRotationGestureRecognizer : OUIGestureRecognizer {
     

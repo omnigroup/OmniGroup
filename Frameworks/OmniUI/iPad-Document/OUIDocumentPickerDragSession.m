@@ -237,6 +237,7 @@ RCS_ID("$Id$");
         return;
     }
     
+#if 0
     if ([_dragDestinationItem isKindOfClass:[OFSDocumentStoreFileItem class]]) {
         // make a new group
         [_picker.documentStore makeGroupWithFileItems:[_fileItems setByAddingObject:_dragDestinationItem] completionHandler:^(OFSDocumentStoreGroupItem *group, NSError *error){
@@ -257,6 +258,7 @@ RCS_ID("$Id$");
     } else {
         OBASSERT_NOT_REACHED("Unknown drag destination type.");
     }
+#endif
 
     [_picker rescanDocuments];
     

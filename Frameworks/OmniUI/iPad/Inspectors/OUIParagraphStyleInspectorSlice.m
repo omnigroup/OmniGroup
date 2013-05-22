@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIParagraphStyleInspectorSlice.h"
+#import <OmniUI/OUIParagraphStyleInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
 

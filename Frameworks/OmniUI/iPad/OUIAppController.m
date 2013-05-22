@@ -22,12 +22,12 @@
 #import <OmniUI/OUISpecialURLActionSheet.h>
 #import <OmniUI/OUIWebViewController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/UIViewController-OUIExtensions.h>
 
 #import <sys/sysctl.h>
 
 #import "OUIParameters.h"
 #import "OUISoftwareUpdateController.h"
-#import "UIViewController-OUIExtensions.h"
 
 RCS_ID("$Id$");
 

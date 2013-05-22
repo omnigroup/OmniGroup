@@ -85,7 +85,7 @@ RCS_ID("$Id$");
     
     // We do all operations synchronously by default right now.
     if (_read) {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         NSData *data = [fileManager dataWithContentsOfURL:_url error:&error];
         if (data == nil) {
             if (_didFinish)
@@ -99,7 +99,7 @@ RCS_ID("$Id$");
             _didFinish(self, nil);
         }
     } else {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         if (![fileManager writeData:_data toURL:_url atomically:_atomically error:&error]) {
             _didFinish(self, error);
         } else {

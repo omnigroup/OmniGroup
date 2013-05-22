@@ -226,10 +226,14 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         return;
     }];
     
+    // Avoid zombie -- stay alive until the work below is done.
+    [self retain];
+
     NSDictionary *installerArguments = [self _installerArguments];
     [remoteObjectProxy preflightUpdate:installerArguments reply:^(BOOL success, NSError *error, NSData *authorizationData) {
         if (!success) {
             [self _presentError:error];
+            [self release];
             return;
         } else {
             // Hold on to the authorization data that the service passed back to us.
@@ -237,10 +241,9 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 
             // Ask NSApplication to terminate. During the termination sequence, replace ourselves and relaunch
             void (^willTerminate)(NSNotification *notification) = ^(NSNotification *notification){
-                // Remove the observer and the cycle we previous created with self.
+                
                 [[NSNotificationCenter defaultCenter] removeObserver:_terminationObserver];
-                [_terminationObserver autorelease];
-                _terminationObserver = nil;
+                self.terminationObserver = nil;
                 
                 NSError *error = nil;
                 if (![self installAndRelaunch:YES error:&error]) {
@@ -271,8 +274,8 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
                 OBASSERT_NOT_REACHED("Should not be able to reach the end of the termination handler in -[OSUInstaller run].");
             };
             
-            OBASSERT(self.terminationObserver == nil);
-            self.terminationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSApplicationWillTerminateNotification object:nil queue:nil usingBlock:willTerminate];
+            if (self.terminationObserver == nil)
+                self.terminationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSApplicationWillTerminateNotification object:nil queue:nil usingBlock:willTerminate];
             [[NSApplication sharedApplication] terminate:self];
         }
     }];
@@ -455,7 +458,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         [panel setDirectoryURL:[NSURL fileURLWithPath:initialDirectoryPath]];
     }
     
-    handler = Block_copy(handler);
+    handler = [[handler copy] autorelease];
     
     void (^localCompletionHandler)(NSInteger result) = ^(NSInteger result) {
         if (result == NSFileHandlingPanelOKButton) {
@@ -465,20 +468,17 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
             handler(error, nil);
         }
-        Block_release(handler);
     };
     
-    localCompletionHandler = Block_copy(localCompletionHandler);
+    localCompletionHandler = [[localCompletionHandler copy] autorelease];
     
     if (parentWindow != nil) {
         [panel beginSheetModalForWindow:parentWindow completionHandler:^(NSInteger result) {
             localCompletionHandler(result);
-            Block_release(localCompletionHandler);
         }];
     } else {
         NSUInteger result = [panel runModal];
         localCompletionHandler(result);
-        Block_release(localCompletionHandler);
     }
 }
 

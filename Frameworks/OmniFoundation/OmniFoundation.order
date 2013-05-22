@@ -83,7 +83,6 @@ OFObject-Queue.o:___rcs_id_hack
 OFObject.o:___rcs_id_hack
 OFPoint.o:___rcs_id_hack
 OFPreference.o:___rcs_id_hack
-OFQueue.o:___rcs_id_hack
 OFQueueProcessor.o:___rcs_id_hack
 OFRandom.o:___rcs_id_hack
 OFReadWriteLock.o:___rcs_id_hack

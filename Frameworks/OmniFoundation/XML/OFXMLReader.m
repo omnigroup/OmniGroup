@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,12 @@ RCS_ID("$Id$");
 #import <OmniFoundation/NSDate-OFExtensions.h>
 #import <libxml/xmlIO.h>
 #import <libxml/xmlreader.h>
+
+@interface OFXMLReader ()
+
+- (BOOL)_isReadableTextXMLReaderType:(int)readerType;
+
+@end
 
 @implementation OFXMLReader
 
@@ -395,10 +401,57 @@ static void _finalize(OFXMLReader *self)
     return _skipPastEndOfElement(self, 0/*endTagsLeft*/, outError);
 }
 
+- (BOOL)copyString:(NSString **)outString endingElement:(BOOL *)outElementEnded error:(NSError **)outError;
+{
+    BOOL onEndElement = (_currentNodeType == XML_READER_TYPE_END_ELEMENT);
+    BOOL onEmptyElement = (_currentNodeType == XML_READER_TYPE_ELEMENT && _inEmptyElement);
+    
+    OBPRECONDITION([self _isReadableTextXMLReaderType:_currentNodeType] || onEndElement || onEmptyElement);
+    
+    if (onEndElement || onEmptyElement) {
+        if (outString != NULL)
+            *outString = @"";
+        if (outElementEnded != NULL)
+            *outElementEnded = YES;
+        return YES;
+    }
+    
+    NSMutableString *str = [[NSMutableString alloc] init];
+    while ([self _isReadableTextXMLReaderType:_currentNodeType]) {
+        NSString *text = [[NSString alloc] initWithUTF8String:(const char *)xmlTextReaderConstValue(_reader)];
+        [str appendString:text];
+        [text release];
+        
+        if (!_stepReader(self, outError)) {
+            [str release];
+            return NO;
+        }
+    }
+    
+    if (outElementEnded != NULL) {
+        *outElementEnded = (_currentNodeType == XML_READER_TYPE_END_ELEMENT);
+    }
+    
+    if (outString != NULL)
+        *outString = str;
+    else
+        [str release];
+    return YES;
+}
+
 - (BOOL)copyStringContentsToEndOfElement:(NSString **)outString error:(NSError **)outError;
 {
     OBPRECONDITION(outString);
-    OBPRECONDITION(_currentNodeType == XML_READER_TYPE_ELEMENT); // We expect to be at the start of <foo>string</foo>.  The caller shouldn't open the element.  Later we may need to handle strings starting after we've just finished reading something, like <foo><bar>str1</bar>str2</foo>.
+    
+    BOOL onElementStart = (_currentNodeType == XML_READER_TYPE_ELEMENT);
+    BOOL onElementEnd = (_currentNodeType == XML_READER_TYPE_END_ELEMENT);
+    BOOL onReadableText = [self _isReadableTextXMLReaderType:_currentNodeType];
+    OBPRECONDITION(onElementStart || onElementEnd || onReadableText);
+    
+    // We expect one of three things to be true:
+    //  (a) We are at the start of <foo>string</foo>. In this case, the caller shouldn't open the element.
+    //  (b) We are at the end of a nested element, e.g. the </bar> in <foo><bar>str1</bar>str2</foo>. In this case, we'll read until the next unmatched end tag.
+    //  (c) We are on "readable text" (text, CDATA, or significant whitespace), e.g. the "str2" in <foo><bar>str1</bar>str2</foo>. In this case, we'll read starting with the current text element to the next unmatched end tag.
     
     if (_inEmptyElement) {
         if (outString)
@@ -408,7 +461,7 @@ static void _finalize(OFXMLReader *self)
     
     // We'll add some support for reading not starting at the beginning of an element, but we do assume that if you are at the start of an element, you want the stuff inside that element, and not its following peer strings or strings in following peer elements.
     NSUInteger endTagsLeft = 0;
-    if (_currentNodeType == XML_READER_TYPE_ELEMENT) {
+    if (onElementStart) {
         if (xmlTextReaderIsEmptyElement(_reader)) {
             // No text in the empty element, but we want to step past it and consume it (like we would with a non-empty element).
             if (outString)
@@ -420,6 +473,14 @@ static void _finalize(OFXMLReader *self)
                 return NO;
             endTagsLeft++;
         }
+    } else if (onElementEnd) {
+        // Skip the current end tag, then read to the end of that tag's parent element.
+        if (!_stepReader(self, outError))
+            return NO;
+        endTagsLeft = 1;
+    } else if (onReadableText) {
+        // Start reading right here; read to the end of the containing element.
+        endTagsLeft = 1;
     }
     
     // Now, read to the end of the *current* element. So if we encounter a new starting element, we have to continue past its ending tag.
@@ -447,7 +508,13 @@ static void _finalize(OFXMLReader *self)
             case XML_READER_TYPE_CDATA:
             case XML_READER_TYPE_SIGNIFICANT_WHITESPACE: // For example, a text run in OmniStyle where just a range of whitespace as a different style applied.
             {
-                NSString *text = [[NSString alloc] initWithUTF8String:(const char *)xmlTextReaderConstValue(_reader)];
+                NSString *text = nil;
+                BOOL endedElement = NO;
+                if (![self copyString:&text endingElement:&endedElement error:outError]) {
+                    [str release];
+                    return NO;
+                }
+                
                 if (str) {
                     // Should be rare, but if we get multiple CDATA sections in a row, it could maybe happen.
                     NSString *concat = [[NSString alloc] initWithFormat:@"%@%@", str, text];
@@ -457,7 +524,7 @@ static void _finalize(OFXMLReader *self)
                 } else {
                     str = text;
                 }
-                break;
+                continue; // immediately jump to the next iteration; the -copyString:error: call above performed the reader step we need
             }
             default:
                 OFError(outError, OFXMLReaderUnexpectedNodeType, ([NSString stringWithFormat:@"Hit node type %d while reading string.", _currentNodeType]), nil);
@@ -883,6 +950,13 @@ static BOOL _prepareSimpleValueReader(OFXMLReader *self, const char **outString,
     }
     
     SIMPLE_READ_SUFFIX;
+}
+
+#pragma mark - Private
+
+- (BOOL)_isReadableTextXMLReaderType:(int)readerType;
+{
+    return (readerType == XML_READER_TYPE_TEXT || readerType == XML_READER_TYPE_CDATA || readerType == XML_READER_TYPE_SIGNIFICANT_WHITESPACE);
 }
 
 @end

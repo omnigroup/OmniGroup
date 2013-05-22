@@ -85,7 +85,7 @@ static OFPreference *directoryIndexFilenamePreference = nil;
     [lowercaseEffectNameDictionary setObject:[NSNumber numberWithInt:OWAddressEffectNewBrowserWindow] forKey:@"x-popup"];
     [lowercaseEffectNameDictionary setObject:[NSNumber numberWithInt:OWAddressEffectOpenBookmarksWindow] forKey:@"x-as-list"];
     
-    [[OFController sharedController] addObserver:(id)self];
+    [[OFController sharedController] addObserver:self];
 }
 
 + (void)controllerDidInitialize:(OFController *)controller;
@@ -1101,6 +1101,9 @@ addressForNotSoObviousHostname(NSString *string)
 
 - (BOOL)isFiltered;
 {
+    if (OFISEQUAL([url scheme], @"data"))
+        return NO;
+
     [_filterRegularExpressionLock lock];
     BOOL isFilteredAddress = (_filterRegularExpression != nil &&
                          [_filterRegularExpression hasMatchInString:[url compositeString]] &&

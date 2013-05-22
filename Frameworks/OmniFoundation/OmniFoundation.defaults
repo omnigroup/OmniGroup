@@ -16,7 +16,10 @@
         <integer>10</integer>
         <key>OFCompletionMatchScoreForCapitalLetter</key>
         <integer>15</integer>
-		<key>OFTrustedHosts</key>
-		<array/>
+        
+        <!-- Only used on iOS. On the Mac, permanent certificate trust exceptions should be stored in Keychain via SFCertificateTrustPanel -->
+        <key>OFCertificateTrustExceptions</key>
+        <dict/>
+        
     </dict>
 </plist>

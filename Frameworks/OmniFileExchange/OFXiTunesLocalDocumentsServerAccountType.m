@@ -73,6 +73,12 @@ NSString * const OFXiTunesLocalDocumentsServerAccountTypeIdentifier = @"com.omni
     return nil;
 }
 
+- (NSString *)addAccountDescription;
+{
+    OBASSERT_NOT_REACHED("This account type cannot be added");
+    return nil;
+}
+
 - (NSString *)setUpAccountTitle;
 {
     OBASSERT_NOT_REACHED("This account type cannot be configured");

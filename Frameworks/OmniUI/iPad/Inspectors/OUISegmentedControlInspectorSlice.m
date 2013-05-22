@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUISegmentedControlInspectorSlice.h"
+#import <OmniUI/OUISegmentedControlInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSegmentedControl.h>

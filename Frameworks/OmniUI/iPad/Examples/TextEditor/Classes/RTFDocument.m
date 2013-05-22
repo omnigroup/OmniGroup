@@ -102,9 +102,19 @@ static void _writePreview(Class self, NSURL *fileURL, NSDate *date, UIViewContro
 
 + (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;
 {
-    // In this particular sample, it is cheaper to reconfigure the existing view controller to the initial view state (scroll to the top). In some other cases, a useful pattern is to make a new view controller that is preconfigured to know that it will only ever be used to generate a preview (by propagating the UIDocument.forPreviewGeneration flag). In this case, the view controller can only load the data necessary to show a preview (data that might not be present in the current view controller if it is scrolled out of view). For example, in OmniOutliner for iPad, we make a new view controller that only loads N rows (based on the minimum row height and orientation).
+    // A useful pattern is to make a new view controller that is preconfigured to know that it will only ever be used to generate a preview (by propagating the UIDocument.forPreviewGeneration flag). In this case, the view controller can only load the data necessary to show a preview (data that might not be present in the current view controller if it is scrolled out of view). For example, in OmniOutliner for iPad, we make a new view controller that only loads N rows (based on the minimum row height and orientation).
     
-    TextViewController *viewController = (TextViewController *)document.viewController;
+    TextViewController *viewController;
+
+    if (document.forPreviewGeneration) {
+        // Just use the default view controller -- no one else is
+        viewController = (TextViewController *)document.viewController;
+    } else {
+        // Make a new view controller so we can assume it is not scrolled down or has a different viewport.
+        viewController = (TextViewController *)[document makeViewController];
+        viewController.document = document;
+    }
+    viewController.forPreviewGeneration = YES;
     
     viewController.scrollView.contentOffset = CGPointZero;
     

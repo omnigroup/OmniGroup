@@ -233,6 +233,17 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
+- (NSArray *)arrayByInsertingObject:(id)anObject atIndex:(NSUInteger)index;
+{
+    if (index > self.count)
+        return nil;
+    
+    NSMutableArray *result = [[self mutableCopy] autorelease];
+    [result insertObject:anObject atIndex:index];
+    
+    return result;
+}
+
 - (NSArray *)arrayByRemovingObject:(id)anObject;
 {    
     if (![self containsObject:anObject])

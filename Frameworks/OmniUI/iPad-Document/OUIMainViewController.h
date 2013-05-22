@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,7 @@
 
 @class UINavigationController;
 
-typedef void (^OUIMainViewControllerGetAnimationRegion)(UIView **outView, CGRect *outRect);
+typedef UIView *(^OUIMainViewControllerGetAnimationRegion)(CGRect *outRect);
 
 @interface OUIMainViewController : OUIViewController
 

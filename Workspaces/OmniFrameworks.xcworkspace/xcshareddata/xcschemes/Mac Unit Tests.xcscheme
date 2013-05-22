@@ -113,7 +113,7 @@
       buildConfiguration = "Debug">
       <Testables>
          <TestableReference
-            skipped = "YES">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "34EE20D014F0354300722491"
@@ -123,7 +123,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "YES">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "4A4E07A808AA72B10098FF0F"
@@ -143,13 +143,33 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "YES">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "34AFADA7164B1401009E39AB"
                BuildableName = "OFXUnitTests.octest"
                BlueprintName = "OFXUnitTests"
                ReferencedContainer = "container:../Frameworks/OmniFileExchange/OmniFileExchange.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4AA1E7FA08AA764600E2FF6B"
+               BuildableName = "OAUnitTests.octest"
+               BlueprintName = "OAUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniAppKit/OmniAppKit.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "340D5DB40DAACED300BF27F8"
+               BuildableName = "ODOTests.octest"
+               BlueprintName = "ODOTests"
+               ReferencedContainer = "container:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -176,12 +196,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "OFSAccountRemoteBaseURL"
-            value = "https://crispy.local:8001/"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "OFAutomaticallyTrustAllHosts"
-            value = "YES"
+            value = "https://LOCAL_HOST:8001/"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable

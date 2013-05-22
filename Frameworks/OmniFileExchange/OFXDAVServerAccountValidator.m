@@ -7,6 +7,7 @@
 
 #import "OFXDAVServerAccountValidator.h"
 
+#import <OmniFileExchange/OFXAgent.h>
 #import <OmniFileStore/OFSDAVConformanceTest.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFileStore/OFSDAVFileManager.h>
@@ -70,18 +71,16 @@ RCS_ID("$Id$")
 
 static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
 {
-    NSError *strongError = error; // Hopefully passing the autoreleasing NSError through the function argument would strong-ify it, but let's make sure the block captures the error.
-    
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         // Break possible retain cycles
         typeof(self->_finished) finished = self->_finished;
         
         self->_finished = nil;
         self->_stateChanged = nil;
-        self->_account.lastError = strongError;
+        [self->_account reportError:error];
         
         if (finished)
-            finished(strongError);
+            finished(error);
         
         OBStrongRelease(self); // Matching retain at the top of -startValidation
     }];
@@ -96,7 +95,7 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
 {
     OBStrongRetain(self); // Hard retain ourselves until the end of the operation (even when we switch to ARC)
     
-    _account.lastError = nil;
+    [_account clearError];
     
     [_validationOperationQueue addOperationWithBlock:^{
         NSURL *address = _account.remoteBaseURL;
@@ -124,7 +123,7 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
         }
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [self _updateState:NSLocalizedStringFromTableInBundle(@"Checking credentials", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description")];
+            [self _updateState:NSLocalizedStringFromTableInBundle(@"Checking Credentials", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description")];
         }];
         error = nil;
         OFSFileInfo *fileInfo = [fileManager fileInfoAtURL:address error:&error];
@@ -161,25 +160,52 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
             if (!_account.isCloudSyncEnabled || _shouldSkipConformanceTests) {
                 finishWithError(nil);
             }
-            OFSDAVConformanceTest *conformanceTest = [[OFSDAVConformanceTest alloc] initWithFileManager:fileManager];
-            conformanceTest.statusChanged = ^(NSString *status){
-                OBASSERT([NSThread isMainThread]);
-                [self _updateState:status];
-            };
-            conformanceTest.finished = ^(NSError *errorOrNil){
-                OBASSERT([NSThread isMainThread]);
+            
+            [_validationOperationQueue addOperationWithBlock:^{
+                
+                // An additional test before starting the real validation - check for creation of the OmniPresence folder
+                NSURL *remoteSyncDirectory = [_account.remoteBaseURL URLByAppendingPathComponent:@".com.omnigroup.OmniPresence" isDirectory:YES];
+                NSError *error;
+                if (![fileManager createDirectoryAtURLIfNeeded:remoteSyncDirectory error:&error]) {
+                    finishWithError(error);
+                }
 
-                // Don't leave speculatively added credentials around
-                if (errorOrNil && _challengeServiceIdentifier)
-                    OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier);
-                finishWithError(errorOrNil);
-            };
-            [conformanceTest start];
+                if (_challengeServiceIdentifier == nil) {
+                    __autoreleasing NSError *noCredentialsError;
+                    OFXError(&noCredentialsError, OFXServerAccountNotConfigured,
+                             NSLocalizedStringFromTableInBundle(@"Account not configured", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
+                             NSLocalizedStringFromTableInBundle(@"Unable to verify login credentials at this time.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
+                    finishWithError(noCredentialsError);
+                }
+
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    OFSDAVConformanceTest *conformanceTest = [[OFSDAVConformanceTest alloc] initWithFileManager:fileManager];
+                    conformanceTest.statusChanged = ^(NSString *status){
+                        OBASSERT([NSThread isMainThread]);
+                        [self _updateState:status];
+                    };
+                    conformanceTest.finished = ^(NSError *errorOrNil){
+                        OBASSERT([NSThread isMainThread]);
+                        
+                        // Don't leave speculatively added credentials around
+                        if (errorOrNil && _challengeServiceIdentifier)
+                            OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier);
+                        finishWithError(errorOrNil);
+                    };
+                    [self _updateState:NSLocalizedStringFromTableInBundle(@"Testing Server for Compatibility", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description")];
+                    [conformanceTest start];
+                }];
+            }];
         }];
     }];
 }
 
 #pragma mark - OFSFileManagerDelegate
+
+- (BOOL)fileManagerShouldAllowCellularAccess:(OFSFileManager *)manager;
+{
+    return YES; // We could test +[OFXAgent isCellularSyncEnabled] here, but the user doesn't even see the "Use Cellular Data" switch until they've validated an account.
+}
 
 - (BOOL)fileManagerShouldUseCredentialStorage:(OFSFileManager *)manager;
 {
@@ -207,13 +233,7 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
 
 - (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
-    _certificateTrustError = nil;
-    
-    // This error has no localized strings since it is intended to be caught and cause localized UI to be presented to the user to evaluate trust and possibly restart the operation.
-    __autoreleasing NSError *error = nil;
-    OFXErrorWithInfo(&error, OFXServerAccountCertificateTrustIssue, @"Untrusted certificate", @"Present UI to let the user pick", OFXServerAccountValidationCertificateTrustChallengeErrorKey, challenge, nil);
-
-    _certificateTrustError = error;
+    _certificateTrustError = [NSError certificateTrustErrorForChallenge:challenge];
 }
 
 #pragma mark - Private

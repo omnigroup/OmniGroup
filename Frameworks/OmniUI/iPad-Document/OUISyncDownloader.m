@@ -55,7 +55,7 @@ NSString * const OUISyncDownloadCanceledNotification = @"OUISyncDownloadCanceled
             continue;
         
         
-        NSError *error;
+        __autoreleasing NSError *error;
         BOOL didWrite = NO;
         @autoreleasepool {
             NSData *uncompressed = [archive dataForEntry:entry error:&error];

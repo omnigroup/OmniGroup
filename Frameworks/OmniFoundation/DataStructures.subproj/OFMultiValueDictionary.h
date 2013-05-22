@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,26 +8,24 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
+
 #import <CoreFoundation/CFDictionary.h>
+#import <OmniFoundation/OFUtilities.h>
 
 @class NSArray, NSEnumerator, NSMutableDictionary;
 
 @interface OFMultiValueDictionary : OFObject </*NSCoding,*/ NSMutableCopying>
-{
-    CFMutableDictionaryRef dictionary;
-    short dictionaryFlags;
-}
 
 - init;
-- initWithCaseInsensitiveKeys: (BOOL) caseInsensitivity;
-- initWithKeyCallBacks:(const CFDictionaryKeyCallBacks *)keyBehavior;  // D.I.
+- initWithCaseInsensitiveKeys:(BOOL)caseInsensitivity;
+- initWithKeyCallBacks:(const CFDictionaryKeyCallBacks *)keyBehavior;
 
 - (NSArray *)arrayForKey:(id)aKey;
 - (id)firstObjectForKey:(id)aKey;
 - (id)lastObjectForKey:(id)aKey;
 - (void)addObject:(id)anObject forKey:(id)aKey;
 - (void)addObjects:(NSArray *)moreObjects forKey:(id)aKey;
-- (void)addObjects:(NSArray *)manyObjects keyedBySelector:(SEL)aSelector;
+- (void)addObjects:(NSArray *)manyObjects keyedByBlock:(OFObjectToObjectBlock)keyBlock;
 - (void)setObjects:(NSArray *)replacementObjects forKey:(id)aKey;
 - (void)insertObject:(id)anObject forKey:(id)aKey atIndex:(unsigned int)anIndex;
 - (BOOL)removeObject:(id)anObject forKey:(id)aKey;
@@ -43,8 +41,8 @@
 
 #import <Foundation/NSArray.h>
 @interface NSArray (OFMultiValueDictionary)
-- (OFMultiValueDictionary *)groupBySelector:(SEL)aSelector;
-- (OFMultiValueDictionary *)groupBySelector:(SEL)aSelector withObject:(id)anObject;
+- (OFMultiValueDictionary *)groupByKeyBlock:(OFObjectToObjectBlock)keyBlock;
+- (OFMultiValueDictionary *)groupByKeyBlock:(id (^)(id object, id arg))keyBlock withObject:(id)argument;
 @end
 
 @interface NSString (OFMultiValueDictionary)

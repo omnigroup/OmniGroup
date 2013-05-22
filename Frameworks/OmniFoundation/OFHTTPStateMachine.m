@@ -87,21 +87,10 @@ static NSString * const HTTPErrorDomain = @"org.w3.http";
     
     STATE_LOG(1, @"sending request for state=%@", currentState.name);
 
-    BOOL useOperationQueue = YES;
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    if (![OFVersionNumber isOperatingSystemLionOrLater])
-        useOperationQueue = NO;
-#else
-    // setDelegateQueue: is broken in 5.x by my testing, and according to <http://ddeville.me/2011/12/broken-NSURLConnection-on-ios/>
-    useOperationQueue = [OFVersionNumber isOperatingSystemiOS60OrLater];
-#endif
-    
-    if (useOperationQueue) {
-        activeConnection = [[NSURLConnection alloc] initWithRequest:request delegate:self startImmediately:NO];
-        [activeConnection setDelegateQueue:[NSOperationQueue currentQueue]];
-        [activeConnection start];
-    } else
-        activeConnection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+    // -setDelegateQueue: was broken on older OS versions according to our testing, but we require 10.7 and iOS 6 now, where it does work. See <http://ddeville.me/2011/12/broken-NSURLConnection-on-ios/>
+    activeConnection = [[NSURLConnection alloc] initWithRequest:request delegate:self startImmediately:NO];
+    [activeConnection setDelegateQueue:[NSOperationQueue currentQueue]];
+    [activeConnection start];
 }
 
 - (void)cancel;

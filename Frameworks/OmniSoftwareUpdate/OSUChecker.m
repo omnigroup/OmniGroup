@@ -16,6 +16,7 @@
 #import <AppKit/NSPanel.h>
 #endif
 
+#import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
@@ -36,8 +37,8 @@
 
 RCS_ID("$Id$");
 
-#if 0 && (defined(DEBUG_bungi) || defined(DEBUG_wiml))
-#define OSU_DEBUG
+#if DEBUG_kc0
+#define OSU_DEBUG 1
 #endif
 
 #ifdef DEBUG
@@ -60,6 +61,7 @@ static NSString * const OSUDefaultCurrentVersionsURLString = @"http://update.omn
 static NSString * const OSUBundleCheckAtLaunchKey = @"OSUSoftwareUpdateAtLaunch";
 static NSString * const OSUBundleCheckerClassKey = @"OSUCheckerClass";
 static NSString * const OSUBundleTrackInfoKey = @"OSUSoftwareUpdateTrack";
+static NSString * const OSUBundleLicenseTypeKey = @"OSUSoftwareUpdateLicenseType";
 
 // Preferences keys
 static NSString * const OSUNextCheckKey = @"OSUNextScheduledCheck";
@@ -70,7 +72,7 @@ static NSString * const OSUNewestVersionNumberLaunchedKey = @"OSUNewestVersionNu
 #define OSUVersionNumberString _OSUVersionNumberString(OSU_VERSION_NUMBER)
 
 static OFVersionNumber *OSUVersionNumber = nil;
-static NSURL    *OSUCurrentVersionsURL = nil;
+static NSURL *OSUCurrentVersionsURL = nil;
 
 // 
 NSString * const OSULicenseTypeUnset = @"unset";
@@ -344,6 +346,28 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     OSURunTimeApplicationDeactivated([bundle bundleIdentifier], OSUBundleVersionForBundle(bundle), NO/*crashed*/);
 }
 
+- (id)init;
+{
+    self = [super init];
+    if (self == nil)
+        return nil;
+
+    _licenseType = [[[NSBundle mainBundle] infoDictionary] objectForKey:OSUBundleLicenseTypeKey defaultObject:OSULicenseTypeNone];
+
+    return self;
+}
+
+- (void)dealloc;
+{
+    OBPRECONDITION(!_hasScheduledCheck(self)); // Otherwise, it would be retaining us and we wouldn't be being deallocated
+    
+    [self _stopWatchingNetworkReachability];
+    [_checkTarget release];
+    _checkTarget = nil;
+    [_licenseType release];
+    [super dealloc];
+}
+
 - (OFVersionNumber *)applicationMarketingVersion
 {
     static OFVersionNumber *version = nil;
@@ -415,24 +439,12 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     return (_currentCheckOperation != nil)? YES : NO; 
 }
 
-- (void)dealloc;
-{
-    OBPRECONDITION(!_hasScheduledCheck(self)); // Otherwise, it would be retaining us and we wouldn't be being deallocated
-    
-    [self _stopWatchingNetworkReachability];
-    [_checkTarget release];
-    _checkTarget = nil;
-    [_licenseType release];
-    [super dealloc];
-}
-
-
 // API
 
 - (BOOL)checkSynchronously;
 {
-    if (!_checkTarget)
-        return NO; // No point.
+    assert(_checkTarget != nil); // +startWithTarget: needs to be called before we start checking
+
     if ([_checkTarget respondsToSelector:@selector(checkerShouldStartCheck:)] && ![_checkTarget checkerShouldStartCheck:self])
         return NO; // Denied.
     
@@ -581,13 +593,13 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     if (_checkTarget) {
         if ([self _shouldCheckAtLaunch]) {
             // Do a check immediately, unless our license type isn't set; licensing system is still processing stuff in this case.
-            if (_licenseType)
+            if (OFNOTEQUAL(_licenseType, OSULicenseTypeUnset))
                 [self _initiateCheck];
             else
                 _flags.initiateCheckOnLicenseTypeChange = YES;
         } else {
             // As above, only schedule if we have our license type set already.
-            if (_licenseType)
+            if (OFNOTEQUAL(_licenseType, OSULicenseTypeUnset))
                 [self _scheduleNextCheck];
             else
                 _flags.scheduleNextCheckOnLicenseTypeChange = YES;

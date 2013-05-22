@@ -31,9 +31,6 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
 
 @implementation OFXServerAccountRegistry
 
-NSInteger OFXSyncDebug;
-NSInteger OFXMetadataDebug;
-
 + (void)initialize;
 {
     OBINITIALIZE;
@@ -66,7 +63,7 @@ NSInteger OFXMetadataDebug;
             
             accountsDirectoryURL = [NSURL fileURLWithPath:path];
         } else {
-            NSError *error = nil;
+            __autoreleasing NSError *error = nil;
             NSURL *applicationSupportDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
             if (!applicationSupportDirectoryURL) {
                 NSLog(@"%s: Unable to create application support directory: %@", __PRETTY_FUNCTION__, [error toPropertyList]);
@@ -74,10 +71,10 @@ NSInteger OFXMetadataDebug;
             }
 
 
-            accountsDirectoryURL = [applicationSupportDirectoryURL URLByAppendingPathComponent:@"com.omnigroup.OmniFileExchange.Accounts" isDirectory:YES];
+            accountsDirectoryURL = [applicationSupportDirectoryURL URLByAppendingPathComponent:@"com.omnigroup.OmniPresence.Accounts" isDirectory:YES];
         }
 
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         defaultRegistry = [[self alloc] initWithAccountsDirectoryURL:accountsDirectoryURL error:&error];
         if (!defaultRegistry) {
             NSLog(@"Error creating account registry at %@: %@", accountsDirectoryURL, [error toPropertyList]);
@@ -103,7 +100,7 @@ NSInteger OFXMetadataDebug;
 
     // Ensure the directory exists so we can normalize the directory here once. Don't attempt to standardize it until it exists (since standardization silently does nothing if it doesn't).
 
-    NSError *directoryError;
+    __autoreleasing NSError *directoryError;
     if (![[NSFileManager defaultManager] createDirectoryAtURL:accountsDirectoryURL withIntermediateDirectories:YES attributes:nil error:&directoryError]) {
         if ([directoryError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:EEXIST] ||
             [directoryError hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileWriteFileExistsError]) {
@@ -121,7 +118,7 @@ NSInteger OFXMetadataDebug;
     // TODO: Should we add a lock file, or maybe OFXAgent should when using us?
 
     // Read existing accounts.
-    NSError *error;
+    __autoreleasing NSError *error;
     NSArray *accountURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:_accountsDirectoryURL includingPropertiesForKeys:nil options:NSDirectoryEnumerationSkipsSubdirectoryDescendants error:&error];
     if (!accountURLs) {
         if ([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] ||
@@ -133,11 +130,9 @@ NSInteger OFXMetadataDebug;
     }
 
     NSMutableArray *allAccounts = [NSMutableArray new];
-    NSMutableArray *validCloudSyncAccounts = [NSMutableArray new];
-    NSMutableArray *validImportExportAccounts = [NSMutableArray new];
-    
+
     for (NSURL *accountURL in accountURLs) {
-        NSError *infoError;
+        __autoreleasing NSError *infoError;
         NSURL *infoURL = [accountURL URLByAppendingPathComponent:@"Info.plist"];
         NSDictionary *propertyList = OFReadNSPropertyListFromURL(infoURL, &infoError);
         if (!propertyList) {
@@ -152,7 +147,7 @@ NSInteger OFXMetadataDebug;
 
         // TODO: If there is some error loading an account, it would be nice if we kept it around and at least allowed the user to try to delete it. Or maybe we should just burn it with fire here.
         NSString *uuid = [accountURL lastPathComponent]; // Don't need to check for uniqueness since we can't have two directories with the same name
-        NSError *accountError;
+        __autoreleasing NSError *accountError;
         OFXServerAccount *account = [[OFXServerAccount alloc] _initWithUUID:uuid propertyList:propertyList error:&accountError];
         if (!account) {
             NSLog(@"Error reading account from %@: %@", accountURL, [accountError toPropertyList]);
@@ -161,27 +156,22 @@ NSInteger OFXMetadataDebug;
         
         if (account.hasBeenPreparedForRemoval) {
             // We died or were killed before being able to remove the account...
-            NSError *error;
+            __autoreleasing NSError *error;
             if (![self _cleanupAccountAfterRemoval:account error:&error])
                 NSLog(@"Error resuming cleanup of previously deleted account %@: %@", [account shortDescription], [error toPropertyList]);
             continue; // Either way, ignore it.
         }
         
-        [self _startObservingAccount:account];
         [allAccounts addObject:account];
-        
-        if ([self _isAccountValid:account]) {
-            if (account.isCloudSyncEnabled)
-                [validCloudSyncAccounts addObject:account];
-            if (account.isImportExportEnabled)
-                [validImportExportAccounts addObject:account];
-        }
     }
     
-    _allAccounts = [allAccounts copy];
-    _validCloudSyncAccounts = [validCloudSyncAccounts copy];
-    _validImportExportAccounts = [validImportExportAccounts copy];
+    // Start in a consistent empty state so our setter can early-out.
+    _allAccounts = [NSArray new]; // avoid assertion in the setter for now.
+    _validCloudSyncAccounts = [NSArray new];
+    _validImportExportAccounts = [NSArray new];
     
+    self.allAccounts = allAccounts;
+
     OBPOSTCONDITION(_allAccounts);
     OBPOSTCONDITION(_validCloudSyncAccounts);
     OBPOSTCONDITION(_validImportExportAccounts);
@@ -224,15 +214,46 @@ NSInteger OFXMetadataDebug;
     return nil;
 }
 
+- (BOOL)_createLocalDocumentsFolderForAccount:(OFXServerAccount *)account error:(NSError **)outError;
+{
+    NSFileManager *manager = [NSFileManager defaultManager];
+
+    // This will not produce an error if the directory already exists.
+    __autoreleasing NSError *createError;
+    if (![manager createDirectoryAtURL:account.localDocumentsURL withIntermediateDirectories:YES attributes:nil error:&createError]) {
+        NSLog(@"Error creating local documents directory %@: %@", account.localDocumentsURL, [createError toPropertyList]);
+        if (outError)
+            *outError = createError;
+        return NO;
+    }
+
+    __autoreleasing NSError *contentsError;
+    if (![OFXServerAccount validateLocalDocumentsURL:account.localDocumentsURL reason:OFXServerAccountValidateLocalDirectoryForAccountCreation error:&contentsError]) {
+        if (outError)
+            *outError = contentsError;
+        return NO;
+    }
+
+    return YES;
+}
+
 - (BOOL)addAccount:(OFXServerAccount *)account error:(NSError **)outError;
 {
     OBPRECONDITION([_allAccounts indexOfObject:account] == NSNotFound);
     OBPRECONDITION([self accountWithUUID:account.uuid] == nil);
-    OBPRECONDITION(account.credentialServiceIdentifier);
     OBPRECONDITION(account.hasBeenPreparedForRemoval == NO);
-    
+
+    if (account.credentialServiceIdentifier == nil) {
+        if (outError != NULL) {
+            OFXError(outError, OFXServerAccountNotConfigured,
+                     NSLocalizedStringFromTableInBundle(@"Account not configured", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
+                     NSLocalizedStringFromTableInBundle(@"Account is missing login credentials.", @"OmniFileExchange", OMNI_BUNDLE, @"account credentials missing suggestion"));
+        }
+        return NO;
+    }
+
     NSFileManager *manager = [NSFileManager defaultManager];
-    
+
     NSURL *accountURL = [self localStoreURLForAccount:account];
     NSURL *temporaryURL = [manager temporaryURLForWritingToURL:accountURL allowOriginalDirectory:NO error:outError];
     if (!temporaryURL)
@@ -242,30 +263,22 @@ NSInteger OFXMetadataDebug;
         return NO;
     
     if (account.isCloudSyncEnabled) {
-        // TODO: Use NSFileCoordination here?
         // Make the local documents directory for this URL. We need to do this before calling -propertyList so that (on OS X), we can record an app-scoped bookmark.
-        NSError *createError;
-        if (![manager createDirectoryAtURL:account.localDocumentsURL withIntermediateDirectories:YES attributes:nil error:&createError]) {
-            NSLog(@"Error creating local documents directory %@: %@", account.localDocumentsURL, [createError toPropertyList]);
-            if (outError)
-                *outError = createError;
-            return NO;
-        }
-        
-        NSError *contentsError;
-        if (![OFXServerAccount isValidLocalDocumentsURL:account.localDocumentsURL error:&contentsError]) {
-            if (outError)
-                *outError = contentsError;
+        // NOTE: We don't delete the document directory here since it was possibly created by the user (and if validation fails, this will let them pick it again). AND, most importantly, it might fail to be valid below due to containing actual files!
+        if (![self _createLocalDocumentsFolderForAccount:account error:outError]) {
+            [manager removeItemAtURL:temporaryURL error:NULL];
             return NO;
         }
     }
 
     NSDictionary *plist = account.propertyList;
-    if (!OFWriteNSPropertyListToURL(plist, [temporaryURL URLByAppendingPathComponent:@"Info.plist"], outError))
+    if (!OFWriteNSPropertyListToURL(plist, [temporaryURL URLByAppendingPathComponent:@"Info.plist"], outError)) {
+        [manager removeItemAtURL:temporaryURL error:NULL];
         return NO;
+    }
     
     // We lazily create our accounts directory
-    NSError *createError = nil;
+    __autoreleasing NSError *createError = nil;
     if (![manager createDirectoryAtURL:_accountsDirectoryURL withIntermediateDirectories:YES attributes:nil error:&createError]) {
         if ([createError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:EEXIST] ||
             [createError hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileWriteFileExistsError]) {
@@ -273,13 +286,16 @@ NSInteger OFXMetadataDebug;
         } else {
             if (outError)
                 *outError = createError;
+            [manager removeItemAtURL:temporaryURL error:NULL];
             return NO;
         }
     }
     
     // Move the new account into place and publish it via KVO.
-    if (![manager moveItemAtURL:temporaryURL toURL:accountURL error:outError])
+    if (![manager moveItemAtURL:temporaryURL toURL:accountURL error:outError]) {
+        [manager removeItemAtURL:temporaryURL error:NULL];
         return NO;
+    }
     
     NSArray *accounts = [self.allAccounts arrayByAddingObject:account];
     OBASSERT(accounts); // accounts should return an empty array if there are none
@@ -299,7 +315,7 @@ static unsigned AccountContext;
         OBASSERT([_allAccounts indexOfObjectIdenticalTo:object] != NSNotFound);
         
         OFXServerAccount *account = object;
-        NSError *error;
+        __autoreleasing NSError *error;
         if (![self _writeUpdatedAccountInfo:account error:&error])
             NSLog(@"Error writing updated Info.plist for account %@: %@", [account shortDescription], [error toPropertyList]);
         
@@ -336,6 +352,8 @@ static unsigned AccountContext;
 // This is called after an account is marked for removal and after we are sure any syncing operations on it have finished.
 - (BOOL)_cleanupAccountAfterRemoval:(OFXServerAccount *)account error:(NSError **)outError;
 {
+    OBPRECONDITION([NSThread isMainThread]);
+
     if (!account.hasBeenPreparedForRemoval) {
         OBASSERT_NOT_REACHED("UI code should just call -prepareForRemoval on accounts");
         OFXError(outError, OFXAccountNotPreparedForRemoval, @"Account is not prepared for removal.", nil);
@@ -343,7 +361,7 @@ static unsigned AccountContext;
     }
 
     // Atomically remove the account directory now that any syncing on this account is done.
-    NSError *removeError;
+    __autoreleasing NSError *removeError;
     NSURL *accountStoreDirectory = [self localStoreURLForAccount:account];
     if (![[NSFileManager defaultManager] atomicallyRemoveItemAtURL:accountStoreDirectory error:&removeError]) {
         NSLog(@"Error removing local account store %@: %@", accountStoreDirectory, [removeError toPropertyList]);
@@ -364,8 +382,10 @@ static unsigned AccountContext;
         }
     }
 #endif
-    
-    [self setAllAccounts:[_allAccounts arrayByRemovingObject:account]];    
+
+    if (_allAccounts != nil) // Avoid some work and an assertion in -setAllAccounts:
+        [self setAllAccounts:[_allAccounts arrayByRemovingObject:account]];
+
     return YES;
 }
 
@@ -431,11 +451,7 @@ static unsigned AccountContext;
     {
         for (OFXServerAccount *account in _allAccounts)
             [self _stopObservingAccount:account];
-        for (OFXServerAccount *account in allAccounts)
-            [account willChangeValueForKey:@"displayName"];
         _allAccounts = [allAccounts copy];
-        for (OFXServerAccount *account in allAccounts)
-            [account didChangeValueForKey:@"displayName"];
         for (OFXServerAccount *account in _allAccounts)
             [self _startObservingAccount:account];
     }

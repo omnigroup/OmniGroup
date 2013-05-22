@@ -16,6 +16,7 @@
 #import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFUTI.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
 #import <OmniUI/OUIAppController.h>
@@ -115,7 +116,7 @@ RCS_ID("$Id$");
     
     _totalDataLength = 0;
     _uploadOperations = [[NSMutableArray alloc] init];
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OBASSERT (_baseURL == nil);
     _baseURL = targetURL;
     if (![self _queueUploadFileWrapper:fileWrapper atomically:YES toURL:targetURL usingFileManager:_fileManager error:&error]) {
@@ -185,13 +186,13 @@ RCS_ID("$Id$");
         // all downloads are done, lets do our final cleanup
         NSString *localFile = _downloadPath;
         NSURL *localFileURL = [NSURL fileURLWithPath:localFile];
-        NSError *utiError;
+        __autoreleasing NSError *utiError;
         NSString *fileUTI = OFUTIForFileURLPreferringNative(localFileURL, &utiError);
         if (!fileUTI) {
             localFile = nil;
             OUI_PRESENT_ERROR(utiError);
         } else if (OFSIsZipFileType(fileUTI)) {
-            NSError *unarchiveError = nil;
+            __autoreleasing NSError *unarchiveError = nil;
             localFile = [self unarchiveFileAtPath:localFile error:&unarchiveError];
             if (!localFile || unarchiveError)
                 OUI_PRESENT_ERROR(unarchiveError);
@@ -224,7 +225,7 @@ RCS_ID("$Id$");
                 url = [url substringToIndex:[url length] - 1]; // if it's got a trailing slash, trim it.
                 [_fileManager deleteURL:[NSURL URLWithString:url] error:NULL];
             }
-            NSError *moveError = nil;
+            __autoreleasing NSError *moveError = nil;
             if (![_fileManager moveURL:_uploadTemporaryURL toURL:_uploadFinalURL error:&moveError]) {
                 OUI_PRESENT_ERROR(moveError);
                 success = NO;
@@ -266,7 +267,7 @@ RCS_ID("$Id$");
 {    
     _file = aFile;
         
-    NSError *error;
+    __autoreleasing NSError *error;
     NSString *localFilePath = [self _downloadLocation];
     NSString *localFileDirectory = [localFilePath stringByDeletingLastPathComponent];
     
@@ -332,7 +333,7 @@ RCS_ID("$Id$");
 
 - (void)_readAndQueueContentsOfDirectory:(OFSFileInfo *)aDirectory;
 {
-    NSError *outError = nil;
+    __autoreleasing NSError *outError = nil;
     
     NSArray *fileInfos = [_fileManager directoryContentsAtURL:[aDirectory originalURL] havingExtension:nil options:OFSDirectoryEnumerationForceRecursiveDirectoryRead error:&outError];
     if (outError) {
@@ -353,20 +354,26 @@ RCS_ID("$Id$");
     NSLog(@"DEBUG: Queueing upload to %@", [targetURL absoluteString]);
 #endif
     if ([fileWrapper isDirectory]) {
-        targetURL = OFSURLWithTrailingSlash(targetURL); // RFC 2518 section 5.2 says: In general clients SHOULD use the "/" form of collection names.
-        NSError *error = nil;
+        targetURL = OFURLWithTrailingSlash(targetURL); // RFC 2518 section 5.2 says: In general clients SHOULD use the "/" form of collection names.
+        __autoreleasing NSError *error = nil;
         if (atomically) {
             OBASSERT(_uploadTemporaryURL == nil); // Otherwise we'd need a stack of things to rename rather than just one
             OBASSERT(_uploadFinalURL == nil);
             
             NSString *temporaryNameSuffix = [@"-write-in-progress-" stringByAppendingString:OFXMLCreateID()];
             _uploadFinalURL = targetURL;
-            targetURL = OFSURLWithTrailingSlash(OFSURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES));
+            targetURL = OFURLWithTrailingSlash(OFSURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES));
         }
         NSURL *parentURL = [fileManager createDirectoryAtURL:targetURL attributes:nil error:&error];
-        if (atomically)
+        if (atomically) {
             _uploadTemporaryURL = parentURL;
-        
+            if (parentURL != nil && !OFURLEqualsURL(parentURL, targetURL)) {
+                NSString *rewrittenFinalURLString = OFSURLAnalogousRewrite(targetURL, [_uploadFinalURL absoluteString], parentURL);
+                if (rewrittenFinalURLString)
+                    _uploadFinalURL = [NSURL URLWithString:rewrittenFinalURLString];
+            }
+        }
+
         NSDictionary *childWrappers = [fileWrapper fileWrappers];
         for (NSString *childName in childWrappers) {
             NSFileWrapper *childWrapper = [childWrappers objectForKey:childName];

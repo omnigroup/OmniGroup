@@ -46,6 +46,7 @@ typedef struct {
     NSString *appVersionString;
     NSString *track;
     BOOL includeHardwareInfo;
+    BOOL includeOpenGLInfo;
     BOOL reportMode;
     NSString *licenseType;
     NSString *osuVersionString;

@@ -38,6 +38,7 @@ typedef void (^OFXServerAccountValidationHandler)(NSError *errorOrNil);
 @property(nonatomic,readonly) BOOL usesCredentials;
 - (NSString *)accountDetailsStringForAccount:(OFXServerAccount *)account;
 @property(nonatomic,readonly) NSString *addAccountTitle;
+@property(nonatomic,readonly) NSString *addAccountDescription;
 @property(nonatomic,readonly) NSString *setUpAccountTitle;
 
 - (id <OFXServerAccountValidator>)validatorWithAccount:(OFXServerAccount *)account username:(NSString *)username password:(NSString *)password;

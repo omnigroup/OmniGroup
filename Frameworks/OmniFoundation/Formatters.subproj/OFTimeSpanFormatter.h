@@ -1,4 +1,4 @@
-// Copyright 2000-2009, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2009, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,7 @@
 #define STANDARD_WORK_PER_YEAR (365.0f * STANDARD_WORK_PER_DAY)
 
 typedef enum {
+    // Order must match +initalize
     UNITS_YEARS, UNITS_MONTHS, UNITS_WEEKS, UNITS_DAYS, UNITS_HOURS, UNITS_MINUTES, UNITS_SECONDS, UNITS_COUNT
 } OFTimeSpanFormatterUnit;
 

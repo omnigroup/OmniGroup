@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -185,5 +185,81 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
 }
 
 #undef EQUAL_DATES
+
+- (void)testThreadSafety;
+{
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    queue.name = self.name;
+    
+    for (NSUInteger blockIndex = 0; blockIndex < 64; blockIndex++) {
+        [queue addOperationWithBlock:^{
+            for (NSUInteger dateIndex = 0; dateIndex < 1e4; dateIndex++) {
+                NSDate *originalDate = [NSDate date];
+                NSString *xmlString = [originalDate xmlString];
+                NSDate *decodedDate = [[NSDate alloc] initWithXMLString:xmlString];
+                STAssertNotNil(decodedDate, nil);
+                
+                if (fabs([originalDate timeIntervalSinceReferenceDate] - [decodedDate timeIntervalSinceReferenceDate]) > 0.001) {
+                    NSLog(@"originalDate %@ / %f, xmlString %@, decodedDate %@  / %f", originalDate, [originalDate timeIntervalSinceReferenceDate], xmlString, decodedDate, [decodedDate timeIntervalSinceReferenceDate]);
+                    STFail(@"Did not round-trip date");
+                }
+                //STAssertEqualsWithAccuracy([originalDate timeIntervalSinceReferenceDate], [decodedDate timeIntervalSinceReferenceDate], 0.001, nil);
+            }
+        }];
+    }
+    
+    [queue waitUntilAllOperationsAreFinished];
+}
+
+// YYYYMMddTHHmmssZ
+- (void)testICSString;
+{
+    NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:390177789];
+    NSLog(@"date = %@", date);
+    NSString *dateString = [date icsDateString];
+    STAssertEqualObjects(dateString, @"20130513T224309Z", nil);
+    
+    NSDate *decodedDate = [[NSDate alloc] initWithICSDateString:dateString];
+    
+    NSDateComponents *components = [[NSDate gregorianUTCCalendar] components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSSecondCalendarUnit fromDate:decodedDate];
+    STAssertEquals(components.year, 2013L, nil);
+    STAssertEquals(components.month, 5L, nil);
+    STAssertEquals(components.day, 13L, nil);
+    STAssertEquals(components.hour, 22L, nil);
+    STAssertEquals(components.minute, 43L, nil);
+    STAssertEquals(components.second, 9L, nil);
+}
+
+// ISO 8601 Calendar date strings (YYYY-MM-DD)
+- (void)testCalendarDateString;
+{
+    NSString *dateString = [[NSDate dateWithTimeIntervalSinceReferenceDate:390177780] xmlDateString];
+    STAssertEqualObjects(dateString, @"2013-05-13", nil);
+    
+    NSDate *decodedDate = [[NSDate alloc] initWithXMLDateString:dateString];
+    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSSecondCalendarUnit fromDate:decodedDate];
+    STAssertEquals(components.year, 2013L, nil);
+    STAssertEquals(components.month, 5L, nil);
+    STAssertEquals(components.day, 13L, nil);
+    STAssertEquals(components.hour, 0L, nil);
+    STAssertEquals(components.minute, 0L, nil);
+    STAssertEquals(components.second, 0L, nil);
+}
+
+// ICS drops the dashes, YYYYMMDD
+- (void)testICSDateString;
+{
+    NSString *dateString = [[NSDate dateWithTimeIntervalSinceReferenceDate:390177780] icsDateOnlyString];
+    STAssertEqualObjects(dateString, @"20130513", nil);
+    
+    NSDate *decodedDate = [[NSDate alloc] initWithICSDateOnlyString:dateString];
+    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSSecondCalendarUnit fromDate:decodedDate];
+    STAssertEquals(components.year, 2013L, nil);
+    STAssertEquals(components.month, 5L, nil);
+    STAssertEquals(components.day, 13L, nil);
+    STAssertEquals(components.hour, 0L, nil);
+    STAssertEquals(components.minute, 0L, nil);
+    STAssertEquals(components.second, 0L, nil);
+}
 
 @end

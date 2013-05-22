@@ -43,22 +43,30 @@ typedef void (^OFSDocumentStoreScopeDocumentCreationHandler)(OFSDocumentStoreFil
 - (void)performAsynchronousFileAccessUsingBlock:(void (^)(void))block;
 - (void)afterAsynchronousFileAccessFinishes:(void (^)(void))block;
 
-- (NSURL *)urlForNewDocumentInFolderNamed:(NSString *)folderName baseName:(NSString *)baseName fileType:(NSString *)documentUTI;
+// Passing nil means the scope's documentsURL.
+- (NSURL *)urlForNewDocumentInFolderAtURL:(NSURL *)folderURL baseName:(NSString *)baseName fileType:(NSString *)documentUTI;
 - (void)performDocumentCreationAction:(OFSDocumentStoreScopeDocumentCreationAction)createDocument handler:(OFSDocumentStoreScopeDocumentCreationHandler)handler;
 
 // Added the ability to pass in a baseName which will be substitute in for the files name in to toURL. We use this for handling localized names when restoring sample documents. If you don't want the name changed when adding an item, either pass in nil for the baseName or call the alternate method that doesn't take a baseName. Pass in nil for scope to add to the default scope.
-- (void)addDocumentInFolderNamed:(NSString *)folderName baseName:(NSString *)baseName fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
-- (void)addDocumentInFolderNamed:(NSString *)folderName fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
+- (void)addDocumentInFolderAtURL:(NSURL *)folderURL baseName:(NSString *)baseName fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
+- (void)addDocumentInFolderAtURL:(NSURL *)folderURL fromURL:(NSURL *)fromURL option:(OFSDocumentStoreAddOption)option completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;
 
 - (void)renameFileItem:(OFSDocumentStoreFileItem *)fileItem baseName:(NSString *)baseName fileType:(NSString *)fileType completionHandler:(void (^)(NSURL *destinationURL, NSError *errorOrNil))completionHandler;
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 - (void)moveFileItems:(NSSet *)fileItems completionHandler:(void (^)(OFSDocumentStoreFileItem *failingFileItem, NSError *errorOrNil))completionHandler;
-- (void)migrateDocumentsFromScope:(OFSDocumentStoreScope *)sourceScope byMoving:(BOOL)shouldMove completionHandler:(void (^)(NSDictionary *migratedURLs, NSDictionary *errorURLs))completionHandler;
+- (BOOL)isTrash;
++ (OFSDocumentStoreScope *)trashScope;
++ (void)setTrashScope:(OFSDocumentStoreScope *)trashScope;
 #endif
+
++ (BOOL)trashItemAtURL:(NSURL *)url resultingItemURL:(NSURL **)outResultingURL error:(NSError **)error;
 
 // When moving documents between scopes, the current scope must be asked if this is OK first. The on-disk representation may out of date or otherwise not ready to be moved.
 - (BOOL)prepareToMoveFileItem:(OFSDocumentStoreFileItem *)fileItem toScope:(OFSDocumentStoreScope *)otherScope error:(NSError **)outError;
+
+- (NSComparisonResult)compareDocumentScope:(OFSDocumentStoreScope *)otherScope;
+- (NSInteger)documentScopeGroupRank;
 
 @end
 
@@ -68,7 +76,7 @@ typedef void (^OFSDocumentStoreScopeDocumentCreationHandler)(OFSDocumentStoreFil
 @property(nonatomic,readonly) NSString *displayName;
 - (NSString *)moveToActionLabelWhenInList:(BOOL)inList;
 @property(nonatomic,readonly) BOOL hasFinishedInitialScan; // Must be KVO compliant
-- (NSURL *)documentsURL:(NSError **)outError;
+@property(nonatomic,readonly) NSURL *documentsURL;
 - (BOOL)requestDownloadOfFileItem:(OFSDocumentStoreFileItem *)fileItem error:(NSError **)outError;
 
 - (void)deleteItem:(OFSDocumentStoreFileItem *)fileItem completionHandler:(void (^)(NSError *errorOrNil))completionHandler;

@@ -7,17 +7,21 @@
 
 #import "OUICloudAccountListViewController.h"
 
+#import <OmniFileExchange/OFXAgent.h>
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
+#import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIMainViewController.h>
 
 #import "OUIAddCloudAccountViewController.h"
 #import "OUIServerAccountSetupViewController.h"
+#import "OUIDocumentAppController-Internal.h"
 
 RCS_ID("$Id$");
 
@@ -26,6 +30,10 @@ enum {
     ImportExportAccountListSection,
     SectionCount,
 };
+
+@protocol BlahBlahBlah
+- (NSURL *)localDocumentURL;
+@end
 
 @interface OUICloudAccountListViewController () <UITableViewDataSource, UITableViewDelegate>
 @end
@@ -122,7 +130,10 @@ enum {
 
     switch (section) {
         case CloudSyncAccountListSection:
-            return [_cloudSyncAccounts count];
+            if (_cloudSyncAccounts.count == 0)
+                return 0;
+            else
+                return _cloudSyncAccounts.count + 1; // An extra row for the "Use Cellular Data" switch
         case ImportExportAccountListSection:
             return [_importExportAccounts count];
         default:
@@ -143,6 +154,11 @@ enum {
     }
 }
 
+- (void)_takeCellularDataSettingFromSwitch:(UISwitch *)controlSwitch;
+{
+    [OFXAgent setCellularSyncEnabled:controlSwitch.isOn];
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     if (tableView != _accountListTableView) {
@@ -159,6 +175,29 @@ enum {
 
     switch (indexPath.section) {
         case CloudSyncAccountListSection:
+            if (indexPath.row == (signed)_cloudSyncAccounts.count) {
+                static NSString * const switchIdentifier = @"OUICloudAccountListViewControllerUseCellularData";
+                UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:switchIdentifier];
+                if (!cell) {
+                    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:switchIdentifier];
+                    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+
+                    UISwitch *accessorySwitch = [[UISwitch alloc] initWithFrame:CGRectZero];
+                    [accessorySwitch addTarget:self action:@selector(_takeCellularDataSettingFromSwitch:) forControlEvents:UIControlEventValueChanged];
+                    [accessorySwitch sizeToFit];
+                    cell.accessoryView = accessorySwitch;
+                }
+
+                NSString *title = NSLocalizedStringFromTableInBundle(@"Use Cellular Data", @"OmniUIDocument", OMNI_BUNDLE, @"Label for switch which controls whether cloud sync is allowed to use cellular data");
+
+                cell.textLabel.text = title;
+
+                UISwitch *accessorySwitch = (UISwitch *)cell.accessoryView;
+                [accessorySwitch setOn:[OFXAgent isCellularSyncEnabled]];
+
+                return cell;
+            }
+            // NO BREAK
         case ImportExportAccountListSection: {
             static NSString * const reuseIdentifier = @"ExistingServer";
             UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
@@ -222,7 +261,12 @@ enum {
     }
 
     switch (indexPath.section) {
-        case CloudSyncAccountListSection:
+        case CloudSyncAccountListSection: {
+            if (indexPath.row == (signed)_cloudSyncAccounts.count) { // "Use Cellular Data" switch
+                return;
+            }
+            // NO BREAK
+        }
         case ImportExportAccountListSection: {
             OFXServerAccount *account = [self _accountForRowAtIndexPath:indexPath];
             [self _editServerAccount:account];
@@ -239,52 +283,72 @@ enum {
     if (tableView != _accountListTableView)
         return UITableViewCellEditingStyleNone;
     
+    if (indexPath.section == CloudSyncAccountListSection && indexPath.row == (signed)_cloudSyncAccounts.count) { // "Use Cellular Data" switch
+        return UITableViewCellEditingStyleNone;
+    }
+
     return UITableViewCellEditingStyleDelete;
+}
+
+- (NSMutableArray *)_mutableCopyOfAccountsForSection:(NSUInteger)section;
+{
+    switch (section) {
+        case CloudSyncAccountListSection:
+            return [_cloudSyncAccounts mutableCopy];
+        case ImportExportAccountListSection:
+            return [_importExportAccounts mutableCopy];
+        default:
+            OBASSERT_NOT_REACHED("Unknown section");
+            return nil;
+    }
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    NSMutableArray *accounts;
-    switch (indexPath.section) {
-        case CloudSyncAccountListSection:
-            accounts = [_cloudSyncAccounts mutableCopy];
-            break;
-        case ImportExportAccountListSection:
-            accounts = [_importExportAccounts mutableCopy];
-            break;
-        default:
-            return;
-    }
-
+    if (indexPath.section == CloudSyncAccountListSection && indexPath.row == (signed)_cloudSyncAccounts.count)
+        return; // Don't touch the "Use Cellular Data" switch
+    NSMutableArray *accounts = [self _mutableCopyOfAccountsForSection:indexPath.section];
     NSInteger accountIndex = indexPath.row;
 
     OFXServerAccount *account = [accounts objectAtIndex:accountIndex];
+    [[OUIDocumentAppController controller] warnAboutDiscardingUnsyncedEditsInAccount:account withCancelAction:NULL discardAction:^{
+        // This marks the account for removal and starts the process of stopping syncing on it. Once that happens, it will automatically be removed from the filesystem.
+        [account prepareForRemoval];
 
-    // This marks the account for removal and starts the process of stopping syncing on it. Once that happens, it will automatically be removed from the filesystem.
-    [account prepareForRemoval];
+        NSUInteger section = indexPath.section;
+        NSMutableArray *accounts = [self _mutableCopyOfAccountsForSection:section];
+        NSUInteger accountIndex = [accounts indexOfObjectIdenticalTo:account];
+        if (accountIndex == NSNotFound)
+            return; // Already removed?
 
-    [accounts removeObjectAtIndex:accountIndex];
-    switch (indexPath.section) {
-        case CloudSyncAccountListSection:
-            _cloudSyncAccounts = accounts;
-            break;
-        case ImportExportAccountListSection:
-            _importExportAccounts = accounts;
-            break;
-        default:
-            OBASSERT_NOT_REACHED("We already short-circuit above if we're not in one of these two sections");
-    }
+        [accounts removeObjectAtIndex:accountIndex];
+        switch (section) {
+            case CloudSyncAccountListSection:
+                _cloudSyncAccounts = accounts;
+                break;
+            case ImportExportAccountListSection:
+                _importExportAccounts = accounts;
+                break;
+            default:
+                OBASSERT_NOT_REACHED("We already short-circuit above if we're not in one of these two sections");
+        }
 
-    [_accountListTableView beginUpdates];
-    [_accountListTableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    [_accountListTableView endUpdates];
+        [_accountListTableView beginUpdates];
+        if (section == CloudSyncAccountListSection && [_cloudSyncAccounts count] == 0) // If we've deleted our last cloud sync account, we need to also delete our "Use Cellular Data" row
+            [_accountListTableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:[NSIndexPath indexPathForRow:1 inSection:CloudSyncAccountListSection]] withRowAnimation:UITableViewRowAnimationFade];
+        [_accountListTableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:[NSIndexPath indexPathForRow:accountIndex inSection:section]] withRowAnimation:UITableViewRowAnimationFade];
+        [_accountListTableView endUpdates];
 
-    // Edit editing mode if this was the last editable object
-    if ([accounts count] == 0) {
-        OBFinishPortingLater("Can we swap to the 'add account' view controller at this point?");
-        [self setEditing:NO animated:YES];
-        [self _updateToolbarButtons];
-    }
+        // Edit editing mode if this was the last editable object
+        if (_cloudSyncAccounts.count + _importExportAccounts.count == 0) {
+            [self setEditing:NO animated:YES];
+            [self _updateToolbarButtons];
+
+            // Swap to the 'add account' view controller
+            OUIAddCloudAccountViewController *add = [[OUIAddCloudAccountViewController alloc] init];
+            [self.navigationController setViewControllers:@[add] animated:YES];
+        }
+    }];
 }
 
 #pragma mark - Private
@@ -304,7 +368,7 @@ enum {
 
     NSMutableArray *cloudSyncAccounts = [NSMutableArray array];
     NSMutableArray *importExportAccounts = [NSMutableArray array];
-    for (OFXServerAccount *account in accountRegistry.allAccounts) {
+    for (OFXServerAccount *account in [accountRegistry.allAccounts sortedArrayUsingSelector:@selector(compareServerAccount:)]) {
         if (account.type == iTunesAccountType)
             continue;
         if (account.hasBeenPreparedForRemoval)
@@ -331,6 +395,10 @@ enum {
     OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initWithAccount:account ofType:account.type];
     setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError *errorOrNil){
         [self.navigationController popToViewController:self animated:YES];
+        if (vc.account.isCloudSyncEnabled) {
+            [[OUIDocumentAppController controller] _selectScopeWithAccount:vc.account completionHandler:NULL];
+            [[[OUIDocumentAppController controller] documentPicker] updateTitle];
+        }
     };
     
     [self.navigationController pushViewController:setup animated:YES];

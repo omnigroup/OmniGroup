@@ -25,7 +25,7 @@ extern NSString * const OUIUndoPopoverWillShowNotification;
     NSUndoManager *_undoManager;
     OUIUndoButton *_undoButton;
     
-    UITapGestureRecognizer *_tapRecoginizer;
+    UITapGestureRecognizer *_tapRecognizer;
     UILongPressGestureRecognizer *_longPressRecognizer;
     
     id <OUIUndoBarButtonItemTarget> _undoBarButtonItemTarget;

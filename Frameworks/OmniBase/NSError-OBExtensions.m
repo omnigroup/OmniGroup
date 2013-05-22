@@ -134,6 +134,26 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
     return [self hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] || [self hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError];
 }
 
+
+- (BOOL)causedByUnreachableHost;
+{
+    NSError *urlError = [self underlyingErrorWithDomain:NSURLErrorDomain];
+    if (urlError == nil)
+         return NO;
+
+    switch ([urlError code]) {
+        case NSURLErrorCannotFindHost:
+        case NSURLErrorTimedOut:
+        case NSURLErrorDNSLookupFailed:
+        case NSURLErrorNotConnectedToInternet:
+        case NSURLErrorCannotConnectToHost:
+            return YES;
+
+        default:
+            return NO;
+    }
+}
+
 - initWithPropertyList:(NSDictionary *)propertyList;
 {
     NSString *domain = [propertyList objectForKey:@"domain"];
@@ -275,6 +295,23 @@ static NSString * const OFSuppressedErrorCode = @"code";
 
 - (void)log:(NSString *)format, ...;
 {
+    va_list args;
+    va_start(args, format);
+    [self log:format arguments:args];
+    va_end(args);
+}
+
+- (void)log:(NSString *)format arguments:(va_list)arguments;
+{
+    NSString *reason = [[NSString alloc] initWithFormat:format arguments:arguments];
+    [self logWithReason:reason];
+}
+
+- (void)logWithReason:(NSString *)reason;
+{
+    if ([self causedByUserCancelling])
+        return;
+    
     NSMutableArray *suppressionStack = [[NSThread currentThread] threadDictionary][OFSuppressedErrorStack];
     if (suppressionStack) {
         NSString *domain = self.domain;
@@ -284,11 +321,6 @@ static NSString * const OFSuppressedErrorCode = @"code";
                 return;
         }
     }
-    
-    va_list args;
-    va_start(args, format);
-    NSString *reason = [[NSString alloc] initWithFormat:format arguments:args];
-    va_end(args);
     
     NSLog(@"%@: %@", reason, [self toPropertyList]);
 }

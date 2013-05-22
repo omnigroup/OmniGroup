@@ -9,18 +9,20 @@
 
 #import <Foundation/NSAttributedString.h>
 #import <MobileCoreServices/UTCoreTypes.h>
-#import <OmniAppKit/OATextStorage.h>
 #import <OmniAppKit/OATextAttributes.h>
+#import <OmniAppKit/OATextStorage.h>
 #import <OmniBase/rcsid.h>
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/OFCharacterSet.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniQuartz/OQColor.h>
 #import <OmniQuartz/OQDrawing.h>
+#import <OmniUI/OUEFTextRange.h>
 #import <OmniUI/OUIColorInspectorSlice.h>
 #import <OmniUI/OUIDirectTapGestureRecognizer.h>
 #import <OmniUI/OUIFontAttributesInspectorSlice.h>
 #import <OmniUI/OUIFontInspectorSlice.h>
+#import <OmniUI/OUILoupeOverlay.h>
 #import <OmniUI/OUIParagraphStyleInspectorSlice.h>
 #import <OmniUI/OUIScrollNotifier.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
@@ -33,10 +35,8 @@
 #import <stdlib.h>
 
 #import "OUEFTextPosition.h"
-#import "OUEFTextRange.h"
 #import "OUEFTextSpan.h"
 #import "OUIEditMenuController.h"
-#import "OUILoupeOverlay.h"
 #import "OUITextCursorOverlay.h"
 #import "OUITextInputStringTokenizer.h"
 #import "OUITextThumb.h"
@@ -1476,7 +1476,7 @@ static BOOL _rangeIsInsertionPoint(OUIEditableFrame *self, UITextRange *r)
         if (value)
             [attributes setObject:value forKey:attr];
         else
-            [attributes removeObjectForKey:value];
+            [attributes removeObjectForKey:attr];
         self.typingAttributes = attributes;
         [attributes release];
         return;

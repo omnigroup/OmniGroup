@@ -16,5 +16,9 @@
 - (id)initWithAccount:(OFXServerAccount *)account ofType:(OFXServerAccountType *)accountType;
 
 @property(nonatomic,readonly) OFXServerAccount *account;
+@property(nonatomic,copy) NSString *location;
+@property(nonatomic,copy) NSString *accountName;
+@property(nonatomic,copy) NSString *password;
+@property(nonatomic,copy) NSString *nickname;
 
 @end

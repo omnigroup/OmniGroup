@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2010, 2013 Omni Development, Inc.All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,7 +38,7 @@
 
 @property (nonatomic,readonly) NSURL *url;
 
-- (OFXMLQName *)elementQName; // If on an elemenet, return it's name.  Otherwise, nil.
+- (OFXMLQName *)elementQName; // If on an element, return it's name.  Otherwise, nil.
 
 - (BOOL)openElement:(NSError **)outError; // If on an element, skip to its first child
 - (BOOL)closeElement:(NSError **)outError; // Skip the remaining children of an element and its closing mark.
@@ -49,7 +49,10 @@
 // Expects to be called with the reader pointing at an element.  If it isn't, this will return YES without doing anything but asserting.  Otherwise, this skips the entire element and all its children, or returns an error.
 - (BOOL)skipCurrentElement:(NSError **)outError;
 
-// Skips past the string to the the end of the element, returning it if outString is non-NULL;
+// Skips the current and any immediately following readable string nodes (text, CDATA, or whitespace), returning them as a single plain text string by reference if outString is non-NULL. If outElementEnded is non-NULL, additionally returns by reference whether the text reading placed the reader at the end of an element.
+- (BOOL)copyString:(NSString **)outString endingElement:(BOOL *)outElementEnded error:(NSError **)outError;
+
+// Skips past the string to the the end of the element, returning it by reference if outString is non-NULL
 - (BOOL)copyStringContentsToEndOfElement:(NSString **)outString error:(NSError **)outError;
 
 // Attributes.

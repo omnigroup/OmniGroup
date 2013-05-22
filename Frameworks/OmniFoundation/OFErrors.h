@@ -44,6 +44,11 @@ enum {
     OFNetStateRegistrationCannotCreateSocket,
     
     OFSyncClientStateInvalidPropertyList,
+    
+    // OFLockFile
+    OFLockInvalidated,
+    OFLockUnavailable,
+    OFCannotCreateLock,
 };
 
 

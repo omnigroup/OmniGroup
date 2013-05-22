@@ -36,7 +36,6 @@ RCS_ID("$Id$");
 - (void)_queuedRecalculateInspectorsAndInspectWindow:(int)onlyIfVisible updateInspectors:(int)updateInspectors;
 - (void)_getInspectedObjects;
 - (void)_recalculateInspectionSetIfVisible:(BOOL)onlyIfVisible updateInspectors:(BOOL)updateInspectors;
-- (void)_selectionMightHaveChangedNotification:(NSNotification *)notification;
 - (void)_inspectWindowNotification:(NSNotification *)notification;
 - (void)_uninspectWindowNotification:(NSNotification *)notification;
 - (void)_windowWillClose:(NSNotification *)note;
@@ -44,7 +43,7 @@ RCS_ID("$Id$");
 - (void)_loadConfigurations;
 @end
 
-NSString *OIInspectorSelectionDidChangeNotification = @"OIInspectorSelectionDidChangeNotification";
+NSString *OIInspectionSetChangedNotification = @"OIInspectionSetChangedNotification";
 NSString *OIWorkspacesHelpURLKey = @"OIWorkspacesHelpURL";
 
 static NSMutableArray *additionalPanels = nil;
@@ -249,7 +248,7 @@ static NSMutableArray *hiddenPanels = nil;
 + (void)clearInspectionSet;
 {
     [[[self sharedInspector] inspectionSet] removeAllObjects];
-    [[self sharedInspector] inspectionSetChanged];
+    [[self sharedInspector] _postInspectionSetChangedNotificationAndUpdateInspectors:YES];
 }
 
 - (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
@@ -423,15 +422,15 @@ static BOOL objectInterestsInspectorP(id anObject, void *anInspector)
     return [inspectionSet allObjects];
 }
 
-- (OIInspectionSet *)inspectionSet;
-    /*" This method allows fine tuning of the inspection.  If the inspection set is changed, -inspectionSetChanged must be called to update the inspectors "*/
+- (NSString *)inspectionIdentifierForCurrentInspectionSet;
 {
-    return inspectionSet;
+    return _currentInspectionIdentifier;
 }
 
-- (void)inspectionSetChanged;
+- (OIInspectionSet *)inspectionSet;
+    /*" This method allows fine tuning of the inspection.  If the inspection set is changed, -_postInspectionSetChangedNotificationAndUpdateInspectors: must be called "*/
 {
-    [inspectorControllers makeObjectsPerformSelector:@selector(updateInspector)];
+    return inspectionSet;
 }
 
 - (NSMutableDictionary *)workspaceDefaults;
@@ -970,6 +969,9 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
                 if ([seenControllers member:target] == nil) {
                     [seenControllers addObject:target];
                     [(id <OIInspectableController>)target addInspectedObjects:inspectionSet];
+                    if ([target respondsToSelector:@selector(inspectionIdentifierForInspectionSet:)] && _currentInspectionIdentifier == nil) {
+                        _currentInspectionIdentifier = [[target inspectionIdentifierForInspectionSet:inspectionSet] copy];
+                    }
                 }
             }
             return YES; // continue searching
@@ -988,22 +990,27 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (void)_recalculateInspectionSetIfVisible:(BOOL)onlyIfVisible updateInspectors:(BOOL)updateInspectors;
 {
     registryFlags.isInspectionQueued = NO;
+    [_currentInspectionIdentifier release];
+    _currentInspectionIdentifier = nil;
 
     // Don't calculate inspection set if it would be pointless
     if (onlyIfVisible && ![self hasVisibleInspector]) {
         [inspectionSet release];
         inspectionSet = nil;
-        return;
+        [self _postInspectionSetChangedNotificationAndUpdateInspectors:NO];
+    } else {
+        [self _getInspectedObjects];
+        [self _postInspectionSetChangedNotificationAndUpdateInspectors:updateInspectors];
     }
-    
-    [self _getInspectedObjects];
-    if (updateInspectors)
-        [self inspectionSetChanged];
 }
 
-- (void)_selectionMightHaveChangedNotification:(NSNotification *)notification;
+- (void)_postInspectionSetChangedNotificationAndUpdateInspectors:(BOOL)updateInspectors;
 {
-    [self _inspectWindow:[NSApp mainWindow] queue:YES onlyIfVisible:YES updateInspectors:YES];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OIInspectionSetChangedNotification object:self userInfo:nil];
+    
+    // Some callers know we don't need to update the inspectors themselves (perhaps we have no visible inspectors or they will be directly updated soon).
+    if (updateInspectors)
+        [inspectorControllers makeObjectsPerformSelector:@selector(updateInspector)];
 }
 
 - (void)_inspectWindowNotification:(NSNotification *)notification;
@@ -1062,7 +1069,6 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
         [defaultNotificationCenter addObserver:self selector:@selector(_applicationWillResignActive:) name:NSApplicationWillResignActiveNotification object:NSApp];
         [defaultNotificationCenter addObserver:self selector:@selector(_inspectWindowNotification:) name:NSWindowDidBecomeMainNotification object:nil];
         [defaultNotificationCenter addObserver:self selector:@selector(_uninspectWindowNotification:) name:NSWindowDidResignMainNotification object:nil];
-        [defaultNotificationCenter addObserver:self selector:@selector(_selectionMightHaveChangedNotification:) name:OIInspectorSelectionDidChangeNotification object:nil];
         
 	// Listen for all window close notifications; this is easier than keeping track of subscribing only once if lastWindowAskedToInspect and lastMainWindowBeforeAppSwitch are the same but twice if they differ (but not if on is nil, etc).  There aren't a huge number of these notifications anyway.
 	[defaultNotificationCenter addObserver:self selector:@selector(_windowWillClose:) name:NSWindowWillCloseNotification object:nil];

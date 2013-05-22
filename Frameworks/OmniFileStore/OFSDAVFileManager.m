@@ -14,6 +14,7 @@
 #import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -31,6 +32,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 
 - initWithBaseURL:(NSURL *)baseURL delegate:(id <OFSFileManagerDelegate>)delegate error:(NSError **)outError;
 {
+    OBPRECONDITION(baseURL);
+
     // Good form requires that DAV file managers have a delegate for authentication and at least be able to provide credentials
     OBPRECONDITION(delegate);
     OBPRECONDITION([delegate conformsToProtocol:@protocol(OFSFileManagerDelegate)]);
@@ -49,7 +52,10 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     }
     
     _connection = [[OFSDAVConnection alloc] init];
-    
+    if ([delegate respondsToSelector:@selector(fileManagerShouldAllowCellularAccess:)]) {
+        _connection.shouldDisableCellularAccess = ![delegate fileManagerShouldAllowCellularAccess:self];
+    }
+
     // If we try to spin the runloop while using NSURLConnection's operation queue scheduling, we can end up blocking some of its work and deadlocking. Instead, we have the connection do its work on a private serial queue and we wait for it with NSConditionLocks.
     _connectionQueue = [[NSOperationQueue alloc] init];
     _connectionQueue.maxConcurrentOperationCount = 1;
@@ -85,6 +91,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 
 - (NSString *)lockURL:(NSURL *)url error:(NSError **)outError;
 {
+    OBPRECONDITION(url);
+
     __block NSString *returnToken;
     __block NSError *returnError;
     
@@ -105,6 +113,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 
 - (BOOL)unlockURL:(NSURL *)url token:(NSString *)lockToken error:(NSError **)outError;
 {
+    OBPRECONDITION(url);
+
     __block NSError *returnError;
     
     [self _performOperation:^(OperationDone done) {
@@ -150,6 +160,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 
 - (OFSFileInfo *)fileInfoAtURL:(NSURL *)url serverDate:(NSDate **)outServerDate error:(NSError **)outError;
 {
+    OBPRECONDITION(url);
+
     __block OFSDAVSingleFileInfoResult *returnResult;
     __block NSError *returnError;
     
@@ -175,6 +187,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 
 - (NSData *)dataWithContentsOfURL:(NSURL *)url withETag:(NSString *)ETag error:(NSError **)outError;
 {
+    OBPRECONDITION(url);
+
     __block OFSDAVOperation *operation;
     
     [self _performOperation:^(OperationDone done) {
@@ -200,6 +214,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 
 - (NSMutableArray *)directoryContentsAtURL:(NSURL *)url withETag:(NSString *)ETag collectingRedirects:(NSMutableArray *)redirections options:(OFSDirectoryEnumerationOptions)options serverDate:(NSDate **)outServerDate error:(NSError **)outError;
 {
+    OBPRECONDITION(url);
+
 #ifdef DEBUG_bungi
     // I'd like to make this the default, so start reviewing callers that aren't passing it.
     OBPRECONDITION(options & OFSDirectoryEnumerationSkipsSubdirectoryDescendants);
@@ -230,7 +246,7 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
                     (options & OFSDirectoryEnumerationForceRecursiveDirectoryRead) &&
                     [errorOrNil hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_FORBIDDEN]) {
                     /* possible that 'depth:infinity' not supported on this server but still want results */
-                    NSError *recursiveError;
+                    __autoreleasing NSError *recursiveError;
                     returnContents = [self _recursivelyCollectDirectoryContentsAtURL:url collectingRedirects:redirections options:options error:&recursiveError];
                     if (!returnContents)
                         returnError = recursiveError;
@@ -273,7 +289,7 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
                 
                 // The directory itself will be in the property results.
                 // We don't necessarily know what its name will be, though.
-                if (!containerInfo && OFSURLEqualsURL([info originalURL], expectedDirectoryURL)) {
+                if (!containerInfo && OFURLEqualsURL([info originalURL], expectedDirectoryURL)) {
                     containerInfo = info;
                     // Don't return the container itself in the results list.
                     continue;
@@ -377,6 +393,9 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 
 - (NSURL *)writeData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically error:(NSError **)outError;
 {
+    OBPRECONDITION(data, @"Pass an empty data if that's really what you want");
+    OBPRECONDITION(url);
+
     if (OFSFileManagerDebug > 0)
         NSLog(@"DAV operation: PUT %@ (data of %ld bytes) atomically:%d", url, [data length], atomically);
 
@@ -392,7 +411,7 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
             return nil;
         
         NSURL *finalURL = url;
-        if (!OFSURLEqualsURL(actualTemporaryURL,temporaryURL)) {
+        if (!OFURLEqualsURL(actualTemporaryURL,temporaryURL)) {
             NSString *rewrittenFinalURL = OFSURLAnalogousRewrite(temporaryURL, [url absoluteString], actualTemporaryURL);
             if (rewrittenFinalURL)
                 finalURL = [NSURL URLWithString:rewrittenFinalURL];
@@ -423,6 +442,7 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 
 - (NSURL *)createDirectoryAtURL:(NSURL *)url attributes:(NSDictionary *)attributes error:(NSError **)outError;
 {
+    OBPRECONDITION(url);
     OBPRECONDITION(_connection);
     
     __block NSError *createError;
@@ -455,6 +475,9 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
 
 - (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL error:(NSError **)outError;
 {
+    OBPRECONDITION(sourceURL);
+    OBPRECONDITION(destURL);
+
     __block NSURL *URL;
     __block NSError *error;
     
@@ -471,6 +494,9 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
 
 - (NSURL *)copyURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
 {
+    OBPRECONDITION(sourceURL);
+    OBPRECONDITION(destURL);
+
     __block NSURL *URL;
     __block NSError *error;
     
@@ -487,6 +513,9 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
 
 - (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
 {
+    OBPRECONDITION(sourceURL);
+    OBPRECONDITION(destURL);
+
     __block NSURL *URL;
     __block NSError *error;
     
@@ -503,6 +532,9 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
 
 - (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
 {
+    OBPRECONDITION(sourceURL);
+    OBPRECONDITION(destURL);
+
     __block NSURL *URL;
     __block NSError *error;
     
@@ -519,6 +551,9 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
 
 - (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
 {
+    OBPRECONDITION(sourceURL);
+    OBPRECONDITION(destURL);
+
     __block NSURL *URL;
     __block NSError *error;
     
@@ -535,6 +570,9 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
 
 - (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
 {
+    OBPRECONDITION(sourceURL);
+    OBPRECONDITION(destURL);
+
     __block NSURL *URL;
     __block NSError *error;
     
@@ -551,11 +589,33 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
 
 - (NSURL *)moveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL error:(NSError **)outError;
 {
+    OBPRECONDITION(sourceURL);
+    OBPRECONDITION(destURL);
+
     __block NSURL *URL;
     __block NSError *error;
     
     [self _performOperation:^(OperationDone done) {
         [_connection moveURL:sourceURL toMissingURL:destURL completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
+            URL = resultURL;
+            error = errorOrNil;
+            done();
+        }];
+    }];
+    
+    return _returnURLOrError(URL, error, outError);
+}
+
+- (NSURL *)moveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL ifURLExists:(NSURL *)tagURL error:(NSError **)outError;
+{
+    OBPRECONDITION(sourceURL);
+    OBPRECONDITION(destURL);
+
+    __block NSURL *URL;
+    __block NSError *error;
+    
+    [self _performOperation:^(OperationDone done) {
+        [_connection moveURL:sourceURL toURL:destURL ifURLExists:tagURL completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
             URL = resultURL;
             error = errorOrNil;
             done();
@@ -573,6 +633,7 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
 - (BOOL)deleteURL:(NSURL *)url withETag:(NSString *)ETag error:(NSError **)outError;
 {
     OBPRECONDITION(_connection);
+    OBPRECONDITION(url);
     
     __block BOOL success = NO;
     __block NSError *error; // strong ref to hold onto error past our autorelease pool.
@@ -626,6 +687,8 @@ typedef void (^Operation)(OperationDone done);
 
 - (NSMutableArray *)_recursivelyCollectDirectoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections options:(OFSDirectoryEnumerationOptions)options error:(NSError **)outError;
 {
+    OBPRECONDITION(url);
+
     NSMutableArray *folderContents = [self directoryContentsAtURL:url withETag:nil collectingRedirects:redirections options:(options | OFSDirectoryEnumerationSkipsSubdirectoryDescendants) serverDate:NULL error:outError];
     
     NSMutableIndexSet *directoryReferences = [[NSMutableIndexSet alloc] init];

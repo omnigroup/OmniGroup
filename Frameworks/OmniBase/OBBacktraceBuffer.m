@@ -12,8 +12,6 @@
 #include <execinfo.h>  // For backtrace()
 #include <sys/time.h>
 
-OB_REQUIRE_ARC
-
 RCS_ID("$Id$")
 
 #if !defined(OB_BUILTIN_ATOMICS_AVAILABLE)

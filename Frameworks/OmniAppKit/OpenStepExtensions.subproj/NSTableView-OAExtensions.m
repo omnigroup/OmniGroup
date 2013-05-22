@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -523,7 +523,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
             return NO;
     } else {
         id <NSTableViewDataSource> dataSource = self.dataSource;
-        if ([self numberOfSelectedRows] > 0 && [dataSource respondsToSelector:@selector(tableView:writeRows:toPasteboard:)])
+        if ([self numberOfSelectedRows] > 0 && [dataSource respondsToSelector:@selector(tableView:writeRowsWithIndexes:toPasteboard:)])
             return [dataSource tableView:self writeRowsWithIndexes:[self selectedRowIndexes] toPasteboard:pasteboard];
         else
             return NO;

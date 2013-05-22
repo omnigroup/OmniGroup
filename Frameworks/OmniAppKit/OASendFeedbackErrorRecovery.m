@@ -1,4 +1,4 @@
-// Copyright 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,8 +52,13 @@ RCS_ID("$Id$")
     
     // These are going to be read by the developer, not necessarily the user, so don't localize them (or if we did, we'd want to localize to the main bundle's development language).
     [body appendFormat:@"Error: %@\n", [error localizedDescription]];
-    [body appendFormat:@"Reason: %@\n", [error localizedFailureReason]];
-    
+    NSString *reason = [error localizedFailureReason];
+    if (reason != nil)
+        [body appendFormat:@"Reason: %@\n", reason];
+    NSString *recoverySuggestion = [error localizedRecoverySuggestion];
+    if (recoverySuggestion != nil)
+        [body appendFormat:@"Recovery Suggestion: %@\n", recoverySuggestion];
+
     [body appendString:@"\nDetails:\n\n"];
     
     NSError *detailError = error;

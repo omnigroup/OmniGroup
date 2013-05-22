@@ -1,4 +1,4 @@
-// Copyright 1997-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,5 +13,8 @@
 
 - (void)addInspectedObjects:(OIInspectionSet *)inspectionSet;
 /*" OIInspectorRegistry calls this on objects in the responder chain to collect the set of objects to inspect. "*/
+
+@optional
+- (NSString *)inspectionIdentifierForInspectionSet:(OIInspectionSet *)inspectionSet;
 
 @end

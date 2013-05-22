@@ -147,7 +147,7 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
                  }
              } else {
                  if (![[NSFileManager defaultManager] moveItemAtURL:newURL toURL:destinationURL error:&moveError]) {
-                     NSLog(@"Error moving %@ to %@: %@", newURL, destinationURL, [moveError toPropertyList]);
+                     //NSLog(@"Error moving %@ to %@: %@", newURL, destinationURL, [moveError toPropertyList]);
                      if (outError)
                          *outError = moveError;
                      return;
@@ -167,7 +167,6 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
 
          */
         
-        OBFinishPortingLater("Maybe don't pass 'replacing' here -- we don't want to overwrite the destination in most cases, if any");
         [self coordinateWritingItemAtURL:sourceURL options:NSFileCoordinatorWritingForMoving
                         writingItemAtURL:destinationURL options:NSFileCoordinatorWritingForMerging error:outError
                               byAccessor:
@@ -179,7 +178,7 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
 
                  NSError *moveError = nil;
              if (![[NSFileManager defaultManager] moveItemAtURL:newURL1 toURL:newURL2 error:&moveError]) {
-                 NSLog(@"Error moving %@ to %@: %@", newURL1, newURL2, [moveError toPropertyList]);
+                 //NSLog(@"Error moving %@ to %@: %@", newURL1, newURL2, [moveError toPropertyList]);
                  if (outError)
                      *outError = moveError;
                  return;
@@ -190,6 +189,90 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
          }];
     }
     
+    return success;
+}
+
+- (BOOL)moveItemAtURL:(NSURL *)sourceURL error:(NSError **)outError byAccessor:(NSURL * (^)(NSURL *newURL, NSError **outError))accessor;
+{
+    __block BOOL success = NO;
+    [self coordinateWritingItemAtURL:sourceURL options:NSFileCoordinatorWritingForMoving error:outError byAccessor:^(NSURL *newURL){
+        NSURL *destinationURL = accessor(newURL, outError);
+        if (!destinationURL)
+            return;
+        [self itemAtURL:newURL didMoveToURL:destinationURL];
+        success = YES;
+    }];
+    return success;
+}
+
+- (BOOL)removeItemAtURL:(NSURL *)fileURL error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL, NSError **outError))accessor;
+{
+    __block BOOL success = NO;
+    [self coordinateWritingItemAtURL:fileURL options:NSFileCoordinatorWritingForDeleting error:outError byAccessor:^(NSURL *newURL){
+        success = accessor(newURL, outError);
+    }];
+    return success;
+}
+
+- (BOOL)readItemAtURL:(NSURL *)fileURL withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL, NSError **outError))accessor;
+{
+    __block BOOL success = NO;
+    
+    NSFileCoordinatorReadingOptions options = withChanges ? 0 : NSFileCoordinatorReadingWithoutChanges;
+    [self coordinateReadingItemAtURL:fileURL options:options error:outError byAccessor:^(NSURL *newURL) {
+        success = accessor(newURL, outError);
+    }];
+    return success;
+}
+
+- (BOOL)writeItemAtURL:(NSURL *)fileURL withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL, NSError **outError))accessor;
+{
+    __block BOOL success = NO;
+    
+    NSFileCoordinatorWritingOptions options = withChanges ? NSFileCoordinatorWritingForMerging : 0;
+    [self coordinateWritingItemAtURL:fileURL options:options error:outError byAccessor:^(NSURL *newURL) {
+        success = accessor(newURL, outError);
+    }];
+    return success;
+}
+
+- (BOOL)readItemAtURL:(NSURL *)readURL withChanges:(BOOL)readWithChanges
+       writeItemAtURL:(NSURL *)writeURL withChanges:(BOOL)writeWithChanges
+                error:(NSError **)outError byAccessor:(BOOL (^)(NSURL *newURL1, NSURL *newURL2, NSError **outError))accessor;
+{
+    NSFileCoordinatorReadingOptions readOptions = readWithChanges ? 0 : NSFileCoordinatorReadingWithoutChanges;
+    NSFileCoordinatorWritingOptions writeOptions = writeWithChanges ? NSFileCoordinatorWritingForMerging : 0;
+
+    __block BOOL success = NO;
+    [self coordinateReadingItemAtURL:readURL options:readOptions
+                    writingItemAtURL:writeURL options:writeOptions
+                               error:outError byAccessor:
+     ^(NSURL *newURL1, NSURL *newURL2){
+         success = accessor(newURL1, newURL2, outError);
+     }];
+    
+    return success;
+}
+
+- (BOOL)prepareToReadItemsAtURLs:(NSArray *)readingURLs withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSError **outError))accessor;
+{
+    __block BOOL success = NO;
+    NSFileCoordinatorReadingOptions options = withChanges ? 0 : NSFileCoordinatorReadingWithoutChanges;
+    [self prepareForReadingItemsAtURLs:readingURLs options:options writingItemsAtURLs:nil options:0 error:outError byAccessor:^(void (^completionHandler)(void)){
+        success = accessor(outError);
+        completionHandler();
+    }];
+    return success;
+}
+
+- (BOOL)prepareToWriteItemsAtURLs:(NSArray *)writingURLs withChanges:(BOOL)withChanges error:(NSError **)outError byAccessor:(BOOL (^)(NSError **outError))accessor;
+{
+    __block BOOL success = NO;
+    NSFileCoordinatorWritingOptions options = withChanges ? NSFileCoordinatorWritingForMerging : 0;
+    [self prepareForReadingItemsAtURLs:nil options:0 writingItemsAtURLs:writingURLs options:options error:outError byAccessor:^(void (^completionHandler)(void)){
+        success = accessor(outError);
+        completionHandler();
+    }];
     return success;
 }
 

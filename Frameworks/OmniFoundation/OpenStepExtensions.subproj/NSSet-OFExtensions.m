@@ -120,6 +120,15 @@ static void insertionSort(const void *anObject, void *_context)
     return nil;
 }
 
+- (BOOL)all:(OFPredicateBlock)predicate;
+{
+    for (id obj in self) {
+        if (!predicate(obj))
+            return NO;
+    }
+    return YES;
+}
+
 - (NSSet *)select:(OFPredicateBlock)predicate;
 {
     NSMutableSet *matches = [NSMutableSet set];

@@ -229,7 +229,7 @@ static NSString *clGetPlatformInfoString(cl_platform_id plat, cl_platform_info w
 static NSString *clGetDeviceInfoString(cl_device_id device, cl_device_info what);
 #endif /* CL_VERSION_1_0 */
 
-CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collectHardwareInformation, NSString *licenseType, bool reportMode)
+CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collectHardwareInformation, bool collectOpenGLInformation, NSString *licenseType, bool reportMode)
 {
     CFMutableDictionaryRef info = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     
@@ -588,12 +588,11 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
     }
     
     // OpenGL extensions for the main display adaptor.
-    do {
+    if (collectOpenGLInformation) {
 #if OSU_MAC
 	NSOpenGLPixelFormatAttribute attributes[] = {
 	    NSOpenGLPFAFullScreen,
-	    NSOpenGLPFAScreenMask,
-	    CGDisplayIDToOpenGLDisplayMask(CGMainDisplayID()),
+	    NSOpenGLPFAScreenMask, CGDisplayIDToOpenGLDisplayMask(CGMainDisplayID()),
 	    NSOpenGLPFAAccelerated,
 	    NSOpenGLPFANoRecovery,
 	    0
@@ -655,7 +654,7 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
 #if OSU_IPHONE
         // The GL info is implicit in the hardware model, but it might be useful for us to collect that instead of having to have one of every device and manually collect it.
 #endif
-    } while (0);
+    }
         
     // More info on the general hardware from system_profiler
     {

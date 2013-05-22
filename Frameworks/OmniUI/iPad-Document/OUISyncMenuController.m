@@ -8,7 +8,7 @@
 #import "OUISyncMenuController.h"
 
 #import <MobileCoreServices/MobileCoreServices.h>
-#import <OmniFileExchange/OFXServerAccount.h>
+#import <OmniFileExchange/OFXAgent.h>
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
@@ -23,6 +23,7 @@
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
 
+#import "OUICloudSetupViewController.h"
 #import "OUIExportOptionsController.h"
 #import "OUIExportOptionsView.h"
 #import "OUIWebDAVSyncListController.h"
@@ -37,6 +38,7 @@ RCS_ID("$Id$")
 
 enum {
     AccountsSection,
+    CloudSetupSection,
     ResetSampleDocumentSection,
     SectionCount,
 };
@@ -96,7 +98,6 @@ enum {
     self.contentSizeForViewInPopover = self.view.frame.size; // Make sure we set this before creating our popover
 
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Import Document\u2026", @"OmniUIDocument", OMNI_BUNDLE, @"Import document title");
-    self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
     [self _updateToolbarButtons];
     
@@ -173,8 +174,14 @@ enum {
 - (NSInteger)tableView:(UITableView *)table numberOfRowsInSection:(NSInteger)section;
 {
     if (section == AccountsSection)
-        return [_accounts count] + [_accountTypes count]; // Existing accounts + the types that can be added
+        return [_accounts count];
 
+    if (section == CloudSetupSection) {
+        if ([OFXAgent hasDefaultSyncPathExtensions])
+            return 1;
+        return 0;
+    }
+    
     if (section == ResetSampleDocumentSection)
         return 1;
 
@@ -183,6 +190,21 @@ enum {
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
+    if (indexPath.section == CloudSetupSection) {
+        static NSString *cloudSetupReuseIdentifier = @"cloudSetupReuseIdentifier";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cloudSetupReuseIdentifier];
+        if (cell == nil) {
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cloudSetupReuseIdentifier];
+            cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+        }
+        
+        cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Cloud Setup...", @"OmniUIDocument", OMNI_BUNDLE, @"App menu item title");
+        cell.imageView.image = [UIImage imageNamed:@"OUIMenuItemCloudSetUp"];
+        cell.accessoryType = UITableViewCellAccessoryNone;
+        
+        return cell;
+    }
+    
     if (indexPath.section == ResetSampleDocumentSection) {
         static NSString *reuseIdentifier = @"ResetSampleDocument";
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
@@ -195,24 +217,6 @@ enum {
         return cell;
     }
     
-    NSInteger accountIndex = indexPath.row;
-    if ((NSUInteger)accountIndex >= [_accounts count]) {
-        NSUInteger accountTypeIndex = accountIndex - [_accounts count];
-        OBASSERT(accountTypeIndex < [_accountTypes count]);
-        OFXServerAccountType *accountType = [_accountTypes objectAtIndex:accountTypeIndex];
-        
-        // Add Account row
-        static NSString *reuseIdentifier = @"AddAccount";
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
-        if (!cell) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
-            cell.textLabel.text = accountType.addAccountTitle;
-            cell.imageView.image = [UIImage imageNamed:@"OUIGreenPlusButton.png"];
-        }
-        
-        return cell;
-    }
-    
     static NSString * const reuseIdentifier = @"ExistingServer";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
     if (!cell) {
@@ -220,6 +224,7 @@ enum {
         cell.editingAccessoryType = UITableViewCellAccessoryDetailDisclosureButton;
     }
     
+    NSInteger accountIndex = indexPath.row;
     OFXServerAccount *account = [_accounts objectAtIndex:accountIndex];
     cell.textLabel.text = _isExporting ? account.exportTitle : account.importTitle;
     cell.detailTextLabel.text = account.accountDetailsString;
@@ -242,6 +247,21 @@ enum {
     OBPRECONDITION(self.editing == NO); // Tapping rows doesn't select them in edit mode
     
     [[OUIAppController controller] dismissPopover:_menuPopoverController animated:YES];
+    
+    if (indexPath.section == CloudSetupSection) {
+        OUICloudSetupViewController *setup = [[OUICloudSetupViewController alloc] init];
+        OUIAppController *controller = [OUIAppController controller];
+
+        if (_isExporting) {
+            [controller.topViewController dismissViewControllerAnimated:YES completion:^{
+                [controller.topViewController presentViewController:setup animated:YES completion:nil];
+            }];
+        }
+        else {
+            [controller.topViewController presentViewController:setup animated:YES completion:nil];
+        }
+        return;
+    }
 
     if (indexPath.section == ResetSampleDocumentSection) {
         [self.navigationController dismissViewControllerAnimated:YES completion:nil];
@@ -310,21 +330,25 @@ enum {
     }
     
     OFXServerAccount *account = [_accounts objectAtIndex:accountIndex];
-    [account prepareForRemoval];
-    
-    NSMutableArray *accounts = [_accounts mutableCopy];
-    [accounts removeObject:account];
-    _accounts = [accounts copy];
-    
-    [_tableView beginUpdates];
-    [_tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    [_tableView endUpdates];
-    
-    // Edit editing mode if this was the last editable object
-    if ([_accounts count] == 0) {
-        [self setEditing:NO animated:YES];
-        [self _updateToolbarButtons];
-    }
+    [[OUIDocumentAppController controller] warnAboutDiscardingUnsyncedEditsInAccount:account withCancelAction:NULL discardAction:^{
+        [account prepareForRemoval];
+
+        NSMutableArray *accounts = [_accounts mutableCopy];
+        NSUInteger accountIndex = [accounts indexOfObjectIdenticalTo:account];
+        [accounts removeObject:account];
+        _accounts = [accounts copy];
+
+        [_tableView beginUpdates];
+        [_tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:[NSIndexPath indexPathForRow:accountIndex inSection:AccountsSection]] withRowAnimation:UITableViewRowAnimationFade];
+        [_tableView endUpdates];
+
+
+        // Edit editing mode if this was the last editable object
+        if ([_accounts count] == 0) {
+            [self setEditing:NO animated:YES];
+            [self _updateToolbarButtons];
+        }
+    }];
 }
 
 #pragma mark - UIPopoverControllerDelegate
@@ -353,7 +377,6 @@ enum {
     OBPRECONDITION(_sheetNavigationController == nil);
     
     self.navigationItem.leftBarButtonItem = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(_cancel:)];
-    self.navigationItem.rightBarButtonItem = self.editButtonItem;
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Export", @"OmniUIDocument", OMNI_BUNDLE, @"export options title");
     
     // This retain cycle gets cleared when the sheet is dismissed in -_popViewControllerInSheet
@@ -406,13 +429,15 @@ enum {
     
     OFXServerAccountRegistry *accountRegistry = [OFXServerAccountRegistry defaultAccountRegistry];
     NSMutableArray *accounts = [NSMutableArray arrayWithArray:accountRegistry.validImportExportAccounts];
-    
+
     // No importing from iTunes (though iWork does by having a split between their interchange and operating document formats).
     if (!_isExporting) {
         OFXServerAccountType *iTunesAccountType = [OFXServerAccountType accountTypeWithIdentifier:OFXiTunesLocalDocumentsServerAccountTypeIdentifier];
         [accounts removeObjectsInArray:[accountRegistry accountsWithType:iTunesAccountType]];
     }
     
+    [accounts sortUsingSelector:@selector(compareServerAccount:)];
+
     _accounts = [accounts copy];
     
     [_tableView reloadData];
@@ -446,7 +471,7 @@ enum {
     if (_isExporting)
         viewController = [[OUIExportOptionsController alloc] initWithServerAccount:account exportType:OUIExportOptionsExport];
     else {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         if (!(viewController = [[OUIWebDAVSyncListController alloc] initWithServerAccount:account exporting:NO error:&error])) {
             OUI_PRESENT_ERROR(error);
             return;

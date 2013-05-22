@@ -29,6 +29,9 @@
 - (void)removeScope:(OFSDocumentStoreScope *)scope;
 
 @property(nonatomic,readonly) OFSDocumentStoreScope *defaultUsableScope;
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+@property(nonatomic,readonly) OFSDocumentStoreScope *trashScope;
+#endif
 
 @property(nonatomic,readonly) NSSet *mergedFileItems; // All the file items from all scopes.
 
@@ -46,9 +49,9 @@
 - (void)performAsynchronousFileAccessUsingBlock:(void (^)(void))block;
 - (void)afterAsynchronousFileAccessFinishes:(void (^)(void))block;
 
-- (void)moveDocumentFromURL:(NSURL *)fromURL toScope:(OFSDocumentStoreScope *)scope inFolderNamed:(NSString *)folderName completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;    // similar to -addDocumentWithScope only this performs a coordinated move
+// - (void)moveDocumentFromURL:(NSURL *)fromURL toScope:(OFSDocumentStoreScope *)scope inFolderNamed:(NSString *)folderName completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem, NSError *error))completionHandler;    // similar to -addDocumentWithScope only this performs a coordinated move
 // Call this method on the main thread to asynchronously move a file to the cloud. The completionHandler will be executed on the main thread sometime after this method returns.
-- (void)moveItemsAtURLs:(NSSet *)urls toCloudFolderInScope:(OFSDocumentStoreScope *)ubiquitousScope withName:(NSString *)folderNameOrNil completionHandler:(void (^)(NSDictionary *movedURLs, NSDictionary *errorURLs))completionHandler;
+// - (void)moveItemsAtURLs:(NSSet *)urls toCloudFolderInScope:(OFSDocumentStoreScope *)ubiquitousScope withName:(NSString *)folderNameOrNil completionHandler:(void (^)(NSDictionary *movedURLs, NSDictionary *errorURLs))completionHandler;
 
 // Called by the OUIDocumentPicker, so this isn't needed on the Mac (where we manage files in the Finder).
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -57,17 +60,15 @@
 
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-- (void)makeGroupWithFileItems:(NSSet *)fileItems completionHandler:(void (^)(OFSDocumentStoreGroupItem *group, NSError *error))completionHandler;
-- (void)moveItems:(NSSet *)fileItems toFolderNamed:(NSString *)folderName completionHandler:(void (^)(OFSDocumentStoreGroupItem *group, NSError *error))completionHandler;
+// - (void)makeGroupWithFileItems:(NSSet *)fileItems completionHandler:(void (^)(OFSDocumentStoreGroupItem *group, NSError *error))completionHandler;
+// - (void)moveItems:(NSSet *)fileItems toFolderNamed:(NSString *)folderName completionHandler:(void (^)(OFSDocumentStoreGroupItem *group, NSError *error))completionHandler;
 #endif
 
 - (void)scanItemsWithCompletionHandler:(void (^)(void))completionHandler;
 - (void)startDeferringScanRequests;
 - (void)stopDeferringScanRequests:(void (^)(void))completionHandler;
 
-- (BOOL)hasDocuments;
 - (OFSDocumentStoreFileItem *)fileItemWithURL:(NSURL *)url;
-- (OFSDocumentStoreFileItem *)fileItemNamed:(NSString *)documentName;
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 @property(readonly,nonatomic) NSString *documentTypeForNewFiles;

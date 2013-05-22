@@ -16,6 +16,7 @@
 #import <OmniUI/OUIMenuController.h>
 
 @class OFSDocumentStoreFileItem, OFSDocumentStoreScope;
+@class OFXAgentActivity, OFXServerAccount;
 @class OUIDocument, OUIDocumentPicker, OUIMainViewController, OUIBarButtonItem;
 
 typedef enum {
@@ -39,6 +40,8 @@ typedef enum {
 @property(nonatomic,readonly) UIBarButtonItem *infoBarButtonItem;
 @property(nonatomic,readonly) BOOL shouldOpenWelcomeDocumentOnFirstLaunch;
 
+@property(nonatomic,readonly) OFXAgentActivity *agentActivity;
+
 - (NSArray *)editableFileTypes;
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 
@@ -49,11 +52,8 @@ typedef enum {
 
 - (void)documentDidDisableEnditing:(OUIDocument *)document; // Incoming iCloud edit on an open document
 
+- (void)updateDocumentTitle:(NSString *)newTitle;
 - (void)updateTitleBarButtonItemSizeUsingInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
-
-// Returns the width the _documentTitleTextField should be set to while editing.
-// If overridden in sub-class, don't call super.
-- (CGFloat)titleTextFieldWidthForOrientation:(UIInterfaceOrientation)orientation;
 
 - (OUIBarButtonItemBackgroundType)defaultBarButtonBackgroundType;
 
@@ -104,10 +104,19 @@ typedef enum {
 - (NSString *)feedbackMenuTitle;
 - (void)sendFeedback:(id)sender;
 - (void)showAppMenu:(id)sender;
-- (void)showSyncMenu:(id)sender;
 
 // Optional OFSDocumentStoreDelegate that we implement
 - (NSArray *)documentStoreEditableDocumentTypes:(OFSDocumentStore *)store;
+
+// Helpful dialogs
+- (void)presentSyncError:(NSError *)syncError inNavigationController:(UINavigationController *)navigationController retryBlock:(void (^)(void))retryBlock;
+- (void)presentSyncError:(NSError *)syncError retryBlock:(void (^)(void))retryBlock;
+- (void)warnAboutDiscardingUnsyncedEditsInAccount:(OFXServerAccount *)account withCancelAction:(void (^)(void))cancelAction discardAction:(void (^)(void))discardAction;
+
+// document state
++ (NSDictionary *)documentStateForURL:(NSURL *)documentURL;
++ (void)setDocumentState:(NSDictionary *)documentState forURL:(NSURL *)documentURL;
++ (void)moveDocumentStateFromURL:(NSURL *)fromDocumentURL toURL:(NSURL *)toDocumentURL deleteOriginal:(BOOL)deleteOriginal;
 
 @end
 

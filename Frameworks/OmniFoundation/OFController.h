@@ -31,7 +31,7 @@ typedef enum _OFControllerTerminateReply {
 
 + (NSBundle *)controllingBundle;
 
-+ (id)sharedController;
++ (instancetype)sharedController;
 
 - (OFControllerStatus)status;
 

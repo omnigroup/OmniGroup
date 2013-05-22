@@ -97,39 +97,37 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
 {
     double valueLimit = 999.95; // Above this value we switch to bigger units
     double kilo = 1000.0; // Switched from kiB to kB for <bug:///80383> (Switch to base 1000 now that finder uses it rather than base 1024)
-    
-    // We can't use [self bundle] or [NSString bundle], since that would try to load from Foundation, where NSString is defined. So we use [OFObject bundle]. If this file is ever moved to a bundle other than the one containing OFObject, that will have to be changed.
-    
+        
     if (bytes < valueLimit)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%d bytes", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), (int)bytes];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%d bytes", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for bytes format"), (int)bytes];
     double kb = bytes / kilo;
     if (kb < valueLimit)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f kB", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), kb];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f kB", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for bytes format"), kb];
     double mb = kb / kilo;
     if (mb < valueLimit)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f MB", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), mb];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f MB", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for bytes format"), mb];
     double gb = mb / kilo;
     if (gb < valueLimit)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f GB", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), gb];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f GB", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for bytes format"), gb];
     double tb = gb / kilo;
     if (tb < valueLimit)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f TB", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), tb];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f TB", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for bytes format"), tb];
     double pb = tb / kilo;
-    return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f PB", @"OmniFoundation", [OFObject bundle], @"abbreviated string for bytes format"), pb];
+    return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f PB", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for bytes format"), pb];
 }
 
 + (NSString *)abbreviatedStringForHertz:(unsigned long long)hz;
 {
     if (hz <= 990ULL)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%u Hz", @"OmniFoundation", [OFObject bundle], @"abbreviated string for hertz format"), (unsigned)hz];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%u Hz", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for hertz format"), (unsigned)hz];
     if (hz <= 999900ULL)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f KHz", @"OmniFoundation", [OFObject bundle], @"abbreviated string for kilohertz format"), rint((double)hz/100.0f)/10.0f];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f KHz", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for kilohertz format"), rint((double)hz/100.0f)/10.0f];
     if (hz <= 999999000ULL)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f MHz", @"OmniFoundation", [OFObject bundle], @"abbreviated string for megahertz format"), rint((double)hz/100000.0f)/10.0f];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f MHz", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for megahertz format"), rint((double)hz/100000.0f)/10.0f];
     if (hz <= 999999990000ULL)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f GHz", @"OmniFoundation", [OFObject bundle], @"abbreviated string for gigahertz format"), rint((double)hz/100000000.0f)/10.0f];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f GHz", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for gigahertz format"), rint((double)hz/100000000.0f)/10.0f];
 
-    return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f THz", @"OmniFoundation", [OFObject bundle], @"abbreviated string for terahertz format"), rint((double)hz/100000000000.0f)/10.0f];
+    return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%0.1f THz", @"OmniFoundation", OMNI_BUNDLE, @"abbreviated string for terahertz format"), rint((double)hz/100000000000.0f)/10.0f];
 }
 
 + (NSString *)approximateStringForTimeInterval:(NSTimeInterval)interval;
@@ -143,19 +141,19 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
         return nil;
     
     if (rounded < 60)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d seconds", @"OmniFoundation", [OFObject bundle], @"approximate time interval: seconds since start or until finish"), (int)rounded];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d seconds", @"OmniFoundation", OMNI_BUNDLE, @"approximate time interval: seconds since start or until finish"), (int)rounded];
     
     if (rounded < 2 * 60 - roundUpSeconds)
-        return NSLocalizedStringFromTableInBundle(@"about a minute", @"OmniFoundation", [OFObject bundle], @"approximate time interval: one minute");
+        return NSLocalizedStringFromTableInBundle(@"about a minute", @"OmniFoundation", OMNI_BUNDLE, @"approximate time interval: one minute");
     
     rounded = rintf((float)interval / 30.0f) * 30;
     if (rounded < 3600)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d minutes", @"OmniFoundation", [OFObject bundle], @"approximate time interval: some minutes since start or until finish"), (rounded + roundUpSeconds)/60];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d minutes", @"OmniFoundation", OMNI_BUNDLE, @"approximate time interval: some minutes since start or until finish"), (rounded + roundUpSeconds)/60];
     
     if (rounded < 3600 + 360)
-        return NSLocalizedStringFromTableInBundle(@"about an hour", @"OmniFoundation", [OFObject bundle], @"approximate time interval: one hour");
+        return NSLocalizedStringFromTableInBundle(@"about an hour", @"OmniFoundation", OMNI_BUNDLE, @"approximate time interval: one hour");
     
-    return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %.1f hours", @"OmniFoundation", [OFObject bundle], @"approximate time interval: more than one hour"), rounded/3600.0];
+    return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %.1f hours", @"OmniFoundation", OMNI_BUNDLE, @"approximate time interval: more than one hour"), rounded/3600.0];
 }
 
 + (NSString *)spacesOfLength:(NSUInteger)aLength;

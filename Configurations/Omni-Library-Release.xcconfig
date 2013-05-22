@@ -3,9 +3,14 @@
 // $Id$
 
 // Common settings for Library targets
+#include "Omni-Global-Release.xcconfig"
 #include "Omni-Library-Common.xcconfig"
 
 // Common settings for Release configurations of Library targets
 
 // Would like to build dylibs for debug and static for release, but this isn't working yet (we always get static).
 // MACH_O_TYPE = staticlib
+
+// Publish all public header files for Foo to a common area as <Foo/header.h>
+PUBLIC_HEADERS_FOLDER_PATH = $(CONFIGURATION_BUILD_DIR)/include/$(PRODUCT_NAME)
+

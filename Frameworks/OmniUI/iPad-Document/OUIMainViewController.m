@@ -32,8 +32,6 @@ RCS_ID("$Id$");
     #define DEBUG_KEYBOARD(format, ...)
 #endif
 
-static BOOL IsPreIOS51 = NO;
-
 @interface _OUIMainViewControllerTransitionView : UIView
 - initWithFromImage:(UIImage *)fromImage toImage:(UIImage *)toImage sourceFrame:(CGRect)sourceFrame;
 - initWithFromView:(UIView *)fromView toView:(UIView *)toView sourceFrame:(CGRect)sourceFrame;
@@ -96,7 +94,7 @@ static BOOL IsPreIOS51 = NO;
 #ifdef DEBUG
 - (void)writeImagesWithPrefix:(NSString *)prefix;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     
     NSString *fromPath = [NSString stringWithFormat:@"~/tmp/%@-from.png", prefix];
     if (![UIImagePNGRepresentation(_fromImage) writeToFile:[fromPath stringByExpandingTildeInPath] options:0 error:&error])
@@ -118,17 +116,8 @@ static BOOL IsPreIOS51 = NO;
     BOOL _resizesToAvoidKeyboard;
     BOOL _ignoringInteractionWhileAnimatingToAvoidKeyboard; // We ignore events at the application level while resizing to avoid the keyboard
     BOOL _keyboardInititallyShowing;
-    // Flags for iOS 5.0 bugs
-    BOOL _keyboardVisible;
     
     NSUInteger _interactionIgnoreCount;
-}
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    IsPreIOS51 = ![OFVersionNumber isOperatingSystemiOS51OrLater];
 }
 
 - (void)dealloc;
@@ -222,9 +211,9 @@ static BOOL IsPreIOS51 = NO;
     CGRect fromViewRect = CGRectZero, toViewRect = CGRectZero;
     
     if (fromRegion)
-        fromRegion(&fromView, &fromViewRect);
+        fromView = fromRegion(&fromViewRect);
     if (toRegion)
-        toRegion(&toView, &toViewRect);
+        toView = toRegion(&toViewRect);
     
     if (!fromView)
         fromView = _innerViewController.view;
@@ -387,13 +376,13 @@ static BOOL IsPreIOS51 = NO;
 - (void)setInnerViewController:(UIViewController *)viewController animated:(BOOL)animated fromView:(UIView *)fromView toView:(UIView *)toView;
 {
     [self setInnerViewController:viewController animated:animated
-                      fromRegion:^(UIView **outView, CGRect *outRect){
-                          *outView = fromView;
+                      fromRegion:^UIView *(CGRect *outRect){
                           *outRect = CGRectZero;
+                          return fromView;
                       }
-                        toRegion:^(UIView **outView, CGRect *outRect){
-                            *outView = toView;
+                        toRegion:^UIView *(CGRect *outRect){
                             *outRect = CGRectZero;
+                            return toView;
                         }
                 transitionAction:nil completionAction:nil];
 }
@@ -413,22 +402,11 @@ static BOOL IsPreIOS51 = NO;
         [center addObserver:self selector:@selector(_keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
         [center addObserver:self selector:@selector(_keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
         [center addObserver:self selector:@selector(_keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
-        
-        // These notifications typically aren't too useful (at least on 5.1 and later) since device rotations can result in a did hide/show cycle when the keyboard really is staying on screen. But on 5.0.1, if you bring up the keyboard in landscape, hide it, background the app, and then foreground the app, the system throws a spurious UIKeyboardDidChangeFrameNotification that makes us leave a gap at the bottom. This can happen both with rotating to portrait and w/o rotating at all while the app is backgrounded. Ignore this when running on iOS 5.0.x
-        if (IsPreIOS51) {
-            [center addObserver:self selector:@selector(_keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
-            [center addObserver:self selector:@selector(_keyboardDidHide:) name:UIKeyboardDidHideNotification object:nil];
-        }
     } else {
         [center removeObserver:self name:UIKeyboardWillChangeFrameNotification object:nil];
         [center removeObserver:self name:UIKeyboardDidChangeFrameNotification object:nil];
         [center removeObserver:self name:UIKeyboardWillShowNotification object:nil];
         [center removeObserver:self name:UIKeyboardDidShowNotification object:nil];
-        
-        if (IsPreIOS51) {
-            [center removeObserver:self name:UIKeyboardWillHideNotification object:nil];
-            [center removeObserver:self name:UIKeyboardDidHideNotification object:nil];
-        }
     }
 }
 
@@ -505,14 +483,6 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIMainViewController 
     OBASSERT(backgroundView.superview == backgroundView.window);
 
     CGFloat avoidedBottomHeight = _bottomHeightToAvoidForEndingKeyboardFrame(self, note);
-    
-    if (IsPreIOS51) {
-        // See note where we subscribe to UIKeyboardDidShowNotification
-        if (!_keyboardVisible) {
-            // Spurious keyboard change notification, possibly. But we need to treat it as height zero in the case of a split software keyboard being toggled on/off while in a document rename.
-            avoidedBottomHeight = 0;
-        }
-    }
     
     if (_lastKeyboardHeight == avoidedBottomHeight) {
         DEBUG_KEYBOARD("  same (%f) -- bailing", _lastKeyboardHeight);
@@ -628,38 +598,15 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIMainViewController 
 // See note where we subscribe to UIKeyboardDidShowNotification
 - (void)_keyboardWillShow:(NSNotification *)note;
 {
-
     DEBUG_KEYBOARD("will show %@", note);
-    _keyboardVisible = YES;
     _keyboardInititallyShowing = YES;
-    if (IsPreIOS51)
-        // Without this, the view updates OK, but the animation of the inner view controller lags behind that of the keyboard.
-        [self _handleKeyboardFrameChange:note isDid:NO];
 }
 
 - (void)_keyboardDidShow:(NSNotification *)note;
 {
-    OBPRECONDITION(_keyboardVisible == YES);
     _keyboardInititallyShowing = NO;
-
     DEBUG_KEYBOARD("did show %@", note);
 }
-
-- (void)_keyboardWillHide:(NSNotification *)note;
-{
-    OBPRECONDITION(IsPreIOS51);
-    
-    DEBUG_KEYBOARD("will hide %@", note);
-}
-- (void)_keyboardDidHide:(NSNotification *)note;
-{
-    OBPRECONDITION(IsPreIOS51);
-    OBPRECONDITION(_keyboardVisible == YES);
-
-    DEBUG_KEYBOARD("did hide %@", note);
-    _keyboardVisible = NO;
-}
-
 
 - (void)resetToolbarFromMainViewController;
 {

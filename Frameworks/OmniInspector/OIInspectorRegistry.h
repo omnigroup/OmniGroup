@@ -44,6 +44,7 @@
 
     NSMutableArray *inspectorControllers;
     float inspectorWidth;
+    NSString *_currentInspectionIdentifier;
     
 @private 
     BOOL _applicationDidFinishRestoringWindows;	// for document based app on 10.7, this means that the app has loaded its documents
@@ -79,8 +80,8 @@
 - (NSArray *)copyObjectsSatisfyingPredicate:(NSPredicate *)predicate;
 - (NSArray *)inspectedObjectsOfClass:(Class)aClass;
 
+- (NSString *)inspectionIdentifierForCurrentInspectionSet;
 - (OIInspectionSet *)inspectionSet;
-- (void)inspectionSetChanged;
 
 - (void)configurationsChanged;
 
@@ -116,7 +117,7 @@
 
 @end
 
-extern NSString *OIInspectorSelectionDidChangeNotification;
+extern NSString *OIInspectionSetChangedNotification;
 extern NSString *OIWorkspacesHelpURLKey;
 
 #import <AppKit/NSView.h>

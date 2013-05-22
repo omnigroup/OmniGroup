@@ -294,6 +294,20 @@
 			remoteGlobalIDString = 340115D311E515DB0016ADB3;
 			remoteInfo = OmniFoundationTouchTests;
 		};
+		349029891729810600F9C449 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34272163119480A700B39788 /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34B2F63B17188539000E45DF;
+			remoteInfo = OFXMLIdHash;
+		};
+		34A115F41745282400008FF1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 340E55271676B1000085CF55 /* OmniFileExchange.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34824AF91742E55600253D52;
+			remoteInfo = OFXAuthTest;
+		};
 		34C6FE3B11E644A600496375 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 342721571194809800B39788 /* OmniBase.xcodeproj */;
@@ -587,6 +601,7 @@
 				340E55311676B1010085CF55 /* OmniFileExchange.framework */,
 				340E55331676B1010085CF55 /* libOmniFileExchange.a */,
 				340E55351676B1010085CF55 /* OFXUnitTests.octest */,
+				34A115F51745282400008FF1 /* OFXAuthTest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -685,6 +700,7 @@
 				3427217F119480A700B39788 /* OFCrashOnExceptionTest */,
 				34272181119480A700B39788 /* OFRandomRepeatTest */,
 				340E551F1676B0EE0085CF55 /* OFXMLParsingTest */,
+				3490298A1729810600F9C449 /* OFXMLIdHash */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1048,6 +1064,20 @@
 			fileType = archive.ar;
 			path = libOmniUI.a;
 			remoteRef = 342721A1119480CE00B39788 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3490298A1729810600F9C449 /* OFXMLIdHash */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFXMLIdHash;
+			remoteRef = 349029891729810600F9C449 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34A115F51745282400008FF1 /* OFXAuthTest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFXAuthTest;
+			remoteRef = 34A115F41745282400008FF1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34C6FE3C11E644A600496375 /* libOmniBaseTouchTests.a */ = {

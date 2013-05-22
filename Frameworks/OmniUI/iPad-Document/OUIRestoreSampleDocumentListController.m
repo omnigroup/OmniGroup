@@ -44,7 +44,7 @@ RCS_ID("$Id$");
     // Load sample documents.
     NSURL *sampleDocumentsURL = [[OUIDocumentAppController controller] sampleDocumentsDirectoryURL];
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OFSFileManager *fileManager = [[OFSFileManager alloc] initWithBaseURL:sampleDocumentsURL delegate:nil error:&error];
     if (error) {
         OUI_PRESENT_ERROR(error);

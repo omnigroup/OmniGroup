@@ -46,9 +46,14 @@ NSString * const OFXOmniSyncServerAccountTypeIdentifier = @"com.omnigroup.OmniFi
     return NSLocalizedStringFromTableInBundle(@"Add Omni Sync Server Account", @"OmniFileExchange", OMNI_BUNDLE, @"Add server account title");
 }
 
+- (NSString *)addAccountDescription;
+{
+    return NSLocalizedStringFromTableInBundle(@"Easily sync Omni documents. Signup is free!", @"OmniFileExchange", OMNI_BUNDLE, @"Add server account description");
+}
+
 - (NSString *)setUpAccountTitle;
 {
-    return NSLocalizedStringFromTableInBundle(@"Set Up Omni Sync Server Account", @"OmniFileExchange", OMNI_BUNDLE, @"Set up server account title");
+    return NSLocalizedStringFromTableInBundle(@"Omni Sync Server", @"OmniFileExchange", OMNI_BUNDLE, @"Set up server account title");
 }
 
 - (NSURL *)baseURLForServerURL:(NSURL *)serverURL username:(NSString *)username;

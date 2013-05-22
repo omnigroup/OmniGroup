@@ -5,9 +5,9 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIEditableLabeledTableViewCell.h"
+#import <OmniUI/OUIEditableLabeledTableViewCell.h>
 
-#import "OUIEditableLabeledValueCell.h"
+#import <OmniUI/OUIEditableLabeledValueCell.h>
 
 RCS_ID("$Id$")
 

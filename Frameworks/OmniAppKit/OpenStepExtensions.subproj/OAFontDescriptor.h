@@ -1,4 +1,4 @@
-// Copyright 2003-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,17 +26,12 @@
 
 @class NSNotification, NSDictionary;
 
-extern CGFloat OAFontDescriptorDefaultFontWeight(void);
+extern NSInteger OAFontDescriptorRegularFontWeight(void); // NSFontManager-style weight
+extern NSInteger OAFontDescriptorBoldFontWeight(void); // NSFontManager-style weight
 extern OFExtent OAFontDescriptorValidFontWeightExtent(void);
+extern NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font);
 
 @interface OAFontDescriptor : OFObject <NSCopying>
-{
-@private
-    NSDictionary *_attributes;
-    CTFontDescriptorRef _fontDescriptor;
-    OAFontDescriptorPlatformFont _font;
-    BOOL _isUniquedInstance;
-}
 
 + (void)forgetUnusedInstances;
 
@@ -50,6 +45,7 @@ extern OFExtent OAFontDescriptorValidFontWeightExtent(void);
 - (NSDictionary *)fontAttributes;
 - (NSString *)family;
 - (CGFloat)size;
+- (BOOL)hasExplicitWeight;
 - (NSInteger)weight;
 - (BOOL)valueForTrait:(uint32_t)trait;
 - (BOOL)italic;
@@ -71,7 +67,4 @@ extern OFExtent OAFontDescriptorValidFontWeightExtent(void);
 - (OAFontDescriptor *)newFontDescriptorWithBold:(BOOL)bold;
 - (OAFontDescriptor *)newFontDescriptorWithItalic:(BOOL)italic;
 - (OAFontDescriptor *)newFontDescriptorWithCondensed:(BOOL)condensed;
-
-- (NSDictionary *)matchedAttributes;
-
 @end

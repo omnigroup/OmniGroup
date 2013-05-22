@@ -71,7 +71,7 @@ RCS_ID("$Id$");
     CFStringRef tempString = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef )self.exportFileWrapper.preferredFilename, NULL, CFSTR("?"), kCFStringEncodingUTF8);
     fileURL = OFSURLRelativeToDirectoryURL(directoryURL, (__bridge NSString *)tempString);
     CFRelease(tempString);
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     
     OBFinishPortingLater("Avoid synchronous API here");
     OFSFileInfo *fileCheck = [_fileManager fileInfoAtURL:fileURL error:&error];
@@ -102,11 +102,11 @@ RCS_ID("$Id$");
     OBFinishPortingLater("Test changing credentials on another device"); // Used to validate the connection here; what if we add the account, change the password elsewhere and then try to use the account here?
         
     NSURL *url = (self.address != nil) ? self.address : [_fileManager baseURL];
-    NSError *outError = nil;
+    __autoreleasing NSError *error = nil;
     // TODO: would be nice if -directoryContentsAtURL was asynchronous
-    NSArray *fileInfos = [_fileManager directoryContentsAtURL:url havingExtension:nil options:(OFSDirectoryEnumerationSkipsSubdirectoryDescendants | OFSDirectoryEnumerationSkipsHiddenFiles) error:&outError];
-    if (outError) {
-        OUI_PRESENT_ALERT(outError);
+    NSArray *fileInfos = [_fileManager directoryContentsAtURL:url havingExtension:nil options:(OFSDirectoryEnumerationSkipsSubdirectoryDescendants | OFSDirectoryEnumerationSkipsHiddenFiles) error:&error];
+    if (!fileInfos) {
+        OUI_PRESENT_ALERT(error);
         return;
     }
     
@@ -131,12 +131,14 @@ RCS_ID("$Id$");
     
     OFSFileInfo *fileInfo = [self.files objectAtIndex:indexPath.row];
     if (![self _canOpenFile:fileInfo] && [fileInfo isDirectory]) {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         OUIWebDAVSyncListController *subfolderController = [[OUIWebDAVSyncListController alloc] initWithServerAccount:self.serverAccount exporting:self.isExporting error:&error];
         if (!subfolderController) {
             OUI_PRESENT_ERROR(error);
             return;
         }
+        subfolderController.title = fileInfo.name;
+        subfolderController.contentSizeForViewInPopover = self.contentSizeForViewInPopover;
         subfolderController.address = fileInfo.originalURL;
         subfolderController.exportFileWrapper = self.exportFileWrapper;
         

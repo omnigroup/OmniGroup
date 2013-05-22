@@ -1,4 +1,4 @@
-// Copyright 2007-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2013 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,40 +7,37 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
 
-@class NSArray, NSString, NSMutableAttributedString;
+@class NSArray;
+@class NSAttributedString;
+@class NSString;
 @class OFIndexPath;
 
-typedef NSString *(*OFCompletionMatchTransformSubstring)(NSString *substring);
+typedef NSString * (^OFCompletionMatchTransformSubstring)(NSString *string);
 
-@interface OFCompletionMatch : OFObject
-{
-    NSString *_string;
-    OFIndexPath *_wordIndexPath;
-    OFIndexPath *_characterIndexPath;
-    int _score;
-}
+@interface OFCompletionMatch : NSObject
 
-+ (OFCompletionMatch *)bestOfMatches:(NSArray *)matches;
++ (OFCompletionMatch *)bestMatchFromMatches:(NSArray *)matches;
 + (NSArray *)matchesForFilter:(NSString *)filter inArray:(NSArray *)candidates shouldSort:(BOOL)shouldSort shouldUnique:(BOOL)shouldUnique;
 + (NSArray *)matchesForFilter:(NSString *)filter inString:(NSString *)name;
 + (void)addMatchesForFilter:(NSString *)filter inString:(NSString *)name toResults:(NSMutableArray *)results;
-+ (OFCompletionMatch *)completionMatchWithString:(NSString *)aString;
++ (OFCompletionMatch *)completionMatchWithString:(NSString *)string;
 
-- (id)initWithString:(NSString *)aString wordIndexPath:(OFIndexPath *)anIndexPath characterIndexPath:(OFIndexPath *)anIndexPath score:(int)aScore;
-- (OFCompletionMatch *)sequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(int)aScore;
-- (OFCompletionMatch *)sequenceByAddingScore:(int)aScore;
+- (id)initWithString:(NSString *)string wordIndexPath:(OFIndexPath *)wordIndexPath characterIndexPath:(OFIndexPath *)characterIndexPath score:(NSInteger)score;
 
-- (NSString *)string;
-- (OFIndexPath *)wordIndexPath;
-- (OFIndexPath *)characterIndexPath;
-- (int)score;
+- (OFCompletionMatch *)sequenceByAddingWordIndex:(NSUInteger)wordIndex characterIndex:(NSUInteger)characterIndex withScore:(NSInteger)score;
+- (OFCompletionMatch *)sequenceByAddingScore:(NSInteger)score;
 
-- (NSUInteger)lastWordIndex;
-- (NSUInteger)lastCharacterIndex;
+@property (nonatomic, readonly) NSString *string;
+@property (nonatomic, readonly) OFIndexPath *wordIndexPath;
+@property (nonatomic, readonly) OFIndexPath *characterIndexPath;
+@property (nonatomic, readonly) NSInteger score;
 
-- (void)setAttributes:(NSDictionary *)attributes onAttributedString:(NSMutableAttributedString *)attributedString startingAtIndex:(int)start;
+@property (nonatomic, readonly) NSUInteger lastWordIndex;
+@property (nonatomic, readonly) NSUInteger lastCharacterIndex;
+
+- (NSAttributedString *)attributedStringWithTextAttributes:(NSDictionary *)textAttributes matchAttributes:(NSDictionary *)matchAttributes;
 
 - (NSString *)stringBySurroundingMatchRangesWithPrefix:(NSString *)prefix suffix:(NSString *)suffix transformSubstrings:(OFCompletionMatchTransformSubstring)transformSubstrings;
 - (NSString *)xmlStringWithMatchingSpanClass:(NSString *)className;

@@ -5,8 +5,9 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+#import <OmniUI/UIViewController-OUIExtensions.h>
+
 #import <OmniBase/OBUtilities.h>
-#import "UIViewController-OUIExtensions.h"
 
 RCS_ID("$Id$");
 

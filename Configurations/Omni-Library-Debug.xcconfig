@@ -3,6 +3,7 @@
 // $Id$
 
 // Common settings for Library targets
+#include "Omni-Global-Debug.xcconfig"
 #include "Omni-Library-Common.xcconfig"
 
 // Common settings for Debug configurations of Library targets

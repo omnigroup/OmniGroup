@@ -64,7 +64,7 @@ static NSMutableArray *AccountTypes = nil;
     if ([NSString isEmptyString:displayName])
         displayName = self.displayName;
     
-    return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Copy from \"%@\"", @"OmniFileExchange", OMNI_BUNDLE, @"Server account import title format"), displayName];
+    return displayName;
 }
 
 - (NSString *)exportTitleForDisplayName:(NSString *)displayName;

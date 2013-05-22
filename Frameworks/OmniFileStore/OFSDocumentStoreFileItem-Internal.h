@@ -10,7 +10,4 @@
 #import <OmniFileStore/OFSDocumentStoreFileItem.h>
 
 @interface OFSDocumentStoreFileItem (/*Internal*/)
-
-- (void)_invalidateAfterWriter;
-
 @end

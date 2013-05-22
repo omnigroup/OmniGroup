@@ -20,6 +20,7 @@
 
 - (BOOL)causedByUserCancelling;
 - (BOOL)causedByMissingFile;
+- (BOOL)causedByUnreachableHost;
 
 - initWithPropertyList:(NSDictionary *)propertyList;
 - (NSDictionary *)toPropertyList;
@@ -29,5 +30,7 @@
 
 // If the error isn't being suppressed, the format and arguments are turned into a string and logged, along with the property list version of the error.
 - (void)log:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
+- (void)log:(NSString *)format arguments:(va_list)arguments;
+- (void)logWithReason:(NSString *)reason;
 
 @end

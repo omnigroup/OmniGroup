@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		23C9E26817455CBD001982D6 /* OUIGenericWebDAV.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 23C9E26617455C27001982D6 /* OUIGenericWebDAV.png */; };
+		23C9E26917455CBD001982D6 /* OUIGenericWebDAV@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 23C9E26717455C27001982D6 /* OUIGenericWebDAV@2x.png */; };
 		3424E4F716780D8A0019328E /* OUIAddCloudAccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E4F216780D8A0019328E /* OUIAddCloudAccountViewController.m */; };
 		3424E4F816780D8A0019328E /* OUICloudAccountListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E4F416780D8A0019328E /* OUICloudAccountListViewController.m */; };
 		3424E4F916780D8A0019328E /* OUICloudSetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E4F616780D8A0019328E /* OUICloudSetupViewController.m */; };
@@ -47,7 +49,7 @@
 		3424E56616781F210019328E /* OUIDocumentParameters.h in Headers */ = {isa = PBXBuildFile; fileRef = 3424E56516781F200019328E /* OUIDocumentParameters.h */; };
 		3424E56916781FDC0019328E /* OUISheetNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 3424E56716781FDA0019328E /* OUISheetNavigationController.h */; };
 		3424E56A16781FDC0019328E /* OUISheetNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E56816781FDB0019328E /* OUISheetNavigationController.m */; };
-		3424E56D167820280019328E /* OUIToolbarTitleButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 3424E56B167820270019328E /* OUIToolbarTitleButton.h */; };
+		3424E56D167820280019328E /* OUIToolbarTitleButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 3424E56B167820270019328E /* OUIToolbarTitleButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3424E56E167820280019328E /* OUIToolbarTitleButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E56C167820280019328E /* OUIToolbarTitleButton.m */; };
 		3424E590167824360019328E /* OUICloudSetupBackground.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3424E52A16780DAA0019328E /* OUICloudSetupBackground.png */; };
 		3424E591167824360019328E /* OUIExportCancelBadge.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3424E56F167823E50019328E /* OUIExportCancelBadge.png */; };
@@ -86,8 +88,6 @@
 		3424E5BC167824360019328E /* OUIDocumentSortByDate@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3424E53616780DAA0019328E /* OUIDocumentSortByDate@2x.png */; };
 		3424E5BD167824360019328E /* OUIDocumentSortByName.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3424E53716780DAA0019328E /* OUIDocumentSortByName.png */; };
 		3424E5BE167824360019328E /* OUIDocumentSortByName@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3424E53816780DAA0019328E /* OUIDocumentSortByName@2x.png */; };
-		3424E5BF167824360019328E /* OUIDocumentStatusConflictingVersions.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3424E53916780DAA0019328E /* OUIDocumentStatusConflictingVersions.png */; };
-		3424E5C0167824360019328E /* OUIDocumentStatusConflictingVersions@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3424E53A16780DAA0019328E /* OUIDocumentStatusConflictingVersions@2x.png */; };
 		3424E5C1167824360019328E /* OUIDocumentStatusNotDownloaded.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3424E53B16780DAA0019328E /* OUIDocumentStatusNotDownloaded.png */; };
 		3424E5C2167824360019328E /* OUIDocumentStatusNotDownloaded@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3424E53C16780DAA0019328E /* OUIDocumentStatusNotDownloaded@2x.png */; };
 		3424E5C3167824360019328E /* OUIDocumentStatusNotUploaded.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3424E53D16780DAA0019328E /* OUIDocumentStatusNotUploaded.png */; };
@@ -123,11 +123,39 @@
 		342F494116779B89007C5FFB /* OUIDocumentPreviewGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F492D16779B89007C5FFB /* OUIDocumentPreviewGenerator.m */; };
 		342F494216779B89007C5FFB /* OUIDocumentPreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F492F16779B89007C5FFB /* OUIDocumentPreviewView.m */; };
 		342F494316779B89007C5FFB /* OUIDocumentRenameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 342F493116779B89007C5FFB /* OUIDocumentRenameViewController.m */; };
+		34409A84174B148B0030879F /* OUIDocumentStoreScope-Local.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34409A7E174B14280030879F /* OUIDocumentStoreScope-Local.png */; };
+		34409A85174B148B0030879F /* OUIDocumentStoreScope-Local@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34409A7F174B14280030879F /* OUIDocumentStoreScope-Local@2x.png */; };
+		34409A86174B148B0030879F /* OUIDocumentStoreScope-Presence.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34409A80174B14280030879F /* OUIDocumentStoreScope-Presence.png */; };
+		34409A87174B148B0030879F /* OUIDocumentStoreScope-Presence@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34409A81174B14280030879F /* OUIDocumentStoreScope-Presence@2x.png */; };
+		34409A88174B148B0030879F /* OUIDocumentStoreScope-Trash.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34409A82174B14280030879F /* OUIDocumentStoreScope-Trash.png */; };
+		34409A89174B148B0030879F /* OUIDocumentStoreScope-Trash@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 34409A83174B14280030879F /* OUIDocumentStoreScope-Trash@2x.png */; };
 		3441607A16B0BC5E00E917F5 /* OUIServerAccountValidationViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 3441607716B0BC5E00E917F5 /* OUIServerAccountValidationViewController.h */; };
 		3441607B16B0BC5E00E917F5 /* OUIServerAccountValidationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3441607816B0BC5E00E917F5 /* OUIServerAccountValidationViewController.m */; };
 		3441608016B1A9B700E917F5 /* OUIServerAccountValidationViewController.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 3441607916B0BC5E00E917F5 /* OUIServerAccountValidationViewController.xib */; };
 		3452DDDD16C213E5001164A6 /* OUIDocumentInbox.h in Headers */ = {isa = PBXBuildFile; fileRef = 3452DDDB16C213E5001164A6 /* OUIDocumentInbox.h */; };
 		3452DDDE16C213E5001164A6 /* OUIDocumentInbox.m in Sources */ = {isa = PBXBuildFile; fileRef = 3452DDDC16C213E5001164A6 /* OUIDocumentInbox.m */; };
+		4A476DDD1717E88900CF79D2 /* OmniPresenceToolbarIcon-Error.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4A476DDA1717E73600CF79D2 /* OmniPresenceToolbarIcon-Error.png */; };
+		4A476DDE1717E88900CF79D2 /* OmniPresenceToolbarIcon-Error@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4A476DDC1717E75B00CF79D2 /* OmniPresenceToolbarIcon-Error@2x.png */; };
+		4A476DE11717F13D00CF79D2 /* OUIPresenceDocuments-Error.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4A476DDF1717F11A00CF79D2 /* OUIPresenceDocuments-Error.png */; };
+		4A476DE21717F13D00CF79D2 /* OUIPresenceDocuments-Error@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4A476DE01717F12300CF79D2 /* OUIPresenceDocuments-Error@2x.png */; };
+		4A476E41171F079A00CF79D2 /* OmniPresenceToolbarIcon-Offline.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4A476E3F171F078700CF79D2 /* OmniPresenceToolbarIcon-Offline.png */; };
+		4A476E42171F079A00CF79D2 /* OmniPresenceToolbarIcon-Offline@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4A476E40171F078800CF79D2 /* OmniPresenceToolbarIcon-Offline@2x.png */; };
+		4ABDA3EB17335D4700369B3C /* OUIAnnotationArrow.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4ABDA3E717335CF900369B3C /* OUIAnnotationArrow.png */; };
+		4ABDA3EC17335D4700369B3C /* OUIAnnotationArrow@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4ABDA3E817335CF900369B3C /* OUIAnnotationArrow@2x.png */; };
+		4ABDA3ED17335D5800369B3C /* OUIContentAreaButtonClear.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4ABDA3E917335CF900369B3C /* OUIContentAreaButtonClear.png */; };
+		4ABDA3EE17335D5800369B3C /* OUIContentAreaButtonClear@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4ABDA3EA17335CF900369B3C /* OUIContentAreaButtonClear@2x.png */; };
+		4ABDA3F31733F81A00369B3C /* OmniPresenceConfigDocumentIcon-32.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4ABDA3EF1733F80400369B3C /* OmniPresenceConfigDocumentIcon-32.png */; };
+		4ABDA3F41733F81A00369B3C /* OmniPresenceConfigDocumentIcon-32@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4ABDA3F01733F80400369B3C /* OmniPresenceConfigDocumentIcon-32@2x.png */; };
+		4ABDA3F51733F81A00369B3C /* OmniPresenceConfigDocumentIcon-128.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4ABDA3F11733F80400369B3C /* OmniPresenceConfigDocumentIcon-128.png */; };
+		4ABDA3F61733F81A00369B3C /* OmniPresenceConfigDocumentIcon-128@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4ABDA3F21733F80400369B3C /* OmniPresenceConfigDocumentIcon-128@2x.png */; };
+		6CBD70141701F7BE0035A9EC /* OmniPresenceToolbarIcon.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 6C36347F16FD27C2000BCA41 /* OmniPresenceToolbarIcon.png */; };
+		6CBD70151701F7BE0035A9EC /* OmniPresenceToolbarIcon@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 6C36348016FD27C2000BCA41 /* OmniPresenceToolbarIcon@2x.png */; };
+		6CBD70161701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-1.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 6C36348116FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-1.png */; };
+		6CBD70171701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-1@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 6C36348216FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-1@2x.png */; };
+		6CBD70181701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-2.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 6C36348316FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-2.png */; };
+		6CBD70191701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-2@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 6C36348416FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-2@2x.png */; };
+		6CBD701A1701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-3.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 6C36348516FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-3.png */; };
+		6CBD701B1701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-3@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 6C36348616FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-3@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -137,6 +165,22 @@
 			dstPath = "Resources/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				34409A84174B148B0030879F /* OUIDocumentStoreScope-Local.png in Copy Resources */,
+				34409A85174B148B0030879F /* OUIDocumentStoreScope-Local@2x.png in Copy Resources */,
+				34409A86174B148B0030879F /* OUIDocumentStoreScope-Presence.png in Copy Resources */,
+				34409A87174B148B0030879F /* OUIDocumentStoreScope-Presence@2x.png in Copy Resources */,
+				34409A88174B148B0030879F /* OUIDocumentStoreScope-Trash.png in Copy Resources */,
+				34409A89174B148B0030879F /* OUIDocumentStoreScope-Trash@2x.png in Copy Resources */,
+				23C9E26817455CBD001982D6 /* OUIGenericWebDAV.png in Copy Resources */,
+				23C9E26917455CBD001982D6 /* OUIGenericWebDAV@2x.png in Copy Resources */,
+				4ABDA3F31733F81A00369B3C /* OmniPresenceConfigDocumentIcon-32.png in Copy Resources */,
+				4ABDA3F41733F81A00369B3C /* OmniPresenceConfigDocumentIcon-32@2x.png in Copy Resources */,
+				4ABDA3F51733F81A00369B3C /* OmniPresenceConfigDocumentIcon-128.png in Copy Resources */,
+				4ABDA3F61733F81A00369B3C /* OmniPresenceConfigDocumentIcon-128@2x.png in Copy Resources */,
+				4ABDA3ED17335D5800369B3C /* OUIContentAreaButtonClear.png in Copy Resources */,
+				4ABDA3EE17335D5800369B3C /* OUIContentAreaButtonClear@2x.png in Copy Resources */,
+				4ABDA3EB17335D4700369B3C /* OUIAnnotationArrow.png in Copy Resources */,
+				4ABDA3EC17335D4700369B3C /* OUIAnnotationArrow@2x.png in Copy Resources */,
 				3441608016B1A9B700E917F5 /* OUIServerAccountValidationViewController.xib in Copy Resources */,
 				3424E6C016784EA90019328E /* OUIDocumentPicker.xib in Copy Resources */,
 				3424E6C116784EA90019328E /* OUIExportOptions.xib in Copy Resources */,
@@ -188,12 +232,24 @@
 				3424E5BC167824360019328E /* OUIDocumentSortByDate@2x.png in Copy Resources */,
 				3424E5BD167824360019328E /* OUIDocumentSortByName.png in Copy Resources */,
 				3424E5BE167824360019328E /* OUIDocumentSortByName@2x.png in Copy Resources */,
-				3424E5BF167824360019328E /* OUIDocumentStatusConflictingVersions.png in Copy Resources */,
-				3424E5C0167824360019328E /* OUIDocumentStatusConflictingVersions@2x.png in Copy Resources */,
 				3424E5C1167824360019328E /* OUIDocumentStatusNotDownloaded.png in Copy Resources */,
 				3424E5C2167824360019328E /* OUIDocumentStatusNotDownloaded@2x.png in Copy Resources */,
 				3424E5C3167824360019328E /* OUIDocumentStatusNotUploaded.png in Copy Resources */,
 				3424E5C4167824360019328E /* OUIDocumentStatusNotUploaded@2x.png in Copy Resources */,
+				6CBD70141701F7BE0035A9EC /* OmniPresenceToolbarIcon.png in Copy Resources */,
+				6CBD70151701F7BE0035A9EC /* OmniPresenceToolbarIcon@2x.png in Copy Resources */,
+				6CBD70161701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-1.png in Copy Resources */,
+				6CBD70171701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-1@2x.png in Copy Resources */,
+				6CBD70181701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-2.png in Copy Resources */,
+				6CBD70191701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-2@2x.png in Copy Resources */,
+				6CBD701A1701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-3.png in Copy Resources */,
+				6CBD701B1701F7BE0035A9EC /* OmniPresenceToolbarIconAnimation-3@2x.png in Copy Resources */,
+				4A476DDD1717E88900CF79D2 /* OmniPresenceToolbarIcon-Error.png in Copy Resources */,
+				4A476DDE1717E88900CF79D2 /* OmniPresenceToolbarIcon-Error@2x.png in Copy Resources */,
+				4A476DE11717F13D00CF79D2 /* OUIPresenceDocuments-Error.png in Copy Resources */,
+				4A476DE21717F13D00CF79D2 /* OUIPresenceDocuments-Error@2x.png in Copy Resources */,
+				4A476E41171F079A00CF79D2 /* OmniPresenceToolbarIcon-Offline.png in Copy Resources */,
+				4A476E42171F079A00CF79D2 /* OmniPresenceToolbarIcon-Offline@2x.png in Copy Resources */,
 			);
 			name = "Copy Resources";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -201,6 +257,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		23C9E26617455C27001982D6 /* OUIGenericWebDAV.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIGenericWebDAV.png; sourceTree = "<group>"; };
+		23C9E26717455C27001982D6 /* OUIGenericWebDAV@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIGenericWebDAV@2x.png"; sourceTree = "<group>"; };
 		3424E4F116780D8A0019328E /* OUIAddCloudAccountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIAddCloudAccountViewController.h; sourceTree = SOURCE_ROOT; };
 		3424E4F216780D8A0019328E /* OUIAddCloudAccountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIAddCloudAccountViewController.m; sourceTree = SOURCE_ROOT; };
 		3424E4F316780D8A0019328E /* OUICloudAccountListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUICloudAccountListViewController.h; sourceTree = SOURCE_ROOT; };
@@ -254,8 +312,6 @@
 		3424E53616780DAA0019328E /* OUIDocumentSortByDate@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentSortByDate@2x.png"; sourceTree = "<group>"; };
 		3424E53716780DAA0019328E /* OUIDocumentSortByName.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocumentSortByName.png; sourceTree = "<group>"; };
 		3424E53816780DAA0019328E /* OUIDocumentSortByName@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentSortByName@2x.png"; sourceTree = "<group>"; };
-		3424E53916780DAA0019328E /* OUIDocumentStatusConflictingVersions.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocumentStatusConflictingVersions.png; sourceTree = "<group>"; };
-		3424E53A16780DAA0019328E /* OUIDocumentStatusConflictingVersions@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentStatusConflictingVersions@2x.png"; sourceTree = "<group>"; };
 		3424E53B16780DAA0019328E /* OUIDocumentStatusNotDownloaded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocumentStatusNotDownloaded.png; sourceTree = "<group>"; };
 		3424E53C16780DAA0019328E /* OUIDocumentStatusNotDownloaded@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentStatusNotDownloaded@2x.png"; sourceTree = "<group>"; };
 		3424E53D16780DAA0019328E /* OUIDocumentStatusNotUploaded.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIDocumentStatusNotUploaded.png; sourceTree = "<group>"; };
@@ -387,11 +443,39 @@
 		342F493016779B89007C5FFB /* OUIDocumentRenameViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentRenameViewController.h; sourceTree = SOURCE_ROOT; };
 		342F493116779B89007C5FFB /* OUIDocumentRenameViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentRenameViewController.m; sourceTree = SOURCE_ROOT; };
 		342F493216779B89007C5FFB /* OUIDocumentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentViewController.h; sourceTree = SOURCE_ROOT; };
+		34409A7E174B14280030879F /* OUIDocumentStoreScope-Local.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentStoreScope-Local.png"; sourceTree = "<group>"; };
+		34409A7F174B14280030879F /* OUIDocumentStoreScope-Local@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentStoreScope-Local@2x.png"; sourceTree = "<group>"; };
+		34409A80174B14280030879F /* OUIDocumentStoreScope-Presence.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentStoreScope-Presence.png"; sourceTree = "<group>"; };
+		34409A81174B14280030879F /* OUIDocumentStoreScope-Presence@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentStoreScope-Presence@2x.png"; sourceTree = "<group>"; };
+		34409A82174B14280030879F /* OUIDocumentStoreScope-Trash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentStoreScope-Trash.png"; sourceTree = "<group>"; };
+		34409A83174B14280030879F /* OUIDocumentStoreScope-Trash@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIDocumentStoreScope-Trash@2x.png"; sourceTree = "<group>"; };
 		3441607716B0BC5E00E917F5 /* OUIServerAccountValidationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIServerAccountValidationViewController.h; sourceTree = SOURCE_ROOT; };
 		3441607816B0BC5E00E917F5 /* OUIServerAccountValidationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIServerAccountValidationViewController.m; sourceTree = SOURCE_ROOT; };
 		3441607916B0BC5E00E917F5 /* OUIServerAccountValidationViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUIServerAccountValidationViewController.xib; sourceTree = SOURCE_ROOT; };
 		3452DDDB16C213E5001164A6 /* OUIDocumentInbox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentInbox.h; sourceTree = SOURCE_ROOT; };
 		3452DDDC16C213E5001164A6 /* OUIDocumentInbox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentInbox.m; sourceTree = SOURCE_ROOT; };
+		4A476DDA1717E73600CF79D2 /* OmniPresenceToolbarIcon-Error.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIcon-Error.png"; sourceTree = "<group>"; };
+		4A476DDC1717E75B00CF79D2 /* OmniPresenceToolbarIcon-Error@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIcon-Error@2x.png"; sourceTree = "<group>"; };
+		4A476DDF1717F11A00CF79D2 /* OUIPresenceDocuments-Error.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIPresenceDocuments-Error.png"; sourceTree = "<group>"; };
+		4A476DE01717F12300CF79D2 /* OUIPresenceDocuments-Error@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIPresenceDocuments-Error@2x.png"; sourceTree = "<group>"; };
+		4A476E3F171F078700CF79D2 /* OmniPresenceToolbarIcon-Offline.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIcon-Offline.png"; sourceTree = "<group>"; };
+		4A476E40171F078800CF79D2 /* OmniPresenceToolbarIcon-Offline@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIcon-Offline@2x.png"; sourceTree = "<group>"; };
+		4ABDA3E717335CF900369B3C /* OUIAnnotationArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIAnnotationArrow.png; sourceTree = "<group>"; };
+		4ABDA3E817335CF900369B3C /* OUIAnnotationArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIAnnotationArrow@2x.png"; sourceTree = "<group>"; };
+		4ABDA3E917335CF900369B3C /* OUIContentAreaButtonClear.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIContentAreaButtonClear.png; sourceTree = "<group>"; };
+		4ABDA3EA17335CF900369B3C /* OUIContentAreaButtonClear@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIContentAreaButtonClear@2x.png"; sourceTree = "<group>"; };
+		4ABDA3EF1733F80400369B3C /* OmniPresenceConfigDocumentIcon-32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceConfigDocumentIcon-32.png"; sourceTree = "<group>"; };
+		4ABDA3F01733F80400369B3C /* OmniPresenceConfigDocumentIcon-32@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceConfigDocumentIcon-32@2x.png"; sourceTree = "<group>"; };
+		4ABDA3F11733F80400369B3C /* OmniPresenceConfigDocumentIcon-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceConfigDocumentIcon-128.png"; sourceTree = "<group>"; };
+		4ABDA3F21733F80400369B3C /* OmniPresenceConfigDocumentIcon-128@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceConfigDocumentIcon-128@2x.png"; sourceTree = "<group>"; };
+		6C36347F16FD27C2000BCA41 /* OmniPresenceToolbarIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OmniPresenceToolbarIcon.png; sourceTree = "<group>"; };
+		6C36348016FD27C2000BCA41 /* OmniPresenceToolbarIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIcon@2x.png"; sourceTree = "<group>"; };
+		6C36348116FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIconAnimation-1.png"; sourceTree = "<group>"; };
+		6C36348216FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-1@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIconAnimation-1@2x.png"; sourceTree = "<group>"; };
+		6C36348316FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIconAnimation-2.png"; sourceTree = "<group>"; };
+		6C36348416FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIconAnimation-2@2x.png"; sourceTree = "<group>"; };
+		6C36348516FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIconAnimation-3.png"; sourceTree = "<group>"; };
+		6C36348616FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-3@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIconAnimation-3@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -409,31 +493,29 @@
 		3424E52916780DAA0019328E /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				4ABDA3F11733F80400369B3C /* OmniPresenceConfigDocumentIcon-128.png */,
+				4ABDA3F21733F80400369B3C /* OmniPresenceConfigDocumentIcon-128@2x.png */,
+				4ABDA3EF1733F80400369B3C /* OmniPresenceConfigDocumentIcon-32.png */,
+				4ABDA3F01733F80400369B3C /* OmniPresenceConfigDocumentIcon-32@2x.png */,
+				4A476DDA1717E73600CF79D2 /* OmniPresenceToolbarIcon-Error.png */,
+				4A476DDC1717E75B00CF79D2 /* OmniPresenceToolbarIcon-Error@2x.png */,
+				4A476E3F171F078700CF79D2 /* OmniPresenceToolbarIcon-Offline.png */,
+				4A476E40171F078800CF79D2 /* OmniPresenceToolbarIcon-Offline@2x.png */,
+				6C36347F16FD27C2000BCA41 /* OmniPresenceToolbarIcon.png */,
+				6C36348016FD27C2000BCA41 /* OmniPresenceToolbarIcon@2x.png */,
+				6C36348116FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-1.png */,
+				6C36348216FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-1@2x.png */,
+				6C36348316FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-2.png */,
+				6C36348416FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-2@2x.png */,
+				6C36348516FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-3.png */,
+				6C36348616FD27C2000BCA41 /* OmniPresenceToolbarIconAnimation-3@2x.png */,
+				4ABDA3E717335CF900369B3C /* OUIAnnotationArrow.png */,
+				4ABDA3E817335CF900369B3C /* OUIAnnotationArrow@2x.png */,
 				3424E5D2167825460019328E /* OUIAppMenu.png */,
 				3424E5D3167825460019328E /* OUIAppMenu@2x.png */,
 				3424E52A16780DAA0019328E /* OUICloudSetupBackground.png */,
-				3424E56F167823E50019328E /* OUIExportCancelBadge.png */,
-				3424E570167823E50019328E /* OUIExportCancelBadge@2x.png */,
-				3424E571167823E50019328E /* OUIExportFinishedBadge.png */,
-				3424E572167823E50019328E /* OUIExportFinishedBadge@2x.png */,
-				3424E573167823E50019328E /* OUIExportOptionsBorder.png */,
-				3424E574167823E50019328E /* OUIExportOptionsBorder@2x.png */,
-				3424E575167823E50019328E /* OUIExportPane.png */,
-				3424E576167823E50019328E /* OUIExportPane@2x.png */,
-				3424E577167823E50019328E /* OUIFolder.png */,
-				3424E578167823E50019328E /* OUIFolder@2x.png */,
-				3424E579167823E50019328E /* OUIGreenPlusButton.png */,
-				3424E57A167823E50019328E /* OUIGreenPlusButton@2x.png */,
-				3424E585167823E50019328E /* OUIPDF.png */,
-				3424E586167823E50019328E /* OUIPDF@2x.png */,
-				3424E587167823E50019328E /* OUIPNG.png */,
-				3424E588167823E50019328E /* OUIPNG@2x.png */,
-				3424E589167823E50019328E /* OUIToolbarAddDocument.png */,
-				3424E58A167823E50019328E /* OUIToolbarAddDocument@2x.png */,
-				3424E58B167823E50019328E /* OUIToolbarButtonImport.png */,
-				3424E58C167823E50019328E /* OUIToolbarButtonImport@2x.png */,
-				3424E58D167823E50019328E /* OUIToolbarTitleDisclosureButton.png */,
-				3424E58E167823E50019328E /* OUIToolbarTitleDisclosureButton@2x.png */,
+				4ABDA3E917335CF900369B3C /* OUIContentAreaButtonClear.png */,
+				4ABDA3EA17335CF900369B3C /* OUIContentAreaButtonClear@2x.png */,
 				3424E52B16780DAA0019328E /* OUIDocument.png */,
 				3424E52C16780DAA0019328E /* OUIDocument@2x.png */,
 				3424E52D16780DAA0019328E /* OUIDocumentDelete.png */,
@@ -448,12 +530,24 @@
 				3424E53616780DAA0019328E /* OUIDocumentSortByDate@2x.png */,
 				3424E53716780DAA0019328E /* OUIDocumentSortByName.png */,
 				3424E53816780DAA0019328E /* OUIDocumentSortByName@2x.png */,
-				3424E53916780DAA0019328E /* OUIDocumentStatusConflictingVersions.png */,
-				3424E53A16780DAA0019328E /* OUIDocumentStatusConflictingVersions@2x.png */,
 				3424E53B16780DAA0019328E /* OUIDocumentStatusNotDownloaded.png */,
 				3424E53C16780DAA0019328E /* OUIDocumentStatusNotDownloaded@2x.png */,
 				3424E53D16780DAA0019328E /* OUIDocumentStatusNotUploaded.png */,
 				3424E53E16780DAA0019328E /* OUIDocumentStatusNotUploaded@2x.png */,
+				34409A7E174B14280030879F /* OUIDocumentStoreScope-Local.png */,
+				34409A7F174B14280030879F /* OUIDocumentStoreScope-Local@2x.png */,
+				34409A80174B14280030879F /* OUIDocumentStoreScope-Presence.png */,
+				34409A81174B14280030879F /* OUIDocumentStoreScope-Presence@2x.png */,
+				34409A82174B14280030879F /* OUIDocumentStoreScope-Trash.png */,
+				34409A83174B14280030879F /* OUIDocumentStoreScope-Trash@2x.png */,
+				3424E56F167823E50019328E /* OUIExportCancelBadge.png */,
+				3424E570167823E50019328E /* OUIExportCancelBadge@2x.png */,
+				3424E571167823E50019328E /* OUIExportFinishedBadge.png */,
+				3424E572167823E50019328E /* OUIExportFinishedBadge@2x.png */,
+				3424E573167823E50019328E /* OUIExportOptionsBorder.png */,
+				3424E574167823E50019328E /* OUIExportOptionsBorder@2x.png */,
+				3424E575167823E50019328E /* OUIExportPane.png */,
+				3424E576167823E50019328E /* OUIExportPane@2x.png */,
 				3424E54316780DAA0019328E /* OUIFilePickerBackground-Hardboard-Horizontal-Editing.jpg */,
 				3424E54416780DAA0019328E /* OUIFilePickerBackground-Hardboard-Horizontal-Editing@2x.jpg */,
 				3424E54516780DAA0019328E /* OUIFilePickerBackground-Hardboard-Horizontal.jpg */,
@@ -462,6 +556,24 @@
 				3424E54816780DAA0019328E /* OUIFilePickerBackground-Hardboard-Vertical-Editing@2x.jpg */,
 				3424E54916780DAA0019328E /* OUIFilePickerBackground-Hardboard-Vertical.jpg */,
 				3424E54A16780DAA0019328E /* OUIFilePickerBackground-Hardboard-Vertical@2x.jpg */,
+				3424E577167823E50019328E /* OUIFolder.png */,
+				3424E578167823E50019328E /* OUIFolder@2x.png */,
+				23C9E26617455C27001982D6 /* OUIGenericWebDAV.png */,
+				23C9E26717455C27001982D6 /* OUIGenericWebDAV@2x.png */,
+				3424E579167823E50019328E /* OUIGreenPlusButton.png */,
+				3424E57A167823E50019328E /* OUIGreenPlusButton@2x.png */,
+				3424E585167823E50019328E /* OUIPDF.png */,
+				3424E586167823E50019328E /* OUIPDF@2x.png */,
+				3424E587167823E50019328E /* OUIPNG.png */,
+				3424E588167823E50019328E /* OUIPNG@2x.png */,
+				4A476DDF1717F11A00CF79D2 /* OUIPresenceDocuments-Error.png */,
+				4A476DE01717F12300CF79D2 /* OUIPresenceDocuments-Error@2x.png */,
+				3424E589167823E50019328E /* OUIToolbarAddDocument.png */,
+				3424E58A167823E50019328E /* OUIToolbarAddDocument@2x.png */,
+				3424E58B167823E50019328E /* OUIToolbarButtonImport.png */,
+				3424E58C167823E50019328E /* OUIToolbarButtonImport@2x.png */,
+				3424E58D167823E50019328E /* OUIToolbarTitleDisclosureButton.png */,
+				3424E58E167823E50019328E /* OUIToolbarTitleDisclosureButton@2x.png */,
 			);
 			path = Images;
 			sourceTree = SOURCE_ROOT;

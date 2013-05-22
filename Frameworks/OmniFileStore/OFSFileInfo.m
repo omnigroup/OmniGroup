@@ -20,43 +20,6 @@
 
 RCS_ID("$Id$");
 
-#if defined(DEBUG_bungi)
-// Patch -[NSURL isEqual:] and -hash to asssert. Don't use these as dictionary keys due to their issues with comparison (standardized paths for /var/private, trailing slash, case comparison bugs with hex-encoded octets).
-static BOOL (*original_NSURL_isEqual)(NSURL *self, SEL _cmd, id otherObject);
-static NSUInteger (*original_NSURL_hash)(NSURL *self, SEL _cmd);
-
-static BOOL replacement_NSURL_isEqual(NSURL *self, SEL _cmd, id otherObject)
-{
-    if ([self isFileURL]) {
-        // NSFileManager calls -isEqual: on the two URLs given to -writeToURL:options:originalContentsURL:error:, so we ignore file URLs.
-    } else if ([[self absoluteString] length] == 0) {
-        // OSURLStyleAttribute's default value
-
-    } else {
-        OBASSERT_NOT_REACHED("Don't call -[NSURL isEqual:]");
-    }
-    
-    return original_NSURL_isEqual(self, _cmd, otherObject);
-}
-
-static NSUInteger replacement_NSURL_hash(NSURL *self, SEL _cmd)
-{
-    OBASSERT_NOT_REACHED("Don't call -[NSURL hash]");
-    return original_NSURL_hash(self, _cmd);
-}
-
-static void patchURL(void) __attribute__((constructor));
-static void patchURL(void)
-{
-    Class cls = [NSURL class];
-    original_NSURL_isEqual = (typeof(original_NSURL_isEqual))OBReplaceMethodImplementation(cls, @selector(isEqual:), (IMP)replacement_NSURL_isEqual);
-    original_NSURL_hash = (typeof(original_NSURL_hash))OBReplaceMethodImplementation(cls, @selector(hash), (IMP)replacement_NSURL_hash);
-}
-
-
-#endif
-
-
 @implementation OFSFileInfo
 
 + (NSString *)nameForURL:(NSURL *)url;

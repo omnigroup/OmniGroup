@@ -289,21 +289,14 @@ RCS_ID("$Id$");
     OFForEachInArray(_availableItems, OSUItem *, anItem, { if([anItem price] != nil) haveAnyPrices = YES; });
     [[_itemTableView tableColumnWithIdentifier:@"price"] setHidden:([_availableItems count] > 0 && !haveAnyPrices)];
     
-    /* We do a bit of extra setup if we're updated while not visible. Or, equivalently, we avoid messing with the selection if we're updated while visible. */
-    BOOL bringingOnscreen = ![[self window] isVisible];
+    [self _resizeInterface:YES];
     
-    [self _resizeInterface:bringingOnscreen];
-    
-    NSArray *initialSelection = nil;
-    /* In the special (but common) case that there's exactly one update available, *and* it's free, go ahead and select it by default */
+    /* Select the first available update */
     NSArray *nonIgnoredItems = [_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]];
-    if ([nonIgnoredItems count] == 1) {
-        OSUItem *theItem = [nonIgnoredItems objectAtIndex:0];
-        if ([theItem isFree])
-            initialSelection = nonIgnoredItems;
-    }
-    if (initialSelection || bringingOnscreen) {
-        [_availableItemController setSelectedObjects: (initialSelection? initialSelection : [NSArray array])];
+    if ([nonIgnoredItems count] > 0) {
+        [_availableItemController setSelectedObjects:@[nonIgnoredItems[0]]];
+    } else {
+        [_availableItemController setSelectedObjects:@[]];
     }
     
     [self _refreshSelectedItem:nil];
@@ -504,7 +497,7 @@ static CGFloat minHeightOfItemTableView(NSTableView *itemTableView)
     if (rowsHigh > 3)
         rowsHigh = (CGFloat)3.5;
     if (rowsHigh < 1)
-        rowsHigh = 3;
+        rowsHigh = 1;
     return rowsHigh * ([itemTableView rowHeight] + [itemTableView intercellSpacing].height);
 }
 
@@ -871,7 +864,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     }
     
     NSURL *releaseNotesURL = [_selectedItem releaseNotesURL];
-    if ([[[[[_releaseNotesWebView mainFrame] provisionalDataSource] initialRequest] URL] isEqualTo:releaseNotesURL])
+    if (OFURLEqualsURL([[[[_releaseNotesWebView mainFrame] provisionalDataSource] initialRequest] URL], releaseNotesURL))
         return;
 
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:releaseNotesURL cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:120.0];

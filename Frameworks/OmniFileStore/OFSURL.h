@@ -43,6 +43,7 @@ extern BOOL OFSGetBoolResourceValue(NSURL *url, NSString *key, BOOL *outValue, N
 extern BOOL OFSURLContainsURL(NSURL *containerURL, NSURL *url);
 extern NSString *OFSFileURLRelativePath(NSURL *baseURL, NSURL *fileURL);
 
+extern BOOL OFSURLIsStandardizedOrMissing(NSURL *url);
 extern BOOL OFSURLIsStandardized(NSURL *url);
 
 
@@ -58,17 +59,6 @@ static inline NSURL *OFSFileURLRelativeToDirectoryURL(NSURL *baseURL, NSString *
     NSString *quotedFileName = [NSString encodeURLString:nonquotedFileName asQuery:NO leaveSlashes:NO leaveColons:NO];
     return OFSURLRelativeToDirectoryURL(baseURL, quotedFileName);
 }
-
-/* A utility function which returns the range of the path portion of an RFC1808-style URL. */
-extern NSRange OFSURLRangeOfPath(NSString *rfc1808URL);
-
-/* Appends a slash to the path of the given URL if it doesn't already end in one. */
-extern NSURL *OFSURLWithTrailingSlash(NSURL *baseURL);
-
-// -[NSURL isEqual:] ignores the http://tools.ietf.org/html/rfc3986#section-2.1 which says that percent-encoded octets should be compared case-insentively (%5b should be the same as %5B).
-extern BOOL OFSURLEqualsURL(NSURL *URL1, NSURL *URL2);
-
-extern BOOL OFSURLEqualToURLIgnoringTrailingSlash(NSURL *URL1, NSURL *URL2);
 
 /* Modifies the last path segment of the given URL by appending a suffix string to it (the suffix must already contain any necessary %-escapes). If addSlash=YES, the returned URL will end in a slash; if removeSlash=YES, the returned URL will not end in a slash; otherwise its trailing slash (or lack of same) is left alone. */
 extern NSURL *OFSURLWithNameAffix(NSURL *baseURL, NSString *quotedSuffix, BOOL addSlash, BOOL removeSlash);
