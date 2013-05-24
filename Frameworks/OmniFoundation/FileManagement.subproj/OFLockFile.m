@@ -173,7 +173,7 @@ static NSString * OFLockFileOverrideLockRecoveryOption = nil;
         if (outError) {
             NSString *reasonFormat = NSLocalizedStringFromTableInBundle(@"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running.", @"OmniFoundation", OMNI_BUNDLE, @"error reason");
             NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
-            [formatter setFormatterBehavior:NSDateFormatterBehavior10_4];
+            OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4);
             
             [formatter setDateStyle:NSDateFormatterShortStyle];
             [formatter setTimeStyle:NSDateFormatterNoStyle];

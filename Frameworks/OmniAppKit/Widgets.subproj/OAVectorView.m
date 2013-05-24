@@ -1,4 +1,4 @@
-// Copyright 2003-2006,2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2006,2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,6 @@
 
 #import <Cocoa/Cocoa.h>
 #import <OmniBase/OmniBase.h>
-#import <OmniFoundation/NSKeyValueObserving-OFExtensions.h> // For HAS_REMOVEOBSERVER_FORKEYPATH_CONTEXT
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/NSTextField-OAExtensions.h>
 #import <OmniAppKit/OAVectorCell.h>
@@ -243,11 +242,7 @@ static unsigned int _OAVectorViewObservationContext;
 {
     OBASSERT([binding isEqualToString:@"vector"]);
     
-#if HAS_REMOVEOBSERVER_FORKEYPATH_CONTEXT
     [observedObjectForVector removeObserver:self forKeyPath:observedKeyPathForVector context:&_OAVectorViewObservationContext];
-#else
-    [observedObjectForVector removeObserver:self forKeyPath:observedKeyPathForVector];
-#endif
 
     [observedObjectForVector release];
     observedObjectForVector = nil;

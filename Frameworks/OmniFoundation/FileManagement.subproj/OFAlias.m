@@ -7,6 +7,10 @@
 
 #import <OmniFoundation/OFAlias.h>
 
+// <bug:///89022> (Rewrite OFAlias to use non-deprecated API or remove it)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Carbon/Carbon.h>
 #endif
@@ -158,3 +162,5 @@ error_out:
 @synthesize data = _aliasData;
 
 @end
+
+#pragma clang diagnostic pop

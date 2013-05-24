@@ -13,7 +13,6 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import <AssetsLibrary/AssetsLibrary.h>
-#import <OmniFoundation/OFFileWrapper.h>
 #import <OmniFoundation/OFExtent.h>
 #import <OmniAppKit/OATextAttachment.h>
 #import <OmniAppKit/OATextStorage.h>

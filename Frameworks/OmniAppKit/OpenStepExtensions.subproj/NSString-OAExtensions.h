@@ -17,8 +17,6 @@
 @interface NSString (OAExtensions)
 
 + (NSString *)stringForKeyEquivalent:(NSString *)equivalent andModifierMask:(NSUInteger)mask;
-// Used for displaying a file size in a tableview, which automatically abbreviates when the column gets too narrow.
-//+ (NSString *)possiblyAbbreviatedStringForBytes:(unsigned long long)bytes inTableView:(NSTableView *)tableView tableColumn:(NSTableColumn *)tableColumn;
 
 // String drawing
 - (void)drawWithFontAttributes:(NSDictionary *)attributes alignment:(NSTextAlignment)alignment verticallyCenter:(BOOL)verticallyCenter inRectangle:(NSRect)rectangle;

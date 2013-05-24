@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,10 +12,6 @@
 RCS_ID("$Id$");
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-
-#if TARGET_API_MAC_OSX && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5)
-CF_EXPORT CFRunLoopRef CFRunLoopGetMain(void) AVAILABLE_MAC_OS_X_VERSION_10_1_AND_LATER;
-#endif
 
 @interface OFDynamicStoreListener ()
 

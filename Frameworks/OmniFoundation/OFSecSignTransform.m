@@ -1,38 +1,28 @@
-// Copyright 2011-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2011-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
-// If we allow 10.7 API but also support 10.6, then we need to weakly import these Security.framework symbols or we won't be able to launch on 10.6.
-// (RADAR #10575268)
-extern const CFStringRef kSecDigestLengthAttribute __attribute__((weak_import));
-extern const CFStringRef kSecDigestTypeAttribute __attribute__((weak_import));
-extern CFStringRef kSecInputIsAttributeName __attribute__((weak_import));
-extern CFStringRef kSecInputIsPlainText __attribute__((weak_import));
-extern const CFStringRef kSecTransformInputAttributeName __attribute__((weak_import));
-#endif
-
 #import "OFSecSignTransform.h"
+
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFErrors.h>
-
-// Redeclare this locally for now because the 10.7 SDK doesn't have the CF_RETURNS_RETAINED annotation, even though that's the behavior.
-#if !defined(MAC_OS_X_VERSION_10_8) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
-CF_EXPORT 
-CFTypeRef SecTransformExecute(SecTransformRef transformRef, CFErrorRef* errorRef) 
-__OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_NA) CF_RETURNS_RETAINED; 
-#endif
-
 
 RCS_ID("$Id$");
 
 // #define DEBUG_OFSecSignTransform // Enables some log messages
 
 @implementation OFSecSignTransform
+{
+    NSMutableData *writebuffer;
+    SecKeyRef key;
+    CFStringRef digestType;
+    int digestLength;
+    int generatorGroupOrderLog2;
+    BOOL verifying;
+}
 
 - initWithKey:(SecKeyRef)aKey;
 {
@@ -254,5 +244,3 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
 }
 
 @end
-
-#endif /* OSX 10.7 or later */

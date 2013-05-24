@@ -7,6 +7,8 @@
 
 #import "OFXTestCase.h"
 
+RCS_ID("$Id$")
+
 @interface OFXRemotePackageTypeTestCase : OFXTestCase
 
 @end

@@ -14,8 +14,9 @@
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFUTI.h>
-#import <OmniFoundation/OFVersionNumber.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 
 #import "OFSDocumentStore-Internal.h"
 #import "OFSDocumentStoreFileItem-Internal.h"
@@ -86,7 +87,7 @@ NSString *OFSDocumentStoreScopeCacheKeyForURL(NSURL *url)
 // This is split out from the instance method so that we can build a cache of container URLs. Getting the container URL is slow in some scopes.
 + (BOOL)isFile:(NSURL *)fileURL inContainer:(NSURL *)containerURL;
 {
-    return OFSURLContainsURL(containerURL, fileURL);
+    return OFURLContainsURL(containerURL, fileURL);
 }
 
 - init;
@@ -345,7 +346,7 @@ static void _addItemAndNotifyHandler(OFSDocumentStoreScope *self, void (^handler
     
     NSURL *documentsURL = self.documentsURL;
     if (folderURL) {
-        OBASSERT(OFSURLContainsURL(documentsURL, folderURL));
+        OBASSERT(OFURLContainsURL(documentsURL, folderURL));
     } else
         folderURL = documentsURL;
         
@@ -1022,7 +1023,7 @@ NSDate *OFSDocumentStoreScopeModificationDateForFileURL(NSFileManager *fileManag
     
     NSURL *documentsURL = self.documentsURL;
     if (folderURL)
-        OBASSERT(OFSURLContainsURL(documentsURL, folderURL));
+        OBASSERT(OFURLContainsURL(documentsURL, folderURL));
     else
         folderURL = documentsURL;
         

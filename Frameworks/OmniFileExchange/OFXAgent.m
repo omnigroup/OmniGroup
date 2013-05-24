@@ -8,6 +8,7 @@
 #import "OFXAgent-Internal.h"
 
 #import <OmniFileExchange/OFXAccountClientParameters.h>
+#import <OmniFileExchange/OFXFileMetadata.h>
 #import <OmniFileExchange/OFXRegistrationTable.h>
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
@@ -19,7 +20,6 @@
 
 #import "OFXAccountAgent-Internal.h"
 #import "OFXServerAccountRegistry-Internal.h"
-#import "OFXFileMetadata.h"
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>

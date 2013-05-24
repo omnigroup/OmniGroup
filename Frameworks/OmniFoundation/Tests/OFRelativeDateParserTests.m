@@ -251,9 +251,6 @@ do { \
 
 - (void)testDayWeekCodes;
 {
-#if defined(MAC_OS_X_VERSION_10_6) && MAC_OS_X_VERSION_10_6 >= MAC_OS_X_VERSION_MIN_REQUIRED
-    NSLog(@"Skipping test that fails due to bug in 10A222.");
-#else
     NSString *timeFormat = @"h:mm a";
     NSString *dateFormat = @"d-MMM-yy";
 
@@ -262,7 +259,6 @@ do { \
     NSDate *baseDate     = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
     NSDate *expectedDate = _dateFromYear(2001, 1, 11, 0, 0, 0, calendar);
     parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-#endif
 }
 
 - (void)testRelativeDateNames;
@@ -813,7 +809,7 @@ do { \
         [calendar autorelease];
 	calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
 	NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
-	[formatter setFormatterBehavior:NSDateFormatterBehavior10_4];
+        OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4);
 	
 	[formatter setLocale:locale];
 	NSArray *months = [formatter monthSymbols];

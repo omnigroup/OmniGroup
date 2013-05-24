@@ -252,6 +252,9 @@ static OFPreference *fileRefreshIntervalPreference = nil;
 
 - (NSString *)_pathForVolumeNamed:(NSString *)name;
 {
+    // <bug:///89060> (Stop using deprecated API in OWFileProcessor)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     unsigned int volumeIndex;
     HFSUniStr255 volumeName;
     FSRef volumeFSRef;
@@ -266,6 +269,7 @@ static OFPreference *fileRefreshIntervalPreference = nil;
         }
     }
     return nil;
+#pragma clang diagnostic pop
 }
 
 - (BOOL)_redirectHFSPathToPosixPath;

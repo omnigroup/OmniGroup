@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,33 +83,21 @@ const unichar rfc3492_7_R[] = { 0x305D, 0x306E, 0x30B9, 0x30D4, 0x30FC, 0x30C9, 
 const char *rfc3492_7_R_pc = "d9juau41awczczp";
 
 
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-extern CFStringEncoding _NSCFStringEncodingForLogging;
-#endif
 extern NSStringEncoding _NSCStringEncoding, _NSDefaultStringEncoding;
 
 - (void)setUp
 {
     [super setUp];
     
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-    oldNSCFStringEncodingForLogging = _NSCFStringEncodingForLogging;
-#endif
     oldNSCStringEncoding = _NSCStringEncoding;
     oldNSDefaultStringEncoding = _NSDefaultStringEncoding;
 
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-    _NSCFStringEncodingForLogging = kCFStringEncodingUTF8;
-#endif
     _NSCStringEncoding = NSUTF8StringEncoding;
     _NSDefaultStringEncoding = NSUTF8StringEncoding;
 }
 
 - (void)tearDown
 {
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-    _NSCFStringEncodingForLogging = oldNSCFStringEncodingForLogging;
-#endif
     _NSCStringEncoding = oldNSCStringEncoding;
     _NSDefaultStringEncoding = oldNSDefaultStringEncoding;
     

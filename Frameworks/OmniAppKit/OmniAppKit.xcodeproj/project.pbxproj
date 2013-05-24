@@ -14,7 +14,6 @@
 		271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 271A9D9E1533DA2800A78CCB /* OAAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 271A9D9F1533DA2800A78CCB /* OAAnimation.m */; };
 		272023F315C06D7D0089BC49 /* OAInfoTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */; };
-		272975E415C7138B00CCB79F /* NSScroller-OAFixes.m in Sources */ = {isa = PBXBuildFile; fileRef = 272975E315C7138B00CCB79F /* NSScroller-OAFixes.m */; };
 		272A315B1666BABB00110B0B /* OANoExpansionFrameTextFieldCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 272A315A1666BABB00110B0B /* OANoExpansionFrameTextFieldCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		272A315E1666BAFF00110B0B /* OANoExpansionFrameTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 272A315D1666BAFF00110B0B /* OANoExpansionFrameTextFieldCell.m */; };
 		2730CF3B144E205B007C3A99 /* OADocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 2730CF39144E205B007C3A99 /* OADocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -28,7 +27,6 @@
 		2779DDBE16BB338400A2BC8F /* OAViewPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2779DDBD16BB338400A2BC8F /* OAViewPicker.m */; };
 		27AC122D15BA295400B726A7 /* NSView-OALayerBackedFix.h in Headers */ = {isa = PBXBuildFile; fileRef = 27AC122B15BA295400B726A7 /* NSView-OALayerBackedFix.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27AC122E15BA295400B726A7 /* NSView-OALayerBackedFix.m in Sources */ = {isa = PBXBuildFile; fileRef = 27AC122C15BA295400B726A7 /* NSView-OALayerBackedFix.m */; };
-		27AC123315BA29D500B726A7 /* NSClipView-OALayerBackedFix.m in Sources */ = {isa = PBXBuildFile; fileRef = 27AC123215BA29D500B726A7 /* NSClipView-OALayerBackedFix.m */; };
 		3401161611E516C10016ADB3 /* OATextStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3401161411E516C10016ADB3 /* OATextStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3401161711E516C10016ADB3 /* OATextStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 3401161511E516C10016ADB3 /* OATextStorage.m */; };
 		3401161811E516C10016ADB3 /* OATextStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3401161411E516C10016ADB3 /* OATextStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -668,7 +666,6 @@
 		271A9D9E1533DA2800A78CCB /* OAAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAnimation.h; sourceTree = "<group>"; };
 		271A9D9F1533DA2800A78CCB /* OAAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAnimation.m; sourceTree = "<group>"; };
 		272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = OAInfoTemplate.pdf; sourceTree = "<group>"; };
-		272975E315C7138B00CCB79F /* NSScroller-OAFixes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSScroller-OAFixes.m"; sourceTree = "<group>"; };
 		272A315A1666BABB00110B0B /* OANoExpansionFrameTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OANoExpansionFrameTextFieldCell.h; sourceTree = "<group>"; };
 		272A315D1666BAFF00110B0B /* OANoExpansionFrameTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OANoExpansionFrameTextFieldCell.m; sourceTree = "<group>"; };
 		2730CF39144E205B007C3A99 /* OADocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADocument.h; sourceTree = "<group>"; };
@@ -682,7 +679,6 @@
 		2779DDBD16BB338400A2BC8F /* OAViewPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAViewPicker.m; sourceTree = "<group>"; };
 		27AC122B15BA295400B726A7 /* NSView-OALayerBackedFix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSView-OALayerBackedFix.h"; sourceTree = "<group>"; };
 		27AC122C15BA295400B726A7 /* NSView-OALayerBackedFix.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSView-OALayerBackedFix.m"; sourceTree = "<group>"; };
-		27AC123215BA29D500B726A7 /* NSClipView-OALayerBackedFix.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSClipView-OALayerBackedFix.m"; sourceTree = "<group>"; };
 		2EAA6AE5FF476391C697A12F /* NSTableView-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTableView-OAExtensions.h"; sourceTree = "<group>"; };
 		2EAA6AE6FF476391C697A12F /* NSTableView-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTableView-OAExtensions.m"; sourceTree = "<group>"; };
 		312A98BC008EFFB6C697A14B /* OALeftArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OALeftArrow.png; sourceTree = "<group>"; };
@@ -1307,14 +1303,6 @@
 			name = Animations;
 			sourceTree = "<group>";
 		};
-		272975E215C7137B00CCB79F /* NSScroller */ = {
-			isa = PBXGroup;
-			children = (
-				272975E315C7138B00CCB79F /* NSScroller-OAFixes.m */,
-			);
-			name = NSScroller;
-			sourceTree = "<group>";
-		};
 		2730CF37144E1F96007C3A99 /* Documents */ = {
 			isa = PBXGroup;
 			children = (
@@ -1337,7 +1325,6 @@
 			isa = PBXGroup;
 			children = (
 				2779DD8616BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m */,
-				27AC123215BA29D500B726A7 /* NSClipView-OALayerBackedFix.m */,
 			);
 			name = NSClipView;
 			sourceTree = "<group>";
@@ -1488,15 +1475,18 @@
 				3FDA413C020970130297A14E /* CalendarView */,
 				4A785F5C0B040C4200B513F3 /* Date Picker */,
 				B584AFE5058A7A1E0097A10E /* Default Setting Indicator */,
+				E2D79E9206DD62F30097A11C /* HierarchicalPopUpController */,
+				00E51F0DFE8AB2E911C9CC38 /* namedColors.plist */,
 				3412B1D2089EE7E10046872B /* OAAutosizingHorizontalRule.h */,
 				3412B1D3089EE7E10046872B /* OAAutosizingHorizontalRule.m */,
 				B5FEDACF055862C20097A10E /* OABackgroundImageControl.h */,
 				B5FEDAD0055862C20097A10E /* OABackgroundImageControl.m */,
+				94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */,
+				94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */,
 				00E51F00FE8AB2E911C9CC38 /* OAColorPalette.h */,
 				00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */,
 				34471ABF09D31320004C9DBA /* OAConstructionTimeView.h */,
 				34471AC009D31320004C9DBA /* OAConstructionTimeView.m */,
-				00E51F0DFE8AB2E911C9CC38 /* namedColors.plist */,
 				B5C3F579050FE63D0097A10E /* OAContextButton.h */,
 				B5C3F57A050FE63D0097A10E /* OAContextButton.m */,
 				345057E506F209090097A113 /* OAContextControl.h */,
@@ -1513,36 +1503,33 @@
 				00E51EF9FE8AB2E911C9CC38 /* OAFontCache.m */,
 				00E51F8AFE8AB2E911C9CC38 /* OAFontView.h */,
 				00E51F7AFE8AB2E911C9CC38 /* OAFontView.m */,
-				E2D79E9206DD62F30097A11C /* HierarchicalPopUpController */,
 				6C72445903E88BCE00E7FE1C /* OAMouseTipView.h */,
 				6C72445A03E88BCE00E7FE1C /* OAMouseTipView.m */,
 				6C72445503E886EE00E7FE1C /* OAMouseTipWindow.h */,
 				6C72445603E886EE00E7FE1C /* OAMouseTipWindow.m */,
 				1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */,
 				1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */,
-				B5F31284051140420097A10E /* Search Field */,
 				A27FE45E0CAB033300EE72BA /* OASlowLoadingImage.h */,
 				A27FE45F0CAB033300EE72BA /* OASlowLoadingImage.m */,
-				B5CBF07E0517D84C0097A10E /* Switcher Bar */,
+				E2CBC36006EF77CE0097A11C /* OASpringLoadHelper.h */,
+				E2CBC36106EF77CE0097A11C /* OASpringLoadHelper.m */,
 				A2177CD404FEC4FF0097A146 /* OASwoopView.h */,
 				A2177CD504FEC4FF0097A146 /* OASwoopView.m */,
 				010A51C0005212DBC697A13D /* OATextWithIconCell.h */,
 				010A51C1005212DBC697A13D /* OATextWithIconCell.m */,
 				66525F0701768E3B0097A13E /* OATypeAheadSelectionHelper.h */,
 				66525F0801768E3B0097A13E /* OATypeAheadSelectionHelper.m */,
-				0CF02C24FF1319B8C697A12F /* OAWindowCascade.h */,
-				0CF02C25FF1319B8C697A12F /* OAWindowCascade.m */,
-				E2CBC36006EF77CE0097A11C /* OASpringLoadHelper.h */,
-				E2CBC36106EF77CE0097A11C /* OASpringLoadHelper.m */,
-				348A50790571430C0097A113 /* OAVectorView.h */,
-				348A507A0571430C0097A113 /* OAVectorView.m */,
 				348A508B05715F0A0097A113 /* OAVectorCell.h */,
 				348A508C05715F0A0097A113 /* OAVectorCell.m */,
-				94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */,
-				94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */,
+				348A50790571430C0097A113 /* OAVectorView.h */,
+				348A507A0571430C0097A113 /* OAVectorView.m */,
 				4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */,
 				4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */,
 				4A5F17B2172772F5001A60E5 /* OAWebPageViewer.xib */,
+				0CF02C24FF1319B8C697A12F /* OAWindowCascade.h */,
+				0CF02C25FF1319B8C697A12F /* OAWindowCascade.m */,
+				B5F31284051140420097A10E /* Search Field */,
+				B5CBF07E0517D84C0097A10E /* Switcher Bar */,
 			);
 			name = Widgets;
 			path = Widgets.subproj;
@@ -1781,7 +1768,6 @@
 				3FDA4148020972FB0297A14E /* NSBrowser */,
 				3FDA414B020973C90297A14E /* NSButton */,
 				3FDA414D020973C90297A14E /* NSOutlineView */,
-				272975E215C7137B00CCB79F /* NSScroller */,
 				3FDA4158020975210297A14E /* NSTableView */,
 				3FDA4159020975210297A14E /* NSTextField */,
 			);
@@ -3133,8 +3119,6 @@
 				271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */,
 				346A98A315903B0F00CA3359 /* NSAnimationContext-OAExtensions.m in Sources */,
 				27AC122E15BA295400B726A7 /* NSView-OALayerBackedFix.m in Sources */,
-				27AC123315BA29D500B726A7 /* NSClipView-OALayerBackedFix.m in Sources */,
-				272975E415C7138B00CCB79F /* NSScroller-OAFixes.m in Sources */,
 				E235B46515CC771600E162D6 /* OATrackingLoop.m in Sources */,
 				E235B6A015CC836000E162D6 /* OAToolbarButton.m in Sources */,
 				273AF0F515CC8C6E00655DC0 /* OAOpaqueTextField.m in Sources */,

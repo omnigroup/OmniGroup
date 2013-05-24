@@ -294,7 +294,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     [[self window] setTitle:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ Update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download window title - text is name of the running application"), appDisplayName]];
     
     NSString *basicText = [_installViewMessageText stringValue];
-    basicText = [basicText stringByReplacingAllOccurrencesOfString:@"%@" withString:appDisplayName];
+    basicText = [basicText stringByReplacingOccurrencesOfString:@"%@" withString:appDisplayName];
     [_installViewMessageText setStringValue:basicText];
     
     [self _adjustProgressIndiciateAttributesInSubtreeForView:_progressView];

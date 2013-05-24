@@ -1,4 +1,4 @@
-// Copyright 2005-2012 The Omni Group. All rights reserved.
+// Copyright 2005-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,11 +60,7 @@ static NSMutableDictionary *classToKernel = nil;
 	className, kCIAttributeFilterDisplayName,
 	[NSArray arrayWithObject:@"OmniMagicWand Internal"], kCIAttributeFilterCategories, nil];
     
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
     id constructor = (id <CIFilterConstructor>)self; // OBFinishPorting: Can't declare that the class implements CIFilterConstructor (just +filterWithName:).
-#else
-    id constructor = self;
-#endif
     
     [CIFilter registerFilterName:className  
 		     constructor:constructor

@@ -49,6 +49,10 @@ enum {
     OFLockInvalidated,
     OFLockUnavailable,
     OFCannotCreateLock,
+    
+    // NSFileManager(OFExtensions)
+    OFCannotGetQuarantineProperties,
+    OFCannotSetQuarantineProperties,
 };
 
 

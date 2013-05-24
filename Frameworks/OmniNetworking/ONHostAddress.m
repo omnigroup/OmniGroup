@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,27 +12,11 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniBase/system.h>
 
-#if ON_SUPPORT_APPLE_TALK
-#import <netat/appletalk.h>
-#endif
-
 #import "ONHostAddress-Private.h"
 #import "ONInterface.h"
 #import "ONLinkLayerHostAddress.h"
 
 RCS_ID("$Id$")
-
-// The 10.5 SDK shows this as being availabe on 10.4, but the 10.4 SDK doesn't list it (presumably this was SPI but then opened up).
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-enum {
-    NSStringEncodingConversionAllowLossy = 1,
-    NSStringEncodingConversionExternalRepresentation = 2
-};
-typedef unsigned NSStringEncodingConversionOptions;
-@interface NSString (TigerAPIExposedInLeopard)
-- (BOOL)getBytes:(void *)buffer maxLength:(unsigned)maxBufferCount usedLength:(unsigned *)usedBufferCount encoding:(NSStringEncoding)encoding options:(NSStringEncodingConversionOptions)options range:(NSRange)range remainingRange:(NSRangePointer)leftover;
-@end
-#endif
 
 #define ADDRSTRLEN ((unsigned)MAX(INET_ADDRSTRLEN, INET6_ADDRSTRLEN))
 
@@ -55,17 +39,6 @@ typedef unsigned NSStringEncodingConversionOptions;
 
 @end
 
-#if ON_SUPPORT_APPLE_TALK
-@interface ONAppleTalkHostAddress : ONHostAddress
-{
-    struct at_addr appletalkAddress;
-}
-
-- initWithInternetAddress:(const struct at_addr *)anAppletalkAddress;
-
-@end
-#endif
-
 @implementation ONHostAddress
 
 + (ONHostAddress *)hostAddressWithInternetAddress:(const void *)anInternetAddress
@@ -76,10 +49,6 @@ typedef unsigned NSStringEncodingConversionOptions;
             return [[(ONIPv4HostAddress *)[ONIPv4HostAddress alloc] initWithInternetAddress:anInternetAddress] autorelease];
         case AF_INET6:
             return [[(ONIPv6HostAddress *)[ONIPv6HostAddress alloc] initWithInternetAddress:anInternetAddress] autorelease];
-#if ON_SUPPORT_APPLE_TALK
-        case AF_APPLETALK:
-            return [[(ONAppleTalkHostAddress *)[ONAppleTalkHostAddress alloc] initWithInternetAddress:anInternetAddress] autorelease];
-#endif
         case AF_UNSPEC:
             return nil;
         default:
@@ -110,9 +79,6 @@ typedef unsigned NSStringEncodingConversionOptions;
         default:           hostPortion = &(portAddress->sa_data); break;
         case AF_INET:      hostPortion = &(((struct sockaddr_in *)portAddress)->sin_addr); break;
         case AF_INET6:     hostPortion = &(((struct sockaddr_in6 *)portAddress)->sin6_addr); break;
-#if ON_SUPPORT_APPLE_TALK
-        case AF_APPLETALK: hostPortion = &(((struct sockaddr_at *)portAddress)->sat_addr); break;
-#endif
         case AF_LINK:
         {
             ONLinkLayerHostAddress *address = [[ONLinkLayerHostAddress alloc] initWithLinkLayerAddress:(const struct sockaddr_dl *)portAddress];
@@ -220,22 +186,6 @@ static inline u_int32_t isCharNumeric(unsigned char ch) {
         }
     }
 
-#if ON_SUPPORT_APPLE_TALK
-    // Attempt to parse the string as an AppleTalk node address.
-    if (colonCount == 1 && (dotCount == 0 || dotCount == 1)) {
-        ONHostAddress *atalkAddress;
-        
-        if (didTrim)
-            addressString = [NSString stringWithCString:asciiBuf encoding: NSASCIIStringEncoding];
-        atalkAddress = [ONAppleTalkHostAddress hostAddressWithNumericString:addressString];
-        
-        if (atalkAddress) {
-            free(asciiBuf);
-            return atalkAddress;
-        }
-    }
-#endif
-    
     // We haven't been able to parse this address.
     free(asciiBuf);
     return nil;
@@ -543,111 +493,3 @@ static u_int32_t parseIpaddrPart(NSString *str, int *ok)
 }
 
 @end
-
-#if ON_SUPPORT_APPLE_TALK
-@implementation ONAppleTalkHostAddress
-
-+ (ONHostAddress *)hostAddressWithNumericString:(NSString *)addressString
-{
-    NSScanner *scan;
-    struct at_addr atalkAddress;
-    int netPart, hostPart;
-
-    scan = [[NSScanner alloc] initWithString:addressString];
-    if (![scan scanInt:&netPart])
-        goto scanFailure;
-    if ([scan scanString:@"." intoString:NULL]) {
-        int lowNetPart;
-        if (![scan scanInt:&lowNetPart])
-            goto scanFailure;
-        netPart = (netPart * 256) + lowNetPart;
-    }
-    if (![scan scanString:@":" intoString:NULL])
-        goto scanFailure;
-    if (![scan scanInt:&hostPart])
-        goto scanFailure;
-    if (![scan isAtEnd])
-        goto scanFailure;
-
-    [scan release];
-
-    /* We've scanned a syntactically valid appletalk address. */
-    if (netPart < 0 || netPart > 65536 || hostPart < 0 || hostPart > 255)
-        return nil; /* but not a semantically valid one. */
-
-    bzero(&atalkAddress, sizeof(atalkAddress));
-    atalkAddress.s_net = htons(netPart);
-    atalkAddress.s_node = hostPart;
-    return [ONHostAddress hostAddressWithInternetAddress:&atalkAddress family:AF_APPLETALK];
-
-scanFailure:
-    [scan release];
-    return nil;
-}
-
-- initWithInternetAddress:(const struct at_addr *)anAppletalkAddress;
-{
-    if (![self init])
-        return nil;
-
-    if (!anAppletalkAddress) {
-        [self release];
-        return nil;
-    }
-
-    bcopy(anAppletalkAddress, &appletalkAddress, sizeof(appletalkAddress));
-
-    return self;
-}
-
-- (int)addressFamily
-{
-    return AF_APPLETALK;
-}
-
-- (const void *)_internetAddress
-{
-    return &appletalkAddress;
-}
-
-- (unsigned int)_addressLength
-{
-    return sizeof(struct at_addr);
-}
-
-- (struct sockaddr *)mallocSockaddrWithPort:(unsigned short int)portNumber
-{
-    struct sockaddr_at *sat;
-
-    /* AppleTalk "socket numbers" (the equivalent of a TCP or UDP port number) are only 8 bits wide */
-    if (portNumber > 255)
-        return NULL;
-
-    sat = malloc(sizeof(struct sockaddr_at));
-    bzero(sat, sizeof(*sat));
-
-    sat->sat_len = sizeof(*sat);
-    sat->sat_family = AF_APPLETALK;
-    sat->sat_port = portNumber;
-    bcopy(&appletalkAddress, &(sat->sat_addr), sizeof(sat->sat_addr));
-
-    return (struct sockaddr *)sat;
-}
-
-- (BOOL)isMulticastAddress;
-{
-    return ( appletalkAddress.s_node == ATADDR_BCASTNODE ) ? YES : NO;
-}
-
-- (NSUInteger)hash
-{
-    return ( appletalkAddress.s_node ) | ( (NSUInteger)(appletalkAddress.s_net) << 8 );;
-}
-
-- (NSString *)stringValue
-{
-    return [NSString stringWithFormat:@"%d:%d", (int)ntohs(appletalkAddress.s_net), appletalkAddress.s_node];
-}
-
-@end
-#endif // ON_SUPPORT_APPLE_TALK

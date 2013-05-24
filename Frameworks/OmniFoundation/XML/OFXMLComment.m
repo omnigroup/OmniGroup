@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,7 @@ RCS_ID("$Id$")
     // XML comments can't contain '--' since that ends a comment.
     if ([unquotedString containsString:@"--"])
         // Replace any double-dashes with an m-dash.  Cutesy, but it'll at least be valid.
-        _quotedString  = [[unquotedString stringByReplacingAllOccurrencesOfString:@"--" withString:[NSString emdashString]] copy];
+        _quotedString  = [[unquotedString stringByReplacingOccurrencesOfString:@"--" withString:[NSString emdashString]] copy];
     else
         _quotedString = [unquotedString copy];
 

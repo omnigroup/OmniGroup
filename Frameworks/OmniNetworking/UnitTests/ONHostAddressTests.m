@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,9 +15,6 @@
 
 #include <sys/socket.h>
 #include <netinet/in.h>
-#if ON_SUPPORT_APPLE_TALK
-#include <netat/appletalk.h>
-#endif
 
 RCS_ID("$Id$");
 
@@ -150,44 +147,6 @@ RCS_ID("$Id$");
     shouldBeEqual(nil, [ONHostAddress hostAddressWithNumericString:@"2002.d827.893a.101.50.ba08.d61"]);
     shouldBeEqual(nil, [ONHostAddress hostAddressWithNumericString:@"2002.d827.893a.101.0..50.ba08.d61"]);
 }
-
-#if ON_SUPPORT_APPLE_TALK
-- (void)testAtalkParsing
-{
-    ONHostAddress *atalk1, *atalk2, *atalk3;
-    struct sockaddr_at sat, *satptr;
-
-    /* I don't know a heck of a lot about what's normal practice when it comes to representing AppleTalk addresses, but this seems to be the common syntax: you have a net-part (16 bits) and a host-part (8 bits), represented in decimal and separated by a colon. The net-part can optionally be represented as a dotted decimal pair. */
-
-    atalk1 = [ONHostAddress hostAddressWithNumericString:@"65328:63"];
-    atalk2 = [ONHostAddress hostAddressWithNumericString:@"[255.48:63]"];
-    should([atalk1 addressFamily] == AF_APPLETALK);
-    should([atalk2 addressFamily] == AF_APPLETALK);
-    shouldBeEqual(atalk1, atalk2);
-
-    should([atalk2 mallocSockaddrWithPort:256] == NULL);  /* AppleTalk can't represent port numbers greater than 255 */
-    shouldBeEqual(nil, [ONHostAddress hostAddressWithNumericString:@"65537:0"]);  /* or net numbers past 2^16-1 */
-        
-    satptr = (struct sockaddr_at *)[atalk1 mallocSockaddrWithPort:1];
-    should(satptr->sat_len == sizeof(struct sockaddr_at));
-    should(satptr->sat_family == AF_APPLETALK);
-    should(satptr->sat_addr.s_node == 63);
-    should(ntohs(satptr->sat_addr.s_net) == 65328);
-    free(satptr);
-
-    bzero(&sat, sizeof(sat));
-    sat.sat_len = sizeof(sat);
-    sat.sat_family = AF_APPLETALK;
-    sat.sat_addr.s_net = htons(0xFF30);
-    sat.sat_addr.s_node = 63;
-    atalk3 = [ONHostAddress hostAddressWithSocketAddress:(void *)&sat];
-    shouldBeEqual(atalk1, atalk3);
-
-    shouldBeEqual([atalk3 stringValue], @"65328:63");
-
-    shouldBeEqual(nil, [ONHostAddress hostAddressWithNumericString:@"65328:256"]); /* node numbers are limited to 8 bits also */
-}
-#endif
 
 @end
 

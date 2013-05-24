@@ -15,6 +15,7 @@
 #import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 
 #import "OFXAccountAgent-Internal.h"
 #import "OFXContainerDocumentIndex.h"
@@ -940,7 +941,7 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
 
 - (NSString *)_localRelativePathForFileURL:(NSURL *)fileURL;
 {
-    return OFSFileURLRelativePath(_account.localDocumentsURL, fileURL);
+    return OFFileURLRelativePath(_account.localDocumentsURL, fileURL);
 }
 
 - (NSURL *)_URLForLocalRelativePath:(NSString *)relativePath isDirectory:(BOOL)isDirectory;

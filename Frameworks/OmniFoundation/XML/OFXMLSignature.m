@@ -931,8 +931,7 @@ struct algorithmParameter {
         }
     }
     
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    if (keyRef != NULL && OFSecSignTransformAvailable()) {
+    if (keyRef != NULL) {
         OFSecSignTransform *result = [[OFSecSignTransform alloc] initWithKey:keyRef];
         CFRelease(keyRef);
         result.digestType = *(cursor->secDigestType);
@@ -941,7 +940,6 @@ struct algorithmParameter {
             [result setPackDigestsWithGroupOrder:sigorder];
         return result; // We are NS_RETURNS_RETAINED
     }
-#endif /* Lion APIs */
     
 #if OF_ENABLE_CDSA
     /* If SecTransformEtc. isn't available, we can create a CSSM key from the KeyRef and use it with the CDSA APIs (since KeyRefs are wrappers around CDSA stuff underneath in the first place). */

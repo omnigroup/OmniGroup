@@ -1,4 +1,4 @@
-// Copyright 2001-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,24 +98,6 @@ typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
     [OSUController checkSynchronouslyWithUIAttachedToWindow:[[self controlBox] window]];
 }
 
-static NSString *formatAngle(NSString *value, NSString *positive, NSString *negative)
-{
-    double degrees, minutes, seconds;
-    NSString *directional;
-    
-    degrees = [value doubleValue];
-    if (degrees >= 0)
-        directional = positive;
-    else {
-        degrees = -degrees;
-        directional = negative;
-    }
-    minutes = 60 * modf(degrees, &degrees);
-    seconds = 60 * modf(minutes, &minutes);
-    
-    return [NSString stringWithFormat:@"%.0f&#176;&nbsp;%.0f&#8242;&nbsp;%.0f&#8243;&nbsp;%@", degrees, minutes, seconds, directional];
-}
-
 - (IBAction)showSystemConfigurationDetailsSheet:(id)sender;
 {
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
@@ -191,26 +173,6 @@ static NSString *formatAngle(NSString *value, NSString *positive, NSString *nega
 		NSString *localizedName = OFLocalizedNameForISOLanguageCode(replacement);
 		if (localizedName)
 		    replacement = localizedName;
-	    } else if ([key isEqualToString:@"LATITUDE"]) {
-		NSString *loc = [report objectForKey:@"loc"];
-		NSArray *elements = [loc componentsSeparatedByString:@","];
-		if ([elements count] == 2)
-		    replacement = [elements objectAtIndex:0];
-	    } else if ([key isEqualToString:@"LATITUDE-DMS"]) {
-		NSString *loc = [report objectForKey:@"loc"];
-		NSArray *elements = [loc componentsSeparatedByString:@","];
-		if ([elements count] == 2)
-		    replacement = formatAngle([elements objectAtIndex:0], @"N", @"S");
-	    } else if ([key isEqualToString:@"LONGITUDE"]) {
-		NSString *loc = [report objectForKey:@"loc"];
-		NSArray *elements = [loc componentsSeparatedByString:@","];
-		if ([elements count] == 2)
-		    replacement = [elements objectAtIndex:1];
-	    } else if ([key isEqualToString:@"LONGITUDE-DMS"]) {
-		NSString *loc = [report objectForKey:@"loc"];
-		NSArray *elements = [loc componentsSeparatedByString:@","];
-		if ([elements count] == 2)
-		    replacement = formatAngle([elements objectAtIndex:1], @"E", @"W");
 	    } else if ([key isEqualToString:@"cpu"]) {
 		NSArray *elements = [replacement componentsSeparatedByString:@","];
 		if ([elements count] == 2) {
@@ -452,8 +414,7 @@ static NSString *formatAngle(NSString *value, NSString *positive, NSString *nega
             } else if ([key isEqualToString:@"OTHERVARS"]) {
                 NSMutableString *rows = [NSMutableString string];
                 OFForEachObject([report keyEnumerator], NSString *, aVar) {
-                    if (![aVar isEqualToString:@"loc"])
-                        [rows appendFormat:@"<tr><th>%@</th><td>%@</td></tr>", aVar, [report objectForKey:aVar]];
+                    [rows appendFormat:@"<tr><th>%@</th><td>%@</td></tr>", aVar, [report objectForKey:aVar]];
                 }
                 replacement = rows;
             }
@@ -469,7 +430,6 @@ static NSString *formatAngle(NSString *value, NSString *positive, NSString *nega
             }
         }
 
-	[report removeObjectForKey:@"loc"]; // Gets handled by the synthetic LATITUDE and LONGITUDE keys
         if ([report count]) {
             NSLog(@"Unhandled keys: %@", report);
             OBASSERT(NO);

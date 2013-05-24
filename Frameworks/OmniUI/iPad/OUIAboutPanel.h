@@ -31,6 +31,7 @@
 
 - (IBAction)dismissPanel:(id)sender;
 - (IBAction)emailSupport:(id)sender;
+- (IBAction)viewInAppStore:(id)sender;
 - (IBAction)tappedLogoImage:(id)sender;
 - (IBAction)viewDataSharingPrefs:(id)sender;
 

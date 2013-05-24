@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,10 +14,6 @@
 
 #import "ONHost.h"
 #import "ONHostAddress.h"
-
-#if ON_SUPPORT_APPLE_TALK
-#include <netat/appletalk.h>
-#endif
 
 RCS_ID("$Id$")
 
@@ -90,10 +86,6 @@ RCS_ID("$Id$")
             return ntohs(((struct sockaddr_in *)portAddress)->sin_port);
         case AF_INET6:
             return ntohs(((struct sockaddr_in6 *)portAddress)->sin6_port);
-#if ON_SUPPORT_APPLE_TALK
-        case AF_APPLETALK:
-            return ((struct sockaddr_at *)portAddress)->sat_port;
-#endif
         default:
             OBASSERT_NOT_REACHED("Unexpected address family");
             return 0;

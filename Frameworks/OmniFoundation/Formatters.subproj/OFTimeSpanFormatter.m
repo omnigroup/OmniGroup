@@ -201,7 +201,7 @@ static NSArray *TimeSpanUnits = nil;
         return nil;
 
     numberFormatter = [[NSNumberFormatter alloc] init];
-    [numberFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
+    OBASSERT([numberFormatter formatterBehavior] == NSNumberFormatterBehavior10_4);
     [numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [numberFormatter setGeneratesDecimalNumbers:NO];
     [numberFormatter setZeroSymbol:@"0"];

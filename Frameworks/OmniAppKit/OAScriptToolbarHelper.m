@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,30 +26,6 @@ static BOOL OAScriptToolbarHelperHasNSUserScriptTask;
 
 typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *error);
 
-@interface OAScriptToolbarHelper ()
-
-- (OSAScript *)_compiledScriptForPath:(NSString *)path errorInfo:(NSDictionary **)errorInfo;
-
-- (void)_scanItems;
-
-- (NSArray *)_scriptTypes;
-- (NSArray *)_scriptFilenameExtensions;
-- (NSString *)_stringByRemovingScriptFilenameExtension:(NSString *)filename;
-
-- (void)_sandboxedExecuteAutomatorWorkflowForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
-- (void)_sandboxedExecuteOSAScriptForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
-
-- (void)_unsandboxedExecuteAutomatorWorkflowForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
-- (void)_unsandboxedExecuteOSAScriptForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
-
-- (void)_handleAutomatorWorkflowLoadErrorForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController errorText:(NSString *)errorText;
-- (void)_handleAutomatorWorkflowExecutionErrorForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController errorText:(NSString *)errorText;
-
-- (void)_handleOSAScriptLoadErrorForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController errorText:(NSString *)errorText;
-- (void)_handleOSAScriptExecutionErrorForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController errorText:(NSString *)errorText;
-
-@end
-
 @implementation OAScriptToolbarHelper
 
 + (void)initialize;
@@ -60,9 +36,8 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
 
 - (id)init;
 {
-    if (!(self = [super init])) {
+    if (!(self = [super init]))
         return nil;
-    }
 
     _pathForItemDictionary = [[NSMutableDictionary alloc] init];
     _cachedScriptInfoDictionaries = [[NSMutableDictionary alloc] init];
@@ -143,6 +118,9 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
 
 - (void)finishSetupForToolbarItem:(NSToolbarItem *)toolbarItem toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 {
+    // <bug:///89032> (Update OAScriptToolbarHelper to use non-deprecated API)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     NSString *path = [self pathForItem:toolbarItem];
     if (path == nil) {
         return;
@@ -193,6 +171,7 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
             [toolbarItem setImage:[NSImage imageNamed:@"OAScriptIconTemplate" inBundle:OMNI_BUNDLE]];
         }
     }
+#pragma clang diagnostic pop
 }
 
 - (void)executeScriptItem:(id)sender;

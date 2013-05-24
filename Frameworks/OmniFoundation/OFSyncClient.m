@@ -253,11 +253,7 @@ NSDate *OFSyncClientDateWithTimeIntervalSinceNow(NSTimeInterval sinceNow)
     
     if (ReferenceDate) {
         // The clock is stopped in this case, so we can't really do multiple sync operations (but we want predictable outputs, so that's expected).  We could add the ability to set the reference date later if we need.
-#if !TARGET_OS_IPHONE && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5) || (TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MIN_REQUIRED >= 40000)
         return [ReferenceDate dateByAddingTimeInterval:sinceNow];
-#else
-        return [ReferenceDate addTimeInterval:sinceNow];
-#endif
     }
     
     return [NSDate dateWithTimeIntervalSinceNow:sinceNow];

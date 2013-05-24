@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2007, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -198,7 +198,7 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
     NSRect controlFrame = [snuggleUpToRightSideOfView frame];
 
     CGFloat xEdge = NSMaxX(controlFrame);
-    OA_LION_ONLY( xEdge -= [snuggleUpToRightSideOfView alignmentRectInsets].right; );
+    xEdge -= [snuggleUpToRightSideOfView alignmentRectInsets].right;
     NSPoint origin = NSMakePoint((CGFloat)rint(xEdge + horizontalSpaceFromSnuggleView), (CGFloat)rint(NSMinY(controlFrame) + (NSHeight(controlFrame) - iconSize.height) / 2.0f));
     
     [self setFrame:(NSRect){origin, iconSize}];

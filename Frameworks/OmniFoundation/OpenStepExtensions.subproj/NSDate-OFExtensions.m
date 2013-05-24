@@ -448,16 +448,3 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 }
 
 @end
-
-// 10.4 has a bug where -copyWithZone: apparently calls [self allocWithZone:] instead of [[self class] allocWithZone:].
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MIN_ALLOWED <= MAC_OS_X_VERSION_10_4
-#import <Foundation/NSCalendar.h>
-@interface NSDateComponents (OFTigerFixes)
-@end
-@implementation NSDateComponents (OFTigerFixes)
-- (id)allocWithZone:(NSZone *)zone;
-{
-    return [[self class] allocWithZone:zone];
-}
-@end
-#endif

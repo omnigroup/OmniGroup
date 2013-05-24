@@ -547,10 +547,8 @@ static const struct {
         
 #define T(t) { @encode(t), kCFNumber ## t ## Type }
     T(SInt8), T(SInt16), T(SInt32), T(SInt64), T(Float32), T(Float64),
-#if defined(MAC_OS_X_VERSION_10_5) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
     T(NSInteger), T(CGFloat),
     // Yep, there's no kCFNumberNSUIntegerType. WTF, Apple?!?
-#endif
 #undef T
     
 #define T(n, v) { @encode(n), kCFNumber ## v ## Type }

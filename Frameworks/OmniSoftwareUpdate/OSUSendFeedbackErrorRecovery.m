@@ -46,7 +46,7 @@ RCS_ID("$Id$")
     [super getFeedbackAddress:feedbackAddress andSubject:subjectLine];
     
     if (feedbackAddress) {
-        *feedbackAddress = [*feedbackAddress stringByReplacingAllOccurrencesOfString:@"@" withString:@"+omnisoftwareupdate@"];
+        *feedbackAddress = [*feedbackAddress stringByReplacingOccurrencesOfString:@"@" withString:@"+omnisoftwareupdate@"];
     }
 }
 

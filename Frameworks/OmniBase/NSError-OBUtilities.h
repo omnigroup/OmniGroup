@@ -1,4 +1,4 @@
-// Copyright 2005-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,8 +28,6 @@ enum {
 
 extern NSError *_OBWrapUnderlyingError(NSError *underlyingError, NSString *domain, NSInteger code, const char *fileName, unsigned int line, NSString *firstKey, ...) NS_REQUIRES_NIL_TERMINATION;
     
-// Clang complains if we have a function that takes NSError ** without returning BOOL/pointer.
-// Bail on a NULL outError. Some Foundation code on 10.4 would crash if you did this, but on 10.5, many methods are documented to allow it. So let's allow it also.
 #define _OBError(outError, domain, code, fileName, line, firstKey, ...) do { \
     OB_AUTORELEASING NSError **_outError = (outError); \
     if (_outError) \

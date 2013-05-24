@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,32 +23,6 @@ RCS_ID("$Id$")
 CFCharacterSetRef OFDeferredDecodingCharacterSet(void) OB_HIDDEN;
 unichar OFCharacterForDeferredDecodedByte(unsigned int byte) OB_HIDDEN;
 unsigned int OFByteForDeferredDecodedCharacter(unichar uchar) OB_HIDDEN;
-
-/* Under 10.1.x, CFCharacterSets are pretty much useless, and aren't toll-free-bridged with NSCharacterSets. So we use NSCharacterSets here ... some happy day, we will be free of the burden of 10.1 support ... */
-#ifdef OSX_10_1_KLUDGE
-#define CFCharacterSetRef NSCharacterSet *
-static CFCharacterSetRef kludge_CreateCharacterSet(CFRange r)
-{
-    return [[NSCharacterSet characterSetWithRange:(NSRange){r.location, r.length}] retain];
-}
-static Boolean kludge_FindCharacterFromSet(CFStringRef str, CFCharacterSetRef set, CFRange r, CFIndex opts, CFRange *result)
-{
-    NSRange found = [(NSString *)str rangeOfCharacterFromSet:set options:opts range:(NSRange){r.location, r.length}];
-    if (found.length > 0) {
-        result->location = found.location;
-        result->length = found.length;
-        return TRUE;
-    } else {
-        return FALSE;
-    }
-}
-#define CFStringFindCharacterFromSet(a,b,c,d,e) kludge_FindCharacterFromSet(a,b,c,d,e)
-#define CFCharacterSetCreateWithCharactersInRange(a,b) kludge_CreateCharacterSet(b)
-#define CFCharacterSetCreateInvertedSet(a,b) [[(b) invertedSet] retain]
-#define ReleaseCharacterSet(b) [(b) release]
-#else
-#define ReleaseCharacterSet(b) CFRelease(b)
-#endif /* OSX_10_1_KLUDGE */
 
 /* This is where we stash high-bit-set bytes when we're using OFDeferredASCIISupersetStringEncoding. This value was arbitrarily chosen to be somewhere in the Supplementary Private Use Area A. Anything in this range should be re-coded before it leaves this process, so it's OK to set this to a different value if necessary. */
 #define OFDeferredASCIISupersetBase (0xFA00)
@@ -409,7 +383,7 @@ CFDataRef OFCreateDataFromStringWithDeferredEncoding(CFStringRef str, CFRange ra
             fastCursor = conversionEnd;
     }
 
-    ReleaseCharacterSet(nonDeferredCharacters);
+    CFRelease(nonDeferredCharacters);
 
     return octets;
 }

@@ -1,4 +1,4 @@
-// Copyright 2005-2007, 2009, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2007, 2009, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,33 @@ RCS_ID("$Id$");
 
 @implementation NSEvent (OAExtensions)
 
-- (NSString *)charactersWithModifiers:(unsigned int)modifierFlags;
+- (BOOL)isUserCancel;
+{
+    if ([self type] != NSKeyDown) {
+        return NO;
+    }
+    
+    NSUInteger modifierFlags = [self modifierFlags];
+    NSString *characters = [self charactersIgnoringModifiers];
+    
+    if ([characters length] != 1) {
+        return NO;
+    }
+    
+    // Test for unmodified Escape
+    if ((modifierFlags & (NSShiftKeyMask | NSControlKeyMask | NSAlternateKeyMask | NSCommandKeyMask)) == 0) {
+        return [characters characterAtIndex:0] == 0x1B;
+    }
+
+    // Test for Command-Period
+    if ((modifierFlags & (NSShiftKeyMask | NSControlKeyMask | NSAlternateKeyMask | NSCommandKeyMask)) == NSCommandKeyMask) {
+        return [characters isEqualToString:@"."];
+    }
+
+    return NO;
+}
+
+- (NSString *)charactersWithModifiers:(NSUInteger)modifierFlags;
 {
     UInt32 eventModifiers = 0;
     if (modifierFlags & NSShiftKeyMask)

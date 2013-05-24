@@ -20,3 +20,6 @@ extern BOOL OFURLEqualsURL(NSURL *URL1, NSURL *URL2);
 
 extern BOOL OFURLEqualToURLIgnoringTrailingSlash(NSURL *URL1, NSURL *URL2);
 
+extern BOOL OFURLContainsURL(NSURL *containerURL, NSURL *url);
+extern NSString *OFFileURLRelativePath(NSURL *baseURL, NSURL *fileURL);
+

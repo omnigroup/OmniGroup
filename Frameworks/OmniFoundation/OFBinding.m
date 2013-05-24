@@ -7,7 +7,6 @@
 
 #import <OmniFoundation/OFBinding.h>
 
-#import <OmniFoundation/NSKeyValueObserving-OFExtensions.h> // For HAS_REMOVEOBSERVER_FORKEYPATH_CONTEXT
 #import <OmniFoundation/OFBindingPoint.h>
 #import <OmniFoundation/OFNull.h> // For OFISEQUAL()
 #import <OmniBase/OBObject.h>
@@ -254,11 +253,7 @@ static unsigned int _OFBindingObservationContext;
     if (!_registered) // don't null-deregister if there is a programming error
 	return;
 
-#if HAS_REMOVEOBSERVER_FORKEYPATH_CONTEXT
     [_sourceObject removeObserver:self forKeyPath:_sourceKeyPath context:&_OFBindingObservationContext];
-#else
-    [_sourceObject removeObserver:self forKeyPath:_sourceKeyPath];
-#endif
     _registered = NO;
 
 #if DEBUG_KVO

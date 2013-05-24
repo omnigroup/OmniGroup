@@ -1,4 +1,4 @@
-// Copyright 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,10 @@
 #import <OmniAppKit/NSNib-OAExtensions.h>
 
 RCS_ID("$Id$");
+
+// <bug:///89033> (Update/remove NSNib(OAExtensions) to us non-deprecated API)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 @implementation NSNib (OAExtensions)
 
@@ -39,3 +43,5 @@ RCS_ID("$Id$");
 }
 
 @end
+
+#pragma clang diagnostic pop

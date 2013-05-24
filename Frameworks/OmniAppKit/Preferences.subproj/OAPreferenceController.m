@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -999,53 +999,6 @@ static NSComparisonResult OAPreferenceControllerCompareCategoryNames(id name1, i
 
 @end
 
-#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_10_7 > MAC_OS_X_VERSION_MIN_REQUIRED
-#define HAVE_OAOpenSystemPreferenceBundle
-static BOOL OAOpenSystemPreferenceBundle(NSString *paneBundleIdentifier)
-{
-    OSErr err;
-    FSRef fRef;
-    CFURLRef prefDir;
-    CFArrayRef panes;
-    BOOL didOpen;
-    
-    // Find the folder containing the pref panes
-    err = FSFindFolder(kSystemDomain, kSystemPreferencesFolderType, FALSE, &fRef);
-    if (err != noErr) {
-        NSLog(@"FSFindFolder(kSystemPreferencesFolderType) returned %d", err);
-        return NO;
-    }
-    
-    prefDir = CFURLCreateFromFSRef(kCFAllocatorDefault, &fRef);
-    if (!prefDir)
-        return NO; // shouldn't happen, really
-    
-    // List all the preference panes in that folder
-    panes = CFBundleCreateBundlesFromDirectory(kCFAllocatorDefault, prefDir, NULL);
-    CFRelease(prefDir);
-    if (!panes) {
-        return NO;
-    }
-    
-    // Search for one with a matching bundle identifier
-    CFIndex paneCount = CFArrayGetCount(panes), paneIndex;
-    didOpen = NO;
-    for(paneIndex = 0; paneIndex < paneCount; paneIndex ++) {
-        CFBundleRef pane = (CFBundleRef)CFArrayGetValueAtIndex(panes, paneIndex);
-        CFStringRef paneID = CFBundleGetIdentifier(pane);
-        if (CFStringCompare(paneID, (CFStringRef)paneBundleIdentifier, 0) == kCFCompareEqualTo) {
-            CFURLRef paneLocation = CFBundleCopyBundleURL(pane);
-            didOpen = [[NSWorkspace sharedWorkspace] openURL:(NSURL *)paneLocation];
-            CFRelease(paneLocation);
-            break;
-        }
-    }
-    CFRelease(panes);
-    
-    return didOpen;
-}
-#endif
-
 static NSAppleEventDescriptor *whose(OSType form, OSType want, NSAppleEventDescriptor *seld, NSAppleEventDescriptor *container)
 {
     NSAppleEventDescriptor *obj = [NSAppleEventDescriptor recordDescriptor];
@@ -1061,8 +1014,7 @@ static NSAppleEventDescriptor *whose(OSType form, OSType want, NSAppleEventDescr
     return [obj coerceToDescriptorType:'obj '];
 }
 
-/* On 10.4, System Preferences has applescript support for revealing a specific tab (or anchor) within a specific pane. So we call that. */
-static BOOL OAOpenSystemPreferenceTab(NSString *paneIdentifier, NSString *tabIdentifier)
+BOOL OAOpenSystemPreferencePane(NSString *paneIdentifier, NSString *tabIdentifier)
 {
     NSString *systemPreferencesBundleID = @"com.apple.systempreferences";
     NSAppleEventDescriptor *target = whose(formUniqueID, 'xppb', [NSAppleEventDescriptor descriptorWithString:paneIdentifier], nil);
@@ -1118,17 +1070,3 @@ static BOOL OAOpenSystemPreferenceTab(NSString *paneIdentifier, NSString *tabIde
 
     return successResponse;
 }
-
-BOOL OAOpenSystemPreferencePane(NSString *bundleIdentifier, NSString *tabIdentifier)
-{
-    BOOL success = OAOpenSystemPreferenceTab(bundleIdentifier, tabIdentifier);
-    
-#ifdef HAVE_OAOpenSystemPreferenceBundle
-    /* Fall back to the 10.3 technique of asking System Preferences to open a given preference bundle. */
-    if (!success)
-        success = OAOpenSystemPreferenceBundle(bundleIdentifier);
-#endif
-    
-    return success;
-}
-

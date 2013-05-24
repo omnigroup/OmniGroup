@@ -1,4 +1,4 @@
-// Copyright 2005-2011 The Omni Group. All rights reserved.
+// Copyright 2005-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,7 @@ RCS_ID("$Id$")
 	
 	// Do the draw!  This should be fast since it is constant
 	CIImage *constantColorImage = [cropFilter valueForKey:@"outputImage"];
-	[self drawImage:constantColorImage atPoint:(CGPoint){rect.origin.x, rect.origin.y} fromRect:*(CGRect*)&rect];
+	[self drawImage:constantColorImage inRect:rect fromRect:rect];
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,27 +23,27 @@ RCS_ID("$Id$");
 + (OFVersionNumber *)userVisibleOperatingSystemVersionNumber;
 {
     static OFVersionNumber *userVisibleOperatingSystemVersionNumber = nil;
-    if (userVisibleOperatingSystemVersionNumber)
-        return userVisibleOperatingSystemVersionNumber;
-    
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
 #if TARGET_OS_IPHONE
-    UIDevice *device = [UIDevice currentDevice];
-    NSString *versionString = device.systemVersion;
-#else 
-    // sysctlbyname("kern.osrevision"...) returns an error, Radar #3624904
-    //setSysctlStringKey(info, "kern.osrevision");
-
-    SInt32 major, minor, bug;
-    Gestalt(gestaltSystemVersionMajor, &major);
-    Gestalt(gestaltSystemVersionMinor, &minor);
-    Gestalt(gestaltSystemVersionBugFix, &bug);
-    
-    NSString *versionString = [NSMakeCollectable(CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%d.%d.%d"), major, minor, bug)) autorelease];
+        UIDevice *device = [UIDevice currentDevice];
+        NSString *versionString = device.systemVersion;
+#else
+        // There is no good replacement for this API right now. NSProcessInfo's -operatingSystemVersionString is explicitly documented as not appropriate for parsing. We could look in "/System/Library/CoreServices/SystemVersion.plist", but that seems fragile. We could get the sysctl kern.osrevision and map it ourselves, but that seems terrible too.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        SInt32 major, minor, bug;
+        Gestalt(gestaltSystemVersionMajor, &major);
+        Gestalt(gestaltSystemVersionMinor, &minor);
+        Gestalt(gestaltSystemVersionBugFix, &bug);
+#pragma clang diagnostic pop
+        
+        NSString *versionString = [NSString stringWithFormat:@"%d.%d.%d", major, minor, bug];
 #endif
-
-    // TODO: Add a -initWithComponents:count:?
-    userVisibleOperatingSystemVersionNumber = [[self alloc] initWithVersionString:versionString];
-
+        
+        // TODO: Add a -initWithComponents:count:?
+        userVisibleOperatingSystemVersionNumber = [[self alloc] initWithVersionString:versionString];
+    });
     return userVisibleOperatingSystemVersionNumber;
 }
 
@@ -59,82 +59,26 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-+ (BOOL)isOperatingSystemiOS50OrLater; // iOS 5.0
++ (BOOL)isOperatingSystemiOS61OrLater; // iOS 6.1
 {
-    static BOOL initialized = NO;
     static BOOL isLater;
-    
-    if (!initialized) {
-        isLater = isOperatingSystemLaterThanVersionString(@"5.0");
-        initialized = YES;
-    }
-    
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystemiOS51OrLater; // iOS 5.1
-{
-    static BOOL initialized = NO;
-    static BOOL isLater;
-    
-    if (!initialized) {
-        isLater = isOperatingSystemLaterThanVersionString(@"5.1");
-        initialized = YES;
-    }
-    
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystemiOS60OrLater; // iOS 6.0
-{
-    static BOOL initialized = NO;
-    static BOOL isLater;
-    
-    if (!initialized) {
-        isLater = isOperatingSystemLaterThanVersionString(@"6.0");
-        initialized = YES;
-    }
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        isLater = isOperatingSystemLaterThanVersionString(@"6.1");
+    });
     
     return isLater;
 }
 
 #else
 
-+ (BOOL)isOperatingSystemSnowLeopardOrLater; // 10.6
-{
-    static BOOL initialized = NO;
-    static BOOL isLater;
-
-    if (!initialized) {
-        isLater = isOperatingSystemLaterThanVersionString(@"10.6");
-        initialized = YES;
-    }
-
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystemLionOrLater; // 10.7
-{
-    static BOOL initialized = NO;
-    static BOOL isLater;
-
-    if (!initialized) {
-        isLater = isOperatingSystemLaterThanVersionString(@"10.7");
-        initialized = YES;
-    }
-
-    return isLater;
-}
-
 + (BOOL)isOperatingSystemMountainLionOrLater; // 10.8
 {
-    static BOOL initialized = NO;
     static BOOL isLater;
-
-    if (!initialized) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         isLater = isOperatingSystemLaterThanVersionString(@"10.8");
-        initialized = YES;
-    }
+    });
 
     return isLater;
 }

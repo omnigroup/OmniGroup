@@ -77,7 +77,7 @@ static void _OFControllerCheckTerminated(void)
         if (!controllingBundle)
             controllingBundle = [[NSBundle mainBundle] retain];
         
-        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.7 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
+        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.8 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
 #ifdef OMNI_ASSERTIONS_ON
         {
             NSString *requiredVersionString = [[controllingBundle infoDictionary] objectForKey:@"LSMinimumSystemVersion"];
@@ -85,7 +85,7 @@ static void _OFControllerCheckTerminated(void)
                 OFVersionNumber *requiredVersion = [[OFVersionNumber alloc] initWithVersionString:requiredVersionString];
                 OBASSERT(requiredVersion);
                 
-                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.7"];
+                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.8"];
                 OBASSERT([globalRequiredVersion compareToVersionNumber:requiredVersion] != NSOrderedDescending);
                 [requiredVersion release];
                 [globalRequiredVersion release];

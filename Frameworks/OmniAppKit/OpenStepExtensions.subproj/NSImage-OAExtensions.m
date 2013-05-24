@@ -197,6 +197,9 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 /* Checks whether the given file has a custom image specified.  If so, it uses NSWorkspace to get said image.  Otherwise, it tries to use the file extension to get a shared version of the image.  This method will not returned uniqued results for files *with* custom images, but hopefully that calling pattern is rare. */
 + (NSImage *)imageForFile:(NSString *)path;
 {
+    // <bug:///89030> (Rewrite +[NSImage(OAExtensions) imageForFile:] to not use deprecated API)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     // The 'isDirectory' only matters if we use this URL as the base for another relative URL.
     CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)path, kCFURLPOSIXPathStyle, false/*isDirectory*/);
 
@@ -218,6 +221,7 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 		return [self imageForFileType:extension];
 	else
 		return [[NSWorkspace sharedWorkspace] iconForFile:path];
+#pragma clang diagnostic pop
 }
 
 #define X_SPACE_BETWEEN_ICON_AND_TEXT_BOX 2
@@ -300,18 +304,6 @@ static NSDictionary *titleFontAttributes;
         if (sourceRect.size.width == 0 && sourceRect.size.height == 0)
             sourceRect.size = [self size];
         CGContextScaleCTM(context,rect.size.width/sourceRect.size.width, -1 * ( rect.size.height/sourceRect.size.height ));
-        
-        if (NSAppKitVersionNumber <= OAAppKitVersionNumber10_5_3) {
-            // <bug://bugs/43240> (10.5/Leopard: Placed EPS and PDF images corrupted when opacity changed in Image Inspector), <bug://bugs/44518> (Copied and pasted PDFs rasterize when their opacity is changed) and RADAR 5586059 / 4766375 all involve PDF caching problems. The following seems to fix it even though I do not know why...
-            // fixed in 10.6 so do not do this anymore; in fact, it caused <bug://bugs/55452> (10.6: Opacity doesn't effect PDFs)
-            OFForEachInArray([self representations], NSImageRep *, rep, {
-                if ([rep isKindOfClass:[NSPDFImageRep class]] || [rep isKindOfClass:[NSEPSImageRep class]]) {
-                  CGContextSetAlpha(context, delta);
-                  delta = 1.0f;
-                  break;
-                }
-            });
-        }
         
         rect.origin.x = rect.origin.y = 0; // We've translated ourselves so it's zero
         rect.size = sourceRect.size;  // We've scaled ourselves to match

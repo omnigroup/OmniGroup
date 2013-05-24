@@ -40,9 +40,6 @@ extern OFSScanDirectoryFilter OFSScanDirectoryExcludeInboxItemsFilter(void);
 
 extern BOOL OFSGetBoolResourceValue(NSURL *url, NSString *key, BOOL *outValue, NSError **outError);
 
-extern BOOL OFSURLContainsURL(NSURL *containerURL, NSURL *url);
-extern NSString *OFSFileURLRelativePath(NSURL *baseURL, NSURL *fileURL);
-
 extern BOOL OFSURLIsStandardizedOrMissing(NSURL *url);
 extern BOOL OFSURLIsStandardized(NSURL *url);
 

@@ -1,4 +1,4 @@
-// Copyright 2005-2006,2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2006,2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -185,6 +185,9 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 
 - (IBAction)showAboutPanel:(id)sender;
 {
+    // <bug:///89031> (Update OAAboutPanelController to use non-deprecated API)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if (!panel) {
 	NSNib *nib = [[NSNib alloc] initWithNibNamed:@"OAAboutPanel" bundle:OMNI_BUNDLE];
 	if (!nib || ![nib instantiateNibWithOwner:self topLevelObjects:NULL])
@@ -195,6 +198,7 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
     [self willShowAboutPanel];
     [panel makeKeyAndOrderFront:self];
     [panel makeFirstResponder:panel];
+#pragma clang diagnostic pop
 }
 
 - (IBAction)hideAboutPanel:(id)sender;

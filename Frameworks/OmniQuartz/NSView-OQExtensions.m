@@ -1,4 +1,4 @@
-// Copyright 2005-2012 The Omni Group. All rights reserved.
+// Copyright 2005-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -300,10 +300,11 @@ typedef struct _TransitionUserInfo {
 	//[[NSColor redColor] set];
 	//NSRectFill([preferenceBox bounds]);
 	//NSLog(@"ctx = %@, img = %@, extent = %f, %f, %f, %f", [[window graphicsContext] CIContext], image, [image extent].origin.x, [image extent].origin.y, [image extent].size.width, [image extent].size.height);
-	[[[window graphicsContext] CIContext] drawImage:image atPoint:(CGPoint){0,0} fromRect:[image extent]];
+        CGRect imageExtent = [image extent];
+	[[[window graphicsContext] CIContext] drawImage:image inRect:CGRectMake(0, 0, imageExtent.size.width, imageExtent.size.height) fromRect:imageExtent];
 	[self unlockFocus];
-		[window flushWindow];
-		[[window graphicsContext] flushGraphics];
+        [window flushWindow];
+        [[window graphicsContext] flushGraphics];
 	NSEnableScreenUpdates();
     }
 }

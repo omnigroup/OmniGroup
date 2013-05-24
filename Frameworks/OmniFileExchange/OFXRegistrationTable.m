@@ -55,14 +55,7 @@ static NSInteger OFXRegistrationTableDebug = INT_MAX; // Make sure to log if we 
     return self;
 }
 
-// Newer OS versions include GCD in ARC and dispatch_release() isn't allowed/needed.
-#if !OB_ARC_GCD
-- (void)dealloc;
-{
-    // There should be no operations on the queue -- writers don't have a reference to us since we are being deallocated. There should be no pending update queued since we reference 'self' in those blocks and thus we can't be deallocated while one is pending.
-    dispatch_release(_queue);
-}
-#endif
+// Regarding -dealloc. GCD is inluded in ARC. There should be no operations on the queue -- writers don't have a reference to us since we are being deallocated. There should be no pending update queued since we reference 'self' in those blocks and thus we can't be deallocated while one is pending.
 
 - (id)objectForKeyedSubscript:(NSString *)key;
 {

@@ -494,7 +494,6 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         
         id responsible = [object responsibleTargetForAction:theAction sender:sender];
         
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_10_7 <= MAC_OS_X_VERSION_MIN_REQUIRED
         // Use the supplementalTargetForAction mechanism that was introduced in 10.7 to look for delegates and other helper objects attached to responders, but still use our OATargetSelection approach of requiring objects to override responsibleTargetForAction if they wish to terminate the search.
         if (!responsible && [object isKindOfClass:[NSResponder class]]) {
             DEBUG_TARGET_SELECTION(@"      ... trying supplementalTarget");
@@ -503,7 +502,6 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
                 DEBUG_TARGET_SELECTION(@"      ... got supplementalTarget: %@", [responsible shortDescription]);
             responsible = [responsible responsibleTargetForAction:theAction sender:sender];
         }
-#endif
         
         if (responsible) {
             // Someone claimed to be responsible for the action.  The sender will re-validate with any appropriate means and might still get refused, but we should stop iterating.
@@ -967,7 +965,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 {
     NSArray *orderedWindows = [super orderedWindows];
 
-    if (NSAppKitVersionNumber >= OAAppKitVersionNumber10_7) {
+    {
         // Workaround for rdar://problem/10262921
         //
         // In full-screen mode, the window's toolbar gets hosted in it's own window, and there is a full-screen backdrop window.

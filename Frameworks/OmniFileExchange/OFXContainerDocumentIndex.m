@@ -13,6 +13,8 @@
 
 #import <OmniFileStore/OFSURL.h>
 
+RCS_ID("$Id$")
+
 @implementation OFXContainerDocumentIndex
 {
     __weak OFXContainerAgent *_weak_containerAgent;

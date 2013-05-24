@@ -1,4 +1,4 @@
-// Copyright 2011-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,4 @@
 
 #import <Availability.h>
 
-#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-    #define OA_USE_COLOR_MANAGER 1
-#else
-    #define OA_USE_COLOR_MANAGER 1 // Deprecated in 10.7
-#endif
+#define OA_USE_COLOR_MANAGER 1 // Deprecated in 10.7, but there is no replacement yet.

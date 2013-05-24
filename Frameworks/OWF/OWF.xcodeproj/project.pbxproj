@@ -372,6 +372,13 @@
 			remoteGlobalIDString = 34EE20D114F0354300722491;
 			remoteInfo = OBUnitTests;
 		};
+		34C03379174E9F6600FE3E6D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34D029D1167E5CB8005E680B /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34B2F63B17188539000E45DF;
+			remoteInfo = OFXMLIdHash;
+		};
 		34D02A12167E5CCB005E680B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34D02A06167E5CCB005E680B /* OmniNetworking.xcodeproj */;
@@ -1174,6 +1181,7 @@
 				344B89C416C9A2BC004C709D /* OFCrashOnExceptionTest */,
 				344B89C616C9A2BC004C709D /* OFRandomRepeatTest */,
 				344B89C816C9A2BC004C709D /* OFXMLParsingTest */,
+				34C0337A174E9F6600FE3E6D /* OFXMLIdHash */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1834,6 +1842,13 @@
 			fileType = wrapper.cfbundle;
 			path = OBUnitTests.octest;
 			remoteRef = 344B89DC16C9A2BD004C709D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34C0337A174E9F6600FE3E6D /* OFXMLIdHash */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFXMLIdHash;
+			remoteRef = 34C03379174E9F6600FE3E6D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34D02A13167E5CCB005E680B /* OmniNetworking.framework */ = {

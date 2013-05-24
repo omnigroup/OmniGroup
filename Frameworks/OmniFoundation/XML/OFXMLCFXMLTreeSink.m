@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2009-2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,10 @@
 
 RCS_ID("$Id$");
 
+
+// <bug:///88983> (Stop using the deprecated CFXML system for SVG export)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 @implementation OFXMLCFXMLTreeSink
 
@@ -307,4 +311,4 @@ static void learnNamespace(const void *attributeName, const void *attributeValue
 
 @end
 
-
+#pragma clang diagnostic pop

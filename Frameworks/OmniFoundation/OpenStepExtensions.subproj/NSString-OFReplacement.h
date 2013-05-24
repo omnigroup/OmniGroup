@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,9 +21,6 @@
 
 - (NSString *)stringByRemovingString:(NSString *)removeString;
 // - (NSString *)stringByPaddingToLength:(unsigned int)aLength;  // Use Foundation's new -stringByPaddingToLength:withString:startingAtIndex: method.
-
-- (NSString *)stringByReplacingAllOccurrencesOfString:(NSString *)stringToReplace withString:(NSString *)replacement;
-// Can be better than making a mutable copy and calling -[NSMutableString replaceOccurrencesOfString:withString:options:range:] -- if stringToReplace is not found in the receiver, then the receiver is retained, autoreleased, and returned immediately.
 
 - (NSString *)stringByReplacingCharactersInSet:(NSCharacterSet *)set withString:(NSString *)replaceString;
 

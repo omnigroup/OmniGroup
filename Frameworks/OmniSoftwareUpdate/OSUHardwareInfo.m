@@ -35,7 +35,7 @@
 #import <mach-o/arch.h>
 #import <sys/sysctl.h>
 
-#if OSU_MAC && defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
+#if OSU_MAC
 #import <OpenCL/opencl.h>
 #endif
 
@@ -272,10 +272,15 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
         //setSysctlStringKey(info, "kern.osrevision");
 
 #if OSU_MAC
+        // There is no good replacement for this API right now. NSProcessInfo's -operatingSystemVersionString is explicitly documented as not appropriate for parsing. We could look in "/System/Library/CoreServices/SystemVersion.plist", but that seems fragile. We could get the sysctl kern.osrevision and map it ourselves, but that seems terrible too.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         SInt32 major, minor, bug;
         Gestalt(gestaltSystemVersionMajor, &major);
         Gestalt(gestaltSystemVersionMinor, &minor);
         Gestalt(gestaltSystemVersionBugFix, &bug);
+#pragma clang diagnostic pop
+
         CFStringRef userVisibleSystemVersion = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%d.%d.%d"), major, minor, bug);
 #endif
 #if OSU_IPHONE
@@ -297,29 +302,6 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
             }
             CFRelease(languages);
         }
-    }
-    
-    // Location reported via the System Preferences TimeZone pane (or possibly via a GPS dongle; that seems less likely, though)
-    {
-#if OSU_MAC
-	MachineLocation location;
-	memset(&location, 0, sizeof(location));
-	ReadLocation(&location);
-        
-        // This wasn't present under 10.2
-#ifndef FractToFloat
-#define FractToFloat(a)     ((float)(a) / fract1)
-#endif
-        
-	// These are reported with a scale of 1/90.  Convert them to the normal representation.
-	CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%f,%f"), 90*FractToFloat(location.latitude), 90*FractToFloat(location.longitude));
-	CFDictionarySetValue(info, CFSTR("loc"), value);
-	CFRelease(value);
-#endif
-        
-#if OSU_IPHONE
-        // If we ask for the location, the OS will put up a sheet asking if the user wants to allow it. Should we go ahead and do that? Do we have a reason to care where the user is -- seems unlikely.
-#endif
     }
     
     // Computer model
@@ -535,7 +517,6 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
             
             // Display mode and QuartzExtreme boolean for up to 4 displays            
             for (displayIndex = 0; displayIndex < displayCount; displayIndex++) {
-#if defined(MAC_OS_X_VERSION_10_6) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6)
                 CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displays[displayIndex]);
                 if (!mode)
                     continue;
@@ -553,21 +534,7 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
                 
                 CFRelease(mode);
                 CFRelease(pixelEncoding);
-#else
-                CFDictionaryRef mode = CGDisplayCurrentMode(displays[displayIndex]);
-                if (!mode)
-                    continue;
-                CFNumberRef width, height, refreshRate;
-                CFTypeRef pixelEncoding;
-                
-                width = CFDictionaryGetValue(mode, kCGDisplayWidth);
-                height = CFDictionaryGetValue(mode, kCGDisplayHeight);
-                refreshRate = CFDictionaryGetValue(mode, kCGDisplayRefreshRate);
-                pixelEncoding = CFDictionaryGetValue(mode, kCGDisplayBitsPerPixel);
-                
-                CFStringRef format = reportMode ? CFSTR("%@x%@, %@ bits, %@Hz") : CFSTR("%@,%@,%@,%@");
-                CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, format, width, height, pixelEncoding, refreshRate);
-#endif
+
                 CFStringRef key = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("display%d"), displayIndex);
                 CFDictionarySetValue(info, key, value);
                 CFRelease(key);

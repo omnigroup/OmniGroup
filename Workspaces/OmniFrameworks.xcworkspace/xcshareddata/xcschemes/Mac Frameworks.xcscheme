@@ -253,7 +253,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "4AFE72AA08A02E9D00ED9F2D"
-               BuildableName = "ONUnitTests.otest"
+               BuildableName = "ONUnitTests.octest"
                BlueprintName = "ONUnitTests"
                ReferencedContainer = "container:../Frameworks/OmniNetworking/OmniNetworking.xcodeproj">
             </BuildableReference>

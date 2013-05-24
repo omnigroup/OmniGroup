@@ -327,7 +327,7 @@ static NSMutableArray *hiddenPanels = nil;
         return nil;
     
     _applicationDidFinishRestoringWindows = NO;
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidFinishRestoringWindowsNotification:) name:(NSAppKitVersionNumber >= OAAppKitVersionNumber10_7) ? @"NSApplicationDidFinishRestoringWindowsNotification" : NSApplicationDidFinishLaunchingNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidFinishRestoringWindowsNotification:) name:NSApplicationDidFinishRestoringWindowsNotification object:nil];
     
     inspectorControllers = [[NSMutableArray alloc] init];
 

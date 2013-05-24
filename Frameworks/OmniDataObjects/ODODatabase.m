@@ -80,14 +80,12 @@ static void ODOComparisonPredicateContainsStringGeneric(sqlite3_context *ctx, in
     CFStringRef lhsString = CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, (const char *)lhs, kCFStringEncodingUTF8, kCFAllocatorNull);
     CFStringRef rhsString = CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, (const char *)rhs, kCFStringEncodingUTF8, kCFAllocatorNull);
     
-    // Diacritic insensitivity is only on 10.5 or the iPhone, so this won't work on the Mac under 10.4.
+    // Diacritic/case insensitivity
     CFOptionFlags cfOptions = 0;
     if (options & NSCaseInsensitivePredicateOption)
         cfOptions |= kCFCompareCaseInsensitive;
-#if (defined(MAC_OS_X_VERSION_10_5) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
     if (options & NSDiacriticInsensitivePredicateOption)
         cfOptions |= kCFCompareDiacriticInsensitive;
-#endif
     OBASSERT((options & (NSCaseInsensitivePredicateOption|NSDiacriticInsensitivePredicateOption)) == options); // should be the only flags
     
     if (location == ODOComparisonPredicateContainsStartLocation)

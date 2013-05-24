@@ -486,7 +486,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     if (!_priceFormatter) {
         // Make sure that we display the feed's specified currency according to the user's specified locale.  For example, if the user is Australia, we need to specify that the price is in US dollars instead of just using '$'.
         NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
-        [formatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
+        OBASSERT([formatter formatterBehavior] == NSNumberFormatterBehavior10_4);
         [formatter setNumberStyle:NSNumberFormatterCurrencyStyle];
         [formatter setLocale:[NSLocale currentLocale]];
         [formatter setCurrencyCode:_currencyCode];

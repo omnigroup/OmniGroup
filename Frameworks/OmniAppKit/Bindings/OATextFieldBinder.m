@@ -1,4 +1,4 @@
-// Copyright 2007, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2007, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,6 @@
 #import "OATextFieldBinder.h"
 
 #import <OmniBase/OmniBase.h>
-#import <OmniFoundation/NSKeyValueObserving-OFExtensions.h> // For HAS_REMOVEOBSERVER_FORKEYPATH_CONTEXT
 #import <AppKit/AppKit.h>
 
 RCS_ID("$Id$");
@@ -28,11 +27,7 @@ static unsigned int _OATextFieldBinderObservationContext;
     }
 
     if (observing && !shouldBeObserving) {
-#if HAS_REMOVEOBSERVER_FORKEYPATH_CONTEXT
         [subject removeObserver:self forKeyPath:keyPath context:&_OATextFieldBinderObservationContext];
-#else
-        [subject removeObserver:self forKeyPath:keyPath];
-#endif
         observing = NO;
     } else if (!observing && shouldBeObserving) {
         [subject addObserver:self forKeyPath:keyPath options:NSKeyValueObservingOptionNew context:&_OATextFieldBinderObservationContext];

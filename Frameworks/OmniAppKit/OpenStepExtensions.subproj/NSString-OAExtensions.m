@@ -33,23 +33,6 @@ RCS_ID("$Id$")
     return fullString;
 }
 
-// Uses deprecated API
-#if 0
-+ (NSString *)possiblyAbbreviatedStringForBytes:(unsigned long long)bytes inTableView:(NSTableView *)tableView tableColumn:(NSTableColumn *)tableColumn;
-{
-    NSCell *dataCell;
-    NSString *bytesString;
-
-    bytesString = [NSString stringWithFormat:@"%@", [NSNumber numberWithUnsignedLongLong:bytes]];
-    dataCell = [tableColumn dataCell];
-#warning Deprecated in Mac OS 10.4. This API never returns correct value. Use NSStringDrawing API instead.
-    if ([[dataCell font] widthOfString:bytesString] + 5 <= [dataCell titleRectForBounds:NSMakeRect(0, 0, [tableColumn width], [tableView rowHeight])].size.width)
-        return [bytesString stringByAppendingString:NSLocalizedStringFromTableInBundle(@" bytes", @"OmniAppKit", [OAApplication bundle], "last word of abbreviated bytes string if no abbreviation is necessary")];
-    else
-        return [NSString abbreviatedStringForBytes:bytes];
-}
-#endif
-
 // String drawing
 
 - (void)drawWithFontAttributes:(NSDictionary *)attributes alignment:(NSTextAlignment)alignment verticallyCenter:(BOOL)verticallyCenter inRectangle:(NSRect)rectangle;

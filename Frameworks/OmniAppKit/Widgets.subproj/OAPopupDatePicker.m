@@ -96,8 +96,7 @@ static NSSize calendarImageSize;
 
     NSWindow *window = [self window];
     if ([window respondsToSelector:@selector(setCollectionBehavior:)]) {
-        unsigned int collectionBehavior = NSWindowCollectionBehaviorMoveToActiveSpace;
-        OA_LION_ONLY( collectionBehavior |= NSWindowCollectionBehaviorFullScreenAuxiliary; );
+        unsigned int collectionBehavior = NSWindowCollectionBehaviorMoveToActiveSpace|NSWindowCollectionBehaviorFullScreenAuxiliary;
     	[window setCollectionBehavior:collectionBehavior];  
     }
 
@@ -139,7 +138,7 @@ static NSSize calendarImageSize;
     NSDictionary *bindingInfo = [aControl infoForBinding:@"value"];
     id bindingObject = [bindingInfo objectForKey:NSObservedObjectKey];
     NSString *bindingKeyPath = [bindingInfo objectForKey:NSObservedKeyPathKey];
-    bindingKeyPath = [bindingKeyPath stringByReplacingAllOccurrencesOfString:@"selectedObjects." withString:@"selection."];
+    bindingKeyPath = [bindingKeyPath stringByReplacingOccurrencesOfString:@"selectedObjects." withString:@"selection."];
 
     if (!bindingInfo) {
 	bindingObject = aControl;

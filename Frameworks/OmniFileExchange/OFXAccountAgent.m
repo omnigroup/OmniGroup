@@ -20,6 +20,7 @@
 #import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/OFNetStateRegistration.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFUTI.h>
 #import <dirent.h>
 
@@ -274,7 +275,12 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 #endif
     NSURL *localDocumentsURL = _account.localDocumentsURL;
 
-    if ([self _isLocalURLInTrash:localDocumentsURL]) {
+    BOOL inTrash = NO;
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    inTrash = [[NSFileManager defaultManager] isFileInTrashAtURL:localDocumentsURL];
+#endif
+    
+    if (inTrash) {
         __autoreleasing NSError *documentsError;
         OFXError(&documentsError, OFXLocalAccountDocumentsDirectoryMissing,
                  NSLocalizedStringFromTableInBundle(@"Cannot start account agent.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description"),
@@ -873,7 +879,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 
 - (BOOL)containsLocalDocumentFileURL:(NSURL *)fileURL;
 {
-    return OFSURLContainsURL(_account.localDocumentsURL, fileURL);
+    return OFURLContainsURL(_account.localDocumentsURL, fileURL);
 }
 
 - (void)containerNeedsFileTransfer:(OFXContainerAgent *)container;
@@ -1376,12 +1382,12 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 
 - (NSString *)_localRelativePathForFileURL:(NSURL *)fileURL;
 {
-    return OFSFileURLRelativePath(_account.localDocumentsURL, fileURL);
+    return OFFileURLRelativePath(_account.localDocumentsURL, fileURL);
 }
 
 - (NSString *)_localRelativePathForDirectoryURL:(NSURL *)directoryURL;
 {
-    NSString *relativePath = OFSFileURLRelativePath(_account.localDocumentsURL, directoryURL);
+    NSString *relativePath = OFFileURLRelativePath(_account.localDocumentsURL, directoryURL);
     if (![relativePath hasSuffix:@"/"])
         relativePath = [relativePath stringByAppendingString:@"/"];
     return relativePath;
@@ -1621,29 +1627,6 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
         return YES; // Mac agent syncing all file types
     
     return ([_syncPathExtensions member:pathExtension] != nil);
-}
-
-- (BOOL)_isLocalURLInTrash:(NSURL *)localURL;
-{
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    // NSTrashDirectory/NSAllDomainsMask doesn't cover all the cases since it won't report the trashes on other volumes (like encrypted disk images).
-    NSArray *trashURLs = [[NSFileManager defaultManager] URLsForDirectory:NSTrashDirectory inDomains:NSAllDomainsMask];
-    
-    for (NSURL *trashURL in trashURLs) {
-        if (OFSURLContainsURL(trashURL, localURL))
-            return YES;
-    }
-    OBASSERT([[localURL pathComponents] containsObject:@".Trash"] == NO, "User directories have '.Trash', but we should have handled this already");
-
-    // Maybe it is in a per-volume trash.
-    NSURL *volumeTrashDirectoryURL = [[NSFileManager defaultManager] trashDirectoryURLForURL:localURL error:NULL];
-    if (volumeTrashDirectoryURL && OFSURLContainsURL(volumeTrashDirectoryURL, localURL))
-        return YES;
-    OBASSERT([[localURL pathComponents] containsObject:@".Trashes"] == NO, "Volumes use '.Trashes', but we should have handled this already");
-
-    return NO;
-#endif
-    return NO;
 }
 
 - (NSURL *)_remoteSyncDirectory;

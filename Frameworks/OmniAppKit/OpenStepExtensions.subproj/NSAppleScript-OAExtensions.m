@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,9 +27,6 @@ RCS_ID("$Id$");
 + (NSAttributedString *)_attributedStringFromDescriptor:(NSAppleEventDescriptor *)descriptor;
 @end
                     
-@interface NSAppleScript (OAExtensionsPrivate)
-@end
-
 @implementation NSAppleScript (OAExtensions)
 
 - (id)initWithData:(NSData *)data error:(NSDictionary **)errorInfo;
@@ -74,6 +71,9 @@ RCS_ID("$Id$");
 
 + (NSDictionary *)stringAttributesForAppleScriptStyle:(int)styleNumber;
 {
+    // <bug:///89028> (Rewrite -stringAttributesForAppleScriptStyle: to use non-deprecated API or remove it)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5  // Uses API deprecated on 10.5
     OSStatus err;
     ComponentInstance appleScriptComponent;
@@ -140,11 +140,7 @@ RCS_ID("$Id$");
     CFRelease(stylesAttributes);
     return answer;
 #endif
+#pragma clang diagnostic pop
 }
 
-
 @end
-
-@implementation NSAppleScript (OAExtensionsPrivate)
-@end
-

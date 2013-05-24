@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -757,20 +757,6 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     error = CMCopyProfileLocalizedString((CMProfileRef)aProfile, cmProfileDescriptionMLTag, 0,0, &string);
     if (error == noErr)
         return (NSString *)string;
-
-#if !defined(MAC_OS_X_VERSION_10_5) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5  // Uses API deprecated on 10.5
-    {
-        Str255 name;
-        ScriptCode code;
-        
-        error = CMGetScriptProfileDescription((CMProfileRef)aProfile, name, &code);
-        if (error == noErr) {
-            string = CFStringCreateWithPascalString(0, name, code);
-            return (NSString *)string;
-        }
-    }
-    // TODO: This leaks.
-#endif
     
     return nil; // everything errored out
 #else

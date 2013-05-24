@@ -138,7 +138,7 @@
 		4AB8F3C508AD260400DBB061 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AB8F3C608AD260400DBB061 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
 		4AFE729B08A02E9D00ED9F2D /* OmniNetworking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniNetworking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AFE72C108A02E9D00ED9F2D /* ONUnitTests.otest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ONUnitTests.otest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AFE72C108A02E9D00ED9F2D /* ONUnitTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ONUnitTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AFE72D208A02E9D00ED9F2D /* ListInterfaces */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ListInterfaces; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AFE72E408A02E9E00ED9F2D /* ONThreadedLookupTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ONThreadedLookupTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AFE72F808A02F7F00ED9F2D /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Coverage.xcconfig"; path = "../../Configurations/Omni-Framework-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
@@ -370,7 +370,7 @@
 		8BEC418904463436133F7B26 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				4AFE72C108A02E9D00ED9F2D /* ONUnitTests.otest */,
+				4AFE72C108A02E9D00ED9F2D /* ONUnitTests.octest */,
 				4AFE72E408A02E9E00ED9F2D /* ONThreadedLookupTest */,
 			);
 			name = Tests;
@@ -467,7 +467,7 @@
 			name = ONUnitTests;
 			productInstallPath = "$(USER_LIBRARY_DIR)/Bundles";
 			productName = ONUnitTests;
-			productReference = 4AFE72C108A02E9D00ED9F2D /* ONUnitTests.otest */;
+			productReference = 4AFE72C108A02E9D00ED9F2D /* ONUnitTests.octest */;
 			productType = "com.apple.product-type.bundle";
 		};
 		4AFE72C208A02E9D00ED9F2D /* ListInterfaces */ = {
@@ -755,7 +755,7 @@
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
-				WRAPPER_EXTENSION = otest;
+				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
 		};
@@ -776,7 +776,7 @@
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
 				SKIP_INSTALL = YES;
-				WRAPPER_EXTENSION = otest;
+				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};
@@ -796,7 +796,7 @@
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
-				WRAPPER_EXTENSION = otest;
+				WRAPPER_EXTENSION = octest;
 			};
 			name = Coverage;
 		};

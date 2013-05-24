@@ -358,14 +358,8 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     if ([challengeMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {        
         SecTrustRef trustRef;
         if ((trustRef = [protectionSpace serverTrust]) != NULL) {
-            
-            // The SecTrust API exists on 10.4, just not the screwy "server trust" protection space.
-            // On 10.4, we will instead get a call to the private method +[NSURLRequest setAllowsAnyHTTPSCertificate:forHost:], which OFSDAVFileManager provides an override for.
-            OSStatus oserr;
-            SecTrustResultType evaluationResult;
-            
-            evaluationResult = kSecTrustResultOtherError;
-            oserr = SecTrustEvaluate(trustRef, &evaluationResult); // NB: May block for long periods (eg OCSP verification, etc)
+            SecTrustResultType evaluationResult = kSecTrustResultOtherError;
+            OSStatus oserr = SecTrustEvaluate(trustRef, &evaluationResult); // NB: May block for long periods (eg OCSP verification, etc)
             if (OFSFileManagerDebug > 2) {
                 NSString *result; // TODO: Use OFSummarizeTrustResult() instead.
                 if (oserr != noErr) {

@@ -27,18 +27,6 @@
     #define OB_AUTORELEASE(x) [(x) autorelease]
 #endif
 
-#if OB_ARC
-    // In iOS 6 and Mac OS X 10.8, ARC extends to GCD. We require iOS 6, but we only require 10.7 currently.
-    #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-        #define OB_ARC_GCD 1
-    #elif (defined(MAC_OS_X_VERSION_10_8) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_8)
-        #define OB_ARC_GCD 1
-    #endif
-#endif
-#if !defined(OB_ARC_GCD)
-    #define OB_ARC_GCD 0
-#endif
-
 #if !defined(SWAP)
 #define SWAP(A, B) do { __typeof__(A) __temp = (A); (A) = (B); (B) = __temp;} while(0)
 #endif

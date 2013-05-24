@@ -8,7 +8,7 @@
 #import <OmniUnzip/OUZipLinkMember.h>
 
 #import <OmniUnzip/OUZipArchive.h>
-#import <OmniFoundation/OFFileWrapper.h>
+#import <Foundation/NSFileWrapper.h>
 
 RCS_ID("$Id$");
 

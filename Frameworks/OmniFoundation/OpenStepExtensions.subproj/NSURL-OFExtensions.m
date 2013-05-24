@@ -8,6 +8,7 @@
 #import <OmniFoundation/NSURL-OFExtensions.h>
 
 #import <OmniBase/OBUtilities.h>
+#import <OmniFoundation/NSString-OFReplacement.h>
 
 RCS_ID("$Id$")
 
@@ -153,5 +154,73 @@ BOOL OFURLEqualToURLIgnoringTrailingSlash(NSURL *URL1, NSURL *URL2)
     if (OFURLEqualsURL(URL1, URL2))
         return YES;
     return OFURLEqualsURL(OFURLWithTrailingSlash(URL1), OFURLWithTrailingSlash(URL2));
+}
+
+static void _assertPlainURL(NSURL *url)
+{
+    OBPRECONDITION([NSString isEmptyString:[url fragment]]);
+    OBPRECONDITION([NSString isEmptyString:[url parameterString]]);
+    OBPRECONDITION([NSString isEmptyString:[url query]]);
+}
+
+static NSString *_standardizedPathForURL(NSURL *url, BOOL followFinalSymlink)
+{
+    OBASSERT([url isFileURL]);
+    NSString *urlPath = [[url absoluteURL] path];
+    
+    NSString *path;
+    if (!followFinalSymlink) {
+        // We don't always want to resolve symlinks in the last path component, or we can't tell symlinks apart from the things they point at
+        NSString *standardizedParentPath = [[urlPath stringByDeletingLastPathComponent] stringByStandardizingPath];
+        path = [standardizedParentPath stringByAppendingPathComponent:[urlPath lastPathComponent]];
+    } else {
+        // When the container is a symlink, however, we do want to resolve it
+        path = [[urlPath stringByResolvingSymlinksInPath] stringByStandardizingPath];
+    }
+    
+    // In some cases this doesn't normalize /private/var/mobile and /var/mobile to the same thing.
+    path = [path stringByRemovingPrefix:@"/var/mobile/"];
+    path = [path stringByRemovingPrefix:@"/private/var/mobile/"];
+    
+    return path;
+}
+
+BOOL OFURLContainsURL(NSURL *containerURL, NSURL *url)
+{
+    _assertPlainURL(url);
+    _assertPlainURL(containerURL);
+    
+    if (!containerURL)
+        return NO;
+    
+    // -[NSFileManager contentsOfDirectoryAtURL:...], when given something in file://localhost/var/mobile/... will return file URLs with non-standarized paths like file://localhost/private/var/mobile/...  Terrible.
+    OBASSERT([containerURL isFileURL]);
+    
+    NSString *urlPath = _standardizedPathForURL(url, YES);
+    NSString *containerPath = _standardizedPathForURL(containerURL, NO);
+    
+    if (![containerPath hasSuffix:@"/"])
+        containerPath = [containerPath stringByAppendingString:@"/"];
+    
+    return [urlPath hasPrefix:containerPath];
+}
+
+NSString *OFFileURLRelativePath(NSURL *baseURL, NSURL *fileURL)
+{
+    _assertPlainURL(fileURL);
+    _assertPlainURL(baseURL);
+    OBPRECONDITION([[[fileURL absoluteURL] path] hasPrefix:[[baseURL absoluteURL] path]]); // Can't compare the prefix in URL encoding since the % encoding can have upper/lowercase differences.
+    
+    NSString *localBasePath = [[baseURL absoluteURL] path];
+    if (![localBasePath hasSuffix:@"/"])
+        localBasePath = [localBasePath stringByAppendingString:@"/"];
+    
+    NSString *localAbsolutePath = [[fileURL absoluteURL] path];
+    OBASSERT([localAbsolutePath hasPrefix:localBasePath]);
+    
+    NSString *localRelativePath = [[localAbsolutePath stringByRemovingPrefix:localBasePath] stringByRemovingSuffix:@"/"];
+    OBASSERT(![localRelativePath hasPrefix:@"/"]);
+    
+    return localRelativePath;
 }
 

@@ -339,12 +339,12 @@ addressForShortcut(NSString *originalString)
     if (shortcutFormat == nil)
         return nil;
     
-    formattedShortcut = [shortcutFormat stringByReplacingAllOccurrencesOfString:@"%@" withString:shortcutParameter];
+    formattedShortcut = [shortcutFormat stringByReplacingOccurrencesOfString:@"%@" withString:shortcutParameter];
     
     NSString *formattedQuery = nil;
     NSString *shortcutQuery = [shortcutDefinition objectForKey:@"formData"];
     if (shortcutQuery != nil)
-        formattedQuery = [shortcutQuery stringByReplacingAllOccurrencesOfString:@"%@" withString:shortcutParameter];
+        formattedQuery = [shortcutQuery stringByReplacingOccurrencesOfString:@"%@" withString:shortcutParameter];
     
     if ([[shortcutDefinition objectForKey:@"method"] isEqualToString:@"POST"]) {
         OWAddress *postAddress = [OWAddress addressWithURL:[OWURL urlFromDirtyString:formattedShortcut]];

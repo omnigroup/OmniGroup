@@ -506,7 +506,9 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             if (outError != NULL) {
                 NSString *localizedDescription = nil;
                 NSString *localizedFailureReason = nil;
-                NSString *volumeName = [fileManager volumeNameForPath:statPath error:NULL];
+                
+                NSString *mountPoint = [fileManager stringWithFileSystemRepresentation:sbuf.f_mntonname length:strnlen(sbuf.f_mntonname, sizeof(sbuf.f_mntonname))];
+                NSString *volumeName = [mountPoint lastPathComponent];
                 
                 if ((sbuf.f_flags & MNT_RDONLY) != 0) {
                     localizedFailureReason = NSLocalizedStringFromTableInBundle(@"The destination volume, \\U201C%@\\U201D, is not writable.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error failure reason - when the destination location is on a read-only filesystem such as a disk image or CDROM");

@@ -19,16 +19,4 @@ RCS_ID("$Id$")
     return YES;
 }
 
-- (void)viewWillDraw;
-{
-    [super viewWillDraw];
-    
-    // HACK to work around rdar://probem/8009542 (CoreAnimation: Scroll view misbehaves with flipped layer-hosting document view). -_updateLayerGeometryFromView doesn't work with flipped views for some reason, but only on the first time around. If we reach the runloop and call it again (or scroll or do anything else to provoke it being called) then it lays out correctly. This is the cause of <bug://bugs/51584> (opening scrolled file doesn't draw outline view properly at first [CAOOV])
-    
-    if (!_triedLayerGeometryFix) {
-        _triedLayerGeometryFix = YES;
-        [self fixLayerGeometry];
-    }
-}
-
 @end

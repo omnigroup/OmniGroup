@@ -382,7 +382,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     NSString *timeString = nil;
     
     // first see if we have an @, if so then we can easily split the date and time portions of the string
-    string = [string stringByReplacingAllOccurrencesOfString:@" at " withString:@"@"];
+    string = [string stringByReplacingOccurrencesOfString:@" at " withString:@"@"];
     if ([string containsString:@"@"]) {
 	
 	NSArray *dateAndTime = [string componentsSeparatedByString:@"@"];

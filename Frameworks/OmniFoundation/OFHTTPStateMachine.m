@@ -132,7 +132,7 @@ static NSString * const HTTPErrorDomain = @"org.w3.http";
     if ([authenticationMethod isEqualToString:NSURLAuthenticationMethodClientCertificate])
         result = NO;
     else if ([authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
-        if (NSFoundationVersionNumber >= OFFoundationVersionNumber10_5 && [delegate respondsToSelector:@selector(httpStateMachine:validateRecoverableTrustChallenge:)])
+        if ([delegate respondsToSelector:@selector(httpStateMachine:validateRecoverableTrustChallenge:)])
             result = YES;
         else
             result = NO; // Shouldn't be reached, but who knows.

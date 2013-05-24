@@ -27,6 +27,59 @@ static NSLock *tempFilenameLock = nil;
     tempFilenameLock = [[NSLock alloc] init];
 }
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+// We need this since NSItemReplacementDirectory creates a new directory inside the TemporaryItems directory instead of just returning the TemporaryItems directory. Radar 13965099: Add suitable replacement for FSFindFolder/kTemporaryFolderType
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+- (NSURL *)_specialDirectory:(OSType)whatDirectoryType forFileSystemContainingPath:(NSString *)path create:(BOOL)createIfMissing error:(NSError **)outError;
+{
+    OBPRECONDITION([path isAbsolutePath]);
+    
+    FSRef ref;
+    OSStatus err;
+    
+    // The file in question might not exist yet.  This loop assumes that it will terminate due to '/' always being valid.
+    NSURL *attempt = [NSURL fileURLWithPath:path];
+    while (YES) {
+        if (CFURLGetFSRef((CFURLRef)attempt, &ref))
+            break;
+        attempt = [attempt URLByDeletingLastPathComponent];
+    }
+    
+    // Find the path's volume number.
+    FSCatalogInfo catalogInfo;
+    err = FSGetCatalogInfo(&ref, kFSCatInfoVolume, &catalogInfo, NULL, NULL, NULL);
+    if (err != noErr) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]; // underlying error
+        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to get catalog info for '%@' (for '%@')", attempt, path]), nil);
+        return nil;
+    }
+    
+    // Actually look up the folder.
+    FSRef folderRef;
+    err = FSFindFolder(catalogInfo.volume, whatDirectoryType, createIfMissing? kCreateFolder : kDontCreateFolder, &folderRef);
+    if (err != noErr) {
+        if (outError)
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]; // underlying error
+        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to find temporary items directory for '%@'", attempt]), nil);
+        return nil;
+    }
+    
+    CFURLRef temporaryItemsURL;
+    temporaryItemsURL = CFURLCreateFromFSRef(kCFAllocatorDefault, &folderRef);
+    if (!temporaryItemsURL) {
+        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to create URL to temporary items directory for '%@'", attempt]), nil);
+        return nil;
+    }
+    
+    NSURL *resultURL = [NSMakeCollectable(temporaryItemsURL) autorelease];
+    
+    return [resultURL URLByStandardizingPath];
+}
+#pragma clang diagnostic pop
+#endif
+
 - (NSURL *)temporaryDirectoryForFileSystemContainingURL:(NSURL *)fileURL error:(NSError **)outError;
 /*"
  Returns a URL to a temporary items directory that can be used to write a new file and then do a -replaceItemAtURL:... If there is a problem (no temporary items folder on the filesystem), nil is returned.
@@ -34,14 +87,25 @@ static NSLock *tempFilenameLock = nil;
  The returned directory should be only readable by the calling user, so files written into this directory can be written with the desired final permissions without worrying about security (the expectation being that you'll soon call -exchangeFileAtPath:withFileAtPath:).
  "*/
 {
-    // Sadly, -URLForDirectory:inDomain:appropriateForURL:create:error: creates a new '(A Document Being Saved By foo)' directory each time it is called, even if you pass create:NO! We just want the temporary items directory.
-    
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     // Only one filesystem. Sadly, on the simulator this returns something in / instead of the app sandbox's "tmp" directory. Radar 8137291.
     return [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByStandardizingPath]];
 #else
+
+    // Sadly, -URLForDirectory:inDomain:appropriateForURL:create:error: creates a new '(A Document Being Saved By foo)' directory each time it is called, even if you pass create:NO! We just want the temporary items directory.
+#if 0
+    NSError *error;
+    NSURL *temporaryDirectory = [self URLForDirectory:NSItemReplacementDirectory inDomain:NSUserDomainMask appropriateForURL:fileURL create:NO error:&error];
+    NSLog(@"temporaryDirectoryForFileSystemContainingURL:%@ -> %@", fileURL, temporaryDirectory);
+    if (!temporaryDirectory) {
+        [error log:@"Error finding temporary directory"];
+        if (outError)
+            *outError = error;
+    }
+#endif
+    
     // We do NOT carry over the OFTemporaryDirectory/OFTemporaryVolumeOverride goop from the path-based version since those could mean the result isn't usable for -replaceItemAtURL:...
-    return [self specialDirectory:kTemporaryFolderType forFileSystemContainingPath:[[fileURL absoluteURL] path] create:YES error:outError];
+    return [self _specialDirectory:kTemporaryFolderType forFileSystemContainingPath:[[fileURL absoluteURL] path] create:YES error:outError];
 #endif
 }
 
@@ -134,7 +198,7 @@ static NSLock *tempFilenameLock = nil;
     if (![NSString isEmptyString:stringValue])
         path = [stringValue stringByStandardizingPath];
     
-    return [[self specialDirectory:kTemporaryFolderType forFileSystemContainingPath:path create:YES error:outError] path];
+    return [[self _specialDirectory:kTemporaryFolderType forFileSystemContainingPath:path create:YES error:outError] path];
 #endif
 }
 
@@ -299,6 +363,9 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
 - (BOOL)_exchangeFileAtPath:(NSString *)originalFile withFileAtPath:(NSString *)newFile deleteOriginal:(BOOL)deleteOriginal error:(NSError **)outError;
 /*" Replaces the orginal file with the new file, possibly using underlying filesystem features to do so atomically. "*/
 {
+    // <bug:///89026> (Rewrite _exchangeFileAtPath:… to use non-deprecated API or remove it)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     OBPRECONDITION(OFNOTEQUAL(originalFile, newFile));
     
     NSDictionary *originalAttributes = [self attributesOfItemAtPath:originalFile error:outError];
@@ -418,6 +485,7 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
         
         return YES;
     }
+#pragma clang diagnostic pop
 }
 
 - (BOOL)replaceFileAtPath:(NSString *)originalFile withFileAtPath:(NSString *)newFile error:(NSError **)outError;

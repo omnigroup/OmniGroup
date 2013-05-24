@@ -126,6 +126,13 @@ RCS_ID("$Id$");
     NSLog(@"No target found for menu action %@", NSStringFromSelector(action));
 }
 
+- (IBAction)viewInAppStore:(id)sender {
+    NSString *appStoreURLString = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIAppStoreURL"];
+    if (appStoreURLString.length) {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:appStoreURLString]];
+    }
+}
+
 - (IBAction)tappedLogoImage:(id)sender {
     NSString *appStoreURLString = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUICompanyAppStoreURL"];
     if (appStoreURLString.length) {

@@ -5,8 +5,6 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-// #define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_2
-
 #import "ONHost.h"
 
 #import <Foundation/Foundation.h>

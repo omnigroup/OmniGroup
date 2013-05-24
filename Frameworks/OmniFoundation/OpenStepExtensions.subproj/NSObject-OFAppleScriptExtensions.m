@@ -280,8 +280,8 @@ RCS_ID("$Id$")
     NSString *type, *enumerationValue;
     
     if ([value isKindOfClass:[NSString class]]) {
-        NSString *escapeBackslash = [value stringByReplacingAllOccurrencesOfString:@"\\" withString:@"\\\\"];
-        NSString *escapeQuotes = [escapeBackslash stringByReplacingAllOccurrencesOfString:@"\"" withString:@"\\\""];
+        NSString *escapeBackslash = [value stringByReplacingOccurrencesOfString:@"\\" withString:@"\\\\"];
+        NSString *escapeQuotes = [escapeBackslash stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
         return [NSString stringWithFormat:@"\"%@\"", escapeQuotes];
     }
     

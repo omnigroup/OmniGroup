@@ -14,19 +14,12 @@
 #include <netinet/in.h>
 #include <sys/un.h>
 
-#if ON_SUPPORT_APPLE_TALK
-#include <netat/appletalk.h>
-#endif
-
 typedef union {
     struct sockaddr generic;           // Generic "abstract superclass" sockaddr
     struct sockaddr_in ipv4;           // IPv4 addresses
     struct sockaddr_in6 ipv6;          // IPv6 addresses
     struct sockaddr_un local;          // UNIX-domain socket addresses
     struct sockaddr_storage storage;   // Forces alignment and size
-#if ON_SUPPORT_APPLE_TALK
-    struct sockaddr_at atalk;          // AF_APPLETALK addresses [net.work:node/socket]
-#endif
     
 #if 0
     /* Other sockaddr types we may want someday but don't need right now */
@@ -34,12 +27,7 @@ typedef union {
 #endif
 } ONSockaddrAny;
 
-// gcc 4.0 & 10.4 result in warnings if we use int for this since the BSD headers were modified to add a socklen_t type (which is unsigned) and gcc 4 complains about signed vs. unsigned mismatches.
-#if defined(MAC_OS_X_VERSION_10_4) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
 typedef socklen_t ONSocketAddressLength;
-#else
-typedef int ONSocketAddressLength;
-#endif
 
 // This API is for use by subclasses of ONInternetSocket.  It shouldn't be used by the world at large.
 

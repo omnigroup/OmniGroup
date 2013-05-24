@@ -948,9 +948,6 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
     if (savedFilename && finalFileAttributes) {
         NSFileManager *manager = [NSFileManager defaultManager];
         [manager setAttributes:finalFileAttributes ofItemAtPath:savedFilename error:NULL];
-        FNNotifyByPath((unsigned char *)[manager fileSystemRepresentationWithPath:[savedFilename stringByDeletingLastPathComponent]],
-                       kFNDirectoryModifiedMessage,
-                       kNilOptions);
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2005-2006, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2006, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,10 @@
 
 @interface NSEvent (OAExtensions)
 
-- (NSString *)charactersWithModifiers:(unsigned int)modifierFlags;
+- (BOOL)isUserCancel;
+// Does this event represent a 'user cancel' event. Currently this is defined to be either the escape key being pressed, or command-period being pressed.
+
+- (NSString *)charactersWithModifiers:(NSUInteger)modifierFlags;
 // This returns what the current key event's key code would have returned if the passed in modifiers had been pressed.
 // This does not correctly handle dead key processing from previous events however the returned value may be empty if this would be a dead key itself.
 

@@ -12,16 +12,16 @@
 #import <OmniBase/macros.h>
 #import <OmniBase/NSError-OBExtensions.h>
 
-#import <OmniFoundation/NSProcessInfo-OFExtensions.h>
+#import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSBundle-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
+#import <OmniFoundation/NSProcessInfo-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
-#import <OmniFoundation/CFPropertyList-OFExtensions.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFUtilities.h>
-#import <OmniFoundation/OFVersionNumber.h>
 
 #import <CoreServices/CoreServices.h>
 #import <Security/SecCode.h>
@@ -60,50 +60,6 @@ static int permissionsMask = 0022;
 
     permissionsMask = umask(permissionsMask);
     umask(permissionsMask); // Restore the original value
-}
-
-- (NSString *)desktopDirectory;
-{
-    FSRef dirRef;
-    OSErr err = FSFindFolder(kUserDomain, kDesktopFolderType, kCreateFolder, &dirRef);
-    if (err != noErr) {
-#ifdef DEBUG
-        NSLog(@"FSFindFolder(kDesktopFolderType) -> %d", err);
-#endif
-        [NSException raise:NSInvalidArgumentException format:@"Unable to find desktop directory"];
-    }
-
-    CFURLRef url;
-    url = CFURLCreateFromFSRef(kCFAllocatorDefault, &dirRef);
-    if (!url)
-        [NSException raise:NSInvalidArgumentException format:@"Unable to create URL to desktop directory"];
-
-    NSString *path = [[[(NSURL *)url path] copy] autorelease];
-    CFRelease(url);
-
-    return path;
-}
-
-- (NSString *)documentDirectory;
-{
-    FSRef dirRef;
-    OSErr err = FSFindFolder(kUserDomain, kDocumentsFolderType, kCreateFolder, &dirRef);
-    if (err != noErr) {
-#ifdef DEBUG
-        NSLog(@"FSFindFolder(kDocumentsFolderType) -> %d", err);
-#endif
-        [NSException raise:NSInvalidArgumentException format:@"Unable to find document directory"];
-    }
-
-    CFURLRef url;
-    url = CFURLCreateFromFSRef(kCFAllocatorDefault, &dirRef);
-    if (!url)
-        [NSException raise:NSInvalidArgumentException format:@"Unable to create URL to document directory"];
-
-    NSString *path = [[[(NSURL *)url path] copy] autorelease];
-    CFRelease(url);
-
-    return path;
 }
 
 - (NSString *)scratchDirectoryPath;
@@ -342,59 +298,33 @@ static int permissionsMask = 0022;
 #endif
 }
 
-//
-- (NSURL *)specialDirectory:(OSType)whatDirectoryType forFileSystemContainingPath:(NSString *)path create:(BOOL)createIfMissing error:(NSError **)outError;
-{
-    FSRef ref;
-    OSStatus err;
-    
-    // The file in question might not exist yet.  This loop assumes that it will terminate due to '/' always being valid.
-    NSString *attempt = path;
-    while (YES) {
-        const char *posixPath = [self fileSystemRepresentationWithPath:attempt];
-        err = FSPathMakeRefWithOptions((const unsigned char *)posixPath, kFSPathMakeRefDoNotFollowLeafSymlink, &ref, NULL);
-        if (err == noErr)
-            break;
-        attempt = [attempt stringByDeletingLastPathComponent];
-    }
-    
-    // Find the path's volume number.
-    FSCatalogInfo catalogInfo;
-    err = FSGetCatalogInfo(&ref, kFSCatInfoVolume, &catalogInfo, NULL, NULL, NULL);
-    if (err != noErr) {
-        if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]; // underlying error
-        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to get catalog info for '%@' (for '%@')", attempt, path]), nil);
-        return nil;
-    }
-    
-    // Actually look up the folder.
-    FSRef folderRef;
-    err = FSFindFolder(catalogInfo.volume, whatDirectoryType, createIfMissing? kCreateFolder : kDontCreateFolder, &folderRef);
-    if (err != noErr) {
-        if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]; // underlying error
-        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to find temporary items directory for '%@'", attempt]), nil);
-        return nil;
-    }
-    
-    CFURLRef temporaryItemsURL;
-    temporaryItemsURL = CFURLCreateFromFSRef(kCFAllocatorDefault, &folderRef);
-    if (!temporaryItemsURL) {
-        OFError(outError, OFCannotFindTemporaryDirectoryError, ([NSString stringWithFormat:@"Unable to create URL to temporary items directory for '%@'", attempt]), nil);
-        return nil;
-    }
-    
-    NSURL *resultURL = [NSMakeCollectable(temporaryItemsURL) autorelease];
-    
-    return [resultURL URLByStandardizingPath];
-}
-
 - (NSURL *)trashDirectoryURLForURL:(NSURL *)fileURL error:(NSError **)outError;
 {
     OBPRECONDITION([fileURL isFileURL]);
     
-    return [self specialDirectory:kTrashFolderType forFileSystemContainingPath:[fileURL path] create:NO error:outError];
+    // This will return ~/.Trash for something in the user's home directory, or /Volume/.Trashes/$UID for something on another disk. But, if the user doesn't have permission to create the trash directory (read-only filesystem/directory), this might return nil.
+    // This also works if the file is already in the trash.
+    return [self URLForDirectory:NSTrashDirectory inDomain:NSAllDomainsMask appropriateForURL:fileURL create:YES error:outError];
+}
+
+- (BOOL)isFileInTrashAtURL:(NSURL *)fileURL;
+{
+    // Check the Trash that should be used for this specific file.
+    NSURL *trashDirectoryURL = [[NSFileManager defaultManager] trashDirectoryURLForURL:fileURL error:NULL]; // Might be nil if this is a read-only volume
+    if (trashDirectoryURL)
+        return OFURLContainsURL(trashDirectoryURL, fileURL);
+
+    OBASSERT([[fileURL pathComponents] containsObject:@".Trash"] == NO, "User directories have '.Trash', but we should have handled this already");
+
+    // As a fallback, check all the trashes. NSTrashDirectory/NSAllDomainsMask doesn't cover all the cases since it won't report the trashes on other volumes (like encrypted disk images).
+    NSArray *trashURLs = [[NSFileManager defaultManager] URLsForDirectory:NSTrashDirectory inDomains:NSAllDomainsMask];
+    for (NSURL *trashURL in trashURLs) {
+        if (OFURLContainsURL(trashURL, fileURL))
+            return YES;
+    }
+    OBASSERT([[fileURL pathComponents] containsObject:@".Trashes"] == NO, "Volumes use '.Trashes', but we should have handled this already");
+    
+    return NO;
 }
 
 - (NSNumber *)posixPermissionsForMode:(unsigned int)mode;
@@ -411,15 +341,6 @@ static int permissionsMask = 0022;
 {
     return [self posixPermissionsForMode:0777];
 }
-
-- (BOOL)isFileAtPath:(NSString *)path enclosedByFolderOfType:(OSType)folderType;
-{
-    Boolean result;
-    OSErr err = DetermineIfPathIsEnclosedByFolder (kOnAppropriateDisk, folderType, (UInt8 *)[path UTF8String], false, &result);
-    return (err == noErr && result);
-}
-
-//
 
 - (NSString *)networkMountPointForPath:(NSString *)path returnMountSource:(NSString **)mountSource;
 {
@@ -446,62 +367,11 @@ static int permissionsMask = 0022;
     return [NSString stringWithCString:stats.f_fstypename encoding:NSASCIIStringEncoding];
 }
 
-- (FSVolumeRefNum)volumeRefNumForPath:(NSString *)path error:(NSError **)outError;
-{
-    FSRef pathRef;
-    FSCatalogInfo pathInfo;
-    OSErr err;
-    
-    bzero(&pathRef, sizeof(pathRef));
-    err = FSPathMakeRef((const UInt8 *)[path fileSystemRepresentation], &pathRef, NULL);
-    if (err != noErr) {
-        if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObject:path forKey:NSFilePathErrorKey]];
-        return kFSInvalidVolumeRefNum;
-    }
-
-    bzero(&pathInfo, sizeof(pathInfo));
-    err = FSGetCatalogInfo(&pathRef, kFSCatInfoVolume, &pathInfo, NULL, NULL, NULL);
-    if (err != noErr) {
-        if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObject:path forKey:NSFilePathErrorKey]];
-        return kFSInvalidVolumeRefNum;
-    }
-    
-    if (pathInfo.volume == kFSInvalidVolumeRefNum) {
-        // Shouldn't happen, but let's not cause our caller to crash when it looks at *outError.
-        if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:nsvErr userInfo:[NSDictionary dictionaryWithObject:path forKey:NSFilePathErrorKey]];
-        return kFSInvalidVolumeRefNum;
-    }
-    
-    return pathInfo.volume;
-}
-
-- (NSString *)volumeNameForPath:(NSString *)filePath error:(NSError **)outError;
-{    
-    FSVolumeRefNum vRef = [self volumeRefNumForPath:filePath error:outError];
-    if (vRef == kFSInvalidVolumeRefNum)
-        return nil;
-    
-    OSErr err;
-    HFSUniStr255 nameBuf;
-    bzero(&nameBuf, sizeof(nameBuf));
-    err = FSGetVolumeInfo(vRef, 0, NULL,
-                          kFSVolInfoNone, NULL,
-                          &nameBuf, NULL);
-    
-    if (err != noErr) {
-        if (outError)
-            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObject:filePath forKey:NSFilePathErrorKey]];
-        return nil;
-    }
-    
-    return [NSString stringWithCharacters:nameBuf.unicode length:nameBuf.length];
-}
-
 - (NSString *)resolveAliasAtPath:(NSString *)path
 {
+    // <bug:///89013> (Rewrite alias resolution methods in OmniFoundation using NSURL/CFURL support)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     FSRef ref;
     OSErr err;
     char *buffer;
@@ -532,10 +402,14 @@ static int permissionsMask = 0022;
     free(buffer);
 
     return path;
+#pragma clang diagnostic pop
 }
 
 - (NSString *)resolveAliasesInPath:(NSString *)originalPath
 {
+    // <bug:///89013> (Rewrite alias resolution methods in OmniFoundation using NSURL/CFURL support)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     FSRef ref, originalRefOfPath;
     OSErr err;
     char *buffer;
@@ -641,10 +515,14 @@ static int permissionsMask = 0022;
     }
 
     return path;
+#pragma clang diagnostic pop
 }
 
 - (BOOL)fileIsStationeryPad:(NSString *)filename;
 {
+    // <bug:///89011> (Consider adopting standard behavior for Stationery files)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     const char *posixPath;
     FSRef myFSRef;
     FSCatalogInfo catalogInfo;
@@ -657,6 +535,7 @@ static int permissionsMask = 0022;
     if (FSGetCatalogInfo(&myFSRef, kFSCatInfoFinderInfo, &catalogInfo, NULL, NULL, NULL) != noErr)
         return NO;
     return (((FileInfo *)(&catalogInfo.finderInfo))->finderFlags & kIsStationery) != 0;
+#pragma clang diagnostic pop
 }
 
 - (BOOL)path:(NSString *)otherPath isAncestorOfPath:(NSString *)thisPath relativePath:(NSString **)relativeResult
@@ -705,38 +584,41 @@ static int permissionsMask = 0022;
 - (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
 {
     FSRef carbonRef;
-    OSStatus err;
-    
     bzero(&carbonRef, sizeof(carbonRef));
-    err = FSPathMakeRef((void *)[self fileSystemRepresentationWithPath:path], &carbonRef, NULL);
-    if (err != noErr)
-        goto errorReturn;
     
-    err = LSSetItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, quarantineDictionary);
+    NSURL *url = [NSURL fileURLWithPath:path];
+    if (!CFURLGetFSRef((CFURLRef)url, &carbonRef)) {
+        if (outError)
+            *outError = [NSError errorWithDomain:OFErrorDomain code:OFCannotGetQuarantineProperties userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, nil]];
+        return NO;
+    }
+
+    OSStatus err = LSSetItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, quarantineDictionary);
     if (err != noErr)
         goto errorReturn;
     
     return YES;
     
 errorReturn:
-    if (outError) {
+    if (outError)
         *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, quarantineDictionary, kLSItemQuarantineProperties, nil]];
-    }
     return NO;
 }
 
 - (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError;
 {
     FSRef carbonRef;
-    OSStatus err;
-    
     bzero(&carbonRef, sizeof(carbonRef));
-    err = FSPathMakeRef((void *)[self fileSystemRepresentationWithPath:path], &carbonRef, NULL);
-    if (err != noErr)
-        goto errorReturn;
     
+    NSURL *url = [NSURL fileURLWithPath:path];
+    if (!CFURLGetFSRef((CFURLRef)url, &carbonRef)) {
+        if (outError)
+            *outError = [NSError errorWithDomain:OFErrorDomain code:OFCannotGetQuarantineProperties userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, nil]];
+        return nil;
+    }
+        
     CFTypeRef quarantineDictionary = NULL;
-    err = LSCopyItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, &quarantineDictionary);
+    OSStatus err = LSCopyItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, &quarantineDictionary);
     if (err != noErr)
         goto errorReturn;
     if (!quarantineDictionary) {
@@ -750,12 +632,11 @@ errorReturn:
         goto errorReturn;
     }
     
-    return [NSMakeCollectable(quarantineDictionary) autorelease];
+    return CFBridgingRelease(quarantineDictionary);
     
 errorReturn:
-    if (outError) {
+    if (outError)
         *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, nil]];
-    }
     return nil;
 }
 

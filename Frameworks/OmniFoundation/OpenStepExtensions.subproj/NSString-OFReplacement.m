@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -79,34 +79,6 @@ RCS_ID("$Id$");
     NSString *returnValue = [newString copy];
     [newString release];
     return [returnValue autorelease];
-}
-
-- (NSString *)stringByReplacingAllOccurrencesOfString:(NSString *)stringToReplace withString:(NSString *)replacement;
-{
-    NSRange searchRange = NSMakeRange(0, [self length]);
-    NSRange foundRange = [self rangeOfString:stringToReplace options:0 range:searchRange];
-    
-    // If stringToReplace is not found, then there's nothing to replace -- just return self
-    if (foundRange.length == 0)
-        return [[self copy] autorelease];
-    
-    NSMutableString *copy = [self mutableCopy];
-    NSUInteger replacementLength = [replacement length];
-    
-    while (foundRange.length > 0) {
-        [copy replaceCharactersInRange:foundRange withString:replacement];
-        
-        searchRange.location = foundRange.location + replacementLength;
-        searchRange.length = [copy length] - searchRange.location;
-        
-        foundRange = [copy rangeOfString:stringToReplace options:0 range:searchRange];
-    }
-    
-    // Avoid an autorelease
-    NSString *result = [copy copy];
-    [copy release];
-    
-    return [result autorelease];
 }
 
 - (NSString *)stringByReplacingCharactersInSet:(NSCharacterSet *)set withString:(NSString *)replaceString;
