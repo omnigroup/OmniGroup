@@ -1816,8 +1816,8 @@ static unsigned _solveCubic(const double *c, double *roots, unsigned *multiplici
     double sq_A, p, q;
     double cb_p, D;
 
-    if (c[3] == 0) {
-        if (c[2] == 0) {
+    if (fabs(c[3]) < EPSILON) {
+        if (fabs(c[2]) < EPSILON) {
             if (c[1] == 0) {
                 num = 0;
             } else {
