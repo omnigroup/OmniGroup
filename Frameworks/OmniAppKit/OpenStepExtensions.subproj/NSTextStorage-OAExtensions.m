@@ -19,51 +19,6 @@
 RCS_ID("$Id$")
 
 
-// To avoid warnings from OBReplaceMethodImplementationWithSelector, we can't use int or NSInteger since we have NS_BUILD_32_LIKE_64 on, NSUInteger would become unsigned long, which woule mismatch with int in AppKit's signature.  
-#if defined (__LP64__)
-    #define CHARACTER_INDEX_TYPE NSInteger
-#else
-    #define CHARACTER_INDEX_TYPE int
-#endif
-
-// <bug://bugs/26796> -- If you are linked against 10.4, Apple's code will raise if you access 'last character of SomeText' and 'SomeText' is empty.  Under earlier versions, it will create an NSSubTextStorage that contains the out-of-bounds reference, leading to crashes.   They have a log message that comes out under 10.4 saying that you'll get an exception under earlier OS's, but they goofed and you still get the crash.  Testing shows that this is only a problem in the 'characters' version (presumably since they can directly index the characters and thus avoided building an array and the bounds checking code).
-// 2005/03/23 -- Arg.  Testing again with all 10.4 SDKs this still fails.  Re-enabling the hack unconditionally for now.
-#if 1 || !defined(MAC_OS_X_VERSION_10_4) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
-@interface NSTextStorage (PrivateAPI)
-- (id)valueInCharactersAtIndex:(CHARACTER_INDEX_TYPE)i;
-@end
-
-@implementation NSTextStorage (OAScriptFixes)
-
-static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX_TYPE i) = NULL;
-
-+ (void)didLoad;
-{
-    originalValueInCharactersAtIndex = (void *)OBReplaceMethodImplementationWithSelector(self,  @selector(valueInCharactersAtIndex:), @selector(replacement_valueInCharactersAtIndex:));
-}
-
-- (id)replacement_valueInCharactersAtIndex:(CHARACTER_INDEX_TYPE)characterIndex;
-{
-    CHARACTER_INDEX_TYPE originalIndex = characterIndex;
-    NSUInteger length = [self length];
-    if (length == 0)
-	return nil;
-    
-    // -1 means 'last'
-    if (characterIndex < 0) {
-	characterIndex += length;
-	if (characterIndex < 0) // past the beginning
-	    return nil;
-    }
-    
-    if ((NSUInteger)characterIndex >= length) // past the end
-	return nil;
-    
-    return originalValueInCharactersAtIndex(self, _cmd, originalIndex);
-}
-
-@end
-#endif
 
 @interface NSTextStorage (NSScripting)
 - (void)setFontSize:(float)size;
