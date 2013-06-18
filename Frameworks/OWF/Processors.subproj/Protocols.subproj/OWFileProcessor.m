@@ -27,7 +27,6 @@ RCS_ID("$Id$")
 
 @interface OWFileProcessor (Private)
 - (void)_processDirectoryAtPath:(NSString *)filePath;
-- (BOOL)_processLocationFromPath:(NSString *)filePath;
 - (void)_fetchDirectoryWithPath:(NSString *)directoryPath;
 - (void)_fetchRegularFileWithPath:(NSString *)filePath;
 - (BOOL)_redirectToFTP;
@@ -106,9 +105,6 @@ static OFPreference *fileRefreshIntervalPreference = nil;
     // -attributesOfItemAtPath:error: will return nil if there is a ~ in this.
     filePath = [filePath stringByExpandingTildeInPath];
     
-    if ([[filePath pathExtension] hasSuffix:@"loc"] && [self _processLocationFromPath:filePath])
-        return;
-
     NSError *error = nil;
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:filePath error:&error];
     if (!attributes) {
@@ -140,33 +136,6 @@ static OFPreference *fileRefreshIntervalPreference = nil;
 
     // Redirect from file:/.../x to file:/.../x/
     [pipeline addRedirectionContent:[OWAddress addressWithFilename:[filePath stringByAppendingString:@"/"]] sameURI:YES];
-}
-
-- (BOOL)_processLocationFromPath:(NSString *)filePath;
-{
-    // First, verify that the data fork is really empty
-    if ([[NSData dataWithContentsOfMappedFile:filePath] length] != 0)
-        return NO; // Wait, this doesn't look like the .fileloc files we know!
-    
-    // Now, read the 'url' resource
-    OWAddress *address = nil;
-    NS_DURING {
-        OFResourceFork *resourceFork = [[[OFResourceFork alloc] initWithContentsOfFile:filePath] autorelease];
-        NSString *urlString = [NSString stringWithData:[resourceFork dataForResourceType:'url ' atIndex:0] encoding:NSMacOSRomanStringEncoding];
-        address = [OWAddress addressForDirtyString:urlString];
-    } NS_HANDLER {
-#ifdef DEBUG
-        NSLog(@"-[%@ %@]: %@: ignoring resources after encountering exception %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), filePath, [localException reason]);
-#endif
-        return NO;
-    } NS_ENDHANDLER;
-
-    if (address == nil)
-        return NO;
-
-    [pipeline addRedirectionContent:address sameURI:NO];
-
-    return YES;
 }
 
 - (void)_fetchDirectoryWithPath:(NSString *)directoryPath;
@@ -223,7 +192,7 @@ static OFPreference *fileRefreshIntervalPreference = nil;
         [newContent addHeader:OWContentTypeHeaderString value:newContentType];
     else
         [newContent addHeaders:[OWContentType contentTypeAndEncodingForFilename:filePath isLocalFile:YES]];
-    [newContent addHeaders:[isa headersForFilename:filePath]];
+    [newContent addHeaders:[[self class] headersForFilename:filePath]];
     [newContent markEndOfHeaders];
     [pipeline cacheControl:[OWCacheControlSettings cacheSettingsWithMaxAgeInterval:[fileRefreshIntervalPreference floatValue]]];
     [pipeline addContent:newContent fromProcessor:self flags:OWProcessorContentIsSource|OWProcessorContentNoDiskCache|OWProcessorTypeRetrieval];

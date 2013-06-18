@@ -116,6 +116,18 @@ static NSComparisonResult compareWithSelectorAndIMP(id obj1, id obj2, void *cont
     return [self indexWhereObjectWouldBelong:anObject inArraySortedUsingFunction:compareWithSelectorAndIMP context:&selAndImp];
 }
 
+static NSComparisonResult compareWithComparator(id obj1, id obj2, void *context)
+{
+    NSComparator comparator = (NSComparator)context;
+    return comparator(obj1, obj2);
+}
+
+- (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingComparator:(NSComparator)comparator;
+{
+    OBASSERT(comparator != NULL);
+    return [self indexWhereObjectWouldBelong:anObject inArraySortedUsingFunction:compareWithComparator context:comparator];
+}
+
 static NSComparisonResult compareWithSortDescriptors(id obj1, id obj2, void *context)
 {
     NSArray *sortDescriptors = (NSArray *)context;

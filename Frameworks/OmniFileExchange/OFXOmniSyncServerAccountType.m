@@ -9,6 +9,7 @@
 
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileStore/OFSURL.h>
+#import <OmniFoundation/OFCredentials.h>
 
 RCS_ID("$Id$")
 
@@ -38,7 +39,8 @@ NSString * const OFXOmniSyncServerAccountTypeIdentifier = @"com.omnigroup.OmniFi
 
 - (NSString *)accountDetailsStringForAccount:(OFXServerAccount *)account;
 {
-    return account.credential.user;
+    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(account.credentialServiceIdentifier, NULL);
+    return credential.user;
 }
 
 - (NSString *)addAccountTitle;

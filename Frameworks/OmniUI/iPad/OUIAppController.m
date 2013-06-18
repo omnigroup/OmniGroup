@@ -33,6 +33,8 @@ RCS_ID("$Id$");
 
 @implementation OUIAppController
 {
+    NSMutableArray *_launchActions;
+
 #if OUI_SOFTWARE_UPDATE_CHECK
     OUISoftwareUpdateController *_softwareUpdateController;
 #endif
@@ -113,6 +115,17 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
     id controller = [[UIApplication sharedApplication] delegate];
     OBASSERT([controller isKindOfClass:self]);
     return controller;
+}
+
++ (NSString *)applicationName;
+{
+    // The kCFBundleNameKey is often in the format "AppName-iPad".  If so, define an OUIApplicationName key in Info.plist and provide a better human-readable name, such as "AppName" or "AppName for iPad".
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *appName = [infoDictionary objectForKey:@"OUIApplicationName"];
+    if (!appName) {
+        appName = [infoDictionary objectForKey:(NSString *)kCFBundleNameKey];
+    }
+    return appName;
 }
 
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
@@ -200,6 +213,35 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 //    OUIDeleteAllCredentials();
 }
 
+- (void)setShouldPostponeLaunchActions:(BOOL)shouldPostpone;
+{
+    OBPRECONDITION(_shouldPostponeLaunchActions ^ shouldPostpone);
+    
+    _shouldPostponeLaunchActions = shouldPostpone;
+    
+    // Invoking actions might re-postpone.
+    while (_shouldPostponeLaunchActions == NO && [_launchActions count] > 0) {
+        void (^launchAction)(void) = [[[_launchActions objectAtIndex:0] retain] autorelease];
+        [_launchActions removeObjectAtIndex:0];
+        
+        launchAction();
+    }
+}
+
+- (void)addLaunchAction:(void (^)(void))launchAction;
+{
+    if (!_shouldPostponeLaunchActions) {
+        launchAction();
+        return;
+    }
+
+    if (!_launchActions)
+        _launchActions = [NSMutableArray new];
+    
+    launchAction = [[launchAction copy] autorelease];
+    [_launchActions addObject:launchAction];
+}
+
 #pragma mark -
 #pragma mark Subclass responsibility
 
@@ -207,17 +249,6 @@ NSTimeInterval OUIElapsedTimeSinceProcessCreation(void)
 {
     OBASSERT_NOT_REACHED("Must subclass");
     return nil;
-}
-
-- (NSString *)applicationName;
-{
-    // The kCFBundleNameKey is often in the format "AppName-iPad".  If so, define an OUIApplicationName key in Info.plist and provide a better human-readable name, such as "AppName" or "AppName for iPad".
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSString *appName = [infoDictionary objectForKey:@"OUIApplicationName"];
-    if (!appName) {
-        appName = [infoDictionary objectForKey:(NSString *)kCFBundleNameKey];
-    }
-    return appName;
 }
 
 #pragma mark -
@@ -440,7 +471,7 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
         NSString *titleFormat = NSLocalizedStringFromTableInBundle(@"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?", @"OmniUI", OMNI_BUNDLE, @"alert message");
         actionSheet = [[OUISpecialURLActionSheet alloc] initWithURL:url titleFormat:titleFormat handler:OUIChangePreferenceURLHandler];
     } else if ([path isEqualToString:@"/debug"]) {
-        NSString *titleFormat = NSLocalizedStringFromTableInBundle(@"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Ninjas, please don’t.\nDo you wish to run this command?", @"OmniUI", OMNI_BUNDLE, @"debug setting alert message");
+        NSString *titleFormat = NSLocalizedStringFromTableInBundle(@"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?", @"OmniUI", OMNI_BUNDLE, @"debug setting alert message");
         actionSheet = [[OUISpecialURLActionSheet alloc] initWithURL:url titleFormat:titleFormat handler:[self debugURLHandler]];
     }
     

@@ -191,6 +191,9 @@ dateString = [super stringForObjectValue:obj]; \
 {
     OFRelativeDateFormatter *copy = [super copyWithZone:zone];
     copy->_defaultTimeDateComponents = [_defaultTimeDateComponents copy];
+    copy->_useEndOfDuration = _useEndOfDuration;
+    copy->_useRelativeDayNames = _useRelativeDayNames;
+    copy->_wantsTruncatedTime = _wantsTruncatedTime;
     return copy;
 }
 

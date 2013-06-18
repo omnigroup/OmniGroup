@@ -52,7 +52,7 @@ enum {
     CGFloat _defaultSectionFooterHeight;
 }
 
-- (void)showFromView:(UIView *)view;
+- (void)showFromView:(UIView *)view inViewController:(UIViewController *)currentController;
 {
     OBStrongRetain(self); // Stay alive while our popover is up
     
@@ -87,10 +87,16 @@ enum {
 
     self.navController = [[UINavigationController alloc] initWithRootViewController:self.rootViewController];
     self.navController.delegate = self;
-    _filterPopoverController = [[UIPopoverController alloc] initWithContentViewController:self.navController];
-    _filterPopoverController.delegate = self;
-    
-    [[OUIAppController controller] presentPopover:_filterPopoverController fromRect:view.bounds inView:view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        self.rootViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelButton:)];
+        [currentController presentViewController:self.navController animated:YES completion:NULL];
+    } else {
+        _filterPopoverController = [[UIPopoverController alloc] initWithContentViewController:self.navController];
+        _filterPopoverController.delegate = self;
+        
+        [[OUIAppController controller] presentPopover:_filterPopoverController fromRect:view.bounds inView:view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
 }
 
 - (void)dealloc;
@@ -128,7 +134,7 @@ enum {
         case SettingSectionCloudScope:
             return [self.cloudDocumentScopes count];
         case SettingSectionImport:
-            return [[[OFXServerAccountRegistry defaultAccountRegistry] validImportExportAccounts] count];
+            return [self.availableImportExportAccounts count];
             
         case SettingSectionCloudSetup:
             if ([OFXAgent hasDefaultSyncPathExtensions])
@@ -166,7 +172,7 @@ enum {
         }
             
         case SettingSectionImport: {
-            OFXServerAccount *account = [[[OFXServerAccountRegistry defaultAccountRegistry] validImportExportAccounts] objectAtIndex:row];
+            OFXServerAccount *account = [self.availableImportExportAccounts objectAtIndex:row];
             cell.textLabel.text = account.displayName;
             cell.imageView.image = [UIImage imageNamed:@"OUIGenericWebDAV"];
             cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -249,13 +255,17 @@ enum {
                 cell.accessoryType = (row == rowIndex) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
             }
             
-            [_filterPopoverController dismissPopoverAnimated:YES];
-            _filterPopoverController = nil;
+            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+                [self.navController dismissViewControllerAnimated:YES completion:NULL];
+            } else {
+                [_filterPopoverController dismissPopoverAnimated:YES];
+                _filterPopoverController = nil;
+            }
             
             break;
         }
         case SettingSectionImport: {
-            OFXServerAccount *account = [[[OFXServerAccountRegistry defaultAccountRegistry] validImportExportAccounts] objectAtIndex:row];
+            OFXServerAccount *account = [self.availableImportExportAccounts objectAtIndex:row];
             
             NSError *error = nil;
             OUIWebDAVSyncListController *webDAVListController = [[OUIWebDAVSyncListController alloc] initWithServerAccount:account exporting:NO error:&error];
@@ -271,13 +281,18 @@ enum {
             break;
         }
         case SettingSectionCloudSetup: {
+            
+            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+                [self.navController dismissViewControllerAnimated:YES completion:NULL];
+            } else {
+                [_filterPopoverController dismissPopoverAnimated:YES];
+                _filterPopoverController = nil;
+            }
+            
+            
             OUICloudSetupViewController *setup = [[OUICloudSetupViewController alloc] init];
             OUIAppController *controller = [OUIAppController controller];
             [controller.topViewController presentViewController:setup animated:YES completion:nil];
-            
-            [_filterPopoverController dismissPopoverAnimated:YES];
-            _filterPopoverController = nil;
-
             break;
         }
         default:
@@ -329,6 +344,12 @@ enum {
         [self.locationsTableView deselectRowAtIndexPath:selectedIndexPath animated:YES];
     }
 }
+
+- (void)cancelButton:(id)sender;
+{
+    [self.navController dismissViewControllerAnimated:YES completion:NULL];
+}
+
 @end
 
 #import <OmniFileStore/OFSDocumentStoreLocalDirectoryScope.h>
@@ -344,10 +365,17 @@ enum {
 @implementation OFSDocumentStoreLocalDirectoryScope (OUIDocumentPickerSettings)
 - (NSString *)settingsImageName;
 {
-    if (self.isTrash)
-        return @"OUIDocumentStoreScope-Trash.png";
-    else
+    if (self.isTrash) {
+        if ([self.fileItems count] > 0) {
+            return @"OUIDocumentStoreScope-Trash-Full.png";
+        }
+        else {
+            return @"OUIDocumentStoreScope-Trash.png";
+        }
+    }
+    else {
         return @"OUIDocumentStoreScope-Local.png";
+    }
 }
 @end
 

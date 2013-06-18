@@ -150,7 +150,7 @@ RCS_ID("$Id$")
                 NSLog(@"Error registering testing account: %@", [errorOrNil toPropertyList]);
                 [NSException raise:NSGenericException format:@"Test can't continue"];
             } else {
-                OBASSERT(account.credential);
+                OBASSERT(account.credentialServiceIdentifier);
                 
                 __autoreleasing NSError *addError;
                 success = [registry addAccount:account error:&addError];
@@ -170,11 +170,14 @@ RCS_ID("$Id$")
         OBASSERT(_agentA != nil);
             
         OFXServerAccount *accountA = [_agentA.accountRegistry.validCloudSyncAccounts lastObject];
-        OBASSERT(accountA.credential);
+        
+        NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(accountA.credentialServiceIdentifier, NULL);
+        STAssertNotNil(credential, nil);
+        OBASSERT(credential);
             
-        [account _storeCredential:accountA.credential forServiceIdentifier:accountA.credentialServiceIdentifier];
+        [account _storeCredential:credential forServiceIdentifier:accountA.credentialServiceIdentifier];
 
-        OBASSERT(account.credential);
+        OBASSERT(account.credentialServiceIdentifier);
         
         __autoreleasing NSError *addError;
         success = [registry addAccount:account error:&addError];
@@ -813,7 +816,7 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
             return NO;
         
         // Also wait for this *version* of the file to be uploaded if we are replacing an old version.
-        if (OFISEQUAL(metadata.editIdentifier, previousMetadata.editIdentifier))
+        if (previousMetadata && OFISEQUAL(metadata.editIdentifier, previousMetadata.editIdentifier))
             return NO;
         
         return metadata.uploaded;
@@ -951,7 +954,8 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
         NSURLCredential *credential;
         if (_agentA) {
             OFXServerAccount *account = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
-            credential = account.credential;
+            
+            credential = OFReadCredentialsForServiceIdentifier(account.credentialServiceIdentifier, NULL);
         } else
             credential = [self accountCredentialWithPersistence:NSURLCredentialPersistenceNone]; // Fallback.
         

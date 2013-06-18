@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,6 +41,7 @@ typedef enum {
 + (UIImage *)imageFromAttributedString:(NSAttributedString *)attString;
 
 - initWithAttributedString:(NSAttributedString *)attributedString constraints:(CGSize)constraints;
+- initWithAttributedString:(NSAttributedString *)attributedString_ constraints:(CGSize)constraints includeTrailingWhitespace:(BOOL)includeTrailingWhitespace;
 
 @property(readonly,nonatomic) NSAttributedString *attributedString;
 @property(readonly,nonatomic) CGSize usedSize;

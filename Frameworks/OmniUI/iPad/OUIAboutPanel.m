@@ -64,8 +64,7 @@ RCS_ID("$Id$");
     OBASSERT([self.view isKindOfClass:[UIImageView class]]);
     [(UIImageView *)self.view setImage:paneBackground];
     
-    OUIAppController *appController = [OUIAppController controller];
-    appNameLabel.text = appController.applicationName;
+    appNameLabel.text = [OUIAppController applicationName];
     
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     appVersionLabel.text = [NSString stringWithFormat:@"%@ (v%@)", [infoDictionary objectForKey:@"CFBundleShortVersionString"], [infoDictionary objectForKey:@"CFBundleVersion"]];

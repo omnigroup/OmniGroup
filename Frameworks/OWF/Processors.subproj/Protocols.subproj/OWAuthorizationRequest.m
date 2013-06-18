@@ -154,7 +154,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
     }
     defaultPortnumber = defaultPort;
     parsedHostname = [[[server hostname] lowercaseString] retain];
-    parsedChallenges = [[isa findParametersOfType:type headers:challenge] retain];
+    parsedChallenges = [[[self class] findParametersOfType:type headers:challenge] retain];
 	
     requestCondition = [[NSConditionLock alloc] initWithCondition:NO];
     results = nil;
@@ -166,7 +166,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
         // this will need review if we ever add other auth schemes that may also become stale
         OWAuthSchemeHTTPDigest *newCredential = [[OWAuthSchemeHTTPDigest alloc] initAsCopyOf:[theseDidntWork lastObject]];
         [newCredential setParameters:bestChallenge];
-        [isa cacheCredentialIfAbsent:newCredential];
+        [[self class] cacheCredentialIfAbsent:newCredential];
         results = [[NSArray alloc] initWithObjects:newCredential, nil];
         [newCredential release];
         [requestCondition unlockWithCondition:YES];

@@ -22,6 +22,7 @@
 #import <OmniFoundation/OFNetStateRegistration.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFUTI.h>
+#import <OmniFoundation/OFCredentials.h>
 #import <dirent.h>
 
 #import "OFXAccountInfo.h"
@@ -102,6 +103,8 @@ static NSString * const RemoteTemporaryDirectoryName = @"tmp";
     NSLock *_queuedSyncCallbacksLock;
     NSMutableArray *_locked_queuedSyncCallbacks;
 
+    NSURLCredential *_credentialsForCurrentSync;
+    
     // Pending/running file transfers
     OFXFileItemTransfers *_uploadFileItemTransfers;
     OFXFileItemTransfers *_downloadFileItemTransfers;
@@ -229,6 +232,12 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     return self.foregroundState == OFXAccountAgentStateStarted;
 }
 
+- (NSString *)_operationQueueName;
+{
+    OBPRECONDITION(_account);
+    return [NSString stringWithFormat:@"com.omnigroup.OmniFileExchange.OFXAccountAgent.bookkeeping account:%@ owner:%@", _account.uuid, _debugName];
+}
+
 - (BOOL)start:(NSError **)outError;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -332,8 +341,8 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
         _lockFile = [[OFLockFile alloc] initWithURL:lockURL];
         OBASSERT(_lockFile, @"The lock object should be created even if the lock is taken or invalid.");
         
-        __autoreleasing NSError *lockError;
-        if (![_lockFile lockOverridingExistingLock:NO error:&lockError]) {
+        __autoreleasing NSError *lockError = nil;
+        if (![_lockFile lockWithOptions:OFLockFileLockOperationOptionsNone error:&lockError]) {
             OFXError(&lockError, OFXUnableToLockAccount, @"Cannot start syncing.", @"Unable to lock account.");
             [_account reportError:lockError format:@"Error starting account agent. Unable to lock account."];
             if (outError)
@@ -379,7 +388,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     _queuedSyncCallbacksLock = [NSLock new];
     
     _operationQueue = [[NSOperationQueue alloc] init];
-    _operationQueue.name = [NSString stringWithFormat:@"com.omnigroup.OmniFileExchange.OFXAccountAgent.bookkeeping account:%@ owner:%@", _account.uuid, _debugName];
+    _operationQueue.name = [self _operationQueueName];
     _operationQueue.maxConcurrentOperationCount = 1;
     
     _foregroundState = OFXAccountAgentStateStarted;
@@ -658,6 +667,14 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     if (!shouldProceed)
         return;
 
+    // Even on failure, we queue up so that our completion handler will get called in the same sequence it would otherwise.
+    NSError *credentialError;
+    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(self.account.credentialServiceIdentifier, &credentialError);
+    if (!credential) {
+        // If the keychain is locked and the user clicks cancel, we'll get userCanceledErr (which -[NSError(OBExtensions) causedByUserCancelling] understands.
+        [credentialError log:@"Error looking up credentials for %@ with identifier %@", self.account, self.account.credentialServiceIdentifier];
+    }
+    
     self.account.isSyncInProgress = YES;
     [_operationQueue addOperationWithBlock:^{
         // Get the list of queued callbacks and clear it, signalling that any further requests start a new batch
@@ -669,12 +686,24 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
         }
         [_queuedSyncCallbacksLock unlock];
 
-        if (self.backgroundState != OFXAccountAgentStateStarted) {
+        if (!credential) {
+            DEBUG_SYNC(1, @"Skipped; could not look up credentials");
+        } else if (self.backgroundState != OFXAccountAgentStateStarted) {
             DEBUG_SYNC(1, @"Stopped; not performing sync");
         } else if  (!self.backgroundSyncingEnabled) {
             DEBUG_SYNC(1, @"Syncing disabled; not performing sync");
-        } else
+        } else {
+            //OBASSERT(_credentialsForCurrentSync == nil);
+            @synchronized(self) {
+                _credentialsForCurrentSync = credential;
+            }
             [self _performSync];
+            
+            // We leave this set so that transfers that fire up w/o a full sync don't get an assertion/missing credentials.
+            // @synchronized(self) {
+            //    _credentialsForCurrentSync = nil;
+            // }
+        }
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             for (void (^handler)(void) in callbacks)
@@ -1208,7 +1237,13 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 
 - (BOOL)runningOnAccountAgentQueue;
 {
-    return [NSOperationQueue currentQueue] == _operationQueue;
+    NSOperationQueue *currentQueue = [NSOperationQueue currentQueue];
+    
+    if (_operationQueue)
+        return (currentQueue == _operationQueue);
+
+    // We are in the middle of stopping and we've nilled out our queue. This is ugly and we might be better off doing it a different way...
+    return [currentQueue.name isEqualToString:[self _operationQueueName]];
 }
 
 #pragma mark - OFSFileManagerDelegate
@@ -1219,11 +1254,15 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 }
 
 - (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
+{    
     if ([challenge previousFailureCount] <= 2) {
-        NSURLCredential *credential = _account.credential;
+        NSURLCredential *credential;
+        @synchronized(self) {
+            credential = _credentialsForCurrentSync; // Set on the bookkeeping queue, but this will be called on a private queue for DAV operations
+        }
         // This will legitimately be nil in -[OFXAgentAccountChangeTestCase testRemoveAccount] since we can have a sync running and then have removed the account before the sync finishes.
-        //OBASSERT(credential);
+        // TODO: Still true?
+        OBASSERT(credential);
         return credential;
     }
     return nil;
@@ -1345,6 +1384,21 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 
 #pragma mark - Internal
 
+- (OFSDAVFileManager *)_makeFileManager:(NSError **)outError;
+{
+    __autoreleasing NSError *error;
+    
+    // Give the file manager the full account base URL so that -createDirectoryAtURLIfNeeded:error: can make directories all the way up to the top of the account.
+    NSURL *remoteBaseURL = self.remoteBaseDirectory;
+    OFSDAVFileManager *fileManager = [[OFSDAVFileManager alloc] initWithBaseURL:remoteBaseURL delegate:self error:&error];
+    if (!fileManager) {
+        [_account reportError:error format:@"Error creating file manager for %@", remoteBaseURL];
+        if (outError)
+            *outError = error;
+    }
+    return fileManager;
+}
+
 - (void)_fileItemDidGenerateConflict:(OFXFileItem *)fileItem;
 {
     // We need to do a scan to find the new conflict version and generate a file item for it.
@@ -1366,19 +1420,6 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 }
 
 #pragma mark - Private
-
-- (OFSDAVFileManager *)_makeFileManager:(NSError **)outError;
-{
-    __autoreleasing NSError *error;
-    NSURL *remoteBaseURL = self.remoteBaseDirectory;
-    OFSDAVFileManager *fileManager = [[OFSDAVFileManager alloc] initWithBaseURL:remoteBaseURL delegate:self error:&error];
-    if (!fileManager) {
-        [_account reportError:error format:@"Error creating file manager for %@", remoteBaseURL];
-        if (outError)
-            *outError = error;
-    }
-    return fileManager;
-}
 
 - (NSString *)_localRelativePathForFileURL:(NSURL *)fileURL;
 {
@@ -1693,8 +1734,9 @@ static NSString * const OFXContainerPathExtension = @"container";
         containerAgent.automaticallyDownloadFileContents = self.backgroundAutomaticallyDownloadFileContents;
         containerAgent.filePresenter = self;
         
-        if (_debugName)
-            containerAgent.debugName = [NSString stringWithFormat:@"%@.%@.%@", _debugName, _account.credential.user, identifier];
+        if (_debugName) {
+            containerAgent.debugName = [NSString stringWithFormat:@"%@.%@", _debugName, identifier];
+        }
         _containerIdentifierToContainerAgent[identifier] = containerAgent;
 
         if (self.backgroundState == OFXAccountAgentStateStarted) {

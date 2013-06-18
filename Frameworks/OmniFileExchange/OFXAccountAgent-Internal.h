@@ -9,9 +9,12 @@
 
 #import "OFXAccountAgent.h"
 
+@class OFSDAVFileManager;
 @class OFXFileItem;
 
 @interface OFXAccountAgent ()
+
+- (OFSDAVFileManager *)_makeFileManager:(NSError **)outError;
 
 - (void)_fileItemDidGenerateConflict:(OFXFileItem *)fileItem;
 - (void)_fileItemDidDetectUnknownRemoteEdit:(OFXFileItem *)fileItem;

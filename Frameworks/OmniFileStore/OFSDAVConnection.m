@@ -834,6 +834,12 @@ static void OFSDAVAddUserAgentStringToRequest(OFSDAVConnection *manager, NSMutab
         if (![NSString isEmptyString:resultLocationString]) {
             resultLocation = [NSURL URLWithString:resultLocationString];
             
+            if ([[resultLocation host] isEqualToString:@"localhost"] && ![[[request URL] host] isEqualToString:@"localhost"]) {
+                // Work around a bug in OS X Server's WebDAV hosting on 10.8.3 where the proxying server passes back Location headers which are unreachable from the outside world rather than rewriting them into its own namespace.  (It doesn't ever make sense to redirect a WebDAV request to localhost from somewhere other than localhost.)  Hopefully the Location headers in question are always predictable!  Fixes <bug:///87276> (Syncs after initial sync fail on 10.8.3 WebDAV server (error -1004, kCFURLErrorCannotConnectToHost)).
+                // We'll fall back to using the Destination header we specified, but we could also try to take the path from the result URL and tack it onto the scheme/host/port from the original.
+                resultLocation = nil;
+            }
+            
             // This fails so often on stock Apache that I'm turning it off.
             // Apache 2.4.3 doesn't properly URI encode the Location header <See https://issues.apache.org/bugzilla/show_bug.cgi?id=54611> (though our patched version does), but hopefully the location we *asked* to move it to will be valid. Note this won't help for PUT <https://issues.apache.org/bugzilla/show_bug.cgi?id=54367> since it doesn't have a destination header. But in this case we'll fall through and use the original URI.
             // OBASSERT(resultLocation, @"Location header couldn't be parsed as a URL, %@", resultLocationString);
@@ -845,11 +851,6 @@ static void OFSDAVAddUserAgentStringToRequest(OFSDAVConnection *manager, NSMutab
                     resultLocation = [NSURL URLWithString:destinationHeader];
                 }
             }
-        }
-
-        if ([[resultLocation host] isEqualToString:@"localhost"] && ![[[request URL] host] isEqualToString:@"localhost"]) {
-            // Work around a bug in OS X Server's WebDAV hosting on 10.8.3 where the proxying server passes back Location headers which are unreachable from the outside world rather than rewriting them into its own namespace.  (It doesn't ever make sense to redirect a WebDAV request to localhost from somewhere other than localhost.)  Hopefully the Location headers in question are always predictable!  Fixes <bug:///87276> (Syncs after initial sync fail on 10.8.3 WebDAV server (error -1004, kCFURLErrorCannotConnectToHost)).
-            resultLocation = nil;
         }
 
         if (!resultLocation) {

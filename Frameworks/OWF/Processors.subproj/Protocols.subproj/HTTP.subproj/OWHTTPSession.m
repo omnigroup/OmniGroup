@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -515,17 +515,17 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     flags.serverIsLocal = [host isLocalHost]?1:0;
 
     // Sadly, we have two socket methods, +[ONInternetSocket socket] and -[ONSocketStream socket], and the compiler doesn't know which it's getting without the final cast.  (There's no way to cast +socketClass to disambiguate ahead of time.)
-    socketClass = [isa socketClass];
+    socketClass = [[self class] socketClass];
     socket = (ONInternetSocket *)objc_msgSend(socketClass, @selector(socket));
     [socket setReadBufferSize:32 * 1024];
 
     OBASSERT(!socketStream);
     socketStream = [[ONSocketStream alloc] initWithSocket:socket];
-    [socket connectToHost:host port:port ? [port intValue] : [isa defaultPort]];
+    [socket connectToHost:host port:port ? [port intValue] : [[self class] defaultPort]];
 
     [self setStatusFormat:NSLocalizedStringFromTableInBundle(@"Contacted %@", @"OWF", myBundle, @"session status"), [proxyLocation shortDisplayString]];
     if (OWHTTPDebug)
-        NSLog(@"%@: Connected to %@ (%@)", [isa description], [proxyLocation displayString], [socket remoteAddress]);
+        NSLog(@"%@: Connected to %@ (%@)", [[self class] description], [proxyLocation displayString], [socket remoteAddress]);
 }
 
 - (void)disconnectAndRequeueProcessors;
@@ -747,12 +747,12 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     NSUInteger credentialCount, credentialIndex;
     
     if (flags.connectingViaProxyServer && proxyCredentials == nil) {
-        proxyAuthorization = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_HTTP_Proxy netLocation:proxyLocation defaultPort:[isa defaultPort] context:[aProcessor pipeline] challenge:nil promptForMoreThan:nil];
+        proxyAuthorization = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_HTTP_Proxy netLocation:proxyLocation defaultPort:[[self class] defaultPort] context:[aProcessor pipeline] challenge:nil promptForMoreThan:nil];
     } else
         proxyAuthorization = nil;
     
     if ([aProcessor credentials] == nil) {
-        serverAuthorization = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_HTTP netLocation:[[anAddress url] parsedNetLocation] defaultPort:[isa defaultPort] context:[aProcessor pipeline] challenge:nil promptForMoreThan:nil];
+        serverAuthorization = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_HTTP netLocation:[[anAddress url] parsedNetLocation] defaultPort:[[self class] defaultPort] context:[aProcessor pipeline] challenge:nil promptForMoreThan:nil];
     } else
         serverAuthorization = nil;
     
@@ -810,11 +810,11 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
 {
     NSString *userAgent;
 
-    userAgent = [isa userAgentInfoForAddress:anAddress forceRevealIdentity:(kludge.forceTrueIdentityInUAHeader)];
+    userAgent = [[self class] userAgentInfoForAddress:anAddress forceRevealIdentity:(kludge.forceTrueIdentityInUAHeader)];
     if (userAgent == nil)
         return @"";
     else
-        return [isa stringForHeader:@"User-Agent" value:userAgent];
+        return [[self class] stringForHeader:@"User-Agent" value:userAgent];
 }
 
 - (BOOL)sendRequest;
@@ -1204,9 +1204,9 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     if (kludge.suppressAcceptEncodingHeader) {
         return @"";
     } else if (kludge.fakeAcceptEncodingHeader) {
-        return [isa stringForHeader:@"Accept-Encoding" value:@"gzip, identity"];
+        return [[self class] stringForHeader:@"Accept-Encoding" value:@"gzip, identity"];
     } else {
-        return [isa _acceptEncodingsHeaderString];
+        return [[self class] _acceptEncodingsHeaderString];
     }
 }
 
@@ -1214,7 +1214,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 {
     NSString *acceptCharsetString = [aPipeline contextObjectForKey:OWHTTPAcceptCharsetHeaderPreferenceKey];
     if (acceptCharsetString != nil && [acceptCharsetString isKindOfClass:[NSString class]] && [acceptCharsetString length])
-        return [isa stringForHeader:@"Accept-Charset" value:acceptCharsetString];
+        return [[self class] stringForHeader:@"Accept-Charset" value:acceptCharsetString];
     else
         return @"";
 }
@@ -1261,7 +1261,7 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
 - (NSString *)acceptHeaderStringForPipeline:(id <OWProcessorContext>)aPipeline;
 {
     if (kludge.fakeAcceptHeader)
-        return [isa stringForHeader:@"Accept" value:@"image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, image/png, image/tiff, multipart/x-mixed-replace, */*;q=0.1"];
+        return [[self class] stringForHeader:@"Accept" value:@"image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, image/png, image/tiff, multipart/x-mixed-replace, */*;q=0.1"];
 
     NSMutableArray *acceptsArray;
     NSEnumerator *targetTypesEnumerator, *possibleTypesEnumerator;
@@ -1325,7 +1325,7 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
         [acceptsArray addObject:typeString];
     }
     
-    NSString *acceptTypesString = [isa stringForHeader:@"Accept" value:[acceptsArray componentsJoinedByString:@", "]];
+    NSString *acceptTypesString = [[self class] stringForHeader:@"Accept" value:[acceptsArray componentsJoinedByString:@", "]];
     [acceptsArray release];
     [sortedContentTypes release];
     [acceptableContentTypes release];
@@ -1353,7 +1353,7 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
     referrerString = [[referringURL compositeString] stringByRemovingReturns];
     if ([NSString isEmptyString:referrerString])
         return @"";
-    return [isa stringForHeader:@"Referer" /* [sic] */ value:referrerString];
+    return [[self class] stringForHeader:@"Referer" /* [sic] */ value:referrerString];
 }
 
 - (NSString *)cacheControlHeaderStringForPipeline:(id <OWProcessorContext>)aPipeline;
@@ -1364,12 +1364,12 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
     if (cacheControl == nil)
         return @"";
     else if ([cacheControl isEqualToString:OWCacheArcReload]) {
-        result = [isa stringForHeader:@"Cache-Control" value:@"no-cache"];
-        result = [result stringByAppendingString:[isa stringForHeader:@"Pragma" value:@"no-cache"]];
+        result = [[self class] stringForHeader:@"Cache-Control" value:@"no-cache"];
+        result = [result stringByAppendingString:[[self class] stringForHeader:@"Pragma" value:@"no-cache"]];
     } else if ([cacheControl isEqualToString:OWCacheArcRevalidate]) {
-        result = [isa stringForHeader:@"Cache-Control" value:@"max-age=0"];
+        result = [[self class] stringForHeader:@"Cache-Control" value:@"max-age=0"];
         // We use Pragma: no-cache here since HTTP/1.0 doesn't have a directive exactly equivalent to what we want
-        result = [result stringByAppendingString:[isa stringForHeader:@"Pragma" value:@"no-cache"]];
+        result = [result stringByAppendingString:[[self class] stringForHeader:@"Pragma" value:@"no-cache"]];
     } else if ([cacheControl isEqualToString:OWCacheArcPreferCache]) {
         return @"";
     } else {
@@ -1398,14 +1398,14 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
         
     if ([validatorKey caseInsensitiveCompare:@"ETag"] == NSOrderedSame) {
         if (wantChanges)
-            return [isa stringForHeader:@"If-None-Match" value:validatorValue];
+            return [[self class] stringForHeader:@"If-None-Match" value:validatorValue];
         else
-            return [isa stringForHeader:@"If-Match" value:validatorValue];
+            return [[self class] stringForHeader:@"If-Match" value:validatorValue];
     } else if ([validatorKey caseInsensitiveCompare:@"Last-Modified"] == NSOrderedSame) {
         if (wantChanges)
-            return [isa stringForHeader:@"If-Modified-Since" value:validatorValue];
+            return [[self class] stringForHeader:@"If-Modified-Since" value:validatorValue];
         else
-            return [isa stringForHeader:@"If-Unmodified-Since" value:validatorValue];
+            return [[self class] stringForHeader:@"If-Unmodified-Since" value:validatorValue];
     } else {
         NSLog(@"%@ unsupported validator: %@", [aPipeline logDescription], validatorKey);
         return @"";
@@ -1427,7 +1427,7 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
     else
         result = [NSString stringWithFormat:@"%@:%@", hostname, port];
 
-    return [isa stringForHeader:@"Host" value:result];
+    return [[self class] stringForHeader:@"Host" value:result];
 }
 
 - (NSString *)rangeStringForProcessor:(OWHTTPProcessor *)aProcessor;
@@ -1448,9 +1448,9 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
     }  
     
     if (desiredRange.length)
-        return [isa stringForHeader:@"Range" value:[NSString stringWithFormat:@"bytes=%lu-%lu", desiredRange.location, desiredRange.location + desiredRange.length - 1]];
+        return [[self class] stringForHeader:@"Range" value:[NSString stringWithFormat:@"bytes=%lu-%lu", desiredRange.location, desiredRange.location + desiredRange.length - 1]];
     else if (desiredRange.location)
-        return [isa stringForHeader:@"Range" value:[NSString stringWithFormat:@"bytes=%lu-", desiredRange.location]];
+        return [[self class] stringForHeader:@"Range" value:[NSString stringWithFormat:@"bytes=%lu-", desiredRange.location]];
     else
         return @"";
 }
@@ -1460,12 +1460,12 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
     if (flags.connectingViaProxyServer)
         return @"";
     else
-        return [isa stringForHeader:@"Connection" value:@"Keep-Alive"];
+        return [[self class] stringForHeader:@"Connection" value:@"Keep-Alive"];
 }
 
 - (NSString *)cookiesForURL:(OWURL *)aURL pipeline:(id <OWProcessorContext>)aPipeline;
 {
-    return [isa stringForHeader:@"Cookie" value:[aPipeline contextObjectForKey:OWCacheArcApplicableCookiesContentKey isDependency:YES]];
+    return [[self class] stringForHeader:@"Cookie" value:[aPipeline contextObjectForKey:OWCacheArcApplicableCookiesContentKey isDependency:YES]];
 }
 
 - (NSString *)contentTypeHeaderStringForAddress:(OWAddress *)anAddress;
@@ -1485,7 +1485,7 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
     if (boundaryString)
         [valueString appendStrings:@"; boundary=", boundaryString, nil];
 
-    contentTypeHeaderString = [isa stringForHeader:@"Content-Type" value:valueString];
+    contentTypeHeaderString = [[self class] stringForHeader:@"Content-Type" value:valueString];
     [valueString release];
     return contentTypeHeaderString;
 }
@@ -1493,7 +1493,7 @@ static NSComparisonResult acceptHeaderOrdering(id a, id b, void *ctxt)
 - (NSString *)contentLengthHeaderStringForAddress:(OWAddress *)anAddress;
 {
     NSDictionary *addressMethodDictionary = [anAddress methodDictionary];
-    return [isa stringForHeader:@"Content-Length" value:[NSNumber numberWithUnsignedLong:[[addressMethodDictionary objectForKey:OWAddressContentStringMethodKey] length] + [[addressMethodDictionary objectForKey:OWAddressContentDataMethodKey] length]]];
+    return [[self class] stringForHeader:@"Content-Length" value:[NSNumber numberWithUnsignedLong:[[addressMethodDictionary objectForKey:OWAddressContentStringMethodKey] length] + [[addressMethodDictionary objectForKey:OWAddressContentDataMethodKey] length]]];
 }
 
 - (NSString *)contentStringForAddress:(OWAddress *)anAddress;
@@ -1713,7 +1713,7 @@ processStatus:
             authorizationRequest = [[[OWAuthorizationRequest authorizationRequestClass] alloc]
                 initForType:(IsProxyAuth ? OWAuth_HTTP_Proxy : OWAuth_HTTP)
                 netLocation:(IsProxyAuth ? proxyLocation : [fetchURL parsedNetLocation])
-                defaultPort:[isa defaultPort]
+                defaultPort:[[self class] defaultPort]
                 context:[processor pipeline]
                 challenge:headerDictionary
                 promptForMoreThan:oldCredentials];

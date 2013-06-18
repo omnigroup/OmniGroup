@@ -13,6 +13,7 @@
 #import <OmniFileStore/OFSURL.h>
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniFoundation/OFCredentials.h>
 
 #import "OUIWebDAVSyncDownloader.h"
 
@@ -23,12 +24,17 @@ RCS_ID("$Id$");
 
 @implementation OUIWebDAVSyncListController
 {
+    NSURLCredential *_credentials;
     OFSFileManager *_fileManager;
 }
 
 - initWithServerAccount:(OFXServerAccount *)serverAccount exporting:(BOOL)exporting error:(NSError **)outError;
 {
     if (!(self = [super initWithServerAccount:serverAccount exporting:exporting error:outError]))
+        return nil;
+    
+    _credentials = OFReadCredentialsForServiceIdentifier(serverAccount.credentialServiceIdentifier, outError);
+    if (!_credentials)
         return nil;
     
     _fileManager = [[OFSFileManager alloc] initWithBaseURL:serverAccount.remoteBaseURL delegate:self error:outError];
@@ -162,7 +168,9 @@ RCS_ID("$Id$");
 
 - (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
 {
-    return self.serverAccount.credential;
+    if ([challenge previousFailureCount] <= 2)
+        return _credentials;
+    return nil;
 }
 
 - (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;

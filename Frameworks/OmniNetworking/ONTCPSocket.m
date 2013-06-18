@@ -105,7 +105,7 @@ static Class defaultTCPSocketClass = nil;
 
 - (ONTCPSocket *)acceptConnectionOnNewSocket;
 {
-    return (ONTCPSocket *)[isa socketWithConnectedFileDescriptor:[self socketFDForAcceptedConnection] shouldClose:YES];
+    return (ONTCPSocket *)[[self class] socketWithConnectedFileDescriptor:[self socketFDForAcceptedConnection] shouldClose:YES];
 }
 
 - (void)setUsesNagleDelay:(BOOL)nagle;

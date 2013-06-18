@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,7 @@ RCS_ID("$Id$")
 
     // TODO: should we localize this hack? Arguably there should be a class name -> displayName mapping in the localizable .strings tables.
 
-    className = NSStringFromClass(isa);
+    className = NSStringFromClass([self class]);
     if ([className hasPrefix:@"OW"] ||
         [className hasPrefix:@"OI"] ||
         [className hasPrefix:@"OH"])

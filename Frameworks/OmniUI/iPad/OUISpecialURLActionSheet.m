@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -75,7 +75,8 @@ OUISpecialURLHandler OUIChangePreferenceURLHandler = ^(NSURL *url) {
     
     OUISpecialURLActionSheetDelegate *delegate = [[[OUISpecialURLActionSheetDelegate alloc] initWithURL:url handler:urlHandler] autorelease]; // retained; releases self in button press
     objc_msgSend(delegate, @selector(retain));
-    return [self initWithTitle:title delegate:delegate cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") destructiveButtonTitle:nil otherButtonTitles:NSLocalizedStringFromTableInBundle(@"Accept", @"OmniUI", OMNI_BUNDLE, @"alert button title"), nil];
+    // We add the 'Cancel' button as an 'other button' instead of the designated 'cancelButtonTitle' to force it to show on iPad.
+    return [self initWithTitle:title delegate:delegate cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:NSLocalizedStringFromTableInBundle(@"Accept", @"OmniUI", OMNI_BUNDLE, @"alert button title"), NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title"), nil];
 }
 
 @end

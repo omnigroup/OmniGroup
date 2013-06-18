@@ -46,7 +46,7 @@ static void OFLogMatchingCredentials(NSDictionary *query)
     
     NSArray *items = nil;
     OSStatus err = SecItemCopyMatching((CFDictionaryRef)searchQuery, (CFTypeRef *)&items);
-    if (err == noErr) {
+    if (err == errSecSuccess) {
         for (NSDictionary *item in items)
             NSLog(@"item = %@", item);
     } else if (err == errSecItemNotFound) {
@@ -64,11 +64,15 @@ static void OFLogAllCredentials(void)
 }
 #endif
 
-NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifier)
+NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)
 {    
-    OBPRECONDITION(![NSString isEmptyString:serviceIdentifier]);
-
     DEBUG_CREDENTIALS(@"read credentials for service identifier %@", serviceIdentifier);
+    
+    if ([NSString isEmptyString:serviceIdentifier]) {
+        if (outError)
+            *outError = [NSError errorWithDomain:OFCredentialsErrorDomain code:OFCredentialsErrorNotFound userInfo:nil];
+        return nil;
+    }
     
     NSMutableDictionary *query = BasicQuery();
     
@@ -85,7 +89,7 @@ NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifi
 
     NSArray *items = nil;
     OSStatus err = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&items);
-    if (err == noErr) {
+    if (err == errSecSuccess) {
         for (NSDictionary *item in items) {
             NSString *service = [item objectForKey:(id)kSecAttrService];
             NSString *expectedService = serviceIdentifier;
@@ -115,14 +119,19 @@ NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifi
             CFRelease(items);
             return result;
         }
-        
-    } else if (err != errSecItemNotFound) {
-        OFLogSecError("SecItemCopyMatching", err);
+        if (items)
+            CFRelease(items);
+        if (outError)
+            *outError = [NSError errorWithDomain:OFCredentialsErrorDomain code:OFCredentialsErrorNotFound userInfo:nil];
+        return nil;
+    } else if (err == errSecItemNotFound) {
+        if (outError)
+            *outError = [NSError errorWithDomain:OFCredentialsErrorDomain code:OFCredentialsErrorNotFound userInfo:nil];
+        return nil;
+    } else {
+        OFSecError("SecItemCopyMatching", err, outError);
+        return nil;
     }
-    if (items)
-        CFRelease(items);
-    
-    return nil;
 }
 
 static const UInt8 legacyKeychainIdentifier[] = "com.omnigroup.frameworks.OmniUI";
@@ -162,7 +171,7 @@ NSURLCredential *OFReadCredentialsForLegacyHostPattern(NSString *hostPattern, NS
 
     NSArray *items = nil;
     OSStatus err = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&items);
-    if (err == noErr) {
+    if (err == errSecSuccess) {
         for (NSDictionary *item in items) {
             NSString *service = [item objectForKey:(id)kSecAttrService];
             // We used to store credentials using [NSString stringWithFormat:@"%@/%@", [protectionSpace host], [protectionSpace realm]].  When converting legacy accounts we no longer have those details, so we're looking for anything matching our legacy host pattern.
@@ -194,7 +203,7 @@ NSURLCredential *OFReadCredentialsForLegacyHostPattern(NSString *hostPattern, NS
         }
         
     } else if (err != errSecItemNotFound) {
-        OFLogSecError("SecItemCopyMatching", err);
+        OFSecError("SecItemCopyMatching", err, NULL);
     }
     if (items)
         CFRelease(items);
@@ -202,7 +211,7 @@ NSURLCredential *OFReadCredentialsForLegacyHostPattern(NSString *hostPattern, NS
     return nil;
 }
 
-void OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSString *userName, NSString *password)
+BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSString *userName, NSString *password, NSError **outError)
 {
     OBPRECONDITION(![NSString isEmptyString:serviceIdentifier]);
     OBPRECONDITION(![NSString isEmptyString:userName]);
@@ -221,24 +230,27 @@ void OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
     
     DEBUG_CREDENTIALS(@"adding item: %@", entry);
     OSStatus err = SecItemAdd((CFDictionaryRef)entry, NULL);
-    if (err != noErr) {
-        if (err != errSecDuplicateItem) {
-            OFLogSecError("SecItemAdd", err);
-            return;
-        }
-
-        // Split the entry into a query and attributes to update.
-        NSMutableDictionary *query = [[entry mutableCopy] autorelease];
-        [query removeObjectForKey:kSecAttrAccount];
-        [query removeObjectForKey:kSecValueData];
-        
-        NSDictionary *attributes = @{(id)kSecAttrAccount:entry[(id)kSecAttrAccount], (id)kSecValueData:entry[(id)kSecValueData]};
-        
-        err = SecItemUpdate((CFDictionaryRef)query, (CFDictionaryRef)attributes);
-        if (err != noErr) {
-            OFLogSecError("SecItemUpdate", err);
-        }
+    if (err == errSecSuccess)
+        return YES;
+    
+    if (err != errSecDuplicateItem) {
+        OFSecError("SecItemAdd", err, outError);
+        return NO;
     }
+
+    // Split the entry into a query and attributes to update.
+    NSMutableDictionary *query = [[entry mutableCopy] autorelease];
+    [query removeObjectForKey:kSecAttrAccount];
+    [query removeObjectForKey:kSecValueData];
+    
+    NSDictionary *attributes = @{(id)kSecAttrAccount:entry[(id)kSecAttrAccount], (id)kSecValueData:entry[(id)kSecValueData]};
+    
+    err = SecItemUpdate((CFDictionaryRef)query, (CFDictionaryRef)attributes);
+    if (err == errSecSuccess)
+        return YES;
+    
+    OFSecError("SecItemUpdate", err, outError);
+    return NO;
 }
 
 void OFDeleteAllCredentials(void)
@@ -247,11 +259,11 @@ void OFDeleteAllCredentials(void)
 
     NSMutableDictionary *query = BasicQuery();
     OSStatus err = SecItemDelete((CFDictionaryRef)query);
-    if (err != noErr && err != errSecItemNotFound)
-        OFLogSecError("SecItemDelete", err);
+    if (err != errSecSuccess && err != errSecItemNotFound)
+        OFSecError("SecItemDelete", err, NULL);
 }
 
-void OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier)
+BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)
 {
     OBPRECONDITION(![NSString isEmptyString:serviceIdentifier]);
     
@@ -278,9 +290,12 @@ void OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier)
     OFLogAllCredentials();
 #endif
     
+    BOOL success = YES;
     OSStatus err = SecItemDelete((CFDictionaryRef)query);
-    if (err != noErr && err != errSecItemNotFound)
-        OFLogSecError("SecItemDelete", err);
+    if (err != errSecSuccess && err != errSecItemNotFound) {
+        OFSecError("SecItemDelete", err, outError);
+        success = NO;
+    }
     
 #if DEBUG_CREDENTIALS_DEFINED
     DEBUG_CREDENTIALS(@"  after (matching)...");
@@ -289,7 +304,7 @@ void OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier)
     OFLogAllCredentials();
 #endif
     
-    OBASSERT(OFReadCredentialsForServiceIdentifier(serviceIdentifier) == nil);
+    OBASSERT(OFReadCredentialsForServiceIdentifier(serviceIdentifier, NULL) == nil);
     
     OBFinishPortingLater("Store trusted certificates for the same service identifier so we can remove them here");
 #if 0
@@ -299,6 +314,8 @@ void OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier)
         OFRemoveTrustedHost(host);
     }
 #endif
+    
+    return success;
 }
 
 static void _OFAccessCertificateTrustExceptions(void (^accessor)(NSMutableDictionary *, OFPreference *))
@@ -397,8 +414,8 @@ BOOL OFHasTrustForChallenge(NSURLAuthenticationChallenge *challenge)
 
     SecTrustResultType evaluationResult = kSecTrustResultOtherError;
     OSStatus err = SecTrustEvaluate(trust, &evaluationResult); // NB: May block for long periods (eg OCSP verification, etc)
-    if (err == noErr && evaluationResult == kSecTrustResultProceed)
+    if (err == errSecSuccess && evaluationResult == kSecTrustResultProceed)
         return YES;
-    NSLog(@"err:%ld, evaluationResult:%ld", err, evaluationResult);
+    NSLog(@"err:%ld, evaluationResult:%lu", err, (unsigned long)evaluationResult);
     return NO;
 }

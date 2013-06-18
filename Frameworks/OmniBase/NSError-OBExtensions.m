@@ -142,8 +142,9 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
          return NO;
 
     switch ([urlError code]) {
-        case NSURLErrorCannotFindHost:
         case NSURLErrorTimedOut:
+        case NSURLErrorCannotFindHost:
+        case NSURLErrorNetworkConnectionLost:
         case NSURLErrorDNSLookupFailed:
         case NSURLErrorNotConnectedToInternet:
         case NSURLErrorCannotConnectToHost:

@@ -144,7 +144,7 @@ RCS_ID("$Id$")
     if (!otherObject)
         return NO;
 
-    if (!OBClassIsSubclassOfClass(*(Class *)otherObject, isa))
+    if (!OBClassIsSubclassOfClass([otherObject class], [self class]))
         return NO;
 
     return [self isEqualToSocketAddress:[(ONPortAddress *)otherObject portAddress]];

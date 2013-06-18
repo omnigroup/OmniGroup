@@ -564,10 +564,10 @@ static NSString *defaultPassword = nil;
     [tcpSocket setReadBufferSize:32*1024];
     controlSocketStream = [[ONSocketStream alloc] initWithSocket:tcpSocket];
     port = [netLocation port];
-    [tcpSocket connectToHost:serviceHost port:port ? [port intValue] : [isa defaultPort]];
+    [tcpSocket connectToHost:serviceHost port:port ? [port intValue] : [[self class] defaultPort]];
     [nonretainedProcessor setStatusFormat:NSLocalizedStringFromTableInBundle(@"Contacted %@", @"OWF", [OWFTPSession bundle], ftp session status), [netLocation shortDisplayString]];
     if (OWFTPSessionDebug)
-        NSLog(@"%@: Connected to %@ (%@)", [isa description], [netLocation displayString], [tcpSocket remoteAddress]);
+        NSLog(@"%@: Connected to %@ (%@)", [[self class] description], [netLocation displayString], [tcpSocket remoteAddress]);
 
     if (![self readResponse]) { // "220 ftp.omnigroup.com ready"
         NSString *errorReply = [[lastReply retain] autorelease];
@@ -598,7 +598,7 @@ static NSString *defaultPassword = nil;
             int credentialIndex;
             NSArray *moreCredentials;
             
-            getPassword = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_FTP netLocation:netLocation defaultPort:[isa defaultPort] context:[nonretainedProcessor pipeline] challenge:nil promptForMoreThan:failedCredentials];
+            getPassword = [[[OWAuthorizationRequest authorizationRequestClass] alloc] initForType:OWAuth_FTP netLocation:netLocation defaultPort:[[self class] defaultPort] context:[nonretainedProcessor pipeline] challenge:nil promptForMoreThan:failedCredentials];
             moreCredentials = [getPassword credentials];
             
             if (!moreCredentials) {

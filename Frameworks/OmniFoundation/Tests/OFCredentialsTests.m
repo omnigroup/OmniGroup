@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
-#import <OmniBase/rcsid.h>
+#import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
@@ -43,20 +43,22 @@ RCS_ID("$Id$");
 
 - (void)testReadMissingCredentials;
 {
-    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(@"xxx");
+    NSError *error;
+    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(@"xxx", &error);
     STAssertNil(credential, nil);
+    STAssertTrue([error hasUnderlyingErrorDomain:OFCredentialsErrorDomain code:OFCredentialsErrorNotFound], nil);
 }
 
 - (void)testDeleteMissingCredentials;
 {
-    OFDeleteCredentialsForServiceIdentifier(@"xxx");
+    STAssertTrue(OFDeleteCredentialsForServiceIdentifier(@"xxx", NULL), nil);
 }
 
 - (void)testWriteAndReadCredential;
 {
     NSString *password = [OFXMLCreateID() autorelease];
-    OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password);
-    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(_serviceIdentifier);
+    STAssertTrue(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password, NULL), nil);
+    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, NULL);
     STAssertEqualObjects(credential.user, @"user", nil);
     STAssertEqualObjects(credential.password, password, nil);
 }
@@ -64,27 +66,29 @@ RCS_ID("$Id$");
 - (void)testUpdateCredential;
 {
     NSString *password1 = [OFXMLCreateID() autorelease];
-    OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password1);
+    STAssertTrue(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password1, NULL), nil);
 
-    NSURLCredential *credential1 = OFReadCredentialsForServiceIdentifier(_serviceIdentifier);
+    NSURLCredential *credential1 = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, NULL);
     STAssertEqualObjects(credential1.user, @"user", nil);
     STAssertEqualObjects(credential1.password, password1, nil);
 
     NSString *password2 = [OFXMLCreateID() autorelease];
-    OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password2);
+    STAssertTrue(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password2, NULL), nil);
     
-    NSURLCredential *credential2 = OFReadCredentialsForServiceIdentifier(_serviceIdentifier);
+    NSURLCredential *credential2 = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, NULL);
     STAssertEqualObjects(credential2.user, @"user", nil);
     STAssertEqualObjects(credential2.password, password2, nil);
 }
 
 - (void)testDeleteCredential;
 {
-    OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", @"password");
-    OFDeleteCredentialsForServiceIdentifier(_serviceIdentifier);
+    STAssertTrue(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", @"password", NULL), nil);
+    STAssertTrue(OFDeleteCredentialsForServiceIdentifier(_serviceIdentifier, NULL), nil);
     
-    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(_serviceIdentifier);
+    NSError *error;
+    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, &error);
     STAssertNil(credential, nil);
+    STAssertTrue([error hasUnderlyingErrorDomain:OFCredentialsErrorDomain code:OFCredentialsErrorNotFound], nil);
 }
 
 @end

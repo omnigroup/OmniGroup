@@ -39,6 +39,8 @@ static BOOL DebugLockFile = NO;
 static NSString * OFLockFileCancelRecoveryOption = nil;
 static NSString * OFLockFileOverrideLockRecoveryOption = nil;
 
+static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
+
 @implementation OFLockFile
 {
     BOOL _ownsLock; // At least, last we knew -- someone else can force the lock.
@@ -59,6 +61,32 @@ static NSString * OFLockFileOverrideLockRecoveryOption = nil;
     
     recoveryOption = NSLocalizedStringFromTableInBundle(@"Override Lock", @"OmniFoundation", OMNI_BUNDLE, @"OFLockFile recovery option");
     OFLockFileOverrideLockRecoveryOption = [recoveryOption copy];
+}
+
++ (id <OFLockUnavailableHandler>)lockUnavailableHandler;
+{
+    return OFLockFileLockUnavailableHandler;
+}
+
++ (void)setLockUnavailableHandler:(id <OFLockUnavailableHandler>)handler;
+{
+    OBPRECONDITION(!handler || [handler conformsToProtocol:@protocol(OFLockUnavailableHandler)]);
+    if (OFLockFileLockUnavailableHandler != handler) {
+        [OFLockFileLockUnavailableHandler release];
+        OFLockFileLockUnavailableHandler = [handler retain];
+    }
+}
+
++ (NSString *)localizedCannotCreateLockErrorReason;
+{
+    NSString *localizedCannotCreateLockErrorReason = nil;
+    
+    id <OFLockUnavailableHandler> lockUnavailableHandler = [self lockUnavailableHandler];
+    if (lockUnavailableHandler != nil && [lockUnavailableHandler respondsToSelector:@selector(localizedCannotCreateLockErrorReason)]) {
+        localizedCannotCreateLockErrorReason = [lockUnavailableHandler localizedCannotCreateLockErrorReason];
+    }
+
+    return localizedCannotCreateLockErrorReason;
 }
 
 - (id)initWithURL:(NSURL *)lockFileURL;
@@ -84,13 +112,16 @@ static NSString * OFLockFileOverrideLockRecoveryOption = nil;
     
     [_URL release];
     [_currentLockFileContents release];
+    [_lockUnavailableHandler release];
     
     [super dealloc];
 }
 
 // NOTE: This will re-write the lock file each time it is obtained, which will keep the lock fresh...  Need an option to not do that.
-- (BOOL)lockOverridingExistingLock:(BOOL)override error:(NSError **)outError;
-{    
+- (BOOL)lockWithOptions:(OFLockFileLockOperationOptions)options error:(NSError **)outError;
+{
+    BOOL override = (options & OFLockFileLockOperationOverrideLockOption) != 0;
+    
     // Make sure the intervening directories exist.  Have to preemptively do this so the lock can live next to where the document *would* be, even if the document hasn't been created yet.
     if (![[NSFileManager defaultManager] createDirectoryAtURL:[_URL URLByDeletingLastPathComponent] withIntermediateDirectories:YES attributes:nil error:outError])
         return NO;
@@ -169,31 +200,31 @@ static NSString * OFLockFileOverrideLockRecoveryOption = nil;
             break;
         }
         
-        // Nothing allowed us to ignore the current lock.
-        if (outError) {
-            NSString *reasonFormat = NSLocalizedStringFromTableInBundle(@"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running.", @"OmniFoundation", OMNI_BUNDLE, @"error reason");
-            NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
-            OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4);
-            
-            [formatter setDateStyle:NSDateFormatterShortStyle];
-            [formatter setTimeStyle:NSDateFormatterNoStyle];
-            NSString *dateString = [formatter stringFromDate:[self ownerLockDate]];
-            
-            [formatter setDateStyle:NSDateFormatterNoStyle];
-            [formatter setTimeStyle:NSDateFormatterShortStyle];
-            NSString *timeString = [formatter stringFromDate:[self ownerLockDate]];
-            
-            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniFoundation", OMNI_BUNDLE, @"error description");
-            NSString *reason = [NSString stringWithFormat:reasonFormat, [self ownerName], [self ownerHost], dateString, timeString];
-            NSArray *recoveryOptions = @[OFLockFileOverrideLockRecoveryOption, OFLockFileCancelRecoveryOption];
+        id <OFLockUnavailableHandler> lockUnavailableHandler = [self _currentLockUnavailableHandler];
+        if (lockUnavailableHandler != nil) {
+            NSError *localError = nil;
+            if (outError == NULL) {
+                outError = &localError;
+            }
 
-            OFErrorWithInfo(outError, OFLockUnavailable, description, reason,
-                            NSLocalizedRecoveryOptionsErrorKey, recoveryOptions,
-                            NSRecoveryAttempterErrorKey, self,
-                            @"OFLockExistingLock", _currentLockFileContents,
-                            @"OFLockProposedLock", localLock,
-                            nil);
+            *outError = [self _errorForLockOperationWithOptions:options lockUnavailableHandler:lockUnavailableHandler existingLock:_currentLockFileContents proposedLock:localLock];
+
+            if ([lockUnavailableHandler handleLockUnavailableError:*outError]) {
+                // The lockUnavailableHandler returns YES if error recovery is done.
+                // Loop again and override the lock
+                override = YES;
+                continue;
+            }
         }
+
+        // Nothing allowed us to ignore the current lock.
+        //
+        // Return an NSError instance with code OFLockUnavailable and recovery options if appropriate, other return OFCannotCreateLock
+
+        if (outError != NULL) {
+            *outError = [self _errorForLockOperationWithOptions:options lockUnavailableHandler:nil existingLock:_currentLockFileContents proposedLock:localLock];
+        }
+
         return NO;
     }
 
@@ -293,6 +324,11 @@ static NSString * OFLockFileOverrideLockRecoveryOption = nil;
 
 #pragma mark - NSObject(NSErrorRecoveryAttempting)
 
+- (void)attemptRecoveryFromError:(NSError *)error optionIndex:(NSUInteger)recoveryOptionIndex delegate:(id)delegate didRecoverSelector:(SEL)didRecoverSelector contextInfo:(void *)contextInfo;
+{
+    OBRejectUnusedImplementation(self, _cmd);
+}
+
 - (BOOL)attemptRecoveryFromError:(NSError *)error optionIndex:(NSUInteger)recoveryOptionIndex;
 {
     if ([[error domain] isEqualToString:OFErrorDomain] && [error code] == OFLockUnavailable) {
@@ -308,6 +344,68 @@ static NSString * OFLockFileOverrideLockRecoveryOption = nil;
 }
 
 #pragma mark - Private
+
+- (id <OFLockUnavailableHandler>)_currentLockUnavailableHandler;
+{
+    if (_lockUnavailableHandler != nil) {
+        return _lockUnavailableHandler;
+    }
+    
+    return [[self class] lockUnavailableHandler];
+}
+
+- (NSError *)_errorForLockOperationWithOptions:(OFLockFileLockOperationOptions)options lockUnavailableHandler:(id <OFLockUnavailableHandler>)lockUnavailableHandler existingLock:(NSDictionary *)existingLock proposedLock:(NSDictionary *)proposedLock;
+{
+    NSError *error = nil;
+    
+    if (((options & OFLockFileLockOperationAllowRecoveryOption) != 0) || lockUnavailableHandler != nil) {
+        NSString *reasonFormat = NSLocalizedStringFromTableInBundle(@"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running.", @"OmniFoundation", OMNI_BUNDLE, @"error reason");
+        
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniFoundation", OMNI_BUNDLE, @"error description");
+        NSString *reason = [self _lockUnavailableErrorReasonWithFormat:reasonFormat];
+        NSArray *recoveryOptions = @[OFLockFileOverrideLockRecoveryOption, OFLockFileCancelRecoveryOption];
+        
+        OFErrorWithInfo(&error, OFLockUnavailable, description, reason,
+                        NSLocalizedRecoveryOptionsErrorKey, recoveryOptions,
+                        NSRecoveryAttempterErrorKey, self,
+                        @"OFLockExistingLock", existingLock,
+                        @"OFLockProposedLock", proposedLock,
+                        nil);
+    } else {
+        NSString *reason = [[self class] localizedCannotCreateLockErrorReason];
+        if ([NSString isEmptyString:reason]) {
+            NSString *reasonFormat = NSLocalizedStringFromTableInBundle(@"This lock was taken by %@ using the computer \"%@\" on %@ at %@.", @"OmniFoundation", OMNI_BUNDLE, @"error reason");
+            reason = [self _lockUnavailableErrorReasonWithFormat:reasonFormat];
+        }
+        
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniFoundation", OMNI_BUNDLE, @"error description");
+        OFErrorWithInfo(&error, OFCannotCreateLock, description, reason,
+                        @"OFLockExistingLock", existingLock,
+                        @"OFLockProposedLock", proposedLock,
+                        nil);
+    }
+    
+    return error;
+}
+
+- (NSString *)_lockUnavailableErrorReasonWithFormat:(NSString *)format;
+{
+    OBPRECONDITION(![NSString isEmptyString:format]);
+
+    NSString *dateString = nil;
+    NSString *timeString = nil;
+    NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
+
+    [formatter setDateStyle:NSDateFormatterShortStyle];
+    [formatter setTimeStyle:NSDateFormatterNoStyle];
+    dateString = [formatter stringFromDate:[self ownerLockDate]];
+    
+    [formatter setDateStyle:NSDateFormatterNoStyle];
+    [formatter setTimeStyle:NSDateFormatterShortStyle];
+    timeString = [formatter stringFromDate:[self ownerLockDate]];
+    
+    return [NSString stringWithFormat:format, self.ownerName, self.ownerHost, dateString, timeString];
+}
 
 - (NSDictionary *)_localLockFileContents;
 {
@@ -342,7 +440,7 @@ static NSString * OFLockFileOverrideLockRecoveryOption = nil;
     [_currentLockFileContents release];
     _currentLockFileContents = nil;
     
-    // TODO: Read via the NSData methods an check for ENOENT instead of probe/read, which race anyway.
+    // TODO: Read via the NSData methods and check for ENOENT instead of probe/read, which race anyway.
     if ([[NSFileManager defaultManager] fileExistsAtPath:[_URL path]]) {
         _currentLockFileContents = [[NSDictionary alloc] initWithContentsOfFile:[_URL path]];
         if (!_currentLockFileContents)
@@ -387,6 +485,9 @@ static NSString * OFLockFileOverrideLockRecoveryOption = nil;
     // This is enough to determine if the process is running, but Apple has been pretty explicit about not relying on, or trying to infer much about state, from the result codes when an operation is denied by sandboxd.
     //
     // Since we can look up the process in the process table to determine if it exists, lets do that instead.
+    //
+    // If the process we find is a zombie, ignore it.
+    // If we find a process in the exiting state, ignore it.
     
     int mib[] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, pid, 0};
     struct kinfo_proc kp = {};
@@ -394,6 +495,10 @@ static NSString * OFLockFileOverrideLockRecoveryOption = nil;
     
     int rc = sysctl((int *)mib, 4, &kp, &length, NULL, 0);
     if (rc != -1 && length == sizeof(kp)) {
+        if (((kp.kp_proc.p_stat & SZOMB) != 0) || ((kp.kp_proc.p_flag & P_WEXIT) != 0)) {
+            // This process is a zombie, or exiting (possibly a zombie).
+            return NO;
+        }
         return YES;
     }
     

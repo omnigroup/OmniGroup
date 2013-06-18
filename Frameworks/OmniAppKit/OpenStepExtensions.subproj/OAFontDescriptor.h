@@ -29,6 +29,8 @@
 extern NSInteger OAFontDescriptorRegularFontWeight(void); // NSFontManager-style weight
 extern NSInteger OAFontDescriptorBoldFontWeight(void); // NSFontManager-style weight
 extern OFExtent OAFontDescriptorValidFontWeightExtent(void);
+
+// Returns the _minimal_ set of attributes (on iOS at least). Primarily useful for testing and debugging.
 extern NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font);
 
 @interface OAFontDescriptor : OFObject <NSCopying>

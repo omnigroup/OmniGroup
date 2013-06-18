@@ -155,14 +155,27 @@ int main(int argc, const char * argv[])
             
             while (YES) {
                 @autoreleasepool {
-                    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];
+                    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:5]];
                     
-                    
+                    // Periodically lock the default keychain
+                    SecKeychainRef keychain = NULL;
+                    OSStatus rc = SecKeychainCopyDefault(&keychain);
+                    if (rc != errSecSuccess) {
+                        NSLog(@"SecKeychainCopyDefault returned %d", rc);
+                    } else {
+                        rc = SecKeychainLock(keychain);
+                        if (rc != errSecSuccess) {
+                            NSLog(@"SecKeychainLock returned %d", rc);
+                        }
+                    }
+
+#if 0
                     for (OFXServerAccount *account in registry.validCloudSyncAccounts) {
                         NSURLCredential *credential = account.credential;
                         assert([credential.user length] > 0);
                         assert([credential.password length] > 0);
                     }
+#endif
                 }
             }
         }];

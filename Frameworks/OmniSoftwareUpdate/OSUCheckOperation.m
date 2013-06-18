@@ -340,10 +340,10 @@ NSDictionary *OSUPerformCheck(NSURL *url)
         }
     }
     
-    // The check of 'error' here is intentional (as opposed to checking resultDict == nil).
+    // The check of 'error' here is intentional (as opposed to checking resultDict == nil) since they error might be formed from the response data (and indicate that there is no non-error response).
     if (error)
         [resultDict setObject:[error toPropertyList] forKey:OSUCheckResultsErrorKey];
-    else
+    else if (resourceData)
         [resultDict setObject:resourceData forKey:OSUCheckResultsDataKey];
     
     return resultDict;

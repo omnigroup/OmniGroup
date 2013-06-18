@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -209,8 +209,13 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
     // In the embedding case, the 'from whatever' arguments are irrelevant. We assumed the embedding navigation controller is going to be made visibiel somehow.
     if ([self isEmbededInOtherNavigationController] == NO) {
-        if (![[OUIAppController controller] presentPopover:_popoverController fromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES])
-            return NO;
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+            _navigationController.topViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismiss)];
+            [[[OUIAppController controller] topViewController] presentViewController:_navigationController animated:YES completion:NULL];
+        } else {
+            if (![[OUIAppController controller] presentPopover:_popoverController fromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES])
+                return NO;
+        }
     }
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorDidPresentNotification object:self];
@@ -244,10 +249,14 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 - (void)dismissAnimated:(BOOL)animated;
 {
-    if (!_popoverController)
-        return;
-    
-    [[OUIAppController controller] dismissPopover:_popoverController animated:animated];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        [_navigationController dismissViewControllerAnimated:animated completion:NULL];
+    } else {
+        if (!_popoverController)
+            return;
+        
+        [[OUIAppController controller] dismissPopover:_popoverController animated:animated];
+    }
 }
 
 - (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
@@ -464,7 +473,7 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
             // The popover controller will read the nav controller's contentSizeForViewInPopover as soon as it is created (and it will read the top view controller's)
             _configureContentSize(self, _mainPane, _height, NO);
             
-            if (_popoverController == nil) {
+            if (_popoverController == nil && UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPhone) {
                 _popoverController = [[OUIInspectorPopoverController alloc] initWithContentViewController:_navigationController];
                 _popoverController.delegate = self;
             }

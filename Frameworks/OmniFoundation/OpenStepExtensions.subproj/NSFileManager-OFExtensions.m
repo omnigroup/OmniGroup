@@ -518,26 +518,6 @@ static int permissionsMask = 0022;
 #pragma clang diagnostic pop
 }
 
-- (BOOL)fileIsStationeryPad:(NSString *)filename;
-{
-    // <bug:///89011> (Consider adopting standard behavior for Stationery files)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    const char *posixPath;
-    FSRef myFSRef;
-    FSCatalogInfo catalogInfo;
-    
-    posixPath = [filename fileSystemRepresentation];
-    if (posixPath == NULL)
-        return NO; // Protect FSPathMakeRef() from crashing
-    if (FSPathMakeRef((UInt8 *)posixPath, &myFSRef, NULL))
-        return NO;
-    if (FSGetCatalogInfo(&myFSRef, kFSCatInfoFinderInfo, &catalogInfo, NULL, NULL, NULL) != noErr)
-        return NO;
-    return (((FileInfo *)(&catalogInfo.finderInfo))->finderFlags & kIsStationery) != 0;
-#pragma clang diagnostic pop
-}
-
 - (BOOL)path:(NSString *)otherPath isAncestorOfPath:(NSString *)thisPath relativePath:(NSString **)relativeResult
 {
     NSArray *myContinuation = nil;

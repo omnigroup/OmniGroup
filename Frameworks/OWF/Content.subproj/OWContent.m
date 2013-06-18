@@ -1230,7 +1230,7 @@ static void Thingy(id mememe, SEL wheee)
     OWContent *newContent;
 
     OFSimpleLock(&lock);
-    newContent = [[isa alloc] initWithContent:concreteContent];
+    newContent = [[[self class] alloc] initWithContent:concreteContent];
     // Direct access is OK here because nobody has a reference to the new content except us.
     newContent->contentHash = contentHash;
     [newContent addHeaders:metaData];

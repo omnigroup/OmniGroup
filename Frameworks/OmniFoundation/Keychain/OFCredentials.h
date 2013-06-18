@@ -18,9 +18,9 @@
  */
 extern NSString *OFMakeServiceIdentifier(NSURL *originalURL, NSString *username, NSString *realm);
 
-extern NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifier);
-extern void OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSString *userName, NSString *password);
-extern void OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier);
+extern NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError **outError);
+extern BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSString *userName, NSString *password, NSError **outError);
+extern BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError **outError);
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 extern NSURLCredential *OFReadCredentialsForLegacyHostPattern(NSString *hostPattern, NSString *username); // For importing legacy credentials on iOS
@@ -42,3 +42,12 @@ extern NSString *OFCertificateTrustPromptForChallenge(NSURLAuthenticationChallen
 
 // Posted on the main queue after OFAddTrustForChallenge() makes a change.
 extern NSString * const OFCertificateTrustUpdatedNotification;
+
+extern NSString * const OFCredentialsErrorDomain;
+extern NSString * const OFCredentialsSecurityErrorDomain; // The underlying error from the Security framework
+
+enum {
+    OFCredentialsErrorNone = 0,
+    OFCredentialsErrorNotFound,
+    
+};

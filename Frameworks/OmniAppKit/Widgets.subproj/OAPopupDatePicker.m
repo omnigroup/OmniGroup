@@ -13,10 +13,20 @@
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/NSWindow-OAExtensions.h>
 
+#import "NSEvent-OAExtensions.h"
 #import "NSImage-OAExtensions.h"
 #import "OAWindowCascade.h"
 #import "OADatePicker.h"
 #import "OAVersion.h"
+
+NSString * const OAPopupDatePickerWillShowNotificationName = @"OAPopupDatePickerWillShow";
+NSString * const OAPopupDatePickerDidHideNotificationName = @"OAPopupDatePickerDidHide";
+
+NSString * const OAPopupDatePickerClientControlKey = @"OAPopupDatePickerClientControl";
+NSString * const OAPopupDatePickerCloseReasonKey = @"OAPopupDatePickerCloseReason";
+
+NSString * const OAPopupDatePickerCloseReasonStandard = @"OAPopupDatePickerCloseReasonStandard";
+NSString * const OAPopupDatePickerCloseReasonCancel = @"OAPopupDatePickerCloseReasonCancel";
 
 RCS_ID("$Id$");
 
@@ -26,8 +36,41 @@ RCS_ID("$Id$");
 @interface OADatePickerButton : NSButton 
 @end
 
-@interface OAPopupDatePicker (Private)
+@interface OAPopupDatePicker () {
+    id _datePickerObjectValue;
+    id _datePickerOriginalValue;
+    
+    NSObject *_boundObject;
+    id _boundObjectKeyPath;
+    
+    id _control;
+    NSFormatter *_controlFormatter;
+    
+    SEL _dateUpdatedAction;
+    
+    BOOL _startedWithNilDate;
+    
+    IBOutlet OADatePicker *datePicker;
+    IBOutlet NSDatePicker *timePicker;
+}
+
+- (void)_configureTimePickerFromFormatter:(NSFormatter *)formatter;
+    // Show or hide the time picker as needed based on the time style from the given formatter
+    // If passed nil or a non-NSDateFormatter, will show the time picker
+
+- (void)_setDefaultDate:(NSDate *)defaultDate respectingValueFromBoundObject:(BOOL)preferBinding;
+    // Set the initial date to be selected when the popup is presented
+    // If preferBinding is YES, will query _boundObject using _boundObjectKeyPath to attempt to determine an NSDate
+    // If preferBinding is NO or the bound object returned a nil date, will fall back on using the given defaultDate
+
+- (void)_prepareBindingsForPopupWindowPresentation;
+    // Establish bindings between our visible controls (date & time pickers) and this object
+    // Bindings to the presenting control are *optional* and configured by calling -startPickingDateWithTitle:...bindToObject:...
+
+- (void)_showPopupWindowWithTitle:(NSString *)title fromRect:(NSRect)viewRect ofView:(NSView *)emergeFromView;
+
 - (void)_firstDayOfTheWeekDidChange:(NSNotification *)notification;
+
 @end
 
 @implementation OAPopupDatePicker
@@ -133,110 +176,33 @@ static NSSize calendarImageSize;
     [timePicker setCalendar:calendar];
 }
 
-- (void)startPickingDateWithTitle:(NSString *)title forControl:(NSControl *)aControl stringUpdateSelector:(SEL)stringUpdateSelector defaultDate:(NSDate *)defaultDate;
+- (void)startPickingDateWithTitle:(NSString *)title forControl:(NSControl *)aControl dateUpdateSelector:(SEL)dateUpdateSelector defaultDate:(NSDate *)defaultDate;
 {
-    NSDictionary *bindingInfo = [aControl infoForBinding:@"value"];
-    id bindingObject = [bindingInfo objectForKey:NSObservedObjectKey];
-    NSString *bindingKeyPath = [bindingInfo objectForKey:NSObservedKeyPathKey];
-    bindingKeyPath = [bindingKeyPath stringByReplacingOccurrencesOfString:@"selectedObjects." withString:@"selection."];
-
-    if (!bindingInfo) {
-	bindingObject = aControl;
-	bindingKeyPath = @"objectValue";
-    }
-    [self startPickingDateWithTitle:title fromRect:[aControl visibleRect] inView:aControl bindToObject:bindingObject withKeyPath:bindingKeyPath control:aControl controlFormatter:[aControl formatter] defaultDate:defaultDate];
+    [self close];
+    
+    _control = [aControl retain];
+    _dateUpdatedAction = dateUpdateSelector;
+    
+    [self _configureTimePickerFromFormatter:[aControl formatter]];
+    [self _setDefaultDate:defaultDate respectingValueFromBoundObject:NO];
+    
+    [self _showPopupWindowWithTitle:title fromRect:[aControl bounds] ofView:aControl];
 }
 
 - (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter defaultDate:(NSDate *)defaultDate;
 {
     [self close];
     
-    // retain the bound object and keypath
+    // retain the various arguments (bound object/keypath, presenting control)
     _boundObject = [bindObject retain];
     _boundObjectKeyPath = [bindingKeyPath retain];
-     
-    // retain the field editor, its containg view, and optionally formatter so that we can update it as we make changes since we're not pushing values to it each time
     _control = [control retain];
     
-    NSWindow *emergeFromWindow = [emergeFromView window];
-    NSWindow *popupWindow = [self window];    
-
-    if ([controlFormatter isKindOfClass:[NSDateFormatter class]] && [(NSDateFormatter *)controlFormatter timeStyle] == kCFDateFormatterNoStyle) { 
-        if ([timePicker superview]) {
-            NSRect frame = popupWindow.frame;
-            frame.size.height -= NSHeight([timePicker frame]);
-            [timePicker removeFromSuperview];
-            [popupWindow setFrame:frame display:YES];
-        }
-    } else if (![timePicker superview]) {
-        [[popupWindow contentView] addSubview:timePicker];
-        NSRect frame = popupWindow.frame;
-        frame.size.height += NSHeight([timePicker frame]);
-        [popupWindow setFrame:frame display:YES];
-    }
+    // set up default appearance & behavior
+    [self _configureTimePickerFromFormatter:controlFormatter];
+    [self _setDefaultDate:defaultDate respectingValueFromBoundObject:YES];
     
-    // set the default date picker value to the bound value
-    [_datePickerObjectValue release];
-    _datePickerObjectValue = nil;
-    id defaultObject = [_boundObject valueForKeyPath:_boundObjectKeyPath];
-    _startedWithNilDate = YES;
-    if (defaultObject) {
-	if ([defaultObject isKindOfClass:[NSDate class]]) {
-	    _datePickerObjectValue = [defaultObject retain]; 
-	    _datePickerOriginalValue = [_datePickerObjectValue retain];
-	    _startedWithNilDate = NO;
-	} 
-    }
-    
-    //if there is no value, use the passed in default time
-    if (_datePickerObjectValue == nil) 
-	_datePickerObjectValue = [defaultDate copy];
-	        
-    [datePicker reset];
-    
-    // bind the date picker to our local object value 
-    [datePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:NSAllowsEditingMultipleValuesSelectionBindingOption]];
-    [datePicker setTarget:self];
-    [datePicker setAction:@selector(datePickerAction:)];
-
-    [timePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:NSAllowsEditingMultipleValuesSelectionBindingOption]];
-
-    [self setDatePickerObjectValue:_datePickerObjectValue];
-    [datePicker setClicked:NO];
-    /* Finally, place the editor window on-screen */
-    [popupWindow setTitle:title];
-    
-    NSRect popupWindowFrame = [popupWindow frame];
-    NSRect targetWindowRect = [emergeFromView convertRect:viewRect toView:nil];
-    NSPoint viewRectCenter = [emergeFromWindow convertBaseToScreen:NSMakePoint(NSMidX(targetWindowRect), NSMidY(targetWindowRect))];
-    NSPoint windowOrigin = [emergeFromWindow convertBaseToScreen:NSMakePoint(NSMidX(targetWindowRect), NSMinY(targetWindowRect))];
-    windowOrigin.x -= (CGFloat)floor(NSWidth(popupWindowFrame) / 2.0f);
-    windowOrigin.y -= 2.0f;
-    
-    NSScreen *screen = [OAWindowCascade screenForPoint:viewRectCenter];
-    NSRect visibleFrame = [screen visibleFrame];
-    if (windowOrigin.x < visibleFrame.origin.x)
-	windowOrigin.x = visibleFrame.origin.x;
-    else {
-	CGFloat maxX = NSMaxX(visibleFrame) - NSWidth(popupWindowFrame);
-	if (windowOrigin.x > maxX)
-	    windowOrigin.x = maxX;
-    }
-    
-    if (windowOrigin.y > NSMaxY(visibleFrame))
-	windowOrigin.y = NSMaxY(visibleFrame);
-    else {
-	CGFloat minY = NSMinY(visibleFrame) + NSHeight(popupWindowFrame);
-	if (windowOrigin.y < minY)
-	    windowOrigin.y = minY;
-    }
-    
-    [popupWindow setFrameTopLeftPoint:windowOrigin];
-    [popupWindow makeKeyAndOrderFront:nil];
-    
-    NSWindow *parentWindow = [emergeFromView window];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_parentWindowWillClose:) name:NSWindowWillCloseNotification object:parentWindow];
-    [parentWindow addChildWindow:popupWindow ordered:NSWindowAbove];
+    [self _showPopupWindowWithTitle:title fromRect:viewRect ofView:emergeFromView];
 }
 
 - (id)destinationObject;
@@ -260,6 +226,11 @@ static NSSize calendarImageSize;
 	[[self window] resignKeyWindow];
 }
 
+- (id)clientControl;
+{
+    return _control;
+}
+
 - (NSDatePicker *)datePicker;
 {
     OBASSERT(datePicker);
@@ -270,6 +241,10 @@ static NSSize calendarImageSize;
 {
     if (_boundObject && ![_boundObject valueForKeyPath:_boundObjectKeyPath]) {
         [_boundObject setValue:[datePicker objectValue] forKeyPath:_boundObjectKeyPath];
+    }
+    
+    if (!_boundObject && _dateUpdatedAction) {
+        [_control performSelector:_dateUpdatedAction withObject:_datePickerObjectValue];
     }
 }
 
@@ -300,10 +275,11 @@ static NSSize calendarImageSize;
     [_datePickerObjectValue release];
     _datePickerObjectValue = [newObjectValue retain];
     
-    
     // update the object
     if (_boundObject) {
         [_boundObject setValue:_datePickerObjectValue forKeyPath:_boundObjectKeyPath];
+    } else if (_dateUpdatedAction) {
+        [_control performSelector:_dateUpdatedAction withObject:_datePickerObjectValue];
     }
 }
 
@@ -319,16 +295,38 @@ static NSSize calendarImageSize;
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowWillCloseNotification object:parentWindow];
     
+    NSString *closeReason = OAPopupDatePickerCloseReasonStandard;
     NSEvent *currentEvent = [NSApp currentEvent];
-    if (([currentEvent type] == NSKeyDown) && ([[NSApp currentEvent] keyCode] == 53)) { 
+    
+    BOOL isCancel = [currentEvent isUserCancel];
+    unichar character = (([currentEvent type] == NSKeyDown) && ([[currentEvent characters] length] == 1)) ? [[currentEvent characters] characterAtIndex:0] : 0;
+    BOOL isCommit = ([currentEvent type] == NSKeyDown && (character == 0x1b || character == 0x03 || character == 0x0d));
+    
+    if (isCancel) {
+        closeReason = OAPopupDatePickerCloseReasonCancel;
+        
         if (_startedWithNilDate) {
             _datePickerObjectValue = nil;
-            [_control setObjectValue:nil];
+            
+            if (_dateUpdatedAction)
+                [_control performSelector:_dateUpdatedAction withObject:nil];
+            else
+                [_control setObjectValue:nil];
         } else if (!_startedWithNilDate && _datePickerOriginalValue) {
             _datePickerObjectValue = _datePickerOriginalValue;
-            [_control setObjectValue:_datePickerOriginalValue];
+            
+            if (_dateUpdatedAction)
+                [_control performSelector:_dateUpdatedAction withObject:_datePickerOriginalValue];
+            else
+                [_control setObjectValue:_datePickerOriginalValue];
         }
-    } 
+    } else if (isCommit) {
+        // Force-set whatever object value we currently have in response to an Enter/Return keypress
+        if (_dateUpdatedAction)
+            [_control performSelector:_dateUpdatedAction withObject:_datePickerObjectValue];
+        else
+            [_control setObjectValue:_datePickerObjectValue];
+    }
     
     if ([_boundObject respondsToSelector:@selector(datePicker:willUnbindFromKeyPath:)])
         [_boundObject datePicker:self willUnbindFromKeyPath:_boundObjectKeyPath];
@@ -341,6 +339,8 @@ static NSSize calendarImageSize;
     [_boundObjectKeyPath release];
     _boundObjectKeyPath = nil;
     
+    [self _postNotificationWithName:OAPopupDatePickerDidHideNotificationName additionalUserInfo:@{ OAPopupDatePickerCloseReasonKey : closeReason }];
+    
     [_control release];
     _control = nil;
 }
@@ -350,22 +350,139 @@ static NSSize calendarImageSize;
     [self close];
 }
 
+#pragma mark - Private
+
+- (void)_configureTimePickerFromFormatter:(NSFormatter *)formatter;
+{
+    NSWindow *popupWindow = [self window];
+    
+    if ([formatter isKindOfClass:[NSDateFormatter class]] && [(NSDateFormatter *)formatter timeStyle] == kCFDateFormatterNoStyle) {
+        if ([timePicker superview]) {
+            NSRect frame = popupWindow.frame;
+            frame.size.height -= NSHeight([timePicker frame]);
+            [timePicker removeFromSuperview];
+            [popupWindow setFrame:frame display:YES];
+        }
+    } else if (![timePicker superview]) {
+        [[popupWindow contentView] addSubview:timePicker];
+        NSRect frame = popupWindow.frame;
+        frame.size.height += NSHeight([timePicker frame]);
+        [popupWindow setFrame:frame display:YES];
+    }
+}
+
+- (void)_setDefaultDate:(NSDate *)defaultDate respectingValueFromBoundObject:(BOOL)preferBinding;
+{
+    // set the default date picker value to the bound value
+    [_datePickerObjectValue release];
+    _datePickerObjectValue = nil;
+    _startedWithNilDate = YES;
+    
+    if (preferBinding) {
+        id defaultObjectFromBinding = [_boundObject valueForKeyPath:_boundObjectKeyPath];
+        if ([defaultObjectFromBinding isKindOfClass:[NSDate class]]) {
+            _datePickerObjectValue = [defaultObjectFromBinding retain];
+            _datePickerOriginalValue = [_datePickerObjectValue retain];
+            _startedWithNilDate = NO;
+        }
+    }
+    
+    //if there is no value from the binding (or we didn't use the binding), use the passed in default time
+    if (_datePickerObjectValue == nil)
+	_datePickerObjectValue = [defaultDate copy]; // NB: don't update _startedWithNilDate, because a "default" is not the same as an "original" value
+    
+    [datePicker reset];
+}
+
+- (void)_prepareBindingsForPopupWindowPresentation;
+{
+    // bind the date picker to our local object value
+    [datePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:@{ NSAllowsEditingMultipleValuesSelectionBindingOption : @YES }];
+    [datePicker setTarget:self];
+    [datePicker setAction:@selector(datePickerAction:)];
+    
+    [timePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:@{ NSAllowsEditingMultipleValuesSelectionBindingOption : @YES }];
+    
+    [self setDatePickerObjectValue:_datePickerObjectValue];
+    [datePicker setClicked:NO];
+}
+
+- (void)_showPopupWindowWithTitle:(NSString *)title fromRect:(NSRect)viewRect ofView:(NSView *)emergeFromView;
+{
+    [self _prepareBindingsForPopupWindowPresentation];
+    
+    NSWindow *emergeFromWindow = [emergeFromView window];
+    NSWindow *popupWindow = [self window];
+    
+    /* Finally, place the editor window on-screen */
+    [popupWindow setTitle:title];
+    
+    NSRect popupWindowFrame = [popupWindow frame];
+    NSRect targetWindowRect = [emergeFromView convertRect:viewRect toView:nil];
+    NSPoint viewRectCenter = [emergeFromWindow convertBaseToScreen:NSMakePoint(NSMidX(targetWindowRect), NSMidY(targetWindowRect))];
+    NSPoint windowOrigin = [emergeFromWindow convertBaseToScreen:NSMakePoint(NSMidX(targetWindowRect), NSMinY(targetWindowRect))];
+    windowOrigin.x -= (CGFloat)floor(NSWidth(popupWindowFrame) / 2.0f);
+    windowOrigin.y -= 2.0f;
+    
+    NSScreen *screen = [OAWindowCascade screenForPoint:viewRectCenter];
+    NSRect visibleFrame = [screen visibleFrame];
+    if (windowOrigin.x < visibleFrame.origin.x)
+	windowOrigin.x = visibleFrame.origin.x;
+    else {
+	CGFloat maxX = NSMaxX(visibleFrame) - NSWidth(popupWindowFrame);
+	if (windowOrigin.x > maxX)
+	    windowOrigin.x = maxX;
+    }
+    
+    if (windowOrigin.y > NSMaxY(visibleFrame))
+	windowOrigin.y = NSMaxY(visibleFrame);
+    else {
+	CGFloat minY = NSMinY(visibleFrame) + NSHeight(popupWindowFrame);
+	if (windowOrigin.y < minY)
+	    windowOrigin.y = minY;
+    }
+    
+    [self _postNotificationWithName:OAPopupDatePickerWillShowNotificationName additionalUserInfo:nil];
+    
+    [popupWindow setFrameTopLeftPoint:windowOrigin];
+    [popupWindow makeKeyAndOrderFront:nil];
+    
+    NSWindow *parentWindow = [emergeFromView window];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_parentWindowWillClose:) name:NSWindowWillCloseNotification object:parentWindow];
+    [parentWindow addChildWindow:popupWindow ordered:NSWindowAbove];
+}
+
+- (void)_postNotificationWithName:(NSString *)notificationName additionalUserInfo:(NSDictionary *)additionalUserInfo;
+{
+    NSMutableDictionary *userInfo = additionalUserInfo ? [[additionalUserInfo mutableCopy] autorelease] : [NSMutableDictionary dictionary];
+    if (self.clientControl != nil)
+        [userInfo setObject:[self clientControl] forKey:OAPopupDatePickerClientControlKey];
+    
+    NSNotification *notification = [NSNotification notificationWithName:notificationName object:self userInfo:userInfo];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
+}
+
+- (void)_firstDayOfTheWeekDidChange:(NSNotification *)notification;
+{
+    NSCalendar *currentCalendar = [NSCalendar currentCalendar];
+    if (![datePicker calendar])
+        [datePicker setCalendar:currentCalendar];
+    
+    // NSDatePicker copies its calendar and is never == currentCalendar
+    NSCalendar *cal = [datePicker calendar];
+    
+    NSUInteger firstDayOfWeek = [[OFPreference preferenceForKey:@"FirstDayOfTheWeek"] unsignedIntegerValue];
+    
+    if (firstDayOfWeek != 0)
+        firstDayOfWeek = [currentCalendar firstWeekday];
+    
+    if (firstDayOfWeek != [cal firstWeekday])
+        [cal setFirstWeekday:firstDayOfWeek];
+}
+
 @end
 
 @implementation OAPopupDatePickerWindow
-
-- (void)sendEvent:(NSEvent *)theEvent;
-{
-    if ([theEvent type] == NSKeyDown) {
-        NSString *characters = [theEvent characters];
-        if ([characters length] == 1 && [characters characterAtIndex:0] == 0x0d) {
-            [self resignKeyWindow];
-            return;
-        }
-    }
-        
-    [super sendEvent:theEvent];
-}
 
 - (BOOL)performKeyEquivalent:(NSEvent *)theEvent;
 {
@@ -381,18 +498,17 @@ static NSSize calendarImageSize;
             if ([theEvent modifierFlags] & NSCommandKeyMask) {
                 [self resignKeyWindow];
                 return YES;
+            } else {
+                return [super performKeyEquivalent:theEvent];
             }
-            break;
         case 0x1b:
-        case 0x03:    
+        case 0x0d:
+        case 0x03:
             [self resignKeyWindow];
             return YES;
-            break;
         default:
             return [super performKeyEquivalent:theEvent];
     }
-    
-    return NO; // happify the compiler .... you can't get here.
 }
 
 - (BOOL)canBecomeKeyWindow
@@ -410,29 +526,6 @@ static NSSize calendarImageSize;
         // <bug://bugs/57041> (Enter/Return should commit edits on the split task window)
         [parentWindow makeKeyAndOrderFront:nil];
     }
-}
-
-@end
-
-
-@implementation OAPopupDatePicker (Private)
-
-- (void)_firstDayOfTheWeekDidChange:(NSNotification *)notification;
-{
-    NSCalendar *currentCalendar = [NSCalendar currentCalendar];
-    if (![datePicker calendar])
-        [datePicker setCalendar:currentCalendar];
-
-    // NSDatePicker copies its calendar and is never == currentCalendar
-    NSCalendar *cal = [datePicker calendar];
-    
-    NSUInteger firstDayOfWeek = [[OFPreference preferenceForKey:@"FirstDayOfTheWeek"] unsignedIntegerValue];
-    
-    if (firstDayOfWeek != 0)
-        firstDayOfWeek = [currentCalendar firstWeekday];
-    
-    if (firstDayOfWeek != [cal firstWeekday])
-        [cal setFirstWeekday:firstDayOfWeek];
 }
 
 @end

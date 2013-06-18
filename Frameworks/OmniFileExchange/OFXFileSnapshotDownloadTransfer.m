@@ -30,6 +30,7 @@ RCS_ID("$Id$")
     NSMutableData *_resultData; // Would need a separate map for op->results if we run more than one at a time.
     
     BOOL _cancelled;
+    BOOL _didTryToMakeLocalTemporaryDocumentContentsURL;
     
     long long _totalBytesToRead;
     long long _totalBytesRead;
@@ -94,6 +95,8 @@ RCS_ID("$Id$")
     if (_localTemporaryDocumentContentsURL) {
         DEBUG_TRANSFER(1, @"  Downloading %@ to %@", _remoteSnapshotURL, _localTemporaryDocumentContentsURL);
 
+        _didTryToMakeLocalTemporaryDocumentContentsURL = YES;
+        
         if (![_downloadingSnapshot makeDownloadStructureAt:_localTemporaryDocumentContentsURL error:&error withFileApplier:^(NSURL *fileURL, long long fileSize, NSString *hash){
             // TODO: Avoid redownloading data we've already downloaded. This is not terribly likely, but we could have a document with the same image attached multiple times.
 
@@ -133,8 +136,6 @@ RCS_ID("$Id$")
             OFXFileSnapshotTransferReturnWithError(error);
             return;
         }
-        
-        _didMakeLocalTemporaryDocumentContentsURL = YES;
     }
 
     [self _startReadOperation];
@@ -175,8 +176,12 @@ RCS_ID("$Id$")
         if (![[NSFileManager defaultManager] removeItemAtURL:temporarySnapshotURL error:&cleanupError])
             [cleanupError log:@"Error cleaning up temporary download snapshot at %@", temporarySnapshotURL];
         _downloadingSnapshot = nil;
-        
-        _didMakeLocalTemporaryDocumentContentsURL = NO;
+    }
+    if (_localTemporaryDocumentContentsURL && _didTryToMakeLocalTemporaryDocumentContentsURL) {
+        __autoreleasing NSError *cleanupError;
+        if (![[NSFileManager defaultManager] removeItemAtURL:_localTemporaryDocumentContentsURL error:&cleanupError])
+            [cleanupError log:@"Error cleaning up temporary downloaded document at %@", _localTemporaryDocumentContentsURL];
+        _localTemporaryDocumentContentsURL = nil;
     }
 }
 

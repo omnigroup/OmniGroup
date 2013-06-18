@@ -11,13 +11,17 @@
 
 #import <CoreFoundation/CFSet.h>
 #import <OmniFoundation/OFUtilities.h>
+#import <Foundation/NSObjCRuntime.h> // for NSComparator
 
 @interface NSSet (OFExtensions)
 
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
 - (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)block;
 
+- (NSSet *)setByRemovingObject:(id)anObject;
+
 - (NSArray *)sortedArrayUsingSelector:(SEL)comparator;
+- (NSArray *)sortedArrayUsingComparator:(NSComparator)comparator;
 
 - (void)applyFunction:(CFSetApplierFunction)applier context:(void *)context;
 

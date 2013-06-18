@@ -15,6 +15,7 @@
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/NSRegularExpression-OFExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
+#import <OmniFoundation/OFCredentials.h>
 #import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
@@ -49,7 +50,12 @@ typedef enum {
     ServerAccountCloudSyncEnabledSection,
     ServerAccountSectionCount,
 } ServerAccountSections;
-
+typedef enum {
+    ServerAccountTypeOmniPresence,
+    ServerAccountTypeImportExport,
+    ServerAccountTypeBoth,
+    ServerAccountTypeOptionsCount
+} ServerAccountTypeOptions;
 typedef enum {
     ServerAccountCredentialsUsernameRow,
     ServerAccountCredentialsPasswordRow,
@@ -57,9 +63,13 @@ typedef enum {
 } ServerAccountCredentialRows;
 
 #define CELL_AT(section,row) ((OUIEditableLabeledTableViewCell *)[_tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:section]])
-#define TEXT_AT(section,row) CELL_AT(section,row).editableValueCell.valueField.text
+#define TEXT_AT(section,row) [self _textAtSection:section andRow:row]
 
 @interface OUIServerAccountSetupViewController () <OUIEditableLabeledValueCellDelegate, UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate>
+
+@property (nonatomic,assign) BOOL isCloudSyncEnabled;
+@property (nonatomic,assign) BOOL isImportExportEnabled;
+
 @end
 
 
@@ -68,6 +78,7 @@ typedef enum {
     UITableView *_tableView;
     OFXServerAccountType *_accountType;
     UIButton *_accountInfoButton;
+    NSMutableDictionary *_cachedTextValues;
 }
 
 - init;
@@ -84,15 +95,31 @@ typedef enum {
     if (!(self = [self initWithNibName:nil bundle:nil]))
         return nil;
     
+    _cachedTextValues = [[NSMutableDictionary alloc] init];
+    
     _account = account;
     _accountType = accountType;
 
+    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(_account.credentialServiceIdentifier, NULL);
+
     self.location = [_account.remoteBaseURL absoluteString];
-    self.accountName = _account.credential.user;
-    self.password = _account.credential.password;
+    self.accountName = credential.user;
+    self.password = credential.password;
     self.nickname = _account.nickname;
+    self.isCloudSyncEnabled = _account.isCloudSyncEnabled;
+    self.isImportExportEnabled = _account.isImportExportEnabled;
+        
+    if ((self.isCloudSyncEnabled == NO) && (self.isImportExportEnabled == NO)) {
+        self.isCloudSyncEnabled = YES; // Default to OmniPresence account for new accounts.
+    }
 
     return self;
+}
+
+- (NSString *)_textAtSection:(NSUInteger)section andRow:(NSUInteger)row;
+{
+    NSIndexPath *path = [NSIndexPath indexPathForRow:row inSection:section];
+    return [_cachedTextValues objectForKey:path];
 }
 
 
@@ -113,12 +140,10 @@ typedef enum {
     NSString *password = nil;
     if (_accountType.requiresPassword)
         password = TEXT_AT(ServerAccountCredentialsSection, ServerAccountCredentialsPasswordRow);
-    
-    BOOL isCloudSyncEnabled = ((UISwitch *)(CELL_AT(ServerAccountCloudSyncEnabledSection, 0).accessoryView)).on;
 
     if (_account != nil) {
         // Some combinations of options require a new account
-        BOOL needNewAccount = isCloudSyncEnabled != _account.isCloudSyncEnabled;
+        BOOL needNewAccount = (self.isCloudSyncEnabled != _account.isCloudSyncEnabled);
 
         NSURL *newRemoteBaseURL = OFURLWithTrailingSlash([_accountType baseURLForServerURL:serverURL username:username]);
         if (OFNOTEQUAL(newRemoteBaseURL, _account.remoteBaseURL))
@@ -166,14 +191,18 @@ typedef enum {
             return;
         }
         
-        _account.isCloudSyncEnabled = isCloudSyncEnabled;
+        _account.isCloudSyncEnabled = self.isCloudSyncEnabled;
         needValidation = YES;
     } else {
+        NSURLCredential *credential = nil;
+        if (_account.credentialServiceIdentifier)
+            credential = OFReadCredentialsForServiceIdentifier(_account.credentialServiceIdentifier, NULL);
+        
         if (_accountType.requiresServerURL && OFNOTEQUAL(serverURL, _account.remoteBaseURL)) {
             needValidation = YES;
-        } else if (_accountType.requiresUsername && OFNOTEQUAL(username, _account.credential.user)) {
+        } else if (_accountType.requiresUsername && OFNOTEQUAL(username, credential.user)) {
             needValidation = YES;
-        } else if (_accountType.requiresPassword && OFNOTEQUAL(password, _account.credential.password)) {
+        } else if (_accountType.requiresPassword && OFNOTEQUAL(password, credential.password)) {
             needValidation = YES;
         } else {
             // isCloudSyncEnabled required a whole new account, so we don't need to test it
@@ -181,6 +210,8 @@ typedef enum {
         }
     }
 
+    _account.isImportExportEnabled = self.isImportExportEnabled;
+    
     // Let us rename existing accounts even if their credentials aren't currently valid
     _account.nickname = nickname;
     if (!needValidation) {
@@ -189,7 +220,7 @@ typedef enum {
     }
 
     // Validate the new account settings
-    OBASSERT(_account.isCloudSyncEnabled == isCloudSyncEnabled); // If this changed, we created a new _account with it set properly
+    OBASSERT(_account.isCloudSyncEnabled == self.isCloudSyncEnabled); // If this changed, we created a new _account with it set properly
 
     OUIServerAccountValidationViewController *validationViewController = [[OUIServerAccountValidationViewController alloc] initWithAccount:_account username:username password:password];
 
@@ -215,7 +246,7 @@ typedef enum {
     _tableView.dataSource = self;
     _tableView.delegate = self;
     
-    _tableView.scrollEnabled = NO;
+    _tableView.scrollEnabled = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone;
     _tableView.backgroundColor = [UIColor clearColor];
     _tableView.backgroundView = nil;
 
@@ -292,7 +323,7 @@ typedef enum {
             OBASSERT(_accountType.requiresPassword);
             return 2;
         case ServerAccountCloudSyncEnabledSection:
-            return 1;
+            return ServerAccountTypeOptionsCount;
         default:
             OBASSERT_NOT_REACHED("Unknown section");
             return 0;
@@ -320,25 +351,31 @@ typedef enum {
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     if (indexPath.section == ServerAccountCloudSyncEnabledSection) {
-        static NSString * const switchIdentifier = @"OUIServerAccountSetupViewControllerSwitch";
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:switchIdentifier];
+        static NSString * const accountTypeIdentifier = @"OUIServerAccountTypeIdentifier";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:accountTypeIdentifier];
         if (!cell) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:switchIdentifier];
-            cell.selectionStyle = UITableViewCellSelectionStyleNone;
-
-            UISwitch *accessorySwitch = [[UISwitch alloc] initWithFrame:CGRectZero];
-            [accessorySwitch addTarget:self action:@selector(_validateSignInButton) forControlEvents:UIControlEventValueChanged];
-            [accessorySwitch sizeToFit];
-            cell.accessoryView = accessorySwitch;
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:accountTypeIdentifier];
+            cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+            cell.textLabel.font = [OUIEditableLabeledValueCell labelFontForStyle:OUILabeledValueCellStyleDefault];
         }
 
-        NSString *title = NSLocalizedStringFromTableInBundle(@"OmniPresence", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV OmniPresence edit field");
-
-        cell.textLabel.text = title;
-        cell.textLabel.font = [OUIEditableLabeledValueCell labelFontForStyle:OUILabeledValueCellStyleDefault];
-
-        UISwitch *accessorySwitch = (UISwitch *)cell.accessoryView;
-        [accessorySwitch setOn:_account != nil ? _account.isCloudSyncEnabled : YES];
+        switch (indexPath.row) {
+            case ServerAccountTypeOmniPresence:
+                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"OmniPresence", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV OmniPresence edit field");
+                cell.accessoryType = (self.isCloudSyncEnabled == YES && self.isImportExportEnabled == NO) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone ;
+                break;
+            case ServerAccountTypeImportExport:
+                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Import/Export", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV Import/Export account type");
+                cell.accessoryType = (self.isCloudSyncEnabled == NO && self.isImportExportEnabled == YES) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone ;
+                break;
+            case ServerAccountTypeBoth:
+                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Both", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV Both (Import and Export) account type");
+                cell.accessoryType = (self.isCloudSyncEnabled == YES && self.isImportExportEnabled == YES) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone ;
+                break;
+            default:
+                OBASSERT_NOT_REACHED("Unknown account type.");
+                break;
+        }
         
         return cell;
     }
@@ -434,13 +471,20 @@ typedef enum {
             OBASSERT_NOT_REACHED("Unknown section");
             break;
     }
-        
+    
+    NSString *_cachedValue = [_cachedTextValues objectForKey:indexPath];
+    if (_cachedValue)
+        contents.value = _cachedValue;
+    else if (contents.value)
+        [_cachedTextValues setObject:contents.value forKey:indexPath];
+    else
+        [_cachedTextValues removeObjectForKey:indexPath];
     return cell;
 }
 
 static const CGFloat OUIOmniSyncServerSetupHeaderHeight = 44;
 static const CGFloat OUIServerAccountSetupViewControllerHeaderHeight = 40;
-static const CGFloat OUIServerAccountSeendSettingsFooterHeight = 140;
+static const CGFloat OUIServerAccountSendSettingsFooterHeight = 140;
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
 {
@@ -457,13 +501,13 @@ static const CGFloat OUIServerAccountSeendSettingsFooterHeight = 140;
         _accountInfoButton.frame = (CGRect){
             .origin.x = 30,
             .origin.y = OUIOmniSyncServerSetupHeaderHeight - 44 /* my height */,
-            .size.width = 480,
+            .size.width = (tableView.frame.size.width - 60),
             .size.height = 44
         };
         _accountInfoButton.titleLabel.font = [UIFont boldSystemFontOfSize:17];
         
         [_accountInfoButton addTarget:self action:@selector(accountInfoButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-        [_accountInfoButton setTitle:NSLocalizedStringFromTableInBundle(@"Sign Up", @"OmniUIDocument", OMNI_BUNDLE, @"Omni Sync Server sign up button title")
+        [_accountInfoButton setTitle:NSLocalizedStringFromTableInBundle(@"Sign Up For a New Account", @"OmniUIDocument", OMNI_BUNDLE, @"Omni Sync Server sign up button title")
                             forState:UIControlStateNormal];
         [_accountInfoButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [headerView addSubview:_accountInfoButton];
@@ -507,18 +551,28 @@ static const CGFloat OUIServerAccountSeendSettingsFooterHeight = 140;
 - (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section;
 {
     if (section == ServerAccountCloudSyncEnabledSection) {
+        CGFloat height = OUIServerAccountSendSettingsFooterHeight;
+        CGFloat messageHeight = 40.0;
+        
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) { // add space to scroll up with keyboard showing
+            height += 220;
+            messageHeight = 60.0;
+        }
+        
         UIView *footerView = [[UIView alloc] initWithFrame:(CGRect){
             .origin.x = 0,
             .origin.y = 0,
             .size.width = 0, // Width will automatically be same as the table view it's put into.
-            .size.height = OUIServerAccountSeendSettingsFooterHeight
+            .size.height = height
         }];
         
-        UILabel *messageLabel = [self _sectionLabelWithFrame:(CGRect){
+        
+        
+        UILabel *messageLabel = [self _sectionLabelWithFrame:(CGRect) {
             .origin.x = 0,
             .origin.y = 10,
-            .size.width = 480,
-            .size.height = 40
+            .size.width = (tableView.frame.size.width),
+            .size.height = messageHeight
         }];
         
         messageLabel.text = NSLocalizedStringFromTableInBundle(@"OmniPresence automatically keeps your documents up to date on all of your iPads and Macs.", @"OmniUIDocument", OMNI_BUNDLE, @"omni sync server nickname help");
@@ -533,8 +587,8 @@ static const CGFloat OUIServerAccountSeendSettingsFooterHeight = 140;
             UIButton *settingsButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
             settingsButton.frame = (CGRect){
                 .origin.x = 30,
-                .origin.y = OUIServerAccountSeendSettingsFooterHeight - 44 /* my height */,
-                .size.width = 480,
+                .origin.y = OUIServerAccountSendSettingsFooterHeight - 44 /* my height */,
+                .size.width = (tableView.frame.size.width - 60),
                 .size.height = 44
             };
             settingsButton.titleLabel.font = [UIFont boldSystemFontOfSize:17];
@@ -556,10 +610,52 @@ static const CGFloat OUIServerAccountSeendSettingsFooterHeight = 140;
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
 {
-    if (section == ServerAccountCloudSyncEnabledSection)
-        return OUIServerAccountSeendSettingsFooterHeight;
-    
+    if (section == ServerAccountCloudSyncEnabledSection) {
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) // add space to scroll up with keyboard showing
+            return OUIServerAccountSendSettingsFooterHeight + 220;
+        return OUIServerAccountSendSettingsFooterHeight;
+    }
     return tableView.sectionFooterHeight;
+}
+
+#pragma mark - UITableViewDelelgate
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    if (indexPath.section != ServerAccountCloudSyncEnabledSection) {
+        return;
+    }
+    
+    switch (indexPath.row) {
+        case ServerAccountTypeOmniPresence:
+            self.isCloudSyncEnabled = YES;
+            self.isImportExportEnabled = NO;
+            break;
+        case ServerAccountTypeImportExport:
+            self.isCloudSyncEnabled = NO;
+            self.isImportExportEnabled = YES;
+            break;
+        case ServerAccountTypeBoth:
+            self.isCloudSyncEnabled = YES;
+            self.isImportExportEnabled = YES;
+            break;
+        default:
+            OBASSERT_NOT_REACHED("Unknown type");
+            break;
+    }
+
+    for (NSInteger rowIndex = 0; rowIndex < ServerAccountTypeOptionsCount; rowIndex++) {
+        NSIndexPath *loopIndexPath = [NSIndexPath indexPathForRow:rowIndex inSection:ServerAccountCloudSyncEnabledSection];
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:loopIndexPath];
+        
+        if (rowIndex == indexPath.row) {
+            cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        }
+        else {
+          cell.accessoryType = UITableViewCellAccessoryNone;
+        }
+    }
+    
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 #pragma mark -
@@ -567,6 +663,12 @@ static const CGFloat OUIServerAccountSeendSettingsFooterHeight = 140;
 
 - (void)editableLabeledValueCellTextDidChange:(OUIEditableLabeledValueCell *)cell;
 {
+    UITableViewCell *tableCell = (UITableViewCell *)cell.superview.superview;
+    NSIndexPath *indexPath = [_tableView indexPathForCell:tableCell];
+    if (cell.value)
+        [_cachedTextValues setObject:cell.value forKey:indexPath];
+    else
+        [_cachedTextValues removeObjectForKey:indexPath];
     [self _validateSignInButton];
 }
 

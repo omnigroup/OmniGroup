@@ -27,6 +27,8 @@ typedef enum {
 @interface OUIDocumentAppController : OUIAppController <UITextFieldDelegate, OUIUndoBarButtonItemTarget, OFSDocumentStoreDelegate, OUIMenuControllerDelegate, OFSDocumentStoreDelegate>
 
 @property(nonatomic,retain) IBOutlet UIWindow *window;
+- (UIWindow *)makeMainWindow; // Called at app startup if the main xib didn't have a window outlet hooked up.
+
 @property(nonatomic,retain) IBOutlet OUIMainViewController *mainViewController;
 
 @property(nonatomic,readonly) UIBarButtonItem *appMenuBarItem;

@@ -8,11 +8,16 @@
 #import <OmniAppKit/OAFontDescriptor.h>
 
 #import <OmniFoundation/OFCFCallbacks.h>
+#import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
+#import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniBase/OmniBase.h>
 
 #import <Foundation/Foundation.h>
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import <UIKit/UIFont.h>
+#endif
 
 RCS_ID("$Id$");
 
@@ -100,6 +105,7 @@ OFExtent OAFontDescriptorValidFontWeightExtent(void)
     return OFExtentMake(1.0f, 13.0f); // range is inclusive and given as (location,length), so this includes 14
 }
 
+// Returns the _minimal_ set of attributes (on iOS at least). Primarily useful for testing and debugging.
 NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font)
 {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -118,31 +124,30 @@ NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font)
 #endif
 }
 
-// CoreText's font traits are often normalize -1..1 where AppKits are BOOL or an int with defined values. To avoid lossy round-tripping this function and the next should be inverses of each other over the integers [1,14].
+// CoreText's font traits normalize weights to the range -1..1 where AppKits are BOOL or an int with defined values. To avoid lossy round-tripping this function and the next should be inverses of each other over the integers [1,14]. Empirically, we can't quite achieve that, however. Analyzing font names on iOS 6.1 shows that "ultralight" fonts, which NSFontManager documents as having an AppKit weight of 1, have a CoreText weight of -0.8. At the other extreme, "extrablack" fonts are documented to have an AppKit weight of 14 but have a CoreText weight of 0.8.
 static CGFloat _fontManagerWeightToWeight(NSInteger weight)
 {
-    // Defined as three linear functions over distinct ranges to approximate the previous discretation approach.
-    if (weight < 5)
-        return 0.25 * (weight - 5.0);
-    else if (weight < 9)
-        return 0.3 * 0.25 * (weight - 5.0);
+    if (weight == 1)
+        return -0.8;
+    else if (weight <= 6)
+        return 0.2 * weight - 1.0;
+    else if (weight < 14)
+        return 0.6 *weight / 8.0 - 0.25;
     else
-        return 0.7 * 0.20 * (weight - 9.0) + 0.3;
+        return 0.8;
 }
 
 static NSInteger _weightToFontManagerWeight(CGFloat weight)
 {
-    // Defined as three linear functions over distinct ranges to approximate the previous discretation approach.
-    // -1.0 |==> 1
-    //  0.0 |==> 5, "regular"
-    //  0.3 |==> 9, "bold"
-    //  1.0 |==> 14, "extra black"
-    if (weight < 0)
-        return floor(4.0 * (weight + 1.0) + 1.0);
-    else if (weight < 0.3)
-        return floor(4.0 * weight / 0.3 + 5.0);
+    // Defined as four linear functions over distinct ranges based on empirical analysis of all the fonts on iOS 6.1. See svn+ssh://source.omnigroup.com/Source/svn/Omni/trunk/Staff/curt/MiscRadars/FontMetricChecks/CoreTextWeightConversions.ograph
+    if (weight < -0.8)
+        return 1;
+    else if (weight <= 0.2)
+        return round(5.0 * weight + 5.0 );
+    else if (weight <= 0.8)
+        return round(8.0 * weight / 0.6 + 10.0 / 3.0);
     else
-        return floor(5 * (weight - 0.3) / 0.7 + 9.0);
+        return 14;
 }
 
 // Takes an NSFontManager weight, [1,14].
@@ -168,6 +173,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     }
 }
 
+// All initializers should flow through here in order to get caching.
 - initWithFontAttributes:(NSDictionary *)fontAttributes;
 {
     OBPRECONDITION(fontAttributes);
@@ -177,6 +183,24 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
         return nil;
     
     _attributes = [fontAttributes copy];
+    {
+        // Sanitize the symbolic traits to omit the class bits
+        NSDictionary *traits = [self->_attributes objectForKey:(id)kCTFontTraitsAttribute];
+        NSNumber *symbolicTraitsNumber = [traits objectForKey:(id)kCTFontSymbolicTrait];
+        CTFontSymbolicTraits symbolicTraits = [symbolicTraitsNumber unsignedIntValue];
+        CTFontSymbolicTraits cleanedSymbolicTraits = _clearClassMask(symbolicTraits);
+        if (cleanedSymbolicTraits != symbolicTraits) {
+            NSMutableDictionary *updatedTraits = [traits mutableCopy];
+            OBASSERT(sizeof(CTFontSymbolicTraits) == sizeof(unsigned int));
+            updatedTraits[(id)kCTFontSymbolicTrait] = [NSNumber numberWithUnsignedInt:cleanedSymbolicTraits];
+            NSMutableDictionary *updatedAttributes = [_attributes mutableCopy];
+            updatedAttributes[(id)kCTFontTraitsAttribute] = updatedTraits;
+            [updatedTraits release];
+            [_attributes release];
+            _attributes = [updatedAttributes copy];
+            [updatedAttributes release];
+        }
+    }
     
     [_OAFontDescriptorUniqueTableLock lock];
     OAFontDescriptor *uniquedInstance = [[_OAFontDescriptorUniqueTable member:self] retain];
@@ -213,23 +237,18 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     return self;
 }
 
-// <bug://bugs/60459> ((Re) add support for expanded/condensed/width in OSFontDescriptor): add 'expanded' or remove 'condensed' and replace with 'width'. This would be a backwards compatibility issue w.r.t. archiving, though.
-// This (currently) takes the NSFontManager-style weight, or 0 for no explicit weight. Longer term, we should just switch to archiving a plist with the entire font descriptor, maybe.  Or maybe we should just switch to archiving the 0..1 weight and width attributes.
-- initWithFamily:(NSString *)family size:(CGFloat)size weight:(NSInteger)weight italic:(BOOL)italic condensed:(BOOL)condensed fixedPitch:(BOOL)fixedPitch;
++ (NSDictionary *)_attributesDictionaryForFamily:(NSString *)family size:(CGFloat)size weight:(NSInteger)weight italic:(BOOL)italic condensed:(BOOL)condensed fixedPitch:(BOOL)fixedPitch;
 {
-    OBPRECONDITION(![NSString isEmptyString:family]);
-    OBPRECONDITION(size > 0.0f);
-    
     NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
     {
         if (family)
             [attributes setObject:family forKey:(id)kCTFontFamilyNameAttribute];
         if (size > 0)
             [attributes setObject:[NSNumber numberWithCGFloat:size] forKey:(id)kCTFontSizeAttribute];
-
+        
         NSMutableDictionary *traits = [[NSMutableDictionary alloc] init];
         CTFontSymbolicTraits symbolicTraits = 0;
-            
+        
         _setWeightInTraitsDictionary(traits, &symbolicTraits, weight);
         
         if (fixedPitch)
@@ -243,16 +262,26 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
         
         if (symbolicTraits != 0)
             [traits setObject:[NSNumber numberWithUnsignedInt:symbolicTraits] forKey:(id)kCTFontSymbolicTrait];
-
+        
         if ([traits count] > 0)
             [attributes setObject:traits forKey:(id)kCTFontTraitsAttribute];
         [traits release];
     }
     
+    return [attributes autorelease];
+}
+
+// <bug://bugs/60459> ((Re) add support for expanded/condensed/width in OSFontDescriptor): add 'expanded' or remove 'condensed' and replace with 'width'. This would be a backwards compatibility issue w.r.t. archiving, though.
+// This takes the NSFontManager-style weight, or 0 for no explicit weight.
+- initWithFamily:(NSString *)family size:(CGFloat)size weight:(NSInteger)weight italic:(BOOL)italic condensed:(BOOL)condensed fixedPitch:(BOOL)fixedPitch;
+{
+    OBPRECONDITION(![NSString isEmptyString:family]);
+    OBPRECONDITION(size > 0.0f);
+    
+    NSDictionary *attributes = [OAFontDescriptor _attributesDictionaryForFamily:family size:size weight:weight italic:italic condensed:condensed fixedPitch:fixedPitch];
     self = [self initWithFontAttributes:attributes];
     OBASSERT([self font]); // Make sure we can cache a font
     
-    [attributes release];
     return self;
 }
 
@@ -261,19 +290,41 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     OBPRECONDITION(font);
 
     // Note that this leaves _font as nil so that we get the same results as forward mapping via our caching.
-    NSDictionary *attributes;
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    CTFontDescriptorRef fontDescriptor = CTFontCopyFontDescriptor(font);
-    attributes = (NSDictionary *)CTFontDescriptorCopyAttributes(fontDescriptor);
-    CFRelease(fontDescriptor);
+    CTFontDescriptorRef fontDescriptorRef = CTFontCopyFontDescriptor(font);
+    
+    NSString *family = (NSString *)CTFontDescriptorCopyAttribute(fontDescriptorRef, kCTFontFamilyNameAttribute);
+    NSNumber *sizeRef = (NSNumber *)CTFontDescriptorCopyAttribute(fontDescriptorRef, kCTFontSizeAttribute);
+    CGFloat size;
+    if (sizeRef != nil) {
+        size = sizeRef.doubleValue;
+    } else {
+        OBASSERT_NOT_REACHED("expected to have a size from the font ref");
+        size = 12.0;
+    }
+
+    NSDictionary *traits = (NSDictionary *)CTFontDescriptorCopyAttribute(fontDescriptorRef, kCTFontTraitsAttribute);
+    NSNumber *weightTrait = traits[(id)kCTFontWeightTrait];
+    CGFloat coreTextWeight = [weightTrait doubleValue];
+    NSInteger fontManagerWeight = _weightToFontManagerWeight(coreTextWeight);
+
+    NSNumber *symbolicTraitsRef = traits[(id)kCTFontSymbolicTrait];
+    NSInteger symbolicTraits = symbolicTraitsRef.unsignedIntegerValue;
+    BOOL isItalic = (symbolicTraits & kCTFontTraitItalic) != 0;
+    BOOL isCondensed = (symbolicTraits & kCTFontTraitCondensed) != 0;
+    BOOL isFixedPitch = (symbolicTraits & kCTFontMonoSpaceTrait) != 0;
+
+    NSDictionary *attributes = [OAFontDescriptor _attributesDictionaryForFamily:family size:size weight:fontManagerWeight italic:isItalic condensed:isCondensed fixedPitch:isFixedPitch];
+    self = [self initWithFontAttributes:attributes];
+    [family release];
+    [sizeRef release];
+    [traits release];
+    CFRelease(fontDescriptorRef);
 #else
-    attributes = [[font fontDescriptor] fontAttributes];
+    NSDictionary *attributes = [[font fontDescriptor] fontAttributes];
+    self = [self initWithFontAttributes:attributes];
 #endif
 
-    self = [self initWithFontAttributes:attributes];
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    [attributes release];
-#endif
     return self;
 }
 
@@ -397,18 +448,26 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     return 5;
 }
 
+static CTFontSymbolicTraits _clearClassMask(CTFontSymbolicTraits traits)
+{
+    // clear kCTFontTraitClassMask, see CTFontStylisticClass.
+    return traits & ~kCTFontTraitClassMask;
+}
+
 static CTFontSymbolicTraits _symbolicTraits(OAFontDescriptor *self)
 {
     NSDictionary *traits = [self->_attributes objectForKey:(id)kCTFontTraitsAttribute];
     NSNumber *symbolicTraitsNumber = [traits objectForKey:(id)kCTFontSymbolicTrait];
     if (symbolicTraitsNumber) {
         OBASSERT(sizeof(CTFontSymbolicTraits) == sizeof(unsigned int));
-        return [symbolicTraitsNumber unsignedIntValue];
+        CTFontSymbolicTraits result = [symbolicTraitsNumber unsignedIntValue];
+        return _clearClassMask(result);
     }
     
     OAFontDescriptorPlatformFont font = self.font;
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    return CTFontGetSymbolicTraits(font);
+    CTFontSymbolicTraits result = CTFontGetSymbolicTraits(font);
+    return _clearClassMask(result);
 #else
     // NSFontTraitMask is NSUInteger; avoid a warning and assert that we aren't dropping anything by the cast.
     NSFontTraitMask result = [[NSFontManager sharedFontManager] traitsOfFont:font];
@@ -495,6 +554,12 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
         NSNumber *weight = [(NSDictionary *)traits objectForKey:(id)kCTFontWeightTrait];
         wantBold = [weight cgFloatValue] >= _fontManagerWeightToWeight(OAFontDescriptorBoldFontWeight());
     }
+    if (! wantBold) {
+        NSString *requestedFontName = (NSString *)CTFontDescriptorCopyAttribute(matchingDescriptor, kCTFontNameAttribute);
+        wantBold |= [requestedFontName containsString:@"bold" options:NSCaseInsensitiveSearch];
+        wantBold |= [newFontFamilyName hasPrefix:@"Hiragino"] && [requestedFontName containsString:@"W6" options:NSCaseInsensitiveSearch]; // special case for Hiragino Kaku Gothic, Hiragino Mincho, and Hiragino Sans whose weights aren't "heavy enough" to be considered bold, but whose bold attributes are set
+        [requestedFontName release];
+    }
     if (traits)
         CFRelease(traits);
     
@@ -551,6 +616,55 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
     return reasonableMatch;
 }
 
+// Returns an array of NSNumbers representing "nearby" existing weights in the current font family. Result may be empty.
+- (NSArray *)_neighboringWeightsForAttemptedMatchingOfWeight:(NSNumber *)originalWeightRef;
+{
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    // Can't use self.family here as that would (mutually) recursively call -font and we'd end up here again.
+    CTFontDescriptorRef matchingDescriptor = CTFontDescriptorCreateWithAttributes((CFDictionaryRef)_attributes);
+    NSString *familyName = (NSString *)CTFontDescriptorCopyAttribute(matchingDescriptor, kCTFontFamilyNameAttribute);
+    CFRelease(matchingDescriptor);
+    if (familyName == nil) {
+        OBASSERT_NOT_REACHED(@"Expect to always find a family name. Bailing");
+        return [NSArray array];
+    }
+
+    NSArray *fontNamesInFamily = [UIFont fontNamesForFamilyName:familyName];
+    [familyName release];
+    NSSet *availableWeights = [fontNamesInFamily setByPerformingBlock:^id(id anObject) {
+        NSString *fontName = anObject;
+        CTFontDescriptorRef descriptor = CTFontDescriptorCreateWithNameAndSize((CFStringRef)fontName, 0.0);
+        NSDictionary *attributes = CTFontDescriptorCopyAttribute(descriptor, kCTFontTraitsAttribute);
+        NSNumber *weightRef = [[attributes[(id)kCTFontWeightTrait] retain] autorelease]; // hang onto the reference between releasing attributes and the NSSet retaining the weightRef
+        [attributes release];
+        CFRelease(descriptor);
+        return weightRef;
+    }];
+
+    CGFloat originalWeight = originalWeightRef.cgFloatValue;
+    NSSet *filteredWeights = [availableWeights select:^BOOL(id object) {
+        NSNumber *prospectiveWeight = object;
+        return fabs(prospectiveWeight.cgFloatValue - originalWeight) < 0.1f;
+    }];
+    
+    NSArray *weightsSortedByDistanceFromOriginal = [filteredWeights sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        NSNumber *weight1 = obj1;
+        NSNumber *weight2 = obj2;
+        CGFloat distance1 = fabs(weight1.cgFloatValue - originalWeight);
+        CGFloat distance2 = fabs(weight2.cgFloatValue - originalWeight);
+        if (distance1 < distance2)
+            return NSOrderedAscending;
+        else if (distance1 > distance2)
+            return NSOrderedDescending;
+        else
+            return NSOrderedSame;
+    }];
+    return weightsSortedByDistanceFromOriginal;
+#else
+    return [NSArray array];
+#endif
+}
+
 - (OAFontDescriptorPlatformFont)font;
 {
     // See units tests for font look up in OAFontDescriptorTests. Font lookup is fragile and has different pitfalls on iOS and Mac. Run the unit tests on both platforms.
@@ -561,7 +675,7 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
     dispatch_once(&onceToken, ^{
         // In OO3's version of this we'd prefer traits to the family. Continue doing so here. We don't have support for maintaining serif-ness, though. We remove the size attribute first, but pass the rounded value of it as an additional parameter to _copyFont.
         // CONSIDER: rather than just removing all the traits for our last attempt, we might want to narrow them down in some order.
-        attributesToRemoveForFallback = @[(id)kCTFontSizeAttribute, (id)kCTFontNameAttribute, (id)kCTFontFamilyNameAttribute, (id)kCTFontTraitsAttribute];
+        attributesToRemoveForFallback = @[(id)kCTFontSizeAttribute, (id)kCTFontNameAttribute, (id)kCTFontTraitsAttribute];
         [attributesToRemoveForFallback retain];
         fallbackAttributesDictionary = @{(id)kCTFontFamilyNameAttribute: @"Helvetica"};
         [fallbackAttributesDictionary retain];
@@ -575,10 +689,41 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
 
         // No direct match -- most likely the traits produce something w/o an exact match (asking for a bold variant of something w/o bold). We'll progressively clean up the attributes until we get something useful.
         
-        // Font weight trait seems particularly vexing. We can fall back on the symbolic bold trait, so let's try again by removing just the weight trait if any.
+        // Try removing the fixed-pitch attribute first. We're hoping that the family name gives us a fall-back for this.
         NSMutableDictionary *attributeSubset = [NSMutableDictionary dictionaryWithDictionary:_attributes];
-        NSDictionary *traits = _attributes[(id)kCTFontTraitsAttribute];
-        if (traits && traits[(id)kCTFontWeightTrait] != nil ) {
+        NSDictionary *traits = attributeSubset[(id)kCTFontTraitsAttribute];
+        NSNumber *symbolicTraitsRef = traits[(id)kCTFontSymbolicTrait];
+        CTFontSymbolicTraits symbolicTraits = [symbolicTraitsRef unsignedIntValue];
+        if ((symbolicTraits & kCTFontTraitMonoSpace) != 0) {
+            symbolicTraits = symbolicTraits & ~kCTFontTraitMonoSpace;
+            NSMutableDictionary *replacementTraits = [traits mutableCopy];
+            replacementTraits[(id)kCTFontSymbolicTrait] = [NSNumber numberWithUnsignedInt:symbolicTraits];
+            attributeSubset[(id)kCTFontTraitsAttribute] = replacementTraits;
+            traits = nil; // replacing the traits in the attributes dictionary can release the traits object
+            [replacementTraits release];
+            DEBUG_FONT_LOOKUP(@"Removing monospace (fixed-width) attribute");
+            if ([self _setFontFromAttributes:attributeSubset size:0])
+                goto matchSucceeded;
+        }
+        
+        // Font weight trait seems particularly vexing, particularly on iOS where the matching algorithm brooks no weight approximation.
+        traits = attributeSubset[(id)kCTFontTraitsAttribute];
+        NSNumber *existingWeight = traits[(id)kCTFontWeightTrait];
+        if (traits && existingWeight != nil ) {
+            NSArray *otherWeightsToTry = [self _neighboringWeightsForAttemptedMatchingOfWeight:existingWeight];
+            for (NSNumber *otherWeight in otherWeightsToTry) {
+                NSMutableDictionary *replacementTraits = [traits mutableCopy];
+                replacementTraits[(id)kCTFontWeightTrait] = otherWeight;
+                attributeSubset[(id)kCTFontTraitsAttribute] = replacementTraits;
+                traits = nil; // replacing the traits in the attributes dictionary can release the traits object
+                [replacementTraits release];
+                DEBUG_FONT_LOOKUP(@"Substituting weight %@ for %@", otherWeight, existingWeight);
+                if ([self _setFontFromAttributes:attributeSubset size:0])
+                    goto matchSucceeded;
+                traits = attributeSubset[(id)kCTFontTraitsAttribute];
+            }
+            
+            // We can fall back on the symbolic bold trait, so let's try again by removing just the weight trait if any.
             if ([traits count] == 1) {
                 // weight is the only trait, so remove the traits altogether
                 [attributeSubset removeObjectForKey:(id)kCTFontTraitsAttribute];
@@ -605,6 +750,12 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
             if ([self _setFontFromAttributes:attributeSubset size:integralSize])
                 goto matchSucceeded;
         }
+        
+        // One last try with just the family name and size
+        DEBUG_FONT_LOOKUP(@"Trying with just the family name");
+        NSString *familyName = _attributes[(id)kCTFontFamilyNameAttribute];
+        if (familyName != nil && [self _setFontFromAttributes:@{(id)kCTFontFamilyNameAttribute:familyName} size:size])
+            goto matchSucceeded;
         
         DEBUG_FONT_LOOKUP(@"falling through");
         CTFontDescriptorRef fallbackDescriptor = CTFontDescriptorCreateWithAttributes((CFDictionaryRef)fallbackAttributesDictionary);

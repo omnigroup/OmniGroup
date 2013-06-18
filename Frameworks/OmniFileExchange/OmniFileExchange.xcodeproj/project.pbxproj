@@ -74,6 +74,7 @@
 		34824CBC1742E8FC00253D52 /* OmniFileExchange.h in Headers */ = {isa = PBXBuildFile; fileRef = 34824CBB1742E8FC00253D52 /* OmniFileExchange.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34824CBD1742E8FC00253D52 /* OmniFileExchange.h in Headers */ = {isa = PBXBuildFile; fileRef = 34824CBB1742E8FC00253D52 /* OmniFileExchange.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3482F58616557E8300F0C70B /* OFXDeleteTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3482F58516557E8300F0C70B /* OFXDeleteTestCase.m */; };
+		348727B7175D0C980095746F /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348727B6175D0C980095746F /* Security.framework */; };
 		3490D73D1651A9C600240640 /* OFXRenameTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3490D73C1651A9C600240640 /* OFXRenameTestCase.m */; };
 		34A270751731C5A300C00438 /* OFXRemotePackageTypeTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A270741731C5A300C00438 /* OFXRemotePackageTypeTestCase.m */; };
 		34A847DC16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A847DA16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.h */; };
@@ -288,6 +289,7 @@
 		34824B051742E5B200253D52 /* OmniCommandLine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniCommandLine.xcodeproj; path = ../OmniCommandLine/OmniCommandLine.xcodeproj; sourceTree = SOURCE_ROOT; };
 		34824CBB1742E8FC00253D52 /* OmniFileExchange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniFileExchange.h; sourceTree = SOURCE_ROOT; };
 		3482F58516557E8300F0C70B /* OFXDeleteTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXDeleteTestCase.m; sourceTree = "<group>"; };
+		348727B6175D0C980095746F /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
 		3490D73C1651A9C600240640 /* OFXRenameTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXRenameTestCase.m; sourceTree = "<group>"; };
 		34A270741731C5A300C00438 /* OFXRemotePackageTypeTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXRemotePackageTypeTestCase.m; sourceTree = "<group>"; };
 		34A847DA16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXFileSnapshotRemoteEncoding.h; sourceTree = SOURCE_ROOT; };
@@ -430,6 +432,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				348727B7175D0C980095746F /* Security.framework in Frameworks */,
 				34824B0F1742E5D600253D52 /* OmniFileExchange.framework in Frameworks */,
 				34824B0E1742E5CF00253D52 /* OmniBase.framework in Frameworks */,
 				34824B0D1742E5CB00253D52 /* OmniFoundation.framework in Frameworks */,
@@ -576,6 +579,7 @@
 		34AFACE4164B0E70009E39AB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				348727B6175D0C980095746F /* Security.framework */,
 				34F7D56C164B6CCC00911B0A /* ApplicationServices.framework */,
 				34F7D558164B32F300911B0A /* OmniBase.framework */,
 				34F7D556164B32E600911B0A /* OmniFoundation.framework */,

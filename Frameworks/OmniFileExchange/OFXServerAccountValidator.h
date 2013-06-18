@@ -15,6 +15,7 @@
 
 @property(nonatomic,readonly) OFXServerAccount *account;
 @property(nonatomic,readonly) NSString *state;
+@property(nonatomic,readonly) double percentDone;
 @property(nonatomic,readonly) NSArray *errors;
 
 @property(nonatomic,copy) void (^stateChanged)(id <OFXServerAccountValidator> validator);

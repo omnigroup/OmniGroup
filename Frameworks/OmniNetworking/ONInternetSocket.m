@@ -715,7 +715,7 @@ static BOOL is_mutex_locked(pthread_mutex_t *m)
     
     protocolFamily = ONProtocolFamilyForAddressFamily(af);
 
-    newSocketFD = socket(protocolFamily, [isa socketType], [isa ipProtocol]);
+    newSocketFD = socket(protocolFamily, [[self class] socketType], [[self class] ipProtocol]);
     if (ONSocketStateDebug)
         NSLog(@"%@: opened new fd %d", [self shortDescription], newSocketFD);
     if (newSocketFD == -1) {

@@ -1171,7 +1171,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     if (NSShouldRetainWithZone(self, zone))
         return [self retain];
 
-    newURL = [[isa allocWithZone:zone] init];
+    newURL = [[[self class] allocWithZone:zone] init];
     
     newURL->scheme = [scheme copyWithZone:zone];
     newURL->netLocation = [netLocation copyWithZone:zone];

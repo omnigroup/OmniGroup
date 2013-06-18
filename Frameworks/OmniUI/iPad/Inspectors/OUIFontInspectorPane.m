@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -264,6 +264,22 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
 
 #pragma mark -
 #pragma mark UITableViewDelegate
+static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, NSString *familyName)
+{
+    // Set or clear the fixed pitch trait based on the default for the family. Otherwise setting a font from the font faces inspector to something like Courier New Regular causes the inspector style to pick up the fixed width trait, but subsequent changes to the font using the regular (non-faces) inspector will not clear the trait. At least on iOS, fixed-width-edness is a property of the family, so if the user chooses a different family, let's respect its fixed-width-edness.
+    OBPRECONDITION(fontDescriptor != nil);
+    OBPRECONDITION(familyName != nil);
+    
+    CTFontDescriptorRef descriptorFromFamily = CTFontDescriptorCreateWithAttributes((CFDictionaryRef)@{(id)kCTFontFamilyNameAttribute: familyName});
+    NSDictionary *traitsFromFamily = (NSDictionary *)CTFontDescriptorCopyAttribute(descriptorFromFamily, kCTFontTraitsAttribute);
+    NSNumber *symbolicTraitsFromFamily = traitsFromFamily[(id)kCTFontSymbolicTrait];
+    [traitsFromFamily release];
+    CFRelease(descriptorFromFamily);
+
+    BOOL familyHasMonoSpaceTrait = ([symbolicTraitsFromFamily unsignedIntegerValue] & kCTFontMonoSpaceTrait) != 0;
+    
+    return [[fontDescriptor newFontDescriptorWithValue:familyHasMonoSpaceTrait forTrait:kCTFontMonoSpaceTrait] autorelease];
+}
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
@@ -294,10 +310,12 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
             if (_showFacesOfFont == nil) {
                 if (fontDescriptor) {
                     fontDescriptor = [fontDescriptor newFontDescriptorWithFamily:font.familyName];
+                    OAFontDescriptor *repairedFontDescriptor = _fixFixedPitchTrait(fontDescriptor, font.familyName);
+                    [fontDescriptor release];
+                    fontDescriptor = [repairedFontDescriptor retain];
                 } else
                     fontDescriptor = [[OAFontDescriptor alloc] initWithFamily:font.familyName size:fontSize];
             } else {
-                // TODO: Take the current font descriptor and try to add the delta between this font's base font and this font?
                 CTFontRef fontRef = CTFontCreateWithName((CFStringRef)font.fontName, fontSize, NULL);
                 if (fontRef) {
                     fontDescriptor = [[OAFontDescriptor alloc] initWithFont:fontRef];

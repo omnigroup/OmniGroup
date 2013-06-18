@@ -55,7 +55,6 @@ RCS_ID("$Id$")
     // Clear all our block pointers once we are done running so we don't have to deal with retain cycles in the blocks themselves.
     // As a side-effect, this means that calling -finished: twice will do nothing. We should attempt to not do this anyway, but this could help if we screw up.
     _transferProgress = nil;
-    _transferFinished = nil;
     _validateCommit = nil;
     _commit = nil;
     _doneBlocks = nil;
@@ -118,9 +117,6 @@ static BOOL _shouldLogError(NSError *error)
     // We might get called twice if we get cancelled with shutdown=NO.
     // OBASSERT(_doneBlocks, @"Don't call -finish: multiple times"); // Though -invalidate should prevent us from doing anything on the extra calls.
     
-    if (_transferFinished)
-        _transferFinished();
-
     if (errorOrNil == nil) {
         if (_validateCommit)
             errorOrNil = _validateCommit();

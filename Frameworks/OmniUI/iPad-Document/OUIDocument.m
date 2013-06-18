@@ -702,7 +702,10 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         }
         
         OUI_PRESENT_ALERT(error);
+    } else {
+        [error log:@"Error encountered by document"];
     }
+    
     [self finishedHandlingError:error recovered:NO];
 }
 

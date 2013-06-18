@@ -333,6 +333,10 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     
     OBPRECONDITION(OSUCheckerRunning == YES);
     
+    // Radar 14075101: UIApplicationDidEnterBackgroundNotification sent twice if app with background activity is killed from Springboard
+    if (OSUCheckerRunning == NO)
+        return;
+    
     OSUCheckerRunning = NO;
     
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE

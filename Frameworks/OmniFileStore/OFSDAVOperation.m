@@ -389,7 +389,16 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
                     // The delegate didn't opt to immediately mark the certificate trusted. It is presumably giving up or prompting the user and will retry the operation later.
                     // We'd prefer to cancel here, but if we do, we deadlock (in the NSOperationQueue-based scheduling).
                     //[[challenge sender] cancelAuthenticationChallenge:challenge];
+                    
+                    // These doesn't block the operation if, during this process, we've connected to the host, but the host has changed certificates since then.
+                    //[[challenge sender] performDefaultHandlingForAuthenticationChallenge:challenge];
                     [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
+
+                    // This doesn't block the operation
+                    //[[challenge sender] rejectProtectionSpaceAndContinueWithChallenge:challenge];
+
+                    //[[challenge sender] useCredential:nil forAuthenticationChallenge:challenge];
+                    
                     return;
                 }
             }

@@ -97,8 +97,9 @@ static BOOL debugSGMLProcessing = NO;
     // GRT: Disable this until I figure out what the problem is with it (it was to do away with any cached error title in case this document has no real title of its own)
     //[OWDocumentTitle cacheRealTitle:nil forAddress:baseAddress];
 
-    dtd = [isa dtd];
-    appliedMethods = [[OWSGMLAppliedMethods allocWithZone:[self zone]] initFromSGMLMethods:[isa sgmlMethods] dtd:dtd forTargetClass:isa];
+    Class myClass = [self class];
+    dtd = [myClass dtd];
+    appliedMethods = [[OWSGMLAppliedMethods allocWithZone:[self zone]] initFromSGMLMethods:[myClass sgmlMethods] dtd:dtd forTargetClass:myClass];
 
     tagCount = [dtd tagCount];
     if (tagCount > 0) {

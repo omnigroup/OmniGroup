@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,22 +15,16 @@
 @class /* AppKit         */ NSButton, NSDatePicker, NSImage;
 @class /* OmniAppKit     */ OADatePicker;
 
+extern NSString * const OAPopupDatePickerWillShowNotificationName;
+extern NSString * const OAPopupDatePickerDidHideNotificationName;
+
+extern NSString * const OAPopupDatePickerClientControlKey;
+extern NSString * const OAPopupDatePickerCloseReasonKey;
+
+extern NSString * const OAPopupDatePickerCloseReasonStandard;
+extern NSString * const OAPopupDatePickerCloseReasonCancel;
+
 @interface OAPopupDatePicker : NSWindowController <NSWindowDelegate>
-{
-    id _datePickerObjectValue;
-    id _datePickerOriginalValue;
-    
-    NSObject *_boundObject;
-    id _boundObjectKeyPath;
-    
-    id _control;
-    NSFormatter *_controlFormatter;
-    
-    BOOL _startedWithNilDate;
-    
-    IBOutlet OADatePicker *datePicker;
-    IBOutlet NSDatePicker *timePicker;
-}
 
 + (OAPopupDatePicker *)sharedPopupDatePicker;
 
@@ -41,11 +35,13 @@
 
 - (void)setCalendar:(NSCalendar *)calendar;
 
-- (void)startPickingDateWithTitle:(NSString *)title forControl:(NSControl *)aControl stringUpdateSelector:(SEL)stringUpdateSelector defaultDate:(NSDate *)defaultDate;
+- (void)startPickingDateWithTitle:(NSString *)title forControl:(NSControl *)aControl dateUpdateSelector:(SEL)dateUpdateSelector defaultDate:(NSDate *)defaultDate;
 - (void)startPickingDateWithTitle:(NSString *)title fromRect:(NSRect)viewRect inView:(NSView *)emergeFromView bindToObject:(id)bindObject withKeyPath:(NSString *)bindingKeyPath control:(id)control controlFormatter:(NSFormatter* )controlFormatter defaultDate:(NSDate *)defaultDate;
 
 - (id)destinationObject;
 - (NSString *)bindingKeyPath;
+
+- (id)clientControl;
 
 - (BOOL)isKey;
 - (void)close;

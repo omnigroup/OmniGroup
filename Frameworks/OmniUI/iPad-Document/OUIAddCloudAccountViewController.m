@@ -87,7 +87,8 @@ RCS_ID("$Id$");
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:reuseIdentifier];
         cell.textLabel.text = accountType.addAccountTitle;
         cell.detailTextLabel.text = accountType.addAccountDescription;
-        cell.imageView.image = [UIImage imageNamed:@"OUIGreenPlusButton.png"];
+        if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPhone) // no button on phone, not enough vertical room for it and the text
+            cell.imageView.image = [UIImage imageNamed:@"OUIGreenPlusButton.png"];
     }
     
     return cell;

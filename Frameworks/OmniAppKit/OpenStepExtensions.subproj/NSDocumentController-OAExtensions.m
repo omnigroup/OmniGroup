@@ -1,4 +1,4 @@
-// Copyright 2001-2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2006, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,8 +16,6 @@ RCS_ID("$Id$")
 
 @implementation NSDocumentController (OAExtensions)
 
-static id (*originalOpenDocumentIMP)(id, SEL, NSURL *, BOOL, NSError **);
-
 #ifdef OMNI_ASSERTIONS_ON
 static void checkDeprecatedSelector(Class subclass, Class klass, SEL sel)
 {
@@ -28,13 +26,9 @@ static void checkDeprecatedSelector(Class subclass, Class klass, SEL sel)
 	NSLog(@"%@ is implementing %@, but this is deprecated!", NSStringFromClass(subclass), NSStringFromSelector(sel));
 }
 #define CHECK_DOCUMENT_API(sel) checkDeprecatedSelector(aClass, self, sel)
-#endif
 
 + (void)didLoad;
 {
-    originalOpenDocumentIMP = (typeof(originalOpenDocumentIMP))OBReplaceMethodImplementationWithSelector(self, @selector(openDocumentWithContentsOfURL:display:error:), @selector(_replacement_openDocumentWithContentsOfURL:display:error:));
-    
-#ifdef OMNI_ASSERTIONS_ON
     // Check that no deprecated APIs are implemented in subclasses of NSDocumentController.  NSDocumentController changes its behavior if you *implement* the deprecated APIs and we want to stay on the mainstream path.
     
     // Get the class list
@@ -70,15 +64,7 @@ static void checkDeprecatedSelector(Class subclass, Class klass, SEL sel)
         
         free(classes);
     }
+}
 #endif
-}
-
-- (id)_replacement_openDocumentWithContentsOfURL:(NSURL *)absoluteURL display:(BOOL)displayDocument error:(NSError **)outError;
-{
-    NSDocument *document = originalOpenDocumentIMP(self, _cmd, absoluteURL, displayDocument, outError);
-    if ([[NSFileManager defaultManager] fileIsStationeryPad:[absoluteURL path]])
-        [document setFileURL:nil];
-    return document;
-}
 
 @end

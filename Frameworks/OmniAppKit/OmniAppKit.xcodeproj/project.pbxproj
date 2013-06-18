@@ -419,6 +419,8 @@
 		4AE460D911D20CA800215084 /* OSAKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AE460D811D20CA800215084 /* OSAKit.framework */; };
 		4D7B031B16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4D7B031916A9DA7F006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png */; };
 		4D7B031C16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4D7B031A16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png */; };
+		4D92F571174C10BA00E251EF /* OAResizingTitleBarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D92F56F174C10BA00E251EF /* OAResizingTitleBarButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4D92F572174C10BA00E251EF /* OAResizingTitleBarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D92F570174C10BA00E251EF /* OAResizingTitleBarButton.m */; };
 		4DFEA4981728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
 		4DFEA4991728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
 		4DFEA49A17285B8C00149B1F /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -844,6 +846,8 @@
 		4AE460D811D20CA800215084 /* OSAKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OSAKit.framework; path = /System/Library/Frameworks/OSAKit.framework; sourceTree = "<absolute>"; };
 		4D7B031916A9DA7F006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorCircleXOff@2x.png"; sourceTree = "<group>"; };
 		4D7B031A16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorCircleXOn@2x.png"; sourceTree = "<group>"; };
+		4D92F56F174C10BA00E251EF /* OAResizingTitleBarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAResizingTitleBarButton.h; sourceTree = "<group>"; };
+		4D92F570174C10BA00E251EF /* OAResizingTitleBarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAResizingTitleBarButton.m; sourceTree = "<group>"; };
 		4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFontDescriptorTests.m; sourceTree = "<group>"; };
 		50A5C89408C5505500B1C5E4 /* NSEvent-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = "NSEvent-OAExtensions.h"; sourceTree = "<group>"; };
 		50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = "NSEvent-OAExtensions.m"; sourceTree = "<group>"; };
@@ -1509,6 +1513,8 @@
 				6C72445603E886EE00E7FE1C /* OAMouseTipWindow.m */,
 				1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */,
 				1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */,
+				4D92F56F174C10BA00E251EF /* OAResizingTitleBarButton.h */,
+				4D92F570174C10BA00E251EF /* OAResizingTitleBarButton.m */,
 				A27FE45E0CAB033300EE72BA /* OASlowLoadingImage.h */,
 				A27FE45F0CAB033300EE72BA /* OASlowLoadingImage.m */,
 				E2CBC36006EF77CE0097A11C /* OASpringLoadHelper.h */,
@@ -2555,6 +2561,7 @@
 				272A315B1666BABB00110B0B /* OANoExpansionFrameTextFieldCell.h in Headers */,
 				2779DDBC16BB328500A2BC8F /* OAViewPicker.h in Headers */,
 				4A5F17B3172772F5001A60E5 /* OAWebPageViewer.h in Headers */,
+				4D92F571174C10BA00E251EF /* OAResizingTitleBarButton.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3129,6 +3136,7 @@
 				2779DD8716BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m in Sources */,
 				2779DDBE16BB338400A2BC8F /* OAViewPicker.m in Sources */,
 				4A5F17B4172772F5001A60E5 /* OAWebPageViewer.m in Sources */,
+				4D92F572174C10BA00E251EF /* OAResizingTitleBarButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

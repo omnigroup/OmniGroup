@@ -460,6 +460,56 @@ RCS_ID("$Id$")
     [self waitForFileMetadataItems:self.agentB where:predicate];
 }
 
+- (void)testIncomingMoveAndOutgoingUpload;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+    
+    agentA.automaticallyDownloadFileContents = YES;
+    agentB.automaticallyDownloadFileContents = YES;
+    
+    // Get the same file on both.
+    [self uploadFixture:@"test.package"];
+    OFXFileMetadata *originalMetadata = [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
+        return metadata.downloaded;
+    }];
+    
+    agentA.syncingEnabled = NO;
+    agentB.syncingEnabled = NO;
+    
+    // Move on A
+    [self movePath:@"test.package" toPath:@"test-A.package" ofAccount:[self singleAccountInAgent:agentA]];
+    
+    // Add a new file on B
+    [self copyFixtureNamed:@"test2.package" toPath:@"test-B.package" ofAccount:[self singleAccountInAgent:agentB]];
+    
+    agentA.syncingEnabled = YES;
+    agentB.syncingEnabled = YES;
+    
+    // Make sure the changes are acknowledged
+    [self waitForChangeToMetadata:originalMetadata inAgent:agentA];
+    [self waitForChangeToMetadata:originalMetadata inAgent:agentB];
+    
+    // Wait for the agents to settle down to a common state.
+    [self waitForAgentsToAgree];
+    
+    NSSet *metadataItems = [self metadataItemsForAgent:agentA];
+    STAssertTrue([metadataItems count] == 2, nil);
+    {
+        NSSet *metadataItems = [self metadataItemsForAgent:agentA];
+        
+        OFXFileMetadata *finalMetadataA = [metadataItems any:^BOOL(OFXFileMetadata *metadata) {
+            return [[metadata.fileURL lastPathComponent] isEqual:@"test-A.package"];
+        }];
+        OFXFileMetadata *finalMetadataB = [metadataItems any:^BOOL(OFXFileMetadata *metadata) {
+            return [[metadata.fileURL lastPathComponent] isEqual:@"test-B.package"];
+        }];
+        
+        STAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataA, @"test.package"), nil);
+        STAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataB, @"test2.package"), nil);
+    }
+}
+
 // Write version of -testLocalUpdateWhileDownloading where we simulate local unsaved changes when there is an incoming download update of a file
 // Test uploading a new document w/o automatically downloading a different large document
 // Replace a file with different contents but the same mtime while syncing is off. Turn on syncing. Dropbox doesn't notice the change.

@@ -4,10 +4,12 @@
 
 // Common settings
 
-// Make CG and NS geometry types be the same. Mostly doesn't matter on iPhone, but this also makes NSInteger types be defined based on 'long' consistently, which avoids conflicting warnings from clang + llvm 2.7 about printf format checking
+// NS_BUILD_32_LIKE_64 makes CG and NS geometry types be the same. Mostly doesn't matter on iPhone, but this also makes NSInteger types be defined based on 'long' consistently, which avoids conflicting warnings from clang + llvm 2.7 about printf format checking
+// Also, define a few useful macros for making configuration-specific builds. We do NOT append OMNI_BUILD_IDENTIFIER_SUFFIX on OMNI_BUNDLE_IDENTIFIER here, but we would in the end application.
+// Note that the OMNI_BUILD_IDENTIFIER_SUFFIX and OMNI_BUILD_FILE_SUFFIX are declared in the individual specific configuration files Omni-Global-{Debug,Release,Coverage}.xcconfig, which seems to work fine.
+// Targets still need to use these in their configurations in their bundle identifier, product name and in the source where needed.
+OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64 -DOMNI_BUILD_IDENTIFIER_SUFFIX=@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\" -DOMNI_BUILD_FILE_SUFFIX=@\"$(OMNI_BUILD_FILE_SUFFIX)\"
 
-OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64
-	
 // Keep precomps in the build dir so that switching branches/products doesn't confuse the precomp builds
 SHARED_PRECOMPS_DIR = $(CONFIGURATION_BUILD_DIR)/SharedPrecompiledHeaders
 

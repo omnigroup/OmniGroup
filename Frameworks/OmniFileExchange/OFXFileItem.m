@@ -46,16 +46,18 @@ RCS_ID("$Id$")
 #endif
 @end
 
+static const NSUInteger OFXFileItemUnknownVersion = NSUIntegerMax;
+
 @implementation OFXFileItem
 {
     OFXRegistrationTable *_metadataRegistrationTable;
     OFXFileSnapshot *_snapshot;
     OFXFileSnapshotTransfer *_currentTransfer;
 
-    // If we get a 404, record the version here and refuse to try to fetch that version again until the next scan tells us what our new version is. Set to NSUIntegerMax if we know of now missing version.
+    // If we get a 404, record the version here and refuse to try to fetch that version again until the next scan tells us what our new version is. Set to OFXFileItemUnknownVersion if we know of no missing version.
     NSUInteger _newestMissingVersion;
     
-    // During a remote scan, our container will tell us our latest version number.
+    // During a remote scan, our container will tell us our latest version number. Set to OFXFileItemUnknownVersion if we don't know of any newer version than _snapshot.version
     NSUInteger _newestRemoteVersion;
 }
 
@@ -210,6 +212,7 @@ static NSString *_makeRemoteSnapshotDirectoryName(OFXFileItem *fileItem, OFXFile
 static NSURL *_makeRemoteSnapshotURLWithVersion(OFXContainerAgent *containerAgent, OFXFileItem *fileItem, NSUInteger fileVersion)
 {
     OBPRECONDITION(containerAgent);
+    OBPRECONDITION(fileVersion != OFXFileItemUnknownVersion);
     
     NSString *directoryName = _makeRemoteSnapshotDirectoryNameWithVersion(fileItem, fileVersion);
     
@@ -252,7 +255,8 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
 
     _identifier = [identifier copy];
     _snapshot = snapshot;
-    _newestMissingVersion = NSUIntegerMax;
+    _newestMissingVersion = OFXFileItemUnknownVersion;
+    _newestRemoteVersion = OFXFileItemUnknownVersion;
     
     _localRelativePath = [[container _localRelativePathForFileURL:localDocumentURL] copy];
     OBASSERT([_localRelativePath isEqual:snapshot.localRelativePath]);
@@ -533,7 +537,8 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
 {
     OBPRECONDITION(_snapshot);
     
-    if (_newestRemoteVersion == newestRemoteVersion)
+    // We don't currently step the _newestRemoteVersion forward when committing an upload. The '>=' protects vs. that, but it would be nice to go ahead and step it forward.
+    if (_newestRemoteVersion != OFXFileItemUnknownVersion && _newestRemoteVersion >= newestRemoteVersion)
         return YES; // We already know about this version
 
     _newestRemoteVersion = newestRemoteVersion;
@@ -646,15 +651,10 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
 
     __weak OFXFileSnapshotUploadTransfer *weakTransfer = transfer;
     
-    _currentTransfer = transfer;
-    [self _updatedMetadata];
+    [self _transferStarted:transfer];
 
     transfer.transferProgress = ^{
         [self _updatedMetadata];
-    };
-    transfer.transferFinished = ^{
-        OBASSERT(self.isUploading);
-        [self _transferFinished:weakTransfer];
     };
     transfer.commit = ^BOOL(NSError **outError){
 #ifdef OMNI_ASSERTIONS_ON
@@ -806,13 +806,15 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
         DEBUG_CONTENT(1, @"Commit upload with content \"%@\"", OFXLookupDisplayNameForContentIdentifier(_snapshot.currentContentIdentifier));
         _snapshot = uploadedSnapshot;
         
-        [self _updatedMetadata];
         return YES;
     };
     
     [transfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
         OBINVARIANT([self _checkInvariants]);
         
+        OBASSERT(self.isUploading);
+        [self _transferFinished:transfer];
+
         // TODO: may want to keep _lastError and also put it into updated metadata
         
         // If the transfer was cancelled due to sync being paused, or the commit failed for some reason, we still need to say we aren't uploading.
@@ -832,8 +834,6 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
                 OBFinishPortingLater("Is there more we should do to handle unexpected errors when uploading (e.g. quota exceeded)?"); // Tim, any thoughts? -- Ken
                 // tjw: Maybe. We don't want to spam the server with upload requests if they are just going to fail. The -_fileItemDidDetectUnknownRemoteEdit: call is going to sync up in another sync happening immediately. It might work to have a notion of a blocking error where -sync: won't try again until something clears that error (net state changes would clear network errors, timer would clear most, user action would clear all).
             }
-            
-            [self _updatedMetadata];
         }
         return errorOrNil;
     }];
@@ -863,15 +863,16 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     NSURL *targetLocalSnapshotURL = _makeLocalSnapshotURL(container, _identifier);
     
     NSURL *targetRemoteSnapshotURL;
-    if (_newestRemoteVersion) {
-        OBASSERT(_newestMissingVersion == NSUIntegerMax || _newestMissingVersion < _newestRemoteVersion);
+    if (_newestRemoteVersion != OFXFileItemUnknownVersion) {
+        OBASSERT(_newestMissingVersion == OFXFileItemUnknownVersion || _newestMissingVersion < _newestRemoteVersion);
         targetRemoteSnapshotURL = _makeRemoteSnapshotURLWithVersion(container, self, _newestRemoteVersion);
     } else {
-        OBASSERT(_newestMissingVersion == NSUIntegerMax || _newestMissingVersion < _snapshot.version);
+        OBASSERT(_newestMissingVersion == OFXFileItemUnknownVersion || _newestMissingVersion < _snapshot.version);
         targetRemoteSnapshotURL = _makeRemoteSnapshotURL(container, self, _snapshot);
     }
     
     OBASSERT([_snapshot.localSnapshotURL isEqual:targetLocalSnapshotURL]);
+    OBASSERT(_snapshot.version < _newestRemoteVersion || (_snapshot.localState.missing && _contentsRequested && _snapshot.version == _newestRemoteVersion), "Should be downloading a new snapshot, or the contents for our current version (only if we don't have those contents already");
     
     // Pick a contents download location (meaning we will grab the contents instead of just metadata) if someone asked us to or our previous snapshot had contents. If this document is shadowed by another, don't download contents since we'll just throw them away in the commit.
     NSURL *localTemporaryDocumentContentsURL;
@@ -893,8 +894,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
 
     __weak OFXFileSnapshotDownloadTransfer *weakTransfer = transfer;
 
-    _currentTransfer = transfer;
-    [self _updatedMetadata];
+    [self _transferStarted:transfer];
     
     transfer.started = ^{
         OFXFileSnapshotDownloadTransfer *strongTransfer = weakTransfer;
@@ -905,10 +905,6 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     };
     transfer.transferProgress = ^{
         [self _updatedMetadata];
-    };
-    transfer.transferFinished = ^{
-        OBASSERT(self.isDownloading);
-        [self _transferFinished:weakTransfer];
     };
     transfer.commit = ^BOOL(NSError **outError){
         OBASSERT(self.hasBeenLocallyDeleted == NO);
@@ -926,6 +922,15 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
         OFXFileSnapshot *downloadedSnapshot = strongTransfer.downloadedSnapshot; // The operation clears callbacks, so this retain cycle will be broken.
         OBASSERT((downloadContents && downloadedSnapshot.localState.normal) || (!downloadContents && downloadedSnapshot.localState.missing));
 
+        // Since the download has worked as far as the transfer is concerned, this URL is now ours to cleanup if we fail to commit.
+        void (^cleanup)(void) = ^{
+            NSURL *downloadedSnapshotURL = downloadedSnapshot.localSnapshotURL;
+            __autoreleasing NSError *cleanupError;
+            if (![[NSFileManager defaultManager] removeItemAtURL:downloadedSnapshotURL error:&cleanupError]) {
+                [cleanupError log:@"Error cleaning up local downloaded snapshot %@", downloadedSnapshot];
+            }
+        };
+
         DEBUG_CONTENT(1, @"Commit download with local content \"%@\" and new content \"%@\"", OFXLookupDisplayNameForContentIdentifier(_snapshot.currentContentIdentifier), OFXLookupDisplayNameForContentIdentifier(downloadedSnapshot.currentContentIdentifier));
 
         // A write with NSFileCoordinatorWritingForMerging implies a read. If we explicitly pass an array of reading URLs that contains an item from writingURLs, filecoordinationd will crash (at least in 10.8.2). I don't have a standalone test case of this, but it is logged as Radar 12993597.
@@ -942,6 +947,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
 #endif
             __autoreleasing NSError *renameError;
             if (![downloadedSnapshot markAsLocallyMovedToRelativePath:_snapshot.localRelativePath error:&renameError]) {
+                cleanup();
                 if (outError)
                     *outError = renameError;
                 return NO;
@@ -971,18 +977,23 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
                  completionHandler();
          }];
 
-        if (!success)
+        if (!success) {
+            cleanup();
             return NO;
+        }
 
         OBASSERT(!hadLocalMove || _snapshot.localState.moved, @"If we had a local move, make sure to preserve that to be uploaded");
         
-        [self _updatedMetadata];
         return YES;
     };
     
     [transfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
         OBINVARIANT([self _checkInvariants]);
         
+        OBASSERT(self.isDownloading == YES);
+        [self _transferFinished:transfer];
+        OBASSERT(self.isDownloading == NO);
+
         // TODO: may want to keep _lastError and also put it into updated metadata
         
         // If the transfer was cancelled due to sync being paused, or the commit failed for some reason, we still need to say we aren't downloading.
@@ -997,15 +1008,6 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
                 OFXError(&error, OFXFileItemDetectedRemoteEdit, nil, nil);
                 errorOrNil = error;
             }
-            
-            OFXFileSnapshotDownloadTransfer *strongTransfer = weakTransfer;
-            if (strongTransfer.didMakeLocalTemporaryDocumentContentsURL) { // Might not have gotten that far...
-                __autoreleasing NSError *cleanupError;
-                if (![[NSFileManager defaultManager] removeItemAtURL:localTemporaryDocumentContentsURL error:&cleanupError])
-                    [cleanupError log:@"Error cleaning up temporary download document at %@", localTemporaryDocumentContentsURL];
-            }
-            
-            [self _updatedMetadata];
         }
         return errorOrNil;
     }];
@@ -1157,15 +1159,15 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
         if (takeExistingContent) {
             DEBUG_TRANSFER(1, @"Downloaded snapshot %@ taking over previously published contents from %@", [downloadedSnapshot shortDescription], [_snapshot shortDescription]);
             
-            // Not going to use whatever content we downloaded
-            __autoreleasing NSError *cleanupError;
-            if (![[NSFileManager defaultManager] removeItemAtURL:localTemporaryDocumentContentsURL error:&cleanupError])
-                [cleanupError log:@"Error cleaning up temporary download document at %@ (after taking over contents from another version).", localTemporaryDocumentContentsURL];
-
             if (![downloadedSnapshot didTakePublishedContentsFromSnapshot:_snapshot error:outError]) {
                 OBChainError(outError);
                 return NO;
             }
+            
+            // Not going to use whatever content we downloaded (we only do this on success, since our caller does it on failure).
+            __autoreleasing NSError *cleanupError;
+            if (![[NSFileManager defaultManager] removeItemAtURL:localTemporaryDocumentContentsURL error:&cleanupError])
+                [cleanupError log:@"Error cleaning up temporary download document at %@ (after taking over contents from another version).", localTemporaryDocumentContentsURL];
         } else {
             if (![self _publishContentsFromTemporaryDocumentURL:localTemporaryDocumentContentsURL toLocalDocumentURL:updatedLocalDocumentURL snapshot:downloadedSnapshot coordinator:coordinator error:outError]) {
                 OBChainError(outError);
@@ -1200,6 +1202,8 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
 
 - (BOOL)_performDownloadCommitMoveToURL:(NSURL *)updatedLocalDocumentURL coordinator:(NSFileCoordinator *)coordinator error:(NSError **)outError;
 {
+    DEBUG_TRANSFER(1, @"performing download commit of move from %@ to %@", self.localRelativePath, updatedLocalDocumentURL);
+                   
     __autoreleasing NSError *moveError;
     if ([coordinator moveItemAtURL:_localDocumentURL toURL:updatedLocalDocumentURL createIntermediateDirectories:YES error:&moveError])
         return YES;
@@ -1253,8 +1257,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     
     __weak OFXFileSnapshotDeleteTransfer *weakTransfer = transfer;
     
-    _currentTransfer = transfer;
-    [self _updatedMetadata];
+    [self _transferStarted:transfer];
     
     BOOL (^removeSnapshot)(NSError **outError) = [^BOOL(NSError **outError){
         // Remove the local snapshot. If this fails, we'll be doomed to do the delete again and again... Hopefully the move portion of the atomic delete happens so that we don't see the snapshot on the next run.
@@ -1273,10 +1276,6 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
         return YES;
     } copy];
     
-    transfer.transferFinished = ^{
-        OBASSERT(self.isDeleting);
-        [self _transferFinished:weakTransfer];
-    };
     transfer.commit = ^BOOL(NSError **outError){
         OBASSERT(self.hasBeenLocallyDeleted == YES, @"Cannot resurrect now that the delete has happened on the server"); //
         
@@ -1287,11 +1286,13 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
         }
         
         [_snapshot markAsRemotelyDeleted:outError];
-        [self _updatedMetadata];
         return removeSnapshot(outError);
     };
     
     [transfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
+        OBASSERT(self.isDeleting);
+        [self _transferFinished:transfer];
+        
         if (errorOrNil) {
             OBINVARIANT([self _checkInvariants]);
             
@@ -1626,10 +1627,22 @@ static NSString *ClientComputerName(void)
 - (void)_updatedMetadata;
 {
     // We check -hasBeenLocallyDeleted here for convenience in the local-delete vs. local-download race case. We could also predicate our calls in the download transferProgress() block, but this seems like a nice global solution that might catch other cases.
-    if (_shadowedByOtherFileItem || (self.localState.deleted && self.remoteState.deleted))
+    if (_shadowedByOtherFileItem)
         [_metadataRegistrationTable removeObjectForKey:_identifier];
-    else
+    else if (self.localState.deleted && (self.remoteState.missing || self.remoteState.deleted)) {
+        // This was never uploaded, or has been deleted remotely too, so the "delete" transfer isn't going to actually do any network work (which is why we delay clearing the metadata -- so we can show the number of delete operations that need to be performed). Also, if we generate metadata here, we'll hit assertions.
+        [_metadataRegistrationTable removeObjectForKey:_identifier];
+    } else
         _metadataRegistrationTable[_identifier] = [self _makeMetadata];
+}
+
+- (void)_transferStarted:(OFXFileSnapshotTransfer *)transfer;
+{
+    OBPRECONDITION(_currentTransfer == nil, @"Starting another transfer with out the previous one finishing?");
+    OBPRECONDITION(transfer);
+    
+    _currentTransfer = transfer;
+    [self _updatedMetadata];
 }
 
 - (void)_transferFinished:(OFXFileSnapshotTransfer *)transfer;
@@ -1639,9 +1652,10 @@ static NSString *ClientComputerName(void)
         OBASSERT_NOT_REACHED("Shouldn't be invoked after transfer is deallocated");
         return;
     }
-    if (_currentTransfer == transfer)
+    if (_currentTransfer == transfer) {
         _currentTransfer = nil;
-    else {
+        [self _updatedMetadata];
+    } else {
         OBASSERT_NOT_REACHED("Started another transfer before a previous transfer finished?");
     }
 }
@@ -1688,7 +1702,18 @@ static NSString *ClientComputerName(void)
          
          If we delay here, they'll get the 'did change' w/in the writer block. The amount of time we wait is obviously fragile. Hopefully this bug will get fixed in the OS or we'll find a better workaround.
          */
-        if (!snapshot.directory && !isRunningUnitTests) {
+        
+        BOOL writeURLIsFlatFile;
+        __autoreleasing NSNumber *writeURLIsDirectoryNumber = nil;
+        __autoreleasing NSError *resourceError = nil;
+        if (![newWriteURL getResourceValue:&writeURLIsDirectoryNumber forKey:NSURLIsDirectoryKey error:&resourceError]) {
+            writeURLIsFlatFile = YES; // That is, we don't need the workaround
+            if (![resourceError causedByMissingFile])
+                NSLog(@"Unable to determine if %@ is a directory: %@", newWriteURL, [resourceError toPropertyList]);
+        } else
+            writeURLIsFlatFile = ![writeURLIsDirectoryNumber boolValue];
+        
+        if ((!snapshot.directory || writeURLIsFlatFile) && !isRunningUnitTests) {
             sleep(1);
         }
         

@@ -27,11 +27,17 @@
 
 + (instancetype)controller;
 
++ (NSString *)applicationName;
+
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
 
 + (void)presentError:(NSError *)error;
 + (void)presentError:(NSError *)error file:(const char *)file line:(int)line;
 + (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
+
+// Can be set by early startup code and queried by later startup code to determine whether to launch into a plain state (no inbox item opened, no last document opened, etc). This can be used by applications integrating crash reporting software when they detect a crash from a previous launch and want to report it w/o other launch-time activities.
+@property(nonatomic,assign) BOOL shouldPostponeLaunchActions;
+- (void)addLaunchAction:(void (^)(void))launchAction;
 
 // Popover Helpers
 // Present all popovers via this API to help avoid popovers having to know about one another to avoid multiple popovers on screen.
@@ -61,7 +67,6 @@
 
 // Subclass responsibility
 @property(readonly) UIViewController *topViewController;
-@property(readonly) NSString *applicationName;
 
 - (void)resetKeychain;
 

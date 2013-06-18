@@ -15,6 +15,8 @@ RCS_ID("$Id$");
     #define DEBUG_VIEW_CONTROLLER_EXTESIONS
 #endif
 
+OBDEPRECATED_METHOD(-modalParentViewController); // Use -presentingViewController instead
+
 static void (*original_viewWillAppear)(id self, SEL _cmd, BOOL animated) = NULL;
 static void (*original_viewDidAppear)(id self, SEL _cmd, BOOL animated) = NULL;
 static void (*original_viewWillDisappear)(id self, SEL _cmd, BOOL animated) = NULL;
@@ -140,10 +142,9 @@ static NSString * NSStringFromOUIViewControllerState(OUIViewControllerState stat
 
 #pragma mark -
 
+// Since presentedViewController is NS_AVAILABLE_IOS(5_0), not sure what this method buys us. Trunk is 6+, so I'm deprecating this method [TAB]
 - (UIViewController *)modalParentViewController;
 {
-    OBFinishPortingLater("Reevaluate this for iOS 6?");
-    
     // What we really want here is the view controller which presented us, which iOS 5 happily tells us
     
     if ([self respondsToSelector:@selector(presentingViewController)])
@@ -256,7 +257,7 @@ static void *OUIViewControllerExtraAssociatedObjectKey = &OUIViewControllerExtra
 
 - (void)replacement_dismissViewControllerAnimated:(BOOL)animated completion:(void (^)(void))completion;
 {
-    UIViewController *modalParent = (self.presentedViewController ? self : self.modalParentViewController);
+    UIViewController *modalParent = (self.presentedViewController ? self : self.presentingViewController);
     if (modalParent && animated) {
         OUIViewControllerExtra *extra = [modalParent viewControllerExtra];
         OBASSERT(extra);

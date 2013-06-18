@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -181,7 +181,7 @@ unlockAndReturn:
 
 - (void)startProcessing;
 {
-    [self startProcessingInQueue:[isa processorQueue]];
+    [self startProcessingInQueue:[[self class] processorQueue]];
 }
 
 - (void)abortProcessing;
@@ -233,7 +233,7 @@ unlockAndReturn:
     NSMutableString *newStatusString;
 
     // Avoid +stringWithFormat: since this is simple
-    newStatusString = [[NSMutableString alloc] initWithString: [isa readableClassName]];
+    newStatusString = [[NSMutableString alloc] initWithString:[[self class] readableClassName]];
     [newStatusString appendString: @" "];
     [newStatusString appendString: newStatus];
     
@@ -361,7 +361,7 @@ unlockAndReturn:
         return;
     }
 
-    NSLog(@"%@ (%@): %@: %@", [[pipeline contextObjectForKey:OWCacheArcSourceURLKey] compositeString], [isa readableClassName], [processingException displayName], [processingException reason]);
+    NSLog(@"%@ (%@): %@: %@", [[pipeline contextObjectForKey:OWCacheArcSourceURLKey] compositeString], [[self class] readableClassName], [processingException displayName], [processingException reason]);
 
     [pipeline noteErrorName:[processingException displayName] reason:[processingException reason]];
 

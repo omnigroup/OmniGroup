@@ -40,7 +40,6 @@ typedef NSError * (^OFXFileSnapshotTransferDone)(OFXFileSnapshotTransfer *transf
 
 // Callbacks are currently invoked on the NSOperationQueue that -initWithFileManager: was called on.
 @property(nonatomic,copy) void (^transferProgress)(void);
-@property(nonatomic,copy) void (^transferFinished)(void);
 @property(nonatomic,copy) NSError *(^validateCommit)(void);
 @property(nonatomic,copy) BOOL (^commit)(NSError **outError);
 - (void)addDone:(OFXFileSnapshotTransferDone)done;

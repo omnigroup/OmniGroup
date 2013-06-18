@@ -64,6 +64,7 @@ RCS_ID("$Id$")
 // Protocol properties aren't auto-synthesized
 @synthesize account = _account;
 @synthesize state = _state;
+@synthesize percentDone = _percentDone;
 @synthesize errors = _errors;
 @synthesize stateChanged = _stateChanged;
 @synthesize finished = _finished;
@@ -123,7 +124,7 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
         }
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [self _updateState:NSLocalizedStringFromTableInBundle(@"Checking Credentials", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description")];
+            [self _updateState:NSLocalizedStringFromTableInBundle(@"Checking Credentials", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description") percentDone:0];
         }];
         error = nil;
         OFSFileInfo *fileInfo = [fileManager fileInfoAtURL:address error:&error];
@@ -180,19 +181,20 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
 
                 [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                     OFSDAVConformanceTest *conformanceTest = [[OFSDAVConformanceTest alloc] initWithFileManager:fileManager];
-                    conformanceTest.statusChanged = ^(NSString *status){
+                    conformanceTest.statusChanged = ^(NSString *status, double percentDone){
                         OBASSERT([NSThread isMainThread]);
-                        [self _updateState:status];
+                        [self _updateState:status percentDone:percentDone];
                     };
                     conformanceTest.finished = ^(NSError *errorOrNil){
                         OBASSERT([NSThread isMainThread]);
                         
                         // Don't leave speculatively added credentials around
-                        if (errorOrNil && _challengeServiceIdentifier)
-                            OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier);
+                        if (errorOrNil && _challengeServiceIdentifier) {
+                            OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier, NULL);
+                        }
                         finishWithError(errorOrNil);
                     };
-                    [self _updateState:NSLocalizedStringFromTableInBundle(@"Testing Server for Compatibility", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description")];
+                    [self _updateState:nil percentDone:0];
                     [conformanceTest start];
                 }];
             }];
@@ -226,8 +228,10 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
     _challengeServiceIdentifier = [OFMakeServiceIdentifier(_account.remoteBaseURL, _username, challenge.protectionSpace.realm) copy];
     
     // Might have old bad credentials, or even existing valid credentials. But we were given a user name and password to use, so we should use them.
-    OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier);
-
+    NSError *deleteError;
+    if (!OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier, &deleteError))
+        [deleteError log:@"Error deleting credentials for service identifier %@", _challengeServiceIdentifier];
+    
     return _attemptCredential;
 }
 
@@ -238,11 +242,16 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
 
 #pragma mark - Private
 
-- (void)_updateState:(NSString *)state;
+- (void)_updateState:(NSString *)state percentDone:(double)percentDone;
 {
     OBASSERT([NSThread isMainThread]);
 
-    _state = [state copy];
+    // We don't currently show the messages from the tests since it is too flashy.
+    _state = NSLocalizedStringFromTableInBundle(@"Testing Server for Compatibility", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description");
+    //_state = [state copy];
+    
+    _percentDone = percentDone;
+    
     if (_stateChanged)
         _stateChanged(self);
 }

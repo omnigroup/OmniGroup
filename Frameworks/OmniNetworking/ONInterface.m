@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2007, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2005, 2007, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -265,7 +265,7 @@ static const struct { int ift; ONInterfaceCategory cat; } interfaceClassificatio
         if (ioctl(fd, SIOCGIFMTU, &ifr) < 0) {
             // Signal that we tried to retrieve this and failed. See below for our fallback numbers.
             maximumTransmissionUnit = ONUnknownMTU;
-            NSLog(@"%@: Cannot get MTU of %@: SIOCGIFMTU: %s", isa, name, strerror(OMNI_ERRNO()));
+            NSLog(@"%@: Cannot get MTU of %@: SIOCGIFMTU: %s", [self class], name, strerror(OMNI_ERRNO()));
         } else {
             maximumTransmissionUnit = ifr.ifr_mtu;
             OBASSERT(maximumTransmissionUnit != 0);
@@ -286,7 +286,7 @@ static const struct { int ift; ONInterfaceCategory cat; } interfaceClassificatio
                 return FDDIMTU;
 #endif
             default:
-                [NSException raise:NSGenericException format:@"-[%@ %@] -- Unable to get interface MTU for %@", isa, NSStringFromSelector(_cmd), name];
+                [NSException raise:NSGenericException format:@"-[%@ %@] -- Unable to get interface MTU for %@", [self class], NSStringFromSelector(_cmd), name];
         }
     }
 

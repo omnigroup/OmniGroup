@@ -527,6 +527,9 @@ static void _removeUsedPreviewFileURLs(Class self, NSMutableSet *unusedPreviewFi
     NSString *dateString = [date xmlString];
     fileName = [fileName stringByAppendingFormat:@"-%@-%@", dateString, landscape ? @"landscape" : @"portrait"];
     
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+        fileName = [fileName stringByAppendingString:@"-phone"];
+    
     fileName = [fileName stringByAppendingPathExtension:@"jpg"];
     
     return fileName;
@@ -736,10 +739,14 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
 
 + (CGSize)maximumPreviewSizeForLandscape:(BOOL)landscape;
 {
-    static CGSize kLandscapePreviewSize = (CGSize){186, 140}; // 1.3285 vs. 1024/768 = 1.3333
-    static CGSize kPortraitPreviewSize = (CGSize){174, 225}; // 0.7733 vs 768/1024 = 0.7500
-    
-    return landscape ? kLandscapePreviewSize : kPortraitPreviewSize;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        return (CGSize){111, 120};
+    } else {
+        static CGSize kLandscapePreviewSize = (CGSize){186, 140}; // 1.3285 vs. 1024/768 = 1.3333
+        static CGSize kPortraitPreviewSize = (CGSize){174, 225}; // 0.7733 vs 768/1024 = 0.7500
+        
+        return landscape ? kLandscapePreviewSize : kPortraitPreviewSize;
+    }
 }
 
 // Returns the scale at which the preview image should be rendered when saving to disk. It's on screen size must fit within +maximumPreviewSizeForLandscape:, but the image should be scaled up by this amount (and will be descaled when rendered at the normal magnification in the document picker).

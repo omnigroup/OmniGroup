@@ -28,6 +28,13 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
 static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, const char *file, unsigned line, NSString *format, ...)
 {
     if (outError) {
+        // Our conformance tests failed because of some unrelated error (unreachable host, authentication issue, storage space issue, etc.).  Let's just return that error, rather than bundling it up into a conformance failure error.
+        // On the other hand, if there is no underlying error, then the error we are about to make *is* the root error (for example, if we are just checking if a timestamp changed).
+        if (originalError && !OFSShouldOfferToReportError(originalError)) {
+            *outError = originalError;
+            return NO;
+        }
+
         NSString *description = NSLocalizedStringFromTableInBundle(@"WebDAV server failed conformance test.", @"OmniFileStore", OMNI_BUNDLE, @"Error description");
         
         NSString *reason;
@@ -84,9 +91,12 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
 {
     NSURL *_baseURL;
     NSOperationQueue *_operationQueue;
+    
+    NSString *_status;
+    double _percentDone;
 }
 
-+ (void)eachTest:(void (^)(SEL sel, OFSDAVConformanceTestImp imp))applier;
++ (void)eachTest:(void (^)(SEL sel, OFSDAVConformanceTestImp imp, OFSDAVConformanceTestProgress progress))applier;
 {
     OBPRECONDITION(self == [OFSDAVConformanceTest class]); // We could iterate each superclass too if not...
     
@@ -97,6 +107,7 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
     unsigned int methodCount;
     Method *methods = class_copyMethodList(self, &methodCount);
     
+    NSMutableArray *testMethodValues = [NSMutableArray new];
     for (unsigned int methodIndex = 0; methodIndex < methodCount; methodIndex++) {
         // Make sure the method looks like what we are interested in
         Method method = methods[methodIndex];
@@ -107,10 +118,17 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
         if (strcmp(testWithErrorEncoding, method_getTypeEncoding(method)))
             continue;
         
-        OFSDAVConformanceTestImp testImp = (typeof(testImp))method_getImplementation(method);
-
-        applier(methodSelector, testImp);
+        [testMethodValues addObject:[NSValue valueWithPointer:method]];
     }
+    
+    NSUInteger testCount = [testMethodValues count];
+    [testMethodValues enumerateObjectsUsingBlock:^(NSValue *methodValue, NSUInteger testIndex, BOOL *stop) {
+        Method method = [methodValue pointerValue];
+        SEL methodSelector = method_getName(method);
+        
+        OFSDAVConformanceTestImp testImp = (typeof(testImp))method_getImplementation(method);
+        applier(methodSelector, testImp, (OFSDAVConformanceTestProgress){.completed = testIndex, .total = testCount});
+    }];
 }
 
 /*
@@ -152,9 +170,20 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
         __autoreleasing NSError *error;
         if ([errors count] > 0) {
             NSString *description = NSLocalizedStringFromTableInBundle(@"WebDAV server failed conformance test.", @"OmniFileStore", OMNI_BUNDLE, @"Error description");
-            NSArray *recoverySuggestions = [errors arrayByPerformingBlock:^(NSError *anError) {
-                return [anError localizedRecoverySuggestion];
-            }];
+            NSMutableArray *recoverySuggestions = [NSMutableArray array];
+            for (NSError *anError in errors) {
+                if (![anError hasUnderlyingErrorDomain:OFSErrorDomain code:OFSDAVFileManagerConformanceFailed] || !OFSShouldOfferToReportError(anError)) {
+                    // Our conformance tests failed because of some unrelated error (unreachable host, authentication issue, storage space issue, etc.).  Let's just return that error, rather than bundling it up into a conformance failure error.
+                    [self _finishWithError:anError];
+                    return;
+                }
+
+                // Collect all the recovery suggestions for conformance test failures
+                NSString *recoverySuggestion = [anError localizedRecoverySuggestion];
+                OBASSERT(recoverySuggestion != nil); // Since we're only looking at OFSDAVFileManagerConformanceFailed, we should be able to rely on the recovery suggestion being set
+                if (recoverySuggestion != nil) // ... but just in case it isn't, let's not crash while trying to report an error
+                    [recoverySuggestions addObject:recoverySuggestion];
+            }
             OFSErrorWithInfo(&error, OFSDAVFileManagerConformanceFailed, description, [recoverySuggestions componentsJoinedByString:@" "], OFSDAVConformanceFailureErrors, errors, nil);
         }
         [self _finishWithError:error];
@@ -164,8 +193,8 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
 - (void)start;
 {
     [_operationQueue addOperationWithBlock:^{
-        // Put spaces in the path to make sure we run tests that force URL encoding
-        NSURL *mainTestDirectory = [_baseURL URLByAppendingPathComponent:@"OmniFileStore DAV Conformance Tests" isDirectory:YES];
+        // We run each test twice, once with some spaces in the path and once without (since each case can hit different server bugs).
+        NSURL *mainTestDirectory = [_baseURL URLByAppendingPathComponent:@"OmniFileStore-DAV-Conformance-Tests" isDirectory:YES];
         NSMutableArray *errors = [NSMutableArray new];
         __autoreleasing NSError *mainError;
 
@@ -183,20 +212,29 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
             return;
         }
         
-        [[self class] eachTest:^(SEL sel, OFSDAVConformanceTestImp imp) {
-            __autoreleasing NSError *perTestError;
+        [[self class] eachTest:^(SEL sel, OFSDAVConformanceTestImp imp, OFSDAVConformanceTestProgress progress) {
+            void (^runTest)(BOOL withSpace) = ^(BOOL withSpace){
+                __autoreleasing NSError *perTestError;
+                
+                NSString *testName = [NSString stringWithFormat:@"for%@%@", NSStringFromSelector(sel), withSpace ? @" " : @"-"];
+                _baseURL = [mainTestDirectory URLByAppendingPathComponent:testName isDirectory:YES];
+                if (![_fileManager createDirectoryAtURL:_baseURL attributes:nil error:&perTestError]) {
+                    [errors addObject:perTestError];
+                    return;
+                }
+                
+                perTestError = nil;
+                if (!imp(self, sel, &perTestError)) {
+                    NSLog(@"Error encountered while running -%@ -- %@", NSStringFromSelector(sel), [perTestError toPropertyList]);
+                    [errors addObject:perTestError];
+                }
+            };
+            
+            runTest(YES);
+            [self _updatePercentDone:(2*progress.completed + 0)/(2.0*progress.total)];
 
-            _baseURL = [mainTestDirectory URLByAppendingPathComponent:NSStringFromSelector(sel) isDirectory:YES];
-            if (![_fileManager createDirectoryAtURL:_baseURL attributes:nil error:&perTestError]) {
-                [errors addObject:perTestError];
-                return;
-            }
-
-            perTestError = nil;
-            if (!imp(self, sel, &perTestError)) {
-                NSLog(@"Error encountered while running -%@ -- %@", NSStringFromSelector(sel), [perTestError toPropertyList]);
-                [errors addObject:perTestError];
-            }
+            runTest(NO);
+            [self _updatePercentDone:(2*progress.completed + 1)/(2.0*progress.total)];
         }];
         
         // Clean up after ourselves
@@ -693,6 +731,72 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
     return YES;
 }
 
+- (BOOL)testCopyFileReturnsDestinationURL:(NSError **)outError;
+{    
+    __autoreleasing NSError *error;
+    
+    DAV_mkdir(a);
+    NSURL *b = [_baseURL URLByAppendingPathComponent:@"b" isDirectory:NO];
+    
+    NSURL *dest = [_fileManager copyURL:a toURL:b withSourceETag:nil overwrite:NO error:&error];
+    OFSDAVRequire(dest, @"Copy of file should succeed");
+
+    // Have to allow redirection -- we mostly want to make sure we don't get the original URL back.
+    OFSDAVRequire([[dest path] isEqual:[b path]], @"Move of file should return the correct destination URL.");
+    
+    return YES;
+}
+
+- (BOOL)testCopyCollectionReturnsDestinationURL:(NSError **)outError;
+{    
+    __autoreleasing NSError *error;
+    
+    DAV_mkdir(a);
+    NSURL *b = [_baseURL URLByAppendingPathComponent:@"b" isDirectory:YES];
+    
+    NSURL *dest = [_fileManager copyURL:a toURL:b withSourceETag:nil overwrite:NO error:&error];
+    OFSDAVRequire(dest, @"Copy of collection should succeed");
+    
+    // Have to allow redirection -- we mostly want to make sure we don't get the original URL back.
+    OFSDAVRequire([[dest path] isEqual:[b path]], @"Copy of collection should return the correct destination URL.");
+    
+    return YES;
+}
+
+- (BOOL)testMoveFileReturnsDestinationURL:(NSError **)outError;
+{
+    NSURL *main = _baseURL;
+    
+    __autoreleasing NSError *error;
+    DAV_write_at(main, a, [NSData data]);
+    NSURL *main_b = [main URLByAppendingPathComponent:@"b" isDirectory:NO];
+    
+    NSURL *dest = [_fileManager moveURL:main_a toMissingURL:main_b error:&error];
+    OFSDAVRequire(dest, @"Move of file should succeed");
+    
+    // Have to allow redirection -- we mostly want to make sure we don't get the original URL back.
+    OFSDAVRequire([[dest path] isEqual:[main_b path]], @"Move of file should return the correct destination URL.");
+    
+    return YES;
+}
+
+- (BOOL)testMoveCollectionReturnsDestinationURL:(NSError **)outError;
+{
+    NSURL *main = _baseURL;
+    
+    __autoreleasing NSError *error;
+    DAV_write_at(main, a, [NSData data]);
+    NSURL *main_b = [main URLByAppendingPathComponent:@"b" isDirectory:YES];
+    
+    NSURL *dest = [_fileManager moveURL:main_a toMissingURL:main_b error:&error];
+    OFSDAVRequire(dest, @"Move of collection should succeed");
+
+    // Have to allow redirection -- we mostly want to make sure we don't get the original URL back.
+    OFSDAVRequire([[dest path] isEqual:[main_b path]], @"Move of collection should return the correct destination URL.");
+    
+    return YES;
+}
+
 - (BOOL)testMoveFileIfMissing:(NSError **)outError;
 {
     NSURL *main = _baseURL;
@@ -831,9 +935,25 @@ static BOOL _OFSDAVConformanceError(NSError **outError, NSError *originalError, 
 
 - (void)_updateStatus:(NSString *)status;
 {
+    _status = [status copy];
+    
     if (_statusChanged) {
+        double percentDone = _percentDone;
+        
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            _statusChanged(status);
+            _statusChanged(status, percentDone);
+        }];
+    }
+}
+
+- (void)_updatePercentDone:(double)percentDone;
+{
+    _percentDone = percentDone;
+    if (_statusChanged) {
+        NSString *status = _status;
+        
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            _statusChanged(status, percentDone);
         }];
     }
 }

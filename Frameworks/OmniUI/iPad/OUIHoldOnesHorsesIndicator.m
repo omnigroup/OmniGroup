@@ -112,6 +112,7 @@ static UIColor *BackgroundWashColor;
     [self.indicatorView addSubview:self.spinnerView];
     self.spinnerView.center = self.indicatorView.center;
     [self.parentView addSubview:self.indicatorView];
+    [self.parentView bringSubviewToFront:self.indicatorView];
     
     if (self.shouldDisableAllInteraction)
         [[UIApplication sharedApplication] beginIgnoringInteractionEvents];

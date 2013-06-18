@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2011 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -225,7 +225,7 @@ static OFPreference *cp1252OverridePref = nil;
     NSNumber *encodingOverrideNumber;
     CFStringEncoding specifiedEncoding;
 
-    specifiedEncoding = [isa stringEncodingForContentType:[sourceContent fullContentType]];
+    specifiedEncoding = [[self class] stringEncodingForContentType:[sourceContent fullContentType]];
     encodingOverrideNumber = [pipeline contextObjectForKey:OWEncodingOverrideContextKey];
     if (encodingOverrideNumber != nil) {
         NSNumber *oldEncodingProvenance;
@@ -249,7 +249,7 @@ static OFPreference *cp1252OverridePref = nil;
             if (encodingDefault != kCFStringEncodingInvalidId)
                 return encodingDefault;
         }
-        return [isa defaultStringEncoding];
+        return [[self class] defaultStringEncoding];
     } else
         return specifiedEncoding;
 }

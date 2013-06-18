@@ -18,8 +18,8 @@
     #define DEBUG_CREDENTIALS_DEFINED 0
 #endif
 
-void _OFLogSecError(const char *caller, const char *function, OSStatus err) OB_HIDDEN;
-#define OFLogSecError(function, err) _OFLogSecError(__PRETTY_FUNCTION__, function, err)
+void _OFSecError(const char *caller, const char *function, OSStatus code, NSError **outError) OB_HIDDEN;
+#define OFSecError(function, code, outError) _OFSecError(__PRETTY_FUNCTION__, function, code, outError)
 
 NSURLCredential *_OFCredentialFromUserAndPassword(NSString *user, NSString *password) OB_HIDDEN;
 

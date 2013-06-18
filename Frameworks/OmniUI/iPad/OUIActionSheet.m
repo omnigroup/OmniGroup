@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,8 +108,8 @@ NSString * const OUIActionSheetDidDismissNotification = @"OUIActionSheetDidDismi
 {
     [super dismissWithClickedButtonIndex:buttonIndex animated:animated];
     
-    // -1 means cancel (clicked out) if you don't have a cancel item
-    if (buttonIndex >= 0 && buttonIndex != [self cancelButtonIndex]) {
+    // -1 means cancel (tapped outside the alert) if you don't have a cancel item
+    if (buttonIndex >= 0) {
         void (^action)(void) = (typeof(action))[_actions objectAtIndex:buttonIndex];
         if (action) {
             action();

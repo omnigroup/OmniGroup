@@ -871,6 +871,8 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 {
     OBPRECONDITION([NSThread isMainThread]);
     
+    DEBUG_SYNC(1, @"Sync timer fired");
+
     [self sync:nil];
 }
 

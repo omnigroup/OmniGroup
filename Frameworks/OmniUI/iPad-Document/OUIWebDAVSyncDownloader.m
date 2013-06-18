@@ -385,6 +385,15 @@ RCS_ID("$Id$");
         NSData *data = [fileWrapper regularFileContents];
         _totalDataLength += [data length];
         
+        if ([[targetURL absoluteString] hasSuffix:@"/"]) {// we're replacing a package w/ a flat file
+            OBASSERT(_uploadTemporaryURL == nil); // Otherwise we'd need a stack of things to rename rather than just one
+            OBASSERT(_uploadFinalURL == nil);
+            
+            NSString *temporaryNameSuffix = [@"-write-in-progress-" stringByAppendingString:OFXMLCreateID()];
+            _uploadFinalURL = targetURL;
+            targetURL = OFSURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES);
+            _uploadTemporaryURL = targetURL;
+        }
         __weak OUIWebDAVSyncDownloader *weakSelf = self;
 
         id <OFSAsynchronousOperation> uploadOperation = [fileManager asynchronousWriteData:data toURL:targetURL atomically:NO];

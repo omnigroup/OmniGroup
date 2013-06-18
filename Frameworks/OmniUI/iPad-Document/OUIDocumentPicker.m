@@ -92,6 +92,8 @@ static NSString * const OpenGroupItemsBinding = @"openGroupItems";
 @property(nonatomic,copy) NSSet *openGroupItems;
 @property(nonatomic,strong) NSMutableDictionary *openInMapCache;
 
+@property (nonatomic,strong) UISegmentedControl *filtersSegmentedControl;
+
 @property(nonatomic,readonly) BOOL canPerformActions;
 
 @end
@@ -1092,40 +1094,19 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     if (!self.canPerformActions)
         return;
 
-    OUIActionSheet *actionSheet = [[OUIActionSheet alloc] initWithIdentifier:kActionSheetExportIdentifier];
-
-    // "Move to" for each scope that isn't the selected scope
-    if ([_documentStore.scopes count] > 1) {
-        NSMutableArray *otherScopes = [_documentStore.scopes mutableCopy];
-        [otherScopes removeObject:self.selectedScope];
-        [otherScopes removeObject:_documentStore.trashScope];
-        [otherScopes sortUsingSelector:@selector(compareDocumentScope:)];
-        
-        switch ([otherScopes count]) {
-            case 0:
-                // Nowhere to move
-                break;
-            case 1:
-            {
-                OFSDocumentStoreScope *otherScope = otherScopes[0];
-                [actionSheet addButtonWithTitle:[otherScope moveToActionLabelWhenInList:NO] forAction:^{
-                    [self _moveSelectedDocumentsToScope:otherScope];
-                }];
-                break;
-            }
-            default:
-                [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Move to...", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet button title") forAction:^{
-                    [self _showMoveMenuWithScopes:otherScopes fromSender:sender];
-                }];
-                break;
-        }
-    }
-
-    if (self.selectedFileItems.count > 1) {
-        [[OUIAppController controller] showActionSheet:actionSheet fromSender:sender animated:YES];
+    OFSDocumentStoreScope *currentScope = self.selectedScope;
+    
+    NSMutableArray *otherScopes = [_documentStore.scopes mutableCopy];
+    [otherScopes removeObject:currentScope];
+    [otherScopes removeObject:_documentStore.trashScope];
+    [otherScopes sortUsingSelector:@selector(compareDocumentScope:)];
+    
+    if ((currentScope.isTrash) || (self.selectedFileItems.count > 1)) {
+        [self _showMoveMenuWithScopes:otherScopes fromSender:sender];
         return;
     }
 
+    // By now we know we only have 1 item selected. Before we create the menu below, let's make sure we can do something with the item.
     OFSDocumentStoreFileItem *fileItem = self.singleSelectedFileItem;
     if (!fileItem){
         OBASSERT_NOT_REACHED("Make this button be disabled");
@@ -1151,6 +1132,31 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     if (url == nil)
         return;
 
+    // Looks like we can export this item. Lets build up the menu.
+    OUIActionSheet *actionSheet = [[OUIActionSheet alloc] initWithIdentifier:kActionSheetExportIdentifier];
+    
+    // "Move to" for each scope that isn't the selected scope
+    if ([_documentStore.scopes count] > 1) {
+        switch ([otherScopes count]) {
+            case 0:
+                // Nowhere to move
+                break;
+            case 1:
+            {
+                OFSDocumentStoreScope *otherScope = otherScopes[0];
+                [actionSheet addButtonWithTitle:[otherScope moveToActionLabelWhenInList:NO] forAction:^{
+                    [self _moveSelectedDocumentsToScope:otherScope];
+                }];
+                break;
+            }
+            default:
+                [actionSheet addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Move to...", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet button title") forAction:^{
+                    [self _showMoveMenuWithScopes:otherScopes fromSender:sender];
+                }];
+                break;
+        }
+    }
+    
     id <OUIDocumentPickerDelegate> delegate = _weak_delegate;
     
     BOOL canExport = [[OFPreferenceWrapper sharedPreferenceWrapper] boolForKey:@"OUIExportEnabled"];
@@ -1533,11 +1539,19 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     NSString *identifier = [filterPreference stringValue];
     NSArray *availableFilters = self.availableFilters;
     
-    OUIDocumentPickerFilter *filter = [availableFilters first:^BOOL(OUIDocumentPickerFilter *filter) {
-        return [filter.identifier isEqualToString:identifier];
-    }];
+    OUIDocumentPickerFilter *filter = nil;
+    NSUInteger filterIndex = 0;
+    for (filterIndex = 0; filterIndex < [availableFilters count]; filterIndex++) {
+        OUIDocumentPickerFilter *possableFilter = [availableFilters objectAtIndex:filterIndex];
+        if ([possableFilter.identifier isEqualToString:identifier]) {
+            filter = possableFilter;
+            break;
+        }
+    }
+    
     if (!filter && [availableFilters count] > 0) {
         filter = [availableFilters objectAtIndex:0];
+        filterIndex = 0;
         
         // Fix the preference for other readers to know what we eneded up using. We'll get called reentrantly here now.
         [filterPreference setStringValue:filter.identifier];
@@ -1547,6 +1561,7 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
     
     [self addDocumentStoreInitializationAction:^(OUIDocumentPicker *blockSelf){
         blockSelf->_documentStoreFilter.filterPredicate = filter.predicate;
+        [blockSelf.filtersSegmentedControl setSelectedSegmentIndex:filterIndex];
     }];
 
     // The delegate likely wants to update the title displayed in the document picker toolbar.
@@ -1597,7 +1612,7 @@ static UIImage *_findUnscaledIconForUTI(NSString *fileUTI, NSUInteger targetSize
 }
 
 - (void)updateTitle;
-{    
+{
     NSString *title = [self mainToolbarTitle];
     
     // Had to add a space after the title to make padding between the title and the image. I tried using UIEdgeInsets on the image, title and content but could not get it to work horizontally. I did, however, get it to work to vertically align the image.
@@ -1870,7 +1885,26 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
                 
                 [self _updateToolbarItemsAnimated:NO]; // Update the selected file item count
                 [self _updateToolbarItemsEnabledness];
-            } else {
+            }
+            else if (self.selectedScope.isTrash) {
+                NSMutableArray *otherScopes = [_documentStore.scopes mutableCopy];
+                [otherScopes removeObject:_documentStore.trashScope];
+                [otherScopes sortUsingSelector:@selector(compareDocumentScope:)];
+                
+                NSMutableArray *options = [NSMutableArray array];
+                
+                for (OFSDocumentStoreScope *scope in otherScopes) {
+                    OUIMenuOption *option = [[OUIMenuOption alloc] initWithTitle:[scope moveToActionLabelWhenInList:YES] image:nil action:^{
+                        [self _moveFileItems:[NSSet setWithObject:fileItem] toScope:scope];
+                    }];
+                    [options addObject:option];
+                }
+                
+                OUIMenuController *moveToMenuController = [[OUIMenuController alloc] initWithOptions:options];
+                moveToMenuController.title = NSLocalizedStringFromTableInBundle(@"Move to...", @"OmniUIDocument", OMNI_BUNDLE, @"Menu popover title");
+                [moveToMenuController showMenuFromSender:itemView];
+            }
+            else {
                 id <OUIDocumentPickerDelegate> delegate = _weak_delegate;
                 if ([delegate respondsToSelector:@selector(documentPicker:openTappedFileItem:)])
                     [delegate documentPicker:self openTappedFileItem:fileItem];
@@ -1941,19 +1975,24 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
             _exportBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Export", @"OmniUIDocument", OMNI_BUNDLE, @"Export toolbar item accessibility label.");
             _duplicateDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIDocumentDuplicate.png"] style:UIBarButtonItemStylePlain target:self action:@selector(duplicateDocument:)];
             _duplicateDocumentBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Duplicate", @"OmniUIDocument", OMNI_BUNDLE, @"Duplicate toolbar item accessibility label.");
-            _deleteBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIDocumentDelete.png"] style:UIBarButtonItemStylePlain target:self action:@selector(deleteDocument:)];
-            _deleteBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Delete", @"OmniUIDocument", OMNI_BUNDLE, @"Delete toolbar item accessibility label.");
         }
+        
+        // Delete Item
+        UIImage *deleteButtonImage = self.selectedScope.isTrash ? [UIImage imageNamed:@"OUIDeleteFromTrash"] : [UIImage imageNamed:@"OUIDocumentDelete"];
+        _deleteBarButtonItem = [[UIBarButtonItem alloc] initWithImage:deleteButtonImage style:UIBarButtonItemStylePlain target:self action:@selector(deleteDocument:)];
+        _deleteBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Delete", @"OmniUIDocument", OMNI_BUNDLE, @"Delete toolbar item accessibility label.");
         
         _exportBarButtonItem.enabled = NO;
         _duplicateDocumentBarButtonItem.enabled = NO;
         _deleteBarButtonItem.enabled = NO;
         
         [toolbarItems addObject:_exportBarButtonItem];
-        [toolbarItems addObject:_duplicateDocumentBarButtonItem];
+        if (!self.selectedScope.isTrash) {
+            [toolbarItems addObject:_duplicateDocumentBarButtonItem];
+        }
         [toolbarItems addObject:_deleteBarButtonItem];
     } else {
-        if (_documentStore.documentTypeForNewFiles != nil) {
+        if ((_documentStore.documentTypeForNewFiles != nil) && (self.selectedScope.isTrash == NO)) {
             UIBarButtonItem *addItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarAddDocument.png"] 
                                                                          style:UIBarButtonItemStylePlain 
                                                                         target:controller action:@selector(makeNewDocument:)];
@@ -1981,9 +2020,7 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
                 format = NSLocalizedStringFromTableInBundle(@"%ld Documents Selected", @"OmniUIDocument", OMNI_BUNDLE, @"Main toolbar title for a multiple selected documents.");
         }
 
-        NSString *title = [NSString stringWithFormat:format, [selectedFileItems count]];
-        
-        
+        NSString *title = [NSString stringWithFormat:format, [selectedFileItems count]];        
         UILabel *label = [[UILabel alloc] init];
         label.text = title;
         label.backgroundColor = [UIColor clearColor];
@@ -1991,10 +2028,9 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
         label.textColor = [UIColor whiteColor];
         [label sizeToFit];
         
-        
         UIBarButtonItem *selectionItem = [[UIBarButtonItem alloc] initWithCustomView:label];
-        
-        [toolbarItems addObject:selectionItem];
+        if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPhone) // no selection text on the iPhone, not enough room on the toolbar
+            [toolbarItems addObject:selectionItem];
     } else {
         if ([self.selectedScope isKindOfClass:[OFXDocumentStoreScope class]]) {
 #ifdef OMNI_ASSERTIONS_ON
@@ -2046,7 +2082,8 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     if (!editing)
         [toolbarItems addObject:controller.appMenuBarItem];
     
-    [toolbarItems addObject:self.editButtonItem];
+    if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPhone || editing) // on iPhone to save space, show "Done" button, but not "Edit" button (user can press-and-hold on doc instead)
+        [toolbarItems addObject:self.editButtonItem];
     
     id <OUIDocumentPickerDelegate> delegate = _weak_delegate;
     if ([delegate respondsToSelector:@selector(documentPicker:makeToolbarItems:)])
@@ -2065,7 +2102,7 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
             _deleteBarButtonItem.enabled = NO;
         } else {
             BOOL canExport;
-            if ([_documentStore.scopes count] > 1)
+            if (([_documentStore.scopes count] > 2) || (self.selectedScope.isTrash))
                 canExport = YES;
             else if (count == 1)
                 canExport = ([[self availableExportTypesForFileItem:[self singleSelectedFileItem] serverAccount:nil exportOptionsType:OUIExportOptionsNone] count] > 0);
@@ -2081,10 +2118,19 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
 
 - (void)_setupBottomToolbar
 {
+    NSArray *availableFilters = [self availableFilters];
+    BOOL willDisplayFilter = ([availableFilters count] > 0);
+    
     NSMutableArray *bottomToolbarItems = [NSMutableArray array];
     
     // Sort
     {
+        if (!willDisplayFilter) {
+            // We're only going to show the sort control, so we need to pad it on it's left to center it.
+            UIBarButtonItem *flexySpacer = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+            [bottomToolbarItems addObject:flexySpacer];
+        }
+        
         // Make sure to keep these in sync with the OUIDocumentPickerItemSort enum.
         NSArray *sortTitles = @[
                                 NSLocalizedStringFromTableInBundle(@"Sort by date", @"OmniUIDocument", OMNI_BUNDLE, @"sort by date"),
@@ -2098,28 +2144,25 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
         UIBarButtonItem *sortsItem = [[UIBarButtonItem alloc] initWithCustomView:sortSegmentedControl];
         [bottomToolbarItems addObject:sortsItem];
     }
+    
+    // If we only have the sort itme, this flexy will provide padding on the right to help center it. If we have both the sort and filter, this flexy will push the sort all the way to the right edge. Either way, we want this flexy.
+    UIBarButtonItem *flexySpacer = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+    [bottomToolbarItems addObject:flexySpacer];
 
     // Filter
-    NSArray *availableFilters = [self availableFilters];
-    if ([availableFilters count] > 0) {
-        // First add flexy spacer to move the filters item all the way right.
-        UIBarButtonItem *flexySpacer = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-        [bottomToolbarItems addObject:flexySpacer];
-        
-        
-        // Now time to add the actual filter items.
+    if (willDisplayFilter) {
         NSString *identifier = [[[self class] filterPreference] stringValue];
         NSUInteger selectedIndex = [availableFilters indexOfObjectPassingTest:^BOOL(OUIDocumentPickerFilter *filter, NSUInteger idx, BOOL *stop) {
             return [filter.identifier isEqualToString:identifier];
         }];
         
         NSArray *filterTitles = [availableFilters valueForKey:@"title"];
-        UISegmentedControl *filtersSegmentedControl = [[UISegmentedControl alloc] initWithItems:filterTitles];
-        [filtersSegmentedControl addTarget:self action:@selector(filterSegmentChanged:) forControlEvents:UIControlEventValueChanged];
-        filtersSegmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
-        filtersSegmentedControl.selectedSegmentIndex = selectedIndex;
+        self.filtersSegmentedControl = [[UISegmentedControl alloc] initWithItems:filterTitles];
+        [self.filtersSegmentedControl addTarget:self action:@selector(filterSegmentChanged:) forControlEvents:UIControlEventValueChanged];
+        self.filtersSegmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
+        self.filtersSegmentedControl.selectedSegmentIndex = selectedIndex;
         
-        UIBarButtonItem *filtersItem = [[UIBarButtonItem alloc] initWithCustomView:filtersSegmentedControl];
+        UIBarButtonItem *filtersItem = [[UIBarButtonItem alloc] initWithCustomView:self.filtersSegmentedControl];
         [bottomToolbarItems addObject:filtersItem];
     }
     
@@ -2137,8 +2180,8 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     
     OUIDocumentPickerSettings *settings = [[OUIDocumentPickerSettings alloc] init];
     settings.availableScopes = [_documentStore.scopes sortedArrayUsingSelector:@selector(compareDocumentScope:)];
-    settings.availableFilters = self.availableFilters;
-    [settings showFromView:sender];
+    settings.availableImportExportAccounts = self.selectedScope.isTrash ? nil : [[OFXServerAccountRegistry defaultAccountRegistry] validImportExportAccounts];
+    [settings showFromView:sender inViewController:self];
 }
 
 - (void)_setupTopItemsBinding;
@@ -2315,11 +2358,11 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     _renameViewController = nil;
 }
 
-- (void)_moveSelectedDocumentsToScope:(OFSDocumentStoreScope *)scope;
+- (void)_moveFileItems:(NSSet *)fileItems toScope:(OFSDocumentStoreScope *)scope;
 {
     [self _beginIgnoringDocumentsDirectoryUpdates];
     [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
-    [_documentStore moveFileItems:self.selectedFileItems toScope:scope completionHandler:^(OFSDocumentStoreFileItem *failingItem, NSError *errorOrNil){
+    [_documentStore moveFileItems:fileItems toScope:scope completionHandler:^(OFSDocumentStoreFileItem *failingItem, NSError *errorOrNil){
         [self clearSelection:YES];
         [self _endIgnoringDocumentsDirectoryUpdates];
         [self _performDelayedItemPropagationWithCompletionHandler:^{
@@ -2328,6 +2371,11 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
                 OUI_PRESENT_ALERT(errorOrNil);
         }];
     }];
+}
+
+- (void)_moveSelectedDocumentsToScope:(OFSDocumentStoreScope *)scope;
+{
+    [self _moveFileItems:self.selectedFileItems toScope:scope];
 }
 
 - (void)_showMoveMenuWithScopes:(NSArray *)scopes fromSender:(id)sender;
@@ -2343,7 +2391,7 @@ static void _setItemSelectedAndBounceView(OUIDocumentPicker *self, OUIDocumentPi
     
     OUIMenuController *menu = [[OUIMenuController alloc] initWithOptions:options];
     menu.title = NSLocalizedStringFromTableInBundle(@"Move to...", @"OmniUIDocument", OMNI_BUNDLE, @"Menu popover title");
-    [menu showMenuFromBarItem:_exportBarButtonItem];
+    [menu showMenuFromSender:sender];
 }
 
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView dragWithRecognizer:(OUIDragGestureRecognizer *)recognizer;

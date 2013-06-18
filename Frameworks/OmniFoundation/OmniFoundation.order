@@ -88,7 +88,6 @@ OFRandom.o:___rcs_id_hack
 OFReadWriteLock.o:___rcs_id_hack
 OFRegularExpressionMatch.o:___rcs_id_hack
 OFRemoveScriptCommand.o:___rcs_id_hack
-OFResourceFork.o:___rcs_id_hack
 OFResultHolder.o:___rcs_id_hack
 OFRunLoopQueueProcessor.o:___rcs_id_hack
 OFRunLoopScheduler.o:___rcs_id_hack

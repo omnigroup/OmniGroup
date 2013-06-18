@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSArray.h>
+#import <Foundation/NSObjCRuntime.h> // for NSComparator
 
 @class NSSet;
 
@@ -31,6 +32,7 @@
 
 // Maintaining sorted arrays
 - (void)insertObject:(id)anObject inArraySortedUsingSelector:(SEL)selector;
+- (void)insertObject:(id)anObject inArraySortedUsingComparator:(NSComparator)comparator;
 - (void)insertObject:(id)anObject inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))compare context:(void *)context;
 - (void)removeObjectIdenticalTo:(id)anObject fromArraySortedUsingSelector:(SEL)selector;
 - (void)removeObjectIdenticalTo:(id)anObject fromArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))compare context:(void *)context;

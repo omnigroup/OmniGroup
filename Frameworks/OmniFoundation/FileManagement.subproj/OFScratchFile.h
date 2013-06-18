@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,16 +9,9 @@
 
 #import <OmniFoundation/OFObject.h>
 
-@class NSData, NSMutableArray;
-@class OFDataCursor;
+@class NSData;
 
 @interface OFScratchFile : OFObject
-{
-    NSString                   *filename;
-    NSData                     *contentData;
-    NSString                   *contentString;
-    NSMutableArray             *retainedObjects;
-}
 
 + (OFScratchFile *)scratchFileNamed:(NSString *)aName error:(NSError **)outError;
 + (OFScratchFile *)scratchDirectoryNamed:(NSString *)aName error:(NSError **)outError;
@@ -27,8 +20,5 @@
 - (NSString *)filename;
 - (NSData *)contentData;
 - (NSString *)contentString;
-- (OFDataCursor *)contentDataCursor;
-
-- (void)retainObject:anObject;
 
 @end

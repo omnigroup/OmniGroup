@@ -85,7 +85,6 @@
 		4AA535B708B27DE600F0872D /* OWProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520CCFE8AB39F11C9CC38 /* OWProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA535B908B27DE600F0872D /* OWURLFileProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520CFFE8AB39F11C9CC38 /* OWURLFileProcessor.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4AA535BA08B27DE600F0872D /* OWUnknownDataStreamProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520CEFE8AB39F11C9CC38 /* OWUnknownDataStreamProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA535BB08B27DE600F0872D /* OWXMLURLFileProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 0B27A514FF9AB331C697A14E /* OWXMLURLFileProcessor.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4AA535BD08B27DE600F0872D /* OWFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E4FE8AB39F11C9CC38 /* OWFTPProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA535BE08B27DE600F0872D /* OWFTPSession.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E5FE8AB39F11C9CC38 /* OWFTPSession.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4AA535C008B27DE600F0872D /* OWMacOSPeterLewisFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E6FE8AB39F11C9CC38 /* OWMacOSPeterLewisFTPProcessor.h */; settings = {ATTRIBUTES = (); }; };
@@ -171,7 +170,6 @@
 		4AA5361308B27DE600F0872D /* OWProcessorDescription.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DC8648FFD2F409C697A10E /* OWProcessorDescription.m */; settings = {ATTRIBUTES = (); }; };
 		4AA5361408B27DE600F0872D /* OWURLFileProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E520C8FE8AB39F11C9CC38 /* OWURLFileProcessor.m */; settings = {ATTRIBUTES = (); }; };
 		4AA5361508B27DE600F0872D /* OWUnknownDataStreamProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E520C7FE8AB39F11C9CC38 /* OWUnknownDataStreamProcessor.m */; settings = {ATTRIBUTES = (); }; };
-		4AA5361608B27DE600F0872D /* OWXMLURLFileProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B27A515FF9AB331C697A14E /* OWXMLURLFileProcessor.m */; settings = {ATTRIBUTES = (); }; };
 		4AA5361708B27DE600F0872D /* OWFTPListingProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = A23D75A504DF27750097A146 /* OWFTPListingProcessor.m */; };
 		4AA5361808B27DE600F0872D /* OWFTPProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E520DFFE8AB39F11C9CC38 /* OWFTPProcessor.m */; settings = {ATTRIBUTES = (); }; };
 		4AA5361908B27DE600F0872D /* OWFTPSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E520E0FE8AB39F11C9CC38 /* OWFTPSession.m */; settings = {ATTRIBUTES = (); }; };
@@ -595,8 +593,6 @@
 		056C5364FF3A3028C697A146 /* OWParameterizedContentType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWParameterizedContentType.m; sourceTree = "<group>"; };
 		0A8379FFFF6AFE3EC697A10E /* OWCannedHTTPSourceProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWCannedHTTPSourceProcessor.h; sourceTree = "<group>"; };
 		0A837A00FF6AFE3EC697A10E /* OWCannedHTTPSourceProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWCannedHTTPSourceProcessor.m; sourceTree = "<group>"; };
-		0B27A514FF9AB331C697A14E /* OWXMLURLFileProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWXMLURLFileProcessor.h; sourceTree = "<group>"; };
-		0B27A515FF9AB331C697A14E /* OWXMLURLFileProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWXMLURLFileProcessor.m; sourceTree = "<group>"; };
 		28106325FF018682C697A12F /* OWCookieDomain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWCookieDomain.m; sourceTree = "<group>"; };
 		28106326FF018682C697A12F /* OWCookieDomain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWCookieDomain.h; sourceTree = "<group>"; };
 		2810632CFF02D5AAC697A12F /* OWCookiePath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWCookiePath.m; sourceTree = "<group>"; };
@@ -1129,8 +1125,6 @@
 				00E520C7FE8AB39F11C9CC38 /* OWUnknownDataStreamProcessor.m */,
 				00E520CFFE8AB39F11C9CC38 /* OWURLFileProcessor.h */,
 				00E520C8FE8AB39F11C9CC38 /* OWURLFileProcessor.m */,
-				0B27A514FF9AB331C697A14E /* OWXMLURLFileProcessor.h */,
-				0B27A515FF9AB331C697A14E /* OWXMLURLFileProcessor.m */,
 			);
 			name = Concrete;
 			sourceTree = "<group>";
@@ -1478,7 +1472,6 @@
 				4AA535B708B27DE600F0872D /* OWProcessor.h in Headers */,
 				4AA535B908B27DE600F0872D /* OWURLFileProcessor.h in Headers */,
 				4AA535BA08B27DE600F0872D /* OWUnknownDataStreamProcessor.h in Headers */,
-				4AA535BB08B27DE600F0872D /* OWXMLURLFileProcessor.h in Headers */,
 				4AA535BD08B27DE600F0872D /* OWFTPProcessor.h in Headers */,
 				4AA535BE08B27DE600F0872D /* OWFTPSession.h in Headers */,
 				3475B67D13C39E4C006E3819 /* OWMLSTFTPProcessor.h in Headers */,
@@ -1861,7 +1854,7 @@
 		34D02A15167E5CCB005E680B /* ONUnitTests.otest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
-			path = ONUnitTests.otest;
+			path = ONUnitTests.octest;
 			remoteRef = 34D02A14167E5CCB005E680B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -2024,7 +2017,6 @@
 				4AA5361308B27DE600F0872D /* OWProcessorDescription.m in Sources */,
 				4AA5361408B27DE600F0872D /* OWURLFileProcessor.m in Sources */,
 				4AA5361508B27DE600F0872D /* OWUnknownDataStreamProcessor.m in Sources */,
-				4AA5361608B27DE600F0872D /* OWXMLURLFileProcessor.m in Sources */,
 				4AA5361708B27DE600F0872D /* OWFTPListingProcessor.m in Sources */,
 				4AA5361808B27DE600F0872D /* OWFTPProcessor.m in Sources */,
 				4AA5361908B27DE600F0872D /* OWFTPSession.m in Sources */,

@@ -29,31 +29,47 @@ static inline void main_sync(void (^block)(void))
         dispatch_sync(mainQueue, block);
 }
 
-NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifier)
+static SecKeychainItemRef _OFKeychainItemForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)
 {
-    OBPRECONDITION(![NSString isEmptyString:serviceIdentifier]);
+    NSData *serviceIdentifierData = [serviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
     
-    DEBUG_CREDENTIALS(@"read credentials for service identifier %@", serviceIdentifier);
+    SecKeychainItemRef itemRef = NULL;
+    OSStatus err = SecKeychainFindGenericPassword(NULL, // default keychain search list
+                                                  (UInt32)[serviceIdentifierData length], [serviceIdentifierData bytes],
+                                                  0, NULL, // username length and bytes -- we don't care
+                                                  0, NULL, // password length and bytes -- we'll get these via SecKeychainItemCopyAttributesAndData()
+                                                  &itemRef);
+    if (err != errSecSuccess) {
+        if (err == errSecItemNotFound) {
+            if (outError)
+                *outError = [NSError errorWithDomain:OFCredentialsErrorDomain code:OFCredentialsErrorNotFound userInfo:nil];
+            DEBUG_CREDENTIALS(@"  returning nil credentials -- not found");
+            return NULL;
+        }
+        OFSecError("SecKeychainFindGenericPassword", err, outError);
+        DEBUG_CREDENTIALS(@"  returning nil credentials -- error in lookup");
+        return NULL;
+    }
+    
+    return itemRef;
+}
 
+NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)
+{
+    DEBUG_CREDENTIALS(@"read credentials for service identifier %@", serviceIdentifier);
+    
+    if ([NSString isEmptyString:serviceIdentifier]) {
+        if (outError)
+            *outError = [NSError errorWithDomain:OFCredentialsErrorDomain code:OFCredentialsErrorNotFound userInfo:nil];
+        return nil;
+    }
+    
     __block NSURLCredential *result = nil;
     
     main_sync(^{
-        SecKeychainRef keychain = NULL; // default keychain
-        
-        NSData *serviceIdentifierData = [serviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
-        
-        SecKeychainItemRef itemRef = NULL;
-        OSStatus err = SecKeychainFindGenericPassword(keychain,
-                                                      (UInt32)[serviceIdentifierData length], [serviceIdentifierData bytes],
-                                                      0, NULL, // username length and bytes -- we don't care
-                                                      0, NULL, // password length and bytes -- we'll get these via SecKeychainItemCopyAttributesAndData()
-                                                      &itemRef);
-        if (err != noErr) {
-            if (err != errSecItemNotFound)
-                OFLogSecError("SecKeychainFindGenericPassword", err);
-            DEBUG_CREDENTIALS(@"  returning nil credentials");
+        SecKeychainItemRef itemRef = _OFKeychainItemForServiceIdentifier(serviceIdentifier, outError);
+        if (!itemRef)
             return;
-        }
         
         UInt32 passwordLength = 0;
         void *passwordBytes = NULL;
@@ -66,10 +82,10 @@ NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifi
             .format = attributeFormats
         };
         SecKeychainAttributeList *attributes = NULL;
-        err = SecKeychainItemCopyAttributesAndData(itemRef, &attributeInfo, NULL/*itemClass*/, &attributes, &passwordLength, &passwordBytes);
+        OSStatus err = SecKeychainItemCopyAttributesAndData(itemRef, &attributeInfo, NULL/*itemClass*/, &attributes, &passwordLength, &passwordBytes);
         
-        if (err != noErr) {
-            OFLogSecError("SecKeychainFindGenericPassword", err);
+        if (err != errSecSuccess) {
+            OFSecError("SecKeychainItemCopyAttributesAndData", err, outError);
             CFRelease(itemRef);
             DEBUG_CREDENTIALS(@"  returning nil credentials");
             return;
@@ -90,7 +106,7 @@ NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifi
     return [result autorelease];
 }
 
-void OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSString *userName, NSString *password)
+BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSString *userName, NSString *password, NSError **outError)
 {
     OBPRECONDITION(![NSString isEmptyString:serviceIdentifier]);
     OBPRECONDITION(![NSString isEmptyString:userName]);
@@ -98,6 +114,8 @@ void OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
 
     DEBUG_CREDENTIALS(@"writing credentials for userName:%@ password:%@ serviceIdentifier:%@", userName, password, serviceIdentifier);
 
+    __block BOOL success = NO;
+    
     main_sync(^{
         SecKeychainRef keychain = NULL; // default keychain
         
@@ -111,11 +129,13 @@ void OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
                                                       0, NULL, // username length and bytes -- we don't care
                                                       NULL, NULL, // password length and data
                                                       &itemRef);
-        if (err == noErr) {
+        if (err == errSecSuccess) {
             err = SecKeychainItemModifyAttributesAndData(itemRef, NULL/*attributes*/,
                                                          (UInt32)[passwordData length], [passwordData bytes]);
-            if (err != noErr)
-                OFLogSecError("SecKeychainItemModifyAttributesAndData", err);
+            if (err != errSecSuccess)
+                OFSecError("SecKeychainItemModifyAttributesAndData", err, outError);
+            else
+                success = YES;
             CFRelease(itemRef);
         } else if (err == errSecItemNotFound) {
             // Add a new entry.
@@ -124,19 +144,25 @@ void OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
                                                          (UInt32)[userNameData length], [userNameData bytes],
                                                          (UInt32)[passwordData length], [passwordData bytes],
                                                          NULL/*outItemRef*/);
-            if (err != noErr)
-                OFLogSecError("SecKeychainAddGenericPassword", err);
+            if (err != errSecSuccess)
+                OFSecError("SecKeychainAddGenericPassword", err, outError);
+            else
+                success = YES;
         } else
-            OFLogSecError("SecKeychainFindGenericPassword", err);
+            OFSecError("SecKeychainFindGenericPassword", err, outError);
     });
+    
+    return success;
 }
 
-void OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier)
+BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)
 {
     OBPRECONDITION(![NSString isEmptyString:serviceIdentifier]);
 
     DEBUG_CREDENTIALS(@"delete credentials for protection space %@", serviceIdentifier);
 
+    __block BOOL success = NO;
+    
     main_sync(^{
         SecKeychainRef keychain = NULL; // default keychain
         
@@ -149,21 +175,26 @@ void OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier)
                                                           0, NULL, // username length and bytes -- we don't care
                                                           NULL, NULL, // password length and data
                                                           &itemRef);
-            if (err != noErr) {
-                if (err != errSecItemNotFound)
-                    OFLogSecError("SecKeychainFindGenericPassword", err);
+            if (err == errSecItemNotFound) {
+                success = YES;
+                break;
+            }
+            if (err != errSecSuccess) {
+                OFSecError("SecKeychainFindGenericPassword", err, outError);
                 return;
             }
             
             DEBUG_CREDENTIALS(@"  deleting item %@", itemRef);
             err = SecKeychainItemDelete(itemRef);
             CFRelease(itemRef);
-            if (err != noErr) {
-                OFLogSecError("SecKeychainItemDelete", err);
+            if (err != errSecSuccess) {
+                OFSecError("SecKeychainItemDelete", err, outError);
                 return;
             }
         }
     });
+    
+    return success;
 }
 
 static void _OFAccessTrustedCertificateDataSet(void (^accessor)(NSMutableSet *))

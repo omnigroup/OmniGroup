@@ -676,7 +676,7 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
     
     if (![result length] && smallestUnitString != nil) {
 	// Display 0 of the smallest enabled unit if we have no result
-	result = [NSString stringWithFormat:@"0%@", smallestUnitString];
+	result = [[NSString stringWithFormat:@"0%@", smallestUnitString] mutableCopy];
     }
     result = (id)[roundingPrefix stringByAppendingString:result];
     DLOG(@">> %@", result);

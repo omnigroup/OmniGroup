@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -195,6 +195,12 @@ static NSComparisonResult orderObjectsBySavedIndex(id object1, id object2, void 
     NSUInteger objectIndex = [self indexWhereObjectWouldBelong:anObject inArraySortedUsingSelector:selector];
     [self insertObject:anObject atIndex:objectIndex];
 }    
+
+- (void)insertObject:(id)anObject inArraySortedUsingComparator:(NSComparator)comparator;
+{
+    NSUInteger objectIndex = [self indexWhereObjectWouldBelong:anObject inArraySortedUsingComparator:comparator];
+    [self insertObject:anObject atIndex:objectIndex];
+}
 
 - (void)insertObject:(id)anObject inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))compare context:(void *)context;
 {

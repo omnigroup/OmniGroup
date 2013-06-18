@@ -567,6 +567,56 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
     [self waitForFileMetadataItems:agentB where:predicate];
 }
 
+// NSFileManager doesn't handle %-encoded directory names correctly in all cases. http://openradar.appspot.com/radar?id=3041405
+#if 0
+- (void)testRenameToInvalidUnicodeName;
+{
+    // Upload a file and wait for it to propagate
+    OFXAgent *agentA = self.agentA;
+    OFXServerAccount *accountA = [agentA.accountRegistry.validCloudSyncAccounts lastObject];
+    OBASSERT(accountA);
+    
+    OFXAgent *agentB = self.agentB;
+    OFXServerAccount *accountB = [agentB.accountRegistry.validCloudSyncAccounts lastObject];
+    OBASSERT(accountB);
+    
+    OFXFileMetadata *originalMetadata = [self uploadFixture:@"test.package"];
+    [self waitForFileMetadata:agentB where:nil];
+    
+    // File coordination takes URLs which have NSString paths, which we treat as UTF-8. But maybe someone has software that creates/renames files with Mac Roman with uncoordinated writes.
+    {
+        const char destinationName[] = {(char)0xff, '.','p','a','c','k','a','g','e'};
+        const char *originalName = [[originalMetadata.fileURL path] UTF8String];
+        
+        if (chdir([[[originalMetadata.fileURL URLByDeletingLastPathComponent] path] UTF8String]) < 0) {
+            STFail(@"chdir should work");
+        }
+        NSLog(@"***** Renaming in %@ *****", originalMetadata.fileURL.path);
+        if (rename(originalName, destinationName) < 0) {
+            STFail(@"Rename should work");
+        }
+    }
+    
+    // TODO: NSFileCoordination doesn't seem to get poked for this uncoordinated rename. Maybe NSFileCoordination just bails on invalid UTF-8 file names?
+    // Poke another file to get the scan to happen.
+    sleep(1);
+    [self uploadFixture:@"flat1.txt"];
+    
+    OFXFileMetadata *updatedMetadata = [self waitForFileMetadata:agentA where:^BOOL(OFXFileMetadata *metadata) {
+        return metadata.uploaded && [metadata.fileIdentifier isEqual:originalMetadata.fileIdentifier] && ![metadata.editIdentifier isEqual:originalMetadata.editIdentifier];
+    }];
+    STAssertTrue([[agentA metadataItemsForAccount:accountA] count] == 1, @"Shouldn't get a new item, but rename the existing one");
+    
+    OFXFileMetadata *metadataB = [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
+        return metadata.downloaded && [metadata.fileIdentifier isEqual:originalMetadata.fileIdentifier] && ![metadata.editIdentifier isEqual:updatedMetadata.editIdentifier];
+    }];
+    STAssertTrue([[agentB metadataItemsForAccount:accountB] count] == 1, @"Shouldn't get a new item, but rename the existing one");
+    
+    // Make sure the move happened on the remote side too
+    OFDiffFiles(self, [[self fixtureNamed:@"test.package"] path], [metadataB.fileURL path], nil);
+}
+#endif
+
 // Test moving a document inside another document and back out
 // Test rename combined with edit (while offline, or fast enough that one happens before first finishes).
 // test rename of file while offline and not downloaded

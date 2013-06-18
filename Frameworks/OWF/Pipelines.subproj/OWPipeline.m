@@ -672,7 +672,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     [_target incrementWeakRetainCount];
 
     NS_DURING {
-        [isa _addPipeline:self forTarget:_target];
+        [[self class] _addPipeline:self forTarget:_target];
         [self setParentContentInfo:[_target parentContentInfo]];
         OBASSERT(parentContentInfo != nil);
 
@@ -863,7 +863,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
     } NS_ENDHANDLER;
     [OWPipeline unlock];
     [self _deactivateIfPipelineHasNoProcessors];
-    // [isa activeTreeHasChanged];
+    // [[self class] activeTreeHasChanged];
 }
 
 - (NSTimeInterval)estimatedRemainingTimeInterval;
@@ -1043,7 +1043,7 @@ static void addInvocationsToQueue(NSMutableArray *invQueue, NSArray *pipelines, 
             OBASSERT(state != OWPipelineInvalidating);
             if (state != OWPipelineDead)
                 OWPipelineSetState(self, OWPipelineInvalidating);
-            [isa _removePipeline:self forTarget:oldTarget];
+            [[self class] _removePipeline:self forTarget:oldTarget];
             [self setParentContentInfo:[OWContentInfo orphanParentContentInfo]];
         }
     } NS_HANDLER {
@@ -1304,7 +1304,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
     [OWPipeline lock];
     NS_DURING {
-        newPipeline = [[isa allocWithZone:[self zone]] initWithCacheGroup:caches content:followedContent arcs:followedArcs target:aTarget];
+        newPipeline = [[[self class] allocWithZone:[self zone]] initWithCacheGroup:caches content:followedContent arcs:followedArcs target:aTarget];
         [contextLock lock];
         [newPipeline->context addEntriesFromDictionary:context];
         [contextLock unlock];
@@ -1769,7 +1769,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
                 case OWPipelineInit:
                     if (cloneParent != nil) {
                         // We're already registered as a pipeline for our target, but we want to change our ordering
-                        [isa _reorderPipeline:self forTarget:[self target] nextToPipeline:cloneParent placeBefore:shouldPlaceBefore];
+                        [[self class] _reorderPipeline:self forTarget:[self target] nextToPipeline:cloneParent placeBefore:shouldPlaceBefore];
                     }
 
                     OWPipelineSetState(self, OWPipelineBuilding);
@@ -2056,7 +2056,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
     newPipelineArcs = [followedArcs subarrayWithRange:reusedArcs];
 
-    newPipeline = [[isa alloc] initWithCacheGroup:caches content:newPipelineContent arcs:newPipelineArcs target:targetSnapshot];
+    newPipeline = [[[self class] alloc] initWithCacheGroup:caches content:newPipelineContent arcs:newPipelineArcs target:targetSnapshot];
     [contextLock lock];
     [newPipeline->context addEntriesFromDictionary:context];
     [contextLock unlock];
@@ -2265,7 +2265,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
             NS_DURING {
                 if (state == OWPipelineBuilding) {
                     OWPipelineSetState(self, OWPipelineRunning);
-                    [isa _target:targetSnapshot acceptedContentFromPipeline:self];
+                    [[self class] _target:targetSnapshot acceptedContentFromPipeline:self];
                 }
                 [self _deactivateIfPipelineHasNoProcessors];
             } NS_HANDLER {
@@ -2280,7 +2280,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
     }
 
     [self updateStatusOnTarget];
-    [isa activeTreeHasChanged];
+    [[self class] activeTreeHasChanged];
     [self treeActiveStatusMayHaveChanged];
 }
 
@@ -2514,12 +2514,12 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
             [OWPipeline unlock];
             NS_DURING {
                 if (OWPipelineDebug || flags.debug)
-                    NSLog(@"%@: delivering %@ content to %@", [self shortDescription], [isa stringForTargetContentOffer:offerType], [(NSObject *)targetSnapshot shortDescription]);
+                    NSLog(@"%@: delivering %@ content to %@", [self shortDescription], [[self class] stringForTargetContentOffer:offerType], [(NSObject *)targetSnapshot shortDescription]);
                 disposition = [targetSnapshot pipeline:self hasContent:someContent flags:offerType];
             } NS_HANDLER {
                 disposition = OWTargetContentDisposition_ContentRejectedCancelPipeline;
                 NSLog(@"Exception \"%@\" raised while delivering %@ content %@ to target %@: %@",
-                      [localException name], [isa stringForTargetContentOffer:offerType], [someContent shortDescription], [(NSObject *)targetSnapshot shortDescription], [localException description]);
+                      [localException name], [[self class] stringForTargetContentOffer:offerType], [someContent shortDescription], [(NSObject *)targetSnapshot shortDescription], [localException description]);
             } NS_ENDHANDLER;
             [OWPipeline lock];
         }
@@ -2545,7 +2545,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
             NSLog(@"%@: contentDisposition=%d", [self shortDescription], disposition);
         switch (disposition) {
             case OWTargetContentDisposition_ContentAccepted:
-                [isa _target:targetSnapshot acceptedContentFromPipeline:self];
+                [[self class] _target:targetSnapshot acceptedContentFromPipeline:self];
                 OWPipelineSetState(self, OWPipelineRunning);
                 break;
             case OWTargetContentDisposition_ContentRejectedAbortAndSavePipeline:
@@ -2579,7 +2579,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
         [localException raise];
     } NS_ENDHANDLER;
     [OWPipeline unlock];
-    [isa activeTreeHasChanged];
+    [[self class] activeTreeHasChanged];
 }
 
 - (void)_blockThenProcess;
@@ -2765,7 +2765,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
         [optionalTarget updateStatusForPipeline:self];
     else if (optionalTarget != (id)target &&
              [optionalTarget respondsToSelector:@selector(updateStatusForPipeline:)])
-        [optionalTarget updateStatusForPipeline:[isa lastActivePipelineForTarget:optionalTarget]];
+        [optionalTarget updateStatusForPipeline:[[self class] lastActivePipelineForTarget:optionalTarget]];
 }
 
 // NB The string (compositeTypeString) built by this method should be in the user's current language.

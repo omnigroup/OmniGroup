@@ -305,9 +305,10 @@ NSInteger OFNetStateNotifierDebug;
 - (void)_applicationDidEnterBackground:(NSNotification *)notification;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(_browser != nil);
     
-    [self invalidate];
+    // Radar 14075101: UIApplicationDidEnterBackgroundNotification sent twice if app with background activity is killed from Springboard
+    if (_browser)
+        [self invalidate];
 }
 
 - (void)_applicationWillEnterForeground:(NSNotification *)notification;

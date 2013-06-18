@@ -19,17 +19,26 @@
 
 RCS_ID("$Id$")
 
-void _OFLogSecError(const char *caller, const char *function, OSStatus err)
+NSString * const OFCredentialsErrorDomain = @"com.omnigroup.OmniFoundation.Credentials.ErrorDomain";
+NSString * const OFCredentialsSecurityErrorDomain = @"com.omnigroup.OmniFoundation.Credentials.Security.ErrorDomain";
+
+
+void _OFSecError(const char *caller, const char *function, OSStatus code, NSError **outError)
 {
+    NSString *errorMessage;
+    
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     // No SecCopyErrorMessageString on iOS, sadly.
-    NSLog(@"%s: %s returned %"PRI_OSStatus"", caller, function, err);
+    errorMessage = [NSString stringWithFormat:@"%s: %s returned %"PRI_OSStatus"", caller, function, code];
 #else
-    CFStringRef errorMessage = SecCopyErrorMessageString(err, NULL/*reserved*/);
-    NSLog(@"%s: %s returned \"%@\" (%"PRI_OSStatus")", caller, function, errorMessage, err);
-    if (errorMessage)
-        CFRelease(errorMessage);
+    errorMessage = CFBridgingRelease(SecCopyErrorMessageString(code, NULL/*reserved*/));
 #endif
+    NSLog(@"%@", errorMessage); // For backwards comptibility, this logs as well as passes out an error.
+    
+    if (outError) {
+        NSDictionary *userInfo = @{NSLocalizedDescriptionKey:errorMessage};
+        *outError = [NSError errorWithDomain:OFCredentialsSecurityErrorDomain code:code userInfo:userInfo];
+    }
 }
 
 NSURLCredential *_OFCredentialFromUserAndPassword(NSString *user, NSString *password)

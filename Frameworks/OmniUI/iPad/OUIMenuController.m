@@ -17,7 +17,7 @@
 
 RCS_ID("$Id$");
 
-#define kOUIMenuControllerTableWidth (320)
+#define kOUIMenuControllerTableWidth (340)
 
 @interface OUIMenuController (/*Private*/) <UIPopoverControllerDelegate, UITableViewDelegate, UITableViewDataSource>
 - (void)_discardMenu;
@@ -86,8 +86,10 @@ RCS_ID("$Id$");
     [super dealloc];
 }
 
-- (void)showMenuFromBarItem:(UIBarButtonItem *)barItem;
+- (void)showMenuFromSender:(id)sender;
 {
+    OBPRECONDITION([sender isKindOfClass:[UIBarButtonItem class]] || [sender isKindOfClass:[UIView class]]);
+    
     if ([_menuPopoverController isPopoverVisible]) {
         [_menuPopoverController dismissPopoverAnimated:YES];
         return;
@@ -112,12 +114,24 @@ RCS_ID("$Id$");
         _menuNavigationController = [[UINavigationController alloc] initWithRootViewController:self];
         _menuNavigationController.navigationBarHidden = [NSString isEmptyString:self.title];
     }
-    if (!_menuPopoverController) {
-        _menuPopoverController = [[UIPopoverController alloc] initWithContentViewController:_menuNavigationController];
-        _menuPopoverController.delegate = self;
-    }
     
-    [[OUIAppController controller] presentPopover:_menuPopoverController fromBarButtonItem:barItem permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        _menuNavigationController.navigationBarHidden = NO;
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelButton:)];
+        [[[OUIAppController controller] topViewController] presentViewController:_menuNavigationController animated:YES completion:NULL];
+    } else {
+        if (!_menuPopoverController) {
+            _menuPopoverController = [[UIPopoverController alloc] initWithContentViewController:_menuNavigationController];
+            _menuPopoverController.delegate = self;
+        }
+        
+        if ([sender isKindOfClass:[UIView class]]) {
+            [[OUIAppController controller] presentPopover:_menuPopoverController fromRect:[sender frame] inView:[sender superview] permittedArrowDirections:(UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown) animated:YES];
+        } else {
+            OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]);
+            [[OUIAppController controller] presentPopover:_menuPopoverController fromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+        }
+    }
 }
 
 #pragma mark -
@@ -187,8 +201,12 @@ RCS_ID("$Id$");
     }
     OUIMenuOption *option = [[[_options objectAtIndex:indexPath.row] retain] autorelease];
 
-    [_menuPopoverController dismissPopoverAnimated:YES];
-    [self _discardMenu]; // -popoverControllerDidDismissPopover: is only called when user action causes the popover to auto-dismiss 
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        [_menuNavigationController dismissViewControllerAnimated:YES completion:NULL];
+    } else {
+        [_menuPopoverController dismissPopoverAnimated:YES];
+    }
+    [self _discardMenu]; // -popoverControllerDidDismissPopover: is only called when user action causes the popover to auto-dismiss
     
     OUIMenuOptionAction action = option.action;
     if (action)
@@ -204,6 +222,13 @@ RCS_ID("$Id$");
 
     // Don't keep the popover controller alive needlessly.
     [[OUIAppController controller] forgetPossiblyVisiblePopoverIfAlreadyHidden];
+}
+
+- (void)cancelButton:(id)sender;
+{
+    [_menuNavigationController dismissViewControllerAnimated:YES completion:^{
+        [self _discardMenu];
+    }];
 }
 
 #pragma mark -

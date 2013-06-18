@@ -29,7 +29,7 @@
 
 RCS_ID("$Id$")
 
-@interface OFXContainerAgent () <OFSFileManagerDelegate>
+@interface OFXContainerAgent ()
 @end
 
 static NSURL *_createContainerSubdirectory(NSURL *localContainerDirectory, NSString *name, NSError **outError) NS_RETURNS_RETAINED;
@@ -157,6 +157,9 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
 
 - (BOOL)syncIfChanged:(OFSFileInfo *)containerFileInfo serverDate:(NSDate *)serverDate remoteFileManager:(OFSDAVFileManager *)remoteFileManager error:(NSError **)outError;
 {
+    NSUInteger retries = 0;
+    
+tryAgain:
     OBPRECONDITION([self _checkInvariants]); // checks the queue too
     OBPRECONDITION(containerFileInfo);
     OBPRECONDITION(serverDate);
@@ -248,7 +251,7 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
             __autoreleasing NSError *documentError = nil;
             fileItem = [[OFXFileItem alloc] initWithNewRemoteSnapshotAtURL:fileInfo.originalURL container:self filePresenter:filePresenter fileManager:remoteFileManager error:&documentError];
             if (!fileItem) {
-                if ([documentError hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_NOT_FOUND]) {
+                if ([documentError hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_NOT_FOUND] && retries < 100) {
                     // Modified while fetching
                     tryAgain = YES;
                     NSLog(@"Expected version missing while fetching remote document at %@ ... will try again", [fileInfo.originalURL absoluteString]);
@@ -285,9 +288,12 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
     
     OBPOSTCONDITION([self _checkInvariants]); // checks the queue too
 
-    if (tryAgain)
-        return [self syncIfChanged:containerFileInfo serverDate:serverDate remoteFileManager:remoteFileManager error:outError];
-    else {
+    if (tryAgain) {
+        // Nesting this call was causing infinite recursion and crash in RT 900574. Let's give up on trying to get the document altogether after an absurd number (e.g. 100) of retries
+        //return [self syncIfChanged:containerFileInfo serverDate:serverDate remoteFileManager:remoteFileManager error:outError];
+        retries++;
+        goto tryAgain;
+    } else {
         // This is definitely ideal, since we don't have complete information here (but we can't, really). If there are downloads going on, they might fix whatever name conflicts we have. But, if there is a large/slow download going on, we don't want to wait for it (and there might be more queued up after that...).
         // TODO: We could wait for a small amount of time here after detecting there is a problem before trying to resolve it. But we might also want to wait longer if there are multiple Bonjour clients on the network and we have reason to believe another might solve the problem (for example, iOS clients might want to defer to Mac clients by waiting a bit longer).
         // For now, we just won't wait.
@@ -902,31 +908,6 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
     [_weak_accountAgent containerNeedsFileTransfer:self];
 }
 
-#pragma mark - OFSFileManagerDelegate
-
-- (BOOL)fileManagerShouldAllowCellularAccess:(OFSFileManager *)manager;
-{
-    return [OFXAgent isCellularSyncEnabled];
-}
-
-- (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    // Called from background transfer queue or NSURLConnection private queue. Who knows.
-    
-    if ([challenge previousFailureCount] <= 2) {
-        NSURLCredential *credential = _account.credential;
-        OBASSERT(credential);
-        return credential;
-    }
-    return nil;
-}
-
-- (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    // Called from background transfer queue or NSURLConnection private queue. Who knows.
-    [_account reportError:[NSError certificateTrustErrorForChallenge:challenge]];
-}
-
 #pragma mark - Debugging
 
 - (NSString *)shortDescription;
@@ -1157,20 +1138,8 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
         OBASSERT_NOT_REACHED("Account agent didn't wait for background operations to finish?");
         return nil;
     }
-    
-    // Give the file manager the full account base URL so that -createDirectoryAtURLIfNeeded:error: can make directories all the way up to the top of the account.
-    OFSDAVFileManager *fileManager = (OFSDAVFileManager *)[[OFSFileManager alloc] initWithBaseURL:accountAgent.remoteBaseDirectory delegate:self error:outError];
-    if (!fileManager)
-        return nil;
-    
-    if (![fileManager isKindOfClass:[OFSDAVFileManager class]])
-        // TODO: Make an error or better get rid of all other subclasses of OFSFileManager
-        return nil;
-    
-    return fileManager;
+    return [accountAgent _makeFileManager:outError];
 }
-
-
 
 - (void)_hasCreatedRemoteDirectory;
 {

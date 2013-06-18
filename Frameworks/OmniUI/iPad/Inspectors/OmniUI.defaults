@@ -31,11 +31,5 @@
 		<string>0.930953 0.643015 0.482506</string>
 	</array>
 
-	<key>OUIDocumentPickerSelectedScope</key>
-	<string>local</string>
-	<key>OUIDocumentPickerSelectedFilter</key>
-	<string/>
-	<key>OUIDocumentPickerSortKey</key>
-	<string>date</string>
 </dict>
 </plist>

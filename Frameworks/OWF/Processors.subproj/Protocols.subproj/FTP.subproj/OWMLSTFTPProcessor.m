@@ -124,7 +124,7 @@ RCS_ID("$Id$");
                    ![NSString isEmptyString:factValue]) {
             fileSize = [NSNumber numberWithLongLong:factValue != nil ? [factValue longLongValue] : 0LL];
         } else if ([factName caseInsensitiveCompare:@"modify"] == NSOrderedSame) {
-            modDate = [isa parseDate:factValue];
+            modDate = [[self class] parseDate:factValue];
         } else if ([factName caseInsensitiveCompare:@"charset"] == NSOrderedSame) {
             nameCharset = factValue;
         }

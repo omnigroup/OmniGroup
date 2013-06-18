@@ -986,6 +986,13 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
 // The width must be at least one and integral. The height must be at least one, but may be non-integral if you want to have a row of itemss peeking out.
 + (CGSize)_gridSizeForLandscape:(BOOL)landscape;
 {
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        if (landscape)
+            return CGSizeMake(3, 1.2);
+        else
+            return CGSizeMake(2, 2.2);
+    }
+    
     // We could maybe make this configurable via a plist entry or delegate callback, but it needs to be relatively static so we can cache preview images at the exact right size (scaling preview images after the fact varies from slow to ugly based on the size of the original preview image).
     if (landscape)
         return CGSizeMake(4, 3.2);

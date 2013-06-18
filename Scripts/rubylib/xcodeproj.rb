@@ -11,7 +11,9 @@
 
 # Very minimal class for getting informtion out of an Xcode xcodeproj file
 
-require "osx/cocoa"
+gem_path = Pathname.new(File.dirname(__FILE__) + "/plist-3.1.0/lib").realpath.to_s
+$: << gem_path
+require 'plist'
 
 module Xcode
 end
@@ -25,8 +27,8 @@ class Xcode::Project
 
         plist_file = path + "/project.pbxproj"
         fail "no project file in #{path}\n" unless File.exists?(plist_file)
-        @project = OSX::NSDictionary.dictionaryWithContentsOfFile(plist_file)
-
+        @project = Plist::parse_xml(`plutil -convert xml1 -o - "#{plist_file}"`)
+        
         @objects = @project['objects']
         @root = @objects[@project['rootObject']]
         fail "doesn't look like the xcodeproj I expect\n" unless @root['isa'] == 'PBXProject'

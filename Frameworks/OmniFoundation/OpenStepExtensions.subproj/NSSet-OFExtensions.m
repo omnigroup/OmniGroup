@@ -82,6 +82,13 @@ static void performAndAdd(const void *anObject, void *_context)
     return [NSSet setWithObjects:singleResult, nil];
 }
 
+- (NSSet *)setByRemovingObject:(id)anObject;
+{
+    return [self filteredSetUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+        return ![evaluatedObject isEqual:anObject];
+    }]];
+}
+
 struct insertionSortContext {
     SEL sel;
     NSMutableArray *into;
@@ -101,6 +108,29 @@ static void insertionSort(const void *anObject, void *_context)
     ctxt.into = [NSMutableArray arrayWithCapacity:[self count]];
     
     CFSetApplyFunction((CFSetRef)self, insertionSort, &ctxt);
+    
+    return ctxt.into;
+}
+
+struct comparatorInsertionSortContext {
+    NSComparator comparator;
+    NSMutableArray *into;
+};
+
+static void comparatorInsertionSort(const void *anObject, void *_context)
+{
+    struct comparatorInsertionSortContext *context = _context;
+    [context->into insertObject:(id)anObject inArraySortedUsingComparator:context->comparator];
+}
+
+- (NSArray *)sortedArrayUsingComparator:(NSComparator)comparator;
+{
+    struct comparatorInsertionSortContext ctxt;
+    
+    ctxt.comparator = comparator;
+    ctxt.into = [NSMutableArray arrayWithCapacity:[self count]];
+    
+    CFSetApplyFunction((CFSetRef)self, comparatorInsertionSort, &ctxt);
     
     return ctxt.into;
 }

@@ -491,7 +491,7 @@ static NSDate *extractDate(void *from)
         else
             logDescription = [source shortDescription];
 
-        NSLog(@"-[%@ %@]: arc<%@> invalidity=%@, created %g ago", OBShortObjectDescription(self), NSStringFromSelector(_cmd), logDescription, [isa stringFromInvalidityFlags:invalidity], pipelineFetchDate != nil ? [pipelineFetchDate timeIntervalSinceDate:creationDate] : 0.0);
+        NSLog(@"-[%@ %@]: arc<%@> invalidity=%@, created %g ago", OBShortObjectDescription(self), NSStringFromSelector(_cmd), logDescription, [[self class] stringFromInvalidityFlags:invalidity], pipelineFetchDate != nil ? [pipelineFetchDate timeIntervalSinceDate:creationDate] : 0.0);
     }
 #endif
     return invalidity;

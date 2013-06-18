@@ -31,10 +31,6 @@ enum {
     SectionCount,
 };
 
-@protocol BlahBlahBlah
-- (NSURL *)localDocumentURL;
-@end
-
 @interface OUICloudAccountListViewController () <UITableViewDataSource, UITableViewDelegate>
 @end
 

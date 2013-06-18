@@ -21,6 +21,7 @@
 #import <sys/socket.h>
 #import <netinet/in.h>
 #else
+#import <OmniFoundation/NSProcessInfo-OFExtensions.h>
 #import <OmniFoundation/OFController.h>
 #endif
 #import <dns_sd.h>
@@ -85,6 +86,19 @@ static const NSTimeInterval kCoalesceTimeInterval = 3;
     OBINITIALIZE;
     
     OBInitializeDebugLogLevel(OFNetStateRegistrationDebug);
+
+#ifdef OMNI_ASSERTIONS_ON
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    // No NSProcessInfo or readable entitlements on iOS, of course...
+#else
+    if ([[NSProcessInfo processInfo] isSandboxed]) {
+        NSDictionary *entitlements = [[NSProcessInfo processInfo] effectiveCodeSigningEntitlements:NULL];
+        
+        // Assert that we have network server entitlement, or this ain't gonna work
+        OBASSERT([[entitlements objectForKey:@"com.apple.security.network.server"] boolValue]);
+    }
+#endif
+#endif
 }
 
 static NSString * const OFNetStateRegistrationGroupTerminator = @" ";
@@ -137,15 +151,15 @@ static NSString * const OFNetStateRegistrationGroupTerminator = @" ";
     
     NSNetService *service = _service;
     _service = nil;
+    NSTimer *timer = _delayedUpdateTimer;
+    _delayedUpdateTimer = nil;
     
     // We could close() this here, but lets not do it until the NSNetService is stopped.
     int serviceSocket = _socket;
     _socket = -1;
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [_delayedUpdateTimer invalidate];
-        _delayedUpdateTimer = nil;
-        
+        [timer invalidate];
         [service stop];
         [service removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         
@@ -163,7 +177,8 @@ NSString * const OFNetStateRegistrationVersionKey = @"v";
 
 - (void)setState:(NSData *)state;
 {
-    OBPRECONDITION(_service); // not invalidated
+    // Might get backgrounded and have some background task that finishes up. If we ever get foregrounded again, we'll remember the state to publish.
+    //OBPRECONDITION(_service); // not invalidated
     
     if (OFISEQUAL(_state, state))
         return;
@@ -173,7 +188,9 @@ NSString * const OFNetStateRegistrationVersionKey = @"v";
 
     _state = [state copy];
     _version = OFXMLCreateID();
-    [self _queueTXTRecordUpdate];
+    
+    if (_state)
+        [self _queueTXTRecordUpdate];
 }
 
 #pragma mark - Debugging
@@ -189,8 +206,8 @@ NSString * const OFNetStateRegistrationVersionKey = @"v";
 - (void)_applicationDidEnterBackground:(NSNotification *)notification;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(_service != nil);
     
+    // Radar 14075101: UIApplicationDidEnterBackgroundNotification sent twice if app with background activity is killed from Springboard
     if (_service)
         [self invalidate];
 }
@@ -207,6 +224,8 @@ NSString * const OFNetStateRegistrationVersionKey = @"v";
 
 - (void)_queueTXTRecordUpdate;
 {
+    OBPRECONDITION(_service);
+    
     NSMutableDictionary *txtRecord = [NSMutableDictionary new];
     
     txtRecord[OFNetStateRegistrationMemberIdentifierKey] = _memberIdentifier;
@@ -455,6 +474,8 @@ NSData *OFNetStateTXTRecordDataFromDictionary(NSDictionary *dictionary, BOOL add
 
 NSDictionary *OFNetStateTXTRecordDictionaryFromData(NSData *txtRecord, BOOL expectTypePrefixes, __autoreleasing NSString **outErrorString)
 {
+    OBPRECONDITION(outErrorString != NULL);
+    
     if ([txtRecord length] == 0) {
         *outErrorString = @"No TXT record data returned.";
         return nil;
@@ -490,8 +511,10 @@ NSDictionary *OFNetStateTXTRecordDictionaryFromData(NSData *txtRecord, BOOL expe
             
             if (expectTypePrefixes) {
                 NSUInteger length = [string length];
-                if (length < 2)
-                    return [NSString stringWithFormat:@"TXT record entry for \"%@\" is too short.", key];
+                if (length < 2) {
+                    *outErrorString = [NSString stringWithFormat:@"TXT record entry for \"%@\" is too short.", key];
+                    return nil;
+                }
                 NSString *payload = [string substringFromIndex:2];
                 
                 unichar type = [string characterAtIndex:0];
@@ -511,14 +534,16 @@ NSDictionary *OFNetStateTXTRecordDictionaryFromData(NSData *txtRecord, BOOL expe
                     }
                     default:
                         OBASSERT_NOT_REACHED("Implement this type");
-                        return [NSString stringWithFormat:@"Unable to handle TXT record entry with type '%c' for key \"%@\".", type, key];
+                        *outErrorString = [NSString stringWithFormat:@"Unable to handle TXT record entry with type '%c' for key \"%@\".", type, key];
+                        return nil;
                 }
             } else {
                 value = string;
             }
         }
         
-        [validatedValues setObject:value forKey:key];
+        if (value)
+            [validatedValues setObject:value forKey:key];
     }
     
     return validatedValues;

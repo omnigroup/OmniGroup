@@ -1,4 +1,4 @@
-// Copyright 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,66 @@
 RCS_ID("$Id$");
 
 #import <OmniFoundation/OFStringScanner.h>
+
+void OFProcessICUDateFormatStringWithComponentHandler(NSString *formatString, void (^componentHandler)(NSString *component, BOOL isLiteral))
+{
+    OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:formatString];
+    
+    while (scannerHasData(scanner)) {
+        unichar character = scannerReadCharacter(scanner);
+        
+        // Check for a quoted literal
+        if (character == '\'') {
+            // Literal string
+            NSMutableString *literal = [[NSMutableString alloc] init];
+            while (scannerHasData(scanner)) {
+                unichar quotedCharacter = scannerReadCharacter(scanner);
+                if (quotedCharacter == '\'') {
+                    // Two single quotes inside or outside of a quoted block represent a quote.
+                    if (scannerHasData(scanner) && (scannerPeekCharacter(scanner) == '\'')) {
+                        // This is a quote inside a quoted block
+                        scannerReadCharacter(scanner);
+                        [literal appendString:@"'"];
+                    } else {
+                        // This is the end of a quoted block
+                        break;
+                    }
+                } else {
+                    CFStringAppendCharacters((CFMutableStringRef)literal, &quotedCharacter, 1);
+                }
+                OBASSERT(scannerHasData(scanner)); // warn if we get an input format with unmatched quotes
+            }
+            
+            if ([literal length] == 0)
+                // This is a quote outside a quoted block
+                componentHandler(@"'", YES);
+            else
+                componentHandler(literal, YES);
+            [literal release];
+            continue;
+        }
+        
+        // Not a literal, read a batch of identical sequential charactders representing a format specifier
+        NSMutableString *component = [NSMutableString string];
+        CFStringAppendCharacters((CFMutableStringRef)component, &character, 1);
+        while (scannerHasData(scanner) && scannerPeekCharacter(scanner) == character) {
+            scannerReadCharacter(scanner);
+            CFStringAppendCharacters((CFMutableStringRef)component, &character, 1);
+        }
+        componentHandler(component, NO);
+    }
+    
+    [scanner release];
+}
+
+NSArray *OFComponentsFromICUDateFormatString(NSString *formatString)
+{
+    NSMutableArray *components = [NSMutableArray array];
+    OFProcessICUDateFormatStringWithComponentHandler(formatString, ^(NSString *component, BOOL isLiteral) {
+        [components addObject:component];
+    });
+    return components;
+}
 
 NSString *OFDateFormatStringForOldFormatString(NSString *oldFormat)
 {
@@ -183,173 +243,144 @@ NSString *OFDateFormatStringForOldFormatString(NSString *oldFormat)
 NSString *OFOldDateFormatStringForFormatString(NSString *newFormat)
 {
     NSMutableString *result = [NSMutableString string];
-    OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:newFormat];
-
-    while (scannerHasData(scanner)) {
-        unichar character = scannerReadCharacter(scanner);
-        
-        // Check for a quoted literal
-        if (character == '\'') {
-            // Literal string
-            NSMutableString *literal = [[NSMutableString alloc] init];
-            while (scannerHasData(scanner)) {
-                unichar quotedCharacter = scannerReadCharacter(scanner);
-                if (quotedCharacter == '\'') {
-                    // Two single quotes inside or outside of a quoted block represent a quote.
-                    if (scannerHasData(scanner) && (scannerPeekCharacter(scanner) == '\'')) {
-                        // This is a quote inside a quoted block
-                        scannerReadCharacter(scanner);
-                        [literal appendString:@"'"];
-                    } else {
-                        // This is the end of a quoted block
-                        break;
+    OFProcessICUDateFormatStringWithComponentHandler(newFormat, ^(NSString *component, BOOL isLiteral) {
+        if (isLiteral) {
+            [result appendString:component];
+        } else {
+            NSUInteger characterCount = [component length];
+            unichar character = [component characterAtIndex:0];
+            switch (character) {
+                case '%': // quoted percent
+                    [result appendString:@"%%"];
+                    break;
+                    
+                case 'y': // year
+                    OBASSERT(characterCount == 1 || characterCount == 2 || characterCount == 4); // ICU supports any length, but we expect to get "reasonable" strings for now. Handle other lengths, but alert if we get them.
+                    if (characterCount == 2)
+                        [result appendString:@"%y"];
+                    else
+                        [result appendString:@"%Y"]; // 'y' and 'yyyy' are explicitly stated to be 4-digit year in ICU
+                    break;
+                case 'M': // month
+                    if (characterCount == 1)
+                        [result appendString:@"%1m"]; // no leading zero
+                    else if (characterCount == 2)
+                        [result appendString:@"%m"]; // with leading zero, if needed
+                    else if (characterCount == 3)
+                        [result appendString:@"%b"]; // short month name
+                    else {
+                        OBASSERT(characterCount == 4); // ICU supports 5 too for a "narrow name"
+                        [result appendString:@"%B"]; // full month name
                     }
-                } else {
-                    CFStringAppendCharacters((CFMutableStringRef)literal, &quotedCharacter, 1);
-                }
-                OBASSERT(scannerHasData(scanner)); // warn if we get an input format with unmatched quotes
+                    break;
+                case 'd': // day of month
+                    OBASSERT(characterCount <= 2);
+                    if (characterCount == 1)
+                        [result appendString:@"%e"]; // no leading zero ("%1d" also works, but we are writing %e in OO3)
+                    else
+                        [result appendString:@"%d"]; // with leading zero, if needed
+                    break;
+                case 'D': // day of year
+                    OBASSERT(characterCount == 3);
+                    if (characterCount >= 3)
+                        [result appendString:@"%j"];
+                    else
+                        [result appendFormat:@"%%%luj", characterCount];
+                    break;
+                case 'E': // day name of week
+                    if (characterCount <= 3)
+                        [result appendString:@"%a"]; // short weekday name
+                    else {
+                        OBASSERT(characterCount == 4); // ICU supports 5 too for a "narrow name"
+                        [result appendString:@"%A"];
+                    }
+                    break;
+                case 'e': // local day name of week
+                    if (characterCount == 1)
+                        [result appendString:@"%u"]; // short weekday name
+                    else if (characterCount <= 3)
+                        [result appendString:@"%a"]; // short weekday name
+                    else {
+                        OBASSERT(characterCount == 4); // ICU supports 5 too for a "narrow name"
+                        [result appendString:@"%A"];
+                    }
+                    break;
+                case 'a': // period
+                    OBASSERT(characterCount == 1);
+                    [result appendString:@"%p"]; // AM/PM
+                    break;
+                case 'h': // hour, 1-12
+                    OBASSERT(characterCount <= 2);
+                    if (characterCount == 1)
+                        [result appendString:@"%1I"];
+                    else
+                        [result appendString:@"%I"];
+                    break;
+                case 'H': // hour, 0-23
+                    OBASSERT(characterCount <= 2);
+                    if (characterCount == 1)
+                        [result appendString:@"%1H"];
+                    else
+                        [result appendString:@"%H"];
+                    break;
+                case 'm': // minute
+                    OBASSERT(characterCount <= 2);
+                    if (characterCount == 1)
+                        [result appendString:@"%1M"];
+                    else
+                        [result appendString:@"%M"];
+                    break;
+                case 's': // second
+                    OBASSERT(characterCount <= 2);
+                    if (characterCount == 1)
+                        [result appendString:@"%1S"];
+                    else
+                        [result appendString:@"%S"];
+                    break;
+                case 'S': // fractional seconds
+                    OBASSERT(characterCount == 3);
+                    [result appendString:@"%F"];
+                    break;
+                case 'z':
+                    if (characterCount <= 3) {
+                        // ICU for this should be "PDT", but strftime/10.2 NSDateFormatter doesn't seem to have a format for that.
+                        [result appendString:@"%Z"];
+                    } else {
+                        OBASSERT(characterCount == 4);
+                        // ICU for this should be "Pacific Daylight Time". %Z in strftime gives "America/Los_Angeles"
+                        [result appendString:@"%Z"];
+                    }
+                    break;
+                case 'Z':
+                    OBASSERT(characterCount == 3); // 1-3 give "-0800", 4 characters gives a different format in ICU, "GMT-08:00"
+                    [result appendString:@"%z"]; // Time zone offset in hours and minutes from GMT (HHMM)
+                    break;
+                    
+                case 'G': // era
+                case 'Y': // week of year
+                case 'u': // extended year
+                case 'Q': // quarter
+                case 'q': // stand-alone quarter
+                case 'L': // stand-along month
+                case 'w': // week of year
+                case 'W': // week of month
+                case 'F': // day of week in month
+                case 'g': // modified julian day
+                case 'c': // stand-alone local day of week
+                case 'K': // hour, 0-11
+                case 'k': // hour, 1-24
+                case 'A': // milliseconds in day
+                    // Some of these full strftime supports, some it may not (just doing the ones documented for 10.0-10.3 NSDateFormatters for now).
+                    OBASSERT_NOT_REACHED("No support for specified format.");
+                    break;
+                default:
+                    // NSDateFormatter on iOS will specify random unquoted strings in the middle of formats (like "M/d/yy h:mm a")
+                    for (NSUInteger characterIndex = 0; characterIndex < characterCount; characterIndex++)
+                        [result appendFormat:@"%C", character];
+                    break;
             }
-            
-            if ([literal length] == 0)
-                // This is a quote outside a quoted block
-                [result appendString:@"'"];
-            else
-                [result appendString:literal];
-            [literal release];
-            continue;
         }
-        
-
-        // Not a literal, read a batch of identical sequential charactders representing a format specifier
-        NSUInteger characterCount = 1;
-        while (scannerHasData(scanner) && scannerPeekCharacter(scanner) == character) {
-            scannerReadCharacter(scanner);
-            characterCount++;
-        }
-        
-        switch (character) {
-            case '%': // quoted percent
-                [result appendString:@"%%"];
-                break;
-
-            case 'y': // year
-                OBASSERT(characterCount == 1 || characterCount == 2 || characterCount == 4); // ICU supports any length, but we expect to get "reasonable" strings for now. Handle other lengths, but alert if we get them.
-                if (characterCount == 2)
-                    [result appendString:@"%y"];
-                else
-                    [result appendString:@"%Y"]; // 'y' and 'yyyy' are explicitly stated to be 4-digit year in ICU
-                break;
-            case 'M': // month
-                if (characterCount == 1)
-                    [result appendString:@"%1m"]; // no leading zero
-                else if (characterCount == 2)
-                    [result appendString:@"%m"]; // with leading zero, if needed
-                else if (characterCount == 3)
-                    [result appendString:@"%b"]; // short month name
-                else {
-                    OBASSERT(characterCount == 4); // ICU supports 5 too for a "narrow name"
-                    [result appendString:@"%B"]; // full month name
-                }
-                break;
-            case 'd': // day of month
-                OBASSERT(characterCount <= 2);
-                if (characterCount == 1)
-                    [result appendString:@"%e"]; // no leading zero ("%1d" also works, but we are writing %e in OO3)
-                else
-                    [result appendString:@"%d"]; // with leading zero, if needed
-                break;
-            case 'D': // day of year
-                OBASSERT(characterCount == 3);
-                if (characterCount >= 3)
-                    [result appendString:@"%j"];
-                else
-                    [result appendFormat:@"%%%luj", characterCount];
-                break;
-            case 'E': // day name of week
-                if (characterCount <= 3)
-                    [result appendString:@"%a"]; // short weekday name
-                else {
-                    OBASSERT(characterCount == 4); // ICU supports 5 too for a "narrow name"
-                    [result appendString:@"%A"];
-                }
-                break;
-            case 'a': // period
-                OBASSERT(characterCount == 1);
-                [result appendString:@"%p"]; // AM/PM
-                break;
-            case 'h': // hour, 1-12
-                OBASSERT(characterCount <= 2);
-                if (characterCount == 1)
-                    [result appendString:@"%1I"];
-                else
-                    [result appendString:@"%I"];
-                break;
-            case 'H': // hour, 0-23
-                OBASSERT(characterCount <= 2);
-                if (characterCount == 1)
-                    [result appendString:@"%1H"];
-                else
-                    [result appendString:@"%H"];
-                break;
-            case 'm': // minute
-                OBASSERT(characterCount <= 2);
-                if (characterCount == 1)
-                    [result appendString:@"%1M"];
-                else
-                    [result appendString:@"%M"];
-                break;
-            case 's': // second
-                OBASSERT(characterCount <= 2);
-                if (characterCount == 1)
-                    [result appendString:@"%1S"];
-                else
-                    [result appendString:@"%S"];
-                break;
-            case 'S': // fractional seconds
-                OBASSERT(characterCount == 3);
-                [result appendString:@"%F"];
-                break;
-            case 'z':
-                if (characterCount <= 3) {
-                    // ICU for this should be "PDT", but strftime/10.2 NSDateFormatter doesn't seem to have a format for that.
-                    [result appendString:@"%Z"];
-                } else {
-                    OBASSERT(characterCount == 4);
-                    // ICU for this should be "Pacific Daylight Time". %Z in strftime gives "America/Los_Angeles"
-                    [result appendString:@"%Z"];
-                }
-                break;
-            case 'Z':
-                OBASSERT(characterCount == 3); // 1-3 give "-0800", 4 characters gives a different format in ICU, "GMT-08:00"
-                [result appendString:@"%z"]; // Time zone offset in hours and minutes from GMT (HHMM)
-                break;
-                
-            case 'G': // era
-            case 'Y': // week of year
-            case 'u': // extended year
-            case 'Q': // quarter
-            case 'q': // stand-alone quarter
-            case 'L': // stand-along month
-            case 'w': // week of year
-            case 'W': // week of month
-            case 'F': // day of week in month
-            case 'g': // modified julian day
-            case 'c': // stand-alone local day of week
-            case 'K': // hour, 0-11
-            case 'k': // hour, 1-24
-            case 'A': // milliseconds in day
-                // Some of these full strftime supports, some it may not (just doing the ones documented for 10.0-10.3 NSDateFormatters for now).
-                OBASSERT_NOT_REACHED("No support for specified format.");
-                break;
-            default:
-                // NSDateFormatter on iOS will specify random unquoted strings in the middle of formats (like "M/d/yy h:mm a")
-                for (NSUInteger characterIndex = 0; characterIndex < characterCount; characterIndex++)
-                    [result appendFormat:@"%C", character];
-                break;
-        }
-    }
-    
-    [scanner release];
+    });
     return result;
 }
 

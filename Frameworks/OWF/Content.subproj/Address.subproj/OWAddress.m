@@ -1062,7 +1062,7 @@ addressForNotSoObviousHostname(NSString *string)
     NSDictionary *newMethodDictionary = [methodDictionary copyWithZone:zone];
     NSDictionary *newContextDictionary = [contextDictionary copyWithZone:zone];
         
-    OWAddress *newAddress = [[isa allocWithZone:zone] initWithURL:newURL target:newTarget methodString:newMethodString methodDictionary:newMethodDictionary effect:flags.effect forceAlwaysUnique:flags.forceAlwaysUnique contextDictionary:newContextDictionary];
+    OWAddress *newAddress = [[[self class] allocWithZone:zone] initWithURL:newURL target:newTarget methodString:newMethodString methodDictionary:newMethodDictionary effect:flags.effect forceAlwaysUnique:flags.forceAlwaysUnique contextDictionary:newContextDictionary];
 
     [newURL release];
     [newTarget release];

@@ -24,7 +24,7 @@ if [ $# = 0 ]; then
     exit 1
 fi
 
-# Build the strings file(s) into a separate directory so we can avoid mucking with timestamps in the build output unless needed (see below).
+# Build the strings file(s) into a separate directory so we can avoid mucking with timestamps in the build output unless needed (see below). Don’t move the file list into place unless building it succeeds.
 STRINGS_DIR="$DERIVED_FILES_DIR/BuildStringsFromTarget-$TARGET_NAME"
 TMP_OUTPUT="$STRINGS_DIR"/English.lproj
 FILE_LIST="$TMP_OUTPUT"/files
@@ -51,11 +51,11 @@ mkdir -p "$STRINGS_DIR"
 mkdir "$TMP_OUTPUT"
 
 # Gather the source files and the project file that defined them into a list, which we'll use for early-out
-echo "$PROJECT_FILE_PATH"/project.pbxproj  > "$FILE_LIST"
+echo "$PROJECT_FILE_PATH"/project.pbxproj  > "$FILE_LIST"-tmp
 source_files=()
 $SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" c,m "$PROJECT_FILE_PATH" | while read f; do
    source_files+=($f)
-   echo "$f" >> "$FILE_LIST"
+   echo "$f" >> "$FILE_LIST"-tmp
 done
 
 if [ $#source_files -gt 0 ]; then
@@ -106,9 +106,12 @@ done
 
 unexpected=0
 for x in "$TMP_OUTPUT"/*(N); do
-    if [ "$x" != "$FILE_LIST" ]; then
+    if [ "$x" != "$FILE_LIST"-tmp ]; then
         echo "Unexpected string file emitted: $x"
         unexpected=1
     fi
 done
 exit $unexpected
+
+mv "$FILE_LIST"-tmp "$FILE_LIST"
+cat "$FILE_LIST"

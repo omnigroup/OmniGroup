@@ -219,7 +219,14 @@ static NSString * const DefaultDateBinding = @"defaultDateBinding";
         [sharedPopupDatePicker close]; 
     else {
         [sharedPopupDatePicker setCalendar:calendar];
-	[sharedPopupDatePicker startPickingDateWithTitle:NSLocalizedStringFromTableInBundle(@"Choose Date", @"OmniAppKit", OMNI_BUNDLE, @"Date picker window title") forControl:self stringUpdateSelector:@selector(setStringValue:) defaultDate:[self defaultDate]];
+        
+        NSString *title = NSLocalizedStringFromTableInBundle(@"Choose Date", @"OmniAppKit", OMNI_BUNDLE, @"Date picker window title");
+        
+        NSDictionary *bindingInfo = [self infoForBinding:@"value"];
+        id bindingObject = [bindingInfo objectForKey:NSObservedObjectKey];
+        NSString *bindingKeyPath = [[bindingInfo objectForKey:NSObservedKeyPathKey] stringByReplacingOccurrencesOfString:@"selectedObjects." withString:@"selection."];
+        
+	[sharedPopupDatePicker startPickingDateWithTitle:title fromRect:[self visibleRect] inView:self bindToObject:bindingObject withKeyPath:bindingKeyPath control:self controlFormatter:[self formatter] defaultDate:[self defaultDate]];
     }
 }
 

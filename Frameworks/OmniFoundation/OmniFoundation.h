@@ -66,7 +66,6 @@
     #import <OmniFoundation/OFObject-Queue.h>
     #import <OmniFoundation/OFQueueProcessor.h>
     #import <OmniFoundation/OFReadWriteLock.h>
-    #import <OmniFoundation/OFResourceFork.h>
     #import <OmniFoundation/OFResultHolder.h>
     #import <OmniFoundation/OFRunLoopQueueProcessor.h>
     #import <OmniFoundation/OFScheduledEvent.h>

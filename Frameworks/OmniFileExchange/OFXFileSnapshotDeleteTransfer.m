@@ -55,8 +55,8 @@ RCS_ID("$Id$")
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
     
-    if (_currentSnapshotRemoteState.missing) {
-        // This is a delete that is just cleaning up a local snapshot. The document never got fully uploaded to the server.
+    if (_currentSnapshotRemoteState.missing || _currentSnapshotRemoteState.deleted) {
+        // This is a delete that is just cleaning up a local snapshot. The document never got fully uploaded to the server or was remotely deleted too.
     } else {
         TRACE_SIGNAL(OFXFileSnapshotDeleteTransfer.remote_delete_attempted);
         OFSDAVFileManager *fileManager = self.fileManager;

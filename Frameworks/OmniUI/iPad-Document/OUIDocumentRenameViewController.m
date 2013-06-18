@@ -449,9 +449,17 @@ RCS_ID("$Id$");
 
     BOOL landscape = _previewView.landscape;
     
-    CGFloat previewToLabelGap = landscape ? 37 : 50;
-    CGFloat nameTextFieldWidth = landscape ? 307 : 340;
-    CGSize targetPreviewSize = landscape ? CGSizeMake(311, 236) : CGSizeMake(197, 254);
+    CGFloat previewToLabelGap, nameTextFieldWidth;
+    CGSize targetPreviewSize;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        previewToLabelGap = 10;
+        nameTextFieldWidth = landscape ? 340 : 307;
+        targetPreviewSize = landscape ? CGSizeMake(111,41) : CGSizeMake(111, 149);
+    } else {
+        previewToLabelGap = landscape ? 37 : 50;
+        nameTextFieldWidth = landscape ? 307 : 340;
+        targetPreviewSize = landscape ? CGSizeMake(311, 236) : CGSizeMake(197, 254);
+    }
     
     RENAME_DEBUG(@"Layout with animation enabled %d", [UIView areAnimationsEnabled]);
 

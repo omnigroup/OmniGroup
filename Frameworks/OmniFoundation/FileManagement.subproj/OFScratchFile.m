@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,17 @@
 
 #import <OmniFoundation/OFScratchFile.h>
 
-#import <OmniFoundation/OFDataCursor.h>
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
 
 RCS_ID("$Id$")
 
 @implementation OFScratchFile
+{
+    NSString *filename;
+    NSData *contentData;
+    NSString *contentString;
+    NSMutableArray *retainedObjects;
+}
 
 + (OFScratchFile *)scratchFileNamed:(NSString *)aName error:(NSError **)outError;
 {
@@ -78,29 +83,14 @@ RCS_ID("$Id$")
     return contentString;
 }
 
-- (OFDataCursor *)contentDataCursor;
-{
-    return [[[OFDataCursor alloc]
-	     initWithData:[self contentData]]
-	    autorelease];
-}
-
-- (void)retainObject:anObject;
-{
-    [retainedObjects addObject:anObject];
-}
-
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
+    NSMutableDictionary *dict = [super debugDictionary];
 
     if (filename)
-	[debugDictionary setObject:filename forKey:@"filename"];
+        dict[@"filename"] = filename;
 
-    return debugDictionary;
+    return dict;
 }
-
 
 @end

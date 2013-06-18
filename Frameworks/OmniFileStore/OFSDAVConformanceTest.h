@@ -11,18 +11,23 @@
 
 @class OFSDAVFileManager;
 
+typedef struct {
+    NSInteger completed;
+    NSUInteger total;
+} OFSDAVConformanceTestProgress;
+
 @interface OFSDAVConformanceTest : NSObject
 
 typedef BOOL (*OFSDAVConformanceTestImp)(OFSDAVConformanceTest *self, SEL _cmd, __autoreleasing NSError **outError);
 
-+ (void)eachTest:(void (^)(SEL sel, OFSDAVConformanceTestImp imp))applier;
++ (void)eachTest:(void (^)(SEL sel, OFSDAVConformanceTestImp imp, OFSDAVConformanceTestProgress progress))applier;
 
 - initWithFileManager:(OFSDAVFileManager *)fileManager;
 
 @property(nonatomic,readonly) OFSDAVFileManager *fileManager;
 @property(nonatomic,readonly) NSUInteger numberOfTestsAvailable;
 
-@property(nonatomic,copy) void (^statusChanged)(NSString *status);
+@property(nonatomic,copy) void (^statusChanged)(NSString *status, double percentDone);
 @property(nonatomic,copy) void (^finished)(NSError *errorOrNil); // On failure, the error passed will wrap up all the failing errors.
 @property(nonatomic,readonly) NSUInteger numberOfTestsRun;
 

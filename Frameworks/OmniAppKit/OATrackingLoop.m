@@ -205,6 +205,9 @@ static BOOL OATrackingLoopDebug = YES;
         NSEvent *nextEvent = [window nextEventMatchingMask:NSAnyEventMask untilDate:_limitDate inMode:_runLoopMode dequeue:YES];
         DEBUG_LOOP(@"event: %@", nextEvent);
         
+        NSUInteger oldFlags = _modifierFlags;
+        _modifierFlags = [nextEvent modifierFlags];
+        
         NSEventType eventType = [nextEvent type];
         // It looks as though we can't get an actual notification that Mission Control, Expose, or Dashboard is coming up. If invoke them with a key and mouse up while they're in front, we actually seem to get the mouse up when we come back. Mouse buttons invoking them appear to be a problem.  NSSystemDefined events of subtype 7 seem to be "mouse button state change events". data1 is the mouse/mice that changed state, and data2 is the current state of all mouse buttons. CGEventTaps cause us to get what appears to be "mouse button 1 changed state and mouse button 1 is down, which we already know, because we're here.  Exit for any other mouse button changing state.
         if (eventType == _upEventType ||
@@ -271,8 +274,6 @@ static BOOL OATrackingLoopDebug = YES;
                 }
             }
         } else if (eventType == NSFlagsChanged) {
-            NSUInteger oldFlags = _modifierFlags;
-            _modifierFlags = [nextEvent modifierFlags];
             if (_modifierFlagsChanged)
                 _modifierFlagsChanged(oldFlags);
         } else if (eventType == NSPeriodic) {

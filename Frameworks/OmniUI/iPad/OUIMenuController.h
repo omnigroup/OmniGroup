@@ -23,6 +23,7 @@
 - initWithDelegate:(id <OUIMenuControllerDelegate>)delegate;
 - initWithOptions:(NSArray *)options;
 
-- (void)showMenuFromBarItem:(UIBarButtonItem *)barItem;
+// Valid sender classes are UIBarButtonItem and UIView.
+- (void)showMenuFromSender:(id)sender;
 
 @end

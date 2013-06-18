@@ -28,6 +28,7 @@ static NSString * const LastKnownDislpayNameKey = @"lastKnownDisplayName";
 static NSString * const NicknameKey = @"nickname";
 #endif
 static NSString * const IsCloudSyncEnabledKey = @"isCloudSyncEnabled";
+static NSString * const IsImportExportEnabledKey = @"isImportExportEnabled";
 static NSString * const CredentialServiceIdentifierKey = @"credentialServiceIdentifier";
 static NSString * const HasBeenPreparedForRemovalKey = @"hasBeenPreparedForRemoval";
 
@@ -193,9 +194,11 @@ static NSInteger OFXBookmarkDebug = 0;
 
     if (![NSString isEmptyString:username]) {
         BOOL sameUser = NO;
-        for (OFXServerAccount *account in similarAccounts)
-            if ((sameUser = OFISEQUAL(account.credential.user, username)))
+        for (OFXServerAccount *account in similarAccounts) {
+            NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(account.credentialServiceIdentifier, NULL);
+            if ((sameUser = OFISEQUAL(credential.user, username)))
                 break;
+        }
         if (!sameUser)
             return [NSString stringWithFormat:@"%@ (%@)", locationForDisplay, username];
     }
@@ -362,6 +365,7 @@ static NSInteger OFXBookmarkDebug = 0;
 #endif
     
     _isCloudSyncEnabled = YES;
+    _isImportExportEnabled = YES;
     
     OBPOSTCONDITION([[self.localDocumentsURL absoluteString] hasSuffix:@"/"]);
     return self;
@@ -413,15 +417,9 @@ static NSInteger OFXBookmarkDebug = 0;
     if (![NSString isEmptyString:_nickname])
         return _nickname;
 
-    return [OFXServerAccount suggestedDisplayNameForAccountType:_type url:self.remoteBaseURL username:self.credential.user excludingAccount:self];
+    NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(self.credentialServiceIdentifier, NULL);
+    return [OFXServerAccount suggestedDisplayNameForAccountType:_type url:self.remoteBaseURL username:credential.user excludingAccount:self];
 #endif
-}
-
-- (NSURLCredential *)credential;
-{
-    if (!_credentialServiceIdentifier)
-        return nil;
-    return OFReadCredentialsForServiceIdentifier(_credentialServiceIdentifier);
 }
 
 - (NSString *)importTitle;
@@ -546,11 +544,6 @@ static NSInteger OFXBookmarkDebug = 0;
 #endif
 }
 
-- (BOOL)isImportExportEnabled;
-{
-    return YES;
-}
-
 - (void)prepareForRemoval;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -568,31 +561,28 @@ static NSInteger OFXBookmarkDebug = 0;
 
 - (void)reportError:(NSError *)error;
 {
-    if ([error causedByUserCancelling])
-        return;
-    
-    void (^report)(void) = ^{
-        if (error && [self.lastError hasUnderlyingErrorDomain:OFSErrorDomain code:OFSCertificateNotTrusted]) // cert trust errors are sticky and not overridden by following errors
-            return;
-        self.lastError = error; // Fire KVO
-    };
-    
-    NSOperationQueue *mainQueue = [NSOperationQueue mainQueue];
-    if ([NSOperationQueue currentQueue] == mainQueue)
-        report();
-    else
-        [mainQueue addOperationWithBlock:report];
+    [self reportError:error format:nil];
 }
 
 - (void)reportError:(NSError *)error format:(NSString *)format, ...;
 {
-    va_list args;
-    va_start(args, format);
-    NSString *reason = [[NSString alloc] initWithFormat:format arguments:args];
-    va_end(args);
+    if ([error causedByUserCancelling])
+        return;
+
+    NSString *reason;
+    if (format) {
+        va_list args;
+        va_start(args, format);
+        reason = [[NSString alloc] initWithFormat:format arguments:args];
+        va_end(args);
+    } else
+        reason = nil;
     
     void (^report)(void) = ^{
-        [error logWithReason:reason];
+        if (reason)
+            [error logWithReason:reason];
+        if (error && [self.lastError hasUnderlyingErrorDomain:OFSErrorDomain code:OFSCertificateNotTrusted]) // cert trust errors are sticky and not overridden by following errors
+            return;
         self.lastError = error; // Fire KVO
     };
 
@@ -675,6 +665,7 @@ static NSInteger OFXBookmarkDebug = 0;
     // CANNOT USE SETTERS HERE. The setters flag the account as needing to be written.
         
     _isCloudSyncEnabled = [propertyList boolForKey:@"cloudSyncEnabled" defaultValue:YES];
+    _isImportExportEnabled = [propertyList boolForKey:@"importExportEnabled" defaultValue:YES];
 
 #if OFX_MAC_STYLE_ACCOUNT
     OBASSERT(_lastKnownDisplayName == nil, @"should not have resolved the local documents URL yet");
@@ -698,7 +689,7 @@ static NSInteger OFXBookmarkDebug = 0;
 #else
             NicknameKey, // On iOS, the nickname can be changed by the user
 #endif
-            IsCloudSyncEnabledKey, CredentialServiceIdentifierKey, HasBeenPreparedForRemovalKey, nil];
+            IsCloudSyncEnabledKey, IsImportExportEnabledKey, CredentialServiceIdentifierKey, HasBeenPreparedForRemovalKey, nil];
 }
 
 - (NSDictionary *)propertyList;
@@ -730,6 +721,9 @@ static NSInteger OFXBookmarkDebug = 0;
     if (!_isCloudSyncEnabled)
         plist[@"cloudSyncEnabled"] = @NO;
     
+    if (!_isImportExportEnabled)
+        plist[@"importExportEnabled"] = @NO;
+    
     if (_credentialServiceIdentifier)
         [plist setObject:_credentialServiceIdentifier forKey:@"serviceIdentifier"];
 
@@ -753,9 +747,13 @@ static NSInteger OFXBookmarkDebug = 0;
     
     [self willChangeValueForKey:CredentialServiceIdentifierKey];
     {
-        _credentialServiceIdentifier = [serviceIdentifier copy];
-        
-        OFWriteCredentialsForServiceIdentifier(_credentialServiceIdentifier, credential.user, credential.password);
+        NSError *writeError;
+        if (!OFWriteCredentialsForServiceIdentifier(serviceIdentifier, credential.user, credential.password, &writeError)) {
+            [writeError log:@"Error storing credentials for service identifier %@", serviceIdentifier];
+            _credentialServiceIdentifier = nil;
+        } else {
+            _credentialServiceIdentifier = [serviceIdentifier copy];
+        }
     }
     [self didChangeValueForKey:CredentialServiceIdentifierKey];
 }

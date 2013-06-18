@@ -143,7 +143,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
         return YES;
     if (anotherObject == nil)
         return NO;
-    if ([anotherObject class] != isa)
+    if ([anotherObject class] != [self class])
         return NO;
     otherProcCacheArc = anotherObject;
 
@@ -1094,7 +1094,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
 
 - (NSString *)shortDescription
 {
-    return [NSString stringWithFormat:@"<%@: %p (%@)>", NSStringFromClass(isa), self, processor ? NSStringFromClass([processor class]) : [[link processorDescription] processorClassName]];
+    return [NSString stringWithFormat:@"<%@: %p (%@)>", NSStringFromClass([self class]), self, processor ? NSStringFromClass([processor class]) : [[link processorDescription] processorClassName]];
 }
 
 - (NSString *)logDescription

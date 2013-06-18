@@ -12,6 +12,10 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
+
 RCS_ID("$Id$");
 
 @interface OAFontDescriptorTests : OATestCase
@@ -23,12 +27,48 @@ RCS_ID("$Id$");
 }
 
 #define CheckFontName(attrDict, expected) STAssertEqualObjects((NSString *)(attrDict[(id)kCTFontNameAttribute]), expected, @"Expected %@", expected)
-#define CheckFontFamily(attrDict, expected) STAssertEqualObjects((NSString *)(attrDict[(id)kCTFontFamilyNameAttribute]), expected, @"Expected %@", expected)
 #define CheckFontSize(attrDict, expected) STAssertEqualObjects((NSNumber *)(attributesFromFoundFont[(id)kCTFontSizeAttribute]), [NSNumber numberWithInt:expected], @"Expected %ld", expected)
 
 static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontDescriptor)
 {
     return  attributesFromFont(fontDescriptor.font);
+}
+
+// This just returns every font name on the current system. That's a bit odd for a unit test, since the installed fonts will change the tests. On the other hand, most of the tests in this class depend on the installed fonts; it's the nature of this particular beast.
++ (NSArray *)_fontNamesToTest;
+{
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    NSMutableArray *fontNames = [NSMutableArray array];
+    for (NSString *fontFamilyName in [UIFont familyNames]) {
+        [fontNames addObjectsFromArray:[UIFont fontNamesForFamilyName:fontFamilyName]];
+    }
+    return fontNames;
+#else
+    NSArray *result = [[NSFontManager sharedFontManager] availableFonts];
+    return result;
+#endif
+}
+
++ (SenTest *)testForRoundTripOfFontName:(NSString *)fontName;
+{
+    NSInvocation *testInvocation = [NSInvocation invocationWithMethodSignature:[self instanceMethodSignatureForSelector:@selector(testRoundTripForFontNamed:)]];
+    testInvocation.selector = @selector(testRoundTripForFontNamed:);
+    [testInvocation setArgument:&fontName atIndex:2];
+    [testInvocation retainArguments];
+    
+    return [self testCaseWithInvocation:testInvocation];
+}
+
++ (id)defaultTestSuite;
+{
+    SenTestSuite *suite = [super defaultTestSuite];
+
+    NSArray *fontNamesToTest = [self _fontNamesToTest];
+    for (NSString *fontName in fontNamesToTest) {
+        [suite addTest:[self testForRoundTripOfFontName:fontName]];
+    }
+    
+    return suite;
 }
 
 - (void)setUp;
@@ -189,7 +229,7 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 
 - (void)testBigInitializer;
 {
-    OAFontDescriptor *descriptor = [[OAFontDescriptor alloc] initWithFamily:@"Helvetica" size:24 weight:9 italic:YES condensed:NO fixedPitch:NO];
+    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Helvetica" size:24 weight:9 italic:YES condensed:NO fixedPitch:NO] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
     STAssertNotNil(attributesFromFoundFont, nil);
     // bold italic is absorbed into the font name, eek
@@ -202,7 +242,7 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 
 - (void)testZapfino36;
 {
-    OAFontDescriptor *descriptor = [[OAFontDescriptor alloc] initWithFamily:@"Zapfino" size:36];
+    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Zapfino" size:36] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
     STAssertNotNil(attributesFromFoundFont, nil);
     CheckFontName(attributesFromFoundFont, @"Zapfino");
@@ -211,7 +251,7 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 
 - (void)testZapfinoAlmost36;
 {
-    OAFontDescriptor *descriptor = [[OAFontDescriptor alloc] initWithFamily:@"Zapfino" size:35.8];
+    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Zapfino" size:35.8] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
     STAssertNotNil(attributesFromFoundFont, nil);
     CheckFontName(attributesFromFoundFont, @"Zapfino");
@@ -221,18 +261,63 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 
 - (void)testCromulentFont;
 {
-    OAFontDescriptor *descriptor = [[OAFontDescriptor alloc] initWithFamily:@"ThisFontIsPerfectlyCromulent" size:10];
+    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"ThisFontIsPerfectlyCromulent" size:10] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
     STAssertNotNil(attributesFromFoundFont, nil);
     NSString *expectedFontNameForPlatform = nil;
-    // TODO: perhaps we should look up the system font here instead of hardcoding expected names
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     expectedFontNameForPlatform = @"Helvetica";
-#else
-    expectedFontNameForPlatform = @"LucidaGrande";
-#endif
     CheckFontName(attributesFromFoundFont, expectedFontNameForPlatform); // Expect to fail family look up and fall back to default
     CheckFontSize(attributesFromFoundFont, 10);
+}
+
+- (void)testFixedPitchHoeflerText;
+{
+    // There is no fixed-pitch Hoefler Text, but let's check our fall-back path
+    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Hoefler Text" size:12.0f weight:5 italic:NO condensed:NO fixedPitch:YES] autorelease];
+    NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
+    STAssertNotNil(attributesFromFoundFont, nil);
+    CheckFontName(attributesFromFoundFont, @"HoeflerText-Regular");
+    CheckFontSize(attributesFromFoundFont, 12);
+}
+
+- (void)testBoldFixedPitchHoeflerText;
+{
+    // There is no fixed-pitch Hoefler Text, but let's check our fall-back path
+    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Hoefler Text" size:12.0f weight:9 italic:NO condensed:NO fixedPitch:YES] autorelease];
+    NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
+    STAssertNotNil(attributesFromFoundFont, nil);
+    CheckFontName(attributesFromFoundFont, @"HoeflerText-Black");
+    CheckFontSize(attributesFromFoundFont, 12);
+}
+
+- (void)testRoundTripForFontNamed:(NSString *)fontName;
+{
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    CTFontRef fontRef = CTFontCreateWithName((CFStringRef)fontName, 12.0f, NULL);
+    NSString *nameFromFontRef = (NSString *)CTFontCopyAttribute(fontRef, kCTFontNameAttribute);
+    STAssertEqualObjects(fontName, nameFromFontRef, @"Asked for font named “%@”, but got font named “%@”.", fontName, nameFromFontRef);
+    
+    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFont:fontRef] autorelease];
+    
+    CTFontRef roundTrippedFontRef = descriptor.font;
+    NSString *nameFromRoundTrippedFontRef = (NSString *)CTFontCopyAttribute(roundTrippedFontRef, kCTFontNameAttribute);
+    STAssertEqualObjects(nameFromFontRef, nameFromRoundTrippedFontRef, @"Started with font named “%@”. After round-tripping got “%@”.", nameFromFontRef, nameFromRoundTrippedFontRef);
+
+    CFRelease(fontRef);
+    CFRelease(roundTrippedFontRef);
+    [nameFromFontRef release];
+    [nameFromRoundTrippedFontRef release];
+#else
+    NSFont *font = [NSFont fontWithName:fontName size:12.0f];
+    NSString *nameFromFontRef = font.fontName;
+    STAssertEqualObjects(fontName, nameFromFontRef, @"Asked for font named “%@”, but got font named “%@”.", fontName, nameFromFontRef);
+
+    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFont:font] autorelease];
+    
+    NSFont *roundTrippedFont = descriptor.font;
+    NSString *nameFromRoundTrippedFontRef = roundTrippedFont.fontName;
+    STAssertEqualObjects(nameFromFontRef, nameFromRoundTrippedFontRef, @"Started with font named “%@”. After round-tripping got “%@”.", nameFromFontRef, nameFromRoundTrippedFontRef);
+#endif
 }
 
 @end

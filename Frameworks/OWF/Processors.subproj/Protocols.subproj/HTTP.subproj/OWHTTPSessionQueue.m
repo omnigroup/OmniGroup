@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -145,7 +145,7 @@ static NSTimeInterval timeout;
     } else {
         [queuedProcessors addObject:aProcessor];
         runningSessions = [sessions count] - [idleSessions count];
-        result = (runningSessions < (NSInteger)[isa maximumSessionsPerServer]);        
+        result = (runningSessions < (NSInteger)[[self class] maximumSessionsPerServer]);
     }
     [lock unlock];
 
@@ -162,7 +162,7 @@ static NSTimeInterval timeout;
             session = [idleSessions lastObject];
             [idleSessions removeLastObject];
         } else {
-            session = [[[isa sessionClass] alloc] initWithAddress:address inQueue:self];
+            session = [[[[self class] sessionClass] alloc] initWithAddress:address inQueue:self];
             [sessions addObject:session];
             [session release];
         }
@@ -253,7 +253,7 @@ static NSTimeInterval timeout;
 
 - (NSString *)queueKey;
 {
-    return [isa cacheKeyForSessionQueueForAddress:address];
+    return [[self class] cacheKeyForSessionQueueForAddress:address];
 }
 
 - (void)setServerUnderstandsPipelinedRequests;

@@ -578,7 +578,7 @@ static void locked_disconnectFromSysConfig(void)
 
 - (NSString *)IDNEncodedHostname;
 {
-    return [isa IDNEncodedHostname:hostname];
+    return [[self class] IDNEncodedHostname:hostname];
 }
 
 

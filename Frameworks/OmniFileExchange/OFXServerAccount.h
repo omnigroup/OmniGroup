@@ -60,12 +60,11 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountLocalDirectoryValidationReason) {
 #endif
 
 @property(nonatomic,readwrite) BOOL isCloudSyncEnabled;
-@property(nonatomic,readonly) BOOL isImportExportEnabled; // Always YES for now
+@property(nonatomic,readwrite) BOOL isImportExportEnabled;
 
 // The credential service identifier and credentals get set by validating the account via OFXServerAccountType
 // NSURLProtectionSpace cannot be archived in 10.8 (though it conforms the resulting archive data can't be unarchived) so OFXServerAccount just records a service identifier. In 10.7 NSURLProtectionSpace didn't even claim to conform to NSCoding.
 @property(nonatomic,copy) NSString *credentialServiceIdentifier;
-@property(nonatomic,readonly) NSURLCredential *credential;
 
 // Must be called before the account can be removed. The sync agent will notice this and begin the process of shutting down the account. Once that happens, the account will be removed.
 - (void)prepareForRemoval;

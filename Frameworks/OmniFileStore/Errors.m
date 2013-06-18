@@ -36,6 +36,8 @@ BOOL OFSShouldOfferToReportError(NSError *error)
             return NO; // Authorization issues cannot be resolved by the app
         if (httpErrorCode == OFS_HTTP_INSUFFICIENT_STORAGE)
             return NO; // Storage space issues cannot be resolved by the app
+        if (httpErrorCode == OFS_HTTP_SERVICE_UNAVAILABLE && ![[[[httpError userInfo] objectForKey:OFSURLErrorFailingURLErrorKey] host] containsString:@"omnigroup.com"])
+            return NO; // Service unavailable issue for some server that isn't ours
     }
 
     if ([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOSPC]) {

@@ -17,7 +17,6 @@
 
 @property(nonatomic,readonly) OFXFileSnapshot *downloadedSnapshot;
 @property(nonatomic,readonly) NSURL *localTemporaryDocumentContentsURL;
-@property(nonatomic,readonly) BOOL didMakeLocalTemporaryDocumentContentsURL;
 
 @property(nonatomic,copy) void (^started)(void);
 @property(nonatomic,readonly) BOOL isContentDownload; // This will be NO until the 'started' block is called and then might switch to YES.

@@ -1,4 +1,4 @@
-// Copyright 2000-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2013 Omni Development. Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,8 +7,13 @@
 //
 // $Id$
 
-#import <OWF/OWDataStreamCharacterProcessor.h>
+#import <OmniFoundation/OFBijection.h>
 
-@interface OWXMLURLFileProcessor : OWDataStreamCharacterProcessor
-+ (OWContentType *)sourceContentType;
+@interface OFMutableBijection : OFBijection
+
+- (void)setObject:(id)anObject forKey:(id)aKey;
+- (void)setKey:(id)aKey forObject:(id)anObject;
+
+- (void)invert;
+
 @end

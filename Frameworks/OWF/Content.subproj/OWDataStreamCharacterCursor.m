@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,7 @@ static NSCharacterSet *tokenDelimiters;
     OBPRECONDITION(source);
     
     if (source == nil)
-        [NSException raise:NSInvalidArgumentException format:@"-[%@ %@] called with a nil source", NSStringFromClass(isa), NSStringFromSelector(_cmd)];
+        [NSException raise:NSInvalidArgumentException format:@"-[%@ %@] called with a nil source", NSStringFromClass([self class]), NSStringFromSelector(_cmd)];
 
     if (!(self = [super init]))
         return nil;

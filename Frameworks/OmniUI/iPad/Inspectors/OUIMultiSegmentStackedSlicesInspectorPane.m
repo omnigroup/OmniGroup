@@ -39,11 +39,19 @@ RCS_ID("$Id$");
     // Layout in the full width, divvying up fractional pixels.
     NSUInteger segmentCount = [_segments count];
     CGFloat totalWidth = OUIInspectorContentWidth - (segmentCount - 1); // remove space taken by the 1px separators between each segment
+    
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        // On iPhone need to leave enough room for a done button as well
+        totalWidth -= 70.0; // There is no public API to get the width of a system bar button item, it just returns 0 (i.e. unset)
+    }
+            
     for (NSUInteger segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++) {
         CGFloat left = ceil(segmentIndex * totalWidth / segmentCount);
         CGFloat right = ceil((segmentIndex + 1) * totalWidth / segmentCount);
         [_titleSegmentedControl setWidth:right - left forSegmentAtIndex:segmentIndex];
     }
+    
+
     
     self.navigationItem.titleView = _titleSegmentedControl;
     

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -84,8 +84,16 @@ CTFontRef OUIGlobalDefaultFont(void)
 
 - initWithAttributedString:(NSAttributedString *)attributedString_ constraints:(CGSize)constraints;
 {
-    OBPRECONDITION(attributedString_);
+    if (!(self = [self initWithAttributedString:attributedString_ constraints:constraints includeTrailingWhitespace:NO]))
+        return nil;
+    
+    return self;
+}
 
+- initWithAttributedString:(NSAttributedString *)attributedString_ constraints:(CGSize)constraints includeTrailingWhitespace:(BOOL)includeTrailingWhitespace;
+{
+    OBPRECONDITION(attributedString_);
+    
     if (!(self = [super init]))
         return nil;
     
@@ -134,7 +142,7 @@ CTFontRef OUIGlobalDefaultFont(void)
     _frame = CTFramesetterCreateFrame(framesetter, (CFRange){0, 0}, path, frameAttributes);
     CFRelease(path);
     
-    _usedSize = OUITextLayoutMeasureFrame(_frame, NO, widthIsConstrained);
+    _usedSize = OUITextLayoutMeasureFrame(_frame, includeTrailingWhitespace, widthIsConstrained);
     
     if (!widthIsConstrained) {
         path = CGPathCreateMutable();
