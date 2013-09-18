@@ -10,7 +10,7 @@ Checking out the source
 Configuring Xcode 4
 -------------------
 
-- We currently use Xcode 4.6.2. You'll probably have the best results if you do too.
+- We currently use Xcode 4.6.3 and Xcode 5. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace.
 - If building for iOS, you need to edit your scheme to turn off implicit dependencies and parallel builds. Xcode 4 doesn't understand implicit dependencies with static libraries, so you'll need to add the dependencies to your scheme in the right order.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
@@ -18,7 +18,7 @@ Configuring Xcode 4
 Supported Targets
 ----------------------
 
-- We require iOS 6 and Mac OS X 10.7, _but_ several bits of framework code implicitly require 10.8 for Auto Layout or layer-backing fixes, or explicitly require them for things like `NSXPCConnection`.
+- We require iOS 7 and Mac OS X 10.8.
 
 Configuring the Source
 ----------------------
