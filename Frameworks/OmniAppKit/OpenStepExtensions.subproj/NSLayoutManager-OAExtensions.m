@@ -1,16 +1,23 @@
-// Copyright 2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006, 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "NSLayoutManager-OAExtensions.h"
+#import <OmniAppKit/NSLayoutManager-OAExtensions.h>
 
+#import <OmniAppKit/NSAttributedString-OAExtensions.h>
+#import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import <UIKit/NSTextContainer.h>
+#else
 #import <Cocoa/Cocoa.h>
+#import "NSTextStorage-OAExtensions.h"
+#endif
+
 #import <OmniBase/OmniBase.h>
 
-#import "NSTextStorage-OAExtensions.h"
 
 RCS_ID("$Id$");
 
@@ -29,13 +36,13 @@ RCS_ID("$Id$");
     return container;
 }
 
-- (NSRect)attachmentFrameAtGlyphIndex:(NSUInteger)glyphIndex;
+- (CGRect)attachmentFrameAtGlyphIndex:(NSUInteger)glyphIndex;
 {
     // "Glyph locations are relative the their line fragment bounding rect's origin"
-    NSRect lineFragmentRect = [self lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:NULL];
+    CGRect lineFragmentRect = [self lineFragmentRectForGlyphAtIndex:glyphIndex effectiveRange:NULL];
     //NSLog(@"      line point = %@", NSStringFromPoint(lineFragmentRect.origin));
     
-    NSRect attachmentRect;
+    CGRect attachmentRect;
     attachmentRect.origin = [self locationForGlyphAtIndex:glyphIndex];
     attachmentRect.size   = [self attachmentSizeForGlyphAtIndex:glyphIndex];
     
@@ -45,21 +52,21 @@ RCS_ID("$Id$");
     return attachmentRect;
 }
 
-- (NSRect)attachmentFrameAtCharacterIndex:(NSUInteger)charIndex;
+- (CGRect)attachmentFrameAtCharacterIndex:(NSUInteger)charIndex;
 {
     NSRange glyphRange = [self glyphRangeForCharacterRange:(NSRange){charIndex, 1} actualCharacterRange:NULL];
     return [self attachmentFrameAtGlyphIndex:glyphRange.location];
 }
 
-- (NSRect)attachmentRectForAttachmentAtCharacterIndex:(NSUInteger)characterIndex inFrame:(NSRect)layoutFrame;
+- (CGRect)attachmentRectForAttachmentAtCharacterIndex:(NSUInteger)characterIndex inFrame:(CGRect)layoutFrame;
 {
-    NSRect attachmentRect = [self attachmentFrameAtCharacterIndex:characterIndex];
+    CGRect attachmentRect = [self attachmentFrameAtCharacterIndex:characterIndex];
     attachmentRect.origin.x += layoutFrame.origin.x;
     attachmentRect.origin.y += layoutFrame.origin.y;
     return attachmentRect;
 }
 
-- (NSTextAttachment *)attachmentAtPoint:(NSPoint)point inTextContainer:(NSTextContainer *)container;
+- (NSTextAttachment *)attachmentAtPoint:(CGPoint)point inTextContainer:(NSTextContainer *)container;
 {
     // Point is in the text containers coordinate system.  Also, this returns the *nearest* glyph.
     NSUInteger glyphIndex = [self glyphIndexForPoint:point inTextContainer:container];
@@ -68,8 +75,8 @@ RCS_ID("$Id$");
         // This most likely hits when -numberOfGlyphs == 0
         return nil;
     
-    NSRect attachmentRect = [self attachmentFrameAtGlyphIndex:glyphIndex];
-    if (!NSPointInRect(point, attachmentRect))
+    CGRect attachmentRect = [self attachmentFrameAtGlyphIndex:glyphIndex];
+    if (!CGRectContainsPoint(attachmentRect, point))
         return nil;
     
     NSUInteger charIndex = [self characterIndexForGlyphAtIndex:glyphIndex];
@@ -101,16 +108,67 @@ RCS_ID("$Id$");
     NSUInteger tcIndex, tcCount = [textContainers count];
     for (tcIndex = 0; tcIndex < tcCount - 1; tcIndex++) {
         textContainer = [textContainers objectAtIndex:tcIndex];
-        NSSize containerSize = [textContainer containerSize];
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+        CGSize containerSize = textContainer.size;
+#else
+        CGSize containerSize = [textContainer containerSize];
+#endif
         totalHeight += containerSize.height;
     }
     
     textContainer = [textContainers lastObject];
-    NSRect usedRect = [self usedRectForTextContainer:textContainer];
+    CGRect usedRect = [self usedRectForTextContainer:textContainer];
     totalHeight += usedRect.size.height;
     
     return totalHeight;
 }
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+/*
+ 
+ -[NSLayoutManager totalHeight] returns zero when it is empty, so we need to do sizing with the attributes.
+ 
+ But, due do 14313143 (TextKit: String drawing and layout manager disagree about sizing), we can't use the NSStringDrawing.h methods.
+ 
+ For most fonts (other than "Helvetica"), the NSStringDrawing.h methods and NSLayoutManger end up with slightly different results. This calculates the height with a text system so that NSLayoutManager-drawn text and a UITextView can agree on sizing.
+ */
++ (CGFloat)heightForAttributes:(NSDictionary *)attributes;
+{
+    OBPRECONDITION([NSThread mainThread]); // We probably could do this on multiple threads as far as the frameworks should be concerned, but we've not tested if UIKit's text system is thread-safe.
+    
+    static dispatch_once_t onceToken;
+    static NSCache *HeightForAttributesCache = nil;
+    dispatch_once(&onceToken, ^{
+        HeightForAttributesCache = [[NSCache alloc] init];
+    });
+    
+    if (!attributes)
+        attributes = @{};
+    NSNumber *heightNumber = [HeightForAttributesCache objectForKey:attributes];
+    if (heightNumber)
+        return [heightNumber cgFloatValue];
+    
+    // NOTE: This doesn't account for custom layout done by subclasses
+    OBASSERT(self == [NSLayoutManager class]);
+    
+    NSTextStorage *textStorage = [[NSTextStorage alloc] initWithString:@" " attributes:attributes];
+    NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
+    [textStorage addLayoutManager:layoutManager];
+    
+    NSTextContainer *textContainer = [[NSTextContainer alloc] initWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+    [layoutManager addTextContainer:textContainer];
+    
+    [layoutManager ensureLayoutForTextContainer:textContainer];
+    
+    CGFloat height = [layoutManager totalHeightUsed];
+    [textStorage release];
+    [textContainer release];
+    [layoutManager release];
+    
+    [HeightForAttributesCache setObject:@(height) forKey:attributes];
+    return height;
+}
+#endif
 
 - (CGFloat)widthOfLongestLine;
 {
@@ -148,7 +206,7 @@ RCS_ID("$Id$");
 	} else {
 	    NSTextContainer *container = [self textContainerForGlyphAtIndex:glyphLocation effectiveRange:NULL];
 	    
-	    NSRect glyphBounds = [self boundingRectForGlyphRange:clippedGlyphRange inTextContainer:container];
+	    CGRect glyphBounds = [self boundingRectForGlyphRange:clippedGlyphRange inTextContainer:container];
 	    
 	    //NSLog(@"glyphRange = %@, lineFrag = %@, glyphBounds = %@", NSStringFromRange(clippedGlyphRange), NSStringFromRect(lineFrag), NSStringFromRect(glyphBounds));
 	    

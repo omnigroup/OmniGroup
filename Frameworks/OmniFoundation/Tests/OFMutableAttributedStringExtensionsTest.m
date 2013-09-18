@@ -1,4 +1,4 @@
-// Copyright 2004-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2006, 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,26 +16,20 @@ RCS_ID("$Id$");
 @interface OFMutableAttributedStringExtensionsTest : OFTestCase
 @end
 
-static NSAttributedString *_replacementMutator(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing, void *context)
-{
-    // Supposed to return a retained object
-    return [(NSAttributedString *)context retain];
-}
-
 // Tests the length calculations in the replacement portion of the NSMutableAttributedString mutator method
 static void __testReplace(id self, NSString *sourceString, NSRange sourceRange, NSString *lookFor, NSString *replaceWith, NSString *resultString)
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
-    NSAttributedString *replacementAttributedString = [[[NSAttributedString alloc] initWithString:replaceWith attributes:nil] autorelease];
-    NSMutableAttributedString *mutatingString = [[[NSMutableAttributedString alloc] initWithString:sourceString attributes:nil] autorelease];
-
-    BOOL didReplace = [mutatingString mutateRanges:_replacementMutator inRange:sourceRange matchingString:lookFor context:replacementAttributedString];
-
-    should(didReplace == ([sourceString rangeOfString:lookFor options:0 range:sourceRange].length > 0));
-    shouldBeEqual([mutatingString string], resultString);
-
-    [pool drain];
+    @autoreleasepool {
+        NSAttributedString *replacementAttributedString = [[NSAttributedString alloc] initWithString:replaceWith attributes:nil];
+        NSMutableAttributedString *mutatingString = [[NSMutableAttributedString alloc] initWithString:sourceString attributes:nil];
+        
+        BOOL didReplace = [mutatingString mutateRangesInRange:sourceRange matchingString:lookFor with:^NSAttributedString *(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing) {
+            return replacementAttributedString;
+        }];
+        
+        should(didReplace == ([sourceString rangeOfString:lookFor options:0 range:sourceRange].length > 0));
+        shouldBeEqual([mutatingString string], resultString);
+    }
 }
 
 #define _testReplace(sourceString, sourceRange, lookFor, replaceWith, resultString) \

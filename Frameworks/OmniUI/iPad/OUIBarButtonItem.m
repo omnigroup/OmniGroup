@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import <OmniUI/OUIBarButtonItem.h>
 
+#import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIToolbarButton.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
@@ -24,7 +25,7 @@ RCS_ID("$Id$");
 
 + (id)spacerWithWidth:(CGFloat)width;
 {
-    UIBarButtonItem *spacer = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:NULL] autorelease];
+    UIBarButtonItem *spacer = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:NULL];
     spacer.width = width;
     return spacer;
 }
@@ -68,24 +69,9 @@ static NSString *_titleForItemStyle(UIBarButtonSystemItem itemStyle)
     return editTitles;
 }
 
-static OUIBarButtonItemBackgroundType _backgroundTypeForStyle(UIBarButtonItemStyle style)
-{
-    switch (style) {
-        case UIBarButtonItemStylePlain:
-            return OUIBarButtonItemBackgroundTypeNone;
-        case UIBarButtonItemStyleDone:
-            return OUIBarButtonItemBackgroundTypeBlue;
-        case UIBarButtonItemStyleBordered:
-        default:
-            return OUIBarButtonItemBackgroundTypeBlack;
-    }
-}
-
 - (id)initWithImage:(UIImage *)image style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action;
 {
-    OUIBarButtonItemBackgroundType backgroundType = _backgroundTypeForStyle(style);
-    
-    OUIBarButtonItem *item = [self initWithBackgroundType:backgroundType image:image title:nil target:target action:action];
+    OUIBarButtonItem *item = [self initWithTintColor:nil image:image title:nil target:target action:action];
     
     if (style == UIBarButtonItemStylePlain)
         item.button.showsTouchWhenHighlighted = YES;
@@ -95,37 +81,26 @@ static OUIBarButtonItemBackgroundType _backgroundTypeForStyle(UIBarButtonItemSty
 
 - (id)initWithTitle:(NSString *)title style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action;
 {
-    OUIBarButtonItemBackgroundType backgroundType;
-    
-    if (style == UIBarButtonItemStyleDone)
-        backgroundType = OUIBarButtonItemBackgroundTypeBlue;
-    else if (style == UIBarButtonItemStyleBordered)
-        backgroundType = OUIBarButtonItemBackgroundTypeBlack;
-    else {
-        // Deal with plain text items here?
-        OBRejectUnusedImplementation(self, _cmd);
-    }
-    
-    return [self initWithBackgroundType:backgroundType image:nil title:title target:target action:action];
+    return [self initWithTintColor:nil image:nil title:title target:target action:action];
 }
 
 - (id)initWithBarButtonSystemItem:(UIBarButtonSystemItem)systemItem target:(id)target action:(SEL)action;
 {
     OUIBarButtonItem *item;
-    
+
     switch (systemItem) {
         case UIBarButtonSystemItemDone: {
-            item = [self initWithBackgroundType:OUIBarButtonItemBackgroundTypeBlue image:nil title:NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
+            item = [self initWithTintColor:nil image:nil title:NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
             item.possibleTitles = [[self class] possibleTitlesForEditBarButtonItems];
             break;
         }
         case UIBarButtonSystemItemEdit: {
-            item = [self initWithBackgroundType:OUIBarButtonItemBackgroundTypeBlack image:nil title:NSLocalizedStringFromTableInBundle(@"Edit", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
+            item = [self initWithTintColor:nil image:nil title:NSLocalizedStringFromTableInBundle(@"Edit", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
             item.possibleTitles = [[self class] possibleTitlesForEditBarButtonItems];
             break;
         }
         case UIBarButtonSystemItemCancel: {
-            item = [self initWithBackgroundType:OUIBarButtonItemBackgroundTypeBlack image:nil title:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
+            item = [self initWithTintColor:nil image:nil title:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
             item.possibleTitles = [[self class] possibleTitlesForEditBarButtonItems];
             break;
         }
@@ -147,43 +122,43 @@ static OUIBarButtonItemBackgroundType _backgroundTypeForStyle(UIBarButtonItemSty
     return nil;
 }
 
-static void _commonInit(OUIBarButtonItem *self, OUIBarButtonItemBackgroundType backgroundType)
+static void _commonInit(OUIBarButtonItem *self, UIColor *tintColor)
 {
     Class buttonClass = [[self class] buttonClass];
     OBASSERT(OBClassIsSubclassOfClass(buttonClass, [OUIToolbarButton class]));
     
-    OUIToolbarButton *button = [[buttonClass alloc] init];
+    OUIToolbarButton *button = [buttonClass buttonWithType:UIButtonTypeSystem];
     [button sizeToFit];
     self.customView = button;
-    [button release];
     
     [button addTarget:self action:@selector(_buttonAction:) forControlEvents:UIControlEventTouchUpInside];
-    
-    [button configureForBackgroundType:backgroundType];
+
+    // Don't set a default tint color if the incoming color is nil. We want to allow the containing view hierarchy to control it.
+    button.tintColor = tintColor;
 }
 
 - initWithCoder:(NSCoder *)coder;
 {
     if (!(self = [super initWithCoder:coder]))
         return nil;
-    _commonInit(self, OUIBarButtonItemBackgroundTypeBlack);
+    _commonInit(self, nil);
     return self;
 }
 
 - init;
 {
-    return [self initWithBackgroundType:OUIBarButtonItemBackgroundTypeBlack image:nil title:nil target:nil action:NULL];
+   return [self initWithTintColor:nil image:nil title:nil target:nil action:NULL];
 }
 
-- initWithBackgroundType:(OUIBarButtonItemBackgroundType)backgroundType image:(UIImage *)image title:(NSString *)title target:(id)target action:(SEL)action;
+- initWithTintColor:(UIColor *)tintColor image:(UIImage *)image title:(NSString *)title target:(id)target action:(SEL)action;
 {
     if (!(self = [super init]))
         return nil;
-    _commonInit(self, backgroundType);
-    
+    _commonInit(self, tintColor);
+
     OUIWithoutAnimating(^{
         OUIToolbarButton *button = (OUIToolbarButton *)self.customView;
-        [button setImage:image forState:UIControlStateNormal];
+        [button setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
         [button setTitle:title forState:UIControlStateNormal];
         [button sizeToFit];
         [button layoutIfNeeded];
@@ -198,18 +173,6 @@ static void _commonInit(OUIBarButtonItem *self, OUIBarButtonItemBackgroundType b
 - (OUIToolbarButton *)button;
 {
     return (OUIToolbarButton *)self.customView;
-}
-
-- (void)setNormalBackgroundImage:(UIImage *)image;
-{
-    OUIToolbarButton *button = (OUIToolbarButton *)self.customView;
-    [button setNormalBackgroundImage:image];
-}
-
-- (void)setHighlightedBackgroundImage:(UIImage *)image;
-{
-    OUIToolbarButton *button = (OUIToolbarButton *)self.customView;
-    [button setHighlightedBackgroundImage:image];
 }
 
 - (void)setPossibleTitles:(NSSet *)possibleTitles;

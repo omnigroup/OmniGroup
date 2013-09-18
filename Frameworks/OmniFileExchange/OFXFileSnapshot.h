@@ -13,7 +13,6 @@
  A record of the state of a version of a document.
  */
 
-@class OFSFileManager, OFSDAVFileManager, OFSFileInfo;
 @class OFXFileState;
 
 @interface OFXFileSnapshot : NSObject

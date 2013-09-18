@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,9 @@
 RCS_ID("$Id$");
 
 @implementation OUIScalingView
+{
+    NSArray *_shadowEdgeViews;
+}
 
 static id _commonInit(OUIScalingView *self)
 {
@@ -39,15 +42,7 @@ static id _commonInit(OUIScalingView *self)
     return _commonInit(self);
 }
 
-- (void)dealloc;
-{
-    [_shadowEdgeViews release];
-    
-    [super dealloc];
-}
-
 // If this view is within a OUIScalingScrollView, then this property should be considered read-only and the scale should be adjusted via its methods.
-@synthesize scale = _scale;
 - (void)setScale:(CGFloat)scale;
 {
     OBPRECONDITION(scale > 0);
@@ -67,8 +62,6 @@ static id _commonInit(OUIScalingView *self)
 {
     // for subclasses
 }
-
-@synthesize rotating = _rotating;
 
 // UIView is flipped, but some subclasses want unflipped coordinates. Both this and scale matter when building the transform from on screen coordiantes (view frame geometry and touch positions) to CoreGraphics rendering coordinates (inside the view).
 - (BOOL)wantsUnflippedCoordinateSystem;
@@ -209,8 +202,6 @@ static id _commonInit(OUIScalingView *self)
     UIGraphicsEndPDFContext();
     return data;
 }
-
-@synthesize wantsShadowEdges = _wantsShadowEdges;
 
 - (void)updateShadowEdgeViews;
 {

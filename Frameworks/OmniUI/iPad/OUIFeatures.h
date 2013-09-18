@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,3 @@
 #else
     #define OUI_SOFTWARE_UPDATE_CHECK 0
 #endif
-
-// Needs more work; disabling for now and using this to mark the spots where to edit to turn it back on.
-#define OUI_DOCUMENT_GROUPING 0

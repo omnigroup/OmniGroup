@@ -7,12 +7,12 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
 #import <OmniFoundation/OFCredentials.h>
 
 @class OUICertificateTrustAlert;
 
-@interface OUICertificateTrustAlert : OFObject <UIAlertViewDelegate>
+@interface OUICertificateTrustAlert : NSObject <UIAlertViewDelegate>
 
 - (id)initForChallenge:(NSURLAuthenticationChallenge *)challenge;
 

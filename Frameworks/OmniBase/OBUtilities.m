@@ -16,19 +16,6 @@
 
 RCS_ID("$Id$")
 
-
-void OBStrongRetain(id object)
-{
-    if (object)
-        CFRetain((OB_BRIDGE CFTypeRef)object);
-}
-
-void OBStrongRelease(id object)
-{
-    if (object)
-        CFRelease((OB_BRIDGE CFTypeRef)object);
-}
-
 static BOOL _OBRegisterMethod(IMP imp, Class cls, const char *types, SEL name)
 {
     return class_addMethod(cls, name, imp, types);
@@ -321,7 +308,7 @@ void _OBInitializeTimeInterval(NSTimeInterval *outInterval, NSString *name, NSTi
     else if ([[NSUserDefaults standardUserDefaults] objectForKey:name])
         value = [[NSUserDefaults standardUserDefaults] doubleForKey:name];
 
-    CLAMP(value, min_value, max_value);
+    value = CLAMP(value, min_value, max_value);
     if (value != default_value)
         NSLog(@"TIME INTERVAL %@ = %lf", name, value);
     *outInterval = value;

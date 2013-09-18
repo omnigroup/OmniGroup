@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,15 @@
 
 #import <Foundation/NSObject.h>
 
+extern NSString * const ODSDocumentPickerFilterDocumentIdentifier;
+extern NSString * const ODSDocumentPickerFilterTemplateIdentifier;
+
+
 @interface OUIDocumentPickerFilter : NSObject
 
 @property(nonatomic,copy) NSString *identifier;
 @property(nonatomic,copy) NSString *title;
 @property(nonatomic,copy) NSString *imageName;
-@property(nonatomic,copy) NSPredicate *predicate; // Suitable for use with OFSDocumentStoreFilter
+@property(nonatomic,copy) NSPredicate *predicate; // Suitable for use with ODSFilter
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,15 +7,13 @@
 
 #import <OmniUI/OUITextColorAttributeInspectorSlice.h>
 
-#import <OmniUI/OUIEditableFrame.h>
 #import <OmniQuartz/OQColor.h>
-#import "OUEFTextSpan.h"
+#import <OmniUI/OUITextSelectionSpan.h>
+#import <OmniUI/OUITextView.h>
 
 RCS_ID("$Id$")
 
 @implementation OUITextColorAttributeInspectorSlice
-
-@synthesize attributeName = _attributeName;
 
 - initWithLabel:(NSString *)label attributeName:(NSString *)attributeName;
 {
@@ -29,42 +27,33 @@ RCS_ID("$Id$")
     return self;
 }
 
-- (void)dealloc;
-{
-    [_attributeName release];
-    [super dealloc];
-}
-
-#pragma mark -
-#pragma mark OUIAbstractColorInspectorSlice subclass
+#pragma mark - OUIAbstractColorInspectorSlice subclass
 
 - (OQColor *)colorForObject:(id)object;
 {
-    OBPRECONDITION([object isKindOfClass:[OUEFTextSpan class]]);
-    OUEFTextSpan *span = object;
-    
-    CGColorRef backgroundColor = (CGColorRef)[span.frame attribute:_attributeName inRange:span];
-    
+    OBPRECONDITION([object isKindOfClass:[OUITextSelectionSpan class]]);
+    OUITextSelectionSpan *span = object;
+
+    UIColor *backgroundColor = (UIColor *)[span.textView attribute:_attributeName inRange:span.range];
     if (!backgroundColor)
         return nil;
     
-    return [OQColor colorWithCGColor:backgroundColor];
+    return [OQColor colorWithPlatformColor:backgroundColor];
 }
 
 - (void)setColor:(OQColor *)color forObject:(id)object;
 {
-    OBPRECONDITION([object isKindOfClass:[OUEFTextSpan class]]);
-    OUEFTextSpan *span = object;
+    OBPRECONDITION([object isKindOfClass:[OUITextSelectionSpan class]]);
+    OUITextSelectionSpan *span = object;
 
-    [span.frame setValue:(id)[[color toColor] CGColor] forAttribute:(id)_attributeName inRange:span];
+    [span.textView setValue:[color toColor] forAttribute:_attributeName inRange:span.range];
 }
 
-#pragma mark -
-#pragma mark OUIInspectorSlice subclass
+#pragma mark - OUIInspectorSlice subclass
 
 - (BOOL)isAppropriateForInspectedObject:(id)object;
 {
-    return [object isKindOfClass:[OUEFTextSpan class]];
+    return [object isKindOfClass:[OUITextSelectionSpan class]];
 }
 
 @end

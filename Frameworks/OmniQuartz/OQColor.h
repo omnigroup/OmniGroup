@@ -1,4 +1,4 @@
-// Copyright 2003-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -184,6 +184,19 @@ static inline OQColor * __attribute__((overloadable)) OQMakeColor(OSHSV c)
 static inline OQColor * __attribute__((overloadable)) OQMakeColor(OQWhiteAlpha c)
 {
     return [OQColor colorWithWhite:c.w alpha:c.a];
+}
+
+static inline OQColor * __attribute__((overloadable)) OQMakeColorWithAlpha(OQLinearRGBA c, CGFloat a)
+{
+    return [OQColor colorWithRed:c.r green:c.g blue:c.b alpha:a];
+}
+static inline OQColor * __attribute__((overloadable)) OQMakeColorWithAlpha(OSHSV c, CGFloat a)
+{
+    return [OQColor colorWithHue:c.h saturation:c.s brightness:c.v alpha:a];
+}
+static inline OQColor * __attribute__((overloadable)) OQMakeColorWithAlpha(OQWhiteAlpha c, CGFloat a)
+{
+    return [OQColor colorWithWhite:c.w alpha:a];
 }
 
 static inline BOOL __attribute__((overloadable)) OQColorsEqual(OQLinearRGBA c1, OQLinearRGBA c2)

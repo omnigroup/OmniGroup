@@ -11,8 +11,8 @@
 
 #import "OFXFileState.h"
 
-@class OFSDAVFileManager, OFXRegistrationTable, OFSFileInfo;
-@class OFXContainerAgent, OFXFileSnapshotTransfer, OFXFileState;
+@class ODAVFileInfo;
+@class OFXConnection, OFXContainerAgent, OFXFileSnapshotTransfer, OFXFileState, OFXRegistrationTable;
 @protocol NSFilePresenter;
 
 /*
@@ -22,7 +22,7 @@
 @interface OFXFileItem : NSObject <NSCopying>
 
 - (id)initWithNewLocalDocumentURL:(NSURL *)localDocumentURL container:(OFXContainerAgent *)container error:(NSError **)outError;
-- (id)initWithNewRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL container:(OFXContainerAgent *)container filePresenter:(id <NSFilePresenter>)filePresenter fileManager:(OFSDAVFileManager *)fileManager error:(NSError **)outError;
+- (id)initWithNewRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL container:(OFXContainerAgent *)container filePresenter:(id <NSFilePresenter>)filePresenter connection:(OFXConnection *)connection error:(NSError **)outError;
 - (id)initWithExistingLocalSnapshotURL:(NSURL *)localSnapshotURL container:(OFXContainerAgent *)container filePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
 
 - (void)invalidate;
@@ -64,9 +64,9 @@
 
 - (NSNumber *)hasSameContentsAsLocalDocumentAtURL:(NSURL *)localDocumentURL error:(NSError **)outError;
 
-- (OFXFileSnapshotTransfer *)prepareUploadTransferWithFileManager:(OFSDAVFileManager *)fileManager error:(NSError **)outError;
-- (OFXFileSnapshotTransfer *)prepareDownloadTransferWithFileManager:(OFSDAVFileManager *)fileManager filePresenter:(id <NSFilePresenter>)filePresenter;
-- (OFXFileSnapshotTransfer *)prepareDeleteTransferWithFileManager:(OFSDAVFileManager *)fileManager filePresenter:(id <NSFilePresenter>)filePresenter;
+- (OFXFileSnapshotTransfer *)prepareUploadTransferWithConnection:(OFXConnection *)connection error:(NSError **)outError;
+- (OFXFileSnapshotTransfer *)prepareDownloadTransferWithConnection:(OFXConnection *)connection filePresenter:(id <NSFilePresenter>)filePresenter;
+- (OFXFileSnapshotTransfer *)prepareDeleteTransferWithConnection:(OFXConnection *)connection filePresenter:(id <NSFilePresenter>)filePresenter;
 
 - (BOOL)handleIncomingDeleteWithFilePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
 

@@ -1,4 +1,4 @@
-// Copyright 2008, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,13 +28,11 @@ RCS_ID("$Id$");
     NSIndexSet *empty = [[NSIndexSet alloc] initWithRangeString:@""];
     STAssertEquals([empty count], (NSUInteger)0, nil);
     STAssertEquals([empty firstIndex], (NSUInteger)NSNotFound, nil);
-    [empty release];
 
     empty = [[NSMutableIndexSet alloc] initWithRangeString:@""];
     STAssertEquals([empty count], (NSUInteger)0, nil);
     STAssertEquals([empty firstIndex], (NSUInteger)NSNotFound, nil);
     STAssertTrue([empty isKindOfClass:[NSMutableIndexSet class]], nil);
-    [empty release];
 }
 
 - (void)testIsolatedIndices
@@ -57,9 +55,6 @@ RCS_ID("$Id$");
         STAssertEqualObjects(roundtrip2, orig, nil);
         STAssertTrue([roundtrip2 isKindOfClass:[NSMutableIndexSet class]], nil);
         
-        [roundtrip1 release];
-        [roundtrip2 release];
-        [orig release];
     }
 }
 
@@ -75,7 +70,6 @@ RCS_ID("$Id$");
             STAssertEqualObjects([st rangeString], rs, nil);
             STAssertEqualObjects([NSIndexSet indexSetWithRangeString:rs], st, nil);
             
-            [st release];
         }
     }
 }
@@ -115,7 +109,6 @@ RCS_ID("$Id$");
                 ris = [NSIndexSet indexSetWithRangeString:buf];
                 STAssertEqualObjects(ris, st, nil);
                 STAssertEquals([ris count], (NSUInteger)(2 * len + 1), nil);
-                [st release];
             }
         }
     }

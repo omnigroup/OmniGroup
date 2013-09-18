@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,8 +33,8 @@ RCS_ID("$Id$");
     [self appendString:string attributes:attributes];
 }
 
-/*" Iterates over the receiver allowing the mutator function to provide replacements for ranges.  If 'matchString' is nil, then the mutator is called once for each contiguous range of identical attributes in the receiver.  If 'matchString' is non-nil, then only ranges with the given string are passed to the mutator.  Note that in the non-nil 'matchString' case, the 'matchRange' will be the range of the found string while the 'effectiveAttributeRange' will be the effective range of the attributes <b>clipped</b> to the match range.  In the nil 'matchString' case, both ranges will be equal.  The mutator function can return nil to indicate no action or it can return an new (retained!) attributed string to be replaced in the receiver for the match range.  The mutator function can also modify attributes on the source text storage and return nil to indicate that no replacement need be done.  In this case, the mutator is responsible for calling -beginEditing and setting *isEditing (only if it is not already set).  If a replacement is done, the replacement itself will not be scanned (that is, the mutator will not be called for any range that it produced).  This method will call -beginEditing and -endEditing if necessary, so the caller need not do that.  Returns YES if any edits were made. "*/
-- (BOOL)mutateRanges:(OFMutableAttributedStringMutator)mutator inRange:(NSRange)sourceRange matchingString:(NSString *)matchString context:(void *)context;
+/*" Iterates over the receiver allowing the mutator to provide replacements for ranges.  If 'matchString' is nil, then the mutator is called once for each contiguous range of identical attributes in the receiver.  If 'matchString' is non-nil, then only ranges with the given string are passed to the mutator.  Note that in the non-nil 'matchString' case, the 'matchRange' will be the range of the found string while the 'effectiveAttributeRange' will be the effective range of the attributes <b>clipped</b> to the match range.  In the nil 'matchString' case, both ranges will be equal.  The mutator can return nil to indicate no action or it can return an attributed string to be replaced in the receiver for the match range.  The mutator can also modify attributes on the source text storage and return nil to indicate that no replacement need be done.  In this case, the mutator is responsible for calling -beginEditing and setting *isEditing (only if it is not already set).  If a replacement is done, the replacement itself will not be scanned (that is, the mutator will not be called for any range that it produced).  This method will call -beginEditing and -endEditing if necessary, so the caller need not do that.  Returns YES if any edits were made. "*/
+- (BOOL)mutateRangesInRange:(NSRange)sourceRange matchingString:(NSString *)matchString with:(OFMutableAttributedStringMutator)mutator;
 {
     NSString *string = [self string];
     BOOL didBeginEditing = NO;
@@ -73,7 +73,7 @@ RCS_ID("$Id$");
             matchRange = effectiveRange;
         }
         
-        NSAttributedString *replacement = mutator(self, attributes, matchRange, effectiveRange, &didBeginEditing, context);
+        NSAttributedString *replacement = mutator(self, attributes, matchRange, effectiveRange, &didBeginEditing);
 
         if (replacement) {
             if (!didBeginEditing) {
@@ -85,7 +85,7 @@ RCS_ID("$Id$");
             
             [self replaceCharactersInRange:matchRange withAttributedString:replacement];
 
-            string   = [self string]; // Don't know if this is mandatory, but it seems like a really good idea
+            string = [self string]; // Don't know if this is mandatory, but it seems like a really good idea
 
             // 'end' might be the end of the 'sourceRange', NOT of the entire string!
             NSUInteger newLength = [string length];
@@ -96,7 +96,6 @@ RCS_ID("$Id$");
                 end += (newLength - oldLength);
 
             location = matchRange.location + [replacement length];
-            [replacement release];
         } else {
             location = matchRange.location + matchRange.length;
         }
@@ -108,15 +107,9 @@ RCS_ID("$Id$");
 #undef sourceRange
 }
 
-- (BOOL)mutateRanges:(OFMutableAttributedStringMutator)mutator matchingString:(NSString *)matchString context:(void *)context;
+- (BOOL)mutateRangesMatchingString:(NSString *)matchString with:(OFMutableAttributedStringMutator)mutator;
 {
-    return [self mutateRanges:mutator inRange:(NSRange){0, [self length]} matchingString:matchString context:context];
-}
-
-static NSAttributedString *_replacementMutator(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing, void *context)
-{
-    NSAttributedString *replacementString = context;
-    return [replacementString retain];
+    return [self mutateRangesInRange:NSMakeRange(0, [self length]) matchingString:matchString with:mutator];
 }
 
 // Tests the length calculations in the replacement portion of the NSMutableAttributedString mutator method
@@ -124,7 +117,9 @@ static NSAttributedString *_replacementMutator(NSMutableAttributedString *source
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSAttributedString *replacementAttributedString = [[[NSAttributedString alloc] initWithString:replacementString attributes:nil] autorelease];
-    BOOL didReplace = [self mutateRanges:_replacementMutator inRange:searchRange matchingString:searchString context:replacementAttributedString];
+    BOOL didReplace = [self mutateRangesInRange:searchRange matchingString:searchString with:^NSAttributedString *(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing) {
+        return replacementAttributedString;
+    }];
     [pool drain];
 
     return didReplace;

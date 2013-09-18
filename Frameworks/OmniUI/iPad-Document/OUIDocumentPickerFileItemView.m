@@ -8,19 +8,15 @@
 #import <OmniUIDocument/OUIDocumentPickerFileItemView.h>
 
 #import <OmniUIDocument/OUIDocumentPreviewView.h>
+#import <OmniUIDocument/OUIDocumentPickerItemMetadataView.h>
 #import <OmniUI/UIView-OUIExtensions.h>
-#import <OmniFileStore/OFSDocumentStoreFileItem.h>
+#import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniFoundation/OFBinding.h>
 
-#import "OUIDocumentPickerItemNameAndDateView.h"
 #import "OUIDocumentPickerItemView-Internal.h"
 #import "OUIDocumentParameters.h"
 
 RCS_ID("$Id$");
-
-@interface OUIDocumentPickerFileItemView ()
-- (void)_selectedChanged;
-@end
 
 @implementation OUIDocumentPickerFileItemView
 
@@ -29,6 +25,12 @@ static id _commonInit(OUIDocumentPickerFileItemView *self)
 #if 0 && defined(DEBUG_bungi)
     self.backgroundColor = [UIColor redColor];
 #endif
+    
+    UIView *contentView = self.contentView;
+    OUIDocumentPreviewView *previewView = [[OUIDocumentPreviewView alloc] initWithFrame:contentView.bounds];
+    previewView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+    [contentView addSubview:previewView];
+
     return self;
 }
 
@@ -53,37 +55,14 @@ static id _commonInit(OUIDocumentPickerFileItemView *self)
     // We do NOT set self.draggingState to OUIDocumentPickerItemViewSourceDraggingState based on fileItem.draggingSource, but let our container control this.
     // We might be a dragging view (in which case we aren't the source view itself).
     
-    [self _selectedChanged];
     [self _downloadRequestedChanged];
-}
-
-- (OUIDocumentPreview *)preview;
-{
-    NSArray *previews = self.previewView.previews;
-    OBASSERT([previews count] <= 1);
-    return [previews lastObject];
-}
-
-- (void)bounceDown;
-{
-    CALayer *layer = self.layer;
-    
-    CATransform3D xform = CATransform3DMakeScale(kOUIDocumentPreviewSelectionTouchBounceScale, kOUIDocumentPreviewSelectionTouchBounceScale, 1.0);
-    
-    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
-    animation.fromValue = nil; // current value/identity?
-    animation.toValue = [NSValue valueWithCATransform3D:xform];
-    animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
-    animation.duration = kOUIDocumentPreviewSelectionTouchBounceDuration;
-    animation.autoreverses = YES;
-    [layer addAnimation:animation forKey:@"bounceTransform"];
 }
 
 #pragma mark - Accessibility
 - (NSString *)accessibilityLabel;
 {
-    OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)self.item;
-    OBASSERT(!fileItem || [fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
+    ODSFileItem *fileItem = (ODSFileItem *)self.item;
+    OBASSERT(!fileItem || [fileItem isKindOfClass:[ODSFileItem class]]);
     
     // Accessibilit label should read: Name, Badge Status (if any), Modification Date, iCloud Exclusion (if any)
     
@@ -105,15 +84,15 @@ static id _commonInit(OUIDocumentPickerFileItemView *self)
     
     
     // Modification Date
-    [label appendFormat:@" %@.", [OFSDocumentStoreItem displayStringForDate:fileItem.userModificationDate]];
+    [label appendFormat:@" %@.", [ODSItem displayStringForDate:fileItem.userModificationDate]];
     
     return label;
 }
 
 - (UIAccessibilityTraits)accessibilityTraits;
 {
-    OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)self.item;
-    OBASSERT(!fileItem || [fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
+    ODSFileItem *fileItem = (ODSFileItem *)self.item;
+    OBASSERT(!fileItem || [fileItem isKindOfClass:[ODSFileItem class]]);
 
     if (fileItem.selected) {
         return UIAccessibilityTraitSelected;
@@ -130,24 +109,22 @@ static unsigned FileItemContext;
 - (void)startObservingItem:(id)item;
 {
     [super startObservingItem:item];
-    [item addObserver:self forKeyPath:OFSDocumentStoreFileItemSelectedBinding options:0 context:&FileItemContext];
-    [item addObserver:self forKeyPath:OFSDocumentStoreFileItemDownloadRequestedBinding options:0 context:&FileItemContext];
+    [item addObserver:self forKeyPath:ODSFileItemDownloadRequestedBinding options:0 context:&FileItemContext];
 }
 
 - (void)stopObservingItem:(id)item;
 {
     [super stopObservingItem:item];
-    [item removeObserver:self forKeyPath:OFSDocumentStoreFileItemSelectedBinding context:&FileItemContext];
-    [item removeObserver:self forKeyPath:OFSDocumentStoreFileItemDownloadRequestedBinding context:&FileItemContext];
+    [item removeObserver:self forKeyPath:ODSFileItemDownloadRequestedBinding context:&FileItemContext];
 }
 
-- (NSSet *)previewedFileItems;
+- (NSArray *)previewedItems;
 {
-    OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)self.item;
-    OBASSERT(!fileItem || [fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
+    ODSFileItem *fileItem = (ODSFileItem *)self.item;
+    OBASSERT(!fileItem || [fileItem isKindOfClass:[ODSFileItem class]]);
 
     if (fileItem)
-        return [NSSet setWithObject:fileItem];
+        return [NSArray arrayWithObject:fileItem];
     return nil;
 }
 
@@ -168,9 +145,7 @@ static unsigned FileItemContext;
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
 {
     if (context == &FileItemContext) {
-        if (OFISEQUAL(keyPath, OFSDocumentStoreFileItemSelectedBinding))
-            [self _selectedChanged];
-        else if (OFISEQUAL(keyPath, OFSDocumentStoreFileItemDownloadRequestedBinding))
+        if (OFISEQUAL(keyPath, ODSFileItemDownloadRequestedBinding))
             [self _downloadRequestedChanged];
         else
             OBASSERT_NOT_REACHED("Unknown KVO keyPath");
@@ -179,27 +154,19 @@ static unsigned FileItemContext;
     [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
-#pragma mark -
-#pragma mark Private
-
-- (void)_selectedChanged;
-{
-    OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)self.item;
-    OBASSERT(!fileItem || [fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
-    
-    OUIDocumentPreviewView *previewView = self.previewView;
-    
-    previewView.selected = fileItem.selected;
-}
+#pragma mark - Private
 
 - (void)_downloadRequestedChanged;
 {
-    OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)self.item;
-    OBASSERT(!fileItem || [fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
+    // <bug:///94069> (File item views not showing the 'downloaded requested' state
+#if 0
+    ODSFileItem *fileItem = (ODSFileItem *)self.item;
+    OBASSERT(!fileItem || [fileItem isKindOfClass:[ODSFileItem class]]);
 
     OUIDocumentPreviewView *previewView = self.previewView;
 
     previewView.downloadRequested = fileItem.downloadRequested;
+#endif
 }
 
 @end

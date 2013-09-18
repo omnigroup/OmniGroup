@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,7 +47,6 @@ RCS_ID("$Id$");
     NSPredicate *isKindOfArrayPredicate = [NSComparisonPredicate isKindOfClassPredicate:[NSArray class]];
     should(![isKindOfArrayPredicate evaluateWithObject:dictionary]);
     
-    [dictionary release];
 }
 
 - (void)testConformsToProtocolPredicate;
@@ -60,7 +59,6 @@ RCS_ID("$Id$");
     NSPredicate *conformsToLockingPredicate = [NSComparisonPredicate conformsToProtocolPredicate:@protocol(B)];
     should(![conformsToLockingPredicate evaluateWithObject:target]);
     
-    [target release];
 }
 
 @end

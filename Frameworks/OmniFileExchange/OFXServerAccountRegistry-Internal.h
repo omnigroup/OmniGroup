@@ -17,6 +17,6 @@
 
 - (NSURL *)localStoreURLForAccount:(OFXServerAccount *)account; // Where we put our metadata and the containers.
 
-- (BOOL)_cleanupAccountAfterRemoval:(OFXServerAccount *)account error:(NSError **)outError;
+- (void)_cleanupAccountAfterRemoval:(OFXServerAccount *)account;
 
 @end

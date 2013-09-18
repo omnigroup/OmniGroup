@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,21 +9,15 @@
 
 #import <OmniUI/OUIViewController.h>
 #import <OmniUI/OUIScrollNotifier.h>
+#import <OmniUI/OUIScalingScrollView.h>
 
 #define OUI_SNAP_TO_ZOOM_PERCENT (0.1)
 
-@class OUIScalingScrollView, OUIOverlayView;
-@protocol UIScrollViewDelegate;
+@class OUIScalingScrollView;
 
-@interface OUIScalingViewController : OUIViewController <UIScrollViewDelegate, OUIScrollNotifier>
-{
-@private
-    OUIScalingScrollView *_scrollView;
-    BOOL _isZooming;
-    BOOL _lastScaleWasFullScale;
-}
+@interface OUIScalingViewController : OUIViewController <OUIScallingScrollViewDelegate, OUIScrollNotifier>
 
-@property(nonatomic,retain) IBOutlet UIScrollView *scrollView;
+@property(nonatomic,strong) IBOutlet OUIScalingScrollView *scrollView;
 
 // UIScrollViewDelegate methods that we implement, so subclasses can know whether to call super
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView;

@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <Foundation/NSObject.h>
+#import <UIKit/UIResponder.h>
 
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniUI/OUISpecialURLActionSheet.h>
@@ -23,7 +23,7 @@
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) file:__FILE__ line:__LINE__]
 
-@interface OUIAppController : NSObject <UIApplicationDelegate, MFMailComposeViewControllerDelegate>
+@interface OUIAppController : UIResponder <UIApplicationDelegate, MFMailComposeViewControllerDelegate>
 
 + (instancetype)controller;
 
@@ -39,8 +39,11 @@
 @property(nonatomic,assign) BOOL shouldPostponeLaunchActions;
 - (void)addLaunchAction:(void (^)(void))launchAction;
 
+- (void)showOnlineHelp:(id)sender;
+
 // Popover Helpers
 // Present all popovers via this API to help avoid popovers having to know about one another to avoid multiple popovers on screen.
+@property(nonatomic,readonly) BOOL hasVisiblePopover;
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation; // Called by OUIMainViewController
 - (BOOL)presentPopover:(UIPopoverController *)popover fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
 - (BOOL)presentPopover:(UIPopoverController *)popover fromBarButtonItem:(UIBarButtonItem *)item permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
@@ -52,7 +55,8 @@
 // Action Sheet Helpers
 - (void)showActionSheet:(OUIActionSheet *)actionSheet fromSender:(id)sender animated:(BOOL)animated;
 
-- (void)dismissActionSheetAndPopover:(BOOL)animated;
+// Return YES if something was dismissed
+- (BOOL)dismissActionSheetAndPopover:(BOOL)animated;
 
 // Special URL handling
 - (BOOL)isSpecialURL:(NSURL *)url;
@@ -65,9 +69,13 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application;
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
 
-// Subclass responsibility
-@property(readonly) UIViewController *topViewController;
+// A UIResponder to make first responder if the app delegate is asked to become first responder.
+@property(nonatomic,readonly) UIResponder *defaultFirstResponder;
 
+// Just stores a default that other parts of the app can use to set/get what keyboard to use.
+@property(nonatomic,assign) UIKeyboardAppearance defaultKeyboardAppearance;
+
+// Subclass responsibility
 - (void)resetKeychain;
 
 - (BOOL)isRunningRetailDemo;
@@ -75,12 +83,24 @@
 
 @property(nonatomic,readonly) NSString *fullReleaseString;
 
+// App menu support
+typedef NS_ENUM(NSInteger, OUIAppMenuOptionPosition) {
+    OUIAppMenuOptionPositionAfterReleaseNotes,
+    OUIAppMenuOptionPositionAtEnd
+};
+
+- (NSString *)aboutMenuTitle; // override to provide the application title
+- (NSString *)feedbackMenuTitle;
+- (UIBarButtonItem *)newAppMenuBarButtonItem; // insert this into your view controllers; see -additionalAppMenuOptionsAtPosition: for customization
+- (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions
 - (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString *)body;
 
+@property(nonatomic,readonly) UIImage *settingsMenuImage;
 
 @end
 
 extern BOOL OUIShouldLogPerformanceMetrics;
 extern NSTimeInterval OUIElapsedTimeSinceProcessCreation(void); // For timing startup work before main() is entered
+extern NSTimeInterval OUIElapsedTimeSinceApplicationStarted(void); // Time since the beginning of -[OUIApplication initialize]
 
 #define OUILogPerformanceMetric(format, ...) if (OUIShouldLogPerformanceMetrics) NSLog((format), ## __VA_ARGS__)

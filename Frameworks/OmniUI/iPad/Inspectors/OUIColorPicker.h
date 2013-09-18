@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,15 +18,10 @@ typedef enum {
 } OUIColorPickerFidelity;
 
 @interface OUIColorPicker : OUIViewController
-{
-@private
-    OUIInspectorSelectionValue *_selectionValue;
-    id _nonretained_target;
-}
 
-@property(assign,nonatomic) IBOutlet id target; // We'll send -changeColor: to this when swatches are tapped
+@property(weak,nonatomic) IBOutlet id target; // We'll send -changeColor: to this when swatches are tapped
 
-@property(retain,nonatomic) OUIInspectorSelectionValue *selectionValue;
+@property(strong,nonatomic) OUIInspectorSelectionValue *selectionValue;
 
 @property(nonatomic,readonly) NSString *identifier;
 

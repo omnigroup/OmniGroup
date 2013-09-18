@@ -13,7 +13,7 @@
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniAppKit/NSFileWrapper-OAExtensions.h>
-#import <OmniUIDocument/OUIDocumentPicker.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
@@ -94,8 +94,6 @@ NSString * const OUISyncDownloadCanceledNotification = @"OUISyncDownloadCanceled
     
     self.progressView.progress = 0;
     
-    UIImage *backgroundImage = [[UIImage imageNamed:@"OUIExportCancelBadge.png"] stretchableImageWithLeftCapWidth:6 topCapHeight:0];
-    [self.cancelButton setBackgroundImage:backgroundImage forState:UIControlStateNormal];
     [self.cancelButton setTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUIDocument", OMNI_BUNDLE, @"button title") forState:UIControlStateNormal];
 }
 

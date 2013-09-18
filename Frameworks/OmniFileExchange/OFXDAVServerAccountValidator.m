@@ -7,12 +7,12 @@
 
 #import "OFXDAVServerAccountValidator.h"
 
+#import <OmniDAV/ODAVConformanceTest.h>
+#import <OmniDAV/ODAVConnection.h>
+#import <OmniDAV/ODAVFeatures.h>
+#import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDAV/ODAVErrors.h>
 #import <OmniFileExchange/OFXAgent.h>
-#import <OmniFileStore/OFSDAVConformanceTest.h>
-#import <OmniFileStore/OFSFileManagerDelegate.h>
-#import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/Errors.h>
 
 #import <OmniFoundation/OFCredentials.h>
 
@@ -20,7 +20,7 @@
 
 RCS_ID("$Id$")
 
-@interface OFXDAVServerAccountValidator () <OFSFileManagerDelegate>
+@interface OFXDAVServerAccountValidator () //<OFSFileManagerDelegate>
 @end
 
 @implementation OFXDAVServerAccountValidator
@@ -34,6 +34,8 @@ RCS_ID("$Id$")
     BOOL _credentialsAccepted;
     NSString *_challengeServiceIdentifier;
     NSURLCredential *_attemptCredential;
+    
+    ODAVConnection *_connection;
 }
 
 - initWithAccount:(OFXServerAccount *)account username:(NSString *)username password:(NSString *)password;
@@ -51,13 +53,46 @@ RCS_ID("$Id$")
     _password = [password copy];
     
     _validationOperationQueue = [[NSOperationQueue alloc] init];
+    _validationOperationQueue.maxConcurrentOperationCount = 1;
     _validationOperationQueue.name = @"OFXDAVServerAccountValidator operation queue";
     
     _state = NSLocalizedStringFromTableInBundle(@"Validating Account...", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description");
     
+#if ODAV_NSURLSESSION
+    NSURLSessionConfiguration *configuration = [[NSURLSessionConfiguration defaultSessionConfiguration] copy];
+    
+    // This is off by default. Turn it on?
+    //configuration.HTTPShouldUsePipelining = YES;
+    
+    // We could test +[OFXAgent isCellularSyncEnabled] here, but the user doesn't even see the "Use Cellular Data" switch until they've validated an account.
+    configuration.allowsCellularAccess = YES;
+#else
+    ODAVConnectionConfiguration *configuration = [ODAVConnectionConfiguration new];
+    
+    // We could test +[OFXAgent isCellularSyncEnabled] here, but the user doesn't even see the "Use Cellular Data" switch until they've validated an account.
+    configuration.allowsCellularAccess = YES;
+#endif
+    
+    _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration];
+    
+    __weak OFXDAVServerAccountValidator *weakSelf = self;
+    
+    // This gets called on an anonymous queue, so we need to serialize access to our state
+    _connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
+        OFXDAVServerAccountValidator *stongSelf = weakSelf;
+        if (!stongSelf)
+            return;
+        stongSelf->_certificateTrustError = [NSError certificateTrustErrorForChallenge:challenge];
+    };
+    _connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
+        OFXDAVServerAccountValidator *stongSelf = weakSelf;
+        if (!stongSelf)
+            return nil;
+        return [stongSelf _findCredentialsForChallenge:challenge];
+    };
+    
     return self;
 }
-
 
 #pragma mark - OFXServerAccountValidator
 
@@ -87,6 +122,7 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
     }];
     
 }
+
 #define finishWithError(err) do { \
     _finishWithError(self, err); \
     return; \
@@ -98,146 +134,25 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
     
     [_account clearError];
     
-    [_validationOperationQueue addOperationWithBlock:^{
-        NSURL *address = _account.remoteBaseURL;
-        __autoreleasing NSError *error = nil;
-
-        if (!address) {
-            OFXError(&error, OFXServerAccountNotConfigured,
-                     NSLocalizedStringFromTableInBundle(@"Account not configured", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
-                     NSLocalizedStringFromTableInBundle(@"Please enter an address for the account.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
-            finishWithError(error);
-        }
-        if ([NSString isEmptyString:_username]) {
-            OFXError(&error, OFXServerAccountNotConfigured,
-                     NSLocalizedStringFromTableInBundle(@"Account not configured", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
-                     NSLocalizedStringFromTableInBundle(@"Please enter an username for the account.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
-            finishWithError(error);
-        }
-
-        _credentialsAccepted = NO;
-        _attemptCredential = [NSURLCredential credentialWithUser:_username password:_password persistence:NSURLCredentialPersistenceNone];
-
-        OFSDAVFileManager *fileManager = [[OFSDAVFileManager alloc] initWithBaseURL:address delegate:self error:&error];
-        if (!fileManager) {
-            finishWithError(error);
-        }
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [self _updateState:NSLocalizedStringFromTableInBundle(@"Checking Credentials", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description") percentDone:0];
-        }];
-        error = nil;
-        OFSFileInfo *fileInfo = [fileManager fileInfoAtURL:address error:&error];
-        
-        if (!fileInfo) {
-            if (_certificateTrustError) {
-                finishWithError(_certificateTrustError);
-            }
-            finishWithError(error);
-        }
-
-        if (!fileInfo.exists) {
-            OFXError(&error, OFXServerAccountNotConfigured,
-                     NSLocalizedStringFromTableInBundle(@"Server location not found", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
-                     NSLocalizedStringFromTableInBundle(@"This location does not appear to exist in the cloud.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
-            finishWithError(error);
-        }
-
-        // Store the credentials so the conformance tests will work. Also, update the credentials to have session persistence so that we don't get zillions of auth challenges while running conformance checks.
-        _credentialsAccepted = YES;
-        _attemptCredential = [NSURLCredential credentialWithUser:_username password:_password persistence:NSURLCredentialPersistenceForSession];
-
-        if (_challengeServiceIdentifier) {
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [_account _storeCredential:_attemptCredential forServiceIdentifier:_challengeServiceIdentifier];
-            }];
-        } else {
-            // This can happen when tests add two accounts and validation succeeds due to NSURLConnection's connection/credential cache. In this case, the test case copies the service identifier to the second account. Terrible.
-            //OBASSERT(NO);
-        }
-        
-        // Dispatch to the main queue so that any possible credential adding is done.
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            if (!_account.isCloudSyncEnabled || _shouldSkipConformanceTests) {
-                finishWithError(nil);
-            }
-            
-            [_validationOperationQueue addOperationWithBlock:^{
-                
-                // An additional test before starting the real validation - check for creation of the OmniPresence folder
-                NSURL *remoteSyncDirectory = [_account.remoteBaseURL URLByAppendingPathComponent:@".com.omnigroup.OmniPresence" isDirectory:YES];
-                NSError *error;
-                if (![fileManager createDirectoryAtURLIfNeeded:remoteSyncDirectory error:&error]) {
-                    finishWithError(error);
-                }
-
-                if (_challengeServiceIdentifier == nil) {
-                    __autoreleasing NSError *noCredentialsError;
-                    OFXError(&noCredentialsError, OFXServerAccountNotConfigured,
-                             NSLocalizedStringFromTableInBundle(@"Account not configured", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
-                             NSLocalizedStringFromTableInBundle(@"Unable to verify login credentials at this time.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
-                    finishWithError(noCredentialsError);
-                }
-
-                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                    OFSDAVConformanceTest *conformanceTest = [[OFSDAVConformanceTest alloc] initWithFileManager:fileManager];
-                    conformanceTest.statusChanged = ^(NSString *status, double percentDone){
-                        OBASSERT([NSThread isMainThread]);
-                        [self _updateState:status percentDone:percentDone];
-                    };
-                    conformanceTest.finished = ^(NSError *errorOrNil){
-                        OBASSERT([NSThread isMainThread]);
-                        
-                        // Don't leave speculatively added credentials around
-                        if (errorOrNil && _challengeServiceIdentifier) {
-                            OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier, NULL);
-                        }
-                        finishWithError(errorOrNil);
-                    };
-                    [self _updateState:nil percentDone:0];
-                    [conformanceTest start];
-                }];
-            }];
-        }];
-    }];
-}
-
-#pragma mark - OFSFileManagerDelegate
-
-- (BOOL)fileManagerShouldAllowCellularAccess:(OFSFileManager *)manager;
-{
-    return YES; // We could test +[OFXAgent isCellularSyncEnabled] here, but the user doesn't even see the "Use Cellular Data" switch until they've validated an account.
-}
-
-- (BOOL)fileManagerShouldUseCredentialStorage:(OFSFileManager *)manager;
-{
-    // We want to be challenged at least once so we can store the service identifier. But while we are running the WebDAV checks, go ahead and use the credential storage.
-    return _credentialsAccepted;
-}
-
-- (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    if (_credentialsAccepted)
-        return _attemptCredential;
+    __autoreleasing NSError *error = nil;
     
-    if (_challengeServiceIdentifier) {
-        // We've been challenged before and presumably failed if we are being called again
-        return nil;
+    if (!_account.remoteBaseURL) {
+        OFXError(&error, OFXServerAccountNotConfigured,
+                 NSLocalizedStringFromTableInBundle(@"Account not configured", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
+                 NSLocalizedStringFromTableInBundle(@"Please enter an address for the account.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
+        finishWithError(error);
     }
-    
-    _challengeServiceIdentifier = [OFMakeServiceIdentifier(_account.remoteBaseURL, _username, challenge.protectionSpace.realm) copy];
-    
-    // Might have old bad credentials, or even existing valid credentials. But we were given a user name and password to use, so we should use them.
-    NSError *deleteError;
-    if (!OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier, &deleteError))
-        [deleteError log:@"Error deleting credentials for service identifier %@", _challengeServiceIdentifier];
-    
-    return _attemptCredential;
-}
+    if ([NSString isEmptyString:_username]) {
+        OFXError(&error, OFXServerAccountNotConfigured,
+                 NSLocalizedStringFromTableInBundle(@"Account not configured", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
+                 NSLocalizedStringFromTableInBundle(@"Please enter an username for the account.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
+        finishWithError(error);
+    }
 
-- (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    _certificateTrustError = [NSError certificateTrustErrorForChallenge:challenge];
+    _credentialsAccepted = NO;
+    _attemptCredential = [NSURLCredential credentialWithUser:_username password:_password persistence:NSURLCredentialPersistenceNone];
+    
+    [self _checkCredentials];
 }
 
 #pragma mark - Private
@@ -254,6 +169,132 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
     
     if (_stateChanged)
         _stateChanged(self);
+}
+
+- (void)_checkCredentials;
+{
+    OBPRECONDITION([NSOperationQueue currentQueue] == [NSOperationQueue mainQueue]);
+    
+    [self _updateState:NSLocalizedStringFromTableInBundle(@"Checking Credentials", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description") percentDone:0];
+    
+    [_validationOperationQueue addOperationWithBlock:^{
+        [_connection fileInfoAtURL:_account.remoteBaseURL ETag:nil completionHandler:^(ODAVSingleFileInfoResult *result, NSError *error) {
+            OBASSERT([NSOperationQueue currentQueue] == _validationOperationQueue);
+            
+            ODAVFileInfo *fileInfo = result.fileInfo;
+            if (!fileInfo) {
+                if (_certificateTrustError) {
+                    finishWithError(_certificateTrustError);
+                }
+                finishWithError(error);
+            }
+            
+            if (!fileInfo.exists) {
+                // Credentials worked out, but the specified URL doesn't exist (wrong path w/in the account possibly).
+                __autoreleasing NSError *fileMissingError;
+                OFXError(&fileMissingError, OFXServerAccountNotConfigured,
+                         NSLocalizedStringFromTableInBundle(@"Server location not found", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
+                         NSLocalizedStringFromTableInBundle(@"This location does not appear to exist in the cloud.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
+                finishWithError(fileMissingError);
+            }
+            
+            // Store the credentials so the conformance tests will work. Also, update the credentials to have session persistence so that we don't get zillions of auth challenges while running conformance checks.
+            _credentialsAccepted = YES;
+            _attemptCredential = [NSURLCredential credentialWithUser:_username password:_password persistence:NSURLCredentialPersistenceForSession];
+            
+            if (_challengeServiceIdentifier) {
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    [_account _storeCredential:_attemptCredential forServiceIdentifier:_challengeServiceIdentifier];
+                }];
+            } else {
+                OBASSERT_NOT_REACHED("We specified that the connection should not use credential storage, so it should have been challenged");
+            }
+            
+            // Dispatch to the main queue so that any possible credential adding is done.
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                if (!_account.isCloudSyncEnabled || _shouldSkipConformanceTests) {
+                    finishWithError(nil);
+                }
+                [self _checkRemoteAccountDirectory];
+            }];
+        }];
+    }];
+}
+
+- (void)_checkRemoteAccountDirectory;
+{
+    OBPRECONDITION([NSOperationQueue currentQueue] == [NSOperationQueue mainQueue]);
+    
+    [_validationOperationQueue addOperationWithBlock:^{
+        // An additional test before starting the real validation - check for creation of the OmniPresence folder
+        NSURL *remoteSyncDirectory = [_account.remoteBaseURL URLByAppendingPathComponent:@".com.omnigroup.OmniPresence" isDirectory:YES];
+        
+        [_connection makeCollectionAtURLIfMissing:remoteSyncDirectory baseURL:_account.remoteBaseURL completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
+            OBASSERT([NSOperationQueue currentQueue] == _validationOperationQueue);
+
+            if (!resultURL)
+                finishWithError(errorOrNil);
+            
+            if (_challengeServiceIdentifier == nil) {
+                __autoreleasing NSError *noCredentialsError;
+                OFXError(&noCredentialsError, OFXServerAccountNotConfigured,
+                         NSLocalizedStringFromTableInBundle(@"Account not configured", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
+                         NSLocalizedStringFromTableInBundle(@"Unable to verify login credentials at this time.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
+                finishWithError(noCredentialsError);
+            }
+            
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [self _checkConformance];
+            }];
+        }];
+    }];
+}
+
+- (void)_checkConformance;
+{
+    OBPRECONDITION([NSOperationQueue currentQueue] == [NSOperationQueue mainQueue]);
+    
+    // ODAVConformanceTest uses its own background queue.
+    
+    ODAVConformanceTest *conformanceTest = [[ODAVConformanceTest alloc] initWithConnection:_connection baseURL:_account.remoteBaseURL];
+    conformanceTest.statusChanged = ^(NSString *status, double percentDone){
+        OBASSERT([NSThread isMainThread]);
+        [self _updateState:status percentDone:percentDone];
+    };
+    conformanceTest.finished = ^(NSError *errorOrNil){
+        OBASSERT([NSThread isMainThread]);
+        
+        // Don't leave speculatively added credentials around
+        if (errorOrNil && _challengeServiceIdentifier) {
+            OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier, NULL);
+        }
+        finishWithError(errorOrNil);
+    };
+    [self _updateState:nil percentDone:0];
+    [conformanceTest start];
+}
+
+- (NSURLCredential *)_findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
+{
+    // This gets called on an anonymous queue, so we need to serialize access to our state
+    // OBPRECONDITION([NSOperationQueue currentQueue] == _validationOperationQueue);
+    
+    if (_credentialsAccepted)
+        return _attemptCredential;
+    
+    if (_challengeServiceIdentifier) {
+        // We've been challenged before and presumably failed if we are being called again
+        return nil;
+    }
+    
+    _challengeServiceIdentifier = [OFMakeServiceIdentifier(_account.remoteBaseURL, _username, challenge.protectionSpace.realm) copy];
+    
+    // Might have old bad credentials, or even existing valid credentials. But we were given a user name and password to use, so we should use them.
+    NSError *deleteError;
+    if (!OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier, &deleteError))
+        [deleteError log:@"Error deleting credentials for service identifier %@", _challengeServiceIdentifier];
+    
+    return _attemptCredential;
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import "OUIColorSwatch.h"
 
+#import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorWell.h>
 #import <OmniQuartz/OQColor.h>
 #import <OmniQuartz/OQDrawing.h>
@@ -23,50 +24,46 @@ RCS_ID("$Id$");
 
 static UIImage *_navigationArrowImage(void)
 {
-    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchNavigationArrow.png"];
+    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchNavigationArrow"];
     OBASSERT(image);
     return image;
 }
 
 static UIImage *_translucentBackgroundImage(void)
 {
-    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchTranslucentBackground.png"];
-    OBASSERT(image);
-    return image;
-}
-
-static UIImage *_nilColorImage(void)
-{
-    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchNone.png"];
+    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchTranslucentBackground"];
     OBASSERT(image);
     return image;
 }
 
 static UIImage *_selectedImage(void)
 {
-    UIImage *image = [UIImage imageNamed:@"OUIColorInspectorSelected.png"];
+    UIImage *image = [UIImage imageNamed:@"OUIColorInspectorSelected"];
     OBASSERT(image);
     return image;
 }
 
 static UIImage *_colorPickerImage(void)
 {
-    UIImage *image = [UIImage imageNamed:@"OUIColorPickerSwatch.png"];
+    UIImage *image = [UIImage imageNamed:@"OUIColorPickerSwatch"];
     OBASSERT(image);
     return image;
 }
 
+static UIColor *_borderColor(void)
+{
+    return [UIColor colorWithWhite:0.65f alpha:0.3f];
+}
+
 + (CGSize)swatchSize;
 {
-    // Hacky: kOUIInspectorWellHeight includes 1 for the highlight on the bottom. Add code to superclass to deal with this?
-    // TODO: This used to have the top edge of the border 1px off the edge of the pre-computed frame. Still need that?
-    return CGSizeMake(kOUIInspectorWellHeight - 1, kOUIInspectorWellHeight);
+    return CGSizeMake(kOUIInspectorWellHeight, kOUIInspectorWellHeight);
 }
 
 // Caller expected to set up the target/action on this.
 + (OUIColorSwatch *)navigateToColorPickerSwatch;
 {
-    OUIColorSwatch *swatch = [[[self alloc] initWithFrame:CGRectZero] autorelease];
+    OUIColorSwatch *swatch = [[self alloc] initWithFrame:CGRectZero];
     swatch.showNavigationArrow = YES;
     return swatch;
 }
@@ -99,19 +96,12 @@ static id _commonInit(OUIColorSwatch *self)
     if (!(self = [self initWithFrame:CGRectZero]))
         return nil;
     
-    _color = [color retain];
+    _color = color;
 
     return self;
 }
 
-- (void)dealloc;
-{
-    [_color release];
-    [super dealloc];
-}
-
-#pragma mark -
-#pragma mark OUIColorValue
+#pragma mark - OUIColorValue
 
 @synthesize color = _color;
 
@@ -139,42 +129,72 @@ static id _commonInit(OUIColorSwatch *self)
 
 - (void)drawRect:(CGRect)rect;
 {
+    CGRect bounds = self.bounds;
+    bounds = CGRectInset(bounds, 2.0f, 2.0f); // Inset a bit to give some more space between us and our neighbors. (Would probably be better to accomplish this by actually positioning the color swatches further apart.)
+    CGRect interiorRect;
+    CGFloat cornerRadius = 4.0f;
+    UIBezierPath *path;
+    
+    if (self.selected) {
+        // If selected, inset a little bit so we don't overwhelm / look larger our neighbors (but inset enough that it doesn't look like a mistake)
+        interiorRect = CGRectInset(bounds, 2.0f, 2.0f);
+    } else {
+        // If not selected, the fill is inset from an outer border
+        interiorRect = CGRectInset(bounds, 6.0f, 6.0f);
+    }
+    
+    // If we're not selected, draw an outer border
+    if (!self.selected) {
+        CGRect borderRect = CGRectInset(bounds, 0.5f, 0.5f);
+        [_borderColor() set];
+        path = [UIBezierPath bezierPathWithRoundedRect:borderRect cornerRadius:cornerRadius];
+        [path stroke];
+    }
+    
+    // Draw the fill
+    path = [UIBezierPath bezierPathWithRoundedRect:interiorRect cornerRadius:cornerRadius];
+    [path addClip];
     CGContextRef ctx = UIGraphicsGetCurrentContext();
-    OUIInspectorWellDraw(ctx, self.bounds,
-                         OUIInspectorWellCornerTypeSmallRadius, OUIInspectorWellBorderTypeDark, YES/*innerShadow*/,
-                         ^(CGRect interiorRect){
-        if (_color) {
-            if ([_color alphaComponent] < 1.0) {
-                CGContextSetInterpolationQuality(ctx, kCGInterpolationNone); // Don't blur the edges between the checkers if this does happen to get stretched.
-                [_translucentBackgroundImage() drawInRect:interiorRect];
-            }
-            
-            [_color.toColor set];
-            CGContextFillRect(ctx, interiorRect);
-        } else if (_showNavigationArrow) {
-            [_colorPickerImage() drawInRect:interiorRect];
-        } else {
-            [_nilColorImage() drawInRect:interiorRect];
+    if (_color != nil) {
+        // If we have transparency, draw that
+        if ([_color alphaComponent] < 1.0) {
+            CGContextSetInterpolationQuality(ctx, kCGInterpolationNone); // Don't blur the edges between the checkers if this does happen to get stretched.
+            [_translucentBackgroundImage() drawInRect:interiorRect];
         }
         
-        if (self.selected && !_showNavigationArrow) {
-            OQFlipVerticallyInRect(ctx, interiorRect);
-            OQDrawImageCenteredInRect(ctx, _selectedImage(), interiorRect);
+        [_color set];
+        [path fill];
+        
+    } else if (_showNavigationArrow) {
+        OBASSERT_NOT_REACHED("I don't think this really fits anymore, but I'm not positive if I can remove it");
+        [_colorPickerImage() drawInRect:interiorRect];
+        
+    } else {
+        [_borderColor() set];
+        UIBezierPath *path = [UIBezierPath bezierPath];
+        CGRect noColorRect = CGRectInset(interiorRect, 5.0f, 5.0f);
+        [path moveToPoint:(CGPoint){ .x = MAX(0.0f, CGRectGetMinX(noColorRect)), .y = MAX(0.0, CGRectGetMaxY(noColorRect)), }];
+        [path addLineToPoint:(CGPoint){ .x = CGRectGetMaxX(noColorRect), .y = CGRectGetMinY(noColorRect), }];
+        [path stroke];
+    }
+
+    if (self.selected && !_showNavigationArrow) {
+        OQFlipVerticallyInRect(ctx, interiorRect);
+        OQDrawImageCenteredInRect(ctx, _selectedImage(), interiorRect);
+    }
+    
+    if (_showNavigationArrow) {
+        CGRect swatchRect = interiorRect;
+        
+        // If we are "wide", then stick the navigation error on the right edge, matching the navigation arrow in OUIInspectorTextWells.
+        if (interiorRect.size.width - interiorRect.size.height > 4) {
+            CGFloat inset = 32;
+            CGRect dummy;
+            CGRectDivide(interiorRect, &swatchRect, &dummy, inset, CGRectMaxXEdge);
         }
         
-        if (_showNavigationArrow) {
-            CGRect swatchRect = interiorRect;
-            
-            // If we are "wide", then stick the navigation error on the right edge, matching the navigation arrow in OUIInspectorTextWells.
-            if (interiorRect.size.width - interiorRect.size.height > 4) {
-                CGFloat inset = 32;
-                CGRect dummy;
-                CGRectDivide(interiorRect, &swatchRect, &dummy, inset, CGRectMaxXEdge);
-            }
-            
-            OQDrawImageCenteredInRect(ctx, _navigationArrowImage(), swatchRect);
-        }
-    });
+        OQDrawImageCenteredInRect(ctx, _navigationArrowImage(), swatchRect);
+    }
 }
 
 @end

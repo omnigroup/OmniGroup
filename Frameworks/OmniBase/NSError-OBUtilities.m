@@ -79,6 +79,13 @@ NSError *OBFirstUnchainedError(NSError *error)
     return error;
 }
 
+NSError *_OBChainedError(NSError *error, const char *fileName, unsigned line)
+{
+    __autoreleasing NSError *chainedError = error;
+    _OBError(&chainedError, OBErrorDomain, OBErrorChained, fileName, line, nil);
+    return chainedError;
+}
+
 NSError *_OBErrorWithErrnoObjectsAndKeys(int errno_value, const char *function, NSString *argument, NSString *localizedDescription, ...)
 {
     NSMutableString *description = [[NSMutableString alloc] init];

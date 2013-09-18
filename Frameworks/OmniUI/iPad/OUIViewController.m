@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIViewController.h>
 
+#import <OmniUI/OUIAppController.h>
+
 RCS_ID("$Id$");
 
 #if 0 && defined(DEBUG)
@@ -21,10 +23,13 @@ RCS_ID("$Id$");
     
     OUIViewControllerVisibility _visibility;
     BOOL _lastChangeAnimated;
-    UIViewController *_unretained_parent; 
+    
+#ifdef OMNI_ASSERTIONS_ON
+    __unsafe_unretained UIViewController *_unretained_parent;
 
     // This is not redundant with parentViewController from UIViewController. UIViewController sets parentViewController in addChildViewController: BEFORE calling willMoveToParentViewController. We don't set _unretained_parent until the end of didMoveToParentViewController, so we can check for (a) consistency of the parent across the calls and (b) make sure we move through having no parent before getting a new parent.
-    UIViewController *_unretained_prospective_parent;
+    __unsafe_unretained UIViewController *_unretained_prospective_parent;
+#endif
 }
 
 #ifdef OMNI_ASSERTIONS_ON
@@ -58,18 +63,9 @@ static BOOL _viewControllerIsChildButNotInViewHiearchy(OUIViewController *self, 
 }
 #endif
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
-        return nil;
-
-    return self;
-}
-
 - (void)dealloc
 {
     OBPRECONDITION(_visibility == OUIViewControllerVisibilityHidden); // Did someone forget to hide us?
-    [super dealloc];
 }
 
 @synthesize initialFrame = _initialFrame;
@@ -176,7 +172,6 @@ static BOOL _viewControllerIsChildButNotInViewHiearchy(OUIViewController *self, 
     [super transitionFromViewController:fromViewController toViewController:toViewController duration:duration options:options animations:animations completion:completion];
 }
 
-
 - (void)willMoveToParentViewController:(UIViewController *)parent;
 {
     DEBUG_PARENT_VC(@"In %s with parent: %@", __func__, parent);
@@ -185,11 +180,12 @@ static BOOL _viewControllerIsChildButNotInViewHiearchy(OUIViewController *self, 
 #ifdef OMNI_ASSERTIONS_ON
     if (parent == nil)
         OBPRECONDITION([self isViewLoaded] && ([self.view isDescendantOfView:_unretained_parent.view] /*|| ![[self view] superview]*/)); // If leaving parent, then our view should have been part of the parent's view hierarchy. /* The OG font inspector is in a different view hierarchy */ May want to end editing before the view is removed. 
+    _unretained_prospective_parent = parent;
 #endif
     
-    _unretained_prospective_parent = parent;
     [super willMoveToParentViewController:parent];
 }
+
 - (void)didMoveToParentViewController:(UIViewController *)parent;
 {
     DEBUG_PARENT_VC(@"In %s with parent: %@", __func__, parent);
@@ -203,9 +199,21 @@ static BOOL _viewControllerIsChildButNotInViewHiearchy(OUIViewController *self, 
     
     [super didMoveToParentViewController:parent];
     
+#ifdef OMNI_ASSERTIONS_ON
     // We might like to nil _unretained_prospective_parent, but the view(Did|Will)(Appear|Disappear) calls can happen before or after the didMoveToParentViewController calls, depending on whether the transition is animated. We keep the prospective parent around so we can check our visibility against the prospective parent's. The precondition above ensures that our real parent matches the prospective one.
     // _unretained_prospective_parent = nil;
     _unretained_parent = parent;
+#endif
     OBASSERT(_unretained_parent == self.parentViewController);
 }
+
+#pragma mark - UITextInputTraits
+
+// ... this avoids flicker when closing the keyboard by making OutlineViewController first responder. They really shouldn't ask us for a keyboard appearance, but they do.
+// this can also happen when an inspector is up in a popover with a text field first responder in the inspector and you tap out of the popover (maybe only with a hardware keyboard attached). in this case, the inspector becomes first responder
+- (UIKeyboardAppearance)keyboardAppearance;
+{
+    return [OUIAppController controller].defaultKeyboardAppearance;
+}
+
 @end

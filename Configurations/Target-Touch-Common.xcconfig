@@ -1,5 +1,7 @@
-// Copyright 2006-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2013 Omni Development, Inc.  All rights reserved.
+//
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+//
 // $Id$
 
 // We were setting this for all build types on iPhone/iPad. Necessary, or only do it for Debug like on the Mac?
@@ -7,7 +9,7 @@ DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 
 // Use the latest iOS SDK with a specific deployment target
 SDKROOT = iphoneos
-IPHONEOS_DEPLOYMENT_TARGET = 6.0
+IPHONEOS_DEPLOYMENT_TARGET = 7.0
 
 // iPhone OS 3.2+ only supports armv7. If we have a target that wants armv6 it'll already need to override the SDK to be 3.1.
 ARCHS[sdk=iphoneos*] = armv7

@@ -122,7 +122,7 @@ RCS_ID("$Id$")
     OFXAgent *agentB = self.agentB;
 
     // Stop syncing on B and delete the item there.
-    agentB.syncingEnabled = NO;
+    agentB.syncSchedule = OFXSyncScheduleNone;
     [self deletePath:@"test.package" ofAccount:[agentB.accountRegistry.validCloudSyncAccounts lastObject]];
     
     // Edit the document on A and wait for it to sync up.
@@ -132,7 +132,7 @@ RCS_ID("$Id$")
     }];
     
     // Reenable syncing on B -- it should delete its old snapshot and then resurrect the file by syncing again.
-    agentB.syncingEnabled = YES;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
     OFXFileMetadata *restoredFile = [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
         return metadata.isDownloaded;
     }];
@@ -170,8 +170,8 @@ RCS_ID("$Id$")
     OFXAgent *agentB = self.agentB;
 
     // Go offline and create different files with the same name on two clients
-    agentA.syncingEnabled = NO;
-    agentB.syncingEnabled = NO;
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
     
     OFXServerAccount *accountA = [agentA.accountRegistry.validCloudSyncAccounts lastObject];
     OFXServerAccount *accountB = [agentB.accountRegistry.validCloudSyncAccounts lastObject];
@@ -183,8 +183,8 @@ RCS_ID("$Id$")
     [self copyFixtureNamed:contentName2 toPath:@"test.package" ofAccount:accountB];
     
     // Go online and let the conflict resolve.
-    agentA.syncingEnabled = YES;
-    agentB.syncingEnabled = YES;
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
     
     [self _waitForConflictResolutionWithContentName:contentName1 andContentName:contentName2];
 }
@@ -199,8 +199,8 @@ RCS_ID("$Id$")
     agentB.automaticallyDownloadFileContents = NO;
     
     // Go offline and create different files with the same name on two clients
-    agentA.syncingEnabled = NO;
-    agentB.syncingEnabled = NO;
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
     
     OFXServerAccount *accountA = [agentA.accountRegistry.validCloudSyncAccounts lastObject];
     OFXServerAccount *accountB = [agentB.accountRegistry.validCloudSyncAccounts lastObject];
@@ -212,8 +212,8 @@ RCS_ID("$Id$")
     [self copyFixtureNamed:contentName2 toPath:@"test.package" ofAccount:accountB];
     
     // Go online and let the conflict resolve.
-    agentA.syncingEnabled = YES;
-    agentB.syncingEnabled = YES;
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
     
     [self _waitForConflictResolutionWithContentName:nil andContentName:nil];
 }
@@ -221,10 +221,10 @@ RCS_ID("$Id$")
 - (void)_runLocallyCreatedFileVsRemotelyCreatedFile:(BOOL)waitForBToAck;
 {
     OFXAgent *agentA = self.agentA;
-    agentA.syncingEnabled = YES;
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
     
     OFXAgent *agentB = self.agentB;
-    agentB.syncingEnabled = NO;
+    agentB.syncSchedule = OFXSyncScheduleNone;
     
     // Upload a file on A which B can't see since it is offline.
     OFXServerAccount *accountA = [agentA.accountRegistry.validCloudSyncAccounts lastObject];
@@ -245,7 +245,7 @@ RCS_ID("$Id$")
     }
     
     // Take B back on line and wait for the fallout
-    agentB.syncingEnabled = YES;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
     [self _waitForConflictResolutionWithContentName:@"test.package" andContentName:@"test2.package"];
 }
 
@@ -261,10 +261,10 @@ RCS_ID("$Id$")
 - (void)testLocalEditVsIncomingCreate;
 {
     OFXAgent *agentA = self.agentA;
-    agentA.syncingEnabled = YES;
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
     
     OFXAgent *agentB = self.agentB;
-    agentB.syncingEnabled = NO;
+    agentB.syncSchedule = OFXSyncScheduleNone;
     
     // Upload a file on A which B can't see since it is offline.
     OFXServerAccount *accountA = [agentA.accountRegistry.validCloudSyncAccounts lastObject];
@@ -274,7 +274,7 @@ RCS_ID("$Id$")
     }];
     
     // Turn off sync on A and then make an edit
-    agentA.syncingEnabled = NO;
+    agentA.syncSchedule = OFXSyncScheduleNone;
     [self copyFixtureNamed:@"test2.package" toPath:@"test.package" ofAccount:accountA];
     
     // Make a conflicting document on B.
@@ -282,8 +282,8 @@ RCS_ID("$Id$")
     [self copyFixtureNamed:@"test3.package" toPath:@"test.package" ofAccount:accountB];
 
     // Take both back on line and wait for the fallout
-    agentA.syncingEnabled = YES;
-    agentB.syncingEnabled = YES;
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
     [self _waitForConflictResolutionWithContentName:@"test2.package" andContentName:@"test3.package"];
 }
 
@@ -297,8 +297,8 @@ RCS_ID("$Id$")
         return metadata.downloaded;
     }];
     
-    agentA.syncingEnabled = NO;
-    agentB.syncingEnabled = NO;
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
 
     BOOL (^predicate)(NSSet *metadataItems) = ^BOOL(NSSet *metadataItems){
         return [metadataItems count] == 0;
@@ -313,8 +313,8 @@ RCS_ID("$Id$")
     [self waitForFileMetadataItems:agentB where:predicate];
     
     // Take both accounts online and wait a while. They should both state at zero files and no error should be registered.
-    agentA.syncingEnabled = YES;
-    agentB.syncingEnabled = YES;
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
     
     [self waitForSeconds:1];
     
@@ -377,8 +377,8 @@ RCS_ID("$Id$")
         return metadata.downloaded;
     }];
 
-    agentA.syncingEnabled = NO;
-    agentB.syncingEnabled = NO;
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
     
     // Move locally
     [self movePath:@"test.package" toPath:@"test-A.package" ofAccount:[self singleAccountInAgent:agentA]];
@@ -387,8 +387,8 @@ RCS_ID("$Id$")
     [self copyFixtureNamed:@"test2.package" toPath:@"test-B.package" ofAccount:[self singleAccountInAgent:agentB]];
     
     // Sync and we should end up with one file, with the new contents and one of the names.
-    agentA.syncingEnabled = YES;
-    agentB.syncingEnabled = YES;
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
     
     // Make sure the changes are acknowledged
     [self waitForChangeToMetadata:originalMetadata inAgent:agentA];

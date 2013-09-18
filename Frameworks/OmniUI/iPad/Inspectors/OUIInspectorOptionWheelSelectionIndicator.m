@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIInspectorOptionWheelSelectionIndicator.h>
+#import <OmniUI/OUIInspector.h>
 
 #import "OUIInspectorBackgroundView.h"
 #import <OmniBase/OmniBase.h>
@@ -15,6 +16,9 @@
 RCS_ID("$Id$");
 
 @implementation OUIInspectorOptionWheelSelectionIndicator
+{
+    UIColor *_color;
+}
 
 static const CGFloat kIndicatorSize = 20;
 
@@ -31,30 +35,23 @@ static const CGFloat kIndicatorSize = 20;
     return self;
 }
 
-- (void)dealloc;
-{
-    [_color release];
-    [super dealloc];
-}
-
 - (void)updateColor;
 {
     UIView *topBackgroundView = nil;
     
     UIView *ancestor = self;
     while (ancestor) {
-        if ([ancestor respondsToSelector:@selector(colorForYPosition:inView:)])
+        if ([ancestor respondsToSelector:@selector(inspectorBackgroundViewColor)])
             topBackgroundView = ancestor;
         ancestor = ancestor.superview;
     }
     
-    UIColor *color = [(id)topBackgroundView colorForYPosition:CGRectGetMinY(self.bounds) inView:self];
+    UIColor *color = [(id)topBackgroundView inspectorBackgroundViewColor];
     if (!color)
-        color = [UIColor whiteColor];
+        color = [OUIInspector backgroundColor];
     
     if (![_color isEqual:color]) {
-        [_color release];
-        _color = [color retain];
+        _color = color;
         [self setNeedsDisplay];
     }
 }
@@ -99,9 +96,9 @@ static const CGFloat kIndicatorSize = 20;
 #pragma mark -
 #pragma mark UIView (OUIInspectorBackgroundView)
 
-- (void)containingInspectorBackgroundViewColorsChanged;
+- (void)containingInspectorBackgroundViewColorChanged;
 {
-    [super containingInspectorBackgroundViewColorsChanged];
+    [super containingInspectorBackgroundViewColorChanged];
     
     [self updateColor];
 }

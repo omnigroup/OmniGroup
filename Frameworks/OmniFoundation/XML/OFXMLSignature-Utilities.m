@@ -1,4 +1,4 @@
-// Copyright 2009-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -367,8 +367,11 @@ static BOOL describeSecItem(SecKeychainItemRef item, NSMutableString *buf)
     }
     
     if (returnedClass == kSecInternetPasswordItemClass || returnedClass == CSSM_DL_DB_RECORD_INTERNET_PASSWORD ||
-        returnedClass == kSecGenericPasswordItemClass || returnedClass == CSSM_DL_DB_RECORD_GENERIC_PASSWORD ||
-        returnedClass == kSecAppleSharePasswordItemClass || returnedClass == CSSM_DL_DB_RECORD_APPLESHARE_PASSWORD) {
+#if defined(MAC_OS_X_VERSION_MIN_REQUIRED) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_9)
+        /* Appleshare passwords are stored as kSecInternetPasswordItemClass in newer OS releases */
+        returnedClass == kSecAppleSharePasswordItemClass || returnedClass == CSSM_DL_DB_RECORD_APPLESHARE_PASSWORD ||
+#endif
+        returnedClass == kSecGenericPasswordItemClass || returnedClass == CSSM_DL_DB_RECORD_GENERIC_PASSWORD) {
         [buf appendString:@" Password"];
     } else if (returnedClass == kSecCertificateItemClass || returnedClass == CSSM_DL_DB_RECORD_CERT) {
         [buf appendString:@" Certificate"];
@@ -531,7 +534,8 @@ static void whine_once(unsigned int lineno)
 }
 #define WHINE whine_once(__LINE__)
 
-static CFDictionaryRef secItemCopySingleSanityCheck(SecKeyRef queryKey, CFTypeRef result)
+/* Sanity-checks the result of SecItemCopyMatching() */
+static CFDictionaryRef secItemCopiedSingleSanityCheck(SecKeyRef queryKey, CFTypeRef result)
 {
     if (!result)
         return NULL;
@@ -719,7 +723,7 @@ static int OFSecKeyGetGroupSize_copymatching(SecKeyRef k)
     CFDictionaryRef info;
     int bits = -1;
     CFNumberRef bitSize = NULL;
-    if (!(info = secItemCopySingleSanityCheck(k, result))) {
+    if (!(info = secItemCopiedSingleSanityCheck(k, result))) {
         bits = -1;
     } else if (!CFDictionaryGetValueIfPresent(info, kSecAttrKeySizeInBits, (const void **)&bitSize)) {
         WHINE;
@@ -983,7 +987,7 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
         
         /* Right now we only do SubjectKeyIdentifier lookups, so that we don't have to get into all the minutia of parsing DNs. */
         if ([parsedNode objectForKey:@"SKI"])
-            [desiredKeys addObject:[parsedNode dictionaryWithObject:nil forKey:@"Certificate"]];
+            [desiredKeys addObject:[parsedNode dictionaryWithObjectRemovedForKey:@"Certificate"]];
     }
     
     free(x509Nodes);

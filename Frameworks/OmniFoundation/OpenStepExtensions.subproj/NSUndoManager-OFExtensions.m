@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -298,7 +298,7 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
 
     // Do this before logging so that the 'BEGIN' log happens first (probably in auto-group creation mode)
     IMP original = (IMP)CFDictionaryGetValue(ProxyForwardInvocationClassToOriginalImp, object_getClass(proxy));
-    original(proxy, _cmd, anInvocation);
+    OBCallVoidIMPWithObject(original, proxy, _cmd, anInvocation);
 
     // bail if we failed to lookup the undo manager.
     if (!self) {

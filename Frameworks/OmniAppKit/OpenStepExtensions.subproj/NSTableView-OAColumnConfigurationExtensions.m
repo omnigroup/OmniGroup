@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,13 +44,13 @@ RCS_ID("$Id$")
 
 // timo - 9/15/2003 - OBReplaceMethodImplementationWithSelector() will only replace the method implementation on the class which was passed.  Subclasses of NSTableView, such as NSOutlineView, also need to have their -reloadData and -setDataSource: implementations replaced in order to get configurable table columns.
 
-static IMP originalOutlineSetDataSource;
-static IMP originalOutlineReloadData;
+static void (*originalOutlineSetDataSource)(NSOutlineView *self, SEL _cmd, id <NSOutlineViewDataSource> dataSource);
+static void (*originalOutlineReloadData)(NSOutlineView *self, SEL _cmd);
 
 + (void)didLoad;
 {
-    originalOutlineSetDataSource = OBReplaceMethodImplementationWithSelector(self, @selector(setDataSource:), @selector(_configurableColumnReplacementSetDataSource:));
-    originalOutlineReloadData = OBReplaceMethodImplementationWithSelector(self, @selector(reloadData), @selector(_configurableColumnReplacementReloadData));
+    originalOutlineSetDataSource = (typeof(originalOutlineSetDataSource))OBReplaceMethodImplementationWithSelector(self, @selector(setDataSource:), @selector(_configurableColumnReplacementSetDataSource:));
+    originalOutlineReloadData = (typeof(originalOutlineReloadData))OBReplaceMethodImplementationWithSelector(self, @selector(reloadData), @selector(_configurableColumnReplacementReloadData));
 }
 
 // NSOutlineView method replacements
@@ -72,15 +72,15 @@ static IMP originalOutlineReloadData;
 
 @implementation NSTableView (OAColumnConfigurationExtensions)
 
-static IMP originalSetDataSource;
-static IMP originalReloadData;
-static IMP originalTableColumnWithIdentifier;
+static void (*originalSetDataSource)(NSTableView *self, SEL _cmd, id <NSTableViewDataSource> dataSource);
+static void (*originalReloadData)(NSTableView *self, SEL _cmd);
+static NSTableColumn *(*originalTableColumnWithIdentifier)(NSTableView *self, SEL _cmd, NSString *identifier);
 
 + (void)didLoad;
 {
-    originalSetDataSource = OBReplaceMethodImplementationWithSelector(self, @selector(setDataSource:), @selector(_configurableColumnReplacementSetDataSource:));
-    originalReloadData = OBReplaceMethodImplementationWithSelector(self, @selector(reloadData), @selector(_configurableColumnReplacementReloadData));
-    originalTableColumnWithIdentifier = OBReplaceMethodImplementationWithSelector(self, @selector(tableColumnWithIdentifier:), @selector(_replacementTableColumnWithIdentifier:));
+    originalSetDataSource = (typeof(originalSetDataSource))OBReplaceMethodImplementationWithSelector(self, @selector(setDataSource:), @selector(_configurableColumnReplacementSetDataSource:));
+    originalReloadData = (typeof(originalReloadData))OBReplaceMethodImplementationWithSelector(self, @selector(reloadData), @selector(_configurableColumnReplacementReloadData));
+    originalTableColumnWithIdentifier = (typeof(originalTableColumnWithIdentifier))OBReplaceMethodImplementationWithSelector(self, @selector(tableColumnWithIdentifier:), @selector(_replacementTableColumnWithIdentifier:));
 }
 
 

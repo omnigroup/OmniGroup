@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,7 +41,7 @@ RCS_ID("$Id$")
 }
 
 /*" Returns an object which is a shallow copy of the receiver except that the given key now maps to anObj. anObj may be nil in order to remove the given key from the dictionary. "*/
-- (NSDictionary *)dictionaryWithObject:(id)anObj forKey:(NSString *)key;
+- (NSDictionary *)dictionaryWithPossiblyRemovedObject:(id)anObj forKey:(NSString *)key;
 {
     NSUInteger keyCount = [self count];
     
@@ -71,6 +71,17 @@ RCS_ID("$Id$")
     [newValues release];
     
     return result;
+}
+
+- (NSDictionary *)dictionaryWithObject:(id)anObj forKey:(NSString *)key;
+{
+    OBASSERT_NOTNULL(anObj);
+    return [self dictionaryWithPossiblyRemovedObject:anObj forKey:key];
+}
+
+- (NSDictionary *)dictionaryWithObjectRemovedForKey:(NSString *)key;
+{
+    return [self dictionaryWithPossiblyRemovedObject:nil forKey:key];
 }
 
 /*" Returns an object which is a shallow copy of the receiver except that the key-value pairs from aDictionary are included (overriding existing key-value associations if they existed). "*/

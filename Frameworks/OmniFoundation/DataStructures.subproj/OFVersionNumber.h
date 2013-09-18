@@ -24,8 +24,10 @@
 // Convenience methods for testing the current operating system.  One nice thing about using these (rather than looking up the operating system and comparing it by hand) is that we can remove these methods when they become irrelevant (e.g. when we require Snow Leopard), helping us find and update any code which is unnecessarily trying to support an older operating system.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 + (BOOL)isOperatingSystemiOS61OrLater; // iOS 6.1
++ (BOOL)isOperatingSystemiOS7OrLater; // iOS 7.0
 #else
 + (BOOL)isOperatingSystemMountainLionOrLater; // 10.8
++ (BOOL)isOperatingSystemMavericksOrLater; // 10.9
 #endif
 
 - initWithVersionString:(NSString *)versionString;

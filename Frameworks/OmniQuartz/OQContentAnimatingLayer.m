@@ -1,4 +1,4 @@
-// Copyright 2008-2012 The Omni Group. All rights reserved.
+// Copyright 2008-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -133,7 +133,7 @@ static CFHashCode _hashString(const void *value)
 {
     SEL sel = ActionSelectorForKey(event);
     if ([self respondsToSelector:sel])
-        return objc_msgSend(self, sel, event); // NOTE that we pass the event here. This will be an extra hidden argument to -actionFor<Key> but will be used by the default -basicAnimationForKey:.
+        return ( (id <CAAction> (*)(id, SEL, NSString *))objc_msgSend )(self, sel, event); // NOTE that we pass the event here. This will be an extra hidden argument to -actionFor<Key> but will be used by the default -basicAnimationForKey:.
     return [super actionForKey:event];
 }
 

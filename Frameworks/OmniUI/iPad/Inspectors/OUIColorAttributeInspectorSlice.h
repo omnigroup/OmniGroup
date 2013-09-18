@@ -13,7 +13,7 @@
 
 @interface OUIColorAttributeInspectorSlice : OUIAbstractColorInspectorSlice
 
-@property(nonatomic,retain) OUIColorAttributeInspectorWell *textWell;
+@property(nonatomic,strong) OUIColorAttributeInspectorWell *textWell;
 
 - initWithLabel:(NSString *)label;
 @end

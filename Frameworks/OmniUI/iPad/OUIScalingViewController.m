@@ -8,7 +8,6 @@
 #import <OmniUI/OUIScalingViewController.h>
 
 #import <OmniUI/OUIScalingView.h>
-#import <OmniUI/OUIScalingScrollView.h>
 #import <OmniUI/OUIOverlayView.h>
 #import <OmniUI/OUITiledScalingView.h>
 #import <OmniUI/UIView-OUIExtensions.h>
@@ -16,16 +15,15 @@
 RCS_ID("$Id$");
 
 @implementation OUIScalingViewController
+{
+    BOOL _isZooming;
+    BOOL _lastScaleWasFullScale;
+}
 
 - (void)dealloc;
 {
     _scrollView.delegate = nil;
-    [_scrollView release];
-    
-    [super dealloc];
 }
-
-@synthesize scrollView = _scrollView;
 
 static OUIScalingView *_scalingView(OUIScalingViewController *self)
 {
@@ -258,6 +256,11 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 #pragma mark -
 #pragma mark UIScrollViewDelegate
 #pragma mark OUIScrollNotifier
+
+- (CGRect)scallingScrollViewContentViewFullScreenBounds:(OUIScalingScrollView *)scallingScrollView;
+{
+    return self.view.bounds;
+}
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView;
 {

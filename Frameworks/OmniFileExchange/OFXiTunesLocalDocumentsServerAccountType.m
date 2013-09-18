@@ -9,7 +9,7 @@
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-#import <OmniFileStore/OFSDocumentStoreLocalDirectoryScope.h>
+#import <OmniDocumentStore/ODSLocalDirectoryScope.h>
 
 RCS_ID("$Id$")
 
@@ -87,7 +87,7 @@ NSString * const OFXiTunesLocalDocumentsServerAccountTypeIdentifier = @"com.omni
 
 - (NSURL *)baseURLForServerURL:(NSURL *)serverURL username:(NSString *)username;
 {
-    return [OFSDocumentStoreLocalDirectoryScope userDocumentsDirectoryURL];
+    return [ODSLocalDirectoryScope userDocumentsDirectoryURL];
 }
 
 - (void)validateAccount:(OFXServerAccount *)account username:(NSString *)username password:(NSString *)password validationHandler:(OFXServerAccountValidationHandler)validationHandler;

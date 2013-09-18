@@ -13,27 +13,29 @@
 @class OAFontDescriptor;
 @class OUIInspectorTextWell, OUIInspectorStepperButton, OUIFontInspectorPane;
 
-typedef struct {
-    NSString *text;
-    UIFont *font;
-} OUIFontInspectorSliceFontDisplay;
+@interface OUIFontInspectorSliceFontDisplay : NSObject
+@property(nonatomic,copy) NSString *text;
+@property(nonatomic,strong) UIFont *font;
+@end
 
 @interface OUIFontInspectorSlice : OUIInspectorSlice
 
-@property(nonatomic,retain) IBOutlet OUIInspectorTextWell *fontFamilyTextWell;
-@property(nonatomic,retain) IBOutlet OUIInspectorStepperButton *fontSizeDecreaseStepperButton;
-@property(nonatomic,retain) IBOutlet OUIInspectorStepperButton *fontSizeIncreaseStepperButton;
-@property(nonatomic,retain) IBOutlet OUIInspectorTextWell *fontSizeTextWell;
+@property(nonatomic,strong) IBOutlet OUIInspectorTextWell *fontFamilyTextWell;
+@property(nonatomic,strong) IBOutlet UILabel *fontSizeLabel;
+@property(nonatomic,strong) IBOutlet OUIInspectorStepperButton *fontSizeDecreaseStepperButton;
+@property(nonatomic,strong) IBOutlet OUIInspectorStepperButton *fontSizeIncreaseStepperButton;
 
 - (IBAction)increaseFontSize:(id)sender;
 - (IBAction)decreaseFontSize:(id)sender;
-- (IBAction)fontSizeTextWellAction:(OUIInspectorTextWell *)sender;
 
-- (OUIFontInspectorSliceFontDisplay)fontNameDisplayForFontDescriptor:(OAFontDescriptor *)fontDescriptor;
-- (OUIFontInspectorSliceFontDisplay)fontNameDisplayForFontDescriptors:(NSArray *)fontDescriptors;
-- (void)updateFontSizeTextWellForFontSizes:(NSArray *)fontSizes extent:(OFExtent)fontSizeExtent;
+- (OUIFontInspectorSliceFontDisplay *)fontNameDisplayForFontDescriptor:(OAFontDescriptor *)fontDescriptor;
+- (OUIFontInspectorSliceFontDisplay *)fontNameDisplayForFontDescriptors:(NSArray *)fontDescriptors;
 
-@property(nonatomic,retain) IBOutlet OUIFontInspectorPane *fontFacesPane;
+- (UIView *)makeFontSizeControlWithFrame:(CGRect)frame; // Return a new view w/o adding it to the view heirarchy
+- (void)updateFontSizeControl:(UIView *)fontSizeControl forFontSizes:(NSArray *)fontSizes extent:(OFExtent)fontSizeExtent;
+- (void)updateFontSizeControl:(UIView *)fontSizeControl withText:(NSString *)text;
+
+@property(nonatomic,strong) IBOutlet OUIFontInspectorPane *fontFacesPane;
 - (void)showFacesForFamilyBaseFont:(UIFont *)font; // Called from the family listing to display members of the family
 
 @end

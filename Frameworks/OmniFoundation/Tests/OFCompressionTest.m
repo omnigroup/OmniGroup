@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -77,10 +77,10 @@ static NSData *utf8(NSString *str)
     for (length = 0; length < 16*1024; length += incrementAmount) {
         if ((length % 100) == 0)
             fprintf(stderr, "%d...\n", length);
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        TEST_STRING(stringOfA);
-        [stringOfA appendString:@"a"];
-        [pool drain];
+        @autoreleasepool {
+            TEST_STRING(stringOfA);
+            [stringOfA appendString:@"a"];
+        }
     }
 }
 
@@ -95,16 +95,16 @@ static NSData *utf8(NSString *str)
     // Test some random vectors
     unsigned int repetitions = 50;
     while (repetitions--) {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        NSData *data = [NSData randomDataOfLength:OFRandomNext32() % maxLength];
-        NS_DURING {
-            TEST_DATA(data);
-        } NS_HANDLER {
-            [data writeToFile:@"/tmp/fail.dat" atomically:YES];
-            NSLog(@"Failed on random vector (base-64): <%@>", [data base64String]);
-            [localException raise];
-        } NS_ENDHANDLER;
-        [pool drain];
+        @autoreleasepool {
+            NSData *data = [NSData randomDataOfLength:OFRandomNext32() % maxLength];
+            NS_DURING {
+                TEST_DATA(data);
+            } NS_HANDLER {
+                [data writeToFile:@"/tmp/fail.dat" atomically:YES];
+                NSLog(@"Failed on random vector (base-64): <%@>", [data base64String]);
+                [localException raise];
+            } NS_ENDHANDLER;
+        }
     }
 }
 
@@ -133,26 +133,26 @@ static NSData *utf8(NSString *str)
 {
     static int levels[] = { -1, 0, 1, 9 };
 
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    @autoreleasepool {
     
-    unsigned int levelIndex;
-    for (levelIndex = 0; levelIndex < (sizeof(levels) / sizeof(*levels)); levelIndex++) {
-        NSError *error = nil;
-        NSData *gzData = [data compressedDataWithGzipHeader:YES compressionLevel:levels[levelIndex] error:&error];
-        OBShouldNotError(gzData != nil);
+        unsigned int levelIndex;
+        for (levelIndex = 0; levelIndex < (sizeof(levels) / sizeof(*levels)); levelIndex++) {
+            NSError *error = nil;
+            NSData *gzData = [data compressedDataWithGzipHeader:YES compressionLevel:levels[levelIndex] error:&error];
+            OBShouldNotError(gzData != nil);
 
-        NSData *gzipDecompressed = [gzData filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObjects:@"--decompress", @"--to-stdout", nil] error:&error];
-        OBShouldNotError(gzipDecompressed != nil);
+            NSData *gzipDecompressed = [gzData filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObjects:@"--decompress", @"--to-stdout", nil] error:&error];
+            OBShouldNotError(gzipDecompressed != nil);
 
-        shouldBeEqual(data, gzipDecompressed);
+            shouldBeEqual(data, gzipDecompressed);
 
-        NSData *decompressed = [gzData decompressedData:&error];
-        OBShouldNotError(decompressed != nil);
+            NSData *decompressed = [gzData decompressedData:&error];
+            OBShouldNotError(decompressed != nil);
 
-        shouldBeEqual(data, decompressed);
+            shouldBeEqual(data, decompressed);
+        }
+
     }
-
-    [pool drain];
 }
 
 @end

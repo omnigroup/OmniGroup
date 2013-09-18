@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010,2013 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,21 +15,21 @@ UIImage *OUITableViewItemSelectionImage(UIControlState state)
     NSString *imageName;
     switch (state) {
         case UIControlStateHighlighted:
-            imageName = @"OUITableViewItemSelection-Highlighted.png";
+            imageName = @"OUITableViewItemSelection-Highlighted";
             break;
         case UIControlStateSelected:
-            imageName = @"OUITableViewItemSelection-Selected.png";
+            imageName = @"OUITableViewItemSelection-Selected";
             break;
         case UIControlStateDisabled:
         default:
             OBASSERT_NOT_REACHED("No images for these states.");
             // fall through
         case UIControlStateNormal:
-            imageName = @"OUITableViewItemSelection-Normal.png";
+            imageName = @"OUITableViewItemSelection-Normal";
             break;
     }
     
-    UIImage *image = [UIImage imageNamed:imageName];
+    UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     OBASSERT(image);
     OBASSERT(state == UIControlStateNormal || CGSizeEqualToSize([image size], [OUITableViewItemSelectionImage(UIControlStateNormal) size]));
              

@@ -230,13 +230,13 @@ static void _startElementNsSAX2Func(void *ctx, const xmlChar *localname, const x
     
     
     // TODO: Make OFXMLWhitespaceBehaviorType QName aware.
-    OFXMLWhitespaceBehaviorType oldBehavior = (OFXMLWhitespaceBehaviorType)[state->whitespaceBehaviorStack lastObject];
+    OFXMLWhitespaceBehaviorType oldBehavior = (OFXMLWhitespaceBehaviorType)[[state->whitespaceBehaviorStack lastObject] unsignedIntegerValue];
     OFXMLWhitespaceBehaviorType newBehavior = [state->whitespaceBehavior behaviorForElementName:elementQName.name];
     
     if (newBehavior == OFXMLWhitespaceBehaviorTypeAuto)
         newBehavior = oldBehavior;
     
-    [state->whitespaceBehaviorStack addObject:(id)newBehavior];
+    [state->whitespaceBehaviorStack addObject:@(newBehavior)];
     
     
     OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
@@ -351,7 +351,7 @@ static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
         OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
         
         // Only add the whitespace if our current behavior dictates that we do so (and we are actually inside the root element)
-        OFXMLWhitespaceBehaviorType currentBehavior = (OFXMLWhitespaceBehaviorType)[state->whitespaceBehaviorStack lastObject];
+        OFXMLWhitespaceBehaviorType currentBehavior = (OFXMLWhitespaceBehaviorType)[[state->whitespaceBehaviorStack lastObject] unsignedIntegerValue];
         
         if (currentBehavior == OFXMLWhitespaceBehaviorTypePreserve) {
             if (state->targetImp.addWhitespace)
@@ -440,7 +440,7 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     
     memset(&state, 0, sizeof(state));
     state.parser = self;
-    state.whitespaceBehaviorStack = (NSMutableArray *)OFCreateIntegerArray();
+    state.whitespaceBehaviorStack = [[NSMutableArray alloc] init];
     state.nonWhitespaceCharacterSet = [[[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet] copy];
     state.loadWarnings = [[NSMutableArray alloc] init];
     state.whitespaceBehavior = whitespaceBehavior;
@@ -480,7 +480,7 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     state.unparsedBlockStart = -1;
     
     // Set up default whitespace behavior
-    [state.whitespaceBehaviorStack addObject:(id)defaultWhitespaceBehavior];
+    [state.whitespaceBehaviorStack addObject:@(defaultWhitespaceBehavior)];
     
     
     // TODO: Add support for passing along the source URL
@@ -505,14 +505,23 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     
     state.ctxt = xmlCreatePushParserCtxt(&sax, &state/*user data*/, [xmlData bytes], (int)xmlLength, NULL);
     
-    int options = XML_PARSE_NOENT; // Turn entities into content
-    options |= XML_PARSE_NONET; // don't allow network access
-    options |= XML_PARSE_NSCLEAN; // remove redundant namespace declarations
-    options |= XML_PARSE_NOCDATA; // merge CDATA as text nodes
+    // Set the options on our XML parser instance.
+    // We set XML_PARSE_HUGE to bypass any hardcoded internal parser limits, such as 10000000 byte input length limit.
+    //
+    // Those limits are enforced by default with the version of libxml2 that ships with iOS 7 and OS X 10.9.
+    // rdar://problem/14280255 and rdar://problem/14280241 asks them to reconsider this default configuration because it breaks binary compatibilty for existing libxml2 clients.
+    
+    int options = 0;
+    options |= XML_PARSE_NOENT;     // Turn entities into content
+    options |= XML_PARSE_NONET;     // Don't allow network access
+    options |= XML_PARSE_NSCLEAN;   // Remove redundant namespace declarations
+    options |= XML_PARSE_NOCDATA;   // Merge CDATA as text nodes
+    options |= XML_PARSE_HUGE;      // Relax any hardcoded limit from the parser
+    
     options = xmlCtxtUseOptions(state.ctxt, options);
     if (options != 0)
-        NSLog(@"unsupported options %d", options);
-    
+        NSLog(@"Unsupported xml parser options: 0x%08x", options);
+
     // Encoding isn't set until after the terminate.
     int rc = xmlParseChunk(state.ctxt, NULL, 0, TRUE/*terminate*/);
     

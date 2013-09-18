@@ -211,7 +211,7 @@ static void _OFControllerCheckTerminated(void)
 - (NSUInteger)_locked_indexOfObserver:(id)observer;
 {
     return [_observerReferences indexOfObjectPassingTest:^BOOL(OFWeakReference *ref, NSUInteger idx, BOOL *stop) {
-        return ref.object == observer;
+        return [ref referencesObject:observer];
     }];
 }
 
@@ -417,9 +417,7 @@ static void _OFControllerCheckTerminated(void)
 
 - (void)crashWithReport:(NSString *)report;
 {
-    [self _makeObserversPerformSelector:@selector(controller:willCrashWithReport:) withObject:report];
-    
-    OBASSERT_NOT_REACHED("Subclasses should do something more useful here, like use OmniCrashCatcher");
+    // OmniCrashCatcher overrides this method to do something more useful
     NSLog(@"Crashing with report:\n%@", report);
     
     //OCCCrashImmediately();
@@ -507,7 +505,11 @@ static void _OFControllerCheckTerminated(void)
         // NSRemoteSavePanel sometimes fails an assertion when it turns on the "hide extension" checkbox on by itself. Seems harmless?
         if (selector == @selector(connection:didReceiveRequest:) && [NSStringFromClass([object class]) isEqualToString:@"NSRemoteSavePanel"])
             crash = NO;
-        
+
+        // Save as PDF (maybe just when the suggested name has 'foo.ext' and you confirm the alert asking to switch to just '.pdf'.
+        if (selector == @selector(updateWindowEdgeResizingRegion) && [NSStringFromClass([object class]) isEqualToString:@"NSRemoteView"])
+            crash = NO;
+
         // Bringing up security options for print-to-pdf in a sandboxed app causes a harmless failure. <bug:///87161>
         if (selector == @selector(sendEvent:) && [NSStringFromClass([object class]) isEqualToString:@"NSAccessoryWindow"])
             crash = NO;

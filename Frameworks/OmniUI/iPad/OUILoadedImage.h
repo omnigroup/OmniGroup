@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,12 +9,12 @@
 
 @class UIImage;
 
-typedef struct {
-    UIImage *image;
-    CGSize size;
-} OUILoadedImage;
+@interface OUILoadedImage : NSObject
+@property(nonatomic,strong) UIImage *image;
+@property(nonatomic) CGSize size;
+@end
 
-extern void OUILoadImage(NSString *name, OUILoadedImage *info);
+extern OUILoadedImage *OUILoadImage(NSString *name);
 
 
 

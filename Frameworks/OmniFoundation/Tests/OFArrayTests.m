@@ -83,9 +83,6 @@ RCS_ID("$Id$");
     [input sortBasedOnOrderInArray:reference identical:NO unknownAtFront:YES];
     shouldBeEqual(input, reference);
     
-    [input release];
-    [reference release];
-    [empty release];
 }
 
 @end
@@ -107,7 +104,6 @@ RCS_ID("$Id$");
     NSObject *y;
     
     y = [[NSObject alloc] init];
-    [y autorelease];
     
     x = [NSArray array];
     should([x anyObject] == nil);
@@ -122,9 +118,9 @@ RCS_ID("$Id$");
     NSMutableArray *subj;
     NSArray *counting, *Counting, *middle;
 
-    counting = [[[NSArray alloc] initWithObjects:@"one", @"two", @"three", @"four", @"five", nil] autorelease];
+    counting = [[NSArray alloc] initWithObjects:@"one", @"two", @"three", @"four", @"five", nil];
     middle = [NSArray arrayWithObjects:@"one", @"TWO", @"THREE", @"FOUR", @"five", nil];
-    Counting = [[[NSArray alloc] initWithObjects:@"One", @"Two", @"Three", @"Four", @"Five", nil] autorelease];
+    Counting = [[NSArray alloc] initWithObjects:@"One", @"Two", @"Three", @"Four", @"Five", nil];
 
     subj = [NSMutableArray array];
     [subj addObjectsFromArray:counting];
@@ -165,7 +161,7 @@ RCS_ID("$Id$");
 {
     NSArray *forward, *backward;
         
-    [self testReverse:[[[NSArray alloc] init] autorelease] giving:[[[NSMutableArray alloc] init] autorelease]];
+    [self testReverse:[[NSArray alloc] init] giving:[[NSMutableArray alloc] init]];
     
     forward = [NSArray arrayWithObject:@"one"];
     [self testReverse:forward giving:forward];
@@ -173,26 +169,18 @@ RCS_ID("$Id$");
     forward = [[NSArray alloc] initWithObjects:@"one", @"two", nil];
     backward = [[NSArray alloc] initWithObjects:@"two", @"one", nil];
     [self testReverse:forward giving:backward];
-    [forward release];
-    [backward release];
     
     forward = [[NSArray alloc] initWithObjects:@"one", @"two", @"three", nil];
     backward = [[NSArray alloc] initWithObjects:@"three", @"two", @"one", nil];
     [self testReverse:forward giving:backward];
-    [forward release];
-    [backward release];
     
     forward = [[NSArray alloc] initWithObjects:@"oscillate", @"my", @"metallic", @"sonatas", nil];
     backward = [[NSArray alloc] initWithObjects:@"sonatas", @"metallic", @"my", @"oscillate", nil];
     [self testReverse:forward giving:backward];
-    [forward release];
-    [backward release];
     
     forward = [[NSArray alloc] initWithObjects:@"one", @"two", @"three", @"four", @"Fibonacci", nil];
     backward = [[NSArray alloc] initWithObjects:@"Fibonacci", @"four", @"three", @"two", @"one", nil];
     [self testReverse:forward giving:backward];
-    [forward release];
-    [backward release];
 }
 
 - (void)testGrouping
@@ -268,11 +256,8 @@ RCS_ID("$Id$");
     int ix;
     NSMutableArray *a, *b;
     
-    a = [[NSMutableArray alloc] init];
-    b = [[NSMutableArray alloc] init];
-    
-    [a autorelease];
-    [b autorelease];
+    a = [NSMutableArray array];
+    b = [NSMutableArray array];
     
     for(ix = 0; ix < NNUM; ix++) {
         
@@ -468,11 +453,8 @@ static NSString * const kX = @"x";
 }
 - (void)tearDown;
 {
-    [a release];
     a = nil;
-    [ab release];
     ab = nil;
-    [abc release];
     abc = nil;
     [super tearDown];
 }
@@ -481,9 +463,9 @@ static OFPredicateBlock truePredicate = ^BOOL(id obj) {
     return YES;
 };
 static OFPredicateBlock ifEquals(id value) {
-    return [[^BOOL(id obj) {
+    return [^BOOL(id obj) {
         return [obj isEqual:value];
-    } copy] autorelease];
+    } copy];
 }
 //static OFPredicateBlock ifIn(NSArray *array) {
 //    return [[^BOOL(id obj) {

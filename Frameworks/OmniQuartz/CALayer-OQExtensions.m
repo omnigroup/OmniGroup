@@ -1,4 +1,4 @@
-// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -606,7 +606,6 @@ static void _writeString(NSString *str)
     OBASSERT(GET_VALUE(isDoubleSided)); // Not handling back face culling.
     OBASSERT(GET_VALUE(mask) == nil); // Not handling mask layers or any filters
     OBASSERT(CGRectEqualToRect(GET_VALUE(contentsRect), CGRectMake(0, 0, 1, 1))); // Should be showing the full content
-    OBASSERT(GET_VALUE(borderWidth) == 0.0);
     OBASSERT(GET_VALUE(compositingFilter) == nil);
     OBASSERT([GET_VALUE(filters) count] == 0);
     OBASSERT([GET_VALUE(backgroundFilters) count] == 0);

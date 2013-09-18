@@ -7,12 +7,14 @@
 
 #import "OUISyncListController.h"
 
-#import <OmniFileStore/OFSFileInfo.h>
+#import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFoundation/OFCredentials.h>
-#import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
+#import <OmniDocumentStore/ODSScope.h>
 
 #import "OUISyncDownloader.h"
 
@@ -59,7 +61,7 @@ RCS_ID("$Id$");
         .size.height = 32
     }];
     
-    _connectingProgress = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    _connectingProgress = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     _connectingProgress.frame = (CGRect){
         .origin.x = 2,
         .origin.y = 6,
@@ -76,7 +78,7 @@ RCS_ID("$Id$");
     }];
     _connectingLabel.backgroundColor = [UIColor clearColor];
     _connectingLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:20.0];
-    _connectingLabel.textColor = [UIColor whiteColor];
+    _connectingLabel.textColor = [UIColor blackColor];
     [_connectingView addSubview:_connectingLabel];
     
     [self _updateNavigationButtons];
@@ -124,15 +126,18 @@ RCS_ID("$Id$");
 
     [self _fadeOutDownload:downloader];
     
-    if (_isExporting) {
-        _isExporting = NO;
-        [[[OUIDocumentAppController controller] documentPicker] exportedDocumentToURL:downloadURL];
-    } else if (_isDownloading) {
-        _isDownloading = NO;
-        [[[OUIDocumentAppController controller] documentPicker] addDocumentFromURL:downloadURL];
-    }
-
-    [self.navigationController performSelector:@selector(dismissModalViewControllerAnimated:) withObject:[NSNumber numberWithBool:YES] afterDelay:0.5];
+    OUIDocumentPickerViewController *scopeViewController = [OUIDocumentAppController controller].documentPicker.selectedScopeViewController;
+    OBASSERT(scopeViewController);
+    
+    [self.navigationController dismissViewControllerAnimated:YES completion:^{
+        if (_isExporting) {
+            _isExporting = NO;
+            [scopeViewController exportedDocumentToURL:downloadURL];
+        } else if (_isDownloading) {
+            _isDownloading = NO;
+            [scopeViewController addDocumentFromURL:downloadURL];
+        }
+    }];
 }
 
 - (void)downloadCanceled:(NSNotification *)notification;
@@ -247,28 +252,16 @@ RCS_ID("$Id$");
     OBASSERT(navigationItem);
 
     if (_isExporting)
-        navigationItem.rightBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Export", @"OmniUIDocument", OMNI_BUNDLE, @"export button title") style:UIBarButtonItemStyleBordered target:self action:@selector(export:)];
+        navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Export", @"OmniUIDocument", OMNI_BUNDLE, @"export button title") style:UIBarButtonItemStylePlain target:self action:@selector(export:)];
 
     UINavigationController *navigationController = self.navigationController;
     NSArray *viewControllers = navigationController.viewControllers;
     NSUInteger viewIndex = [viewControllers indexOfObjectIdenticalTo:self];
     
     if (viewIndex == 0) {
-        UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
+        UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
         navigationItem.leftBarButtonItem = cancel;
     }
-    
-#if 1
-    // Custom view items get ignored for the back item. Also, unlike the 'back to me' button, the left button needs to reference the title of the previous view controller and it needs a real target/action
-    if (viewIndex != 0) {
-        UIViewController *previousController = [viewControllers objectAtIndex:viewIndex - 1];
-        navigationItem.leftBarButtonItem = [[OUIBarButtonItem alloc] initWithBackgroundType:OUIBarButtonItemBackgroundTypeBack image:nil title:previousController.navigationItem.title target:self action:@selector(_goBack:)];
-    }
-#else
-    // 'backBarButtonItem' is for 'go back to *me*'
-    navigationItem.backBarButtonItem = [[[OUIBarButtonItem alloc] initWithBackgroundType:OUIBarButtonItemBackgroundTypeBack image:nil title:[NSString stringWithFormat:@"??? %@", self.title] target:nil action:NULL] autorelease];
-    //navigationItem.backBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:self.title style:UIBarButtonItemStyleBordered target:nil action:NULL] autorelease];
-#endif
 }
 
 - (void)_fadeOutDownload:(OUISyncDownloader *)downloader;
@@ -291,7 +284,7 @@ RCS_ID("$Id$");
 
 - (void)_exportToURL:(NSURL *)exportURL;
 {
-    OFSFileInfo *emptyFile = [[OFSFileInfo alloc] initWithOriginalURL:exportURL name:[OFSFileInfo nameForURL:exportURL] exists:NO directory:NO size:0 lastModifiedDate:nil];
+    ODAVFileInfo *emptyFile = [[ODAVFileInfo alloc] initWithOriginalURL:exportURL name:[ODAVFileInfo nameForURL:exportURL] exists:NO directory:NO size:0 lastModifiedDate:nil];
     NSMutableArray *newFiles = [NSMutableArray arrayWithObject:emptyFile];
     [newFiles addObjectsFromArray:self.files];
     [newFiles sortUsingSelector:@selector(compareByName:)];
@@ -340,7 +333,7 @@ RCS_ID("$Id$");
     if (_isDownloading)
         return nil;
     
-    OFSFileInfo *fileInfo = [self.files objectAtIndex:indexPath.row];
+    ODAVFileInfo *fileInfo = [self.files objectAtIndex:indexPath.row];
     if (![self _canOpenFile:fileInfo] && [fileInfo isDirectory])
         return indexPath;
     

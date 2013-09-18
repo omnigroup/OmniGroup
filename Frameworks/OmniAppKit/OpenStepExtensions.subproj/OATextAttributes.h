@@ -1,4 +1,4 @@
-// Copyright 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,43 +8,30 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObjCRuntime.h> // MAX
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#import <CoreText/CTStringAttributes.h>
-#else
-#import <AppKit/NSAttributedString.h>
-#endif
 
-// Text attributes that have no matching attribute in CoreText
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-extern NSString * const OABackgroundColorAttributeName;
-extern NSString * const OALinkAttributeName;
-extern NSString * const OAStrikethroughStyleAttributeName;
-extern NSString * const OAStrikethroughColorAttributeName;
-extern NSUInteger const OAUnderlineByWordMask;
-#else
-#define OABackgroundColorAttributeName NSBackgroundColorAttributeName
-#define OALinkAttributeName NSLinkAttributeName
-#define OAStrikethroughStyleAttributeName NSStrikethroughStyleAttributeName
-#define OAStrikethroughColorAttributeName NSStrikethroughColorAttributeName
-#define OAUnderlineByWordMask NSUnderlineByWordMask
-#endif
+    #import <UIKit/NSAttributedString.h>
 
-// Text attributes that we can map right across
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#define OA_TEXT_KEY(mac,ipad) ((id)ipad)
-#else
-#define OA_TEXT_KEY(mac,ipad) (mac)
-#endif
+    // iOS has an actual typedef for the enum
+    #define OAUnderlineStyle NSUnderlineStyle
+    #define OAUnderlineByWordMask NSUnderlineByWord
 
-#define OAForegroundColorAttributeName OA_TEXT_KEY(NSForegroundColorAttributeName, kCTForegroundColorAttributeName)
-#define OAStrokeWidthAttributeName OA_TEXT_KEY(NSStrokeWidthAttributeName, kCTStrokeWidthAttributeName)
-#define OAStrokeColorAttributeName OA_TEXT_KEY(NSStrokeColorAttributeName, kCTStrokeColorAttributeName)
-#define OAFontAttributeName OA_TEXT_KEY(NSFontAttributeName, kCTFontAttributeName)
-#define OASuperscriptAttributeName OA_TEXT_KEY(NSSuperscriptAttributeName,kCTSuperscriptAttributeName)
-#define OAUnderlineStyleAttributeName OA_TEXT_KEY(NSUnderlineStyleAttributeName, kCTUnderlineStyleAttributeName)
-#define OAUnderlineColorAttributeName OA_TEXT_KEY(NSUnderlineColorAttributeName, kCTUnderlineColorAttributeName)
-#define OAParagraphStyleAttributeName OA_TEXT_KEY(NSParagraphStyleAttributeName, kCTParagraphStyleAttributeName)
+    // iOS doesn't have a superscript attribute
+    extern NSString * const OASuperscriptAttributeName;
+
+#else
+
+    #import <AppKit/NSAttributedString.h>
+
+    // AppKit has no typedef for the enum
+    #define OAUnderlineStyle NSUInteger
+    #define OAUnderlineByWordMask NSUnderlineByWordMask
+
+    #define OASuperscriptAttributeName NSSuperscriptAttributeName
+
+#endif
 
 // In OmniStyle's text storage subclass, we add a font descriptor to the attributes for the _desired_ font, leaving the other font attribute around for the best calculated match.
 extern NSString * const OAFontDescriptorAttributeName;

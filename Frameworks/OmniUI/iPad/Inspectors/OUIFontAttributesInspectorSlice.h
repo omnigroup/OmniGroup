@@ -9,7 +9,7 @@
 
 #import <OmniUI/OUIInspectorSlice.h>
 
-@class OUIInspectorSegmentedControl, OUIInspectorSegmentedControlButton;
+@class OUISegmentedControl, OUISegmentedControlButton;
 
 typedef enum {
     OUIFontAttributeButtonTypeBold,
@@ -20,7 +20,7 @@ typedef enum {
 
 @interface OUIFontAttributesInspectorSlice : OUIInspectorSlice
 
-- (OUIInspectorSegmentedControlButton *)fontAttributeButtonForType:(OUIFontAttributeButtonType)type; // Useful when overriding -updateFontAttributeButtons
+- (OUISegmentedControlButton *)fontAttributeButtonForType:(OUIFontAttributeButtonType)type; // Useful when overriding -updateFontAttributeButtons
 - (void)updateFontAttributeButtonsWithFontDescriptors:(NSArray *)fontDescriptors;
 
 @property(nonatomic) BOOL showStrikethrough;

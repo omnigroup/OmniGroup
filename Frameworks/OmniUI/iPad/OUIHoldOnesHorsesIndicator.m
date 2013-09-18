@@ -7,6 +7,8 @@
 
 #import <OmniUI/OUIHoldOnesHorsesIndicator.h>
 
+#import <OmniUI/OUIInteractionLock.h>
+
 RCS_ID("$Id$");
 
 #if 0 && defined(DEBUG)
@@ -39,17 +41,27 @@ static UIColor *BackgroundWashColor;
 @end
 
 @implementation OUIHoldOnesHorsesIndicator
+{
+    OUIInteractionLock *_lock;
+}
 
 + (void)initialize;
 {
     OBINITIALIZE;
     
-    BackgroundWashColor = [[UIColor colorWithWhite:0.0f alpha:0.5f] retain];
+    BackgroundWashColor = [UIColor colorWithWhite:0.0f alpha:0.5f];
 }
 
 + (OUIHoldOnesHorsesIndicator *)holdOnesHorsesIndicatorForView:(UIView *)view shouldDisableAllInteraction:(BOOL)disable;
 {
-    OUIHoldOnesHorsesIndicator *result = [[[OUIHoldOnesHorsesIndicator alloc] initForView:view shouldDisableAllInteraction:disable] autorelease];
+    return [[self class] holdOnesHorsesIndicatorForView:view withColor:nil drawShadingView:NO shouldDisableAllInteraction:disable];
+}
+
++ (OUIHoldOnesHorsesIndicator *)holdOnesHorsesIndicatorForView:(UIView *)view withColor:(UIColor *)color drawShadingView:(BOOL)drawShadingView shouldDisableAllInteraction:(BOOL)disable;
+{
+    OUIHoldOnesHorsesIndicator *result = [[OUIHoldOnesHorsesIndicator alloc] initForView:view shouldDisableAllInteraction:disable];
+    result.color = color;
+    result.shouldDrawShadingView = drawShadingView;
     [result activate];
     return result;
 }
@@ -59,7 +71,7 @@ static UIColor *BackgroundWashColor;
     self = [super init];
     if (self) {
         _shouldDisableAllInteraction = disable;
-        _parentView = [view retain];
+        _parentView = view;
     }
     return self;
 }
@@ -69,14 +81,7 @@ static UIColor *BackgroundWashColor;
     OBPRECONDITION(self.indicatorView == nil);
     OBPRECONDITION(self.spinnerView == nil);
     
-    [_parentView release];
-    [_indicatorView release];
-    [_spinnerView release];
     [_stateChangeTimer invalidate];
-    [_stateChangeTimer release];
-    [_delayedDeactivationHandler release];
-    
-    [super dealloc];
 }
 
 - (void)_startSpinner:(NSTimer *)timer;
@@ -84,17 +89,23 @@ static UIColor *BackgroundWashColor;
     DEBUG_HORSE(@"In %@", NSStringFromSelector(_cmd));
     _okToDeactivate = NO;
     self.stateChangeTimer = nil;
-    [UIView animateWithDuration:kFadeInterval animations:^{
-        self.indicatorView.backgroundColor = BackgroundWashColor;
-    } completion:^(BOOL finished) {
+    [self _startMinimumSpinnerDisplayTimer];
+    
+    if (self.shouldDrawShadingView) {
+        [UIView animateWithDuration:kFadeInterval animations:^{
+            self.indicatorView.backgroundColor = BackgroundWashColor;
+        } completion:^(BOOL finished) {
+            [self.spinnerView startAnimating];
+        }];
+    } else {
         [self.spinnerView startAnimating];
-        [self _startMinimumSpinnerDisplayTimer];
-    }];
+    }
 }
 
 - (void)_minimumDisplayTimeReached:(NSTimer *)timer;
 {
     DEBUG_HORSE(@"In %@", NSStringFromSelector(_cmd));
+    self.stateChangeTimer = nil;
     _okToDeactivate = YES;
 }
 
@@ -106,16 +117,22 @@ static UIColor *BackgroundWashColor;
     CGRect indicatorFrame;
     indicatorFrame.size = self.parentView.frame.size;
     indicatorFrame.origin = CGPointZero;
-    self.indicatorView = [[[UIView alloc] initWithFrame:indicatorFrame] autorelease];
-    // TODO: We may want to expose style and color as properties, defaulting to small and white. For now let's just not worry about it.
-    self.spinnerView = [[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite] autorelease];
+    self.indicatorView = [[UIView alloc] initWithFrame:indicatorFrame];
+    // TODO: We may want to expose style as a property, defaulting to small. For now let's just not worry about it.
+    self.spinnerView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+    if (self.color == nil) {
+        self.spinnerView.color = self.parentView.tintColor;
+    } else {
+        self.spinnerView.color = self.color;
+    }
     [self.indicatorView addSubview:self.spinnerView];
     self.spinnerView.center = self.indicatorView.center;
     [self.parentView addSubview:self.indicatorView];
     [self.parentView bringSubviewToFront:self.indicatorView];
     
-    if (self.shouldDisableAllInteraction)
-        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+    if (self.shouldDisableAllInteraction) {
+        _lock = [OUIInteractionLock applicationLock];
+    }
     
     _okToDeactivate = YES;
     [self _startDelayUntilInitialSpinner];
@@ -126,8 +143,10 @@ static UIColor *BackgroundWashColor;
     DEBUG_HORSE(@"In %@", NSStringFromSelector(_cmd));
     self.stateChangeTimer = nil;
     
-    if (self.shouldDisableAllInteraction)
-        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+    if (self.shouldDisableAllInteraction) {
+        [_lock unlock];
+        _lock = nil;
+    }
     
     [self.indicatorView removeFromSuperview];
     self.indicatorView = nil;
@@ -159,9 +178,8 @@ static UIColor *BackgroundWashColor;
         return;
     
     [_stateChangeTimer invalidate];
-    [_stateChangeTimer release];
     
-    _stateChangeTimer = [stateChangeTimer retain];
+    _stateChangeTimer = stateChangeTimer;
 }
 
 - (void)_startDelayUntilInitialSpinner;
@@ -171,7 +189,10 @@ static UIColor *BackgroundWashColor;
 
 - (void)_startMinimumSpinnerDisplayTimer;
 {
-    self.stateChangeTimer = [NSTimer scheduledTimerWithTimeInterval:kMinimumSpinnerDisplayTime target:self selector:@selector(_minimumDisplayTimeReached:) userInfo:nil repeats:NO];
+    NSTimeInterval delayUntilOKToClear = kMinimumSpinnerDisplayTime;
+    if (self.shouldDrawShadingView)
+        delayUntilOKToClear += kFadeInterval;
+    self.stateChangeTimer = [NSTimer scheduledTimerWithTimeInterval:delayUntilOKToClear target:self selector:@selector(_minimumDisplayTimeReached:) userInfo:nil repeats:NO];
 }
 
 - (void)_startDelayUntilDeactivate;
@@ -179,8 +200,13 @@ static UIColor *BackgroundWashColor;
     OBASSERT(self.stateChangeTimer != nil);
     NSDate *okToDeactivateTime = self.stateChangeTimer.fireDate;
     OBASSERT([self.stateChangeTimer.fireDate compare:[NSDate date]] == NSOrderedDescending); // deactivate time should be in the future or we wouldn't have reached here
+    if (self.stateChangeTimer == nil || [self.stateChangeTimer.fireDate compare:[NSDate date]] != NSOrderedDescending) {
+        // don't set a timer in the past
+        [self _deactivateNow];
+        return;
+    }
 
-    NSTimer *deactivateTimer = [[[NSTimer alloc] initWithFireDate:okToDeactivateTime interval:0.0f target:self selector:@selector(_deactivateNow) userInfo:nil repeats:NO] autorelease];
+    NSTimer *deactivateTimer = [[NSTimer alloc] initWithFireDate:okToDeactivateTime interval:0.0f target:self selector:@selector(_deactivateNow) userInfo:nil repeats:NO];
     [[NSRunLoop mainRunLoop] addTimer:deactivateTimer forMode:NSRunLoopCommonModes];
     self.stateChangeTimer = deactivateTimer;
 }

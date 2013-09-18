@@ -21,9 +21,6 @@ RCS_ID("$Id$");
 {
     _tableView.delegate = nil;
     _tableView.dataSource = nil;
-    [_tableView release];
-    
-    [super dealloc];
 }
 
 - (UITableView *)tableView;

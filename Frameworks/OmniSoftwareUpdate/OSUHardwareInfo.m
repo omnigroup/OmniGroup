@@ -496,7 +496,7 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
                             }
                             
                             GLint videoMemory;
-                            err = CGLDescribeRenderer(rendererInfo, rendererIndex, kCGLRPVideoMemory, &videoMemory);
+                            err = CGLDescribeRenderer(rendererInfo, rendererIndex, kCGLRPVideoMemoryMegabytes, &videoMemory);
                             if (err) {
                                 fprintf(stderr, "CGLQueryRendererInfo(%ld, kCGLRPVideoMemory) -> %d\n", (long)rendererIndex, err);
                                 continue;

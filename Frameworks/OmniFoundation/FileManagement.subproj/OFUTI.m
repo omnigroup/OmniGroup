@@ -1,4 +1,4 @@
-// Copyright 2011-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,15 +8,15 @@
 #import <OmniFoundation/OFUTI.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#import <MobileCoreServices/MobileCoreServices.h>
 #define SYSTEM_TYPE_BUNDLE_IDENTIFIER @"com.apple.MobileCoreServices"
 #else
 #import <OmniFoundation/OFController.h>
-#import <CoreServices/CoreServices.h>
 #define SYSTEM_TYPE_BUNDLE_IDENTIFIER @"com.apple.LaunchServices"
 #endif
 
 RCS_ID("$Id$");
+
+NSString * const OFDirectoryPathExtension = @"folder";
 
 // These dictionaries map from tag class (NSString *) to a dictionary whose keys are tag values (NSString *) and whose values are arrays of type identifiers (NSString *) that have claimed that tag.
 // Note that it is a bad idea in general for multiple types to claim the same tag, but we have existing apps that declare multiple types with the same file extension (package vs. flat files). This data structure doesn't prohibit inadvisable scenarios, but the lookup and/or creation functions will warn if multiple directory or flat file types are declared for the same tag, or if a type is declared for a tag that conforms to neither public.data or public.directory.
@@ -187,17 +187,18 @@ NSString *OFUTIForFileURLPreferringNative(NSURL *fileURL, NSError **outError)
     if (![fileURL isFileURL])
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Argument to OFUTIForFileURL must be a file URL." userInfo:nil];
     
-    NSString *path = [fileURL path];
-    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:outError];
-    if (!attributes)
+    __autoreleasing NSNumber *isDirectory = nil;
+    if (![fileURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:outError])
         return nil;
-    BOOL isDirectory = [[attributes fileType] isEqualToString:NSFileTypeDirectory];
-    
-    return OFUTIForFileExtensionPreferringNative([path pathExtension], [NSNumber numberWithBool:isDirectory]);
+
+    return OFUTIForFileExtensionPreferringNative([fileURL pathExtension], isDirectory);
 }
 
 NSString *OFUTIForFileExtensionPreferringNative(NSString *extension, NSNumber *isDirectory)
 {
+    if (isDirectory && [extension isEqualToString:OFDirectoryPathExtension])
+        return (OB_BRIDGE NSString *)kUTTypeFolder;
+    
     CFStringRef conformingUTI = NULL;
     if (isDirectory && [isDirectory boolValue])
         conformingUTI = kUTTypeDirectory;
@@ -282,3 +283,23 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
     [systemTypes autorelease];
     [thirdPartyTypes autorelease];
 }
+
+// This hides a bunch of __bridge usages and shortens up code checking for multiple types. We could explicitly list the first type to start and use it as the va_start() argument, but then we'd need to check it specifically.
+BOOL OFTypeConformsToOneOfTypes(NSString *type, ...)
+{
+    va_list args;
+    va_start(args, type);
+
+    BOOL conforms = NO;
+    NSString *checkType;
+    while ((checkType = va_arg(args, NSString *))) {
+        if (UTTypeConformsTo((OB_BRIDGE CFStringRef)type, (OB_BRIDGE CFStringRef)checkType)) {
+            conforms = YES;
+            break;
+        }
+    }
+
+    va_end(args);
+    return conforms;
+}
+

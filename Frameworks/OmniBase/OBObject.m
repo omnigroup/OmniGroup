@@ -143,6 +143,73 @@ See also: - dealloc (NSObject)
     return [self description];
 }
 
+#ifdef DEBUG
+- (NSString *)ivars;
+{
+    NSMutableString *result = [NSMutableString string];
+    
+    Class cls = [self class];
+    while (cls) {
+        
+        [result appendFormat:@"%@:\n", NSStringFromClass(cls)];
+        
+        unsigned ivarCount;
+        Ivar *ivars = class_copyIvarList(cls, &ivarCount);
+        if (ivars) {
+            for (unsigned ivarIndex = 0; ivarIndex < ivarCount; ivarIndex++) {
+                Ivar ivar = ivars[ivarIndex];
+                ptrdiff_t ivarOffset = ivar_getOffset(ivar);
+                const void *ivarAddress = (OB_BRIDGE void *)self + ivarOffset;
+                [result appendFormat:@"\t%s %s at offset %"PRI_ptrdiff" (%p)\n", ivar_getName(ivar), ivar_getTypeEncoding(ivar), ivarOffset, ivarAddress];
+            }
+            free(ivars);
+        }
+        
+        cls = class_getSuperclass(cls);
+    }
+    
+    return result;
+}
+
+- (NSString *)methods;
+{
+    return [object_getClass(self) instanceMethods];
+}
+
+static NSString *methodsWithPrefix(Class cls, char prefix)
+{
+    NSMutableString *result = [NSMutableString string];
+    
+    while (cls) {
+        [result appendFormat:@"%@:\n", NSStringFromClass(cls)];
+        
+        unsigned int methodCount = 0;
+        Method *methods = class_copyMethodList(cls, &methodCount);
+        if (methods) {
+            for (unsigned int methodIndex = 0; methodIndex < methodCount; methodIndex++) {
+                Method m = methods[methodIndex];
+                [result appendFormat:@"\t%c%s %s\n", prefix, sel_getName(method_getName(m)), method_getTypeEncoding(m)];
+            }
+            free(methods);
+        }
+        
+        cls = class_getSuperclass(cls);
+    }
+    
+    return result;
+}
+
++ (NSString *)instanceMethods;
+{
+    return methodsWithPrefix(self, '-');
+}
++ (NSString *)classMethods;
+{
+    return methodsWithPrefix(object_getClass(self), '+');
+}
+
+#endif
+
 @end
 
 // These are defined on other NSObject subclasses; extend OBObject to have them using our -debugDictionary and -shortDescription

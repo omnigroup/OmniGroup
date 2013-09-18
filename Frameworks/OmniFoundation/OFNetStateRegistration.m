@@ -10,6 +10,7 @@
 #import <OmniBase/NSError-OBUtilities.h>
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSData-OFSignature.h>
+#import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
@@ -29,7 +30,7 @@
 
 OB_REQUIRE_ARC
 
-NSInteger OFNetStateRegistrationDebug;
+static NSInteger OFNetStateRegistrationDebug;
 
 #define DEBUG_REGISTRATION(level, format, ...) do { \
     if (OFNetStateRegistrationDebug >= (level)) \
@@ -124,7 +125,13 @@ static NSString * const OFNetStateRegistrationGroupTerminator = @" ";
     _registrationIdentifier = OFXMLCreateID();
     _socket = -1;
     
-    [self _publishService];
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    BOOL inForeground = ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground);
+#else
+    BOOL inForeground = YES;
+#endif
+    if (inForeground)
+        [self _publishService];
     
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
@@ -189,7 +196,7 @@ NSString * const OFNetStateRegistrationVersionKey = @"v";
     _state = [state copy];
     _version = OFXMLCreateID();
     
-    if (_state)
+    if (_state && _service)
         [self _queueTXTRecordUpdate];
 }
 
@@ -197,7 +204,7 @@ NSString * const OFNetStateRegistrationVersionKey = @"v";
 
 - (NSString *)shortDescription;
 {
-    return [NSString stringWithFormat:@"<%@:%p %@ %@>", NSStringFromClass([self class]), self, _name, _memberIdentifier];
+    return [NSString stringWithFormat:@"<%@:%p %@ %@ %@>", NSStringFromClass([self class]), self, _name, _memberIdentifier, _registrationIdentifier];
 }
 
 #pragma mark - Private
@@ -302,16 +309,18 @@ static void _updateTXTRecord(OFNetStateRegistration *self, NSNetService *service
     self->_lastUpdateTimeInterval = [NSDate timeIntervalSinceReferenceDate];
 }
 
-+ (BOOL)netServiceName:(NSString *)serviceName matchesGroup:(NSString *)groupIdentifier;
++ (BOOL)netServiceName:(NSString *)serviceName matchesAnyGroup:(NSSet *)groupIdentifiers;
 {
-    if (![serviceName hasPrefix:groupIdentifier])
+    return [groupIdentifiers any:^BOOL(NSString *groupIdentifier) {
+        if (![serviceName hasPrefix:groupIdentifier])
+            return NO;
+        
+        // Allow clients that don't append a registration identifier... bad form, but might as well.
+        if ([serviceName rangeOfString:OFNetStateRegistrationGroupTerminator].location == [groupIdentifier length])
+            return YES;
+        
         return NO;
-    
-    // Allow clients that don't append a registration identifier... bad form, but might as well.
-    if ([serviceName rangeOfString:OFNetStateRegistrationGroupTerminator].location == [groupIdentifier length])
-        return YES;
-
-    return NO;
+    }] != nil;
 }
 
 - (void)_publishService;

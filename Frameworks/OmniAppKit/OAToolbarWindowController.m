@@ -321,7 +321,7 @@ static void copyProperty(NSToolbarItem *anItem,
         if ([customImageName containsString:@"/"])
             customImageName = [[customImageName pathComponents] componentsJoinedByString:@":"];
         
-        itemImage = [NSImage tintedImageNamed:customImageName inBundle:bundle];
+        itemImage = [NSImage tintedImageNamed:customImageName inBundle:bundle allowingNil:YES]; // <bug:///90891> (AppleScripts in toolbars don't show custom icons) We're passing the AppleScript name as a customImageName here. That most certainly is wrong.
     }
     
     if ((value = [itemInfo objectForKey:@"customView"])) {

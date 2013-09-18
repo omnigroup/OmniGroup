@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,7 +35,6 @@ RCS_ID("$Id$");
     oneMillionAs = [[NSMutableData alloc] initWithLength:1000000];
     memset([oneMillionAs mutableBytes], 'a', [oneMillionAs length]);
     shouldBeEqual([oneMillionAs sha1Signature], [expectedResults objectAtIndex:2]);
-    [oneMillionAs release];
 }
 
 static NSData *tripletsAndSuffix(unsigned char triplet, unsigned int count, unsigned int suffix, unsigned int suffixLength)
@@ -46,7 +45,6 @@ static NSData *tripletsAndSuffix(unsigned char triplet, unsigned int count, unsi
     NSMutableData *result;
 
     result = [[NSMutableData alloc] initWithCapacity: (3 * count + suffixLength) / 8];
-    [result autorelease];
 
     buf = 0;
     bufFill = 0;
@@ -84,7 +82,7 @@ static NSData *repeatedBytes(int bytevalue, unsigned int count)
     char *buf = malloc(count);
     memset(buf, bytevalue, count);
     NSData *result = [[NSData alloc] initWithBytesNoCopy:buf length:count freeWhenDone:YES];
-    return [result autorelease];
+    return result;
 }
 
 - (void)testGilloglyGrieu
@@ -113,20 +111,19 @@ static NSData *repeatedBytes(int bytevalue, unsigned int count)
         return;
     }
     
-    NSAutoreleasePool *pool;
 
-    pool = [[NSAutoreleasePool alloc] init];
+    @autoreleasepool {
 
-    shouldBeEqual([tripletsAndSuffix(6, 1431655765, 1, 1) sha1Signature],
-                  [NSData dataWithHexString:@"d5e09777a94f1ea9240874c48d9fecb6b634256b" error:NULL]);
+        shouldBeEqual([tripletsAndSuffix(6, 1431655765, 1, 1) sha1Signature],
+                      [NSData dataWithHexString:@"d5e09777a94f1ea9240874c48d9fecb6b634256b" error:NULL]);
 
-    [pool drain];
-    pool = [[NSAutoreleasePool alloc] init];
+    }
+    @autoreleasepool {
 
-    shouldBeEqual([tripletsAndSuffix(3, 1431655765, 0, 1) sha1Signature],
-                  [NSData dataWithHexString:@"A3D7438C589B0B932AA91CC2446F06DF9ABC73F0" error:NULL]);
+        shouldBeEqual([tripletsAndSuffix(3, 1431655765, 0, 1) sha1Signature],
+                      [NSData dataWithHexString:@"A3D7438C589B0B932AA91CC2446F06DF9ABC73F0" error:NULL]);
 
-    [pool drain];
+    }
 }
 
 static NSString *md5string(NSString *input)
@@ -175,7 +172,6 @@ static NSString *md5string(NSString *input)
     shouldBeEqual([oneMillionBytes sha256Signature],
                   [NSData dataWithHexString:@"d29751f2649b32ff572b5e0a9f541ea660a50f94ff0beedfb0b692b924cc8025" error:NULL]);
     
-    [oneMillionBytes release];
     
     shouldBeEqual([[NSData dataWithBytes:"message digest" length:14] sha256Signature],
                   [NSData dataWithHexString:@"f7846f55cf23e14eebeab5b4e1550cad5b509e3348fbc4efa3a1413d393cb650" error:NULL]);
@@ -252,7 +248,6 @@ static NSString *md5string(NSString *input)
          c23ce8a7 895f4b21 ec0daf37 920ac0a2 62a22004 5a03eb2d fed48ef9 b05aabea 
 */
     
-    [fourGigabits release];
 }
 
 // Simple test of -signatureWithAlgorithm:

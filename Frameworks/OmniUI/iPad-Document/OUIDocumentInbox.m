@@ -8,12 +8,12 @@
 #import "OUIDocumentInbox.h"
 
 #import <MobileCoreServices/MobileCoreServices.h>
-#import <OmniFileStore/Errors.h>
-#import <OmniFileStore/OFSDocumentStore.h>
-#import <OmniFileStore/OFSDocumentStoreFileItem.h>
-#import <OmniFileStore/OFSDocumentStoreLocalDirectoryScope.h>
-#import <OmniFileStore/OFSURL.h>
+#import <OmniDocumentStore/ODSFileItem.h>
+#import <OmniDocumentStore/ODSLocalDirectoryScope.h>
+#import <OmniDocumentStore/ODSStore.h>
+#import <OmniDocumentStore/ODSUtilities.h>
 #import <OmniFoundation/OFUTI.h>
+#import <OmniUIDocument/OUIErrors.h>
 #import <OmniUnzip/OUUnzipArchive.h>
 #import <OmniUnzip/OUUnzipEntry.h>
 
@@ -21,13 +21,13 @@
 
 RCS_ID("$Id$");
 
-+ (void)cloneInboxItem:(NSURL *)inboxURL toScope:(OFSDocumentStoreScope *)scope completionHandler:(void (^)(OFSDocumentStoreFileItem *newFileItem, NSError *errorOrNil))completionHandler;
++ (void)cloneInboxItem:(NSURL *)inboxURL toScope:(ODSScope *)scope completionHandler:(void (^)(ODSFileItem *newFileItem, NSError *errorOrNil))completionHandler;
 {
     OBPRECONDITION(scope.hasFinishedInitialScan);
     
     completionHandler = [completionHandler copy];
     
-    void (^finishedBlock)(OFSDocumentStoreFileItem *newFileItem, NSError *errorOrNil) = ^(OFSDocumentStoreFileItem *newFileItem, NSError *errorOrNil) {
+    void (^finishedBlock)(ODSFileItem *newFileItem, NSError *errorOrNil) = ^(ODSFileItem *newFileItem, NSError *errorOrNil) {
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             
             if (completionHandler) {
@@ -38,10 +38,10 @@ RCS_ID("$Id$");
     
     finishedBlock = [finishedBlock copy];
     
-    OFSDocumentStore *documentStore = scope.documentStore;
+    ODSStore *documentStore = scope.documentStore;
     
     [scope performAsynchronousFileAccessUsingBlock:^{
-        if (!OFSInInInbox(inboxURL)) {
+        if (!ODSInInInbox(inboxURL)) {
             finishedBlock(nil, nil);
             return;
         }
@@ -53,7 +53,7 @@ RCS_ID("$Id$");
             return;
         }
         
-        BOOL isZip = OFSIsZipFileType(uti);
+        BOOL isZip = ODSIsZipFileType(uti);
         OUUnzipArchive *archive = nil;
         if (isZip) {
             archive = [[OUUnzipArchive alloc] initWithPath:[inboxURL path] error:&error];
@@ -81,7 +81,7 @@ RCS_ID("$Id$");
             __autoreleasing NSError *utiShouldNotBeIncludedError = nil;
             NSString *title =  NSLocalizedStringFromTableInBundle(@"Unable to open file.", @"OmniUIDocument", OMNI_BUNDLE, @"error title");
             NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ cannot open this type of file.", @"OmniUIDocument", OMNI_BUNDLE, @"error description"), appName];
-            OFSError(&utiShouldNotBeIncludedError, OFSCannotMoveItemFromInbox, title, description);
+            OUIDocumentError(&utiShouldNotBeIncludedError, OUICannotMoveItemFromInbox, title, description);
             
             finishedBlock(nil, utiShouldNotBeIncludedError);
             return;
@@ -126,7 +126,7 @@ RCS_ID("$Id$");
         }
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [scope addDocumentInFolderAtURL:nil fromURL:itemToMoveURL option:OFSDocumentStoreAddByRenaming completionHandler:finishedBlock];
+            [scope addDocumentInFolder:scope.rootFolder fromURL:itemToMoveURL option:ODSStoreAddByRenaming completionHandler:finishedBlock];
         }];
     }];
 }
@@ -138,7 +138,7 @@ RCS_ID("$Id$");
     __autoreleasing NSError *coordinatorError = nil;
     NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
     
-    NSURL *inboxURL = [[OFSDocumentStoreLocalDirectoryScope userDocumentsDirectoryURL] URLByAppendingPathComponent:OFSDocumentInteractionInboxFolderName isDirectory:YES];
+    NSURL *inboxURL = [[ODSLocalDirectoryScope userDocumentsDirectoryURL] URLByAppendingPathComponent:ODSDocumentInteractionInboxFolderName isDirectory:YES];
     
     [coordinator coordinateWritingItemAtURL:inboxURL  options:NSFileCoordinatorWritingForDeleting error:&coordinatorError byAccessor:^(NSURL *newURL) {
         __autoreleasing NSError *deleteError = nil;
@@ -211,7 +211,7 @@ RCS_ID("$Id$");
         NSString *title =  NSLocalizedStringFromTableInBundle(@"Invalid Zip Archive", @"OmniUIDocument", OMNI_BUNDLE, @"error title");
         NSString *description = NSLocalizedStringFromTableInBundle(@"The zip archive must contain a single document.", @"OmniUIDocument", OMNI_BUNDLE, @"error description");
         
-        OFSError(error, OFSInvalidZipArchive, title, description);
+        OUIDocumentError(error, OUIInvalidZipArchive, title, description);
     }
     
     // By now topLevelEntryName will either have a name or be nil. If it's nil, the error will be filled in.

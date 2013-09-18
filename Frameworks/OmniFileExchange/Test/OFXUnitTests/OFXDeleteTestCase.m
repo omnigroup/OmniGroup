@@ -344,7 +344,7 @@ RCS_ID("$Id$")
     OFXFileMetadata *originalMetadata = [self copyFixtureNamed:@"test.package"];
     
     // Take agentB offline so it doesn't see the intermediate state
-    self.agentB.syncingEnabled = NO;
+    self.agentB.syncSchedule = OFXSyncScheduleNone;
 
     // Delete the file and replace it with a different one.
     OFXServerAccount *accountA = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
@@ -362,7 +362,7 @@ RCS_ID("$Id$")
     }];
     
     // Turn syncing back on on B
-    self.agentB.syncingEnabled = YES;
+    self.agentB.syncSchedule = OFXSyncScheduleAutomatic;
     
     // Wait for B to see the updated file
     OFXFileMetadata *updatedMetadata = [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata) {

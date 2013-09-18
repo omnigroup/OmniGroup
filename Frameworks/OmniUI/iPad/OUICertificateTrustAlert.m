@@ -26,18 +26,9 @@ RCS_ID("$Id$");
     return self;
 }
 
-- (void)dealloc;
-{
-    [_challenge release];
-    [_cancelBlock release];
-    [_trustBlock release];
-    
-    [super dealloc];
-}
-
 - (void)show;
 {
-    [self retain];
+    OBStrongRetain(self);
 
     NSString *prompt = OFCertificateTrustPromptForChallenge(_challenge);
     UIAlertView *_alertView = [[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Certificate Trust", @"OmniUI", OMNI_BUNDLE, @"Certificate trust alert title")
@@ -47,7 +38,6 @@ RCS_ID("$Id$");
                                                     (_shouldOfferTrustAlwaysOption ? NSLocalizedStringFromTableInBundle(@"Trust Always", @"OmniUI", OMNI_BUNDLE, @"Certificate trust alert button title") : nil),
                                                     nil];
     [_alertView show];
-    [_alertView release];
 }
 
 #pragma mark -
@@ -81,7 +71,7 @@ RCS_ID("$Id$");
     if (_trustBlock != NULL)
         _trustBlock(trustDuration);
 
-    [self autorelease];
+    OBAutorelease(self);
 }
 
 @end

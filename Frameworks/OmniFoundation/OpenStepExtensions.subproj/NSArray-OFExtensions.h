@@ -93,3 +93,10 @@
 - (void)applyFunction:(CFSetApplierFunction)applier context:(void *)context;
 
 @end
+
+// API exposed in Xcode 5 that was been around for a while
+#if !defined(MAC_OS_X_VERSION_10_9) || MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_9
+@interface NSArray ()
+- (id)firstObject NS_AVAILABLE(10_6, 4_0);
+@end
+#endif

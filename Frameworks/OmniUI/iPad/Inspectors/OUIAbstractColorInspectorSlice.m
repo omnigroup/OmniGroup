@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,13 +16,6 @@
 RCS_ID("$Id$");
 
 @implementation OUIAbstractColorInspectorSlice
-
-- (void)dealloc;
-{
-    [_selectionValue release];
-    [_defaultColor release];
-    [super dealloc];
-}
 
 - (OQColor *)colorForObject:(id)object;
 {
@@ -44,7 +37,6 @@ RCS_ID("$Id$");
         OUIColorInspectorPane *pane = [[OUIColorInspectorPane alloc] init];
         pane.title = self.title;
         self.detailPane = pane;
-        [pane release];
     }
     
     [super showDetails:sender];
@@ -55,30 +47,17 @@ RCS_ID("$Id$");
     NSMutableArray *colors = [NSMutableArray array];
     
     // Find a single color, obeying color spaces, that all the objects have.
-#ifdef NS_BLOCKS_AVAILABLE
     [self eachAppropriateObjectForInspection:^(id object){
         OQColor *objectColor = [self colorForObject:object];
         if (objectColor)
             [colors addObject:objectColor];
     }];
-#else
-    OBFinishPortingLater("Make the trunk 4.x only");
-    NSArray *appropriateObjects = self.appropriateObjectsForInspection;
-    for (id object in appropriateObjects) {
-        OQColor *objectColor = [self colorForObject:object];
-        if (objectColor)
-            [colors addObject:objectColor];
-    }
-#endif
     
     OUIInspectorSelectionValue *selectionValue = [[OUIInspectorSelectionValue alloc] initWithValues:colors];
     
     // Compare the two colors in RGBA space, but keep the old single color's color space. This allow us to map to RGBA for text (where we store the RGBA in a CGColorRef for CoreText's benefit) but not lose the color space in our color picking UI, mapping all HSV colors with S or V of zero to black or white (and losing the H component).  See <bug://bugs/59912> (Hue slider jumps around)
-    if (OFNOTEQUAL([selectionValue.firstValue colorUsingColorSpace:OQColorSpaceRGB], [_selectionValue.firstValue colorUsingColorSpace:OQColorSpaceRGB])) {
-        [_selectionValue release];
+    if (OFNOTEQUAL([selectionValue.firstValue colorUsingColorSpace:OQColorSpaceRGB], [_selectionValue.firstValue colorUsingColorSpace:OQColorSpaceRGB]))
         _selectionValue = selectionValue; // take reference from above
-    } else
-        [selectionValue release];
     
     // Don't check off swatches as selected unless there is only one color selected. Otherwise, we could have the main swatch list have one checkmark when there is really another selected color that just isn't in the list being shown.
     
@@ -122,7 +101,6 @@ RCS_ID("$Id$");
     
     // Pre-populate our selected color before querying back from the objects. This will allow us to keep the original colorspace if the colors are equivalent enough.
     // Do this before calling -updateInterfaceFromInspectedObjects: or -didEndChangingInspectedObjects (which will also update the interface) since that'll read the current selectionValue.
-    [_selectionValue release];
     _selectionValue = [[OUIInspectorSelectionValue alloc] initWithValue:color];
     
     if (!isContinuousChange) {

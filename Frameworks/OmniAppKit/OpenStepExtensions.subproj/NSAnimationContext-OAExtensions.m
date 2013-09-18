@@ -49,7 +49,7 @@ RCS_ID("$Id$")
         // Done!
         DEBUG_SEQ(@"done at %f", CFAbsoluteTimeGetCurrent() - _startTime);
         //[[UIApplication sharedApplication] endIgnoringInteractionEvents];
-        objc_msgSend(self, @selector(release)); // matching -run
+        OBAnalyzerProofRelease(self);
         return;
     }
     
@@ -86,7 +86,7 @@ RCS_ID("$Id$")
     // Turn off interaction and fire up the animations.
 //    [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
     
-    objc_msgSend(self, @selector(retain)); // so the caller can -release us w/o clang-sa complaining.
+    OBAnalyzerProofRetain(self); // so the caller can -release us w/o clang-sa complaining.
     
     _startTime = CFAbsoluteTimeGetCurrent();
     [self _runNextStep];

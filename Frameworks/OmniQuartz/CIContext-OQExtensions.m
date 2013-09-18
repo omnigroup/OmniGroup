@@ -9,6 +9,8 @@
 
 #import "CIContext-OQExtensions.h"
 
+#import <OpenGL/gl.h>
+
 RCS_ID("$Id$")
 
 @implementation CIContext (OQExtensions)

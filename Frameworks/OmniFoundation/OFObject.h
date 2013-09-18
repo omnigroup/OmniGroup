@@ -9,15 +9,5 @@
 
 #import <OmniBase/OBObject.h>
 
-// Turn this off when building on the iPhone and wanting to track leaks in Instruments.  For public release builds, the inline retain count is a win.  But there is no API on the iPhone SDK like the <Foundation/NSDebug.h> to inform the system of internal retain/release allocation events, so Instruments won't see these events and you can't track down leaks easily.
-#define OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT 1
-
 @interface OFObject : OBObject
-{
-@private
-#if OFOBJECT_USE_INTERNAL_EXTRA_REF_COUNT
-    int32_t _extraRefCount; /*" Inline retain count for faster -retain/-release. "*/
-#endif
-}
-
 @end

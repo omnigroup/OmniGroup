@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
+#import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/OFRandom.h>
@@ -17,11 +18,13 @@
 
 RCS_ID("$Id$");
 
+typedef NSString *(^OFStringTestEncodeBlock)(NSData *original);
+typedef NSData *(^OFStringTestDecodeBlock)(NSString *encoded, NSError **outError);
 
 @interface OFStringEncodingTests : OFTestCase
 {
-    SEL encodeSelector;
-    SEL decodeSelector;
+    OFStringTestEncodeBlock encodeBlock;
+    OFStringTestDecodeBlock decodeBlock;
 
     NSArray *zeroEncodings;
     NSArray *allOnesEncodings;
@@ -33,9 +36,6 @@ RCS_ID("$Id$");
 @end
 
 @interface OFQuotedPrintableTests : OFTestCase
-{
-}
-
 @end
 
 @implementation OFStringEncodingTests
@@ -46,15 +46,15 @@ RCS_ID("$Id$");
     NSUInteger thisLength;
 
     for(thisLength = 0; thisLength < maxLength; thisLength ++) {
-        NSMutableData *mutable = [[[NSMutableData alloc] initWithLength:thisLength] autorelease];
+        NSMutableData *mutable = [[NSMutableData alloc] initWithLength:thisLength];
         if (thisLength > 0)
             memset([mutable mutableBytes], (int)byte, thisLength);
-        NSString *encoded = [mutable performSelector:encodeSelector];
+        NSString *encoded = encodeBlock(mutable);
         shouldBeEqual1(encoded, [results objectAtIndex:thisLength], ([NSString stringWithFormat:@"%ld-byte-long buffer containing 0x%02x", thisLength, byte]));
         
         NSError *error = nil;
-        NSData *immutable = [objc_msgSend(objc_msgSend([NSData class], @selector(alloc)), decodeSelector, encoded, &error) autorelease];
-        OBShouldNotError(immutable != nil);
+        NSData *immutable;
+        OBShouldNotError((immutable = decodeBlock(encoded, &error)));
 
         shouldBeEqual1(mutable, immutable, ([NSString stringWithFormat:@"%ld-byte-long buffer containing 0x%02x", thisLength, byte]));
     }
@@ -71,49 +71,38 @@ RCS_ID("$Id$");
 - (void)testCountingNybbles
 {
     NSUInteger maxLength = [countingNybblesEncodings count];
-    NSUInteger thisLength, thisByte;
 
-    for(thisLength = 0; thisLength < maxLength; thisLength ++) {
-        NSMutableData *mutable;
-        NSData *immutable;
-        NSString *encoded;
-
-        mutable = [[NSMutableData alloc] initWithLength:thisLength];
-        for(thisByte = 0; thisByte < thisLength; thisByte ++) {
+    for (NSUInteger thisLength = 0; thisLength < maxLength; thisLength ++) {
+        NSMutableData *mutable = [[NSMutableData alloc] initWithLength:thisLength];
+        for(NSUInteger thisByte = 0; thisByte < thisLength; thisByte ++) {
             unsigned char ch, *ptr;
 
             ch =  (( ( 2*thisByte + 1 ) % 16 ) << 4)  |  ( ( 2*thisByte + 2 ) % 16 );
             ptr = [mutable mutableBytes];
             ptr[thisByte] = ch;
         }
-        encoded = [mutable performSelector:encodeSelector];
+        NSString *encoded = encodeBlock(mutable);
         shouldBeEqual(encoded, [countingNybblesEncodings objectAtIndex:thisLength]);
 
         NSError *error = nil;
-        immutable = objc_msgSend(objc_msgSend([NSData class], @selector(alloc)), decodeSelector, encoded, &error);
-        OBShouldNotError(immutable != nil);
+        NSData *immutable;
+        OBShouldNotError((immutable = decodeBlock(encoded, &error)));
         
         shouldBeEqual(mutable, immutable);
-        [mutable release];
-        [immutable release];
     }
 }
 
 - (void)testRandomStrings
 {
-    int trial;
-
-    for(trial = 0; trial < 1000; trial ++) {
+    for (int trial = 0; trial < 1000; trial ++) {
         NSData *randomness = [NSData randomDataOfLength:(OFRandomNext32() % 1050)];
-        NSString *encoded;
-        NSData *decoded;
-        
         should(randomness != nil);
-        encoded = [randomness performSelector:encodeSelector];
+        
+        NSString *encoded = encodeBlock(randomness);
         should(encoded != nil);
-        decoded = [objc_msgSend([NSData class], @selector(alloc)) performSelector:decodeSelector withObject:encoded];
+        
+        NSData *decoded = decodeBlock(encoded, NULL);
         shouldBeEqual(randomness, decoded);
-        [decoded release];
     }
 }
 
@@ -128,43 +117,40 @@ RCS_ID("$Id$");
         NSData *testValue = [cases objectForKey:expected];
         NSString *encoded = nil;
         if (reversible) {
-            encoded = [testValue performSelector:encodeSelector];
+            encoded = encodeBlock(testValue);
             shouldBeEqual(encoded, expected);
         }
         
-        NSData *decoded = [[objc_msgSend([NSData class], @selector(alloc)) performSelector:decodeSelector withObject:expected] autorelease];
+        NSData *decoded = decodeBlock(expected, NULL);
         shouldBeEqual(decoded, testValue);
     }
 }
 
-+ (SenTest *)testsForEncode:(SEL)encSel decode:(SEL)decSel inf:(NSDictionary *)d
++ (SenTest *)testsForPatternNamed:(NSString *)patternName encode:(OFStringTestEncodeBlock)encodeBlock decode:(OFStringTestDecodeBlock)decodeBlock inf:(NSDictionary *)d
 {
-    NSArray *invocations;
-    SenTestSuite *suite;
-    NSArray *inf;
-    NSDictionary *vecs;
-    unsigned int invIx;
-
-    inf = [[d objectForKey:@"patternTests"] objectForKey:NSStringFromSelector(encSel)];
+    NSArray *inf = [[d objectForKey:@"patternTests"] objectForKey:patternName];
     if ([inf count] != 5) {
         [NSException raise:NSGenericException format:@"+[%@ %@]: patternTests item does not contain the expected number of values", self, NSStringFromSelector(_cmd)];
     }
 
-    invocations = [self testInvocations];
-    suite = [SenTestSuite testSuiteWithName:NSStringFromSelector(encSel)];
-    for(invIx = 0; invIx < [invocations count]; invIx ++) {
-        OFStringEncodingTests *acase = [self testCaseWithInvocation:[invocations objectAtIndex:invIx]];
-        acase->encodeSelector = encSel;
-        acase->decodeSelector = decSel;
-        acase->zeroEncodings = [[inf objectAtIndex:0] retain];
-        acase->allOnesEncodings = [[inf objectAtIndex:1] retain];
-        acase->lsbOnesEncodings = [[inf objectAtIndex:2] retain];
-        acase->msbOnesEncodings = [[inf objectAtIndex:3] retain];
-        acase->countingNybblesEncodings = [[inf objectAtIndex:4] retain];
+    encodeBlock = [encodeBlock copy];
+    decodeBlock = [decodeBlock copy];
+    
+    NSArray *invocations = [self testInvocations];
+    SenTestSuite *suite = [SenTestSuite testSuiteWithName:patternName];
+    for (NSInvocation *invocation in invocations) {
+        OFStringEncodingTests *acase = [self testCaseWithInvocation:invocation];
+        acase->encodeBlock = encodeBlock;
+        acase->decodeBlock = decodeBlock;
+        acase->zeroEncodings = [inf objectAtIndex:0];
+        acase->allOnesEncodings = [inf objectAtIndex:1];
+        acase->lsbOnesEncodings = [inf objectAtIndex:2];
+        acase->msbOnesEncodings = [inf objectAtIndex:3];
+        acase->countingNybblesEncodings = [inf objectAtIndex:4];
         [suite addTest:acase];
     }
 
-    vecs = [[d objectForKey:@"knownStrings"] objectForKey:NSStringFromSelector(encSel)];
+    __unsafe_unretained NSDictionary *vecs = [[d objectForKey:@"knownStrings"] objectForKey:patternName];
     if (vecs) {
         OFStringEncodingTests *acase;
         NSInvocation *call;
@@ -174,8 +160,8 @@ RCS_ID("$Id$");
         [call setArgument:&vecs atIndex:2];
         [call retainArguments];
         acase = [self testCaseWithInvocation:call];
-        acase->encodeSelector = encSel;
-        acase->decodeSelector = decSel;
+        acase->encodeBlock = encodeBlock;
+        acase->decodeBlock = decodeBlock;
         [suite addTest:acase];
     }
 
@@ -186,20 +172,37 @@ RCS_ID("$Id$");
 {
     NSDictionary *knownResults;
     SenTestSuite *suite;
-    NSAutoreleasePool *pool;
 
-    pool = [[NSAutoreleasePool alloc] init];
+    @autoreleasepool {
 
-    knownResults = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle bundleForClass:self] pathForResource:[self description] ofType:@"plist"]];
-    suite = [SenTestSuite testSuiteWithName:[self description]];
-    [suite addTest: [self testsForEncode:@selector(base64String) decode:@selector(initWithBase64String:) inf:knownResults]];
-    [suite addTest: [self testsForEncode:@selector(ascii85String) decode:@selector(initWithASCII85String:) inf:knownResults]];
-    [suite addTest: [self testsForEncode:@selector(unadornedLowercaseHexString) decode:@selector(initWithHexString:error:) inf:knownResults]];
-    [suite addTest: [self testsForEncode:@selector(ascii26String) decode:@selector(initWithASCII26String:) inf:knownResults]];
-
-    [suite retain];
-    [pool drain];
-    return [suite autorelease];
+        knownResults = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle bundleForClass:self] pathForResource:[self description] ofType:@"plist"]];
+        suite = [SenTestSuite testSuiteWithName:[self description]];
+        
+        [suite addTest:[self testsForPatternNamed:@"base64String"
+                                           encode:^NSString *(NSData *original){ return [original base64String]; }
+                                           decode:^NSData *(NSString *encoded, NSError **outError) {
+                                               return [[NSData alloc] initWithBase64String:encoded];
+                                           } inf:knownResults]];
+        
+        [suite addTest:[self testsForPatternNamed:@"ascii85String"
+                                           encode:^NSString *(NSData *original){ return [original ascii85String]; }
+                                           decode:^NSData *(NSString *encoded, NSError **outError) {
+                                               return [[NSData alloc] initWithASCII85String:encoded];
+                                           } inf:knownResults]];
+        
+        [suite addTest:[self testsForPatternNamed:@"unadornedLowercaseHexString"
+                                           encode:^NSString *(NSData *original){ return [original unadornedLowercaseHexString]; }
+                                           decode:^NSData *(NSString *encoded, NSError **outError) {
+                                               return [[NSData alloc] initWithHexString:encoded error:outError];
+                                           } inf:knownResults]];
+        
+        [suite addTest:[self testsForPatternNamed:@"ascii26String"
+                                           encode:^NSString *(NSData *original){ return [original ascii26String]; }
+                                           decode:^NSData *(NSString *encoded, NSError **outError) {
+                                               return [[NSData alloc] initWithASCII26String:encoded];
+                                           } inf:knownResults]];
+    }
+    return suite;
 }
 
 @end
@@ -230,8 +233,6 @@ RCS_ID("$Id$");
     }
     
     NSArray *retval = [a copy];
-    [a release];
-    [retval autorelease];
     return retval;
 }
 

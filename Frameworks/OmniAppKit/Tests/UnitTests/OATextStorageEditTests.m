@@ -1,9 +1,10 @@
-// Copyright 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+
 
 #import "OATestCase.h"
 
@@ -14,34 +15,18 @@ RCS_ID("$Id$");
 
 // The documentation for -edited:range:changeInLength: claims that it must be called by the primitives. Let's check that AppKit does this.
 // The documentation/headers also disagree on when -processEditing gets called. Let's test that too.
-// We'll then be able to use this as a reference for writing OATextStorage for use on iOS.
 
-@interface OATextStorageEditTests : OATestCase <OATextStorageDelegate>
-{
-@private
-    OATextStorage *_textStorage;
-    int _processEditingCalls;
-}
-
-+ (Class)textStorageClass;
-
+@interface OATextStorageEditTests : OATestCase <NSTextStorageDelegate>
 @end
 
 static NSString * const Attribute1 = @"1";
 
 @implementation OATextStorageEditTests
-
-+ (id)defaultTestSuite;
 {
-    if (self == [OATextStorageEditTests class])
-        return nil; // abstract class
-    return [super defaultTestSuite];
+    NSTextStorage *_textStorage;
+    int _processEditingCalls;
 }
 
-+ (Class)textStorageClass;
-{
-    OBRequestConcreteImplementation(self, _cmd);
-}
 
 - (void)setUp;
 {
@@ -49,10 +34,8 @@ static NSString * const Attribute1 = @"1";
     
     NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:@"value", Attribute1, nil];
 
-    Class textStorageClass = [[self class] textStorageClass];
-
     _processEditingCalls = 0;
-    _textStorage = [[textStorageClass alloc] initWithString:@"x" attributes:attributes];
+    _textStorage = [[NSTextStorage alloc] initWithString:@"x" attributes:attributes];
     _textStorage.delegate = self;
 }
 
@@ -93,7 +76,7 @@ static NSString * const Attribute1 = @"1";
     [_textStorage beginEditing];
     [_textStorage replaceCharactersInRange:NSMakeRange(0,0) withString:@"1"];
 
-    STAssertTrue([_textStorage editedMask] == OATextStorageEditedCharacters, nil);
+    STAssertTrue([_textStorage editedMask] == NSTextStorageEditedCharacters, nil);
     STAssertTrue([_textStorage changeInLength] == 1, nil);
     STAssertTrue(NSEqualRanges([_textStorage editedRange], NSMakeRange(0, 1)), nil);
     STAssertTrue(_processEditingCalls == 0, nil);
@@ -196,26 +179,4 @@ static NSString * const Attribute1 = @"1";
     STAssertTrue(_processEditingCalls == 1, nil);
 }
 
-@end
-
-// Test the real text storage if we have it.
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-@interface OATextStorageEditTestsCocoa : OATextStorageEditTests
-@end
-@implementation OATextStorageEditTestsCocoa
-+ (Class)textStorageClass;
-{
-    return [NSTextStorage class];
-}
-@end
-#endif
-
-// Always test our generic replacement
-@interface OATextStorageEditTestsGeneric : OATextStorageEditTests
-@end
-@implementation OATextStorageEditTestsGeneric
-+ (Class)textStorageClass;
-{
-    return [OATextStorage_ class];
-}
 @end

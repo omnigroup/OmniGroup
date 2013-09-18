@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,13 +7,14 @@
 
 #import <OmniUI/OUITextExampleInspectorSlice.h>
 
+#import <OmniUI/OUIParameters.h>
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIEditableFrame.h>
 #import <OmniAppKit/OATextAttributes.h>
 #import <OmniQuartz/OQColor.h>
+#import <OmniUI/OUITextSelectionSpan.h>
+#import <OmniUI/OUITextView.h>
 
 #import "OUIInspectorTextExampleView.h"
-#import "OUEFTextSpan.h"
 
 RCS_ID("$Id$");
 
@@ -21,40 +22,50 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
 
 @implementation OUITextExampleInspectorSlice
 
-#pragma mark -
-#pragma mark UIViewController subclass
+#pragma mark - UIViewController subclass
+
++ (UIEdgeInsets)sliceAlignmentInsets;
+{
+    return (UIEdgeInsets) { .left = 0.0f, .right = 0.0f, .top = 0.0f, .bottom = 0.0f };
+}
 
 - (void)loadView;
 {
-    CGRect frame = CGRectMake(0, 0, OUIInspectorContentWidth, 48); // The height will be preserved, but the rest will be munged by the stacking.
+    CGRect frame = CGRectMake(0, 0, OUIInspectorContentWidth, kOUIInspectorWellHeight); // The height will be preserved, but the rest will be munged by the stacking.
     
-    self.view = [[[OUIInspectorTextExampleView alloc] initWithFrame:frame] autorelease];
+    self.view = [[OUIInspectorTextExampleView alloc] initWithFrame:frame];
 }
 
-// Subclassing point; we handle text selection ranges in OUIEditableFrame, but things that inspect objects of other types will need to subclass this and -isAppropriateForInspectedObject:.
+// Subclassing point; we handle text selection ranges in OUITextView, but things that inspect objects of other types will need to subclass this and -isAppropriateForInspectedObject:.
 
 - (NSAttributedString *)makeExampleAttributedString;
 {
-    OUEFTextSpan *firstSpan = nil;
+    OUITextSelectionSpan *firstSpan = nil;
+    OUITextView *textView = nil;
     
-    for (OUEFTextSpan *span in self.appropriateObjectsForInspection) {
-        if (!firstSpan)
+    for (OUITextSelectionSpan *span in self.appropriateObjectsForInspection) {
+        if (!firstSpan) {
             firstSpan = span;
-        else {
-            if ([span range].location < [firstSpan range].location)
-                firstSpan = span;
+            textView = firstSpan.textView;
+            continue;
         }
+        
+        UITextPosition *firstPosition = firstSpan.range.start;
+        UITextPosition *thisPosition = span.range.start;
+        OBASSERT(textView == span.textView);
+        
+        if ([textView comparePosition:thisPosition toPosition:firstPosition] == NSOrderedAscending)
+            firstSpan = span;
     }
     
     OBASSERT(firstSpan);
-    OBASSERT(firstSpan.frame);
+    OBASSERT(firstSpan.textView);
     
-    NSDictionary *attributes = [firstSpan.frame attributesInRange:firstSpan];
-    return [[[NSAttributedString alloc] initWithString:OUITextExampleInspectorSliceExmapleString attributes:attributes] autorelease];
+    NSDictionary *attributes = [firstSpan.textView attributesInRange:firstSpan.range];
+    return [[NSAttributedString alloc] initWithString:OUITextExampleInspectorSliceExmapleString attributes:attributes];
 }
 
-#pragma mark -
-#pragma mark OUIInspectorSlice subclass
+#pragma mark - OUIInspectorSlice subclass
 
 - (CGFloat)paddingToInspectorTop;
 {
@@ -62,14 +73,9 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
     return 0;
 }
 
-- (CGFloat)paddingToInspectorSides;
-{
-    return 0; // And all the way to the sides
-}
-
 - (BOOL)isAppropriateForInspectedObject:(id)object;
 {
-    return [object isKindOfClass:[OUEFTextRange class]];
+    return [object isKindOfClass:[OUITextSelectionSpan class]];
 }
 
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
@@ -82,13 +88,13 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
         return;
     }
     
-    CGColorRef backgroundColorValue = (CGColorRef)[attributedString attribute:OABackgroundColorAttributeName atIndex:0 effectiveRange:NULL];
+    UIColor *backgroundColorValue = [attributedString attribute:NSBackgroundColorAttributeName atIndex:0 effectiveRange:NULL];
     OQColor *backgroundColor;
     if (backgroundColorValue) {
-        backgroundColor = [OQColor colorWithCGColor:backgroundColorValue];
+        backgroundColor = [OQColor colorWithPlatformColor:backgroundColorValue];
 
-        NSMutableAttributedString *noBackgroundAttributedString = [[attributedString mutableCopy] autorelease];
-        [noBackgroundAttributedString removeAttribute:OABackgroundColorAttributeName range:NSMakeRange(0, stringLength)];
+        NSMutableAttributedString *noBackgroundAttributedString = [attributedString mutableCopy];
+        [noBackgroundAttributedString removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0, stringLength)];
         
         attributedString = noBackgroundAttributedString;
     } else {

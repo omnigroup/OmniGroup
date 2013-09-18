@@ -589,11 +589,7 @@ static inline void _locked_checkCookiesLoaded()
     return [self retain];
 }
 
-@end
-
-
-
-@implementation OWCookieDomain (PrivateAPI)
+#pragma mark - OWCookieDomain (PrivateAPI)
 
 + (void)_loadCookies;
 {

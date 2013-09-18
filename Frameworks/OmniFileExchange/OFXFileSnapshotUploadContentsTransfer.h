@@ -10,5 +10,5 @@
 #import "OFXFileSnapshotUploadTransfer.h"
 
 @interface OFXFileSnapshotUploadContentsTransfer : OFXFileSnapshotUploadTransfer
-- (id)initWithFileManager:(OFSDAVFileManager *)fileManager currentSnapshot:(OFXFileSnapshot *)currentSnapshot forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
+- (id)initWithConnection:(OFXConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
 @end

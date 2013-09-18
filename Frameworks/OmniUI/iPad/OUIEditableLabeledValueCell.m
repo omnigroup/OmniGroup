@@ -7,34 +7,39 @@
 
 #import <OmniUI/OUIEditableLabeledValueCell.h>
 
+#import <OmniUI/OUIAppController.h>
+
 RCS_ID("$Id$");
 
 #define STANDARD_ROW_HEIGHT 44.0
 
 @implementation OUIEditableLabeledValueCell
+{
+    SEL _action;
+    UITextField *_valueField;
+}
 
 - (id)initWithFrame:(CGRect)frame;
 {
-    self = [super initWithFrame:frame];
-    if (!self)
+    if (!(self = [super initWithFrame:frame]))
         return nil;
-        
+    
+    // Lame, but we override the value field in OUILabeledValueCell
+    self.valueHidden = YES;
+    
     [self labelChanged];
+    
     return self;
 }
 
-@synthesize delegate = _delegate;
-@synthesize target = _target;
-@synthesize action = _action;
-@synthesize valueField = _valueField;
+@synthesize delegate = _weak_delegate;
+@synthesize target = _weak_target;
 
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UITextFieldTextDidChangeNotification object:_valueField];
 
     _valueField.delegate = nil;
-    [_valueField release];
-    [super dealloc];
 }
 
 - (NSString *)value;
@@ -51,28 +56,23 @@ RCS_ID("$Id$");
 {
     [super labelChanged];
     
-    CGRect valueRect = [self valueRectForString:@"Value" labelRect:[self labelRect]];
-    
     if (!_valueField) {
-        _valueField = [[UITextField alloc] initWithFrame:valueRect];
-        _valueField.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
-        _valueField.font = [[self class] valueFontForStyle:self.style];
+        _valueField = [[UITextField alloc] initWithFrame:CGRectZero];
+        _valueField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        _valueField.font = [[self class] valueFont];
         _valueField.adjustsFontSizeToFitWidth = YES;
-        _valueField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
         _valueField.minimumFontSize = 10.0;
         _valueField.placeholder = [super valuePlaceholder];
         _valueField.returnKeyType = UIReturnKeyDone;
         _valueField.delegate = self;
+        //_valueField.layer.borderColor = [[UIColor blueColor] CGColor];
+        //_valueField.layer.borderWidth = 1;
         [self addSubview:_valueField];
-#if __IPHONE_3_2 >= __IPHONE_OS_VERSION_MAX_ALLOWED
+        
         UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(beginEditingValue)];
         [self addGestureRecognizer:tapGestureRecognizer];
-        [tapGestureRecognizer release];
-#endif
+
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_textFieldTextDidChange:) name:UITextFieldTextDidChangeNotification object:_valueField];
-        
-    } else {
-        _valueField.frame = valueRect;
     }
 }
 
@@ -86,83 +86,102 @@ RCS_ID("$Id$");
     [self.valueField becomeFirstResponder];
 }
 
-#pragma mark -
-#pragma mark Text Field Delegate
+#pragma mark - UIView subclass
+
+- (void)layoutSubviews;
+{
+    [super layoutSubviews];
+    
+    _valueField.frame = [self valueFrameInRect:self.bounds];
+}
+
+#pragma mark - UITextFieldDelegate
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField;
 {
-    if ([_delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldShouldBeginEditing:)]) {
-        if (![_delegate editableLabeledValueCell:self textFieldShouldBeginEditing:textField])
+    id <OUIEditableLabeledValueCellDelegate> delegate = _weak_delegate;
+    
+    textField.keyboardAppearance = [OUIAppController controller].defaultKeyboardAppearance;
+
+    if ([delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldShouldBeginEditing:)]) {
+        if (![delegate editableLabeledValueCell:self textFieldShouldBeginEditing:textField])
             return NO;
     }
 
-    UITableViewCell *cell = (UITableViewCell *)self.superview.superview;
-    UITableView *tableView = (UITableView *)cell.superview;    
-    NSIndexPath *path = [tableView indexPathForCell:cell];
-    
+    UITableViewCell *containingCell = [self containingTableViewCell];
+    UITableView *containingTableView = [self containingTableView];
+        
+    NSIndexPath *path = [containingTableView indexPathForCell:containingCell];
     if (path)
-	[tableView scrollToRowAtIndexPath:path atScrollPosition:UITableViewScrollPositionTop animated:YES];
+	[containingTableView scrollToRowAtIndexPath:path atScrollPosition:UITableViewScrollPositionTop animated:YES];
  
     return YES;
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField;
 {
-    if ([_delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldDidBeginEditing:)]) {
-        [_delegate editableLabeledValueCell:self textFieldDidBeginEditing:textField];
-    }
+    id <OUIEditableLabeledValueCellDelegate> delegate = _weak_delegate;
+    
+    if ([delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldDidBeginEditing:)])
+        [delegate editableLabeledValueCell:self textFieldDidBeginEditing:textField];
 
-    [self retain];
+    OBStrongRetain(self);
     [self setNeedsDisplay];
 }
 
 - (BOOL)textFieldShouldEndEditing:(UITextField *)textField;
 {
-    if ([_delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldShouldEndEditing:)]) {
-        if (![_delegate editableLabeledValueCell:self textFieldShouldEndEditing:textField])
-            return NO;
-    }
+    id <OUIEditableLabeledValueCellDelegate> delegate = _weak_delegate;
+
+    if ([delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldShouldEndEditing:)] &&
+        ![delegate editableLabeledValueCell:self textFieldShouldEndEditing:textField])
+        return NO;
 
     return YES;
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField; 
 {
-    if ([_delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldDidEndEditing:)]) {
-        [_delegate editableLabeledValueCell:self textFieldDidEndEditing:textField];
-    }
+    id <OUIEditableLabeledValueCellDelegate> delegate = _weak_delegate;
 
-    [self.target performSelector:self.action withObject:self];
+    if ([delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldDidEndEditing:)])
+        [delegate editableLabeledValueCell:self textFieldDidEndEditing:textField];
+
+    OBSendVoidMessageWithObject(self.target, self.action, self);
+
     [self setNeedsDisplay];
-    [self autorelease];
+    OBAutorelease(self);
 }
             
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 {
-    if ([_delegate respondsToSelector:@selector(editableLabeledValueCell:textField:shouldChangeCharactersInRange:replacementString:)]) {
-        if (![_delegate editableLabeledValueCell:self textField:textField shouldChangeCharactersInRange:range replacementString:string])
-            return NO;
-    }
+    id <OUIEditableLabeledValueCellDelegate> delegate = _weak_delegate;
+
+    if ([delegate respondsToSelector:@selector(editableLabeledValueCell:textField:shouldChangeCharactersInRange:replacementString:)] &&
+        ![delegate editableLabeledValueCell:self textField:textField shouldChangeCharactersInRange:range replacementString:string])
+        return NO;
 
     return YES;
 }
 
 - (BOOL)textFieldShouldClear:(UITextField *)textField;           
 {
-    if ([_delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldShouldClear:)]) {
-        if (![_delegate editableLabeledValueCell:self textFieldShouldClear:textField])
-            return NO;
-    }
+    id <OUIEditableLabeledValueCellDelegate> delegate = _weak_delegate;
+
+    if ([delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldShouldClear:)] &&
+        ![delegate editableLabeledValueCell:self textFieldShouldClear:textField])
+        return NO;
 
     return YES;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField;           
 {
-    if ([_delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldShouldReturn:)]) {
-        if (![_delegate editableLabeledValueCell:self textFieldShouldReturn:textField])
-            return NO;
-    }
+    id <OUIEditableLabeledValueCellDelegate> delegate = _weak_delegate;
+
+    if ([delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldShouldReturn:)] &&
+        ![delegate editableLabeledValueCell:self textFieldShouldReturn:textField])
+        return NO;
 
     [textField endEditing:YES];
     return NO;
@@ -170,8 +189,10 @@ RCS_ID("$Id$");
 
 - (void)_textFieldTextDidChange:(NSNotification *)note;
 {
-    if ([_delegate respondsToSelector:@selector(editableLabeledValueCellTextDidChange:)])
-        [_delegate editableLabeledValueCellTextDidChange:self];
+    id <OUIEditableLabeledValueCellDelegate> delegate = _weak_delegate;
+
+    if ([delegate respondsToSelector:@selector(editableLabeledValueCellTextDidChange:)])
+        [delegate editableLabeledValueCellTextDidChange:self];
 }
 
 @end

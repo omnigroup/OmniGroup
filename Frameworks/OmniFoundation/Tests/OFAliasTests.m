@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2008, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,15 +54,11 @@ RCS_ID("$Id$")
     should([fileManager moveItemAtPath:moveToPath1 toPath:moveToPath2 error:NULL]);
     
     NSData *movedAliasData = [[NSData alloc] initWithBase64String:[[restoredAlias data] base64String]];
-    OFAlias *movedAliasFromData = [[OFAlias alloc] initWithData:aliasData];
+    OFAlias *movedAliasFromData = [[OFAlias alloc] initWithData:movedAliasData];
     should([movedAliasFromData path] != nil);
     
     should([fileManager removeItemAtPath:moveToPath2 error:NULL]);
     
-    [originalAlias release];
-    [restoredAlias release];
-    [movedAliasData release];
-    [movedAliasFromData release];
 }
 
 @end

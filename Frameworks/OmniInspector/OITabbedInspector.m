@@ -27,6 +27,7 @@ RCS_ID("$Id$")
 @end
 
 @interface OITabbedInspector (/*Private*/)
+@property (retain, nonatomic) IBOutlet NSView *inspectionView;
 - (void)_selectTabBasedOnObjects:(NSArray *)objects;
 - (OIInspectorTabController *)_tabWithIdentifier:(NSString *)identifier;
 - (void)_updateDimmedForTab:(OIInspectorTabController *)tab;
@@ -49,6 +50,7 @@ RCS_ID("$Id$")
     [_tabControllers release];
     [_trackingRectTags release];
     [_currentInspectionIdentifier release];
+    [inspectionView release];
     [super dealloc];
 }
 
@@ -79,7 +81,7 @@ RCS_ID("$Id$")
     [contentView setFrame:contentFrame];
 
     [contentView setAutoresizesSubviews:NO]; // Must turn this off, or inspector views can get scrambled when we change the inspectionView size after adding pane views to the contentView
-        
+    
     if (_singleSelection) {
         [buttonMatrix setMode:NSRadioModeMatrix];
         [buttonMatrix setAllowsEmptySelection:NO];
@@ -207,7 +209,7 @@ RCS_ID("$Id$")
     
     // If we are starting with a fresh configuration, we might not have anything selected in a radio-style inspector.
     if ([selectedIdentifiers count] == 0 && _singleSelection && [_tabControllers count] > 0)
-        selectedIdentifiers = [NSArray arrayWithObject:[[_tabControllers objectAtIndex:0] identifier]];
+        selectedIdentifiers = [NSMutableArray arrayWithObject:[[_tabControllers objectAtIndex:0] identifier]];
     
     [self setSelectedTabIdentifiers:selectedIdentifiers pinnedTabIdentifiers:pinnedIdentifiers];
     
@@ -396,11 +398,15 @@ RCS_ID("$Id$")
     
     // Read our sub-inspectors from the plist
     for (NSDictionary *tabPlist in [dict objectForKey:@"tabs"]) {
-	OIInspectorTabController *tabController = [[OIInspectorTabController alloc] initWithInspectorDictionary:tabPlist containingInspector:self bundle:sourceBundle];
+        NSString *identifier = [tabPlist objectForKey:@"identifier"];
+        if ([self shouldHideTabWithIdentifier:identifier]) // OG uses this to hide non-Pro tabs
+            continue;
+
+        OIInspectorTabController *tabController = [[OIInspectorTabController alloc] initWithInspectorDictionary:tabPlist containingInspector:self bundle:sourceBundle];
 	if (!tabController)
 	    continue;
 
-	[tabControllers addObject:tabController];
+        [tabControllers addObject:tabController];
 	[tabController release];
     }
     
@@ -412,6 +418,11 @@ RCS_ID("$Id$")
     _trackingRectTags = [[NSMutableArray alloc] init];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_tabTitleDidChange:) name:TabTitleDidChangeNotification object:nil];
     return self;
+}
+
+- (BOOL)shouldHideTabWithIdentifier:(NSString *)identifier;
+{
+    return NO;
 }
 
 - (void)registerInspectorDictionary:(NSDictionary *)tabPlist bundle:(NSBundle *)sourceBundle
@@ -474,8 +485,8 @@ RCS_ID("$Id$")
 
 - (NSView *)inspectorView;
 {
-    if (!contentView)
-        [OMNI_BUNDLE loadNibNamed:@"Tabbed" owner:self];
+    if (!inspectionView)
+        [OMNI_BUNDLE loadNibNamed:@"Tabbed" owner:self topLevelObjects:NULL];
 
     OBPOSTCONDITION(inspectionView);
     return inspectionView;
@@ -549,6 +560,8 @@ RCS_ID("$Id$")
 
 #pragma mark -
 #pragma mark Private
+
+@synthesize inspectionView=inspectionView;
 
 - (void)_selectTabBasedOnObjects:(NSArray *)objects;
 {

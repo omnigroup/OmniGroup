@@ -21,37 +21,20 @@ RCS_ID("$Id$");
 @synthesize infoSharingSettingsButton;
 @synthesize copyrightNotice;
 
-+ (void)displayInSheet;
++ (void)displayAsSheetInViewController:(UIViewController *)viewController;
 {
     OUIAboutPanel *aboutPanel = [[OUIAboutPanel alloc] init];
     UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:aboutPanel];
-    [aboutPanel release];
     navController.modalPresentationStyle = UIModalPresentationFormSheet;
     navController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     
-    OUIAppController *appController = [OUIAppController controller];
-    [appController.topViewController presentViewController:navController animated:YES completion:nil];
+    [viewController presentViewController:navController animated:YES completion:nil];
     
     UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:aboutPanel action:@selector(dismissPanel:)];
     aboutPanel.navigationItem.rightBarButtonItem = doneButton;
-    [doneButton release];
     
     aboutPanel.navigationItem.title = NSLocalizedStringFromTableInBundle(@"About", @"OmniUI", OMNI_BUNDLE, @"Title of the About panel");
     
-    [navController release];
-}
-
-//- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
-//{
-//    return [super initWithNibName:@"OUIAboutPanel" bundle:OMNI_BUNDLE];
-//}
-
-- (void)didReceiveMemoryWarning
-{
-    // Releases the view if it doesn't have a superview.
-    [super didReceiveMemoryWarning];
-    
-    // Release any cached data, images, etc that aren't in use.
 }
 
 #pragma mark - View lifecycle
@@ -91,19 +74,6 @@ RCS_ID("$Id$");
 {
     return YES;
 }
-
-- (void)dealloc;
-{
-    [appNameLabel release];
-    [appVersionLabel release];
-    [contactUsButton release];
-    [infoSharingSettingsButton release];
-    [iconImage release];
-    [copyrightNotice release];
-    [logoImageButton release];
-    [super dealloc];
-}
-
 
 - (IBAction)dismissPanel:(id)sender;
 {

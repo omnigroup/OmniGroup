@@ -1,4 +1,4 @@
-// Copyright 2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,43 @@ RCS_ID("$Id$");
 #endif
 
 @implementation UIScrollView (OUIExtensions)
+
+#if defined(OMNI_ASSERTIONS_ON)
+
+static void (*_original_setContentOffsetAnimated)(UIScrollView *self, SEL _cmd, CGPoint contentOffset, BOOL animated) = NULL;
+static void (*_original_setContentOffset)(UIScrollView *self, SEL _cmd, CGPoint contentOffset) = NULL;
+
+static BOOL checkValue(CGFloat v)
+{
+    OBASSERT(!isnan(v));
+    OBASSERT(!isinf(v));
+    return YES;
+}
+
+static void _replacement_setContentOffsetAnimated(UIScrollView *self, SEL _cmd, CGPoint contentOffset, BOOL animated)
+{
+    OBASSERT(checkValue(contentOffset.x));
+    OBASSERT(checkValue(contentOffset.y));
+    _original_setContentOffsetAnimated(self, _cmd, contentOffset, animated);
+}
+
+static void _replacement_setContentOffset(UIScrollView *self, SEL _cmd, CGPoint contentOffset)
+{
+    OBASSERT(checkValue(contentOffset.x));
+    OBASSERT(checkValue(contentOffset.y));
+    _original_setContentOffset(self, _cmd, contentOffset);
+}
+
+static void OUIScrollViewPerformPosing(void) __attribute__((constructor));
+static void OUIScrollViewPerformPosing(void)
+{
+    Class viewClass = NSClassFromString(@"UIScrollView");
+
+    _original_setContentOffsetAnimated = (typeof(_original_setContentOffsetAnimated))OBReplaceMethodImplementation(viewClass, @selector(setContentOffset:animated:), (IMP)_replacement_setContentOffsetAnimated);
+    _original_setContentOffset = (typeof(_original_setContentOffset))OBReplaceMethodImplementation(viewClass, @selector(setContentOffset:), (IMP)_replacement_setContentOffset);
+}
+
+#endif
 
 #define kDragAutoscrollTimerFrequency (60.0)
 

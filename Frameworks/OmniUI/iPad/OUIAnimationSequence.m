@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <UIKit/UIView.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OUIInteractionLock.h>
 
 RCS_ID("$Id$");
 
@@ -22,6 +23,13 @@ const NSTimeInterval OUIAnimationSequenceDefaultDuration = 0.2;
 const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
 
 @implementation OUIAnimationSequence
+{
+    OUIInteractionLock *_lock;
+    NSTimeInterval _duration;
+    CFAbsoluteTime _startTime;
+    NSArray *_steps;
+    NSUInteger _stepIndex;
+}
 
 - _initWithDuration:(NSTimeInterval)duration steps:(NSArray *)steps;
 {
@@ -33,19 +41,14 @@ const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
     return self;
 }
 
-- (void)dealloc;
-{
-    [_steps release];
-    [super dealloc];
-}
-
 - (void)_runNextStep;
 {
     if (_stepIndex == 0) {
         // Done!
         DEBUG_SEQ(@"done at %f", CFAbsoluteTimeGetCurrent() - _startTime);
-        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
-        objc_msgSend(self, @selector(release)); // matching -run
+        [_lock unlock];
+        _lock = nil;
+        OBStrongRelease(self); // matching -run
         return;
     }
     
@@ -93,9 +96,9 @@ const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
     
     
     // Turn off interaction and fire up the animations.
-    [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+    _lock = [OUIInteractionLock applicationLock];
     
-    objc_msgSend(self, @selector(retain)); // so the caller can -release us w/o clang-sa complaining.
+    OBStrongRetain(self); // so the caller can -release us w/o clang-sa complaining.
     
     _startTime = CFAbsoluteTimeGetCurrent();
     [self _runNextStep];
@@ -108,7 +111,6 @@ const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
     // Collect all the blocks and time intervals into a reversed array.
     action = [action copy]; // promote stack blocks to heap.
     NSMutableArray *objects = [NSMutableArray arrayWithObjects:action, nil];
-    [action release];
     
     {
         va_list args;
@@ -117,14 +119,12 @@ const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
         while ((object = va_arg(args, id))) {
             object = [object copy]; // promote stack blocks to heap.
             [objects insertObject:object atIndex:0];
-            [object release];
         }
         va_end(args);
     }
     
     OUIAnimationSequence *seq = [[OUIAnimationSequence alloc] _initWithDuration:duration steps:objects];
     [seq _run]; // -retains the receiver until it is done
-    [seq release];
 }
 
 

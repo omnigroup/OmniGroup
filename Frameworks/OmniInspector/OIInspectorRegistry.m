@@ -29,6 +29,7 @@
 RCS_ID("$Id$");
 
 @interface OIInspectorRegistry (/*Private*/) <NSTableViewDelegate>
+@property (retain, nonatomic) IBOutlet NSPanel *saveWorkspacePanel, *editWorkspacePanel;
 + (NSString *)_workspacesHelpURL;
 - (void)_ensureNibLoaded;
 - (OIInspectorController *)_registerInspector:(OIInspector *)inspector;
@@ -55,6 +56,13 @@ static NSString *inspectorDefaultsVersion = nil;
 {
     OBINITIALIZE;
     additionalPanels = [[NSMutableArray alloc] init];
+}
+
+- (void)dealloc;
+{
+    [_editWorkspacePanel release];
+    [_saveWorkspacePanel release];
+    [super dealloc];
 }
 
 + (void)setInspectorDefaultsVersion:(NSString *)versionString;
@@ -876,6 +884,8 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 #pragma mark - Private
 
+@synthesize saveWorkspacePanel=_saveWorkspacePanel, editWorkspacePanel=_editWorkspacePanel;
+
 + (NSString *)_workspacesHelpURL;
 {
     static NSString *helpURL = nil;
@@ -889,7 +899,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (void)_ensureNibLoaded;
 {
     if (!newWorkspaceTextField) {
-        [[OIInspectorRegistry bundle] loadNibNamed:@"OIInspectorWorkspacePanels" owner:self];
+        [[OIInspectorRegistry bundle] loadNibNamed:@"OIInspectorWorkspacePanels" owner:self topLevelObjects:NULL];
         
         // Hide the help button if we don't have a help URL
         if ([[self class] _workspacesHelpURL] == nil) {

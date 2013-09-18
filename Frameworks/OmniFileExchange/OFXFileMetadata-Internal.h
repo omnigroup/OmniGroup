@@ -27,6 +27,8 @@
 @property(nonatomic,readwrite,copy) NSDate *creationDate;
 @property(nonatomic,readwrite,copy) NSDate *modificationDate;
 
+@property(nonatomic,readwrite) uint64_t totalSize;
+
 @property(nonatomic,readwrite,getter=isDownloaded,setter=setIsDownloaded:) BOOL downloaded;
 @property(nonatomic,readwrite,getter=isDownloading,setter=setIsDownloading:) BOOL downloading;
 @property(nonatomic,readwrite) float percentDownloaded; // 0..1

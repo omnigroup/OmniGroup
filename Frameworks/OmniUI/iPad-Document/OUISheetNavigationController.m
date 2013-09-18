@@ -7,7 +7,7 @@
 
 #import "OUISheetNavigationController.h"
 
-#import <OmniUI/OUIAppController.h>
+#import <OmniUIDocument/OUIDocumentAppController.h>
 
 RCS_ID("$Id$")
        
@@ -26,8 +26,11 @@ RCS_ID("$Id$")
         navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
         navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
         
-        OUIAppController *appController = [OUIAppController controller];
-        [appController.topViewController presentViewController:navigationController animated:_animateModalViewControllerSheet completion:nil];
+        OBFinishPorting;
+        // We'll be getting rid of this class soon. Just going to comment this out so the call to viewControllerToPresentFrom doesn't break the build after I remove it.
+#if 0
+        [[[OUIDocumentAppController controller] viewControllerToPresentFrom] presentViewController:navigationController animated:_animateModalViewControllerSheet completion:nil];
+#endif
         
         _modalViewControllerSheet = nil;
     }

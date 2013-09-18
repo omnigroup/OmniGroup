@@ -36,7 +36,9 @@ extern "C" {
 // In some cases, we really need to keep an object alive. For example, we may have a window controller that will release itself in response to its window being closed.
 extern void OBStrongRetain(id object);
 extern void OBStrongRelease(id object);
-    
+extern void OBAutorelease(id object);
+extern void OBRetainAutorelease(id object);
+
 /*
  A best guess at what macros might indicate availability and usefulness of the GC APIs.
  
@@ -109,7 +111,7 @@ extern NSString * const OBAbstractImplementation;
 extern NSString * const OBUnusedImplementation;
 
 // Helper for initializing debug log level globals
-    extern void _OBInitializeDebugLogLevel(NSInteger *outLevel, NSString *name);
+extern void _OBInitializeDebugLogLevel(NSInteger *outLevel, NSString *name);
 #define OBInitializeDebugLogLevel(name) _OBInitializeDebugLogLevel(&name, @#name)
     
 // Helper for initializing time interval globals
@@ -325,7 +327,10 @@ __attribute__((visibility("hidden"))) const char *_OBGeometryAdjustedSignature(c
     #define PRI_CFStringEncoding "lu"
     #define PRI_UnicodeScalarValue "lu"
 #endif
-    
+
+// ptrdiff_t
+#define PRI_ptrdiff "td"
+
 /* CFIndex is always a signed long as far as I know */
 #define PRIdCFIndex "ld"
     

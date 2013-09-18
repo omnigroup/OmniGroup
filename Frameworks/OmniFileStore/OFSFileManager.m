@@ -7,12 +7,11 @@
 
 #import <OmniFileStore/OFSFileManager.h>
 
+#import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSDAVFileManager.h>
 #import <OmniFileStore/OFSFileFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
-#import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
@@ -86,86 +85,14 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
     _weak_delegate = nil;
 }
 
-- (id <OFSAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url;
+- (id <ODAVAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url;
 {
     return [[OFSFileOperation alloc] initWithFileManager:self readingURL:url];
 }
 
-- (id <OFSAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically;
+- (id <ODAVAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url;
 {
-    return [[OFSFileOperation alloc] initWithFileManager:self writingData:data atomically:atomically toURL:url];
-}
-
-- (NSURL *)availableURL:(NSURL *)startingURL;
-{
-    BOOL isFileURL = [startingURL isFileURL];
-    NSString *baseName = [OFSFileInfo nameForURL:startingURL];
-    NSURL *directoryURL = OFSDirectoryURLForURL(startingURL);
-    
-    NSString *extension = [baseName pathExtension];
-    
-    BOOL shouldContainExtension = ![NSString isEmptyString:extension];
-    
-    __autoreleasing NSString *name;
-    NSUInteger counter;
-    NSString *urlName = [baseName stringByDeletingPathExtension];
-    
-    OFSFileManagerSplitNameAndCounter(urlName, &name, &counter);
-    
-    NSURL *result = nil;
-    while (!result) {
-        @autoreleasepool {
-        
-        
-            NSString *fileName = nil;
-            if (shouldContainExtension) {
-                fileName = [[NSString alloc] initWithFormat:@"%@.%@", name, extension];
-            }
-            else {
-                fileName = [[NSString alloc] initWithString:name];
-            }
-            
-            NSLog(@"%@", fileName);
-            
-            NSURL *urlCheck = isFileURL ? OFSFileURLRelativeToDirectoryURL(directoryURL, fileName) : OFSURLRelativeToDirectoryURL(directoryURL, [fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
-
-            __autoreleasing NSError *error = nil;
-            OFSFileInfo *fileCheck = [self fileInfoAtURL:urlCheck error:&error];  // all OFSFileManagers implement OFSConcreteFileManager, so this should be safe
-            if (error) {
-                NSLog(@"%@", error);
-                return nil;
-            }
-            
-            if (![fileCheck exists]) {
-                result = [[fileCheck originalURL] copy];
-            } else {
-                if (counter == 0)
-                    counter = 2; // First duplicate should be "Foo 2".
-                
-                if (shouldContainExtension) {
-                    fileName = [[NSString alloc] initWithFormat:@"%@ %lu.%@", name, counter, extension];
-                }
-                else {
-                    fileName = [[NSString alloc] initWithFormat:@"%@ %lu", name, counter];
-                }
-                
-                counter++;
-                
-                urlCheck = isFileURL ? OFSFileURLRelativeToDirectoryURL(directoryURL, fileName) : OFSURLRelativeToDirectoryURL(directoryURL, [fileName stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
-                fileCheck = [self fileInfoAtURL:urlCheck error:&error];
-                if (error){
-                    NSLog(@"%@", error);
-                    return nil;
-                }
-                
-                if (![fileCheck exists])
-                    result = [[fileCheck originalURL] copy];
-            }
-        
-        }
-    }
-    
-    return result;
+    return [[OFSFileOperation alloc] initWithFileManager:self writingData:data atomically:NO toURL:url];
 }
 
 - (NSURL *)createDirectoryAtURLIfNeeded:(NSURL *)requestedDirectoryURL error:(NSError **)outError;
@@ -173,7 +100,7 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
     __autoreleasing NSError *directoryInfoError = nil;
 
     // Assume it exists...
-    OFSFileInfo *directoryInfo = [self fileInfoAtURL:requestedDirectoryURL error:&directoryInfoError];
+    ODAVFileInfo *directoryInfo = [self fileInfoAtURL:requestedDirectoryURL error:&directoryInfoError];
     if (directoryInfo && directoryInfo.exists && directoryInfo.isDirectory) // If there is a flat file, fall through to the MKCOL to get a 409 Conflict filled in
         return directoryInfo.originalURL;
     

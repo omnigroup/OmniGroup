@@ -1,0 +1,64 @@
+#!/bin/zsh -euf
+
+set -x
+
+#
+# Runs a WebDAV server in a temporary directory. Primarily for testing support for self-signed certificates.
+#
+
+# Built my own apache 2.4.3, after downloading apr and apr-util into srclib/ with:
+#   CPP='cc -E' CC=clang ./configure --with-included-apr --prefix=/usr/local/apache2
+#   make; make install
+
+
+ROOT=/Users/Shared/$USER/LocalWebDAVServer
+
+RUN_DIR="$ROOT/Run"
+DOC_DIR="$ROOT/Documents"
+CONFIG_DIR="$ROOT/Configuration"
+LOG_DIR="$ROOT/Logs"
+mkdir -p "$ROOT" "$RUN_DIR" "$DOC_DIR" "$CONFIG_DIR" "$LOG_DIR"
+
+REALM="My Test Realm"
+
+KEY_PATH="$CONFIG_DIR/server.key"
+CRT_PATH="$CONFIG_DIR/server.crt"
+if [ ! -f "$KEY_PATH" -o ! -f "$CRT_PATH" ]; then
+  SUBJECT="/O=My Full Name/OU=$REALM/CN=$HOST"
+  /usr/bin/openssl req -new -x509 -days 3650 -sha1 -newkey rsa:2048 -nodes -keyout "$KEY_PATH" -out "$CRT_PATH" -subj "$SUBJECT"
+fi
+
+cat template-httpd.conf |
+perl -pe "s|RUN_DIR|$RUN_DIR|g;" |
+perl -pe "s|DOC_DIR|$DOC_DIR|g;" |
+perl -pe "s|CONFIG_DIR|$CONFIG_DIR|g;" |
+perl -pe "s|LOG_DIR|$LOG_DIR|g;" |
+perl -pe "s|SERVER_NAME|$HOST|g;" |
+perl -pe "s|LOCAL_PORT|8001|g;" > "$CONFIG_DIR/httpd.conf"
+
+# Generate 100 test users (mostly so we don't hit NSURLConnection's credential cache)
+rm -f "$CONFIG_DIR/user.passwd"
+
+function append_user {
+    cat template-user.conf |
+    perl -pe "s|USER_NUMBER|$1|g;" |
+    perl -pe "s|CONFIG_DIR|$CONFIG_DIR|g;" |
+    perl -pe "s|DOC_DIR|$DOC_DIR|g;" >> "$CONFIG_DIR/httpd.conf"
+    mkdir -p "$DOC_DIR/test$1"
+
+    DIGEST=$(echo -n "test$1:$REALM:password" | /usr/bin/openssl dgst -md5)
+    echo test$1:$REALM:$DIGEST >> "$CONFIG_DIR/user.passwd"
+}
+for n in {0..99}; do
+    append_user $n
+done
+
+# Also make a non-suffixed user for direct testing
+append_user ""
+
+# Remove all locks when restarting the server
+rm -f "$RUN_DIR"/DavLock.dir
+rm -f "$RUN_DIR"/DavLock.pag
+
+# Run in debug mode (-X) so that this won't detach from the console
+/usr/local/apache2/bin/httpd -X -f "$CONFIG_DIR/httpd.conf"

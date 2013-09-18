@@ -1,4 +1,4 @@
-// Copyright 1997-2009 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2009, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,7 +36,7 @@ RCS_ID("$Id$")
 - (void)startOnWindow:(NSWindow *)parentWindow;
 {
     // We have to live until the callback, but a -retain will annoy clang-sa.
-    objc_msgSend(self, @selector(retain));
+    OBAnalyzerProofRetain(self);
     [_alert beginSheetModalForWindow:parentWindow modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:NULL];
 }
 
@@ -45,7 +45,7 @@ RCS_ID("$Id$")
     OBPRECONDITION(alert == _alert);
     
     // Clean up the hidden -retain from -startOnWindow:, first and with -autorelease in case the block asplodes.
-    objc_msgSend(self, @selector(autorelease));
+    OBAnalyzerProofAutorelease(self);
     
     if (_completionHandler)
         _completionHandler(_alert, returnCode);
@@ -55,7 +55,7 @@ RCS_ID("$Id$")
 
 @implementation NSAlert (OAExtensions)
 
-- (void)beginSheetModalForWindow:(NSWindow *)window completionHandler:(OAAlertSheetCompletionHandler)completionHandler;
+- (void)oa_beginSheetModalForWindow:(NSWindow *)window completionHandler:(OAAlertSheetCompletionHandler)completionHandler;
 {
     _OAAlertSheetCompletionHandlerRunner *runner = [[_OAAlertSheetCompletionHandlerRunner alloc] initWithAlert:self completionHandler:completionHandler];
     [runner startOnWindow:window];
@@ -88,7 +88,7 @@ void OABeginAlertSheet(NSString *title, NSString *defaultButton, NSString *alter
     if (otherButton)
         [alert addButtonWithTitle:otherButton];
     
-    [alert beginSheetModalForWindow:docWindow completionHandler:completionHandler];
+    [alert oa_beginSheetModalForWindow:docWindow completionHandler:completionHandler];
     [alert release]; // retained by the runner while the sheet is up
 }
 

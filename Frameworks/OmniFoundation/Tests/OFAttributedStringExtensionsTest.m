@@ -1,4 +1,4 @@
-// Copyright 2005-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2006, 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,12 +18,12 @@ RCS_ID("$Id$");
 
 static void _testSeparate(id self, NSString *string, NSString *separator, NSArray *expectedStrings)
 {
-    NSAttributedString *sourceString = [[[NSAttributedString alloc] initWithString:string attributes:nil] autorelease];
+    NSAttributedString *sourceString = [[NSAttributedString alloc] initWithString:string attributes:nil];
     NSArray *components = [sourceString componentsSeparatedByString:separator];
     
     NSMutableArray *expectedAttributedStrings = [NSMutableArray array];
     for (NSString *s in expectedStrings)
-        [expectedAttributedStrings addObject:[[[NSAttributedString alloc] initWithString:s attributes:nil] autorelease]];
+        [expectedAttributedStrings addObject:[[NSAttributedString alloc] initWithString:s attributes:nil]];
     
     shouldBeEqual(components, expectedAttributedStrings);
 }

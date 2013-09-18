@@ -19,11 +19,14 @@ RCS_ID("$Id$");
 NSString * const OUIColorSwatchPickerTextBackgroundPalettePreferenceKey = @"OUIColorSwatchPickerTextBackgroundPalette";
 NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey = @"OUIColorSwatchPickerTextColorPalette";
 
-@interface OUIColorSwatchPicker ()
-- (IBAction)_swatchTouchDown:(id)sender;
-@end
-
 @implementation OUIColorSwatchPicker
+{
+    NSMutableArray *_colors;
+    OQColor *_swatchSelectionColor;
+    
+    NSMutableArray *_colorSwatches;
+    UIButton *_navigationButton;
+}
 
 static id _commonInit(OUIColorSwatchPicker *self)
 {
@@ -48,22 +51,10 @@ static id _commonInit(OUIColorSwatchPicker *self)
     return _commonInit(self);
 }
 
-- (void)dealloc;
-{
-    [_palettePreferenceKey release];
-    [_colors release];
-    [_swatchSelectionColor release];
-    [_colorSwatches release];
-    [_navigationButton release];
-    [super dealloc];
-}
-
-@synthesize palettePreferenceKey = _palettePreferenceKey;
 - (void)setPalettePreferenceKey:(NSString *)key;
 {
     if (OFISEQUAL(_palettePreferenceKey, key))
         return;
-    [_palettePreferenceKey release];
     _palettePreferenceKey = [key copy];
     
     if (![NSString isEmptyString:_palettePreferenceKey]) {
@@ -83,12 +74,10 @@ static id _commonInit(OUIColorSwatchPicker *self)
 }
 
 // Setter doesn't currently save the list to preferences if we have a preference, only picked colors do and only if _updatesPaletteForSelectedColors is set.
-@synthesize colors = _colors;
 - (void)setColors:(NSArray *)colors;
 {
     if (OFISEQUAL(colors, _colors))
         return;
-    [_colors release];
     _colors = [[NSMutableArray alloc] initWithArray:colors];
     [self setNeedsLayout];
 }
@@ -106,15 +95,14 @@ static id _commonInit(OUIColorSwatchPicker *self)
     self.colors = [NSArray arrayWithObjects:color, nil];
 }
 
-@synthesize target = _nonretained_target;
+@synthesize target = _weak_target;
 - (void)setTarget:(id)target;
 {
     OBPRECONDITION(!target || (_showsSingleSwatch && [target respondsToSelector:@selector(showDetails:)]) || (!_showsSingleSwatch && [target respondsToSelector:@selector(changeColor:)])); // Later we could make the action configurable too...
     
-    _nonretained_target = target;
+    _weak_target = target;
 }
 
-@synthesize showsSingleSwatch = _showsSingleSwatch;
 - (void)setShowsSingleSwatch:(BOOL)showsSingleSwatch;
 {
     if (_showsSingleSwatch == showsSingleSwatch)
@@ -123,7 +111,6 @@ static id _commonInit(OUIColorSwatchPicker *self)
     [self setNeedsLayout];
 }
 
-@synthesize wraps = _wraps;
 - (void)setWraps:(BOOL)wraps;
 {
     if (_wraps == wraps)
@@ -132,7 +119,6 @@ static id _commonInit(OUIColorSwatchPicker *self)
     [self setNeedsLayout];
 }
 
-@synthesize showsNoneSwatch = _showsNoneSwatch;
 - (void)setShowsNoneSwatch:(BOOL)showsNoneSwatch;
 {
     if (_showsNoneSwatch == showsNoneSwatch)
@@ -141,7 +127,6 @@ static id _commonInit(OUIColorSwatchPicker *self)
     [self setNeedsLayout];
 }
 
-@synthesize showsNavigationSwatch = _showsNavigationSwatch;
 - (void)setShowsNavigationSwatch:(BOOL)showsNavigationSwatch;
 {
     if (_showsNavigationSwatch == showsNavigationSwatch)
@@ -189,8 +174,7 @@ static BOOL _colorsMatch(OQColor *color1, OQColor *color2)
     if (OFISEQUAL(_swatchSelectionColor, color))
         return;
 
-    [_swatchSelectionColor release];
-    _swatchSelectionColor = [color retain];
+    _swatchSelectionColor = color;
 
     for (OUIColorSwatch *swatch in _colorSwatches)
         swatch.selected = _colorsMatch(swatch.color, _swatchSelectionColor);
@@ -243,19 +227,21 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
 {
     OUIColorSwatch *swatch = [(OUIColorSwatch *)[OUIColorSwatch alloc] initWithColor:color];
     
-    [swatch addTarget:self action:@selector(_swatchTouchDown:) forControlEvents:UIControlEventTouchDown];
+    [swatch addTarget:self action:@selector(_swatchTouchUp:) forControlEvents:UIControlEventTouchUpInside];
     
     swatch.selected = _colorsMatch(color, self->_swatchSelectionColor);
     _configureSwatchView(self, swatch, offset, size);
     return swatch;
 }
 
-- (void)_swatchTouchDown:(OUIColorSwatch *)swatch;
+- (void)_swatchTouchUp:(OUIColorSwatch *)swatch;
 {
+    id target = _weak_target;
+    
     if (_showsSingleSwatch || swatch == _navigationButton) {
-        if (![[UIApplication sharedApplication] sendAction:@selector(showDetails:) to:_nonretained_target from:swatch forEvent:nil])
+        if (![[UIApplication sharedApplication] sendAction:@selector(showDetails:) to:target from:swatch forEvent:nil])
             NSLog(@"Unable to find target for -showDetails: on color swatch tap.");
-    } else if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:_nonretained_target from:swatch forEvent:nil])
+    } else if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:target from:swatch forEvent:nil])
         NSLog(@"Unable to find target for -changeColor: on color swatch tap.");
 }
 
@@ -284,7 +270,6 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
     if (_showsNoneSwatch) {
         OUIColorSwatch *swatch = _newSwatch(self, nil, &offset, swatchSize);
         [_colorSwatches addObject:swatch];
-        [swatch release];
         swatch.selected = _colorsMatch(nil, _swatchSelectionColor);
         
         OBASSERT(swatchsPerRow >= 2); // not wrapping here.
@@ -298,7 +283,6 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
 
         OUIColorSwatch *swatch = _newSwatch(self, color, &offset, swatchSize);
         [_colorSwatches addObject:swatch];
-        [swatch release];
         
         swatch.selected = _colorsMatch(color, _swatchSelectionColor);
 
@@ -333,12 +317,12 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
     // Detail navigation setup
     if (_showsSingleSwatch) {
         OUIColorSwatch *swatch = [_colorSwatches lastObject];
-        [swatch addTarget:self action:@selector(_swatchTouchDown:) forControlEvents:UIControlEventTouchDown];
+        [swatch addTarget:self action:@selector(_swatchTouchUp:) forControlEvents:UIControlEventTouchUpInside];
     } else if (_showsNavigationSwatch) {
         if (!_navigationButton)
-            _navigationButton = [[OUIColorSwatch navigateToColorPickerSwatch] retain];
+            _navigationButton = [OUIColorSwatch navigateToColorPickerSwatch];
         _configureSwatchView(self, _navigationButton, &offset, swatchSize);
-        [_navigationButton addTarget:self action:@selector(_swatchTouchDown:) forControlEvents:UIControlEventTouchDown];
+        [_navigationButton addTarget:self action:@selector(_swatchTouchUp:) forControlEvents:UIControlEventTouchUpInside];
     }
 }
 

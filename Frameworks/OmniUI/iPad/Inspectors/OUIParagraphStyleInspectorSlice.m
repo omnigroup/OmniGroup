@@ -12,31 +12,26 @@
 #import <OmniAppKit/OAParagraphStyle.h>
 
 #import <UIKit/UIView.h>
-#import <OmniUI/OUIInspectorSegmentedControl.h>
-#import <OmniUI/OUIInspectorSegmentedControlButton.h>
+#import <OmniUI/OUISegmentedControl.h>
+#import <OmniUI/OUISegmentedControlButton.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
 @implementation OUIParagraphStyleInspectorSlice
-
-- (void)dealloc;
 {
-    [alignmentControl release];
-    alignmentControl = nil;
-
-    [super dealloc];
+    OUISegmentedControl *alignmentControl;
 }
 
-- (IBAction)changeParagraphAlignment:(OUIInspectorSegmentedControl *)sender;
+- (IBAction)changeParagraphAlignment:(OUISegmentedControl *)sender;
 {
-    OUIInspectorSegmentedControlButton *segment = [sender selectedSegment];
-    OATextAlignment desiredAlignment;
+    OUISegmentedControlButton *segment = [sender selectedSegment];
+    NSTextAlignment desiredAlignment;
     
     if (segment) {
         desiredAlignment = [segment tag]; // We set up the tags in -loadView to be the same as our OATextAlignment values
     } else {
-        desiredAlignment = OANaturalTextAlignment; // No entry for this, but you can toggle off all the segments to get it.
+        desiredAlignment = NSTextAlignmentNatural; // No entry for this, but you can toggle off all the segments to get it.
     }
     
     
@@ -44,77 +39,51 @@ RCS_ID("$Id$");
     [inspector willBeginChangingInspectedObjects];
     {
         for (id <OUIParagraphInspection> object in self.appropriateObjectsForInspection) {
-            OAParagraphStyle *style = [object paragraphStyleForInspectorSlice:self];
+            NSParagraphStyle *style = [object paragraphStyleForInspectorSlice:self];
             
             if ([style alignment] != desiredAlignment) {
-                OAMutableParagraphStyle *mutatis = [style mutableCopy];
+                NSMutableParagraphStyle *mutatis = [style mutableCopy];
                 [mutatis setAlignment:desiredAlignment];
                 [object setParagraphStyle:mutatis fromInspectorSlice:self];
-                [mutatis release];
             }
         }
     }
     [inspector didEndChangingInspectedObjects];
 }
 
-- (void)updateParagraphAlignmentSegmentedControl:(OUIInspectorSegmentedControl *)segmentedControl;
+- (void)updateParagraphAlignmentSegmentedControl:(OUISegmentedControl *)segmentedControl;
 {
+    NSMutableIndexSet *selectedAlignments = [NSMutableIndexSet indexSet];
     
-    BOOL sel[OATextAlignmentMAX+1];
-    for(unsigned int i = 0; i <= OATextAlignmentMAX; i++)
-        sel[i] = NO;
-    BOOL *selp = sel; // Can't refer to arrays in blocks, but pointers are OK...
-    
-#ifdef NS_BLOCKS_AVAILABLE
     __block BOOL inspectable = NO;
     [self eachAppropriateObjectForInspection:^(id object){
         id <OUIParagraphInspection> paragraph = object;
         
-        OAParagraphStyle *style = [paragraph paragraphStyleForInspectorSlice:self];
+        NSParagraphStyle *style = [paragraph paragraphStyleForInspectorSlice:self];
         
         if (!style)
             return;
         
         inspectable = YES;
         
-        OATextAlignment spanAlignment = [style alignment];
+        NSTextAlignment spanAlignment = style.alignment;
         OBASSERT_NONNEGATIVE(spanAlignment);
-        if (spanAlignment <= OATextAlignmentMAX)
-            selp[spanAlignment] = YES;
+        [selectedAlignments addIndex:spanAlignment];
     }];
-#else
-    OBFinishPortingLater("Make the trunk 4.2 only?");
-    BOOL inspectable = NO;
-    for (id <OUIParagraphInspection> object in self.appropriateObjectsForInspection) {
-        OAParagraphStyle *style = [object paragraphStyleForInspectorSlice:self];
-        
-        if (!style)
-            continue;
-        
-        inspectable = YES;
-        
-        OATextAlignment spanAlignment = [style alignment];
-        OBASSERT_NONNEGATIVE(spanAlignment);
-        if (spanAlignment <= OATextAlignmentMAX)
-            selp[spanAlignment] = YES;
-    }
-#endif
     
     segmentedControl.enabled = inspectable;
     
     NSUInteger segmentIndex = [segmentedControl segmentCount];
     while (segmentIndex--) {
-        OUIInspectorSegmentedControlButton *segment = [segmentedControl segmentAtIndex:segmentIndex];
+        OUISegmentedControlButton *segment = [segmentedControl segmentAtIndex:segmentIndex];
         NSInteger tag = [segment tag];
         
-        if (tag >= 0 && tag <= OATextAlignmentMAX) {
-            segment.selected = sel[tag];
-        }
+        if ([selectedAlignments containsIndex:tag])
+            segment.selected = YES;
     }
 }
 
-#pragma mark -
-#pragma mark OUIInspectorSlice subclass
+#pragma mark - OUIInspectorSlice subclass
 
 - (BOOL)isAppropriateForInspectedObject:(id)object;
 {
@@ -127,8 +96,7 @@ RCS_ID("$Id$");
     [self updateParagraphAlignmentSegmentedControl:alignmentControl];
 }
 
-#pragma mark -
-#pragma mark UIViewController subclass
+#pragma mark - UIViewController subclass
 
 /* We would only have one view in our .nib and we'd have to do most of the setup by hand anyway, so not bothering with a .nib. */
 - (void)loadView;
@@ -136,26 +104,26 @@ RCS_ID("$Id$");
     OBPRECONDITION(alignmentControl == nil);
     
     // We'll be resized by the stack view
-    OUIInspectorSegmentedControl *alignBar = [[OUIInspectorSegmentedControl alloc] initWithFrame:(CGRect){{0,0}, {OUIInspectorContentWidth, 46}}];
+    OUISegmentedControl *alignBar = [[OUISegmentedControl alloc] initWithFrame:(CGRect){{0,0}, {OUIInspectorContentWidth, [OUISegmentedControl buttonHeight]}}];
     alignBar.sizesSegmentsToFit = YES;
     alignBar.allowsEmptySelection = YES;
     
-    OUIInspectorSegmentedControlButton *button;
+    OUISegmentedControlButton *button;
         
     button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentLeft.png"];
-    [button setTag:OALeftTextAlignment];
+    [button setTag:NSTextAlignmentLeft];
     button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Left text align", @"OmniUI", OMNI_BUNDLE, @"Left Text Align button accessibility label.");
     
     button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentCenter.png"];
-    [button setTag:OACenterTextAlignment];
+    [button setTag:NSTextAlignmentCenter];
     button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Center text align", @"OmniUI", OMNI_BUNDLE, @"Center Text Align button accessibility label.");
 
     button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentRight.png"];
-    [button setTag:OARightTextAlignment];
+    [button setTag:NSTextAlignmentRight];
     button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Right text align", @"OmniUI", OMNI_BUNDLE, @"Right Text Align button accessibility label.");
 
     button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentJustified.png"];
-    [button setTag:OAJustifiedTextAlignment];
+    [button setTag:NSTextAlignmentJustified];
     button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Justified text align", @"OmniUI", OMNI_BUNDLE, @"Justified Text Align button accessibility label.");
 
     [alignBar addTarget:self action:@selector(changeParagraphAlignment:) forControlEvents:UIControlEventValueChanged];

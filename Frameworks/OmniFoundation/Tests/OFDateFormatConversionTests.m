@@ -1,4 +1,4 @@
-// Copyright 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,21 +37,17 @@ RCS_ID("$Id$")
     _date = [[NSCalendarDate alloc] initWithTimeIntervalSinceReferenceDate:[date timeIntervalSinceReferenceDate]];
     [_date setTimeZone:[NSDate UTCTimeZone]];
     
-    [date release];
 
     _dateFormatter = [[NSDateFormatter alloc] init];
-    [_dateFormatter setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
-    STAssertTrue([_dateFormatter formatterBehavior] == NSDateFormatterBehavior10_4, @"Should default to the 10.4+ behavior when linked on 10.6");
+    [_dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"]];
     
     [_dateFormatter setTimeZone:[NSDate UTCTimeZone]];
 }
 
 - (void)tearDown;
 {
-    [_date release];
     _date = nil;
     
-    [_dateFormatter release];
     _dateFormatter = nil;
     
     [super tearDown];
@@ -59,34 +55,34 @@ RCS_ID("$Id$")
 
 static void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateFormat, BOOL expectCorrectReconveredOldFormat, NSString *expectedReconvertedOldDateFormat, BOOL shouldBeEqual, NSString *expectedNewResult)
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    @autoreleasepool {
 
-    NSString *oldResult = [self->_date descriptionWithCalendarFormat:oldDateFormat];
-    
-    NSString *newDateFormat = OFDateFormatStringForOldFormatString(oldDateFormat);
-    NSString *reConvertedOldDateFormat = OFOldDateFormatStringForFormatString(newDateFormat);
-    
-    if (expectCorrectReconveredOldFormat) {
-        // For the inputs below, we should get idempotence. ICU supports more than strftime, so we can't expect this for every format.
-        // Some strftime formats map to a single ICU format ("%1d" and "%e", in particular) and we have to pick one thing to reverse them to.
-        if (!expectedReconvertedOldDateFormat)
-            expectedReconvertedOldDateFormat = oldDateFormat;
-        STAssertEqualObjects(expectedReconvertedOldDateFormat, reConvertedOldDateFormat, nil);
-    }
-    
-    [self->_dateFormatter setDateFormat:newDateFormat];
-    
-    NSString *newResult = [self->_dateFormatter stringFromDate:self->_date];
-    
-    NSLog(@"[%@] -> [%@]: [%@] -> [%@]", oldDateFormat, newDateFormat, oldResult, newResult);
-    
-    if (shouldBeEqual)
-        STAssertEqualObjects(oldResult, newResult, nil);
-
-    if (expectedNewResult)
-        STAssertEqualObjects(newResult, expectedNewResult, nil);
+        NSString *oldResult = [self->_date descriptionWithCalendarFormat:oldDateFormat];
         
-    [pool drain];
+        NSString *newDateFormat = OFDateFormatStringForOldFormatString(oldDateFormat);
+        NSString *reConvertedOldDateFormat = OFOldDateFormatStringForFormatString(newDateFormat);
+        
+        if (expectCorrectReconveredOldFormat) {
+            // For the inputs below, we should get idempotence. ICU supports more than strftime, so we can't expect this for every format.
+            // Some strftime formats map to a single ICU format ("%1d" and "%e", in particular) and we have to pick one thing to reverse them to.
+            if (!expectedReconvertedOldDateFormat)
+                expectedReconvertedOldDateFormat = oldDateFormat;
+            STAssertEqualObjects(expectedReconvertedOldDateFormat, reConvertedOldDateFormat, nil);
+        }
+        
+        [self->_dateFormatter setDateFormat:newDateFormat];
+        
+        NSString *newResult = [self->_dateFormatter stringFromDate:self->_date];
+        
+        NSLog(@"[%@] -> [%@]: [%@] -> [%@]", oldDateFormat, newDateFormat, oldResult, newResult);
+        
+        if (shouldBeEqual)
+            STAssertEqualObjects(oldResult, newResult, nil);
+
+        if (expectedNewResult)
+            STAssertEqualObjects(newResult, expectedNewResult, nil);
+        
+    }
 }
 
 #define testFormat(format) _testFormat(self, (format), YES, nil, YES, nil)
@@ -94,9 +90,6 @@ static void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateForm
 
 - (void)testSingleSpecifiers;
 {
-    
-    STAssertTrue([NSDateFormatter defaultFormatterBehavior] == NSDateFormatterBehavior10_4, @"Should default to the 10.4+ behavior when linked on 10.6");
-
     testFormat(@"%%");
     testFormat(@"%a");
     testFormat(@"%A");

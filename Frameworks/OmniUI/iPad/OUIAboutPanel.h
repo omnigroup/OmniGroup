@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,15 +19,15 @@
     UIImageView *iconImage;
 }
 
-+ (void)displayInSheet;
++ (void)displayAsSheetInViewController:(UIViewController *)viewController;
 
-@property (nonatomic, retain) IBOutlet UIImageView *iconImage;
-@property (nonatomic, retain) IBOutlet UILabel *appNameLabel;
-@property (nonatomic, retain) IBOutlet UILabel *appVersionLabel;
-@property (nonatomic, retain) IBOutlet UIButton *logoImageButton;
-@property (nonatomic, retain) IBOutlet UIButton *contactUsButton;
-@property (nonatomic, retain) IBOutlet UIButton *infoSharingSettingsButton;
-@property (nonatomic, retain) IBOutlet UILabel *copyrightNotice;
+@property (nonatomic, strong) IBOutlet UIImageView *iconImage;
+@property (nonatomic, strong) IBOutlet UILabel *appNameLabel;
+@property (nonatomic, strong) IBOutlet UILabel *appVersionLabel;
+@property (nonatomic, strong) IBOutlet UIButton *logoImageButton;
+@property (nonatomic, strong) IBOutlet UIButton *contactUsButton;
+@property (nonatomic, strong) IBOutlet UIButton *infoSharingSettingsButton;
+@property (nonatomic, strong) IBOutlet UILabel *copyrightNotice;
 
 - (IBAction)dismissPanel:(id)sender;
 - (IBAction)emailSupport:(id)sender;

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
 #import <OmniUI/OUIFeatures.h>
 
 #if OUI_SOFTWARE_UPDATE_CHECK
@@ -18,12 +18,7 @@
 - (void)softwareUpdatePrivacyAlert:(OUISoftwareUpdatePrivacyAlert *)alert completedWithAllowingReports:(BOOL)allowReports;
 @end
 
-@interface OUISoftwareUpdatePrivacyAlert : OFObject <UIAlertViewDelegate>
-{
-@private
-    id <OUISoftwareUpdatePrivacyAlertDelegate> _nonretained_delegate;
-    UIAlertView *_alertView;
-}
+@interface OUISoftwareUpdatePrivacyAlert : NSObject <UIAlertViewDelegate>
 - initWithDelegate:(id <OUISoftwareUpdatePrivacyAlertDelegate>)delegate;
 - (void)show;
 @end

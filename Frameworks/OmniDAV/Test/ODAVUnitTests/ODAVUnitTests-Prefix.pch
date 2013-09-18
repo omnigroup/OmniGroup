@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'ODAVUnitTests' target in the 'ODAVUnitTests' project
+//
+
+#import <OmniBase/OmniBase.h>
+
+#import <Foundation/Foundation.h>

@@ -7,8 +7,8 @@
 
 #import <OmniFileStore/OFSFileFileManager.h>
 
+#import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileStore/Errors.h>
-#import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 
 RCS_ID("$Id$");
@@ -41,7 +41,7 @@ RCS_ID("$Id$");
 
 // TODO: Ensure that the input urls are within the specified URL.  Either need to check this directly, or require that they are relative.
 
-static OFSFileInfo *_createFileInfoAtPath(NSString *path)
+static ODAVFileInfo *_createFileInfoAtPath(NSString *path)
 {
     // TODO: Return nil here if we get an error other than 'does not exist'
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
@@ -54,18 +54,18 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     
     // +[NSURL fileURLWithPath:] will re-check whether this is a directory, but we already know.
     CFURLRef url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)path, kCFURLPOSIXPathStyle, directory);
-    OFSFileInfo *info = [[OFSFileInfo alloc] initWithOriginalURL:(__bridge NSURL *)url name:[path lastPathComponent] exists:exists directory:directory size:size lastModifiedDate:[attributes fileModificationDate]];
+    ODAVFileInfo *info = [[ODAVFileInfo alloc] initWithOriginalURL:(__bridge NSURL *)url name:[path lastPathComponent] exists:exists directory:directory size:size lastModifiedDate:[attributes fileModificationDate]];
     CFRelease(url);
     
     return info;
 }
 
-- (OFSFileInfo *)fileInfoAtURL:(NSURL *)url error:(NSError **)outError;
+- (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url error:(NSError **)outError;
 {
     if (OFSFileManagerDebug > 0)
         NSLog(@"FILE operation: INFO at %@", url);
 
-    OFSFileInfo *info = _createFileInfoAtPath([url path]);
+    ODAVFileInfo *info = _createFileInfoAtPath([url path]);
 
     if (OFSFileManagerDebug > 1)
         NSLog(@"  --> %@", info);
@@ -73,7 +73,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     return info;
 }
 
-- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension options:(OFSDirectoryEnumerationOptions)options error:(NSError **)outError;
+- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
 {
     NSTimeInterval start = 0;
     if (OFSFileManagerDebug > 0) {
@@ -85,11 +85,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     NSString *basePath = [url path];
     
     BOOL errorIsNonexistenceError = NO;
-    NSArray *fileNames = nil;
-    if ((options & OFSDirectoryEnumerationSkipsSubdirectoryDescendants))
-        fileNames = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:basePath error:outError];
-    else
-        fileNames = [[NSFileManager defaultManager] subpathsOfDirectoryAtPath:basePath error:outError];
+    NSArray *fileNames = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:basePath error:outError];
     
     if (!fileNames && outError) {
         NSString *errorDomain = [*outError domain];
@@ -113,10 +109,6 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     for (NSString *fileName in fileNames) {
         OBASSERT([[fileName pathComponents] count] == 1);
 
-        if ((options & OFSDirectoryEnumerationSkipsHiddenFiles) && [fileName hasPrefix:@"."]) {
-            continue;
-        }
-        
         if ([fileName hasPrefix:@"._"]) {
             // Ignore split resource fork files; these presumably happen when moving between filesystems.
             continue;
@@ -125,7 +117,7 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
         if (!extension || [[fileName pathExtension] caseInsensitiveCompare:extension] == NSOrderedSame) {
             
             NSString *absolutePath = [basePath stringByAppendingPathComponent:fileName];
-            OFSFileInfo *fileInfo = _createFileInfoAtPath(absolutePath);
+            ODAVFileInfo *fileInfo = _createFileInfoAtPath(absolutePath);
             [results addObject:fileInfo];
         }
     }
@@ -142,14 +134,9 @@ static OFSFileInfo *_createFileInfoAtPath(NSString *path)
     return results;
 }
 
-- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
+- (NSMutableArray *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections error:(NSError **)outError;
 {
-    return [self directoryContentsAtURL:url havingExtension:extension options:OFSDirectoryEnumerationSkipsSubdirectoryDescendants error:outError];
-}
-
-- (NSMutableArray *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections options:(OFSDirectoryEnumerationOptions)options error:(NSError **)outError;
-{
-    return (NSMutableArray *)[self directoryContentsAtURL:url havingExtension:nil options:options error:outError];
+    return (NSMutableArray *)[self directoryContentsAtURL:url havingExtension:nil error:outError];
 }
 
 - (NSData *)dataWithContentsOfURL:(NSURL *)url error:(NSError **)outError;

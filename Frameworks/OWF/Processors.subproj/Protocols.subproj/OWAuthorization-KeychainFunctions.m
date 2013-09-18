@@ -14,6 +14,8 @@
 
 RCS_ID("$Id$");
 
+#if 0
+
 static OSStatus extractSomeItemAttributes(SecKeychainItemRef itemRef, FourCharCode *itemClassp, NSMutableDictionary *into, const FourCharCode *attributesToExtract, unsigned int numberOfAttributes);
 
 static struct { FourCharCode tag; NSString *str; } tagNames[] = {
@@ -112,26 +114,6 @@ OWF_PRIVATE_EXTERN NSData *OWKCGetItemAttribute(SecKeychainItemRef item, SecItem
 }
 
 #endif
-
-OWF_PRIVATE_EXTERN OSStatus OWKCExtractKeyData(SecKeychainItemRef item, NSData **password)
-{
-    OSStatus keychainStatus;
-    UInt32 dataLength;
-    void *dataBuf;
-
-    dataLength = 0;
-    dataBuf = NULL;
-
-    keychainStatus = SecKeychainItemCopyAttributesAndData(item, NULL, NULL, NULL, &dataLength, &dataBuf);
-
-    if (keychainStatus == noErr) {
-        *password = [NSData dataWithBytes:dataBuf length:dataLength];
-        SecKeychainItemFreeAttributesAndData(NULL, dataBuf);
-    } else
-        *password = nil;
-
-    return keychainStatus;
-}
 
 static inline NSString *parseKeychainString(NSData *strbytes) {
     // Trim trailing nulls here, since some strings have 'em and some don't. This could break multibyte encodings, so when we fix those (see above) we'll have to change this as well.
@@ -288,8 +270,8 @@ static OSStatus extractSomeItemAttributes(SecKeychainItemRef itemRef, FourCharCo
     if (osErr != noErr)
         return osErr;
 
-    if ([into objectForKey:@"class"] == nil)
-        [into setObject:[NSData dataWithBytes:&itemClass length:sizeof(itemClass)] forKey:@"class"];
+    if ([into objectForKey:kSecClass] == nil)
+        [into setObject:[NSData dataWithBytes:&itemClass length:sizeof(itemClass)] forKey:kSecClass];
     if (itemClassp)
         *itemClassp = itemClass;
 
@@ -424,50 +406,43 @@ OWF_PRIVATE_EXTERN OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictiona
 #endif
 }
 
-OWF_PRIVATE_EXTERN OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSString *realm, NSString *username, int portNumber, OSType protocol, OSType authType, NSData *passwordData)
-{
-    OBFinishPorting; // Uses deprecated API
-#if 0
-    NSMutableDictionary *attributesDictionary;
-    SecKeychainAttributeList attributeList;
-    OSStatus keychainStatus;
-    FourCharCode itemClass;
-    SecKeychainItemRef item = NULL;
-    
-    // Create attributes
-    itemClass = kSecInternetPasswordItemClass;
-    attributesDictionary = [[NSMutableDictionary alloc] initWithCapacity:6];
-    [attributesDictionary setObject:hostname forKey:@"server"];
-    if (realm != nil)
-        [attributesDictionary setObject:realm forKey:@"securityDomain"];
-    if (username != nil)
-        [attributesDictionary setObject:username forKey:@"account"];
-    [attributesDictionary setIntValue:portNumber forKey:@"port"];
-    [attributesDictionary setIntValue:protocol forKey:@"protocol"];
-    [attributesDictionary setIntValue:authType forKey:@"authenticationType"];
-    attributeList.attr = KeychainAttributesFromDictionary(attributesDictionary, &attributeList.count, &itemClass);
-    [attributesDictionary release];
-    
-    keychainStatus = SecKeychainItemCreateFromContent(itemClass, &attributeList, [passwordData length], [passwordData bytes], NULL, NULL, &item);
-    if (keychainStatus == errSecDuplicateItem) {
-        // If this item already exists, modify its content
-        SecKeychainSearchRef searchState;
-
-        keychainStatus = SecKeychainSearchCreateFromAttributes(NULL, itemClass, &attributeList, &searchState);
-        if (keychainStatus != noErr)
-            goto done;
-            
-        keychainStatus = SecKeychainSearchCopyNext(searchState, &item);
-        if (keychainStatus != noErr)
-            goto done;
-                
-        keychainStatus = SecKeychainItemModifyContent(item, NULL, [passwordData length], [passwordData bytes]);
-        CFRelease(searchState);
-    }
-done:
-    if (item != NULL)
-        CFRelease(item);
-    free(attributeList.attr);
-    return keychainStatus;
 #endif
+
+OWF_PRIVATE_EXTERN OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSString *realm, NSString *username, int portNumber, SecProtocolType protocol, SecAuthenticationType authType, NSData *passwordData)
+{
+    SecKeychainRef keychain = NULL; // default keychain
+    const char *serverName = [hostname UTF8String];
+    UInt32 serverNameLength = (UInt32)(serverName != NULL ? strlen(serverName) : 0);
+    const char *securityDomain = [realm UTF8String];
+    UInt32 securityDomainLength = (UInt32)(securityDomain != NULL ? strlen(securityDomain) : 0);
+    const char *accountName = [username UTF8String];
+    UInt32 accountNameLength = (UInt32)(accountName != NULL ? strlen(accountName) : 0);
+
+    SecKeychainItemRef itemRef;
+    OSStatus err = SecKeychainFindInternetPassword(keychain, serverNameLength, serverName, securityDomainLength, securityDomain, accountNameLength, accountName, 0 /* pathLength */, NULL /* path */, portNumber, protocol, authType, NULL /* &passwordLength */, NULL /* &passwordData */, &itemRef);
+    if (err == errSecSuccess) {
+        err = SecKeychainItemModifyAttributesAndData(itemRef, NULL /* attributes */, (UInt32)[passwordData length], [passwordData bytes]);
+        CFRelease(itemRef);
+    } else if (err == errSecItemNotFound) {
+        // Add a new entry.
+        err = SecKeychainAddInternetPassword(keychain, serverNameLength, serverName, securityDomainLength, securityDomain, accountNameLength, accountName, 0 /* pathLength */, NULL /* path */, portNumber, protocol, authType, (UInt32)[passwordData length], [passwordData bytes], NULL /* &itemRef */);
+    }
+
+    return err;
+}
+
+OWF_PRIVATE_EXTERN OSStatus OWKCExtractKeyData(SecKeychainItemRef item, NSData **password)
+{
+    UInt32 dataLength = 0;
+    void *dataBuf = NULL;
+
+    OSStatus keychainStatus = SecKeychainItemCopyAttributesAndData(item, NULL, NULL, NULL, &dataLength, &dataBuf);
+
+    if (keychainStatus == noErr) {
+        *password = [NSData dataWithBytes:dataBuf length:dataLength];
+        SecKeychainItemFreeAttributesAndData(NULL, dataBuf);
+    } else
+        *password = nil;
+
+    return keychainStatus;
 }

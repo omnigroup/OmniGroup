@@ -7,15 +7,21 @@
 //
 // $Id$
 
-#import <OmniFileStore/OFSDocumentStoreScope.h>
+#import <Availability.h>
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+
+#import <OmniDocumentStore/ODSScope.h>
 
 @class OFXAgent, OFXServerAccount;
 
-@interface OFXDocumentStoreScope : OFSDocumentStoreScope
+@interface OFXDocumentStoreScope : ODSScope
 
-- initWithSyncAgent:(OFXAgent *)syncAgent account:(OFXServerAccount *)account documentStore:(OFSDocumentStore *)documentStore;
+- initWithSyncAgent:(OFXAgent *)syncAgent account:(OFXServerAccount *)account documentStore:(ODSStore *)documentStore;
 
 @property(nonatomic,readonly) OFXAgent *syncAgent;
 @property(nonatomic,readonly) OFXServerAccount *account;
 
 @end
+
+#endif

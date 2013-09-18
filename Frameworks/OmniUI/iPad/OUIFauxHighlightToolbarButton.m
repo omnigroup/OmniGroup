@@ -46,7 +46,6 @@ RCS_ID("$Id$");
 {
     [super endTrackingWithTouch:touch withEvent:event];
     [_highlightView removeFromSuperview];
-    [_highlightView release];
     _highlightView = nil;
 }
 
@@ -54,14 +53,7 @@ RCS_ID("$Id$");
 {
     [super cancelTrackingWithEvent:event];
     [_highlightView removeFromSuperview];
-    [_highlightView release];
     _highlightView = nil;
-}
-
-- (void)dealloc;
-{
-    [_highlightView release];
-    [super dealloc];
 }
 
 @end

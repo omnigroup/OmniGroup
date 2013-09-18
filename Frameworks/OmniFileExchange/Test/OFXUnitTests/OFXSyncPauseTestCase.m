@@ -331,11 +331,11 @@ RCS_ID("$Id$")
 
 - (void)enableAgent:(OFXAgent *)agent;
 {
-    agent.syncingEnabled = YES;
+    agent.syncSchedule = OFXSyncScheduleAutomatic;
 }
 - (void)disableAgent:(OFXAgent *)agent;
 {
-    agent.syncingEnabled = NO;
+    agent.syncSchedule = OFXSyncScheduleNone;
 }
 
 @end

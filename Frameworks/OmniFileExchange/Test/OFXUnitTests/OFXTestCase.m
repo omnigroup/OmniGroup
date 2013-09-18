@@ -7,28 +7,27 @@
 
 #import "OFXTestCase.h"
 
+#import <OmniDAV/ODAVConnection.h>
+#import <OmniDAV/ODAVErrors.h>
 #import <OmniFileExchange/OFXAccountClientParameters.h>
 #import <OmniFileExchange/OFXServerAccountValidator.h>
-#import <OmniFileStore/Errors.h>
-#import <OmniFileStore/OFSFileManager.h>
-#import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/OFRandom.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
 
-#import "OFXServerAccount-Internal.h"
-#import "OFXTrace.h"
-#import "OFXTestSaveFilePresenter.h"
 #import "OFXContentIdentifier.h"
+#import "OFXServerAccount-Internal.h"
+#import "OFXTestSaveFilePresenter.h"
+#import "OFXTrace.h"
 
 RCS_ID("$Id$")
 
 @implementation OFXTestServerAccountRegistry
 @end
 
-@interface OFXTestCase () <OFSFileManagerDelegate>
+@interface OFXTestCase ()
 @property(nonatomic,readonly) NSString *remoteDirectoryName;
 @property(nonatomic,readonly) NSURL *remoteBaseURL;
 @end
@@ -144,7 +143,7 @@ RCS_ID("$Id$")
         __block BOOL finished = NO;
         
         id <OFXServerAccountValidator> accountValidator = [account.type validatorWithAccount:account username:credential.user password:credential.password];
-        accountValidator.shouldSkipConformanceTests = YES; // We bridge to the conformance tests in OFSDAVDynamicTestCase. Doing our suite of conformance tests before each OFX test is overkill.
+        accountValidator.shouldSkipConformanceTests = YES; // We bridge to the conformance tests in ODAVDynamicTestCase. Doing our suite of conformance tests before each OFX test is overkill.
         accountValidator.finished = ^(NSError *errorOrNil){
             if (errorOrNil) {
                 NSLog(@"Error registering testing account: %@", [errorOrNil toPropertyList]);
@@ -255,21 +254,21 @@ static OFXAgent *_makeAgent(OFXTestCase *self, NSUInteger flag, NSString *agentN
     return _agentB;
 }
 
-static BOOL _removeBaseDirectory(OFSFileManager *fileManager, NSURL *remoteBaseURL)
+static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, NSURL *remoteBaseURL, BOOL allowRetry)
 {
-    __autoreleasing NSError *error;
-    if ([fileManager deleteURL:remoteBaseURL error:&error])
+    NSError *error;
+    
+    if ([connection synchronousDeleteURL:remoteBaseURL withETag:nil error:&error])
         return YES;
     
-    // Sometimes our first request will fail with a multistatus with an interior OFS_HTTP_FORBIDDEN. It isn't clear why...
-    if ([error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_MULTI_STATUS] &&
-        [error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_FORBIDDEN]) {
-        error = nil;
-        if ([fileManager deleteURL:remoteBaseURL error:&error])
-            return YES;
+    if (allowRetry) {
+        // Sometimes our first request will fail with a multistatus with an interior ODAV_HTTP_FORBIDDEN. It isn't clear why...
+        if ([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_MULTI_STATUS] &&
+            [error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_FORBIDDEN])
+            return _removeBaseDirectory(self, connection, remoteBaseURL, NO/*allowRetry*/);
     }
-    
-    if ([error hasUnderlyingErrorDomain:OFSErrorDomain code:OFSNoSuchFile])
+
+    if ([error hasUnderlyingErrorDomain:ODAVErrorDomain code:ODAVNoSuchFile])
         return YES;
     
     NSLog(@"Error deleting remote sync directory at %@: %@", remoteBaseURL, [error toPropertyList]);
@@ -299,20 +298,42 @@ static BOOL _removeBaseDirectory(OFSFileManager *fileManager, NSURL *remoteBaseU
     NSURL *accountRemoteBaseURL = self.accountRemoteBaseURL;
     
 
-    __autoreleasing NSError *error = nil;
     _remoteBaseURL = [accountRemoteBaseURL URLByAppendingPathComponent:_remoteDirectoryName isDirectory:YES];
-    OFSFileManager *fileManager = [[OFSFileManager alloc] initWithBaseURL:accountRemoteBaseURL delegate:self error:&error];
+    
+    ODAVConnection *connection = [[ODAVConnection alloc] init];
+    connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
+        // Trust all certificates for these tests.
+        OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
+    };
+    connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
+        if ([challenge previousFailureCount] <= 2) {
+            // Use the account credential if we have an account added. We might be clearing out the remote directory before an account has been added to this test's account registry, though
+            NSURLCredential *credential;
+            if (_agentA) {
+                OFXServerAccount *account = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
+                
+                credential = OFReadCredentialsForServiceIdentifier(account.credentialServiceIdentifier, NULL);
+            } else
+                credential = [self accountCredentialWithPersistence:NSURLCredentialPersistenceNone]; // Fallback.
+            
+            OBASSERT(credential);
+            return credential;
+        }
+        return nil;
+    };
     
     //NSLog(@"Cleaning out base directory for test %@ at %@", [self name], [_remoteBaseURL absoluteString]);
-    _removeBaseDirectory(fileManager, _remoteBaseURL);
+    _removeBaseDirectory(self, connection, _remoteBaseURL, YES/*allowRetry*/);
     //NSLog(@"Creating base directory for test %@ at %@", [self name], [_remoteBaseURL absoluteString]);
 
-    error = nil;
-    if (![fileManager createDirectoryAtURL:_remoteBaseURL attributes:nil error:&error]) {
-        NSLog(@"Error creating remote sync directory at %@: %@", _remoteBaseURL, [error toPropertyList]);
+    NSError *error;
+    NSURL *createdURL = [connection synchronousMakeCollectionAtURL:_remoteBaseURL error:&error];
+    if (!createdURL) {
+        [error log:@"Error creating remote sync directory at %@", _remoteBaseURL];
         [NSException raise:NSGenericException format:@"Test can't continue"];
     }
-
+    _remoteBaseURL = createdURL;
+    
     // Make sure our "cleanup" didn't accidentally start up the agents.
     OBASSERT(_agentA == nil);
     OBASSERT(_agentB == nil);
@@ -942,33 +963,6 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
     NSURL *fileURL = [account.localDocumentsURL URLByAppendingPathComponent:path isDirectory:[isDirectory boolValue]];
 
     [self addFilePresenterWritingFixture:fixtureName toURL:fileURL];
-}
-
-#pragma mark - OFSFileManagerDelegate
-
-// Just needed for cleaning up old data -- otherwise OFXAgent and friends will handle this.
-- (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    if ([challenge previousFailureCount] <= 2) {
-        // Use the account credential if we have an account added. We might be clearing out the remote directory before an account has been added to this test's account registry, though
-        NSURLCredential *credential;
-        if (_agentA) {
-            OFXServerAccount *account = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
-            
-            credential = OFReadCredentialsForServiceIdentifier(account.credentialServiceIdentifier, NULL);
-        } else
-            credential = [self accountCredentialWithPersistence:NSURLCredentialPersistenceNone]; // Fallback.
-        
-        OBASSERT(credential);
-        return credential;
-    }
-    return nil;
-}
-
-- (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    // Trust all certificates for these tests.
-    OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
 }
 
 @end

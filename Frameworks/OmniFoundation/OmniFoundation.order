@@ -386,7 +386,6 @@ OFRunLoopQueueProcessor.o:-[OFRunLoopQueueProcessor runFromCurrentRunLoopInModes
 OFScheduledEvent.o:-[OFScheduledEvent initWithInvocation:atDate:]
 OFStringScanner.o:-[OFStringScanner dealloc]
 OFStringScanner.o:-[OFStringScanner initWithString:]
-CFArray-OFExtensions.o:_OFCreateIntegerArray
 CFArray-OFExtensions.o:_OFCreateNonOwnedPointerArray
 CFSet-OFExtensions.o:_OFCreatePointerEqualObjectSet
 OFCFCallbacks.o:_OFNSObjectHash

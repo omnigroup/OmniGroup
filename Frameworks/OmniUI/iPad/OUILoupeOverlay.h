@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,26 +19,10 @@ typedef enum {
 @class OUIScalingView;
 
 @interface OUILoupeOverlay : UIView
-{
-@private
-    OUILoupeMode _mode;           // What kind of loupe we're displaying
-    CGPoint _touchPoint;          // The point (in our subject view's bounds coordinates) to display
-    CGFloat _scale;               // How much to magnify the subject view
-    OUIScalingView <OUILoupeOverlaySubject> *subjectView;  // If not set, self.superview is used for the subject of display
-    
-    // These are updated based on the mode
-    UIImage *loupeFrameImage;   // The border image to draw around the zoomed view region
-    CGRect loupeFramePosition;  // The frame of the above image, expressed with (0,0) at the (unmagnified) touch point
-    CGPathRef loupeClipPath;    // The clip-path into which to draw the zoomed view region, in our bounds coordinate system
-    CGPoint loupeTouchPoint;    // The point in our bounds coordinate system at which (magnified) _touchPoint should be made to draw
-    UIImage *loupeTabImage;     // Additional image to draw, may be nil
-    CGPoint loupeTabPosition;   // The offset of loupeTabImage w.r.t. the origin of loupeFrameImage
-}
 
 @property(readwrite,nonatomic,assign) CGPoint touchPoint;
 @property(readwrite,nonatomic,assign) OUILoupeMode mode;
 @property(readwrite,nonatomic,assign) CGFloat scale;
-@property(readwrite,nonatomic,assign) OUIScalingView <OUILoupeOverlaySubject> *subjectView;
+@property(readwrite,nonatomic,weak) OUIScalingView <OUILoupeOverlaySubject> *subjectView;
 
 @end
-

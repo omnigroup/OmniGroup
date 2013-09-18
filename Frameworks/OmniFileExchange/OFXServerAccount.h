@@ -36,7 +36,7 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountLocalDirectoryValidationReason) {
 + (NSURL *)generateLocalDocumentsURLForNewAccount:(NSError **)outError;
 
 // When an account is deleted, this should be used to remove its local documents directory (only on iOS; on Mac we leave the user-visible documents alone).
-+ (BOOL)deleteGeneratedLocalDocumentsURL:(NSURL *)documentsURL error:(NSError **)outError;
++ (void)deleteGeneratedLocalDocumentsURL:(NSURL *)documentsURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 #endif
 
 // New account with unique identifier -- not yet in any registry (so it can be configured and the configuration cancelled if needed).
@@ -88,3 +88,9 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountLocalDirectoryValidationReason) {
 - (NSComparisonResult)compareServerAccount:(OFXServerAccount *)otherAccount;
 
 @end
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+// Posted on the main queue at least once per sync when some transfer is needed. Currently only used on iOS for background fetch support.
+extern NSString * const OFXAccountTransfersNeededNotification;
+extern NSString * const   OFXAccountTransfersNeededDescriptionKey; // Debugging user info key for what was needed
+#endif

@@ -7,39 +7,26 @@
 
 #import <OmniUI/OUIFontAttributesInspectorSlice.h>
 
-#import <OmniUI/OUIInspectorSegmentedControl.h>
-#import <OmniUI/OUIInspectorSegmentedControlButton.h>
+#import <OmniUI/OUIFontUtilities.h>
+#import <OmniUI/OUISegmentedControl.h>
+#import <OmniUI/OUISegmentedControlButton.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniAppKit/OAFontDescriptor.h>
-#import <CoreText/CTStringAttributes.h>
-
-#import "OUIFontUtilities.h"
 
 RCS_ID("$Id$");
 
 @implementation OUIFontAttributesInspectorSlice
 {
-    OUIInspectorSegmentedControl *_fontAttributeSegmentedControl;
-    OUIInspectorSegmentedControlButton *_boldFontAttributeButton;
-    OUIInspectorSegmentedControlButton *_italicFontAttributeButton;
-    OUIInspectorSegmentedControlButton *_underlineFontAttributeButton;
-    OUIInspectorSegmentedControlButton *_strikethroughFontAttributeButton;
+    OUISegmentedControl *_fontAttributeSegmentedControl;
+    OUISegmentedControlButton *_boldFontAttributeButton;
+    OUISegmentedControlButton *_italicFontAttributeButton;
+    OUISegmentedControlButton *_underlineFontAttributeButton;
+    OUISegmentedControlButton *_strikethroughFontAttributeButton;
 }
 
-- (void)dealloc;
+- (OUISegmentedControlButton *)fontAttributeButtonForType:(OUIFontAttributeButtonType)type; // Useful when overriding -updateFontAttributeButtons
 {
-    [_fontAttributeSegmentedControl release];
-    [_boldFontAttributeButton release];
-    [_italicFontAttributeButton release];
-    [_underlineFontAttributeButton release];
-    [_strikethroughFontAttributeButton release];
-    
-    [super dealloc];
-}
-
-- (OUIInspectorSegmentedControlButton *)fontAttributeButtonForType:(OUIFontAttributeButtonType)type; // Useful when overriding -updateFontAttributeButtons
-{
-    OUIInspectorSegmentedControlButton *button = nil;
+    OUISegmentedControlButton *button = nil;
     
     switch (type) {
         case OUIFontAttributeButtonTypeBold:
@@ -74,10 +61,10 @@ RCS_ID("$Id$");
     
     BOOL underline = NO, strikethrough = NO;
     for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
-        if ([object underlineStyleForInspectorSlice:self] != kCTUnderlineStyleNone)
+        if ([object underlineStyleForInspectorSlice:self] != NSUnderlineStyleNone)
             underline = YES;
         if (_showStrikethrough) {
-            if ([object strikethroughStyleForInspectorSlice:self] != kCTUnderlineStyleNone)
+            if ([object strikethroughStyleForInspectorSlice:self] != NSUnderlineStyleNone)
                 strikethrough = YES;
         }
     }
@@ -89,26 +76,26 @@ RCS_ID("$Id$");
 
 - (void)loadView;
 {
-    _fontAttributeSegmentedControl = [[OUIInspectorSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 100, [OUIInspectorSegmentedControl buttonHeight])];
+    _fontAttributeSegmentedControl = [[OUISegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 100, [OUISegmentedControl buttonHeight])];
     
     _fontAttributeSegmentedControl.sizesSegmentsToFit = YES;
     _fontAttributeSegmentedControl.allowsMultipleSelection = YES;
     
-    _boldFontAttributeButton = [[_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Bold.png"] retain];
+    _boldFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Bold.png"];
     [_boldFontAttributeButton addTarget:self action:@selector(_toggleBold:)];
     _boldFontAttributeButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Bold", @"OmniUI", OMNI_BUNDLE, @"Bold button accessibility label");
     
     
-    _italicFontAttributeButton = [[_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Italic.png"] retain];
+    _italicFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Italic.png"];
     [_italicFontAttributeButton addTarget:self action:@selector(_toggleItalic:)];
     _italicFontAttributeButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Italic", @"OmniUI", OMNI_BUNDLE, @"Italic button accessibility label");
     
-    _underlineFontAttributeButton = [[_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Underline.png"] retain];
+    _underlineFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Underline.png"];
     [_underlineFontAttributeButton addTarget:self action:@selector(_toggleUnderline:)];
     _underlineFontAttributeButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Underline", @"OmniUI", OMNI_BUNDLE, @"Underline button accessibility label");
     
     if (_showStrikethrough) {
-        _strikethroughFontAttributeButton = [[_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Strikethrough.png"] retain];
+        _strikethroughFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Strikethrough.png"];
         [_strikethroughFontAttributeButton addTarget:self action:@selector(_toggleStrikethrough:)];
         _strikethroughFontAttributeButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Strike Through", @"OmniUI", OMNI_BUNDLE, @"Strike Through button accessibility label");
     }
@@ -127,7 +114,7 @@ RCS_ID("$Id$");
 {
     [super updateInterfaceFromInspectedObjects:reason];
     
-    OUIFontSelection selection = OUICollectFontSelection(self, self.appropriateObjectsForInspection);
+    OUIFontSelection *selection = OUICollectFontSelection(self, self.appropriateObjectsForInspection);
 
     [self updateFontAttributeButtonsWithFontDescriptors:selection.fontDescriptors];
 }
@@ -165,7 +152,7 @@ static BOOL _toggledFlagToAssign(OUIFontAttributesInspectorSlice *self, SEL sel)
         
         for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
             OAFontDescriptor *desc = [object fontDescriptorForInspectorSlice:self];
-            desc = [[desc newFontDescriptorWithBold:flag] autorelease];
+            desc = [desc newFontDescriptorWithBold:flag];
             [object setFontDescriptor:desc fromInspectorSlice:self];
         }
     }
@@ -179,7 +166,7 @@ static BOOL _toggledFlagToAssign(OUIFontAttributesInspectorSlice *self, SEL sel)
         
         for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
             OAFontDescriptor *desc = [object fontDescriptorForInspectorSlice:self];
-            desc = [[desc newFontDescriptorWithItalic:flag] autorelease];
+            desc = [desc newFontDescriptorWithItalic:flag];
             [object setFontDescriptor:desc fromInspectorSlice:self];
         }
     }
@@ -190,8 +177,8 @@ static BOOL _toggledFlagToAssign(OUIFontAttributesInspectorSlice *self, SEL sel)
     [self.inspector willBeginChangingInspectedObjects];
     {
         id <OUIFontInspection> font = _firstFont(self);
-        CTUnderlineStyle underline = [font underlineStyleForInspectorSlice:self];
-        underline = (underline == kCTUnderlineStyleNone) ? kCTUnderlineStyleSingle : kCTUnderlineStyleNone; // Press and hold for menu someday?
+        NSUnderlineStyle underline = [font underlineStyleForInspectorSlice:self];
+        underline = (underline == NSUnderlineStyleNone) ? NSUnderlineStyleSingle : NSUnderlineStyleNone; // Press and hold for menu someday?
         
         for (id <OUIFontInspection> object in self.appropriateObjectsForInspection)
             [object setUnderlineStyle:underline fromInspectorSlice:self];
@@ -203,8 +190,8 @@ static BOOL _toggledFlagToAssign(OUIFontAttributesInspectorSlice *self, SEL sel)
     [self.inspector willBeginChangingInspectedObjects];
     {
         id <OUIFontInspection> font = _firstFont(self);
-        CTUnderlineStyle strikethrough = [font strikethroughStyleForInspectorSlice:self];
-        strikethrough = (strikethrough == kCTUnderlineStyleNone) ? kCTUnderlineStyleSingle : kCTUnderlineStyleNone; // Press and hold for menu someday?
+        NSUnderlineStyle strikethrough = [font strikethroughStyleForInspectorSlice:self];
+        strikethrough = (strikethrough == NSUnderlineStyleNone) ? NSUnderlineStyleSingle : NSUnderlineStyleNone; // Press and hold for menu someday?
         
         for (id <OUIFontInspection> object in self.appropriateObjectsForInspection)
             [object setStrikethroughStyle:strikethrough fromInspectorSlice:self];

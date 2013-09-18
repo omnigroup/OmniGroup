@@ -7,8 +7,9 @@
 
 #import "OFXFileSnapshotTransfer.h"
 
-#import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/Errors.h>
+#import <OmniDAV/ODAVErrors.h>
+
+#import "OFXConnection.h"
 
 RCS_ID("$Id$")
 
@@ -23,15 +24,16 @@ RCS_ID("$Id$")
     OBRejectUnusedImplementation(self, _cmd);
 }
 
-- initWithFileManager:(OFSDAVFileManager *)fileManager;
+- initWithConnection:(OFXConnection *)connection;
 {
-    OBPRECONDITION(fileManager);
-    OBPRECONDITION(fileManager.delegate); // We aren't going to become its delegate; it should already have one for credential lookup.
+    OBPRECONDITION(connection);
+    OBPRECONDITION(connection.validateCertificateForChallenge); // We aren't going to fill in these details -- we expect the caller to have done so
+    OBPRECONDITION(connection.findCredentialsForChallenge);
     
     if (!(self = [super init]))
         return nil;
     
-    _fileManager = fileManager;
+    _connection = connection;
     
     _operationQueue = [NSOperationQueue currentQueue];
     OBASSERT(_operationQueue.maxConcurrentOperationCount == 1);
@@ -94,7 +96,7 @@ static BOOL _shouldLogError(NSError *error)
         // Tried to delete an old version that has gone missing, maybe or other case where we got a precondition or file missing failure that looks like we have a remote edit (and we'll rescan and retry, so don't complain loudly).
         return (OFXSyncDebug > 0);
     
-    if ([error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_PRECONDITION_FAILED])
+    if ([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_PRECONDITION_FAILED])
         // Edit vs. edit conflict where the MOVE failed to put the new snapshot into place since there was one there already
         return (OFXSyncDebug > 0);
     

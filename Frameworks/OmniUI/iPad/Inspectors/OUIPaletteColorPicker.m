@@ -15,33 +15,22 @@
 
 RCS_ID("$Id$");
 
-@interface OUIPaletteColorPicker (/*Private*/)
-- (void)_rebuildThemesViews;
-@end
-
 @implementation OUIPaletteColorPicker
-
-- (void)dealloc;
 {
-    [_themes release];
-    [_themeViews release];
-    [super dealloc];
+    NSArray *_themeViews;
 }
 
-@synthesize themes = _themes;
 - (void)setThemes:(NSArray *)themes;
 {
     if (OFISEQUAL(_themes, themes))
         return;
-    [_themes release];
     _themes = [themes copy];
     
     if (self.isViewLoaded)
         [self _rebuildThemesViews];
 }
 
-#pragma mark -
-#pragma mark OUIColorPicker subclass
+#pragma mark - OUIColorPicker subclass
 
 - (NSString *)identifier;
 {
@@ -124,7 +113,6 @@ RCS_ID("$Id$");
         _themes = [[OUIPaletteTheme defaultThemes] copy];
     
     [_themeViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    [_themeViews release];
     _themeViews = nil;
 
     const CGFloat kLabelToPaletteSpacing = 5;
@@ -157,7 +145,6 @@ RCS_ID("$Id$");
             yOffset = CGRectGetMaxY(labelFrame) + kLabelToPaletteSpacing;
             [themeViews addObject:label];
             [view addSubview:label];
-            [label release];
         }
         
         {
@@ -171,7 +158,6 @@ RCS_ID("$Id$");
             yOffset = CGRectGetMaxY(swatchPicker.frame) + kInterThemeSpacing;
             [themeViews addObject:swatchPicker];
             [view addSubview:swatchPicker];
-            [swatchPicker release];
         }
     }
 

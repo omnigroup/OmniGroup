@@ -104,9 +104,4 @@ Called when -[OFController requestTermination] is called.  This notification giv
 Called when -[OFController willTerminate] is called.  This notification is posted by the OFController just before the application terminates, when there's no chance that the termination will be cancelled).  This may be used to wait for a particular activity (e.g. an asynchronous document save) before the application finally terminates.
 "*/
 
-- (void)controller:(OFController *)controller willCrashWithReport:(NSString *)report;
-/*"
- Called when -[OFController crashWithReport:] is called.  This notification is posted by the OFController just before the application logs the given report and induces a crash. An observer may implement this method to add custom handling of application induced crashes. This should be used with care as some part of the application has decided that a self-induced crash is the safest course of action.
- "*/
-
 @end

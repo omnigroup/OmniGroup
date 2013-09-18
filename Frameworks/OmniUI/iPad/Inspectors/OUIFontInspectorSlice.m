@@ -11,18 +11,23 @@
 #import <OmniUI/OUIInspectorTextWell.h>
 #import <OmniUI/OUIInspectorStepperButton.h>
 #import <OmniUI/OUIFontInspectorPane.h>
-
-#import "OUIFontUtilities.h"
+#import <OmniUI/OUIFontUtilities.h>
+#import <OmniUI/OUIInspectorSliceView.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
+@implementation OUIFontInspectorSliceFontDisplay
+@end
+
 @implementation OUIFontInspectorSlice
 {
     NSNumberFormatter *_wholeNumberFormatter;
     NSNumberFormatter *_fractionalNumberFormatter;
+    UIView *_fontSizeControl;
 }
 
 // TODO: should these be ivars?
@@ -65,12 +70,11 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
                 fontDescriptor = [[OAFontDescriptor alloc] initWithFamily:font.familyName size:newSize];
             }
             [object setFontDescriptor:fontDescriptor fromInspectorSlice:self];
-            [fontDescriptor release];
         }
     }
     [inspector didEndChangingInspectedObjects];
     
-    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self.fontSizeTextWell.accessibilityValue);
+    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self->_fontSizeControl.accessibilityValue);
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
@@ -88,39 +92,24 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
     _fractionalNumberFormatter = [[NSNumberFormatter alloc] init];
     [_fractionalNumberFormatter setPositiveFormat:decimalFormat];
     
-    [decimalFormat release];
     
     return self;
 }
 
 - (void)dealloc;
 {
-    [_fontFamilyTextWell release];
-    
-    [_fontSizeDecreaseStepperButton release];
-    [_fontSizeIncreaseStepperButton release];
-    [_fontSizeTextWell release];
-    [_fontFacesPane release];
-    [_wholeNumberFormatter release];
-    [_fractionalNumberFormatter release];
-    [super dealloc];
+    // Attempting to fix ARC weak reference cleanup crasher in <bug:///93163> (Crash after setting font color on Level 1 style)
+    _fontFacesPane.parentSlice = nil;
 }
 
 - (IBAction)increaseFontSize:(id)sender;
 {
-    [_fontSizeTextWell endEditing:YES/*force*/];
     _setFontSize(self, 1, YES /* relative */);
 }
 
 - (IBAction)decreaseFontSize:(id)sender;
 {
-    [_fontSizeTextWell endEditing:YES/*force*/];
     _setFontSize(self, -1, YES /* relative */);
-}
-
-- (IBAction)fontSizeTextWellAction:(OUIInspectorTextWell *)sender;
-{
-    _setFontSize(self, [[sender text] floatValue], NO /* not relative */);
 }
 
 - (void)showFacesForFamilyBaseFont:(UIFont *)font;
@@ -131,35 +120,30 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
     [self.inspector pushPane:_fontFacesPane];
 }
 
-- (OUIFontInspectorSliceFontDisplay)fontNameDisplayForFontDescriptor:(OAFontDescriptor *)fontDescriptor;
+- (OUIFontInspectorSliceFontDisplay *)fontNameDisplayForFontDescriptor:(OAFontDescriptor *)fontDescriptor;
 {
-    OUIFontInspectorSliceFontDisplay display;
+    OUIFontInspectorSliceFontDisplay *display = [OUIFontInspectorSliceFontDisplay new];
 
     CGFloat fontSize = [OUIInspectorTextWell fontSize];
 
-    CTFontRef font = [fontDescriptor font];
+    UIFont *font = [fontDescriptor font];
     OBASSERT(font);
     
     if (font) {
-        CFStringRef familyName = CTFontCopyFamilyName(font);
+        NSString *familyName = font.familyName;
         OBASSERT(familyName);
-        CFStringRef postscriptName = CTFontCopyPostScriptName(font);
+        
+        NSString *postscriptName = font.fontName;
         OBASSERT(postscriptName);
-        CFStringRef displayName = CTFontCopyDisplayName(font);
+        
+        NSString *displayName = OUIDisplayNameForFont(font, NO/*useFamilyName*/);
         OBASSERT(displayName);
         
-        
         // Using the whole display name gets kinda long in the fixed space we have. Can swap which line is commented below to try it out.
-        display.text = OUIIsBaseFontNameForFamily((NSString *)postscriptName, (id)familyName) ? (id)familyName : (id)displayName;
+        display.text = OUIIsBaseFontNameForFamily(postscriptName, familyName) ? familyName : displayName;
         //display.text = (id)familyName;
-        display.font = postscriptName ? [UIFont fontWithName:(id)postscriptName size:fontSize] : [UIFont systemFontOfSize:fontSize];
+        display.font = postscriptName ? [UIFont fontWithName:postscriptName size:fontSize] : [UIFont systemFontOfSize:fontSize];
         
-        if (familyName)
-            CFRelease(familyName);
-        if (postscriptName)
-            CFRelease(postscriptName);
-        if (displayName)
-            CFRelease(displayName);
     } else {
         display.text = @"???";
         display.font = nil;
@@ -168,11 +152,11 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
     return display;
 }
 
-- (OUIFontInspectorSliceFontDisplay)fontNameDisplayForFontDescriptors:(NSArray *)fontDescriptors;
+- (OUIFontInspectorSliceFontDisplay *)fontNameDisplayForFontDescriptors:(NSArray *)fontDescriptors;
 {
 //    CGFloat fontSize = [OUIInspectorTextWell fontSize];
     
-    OUIFontInspectorSliceFontDisplay display;
+    OUIFontInspectorSliceFontDisplay *display = [OUIFontInspectorSliceFontDisplay new];
     
     switch ([fontDescriptors count]) {
         case 0:
@@ -191,20 +175,28 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
     return display;
 }
 
-- (void)updateFontSizeTextWellForFontSizes:(NSArray *)fontSizes extent:(OFExtent)fontSizeExtent;
-{
-    CGFloat fontSize = [OUIInspectorTextWell fontSize];
-    _fontSizeTextWell.font = [UIFont systemFontOfSize:fontSize];
+- (UIView *)makeFontSizeControlWithFrame:(CGRect)frame; // Return a new view w/o adding it to the view heirarchy
 
+{
+    UILabel *label = [[UILabel alloc] initWithFrame:frame];
+    label.textColor = [OUIInspector disabledLabelTextColor];
+    label.font = [UIFont boldSystemFontOfSize:[OUIInspectorTextWell fontSize]];
+    return label;
+}
+
+- (void)updateFontSizeControl:(UIView *)fontSizeControl forFontSizes:(NSArray *)fontSizes extent:(OFExtent)fontSizeExtent;
+{
+    NSString *valueText;
+    
     switch ([fontSizes count]) {
         case 0:
             OBASSERT_NOT_REACHED("why are we even visible?");
             // leave value where ever it was
             // disable controls? 
-            _fontSizeTextWell.text = nil;
+            valueText = nil;
             break;
         case 1:
-            _fontSizeTextWell.text = [self _formatFontSize:OFExtentMin(fontSizeExtent)];
+            valueText = [self _formatFontSize:OFExtentMin(fontSizeExtent)];
             break;
         default:
             {
@@ -217,10 +209,20 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
                     format = @"~ %@\u2013%@";  /* tilde, two numbers, en-dash */
                 else
                     format = @"%@\u2013%@";  /* two numbers, en-dash */
-                _fontSizeTextWell.text = [NSString stringWithFormat:format, [self _formatFontSize:minSize], [self _formatFontSize:maxSize]];
+                valueText = [NSString stringWithFormat:format, [self _formatFontSize:minSize], [self _formatFontSize:maxSize]];
             }
             break;
     }
+    
+    NSString *text = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ points", @"OUIInspectors", OMNI_BUNDLE, @"font size label format string in points"), valueText];
+
+    [self updateFontSizeControl:_fontSizeControl withText:text];
+}
+
+- (void)updateFontSizeControl:(UIView *)fontSizeControl withText:(NSString *)text;
+{
+    UILabel *label = OB_CHECKED_CAST(UILabel, fontSizeControl);
+    label.text = text;
 }
 
 #pragma mark - OUIInspectorSlice subclass
@@ -230,7 +232,18 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
     return [object shouldBeInspectedByInspectorSlice:self protocol:@protocol(OUIFontInspection)];
 }
 
-static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontInspectorSliceFontDisplay display)
+
+- (CGFloat)paddingToInspectorLeft;
+{
+    return 0.0f; // Stretch all the way to the left
+}
+
+- (CGFloat)paddingToInspectorRight;
+{
+    return 0.0f; // stretch all the way to the right
+}
+
+static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontInspectorSliceFontDisplay *display)
 {
     textWell.text = display.text;
     textWell.font = display.font;
@@ -240,11 +253,13 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
 {
     [super updateInterfaceFromInspectedObjects:reason];
     
-    OUIFontSelection selection = OUICollectFontSelection(self, self.appropriateObjectsForInspection);
+    OUIFontSelection *selection = OUICollectFontSelection(self, self.appropriateObjectsForInspection);
     
     _configureTextWellDisplay(_fontFamilyTextWell, [self fontNameDisplayForFontDescriptors:selection.fontDescriptors]);
     
-    [self updateFontSizeTextWellForFontSizes:selection.fontSizes extent:selection.fontSizeExtent];
+    OUIWithoutAnimating(^{
+        [self updateFontSizeControl:_fontSizeControl forFontSizes:selection.fontSizes extent:selection.fontSizeExtent];
+    });
 }
 
 #pragma mark - UIViewController subclass
@@ -252,34 +267,58 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
 - (void)viewDidLoad;
 {
     [super viewDidLoad];
-
+    
+    CGRect superBounds = _fontFamilyTextWell.superview.bounds;
+    UIEdgeInsets alignmentInsets = self.alignmentInsets;
+    
     _fontFamilyTextWell.style = OUIInspectorTextWellStyleSeparateLabelAndText;
-    _fontFamilyTextWell.backgroundType = OUIInspectorWellBackgroundTypeButton;
+    _fontFamilyTextWell.backgroundType = OUIInspectorWellBackgroundTypeNormal;
     _fontFamilyTextWell.label = NSLocalizedStringFromTableInBundle(@"Font", @"OUIInspectors", OMNI_BUNDLE, @"Title for the font family list in the inspector");
     _fontFamilyTextWell.labelFont = [[_fontFamilyTextWell class] defaultLabelFont];
     _fontFamilyTextWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
+    // Fixup the text well's frame so the content aligns with the alignment insets
+    {
+        UIEdgeInsets borderEdgeInsets = _fontFamilyTextWell.borderEdgeInsets;
+        CGRect frame = _fontFamilyTextWell.frame;
+        frame.origin.x = CGRectGetMinX(superBounds) + alignmentInsets.left - borderEdgeInsets.left;
+        frame.size.width = CGRectGetMaxX(superBounds) - CGRectGetMinX(frame) - alignmentInsets.right + borderEdgeInsets.right;
+        _fontFamilyTextWell.frame = frame;
+    }
     
     [_fontFamilyTextWell setNavigationTarget:self action:@selector(_showFontFamilies:)];
     [(UIImageView *)_fontFamilyTextWell.rightView setHighlightedImage:[OUIInspectorWell navigationArrowImageHighlighted]];
     
-    _fontSizeDecreaseStepperButton.title = @"A";
-    _fontSizeDecreaseStepperButton.titleFont = [UIFont boldSystemFontOfSize:14];
-    _fontSizeDecreaseStepperButton.titleColor = [UIColor whiteColor];
-    _fontSizeDecreaseStepperButton.flipped = YES;
+    _fontSizeDecreaseStepperButton.image = [UIImage imageNamed:@"OUIStepperMinus"];
     _fontSizeDecreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font smaller", @"OUIInspectors", OMNI_BUNDLE, @"Decrement font size button accessibility label");
 
-    _fontSizeIncreaseStepperButton.title = @"A";
-    _fontSizeIncreaseStepperButton.titleFont = [UIFont boldSystemFontOfSize:32];
-    _fontSizeIncreaseStepperButton.titleColor = [UIColor whiteColor];
+    _fontSizeIncreaseStepperButton.image = [UIImage imageNamed:@"OUIStepperPlus"];
     _fontSizeIncreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font bigger", @"OUIInspectors", OMNI_BUNDLE, @"Increment font size button accessibility label");
 
-    CGFloat fontSize = [OUIInspectorTextWell fontSize];
-    _fontSizeTextWell.font = [UIFont boldSystemFontOfSize:fontSize];
-    _fontSizeTextWell.label = NSLocalizedStringFromTableInBundle(@"%@ points", @"OUIInspectors", OMNI_BUNDLE, @"font size label format string in points");
-    _fontSizeTextWell.labelFont = [UIFont systemFontOfSize:fontSize];
-    _fontSizeTextWell.editable = YES;
-    [_fontSizeTextWell setKeyboardType:UIKeyboardTypeNumberPad];
-    _fontSizeTextWell.accessibilityLabel = @"Font size";
+    // Put the font size control beside the two buttons.
+    CGRect decreaseStepperFrame = _fontSizeDecreaseStepperButton.frame;
+    CGRect fontSizeFrame;
+    fontSizeFrame.size.width = 110.0f;
+    fontSizeFrame.size.height = CGRectGetHeight(decreaseStepperFrame);
+    fontSizeFrame.origin.x = CGRectGetMinX(decreaseStepperFrame) - 8.0f - fontSizeFrame.size.width;
+    fontSizeFrame.origin.y = CGRectGetMinY(decreaseStepperFrame);
+    _fontSizeControl = [self makeFontSizeControlWithFrame:fontSizeFrame];
+    _fontSizeControl.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+    [_fontSizeDecreaseStepperButton.superview addSubview:_fontSizeControl];
+    _fontSizeControl.accessibilityLabel = @"Font size";
+    
+    CGRect fontSizeLabelFrame = _fontSizeLabel.frame;
+    fontSizeLabelFrame.origin.x = alignmentInsets.left;
+    fontSizeLabelFrame.size.width = CGRectGetMinX(fontSizeFrame) - 8.0f /* spacing between controls */ - CGRectGetMinX(fontSizeLabelFrame);
+    _fontSizeLabel.frame = fontSizeLabelFrame;
+    _fontSizeLabel.text = NSLocalizedStringFromTableInBundle(@"Size", @"OUIInspectors", OMNI_BUNDLE, @"Label for font size controls");
+    
+    // Add a separator line between the two effective slices we contain
+    superBounds = _fontSizeDecreaseStepperButton.superview.bounds;
+    CGRect separatorFrame = CGRectMake(CGRectGetMinX(superBounds), CGRectGetMinY(_fontFamilyTextWell.frame) - 1.0f, CGRectGetWidth(superBounds), 1.0f);
+    OUIInspectorSliceView *separatorView = [[OUIInspectorSliceView alloc] initWithFrame:separatorFrame];
+    separatorView.inspectorSliceGroupPosition = OUIInspectorSliceGroupPositionCenter;
+    separatorView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [_fontSizeDecreaseStepperButton.superview addSubview:separatorView];
 
     // Superclass does this for the family detail.
     _fontFacesPane.parentSlice = self;

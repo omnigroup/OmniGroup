@@ -7,10 +7,10 @@
 //
 // $Id$
 
-@class OFSDAVFileManager;
+@class OFXConnection;
 
-extern NSArray *OFXFetchFileInfosEnsuringDirectoryExists(OFSDAVFileManager *fileManager, NSURL *directoryURL, NSDate **outServerDate, NSError **outError) OB_HIDDEN;
+extern NSArray *OFXFetchFileInfosEnsuringDirectoryExists(OFXConnection *connection, NSURL *directoryURL, NSDate **outServerDate, NSError **outError) OB_HIDDEN;
 
-extern NSURL *OFXWriteDataToURLAtomically(OFSDAVFileManager *fileManager, NSData *data, NSURL *destinationURL, NSURL *temporaryDirectoryURL, BOOL overwrite, NSError **outError) OB_HIDDEN;
+extern void OFXWriteDataToURLAtomically(OFXConnection *connection, NSData *data, NSURL *destinationURL, NSURL *temporaryDirectoryURL, NSURL *accountBaseURL, BOOL overwrite, void (^completionHandler)(NSURL *url, NSError *errorOrNil)) OB_HIDDEN;
 
-extern NSURL *OFXMoveURLToMissingURLCreatingContainerIfNeeded(OFSDAVFileManager *fileManager, NSURL *sourceURL, NSURL *destinationURL, NSError **outError) OB_HIDDEN;
+extern NSURL *OFXMoveURLToMissingURLCreatingContainerIfNeeded(OFXConnection *connection, NSURL *sourceURL, NSURL *destinationURL, NSError **outError) OB_HIDDEN;

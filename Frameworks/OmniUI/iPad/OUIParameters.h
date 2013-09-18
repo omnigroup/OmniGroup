@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniQuartz/OQColor.h>
 
 // OUIInspectorWell
-#define kOUIInspectorWellHeight (46) // This makes our inner content height match that of a UITableViewCell.
+#define kOUIInspectorWellHeight (44) // This makes our inner content height match that of a UITableViewCell.
 #define kOUIInspectorWellLightBorderGradientStartColor ((OSHSV){213.0/360.0, 0.06, 0.62, 1.0})
 #define kOUIInspectorWellLightBorderGradientEndColor ((OSHSV){216.0/360.0, 0.05, 0.72, 1.0})
 #define kOUIInspectorWellDarkBorderGradientStartColor ((OSHSV){213.0/360.0, 0.06, 0.20, 1.0})
@@ -36,13 +36,21 @@
 #define kOUIInspectorLabelDisabledTextColorAlphaScale (0.5)
 
 // OUIInspectorBackgroundView
-#define kOUIInspectorBackgroundTopColor ((OQLinearRGBA){228.0/255.0, 231.0/255.0, 235.0/255.0, 1.0})
-#define kOUIInspectorBackgroundBottomColor ((OQLinearRGBA){197.0/255.0, 200.0/255.0, 207.0/255.0, 1.0})
+#define kOUIInspectorBackgroundTopColor ((OQLinearRGBA){255.0/255.0, 255.0/255.0, 255.0/255.0, 1.0})
+#define kOUIInspectorBackgroundBottomColor ((OQLinearRGBA){255.0/255.0, 255.0/255.0, 255.0/255.0, 1.0})
 
 // OUIInspectorOptionWheel
 #define kOUIInspectorOptionWheelEdgeGradientGray (0.53)
 #define kOUIInspectorOptionWheelMiddleGradientGray (1.0)
 #define kOUIInspectorOptionWheelGradientPower (2.5)
+
+// OUIEmptyOverlayView
+#define kOUIEmptyOverlayViewMessagePreferredMaxLayoutWidth (300.0f)
+
+// OUIMenuController
+#define kOUIMenuControllerBackgroundOpacity (0.98) // We can lower this quite a bit except on Retina iPad 3. The popover doesn't blur its background on this hardware.
+#define kOUIMenuControllerTableWidth (340)
+#define kOUIMenuOptionIndentationWidth (15) // Points per indentation level, system default is 10
 
 // OUIDrawing
 #define kOUILightContentOnDarkBackgroundShadowColor ((OQWhiteAlpha){0.0, 0.5})

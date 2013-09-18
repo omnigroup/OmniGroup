@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,11 +24,14 @@
 - (NSString *)helperApplicationForScheme:(NSString *)scheme;
 - (BOOL)launchURL:(NSString *)urlString error:(NSError **)outError;
 
-// High level methods
+// API for sending email
+
+- (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body attachments:(NSArray *)attachmentFilenames error:(NSError **)outError;
+
+// Convenience methods which call the above method
 
 - (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy subject:(NSString *)subject body:(NSString *)body error:(NSError **)outError;
 - (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body error:(NSError **)outError;
-
 - (BOOL)launchMailTo:(NSString *)receiver carbonCopy:(NSString *)carbonCopy blindCarbonCopy:(NSString *)blindCarbonCopy subject:(NSString *)subject body:(NSString *)body attachments:(NSArray *)attachmentFilenames;
 
 @end

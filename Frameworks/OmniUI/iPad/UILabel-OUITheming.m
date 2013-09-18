@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,17 +18,14 @@ RCS_ID("$Id$");
 {
     self.opaque = NO;
     self.backgroundColor = nil;
-    self.textColor = [OUIInspectorWell textColor];
-    self.shadowColor = OUIShadowColor(OUIShadowTypeDarkContentOnLightBackground);
-    self.shadowOffset = OUIShadowOffset(OUIShadowTypeDarkContentOnLightBackground);
 
     switch (style) {
         case OUILabelStyleInspectorSliceGroupHeading:
-            self.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:17.0];
+            self.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
             break;
             
         case OUILabelStyleInspectorSliceInstructionText:
-            self.font = [UIFont fontWithName:@"HelveticaNeue" size:16.0];
+            self.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
             break;
             
         default:

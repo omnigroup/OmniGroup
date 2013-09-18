@@ -7,17 +7,17 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
 
 /*
  Internal helper class that helps manage a document single drag session.
  */
 
-@class OUIDocumentPicker, OUIDragGestureRecognizer;
+@class OUIDocumentPickerViewController, OUIDragGestureRecognizer;
 
-@interface OUIDocumentPickerDragSession : OFObject
+@interface OUIDocumentPickerDragSession : NSObject
 
-- initWithDocumentPicker:(OUIDocumentPicker *)picker fileItems:(NSSet *)fileItems recognizer:(OUIDragGestureRecognizer *)dragRecognizer;
+- initWithDocumentPicker:(OUIDocumentPickerViewController *)picker fileItems:(NSSet *)fileItems recognizer:(OUIDragGestureRecognizer *)dragRecognizer;
 
 @property(nonatomic,readonly) NSSet *fileItems;
 
@@ -27,8 +27,8 @@
 
 @end
 
-#import <OmniUIDocument/OUIDocumentPicker.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 
-@interface OUIDocumentPicker (/*OUIDocumentPickerDragSession callbacks*/)
+@interface OUIDocumentPickerViewController (/*OUIDocumentPickerDragSession callbacks*/)
 - (void)dragSessionTerminated; // For final cleanup after animation has finished
 @end

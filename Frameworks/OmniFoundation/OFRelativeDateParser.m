@@ -220,7 +220,6 @@ enum {
     
     // english 
     NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease]; 
-    OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4);
     NSLocale *en_US = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
     [formatter setLocale:en_US];
     englishWeekdays = [[self _arrayByNormalizingValuesInArray:[formatter weekdaySymbols] options:OFRelativeDateParserNormalizeOptionsDefault locale:en_US] retain];
@@ -262,7 +261,6 @@ enum {
 	
 	// Rebuild the weekday/month name arrays for a new locale
 	NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
-        OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4);
         
 	[formatter setLocale:locale];
 	
@@ -300,7 +298,6 @@ enum {
         calendar = _defaultCalendar();
 
     NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease]; 
-    OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4);
 
     [formatter setCalendar:calendar];
     [formatter setLocale:_locale];
@@ -537,7 +534,6 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     NSDateComponents *components = [calendar components:unitFlags fromDate:date];
 
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4); // Linked on 10.6
     
     [formatter setCalendar:calendar];
     [formatter setLocale:_locale];
@@ -1641,8 +1637,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     
     {
 	NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
-        OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4);
-        
+
 	[formatter setDateStyle:NSDateFormatterShortStyle]; 
 	[formatter setTimeStyle:NSDateFormatterNoStyle]; 
 	NSString *shortFormat = [[[formatter dateFormat] copy] autorelease];

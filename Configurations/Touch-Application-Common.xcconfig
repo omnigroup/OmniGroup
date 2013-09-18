@@ -11,7 +11,7 @@ GCC_SYMBOLS_PRIVATE_EXTERN = NO
 OTHER_CFLAGS = $(value) -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\"
 
 // Otherwise, category symbols aren't pulled in from "framework" static libraries.
-OTHER_LDFLAGS = $(value) -all_load -ObjC
+OTHER_LDFLAGS = $(value) -ObjC
 
 // Include all public headers vended by static library targets.
 // Since Applications get installed and Libraries don't, TARGET_BUILD_DIR can't be used.

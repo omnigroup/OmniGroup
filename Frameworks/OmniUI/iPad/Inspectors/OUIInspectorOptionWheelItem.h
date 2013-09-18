@@ -11,6 +11,6 @@
 
 @interface OUIInspectorOptionWheelItem : UIButton
 
-@property(nonatomic,retain) id value;
+@property(nonatomic,strong) id value;
 
 @end

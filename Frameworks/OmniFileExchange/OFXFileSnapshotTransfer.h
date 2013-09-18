@@ -9,8 +9,7 @@
 
 #import <Foundation/NSObject.h>
 
-@class OFSDAVFileManager;
-@class OFXFileSnapshotTransfer;
+@class OFXConnection, OFXFileSnapshotTransfer;
 
 // Done blocks are called in the order they are added. If committed==NO, then errorOrNil will be set. If the block wants to signal that it handled the error, it can return a different error. Returning nil is equivalent to returning the passed in errorOrNil.
 typedef NSError * (^OFXFileSnapshotTransferDone)(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil);
@@ -22,13 +21,13 @@ typedef NSError * (^OFXFileSnapshotTransferDone)(OFXFileSnapshotTransfer *transf
  */
 @interface OFXFileSnapshotTransfer : NSObject
 
-- initWithFileManager:(OFSDAVFileManager *)fileManager;
+- initWithConnection:(OFXConnection *)connection;
 
 - (void)invalidate;
 
-@property(nonatomic,readonly) OFSDAVFileManager *fileManager;
+@property(nonatomic,readonly) OFXConnection *connection;
 @property(nonatomic,readonly) NSOperationQueue *operationQueue; // The serial queue this instance was created on and on which it should expect to be operated on.
-@property(nonatomic,readonly) NSOperationQueue *transferOperationQueue; // A serial queue for async DAV operations. Needs to be different from operationQueue to avoid deadlocks when transitioning from an async OFSDAVOperation to a synchronous one (at least until we go all async).
+@property(nonatomic,readonly) NSOperationQueue *transferOperationQueue; // A serial queue for async DAV operations. Needs to be different from operationQueue to avoid deadlocks when transitioning from an async ODAVOperation to a synchronous one (at least until we go all async).
 
 // Should be read in transferProgress blocks. Probably doesn't need to be atomic, but it will be changed on one queue and read on another, so for good form...
 @property(atomic,readonly) float percentCompleted;

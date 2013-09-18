@@ -7,98 +7,79 @@
 
 #import <OmniUI/OUILabeledValueCell.h>
 
+#import <OmniUI/UIView-OUIExtensions.h>
+
 RCS_ID("$Id$");
 
 @implementation OUILabeledValueCell
-
-+ (UIFont *)labelFontForStyle:(OUILabeledValueCellStyle)style;
 {
-    switch (style) {
-        case OUILabeledValueCellStyleDefault:
-        case OUILabeledValueCellStyleSettings:
-            return [UIFont boldSystemFontOfSize:[UIFont systemFontSize]];
-            
-        case OUILabeledValueCellStyleOmniFocusForiPhoneLegacy:
-            return [UIFont systemFontOfSize:12];
-    }    
+    CGFloat _minimumLabelWidth;
+    BOOL _usesActualLabelWidth;
+    UITextField *_label; // Disabled UITextField so that we get the same metrics as the value w/o autolayout baseline alignment
     
-    OBASSERT_NOT_REACHED("");
-    return nil;
+    UITextField *_valueTextField;
+    BOOL _isHighlighted;
 }
 
-+ (UIFont *)valueFontForStyle:(OUILabeledValueCellStyle)style;
++ (UIFont *)labelFont;
 {
-    switch (style) {
-        case OUILabeledValueCellStyleDefault:
-        case OUILabeledValueCellStyleSettings:
-            return [UIFont systemFontOfSize:[UIFont systemFontSize]];
-            
-        case OUILabeledValueCellStyleOmniFocusForiPhoneLegacy:
-            return [UIFont systemFontOfSize:14];
-    }    
-    
-    OBASSERT_NOT_REACHED("");
-    return nil;
+    return [UIFont boldSystemFontOfSize:[UIFont labelFontSize]];
 }
 
-+ (UIColor *)labelColorForStyle:(OUILabeledValueCellStyle)style isHighlighted:(BOOL)highlighted;
++ (UIFont *)valueFont;
 {
-    switch (style) {
-        case OUILabeledValueCellStyleDefault:
-        case OUILabeledValueCellStyleSettings:
-            return highlighted ? [UIColor whiteColor] : [UIColor blackColor];
-            
-        case OUILabeledValueCellStyleOmniFocusForiPhoneLegacy:
-            return highlighted ? [UIColor colorWithRed:0.31 green:0.40 blue:0.56 alpha:1.0] : [UIColor blackColor];
-    }    
-    
-    OBASSERT_NOT_REACHED("");
-    return nil;
+    return [UIFont systemFontOfSize:[UIFont labelFontSize]];
 }
 
-+ (UIColor *)valueColorForStyle:(OUILabeledValueCellStyle)style isHighlighted:(BOOL)highlighted;
++ (UIColor *)labelColorForHighlighted:(BOOL)highlighted;
 {
-    switch (style) {
-        case OUILabeledValueCellStyleDefault:
-        case OUILabeledValueCellStyleSettings:
-            return highlighted ? [UIColor whiteColor] : [UIColor blackColor];
-            
-        case OUILabeledValueCellStyleOmniFocusForiPhoneLegacy:
-            return highlighted ? [UIColor whiteColor] : [UIColor blackColor];
-    }    
-    
-    OBASSERT_NOT_REACHED("");
-    return nil;
+    return highlighted ? [UIColor whiteColor] : [UIColor blackColor];
+}
+
++ (NSTextAlignment)labelTextAlignment;
+{
+    return NSTextAlignmentLeft;
+}
+
++ (CGFloat)constrainedLabelWidth:(CGFloat)labelWidth;
+{
+    // The 'default context' label for Japanese is wider than we normally need, so make this dynamically computed, but with a minimum size that works for most cases (for nice right-alignment of most labels).
+    return MAX(labelWidth, 60.0);
+}
+
++ (UIColor *)valueColorForHighlighted:(BOOL)highlighted;
+{
+    return highlighted ? [UIColor whiteColor] : [UIColor blackColor];
 }
 
 - (id)initWithFrame:(CGRect)frame;
-{
-    return [self initWithFrame:frame style:OUILabeledValueCellStyleDefault];
-}
-
-- (id)initWithFrame:(CGRect)frame style:(OUILabeledValueCellStyle)style
 {
     self = [super initWithFrame:frame];
     if (!self)
         return nil;
     
-    _style = style;
+    _label = [[UITextField alloc] initWithFrame:CGRectZero];
+    _label.font = [[self class]  labelFont];
+    _label.textAlignment = NSTextAlignmentLeft;
+    _label.enabled = NO;
+    //_label.layer.borderColor = [[UIColor redColor] CGColor];
+    //_label.layer.borderWidth = 1;
+    [self addSubview:_label];
+    
+
+    _valueTextField = [[UITextField alloc] initWithFrame:CGRectZero];
+    _valueTextField.font = [[self class] valueFont];
+    _valueTextField.textColor = [[self class] valueColorForHighlighted:NO];
+    _valueTextField.enabled = NO;
+    _valueTextField.placeholder = NSLocalizedStringFromTableInBundle(@"None", @"OmniUI", OMNI_BUNDLE, @"empty value cell placeholder");
+
+    [self addSubview:_valueTextField];
+    
+    
     self.opaque = NO;
-    self.contentMode = UIViewContentModeRedraw;
-    self.labelAlignment = (self.style == OUILabeledValueCellStyleOmniFocusForiPhoneLegacy) ? NSTextAlignmentRight : NSTextAlignmentLeft;
+
     return self;
 }
-
-- (void)dealloc
-{
-    [_label release];
-    [_value release];
-    [_emptyValueString release];
-    [_valueImage release];
-    [super dealloc];
-}
-
-@synthesize style = _style;
 
 - (CGFloat)minimumLabelWidth
 {
@@ -124,82 +105,121 @@ RCS_ID("$Id$");
 
 - (NSString *)label;
 {
-    return _label;
+    return _label.text;
 }
 
 - (void)setLabel:(NSString *)label;
 {
-    if (_label == label)
+    if (OFISEQUAL(_label.text, label))
         return;
     
-    [_label release];
-    _label = [label copy];
-    
+    _label.text = label;
+
     [self labelChanged];
 }
 
 - (void)labelChanged;
 {
-    [self setNeedsDisplay];
+    [self setNeedsLayout];
 }
 
-@synthesize value = _value;
-@synthesize valuePlaceholder = _emptyValueString;
-@synthesize valueImage = _valueImage;
+- (NSString *)value;
+{
+    return _valueTextField.text;
+}
+- (void)setValue:(NSString *)value;
+{
+    if (OFISEQUAL(self.value, value))
+        return;
+    
+    _valueTextField.text = value;
+    
+    [self setNeedsLayout];
+}
 
 - (NSString *)valuePlaceholder;
 {
-    if (_emptyValueString)
-        return _emptyValueString;
+    return _valueTextField.placeholder;
+}
+- (void)setValuePlaceholder:(NSString *)valuePlaceholder;
+{
+    if (!valuePlaceholder)
+        valuePlaceholder = NSLocalizedStringFromTableInBundle(@"None", @"OmniUI", OMNI_BUNDLE, @"empty value cell placeholder");
+
+    if (OFISEQUAL(self.valuePlaceholder, valuePlaceholder))
+        return;
     
-    return NSLocalizedStringFromTableInBundle(@"None", @"OmniUI", OMNI_BUNDLE, @"empty value cell placeholder");
+    _valueTextField.placeholder = valuePlaceholder;
+    
+    [self setNeedsLayout];
 }
 
-#define LABEL_GAP 10.0
+// TODO: Make this configurable and pass down the actual left separator value from the enclosing UITableViewCell
+#define LABEL_GAP 15.0
 
-- (CGRect)labelRect;
-{    
-    // The 'default context' label for Japanese is wider than we normally need, so make this dynamically computed, but with a minimum size that works for most cases (for nice right-alignment of most labels).
-    UIFont *labelFont = [[self class] labelFontForStyle:self.style];
-    CGFloat constrainedWidth = (self.style == OUILabeledValueCellStyleOmniFocusForiPhoneLegacy) ? 90 : 1e9;
-    CGSize labelSize = [self.label sizeWithFont:labelFont constrainedToSize:CGSizeMake(constrainedWidth, 1e9)];
-    CGFloat labelWidth = 0.0;
-
-    if (self.label)
-        labelWidth = labelSize.width;
-
+- (CGRect)labelFrameInRect:(CGRect)bounds;
+{
+    // We take the height from our bounds and center the label w/in it. This is important since we do this for the value too, yielding consistent baselines.
+    CGFloat labelWidth;
+    if ([NSString isEmptyString:self.label])
+        labelWidth = 0;
+    else
+        labelWidth = [_label sizeThatFits:bounds.size].width;
+    
     if (!self.usesActualLabelWidth) {
-        labelWidth = MAX(labelWidth, 60.0);
+        labelWidth = [[self class] constrainedLabelWidth:labelWidth];
         labelWidth = MAX(labelWidth, _minimumLabelWidth);
     }
     
-    CGRect labelRect = self.bounds;
-    labelRect.origin.x += LABEL_GAP /* gap on left of label */;
+    CGRect labelRect;
+    labelRect.origin.x = CGRectGetMinX(bounds) + LABEL_GAP /* gap on left of label */;
     labelRect.size.width = labelWidth;
-    labelRect.origin.y += (labelRect.size.height - labelSize.height) / 2.0;
-    labelRect.size.height = labelSize.height;
+    labelRect.origin.y = CGRectGetMinY(bounds);
+    labelRect.size.height = CGRectGetHeight(bounds);
     return labelRect;
 }
 
-- (CGRect)valueRectForString:(NSString *)valueString labelRect:(CGRect)labelRect;
+- (CGRect)valueFrameInRect:(CGRect)bounds;
 {
+    CGRect labelRect = [self labelFrameInRect:bounds];
+    
     CGRect valueRect;
     valueRect.origin.x = CGRectGetMaxX(labelRect) + LABEL_GAP /* gap on right of label */;
-    valueRect.size.width = CGRectGetMaxX(self.bounds) - valueRect.origin.x;
+    valueRect.size.width = CGRectGetMaxX(bounds) - valueRect.origin.x - LABEL_GAP;
     
-    if (_valueImage) {
-        valueRect.size = _valueImage.size;
-        valueRect.origin.y = CGRectGetMidY(self.bounds) - valueRect.size.height / 2.0;
-        
-        [_valueImage drawInRect:valueRect];
-        valueRect.origin.x = CGRectGetMaxX(valueRect) + 10.0;
-        valueRect.size.width = CGRectGetMaxX(self.bounds) - valueRect.origin.x;
-    }
-
-    valueRect.origin.y = CGRectGetMinY(self.bounds);
-    valueRect.size.height = self.bounds.size.height;
+    valueRect.origin.y = CGRectGetMinY(labelRect);
+    valueRect.size.height = labelRect.size.height;
     
     return valueRect;
+}
+
+- (BOOL)valueHidden;
+{
+    return _valueTextField.hidden;
+}
+- (void)setValueHidden:(BOOL)valueHidden;
+{
+    _valueTextField.hidden = valueHidden;
+}
+
+- (UITableView *)containingTableView;
+{
+    UITableView *tableView = (UITableView *)[self containingViewMatching:^BOOL(id object) {
+        return [object isKindOfClass:[UITableView class]];
+    }];
+    OBASSERT(tableView);
+    
+    return tableView;
+}
+
+- (UITableViewCell *)containingTableViewCell;
+{
+    UITableViewCell *cell = (UITableViewCell *)[self containingViewMatching:^BOOL(id object) {
+        return [object isKindOfClass:[UITableViewCell class]];
+    }];
+    OBASSERT(cell);
+    
+    return cell;
 }
 
 - (BOOL)isHighlighted;
@@ -210,29 +230,17 @@ RCS_ID("$Id$");
 - (void)setHighlighted:(BOOL)yn;
 {
     _isHighlighted = yn;
-    [self setNeedsDisplay];
+    
+    _label.textColor = [[self class] labelColorForHighlighted:_isHighlighted];
 }
 
-- (void)drawRect:(CGRect)rect 
+- (void)layoutSubviews;
 {
-    [super drawRect:rect];
+    [super layoutSubviews];
     
-    UIColor *labelColor = [[self class] labelColorForStyle:self.style isHighlighted:_isHighlighted];
-    [labelColor set];
-
-    CGRect labelRect = [self labelRect];
-    UIFont *labelFont = [[self class] labelFontForStyle:self.style];
-    [self.label drawInRect:labelRect withFont:labelFont lineBreakMode:NSLineBreakByWordWrapping alignment:self.labelAlignment];
-    
-    NSString *value = _value; // Must access iVar here, don't want to pull value from subclass, which substitutes an editable field
-    NSString *valueString = value ? value : [self valuePlaceholder];
-    CGRect valueRect = [self valueRectForString:valueString labelRect:labelRect];
-
-    UIColor *valueColor = (value != nil || _isHighlighted) ? [[self class] valueColorForStyle:self.style isHighlighted:_isHighlighted] : [UIColor grayColor];
-    [valueColor set];
-
-    UIFont *valueFont = [[self class] valueFontForStyle:self.style];
-    [valueString drawInRect:valueRect withFont:valueFont lineBreakMode:NSLineBreakByTruncatingTail alignment:NSTextAlignmentLeft];
+    CGRect bounds = self.bounds;
+    _label.frame = [self labelFrameInRect:bounds];
+    _valueTextField.frame = [self valueFrameInRect:bounds];
 }
 
 @end

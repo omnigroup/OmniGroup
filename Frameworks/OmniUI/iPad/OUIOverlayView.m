@@ -10,10 +10,6 @@
 #import <OmniUI/OUITextLayout.h>
 #import <Foundation/NSAttributedString.h>
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#import <CoreText/CTStringAttributes.h>
-#endif
-
 RCS_ID("$Id$");
 
 
@@ -32,7 +28,7 @@ RCS_ID("$Id$");
     static UIImage *_backgroundImage = nil;
     if (!_backgroundImage) {
         UIImage *image = [UIImage imageNamed:@"OUIOverlayBackground.png"];
-        _backgroundImage = [[image stretchableImageWithLeftCapWidth:7 topCapHeight:7] retain];
+        _backgroundImage = [image stretchableImageWithLeftCapWidth:7 topCapHeight:7];
     }
     return _backgroundImage;
 }
@@ -224,7 +220,6 @@ RCS_ID("$Id$");
     return self.superview && self.alpha == 1;
 }
 
-
 #pragma mark - alloc/init
 
 - (id)initWithFrame:(CGRect)aRect;
@@ -233,23 +228,28 @@ RCS_ID("$Id$");
         return nil;
     
     self.userInteractionEnabled = NO;
+    self.translucent = YES;
     self.opaque = NO;
     
     [self resetDefaults];
     
     _cachedSuggestedSize = CGSizeZero;
+
+    UIInterpolatingMotionEffect *xAxis = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.x" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
+    xAxis.minimumRelativeValue = [NSNumber numberWithFloat:-10.0];
+    xAxis.maximumRelativeValue = [NSNumber numberWithFloat:10.0];
+    
+    UIInterpolatingMotionEffect *yAxis = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.y" type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
+    yAxis.minimumRelativeValue = [NSNumber numberWithFloat:-10.0];
+    yAxis.maximumRelativeValue = [NSNumber numberWithFloat:10.0];
+    
+    UIMotionEffectGroup *group = [[UIMotionEffectGroup alloc] init];
+    group.motionEffects = @[xAxis, yAxis];
+    [self addMotionEffect:group];
     
     return self;
 }
 
-- (void)dealloc;
-{
-    [_attributedText release];
-    [_image release];
-    [_textLayout release];
-    
-    [super dealloc];
-}
 
 #pragma mark - Class methods
 
@@ -269,15 +269,8 @@ RCS_ID("$Id$");
     
     // setting defaults on nsattributedstring
     NSMutableAttributedString *mutableText = [aString mutableCopy];
-    [mutableText addAttribute:(id)kCTForegroundColorAttributeName value:(id)[[UIColor whiteColor] CGColor] range:NSMakeRange(0, [mutableText length])];
-    
-    CTFontRef defaultFont = CTFontCreateWithName(CFSTR("Helvetica"), 16, NULL);
-    [mutableText addAttribute:(id)kCTFontAttributeName value:(id)defaultFont range:NSMakeRange(0, [mutableText length])];
-    if (defaultFont)
-        CFRelease(defaultFont);
-    
+    [mutableText addAttribute:NSFontAttributeName value:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline] range:NSMakeRange(0, [mutableText length])];
     self.attributedText = mutableText;
-    [mutableText release];
 }
 
 - (NSString *)text;
@@ -290,7 +283,7 @@ RCS_ID("$Id$");
     if (!aString)
         aString = @"";
     
-    self.attributedText = [[[NSAttributedString alloc] initWithString:aString] autorelease];
+    self.attributedText = [[NSAttributedString alloc] initWithString:aString];
     [self applyDefaultTextAttributes];
 }
 
@@ -299,10 +292,8 @@ RCS_ID("$Id$");
     if ([attString isEqualToAttributedString:_attributedText])
         return;
     
-    [_attributedText release];
-    _attributedText = [attString retain];
+    _attributedText = attString;
     
-    [_textLayout release];
     _textLayout = nil;
     if (_attributedText) {
         // Apply superscript and other fix-ups
@@ -313,7 +304,6 @@ RCS_ID("$Id$");
         // Create an OUITextLayout
          _textLayout = [[OUITextLayout alloc] initWithAttributedString:transformedString constraints:CGSizeMake(OUITextLayoutUnlimitedSize, OUITextLayoutUnlimitedSize)];
         
-        [transformedString release];
     }
     
     _cachedSuggestedSize = CGSizeZero;
@@ -322,8 +312,7 @@ RCS_ID("$Id$");
 
 - (void)setImage:(UIImage *)anImage;
 {
-    [_image release];
-    _image = [anImage retain];
+    _image = anImage;
     
     _cachedSuggestedSize = CGSizeZero;
     [self setNeedsDisplay];
@@ -520,8 +509,15 @@ RCS_ID("$Id$");
 - (void)drawRect:(CGRect)rect;
 {
     CGRect bounds = self.bounds;
-        
-    [[[self class] backgroundImage] drawInRect:bounds blendMode:kCGBlendModeNormal alpha:0.8];
+    
+    // No background image currently
+    //[[[self class] backgroundImage] drawInRect:bounds blendMode:kCGBlendModeNormal alpha:0.8];
+    
+    UIBezierPath *roundedRect = [UIBezierPath bezierPathWithRoundedRect:CGRectInset(bounds, 0.5, 0.5) cornerRadius:6.0f];
+    [[[UIColor whiteColor] colorWithAlphaComponent:0.90] set];
+    [roundedRect fill];
+    [[UIColor lightGrayColor] set];
+    [roundedRect stroke];
     
     CGRect contentRect =  CGRectInset(bounds, self.borderSize.width, self.borderSize.height);
     if (_image) {

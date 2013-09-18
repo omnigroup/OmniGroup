@@ -44,7 +44,7 @@ int main(int argc, const char * argv[])
         
 
         [cmd add:@"init # Removes any previous accounts and configures a new set of accounts" with:^{
-            // Lots of stuff copied from OFSDAVTestCase and OFXTestCase. Can clean up later if needed...
+            // Lots of stuff copied from ODAVTestCase and OFXTestCase. Can clean up later if needed...
             static const NSUInteger UsernameCount = 9;
                         
             NSString *baseUsername = _getSetting("OFSAccountUsername");

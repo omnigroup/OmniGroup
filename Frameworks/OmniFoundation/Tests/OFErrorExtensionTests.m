@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,7 +27,7 @@ enum {
 
 - (void)testSimpleError;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     
     OFError(&error, FooError, @"some reason", nil);
     should(error != nil);
@@ -38,7 +38,7 @@ enum {
 
 - (void)testUnderlyingError;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     
     OFErrorWithInfo(&error, FooError, nil, nil, nil);
     OFErrorWithInfo(&error, BarError, nil, nil, nil);
@@ -60,7 +60,7 @@ enum {
 // First key is special in how it is handled
 - (void)testSingleKeyValue;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OFErrorWithInfo(&error, FooError, nil/*description*/, nil/*suggestion*/, @"MyKey", @"MyValue", nil);
     should([[error userInfo] count] == 2);
     should([[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] != nil);
@@ -69,7 +69,7 @@ enum {
 
 - (void)testMultipleKeyValue;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OFErrorWithInfo(&error, FooError, nil/*description*/, nil/*suggestion*/, @"MyKey1", @"MyValue1", @"MyKey2", @"MyValue2", nil);
     should([[error userInfo] count] == 3);
     should([[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] != nil);
@@ -79,7 +79,7 @@ enum {
 
 - (void)testFileAndLineNumber;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OFErrorWithInfo(&error, FooError, nil, nil, nil);
     NSString *expectedFileAndLineNumber = [NSString stringWithFormat:@"%s:%d", __FILE__, __LINE__-1];
     
@@ -88,21 +88,21 @@ enum {
 
 - (void)testCausedByUserCancelling_Not;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OFErrorWithInfo(&error, FooError, nil, nil, nil);
     shouldnt([error causedByUserCancelling]);
 }
 
 - (void)testCausedByUserCancelling_Direct;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OBUserCancelledError(&error);
     should([error causedByUserCancelling]);
 }
 
 - (void)testCausedByUserCancelling_Indirect;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     OBUserCancelledError(&error);
     OFErrorWithInfo(&error, BarError, nil, nil, nil);
     should([error causedByUserCancelling]);

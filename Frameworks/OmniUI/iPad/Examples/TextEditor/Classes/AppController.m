@@ -7,74 +7,41 @@
 
 #import "AppController.h"
 
-#import "RTFDocument.h"
+#import "TextDocument.h"
 #import "TextViewController.h"
 
-#import <OmniUI/OUIEditableFrame.h>
+#import <OmniUI/OUITextView.h>
 #import <OmniUI/OUITextLayout.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
 RCS_ID("$Id$")
 
 @implementation AppController
-{
-    NSArray *_documentToolbarItems;
-}
 
 + (void)initialize;
 {
     OBINITIALIZE;
-
-    CFDictionaryRef type = UTTypeCopyDeclaration(kUTTypeRTF);
-    NSLog(@"rtf = %@", type);
-    if (type)
-        CFRelease(type);
+    
+    // For setting up our UTImportedTypeDeclarations...
+    for (NSString *type in @[(OB_BRIDGE id)kUTTypeRTF, (OB_BRIDGE id)kUTTypeRTFD, (OB_BRIDGE id)kUTTypePlainText]) {
+        CFDictionaryRef declaration = UTTypeCopyDeclaration((OB_BRIDGE CFStringRef)type);
+        NSLog(@"%@ = %@", type, declaration);
+        if (declaration)
+            CFRelease(declaration);
+    }
 }
 
-#pragma mark -
-#pragma mark OUISingleDocumentAppController subclass
+#pragma mark - OUISingleDocumentAppController subclass
 
 - (Class)documentClassForURL:(NSURL *)url;
 {
-    // TODO: check the UTI of the incoming URL
-    return [RTFDocument class];
+    // TODO: check that the UTI of the incoming URL is somethign we can handle
+    return [TextDocument class];
 }
 
 - (UIView *)pickerAnimationViewForTarget:(OUIDocument *)document;
 {
-    return ((TextViewController *)document.viewController).scrollView;
-}
-
-- (NSArray *)toolbarItemsForDocument:(OUIDocument *)document;
-{
-    // Cache document toolbar items. These must *only* target the given object (not the document) so that we can reuse them.
-    if (!_documentToolbarItems) {
-        NSMutableArray *items = [NSMutableArray array];
-        
-        [items addObject:self.closeDocumentBarButtonItem];
-        
-        [items addObject:self.undoBarButtonItem];
-        
-        [items addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
-        
-        UIBarButtonItem *omniPresenceBarButtonItem = [self.document omniPresenceBarButtonItem];
-        if (omniPresenceBarButtonItem != nil)
-            [items addObject:omniPresenceBarButtonItem];
-
-        [items addObject:self.documentTitleToolbarItem];
-        
-        [items addObject:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL] autorelease]];
-        
-        [items addObject:self.infoBarButtonItem];
-
-        UIBarButtonItem *attachImageButtonItem = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:nil action:@selector(attachImage:)] autorelease];
-
-        [items addObject:attachImageButtonItem];
-        
-        _documentToolbarItems = [[NSArray alloc] initWithArray:items];
-    }
-    
-    return _documentToolbarItems;
+    return ((TextViewController *)document.documentViewController).textView;
 }
 
 - (NSString *)feedbackMenuTitle;
@@ -84,24 +51,22 @@ RCS_ID("$Id$")
 
 - (void)showInspectorFromBarButtonItem:(UIBarButtonItem *)item;
 {
-    OUIEditableFrame *editor = ((TextViewController *)self.document.viewController).editor;
-    [editor inspectSelectedTextFromBarButtonItem:item];
+    OUITextView *textView = ((TextViewController *)self.document.documentViewController).textView;
+    [textView inspectSelectedTextFromBarButtonItem:item];
 }
 
-#pragma mark -
-#pragma mark OFSDocumentStoreDelegate
+#pragma mark - ODSStoreDelegate
 
-- (NSString *)documentStoreDocumentTypeForNewFiles:(OFSDocumentStore *)store;
+- (NSString *)documentStoreDocumentTypeForNewFiles:(ODSStore *)store;
 {
     return (NSString *)kUTTypeRTF;
 }
 
-#pragma mark -
-#pragma mark OUIDocumentPickerDelegate
+#pragma mark - OUIDocumentPickerDelegate
 
-- (NSData *)documentPicker:(OUIDocumentPicker *)picker PDFDataForFileItem:(OFSDocumentStoreFileItem *)fileItem error:(NSError **)outError;
+- (NSData *)documentPicker:(OUIDocumentPicker *)picker PDFDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
 {
-    RTFDocument *doc = [[RTFDocument alloc] initWithExistingFileItem:fileItem error:outError];
+    TextDocument *doc = [[TextDocument alloc] initWithExistingFileItem:fileItem error:outError];
     if (!doc)
         return nil;
     
@@ -133,7 +98,7 @@ RCS_ID("$Id$")
     UIGraphicsEndPDFContext();
     
     [textLayout release];
-    [doc willClose];
+    [doc didClose];
     [doc release];
     
     return data;

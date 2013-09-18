@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,9 @@
 
 @interface NSDictionary (OFExtensions)
 
+- (NSDictionary *)dictionaryWithPossiblyRemovedObject:(id)anObj forKey:(NSString *)key;
 - (NSDictionary *)dictionaryWithObject:(id)anObj forKey:(NSString *)key;
+- (NSDictionary *)dictionaryWithObjectRemovedForKey:(NSString *)key;
 - (NSDictionary *)dictionaryByAddingObjectsFromDictionary:(NSDictionary *)otherDictionary;
 
 - (id)anyObject;

@@ -57,8 +57,8 @@ static SecKeyRef copyKeyFromKeychain(SecKeychainRef keychain, xmlNode *signature
         keyIsHMACBogus,
     } keySource;
     
-    __strong CFArrayRef externalCerts;
-    __strong SecKeychainRef forcedKeychain;
+    CFArrayRef externalCerts;
+    SecKeychainRef forcedKeychain;
 }
 
 - (void)setKeySource:(enum testKeySources)s;
@@ -77,7 +77,6 @@ static SecKeyRef copyKeyFromKeychain(SecKeychainRef keychain, xmlNode *signature
     if (forcedKeychain) {
         CFRelease(forcedKeychain);
     }
-    [super dealloc];
 }
 
 #if defined(__OBJC_GC__) && __OBJC_GC__
@@ -125,7 +124,7 @@ static SecKeyRef copyKeyFromKeychain(SecKeychainRef keychain, xmlNode *signature
                 NSLog(@"*** Could not load cert from %@: %@", fn, readError);
                 continue;
             }
-            SecCertificateRef oneCert = SecCertificateCreateWithData(kCFAllocatorDefault, (CFDataRef)derData);
+            SecCertificateRef oneCert = SecCertificateCreateWithData(kCFAllocatorDefault, (__bridge CFDataRef)derData);
             if (oneCert != NULL) {
                 CFArrayAppendValue(certs, oneCert);
                 CFRelease(oneCert);
@@ -163,11 +162,15 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
 - (SecKeyRef)copySecKeyForMethod:(xmlNode *)signatureMethod keyInfo:(xmlNode *)keyInfo operation:(enum OFXMLSignatureOperation)op error:(NSError **)outError;
 {
 #if !OFXMLSigGetKeyAsCSSM
+    unsigned int count;
+
+    NSMutableDictionary *keyAttributes = [NSMutableDictionary dictionary];
+    if (!OFXMLSigGetKeyAttributes(keyAttributes, signatureMethod, op))
+        keyAttributes = nil;
+
     if (keySource == keyFromEmbeddedValues) {
-        unsigned int count;
-        NSMutableDictionary *keyAttributes = [NSMutableDictionary dictionary];
         xmlNode *keyvalue = OFLibXMLChildNamed(keyInfo, "KeyValue", XMLSignatureNamespace, &count);
-        if (count == 1 && OFXMLSigGetKeyAttributes(keyAttributes, signatureMethod, op)) {
+        if (count == 1 && keyAttributes != nil) {
             NSString *keytype = [keyAttributes objectForKey:(id)kSecAttrKeyType];
             if ([keytype isEqual:(id)kSecAttrKeyTypeDSA])
                 return OFXMLSigCopyKeyFromDSAKeyValue(keyvalue, outError);
@@ -181,6 +184,15 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
             }
         }
     }
+    
+    if (keySource == keyIsHMACTest) {
+        return OFXMLSigCopyKeyFromHMACKey([keyAttributes objectForKey:(id)kSecDigestTypeAttribute], (const uint8_t *)"test", 4, outError);
+    } else if (keySource == keyIsHMACBogus) {
+        return OFXMLSigCopyKeyFromHMACKey([keyAttributes objectForKey:(id)kSecDigestTypeAttribute], (const uint8_t *)"bogus", 5, outError);
+    } else if (keySource == keyIsHMACSecret) {
+        return OFXMLSigCopyKeyFromHMACKey([keyAttributes objectForKey:(id)kSecDigestTypeAttribute], (const uint8_t *)"secret", 6, outError);
+    }
+
 #endif
     
     if (keySource == keyIsOnlyApplicableOneInKeychain) {
@@ -201,7 +213,7 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
         CFRelease(availableCerts);
         
         if ([certs count] == 1) {
-            SecCertificateRef cert = (void *)[certs objectAtIndex:0];
+            SecCertificateRef cert = (__bridge void *)[certs objectAtIndex:0];
             SecKeyRef pubkey = NULL;
             OSStatus oserr = SecCertificateCopyPublicKey(cert, &pubkey);
             if (oserr != noErr) {
@@ -374,7 +386,6 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
         [NSException raise:NSGenericException format:@"xmlReadFile() failed to read '%@' !", path];
     }
     
-    [docName autorelease];
     docName = [tcName copy];
 
     return [OFXMLSignatureTest signaturesInTree:loadedDoc]; 
@@ -457,7 +468,6 @@ static BOOL isExpectedBadSignatureError(NSError *error)
     if (merlinDocsDir) {
         NSLog(@"Removing scratch directory %@", merlinDocsDir);
         [[NSFileManager defaultManager] removeItemAtPath:merlinDocsDir error:NULL];
-        [merlinDocsDir release];
         merlinDocsDir = nil;
     }
 }
@@ -607,7 +617,6 @@ static BOOL isExpectedBadSignatureError(NSError *error)
     if (phaosDocsDir) {
         NSLog(@"Removing scratch directory %@", phaosDocsDir);
         [[NSFileManager defaultManager] removeItemAtPath:phaosDocsDir error:NULL];
-        [phaosDocsDir release];
         phaosDocsDir = nil;
     }
 }
@@ -861,7 +870,6 @@ after the signature value was computed.  Verification should FAIL.
 
 - (void)testX509Various
 {
-    NSAutoreleasePool *p;
     NSArray *sigs;
     NSError *error;
     
@@ -872,32 +880,32 @@ after the signature value was computed.  Verification should FAIL.
      references the Subject Key Identifier of the certificate stored in
      certs/rsa-client-cert.der.
      */
-    p = [[NSAutoreleasePool alloc] init];
-    sigs = [self getSigs:@"signature-rsa-manifest-x509-data-ski.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
-    OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromExternalCertificate]);
-    [[sigs objectAtIndex:0] loadExternalCerts:[[self baseDir] stringByAppendingPathComponent:@"certs"]];
-    OFForEachInArray(sigs, OFXMLSignature *, sig,
-                     OBShouldNotError([sig processSignatureElement:&error]);
-                     [self checkReferences:sig];);
-    
+    @autoreleasepool {
+        sigs = [self getSigs:@"signature-rsa-manifest-x509-data-ski.xml"];
+        STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+        OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromExternalCertificate]);
+        [[sigs objectAtIndex:0] loadExternalCerts:[[self baseDir] stringByAppendingPathComponent:@"certs"]];
+        OFForEachInArray(sigs, OFXMLSignature *, sig,
+                         OBShouldNotError([sig processSignatureElement:&error]);
+                         [self checkReferences:sig];);
+        
 
-    /*
-    signature-rsa-detached-x509-data-client-cert.xml
-    ------------------------------------
-    Contains a detached RSA signature with an X509Certificate that 
-    represents the certificate stored in certs/rsa-client-cert.der.
-    */
-    sigs = [self getSigs:@"signature-rsa-manifest-x509-data-cert.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
-    /* Slipping in another test case here: we have some external certs, but none of them are the desired cert; the cert is actually embedded */
-    OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromExternalCertificate]);
-    [[sigs objectAtIndex:0] loadExternalCerts:[[self baseDir] stringByAppendingPathComponent:@"certs"]];
-    OFForEachInArray(sigs, OFXMLSignature *, sig,
-                     OBShouldNotError([sig processSignatureElement:&error]);
-                     [self checkReferences:sig];);
+        /*
+        signature-rsa-detached-x509-data-client-cert.xml
+        ------------------------------------
+        Contains a detached RSA signature with an X509Certificate that 
+        represents the certificate stored in certs/rsa-client-cert.der.
+        */
+        sigs = [self getSigs:@"signature-rsa-manifest-x509-data-cert.xml"];
+        STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+        /* Slipping in another test case here: we have some external certs, but none of them are the desired cert; the cert is actually embedded */
+        OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromExternalCertificate]);
+        [[sigs objectAtIndex:0] loadExternalCerts:[[self baseDir] stringByAppendingPathComponent:@"certs"]];
+        OFForEachInArray(sigs, OFXMLSignature *, sig,
+                         OBShouldNotError([sig processSignatureElement:&error]);
+                         [self checkReferences:sig];);
     
-    [p drain];
+    }
 }
 
 /*
@@ -999,7 +1007,7 @@ after the signature value was computed.  Verification should FAIL.
 
 @interface OFXMLSignatureKeychainTests : OFXMLSignatureTests_Abstract
 {
-    __strong SecKeychainRef kc;
+    SecKeychainRef kc;
 }
 
 @end
@@ -1043,7 +1051,7 @@ after the signature value was computed.  Verification should FAIL.
               generateTestKey(newKeychain, acl, TestKeyType_DSA, 512, &keygenError) &&
               /* Apple CSP docs specify valid ECDSA key sizes: 192, 256, 384, 521 bits. Presumably they use this to choose the generator prime or polynomial. */
               generateTestKey(newKeychain, acl, TestKeyType_ECDSA, 384, &keygenError))) {
-            NSString *desc = [(id)keygenError description];
+            NSString *desc = [(__bridge NSError *)keygenError description];
             CFRelease(keygenError);
             [NSException raise:NSGenericException format:@"Unable to create temporary keys: %@", desc];
         }
@@ -1088,7 +1096,6 @@ after the signature value was computed.  Verification should FAIL.
             SecKeychainDelete(oldKeychain);
             CFRelease(oldKeychain);
         }
-        [testKeychainPath release];
         testKeychainPath = nil;
     }
 }
@@ -1180,7 +1187,6 @@ static void alterSignature(xmlNode *sigNode, int delta)
     xmlAddChild(sigelt, newText);
     
     xmlFree(contentbuf);
-    [dec release];
 }
 
 static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAlg, enum OFXMLSignatureOperation op)
@@ -1232,7 +1238,6 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
         STFail(@"Failed for wrong reason (expecting domain=%@ code=%d): %@", OFXMLSignatureErrorDomain, (int)OFKeyNotAvailable, [error description]);
     }
     
-    [sig release];
     
     NSArray *sigs = [OFXMLSignatureTest signaturesInTree:info];
     STAssertEquals((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
@@ -1267,14 +1272,12 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     [sig setKeySource:keyIsOnlyApplicableOneInKeychain];
     [sig setKeychain:kc];
     OBShouldNotError([sig processSignatureElement:OFXMLSignature_Sign error:&error]);
-    [sig release];
     
     sig = [[OFXMLSignatureTest alloc] initWithElement:sigNode inDocument:info];
     [sig setKeySource:keyIsOnlyApplicableOneInKeychain];
     [sig setKeychain:kc];
     OBShouldNotError([sig processSignatureElement:OFXMLSignature_Verify error:&error]);
     OBShouldNotError([sig verifyReferenceAtIndex:0 toBuffer:NULL error:&error]);
-    [sig release];
     
     // xmlDocDump(stdout, info);
     
@@ -1343,7 +1346,6 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     BOOL signSuccess = [sig processSignatureElement:OFXMLSignature_Sign error:&error];
     STAssertFalse(signSuccess, @"Should fail to sign since no key is available");
     
-    [sig release];
     
     NSArray *sigs = [OFXMLSignatureTest signaturesInTree:info];
     STAssertEquals((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
@@ -1383,23 +1385,24 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
 @end
 @implementation OFXMLSignatureTests_EllipticInterop
 
-+ (id) defaultTestSuite
++ (id)defaultTestSuite
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    SenTestSuite *suite = [[super defaultTestSuite] retain];
-    NSString *files[] = { @"w3c_microsoft_ecc_p256_sha256_c14n.xml", @"w3c_microsoft_ecc_p521_sha256_c14n.xml", @"w3c_microsoft_ecc_p521_sha512_c14n.xml", @"w3c_oracle_signature-enveloping-p256_sha1.xml", @"w3c_oracle_signature-enveloping-p521_sha256.xml", nil };
-
-    for (int testfile = 0; files[testfile]; testfile ++) {
-        NSInvocation *call = [NSInvocation invocationWithMethodSignature:[self instanceMethodSignatureForSelector:@selector(testSignatureOnFile:)]];
-        [call setSelector:@selector(testSignatureOnFile:)];
-        [call setArgument:&(files[testfile]) atIndex:2];
-        [call retainArguments];
+    SenTestSuite *suite;
+    @autoreleasepool {
+        suite = [super defaultTestSuite];
+        __unsafe_unretained NSString *files[] = { @"w3c_microsoft_ecc_p256_sha256_c14n.xml", @"w3c_microsoft_ecc_p521_sha256_c14n.xml", @"w3c_microsoft_ecc_p521_sha512_c14n.xml", @"w3c_oracle_signature-enveloping-p256_sha1.xml", @"w3c_oracle_signature-enveloping-p521_sha256.xml", nil };
         
-        [suite addTest:[self testCaseWithInvocation:call]];
+        for (int testfile = 0; files[testfile]; testfile ++) {
+            NSInvocation *call = [NSInvocation invocationWithMethodSignature:[self instanceMethodSignatureForSelector:@selector(testSignatureOnFile:)]];
+            [call setSelector:@selector(testSignatureOnFile:)];
+            [call setArgument:&(files[testfile]) atIndex:2];
+            [call retainArguments];
+            
+            [suite addTest:[self testCaseWithInvocation:call]];
+        }
     }
     
-    [pool drain];
-    return [suite autorelease];
+    return suite;
 }
 
 - (NSString *)baseDir;

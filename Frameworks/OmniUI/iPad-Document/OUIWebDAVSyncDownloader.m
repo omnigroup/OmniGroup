@@ -7,13 +7,13 @@
 
 #import "OUIWebDAVSyncDownloader.h"
 
+
 #import <MobileCoreServices/MobileCoreServices.h>
-#import <OmniFileStore/OFSAsynchronousOperation.h>
-#import <OmniFileStore/OFSDocumentStore.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/OFSFileManager.h>
-#import <OmniFileStore/OFSFileManagerDelegate.h>
-#import <OmniFileStore/OFSURL.h>
+#import <OmniDAV/ODAVConnection.h>
+#import <OmniDAV/ODAVOperation.h>
+#import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDocumentStore/ODSStore.h>
+#import <OmniDocumentStore/ODSUtilities.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
@@ -23,18 +23,14 @@
 
 RCS_ID("$Id$");
 
-@interface OUIWebDAVSyncDownloader () <OFSFileManagerDelegate>
-@end
-
-
 @implementation OUIWebDAVSyncDownloader
 {
-    OFSFileManager *_fileManager;
-    id <OFSAsynchronousOperation> _downloadOperation;
+    ODAVConnection *_connection;
+    ODAVOperation *_downloadOperation;
     NSOutputStream *_downloadStream;
     NSMutableArray *_uploadOperations;
     
-    OFSFileInfo *_file;
+    ODAVFileInfo *_file;
     NSURL *_baseURL;
     NSMutableArray *_fileQueue;
     NSString *_downloadTimestamp; // for uniqueing
@@ -52,23 +48,21 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- initWithFileManager:(OFSFileManager *)fileManager;
+- initWithConnection:(ODAVConnection *)connection;
 {
-    OBPRECONDITION(fileManager);
+    OBPRECONDITION(connection);
     
     if (!(self = [super init]))
         return nil;
     
-    _fileManager = fileManager;
+    _connection = connection;
     
     return self;
 }
 
-@synthesize fileManager = _fileManager;
-
 #pragma mark - OUIConcreteSyncDownloader
 
-- (void)download:(OFSFileInfo *)aFile;
+- (void)download:(ODAVFileInfo *)aFile;
 {
     _baseURL = nil;
     _fileQueue = nil;
@@ -85,10 +79,10 @@ RCS_ID("$Id$");
         [self _readAndQueueContentsOfDirectory:aFile];
         
         OBASSERT([_fileQueue count]);
-        for (OFSFileInfo *nextFile in _fileQueue)
+        for (ODAVFileInfo *nextFile in _fileQueue)
             _totalDataLength += nextFile.size;
         
-        OFSFileInfo *firstFile = [_fileQueue lastObject];
+        ODAVFileInfo *firstFile = [_fileQueue lastObject];
         [self _downloadFile:firstFile];
         [_fileQueue removeObjectIdenticalTo:firstFile];
     } else {
@@ -101,10 +95,10 @@ RCS_ID("$Id$");
 {
     if (_downloadOperation != nil) {
         [_downloadStream close];
-        [_downloadOperation stopOperation];
+        [_downloadOperation cancel];
     } else if (_uploadOperations != nil) {
-        for (id <OFSAsynchronousOperation> uploadOperation in _uploadOperations)
-            [uploadOperation stopOperation];
+        for (ODAVOperation *uploadOperation in _uploadOperations)
+            [uploadOperation cancel];
     }
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUISyncDownloadCanceledNotification object:self];
@@ -112,27 +106,27 @@ RCS_ID("$Id$");
 
 - (void)uploadFileWrapper:(NSFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
 {
-    OBPRECONDITION(_fileManager);
+    OBPRECONDITION(_connection);
     
     _totalDataLength = 0;
     _uploadOperations = [[NSMutableArray alloc] init];
     __autoreleasing NSError *error = nil;
     OBASSERT (_baseURL == nil);
     _baseURL = targetURL;
-    if (![self _queueUploadFileWrapper:fileWrapper atomically:YES toURL:targetURL usingFileManager:_fileManager error:&error]) {
+    if (![self _queueUploadFileWrapper:fileWrapper atomically:YES toURL:targetURL connection:_connection error:&error]) {
         OBASSERT(error != nil);
         OUI_PRESENT_ERROR(error);
         [self _cleanupWithSuccess:NO];
         return;
     }
-    for (id <OFSAsynchronousOperation> uploadOperation in [NSArray arrayWithArray:_uploadOperations]) {
-        [uploadOperation startOperationOnQueue:nil];
+    for (ODAVOperation *uploadOperation in [NSArray arrayWithArray:_uploadOperations]) {
+        [uploadOperation startWithCallbackQueue:[NSOperationQueue mainQueue]];
     }
 }
 
 #pragma mark - Async operation handlers
 
-- (void)_operation:(id <OFSAsynchronousOperation>)operation didReceiveData:(NSData *)data;
+- (void)_operation:(ODAVOperation *)operation didReceiveData:(NSData *)data;
 {    
     OBPRECONDITION(operation == _downloadOperation);
     
@@ -145,7 +139,7 @@ RCS_ID("$Id$");
     }
 }
 
-- (void)_operation:(id <OFSAsynchronousOperation>)operation didSendBytes:(long long)processedBytes;
+- (void)_operation:(ODAVOperation *)operation didSendBytes:(long long)processedBytes;
 {    
     OBPRECONDITION(_uploadOperations == nil || [_uploadOperations containsObjectIdenticalTo:operation]);
     if (_uploadOperations == nil)
@@ -155,7 +149,7 @@ RCS_ID("$Id$");
     self.progressView.progress = (double)_totalUploadedBytes/(double)_totalDataLength;
 }
 
-- (void)_operationDidFinish:(id <OFSAsynchronousOperation>)operation withError:(NSError *)error;
+- (void)_operationDidFinish:(ODAVOperation *)operation withError:(NSError *)error;
 {
     // Some operation that we cancelled due to a failure in an operation before it in the queue? See <bug:///72669> (Exporting files which time out leaves you in a weird state)
     if (operation != _downloadOperation && [_uploadOperations containsObjectIdenticalTo:operation] == NO)
@@ -177,7 +171,7 @@ RCS_ID("$Id$");
         
         if ([_fileQueue count] != 0) {
              _downloadOperation = nil;
-            OFSFileInfo *firstFile = [_fileQueue lastObject];
+            ODAVFileInfo *firstFile = [_fileQueue lastObject];
             [self _downloadFile:firstFile];
             [_fileQueue removeObjectIdenticalTo:firstFile];
             return; // On to the next download
@@ -191,7 +185,7 @@ RCS_ID("$Id$");
         if (!fileUTI) {
             localFile = nil;
             OUI_PRESENT_ERROR(utiError);
-        } else if (OFSIsZipFileType(fileUTI)) {
+        } else if (ODSIsZipFileType(fileUTI)) {
             __autoreleasing NSError *unarchiveError = nil;
             localFile = [self unarchiveFileAtPath:localFile error:&unarchiveError];
             if (!localFile || unarchiveError)
@@ -200,8 +194,6 @@ RCS_ID("$Id$");
         
         if (localFile) {
             [self.cancelButton setTitle:NSLocalizedStringFromTableInBundle(@"Finished", @"OmniUIDocument", OMNI_BUNDLE, @"finished") forState:UIControlStateNormal];
-            UIImage *backgroundImage = [[UIImage imageNamed:@"OUIExportFinishedBadge.png"] stretchableImageWithLeftCapWidth:6 topCapHeight:0];
-            [self.cancelButton setBackgroundImage:backgroundImage forState:UIControlStateNormal];
             userInfo = [NSDictionary dictionaryWithObject:[NSURL fileURLWithPath:localFile] forKey:OUISyncDownloadURL];
         }
         
@@ -218,15 +210,16 @@ RCS_ID("$Id$");
         // For atomic directory wrapper uploads, move our temporary URL to our final URL
 
         if (_uploadTemporaryURL != nil) {
-            [_fileManager deleteURL:_uploadFinalURL error:NULL]; // Ignore delete errors
+            [_connection synchronousDeleteURL:_uploadFinalURL withETag:nil error:NULL]; // Ignore delete errors
+            
             // we might be replacing a file with a directory, check the verison with and without a slash.
             NSString *url = [_uploadFinalURL absoluteString];
             if ([url hasSuffix:@"/"]) {
                 url = [url substringToIndex:[url length] - 1]; // if it's got a trailing slash, trim it.
-                [_fileManager deleteURL:[NSURL URLWithString:url] error:NULL];
+                [_connection synchronousDeleteURL:[NSURL URLWithString:url] withETag:nil error:NULL];
             }
             __autoreleasing NSError *moveError = nil;
-            if (![_fileManager moveURL:_uploadTemporaryURL toURL:_uploadFinalURL error:&moveError]) {
+            if (![_connection synchronousMoveURL:_uploadTemporaryURL toMissingURL:_uploadFinalURL error:&moveError]) {
                 OUI_PRESENT_ERROR(moveError);
                 success = NO;
             }
@@ -263,7 +256,7 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark Private
 
-- (void)_downloadFile:(OFSFileInfo *)aFile;
+- (void)_downloadFile:(ODAVFileInfo *)aFile;
 {    
     _file = aFile;
         
@@ -281,21 +274,20 @@ RCS_ID("$Id$");
     [_downloadStream open];
     
     OBASSERT(_downloadOperation == nil);
-    _downloadOperation = [_fileManager asynchronousReadContentsOfURL:[aFile originalURL]];
+    _downloadOperation = [_connection asynchronousGetContentsOfURL:aFile.originalURL];
     
     __weak OUIWebDAVSyncDownloader *weakSelf = self;
-    _downloadOperation.didReceiveData = ^(id <OFSAsynchronousOperation> op, NSData *data){
+    _downloadOperation.didReceiveData = ^(ODAVOperation *op, NSData *data){
         OUIWebDAVSyncDownloader *strongSelf = weakSelf;
         OBASSERT(strongSelf, "Deallocated w/o cancelling operation?");
         [strongSelf _operation:op didReceiveData:data];
     };
-    _downloadOperation.didFinish = ^(id <OFSAsynchronousOperation> op, NSError *error){
+    _downloadOperation.didFinish = ^(ODAVOperation *op, NSError *error){
         OUIWebDAVSyncDownloader *strongSelf = weakSelf;
         OBASSERT(strongSelf, "Deallocated w/o cancelling operation?");
         [strongSelf _operationDidFinish:op withError:error];
     };
-    [_downloadOperation startOperationOnQueue:nil];
-    
+    [_downloadOperation startWithCallbackQueue:[NSOperationQueue mainQueue]];
 }
 
 - (void)_cleanupWithSuccess:(BOOL)success;
@@ -331,24 +323,36 @@ RCS_ID("$Id$");
     }
 }
 
-- (void)_readAndQueueContentsOfDirectory:(OFSFileInfo *)aDirectory;
+- (void)_readAndQueueContentsOfDirectory:(ODAVFileInfo *)rootDirectory;
 {
-    __autoreleasing NSError *outError = nil;
+    __autoreleasing NSError *error = nil;
     
-    NSArray *fileInfos = [_fileManager directoryContentsAtURL:[aDirectory originalURL] havingExtension:nil options:OFSDirectoryEnumerationForceRecursiveDirectoryRead error:&outError];
-    if (outError) {
-        OUI_PRESENT_ALERT(outError);
-        [self cancelDownload:nil];
-        return;
+    NSMutableArray *directoryFileInfos = [NSMutableArray arrayWithObject:rootDirectory];
+    NSMutableArray *fileQueue = [[NSMutableArray alloc] init];
+    
+    while ([directoryFileInfos count] > 0) {
+        ODAVFileInfo *directory = [directoryFileInfos lastObject];
+        
+        ODAVMultipleFileInfoResult *result = [_connection synchronousDirectoryContentsAtURL:directory.originalURL withETag:nil error:&error];
+        if (!result) {
+            OUI_PRESENT_ALERT(error);
+            [self cancelDownload:nil];
+            return;
+        }
+        [directoryFileInfos removeLastObject];
+
+        for (ODAVFileInfo *fileInfo in result.fileInfos) {
+            if (fileInfo.isDirectory)
+                [directoryFileInfos addObject:fileInfo];
+            else
+                [fileQueue addObject:fileInfo];
+        }
     }
     
-    _fileQueue = [[NSMutableArray alloc] init];
-    for (OFSFileInfo *fileInfo in fileInfos)
-        if (![fileInfo isDirectory])
-            [_fileQueue addObject:fileInfo];
+    _fileQueue = fileQueue;
 }
 
-- (BOOL)_queueUploadFileWrapper:(NSFileWrapper *)fileWrapper atomically:(BOOL)atomically toURL:(NSURL *)targetURL usingFileManager:(OFSFileManager *)fileManager error:(NSError **)outError;
+- (BOOL)_queueUploadFileWrapper:(NSFileWrapper *)fileWrapper atomically:(BOOL)atomically toURL:(NSURL *)targetURL connection:(ODAVConnection *)connection error:(NSError **)outError;
 {
 #ifdef DEBUG_kc
     NSLog(@"DEBUG: Queueing upload to %@", [targetURL absoluteString]);
@@ -362,13 +366,14 @@ RCS_ID("$Id$");
             
             NSString *temporaryNameSuffix = [@"-write-in-progress-" stringByAppendingString:OFXMLCreateID()];
             _uploadFinalURL = targetURL;
-            targetURL = OFURLWithTrailingSlash(OFSURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES));
+            targetURL = OFURLWithTrailingSlash(OFURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES));
         }
-        NSURL *parentURL = [fileManager createDirectoryAtURL:targetURL attributes:nil error:&error];
+        
+        NSURL *parentURL = [connection synchronousMakeCollectionAtURL:targetURL error:&error];
         if (atomically) {
             _uploadTemporaryURL = parentURL;
             if (parentURL != nil && !OFURLEqualsURL(parentURL, targetURL)) {
-                NSString *rewrittenFinalURLString = OFSURLAnalogousRewrite(targetURL, [_uploadFinalURL absoluteString], parentURL);
+                NSString *rewrittenFinalURLString = OFURLAnalogousRewrite(targetURL, [_uploadFinalURL absoluteString], parentURL);
                 if (rewrittenFinalURLString)
                     _uploadFinalURL = [NSURL URLWithString:rewrittenFinalURLString];
             }
@@ -377,8 +382,8 @@ RCS_ID("$Id$");
         NSDictionary *childWrappers = [fileWrapper fileWrappers];
         for (NSString *childName in childWrappers) {
             NSFileWrapper *childWrapper = [childWrappers objectForKey:childName];
-            NSURL *childURL = OFSFileURLRelativeToDirectoryURL(parentURL, childName);;
-            if (![self _queueUploadFileWrapper:childWrapper atomically:NO toURL:childURL usingFileManager:fileManager error:outError])
+            NSURL *childURL = OFFileURLRelativeToDirectoryURL(parentURL, childName);;
+            if (![self _queueUploadFileWrapper:childWrapper atomically:NO toURL:childURL connection:connection error:outError])
                 return NO;
         }
     } else if ([fileWrapper isRegularFile]) {
@@ -391,18 +396,18 @@ RCS_ID("$Id$");
             
             NSString *temporaryNameSuffix = [@"-write-in-progress-" stringByAppendingString:OFXMLCreateID()];
             _uploadFinalURL = targetURL;
-            targetURL = OFSURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES);
+            targetURL = OFURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES);
             _uploadTemporaryURL = targetURL;
         }
         __weak OUIWebDAVSyncDownloader *weakSelf = self;
 
-        id <OFSAsynchronousOperation> uploadOperation = [fileManager asynchronousWriteData:data toURL:targetURL atomically:NO];
-        uploadOperation.didSendBytes = ^(id <OFSAsynchronousOperation> op, long long byteCount){
+        ODAVOperation *uploadOperation = [connection asynchronousPutData:data toURL:targetURL];
+        uploadOperation.didSendBytes = ^(ODAVOperation *op, long long byteCount){
             OUIWebDAVSyncDownloader *strongSelf = weakSelf;
             OBASSERT(strongSelf, "Deallocated w/o cancelling operation?");
             [strongSelf _operation:op didSendBytes:byteCount];
         };
-        uploadOperation.didFinish = ^(id <OFSAsynchronousOperation> op, NSError *error){
+        uploadOperation.didFinish = ^(ODAVOperation *op, NSError *error){
             OUIWebDAVSyncDownloader *strongSelf = weakSelf;
             OBASSERT(strongSelf, "Deallocated w/o cancelling operation?");
             [strongSelf _operationDidFinish:op withError:error];

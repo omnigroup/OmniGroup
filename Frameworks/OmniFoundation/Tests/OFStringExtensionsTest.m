@@ -111,7 +111,7 @@ RCS_ID("$Id$");
         shouldBeEqual([[NSString stringWithCharacters:s[i]+2 length:sl[i]-4] stringByRemovingSurroundingWhitespace], t);
     }
     
-    NSMutableString *buf = [[[NSMutableString alloc] init] autorelease];
+    NSMutableString *buf = [[NSMutableString alloc] init];
 
     for(i = 0; i < 3; i ++) {
         NSString *t = [NSString stringWithCharacters:2+s[i] length:sl[i]-4];
@@ -129,10 +129,10 @@ RCS_ID("$Id$");
     char *buf;
     
     buf = OFShortASCIIDecimalStringFromDouble(d, OF_FLT_DIGITS_E, NO, YES);
-    t1 = NSMakeCollectable(CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, buf, kCFStringEncodingASCII, kCFAllocatorMalloc));
+    t1 = CFBridgingRelease(CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, buf, kCFStringEncodingASCII, kCFAllocatorMalloc));
     
     buf = OFShortASCIIDecimalStringFromDouble(d, OF_FLT_DIGITS_E, YES, YES);
-    t2 = NSMakeCollectable(CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, buf, kCFStringEncodingASCII, kCFAllocatorMalloc));
+    t2 = CFBridgingRelease(CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, buf, kCFStringEncodingASCII, kCFAllocatorMalloc));
     
     shouldBeEqual(t0, decimalized);
     shouldBeEqual(t1, decimalized);
@@ -142,15 +142,11 @@ RCS_ID("$Id$");
         shouldBeEqual(t2, decimalized);
     }
     
-    [t0 release];
-    [t1 release];
-    [t2 release];
     
     if ([decimalized hasPrefix:@"0."]) {
         buf = OFShortASCIIDecimalStringFromDouble(d, OF_FLT_DIGITS_E, NO, NO);
-        t1 = NSMakeCollectable(CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, buf, kCFStringEncodingASCII, kCFAllocatorMalloc));
+        t1 = CFBridgingRelease(CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, buf, kCFStringEncodingASCII, kCFAllocatorMalloc));
         shouldBeEqual(t1, [decimalized substringFromIndex:1]);
-        [t1 release];
     }
 }
 
@@ -345,16 +341,15 @@ static NSString *unpair(NSString *str, NSRange *where, void *dummy)
                 id p = OFCreatePlistFor4CC(fcc);
                 should1(OFGet4CCFromPlist(p, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc]));
                 
-                str = [NSMakeCollectable(UTCreateStringForOSType(fcc)) autorelease];
+                str = CFBridgingRelease(UTCreateStringForOSType(fcc));
                 should1(OFGet4CCFromPlist(str, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x out=%08x", shift, i, (uint32_t)fcc, tmp]));
-                should1(UTGetOSTypeFromString((CFStringRef)str) == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc]));
+                should1(UTGetOSTypeFromString((__bridge CFStringRef)str) == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc]));
                 should1([str fourCharCodeValue] == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc]));
                 
                 str = [NSString stringWithFourCharCode:fcc];
                 should1(OFGet4CCFromPlist(str, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x out=%08x", shift, i, (uint32_t)fcc, tmp]));
-                should1(UTGetOSTypeFromString((CFStringRef)str) == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc]));
+                should1(UTGetOSTypeFromString((__bridge CFStringRef)str) == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc]));
                 should1([str fourCharCodeValue] == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x out=%08x", shift, i, (uint32_t)fcc, (uint32_t)[str fourCharCodeValue]]));
-                [p release];
             }
         }
     }
@@ -363,7 +358,6 @@ static NSString *unpair(NSString *str, NSRange *where, void *dummy)
 static NSString *fromutf8(const unsigned char *u, unsigned int length)
 {
     NSString *s = [[NSString alloc] initWithBytes:u length:length encoding:NSUTF8StringEncoding];
-    [s autorelease];
     return s;
 }
 
@@ -382,8 +376,8 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     NSString *Fuu = fromutf8(fuu, sizeofA(fuu));
     NSString *Gorgo = fromutf8(gorgo, sizeofA(gorgo));
     
-    NSString *Fuu16 = [[[NSString alloc] initWithCharacters:fuu16 length:sizeofA(fuu16)] autorelease];
-    NSString *Gorgo16 = [[[NSString alloc] initWithCharacters:gorgo16 length:sizeofA(gorgo16)] autorelease];
+    NSString *Fuu16 = [[NSString alloc] initWithCharacters:fuu16 length:sizeofA(fuu16)];
+    NSString *Gorgo16 = [[NSString alloc] initWithCharacters:gorgo16 length:sizeofA(gorgo16)];
     
     NSString *s;
     NSMutableString *t;
@@ -394,7 +388,7 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     s = [NSString stringWithCharacter:0x00FE];  // LATIN SMALL LETTER THORN
     shouldBeEqual(s, ([Fuu substringWithRange:(NSRange){0,1}]));
     s = [s stringByAppendingString:[NSString stringWithCharacter:0x00FC]];  // LATIN SMALL LETTER U WITH DIAERESIS
-    t = [[s mutableCopy] autorelease];
+    t = [s mutableCopy];
     [t appendLongCharacter:'u']; // LATIN SMALL LETTER U
     [t appendLongCharacter:0x308]; // COMBINING DIAERESIS
     should([t compare:Fuu options:0] == NSOrderedSame);
@@ -402,7 +396,7 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     should([Fuu compare:Fuu16 options:0] == NSOrderedSame);
     shouldBeEqual([t decomposedStringWithCanonicalMapping], [Fuu decomposedStringWithCanonicalMapping]);
     shouldBeEqual([t decomposedStringWithCanonicalMapping], [Fuu16 decomposedStringWithCanonicalMapping]);
-    t = [[s mutableCopy] autorelease];
+    t = [s mutableCopy];
     [t appendLongCharacter:0xFC]; // LATIN SMALL LETTER U WITH DIAERESIS
     shouldBeEqual(t, Fuu);
     
@@ -438,7 +432,7 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     static const unichar bad7[4] = { 0xFFFE, 'H', 'i', '!' };  // reversed BOM
     static const unichar bad8[4] = { 'H', 'i', '0', 0xDFEE };  // broken pair
 
-#define USTR(x) (CFStringRef)[NSMakeCollectable(CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, x, sizeof(x)/sizeof(x[0]), kCFAllocatorNull)) autorelease]
+#define USTR(x) (__bridge CFStringRef)CFBridgingRelease(CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, x, sizeof(x)/sizeof(x[0]), kCFAllocatorNull))
     STAssertTrue(OFStringContainsInvalidSequences(USTR(bad1)), nil);
     STAssertTrue(OFStringContainsInvalidSequences(USTR(bad2)), nil);
     STAssertTrue(OFStringContainsInvalidSequences(USTR(bad3)), nil);

@@ -1,4 +1,4 @@
-// Copyright 2009-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,11 +108,11 @@ static SecKeyRef copyKeyRefFromEncodedKey(SecExternalFormat keyFormat, const cha
 	.alertTitle = NULL,
 	.alertPrompt = NULL,
 	.accessRef = NULL,
-        .keyUsage = (CFArrayRef)[NSArray arrayWithObject:(id)kSecAttrCanVerify],
+        .keyUsage = (__bridge CFArrayRef)[NSArray arrayWithObject:(id)kSecAttrCanVerify],
 	.keyAttributes = NULL, /* See below for rant */
     };
     
-    err = SecItemImport((CFDataRef)keyBytes, NULL, &keyFormat, &itemType, kSecKeyImportOnlyOne, &keyParams, NULL, &importedItems);
+    err = SecItemImport((__bridge CFDataRef)keyBytes, NULL, &keyFormat, &itemType, kSecKeyImportOnlyOne, &keyParams, NULL, &importedItems);
     if (err != noErr) {
         errInfo = [NSMutableDictionary dictionary];
         [errInfo setObject:[NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObject:@"SecItemImport" forKey:@"function"]]forKey:NSUnderlyingErrorKey];
@@ -272,14 +272,10 @@ SecKeyRef OFXMLSigCopyKeyFromRSAKeyValue(xmlNode *keyInfo, NSError **outError)
     
     /* The whole shebang */
     NSMutableData *fullKey = OFASN1CreateForSequence(algorithmId, pubkeyBitString, nil);
-    [pubkeyBitString release];
-    [algorithmId release];
     
     SecKeyRef key = copyKeyRefFromEncodedKey(kSecFormatOpenSSL, "RSA ", fullKey, outError);
-    [fullKey release];
 #endif
     
-    [pkcs1Bytes release];
     
     return key;
 }
@@ -345,7 +341,6 @@ SecKeyRef OFXMLSigCopyKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
     [algorithmId appendData:pData];
     [algorithmId appendData:qData];
     [algorithmId appendData:gData];
-    [paramSeq release];
     
     /* The wrapped Y-value, subjectPublicKey BIT STRING */
     NSMutableData *pubKey = OFASN1CreateForTag(BER_TAG_BIT_STRING, 1 + [yData length]);
@@ -356,8 +351,6 @@ SecKeyRef OFXMLSigCopyKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
     NSMutableData *fullKey = OFASN1CreateForTag(BER_TAG_SEQUENCE | CLASS_CONSTRUCTED, [algorithmId length] + [pubKey length]);
     [fullKey appendData:algorithmId];
     [fullKey appendData:pubKey];
-    [algorithmId release];
-    [pubKey release];
     
 #if OFXMLSigGetKeyAsCSSM
     OFCSSMKey *key = [[OFCSSMKey alloc] initWithCSP:nil];
@@ -380,7 +373,6 @@ SecKeyRef OFXMLSigCopyKeyFromDSAKeyValue(xmlNode *keyInfo, NSError **outError)
     SecKeyRef key = copyKeyRefFromEncodedKey(kSecFormatOpenSSL, "DSA ", fullKey, outError);
 #endif
     
-    [fullKey release];
     
     return key;
 }
@@ -529,7 +521,6 @@ static NSData *composeECPublicKeyInfo(NSData *curveName, NSData *pubkeyBitString
     
     /* The whole shebang */
     NSMutableData *fullKey = OFASN1CreateForSequence(algorithmId, pubkeyBitString, nil);
-    [algorithmId release];
     
 #if 0
     {
@@ -540,7 +531,7 @@ static NSData *composeECPublicKeyInfo(NSData *curveName, NSData *pubkeyBitString
     }
 #endif
     
-    return [fullKey autorelease];
+    return fullKey;
 }
 
 /* The RFC4050 syntax for ECDSA keys is not great. See, for example, <http://lists.w3.org/Archives/Public/public-xmlsec/2008Nov/0018.html>. However, we have it here so we can test our interoperability with other peoples' test vectors. */
@@ -589,7 +580,6 @@ static NSData *getPublicKeyFromRFC4050KeyValue(xmlNode *keyvalue, int *log2_p, N
     
     NSData *result = composeECPublicKeyInfo(curveName, pubKey);
     
-    [pubKey release];
     
     return result;
 }
@@ -628,8 +618,75 @@ static NSData *getPublicKeyFromDSIG11KeyValue(xmlNode *keyvalue, int *log2_p, NS
     
     NSData *result = composeECPublicKeyInfo(curveName, pubKey);
     
-    [pubKey release];
     
     return result;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#else
+// Annoyingly, Apple's GCC doesn't understand "GCC diagnostic push". This code is at the end of the file to minimize the amount of other code unintentionally covered by the pragma here.
+//#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wdeprecated-declarations"
+#endif
+
+extern OSStatus
+SecKeyCreateWithCSSMKey(const CSSM_KEY *cssmKey, SecKeyRef *keyRef);
+
+SecKeyRef OFXMLSigCopyKeyFromHMACKey(NSString *hmacAlg, const void *bytes, unsigned int blen, NSError **outError)
+{
+    CSSM_ALGORITHMS keytype;
+    
+    if ([hmacAlg isEqualToString: (id)kSecDigestHMACSHA1]) {
+        keytype = CSSM_ALGID_SHA1HMAC;
+    } else if ([hmacAlg isEqualToString: (id)kSecDigestHMACMD5]) {
+        keytype = CSSM_ALGID_MD5HMAC;
+    } else {
+        if (outError) {
+            *outError = [NSError errorWithDomain:OFXMLSignatureErrorDomain
+                                            code:OFKeyNotAvailable
+                                        userInfo:[NSDictionary dictionaryWithObject:[NSString stringWithFormat:@"MacOSX does not support algid <%@>", hmacAlg] forKey:NSLocalizedFailureReasonErrorKey]];
+        }
+        return NULL;
+    }
+    
+    void *keyBuffer = malloc(blen);
+    memcpy(keyBuffer, bytes, blen);
+    
+    CSSM_KEY key = {
+        .KeyHeader = {
+            .HeaderVersion = CSSM_KEYHEADER_VERSION,
+            .CspId = gGuidAppleCSP,
+            .BlobType = CSSM_KEYBLOB_RAW,
+            .Format = CSSM_KEYBLOB_RAW_FORMAT_OCTET_STRING,
+            .AlgorithmId = keytype,
+            .KeyClass = CSSM_KEYCLASS_SESSION_KEY,
+            .KeyAttr = CSSM_KEYATTR_SENSITIVE,
+            .KeyUsage = CSSM_KEYUSE_VERIFY | CSSM_KEYUSE_SIGN,
+            .LogicalKeySizeInBits = 8 * blen,
+            .WrapAlgorithmId = CSSM_ALGID_NONE
+        },
+        .KeyData = {
+            .Length = blen,
+            .Data = keyBuffer  /* CSSM_FreeKey() will free this when the key is deallocated */
+        }
+    };
+    NSLog(@"key = %p, bytes = %p", &key, bytes);
+    
+    SecKeyRef result = NULL;
+    OSStatus err = SecKeyCreateWithCSSMKey(&key, &result);
+    
+    if (err != noErr || result == NULL) {
+        if (outError) {
+            *outError = [NSError errorWithDomain:NSOSStatusErrorDomain
+                                            code:err
+                                        userInfo:[NSDictionary dictionaryWithObject:[NSString stringWithFormat:@"Cannot create HMAC key <%@>", hmacAlg] forKey:NSLocalizedFailureReasonErrorKey]];
+        }
+        return NULL;
+    } else {
+        return result;
+    }
+}
+
 

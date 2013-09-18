@@ -7,10 +7,10 @@
 
 #import "OFXFileSnapshotUploadContentsTransfer.h"
 
-#import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/OFSAsynchronousOperation.h>
+#import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDAV/ODAVOperation.h>
 
+#import "OFXConnection.h"
 #import "OFXUploadContentsFileSnapshot.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
 #import "OFXFileState.h"
@@ -26,16 +26,16 @@ RCS_ID("$Id$")
     OFXUploadContentsFileSnapshot *_uploadingSnapshot;
     
     NSMutableArray *_writeOperations;
-    id <OFSAsynchronousOperation> _runningOperation;
+    id <ODAVAsynchronousOperation> _runningOperation;
     BOOL _cancelled;
     
     long long _totalBytesToWrite;
     long long _totalBytesWritten;
 }
 
-- (id)initWithFileManager:(OFSDAVFileManager *)fileManager currentSnapshot:(OFXFileSnapshot *)currentSnapshot forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
+- (id)initWithConnection:(OFXConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
 {    
-    if (!(self = [super initWithFileManager:fileManager currentSnapshot:currentSnapshot remoteTemporaryDirectory:remoteTemporaryDirectory]))
+    if (!(self = [super initWithConnection:connection currentSnapshot:currentSnapshot remoteTemporaryDirectory:remoteTemporaryDirectory]))
         return nil;
     
     _writeOperations = [NSMutableArray new];
@@ -80,7 +80,7 @@ RCS_ID("$Id$")
         
         _totalBytesToWrite += [fileData length];
         
-        id <OFSAsynchronousOperation> writeOperation = [self.fileManager asynchronousWriteData:fileData toURL:remoteFileURL atomically:NO];
+        ODAVOperation *writeOperation = [self.connection asynchronousPutData:fileData toURL:remoteFileURL];
         [_writeOperations addObject:writeOperation];
         
         return YES;
@@ -99,7 +99,7 @@ RCS_ID("$Id$")
         
         _totalBytesToWrite += [infoData length];
 
-        id <OFSAsynchronousOperation> writeOperation = [self.fileManager asynchronousWriteData:infoData toURL:infoURL atomically:NO];
+        ODAVOperation *writeOperation = [self.connection asynchronousPutData:infoData toURL:infoURL];
         [_writeOperations addObject:writeOperation];
     }
     
@@ -114,7 +114,7 @@ RCS_ID("$Id$")
     _cancelled = YES;
     
     [_uploadingSnapshot removeTemporaryCopyOfDocument];
-    [_runningOperation stopOperation];
+    [_runningOperation cancel];
 }
 
 - (void)finished:(NSError *)errorOrNil;
@@ -142,21 +142,37 @@ RCS_ID("$Id$")
 - (NSURL *)_makeTemporaryRemoteSnapshotURL:(NSError **)outError;
 {
     // Try to avoid redundant PROPFINDs in the common case -- assume remoteTemporaryDirectoryURL exists and fall back to a slower path if there is an error here.
+    
+    __block NSURL *resultURL;
+    __block NSError *resultError;
+    
+    OFXConnection *connection = self.connection;
     NSURL *temporaryRemoteSnapshotURL = self.temporaryRemoteSnapshotURL;
-    OFSDAVFileManager *fileManager = self.fileManager;
-    NSURL *redirectedTemporaryUploadURL = [fileManager createDirectoryAtURL:temporaryRemoteSnapshotURL attributes:nil error:NULL];
-    if (redirectedTemporaryUploadURL) {
-        temporaryRemoteSnapshotURL = redirectedTemporaryUploadURL; // Yay!
-    } else {
-        // Try creating the whole directory path.
-        temporaryRemoteSnapshotURL = [fileManager createDirectoryAtURLIfNeeded:temporaryRemoteSnapshotURL error:outError];
-        if (!temporaryRemoteSnapshotURL)
-            return nil;
-    }
+    
+    ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
+        [connection makeCollectionAtURL:temporaryRemoteSnapshotURL completionHandler:^(NSURL *createdURL, NSError *createError) {
+            if (createdURL) {
+                resultURL = createdURL; // Yay!
+                done();
+                return;
+            }
+            
+            // Try creating the whole directory path.
+            [connection makeCollectionAtURLIfMissing:temporaryRemoteSnapshotURL baseURL:connection.baseURL completionHandler:^(NSURL *createdURL, NSError *createError) {
+                if (createdURL)
+                    resultURL = createdURL; // Yay!
+                else
+                    resultError = createError;
+                done();
+            }];
+        }];
+    });
     
     // Remember the redirected URL
-    self.temporaryRemoteSnapshotURL = temporaryRemoteSnapshotURL;
-    return temporaryRemoteSnapshotURL;
+    self.temporaryRemoteSnapshotURL = resultURL;
+    if (!resultURL && outError)
+        *outError = resultError;
+    return resultURL;
 }
 
 - (void)_startWriteOperation;
@@ -169,23 +185,25 @@ RCS_ID("$Id$")
     _runningOperation = [_writeOperations lastObject];
     if (_runningOperation) {
         __weak OFXFileSnapshotUploadContentsTransfer *weakSelf = self;
-        _runningOperation.didFinish = ^(id <OFSAsynchronousOperation> op, NSError *errorOrNil){
+        _runningOperation.didFinish = ^(ODAVOperation *op, NSError *errorOrNil){
             OFXFileSnapshotUploadContentsTransfer *strongSelf = weakSelf;
-            OBASSERT_NOTNULL(strongSelf, @"Didn't wait for transfer to finish?");
+            if (!strongSelf)
+                return; // Cancelled, presumably
             OBASSERT([NSOperationQueue currentQueue] == strongSelf.transferOperationQueue);
             [strongSelf.operationQueue addOperationWithBlock:^{
                 [strongSelf _writeOperation:op didFinish:errorOrNil];
             }];
         };
-        _runningOperation.didSendBytes = ^(id <OFSAsynchronousOperation> op, long long byteCount){
+        _runningOperation.didSendBytes = ^(ODAVOperation *op, long long byteCount){
             OFXFileSnapshotUploadContentsTransfer *strongSelf = weakSelf;
-            OBASSERT_NOTNULL(strongSelf, @"Didn't wait for transfer to finish?");
+            if (!strongSelf)
+                return; // Cancelled, presumably
             OBASSERT([NSOperationQueue currentQueue] == strongSelf.transferOperationQueue);
             [strongSelf.operationQueue addOperationWithBlock:^{
                 [strongSelf _writeOperation:op didSendBytes:byteCount];
             }];
         };
-        [_runningOperation startOperationOnQueue:self.transferOperationQueue];
+        [_runningOperation startWithCallbackQueue:self.transferOperationQueue];
         return;
     }
     
@@ -199,7 +217,7 @@ RCS_ID("$Id$")
     [self finished:nil];
 }
 
-- (void)_writeOperation:(id <OFSAsynchronousOperation>)operation didFinish:(NSError *)error;
+- (void)_writeOperation:(ODAVOperation *)operation didFinish:(NSError *)error;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
     OBPRECONDITION(operation == _runningOperation);
@@ -218,7 +236,7 @@ RCS_ID("$Id$")
     [self _startWriteOperation];
 }
 
-- (void)_writeOperation:(id <OFSAsynchronousOperation>)operation didSendBytes:(long long)processedBytes;
+- (void)_writeOperation:(ODAVOperation *)operation didSendBytes:(long long)processedBytes;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
     

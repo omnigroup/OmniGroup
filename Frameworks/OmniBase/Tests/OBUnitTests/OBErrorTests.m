@@ -1,4 +1,4 @@
-// Copyright 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,7 @@ static void _testRoundTrip(OBErrorTests *self, NSError *error1)
 
 - (void)testToPropertyList;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     
     OBErrorWithErrno(&error, ENOENT, "open", @"foozle", @"Unable to open");
     NSDictionary *plist = [error toPropertyList];
@@ -103,7 +103,7 @@ static void _testRoundTrip(OBErrorTests *self, NSError *error1)
     STAssertTrue([[userInfo objectForKey:NSRecoveryAttempterErrorKey] isKindOfClass:[NSString class]], @"should be converted to a string");
     
     // We can't round trip this error since we can't decode the recovery attempter and should drop it on decode.
-    NSError *error2 = [[[NSError alloc] initWithPropertyList:plist] autorelease];
+    NSError *error2 = [[NSError alloc] initWithPropertyList:plist];
     STAssertNil([[error2 userInfo] objectForKey:NSRecoveryAttempterErrorKey], @"error recovery should be dropped when making a new error");
 }
 

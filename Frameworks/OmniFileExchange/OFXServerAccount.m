@@ -7,11 +7,10 @@
 
 #import "OFXServerAccount-Internal.h"
 
+#import <OmniDAV/ODAVErrors.h>
 #import <OmniFileExchange/OFXFeatures.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
-#import <OmniFileStore/Errors.h>
-#import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
@@ -44,11 +43,53 @@ static const NSUInteger ServerAccountPropertyListVersion = 1;
 @end
 
 #if OFX_MAC_STYLE_ACCOUNT
+
 static NSInteger OFXBookmarkDebug = 0;
 #define DEBUG_BOOKMARK(level, format, ...) do { \
     if (OFXBookmarkDebug >= (level)) \
         NSLog(@"BOOKMARK %@: " format, [self shortDescription], ## __VA_ARGS__); \
     } while (0)
+
+// When running unit tests on Mac OS X 10.9, we cannot use app-scoped bookmarks. This worked in 10.8, but under 10.9 we get a generic 'cannot open' error. We don't just check -[NSProcessInfo isSandboxed] since we archive the "bookmark" in a plist. We don't want to handle archiving/unarchiving different styles of bookmarks between sandboxed/non-sandboxed.
+static BOOL IsRunningUnitTests(void)
+{
+    static BOOL runningUnitTests;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *pathExtension = [[[OFController controllingBundle] bundlePath] pathExtension];
+        runningUnitTests = [pathExtension isEqual:@"octest"] || [pathExtension isEqual:@"otest"];
+    });
+    return runningUnitTests;
+}
+
+static NSData *bookmarkDataWithURL(NSURL *url, NSError **outError)
+{
+    if (IsRunningUnitTests()) {
+        NSData *data = [[url absoluteString] dataUsingEncoding:NSUTF8StringEncoding];
+        assert(data); // otherwise we need to fill out the outError
+        return data;
+    }
+    return [url bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil/*app scoped*/ error:outError];
+}
+
+static NSURL *URLWithBookmarkData(NSData *data, NSError **outError)
+{
+    if (IsRunningUnitTests()) {
+        NSString *urlString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        NSURL *url = [NSURL URLWithString:urlString];
+        assert(url); // otherwise we need to fill out the outError
+        return url;
+    }
+    BOOL stale = NO;
+    NSURL *url = [NSURL URLByResolvingBookmarkData:data options:NSURLBookmarkResolutionWithoutUI|NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil/*app-scoped*/ bookmarkDataIsStale:&stale error:outError];
+    if (!url)
+        return nil;
+    if (stale) {
+        NSLog(@"Archived bookmark data was flagged as stale");
+        OBFinishPortingLater("What does this mean? Original URL moved?");
+    }
+    return url;
+}
 #endif
 
 @implementation OFXServerAccount
@@ -64,6 +105,7 @@ static NSInteger OFXBookmarkDebug = 0;
     NSURL *_localDocumentsURL;
 #endif
 }
+
 
 + (void)initialize;
 {
@@ -87,7 +129,7 @@ static NSInteger OFXBookmarkDebug = 0;
             return NO;
         }
         for (NSURL *existingURL in existingURLs) {
-            if (OFSShouldIgnoreURLDuringScan(existingURL))
+            if (OFShouldIgnoreURLDuringScan(existingURL))
                 continue;
             
             NSString *description = NSLocalizedStringFromTableInBundle(@"Local documents folder cannot be used.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
@@ -259,7 +301,7 @@ static NSInteger OFXBookmarkDebug = 0;
     // Add a per-account random ID.
     NSURL *documentsURL = [localDocumentsArea URLByAppendingPathComponent:OFXMLCreateID() isDirectory:YES];
     
-    // Currently has to end in "Documents" for OFSDocumentStoreScopeCacheKeyForURL().
+    // Currently has to end in "Documents" for ODSScopeCacheKeyForURL().
     documentsURL = [documentsURL URLByAppendingPathComponent:@"Documents" isDirectory:YES];
     
     return documentsURL;
@@ -281,36 +323,71 @@ static NSInteger OFXBookmarkDebug = 0;
     return fixedDocumentsURL;
 }
 
-+ (BOOL)deleteGeneratedLocalDocumentsURL:(NSURL *)documentsURL error:(NSError **)outError;
++ (void)deleteGeneratedLocalDocumentsURL:(NSURL *)documentsURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 {
-    NSURL *localDocumentsArea = [self _localDocumentsArea:outError];
-    if (!localDocumentsArea)
-        return NO;
+    __autoreleasing NSError *error;
+    NSURL *localDocumentsArea = [self _localDocumentsArea:&error];
+    if (!localDocumentsArea) {
+        if (completionHandler)
+            completionHandler(error);
+        return;
+    }
     
     if (![[documentsURL lastPathComponent] isEqual:@"Documents"]) {
         NSLog(@"Refusing to delete local documents URL %@ because it doesn't end in \"Documents\".", documentsURL);
-        OFXError(outError, OFXAccountLocalDocumentsDirectoryInvalidForDeletion, @"Error attempting to delete local account documentts", @"The passed in URL doesn't end in \"Documents\"");
-        return NO;
+        if (completionHandler) {
+            error = nil;
+            OFXError(&error, OFXAccountLocalDocumentsDirectoryInvalidForDeletion, @"Error attempting to delete local account documentts", @"The passed in URL doesn't end in \"Documents\"");
+            completionHandler(error);
+        }
+        return;
     }
     
     documentsURL = [documentsURL URLByDeletingLastPathComponent]; // Remove 'Documents', leaving the per-account random ID
 
     if (![[documentsURL URLByDeletingLastPathComponent] isEqual:localDocumentsArea]) {
         NSLog(@"Refusing to delete local documents URL %@ because it isn't in the local documents area %@.", documentsURL, localDocumentsArea);
-        OFXError(outError, OFXAccountLocalDocumentsDirectoryInvalidForDeletion, @"Error attempting to delete local account documentts", @"The passed in URL is not inside the local documents area.");
-        return NO;
+        if (completionHandler) {
+            error = nil;
+            OFXError(&error, OFXAccountLocalDocumentsDirectoryInvalidForDeletion, @"Error attempting to delete local account documentts", @"The passed in URL is not inside the local documents area.");
+            completionHandler(error);
+        }
+        return;
     }
     
-    // Looks good!
-    __autoreleasing NSError *removeError;
-    if (![[NSFileManager defaultManager] atomicallyRemoveItemAtURL:documentsURL error:&removeError]) {
-        NSLog(@"Error removing local account documents at %@: %@", documentsURL, [removeError toPropertyList]);
-        if (outError)
-            *outError = removeError;
-        return NO;
-    }
+    // Looks good! Go ahead and do the deletion. We need to do this with file coordination since there might still be documents open in some edge conditions. For example, on iOS a preview might be being generated, in which case the document will be open (and it will not accommodate deletion until that is done).
+    // We can't block the main queue here or we'll deadlock, so this needs to be done on a background queue.
     
-    return YES;
+    NSOperationQueue *deletionQueue = [[NSOperationQueue alloc] init];
+    deletionQueue.name = @"com.omnigroup.OmniFileExchange.AccountDeletion";
+    
+    completionHandler = [completionHandler copy];
+    
+    [deletionQueue addOperationWithBlock:^{
+        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+        __autoreleasing NSError *coordinationError;
+        
+        BOOL ok = [coordinator removeItemAtURL:documentsURL error:&coordinationError byAccessor:^BOOL(NSURL *newURL, NSError **outRemoveError) {
+            __autoreleasing NSError *removeError;
+            if (![[NSFileManager defaultManager] atomicallyRemoveItemAtURL:newURL error:&removeError]) {
+                NSLog(@"Error removing local account documents at %@: %@", newURL, [removeError toPropertyList]);
+                if (outRemoveError)
+                    *outRemoveError = removeError;
+                return NO;
+            }
+            return YES;
+        }];
+        
+        if (completionHandler) {
+            NSError *completionError = coordinationError;
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                if (!ok)
+                    completionHandler(completionError);
+                else
+                    completionHandler(nil);
+            }];
+        }
+    }];
 }
 
 #endif
@@ -342,7 +419,8 @@ static NSInteger OFXBookmarkDebug = 0;
     
 #if OFX_MAC_STYLE_ACCOUNT
     __autoreleasing NSError *bookmarkError;
-    _localDocumentsBookmarkData = [localDocumentsURL bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil/*app scoped*/ error:&bookmarkError];
+    
+    _localDocumentsBookmarkData = bookmarkDataWithURL(localDocumentsURL, &bookmarkError);
     if (!_localDocumentsBookmarkData) {
         [bookmarkError log:@"Error creating app-scoped bookmark data for %@", localDocumentsURL];
         if (outError)
@@ -459,8 +537,7 @@ static NSInteger OFXBookmarkDebug = 0;
         _accessedLocalDocumentsBookmarkURL = nil;
     }
         
-    BOOL stale;
-    _localDocumentsBookmarkURL = [NSURL URLByResolvingBookmarkData:_localDocumentsBookmarkData options:NSURLBookmarkResolutionWithoutUI|NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil/*app-scoped*/ bookmarkDataIsStale:&stale error:outError];
+    _localDocumentsBookmarkURL = URLWithBookmarkData(_localDocumentsBookmarkData,  outError);
     DEBUG_BOOKMARK(1, @"Resolved bookmark data to %@", _localDocumentsBookmarkURL);
     if (!_localDocumentsBookmarkURL) {
         OFXError(outError, OFXCannotResolveLocalDocumentsURL,
@@ -468,12 +545,7 @@ static NSInteger OFXBookmarkDebug = 0;
                  NSLocalizedStringFromTableInBundle(@"Could not resolve archived bookmark for synchronized documents folder.", @"OmniFileExchange", OMNI_BUNDLE, @"error reason"));
         return NO;
     }
-    
-    if (stale) {
-        NSLog(@"Archived bookmark data was flagged as stale");
-        OBFinishPortingLater("What does this mean? Original URL moved?");
-    }
-    
+        
     DEBUG_BOOKMARK(1, @"Starting security scoped access of %@", _localDocumentsBookmarkURL);
     if (![_localDocumentsBookmarkURL startAccessingSecurityScopedResource]) {
         OFXError(outError, OFXCannotResolveLocalDocumentsURL,
@@ -581,7 +653,7 @@ static NSInteger OFXBookmarkDebug = 0;
     void (^report)(void) = ^{
         if (reason)
             [error logWithReason:reason];
-        if (error && [self.lastError hasUnderlyingErrorDomain:OFSErrorDomain code:OFSCertificateNotTrusted]) // cert trust errors are sticky and not overridden by following errors
+        if (error && [self.lastError hasUnderlyingErrorDomain:ODAVErrorDomain code:ODAVCertificateNotTrusted]) // cert trust errors are sticky and not overridden by following errors
             return;
         self.lastError = error; // Fire KVO
     };
@@ -759,3 +831,8 @@ static NSInteger OFXBookmarkDebug = 0;
 }
 
 @end
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+NSString * const OFXAccountTransfersNeededNotification = @"OFXAccountTransfersNeededNotification";
+NSString * const OFXAccountTransfersNeededDescriptionKey = @"OFXAccountTransfersNeededDescription";
+#endif

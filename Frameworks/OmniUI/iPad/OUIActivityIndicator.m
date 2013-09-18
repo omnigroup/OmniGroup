@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,7 +38,7 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
     if (!(self = [super init]))
         return nil;
     
-    _view = [view retain];
+    _view = view;
     _color = [color copy];
      
     return self;
@@ -50,22 +50,16 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
         OBASSERT_NOT_REACHED("-hide should really have been called the right number of times");
         [self _remove];
     }
-    
-    [_view release];
-    [_color release];
-    
-    [super dealloc];
 }
 
 - (void)_add;
 {
     OBPRECONDITION(_activityIndicator == nil);
-    OBPRECONDITION(CFDictionaryGetValue(ViewToActivityIndicator, _view) == nil);
+    OBPRECONDITION(CFDictionaryGetValue(ViewToActivityIndicator, (__bridge CFTypeRef)_view) == nil);
 
-    CFDictionaryAddValue(ViewToActivityIndicator, _view, self);
+    CFDictionaryAddValue(ViewToActivityIndicator, (__bridge CFTypeRef)_view, (__bridge const void *)(self));
 
-    OUIBeginWithoutAnimating
-    {
+    [UIView performWithoutAnimation:^{
         _activityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
         _activityIndicator.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin;
         
@@ -79,8 +73,7 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
         _activityIndicator.alpha = 0;
         
         [_view.superview addSubview:_activityIndicator];
-    }
-    OUIEndWithoutAnimating;
+    }];
     
     // Just fade this in
     [UIView animateWithDuration:0.3 animations:^{
@@ -91,13 +84,12 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
 - (void)_remove;
 {
     OBPRECONDITION(_activityIndicator);
-    OBPRECONDITION(CFDictionaryGetValue(ViewToActivityIndicator, _view) == self);
+    OBPRECONDITION((__bridge OUIActivityIndicator *)CFDictionaryGetValue(ViewToActivityIndicator, (__bridge CFTypeRef)_view) == self);
     
-    CFDictionaryRemoveValue(ViewToActivityIndicator, _view);
+    CFDictionaryRemoveValue(ViewToActivityIndicator, (__bridge CFTypeRef)_view);
     
     [_activityIndicator stopAnimating];
     [_activityIndicator removeFromSuperview];
-    [_activityIndicator release];
     _activityIndicator = nil;
 }
 
@@ -128,11 +120,9 @@ static CFMutableDictionaryRef ViewToActivityIndicator = NULL;
 
 + (OUIActivityIndicator *)showActivityIndicatorInView:(UIView *)view withColor:(UIColor *)color;
 {
-    OUIActivityIndicator *indicator = (OUIActivityIndicator *)CFDictionaryGetValue(ViewToActivityIndicator, view);
-    if (indicator)
-        [[indicator retain] autorelease];
-    else
-        indicator = [[[OUIActivityIndicator alloc] initWithView:view color:color] autorelease];
+    OUIActivityIndicator *indicator = (__bridge OUIActivityIndicator *)CFDictionaryGetValue(ViewToActivityIndicator, (__bridge CFTypeRef)view);
+    if (!indicator)
+        indicator = [[OUIActivityIndicator alloc] initWithView:view color:color];
     
     [indicator _show];
     

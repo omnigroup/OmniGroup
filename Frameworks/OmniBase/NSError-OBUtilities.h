@@ -38,6 +38,9 @@ extern NSError *_OBWrapUnderlyingError(NSError *underlyingError, NSString *domai
 #define OBChainError(error) _OBError(error, OBErrorDomain, OBErrorChained, __FILE__, __LINE__, nil)
 extern NSError *OBFirstUnchainedError(NSError *error);
 
+extern NSError *_OBChainedError(NSError *error, const char *fileName, unsigned line);
+#define OBChainedError(error) _OBChainedError(error, __FILE__, __LINE__)
+    
 #define OBUserCancelledError(outError) _OBError(outError, NSCocoaErrorDomain, NSUserCancelledError, __FILE__, __LINE__, nil)
     
 // Unlike the other routines in this file, but like all the other Foundation routines, this takes its key-value pairs with each value followed by its key.  The disadvantage to this is that you can't easily have runtime-ignored values (the nil value is a terminator rather than being skipped).

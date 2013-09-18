@@ -7,9 +7,9 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
-#import <UIKit/UIScrollView.h>
 #import <UIKit/UIControl.h>
+
+#import <UIKit/UIScrollView.h>
 
 @class OUIInspectorOptionWheelItem;
 
@@ -19,7 +19,7 @@
 - (OUIInspectorOptionWheelItem *)addItemWithImageNamed:(NSString *)imageName value:(id)value;
 
 @property(copy,nonatomic) NSArray *items;
-@property(retain,nonatomic) id selectedValue; // animates
+@property(strong,nonatomic) id selectedValue; // animates
 @property(nonatomic) BOOL showHighlight;   // selected item is highlighted; off by default
 
 - (void)setSelectedValue:(id)value animated:(BOOL)animated;

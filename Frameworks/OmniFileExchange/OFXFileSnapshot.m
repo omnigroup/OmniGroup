@@ -7,7 +7,6 @@
 
 #import "OFXFileSnapshot.h"
 
-#import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/NSData-OFSignature.h>
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
@@ -259,7 +258,7 @@ static NSDictionary *_recordVersionContents(NSURL *localDocumentURL, NSFileCoord
 {
     OBPRECONDITION(localSnapshotURL);
     OBPRECONDITION([localSnapshotURL checkResourceIsReachableAndReturnError:NULL]);
-    OBPRECONDITION(OFSURLIsStandardized(localSnapshotURL));
+    OBPRECONDITION(OFURLIsStandardized(localSnapshotURL));
 
     if (!(self = [super init]))
         return nil;
@@ -313,7 +312,7 @@ static NSDictionary *_recordVersionContents(NSURL *localDocumentURL, NSFileCoord
 {
     // The parent directory should exist and be standardized, but the target might not.
     OBPRECONDITION([[localTargetURL URLByDeletingLastPathComponent] checkResourceIsReachableAndReturnError:NULL]);
-    OBPRECONDITION(OFSURLIsStandardized([localTargetURL URLByDeletingLastPathComponent]));
+    OBPRECONDITION(OFURLIsStandardized([localTargetURL URLByDeletingLastPathComponent]));
     OBPRECONDITION(![NSString isEmptyString:localRelativePath]);
     
     __autoreleasing NSError *error = nil;

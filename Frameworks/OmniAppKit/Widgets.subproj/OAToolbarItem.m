@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -101,7 +101,7 @@ RCS_ID("$Id$");
         [self setEnabled:[_nonretained_delegate validateToolbarItem:self]];
 }
 
-// Called when the toolbar item is moved into the "overflow" menu (accessible via the double-chevron at the end of the toolbar).
+// Called when the toolbar item is moved into the "overflow" menu (accessible via the double-chevron at the end of the toolbar) or toolbar is text-only.
 - (NSMenuItem *)menuFormRepresentation;
 {
     NSMenuItem *menuFormRepresentation = [super menuFormRepresentation];
@@ -111,8 +111,6 @@ RCS_ID("$Id$");
         [menuFormRepresentation setImage:image];
         [image release];
     }
-    [menuFormRepresentation setTarget:[self target]];
-    [menuFormRepresentation setAction:[self action]];
     
     return menuFormRepresentation;
 }

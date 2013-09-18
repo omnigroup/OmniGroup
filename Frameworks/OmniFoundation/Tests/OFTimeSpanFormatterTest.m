@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,7 +69,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
     
-    [formatter release];
 }
 
 - (void)testStandardCalendarTimeFormatter;
@@ -88,7 +87,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
     
-    [formatter release];
 }
 
 - (void)testAllFormats;
@@ -109,7 +107,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 
-    [formatter release];
 }
 
 - (void)testNoFormats;
@@ -133,7 +130,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 
-    [formatter release];
 }
 
 
@@ -158,7 +154,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 
-    [formatter release];
 }
 
 - (void)testNoMonth;
@@ -182,7 +177,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 
-    [formatter release];
 }
 
 - (void)testNoWeeks;
@@ -206,7 +200,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 
-    [formatter release];
 }
 
 - (void)testNoDays;
@@ -230,7 +223,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 
-    [formatter release];
 }
 
 - (void)testNoHours;
@@ -254,7 +246,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 
-    [formatter release];
 }
 
 - (void)testDefaultEntryHours;
@@ -278,7 +269,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 
-    [formatter release];
 }
 
 - (void)testDefaultEntryDays;
@@ -302,7 +292,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 
-    [formatter release];
 }
 
 - (void)testDefaultEntryWeeks;
@@ -326,7 +315,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
 
-    [formatter release];
 }
 
 - (void)testDefaultEntryMonths;
@@ -350,7 +338,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
     
-    [formatter release];
 }
 
 - (void)testDefaultEntryYears;
@@ -374,7 +361,6 @@ RCS_ID("$Id$");
     should ([formatter getObjectValue:&timeSpan forString:timeSpanString errorDescription:nil]);
     shouldBeEqual (expectedTimeSpanString, [formatter stringForObjectValue:timeSpan]);
     
-    [formatter release];
 }
 
 

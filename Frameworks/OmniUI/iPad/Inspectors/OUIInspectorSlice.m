@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorPane.h>
+#import <OmniUI/OUIEmptyPaddingInspectorSlice.h>
+#import <OmniUI/OUIInspectorSliceView.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
@@ -21,7 +23,17 @@ RCS_ID("$Id$");
 // OUIInspectorSlice
 OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfaceFromInspectedObjects:
 
+
+@interface OUIInspectorSlice ()
+@property(nonatomic,retain) UIView *sliceBackgroundView;
+@end
+
+
 @implementation OUIInspectorSlice
+{
+    OUIInspectorPane *_detailPane;
+    UIView *_sliceBackgroundView;
+}
 
 + (void)initialize;
 {
@@ -33,7 +45,53 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 
 + (instancetype)slice;
 {
-    return [[[self alloc] init] autorelease];
+    return [[self alloc] init];
+}
+
++ (UIEdgeInsets)sliceAlignmentInsets;
+{
+    // Try to match the default UITableView insets for our default insets.
+    static dispatch_once_t predicate;
+    static UIEdgeInsets alignmentInsets = (UIEdgeInsets) { .left = 15.0f, .right = 15.0f, .top = 0.0f, .bottom = 0.0f };
+    dispatch_once(&predicate, ^{
+        UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
+        UIEdgeInsets separatorInsets = tableView.separatorInset;
+        if (separatorInsets.left != 0.0f) {
+            alignmentInsets.left = separatorInsets.left;
+        }
+        if (separatorInsets.right != 0.0f) {
+            alignmentInsets.right = separatorInsets.right;
+        }
+    });
+    return alignmentInsets;
+}
+
++ (UIColor *)sliceBackgroundColor;
+{
+    return [UIColor whiteColor];
+}
+
++ (UIColor *)sliceSeparatorColor;
+{
+#if 1
+    // iOS 7 GM bug: Table views in popovers draw their separators in very light gray the second time the popover is displayed. This is to match what they end up drawing on subsequent displays, so at least we'll be consistent.
+    // RADAR 14969546 : <bug:///94533> (UITableViews in popovers lose their separator color after they are first presented)
+    return [UIColor colorWithWhite:0.9f alpha:1.0f];
+#else
+    // Use UITableView's default separator color as our default separator color.
+    static dispatch_once_t predicate;
+    static UIColor *separatorColor = nil;
+    dispatch_once(&predicate, ^{
+        UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
+        separatorColor = tableView.separatorColor;
+    });
+    return separatorColor;
+#endif
+}
+
++ (CGFloat)paddingBetweenSliceGroups;
+{
+    return 35.0f; // Tries to match the space in between UITableView sections.
 }
 
 + (NSString *)nibName;
@@ -59,13 +117,17 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     
     OBASSERT_NOT_IMPLEMENTED(self, getColorsFromObject:); // -> colorForObject:
     
+    self.alignmentInsets = [[self class] sliceAlignmentInsets];
+    self.groupPosition = OUIInspectorSliceGroupPositionAlone;
+    self.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
+    
     return self;
 }
 
 - (void)dealloc;
 {
-    [_detailPane release];
-    [super dealloc];
+    // Attempting to fix ARC weak reference cleanup crasher in <bug:///93163> (Crash after setting font color on Level 1 style)
+    _detailPane.parentSlice = nil;
 }
 
 - (OUIStackedSlicesInspectorPane *)containingPane;
@@ -78,6 +140,117 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     OUIInspector *inspector = self.containingPane.inspector;
     OBASSERT(inspector);
     return inspector;
+}
+
+- (void)setAlignmentInsets:(UIEdgeInsets)newValue;
+{
+    if (UIEdgeInsetsEqualToEdgeInsets(_alignmentInsets, newValue)) {
+        return;
+    }
+    
+    _alignmentInsets = newValue;
+    
+    if (self.isViewLoaded) {
+        UIView *view = self.view;
+        if ([view respondsToSelector:@selector(setInspectorSliceAlignmentInsets:)]) {
+            [(id)view setInspectorSliceAlignmentInsets:_alignmentInsets];
+        }
+    }
+}
+
+- (void)setGroupPosition:(OUIInspectorSliceGroupPosition)newValue;
+{
+    if (_groupPosition == newValue) {
+        return;
+    }
+    
+    _groupPosition = newValue;
+    
+    if (self.isViewLoaded) {
+        UIView *view = self.view;
+        if ([view respondsToSelector:@selector(setInspectorSliceGroupPosition:)]) {
+            [(id)view setInspectorSliceGroupPosition:_groupPosition];
+        }
+    }
+}
+
+- (void)_pushSeparatorColor;
+{
+    if (self.isViewLoaded) {
+        UIView *view = self.view;
+        if ([view respondsToSelector:@selector(setInspectorSliceSeparatorColor:)]) {
+            [(id)view setInspectorSliceSeparatorColor:_separatorColor];
+        }
+        if ([view isKindOfClass:[UITableView class]]) {
+            [(UITableView *)view setSeparatorColor:_separatorColor];
+        }
+        
+        view = self.sliceBackgroundView;
+        if ([view respondsToSelector:@selector(setInspectorSliceSeparatorColor:)]) {
+            [(id)view setInspectorSliceSeparatorColor:_separatorColor];
+        }
+        if ([view isKindOfClass:[UITableView class]]) {
+            [(UITableView *)view setSeparatorColor:_separatorColor];
+        }
+    }
+}
+
+- (void)setSeparatorColor:(UIColor *)newValue;
+{
+    if (OFISEQUAL(_separatorColor,newValue)) {
+        return;
+    }
+    
+    _separatorColor = newValue;
+    
+    [self _pushSeparatorColor];
+}
+
+- (BOOL)includesInspectorSliceGroupSpacerOnTop;
+{
+    UIView *contentView = self.view;
+    if ([contentView isKindOfClass:[UITableView class]]) {
+        UITableView *tableView = (UITableView *)contentView;
+        if (tableView.style == UITableViewStyleGrouped) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+- (BOOL)includesInspectorSliceGroupSpacerOnBottom;
+{
+    UIView *contentView = self.view;
+    if ([contentView isKindOfClass:[UITableView class]]) {
+        UITableView *tableView = (UITableView *)contentView;
+        if (tableView.style == UITableViewStyleGrouped) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+- (UIView *)sliceBackgroundView;
+{
+    if (!self.isViewLoaded) {
+        [self view]; // The background view normally gets loaded when the content view does, so if that's not loaded yet, do so now.
+    }
+    OBASSERT(_sliceBackgroundView != self.view);
+    return _sliceBackgroundView;
+}
+
+- (UIView *)makeSliceBackgroundView;
+{
+    // If we're already providing group spacers on top and bottom, we won't need a slice background
+    if (self.includesInspectorSliceGroupSpacerOnTop && self.includesInspectorSliceGroupSpacerOnBottom) {
+        return nil;
+    }
+    
+    OUIInspectorSliceView *view = [[OUIInspectorSliceView alloc] init];
+#if DEBUG_OUIINSPECTORSLICEVIEW
+    view.debugIdentifier = NSStringFromClass([self class]);
+#endif // DEBUG_OUIINSPECTORSLICEVIEW
+    return view;
 }
 
 + (void)configureTableViewBackground:(UITableView *)tableView;
@@ -111,29 +284,78 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
     }
 }
 
+// If we have a background view, we want to use it instead of the content view when calculating vertical spacing.
+- (UIView *)_viewForVerticalPaddingCalculations;
+{
+    UIView *backgroundView = self.sliceBackgroundView;
+    OBASSERT_IF(backgroundView != nil, self.view != nil);
+    return (backgroundView != nil) ? backgroundView : self.view;
+}
+
 - (CGFloat)paddingToInspectorTop;
 {
-    return 10 - _borderOffsetFromEdge(self.view, CGRectMinYEdge); // More than the bottom due to the inner shadow on the popover controller.
+    CGFloat padding = 0.0f;
+    if (!self.includesInspectorSliceGroupSpacerOnTop) {
+        padding += [[self class] paddingBetweenSliceGroups];
+    }
+    padding -= _borderOffsetFromEdge(self._viewForVerticalPaddingCalculations, CGRectMinYEdge);
+    return padding;
 }
 
 - (CGFloat)paddingToInspectorBottom;
 {
-    return 10 - _borderOffsetFromEdge(self.view, CGRectMaxYEdge);
+    CGFloat padding = 55 - _borderOffsetFromEdge(self._viewForVerticalPaddingCalculations, CGRectMaxYEdge);
+    if (self.includesInspectorSliceGroupSpacerOnBottom) {
+        padding -= [[self class] paddingBetweenSliceGroups];
+    }
+    return padding;
 }
 
 - (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice remainingHeight:(CGFloat)remainingHeight;
 {
     OBPRECONDITION(previousSlice);
+    
+    // If we're in the middle / at the end of a group, we don't want any padding between us and the previous slice.
+    OUIInspectorSliceGroupPosition groupPosition = self.groupPosition;
+    if ((groupPosition == OUIInspectorSliceGroupPositionCenter) || (groupPosition == OUIInspectorSliceGroupPositionLast)) {
+        return _borderOffsetFromEdge(self._viewForVerticalPaddingCalculations, CGRectMinYEdge);
+    }
+    
+    // Padding slices and background slice views are assumed to have no padding, and we assume we don't want any default padding between them and their bordering slices.
+    if (previousSlice.includesInspectorSliceGroupSpacerOnBottom || (previousSlice.sliceBackgroundView != nil)) {
+        return _borderOffsetFromEdge(self._viewForVerticalPaddingCalculations, CGRectMinYEdge);
+    }
+    if (self.includesInspectorSliceGroupSpacerOnTop || (self.sliceBackgroundView != nil)) {
+        return _borderOffsetFromEdge(previousSlice._viewForVerticalPaddingCalculations, CGRectMaxYEdge);
+    }
+    
+    // Otherwise, we assume 14 points between slices, and adjust as appropriate based on the border offsets for the slices to get the right visual spacing.
     CGFloat result = 14 - _borderOffsetFromEdge(self.view, CGRectMinYEdge) - _borderOffsetFromEdge(previousSlice.view, CGRectMaxYEdge);
     
     OBASSERT(result >= -14.0); // if the combined border of the views is too large, we can end up overlapping content and causing badness
     return result;    
 }
 
-- (CGFloat)paddingToInspectorSides;
+- (CGFloat)paddingToInspectorLeft;
 {
     // The goal is to match the inset of grouped table view cells (for cases where we have controls next to one), though individual inspectors may need to adjust this.
-    return 9 - _borderOffsetFromEdge(self.view, CGRectMinXEdge); // Assumes the left/right border offsets are the same, which they usually are with shadows being done vertically.
+    return self.alignmentInsets.left - _borderOffsetFromEdge(self.view, CGRectMinXEdge);
+}
+
+- (CGFloat)paddingToInspectorRight;
+{
+    // The goal is to match the inset of grouped table view cells (for cases where we have controls next to one), though individual inspectors may need to adjust this.
+    return self.alignmentInsets.right - _borderOffsetFromEdge(self.view, CGRectMaxXEdge);
+}
+
+- (CGFloat)topInsetFromSliceBackgroundView;
+{
+    return (_sliceBackgroundView != nil) ? _sliceBackgroundView.inspectorSliceTopBorderHeight : 0.0f;
+}
+
+- (CGFloat)bottomInsetFromSliceBackgroundView;
+{
+    return (_sliceBackgroundView != nil) ? _sliceBackgroundView.inspectorSliceBottomBorderHeight : 0.0f;
 }
 
 // Called on both height-resizable and non-resizable slices. Subclasses must implement this to be height sizeable. The default implementation is to just return the current view height (assuming a fixed height view). For backwards compatibility, if the view *is* height sizeable, we use kOUIInspectorWellHeight.
@@ -158,8 +380,7 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
     // Just expect this to get called when loading xib. If we want to swap out details, we'll need to only do it when the detail isn't on screen.
     OBPRECONDITION(!_detailPane);
     
-    [_detailPane autorelease];
-    _detailPane = [detailPane retain];
+    _detailPane = detailPane;
     
     // propagate the inspector if we already got it set.
     _detailPane.parentSlice = self;
@@ -172,6 +393,11 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
         return;
     
     [self.inspector pushPane:_detailPane];
+}
+
+- (BOOL)isAppropriateForInspectorPane:(OUIStackedSlicesInspectorPane *)containingPane;
+{
+    return YES;
 }
 
 - (BOOL)isAppropriateForInspectedObjects:(NSArray *)objects;
@@ -229,7 +455,7 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 
 - (void)containingPaneDidLayout;
 {
-    // For subclasses.    
+    // For subclasses. ([TAB] I believe diverse bad things may happen if you use this to provoke any layout changes, ranging from incorrect borderEdgeInsets to infinite layout recursion. Maybe.)
 }
 
 - (NSNumber *)singleSelectedValueForCGFloatSelector:(SEL)sel;
@@ -306,6 +532,26 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 
 #pragma mark -
 #pragma mark UIViewController subclass
+
+- (void)setView:(UIView *)newValue;
+{
+    [super setView:newValue];
+    
+    UIView *view = self.view;
+    if (view == nil) {
+        self.sliceBackgroundView = nil;
+    } else if (_sliceBackgroundView == nil) {
+        self.sliceBackgroundView = [self makeSliceBackgroundView];
+    }
+    
+    if ([view respondsToSelector:@selector(setInspectorSliceAlignmentInsets:)]) {
+        [(id)view setInspectorSliceAlignmentInsets:_alignmentInsets];
+    }
+    if ([view respondsToSelector:@selector(setInspectorSliceGroupPosition:)]) {
+        [(id)view setInspectorSliceGroupPosition:self.groupPosition];
+    }
+    [self _pushSeparatorColor];
+}
 
 - (void)fakeDidReceiveMemoryWarning;
 {

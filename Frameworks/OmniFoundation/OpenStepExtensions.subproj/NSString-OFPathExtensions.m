@@ -1,4 +1,4 @@
-// Copyright 1999-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -103,6 +103,7 @@ NSArray *OFCommonRootPathComponents(NSString *filename, NSString *otherFilename,
     return [[NSString pathWithComponents:stepsUpArray] stringByStandardizingPath];
 }
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSString *)hfsPathFromPOSIXPath;
 {
     CFStringRef hfsPath = NULL;
@@ -118,6 +119,7 @@ NSArray *OFCommonRootPathComponents(NSString *filename, NSString *otherFilename,
     
     return [NSMakeCollectable(hfsPath) autorelease];
 }
+#endif
 
 - (void)splitName:(NSString **)outName andCounter:(NSUInteger *)outCounter;
 {

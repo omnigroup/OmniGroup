@@ -68,6 +68,8 @@ BOOL OQColorComponentsEqual(OQLinearRGBA x, OQLinearRGBA y)
 
 OQLinearRGBA OQGetColorRefComponents(CGColorRef c)
 {
+    OBPRECONDITION(!c || CFGetTypeID(c) == CGColorGetTypeID());
+    
     OQLinearRGBA l;
     if (c != NULL) {
         CGColorSpaceRef colorSpace = CGColorGetColorSpace(c);
@@ -283,6 +285,33 @@ CGColorRef OQCreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor
 CGColorRef OQCreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpace, NSArray *colors)
 {
     OBPRECONDITION(CGColorGetAlpha((CGColorRef)[colors objectAtIndex:0]) == 1.0f);
+
+    static NSMapTable *compositedColorCache;
+    static NSLock *cacheLock;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // Mapping CFHashCodes to CGColorRefs that we'll retain ourselves.
+        NSPointerFunctions *keyFunctions = [NSPointerFunctions pointerFunctionsWithOptions:NSPointerFunctionsIntegerPersonality|NSPointerFunctionsOpaqueMemory];
+        NSPointerFunctions *valueFunctions = [NSPointerFunctions pointerFunctionsWithOptions:NSPointerFunctionsStructPersonality | NSPointerFunctionsOpaqueMemory];
+        compositedColorCache = [[NSMapTable alloc] initWithKeyPointerFunctions:keyFunctions valuePointerFunctions:valueFunctions capacity:10];
+        cacheLock = [[NSLock alloc] init];
+    });
+
+    CFHashCode hashCode = CFHash(destinationColorSpace);
+#define ROLL_AMOUNT (7)
+    for (id obj in colors) {
+        hashCode = (hashCode << ROLL_AMOUNT) | (hashCode >> (CHAR_BIT * sizeof(CFHashCode) - ROLL_AMOUNT));
+        hashCode ^= CFHash((CGColorRef)obj);
+    }
+    
+    [cacheLock lock];
+    id cachedObj = [compositedColorCache objectForKey:(id)hashCode];
+    [cacheLock unlock];
+    if (cachedObj != nil) {
+        CGColorRef cachedColor = (CGColorRef)cachedObj;
+        CGColorRetain(cachedColor);
+        return cachedColor;
+    }
     
     // We calculate the composite color by rendering into a 1x1px 8888RGBA bitmap.
     unsigned char bitmapData[4] = {0, 0, 0, 0};
@@ -306,6 +335,24 @@ CGColorRef OQCreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpac
     OBASSERT(floatComponents[3] == 1.0f);
     
     CGColorRef color = CGColorCreate(destinationColorSpace, floatComponents);
+
+    // Since individual calculations are inexpensive, lets try the cheapest cache management strategy: dump everything once we're full.
+    NSUInteger maximumCacheSize = 100;
+    [cacheLock lock];
+    {
+        if ([compositedColorCache count] >= maximumCacheSize) {
+            NSEnumerator *objectEnumerator = [compositedColorCache objectEnumerator];
+            for (id colorObject in objectEnumerator) {
+                CGColorRef color = (CGColorRef)colorObject;
+                CGColorRelease(color);
+            }
+            [compositedColorCache removeAllObjects];
+        }
+        
+        CGColorRetain(color); // extra retain since we're managing memory for the cache
+        [compositedColorCache setObject:(id)color forKey:(id)hashCode];
+    }
+    [cacheLock unlock];
     
     CGContextRelease(ctx);
     return color;

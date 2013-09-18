@@ -184,7 +184,7 @@ static NSComparisonResult compareWithSortDescriptors(id obj1, id obj2, void *con
 
 static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 {
-    return (NSComparisonResult)objc_msgSend(obj1, (SEL)context, obj2);
+    return ( (NSComparisonResult(*)(id, SEL, id))objc_msgSend )(obj1, (SEL)context, obj2);
 }
 
 - (NSUInteger)indexOfObject:(id)anObject inArraySortedUsingSelector:(SEL)selector;
@@ -220,13 +220,13 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 - (void)makeObjectsPerformSelector:(SEL)selector withObject:(id)arg1 withObject:(id)arg2;
 {
     for (id object in self)
-        objc_msgSend(object, selector, arg1, arg2);
+        ( (void(*)(id, SEL, id, id))objc_msgSend )(object, selector, arg1, arg2);
 }
 
 - (void)makeObjectsPerformSelector:(SEL)aSelector withBool:(BOOL)aBool;
 {
     for (id object in self)
-        objc_msgSend(object, aSelector, aBool);
+        ( (void(*)(id, SEL, BOOL))objc_msgSend )(object, aSelector, aBool);
 }
 
 - (NSArray *)numberedArrayDescribedBySelector:(SEL)aSelector;
@@ -238,7 +238,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     NSMutableArray *result = [NSMutableArray array];
     for (arrayIndex = 0; arrayIndex < arrayCount; arrayIndex++) {
         id value = [self objectAtIndex:arrayIndex];
-        NSString *valueDescription = objc_msgSend(value, aSelector);
+        NSString *valueDescription = ( (id(*)(id, SEL))objc_msgSend )(value, aSelector);
         [result addObject:[NSString stringWithFormat:@"%lu. %@", arrayIndex, valueDescription]];
     }
 

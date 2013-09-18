@@ -1,4 +1,4 @@
-// Copyright 2006-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,6 @@ RCS_ID("$Id$");
 #define QUOTE_NEWLINE(src, dest, flags, nl) do { \
     NSString *q = OFXMLCreateStringWithEntityReferencesInCFEncoding(src, flags, nl, kCFStringEncodingUTF8); \
     STAssertEqualObjects(q, dest, @""); \
-    [q release]; \
 } while (0)
 #define QUOTE(src, dest, flags) QUOTE_NEWLINE((src), (dest), (flags), nil)
 

@@ -25,7 +25,7 @@ RCS_ID("$Id$")
     NSError *error = nil;
     NSString *xml = @"<root><empty1/><empty2/></root>";
     
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     OFXMLQName *name = nil;
@@ -48,7 +48,7 @@ RCS_ID("$Id$")
     NSError *error = nil;
     NSString *xml = @"<root><interior><empty1/><empty2/></interior><follow/></root>";
     
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     OFXMLQName *name = nil;
@@ -75,7 +75,7 @@ RCS_ID("$Id$")
     NSError *error = nil;
     NSString *xml = @"<root><interior><empty1/><empty2/></interior><follow/></root>";
     
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     OFXMLQName *name = nil;
@@ -99,7 +99,7 @@ RCS_ID("$Id$")
     NSError *error = nil;
     NSString *xml = @"<root><empty1/><empty2/></root>";
     
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     OFXMLQName *name = nil;
@@ -122,7 +122,7 @@ RCS_ID("$Id$")
     NSError *error = nil;
     NSString *xml = @"<root>some text</root>";
     
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     OBShouldNotError([reader openElement:&error]);
@@ -134,7 +134,6 @@ RCS_ID("$Id$")
     shouldBeEqual(str, @"some text");
     should(endedElement);
     
-    [str release];
 }
 
 - (void)testCopyStringWithCDATA;
@@ -142,7 +141,7 @@ RCS_ID("$Id$")
     NSError *error = nil;
     NSString *xml = @"<root><![CDATA[some]]><![CDATA[text]]></root>";
     
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     OBShouldNotError([reader openElement:&error]);
@@ -154,7 +153,6 @@ RCS_ID("$Id$")
     shouldBeEqual(str, @"sometext");
     should(endedElement);
     
-    [str release];
 }
 
 - (void)testCopyStringWithEmbeddedElements;
@@ -162,7 +160,7 @@ RCS_ID("$Id$")
     NSError *error = nil;
     NSString *xml = @"<root>a<empty1/>b<foo>c</foo></root>";
     
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     OBShouldNotError([reader openElement:&error]);
@@ -174,7 +172,6 @@ RCS_ID("$Id$")
     shouldBeEqual(str, @"a");
     shouldnt(endedElement);
     
-    [str release];
 }
 
 - (void)testCopyStringToEndWithEmbeddedElements;
@@ -182,7 +179,7 @@ RCS_ID("$Id$")
     NSError *error = nil;
     NSString *xml = @"<root>a<empty1/>b<foo>c</foo></root>";
 
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     NSString *str = nil;
@@ -190,7 +187,6 @@ RCS_ID("$Id$")
     
     shouldBeEqual(str, @"abc");
 
-    [str release];
 }
 
 - (void)testCopyStringToEndFromMiddleOfElement;
@@ -198,7 +194,7 @@ RCS_ID("$Id$")
     NSError *error = nil;
     NSString *xml = @"<root>a<empty/>b</root>";
     
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     OBShouldNotError([reader openElement:&error]); // open <root>
@@ -213,7 +209,6 @@ RCS_ID("$Id$")
     
     shouldBeEqual(str, @"b"); // only string contents after <empty/>
     
-    [str release];
 }
 
 static void _testReadBoolContents(OFXMLReaderTests *self, SEL _cmd, NSString *inner, BOOL defaultValue, BOOL expectedValue)
@@ -221,7 +216,7 @@ static void _testReadBoolContents(OFXMLReaderTests *self, SEL _cmd, NSString *in
     NSError *error = nil;
     NSString *xml = [NSString stringWithFormat:@"<root>%@<foo/></root>", inner];
     
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     OBShouldNotError([reader openElement:&error]);
@@ -295,7 +290,7 @@ static void _testReadLongContents(OFXMLReaderTests *self, SEL _cmd, NSString *in
     NSError *error = nil;
     NSString *xml = [NSString stringWithFormat:@"<root>%@<foo/></root>", inner];
     
-    OFXMLReader *reader = [[[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error] autorelease];
+    OFXMLReader *reader = [[OFXMLReader alloc] initWithData:[xml dataUsingEncoding:NSUTF8StringEncoding] error:&error];
     OBShouldNotError(reader != nil);
     
     OBShouldNotError([reader openElement:&error]);

@@ -10,20 +10,26 @@
 #import <UIKit/UIScrollView.h>
 #import <OmniFoundation/OFExtent.h>
 
+@class OUIScalingScrollView;
+
+@protocol OUIScallingScrollViewDelegate <UIScrollViewDelegate>
+
+@required
+- (CGRect)scallingScrollViewContentViewFullScreenBounds:(OUIScalingScrollView *)scallingScrollView;
+
+@end
+
 @interface OUIScalingScrollView : UIScrollView
 
 @property(nonatomic) OFExtent allowedEffectiveScaleExtent;
 @property(nonatomic) BOOL centerContent;
 @property(nonatomic) UIEdgeInsets extraEdgeInsets;
 
+@property (nonatomic, assign) id<OUIScallingScrollViewDelegate> delegate;  // We'd like this to be weak, but the superclass declares it 'assign'.
+
 - (CGFloat)fullScreenScaleForCanvasSize:(CGSize)canvasSize;
 
 - (void)adjustScaleTo:(CGFloat)effectiveScale canvasSize:(CGSize)canvasSize;
 - (void)adjustContentInsetAnimated:(BOOL)animated;
 
-@end
-
-@interface UIViewController (OUIScalingScrollView)
-// Called on the top view controller by -fullScreenScaleForCanvasSize:. Defaults to returning just the bounds. of the view controller's view.
-@property(nonatomic,readonly) CGRect contentViewFullScreenBounds;
 @end

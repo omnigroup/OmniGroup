@@ -15,7 +15,7 @@ RCS_ID("$Id$");
 
 @implementation UIView (OUIExtensions)
 
-#if defined(OMNI_ASSERTIONS_ON)
+#if 1 && defined(OMNI_ASSERTIONS_ON)
 
 static CGRect (*_original_convertRectFromView)(UIView *self, SEL _cmd, CGRect rect, UIView *view) = NULL;
 static CGRect (*_original_convertRectToView)(UIView *self, SEL _cmd, CGRect rect, UIView *view) = NULL;
@@ -49,7 +49,6 @@ static BOOL _viewsCompatible(UIView *self, UIView *otherView)
     
     if (!otherView) {
         // "If aView is nil, this method instead converts to/from window base coordinates"
-#ifdef OMNI_ASSERTIONS_ON
         
         // Not sure what to do other than whitelist UISearchResultsTableView which has a nil root view when an instance of UISearchDisplayController is present, but not in the view hierarchy. See <bug:///81503> (Failed assertion switching between calendars and search in Forecast view).
         if ([self isKindOfClass:NSClassFromString(@"UISearchResultsTableView")])
@@ -58,11 +57,9 @@ static BOOL _viewsCompatible(UIView *self, UIView *otherView)
         // Not sure what UIKit does in this case. It might just not do any transform, but until we need it we'll stick to requiring a window.
 //      UIView *root = _rootView(self);
 //      OBASSERT([root isKindOfClass:[UIWindow class]]);
-#endif
         return YES;
     }
     
-#ifdef OMNI_ASSERTIONS_ON
     // Bail on the text selection loupe for standard UIKit controls. Not our problem.
     if ([self isKindOfClass:NSClassFromString(@"UITextRangeView")] ||
         [otherView isKindOfClass:NSClassFromString(@"UITextRangeView")])
@@ -76,6 +73,11 @@ static BOOL _viewsCompatible(UIView *self, UIView *otherView)
     // Bail on the UICalloutBar. Not our problem.
     if ([self isKindOfClass:NSClassFromString(@"UICalloutBar")] ||
         [otherView isKindOfClass:NSClassFromString(@"UICalloutBar")])
+        return YES;
+    
+    // Bail on the UIKBBackdropView. Not our problem.
+    if ([self isKindOfClass:NSClassFromString(@"UIKBBackdropView")] ||
+        [otherView isKindOfClass:NSClassFromString(@"UIKBBackdropView")])
         return YES;
 
     // Bail on the snapshot view. There is some internal UIKit magic going on that takes advantage of whatever the default behavior of the transform is when they aren't in the same window.
@@ -101,28 +103,36 @@ static BOOL _viewsCompatible(UIView *self, UIView *otherView)
         [otherView isKindOfClass:[UINavigationBar class]] &&
         otherView.window == nil)
         return YES;
-#endif
     
-    // "Otherwise, both view and the receiver must belong to the same UIWindow object."
-    // We just require that they have a common ancestor view, though.
-    UIView *root1 = _rootView(self);
-    UIView *root2 = _rootView(otherView);
-    
-    if (root1 == root2)
+    // Bail on the assertion when we're pushing or popping a navigation item on a navigation bar and that item isn't in a window yet
+    if ([self isKindOfClass:NSClassFromString(@"UINavigationItemView")] &&
+        [otherView isKindOfClass:[UINavigationBar class]] &&
+        [self window] == nil)
         return YES;
+    
+    // Without this pool, the OO/iPad zombies with these assertions on due to an over-autorelease when exiting a field editor. Guessing there is an ARC bug of some sort, but it isn't clear...
+    @autoreleasepool {
+        // "Otherwise, both view and the receiver must belong to the same UIWindow object."
+        // We just require that they have a common ancestor view, though.
+        UIView *root1 = _rootView(self);
+        UIView *root2 = _rootView(otherView);
         
-    // Bail on UITextEffectsWindow. Not our problem.
-    if ([root1 isKindOfClass:NSClassFromString(@"UITextEffectsWindow")] ||
-        [root2 isKindOfClass:NSClassFromString(@"UITextEffectsWindow")])
+        if (root1 == root2)
+            return YES;
+        
+        // Bail on UITextEffectsWindow. Not our problem.
+        if ([root1 isKindOfClass:NSClassFromString(@"UITextEffectsWindow")] ||
+            [root2 isKindOfClass:NSClassFromString(@"UITextEffectsWindow")])
+            return YES;
+        
+        UIWindow *window1 = _window(self);
+        UIWindow *window2 = _window(otherView);
+        
+        // Might actually be allowed if they are on any screen, but it isn't clear how UIKit would treat those transforms since there is no screen arrangement UI (presumably left-to-right with the top-edge aligned, but who knows).
+        OBASSERT(window1.screen == window2.screen);
+        
         return YES;
-    
-    UIWindow *window1 = _window(self);
-    UIWindow *window2 = _window(otherView);
-    
-    // Might actually be allowed if they are on any screen, but it isn't clear how UIKit would treat those transforms since there is no screen arrangement UI (presumably left-to-right with the top-edge aligned, but who knows).
-    OBASSERT(window1.screen == window2.screen);
-    
-    return YES;
+    }
 }
 
 static CGRect _replacement_convertRectFromView(UIView *self, SEL _cmd, CGRect rect, UIView *view)
@@ -149,6 +159,45 @@ static CGPoint _replacement_convertPointToView(UIView *self, SEL _cmd, CGPoint p
     return _original_convertPointToView(self, _cmd, point, view);
 }
 
+static void (*_original_setFrame)(UIView *self, SEL _cmd, CGRect rect) = NULL;
+static void (*_original_setBounds)(UIView *self, SEL _cmd, CGRect rect) = NULL;
+static void (*_original_setCenter)(UIView *self, SEL _cmd, CGPoint point) = NULL;
+
+static BOOL checkValue(CGFloat v)
+{
+    OBASSERT(!isnan(v));
+    OBASSERT(!isinf(v));
+    return YES;
+}
+
+#ifdef OMNI_ASSERTIONS_ON
+BOOL OUICheckValidFrame(CGRect rect)
+{
+    OBASSERT(checkValue(rect.origin.x));
+    OBASSERT(checkValue(rect.origin.y));
+    OBASSERT(checkValue(rect.size.width));
+    OBASSERT(checkValue(rect.size.height));
+    return YES;
+}
+#endif
+
+static void _replacement_setFrame(UIView *self, SEL _cmd, CGRect rect)
+{
+    OBASSERT(OUICheckValidFrame(rect));
+    _original_setFrame(self, _cmd, rect);
+}
+static void _replacement_setBounds(UIView *self, SEL _cmd, CGRect rect)
+{
+    OBASSERT(OUICheckValidFrame(rect));
+    _original_setBounds(self, _cmd, rect);
+}
+static void _replacement_setCenter(UIView *self, SEL _cmd, CGPoint point)
+{
+    OBASSERT(checkValue(point.x));
+    OBASSERT(checkValue(point.y));
+    _original_setCenter(self, _cmd, point);
+}
+
 static void OUIViewPerformPosing(void) __attribute__((constructor));
 static void OUIViewPerformPosing(void)
 {
@@ -157,9 +206,45 @@ static void OUIViewPerformPosing(void)
     _original_convertRectToView = (typeof(_original_convertRectToView))OBReplaceMethodImplementation(viewClass, @selector(convertRect:toView:), (IMP)_replacement_convertRectToView);
     _original_convertPointFromView = (typeof(_original_convertPointFromView))OBReplaceMethodImplementation(viewClass, @selector(convertPoint:fromView:), (IMP)_replacement_convertPointFromView);
     _original_convertPointToView = (typeof(_original_convertPointToView))OBReplaceMethodImplementation(viewClass, @selector(convertPoint:toView:), (IMP)_replacement_convertPointToView);
+
+    _original_setFrame = (typeof(_original_setFrame))OBReplaceMethodImplementation(viewClass, @selector(setFrame:), (IMP)_replacement_setFrame);
+    _original_setBounds = (typeof(_original_setBounds))OBReplaceMethodImplementation(viewClass, @selector(setBounds:), (IMP)_replacement_setBounds);
+    _original_setCenter = (typeof(_original_setCenter))OBReplaceMethodImplementation(viewClass, @selector(setCenter:), (IMP)_replacement_setCenter);
 }
 
 #endif
+
+- (UIImage *)snapshotImageWithRect:(CGRect)rect;
+{
+    OBPRECONDITION(rect.size.width >= 1);
+    OBPRECONDITION(rect.size.height >= 1);
+    OBPRECONDITION(CGRectContainsRect(self.bounds, rect)); // Don't want to have to fill/clear uncovered areas in the image, but we could if a caller needs it.
+
+    [self layoutIfNeeded];
+    
+    UIImage *image;
+    
+    // CGRect bounds = self.bounds;
+    // OBASSERT(bounds.size.width >= 1);
+    // OBASSERT(bounds.size.height >= 1);
+    
+    OUIGraphicsBeginImageContext(rect.size);
+    {
+        CGContextRef ctx = UIGraphicsGetCurrentContext();
+        CGContextTranslateCTM(ctx, -rect.origin.x, -rect.origin.y);
+        
+        // Switching back to render in context because -drawViewHierarchyInRect: puts the view onscreen or something and causes flicker to ongoing animation <bug:///92160> 
+        //if (![self drawViewHierarchyInRect:bounds afterScreenUpdates:YES]) {
+        //    OBASSERT_NOT_REACHED("Some bitmap contents missing");
+        //}
+        [[self layer] renderInContext:ctx];
+        
+        image = UIGraphicsGetImageFromCurrentImageContext();
+    }
+    OUIGraphicsEndImageContext();
+    
+    return image;
+}
 
 - (UIImage *)snapshotImageWithSize:(CGSize)imageSize;
 {
@@ -201,6 +286,21 @@ static void OUIViewPerformPosing(void)
 - (UIImage *)snapshotImage;
 {
     return [self snapshotImageWithScale:1.0];
+}
+
+- (void)addMotionMaxTilt:(CGFloat)maxTilt;
+{
+    UIInterpolatingMotionEffect *xAxis = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.x" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
+    xAxis.minimumRelativeValue = [NSNumber numberWithFloat:-maxTilt];
+    xAxis.maximumRelativeValue = [NSNumber numberWithFloat:maxTilt];
+    
+    UIInterpolatingMotionEffect *yAxis = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.y" type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
+    yAxis.minimumRelativeValue = [NSNumber numberWithFloat:-maxTilt];
+    yAxis.maximumRelativeValue = [NSNumber numberWithFloat:maxTilt];
+    
+    UIMotionEffectGroup *group = [[UIMotionEffectGroup alloc] init];
+    group.motionEffects = @[xAxis, yAxis];
+    [self addMotionEffect:group];
 }
 
 - (id)containingViewOfClass:(Class)cls; // can return self
@@ -277,6 +377,7 @@ static void OUIViewPerformPosing(void)
     }
     
     // Default to looking through our subviews, finding their effective border rects and unioning that.
+    [self layoutIfNeeded];
     for (UIView *subview in self.subviews) {
         if (subview.skipWhenComputingBorderEdgeInsets)
             continue;
@@ -344,73 +445,56 @@ void OUILogViewTree(UIView *root)
 #pragma mark -
 #pragma mark Rectangular shadows
 
-static struct {
-    OUILoadedImage top;
-    OUILoadedImage bottom;
-    OUILoadedImage left;
-    OUILoadedImage right;
-} ShadowImages;
-
-static void LoadShadowImages(void)
-{
-    if (ShadowImages.top.image)
-        return;
-    
 #if 0 && defined(DEBUG)
-    // Code to make the shadow image (which I'll then dice up by hand into pieces).
+// Code to make the shadow image (which I'll then dice up by hand into pieces).
+static void MakeShadowImages(void)
+{
+    static const CGFloat kPreviewShadowOffset = 4;
+    static const CGFloat kPreviewShadowRadius = 12;
+    
+    CGColorSpaceRef graySpace = CGColorSpaceCreateDeviceGray();
+    CGFloat totalShadowSize = kPreviewShadowOffset + kPreviewShadowRadius; // worst case; less on sides and top.
+    CGSize imageSize = CGSizeMake(8*totalShadowSize, 8*totalShadowSize);
+    
+    CGFloat shadowComponents[] = {0, 0.5};
+    CGColorRef shadowColor = CGColorCreate(graySpace, shadowComponents);
+    UIImage *shadowImage;
+    
+    OUIGraphicsBeginImageContext(imageSize);
     {
-        static const CGFloat kPreviewShadowOffset = 4;
-        static const CGFloat kPreviewShadowRadius = 12;
+        CGContextRef ctx = UIGraphicsGetCurrentContext();
         
-        CGColorSpaceRef graySpace = CGColorSpaceCreateDeviceGray();
-        CGFloat totalShadowSize = kPreviewShadowOffset + kPreviewShadowRadius; // worst case; less on sides and top.
-        CGSize imageSize = CGSizeMake(8*totalShadowSize, 8*totalShadowSize);
+        CGRect imageBounds = CGRectMake(0, 0, imageSize.width, imageSize.height);
+        OQFlipVerticallyInRect(ctx, imageBounds);
         
-        CGFloat shadowComponents[] = {0, 0.5};
-        CGColorRef shadowColor = CGColorCreate(graySpace, shadowComponents);
-        UIImage *shadowImage;
+        CGRect boxRect = CGRectInset(imageBounds, totalShadowSize, totalShadowSize);
         
-        OUIGraphicsBeginImageContext(imageSize);
-        {
-            CGContextRef ctx = UIGraphicsGetCurrentContext();
-            
-            CGRect imageBounds = CGRectMake(0, 0, imageSize.width, imageSize.height);
-            OQFlipVerticallyInRect(ctx, imageBounds);
-            
-            CGRect boxRect = CGRectInset(imageBounds, totalShadowSize, totalShadowSize);
-            
-            CGContextSetShadowWithColor(ctx, CGSizeMake(0, kPreviewShadowOffset), kPreviewShadowRadius, shadowColor);
-            
-            CGFloat whiteComponents[] = {1.0, 1.0};
-            CGColorRef white = CGColorCreate(graySpace, whiteComponents);
-            CGContextSetFillColorWithColor(ctx, white);
-            CGColorRelease(white);
-
-            CGContextFillRect(ctx, boxRect);
-            
-            shadowImage = UIGraphicsGetImageFromCurrentImageContext();
-        }
-        OUIGraphicsEndImageContext();
+        CGContextSetShadowWithColor(ctx, CGSizeMake(0, kPreviewShadowOffset), kPreviewShadowRadius, shadowColor);
         
-        CGColorRelease(shadowColor);
-        CFRelease(graySpace);
-
-        NSData *shadowImagePNGData = UIImagePNGRepresentation(shadowImage);
-        NSError *error = nil;
-        NSString *path = [@"~/Documents/shadow.png" stringByExpandingTildeInPath];
-        if (![shadowImagePNGData writeToFile:path options:0 error:&error])
-            NSLog(@"Unable to write %@: %@", path, [error toPropertyList]);
-        else
-            NSLog(@"Wrote %@", path);
+        CGFloat whiteComponents[] = {1.0, 1.0};
+        CGColorRef white = CGColorCreate(graySpace, whiteComponents);
+        CGContextSetFillColorWithColor(ctx, white);
+        CGColorRelease(white);
+        
+        CGContextFillRect(ctx, boxRect);
+        
+        shadowImage = UIGraphicsGetImageFromCurrentImageContext();
     }
-#endif
+    OUIGraphicsEndImageContext();
     
-    OUILoadImage(@"OUIShadowBorderBottom.png", &ShadowImages.bottom);
-    OUILoadImage(@"OUIShadowBorderTop.png", &ShadowImages.top);
-    OUILoadImage(@"OUIShadowBorderLeft.png", &ShadowImages.left);
-    OUILoadImage(@"OUIShadowBorderRight.png", &ShadowImages.right);
+    CGColorRelease(shadowColor);
+    CFRelease(graySpace);
     
+    NSData *shadowImagePNGData = UIImagePNGRepresentation(shadowImage);
+    NSError *error = nil;
+    NSString *path = [@"~/Documents/shadow.png" stringByExpandingTildeInPath];
+    if (![shadowImagePNGData writeToFile:path options:0 error:&error])
+        NSLog(@"Unable to write %@: %@", path, [error toPropertyList]);
+    else
+        NSLog(@"Wrote %@", path);
 }
+#endif
+
 
 static void _addShadowEdge(UIView *self, const OUILoadedImage *imageInfo, NSMutableArray *edges)
 {
@@ -418,13 +502,13 @@ static void _addShadowEdge(UIView *self, const OUILoadedImage *imageInfo, NSMuta
     edge.layer.needsDisplayOnBoundsChange = NO;
     [self addSubview:edge];
     
-    UIImage *image = imageInfo->image;
+    UIImage *image = imageInfo.image;
     edge.layer.contents = (id)[image CGImage];
     edge.layer.contentsScale = [image scale];
     
     // Exactly one dimension should have an odd pixel count. This center column or row will get stretched via the contentsCenter property on the layer.
 #ifdef OMNI_ASSERTIONS_ON
-    CGSize imageSize = imageInfo->size;
+    CGSize imageSize = imageInfo.size;
 #endif
     OBASSERT(imageSize.width == rint(imageSize.width));
     OBASSERT(imageSize.height == rint(imageSize.height));
@@ -443,7 +527,6 @@ static void _addShadowEdge(UIView *self, const OUILoadedImage *imageInfo, NSMuta
     edge.layer.contentsCenter = CGRectMake(0.5, 0.5, 0, 0);
     
     [edges addObject:edge];
-    [edge release];
 }
 
 //static void _addShadowEdge(UIView *self, const OUILoadedImage *imageInfo, NSMutableArray *edges)
@@ -469,12 +552,10 @@ NSArray *OUIViewAddShadowEdges(UIView *self)
 {
     NSMutableArray *edges = [NSMutableArray array];
     
-    LoadShadowImages();
-    
-    _addShadowEdge(self, &ShadowImages.bottom, edges);
-    _addShadowEdge(self, &ShadowImages.top, edges);
-    _addShadowEdge(self, &ShadowImages.left, edges);
-    _addShadowEdge(self, &ShadowImages.right, edges);
+    _addShadowEdge(self, OUILoadImage(@"OUIShadowBorderBottom.png"), edges);
+    _addShadowEdge(self, OUILoadImage(@"OUIShadowBorderTop.png"), edges);
+    _addShadowEdge(self, OUILoadImage(@"OUIShadowBorderLeft.png"), edges);
+    _addShadowEdge(self, OUILoadImage(@"OUIShadowBorderRight.png"), edges);
     
 #if 0 && defined(DEBUG_robin)
     CGFloat hue = 0;
@@ -503,13 +584,13 @@ void OUIViewLayoutShadowEdges(UIView *self, NSArray *shadowEdges, BOOL flipped)
     }
     
     struct {
-        UIView *bottom;
-        UIView *top;
-        UIView *left;
-        UIView *right;
+        __unsafe_unretained UIView *bottom;
+        __unsafe_unretained UIView *top;
+        __unsafe_unretained UIView *left;
+        __unsafe_unretained UIView *right;
     } edges;
     
-    [shadowEdges getObjects:(id *)&edges];
+    [shadowEdges getObjects:&edges.bottom];
     
     
     CGRect bounds = self.bounds;

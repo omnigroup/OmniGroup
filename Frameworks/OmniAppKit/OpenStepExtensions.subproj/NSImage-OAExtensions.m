@@ -127,12 +127,7 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
     return image;
 }
 
-+ (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle;
-{
-    return [self imageNamed:imageStem withTint:[NSColor currentControlTint] inBundle:aBundle];
-}
-
-+ (NSImage *)imageNamed:(NSString *)imageStem withTint:(NSControlTint)imageTint inBundle:(NSBundle *)aBundle;
++ (NSImage *)imageNamed:(NSString *)imageStem withTint:(NSControlTint)imageTint inBundle:(NSBundle *)aBundle allowingNil:(BOOL)allowNil;
 {
     NSString *tintSuffix;
     
@@ -162,7 +157,27 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
             return tinted;
     }
     
-    return [self imageNamed:imageStem inBundle:aBundle];
+    NSImage *baseImage = [self imageNamed:imageStem inBundle:aBundle];
+
+    if (baseImage == nil && !allowNil)
+        [NSException raise:NSInvalidArgumentException format:@"Internal error: Unable to find image named '%@' in bundle %@", imageStem, aBundle];
+
+    return baseImage;
+}
+
++ (NSImage *)imageNamed:(NSString *)imageStem withTint:(NSControlTint)imageTint inBundle:(NSBundle *)aBundle;
+{
+    return [self imageNamed:imageStem withTint:imageTint inBundle:aBundle allowingNil:NO];
+}
+
++ (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle allowingNil:(BOOL)allowNil;
+{
+    return [self imageNamed:imageStem withTint:[NSColor currentControlTint] inBundle:aBundle allowingNil:allowNil];
+}
+
++ (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle;
+{
+    return [self imageNamed:imageStem withTint:[NSColor currentControlTint] inBundle:aBundle allowingNil:NO];
 }
 
 + (NSImage *)imageForFileType:(NSString *)fileType;
@@ -358,12 +373,18 @@ static NSDictionary *titleFontAttributes;
     /* If we have image representations lying around that already have data in some concrete format, add that data to the pasteboard. */
     for (NSImageRep *rep in self.representations) {
         if ([rep respondsToSelector:@selector(PDFRepresentation)]) {
-            ADD_CHEAP_DATA(NSPDFPboardType, [(NSPDFImageRep *)rep PDFRepresentation]);
+            NSData *pdfRepresentation = [(NSPDFImageRep *)rep PDFRepresentation];
+            ADD_CHEAP_DATA(NSPasteboardTypePDF, pdfRepresentation);
+            ADD_CHEAP_DATA(NSPDFPboardType, pdfRepresentation); // As of 10.9 DP3, Mail and Preview and -[NSImage initWithPasteboard:] still don't accept NSPasteboardTypePDF ("com.adobe.pdf") but do accept NSPDFPboardType ("Apple PDF pasteboard type")
         }
     }
     
-    /* Always offer to convert to TIFF. Do this lazily, though, since we probably have to extract it from a bitmap image rep. */
-    IF_ADD(NSTIFFPboardType, self) {
+    /* Always offer to convert to PNG and TIFF. Do this lazily, though, since we probably have to extract it from a bitmap image rep. */
+    IF_ADD(NSPasteboardTypePNG, self) {
+        count ++;
+    }
+
+    IF_ADD(NSPasteboardTypeTIFF, self) {
         count ++;
     }
 
@@ -372,9 +393,10 @@ static NSDictionary *titleFontAttributes;
 
 - (void)pasteboard:(NSPasteboard *)aPasteboard provideDataForType:(NSString *)wanted
 {
-    if ([wanted isEqual:NSTIFFPboardType]) {
-        [aPasteboard setData:[self TIFFRepresentation] forType:NSTIFFPboardType];
-    }
+    if (UTTypeConformsTo((CFStringRef)wanted, (CFStringRef)NSPasteboardTypePNG))
+        [aPasteboard setData:[self pngData] forType:wanted];
+    else if (UTTypeConformsTo((CFStringRef)wanted, (CFStringRef)NSPasteboardTypeTIFF))
+        [aPasteboard setData:[self TIFFRepresentation] forType:wanted];
 }
 
 //

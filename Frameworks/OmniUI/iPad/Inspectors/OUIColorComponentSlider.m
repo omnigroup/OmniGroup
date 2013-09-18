@@ -21,7 +21,7 @@ RCS_ID("$Id$");
 @private
     OQColor *_color;
 }
-@property(retain,nonatomic) OQColor *color;
+@property(strong,nonatomic) OQColor *color;
 @end
 
 @implementation OUIColorComponentSliderKnobLayer
@@ -44,16 +44,9 @@ static const CGFloat kKnobBorderThickness = 6;
     KnobSize = [_handleImage() size];
 }
 
-- (void)dealloc;
-{
-    [_color release];
-    [super dealloc];
-}
-
 - (void)setColor:(OQColor *)color;
 {
-    [_color autorelease];
-    _color = [color retain];
+    _color = color;
     [self setNeedsDisplay];
 }
 
@@ -115,7 +108,7 @@ static const CGFloat kKnobBorderThickness = 6;
 
 + (id)slider;
 {
-    return [[[self alloc] initWithFrame:CGRectZero] autorelease];
+    return [[self alloc] initWithFrame:CGRectZero];
 }
 
 static id _commonInit(OUIColorComponentSlider *self)
@@ -156,17 +149,10 @@ static id _commonInit(OUIColorComponentSlider *self)
 
 - (void)dealloc;
 {    
-    [_formatString release];
-    [_label release];
-    [_knobLayer release];
-    [_color release];
-    
     if (_backgroundShadingFunction)
         CFRelease(_backgroundShadingFunction);
     if (_backgroundGradient)
         CFRelease(_backgroundGradient);
-    
-    [super dealloc];
 }
 
 - (void)setRange:(CGFloat)range;
@@ -181,7 +167,6 @@ static id _commonInit(OUIColorComponentSlider *self)
 {
     if (OFISEQUAL(_formatString, formatString))
         return;
-    [_formatString release];
     _formatString = [formatString copy];
     [self setNeedsLayout];
 }
@@ -200,8 +185,7 @@ static id _commonInit(OUIColorComponentSlider *self)
     if (OFISEQUAL(_color, color))
         return;
     
-    [_color release];
-    _color = [color retain];
+    _color = color;
     
     if (_representsAlpha == NO)
         // Our knob should display an opaque color unless we are the alpha slider
@@ -375,7 +359,7 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
     CGContextRef ctx = UIGraphicsGetCurrentContext();
 
     OUIInspectorWellDraw(ctx, self.bounds,
-                         OUIInspectorWellCornerTypeLargeRadius, OUIInspectorWellBorderTypeLight, YES/*innerShadow*/,
+                         OUIInspectorWellCornerTypeSmallRadius, OUIInspectorWellBorderTypeLight, NO/*innerShadow*/, NO/*outerShadow*/,
                          ^(CGRect interiorRect){
         // All the non-alpha channels should be opaque and don't need this checkerboard
         if ([self representsAlpha]) {
@@ -428,7 +412,6 @@ static CGFloat _xToValue(OUIColorComponentSlider *self, CGFloat x)
         
         NSString *labelString = [[NSString alloc] initWithFormat:_formatString, (int)rint(_range * _value)];
         _label.text = labelString;
-        [labelString release];
         
         [_label sizeToFit];
         

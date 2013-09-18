@@ -20,29 +20,19 @@ extern NSString * const OUIUndoPopoverWillShowNotification;
 @end
 
 @interface OUIUndoBarButtonItem : UIBarButtonItem
-{
-@private
-    NSUndoManager *_undoManager;
-    OUIUndoButton *_undoButton;
-    
-    UITapGestureRecognizer *_tapRecognizer;
-    UILongPressGestureRecognizer *_longPressRecognizer;
-    
-    id <OUIUndoBarButtonItemTarget> _undoBarButtonItemTarget;
-    OUIUndoButtonController *_buttonController;
-    
-    BOOL _canUndo, _canRedo;
-}
 
-@property(nonatomic,retain) NSUndoManager *undoManager;
+// These are monitored for undo/redo groups. The OUIUndoBarButtonItemTarget is expected to figure out which one should do the action.
+- (void)addUndoManager:(NSUndoManager *)undoManager;
+- (void)removeUndoManager:(NSUndoManager *)undoManager;
+- (BOOL)hasUndoManagers;
 
-@property(nonatomic,assign) id <OUIUndoBarButtonItemTarget> undoBarButtonItemTarget;
+// This will get called automatically when the added undo managers post notifications, but in some cases the target might change its answer to -canPerformAction:withSender: before this happens (for example, UITextView doesn't log an undo in its private undo manager right away when editing text).
+- (void)updateState;
+
+@property(nonatomic,weak) id <OUIUndoBarButtonItemTarget> undoBarButtonItemTarget;
 
 @property(nonatomic,readonly) OUIToolbarButton *button;
 
-- (void)setNormalBackgroundImage:(UIImage *)image;
-- (void)setHighlightedBackgroundImage:(UIImage *)image;
-          
 - (BOOL)dismissUndoMenu;
 
 @end

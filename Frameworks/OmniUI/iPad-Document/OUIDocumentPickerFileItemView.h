@@ -18,6 +18,4 @@
 
 @property(readonly,nonatomic) OUIDocumentPreview *preview;
 
-- (void)bounceDown;
-
 @end

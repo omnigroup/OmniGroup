@@ -154,3 +154,18 @@
 /* The inverse of OB_HIDDEN / __private_extern__, for frameworks which hide symbols by default */
 #define OB_VISIBLE __attribute__((visibility("default")))
 
+/* Mark overrides of a method as required a message to super */
+#define OB_REQUIRES_SUPER __attribute__((objc_requires_super))
+ 
+/* Assert that the given value is of the given class and return it after casting */
+#define OB_CHECKED_CAST(CLS_, VALUE_) ({ \
+    CLS_ *tmp__ = (CLS_ *)(VALUE_); \
+    OBASSERT([tmp__ isKindOfClass:[CLS_ class]], @"Expression %s resulted in instance of %@; expected %@", #VALUE_, NSStringFromClass([tmp__ class]), NSStringFromClass([CLS_ class])); \
+    (CLS_ *)(tmp__); \
+})
+
+#define OB_CHECKED_CAST_OR_NIL(CLS_, VALUE_) ({ \
+    CLS_ *maybeNil__ = (CLS_ *)(VALUE_); \
+    (maybeNil__ ? OB_CHECKED_CAST(CLS_, maybeNil__) : nil); \
+})
+

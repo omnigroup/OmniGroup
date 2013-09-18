@@ -13,7 +13,7 @@
 
 @interface OFXFileSnapshotDownloadTransfer : OFXFileSnapshotTransfer
 
-- initWithFileManager:(OFSDAVFileManager *)fileManager remoteSnapshotURL:(NSURL *)remoteSnapshotURL localTemporaryDocumentContentsURL:(NSURL *)localTemporaryDocumentContentsURL currentSnapshot:(OFXFileSnapshot *)currentSnapshot;
+- initWithConnection:(OFXConnection *)connection remoteSnapshotURL:(NSURL *)remoteSnapshotURL localTemporaryDocumentContentsURL:(NSURL *)localTemporaryDocumentContentsURL currentSnapshot:(OFXFileSnapshot *)currentSnapshot;
 
 @property(nonatomic,readonly) OFXFileSnapshot *downloadedSnapshot;
 @property(nonatomic,readonly) NSURL *localTemporaryDocumentContentsURL;

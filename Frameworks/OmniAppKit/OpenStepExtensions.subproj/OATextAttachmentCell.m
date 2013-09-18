@@ -1,4 +1,4 @@
-// Copyright 2011 The Omni Group.  All rights reserved.
+// Copyright 2011-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@ RCS_ID("$Id$");
 
 @synthesize attachment = _nonretained_attachment;
 
-- (void)drawWithFrame:(CGRect)cellFrame inView:(UIView *)controlView;
+- (void)drawWithFrame:(CGRect)cellFrame inView:(UIView *)controlView characterIndex:(NSUInteger)charIndex layoutManager:(NSLayoutManager *)layoutManager;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }
@@ -37,4 +37,3 @@ RCS_ID("$Id$");
 @end
 
 #endif
-

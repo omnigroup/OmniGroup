@@ -8,14 +8,14 @@
 #import <OmniUI/OUISegmentedControlInspectorSlice.h>
 
 #import <OmniUI/OUIInspector.h>
-#import <OmniUI/OUIInspectorSegmentedControl.h>
-#import <OmniUI/OUIInspectorSegmentedControlButton.h>
+#import <OmniUI/OUISegmentedControl.h>
+#import <OmniUI/OUISegmentedControlButton.h>
 
 RCS_ID("$Id$")
 
 @implementation OUISegmentedControlInspectorSlice
 {
-    OUIInspectorSegmentedControl *_segment;
+    OUISegmentedControl *_segment;
     Class _objectClass;
     NSString *_keyPath;
     NSArray *_titlesAndObjectValues;
@@ -42,28 +42,17 @@ RCS_ID("$Id$")
     OBASSERT([titlesSubtitlesAndObjectValues count] > 0);
     OBASSERT(([titlesSubtitlesAndObjectValues count] % 2) == 0);
     
-    OUISegmentedControlInspectorSlice *result = [[[self alloc] init] autorelease];
+    OUISegmentedControlInspectorSlice *result = [[self alloc] init];
     result->_objectClass = objectClass;
     result->_keyPath = [keyPath copy];
     result->_titlesAndObjectValues = [titlesSubtitlesAndObjectValues copy];
     
-    [titlesSubtitlesAndObjectValues release];
-    
     return result;
-}
-
-- (void)dealloc;
-{
-    [_segment release];
-    [_keyPath release];
-    [_titlesAndObjectValues release];
-    
-    [super dealloc];
 }
 
 - (void)loadView;
 {
-    _segment = [[OUIInspectorSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 46)];
+    _segment = [[OUISegmentedControl alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 46)];
     
     _segment.sizesSegmentsToFit = YES;
     _segment.allowsMultipleSelection = NO;

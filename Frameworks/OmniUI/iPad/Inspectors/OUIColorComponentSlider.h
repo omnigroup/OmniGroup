@@ -22,7 +22,7 @@
 @property(nonatomic) BOOL representsAlpha;
 @property(nonatomic) BOOL needsShading; // gets a gradient otherwise
 
-@property(retain,nonatomic) OQColor *color;
+@property(strong,nonatomic) OQColor *color;
 @property(nonatomic) CGFloat value;
 
 @property(nonatomic) CGFloat leftLuma;

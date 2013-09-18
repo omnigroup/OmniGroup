@@ -216,6 +216,8 @@ static NSString *windowFrameSaveName = @"Preferences";
     [defaultToolbarItems release];
     [allowedToolbarItems release];
     
+    [_topLevelObjects release];
+    
     [super dealloc];
 }
 
@@ -590,7 +592,11 @@ static NSString *windowFrameSaveName = @"Preferences";
     if (_window != nil)
         return;    
 
-    [[OAPreferenceController bundle] loadNibNamed:@"OAPreferences.nib" owner:self options:nil];
+    NSArray *objects;
+    if (![[OAPreferenceController bundle] loadNibNamed:@"OAPreferences" owner:self topLevelObjects:&objects]) {
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Failed to load OAPreferences nib" userInfo:nil];
+    }
+    _topLevelObjects = [objects retain];
 
     // These don't seem to get set by the nib.  We want autosizing on so that clients can resize the window by a delta (though it'd be nicer for us to have API for that).
     [self.preferenceBox setAutoresizesSubviews:YES];

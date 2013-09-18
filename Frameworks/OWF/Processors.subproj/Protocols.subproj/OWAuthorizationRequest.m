@@ -41,7 +41,7 @@ RCS_ID("$Id$")
 
 static Class authorizationRequestClass = nil;
 
-#ifdef DEBUG_wiml
+#ifdef DEBUG_kc
 static BOOL OWAuthorizationDebug = YES;
 #else
 static BOOL OWAuthorizationDebug = NO;
@@ -368,11 +368,6 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
 
 - (BOOL)cacheUsername:(NSString *)aName password:(id)aPassword forChallenge:(NSDictionary *)useParameters saveInKeychain:(BOOL)saveInKeychain;
 {
-    OSType protocol;
-    OSType authType;
-    OSStatus keychainStatus;
-    NSString *realm;
-
     if (OWAuthorizationDebug)
         NSLog(@"cacheUsername[%@] psw[%@] save=%d parms=%@", aName, aPassword, saveInKeychain, useParameters);
 
@@ -382,6 +377,7 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
     if (!saveInKeychain)
         return YES;
     
+    SecProtocolType protocol;
     switch (type) {
         case OWAuth_HTTP:
         case OWAuth_HTTP_Proxy:
@@ -396,14 +392,16 @@ NSString *OWAuthorizationCacheChangedNotificationName = @"OWAuthorizationCacheCh
             break;
     }
 
+    SecAuthenticationType authType;
     if ([[useParameters objectForKey:@"scheme"] isEqual:@"digest"])
         authType = kSecAuthenticationTypeHTTPDigest;
     else
         authType = kSecAuthenticationTypeDefault;
 
-    realm = [useParameters objectForKey:@"realm"];
+    NSString *realm = [useParameters objectForKey:@"realm"];
 
-    keychainStatus = OWKCUpdateInternetPassword(parsedHostname, realm, aName, parsedPortnumber ? parsedPortnumber : defaultPortnumber, protocol, authType, [aPassword dataUsingEncoding:[NSString defaultCStringEncoding]]);
+    OSStatus keychainStatus = OWKCUpdateInternetPassword(parsedHostname, realm, aName, parsedPortnumber ? parsedPortnumber : defaultPortnumber, protocol, authType, [aPassword dataUsingEncoding:[NSString defaultCStringEncoding]]);
+
     if (keychainStatus != noErr)
         [[NSException exceptionWithName:OWAuthorizationRequestKeychainExceptionName reason:[NSString stringWithFormat:@"Unable to store password in keychain (error code %d)", keychainStatus] userInfo:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:keychainStatus], OWAuthorizationRequestKeychainExceptionKeychainStatusKey, nil]] raise];
 
@@ -763,9 +761,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
 
 - (NSSet *)keychainTags;
 {
-    NSMutableSet *knownKeychainTags;
-    
-    knownKeychainTags = [[[NSMutableSet alloc] init] autorelease];
+    NSMutableSet *knownKeychainTags = [[[NSMutableSet alloc] init] autorelease];
     [credentialCacheLock lock];
     NS_DURING {
         NSArray *line = [credentialCache arrayForKey:parsedHostname];
@@ -779,135 +775,117 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
         [credentialCacheLock unlock];
         [localException raise];
     } NS_ENDHANDLER;
-    
+
     return knownKeychainTags;
 }
     
 - (BOOL)getPasswordFromKeychain:(NSDictionary *)useParameters;
 {
-    OBFinishPorting; // Uses deprecated API
-#if 0
-    NSMutableDictionary *search;
-    NSString *realm = nil;
-    NSString *scheme;
-    NSString *username;
-    SecAuthenticationType authType = 0;
-    BOOL foundAnything, tryAgain;
-    NSSet *knownKeychainTags;
+    CFTypeRef authType = kSecAttrAuthenticationTypeDefault;
     
-    search = [NSMutableDictionary dictionary];
-
-    // Special Case iTools lookup in keychain
-    if ([parsedHostname isEqualToString:@"idisk.mac.com"]) {
-        [search setObject:[NSNumber numberWithUnsignedInt:kSecGenericPasswordItemClass] forKey:@"class"];
-        [search setObject:@"iTools" forKey:@"service"];
-    } else {
-        username = [server username];
-        realm = [useParameters objectForKey:@"realm"];
-        scheme = [useParameters objectForKey:@"scheme"];
-        if (scheme) {
-            if ([scheme caseInsensitiveCompare:@"Basic"] == NSOrderedSame)
-                authType = kSecAuthenticationTypeDefault;
-            else if([scheme caseInsensitiveCompare:@"Digest"] == NSOrderedSame)
-                authType = kSecAuthenticationTypeHTTPDigest;
-        }
+    NSMutableDictionary *keychainSearch = [NSMutableDictionary dictionary];
+    keychainSearch[(id)kSecMatchLimit] = @10000; // kSecMatchLimitAll, though documented to work, returnes errSecParam on the Mac
     
-        [search setObject:[NSNumber numberWithUnsignedInt:kSecInternetPasswordItemClass] forKey:@"class"];
-        [search setObject:parsedHostname forKey:@"server"];
-        if (parsedPortnumber > 0 && parsedPortnumber != defaultPortnumber)
-            [search setObject:[NSNumber numberWithInt:parsedPortnumber] forKey:@"port"];
-        if (realm != nil) 
-            [search setObject:realm forKey:@"securityDomain"];
-        if (username != nil)
-            [search setObject:username forKey:@"account"];
-        
-        switch(type) {
-            case OWAuth_HTTP:
-            case OWAuth_HTTP_Proxy:
-                [search setObject:[NSNumber numberWithUnsignedInt:kSecProtocolTypeHTTP] forKey:@"protocol"];
-                break;
-            case OWAuth_FTP:
-                [search setObject:[NSNumber numberWithUnsignedInt:kSecProtocolTypeFTP] forKey:@"protocol"];
-                break;
-            case OWAuth_NNTP:
-                [search setObject:[NSNumber numberWithUnsignedInt:kSecProtocolTypeNNTP] forKey:@"protocol"];
-                break;
-        }
+    keychainSearch[(id)kSecReturnAttributes] = (id)kCFBooleanTrue; // Return the attributes previously set
+    keychainSearch[(id)kSecReturnRef] = (id)kCFBooleanTrue; // Return a keychain item reference
 
-        if (authType != 0)
-            [search setObject:[NSNumber numberWithUnsignedInt:authType] forKey:@"authenticationType"];
+    NSString *username = [server username];
+    NSString *realm = [useParameters objectForKey:@"realm"];
+    NSString *scheme = [useParameters objectForKey:@"scheme"];
+    if (scheme) {
+        if ([scheme caseInsensitiveCompare:@"Basic"] == NSOrderedSame)
+            authType = kSecAttrAuthenticationTypeHTTPBasic;
+        else if([scheme caseInsensitiveCompare:@"Digest"] == NSOrderedSame)
+            authType = kSecAttrAuthenticationTypeHTTPDigest;
     }
-    
+
+    keychainSearch[(id)kSecClass] = kSecClassInternetPassword;
+    keychainSearch[(id)kSecAttrServer] = parsedHostname;
+    if (parsedPortnumber > 0 && parsedPortnumber != defaultPortnumber)
+        keychainSearch[(id)kSecAttrPort] = @(parsedPortnumber);
+    if (realm != nil)
+        keychainSearch[(id)kSecAttrSecurityDomain] = realm;
+    if (username != nil)
+        keychainSearch[(id)kSecAttrAccount] = username;
+
+    switch (type) {
+        case OWAuth_HTTP:
+        case OWAuth_HTTP_Proxy:
+            keychainSearch[(id)kSecAttrProtocol] = kSecAttrProtocolHTTP;
+            break;
+        case OWAuth_FTP:
+            keychainSearch[(id)kSecAttrProtocol] = kSecAttrProtocolFTP;
+            break;
+        case OWAuth_NNTP:
+            keychainSearch[(id)kSecAttrProtocol] = kSecAttrProtocolNNTP;
+            break;
+    }
+
+    if (authType != kSecAttrAuthenticationTypeDefault)
+        keychainSearch[(id)kSecAttrAuthenticationType] = authType;
+
     // TODO: what are the sematics of the path? security implications?
     // rfc2617 states that we can assume that all Basic/Digest credentials for a given <realm,server> can safely be sent in any request for a path that is 'below' one that they've already been sent to, even if we don't already know that the server considers that URI to be in the same realm. Hm.
     
     if (OWAuthorizationDebug)
-        NSLog(@"Keychain search parameters: %@", search);
+        NSLog(@"Keychain search parameters: %@", keychainSearch);
 
-    knownKeychainTags = [self keychainTags];
+    // OSStatus err = SecKeychainFindInternetPassword(keychain, serverNameLength, serverName, securityDomainLength, securityDomain, accountNameLength, accountName, 0 /* pathLength */, NULL /* path */, portNumber, protocol, authType, NULL /* &passwordLength */, NULL /* &passwordData */, &itemRef);
 
+    NSSet *knownKeychainTags = [self keychainTags];
+    if (OWAuthorizationDebug)
+        NSLog(@"-[%@ %@]: knownKeychainTags = %@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), knownKeychainTags);
+
+    BOOL foundAnything = NO;
+    BOOL tryAgain;
     do {
-        OSStatus keychainStatus;
-        SecKeychainSearchRef grepstate;
-        SecKeychainItemRef item;
-        
-        foundAnything = NO;
-        keychainStatus = OWKCBeginKeychainSearch(NULL, search, &grepstate);
+        NSArray *matches = nil;
+        OSStatus keychainStatus = SecItemCopyMatching((CFDictionaryRef)keychainSearch, (CFTypeRef *)&matches);
+        // keychainStatus = OWKCBeginKeychainSearch(NULL, search, &grepstate);
         if (OWAuthorizationDebug)
-            NSLog(@"beginSearch: keychainStatus=%ld", (long)keychainStatus);
-        if (keychainStatus == noErr) {
-            do {
-                NSDictionary *parms;
-                BOOL acceptable = YES;
+            NSLog(@"-[%@ %@]: SecItemCopyMatching: keychainStatus=%ld, matches=%@", OBShortObjectDescription(self), NSStringFromSelector(_cmd), (long)keychainStatus, matches);
 
-                keychainStatus = SecKeychainSearchCopyNext(grepstate, &item);
-                if (OWAuthorizationDebug)
-                    NSLog(@"findNext: keychainStatus=%ld", (long)keychainStatus);
-                if (keychainStatus != noErr)
-                    break;
-                
-                parms = OWKCExtractItemAttributes(item);
-                if (OWAuthorizationDebug)
-                    NSLog(@"Possible item: %@", parms);
+        if (keychainStatus == noErr) {
+            for (NSDictionary *keychainEntry in matches) {
+                BOOL acceptable = YES;
                 
                 // we don't want the username "Passwords not saved" with nbsp for the spaces
                 static NSString *notSavedString = nil;
-                if (!notSavedString) {
+                if (notSavedString == nil) {
                     notSavedString = (NSString *)CFStringCreateWithCString(NULL, "Passwords\\312not\\312saved", kCFStringEncodingNonLossyASCII);
                 }
-                if([[parms objectForKey:@"account"] isEqualToString:notSavedString]){
+
+                if ([[keychainEntry objectForKey:kSecAttrAccount] isEqualToString:notSavedString]) {
                     acceptable = NO;
                 }
                 
                 // Don't examine keychain items that are already in our credential cache.
-                if ([knownKeychainTags containsObject:parms])
+                if ([knownKeychainTags containsObject:keychainEntry])
                     acceptable = NO;
             
                 // If we've loosened our search critera (eg to accept items with no realm), discard items which do specify a realm which isn't the one we're looking for.
                 if (acceptable &&
-                    realm && [parms objectForKey:@"securityDomain"] &&
-                    ![realm isEqual:[parms objectForKey:@"securityDomain"]])
+                    realm != nil && [keychainEntry objectForKey:kSecAttrSecurityDomain] != nil &&
+                    !OFISEQUAL(realm, [keychainEntry objectForKey:kSecAttrSecurityDomain]))
                     acceptable = NO;
-                if (acceptable && [parms objectForKey:@"port"]) {
-                    unsigned int itemPortnum;
 
-                    itemPortnum = [[parms objectForKey:@"port"] unsignedIntValue];
+                if (acceptable && [keychainEntry objectForKey:kSecAttrPort] != nil) {
+                    unsigned int itemPortnum = [[keychainEntry objectForKey:kSecAttrPort] unsignedIntValue];
                     if (itemPortnum != parsedPortnumber && !(parsedPortnumber == 0 && itemPortnum == defaultPortnumber))
                         acceptable = NO;
                 }
+
                 // TODO: Perform similar check for the auth type (it's not good to use a Digest password for Basic authentication, e.g.!)
                 // TODO: Perform similar check for the protocol (probably not as important)
             
                 if (acceptable) {
-                    NSData *itemData = nil;
-                
+                    SecKeychainItemRef item = (SecKeychainItemRef)keychainEntry[(id)kSecValueRef];
+                    NSData *itemData;
                     keychainStatus = OWKCExtractKeyData(item, &itemData);
                     if (keychainStatus == noErr) {
-                        OWAuthorizationCredential *newCredential;
-
                         // TODO: maybe the password credentials should actually be storing NSDatas? Neither W3C nor Apple seems to have given much thought to what encoding passwords are in, or whether they're conceptually char-arrays vs. octet-arrays, or what.
-                        newCredential = [self _credentialForUsername:[parms objectForKey:@"account"] password:[NSString stringWithData:itemData encoding:[NSString defaultCStringEncoding]] challenge:useParameters];
-                        [newCredential setKeychainTag:parms];
+                        OWAuthorizationCredential *newCredential = [self _credentialForUsername:[keychainEntry objectForKey:kSecAttrAccount] password:[NSString stringWithData:itemData encoding:NSUTF8StringEncoding] challenge:useParameters];
+                        [newCredential setKeychainTag:keychainEntry];
                         foundAnything = [[self class] cacheCredentialIfAbsent:newCredential];
                     } else if (keychainStatus == userCanceledErr) {
                         NSString *msg = NSLocalizedStringFromTableInBundle(@"User canceled keychain access", @"OWF", [OWAuthorizationRequest bundle], @"error when authenticating using keychain - user canceled");
@@ -924,11 +902,10 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
                     }
                     // TODO: make sure we handle cancel vs. denied vs. the unexpected
                 }
-            
-                CFRelease(item);
-            } while (!foundAnything && (keychainStatus != userCanceledErr));
-            
-            CFRelease(grepstate);
+
+                if (foundAnything || keychainStatus == userCanceledErr)
+                    break;
+            }
         }
 
         if (keychainStatus == userCanceledErr) {
@@ -941,11 +918,11 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
             tryAgain = NO;
         } else {
             // Loosen the search criteria if we've been unsuccessful. Not all attributes are settable (or visible) in Apple's keychain app, so we check to see if ignoring those will get us a matching item. But we loosen the search gradually, so that we'll use a closer match if possible.
-            if([search objectForKey:@"authenticationType"]) {
-                [search removeObjectForKey:@"authenticationType"];
+            if ([keychainSearch objectForKey:kSecAttrAuthenticationType] != nil) {
+                [keychainSearch removeObjectForKey:kSecAttrAuthenticationType];
                 tryAgain = YES;
-            } else if ([search objectForKey:@"securityDomain"]) {
-                [search removeObjectForKey:@"securityDomain"];
+            } else if ([keychainSearch objectForKey:kSecAttrSecurityDomain] != nil) {
+                [keychainSearch removeObjectForKey:kSecAttrSecurityDomain];
                 tryAgain = YES;
             } else {
                 tryAgain = NO;
@@ -954,7 +931,6 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     } while (tryAgain);
     
     return foundAnything;
-#endif
 }
 
 @end

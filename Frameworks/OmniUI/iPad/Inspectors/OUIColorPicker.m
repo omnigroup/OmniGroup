@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,23 +8,21 @@
 #import <OmniUI/OUIColorPicker.h>
 
 #import <OmniUI/OUIColorValue.h>
+#import <OmniUI/OUIInspectorSelectionValue.h>
 
 RCS_ID("$Id$");
 
 @implementation OUIColorPicker
-
-- (void)dealloc;
 {
-    [_selectionValue release];
-    [super dealloc];
+    OUIInspectorSelectionValue *_selectionValue;
 }
 
-@synthesize target = _nonretained_target;
+@synthesize target = _weak_target;
 - (void)setTarget:(id)target;
 {
     OBPRECONDITION(!target || [target respondsToSelector:@selector(changeColor:)]); // Later we could make the action configurable too...
     
-    _nonretained_target = target;
+    _weak_target = target;
 }
 
 @synthesize selectionValue = _selectionValue;
@@ -54,7 +52,9 @@ RCS_ID("$Id$");
 
 - (void)changeColor:(id <OUIColorValue>)colorValue;
 {
-    if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:_nonretained_target from:colorValue forEvent:nil])
+    id target = _weak_target;
+    
+    if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:target from:colorValue forEvent:nil])
         NSLog(@"Unable to find target for -changeColor: on color picker.");
 }
 

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="4504" systemVersion="12E55" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3734.1"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="90" id="kBQ-oB-sFC" customClass="OUINumericFieldTableCell">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="60"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="kBQ-oB-sFC" id="Mi4-eQ-nO1">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="59"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="700" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hEn-Dq-0oH">
+                        <rect key="frame" x="15" y="19" width="50" height="21"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <constraints>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="50" id="qZr-OL-R9q"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="42" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="h7a-ti-a6F">
+                        <rect key="frame" x="165" y="19" width="50" height="21"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <constraints>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" priority="1" constant="50" id="PTY-8a-z9Y"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <textInputTraits key="textInputTraits" keyboardType="numberPad"/>
+                        <connections>
+                            <outlet property="delegate" destination="kBQ-oB-sFC" id="Emb-Gw-JjB"/>
+                        </connections>
+                    </textField>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ph6-bP-tBC">
+                        <rect key="frame" x="273" y="6" width="30" height="46"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <fontDescription key="fontDescription" type="boldSystem" pointSize="28"/>
+                        <state key="normal" image="OUIStepperPlus"/>
+                        <connections>
+                            <action selector="increment:" destination="kBQ-oB-sFC" eventType="touchUpInside" id="GiW-8y-k3q"/>
+                        </connections>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Kcg-88-uIR">
+                        <rect key="frame" x="235" y="6" width="30" height="46"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <fontDescription key="fontDescription" type="boldSystem" pointSize="28"/>
+                        <state key="normal" image="OUIStepperMinus"/>
+                        <connections>
+                            <action selector="decrement:" destination="kBQ-oB-sFC" eventType="touchUpInside" id="26G-UT-yqa"/>
+                        </connections>
+                    </button>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="units" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="p5O-TE-GEi">
+                        <rect key="frame" x="251" y="19" width="37" height="21"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="centerY" secondItem="Kcg-88-uIR" secondAttribute="centerY" constant="1" id="2dM-8V-eb8"/>
+                    <constraint firstAttribute="centerY" secondItem="hEn-Dq-0oH" secondAttribute="centerY" id="2wu-dH-3S4"/>
+                    <constraint firstAttribute="trailing" secondItem="Ph6-bP-tBC" secondAttribute="trailing" constant="17" id="4LE-Po-4Vp"/>
+                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="p5O-TE-GEi" secondAttribute="trailing" constant="14" id="4ai-BE-6AG"/>
+                    <constraint firstItem="h7a-ti-a6F" firstAttribute="baseline" secondItem="p5O-TE-GEi" secondAttribute="baseline" id="7Re-kh-cTz"/>
+                    <constraint firstItem="Ph6-bP-tBC" firstAttribute="leading" secondItem="Kcg-88-uIR" secondAttribute="trailing" constant="8" id="HxL-Pq-djp"/>
+                    <constraint firstItem="p5O-TE-GEi" firstAttribute="leading" secondItem="h7a-ti-a6F" secondAttribute="trailing" constant="8" id="Vc9-UK-RQI"/>
+                    <constraint firstItem="h7a-ti-a6F" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="hEn-Dq-0oH" secondAttribute="trailing" constant="4" id="qZS-6H-MdS"/>
+                    <constraint firstAttribute="centerY" secondItem="Ph6-bP-tBC" secondAttribute="centerY" constant="1" id="qc0-es-GFC"/>
+                    <constraint firstItem="Kcg-88-uIR" firstAttribute="leading" secondItem="h7a-ti-a6F" secondAttribute="trailing" constant="20" id="rVq-Hm-0yj"/>
+                    <constraint firstItem="hEn-Dq-0oH" firstAttribute="leading" secondItem="Mi4-eQ-nO1" secondAttribute="leading" constant="15" id="vaw-qw-DlU"/>
+                    <constraint firstItem="hEn-Dq-0oH" firstAttribute="baseline" secondItem="h7a-ti-a6F" secondAttribute="baseline" id="wxj-cW-BcP"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="decrementButton" destination="Kcg-88-uIR" id="782-Gl-vhU"/>
+                <outlet property="editingUnitsLabel" destination="p5O-TE-GEi" id="N1C-ov-xzG"/>
+                <outlet property="incrementButton" destination="Ph6-bP-tBC" id="b8O-95-ewN"/>
+                <outlet property="label" destination="hEn-Dq-0oH" id="OWj-o9-8Xr"/>
+                <outlet property="valueTextField" destination="h7a-ti-a6F" id="ssQ-yb-hY0"/>
+                <outlet property="valueTextFieldMinimumWidthConstraint" destination="PTY-8a-z9Y" id="Sfk-eo-sdy"/>
+            </connections>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="OUIStepperMinus" width="16" height="16"/>
+        <image name="OUIStepperPlus" width="16" height="16"/>
+    </resources>
+</document>

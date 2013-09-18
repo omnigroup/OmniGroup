@@ -12,6 +12,7 @@
 #import <Foundation/NSGeometry.h> // for NSInsetRect
 #import <Foundation/NSString.h> // for +stringWithFormat:
 
+
 #import <math.h>
 #import <tgmath.h>
 
@@ -21,7 +22,8 @@ static inline CGFloat OAFastReciprocalSquareRoot(CGFloat x)
     return (CGFloat)(1.0f / sqrt(x));
 }
 
-#if defined(__COREGRAPHICS__) && !defined(__cplusplus)
+#if !defined(TARGET_OS_IPHONE) ||!TARGET_OS_IPHONE
+#import <Foundation/NSAffineTransform.h>
 
 /*
  AppKit and CoreGraphics both use the good old PostScript six-element homogeneous coordinate transform matrix, but they name the elements differently ...

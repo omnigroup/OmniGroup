@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,7 +43,6 @@ RCS_ID("$Id$");
     
     cancelAction = [cancelAction copy];
     _actions = [[NSMutableArray alloc] initWithObjects:cancelAction, nil];
-    [cancelAction release];
     
     // This is NOT the default for UIAlertView as of 4.0.
     _shouldCancelWhenApplicationEntersBackground = YES;
@@ -59,10 +58,6 @@ RCS_ID("$Id$");
         [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
 
     _alertView.delegate = nil;
-    [_alertView release];
-    [_actions release];
-    
-    [super dealloc];
 }
 
 @synthesize shouldCancelWhenApplicationEntersBackground = _shouldCancelWhenApplicationEntersBackground;
@@ -89,7 +84,6 @@ RCS_ID("$Id$");
 
     action = [action copy];
     [_actions addObject:action];
-    [action release];
 
     OBINVARIANT([self _checkInvariants]);
 }
@@ -102,7 +96,7 @@ RCS_ID("$Id$");
     // We want to live as long as the alert is on screen!
     if (!_hasExtraRetain) {
         _hasExtraRetain = YES;
-        CFRetain(self);
+        OBStrongRetain(self);
     }
     
     [_alertView show];
@@ -141,20 +135,18 @@ RCS_ID("$Id$");
 {
     OBINVARIANT([self _checkInvariants]);
     
-    void (^action)(void) = [[[_actions objectAtIndex:buttonIndex] retain] autorelease];
+    void (^action)(void) = [_actions objectAtIndex:buttonIndex];
     
     // break retain cycles, possibly
-    [_actions release];
     _actions = nil;
     
-    [_alertView release];
     _alertView = nil;
     
     action();
     
     if (_hasExtraRetain) {
         _hasExtraRetain = NO; // Do this first in case this causes us to be deallocated...
-        CFRelease(self);
+        OBStrongRelease(self);
     }
 }
 

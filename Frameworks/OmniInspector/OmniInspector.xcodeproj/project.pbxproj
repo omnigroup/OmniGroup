@@ -10,7 +10,8 @@
 		0A6C01C40CC046EF0014024A /* OIWorkspaceRestore.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A6C01C20CC046EF0014024A /* OIWorkspaceRestore.png */; };
 		0A6C01C50CC046EF0014024A /* OIWorkspaceStore.png in Resources */ = {isa = PBXBuildFile; fileRef = 0A6C01C30CC046EF0014024A /* OIWorkspaceStore.png */; };
 		0A6C02900CC04ABB0014024A /* OIWorkspaceSnap.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 0A6C028F0CC04ABB0014024A /* OIWorkspaceSnap.aiff */; };
-		346DEF3209992425008F5B5F /* OIInspectorTabController.h in Headers */ = {isa = PBXBuildFile; fileRef = 346DEF3009992425008F5B5F /* OIInspectorTabController.h */; settings = {ATTRIBUTES = (); }; };
+		274EC2181774D89200E87888 /* OIInspectorWorkspacePanels.xib in Resources */ = {isa = PBXBuildFile; fileRef = 274EC2161774D89200E87888 /* OIInspectorWorkspacePanels.xib */; };
+		346DEF3209992425008F5B5F /* OIInspectorTabController.h in Headers */ = {isa = PBXBuildFile; fileRef = 346DEF3009992425008F5B5F /* OIInspectorTabController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346DEF3309992425008F5B5F /* OIInspectorTabController.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DEF3109992425008F5B5F /* OIInspectorTabController.m */; };
 		346E4371151A9550001C7496 /* OIInspectorGroup-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E4370151A954F001C7496 /* OIInspectorGroup-Internal.h */; };
 		346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E4373151A95EA001C7496 /* OIInspectorController-Internal.h */; };
@@ -72,7 +73,6 @@
 		34D2B78A08D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77508D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png */; };
 		34D2B78B08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77608D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png */; };
 		34D2B78C08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B77708D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png */; };
-		34D2B79208D0E0A700C74260 /* OIInspectorWorkspacePanels.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34D2B78F08D0E0A700C74260 /* OIInspectorWorkspacePanels.nib */; };
 		34D2B7A908D0E17C00C74260 /* OAApplication-OIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D2B7A708D0E17C00C74260 /* OAApplication-OIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D2B7AA08D0E17C00C74260 /* OAApplication-OIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D2B7A808D0E17C00C74260 /* OAApplication-OIExtensions.m */; };
 		34D2B7D008D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D2B7CE08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -82,7 +82,7 @@
 		4914964D0C9B39DF006E9EAB /* OITabLock.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 4914964C0C9B39DF006E9EAB /* OITabLock.pdf */; };
 		6C34FC2B08DA46430055F81A /* OITabbedInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC2908DA46430055F81A /* OITabbedInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C34FC2C08DA46430055F81A /* OITabbedInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC2A08DA46430055F81A /* OITabbedInspector.m */; };
-		6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC3A08DA47590055F81A /* OITabMatrix.h */; };
+		6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC3A08DA47590055F81A /* OITabMatrix.h */; settings = {ATTRIBUTES = (); }; };
 		6C34FC3D08DA47590055F81A /* OITabMatrix.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC3B08DA47590055F81A /* OITabMatrix.m */; };
 		6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC4908DA478D0055F81A /* OITabCell.h */; };
 		6C34FC4C08DA478D0055F81A /* OITabCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC4A08DA478D0055F81A /* OITabCell.m */; };
@@ -114,6 +114,7 @@
 		0A6C01C30CC046EF0014024A /* OIWorkspaceStore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIWorkspaceStore.png; sourceTree = "<group>"; };
 		0A6C028F0CC04ABB0014024A /* OIWorkspaceSnap.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = OIWorkspaceSnap.aiff; sourceTree = "<group>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		274EC2171774D89200E87888 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/OIInspectorWorkspacePanels.xib; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* OmniInspector_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniInspector_Prefix.h; sourceTree = "<group>"; };
 		346DEF3009992425008F5B5F /* OIInspectorTabController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorTabController.h; sourceTree = "<group>"; };
 		346DEF3109992425008F5B5F /* OIInspectorTabController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorTabController.m; sourceTree = "<group>"; };
@@ -192,7 +193,6 @@
 		34D2B77508D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Pressed-Ice.png"; sourceTree = "<group>"; };
 		34D2B77608D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Rollover-Graphite.png"; sourceTree = "<group>"; };
 		34D2B77708D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Rollover-Ice.png"; sourceTree = "<group>"; };
-		34D2B79008D0E0A700C74260 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OIInspectorWorkspacePanels.nib; sourceTree = "<group>"; };
 		34D2B7A708D0E17C00C74260 /* OAApplication-OIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAApplication-OIExtensions.h"; sourceTree = "<group>"; };
 		34D2B7A808D0E17C00C74260 /* OAApplication-OIExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OAApplication-OIExtensions.m"; sourceTree = "<group>"; };
 		34D2B7CE08D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAToolbarWindowController-OIExtensions.h"; sourceTree = "<group>"; };
@@ -280,9 +280,9 @@
 		089C1665FE841158C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				274EC2161774D89200E87888 /* OIInspectorWorkspacePanels.xib */,
 				34D2B76008D0E06D00C74260 /* Images */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
-				34D2B78F08D0E0A700C74260 /* OIInspectorWorkspacePanels.nib */,
 				089C1666FE841158C02AAC07 /* InfoPlist.strings */,
 			);
 			name = Resources;
@@ -519,7 +519,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0500;
 			};
 			buildConfigurationList = 34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -568,7 +568,6 @@
 				34D2B78A08D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png in Resources */,
 				34D2B78B08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png in Resources */,
 				34D2B78C08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png in Resources */,
-				34D2B79208D0E0A700C74260 /* OIInspectorWorkspacePanels.nib in Resources */,
 				34B443AB09F595BE008956F6 /* Tabbed.nib in Resources */,
 				A2F861290C960DAF00BE4827 /* OITabDepressionBackground.png in Resources */,
 				4914964D0C9B39DF006E9EAB /* OITabLock.pdf in Resources */,
@@ -584,6 +583,7 @@
 				E2B8A8CE15BDF90B00B5F26B /* OIWindowSmallCloseBox-Pressed-Ice@2x.png in Resources */,
 				E2B8A8CF15BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Graphite@2x.png in Resources */,
 				E2B8A8D015BDF90B00B5F26B /* OIWindowSmallCloseBox-Rollover-Ice@2x.png in Resources */,
+				274EC2181774D89200E87888 /* OIInspectorWorkspacePanels.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -650,12 +650,12 @@
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
-		34D2B78F08D0E0A700C74260 /* OIInspectorWorkspacePanels.nib */ = {
+		274EC2161774D89200E87888 /* OIInspectorWorkspacePanels.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				34D2B79008D0E0A700C74260 /* English */,
+				274EC2171774D89200E87888 /* English */,
 			);
-			name = OIInspectorWorkspacePanels.nib;
+			name = OIInspectorWorkspacePanels.xib;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

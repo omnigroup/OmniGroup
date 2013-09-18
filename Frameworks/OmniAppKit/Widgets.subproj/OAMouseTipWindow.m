@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2007, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,7 +36,8 @@ RCS_ID("$Id$");
 
 @implementation OAMouseTipWindow
 
-static OFPreference *enablingPreference;
+static OFPreference *enableTipsWhileResizingPreference;
+static OFPreference *enableNotesTipsPreference;
 
 static OAMouseTipWindow *sharedMouseTipInstance(void)
 {
@@ -52,7 +53,8 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
 {
     OBINITIALIZE;
     
-    enablingPreference = [[OFPreference preferenceForKey:OAMouseTipsEnabledPreferenceKey] retain];
+    enableTipsWhileResizingPreference = [[OFPreference preferenceForKey:OAMouseTipsEnabledPreferenceKey] retain];
+    enableNotesTipsPreference = [[OFPreference preferenceForKey:OAMouseTipsNotesEnabledPreferenceKey] retain];
 }
 
 - (id)init;
@@ -67,7 +69,8 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
     mouseTipView = [[OAMouseTipView alloc] initWithFrame:[[self contentView] bounds]];
     [[self contentView] addSubview:mouseTipView];
     [mouseTipView setAutoresizingMask:NSViewHeightSizable | NSViewWidthSizable];
-    [OFPreference addObserver:self selector:@selector(_preferenceChanged:) forPreference:enablingPreference];
+    [OFPreference addObserver:self selector:@selector(_preferenceChanged:) forPreference:enableTipsWhileResizingPreference];
+    [OFPreference addObserver:self selector:@selector(_preferenceChanged:) forPreference:enableNotesTipsPreference];
     
     [self setLevel:NSPopUpMenuWindowLevel];
     [self setStyle:OAMouseTipTooltipStyle];
@@ -125,7 +128,7 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
 
 + (void)showMouseTipWithTitle:(NSString *)aTitle;
 {
-    if (![enablingPreference boolValue])
+    if (![enableTipsWhileResizingPreference boolValue])
         return;
     
     NSPoint springPoint = [NSEvent mouseLocation];
@@ -149,6 +152,9 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
 
 + (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle activeRect:(NSRect)activeRect maxWidth:(CGFloat)maxWidth edge:(NSRectEdge)onEdge delay:(CGFloat)delay;
 {
+    if (![enableNotesTipsPreference boolValue])
+        return;
+
     NSPoint hotSpot = NSZeroPoint;
     NSPoint springFrom = activeRect.origin;
     switch (onEdge) {
@@ -245,7 +251,7 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
 
 - (void)_preferenceChanged:(NSNotification *)note
 {
-    if (![enablingPreference boolValue])
+    if (![enableTipsWhileResizingPreference boolValue] || ![enableNotesTipsPreference boolValue])
         [self _reallyOrderOutIfOwnerUnchanged:nil];
 }
 

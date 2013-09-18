@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,14 +32,6 @@ RCS_ID("$Id$");
     _crc = crc;
     
     return self;
-}
-
-- (void)dealloc;
-{
-    [_name release];
-    [_fileType release];
-    [_date release];
-    [super dealloc];
 }
 
 - (NSString *)name;

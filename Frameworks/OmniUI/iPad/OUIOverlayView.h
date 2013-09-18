@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <UIKit/UIView.h>
+#import <UIKit/UIToolbar.h>
 
 typedef enum {
     OUIOverlayViewAlignmentUpCenter = 0,
@@ -21,7 +21,7 @@ typedef enum {
 #define OUIOverlayViewPerpendicularDistanceFromTwoTouches 100
 
 @class OUITextLayout;
-@interface OUIOverlayView : UIView
+@interface OUIOverlayView : UIToolbar
 
 // Convenience methods for creating temporary overlays.  Pass 0 as the displayInterval to use the default delay.
 + (OUIOverlayView *)sharedTemporaryOverlay;
@@ -43,9 +43,9 @@ typedef enum {
 - (void)applyDefaultTextAttributes;
 
 @property(assign,nonatomic) NSString *text;     // not retained - sets up NSAttributedString with default font and color
-@property(retain,nonatomic) NSAttributedString *attributedText;
+@property(strong,nonatomic) NSAttributedString *attributedText;
 @property(readonly,nonatomic) OUITextLayout *textLayout;
-@property(retain,nonatomic) UIImage *image;
+@property(strong,nonatomic) UIImage *image;
 @property(nonatomic) CGSize borderSize;
 @property(nonatomic) NSTimeInterval messageDisplayInterval;  // seconds
 @property(readonly, nonatomic) BOOL isVisible;

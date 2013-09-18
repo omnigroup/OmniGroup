@@ -32,9 +32,6 @@ RCS_ID("$Id$")
 - (void)dealloc;
 {
     _editableValueCell.delegate = nil; // Callers like OUIServerAccountSetupViewController will make themselves the delegate
-    [_editableValueCell release];
-    
-    [super dealloc];
 }
 
 - (OUIEditableLabeledValueCell *)editableValueCell;

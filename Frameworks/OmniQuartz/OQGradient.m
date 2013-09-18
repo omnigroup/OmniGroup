@@ -1,4 +1,4 @@
-// Copyright 2003-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,8 +27,9 @@ CGImageRef OQCreateVerticalGradientImage(CGGradientRef gradient, CFStringRef col
         alphaInfo = kCGImageAlphaPremultipliedFirst;
     }
     
+    // We can cast directly from CGImageAlphaInfo to CGBitmapInfo because the first component in the latter is an alpha info mask
     size_t bytesPerRow = componentCount * width;
-    CGContextRef ctx = CGBitmapContextCreate(NULL, width, height, 8/*bitsPerComponent*/, bytesPerRow, colorSpace, alphaInfo);
+    CGContextRef ctx = CGBitmapContextCreate(NULL, width, height, 8/*bitsPerComponent*/, bytesPerRow, colorSpace, (CGBitmapInfo)alphaInfo);
     CFRelease(colorSpace);
     
     CGRect bounds = CGRectMake(0, 0, width, height);

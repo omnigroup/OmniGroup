@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -97,7 +97,7 @@ static BOOL compareDataEqual(NSMapTable *table, const void *a, const void *b)
         return nil;
 
 #ifdef DEBUG
-    NSLog(@"Allocated %@ %p", NSStringFromClass(isa), self);
+    NSLog(@"Allocated %@ %p", NSStringFromClass([self class]), self);
 #endif
 
     OWFWeakRetainConcreteImplementation_INIT;
@@ -128,7 +128,7 @@ static BOOL compareDataEqual(NSMapTable *table, const void *a, const void *b)
 - (void)dealloc;
 {
 #ifdef DEBUG
-    NSLog(@"Deallocated %@ %p", NSStringFromClass(isa), self);
+    NSLog(@"Deallocated %@ %p", NSStringFromClass([self class]), self);
 #endif
 
     OWFWeakRetainConcreteImplementation_DEALLOC;
@@ -147,7 +147,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
     [sharedProfileLock lock];
     
 #ifdef DEBUG
-    NSLog(@"Weak retain zappy %@ %p", NSStringFromClass(isa), self);
+    NSLog(@"Weak retain zappy %@ %p", NSStringFromClass([self class]), self);
 #endif
     
     OBASSERT(sharedProfiles != NULL);

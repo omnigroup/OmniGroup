@@ -9,26 +9,23 @@
 
 #import <UIKit/UIViewController.h>
 
-typedef enum {
-    OUIViewControllerStateOffscreen,
-    OUIViewControllerStateDisappearing,
-    OUIViewControllerStateAppearing,
-    OUIViewControllerStateOnscreen
-} OUIViewControllerState;
+typedef NS_OPTIONS(NSUInteger, OUIViewControllerDescendantType) {
+    OUIViewControllerDescendantTypeChild = 1 << 0,
+    OUIViewControllerDescendantTypePresented = 1 << 1
+};
+
+#define OUIViewControllerDescendantTypeNone 0
+#define OUIViewControllerDescendantTypeAny (OUIViewControllerDescendantTypeChild | OUIViewControllerDescendantTypePresented)
 
 @interface UIViewController (OUIExtensions)
 
-+ (void)installOUIViewControllerExtensions;
-
-// The view controller who presented us as a modal.
-@property (nonatomic, readonly) UIViewController *modalParentViewController;
-
-@property (nonatomic, readonly) OUIViewControllerState OUI_viewControllerState;
-
-@property (nonatomic, readonly) BOOL OUI_isDismissingViewControllerAnimated;
-
-// Will present the view controller immediately if we currently do not have a child presented view controller.
-// If we have a child presented view controller, viewController will be presented as soon as the current child is dismissed.
-- (void)enqueuePresentViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion;
+/**
+ Checks whether the receiver is a descendant of another UIViewController, either through parent-child containment relationships or presentation relationships. When searching the view controller hierarchy, potential relationships will be checked in the order defined in the OUIViewControllerDescendantType enum.
+ 
+ @param descendantType The kind of relationship(s) to check; the method will only return YES if otherVC can be reached by traversing only relationships of the given type(s)
+ @param otherVC The potential parent view controller
+ @return YES if otherVC can be reached from the receiver through the given kinds of view controller relationships; NO otherwise
+ */
+- (BOOL)isDescendant:(OUIViewControllerDescendantType)descendantType ofViewController:(UIViewController *)otherVC;
 
 @end

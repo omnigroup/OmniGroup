@@ -23,8 +23,8 @@ RCS_ID("$Id$");
 {
     NSObject *obj = [[NSObject alloc] init];
     OFWeakReference *ref = [[OFWeakReference alloc] initWithObject:obj];
-    [obj release];
-
+    obj = nil;
+    
     STAssertNil(ref.object, @"Should be nullified");
 }
 

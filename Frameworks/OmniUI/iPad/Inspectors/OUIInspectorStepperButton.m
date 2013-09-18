@@ -32,16 +32,9 @@ RCS_ID("$Id$");
 static const NSTimeInterval kTimeToPauseBeforeInitialRepeat = 0.5;
 static const NSTimeInterval kTimeToPauseBetweenFollowingRepeats = 0.25;
 
-static UIImage *_stepperImage(void)
-{
-    UIImage *image = [UIImage imageNamed:@"OUIInspectorStepper.png"];
-    OBASSERT(image);
-    return image;
-}
-
 + (CGSize)stepperButtonSize;
 {
-    return [_stepperImage() size];
+    return CGSizeMake(44,44);
 }
 
 static id _commonInit(OUIInspectorStepperButton *self)
@@ -69,14 +62,6 @@ static id _commonInit(OUIInspectorStepperButton *self)
     if (!(self = [super initWithCoder:coder]))
         return nil;
     return _commonInit(self);
-}
-
-- (void)dealloc;
-{
-    [_label release];
-    [_image release];
-    [_cachedImage release];
-    [super dealloc];
 }
 
 @synthesize flipped = _flipped;
@@ -141,8 +126,7 @@ static id _commonInit(OUIInspectorStepperButton *self)
 }
 - (void)setImage:(UIImage *)image;
 {
-    [_image autorelease];
-    _image = [image retain];
+    _image = image;
     [self _rebuildImage];
 }
 
@@ -167,7 +151,7 @@ static id _commonInit(OUIInspectorStepperButton *self)
     
     if (_repeats && !_repeatTimer) {
         if ([self isTracking]) { // In case the action causes -cancelTrackingWithEvent:, we don't want to leave a timer firing forever!
-            _repeatTimer = [[NSTimer scheduledTimerWithTimeInterval:kTimeToPauseBeforeInitialRepeat target:self selector:@selector(_initialRepeatTimerFired:) userInfo:nil repeats:NO] retain];
+            _repeatTimer = [NSTimer scheduledTimerWithTimeInterval:kTimeToPauseBeforeInitialRepeat target:self selector:@selector(_initialRepeatTimerFired:) userInfo:nil repeats:NO];
         }
     }
 }
@@ -195,7 +179,7 @@ static id _commonInit(OUIInspectorStepperButton *self)
     if (_repeats && _repeatTimer) {
         OBASSERT([self isTracking]); // otherwise the timer would have been cleared
         [self _cancelRepeat];
-        _repeatTimer = [[NSTimer scheduledTimerWithTimeInterval:kTimeToPauseBetweenFollowingRepeats target:self selector:@selector(_followingRepeatTimerFired:) userInfo:nil repeats:YES] retain];
+        _repeatTimer = [NSTimer scheduledTimerWithTimeInterval:kTimeToPauseBetweenFollowingRepeats target:self selector:@selector(_followingRepeatTimerFired:) userInfo:nil repeats:YES];
     }
 }
 
@@ -208,16 +192,12 @@ static id _commonInit(OUIInspectorStepperButton *self)
 - (void)_cancelRepeat;
 {
     [_repeatTimer invalidate];
-    [_repeatTimer release];
     _repeatTimer = nil;
 }
 
 - (void)_rebuildImage;
-{
-    OBPRECONDITION(CGSizeEqualToSize(self.bounds.size, _stepperImage().size)); // Don't stretch this image as it has gradients going both vertically and horizontally.
-    
+{    
     // We could maybe just set this once in -drawRect:, but that scares me since we'd maybe be queuing a display request while servicing one. This isn't performance critical anyway.
-    [_cachedImage release];
     _cachedImage = nil;
     
     CGSize cacheSize = self.bounds.size;
@@ -234,25 +214,18 @@ static id _commonInit(OUIInspectorStepperButton *self)
         CGContextRef ctx = UIGraphicsGetCurrentContext();
         CGContextClearRect(ctx, cacheRect);
         
-        if (_flipped) {
-            CGContextSaveGState(ctx);
-            CGContextScaleCTM(ctx, -1, 1);
-            CGContextTranslateCTM(ctx, -cacheSize.width, 0);
-        }
-                        
-        [_stepperImage() drawInRect:cacheRect];
-        
-        if (_flipped) {
-            CGContextRestoreGState(ctx);
-        }
-        
-        OUIBeginControlImageShadow(ctx, OUIShadowTypeLightContentOnDarkBackground);
+        //OUIBeginControlImageShadow(ctx, OUIShadowTypeLightContentOnDarkBackground);
         {
+            [self.tintColor set];
+
             if (_image) {
                 CGContextSaveGState(ctx);
                 CGContextScaleCTM(ctx, 1, -1);
-                CGContextTranslateCTM(ctx, 0, -cacheSize.height);                    
-                OQDrawImageCenteredInRect(ctx, _image, contentRect);
+                CGContextTranslateCTM(ctx, 0, -cacheSize.height);
+                
+                UIImage *tintImage = [_image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+                CGRect imageRect = OQCenteredIntegralRectInRect(self.bounds, [tintImage size]);
+                [tintImage drawAtPoint:imageRect.origin];
                 CGContextRestoreGState(ctx);
             }
             if ([_label.text length] > 0) {
@@ -262,7 +235,7 @@ static id _commonInit(OUIInspectorStepperButton *self)
                 labelSize.width = contentRect.size.width; // Let the label text centering handle horizontal centering.
                 
                 CGRect labelRect = OQCenteredIntegralRectInRect(contentRect, labelSize);
-                labelRect = OUIShadowContentRectForRect(labelRect, OUIShadowTypeLightContentOnDarkBackground);
+                //labelRect = OUIShadowContentRectForRect(labelRect, OUIShadowTypeLightContentOnDarkBackground);
                 
                 CGRect textRect = [_label textRectForBounds:labelRect limitedToNumberOfLines:1];
                 
@@ -270,14 +243,19 @@ static id _commonInit(OUIInspectorStepperButton *self)
                 
             }
         }
-        OUIEndControlImageShadow(ctx);
+        //OUIEndControlImageShadow(ctx);
         
-        _cachedImage = [UIGraphicsGetImageFromCurrentImageContext() retain];
+        _cachedImage = UIGraphicsGetImageFromCurrentImageContext();
     }
     OUIGraphicsEndImageContext();
     
     [self setImage:_cachedImage forState:UIControlStateNormal];
     [self setNeedsDisplay];
+}
+
+- (void)tintColorDidChange;
+{
+    [self _rebuildImage];
 }
 
 @end

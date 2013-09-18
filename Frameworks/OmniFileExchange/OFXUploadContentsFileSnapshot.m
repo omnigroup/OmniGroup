@@ -9,7 +9,6 @@
 
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
-#import <OmniFileStore/OFSURL.h>
 
 #import "OFXFileSnapshot-Internal.h"
 #import "OFXFileState.h"
@@ -76,9 +75,9 @@ RCS_ID("$Id$")
                 return NO;
             }
 
-            // Wait until we have a coordinate read dgoing on this and we are sure the URL exists (since OFSURLIsStandardized requires it and the file might go missing before we get around to  uploading).
+            // Wait until we have a coordinate read dgoing on this and we are sure the URL exists (since OFURLIsStandardized requires it and the file might go missing before we get around to  uploading).
             // NOTE: We pass newReadingURL here since quick renames can substitute the eventual URL if another local move has already happened.
-            OBASSERT(previousSnapshot.localState.missing || OFSURLIsStandardized(newReadingURL), @"URL should be standardized if the document has been downloaded");
+            OBASSERT(previousSnapshot.localState.missing || OFURLIsStandardized(newReadingURL), @"URL should be standardized if the document has been downloaded");
 
             // Grab the modification date of the original URL. We don't want the current time since we might have modified the file while off line a long time ago and just now be connected and uploading it.
             __autoreleasing NSError *attributesError;

@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,21 +7,41 @@
 
 #import <OmniAppKit/OATextAttachment.h>
 
-#import <OmniBase/rcsid.h>
+#import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
 #import <OmniAppKit/OATextAttachmentCell.h>
+#import <OmniFoundation/OFUTI.h>
 
 @implementation OATextAttachment
+{
+    NSFileWrapper *_fileWrapper;
+    id <OATextAttachmentCell> _cell;
+}
 
 - initWithFileWrapper:(NSFileWrapper *)fileWrapper;
 {
-    if (!(self = [super init]))
+    NSData *contents = nil;
+    NSString *fileType = nil;
+
+    if (fileWrapper) {
+        OBASSERT([fileWrapper isRegularFile] || [fileWrapper isDirectory]);
+        
+        NSString *fileName = [fileWrapper filename];
+        fileType = OFUTIForFileExtensionPreferringNative([fileName pathExtension], @([fileWrapper isDirectory]));
+        
+        if ([fileWrapper isRegularFile])
+            contents = [fileWrapper regularFileContents];
+    }
+    
+    if (!(self = [super initWithData:contents ofType:fileType]))
         return nil;
+    
     _fileWrapper = [fileWrapper retain];
+    
     return self;
 }
 
@@ -48,4 +68,3 @@ RCS_ID("$Id$");
 
 @end
 #endif
-

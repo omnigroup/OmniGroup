@@ -1,0 +1,14 @@
+{
+    /*
+
+    $ = shift
+    ^ = control
+    ~ = option
+    @ = command
+
+    */
+    "document-controller" = {
+        "@n" = "makeNewDocument:";
+        "@w" = "closeDocument:";
+    };
+}

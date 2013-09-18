@@ -82,8 +82,8 @@ struct expectedEnumeration {
     const int *nums;
     int numCount;
     int pos;
-    OFBTreeTests *tester;
-    NSString *marker;
+    __unsafe_unretained OFBTreeTests *tester;
+    __unsafe_unretained NSString *marker;
 };
 
 #define CHECK_ENUMERATION(bTree, numbers...) do { \
@@ -96,7 +96,7 @@ struct expectedEnumeration {
     expectation.marker = [NSString stringWithFormat:@"(Enumeration check at line %d of %s)", __LINE__, __FILE__]; \
     OFBTreeEnumerate(&bTree, ^(const OFBTree *tree, void *element){ \
         int elt = *(int *)element; \
-        OFBTreeTests *self = expectation.tester; \
+        __unsafe_unretained OFBTreeTests *self = expectation.tester; \
         should1(expectation.pos < expectation.numCount, expectation.marker); \
         should1(elt == expectation.nums[expectation.pos], expectation.marker); \
         expectation.pos ++; \

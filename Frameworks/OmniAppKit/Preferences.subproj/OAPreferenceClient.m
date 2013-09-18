@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
+#import <OmniAppKit/NSBundle-OAExtensions.h>
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniAppKit/OAPreferenceClientRecord.h>
 
@@ -37,8 +38,13 @@ RCS_ID("$Id$")
         return nil;
     
     NSString *nibName = [clientRecord nibName];
-    if (nibName != nil)
-        [NSBundle loadNibNamed:nibName owner:self];
+    if (nibName != nil) {
+        NSArray *objects;
+        if (![[NSBundle bundleForClass:[self class]] loadNibNamed:nibName owner:self topLevelObjects:&objects])
+            @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Failed to load nib for preference client" userInfo:nil];
+        
+        _topLevelObjects = [objects retain];
+    }
 
     return self;
 }
@@ -117,6 +123,7 @@ RCS_ID("$Id$")
     [_lastKeyView release];
     [_title release];
     [_preferences release];
+    [_topLevelObjects release];
     [super dealloc];
 }
 

@@ -295,7 +295,7 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
     // Make sure we don't generate spurious conflicts. We should update metadata for all files that we knew about before downloading stuff about new snapshots (so that we see the rename away from one name before a new file is downloaded to take its place).    
     [self uploadFixture:@"test.package"];
     
-    self.agentB.syncingEnabled = NO;
+    self.agentB.syncSchedule = OFXSyncScheduleNone;
     
     // Rename the file on A and once that completes, add a new file in its place. We don't need to pause here since NSFileCoordinator *does* to sub-item renames.
     OFXServerAccount *accountA = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
@@ -313,7 +313,7 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
     }];
     
     // Turn syncing back on on B and wait for it to process stuff.
-    self.agentB.syncingEnabled = YES;
+    self.agentB.syncSchedule = OFXSyncScheduleAutomatic;
     
     __block NSSet *resultMetadataItems;
     [self waitForFileMetadataItems:self.agentB where:^BOOL(NSSet *metadataItems) {
@@ -341,7 +341,7 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
 - (void)testRenameOfNewLocalFileWhileOffline;
 {
     OFXAgent *agentA = self.agentA;
-    agentA.syncingEnabled = NO; // Make sure the file stays in the 'new' state
+    agentA.syncSchedule = OFXSyncScheduleNone; // Make sure the file stays in the 'new' state
     
     OFXServerAccount *accountA = [agentA.accountRegistry.validCloudSyncAccounts lastObject];
     [self copyFixtureNamed:@"test.package" ofAccount:accountA];
@@ -451,8 +451,8 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
     [self movePath:@"random.txt" toPath:@"random-renamed.txt" ofAccount:accountA];
     
     // Interrupt the upload and restart
-    agentA.syncingEnabled = NO;
-    agentA.syncingEnabled = YES;
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
     
     // Wait for agent B to see everything in the end state
     [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata) {

@@ -9,6 +9,8 @@
 
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 
+@class OUITabBar;
+
 @interface OUIInspectorSegment : NSObject
 @property(nonatomic,copy) NSString *title;
 @property(nonatomic,copy) NSArray *slices;
@@ -16,9 +18,9 @@
 
 @interface OUIMultiSegmentStackedSlicesInspectorPane : OUIStackedSlicesInspectorPane
 
-@property(nonatomic,readonly) UISegmentedControl *titleSegmentedControl;
-@property(nonatomic,retain) NSArray *segments;
-@property(nonatomic,retain) OUIInspectorSegment *selectedSegment;
+@property(nonatomic,readonly) OUITabBar *titleTabBar;
+@property(nonatomic,strong) NSArray *segments;
+@property(nonatomic,strong) OUIInspectorSegment *selectedSegment;
 
 - (NSArray *)makeAvailableSegments; // For subclasses
 

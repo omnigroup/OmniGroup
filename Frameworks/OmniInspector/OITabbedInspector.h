@@ -18,7 +18,7 @@
 
 @interface OITabbedInspector : OIInspector <OIConcreteInspector> 
 {
-    IBOutlet NSView *inspectionView;
+    NSView *inspectionView;
     IBOutlet NSView *contentView;
     IBOutlet OITabMatrix *buttonMatrix;
     NSArray *_tabControllers;
@@ -50,4 +50,6 @@
 - (IBAction)selectInspector:(id)sender;
 - (IBAction)switchToInspector:(id)sender;
 
+// for subclasses
+- (BOOL)shouldHideTabWithIdentifier:(NSString *)identifier;
 @end

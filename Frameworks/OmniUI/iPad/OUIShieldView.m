@@ -11,21 +11,16 @@ RCS_ID("$Id$");
 
 @implementation OUIShieldView
 
-@synthesize passthroughViews = _passthroughViews;
-
-#pragma mark -
-#pragma mark Class Methods
 + (OUIShieldView *)shieldViewWithView:(UIView *)view;
 {
-    OUIShieldView *shieldView = [[[OUIShieldView alloc] initWithFrame:view.bounds] autorelease];
+    OUIShieldView *shieldView = [[OUIShieldView alloc] initWithFrame:view.bounds];
     shieldView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     OBASSERT(view.autoresizesSubviews);
     
     return shieldView;
 }
 
-#pragma mark -
-#pragma mark Public
+#pragma mark - UIView subclass
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
 {
@@ -43,12 +38,25 @@ RCS_ID("$Id$");
     return [super hitTest:point withEvent:event];
 }
 
-#pragma mark -
-#pragma mark NSObject
-- (void)dealloc;
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 {
-    [_passthroughViews release];
+    // We capture all touches sent to us, and if they complete successfully we inform the delegate so it can dismiss us.
     
-    [super dealloc];
+    if (_delegate && [_delegate respondsToSelector:@selector(shieldViewWasTouched:)])
+        [_delegate shieldViewWasTouched:self];
 }
+
+// Per the documentation, these implementations must exist. We want them anyway so we don't forward touch events up the responder chain.
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
+{
+}
+
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
+{
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
+{
+}
+
 @end

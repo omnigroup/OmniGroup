@@ -16,12 +16,12 @@ static NSString *_quotedString(NSString *str)
 {
     static NSCharacterSet *CharactersNeedingQuoting = nil;
     if (!CharactersNeedingQuoting)
-        CharactersNeedingQuoting = [[NSCharacterSet characterSetWithCharactersInString:@"\\\"\n"] retain];
+        CharactersNeedingQuoting = [NSCharacterSet characterSetWithCharactersInString:@"\\\"\n"];
     
     if ([str rangeOfCharacterFromSet:CharactersNeedingQuoting].length == 0)
         return str;
     
-    NSMutableString *result = [[str mutableCopy] autorelease];
+    NSMutableString *result = [str mutableCopy];
     [result replaceOccurrencesOfString:@"\\" withString:@"\\\\" options:0 range:(NSRange){0, [result length]}]; // must be first to avoid quoting the backslashes entered here
     [result replaceOccurrencesOfString:@"\"" withString:@"\\\"" options:0 range:(NSRange){0, [result length]}];
     [result replaceOccurrencesOfString:@"\n" withString:@"\\n" options:0 range:(NSRange){0, [result length]}];
@@ -33,7 +33,7 @@ static NSString *_smartQuotedString(NSString *source, NSString *asciiQuote, unic
     if ([source rangeOfString:asciiQuote].length == 0)
         return source;
     
-    NSMutableString *result = [[source mutableCopy] autorelease];
+    NSMutableString *result = [source mutableCopy];
     NSString *leftQuoteString = [NSString stringWithFormat:@"%C", leftQuoteCharacter];
     NSString *rightQuoteString = [NSString stringWithFormat:@"%C", rightQuoteCharacter];
     
@@ -66,7 +66,7 @@ static NSString *_smartQuotedString(NSString *source, NSString *asciiQuote, unic
 }
 
 - initWithComments:(NSArray *)comments pairs:(NSDictionary *)pairs;
-@property(nonatomic,readonly) NSString *minimalSource;
+@property(weak, nonatomic,readonly) NSString *minimalSource;
 - (NSComparisonResult)compareBySource:(Entry *)entry;
 @end
 
@@ -82,7 +82,7 @@ static NSString *_transformedTranslation(NSString *translation)
             ellipsisString = [[NSString alloc] initWithCharacters:&c length:1];
         }
         
-        NSMutableString *ellipsizedString = [[translation mutableCopy] autorelease];
+        NSMutableString *ellipsizedString = [translation mutableCopy];
         [ellipsizedString replaceOccurrencesOfString:@"..." withString:ellipsisString options:0 range:NSMakeRange(0, [ellipsizedString length])];
         translation = ellipsizedString;
     }
@@ -108,13 +108,6 @@ static NSString *_transformedTranslation(NSString *translation)
     _pairs = [transformedPairs copy];
     
     return self;
-}
-
-- (void)dealloc;
-{
-    [_comments release];
-    [_pairs release];
-    [super dealloc];
 }
 
 - (NSComparisonResult)compareBySource:(Entry *)entry;
@@ -157,8 +150,7 @@ int main (int argc, char * const * argv)
     NSString *outputEncodingName = nil;
     NSString *outputDirectory = nil;
     
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    {
+    @autoreleasepool {
         static struct option longopts[] = {
             { "outputencoding",   required_argument, NULL, 'e' },
             { "outdir", required_argument, NULL, 'o' },
@@ -169,12 +161,10 @@ int main (int argc, char * const * argv)
         while ((ch = getopt_long(argc, argv, "e:o:", longopts, NULL)) != -1) {
             switch (ch) {
                 case 'e': {
-                    [outputEncodingName release];
                     outputEncodingName = [[NSString alloc] initWithUTF8String:optarg];
                     break;
                 }
                 case 'o': {
-                    [outputDirectory release];
                     outputDirectory = [[[NSFileManager defaultManager] stringWithFileSystemRepresentation:optarg length:strlen(optarg)] copy];
                     break;
                 }
@@ -184,18 +174,15 @@ int main (int argc, char * const * argv)
             }
         }
     }
-    [pool release];
         
     int argi;
     for (argi = optind; argi < argc; argi++) {
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSString *path = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:argv[argi] length:strlen(argv[argi])];
-	fixStringsFile(path, outputEncodingName, outputDirectory);
-	[pool release];
+	@autoreleasepool {
+            NSString *path = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:argv[argi] length:strlen(argv[argi])];
+            fixStringsFile(path, outputEncodingName, outputDirectory);
+	}
     }
     
-    [outputEncodingName release];
-    [outputDirectory release];
     
     return 0;
 }
@@ -247,8 +234,7 @@ static NSData *fixedStringRepresentationForStringsFile(NSData *fileData, NSStrin
     
     NSMutableArray *entries = [NSMutableArray array];
     
-    NSScanner *scanner = [[[NSScanner alloc] initWithString:fileString] autorelease];
-    [fileString release];
+    NSScanner *scanner = [[NSScanner alloc] initWithString:fileString];
     while (![scanner isAtEnd]) {
 	if (![scanner scanString:@"/*" intoString:NULL]) {
 	    NSLog(@"no starting comment found, but not at end (at position %ld)", [scanner scanLocation]);
@@ -287,7 +273,6 @@ static NSData *fixedStringRepresentationForStringsFile(NSData *fileData, NSStrin
         // genstrings can emit more than one key/value pair per comment for the cross-product style replacements (see input.m's test).
         Entry *entry = [[Entry alloc] initWithComments:comments pairs:dict];
         [entries addObject:entry];
-        [entry release];
     }
     
     NSMutableString *output = [NSMutableString string];
@@ -318,14 +303,14 @@ static NSData *fixedStringRepresentationForStringsFile(NSData *fileData, NSStrin
             NSLog(@"No such encoding '%@'!", outputEncodingName);
             return nil;
         }
-        return [NSMakeCollectable(CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)output, outputEncoding, 0)) autorelease];
+        return CFBridgingRelease(CFStringCreateExternalRepresentation(kCFAllocatorDefault, (CFStringRef)output, outputEncoding, 0));
     }
     
 }
 
 static void fixStringsFile(NSString *path, NSString *outputEncodingName, NSString *outputDirectory)
 {
-    NSData *fileData = [[[NSData alloc] initWithContentsOfFile:path] autorelease];
+    NSData *fileData = [[NSData alloc] initWithContentsOfFile:path];
     if (!fileData) {
 	NSLog(@"Unable to read file '%@'", path);
 	exit(1);

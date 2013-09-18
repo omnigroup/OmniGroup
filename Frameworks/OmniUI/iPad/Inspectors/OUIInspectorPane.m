@@ -19,26 +19,25 @@ RCS_ID("$Id$");
 OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfaceFromInspectedObjects:
 
 @implementation OUIInspectorPane
-
-- (void)dealloc;
 {
-    [_inspectedObjects release];
-    [super dealloc];
+    __weak OUIInspector *_weak_inspector; // the main inspector
+    __weak OUIInspectorSlice *_weak_parentSlice; // our parent slice if any
+    NSArray *_inspectedObjects;
 }
 
 - (BOOL)inInspector;
 {
-    return _nonretained_inspector != nil;
+    return _weak_inspector != nil;
 }
 
-@synthesize inspector = _nonretained_inspector;
+@synthesize inspector = _weak_inspector;
 - (OUIInspector *)inspector;
 {
-    OBPRECONDITION(_nonretained_inspector);
-    return _nonretained_inspector;
+    OBPRECONDITION(_weak_inspector);
+    return _weak_inspector;
 }
 
-@synthesize parentSlice = _nonretained_parentSlice;
+@synthesize parentSlice = _weak_parentSlice;
 
 @synthesize inspectedObjects = _inspectedObjects;
 
@@ -57,7 +56,7 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 
 - (void)viewWillAppear:(BOOL)animated;
 {
-    OBPRECONDITION(_nonretained_inspector); // should have been set by now
+    OBPRECONDITION(_weak_inspector); // should have been set by now
     
     [super viewWillAppear:animated];
     

@@ -339,10 +339,10 @@ RCS_ID("$Id$")
     NSArray *attributeKeys = [classDescription attributeKeys];
     NSArray *extraKeys = [self appleScriptExtraAttributeKeys];
     if (extraKeys != nil) {
-        NSMutableArray *mergedKeys = [NSMutableArray array];
+        NSMutableSet *mergedKeys = [NSMutableSet set];
         [mergedKeys addObjectsFromArray:extraKeys];
         [mergedKeys addObjectsFromArray:attributeKeys];
-        attributeKeys = mergedKeys;
+        attributeKeys = [mergedKeys allObjects];
     }
     
     NSMutableString *result = [NSMutableString string];

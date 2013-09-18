@@ -43,7 +43,6 @@ static NSDate *_dateFromYear(NSInteger year, NSInteger month, NSInteger day, NSI
     [components setMinute:minute];
     [components setSecond:second];
     NSDate *result = [cal dateFromComponents:components];
-    [components release];
     return result;
 }
 
@@ -54,14 +53,14 @@ static unsigned int range(OFRandomState *state, unsigned int min, unsigned int m
 
 static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSString *mediumFormat, NSString *longFormat, NSString *timeFormat)
 {
-    NSCalendar *calendar = [[[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar] autorelease];
+    NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
     
     // specifically set en_US, to make this pass if the user's current locale is ja_JP.
-    [calendar setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
+    [calendar setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"]];
 
     NSString *testDateString = @""; //construct the natural language string
     
-    NSDateComponents *testDateComponents = [[[NSDateComponents alloc] init] autorelease];
+    NSDateComponents *testDateComponents = [[NSDateComponents alloc] init];
     
     OFRelativeDateParser *parser = [OFRelativeDateParser sharedParser];
     
@@ -211,12 +210,12 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
         randomState = OFRandomStateCreate();
     
     // Default to en_US instead of the user's locale for now (in the tests only). Some tests will override this.
-    [[OFRelativeDateParser sharedParser] setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
+    [[OFRelativeDateParser sharedParser] setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"]];
      
     calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
     
     // specifically set en_US, to make this pass if the user's current locale is ja_JP.
-    [calendar setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
+    [calendar setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"]];
 
     dateFormats = [[NSArray alloc] initWithObjects:@"MM/dd/yy", @"MM/dd/yyyy", @"dd/MM/yy", @"dd/MM/yyyy", @"yyyy-MM-dd", @"MM.dd.yy", @"dd.MM.yy", @"d-MMM-yy", nil];
     timeFormats = [[NSArray alloc] initWithObjects:@"hh:mm a", @"hh:mm:ss a", @"HH:mm:ss", @"HH:mm", @"HHmm", @"kk:mm", @"kkmm", nil];
@@ -227,13 +226,10 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
     OFRandomStateDestroy(randomState);
     randomState = NULL;
     
-    [calendar release];
     calendar = nil;
     
-    [dateFormats release];
     dateFormats = nil;
     
-    [timeFormats release];
     timeFormats = nil;
     
     [super tearDown];
@@ -268,29 +264,29 @@ do { \
     while (dateIndex--) {
 	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
-            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+            @autoreleasepool {
 	    
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
+    	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
+    	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
+    	    
+    	    // now, should be this instant
+    	    NSString *string = @"now";
+    	    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    NSDate *expectedDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    // should be 12pm of today
+    	    string = @"noon";
+    	    baseDate     = _dateFromYear(2001, 1, 1, 15, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 1, 12, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @"tonight";
+    	    baseDate     = _dateFromYear(2001, 1, 1, 15, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 1, 23, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
 	    
-	    // now, should be this instant
-	    NSString *string = @"now";
-	    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    NSDate *expectedDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    // should be 12pm of today
-	    string = @"noon";
-	    baseDate     = _dateFromYear(2001, 1, 1, 15, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 1, 12, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @"tonight";
-	    baseDate     = _dateFromYear(2001, 1, 1, 15, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 1, 23, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    [pool drain];
+	    }
 	}
     }
 }
@@ -319,11 +315,10 @@ do { \
 - (void)testCanada;
 {
     // test using canada's date formats
-    [calendar autorelease];
     calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
     
     // specifically set en_US, to make this pass if the user's current locale is ja_JP.
-    [calendar setLocale:[[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease]];
+    [calendar setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"]];
      
     NSString *timeFormat = @"h:mm a";
     NSString *dateFormat = @"d-MMM-yy";
@@ -354,11 +349,10 @@ do { \
 
 - (void)testFrench;
 {
-    NSLocale *savedLocale = [[[[OFRelativeDateParser sharedParser] locale] retain] autorelease];
+    NSLocale *savedLocale = [[OFRelativeDateParser sharedParser] locale];
 
     NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"fr"];
     [[OFRelativeDateParser sharedParser] setLocale:locale];
-    [locale release];
 
     NSDate *baseDate = nil;
     NSDate *expectedDate = nil;
@@ -380,11 +374,10 @@ do { \
 
 - (void)testSpanish;
 {
-    NSLocale *savedLocale = [[[[OFRelativeDateParser sharedParser] locale] retain] autorelease];
+    NSLocale *savedLocale = [[OFRelativeDateParser sharedParser] locale];
 
     NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"es"];
     [[OFRelativeDateParser sharedParser] setLocale:locale];
-    [locale release];
 
     // We expected to get tuesday, not "mar"=>March/Marzo then nil because of the extra input
     // See <bug:///73211> (OFRelativeDateParser doesn't use localized string/abbreviation when parsing out hours)
@@ -411,11 +404,10 @@ do { \
 
 - (void)testItalian;
 {
-    NSLocale *savedLocale = [[[[OFRelativeDateParser sharedParser] locale] retain] autorelease];
+    NSLocale *savedLocale = [[OFRelativeDateParser sharedParser] locale];
 
     NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"it"];
     [[OFRelativeDateParser sharedParser] setLocale:locale];
-    [locale release];
 
     // We expected to get tuesday, not "mar"=>March/Marzo then nil because of the extra input
     // See <bug:///68115> (Italian localization for Sunday doesn't parse in cells [natural language, Domenica])
@@ -439,13 +431,12 @@ do { \
 
 - (void)testGerman;
 {
-    NSLocale *savedLocale = [[[[OFRelativeDateParser sharedParser] locale] retain] autorelease];
+    NSLocale *savedLocale = [[OFRelativeDateParser sharedParser] locale];
 
     NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:@"de"];
     [[OFRelativeDateParser sharedParser] setLocale:locale];
-    [locale release];
 
-    NSDateFormatter *dateFormatter = [[[NSDateFormatter alloc] init] autorelease];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setLocale:locale];
 
     // We expect to be able to get dates back for German days of the week whether or not we include punctuation at the end of the abbreviated day name
@@ -487,7 +478,6 @@ do { \
 
 -(void)testNil;
 {
-    [calendar autorelease];
     calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
     NSDate *baseDate = _dateFromYear(2007, 1, 1, 1, 1, 0, calendar);
     NSString *string = @"";
@@ -510,72 +500,72 @@ do { \
     while (dateIndex--) {
 	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
-            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+            @autoreleasepool {
 	    
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
-	    
-	    NSString *string = @" 2 weeks";
-	    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    NSDate *expectedDate = _dateFromYear(2001, 1, 15, 0, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @"1d 12 pm";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 2, 12, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @"1d 12pm";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 2, 12, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @"1d 2 pm";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 2, 14, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @"1d 2pm";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 2, 14, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @" 2 p";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @" 2p";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @" 2 PM";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @" 2PM";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @" 2 P";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @" 2P";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
-	    
-	    string = @"2";
-	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
-	    expectedDate = _dateFromYear(2001, 1, 2, 0, 0, 0, calendar);
-	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
+    	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];
+    	    
+    	    NSString *string = @" 2 weeks";
+    	    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    NSDate *expectedDate = _dateFromYear(2001, 1, 15, 0, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @"1d 12 pm";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 2, 12, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @"1d 12pm";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 2, 12, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @"1d 2 pm";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 2, 14, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @"1d 2pm";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 2, 14, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @" 2 p";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @" 2p";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @" 2 PM";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @" 2PM";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @" 2 P";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @" 2P";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 1, 14, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
+    	    
+    	    string = @"2";
+    	    baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    	    expectedDate = _dateFromYear(2001, 1, 2, 0, 0, 0, calendar);
+    	    parseDate( string, expectedDate, baseDate,  dateFormat, timeFormat  ); 
             
-            [pool drain];
+            }
 	}
     }
 }
@@ -746,10 +736,10 @@ do { \
     NSArray *availableLocales = [NSArray arrayWithObjects:@"de", /*@"es",*/ @"fr", @"en_US", /*@"it",*/ @"ja", @"nl", @"zh_CN", nil];//[NSLocale availableLocaleIdentifiers];
     unsigned int localeIndex;
     for (localeIndex = 0; localeIndex < [availableLocales count]; localeIndex++) {
-	NSLocale *locale = [[[NSLocale alloc] initWithLocaleIdentifier:[availableLocales objectAtIndex:localeIndex]] autorelease];
+	NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:[availableLocales objectAtIndex:localeIndex]];
 	[[OFRelativeDateParser sharedParser] setLocale:locale];
 	
-	NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease]; 
+	NSDateFormatter *formatter = [[NSDateFormatter alloc] init]; 
 	[formatter setLocale:locale];
 	
 	NSArray *weekdays = [formatter weekdaySymbols];
@@ -802,20 +792,18 @@ do { \
     NSArray *availableLocales = [NSArray arrayWithObjects:@"de", @"es", @"fr", @"en_US", @"it", /*@"ja",*/ @"nl", @"zh_CN", nil];//[NSLocale availableLocaleIdentifiers]; // TODO: Figure out why -testLocaleMonths fails for Japanese
     unsigned int localeIndex;
     for (localeIndex = 0; localeIndex < [availableLocales count]; localeIndex++) {
-	NSLocale *locale = [[[NSLocale alloc] initWithLocaleIdentifier:[availableLocales objectAtIndex:localeIndex]] autorelease];
+	NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:[availableLocales objectAtIndex:localeIndex]];
 	[[OFRelativeDateParser sharedParser] setLocale:locale];
 	
 	
-        [calendar autorelease];
 	calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
-	NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
-        OBASSERT([formatter formatterBehavior] == NSDateFormatterBehavior10_4);
+	NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
 	
 	[formatter setLocale:locale];
 	NSArray *months = [formatter monthSymbols];
 	NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
 	
-        NSArray *shortdays = [NSSet setWithArray:[formatter shortWeekdaySymbols]];
+        NSSet *shortdays = [NSSet setWithArray:[formatter shortWeekdaySymbols]];
 
 	NSDateComponents *components = [calendar components:NSMonthCalendarUnit fromDate:baseDate];
 	
@@ -900,79 +888,79 @@ do { \
     while (dateIndex--) {
 	NSUInteger timeIndex = [timeFormats count];
 	while (timeIndex--) {
-            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+            @autoreleasepool {
             
-	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
-	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];    
-	    parseDate( @"-1h2h3h4h+1h2h3h4h", 
+    	    NSString *timeFormat = [timeFormats objectAtIndex:timeIndex];
+    	    NSString *dateFormat = [dateFormats objectAtIndex:dateIndex];    
+    	    parseDate( @"-1h2h3h4h+1h2h3h4h", 
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"0h", 
+    	    parseDate( @"0h", 
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"1h", 
+    	    parseDate( @"1h", 
 		      _dateFromYear(2001, 1, 1, 2, 1, 1, calendar),
 		      _dateFromYear(2001, 1, 1, 1, 1, 1, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"+1h1h", 
+    	    parseDate( @"+1h1h", 
 		      _dateFromYear(2001, 1, 1, 3, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 1, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"-1h", 
+    	    parseDate( @"-1h", 
 		      _dateFromYear(2001, 1, 1, 1, 1, 1, calendar),
 		      _dateFromYear(2001, 1, 1, 2, 1, 1, calendar),  dateFormat, timeFormat  );
-	    
-	    parseDate( @"0d", 
+    	    
+    	    parseDate( @"0d", 
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"1d", 
+    	    parseDate( @"1d", 
 		      _dateFromYear(2001, 1, 2, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"+1d", 
+    	    parseDate( @"+1d", 
 		      _dateFromYear(2001, 1, 2, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"-1d", 
+    	    parseDate( @"-1d", 
 		      _dateFromYear(2000, 12, 31, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    
-	    parseDate( @"0w", 
+    	    
+    	    parseDate( @"0w", 
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"1w", 
+    	    parseDate( @"1w", 
 		      _dateFromYear(2001, 1, 8, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"+1w", 
+    	    parseDate( @"+1w", 
 		      _dateFromYear(2001, 1, 8, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"-1w", 
+    	    parseDate( @"-1w", 
 		      _dateFromYear(2000, 12, 25, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    
-	    parseDate( @"0m", 
+    	    
+    	    parseDate( @"0m", 
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"1m", 
+    	    parseDate( @"1m", 
 		      _dateFromYear(2001, 2, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"+1m", 
+    	    parseDate( @"+1m", 
 		      _dateFromYear(2001, 2, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"-1m", 
+    	    parseDate( @"-1m", 
 		      _dateFromYear(2000, 12, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    
-	    parseDate( @"0y", 
+    	    
+    	    parseDate( @"0y", 
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"1y", 
+    	    parseDate( @"1y", 
 		      _dateFromYear(2002, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"+1y", 
+    	    parseDate( @"+1y", 
 		      _dateFromYear(2002, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
-	    parseDate( @"-1y", 
+    	    parseDate( @"-1y", 
 		      _dateFromYear(2000, 1, 1, 0, 0, 0, calendar),
 		      _dateFromYear(2001, 1, 1, 0, 0, 0, calendar),  dateFormat, timeFormat  );
             
-            [pool drain];
+            }
 	}
     }
 }

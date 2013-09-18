@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,27 +9,39 @@
 
 #import <UIKit/UIView.h>
 
-#import <OmniUIDocument/OUIDocumentPickerItemViewTapArea.h>
 #import <OmniUIDocument/OUIDocumentPickerItemSort.h>
 
 extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 
 @class OFPreference;
-@class OFSDocumentStoreItem, OFSDocumentStoreFileItem;
+@class ODSItem, ODSFileItem;
 @class OUIDragGestureRecognizer, OUIDocumentPickerItemView, OUIDocumentPickerFileItemView, OUIDocumentPickerScrollView;
+@class OUIDocumentRenameSession;
 
 @protocol OUIDocumentPickerScrollViewDelegate <UIScrollViewDelegate>
-- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView inArea:(OUIDocumentPickerItemViewTapArea)area;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewStartedEditingName:(OUIDocumentPickerItemView *)itemView;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemView:(OUIDocumentPickerItemView *)itemView finishedEditingName:(NSString *)name;
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView dragWithRecognizer:(OUIDragGestureRecognizer *)recognizer;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView willDisplayItemView:(OUIDocumentPickerItemView *)itemView;
+- (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView willEndDisplayingItemView:(OUIDocumentPickerItemView *)itemView;
+
+- (NSArray *)sortDescriptorsForDocumentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView;
+- (BOOL)isReadyOnlyForDocumentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView;
 @end
 
 @interface OUIDocumentPickerScrollView : UIScrollView <UIGestureRecognizerDelegate>
 
 @property(nonatomic,assign) id <OUIDocumentPickerScrollViewDelegate> delegate;
 
+@property(nonatomic,assign) BOOL shouldHideTopControlsOnNextLayout;
+
 - (void)willRotateWithDuration:(NSTimeInterval)duration;
 - (void)didRotate;
 @property(nonatomic,assign) BOOL landscape;
+
+@property(nonatomic,retain) UIView *topControls;
+@property(nonatomic,retain) OUIDocumentRenameSession *renameSession;
 
 @property(nonatomic,readonly) NSSet *items;
 
@@ -44,26 +56,30 @@ extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 @property(nonatomic,readonly) NSArray *sortedItems;
 @property(nonatomic,retain) id draggingDestinationItem;
 
-- (void)scrollItemToVisible:(OFSDocumentStoreItem *)item animated:(BOOL)animated;
+- (void)scrollItemToVisible:(ODSItem *)item animated:(BOOL)animated;
 - (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated;
+- (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated completion:(void (^)(void))completion;
+
+@property(nonatomic,readonly) BOOL hasScrollFinishedHandlers;
+- (void)performScrollFinishedHandlers; // Called by the delegate when scrolling is done
+
 - (void)sortItems;
 
-- (CGRect)frameForItem:(OFSDocumentStoreItem *)item;
+- (CGRect)frameForItem:(ODSItem *)item;
 
-- (OUIDocumentPickerItemView *)itemViewForItem:(OFSDocumentStoreItem *)item;
-- (OUIDocumentPickerFileItemView *)fileItemViewForFileItem:(OFSDocumentStoreFileItem *)fileItem;
-- (OUIDocumentPickerItemView *)itemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
-- (OUIDocumentPickerFileItemView *)fileItemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
+- (OUIDocumentPickerItemView *)itemViewForItem:(ODSItem *)item;
+- (OUIDocumentPickerFileItemView *)fileItemViewForFileItem:(ODSFileItem *)fileItem;
+- (OUIDocumentPickerItemView *)itemViewHitByRecognizer:(UIGestureRecognizer *)recognizer;
 
-- (OFSDocumentStoreFileItem *)preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
-- (void)previewsUpdatedForFileItem:(OFSDocumentStoreFileItem *)fileItem;
+- (ODSFileItem *)preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
+- (void)previewsUpdatedForFileItem:(ODSFileItem *)fileItem;
+- (void)previewedItemsChangedForGroups;
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 
-
 @property(nonatomic) OUIDocumentPickerItemSort itemSort;
 
-- (void)startIgnoringItemForLayout:(OFSDocumentStoreItem *)item;
-- (void)stopIgnoringItemForLayout:(OFSDocumentStoreItem *)item;
+- (void)startIgnoringItemForLayout:(ODSItem *)item;
+- (void)stopIgnoringItemForLayout:(ODSItem *)item;
 
 @end

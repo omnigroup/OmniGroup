@@ -1,16 +1,19 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIFontUtilities.h"
+#import <OmniUI/OUIFontUtilities.h>
 
 #import <OmniUI/OUIInspector.h>
 #import <CoreText/CTFont.h>
 
 RCS_ID("$Id$");
+
+@implementation OUIFontSelection
+@end
 
 // CTFontCreateWithName can end up loading the font off disk, and if this is the only reference, it can do it each time we call this (like when we are reloading in the font family table).
 // Cache the display name for each font to avoid this.
@@ -30,36 +33,26 @@ NSString *OUIDisplayNameForFont(UIFont *font, BOOL useFamilyName)
     }
     
     NSString *fontName = font.fontName;
-    NSString *cachedDisplayName = (useFamilyName) ? [familyNameToDisplayName objectForKey:font.familyName] : [fontNameToDisplayName objectForKey:fontName];
+    NSString *cachedDisplayName = useFamilyName ? familyNameToDisplayName[font.familyName] : fontNameToDisplayName[fontName];
     if (cachedDisplayName)
         return cachedDisplayName;
     
-    CTFontRef fontRef = CTFontCreateWithName((CFStringRef)fontName, 12.0, NULL);
-    if (!fontRef) {
-        NSLog(@"No base font ref for %@", font);
-        return @"???";
-    }
-    
-    CFStringRef displayName = nil;
-    
+    NSString *displayName = nil;
     if (useFamilyName) 
-        displayName = CTFontCopyLocalizedName(fontRef, kCTFontFamilyNameKey, NULL);
+        displayName = CFBridgingRelease(CTFontCopyLocalizedName((OB_BRIDGE CTFontRef)font, kCTFontFamilyNameKey, NULL));
     else
-        displayName = CTFontCopyDisplayName(fontRef);
-    
-    CFRelease(fontRef);
+        displayName = CFBridgingRelease(CTFontCopyDisplayName((OB_BRIDGE CTFontRef)font));
     
     OBASSERT(displayName);
     if (!displayName)
-        displayName = CFStringCreateCopy(kCFAllocatorDefault, (CFStringRef)font.familyName);
+        displayName = [font.familyName copy];
     
-    cachedDisplayName = [NSMakeCollectable(displayName) autorelease];
     if (useFamilyName)
-        [familyNameToDisplayName setObject:cachedDisplayName forKey:font.familyName];
+        [familyNameToDisplayName setObject:displayName forKey:font.familyName];
     else
-        [fontNameToDisplayName setObject:cachedDisplayName forKey:fontName];
+        [fontNameToDisplayName setObject:displayName forKey:fontName];
     
-    return cachedDisplayName;
+    return displayName;
 }
 
 NSString *OUIDisplayNameForFontFaceName(NSString *displayName, NSString *baseDisplayName)
@@ -69,7 +62,7 @@ NSString *OUIDisplayNameForFontFaceName(NSString *displayName, NSString *baseDis
     if ([displayName isEqualToString:baseDisplayName])
         return NSLocalizedStringFromTableInBundle(@"Regular", @"OUIInspectors", OMNI_BUNDLE, @"Name for the variant of a font with out any special attributes");
     
-    NSMutableString *trimmed = [[displayName mutableCopy] autorelease];
+    NSMutableString *trimmed = [displayName mutableCopy];
     [trimmed replaceOccurrencesOfString:baseDisplayName withString:@"" options:0 range:NSMakeRange(0, [trimmed length])];
     [trimmed replaceOccurrencesOfString:@"  " withString:@" " options:0 range:NSMakeRange(0, [trimmed length])]; // In case it was in the middle
     [trimmed replaceOccurrencesOfString:@" " withString:@"" options:NSAnchoredSearch range:NSMakeRange(0, [trimmed length])]; // In case it was at the beginning
@@ -96,14 +89,13 @@ NSString *OUIBaseFontNameForFamilyName(NSString *familyName)
     
     CGFloat size = [UIFont labelFontSize];
     for (NSString *fontName in fontNames) {
-        CTFontRef font = CTFontCreateWithName((CFStringRef)fontName, size, NULL/*matrix*/);
+        UIFont *font = [UIFont fontWithName:fontName size:size];
         if (!font) {
             OBASSERT_NOT_REACHED("But you gave me the font name!");
             continue;
         }
         
-        CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(font);
-        CFRelease(font);
+        CTFontSymbolicTraits traits = CTFontGetSymbolicTraits((OB_BRIDGE CTFontRef)font);
         
         //traits &= kCTFontClassMaskTrait; // Only count the base traits like bold/italic, not sans serif.
         traits &= 0xffff; // The documentation says the bottom 16 bits are for the symbolic bits.  kCTFontClassMaskTrait is a single bit shifted up, not a mask for the bottom 16 bits.
@@ -138,7 +130,7 @@ BOOL OUIIsBaseFontNameForFamily(NSString *fontName, NSString *familyName)
     return [fontName isEqualToString:baseFontName];
 }
 
-OUIFontSelection OUICollectFontSelection(OUIInspectorSlice *self, id <NSFastEnumeration> objects)
+OUIFontSelection *OUICollectFontSelection(OUIInspectorSlice *self, id <NSFastEnumeration> objects)
 {
     OBPRECONDITION(self);
     
@@ -177,11 +169,11 @@ OUIFontSelection OUICollectFontSelection(OUIInspectorSlice *self, id <NSFastEnum
             }
         }
     }
-    
-    return (OUIFontSelection){
-        .fontDescriptors = collectedFontDescriptors,
-        .fontSizes = collectedFontSizes,
-        .fontSizeExtent = OFExtentFromLocations(minFontSize, maxFontSize)
-    };
+
+    OUIFontSelection *result = [OUIFontSelection new];
+    result.fontDescriptors = collectedFontDescriptors;
+    result.fontSizes = collectedFontSizes;
+    result.fontSizeExtent = OFExtentFromLocations(minFontSize, maxFontSize);
+    return result;
 }
 

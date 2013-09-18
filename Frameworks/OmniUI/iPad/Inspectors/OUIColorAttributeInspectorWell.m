@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,11 +6,103 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIColorAttributeInspectorWell.h>
+#import <OmniUI/OUIInspector.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 #import <OmniQuartz/OQColor.h>
 #import <OmniQuartz/OQDrawing.h>
 
 RCS_ID("$Id$");
+
+
+@interface OUIColorAttributeInspectorWellButton : UIButton
+@property (nonatomic,retain) OQColor *color;
+@end
+
+@implementation OUIColorAttributeInspectorWellButton
+
+- (id)initWithFrame:(CGRect)frame;
+{
+    if ((self = [super initWithFrame:frame]) == nil) {
+        return nil;
+    }
+    
+    self.userInteractionEnabled = NO;
+    
+    return self;
+}
+
+#pragma mark - API and Properties
+
+- (void)setColor:(OQColor *)color;
+{
+    if (OFISEQUAL(_color, color))
+        return;
+    _color = [color copy];
+    
+    [self setNeedsDisplay];
+}
+
+#pragma mark - UIView subclass
+
+- (void)drawRect:(CGRect)rect;
+{
+    rect = CGRectInset(self.bounds, 0.5f, 0.5f);
+    UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:4.0f];
+    [path addClip];
+    
+    // Draw the fill
+    OQColor *fillColor = self.color;
+    if (fillColor != nil) {
+        // Transparency? Draw a checkerboard background
+        if ([fillColor alphaComponent] < 1) {
+            CGContextRef ctx = UIGraphicsGetCurrentContext();
+            CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
+            
+            float whiteFill[] = {1, 1};
+            float grayFill[] = {0.85, 1};
+            CGContextSetFillColorSpace(ctx, colorSpace);
+            
+            // Simple checkerboard
+            CGContextSetFillColor(ctx, whiteFill);
+            CGContextFillRect(ctx, rect);
+            
+            CGFloat midX = floor(CGRectGetMidX(rect));
+            CGFloat midY = floor(CGRectGetMidY(rect));
+            
+            CGContextSetFillColor(ctx, grayFill);
+            CGContextFillRect(ctx, CGRectMake(CGRectGetMinX(rect), CGRectGetMinY(rect), midX - CGRectGetMinX(rect), midY - CGRectGetMinY(rect)));
+            CGContextFillRect(ctx, CGRectMake(midX, midY, CGRectGetMaxX(rect) - midX, CGRectGetMaxY(rect) - midY)); // lower right
+
+            CGColorSpaceRelease(colorSpace);
+        }
+
+        // Draw the fill
+        [fillColor set];
+        [path fill];
+    }
+    
+    // Draw the border
+    [[UIColor colorWithWhite:0.3f alpha:0.6f] set];
+    [path stroke];
+    
+    // If necessary, draw the slash (same color as the border)
+    if (fillColor == nil) {
+        CGRect bounds = CGRectInset(self.bounds, 6.0f, 6.0f);
+        UIBezierPath *path = [UIBezierPath bezierPath];
+        [path moveToPoint:(CGPoint){ .x = CGRectGetMinX(bounds), .y = CGRectGetMaxY(bounds), }];
+        [path addLineToPoint:(CGPoint){ .x = CGRectGetMaxX(bounds), .y = CGRectGetMinY(bounds), }];
+        [path stroke];
+        /* circle for circle-with-stroke-through-it
+        CGRect ovalRect = CGRectInset(bounds, 3.0f, 3.0f);
+        path = [UIBezierPath bezierPathWithOvalInRect:ovalRect];
+        [path stroke];
+        */
+    }
+}
+
+@end
+
 
 @implementation OUIColorAttributeInspectorWell
 
@@ -20,8 +112,12 @@ RCS_ID("$Id$");
 static id _commonInit(OUIColorAttributeInspectorWell *self)
 {
     self.style = OUIInspectorTextWellStyleSeparateLabelAndText;
-    [self setNavigationArrowRightView];
     self.singleSwatch = NO;
+    
+    CGRect contentsRect = CGRectMake(0, 0, 1, 30);
+    self.rightView = [[OUIColorAttributeInspectorWellButton alloc] initWithFrame:contentsRect];
+    [self setNeedsLayout];
+    
     return self;
 }
 
@@ -39,24 +135,50 @@ static id _commonInit(OUIColorAttributeInspectorWell *self)
     return _commonInit(self);
 }
 
-- (void)dealloc
-{
-    [_color release];
-    [super dealloc];
-}
-
 - (void)setColor:(OQColor *)color;
 {
     if (OFISEQUAL(_color, color))
         return;
-    [_color release];
     _color = [color copy];
+    
+    [(OUIColorAttributeInspectorWellButton *)self.rightView setColor:_color];
+
     [self setNeedsDisplay];
 }
 
-#pragma mark -
-#pragma mark OUIInspectorWell subclass
+- (void)setSingleSwatch:(BOOL)single;
+{
+    // <bug:///94099> (Remove singleSwatch property on OUIColorAttributeInspectorWell since it is no longer consulted when drawing) -- singleSwatch is only used by drawInteriorFillWithRect: which is not currently called. This class currently draws how OmniPlan wants it regardless of this setting.
+    
+    singleSwatch = single;
+}
 
+#pragma mark - UIView subclass
+
+- (void)layoutSubviews;
+{
+    OBPRECONDITION(!self.leftView); // This won't do what you want.
+    
+    [super layoutSubviews];
+
+    CGRect contentsRect = OUIInspectorWellInnerRect(self.bounds);
+    contentsRect.size.width -= self.borderEdgeInsets.right; // To make this align better with other slices.
+    contentsRect = CGRectIntegral(contentsRect);
+    
+    CGRect oldFrame = self.rightView.frame;
+    
+    // The right view is currently expected to have built-in padding.
+    CGRect rightRect;
+    CGRectDivide(contentsRect, &rightRect, &contentsRect, CGRectGetHeight(oldFrame), CGRectMaxXEdge);
+    rightRect.size.height = CGRectGetHeight(oldFrame);
+    rightRect.origin.y = CGRectGetMinY(contentsRect) + (contentsRect.size.height - rightRect.size.height)/2;
+
+    self.rightView.frame = rightRect;
+}
+
+#pragma mark - OUIInspectorTextWell subclass
+
+// <bug:///94098> (Remove -drawInteriorFillWithRect: on our controls and subclass in OmniGraffle)
 - (void)drawInteriorFillWithRect:(CGRect)rect;
 {
     [super drawInteriorFillWithRect:rect];

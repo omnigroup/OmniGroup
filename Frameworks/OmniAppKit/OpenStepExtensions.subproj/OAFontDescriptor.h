@@ -12,17 +12,17 @@
 #import <Availability.h>
 
 // On the Mac, NSFontDescriptor is toll-free bridged to CTFontDescriptorRef. NSFont doesn't seem to be bridged, but presumably each platform returns the appropriate font type.
+// OBFinishPorting: is this still true in 7.0?
 // On iPhone, there is no class to bridge to.  So, this class is currently a wrapper of a CTFontDescriptorRef instead of a subclass/replacement for NSFontDescriptor.
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    #import <CoreText/CTFont.h>
-    #import <CoreText/CTFontDescriptor.h>
-    #define OAFontDescriptorPlatformFont CTFontRef
+    #define OAPlatformFontClass UIFont
 #else
     #import <ApplicationServices/ApplicationServices.h> // CoreText lives in this umbrella on the Mac
-    @class NSFont;
-    #define OAFontDescriptorPlatformFont NSFont *
+    #define OAPlatformFontClass NSFont
 #endif
+#define OAFontDescriptorPlatformFont OAPlatformFontClass *
+@class OAPlatformFontClass;
 
 @class NSNotification, NSDictionary;
 

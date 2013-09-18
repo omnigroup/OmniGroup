@@ -9,16 +9,16 @@
 
 #import <Foundation/NSObject.h>
 
-@class OFXAccountClientParameters;
-@class OFSDAVFileManager, OFSFileInfo;
+@class OFXAccountClientParameters, OFXConnection;
+@class ODAVFileInfo;
 
 @interface OFXAccountInfo : NSObject
 
-- initWithAccountURL:(NSURL *)accountURL temporaryDirectoryURL:(NSURL *)temporaryDirectoryURL clientParameters:(OFXAccountClientParameters *)clientParameters error:(NSError **)outError;
+- initWithLocalAccountInfoCache:(NSURL *)localAccountInfoCacheURL remoteAccountURL:(NSURL *)remoteAccountURL temporaryDirectoryURL:(NSURL *)temporaryDirectoryURL clientParameters:(OFXAccountClientParameters *)clientParameters error:(NSError **)outError;
 
-@property(nonatomic,readonly) NSURL *accountURL;
+@property(nonatomic,readonly) NSURL *remoteAccountURL;
 
-- (BOOL)updateWithFileManager:(OFSDAVFileManager *)fileManager accountFileInfo:(OFSFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos serverDate:(NSDate *)serverDate error:(NSError **)outError;
+- (BOOL)updateWithConnection:(OFXConnection *)connection accountFileInfo:(ODAVFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos serverDate:(NSDate *)serverDate error:(NSError **)outError;
 
 @property(nonatomic,readonly) NSString *groupIdentifier;
 

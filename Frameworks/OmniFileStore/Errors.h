@@ -11,25 +11,19 @@
 
 enum {
     // skip zero since it means 'no error' to AppleScript (actually the first 10-ish are defined in NSScriptCommand)
-
+    _OFSNoError = 0,
+    
     // General
-    OFSNoFileManagerForScheme = 1,
+    OFSNoFileManagerForScheme,
     OFSBaseURLIsNotAbsolute,
     OFSCannotCreateDirectory,
     OFSCannotMove,
-    OFSCannotWriteFile,
     OFSNoSuchDirectory,
     OFSCannotDelete,
-    OFSFilenameAlreadyInUse,
     OFSNoSuchFile,
     OFSCertificateNotTrusted,
     
-    OFSCannotMoveItemFromInbox,
-    OFSInvalidZipArchive,
-    OFSUnrecognizedFileType,
-    
     // DAV
-    OFSDAVFileManagerCannotAuthenticate,
     OFSDAVFileManagerConformanceFailed,
     OFSDAVOperationInvalidMultiStatusResponse,
 };

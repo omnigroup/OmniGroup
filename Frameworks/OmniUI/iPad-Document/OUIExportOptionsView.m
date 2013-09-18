@@ -45,12 +45,6 @@ static id _commonInit(OUIExportOptionsView *self)
 
     self->_choiceButtons = [[NSMutableArray alloc] init];
     
-    UIImage *borderImage = [UIImage imageNamed:@"OUIExportOptionsBorder.png"];
-    borderImage = [borderImage stretchableImageWithLeftCapWidth:11 topCapHeight:11];
-    
-    OBASSERT(borderImage);
-    [self setImage:borderImage];
-    
     return self;
 }
 

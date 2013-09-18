@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,29 +16,13 @@ extern NSString * const OUIColorSwatchPickerTextBackgroundPalettePreferenceKey;
 extern NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey;
 
 @interface OUIColorSwatchPicker : UIView
-{
-@private
-    NSString *_palettePreferenceKey;
-    NSMutableArray *_colors;
-    OQColor *_swatchSelectionColor;
-    
-    NSMutableArray *_colorSwatches;
-    UIButton *_navigationButton;
-    
-    id _nonretained_target;
-    
-    BOOL _showsSingleSwatch;
-    BOOL _wraps;
-    BOOL _showsNoneSwatch;
-    BOOL _showsNavigationSwatch;
-}
 
 @property(copy,nonatomic) NSString *palettePreferenceKey;
 
 @property(copy,nonatomic) NSArray *colors;
-@property(retain,nonatomic) OQColor *color; // Simple cover for 'colors' when using a single color
+@property(strong,nonatomic) OQColor *color; // Simple cover for 'colors' when using a single color
 
-@property(assign,nonatomic) id target; // We'll send -changeColor: (or to changeDetails: if showsSingleSwatch or if tap is on navigation swatch) to this when swatches are tapped
+@property(weak,nonatomic) id target; // We'll send -changeColor: (or to changeDetails: if showsSingleSwatch or if tap is on navigation swatch) to this when swatches are tapped
 
 @property(assign,nonatomic) BOOL showsSingleSwatch; // If set, the entire view area shows just the first color and navigation to the detail is enabled.
 @property(assign,nonatomic) BOOL wraps; // If set, and there are more than one row's worth of colors, wrap to following rows

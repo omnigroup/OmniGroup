@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,18 +9,10 @@
 
 #import <UIKit/UIView.h>
 
-@class UITouch, UIImage;
+@class UITouch;
 @class NSData;
 
 @interface OUIScalingView : UIView
-{
-@private
-    CGFloat _scale;
-    BOOL _rotating;
-    
-    BOOL _wantsShadowEdges;
-    NSArray *_shadowEdgeViews;
-}
 
 // If this view is within a OUIScalingScrollView, then this property should be considered read-only and the scale should be adjusted via its methods.
 @property(assign,nonatomic) CGFloat scale;

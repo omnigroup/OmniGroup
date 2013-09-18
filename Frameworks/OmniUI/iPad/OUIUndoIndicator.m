@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,16 +13,9 @@ RCS_ID("$Id$");
 - (void)bounce;
 @end
 
-@interface OUIUndoIndicator ()
-- (void)_update;
-@end
-
 @implementation OUIUndoIndicator
 {
-@private
     UIView *_parentView;
-    NSUInteger _groupingLevel;
-    BOOL _hasUnsavedChanges;
 }
 
 - initWithParentView:(UIView *)parentView;
@@ -32,18 +25,11 @@ RCS_ID("$Id$");
     if (!(self = [super initWithNibName:nil bundle:nil]))
         return nil;
     
-    _parentView = [parentView retain];
+    _parentView = parentView;
 
     return self;
 }
 
-- (void)dealloc;
-{
-    [_parentView release];
-    [super dealloc];
-}
-
-@synthesize groupingLevel = _groupingLevel;
 - (void)setGroupingLevel:(NSUInteger)groupingLevel;
 {
     if (_groupingLevel == groupingLevel)
@@ -53,7 +39,6 @@ RCS_ID("$Id$");
     [self _update];
 }
 
-@synthesize hasUnsavedChanges = _hasUnsavedChanges;
 - (void)setHasUnsavedChanges:(BOOL)hasUnsavedChanges;
 {
     if (_hasUnsavedChanges == hasUnsavedChanges)
@@ -84,15 +69,13 @@ RCS_ID("$Id$");
     }
 }
 
-#pragma mark -
-#pragma mark UIViewController
+#pragma mark - UIViewController
 
 - (void)loadView;
 {
     OUIUndoIndicatorView *view = [[OUIUndoIndicatorView alloc] init];
     view.layer.zPosition = CGFLOAT_MAX;
     self.view = view;
-    [view release];
 }
 
 @end

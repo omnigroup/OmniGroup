@@ -7,7 +7,7 @@
 
 #import <OmniUIDocument/OUIReplaceDocumentAlert.h>
 
-#import <OmniFileStore/OFSFileInfo.h>
+#import <OmniDAV/ODAVFileInfo.h>
 
 RCS_ID("$Id$")
 
@@ -31,7 +31,7 @@ RCS_ID("$Id$")
 
 - (void)show;
 {
-    NSString *urlName = [OFSFileInfo nameForURL:_documentURL];
+    NSString *urlName = [ODAVFileInfo nameForURL:_documentURL];
     NSString *message = [NSString stringWithFormat: NSLocalizedStringFromTableInBundle(@"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone.", @"OmniUIDocument", OMNI_BUNDLE, @"replace document description"), urlName];
     UIAlertView *replaceDocumentAlert = [[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Replace document?", @"OmniUIDocument", OMNI_BUNDLE, @"replace document title") message:message delegate:self cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUIDocument", OMNI_BUNDLE, @"cancel button title") otherButtonTitles:NSLocalizedStringFromTableInBundle(@"Replace", @"OmniUIDocument", OMNI_BUNDLE, @"replace button title"), NSLocalizedStringFromTableInBundle(@"Rename",@"OmniUIDocument", OMNI_BUNDLE, @"rename button title"), nil];
     [replaceDocumentAlert show];

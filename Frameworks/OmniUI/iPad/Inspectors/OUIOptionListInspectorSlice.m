@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,23 +43,16 @@ RCS_ID("$Id$");
     OBASSERT([titlesSubtitlesAndObjectValues count] > 0);
     OBASSERT(([titlesSubtitlesAndObjectValues count] % 3) == 0);
     
-    OUIOptionListInspectorSlice *result = [[[self alloc] init] autorelease];
+    OUIOptionListInspectorSlice *result = [[self alloc] init];
     result->_objectClass = objectClass;
     result->_keyPath = [keyPath copy];
     result->_titlesSubtitlesAndObjectValues = [titlesSubtitlesAndObjectValues copy];
     
-    [titlesSubtitlesAndObjectValues release];
     
     return result;
 }
 
-- (void)dealloc;
-{
-    [_keyPath release];
-    [_titlesSubtitlesAndObjectValues release];
-    
-    [super dealloc];
-}
+@synthesize optionChangedBlock = _optionChangedBlock;
 
 #pragma mark - OUIInspectorSlice subclass
 
@@ -81,7 +74,7 @@ RCS_ID("$Id$");
 {
     UITableViewCell *cell = [aTableView dequeueReusableCellWithIdentifier:@"option"];
     if (!cell)
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"option"] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"option"];
     
     NSUInteger row = indexPath.row;
     
@@ -117,6 +110,8 @@ RCS_ID("$Id$");
     {
         for (id object in self.appropriateObjectsForInspection) {
             [object setValue:value forKeyPath:_keyPath];
+            if (_optionChangedBlock != NULL)
+                _optionChangedBlock(_keyPath, value);
         }
     }
     [inspector didEndChangingInspectedObjects];

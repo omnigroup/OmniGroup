@@ -8,7 +8,6 @@
 #import "OFXOmniSyncServerAccountType.h"
 
 #import <OmniFileExchange/OFXServerAccount.h>
-#import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/OFCredentials.h>
 
 RCS_ID("$Id$")
@@ -63,7 +62,7 @@ NSString * const OFXOmniSyncServerAccountTypeIdentifier = @"com.omnigroup.OmniFi
     OBPRECONDITION(serverURL == nil);
     
     serverURL = [NSURL URLWithString:@"https://sync.omnigroup.com/"];
-    return OFSURLRelativeToDirectoryURL(serverURL, [username stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
+    return OFURLRelativeToDirectoryURL(serverURL, [username stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
 }
 
 @end

@@ -7,17 +7,15 @@
 
 #import <OmniUI/UIColor-OUIExtensions.h>
 
+#import <OmniQuartz/OQColor-Archiving.h>
+
 RCS_ID("$Id$");
 
 @implementation UIColor (OUIExtensions)
 
-+ (UIColor *)tabViewBackgroundColor;
++ (UIColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict;
 {
-    static UIColor *_tabViewBackgroundColor;
-    if (_tabViewBackgroundColor == nil)
-    	_tabViewBackgroundColor = [[UIColor colorWithRed:0.875 green:0.886 blue:0.906 alpha:1.0] retain];
-
-    return _tabViewBackgroundColor;
+    return [[OQColor colorFromPropertyListRepresentation:dict] toColor];
 }
 
 @end

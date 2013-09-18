@@ -12,6 +12,7 @@
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OUINavigationController.h>
 
 #import "OUIParameters.h"
 
@@ -44,10 +45,11 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 }
 @end
 
-@interface OUIInspectorNavigationController : UINavigationController
+@interface OUIInspectorNavigationController : OUINavigationController
 @end
 
 @implementation OUIInspectorNavigationController
+
 - (void)viewDidDisappear:(BOOL)animated;
 {
     [super viewDidDisappear:animated];
@@ -58,6 +60,7 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
         [pane updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
     }
 }
+
 @end
 
 
@@ -67,6 +70,9 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 - (void)_startObserving;
 - (void)_stopObserving;
 - (void)_keyboardDidHide:(NSNotification *)note;
+
+@property (readonly,retain) id <UIViewControllerAnimatedTransitioning> transition;
+@property (readonly,retain) NSMutableArray *popTransitions;
 @end
 
 // Might want to make this variable, but at least let's only hardcode it in one spot. Popovers are required to be between 320 and 600; let's shoot for the minimum.
@@ -89,8 +95,6 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     UINavigationController *_navigationController;
     OUIInspectorPopoverController *_popoverController;
     
-    id <OUIInspectorDelegate> _nonretained_delegate;
-    
     BOOL _isObservingNotifications;
     BOOL _keyboardShownWhilePopoverVisible;
 }
@@ -101,8 +105,13 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 {
     UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png"];
     OBASSERT(image);
-    UIBarButtonItem *item = [[[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action] autorelease];
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action];
     return item;
+}
+
++ (UIColor *)backgroundColor;
+{
+    return [UIColor groupTableViewBackgroundColor];
 }
 
 + (UIColor *)disabledLabelTextColor;
@@ -112,17 +121,22 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 + (UIColor *)labelTextColor;
 {
-    return [UIColor colorWithHue:kOUIInspectorLabelTextColor.h saturation:kOUIInspectorLabelTextColor.s brightness:kOUIInspectorLabelTextColor.v alpha:kOUIInspectorLabelTextColor.a];
+    return [UIColor blackColor];
 }
 
 + (UIFont *)labelFont;
 {
-    return [UIFont boldSystemFontOfSize:20];
+    return [UIFont systemFontOfSize:[UIFont labelFontSize]];
 }
 
 + (UIColor *)valueTextColor;
 {
-    return [UIColor colorWithHue:kOUIInspectorLabelTextColor.h saturation:kOUIInspectorLabelTextColor.s brightness:kOUIInspectorLabelTextColor.v alpha:kOUIInspectorLabelTextColor.a];
+    return [UIColor blackColor];
+}
+
++ (UIColor *)indirectValueTextColor;
+{
+    return [UIColor grayColor];
 }
 
 - init;
@@ -138,7 +152,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     _height = height;
     
     if (mainPane)
-        _mainPane = [mainPane retain];
+        _mainPane = mainPane;
     else
         _mainPane = [[OUIStackedSlicesInspectorPane alloc] init];
 
@@ -161,17 +175,12 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     _popoverController.delegate = nil;
-    [_popoverController release];
 
-    // Trying to fix a (possible) retain cycle but this doesn't help.
-//    [_navigationController.view removeFromSuperview];
-//    _navigationController.view = nil;
     _navigationController.delegate = nil;
-    [_navigationController release];
-    
-    _mainPane.inspector = nil;
-    [_mainPane release];
-    [super dealloc];
+
+    // Attempting to fix ARC weak reference cleanup crasher in <bug:///93163> (Crash after setting font color on Level 1 style)
+    for (OUIInspectorPane *pane in _navigationController.viewControllers)
+        pane.inspector = nil;
 }
 
 - (OUIInspectorPane *)mainPane;
@@ -181,7 +190,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 }
 
 @synthesize height = _height;
-@synthesize delegate = _nonretained_delegate;
+@synthesize delegate = _weak_delegate;
 @synthesize alwaysShowToolbar = _alwaysShowToolbar;
 
 // Subclass to return YES if you intend to embed the inspector into a your own navigation controller.
@@ -211,7 +220,16 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
     if ([self isEmbededInOtherNavigationController] == NO) {
         if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
             _navigationController.topViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismiss)];
+            OBFinishPorting;
+            // The following code is bing disabled. We are removing calls to -[OUIAppController topViewController]. In a ViewController Containment world, topViewController could be ambiguous. We need to find a better way to handle this.
+#if 0
+            // When we have time to worry about iPhone, we should replace this:
             [[[OUIAppController controller] topViewController] presentViewController:_navigationController animated:YES completion:NULL];
+            // with something like this:
+            UIViewController *viewControllerToPresentFrom = [self.delegate inspectorViewControllerToPresentFrom:self];
+            [viewControllerToPresentFrom presentViewController:_navigationController animated:YES completion:NULL];
+#endif
+
         } else {
             if (![[OUIAppController controller] presentPopover:_popoverController fromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES])
                 return NO;
@@ -261,8 +279,10 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 - (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 {
-    if ([_nonretained_delegate respondsToSelector:@selector(inspector:makeAvailableSlicesForStackedSlicesPane:)])
-        return [_nonretained_delegate inspector:self makeAvailableSlicesForStackedSlicesPane:pane];
+    id <OUIInspectorDelegate> delegate = _weak_delegate;
+    
+    if ([delegate respondsToSelector:@selector(inspector:makeAvailableSlicesForStackedSlicesPane:)])
+        return [delegate inspector:self makeAvailableSlicesForStackedSlicesPane:pane];
     return nil;
 }
 
@@ -291,7 +311,7 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
     
     self->_popoverController.lockContentSize = YES;
     {
-        vc.contentSizeForViewInPopover = CGSizeMake(OUIInspectorContentWidth, height);
+        vc.preferredContentSize = CGSizeMake(OUIInspectorContentWidth, height);
         
         [self->_navigationController setToolbarHidden:!wantsToolbar animated:animated];
     }
@@ -322,14 +342,40 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
     [navigationController pushViewController:pane animated:animated];
 }
 
+- (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects animated:(BOOL)animated withPushTransition:(id <UIViewControllerAnimatedTransitioning>)pushTransition popTransition:(id <UIViewControllerAnimatedTransitioning>)popTransition;
+{
+    _transition = pushTransition;
+    [self pushPane:pane inspectingObjects:inspectedObjects animated:animated];
+    _transition = nil;
+    
+    if (!_popTransitions)
+        _popTransitions = [[NSMutableArray alloc] init];
+    
+    if (popTransition)
+        [_popTransitions addObject:popTransition];
+    else
+        [_popTransitions addObject:[NSNull null]];
+}
+
 - (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects;
 {
-    [self pushPane:pane inspectingObjects:inspectedObjects animated:YES];
+    [self pushPane:pane inspectingObjects:inspectedObjects animated:YES withPushTransition:nil popTransition:nil];
 }
 
 - (void)pushPane:(OUIInspectorPane *)pane;
 {
     [self pushPane:pane inspectingObjects:nil];
+}
+
+- (void)popToPane:(OUIInspectorPane *)pane;
+{
+    UINavigationController *navigationController = _getNavigationController(self);
+    OBASSERT(navigationController);
+
+    if (pane)
+        [navigationController popToViewController:pane animated:YES];
+    else
+        [navigationController popToRootViewControllerAnimated:YES];
 }
 
 - (OUIInspectorPane *)topVisiblePane;
@@ -388,6 +434,24 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
     _configureContentSize(self, viewController, _height, animated);
 }
 
+#pragma mark UINavigationControllerDelegate
+- (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+                                   animationControllerForOperation:(UINavigationControllerOperation)operation
+                                                fromViewController:(UIViewController *)fromVC
+                                                  toViewController:(UIViewController *)toVC;
+{
+    if (operation == UINavigationControllerOperationPop) {
+        id transition = [_popTransitions lastObject];
+        if (transition == [NSNull null])
+            transition = nil;
+        [_popTransitions removeLastObject];
+        return transition;
+    }
+    
+    return self.transition;
+}
+
+
 #pragma mark -
 #pragma mark UIPopoverControllerDelegate
 
@@ -417,7 +481,8 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
     
     [self _stopObserving];
 
-    [_nonretained_delegate inspectorDidDismiss:self];
+    id <OUIInspectorDelegate> delegate = _weak_delegate;
+    [delegate inspectorDidDismiss:self];
     
     // Don't keep the popover controller alive needlessly.
     [[OUIAppController controller] forgetPossiblyVisiblePopoverIfAlreadyHidden];
@@ -428,9 +493,11 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
 
 - (void)_configureTitleForPane:(OUIInspectorPane *)pane;
 {
+    id <OUIInspectorDelegate> delegate = _weak_delegate;
+
     NSString *title = nil;
-    if ([_nonretained_delegate respondsToSelector:@selector(inspector:titleForPane:)])
-        title = [_nonretained_delegate inspector:self titleForPane:pane];
+    if ([delegate respondsToSelector:@selector(inspector:titleForPane:)])
+        title = [delegate inspector:self titleForPane:pane];
     if (!title)
         title = pane.title;
     if (!title)
@@ -464,8 +531,10 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
         
         // We *MUST* reuse our popover currently. In the past we've not been able to reuse them due to sizing oddities, but we no longer resize our popovers. Also, since we can potentially reuse our panes/slices, if you open an inspector, then quickly tap it closed and reopen, the old popover could not be done animating out before the new one tried to steal the panes/slices. This left them in a confused state. This all seems to work fine if we reuse our popover. See <bug:///71345> (Tapping between the two popover quickly can give you a blank inspector).
         if (embedded == NO) {
+            id <OUIInspectorDelegate> delegate = _weak_delegate;
+
             // TODO: Assuming we aren't on screen.
-            if (!([_nonretained_delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [_nonretained_delegate inspectorShouldMaintainStateWhileReopening:self]))
+            if (!([delegate respondsToSelector:@selector(inspectorShouldMaintainStateWhileReopening:)] && [delegate inspectorShouldMaintainStateWhileReopening:self]))
                 [_navigationController popToRootViewControllerAnimated:NO];
             
             [self dismiss];
@@ -476,6 +545,7 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
             if (_popoverController == nil && UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPhone) {
                 _popoverController = [[OUIInspectorPopoverController alloc] initWithContentViewController:_navigationController];
                 _popoverController.delegate = self;
+                _popoverController.backgroundColor = [[self class] backgroundColor];
             }
             
             [self _startObserving]; // Inside the embedded check since this just signs up for notifications that will fix our popover size, but that isn't our problem if we are embedded

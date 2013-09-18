@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,7 +69,7 @@ RCS_ID("$Id$")
     }
     
     NSDictionary *animationDictionary = [NSDictionary dictionaryWithObjectsAndKeys:resizingSubview, NSViewAnimationTargetKey, [NSValue valueWithRect:endingFrame], NSViewAnimationEndFrameKey, [NSValue valueWithRect:startingFrame], NSViewAnimationStartFrameKey, nil];
-    NSMutableArray *animationArray = [NSArray arrayWithObject:animationDictionary];
+    NSMutableArray *animationArray = [NSMutableArray arrayWithObject:animationDictionary];
     NSAnimation *animation = [[NSViewAnimation alloc] initWithViewAnimations:animationArray];
     
     id <NSAnimationDelegate> delegate = (id)[self delegate]; // Let our delegate implement some of the animation delegate methods if it wants
@@ -89,12 +89,18 @@ static id SplitViewDidResizeObserver;
     SplitViewDidResizeObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSSplitViewDidResizeSubviewsNotification object:nil queue:nil usingBlock:^(NSNotification *note) {
         NSSplitView *splitView = note.object;
         for (NSView *subview in splitView.subviews) {
-            BOOL isIntegral = NSEqualRects(subview.frame, NSIntegralRect(subview.frame));
+            CGRect subviewFrame = subview.frame;
+            
+            // NSIntegralRect returns CGRectZero if called with something with zero width (and maybe height).
+            if (subviewFrame.size.width == 0 || subviewFrame.size.height == 0)
+                continue;
+            
+            BOOL isIntegral = NSEqualRects(subviewFrame, NSIntegralRect(subviewFrame));
             if (!isIntegral) {
                 static NSString *const AlreadyWarnedKey = @"OASplitViewIntegralWarning";
                 id alreadyWarned = objc_getAssociatedObject(splitView, AlreadyWarnedKey);
-                if (!alreadyWarned) {
-                    OBASSERT_NOT_REACHED("Subview %@ of split view %@ was left with a nonintegral frame %@ after resize. Bad things can result when this happens. You should implement -[<NSSplitViewDelegate> splitView:constrainSplitPosition:ofSubviewAt:dividerIndex:] to restrict the splitters to integral positions. Only warning once per split view.", subview.shortDescription, splitView.shortDescription, NSStringFromRect(subview.frame));
+                if (!alreadyWarned) {                    
+                    OBASSERT_NOT_REACHED("Subview %@ of split view %@ was left with a nonintegral frame %@ after resize. Bad things can result when this happens. You should implement -[<NSSplitViewDelegate> splitView:constrainSplitPosition:ofSubviewAt:dividerIndex:] to restrict the splitters to integral positions. Only warning once per split view.", subview.shortDescription, splitView.shortDescription, NSStringFromRect(subviewFrame));
                     
                     objc_setAssociatedObject(splitView, AlreadyWarnedKey, [NSSplitView class], OBJC_ASSOCIATION_ASSIGN);
                     break;

@@ -13,7 +13,6 @@
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
-#import <OmniFileStore/OFSURL.h>
 
 #import "OFXServerAccount-Internal.h"
 #import "OFXServerAccountRegistry-Internal.h"
@@ -156,9 +155,7 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
         
         if (account.hasBeenPreparedForRemoval) {
             // We died or were killed before being able to remove the account...
-            __autoreleasing NSError *error;
-            if (![self _cleanupAccountAfterRemoval:account error:&error])
-                NSLog(@"Error resuming cleanup of previously deleted account %@: %@", [account shortDescription], [error toPropertyList]);
+            [self _cleanupAccountAfterRemoval:account];
             continue; // Either way, ignore it.
         }
         
@@ -350,25 +347,29 @@ static unsigned AccountContext;
 }
 
 // This is called after an account is marked for removal and after we are sure any syncing operations on it have finished.
-- (BOOL)_cleanupAccountAfterRemoval:(OFXServerAccount *)account error:(NSError **)outError;
+- (void)_cleanupAccountAfterRemoval:(OFXServerAccount *)account;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
     if (!account.hasBeenPreparedForRemoval) {
         OBASSERT_NOT_REACHED("UI code should just call -prepareForRemoval on accounts");
-        OFXError(outError, OFXAccountNotPreparedForRemoval, @"Account is not prepared for removal.", nil);
-        return NO;
+        NSLog(@"Account %@ is not prepared for removal.", [account shortDescription]);
+        return;
     }
 
     // Atomically remove the account directory now that any syncing on this account is done.
     __autoreleasing NSError *removeError;
     NSURL *accountStoreDirectory = [self localStoreURLForAccount:account];
     if (![[NSFileManager defaultManager] atomicallyRemoveItemAtURL:accountStoreDirectory error:&removeError]) {
-        NSLog(@"Error removing local account store %@: %@", accountStoreDirectory, [removeError toPropertyList]);
-        if (outError)
-            *outError = removeError;
-        return NO;
+        [removeError log:@"Error removing local account store %@", accountStoreDirectory];
+        return;
     }
+    
+    void (^removalCompleted)(void) = ^{
+        OBASSERT([NSThread isMainThread]);
+        if (_allAccounts != nil) // Avoid some work and an assertion in -setAllAccounts:
+            [self setAllAccounts:[_allAccounts arrayByRemovingObject:account]];
+    };
     
     // On the Mac, we'll leave the synchronized files around since they are in a user-visible location and the user may have just decided to stop using our service. On iOS, there is no other way to get to the files, so we need to clean up after ourselves.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -376,17 +377,16 @@ static unsigned AccountContext;
         removeError = nil;
 
         // Go through this helper method to make sure we delete the right ancestory URL (since there is an extra 'Documents' component). This does some other checks to make sure we are deleting the right thing.
-        if (![OFXServerAccount deleteGeneratedLocalDocumentsURL:account.localDocumentsURL error:&removeError]) {
-            NSLog(@"Error removing local account documents at %@: %@", account.localDocumentsURL, [removeError toPropertyList]);
-            return NO;
-        }
+        [OFXServerAccount deleteGeneratedLocalDocumentsURL:account.localDocumentsURL completionHandler:^(NSError *removeError) {
+            if (removeError)
+                NSLog(@"Error removing local account documents at %@: %@", account.localDocumentsURL, [removeError toPropertyList]);
+            else
+                removalCompleted();
+        }];
     }
+#else
+    removalCompleted();
 #endif
-
-    if (_allAccounts != nil) // Avoid some work and an assertion in -setAllAccounts:
-        [self setAllAccounts:[_allAccounts arrayByRemovingObject:account]];
-
-    return YES;
 }
 
 #pragma mark - Private

@@ -12,7 +12,8 @@
 
 #define kOFXRemoteInfoFilename @"Info.plist"
 
-@class OFSDAVFileManager, OFSFileInfo;
+@class OFXConnection;
+@class ODAVFileInfo;
 
 extern NSString *OFXHashFileNameForData(NSData *data) OB_HIDDEN;
 
@@ -30,6 +31,6 @@ extern NSString *OFXHashFileNameForData(NSData *data) OB_HIDDEN;
 
 extern NSString *OFXFileItemIdentifierFromRemoteSnapshotURL(NSURL *remoteSnapshotURL, NSUInteger *outVersion, NSError **outError) OB_HIDDEN;
 
-extern NSArray *OFXFetchDocumentFileInfos(OFSDAVFileManager *fileManager, NSURL *containerURL, NSString *identifier, NSError **outError) OB_HIDDEN;
+extern NSArray *OFXFetchDocumentFileInfos(OFXConnection *connection, NSURL *containerURL, NSString *identifier, NSError **outError) OB_HIDDEN;
 
-extern NSComparisonResult OFXCompareFileInfoByVersion(OFSFileInfo *fileInfo1, OFSFileInfo *fileInfo2) OB_HIDDEN;
+extern NSComparisonResult OFXCompareFileInfoByVersion(ODAVFileInfo *fileInfo1, ODAVFileInfo *fileInfo2) OB_HIDDEN;

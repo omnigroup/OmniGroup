@@ -18,7 +18,7 @@
 
 @interface OFNetStateRegistration : NSObject
 
-+ (BOOL)netServiceName:(NSString *)serviceName matchesGroup:(NSString *)groupIdentifier;
++ (BOOL)netServiceName:(NSString *)serviceName matchesAnyGroup:(NSSet *)groupIdentifiers;
 
 - initWithGroupIdentifier:(NSString *)groupIdentifier memberIdentifier:(NSString *)memberIdentifier name:(NSString *)name state:(NSData *)state;
 

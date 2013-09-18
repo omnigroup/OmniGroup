@@ -1,4 +1,4 @@
-// Copyright 2003-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -93,6 +93,14 @@ static inline void OQAppendRectWithRoundedLeft(CGContextRef ctx, CGRect rect, CG
 static inline void OQAppendRectWithRoundedRight(CGContextRef ctx, CGRect rect, CGFloat radius, BOOL closeLeft)
     { OQAppendRoundedRectWithMask_c(ctx, rect, radius, OQRectMaxXMinYCorner|OQRectMaxXMaxYCorner|
                                     (closeLeft?OQRectAllEdges:(OQRectMaxXEdge|OQRectMinYEdge|OQRectMaxYEdge))); }
+
+/*
+ iOS 7 - style hyperellipse-like softened rounded corner.
+ Appends a nearly circular arc from 'from' that approaches 'corner' but is rounded to 'radius'.
+ 'handedness' xor the coordinate system's flippedness determines whether the arc turns right/left (clockwise/counterclockwise).
+ 'lineto' determines whether the initial path element added is a MOVETO or a LINETO.
+*/
+void OQPathAddIveCorner(CGMutablePathRef path, CGPoint from, CGPoint corner, CGFloat radius, BOOL handedness, BOOL lineto);
 
 // Updates the CTM so that the lower/upper edges of the rect are swapped.
 static inline void OQFlipVerticallyInRect(CGContextRef ctx, CGRect rect)

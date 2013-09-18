@@ -7,9 +7,11 @@
 
 #import <OmniUI/OUIUndoBarButtonItem.h>
 
-#import <OmniUI/OUIUndoButtonPopoverHelper.h>
+#import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIUndoButton.h>
 #import <OmniUI/OUIUndoButtonController.h>
+#import <OmniUI/UIView-OUIExtensions.h>
+#import "OUIParameters.h"
 
 RCS_ID("$Id$");
 
@@ -22,19 +24,20 @@ NSString * const OUIUndoPopoverWillShowNotification = @"OUIUndoPopoverWillShowNo
 @interface UIBarButtonItem (NSCoding) <NSCoding>
 @end
 
-@interface OUIUndoBarButtonItem (/*Private*/)
-- (void)_startObservingUndoManager;
-- (void)_stopObservingUndoManager;
-- (void)_updateStateFromUndoMananger:(NSNotification *)note;
-- (void)_showUndoMenu;
-
-// Internal actions
-- (void)_touchDown:(id)sender;
-- (void)_undoButtonTap:(id)sender;
-- (void)_undoButtonPressAndHold:(id)sender;
-@end
-
 @implementation OUIUndoBarButtonItem
+{
+    OUIUndoButton *_undoButton;
+
+    NSMutableArray *_undoManagers;
+    
+    UITapGestureRecognizer *_tapRecognizer;
+    UILongPressGestureRecognizer *_longPressRecognizer;
+
+    __weak id <OUIUndoBarButtonItemTarget>  _weak_undoBarButtonItemTarget;
+    OUIUndoButtonController *_buttonController;
+
+    BOOL _canUndo, _canRedo;
+}
 
 - (id)initWithImage:(UIImage *)image style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action;
 {
@@ -62,13 +65,18 @@ NSString * const OUIUndoPopoverWillShowNotification = @"OUIUndoPopoverWillShowNo
 
 static id _commonInit(OUIUndoBarButtonItem *self)
 {
-    self->_undoButton = [[OUIUndoButton alloc] init];
+    self->_undoManagers = [[NSMutableArray alloc] init];
+    
+    UIColor *tintColor = [OUIAppController controller].window.tintColor;
+    self.tintColor = tintColor;
+    self->_undoButton = [OUIUndoButton buttonWithType:UIButtonTypeSystem];
+
     [self->_undoButton sizeToFit];
     self.customView = self->_undoButton;
 
     // adjust the text label because UIButton and UITitleBarButton place their labels 1 apple point off from each other by default.
-    [self->_undoButton setTitleEdgeInsets:UIEdgeInsetsMake(0,0,1,0)];
-    
+    [self->_undoButton setTitleEdgeInsets:UIEdgeInsetsMake(0,0,-3,0)];
+
     [self->_undoButton addTarget:self action:@selector(_touchDown:) forControlEvents:UIControlEventTouchDown];
 
     self->_tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_undoButtonTap:)];
@@ -76,7 +84,10 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 
     self->_longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_undoButtonPressAndHold:)];
     [self->_undoButton addGestureRecognizer:self->_longPressRecognizer];
-    
+
+    [self->_undoButton.titleLabel setFont:[UIFont systemFontOfSize:17]];
+    [self->_undoButton sizeToFit];
+
     return self;
 }
 
@@ -96,110 +107,88 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 
 - (void)dealloc;
 {
-    if (_undoManager) {
-        [self _stopObservingUndoManager];
-        [_undoManager release];
-    }
+    for (NSUndoManager *undoManager in _undoManagers)
+        [self _stopObservingUndoManager:undoManager];
     
     [_undoButton removeTarget:self action:@selector(_touchDown:) forControlEvents:UIControlEventTouchDown];
-    
     [_undoButton removeGestureRecognizer:_tapRecognizer];
-    [_tapRecognizer release];
-    
-    [_longPressRecognizer release];
     [_undoButton removeGestureRecognizer:_longPressRecognizer];
-    
-    [_undoButton release];
-    [_buttonController release];
-    [super dealloc];
 }
 
-#pragma mark -
-#pragma mark API
+#pragma mark - API
 
-@synthesize undoManager = _undoManager;
-- (void)setUndoManager:(NSUndoManager *)undoManager;
+- (void)addUndoManager:(NSUndoManager *)undoManager;
 {
-    if (_undoManager == undoManager)
-        return;
-    
-    if (_undoManager)
-        [self _stopObservingUndoManager];
-
-    [_undoManager release];
-    _undoManager = [undoManager retain];
-
-    if (_undoManager)
-        [self _startObservingUndoManager];
-    
+    OBPRECONDITION([_undoManagers indexOfObjectIdenticalTo:undoManager] == NSNotFound);
+ 
+    [_undoManagers addObject:undoManager];
+    [self _startObservingUndoManager:undoManager];
     [self _updateStateFromUndoMananger:nil];
 }
 
-@synthesize undoBarButtonItemTarget = _undoBarButtonItemTarget;
+- (void)removeUndoManager:(NSUndoManager *)undoManager;
+{
+    OBPRECONDITION([_undoManagers indexOfObjectIdenticalTo:undoManager] != NSNotFound);
+    
+    [self _stopObservingUndoManager:undoManager];
+    [_undoManagers removeObjectIdenticalTo:undoManager];
+    [self _updateStateFromUndoMananger:nil];
+}
+
+- (BOOL)hasUndoManagers;
+{
+    return [_undoManagers count] > 0;
+}
+
+- (void)updateState;
+{
+    [self _updateStateFromUndoMananger:nil];
+}
+
+@synthesize undoBarButtonItemTarget = _weak_undoBarButtonItemTarget;
 @synthesize button = _undoButton;
-
-- (void)setNormalBackgroundImage:(UIImage *)image;
-{
-    [_undoButton setNormalBackgroundImage:image];
-}
-
-- (void)setHighlightedBackgroundImage:(UIImage *)image;
-{
-    [_undoButton setHighlightedBackgroundImage:image];
-}
-
-#pragma mark -
-#pragma mark UIBarButtonItem subclass
-
-- (void)setEnabled:(BOOL)enabled;
-{
-    [super setEnabled:enabled];
-    [self _updateStateFromUndoMananger:nil];
-}
 
 #pragma mark -
 #pragma mark Private
 
-- (void)_startObservingUndoManager;
+- (void)_startObservingUndoManager:(NSUndoManager *)undoManager;
 {
-    OBPRECONDITION(_undoManager);
+    OBPRECONDITION(undoManager);
     
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self selector:@selector(_updateStateFromUndoMananger:) name:NSUndoManagerDidUndoChangeNotification object:_undoManager];
-    [center addObserver:self selector:@selector(_updateStateFromUndoMananger:) name:NSUndoManagerDidRedoChangeNotification object:_undoManager];
-    [center addObserver:self selector:@selector(_updateStateFromUndoMananger:) name:NSUndoManagerWillCloseUndoGroupNotification object:_undoManager];
+    [center addObserver:self selector:@selector(_updateStateFromUndoMananger:) name:NSUndoManagerDidUndoChangeNotification object:undoManager];
+    [center addObserver:self selector:@selector(_updateStateFromUndoMananger:) name:NSUndoManagerDidRedoChangeNotification object:undoManager];
+    [center addObserver:self selector:@selector(_updateStateFromUndoMananger:) name:NSUndoManagerWillCloseUndoGroupNotification object:undoManager];
 }
 
-- (void)_stopObservingUndoManager;
+- (void)_stopObservingUndoManager:(NSUndoManager *)undoManager;
 {
-    OBPRECONDITION(_undoManager);
+    OBPRECONDITION(undoManager);
     
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-    [center removeObserver:self name:NSUndoManagerDidUndoChangeNotification object:_undoManager];
-    [center removeObserver:self name:NSUndoManagerDidRedoChangeNotification object:_undoManager];
-    [center removeObserver:self name:NSUndoManagerWillCloseUndoGroupNotification object:_undoManager];
+    [center removeObserver:self name:NSUndoManagerDidUndoChangeNotification object:undoManager];
+    [center removeObserver:self name:NSUndoManagerDidRedoChangeNotification object:undoManager];
+    [center removeObserver:self name:NSUndoManagerWillCloseUndoGroupNotification object:undoManager];
 }
 
 - (void)_updateStateFromUndoMananger:(NSNotification *)note;
 {
-    OBPRECONDITION(!note || ([note object] == _undoManager));
+    NSUndoManager *undoManager = [note object];
+    OBPRECONDITION(!note || ([_undoManagers indexOfObjectIdenticalTo:undoManager] != NSNotFound));
     
     // We just use the undo manager notifications to determine *when* to ask the target whether it can undo/redo. Likely the target will just use -[NSUndoManager can{Undo,Redo}], but in some cases it might have additional restrictions.
-    
+
     if (note && 
         [[note name] isEqualToString:NSUndoManagerWillCloseUndoGroupNotification] &&
-        [_undoManager groupingLevel] > 1) {
+        [undoManager groupingLevel] > 1) {
         return;
     }
-    
-    BOOL enabled = [self isEnabled];
 
-    if (enabled) {
-        _canUndo = [_undoBarButtonItemTarget canPerformAction:@selector(undo:) withSender:self];
-        _canRedo = [_undoBarButtonItemTarget canPerformAction:@selector(redo:) withSender:self];
+    id <OUIUndoBarButtonItemTarget> target = _weak_undoBarButtonItemTarget;
+    _canUndo = [target canPerformAction:@selector(undo:) withSender:self];
+    _canRedo = [target canPerformAction:@selector(redo:) withSender:self];
         
-        enabled &= (_canUndo || _canRedo);
-    }
+    BOOL enabled = (_canUndo || _canRedo);
     
     if (_canUndo) {
         // Tap should undo, press and hold should give menu
@@ -216,18 +205,20 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     }
     
     // Our superclass enabled property sets whether we want to be enabled at all.
+    self.enabled = enabled;
     [_undoButton setEnabled:enabled];
 }
 
 - (void)_showUndoMenu;
 {
     if (!_buttonController) {
-        _buttonController = [[OUIUndoButtonController alloc] initWithNibName:nil bundle:nil];
-        _buttonController.undoBarButtonItemTarget = _undoBarButtonItemTarget;
+        _buttonController = [[OUIUndoButtonController alloc] init];
+        _buttonController.undoBarButtonItemTarget = _weak_undoBarButtonItemTarget;
+        _buttonController.tintColor = self.tintColor;
     }
     
-    if (![_buttonController isMenuVisible]) {
-        [[OUIUndoButtonPopoverHelper sharedPopoverHelper] dismissPopoverAnimated:NO];
+    if (!_buttonController.isMenuVisible) {
+        [[OUIAppController controller] dismissPopoverAnimated:NO];
         [_buttonController showUndoMenuFromItem:self];
     }
 }
@@ -248,10 +239,10 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 - (void)_undoButtonTap:(id)sender;
 {
     // Close any open popover if the undo toolbar item button is tapped. We can make popovers update themselves in many cases via KVO/notification/manual updating, but it isn't clear that this is useful (iWork closes the inspector popovers on undo). Also, there are cases where we can't update (for example, undoing past the creation of the inspected object) and would have to dismiss anyway.
-    [[OUIUndoButtonPopoverHelper sharedPopoverHelper] dismissPopoverAnimated:YES];
+    [[OUIAppController controller] dismissPopoverAnimated:YES];
     
-    if (_undoBarButtonItemTarget)
-        [_undoBarButtonItemTarget undo:self];
+    id <OUIUndoBarButtonItemTarget> target = _weak_undoBarButtonItemTarget;
+    [target undo:self];
 }
 
 - (void)_undoButtonPressAndHold:(id)sender;
@@ -261,9 +252,8 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 
 - (BOOL)dismissUndoMenu;
 {
-    if (_buttonController) {
+    if (_buttonController)
         return [_buttonController dismissUndoMenu];
-    }
     return NO;
 }
 @end

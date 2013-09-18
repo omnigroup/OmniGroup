@@ -26,8 +26,8 @@ RCS_ID("$Id$");
     if (!(self = [super initWithName:name date:[NSDate date]]))
         return nil;
     
-    _entry = [entry retain];
-    _archive = [archive retain];
+    _entry = entry;
+    _archive = archive;
     
     return self;
 }
@@ -37,32 +37,35 @@ RCS_ID("$Id$");
     return [self initWithName:[entry name] entry:entry archive:archive];
 }
 
-- (void)dealloc;
-{
-    [_entry release];
-    [_archive release];
-    [super dealloc];
-}
-
 #pragma mark -
 #pragma mark OUZipMember subclass
 
 - (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString *)fileNamePrefix error:(NSError **)outError;
 {
-    OMNI_POOL_START {
-        NSData *rawData = [_archive dataForEntry:_entry raw:YES error:outError];
+    BOOL result;
+    NSError *resultError = nil;
+
+    @autoreleasepool {
+        __autoreleasing NSError *error;
+        NSData *rawData = [_archive dataForEntry:_entry raw:YES error:&error];
         if (!rawData) {
-            OBASSERT(outError && *outError);
-            return NO;
+            resultError = error; // strong-ify the error
+            result = NO;
+        } else {
+            OBASSERT([rawData length] == [_entry compressedSize]);
+            
+            // TODO: propagate the data from the source zip file
+            error = nil;
+            result = [zip appendEntryNamed:[self name] fileType:[_entry fileType] contents:rawData raw:YES compressionMethod:[_entry compressionMethod] uncompressedSize:[_entry uncompressedSize] crc:[_entry crc] date:[_entry date] error:&error];
+            if (!result) {
+                resultError = error; // strong-ify the error
+            }
         }
-        OBASSERT([rawData length] == [_entry compressedSize]);
-        
-        // TODO: propagate the data from the source zip file
-        if (![zip appendEntryNamed:[self name] fileType:[_entry fileType] contents:rawData raw:YES compressionMethod:[_entry compressionMethod] uncompressedSize:[_entry uncompressedSize] crc:[_entry crc] date:[_entry date] error:outError])
-            return NO;
-    } OMNI_POOL_ERROR_END;
-    
-    return YES;
+    }
+
+    if (!result && outError)
+        *outError = resultError;
+    return result;
 }
 
 @end

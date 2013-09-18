@@ -13,11 +13,10 @@
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIAppController.h>
-#import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
-#import <OmniUIDocument/OUIMainViewController.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 
 #import "OUIAddCloudAccountViewController.h"
 #import "OUIServerAccountSetupViewController.h"
@@ -61,8 +60,8 @@ enum {
     _accountListTableView.dataSource = self;
     _accountListTableView.scrollEnabled = YES;
     _accountListTableView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-    _accountListTableView.backgroundColor = [UIColor clearColor];
-    _accountListTableView.backgroundView = nil;
+//    _accountListTableView.backgroundColor = [UIColor clearColor];
+//    _accountListTableView.backgroundView = nil;
 
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Cloud Setup", @"OmniUIDocument", OMNI_BUNDLE, @"Cloud setup modal sheet title");
@@ -72,8 +71,8 @@ enum {
     _addAccountTableView.dataSource = self;
     _addAccountTableView.scrollEnabled = NO;
     _addAccountTableView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleTopMargin;
-    _addAccountTableView.backgroundColor = [UIColor clearColor];
-    _addAccountTableView.backgroundView = nil;
+//    _addAccountTableView.backgroundColor = [UIColor clearColor];
+//    _addAccountTableView.backgroundView = nil;
     // OUITableViewAdjustHeightToFitContents(_addAccountTableView);
 
     UIView *topLevelView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 600)];
@@ -351,7 +350,7 @@ enum {
 
 - (void)_done:(id)sender;
 {
-    [[[OUIDocumentAppController controller] mainViewController] dismissViewControllerAnimated:YES completion:nil];
+    [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)_reloadAccounts;
@@ -393,7 +392,7 @@ enum {
         [self.navigationController popToViewController:self animated:YES];
         if (vc.account.isCloudSyncEnabled) {
             [[OUIDocumentAppController controller] _selectScopeWithAccount:vc.account completionHandler:NULL];
-            [[[OUIDocumentAppController controller] documentPicker] updateTitle];
+            [[[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController] updateTitle];
         }
     };
     
@@ -406,7 +405,7 @@ enum {
     if (self.editing)
         self.navigationItem.leftBarButtonItem = nil;
     else
-        self.navigationItem.leftBarButtonItem = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_done:)];
+        self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_done:)];
 }
 
 @end

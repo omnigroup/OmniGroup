@@ -488,17 +488,24 @@ static void _validateMethodSignatures(void)
     for (classIndex = 0; classIndex < classCount; classIndex++) {
         Class cls = classes[classIndex];
         
+#define CLASSNAME_HAS_PREFIX(className, prefix) (strncmp(className, prefix, strlen(prefix)) == 0)
+
         /* Some classes (that aren't our problem) asplode when they try to dynamically create getters/setters. */
         const char *clsName = class_getName(cls);
-        if (strncmp(clsName, "NS", 2) == 0 ||
-            strncmp(clsName, "_NS", 3) == 0 ||
-            strncmp(clsName, "__NS", 4) == 0 ||
-            strncmp(clsName, "__CF", 4) == 0 ||
+        if (CLASSNAME_HAS_PREFIX(clsName, "NS") ||
+            CLASSNAME_HAS_PREFIX(clsName, "_NS") ||
+            CLASSNAME_HAS_PREFIX(clsName, "__NS") ||
+            CLASSNAME_HAS_PREFIX(clsName, "__CF") ||
+            CLASSNAME_HAS_PREFIX(clsName, "CA") ||
+            CLASSNAME_HAS_PREFIX(clsName, "_CN") ||
+            CLASSNAME_HAS_PREFIX(clsName, "VGL") ||
             strcmp(clsName, "DRDevice") == 0) {
             /* In particular, _NS[View]Animator chokes in this case. But we don't really need to check any _NS classes. */
             continue;
         }
-            
+
+#undef CLASSNAME_HAS_PREFIX
+
         unsigned int methodIndex = 0;
         Method *methods = class_copyMethodList(cls, &methodIndex);
         _checkSignaturesVsSuperclass(cls, methods, methodIndex); // instance methods

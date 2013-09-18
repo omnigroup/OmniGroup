@@ -10,4 +10,9 @@
 #import "OUIFileListViewController.h"
 
 @interface OUIRestoreSampleDocumentListController : OUIFileListViewController
+
+- (instancetype)initWithSampleDocumentsURL:(NSURL *)sampleDocumentsURL;
+
+@property (nonatomic, strong) NSPredicate *fileFilterPredicate;
+
 @end

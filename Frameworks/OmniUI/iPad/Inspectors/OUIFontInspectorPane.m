@@ -7,25 +7,21 @@
 
 #import <OmniUI/OUIFontInspectorPane.h>
 
-#import <CoreText/CTFont.h>
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniUI/OUIFontInspectorSlice.h>
+#import <OmniUI/OUIFontUtilities.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 
-#import "OUIFontUtilities.h"
-
 RCS_ID("$Id$");
 
-@interface OUIFontInspectorPane (/*Private*/)
-- (void)_buildSections;
-- (void)_updateSectionItems;
-- (void)_scrollFirstSelectedItemToVisible:(BOOL)animated;
-@end
-
 @implementation OUIFontInspectorPane
+{
+    UIFont *_showFacesOfFont;
+    NSArray *_sections;
+}
 
 static UIFont *_baseFontForFamily(NSString *familyName)
 {
@@ -47,15 +43,6 @@ static UIFont *_baseFontForFamily(NSString *familyName)
     return names;
 }
 
-- (void)dealloc;
-{
-    [_sections release];
-    [_fonts release];
-    [_fontNames release];
-    [_selectedFonts release];
-    [super dealloc];
-}
-
 @synthesize showFacesOfFont = _showFacesOfFont;
 - (void)setShowFacesOfFont:(UIFont *)showFacesOfFont;
 {
@@ -65,17 +52,14 @@ static UIFont *_baseFontForFamily(NSString *familyName)
     if (_showFacesOfFont == showFacesOfFont)
         return;
     
-    [_showFacesOfFont release];
-    _showFacesOfFont = [showFacesOfFont retain];
+    _showFacesOfFont = showFacesOfFont;
     
-    [_sections release];
     _sections = nil;
     
     [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
 }
 
-#pragma mark -
-#pragma mark OUIInspectorPane subclass
+#pragma mark - OUIInspectorPane subclass
 
 - (void)setInspector:(OUIInspector *)aInspector;
 {
@@ -156,8 +140,16 @@ static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
     }    
 }
 
-#pragma mark -
-#pragma mark UIViewController
+#pragma mark - UIViewController
+
+- (void)viewDidLoad;
+{
+    [super viewDidLoad];
+    
+    // iOS 7 GM bug: separators are not reliably drawn. This doesn't actually fix the color after the first display, but at least it gets the separators to show up.
+    UITableView *tableView = (UITableView *)self.view;
+    tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
+}
 
 - (void)viewWillAppear:(BOOL)animated;
 {
@@ -165,13 +157,17 @@ static NSComparisonResult _compareItem(id obj1, id obj2, void *context)
     
     // If we go down into a font family that isn't selected and select one of its faces, then when we come back we need to update selection
     UITableView *tableView = (UITableView *)self.view;
+    if (tableView.style == UITableViewStylePlain) {
+        tableView.backgroundColor = [UIColor whiteColor];
+    } else {
+        tableView.backgroundColor = nil;
+    }
     [tableView reloadData];
     
     [self _scrollFirstSelectedItemToVisible:NO];
 }
 
-#pragma mark -
-#pragma mark UITableViewDataSource
+#pragma mark - UITableViewDataSource
 
 static NSDictionary *_sectionAtIndex(OUIFontInspectorPane *self, NSUInteger sectionIndex)
 {
@@ -233,13 +229,16 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
 {
     // Returning a nil cell will cause UITableView to throw an exception
     NSDictionary *item = _itemAtIndexPath(self, indexPath);
-    if (!item)
-        return [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil] autorelease];
+    if (!item) {
+        UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
+        cell.backgroundColor = [UIColor whiteColor];
+        return cell;
+    }
     
     NSString *identifier = [item objectForKey:ItemIdentifier];
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
     if (!cell) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
         
         cell.backgroundColor = [UIColor whiteColor];
         cell.opaque = YES;
@@ -254,32 +253,17 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
         [cell sizeToFit];
     }
     
-    OUITableViewCellShowSelection(cell, OUITableViewCellImageSelectionType, [[item objectForKey:ItemSelected] boolValue]);
+    OUITableViewCellShowSelection(cell, self._tableViewCellSelectionType, [[item objectForKey:ItemSelected] boolValue]);
 
     if (_showFacesOfFont == nil)
-        cell.accessoryType = [[item objectForKey:ItemHasMulitpleFaces] boolValue] ? UITableViewCellAccessoryDetailDisclosureButton : UITableViewCellAccessoryNone;
+        cell.accessoryType = [[item objectForKey:ItemHasMulitpleFaces] boolValue] ? UITableViewCellAccessoryDetailButton : UITableViewCellAccessoryNone;
     
     return cell;
 }
 
-#pragma mark -
-#pragma mark UITableViewDelegate
-static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, NSString *familyName)
-{
-    // Set or clear the fixed pitch trait based on the default for the family. Otherwise setting a font from the font faces inspector to something like Courier New Regular causes the inspector style to pick up the fixed width trait, but subsequent changes to the font using the regular (non-faces) inspector will not clear the trait. At least on iOS, fixed-width-edness is a property of the family, so if the user chooses a different family, let's respect its fixed-width-edness.
-    OBPRECONDITION(fontDescriptor != nil);
-    OBPRECONDITION(familyName != nil);
-    
-    CTFontDescriptorRef descriptorFromFamily = CTFontDescriptorCreateWithAttributes((CFDictionaryRef)@{(id)kCTFontFamilyNameAttribute: familyName});
-    NSDictionary *traitsFromFamily = (NSDictionary *)CTFontDescriptorCopyAttribute(descriptorFromFamily, kCTFontTraitsAttribute);
-    NSNumber *symbolicTraitsFromFamily = traitsFromFamily[(id)kCTFontSymbolicTrait];
-    [traitsFromFamily release];
-    CFRelease(descriptorFromFamily);
+#pragma mark - UITableViewDelegate
 
-    BOOL familyHasMonoSpaceTrait = ([symbolicTraitsFromFamily unsignedIntegerValue] & kCTFontMonoSpaceTrait) != 0;
-    
-    return [[fontDescriptor newFontDescriptorWithValue:familyHasMonoSpaceTrait forTrait:kCTFontMonoSpaceTrait] autorelease];
-}
+static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, NSString *familyName);
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
@@ -299,8 +283,8 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
     [inspector willBeginChangingInspectedObjects];
     {
         for (id <OUIFontInspection> object in self.parentSlice.appropriateObjectsForInspection) {
+            // Grab any existing font size in order to preserve it
             OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self.parentSlice];
-            
             CGFloat fontSize;
             if (fontDescriptor)
                 fontSize = [fontDescriptor size];
@@ -308,26 +292,22 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
                 fontSize = [UIFont labelFontSize];
             
             if (_showFacesOfFont == nil) {
+                // We're looking at font families; create a font descriptor for the newly-selected item (font family)
                 if (fontDescriptor) {
                     fontDescriptor = [fontDescriptor newFontDescriptorWithFamily:font.familyName];
                     OAFontDescriptor *repairedFontDescriptor = _fixFixedPitchTrait(fontDescriptor, font.familyName);
-                    [fontDescriptor release];
-                    fontDescriptor = [repairedFontDescriptor retain];
+                    fontDescriptor = repairedFontDescriptor;
                 } else
                     fontDescriptor = [[OAFontDescriptor alloc] initWithFamily:font.familyName size:fontSize];
             } else {
-                CTFontRef fontRef = CTFontCreateWithName((CFStringRef)font.fontName, fontSize, NULL);
-                if (fontRef) {
-                    fontDescriptor = [[OAFontDescriptor alloc] initWithFont:fontRef];
-                    CFRelease(fontRef);
-                } else
-                    fontDescriptor = nil;
+                // We're looking at font faces within a family; create a font descriptor for the newly-selected item (font face)
+                fontDescriptor = [[OAFontDescriptor alloc] initWithFont:font];
+                fontDescriptor = [fontDescriptor newFontDescriptorWithSize:fontSize];
             }
             
             if (fontDescriptor) {
                 //NSLog(@"setting fontDescriptor = %@", fontDescriptor);
                 [object setFontDescriptor:fontDescriptor fromInspectorSlice:self.parentSlice];
-                [fontDescriptor release];
             }
         }
     }
@@ -336,7 +316,8 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
     // Our -updateInterfaceFromInspectedObjects: won't reload data when getting called due to an edit, which is good since it lets us fade the selection.
 
     // Clears the selection and updates images.
-    OUITableViewFinishedReactingToSelection(tableView, OUITableViewCellImageSelectionType);
+    OUITableViewFinishedReactingToSelection(tableView, self._tableViewCellSelectionType);
+    [self _updateSectionItems];
 }
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath;
@@ -354,18 +335,16 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
     [(OUIFontInspectorSlice *)self.parentSlice showFacesForFamilyBaseFont:font];
 }
 
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private
 
 - (void)_buildSections;
 {
     if (!self.parentSlice) {
-        [_sections release];
         _sections = nil;
         return;
     }
     
-    OUIFontSelection selection = OUICollectFontSelection(self.parentSlice, self.parentSlice.appropriateObjectsForInspection);
+    OUIFontSelection *selection = OUICollectFontSelection(self.parentSlice, self.parentSlice.appropriateObjectsForInspection);
     //NSLog(@"selection.fontDescriptors = %@", selection.fontDescriptors);
 
     if (_showFacesOfFont == nil) {
@@ -407,7 +386,6 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
                              NSLocalizedStringFromTableInBundle(@"All Fonts", @"OUIInspectors", OMNI_BUNDLE, @"Title for section of font list"), ItemDisplayName,
                              allItems, SectionItems, nil]];
         
-        [_sections release];
         _sections = [[NSArray alloc] initWithArray:sections];
     } else {
         /*
@@ -454,14 +432,19 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
                              items, SectionItems, nil]];
         
         [sections sortUsingFunction:_compareDisplayName context:NULL];
-        [_sections release];
         _sections = [[NSArray alloc] initWithArray:sections];
     }
 }
 
+- (OUITableViewCellSelectionType)_tableViewCellSelectionType;
+{
+    // If we're viewing faces of a specific font, use the accessory selection type. Otherwise, we may already have an accessory, which is used to access the specific faces, so we need to use the image selection type.
+    return (_showFacesOfFont == nil) ? OUITableViewCellImageSelectionType : OUITableViewCellAccessorySelectionType;
+}
+
 - (void)_updateSectionItems;
 {
-    OUIFontSelection selection = OUICollectFontSelection(self.parentSlice, self.parentSlice.appropriateObjectsForInspection);
+    OUIFontSelection *selection = OUICollectFontSelection(self.parentSlice, self.parentSlice.appropriateObjectsForInspection);
         
     NSSet *selectedFontNames;
     if (_showFacesOfFont)
@@ -508,3 +491,22 @@ static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, N
 }
 
 @end
+
+#import <CoreText/CoreText.h>
+
+static OAFontDescriptor *_fixFixedPitchTrait(OAFontDescriptor *fontDescriptor, NSString *familyName)
+{
+    // Set or clear the fixed pitch trait based on the default for the family. Otherwise setting a font from the font faces inspector to something like Courier New Regular causes the inspector style to pick up the fixed width trait, but subsequent changes to the font using the regular (non-faces) inspector will not clear the trait. At least on iOS, fixed-width-edness is a property of the family, so if the user chooses a different family, let's respect its fixed-width-edness.
+    OBPRECONDITION(fontDescriptor != nil);
+    OBPRECONDITION(familyName != nil);
+    
+    CTFontDescriptorRef descriptorFromFamily = CTFontDescriptorCreateWithAttributes((CFDictionaryRef)@{(id)kCTFontFamilyNameAttribute: familyName});
+    NSDictionary *traitsFromFamily = (NSDictionary *)CFBridgingRelease(CTFontDescriptorCopyAttribute(descriptorFromFamily, kCTFontTraitsAttribute));
+    NSNumber *symbolicTraitsFromFamily = traitsFromFamily[(id)kCTFontSymbolicTrait];
+    CFRelease(descriptorFromFamily);
+    
+    BOOL familyHasMonoSpaceTrait = ([symbolicTraitsFromFamily unsignedIntegerValue] & kCTFontMonoSpaceTrait) != 0;
+    
+    return [fontDescriptor newFontDescriptorWithValue:familyHasMonoSpaceTrait forTrait:kCTFontMonoSpaceTrait];
+}
+

@@ -7,11 +7,10 @@
 
 #import "OFXFileSnapshotDeleteTransfer.h"
 
-#import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/OFSURL.h>
-#import <OmniFileStore/Errors.h>
+#import <OmniDAV/ODAVErrors.h>
+#import <OmniDAV/ODAVFileInfo.h>
 
+#import "OFXConnection.h"
 #import "OFXFileState.h"
 #import "OFXFileSnapshot.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
@@ -27,7 +26,7 @@ RCS_ID("$Id$")
     NSURL *_remoteTemporaryDirectoryURL;
 }
 
-- (id)initWithFileManager:(OFSDAVFileManager *)fileManager fileIdentifier:(NSString *)fileIdentifier snapshot:(OFXFileSnapshot *)currentSnapshot remoteContainerURL:(NSURL *)remoteContainerURL remoteTemporaryDirectoryURL:(NSURL *)remoteTemporaryDirectoryURL;
+- (id)initWithConnection:(OFXConnection *)connection fileIdentifier:(NSString *)fileIdentifier snapshot:(OFXFileSnapshot *)currentSnapshot remoteContainerURL:(NSURL *)remoteContainerURL remoteTemporaryDirectoryURL:(NSURL *)remoteTemporaryDirectoryURL;
 {
     OBPRECONDITION(![NSString isEmptyString:fileIdentifier]);
     OBPRECONDITION(currentSnapshot);
@@ -35,7 +34,7 @@ RCS_ID("$Id$")
     OBPRECONDITION(remoteTemporaryDirectoryURL);
     OBPRECONDITION(!OFURLEqualsURL(remoteContainerURL, remoteTemporaryDirectoryURL));
     
-    if (!(self = [super initWithFileManager:fileManager]))
+    if (!(self = [super initWithConnection:connection]))
         return nil;
     
     _fileIdentifier = [fileIdentifier copy];
@@ -59,7 +58,7 @@ RCS_ID("$Id$")
         // This is a delete that is just cleaning up a local snapshot. The document never got fully uploaded to the server or was remotely deleted too.
     } else {
         TRACE_SIGNAL(OFXFileSnapshotDeleteTransfer.remote_delete_attempted);
-        OFSDAVFileManager *fileManager = self.fileManager;
+        OFXConnection *connection = self.connection;
         __autoreleasing NSError *error;
 
         if (_fileIdentifier == nil) {
@@ -68,15 +67,15 @@ RCS_ID("$Id$")
         }
         
         OBFinishPortingLater("Need to write tests that actually generate multiple versions to delete");
-        NSArray *fileInfos = OFXFetchDocumentFileInfos(fileManager, _remoteContainerURL, _fileIdentifier, &error);
+        NSArray *fileInfos = OFXFetchDocumentFileInfos(connection, _remoteContainerURL, _fileIdentifier, &error);
         if ([fileInfos count] > 1) {
             OBASSERT_NOT_REACHED("We don't have any way of hitting this in normal operations, so this code is untested and needs to be.");
-            fileInfos = [fileInfos sortedArrayUsingComparator:^NSComparisonResult(OFSFileInfo *fileInfo1, OFSFileInfo *fileInfo2) {
+            fileInfos = [fileInfos sortedArrayUsingComparator:^NSComparisonResult(ODAVFileInfo *fileInfo1, ODAVFileInfo *fileInfo2) {
                 return OFXCompareFileInfoByVersion(fileInfo1, fileInfo2);
             }];
         }
         
-        for (OFSFileInfo *fileVersionInfo in fileInfos) {
+        for (ODAVFileInfo *fileVersionInfo in fileInfos) {
             // Delete oldest to newest so that if we die partway through, other clients won't see an old version resurrected.
             // Move into tmp and delete, in case the deletion is non-atomic. If we want to avoid this, we'd need to ensure that other client seeing a partially deleted snapshot would either ignore it or clean it up themselves.
             
@@ -94,27 +93,34 @@ RCS_ID("$Id$")
             }
             
             NSURL *temporaryURL = [_remoteTemporaryDirectoryURL URLByAppendingPathComponent:OFXMLCreateID() isDirectory:YES];
-            temporaryURL = [fileManager moveURL:fileVersionInfo.originalURL toMissingURL:temporaryURL error:&error];
-            if (!temporaryURL) {
-                if ([error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_NOT_FOUND]) {
-                    // Delete/delete conflict? Guess it is gone either way!
-                    [self finished:nil];
-                    return;
-                } else {
-                    OBChainError(&error);
-                    [self finished:error];
-                    return;
-                }
-            }
+
+            __block NSError *resultError;
             
-            if (![fileManager deleteURL:temporaryURL error:&error]) {
-                if ([error hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_NOT_FOUND]) {
-                    // Seems very  unlikely, but maybe we are racing against another client cleaning out trash from the temporary directory?
-                } else {
-                    [self finished:error];
-                    return;
-                }
-            }
+            ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done) {
+                [connection moveURL:fileVersionInfo.originalURL toMissingURL:temporaryURL completionHandler:^(NSURL *movedURL, NSError *moveError) {
+                    if (!movedURL) {
+                        if ([moveError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
+                            // Delete/delete conflict? Guess it is gone either way!
+                        } else
+                            resultError = OBChainedError(moveError);
+                        done();
+                        return;
+                    }
+                    
+                    [connection deleteURL:movedURL withETag:nil completionHandler:^(NSError *deleteError) {
+                        if (deleteError) {
+                            if ([deleteError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
+                                // Seems very  unlikely, but maybe we are racing against another client cleaning out trash from the temporary directory?
+                            } else
+                                resultError = OBChainedError(deleteError);
+                        }
+                        done();
+                    }];
+                }];
+            });
+            
+            [self finished:resultError];
+            
         }
     }
 

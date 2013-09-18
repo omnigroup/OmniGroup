@@ -9,6 +9,6 @@
 
 @interface UIColor (OUIExtensions)
 
-+ (UIColor *)tabViewBackgroundColor;
++ (UIColor *)colorFromPropertyListRepresentation:(NSDictionary *)dict;
 
 @end

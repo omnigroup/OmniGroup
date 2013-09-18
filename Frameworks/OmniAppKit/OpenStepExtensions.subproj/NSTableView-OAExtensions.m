@@ -37,7 +37,7 @@ OBDEPRECATED_METHOD(-tableViewTypeAheadSelectionColumn:); // NSTableView automag
 
 @implementation NSTableView (OAExtensions)
 
-static IMP originalTextDidEndEditing;
+static void (*originalTextDidEndEditing)(NSTableView *self, SEL _cmd, NSNotification *note);
 static NSImage *(*originalDragImageForRows)(NSTableView *self, SEL _cmd, NSIndexSet *dragRows, NSArray *tableColumns, NSEvent *dragEvent, NSPointPointer dragImageOffset);
 
 static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
@@ -46,7 +46,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 + (void)didLoad;
 {
-    originalTextDidEndEditing = OBReplaceMethodImplementationWithSelector(self, @selector(textDidEndEditing:), @selector(_replacementTextDidEndEditing:));
+    originalTextDidEndEditing = (typeof(originalTextDidEndEditing))OBReplaceMethodImplementationWithSelector(self, @selector(textDidEndEditing:), @selector(_replacementTextDidEndEditing:));
     
     originalDragImageForRows = (typeof(originalDragImageForRows))OBReplaceMethodImplementationWithSelector(self, @selector(dragImageForRowsWithIndexes:tableColumns:event:offset:), @selector(_replacement_dragImageForRowsWithIndexes:tableColumns:event:offset:));
 }

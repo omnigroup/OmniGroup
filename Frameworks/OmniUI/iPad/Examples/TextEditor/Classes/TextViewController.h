@@ -7,18 +7,21 @@
 //
 // $Id$
 
-#import <OmniUI/OUIScalingViewController.h>
-#import <OmniUI/OUIEditableFrameDelegate.h>
+#import <OmniUI/OUIViewController.h>
+
+#import <OmniUI/OUITextView.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 
-@class RTFDocument;
-@class OUIEditableFrame;
+@class OUITextView;
 
-@interface TextViewController : OUIScalingViewController <OUIDocumentViewController, OUIEditableFrameDelegate>
+@interface TextViewController : OUIViewController <OUIDocumentViewController, OUITextViewDelegate>
 
-@property(retain,nonatomic) IBOutlet UIToolbar *toolbar;
-@property(retain,nonatomic) IBOutlet OUIEditableFrame *editor;
+@property(nonatomic,readonly) OUITextView *textView; // alias for our -view.
+
+@property(nonatomic) CGFloat scale;
 
 @property(nonatomic) BOOL forPreviewGeneration;
+
+- (void)documentDidClose;
 
 @end

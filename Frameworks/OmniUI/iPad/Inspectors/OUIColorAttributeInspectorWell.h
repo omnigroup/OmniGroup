@@ -16,6 +16,6 @@
     BOOL singleSwatch;
 }
 
-@property(nonatomic,retain) OQColor *color;
+@property(nonatomic,strong) OQColor *color;
 @property(nonatomic) BOOL singleSwatch;
 @end

@@ -44,7 +44,7 @@ RCS_ID("$Id$")
 
 - (void)testXMLDateParsing;
 {
-    NSDate *date = [[[NSDate alloc] initWithXMLString:@"2004-06-07T14:15:34.987Z"] autorelease];
+    NSDate *date = [[NSDate alloc] initWithXMLString:@"2004-06-07T14:15:34.987Z"];
     
     NSDateComponents *components = [[NSDate gregorianUTCCalendar] components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSSecondCalendarUnit fromDate:date];
     
@@ -61,7 +61,7 @@ RCS_ID("$Id$")
 }
 
 #define ROUND_TRIP(inputString) do { \
-    NSDate *date = [[[NSDate alloc] initWithXMLString:inputString] autorelease]; \
+    NSDate *date = [[NSDate alloc] initWithXMLString:inputString]; \
     NSString *outputString = [date xmlString]; \
     shouldBeEqual(inputString, outputString); \
 } while(0)
@@ -109,7 +109,7 @@ RCS_ID("$Id$")
 }
 
 // -autorelease to make clang happy.
-#define REJECT(str) should([[[NSDate alloc] initWithXMLString:str] autorelease] == nil)
+#define REJECT(str) should([[NSDate alloc] initWithXMLString:str] == nil)
 
 static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NSTimeInterval expectedFraction)
 {
@@ -119,7 +119,6 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
         return;
     
     NSTimeInterval interval = [date timeIntervalSinceReferenceDate];
-    [date release];
     
     NSTimeInterval actualFraction = interval - floor(interval);
 
@@ -171,8 +170,6 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
     NSDate *date1 = [[NSDate alloc] initWithXMLString:str1]; \
     NSDate *date2 = [[NSDate alloc] initWithXMLString:str1]; \
     shouldBeEqual(date1, date2); \
-    [date1 release]; \
-    [date2 release]; \
 } while(0)
 
 - (void)testNonUTCTimeZone;

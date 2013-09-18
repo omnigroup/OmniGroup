@@ -9,11 +9,10 @@
 
 #import "OFXFileSnapshotTransfer.h"
 
-@class OFSDAVFileManager;
-@class OFXFileSnapshot;
+@class OFXConnection, OFXFileSnapshot;
 
 @interface OFXFileSnapshotDeleteTransfer : OFXFileSnapshotTransfer
 
-- (id)initWithFileManager:(OFSDAVFileManager *)fileManager fileIdentifier:(NSString *)fileIdentifier snapshot:(OFXFileSnapshot *)currentSnapshot remoteContainerURL:(NSURL *)remoteContainerURL remoteTemporaryDirectoryURL:(NSURL *)remoteTemporaryDirectoryURL;
+- (id)initWithConnection:(OFXConnection *)connection fileIdentifier:(NSString *)fileIdentifier snapshot:(OFXFileSnapshot *)currentSnapshot remoteContainerURL:(NSURL *)remoteContainerURL remoteTemporaryDirectoryURL:(NSURL *)remoteTemporaryDirectoryURL;
 
 @end

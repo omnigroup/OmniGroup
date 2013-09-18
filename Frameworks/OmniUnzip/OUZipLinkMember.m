@@ -26,17 +26,11 @@ RCS_ID("$Id$");
     return self;
 }
 
-- (void)dealloc;
-{
-    [_destination release];
-    [super dealloc];
-}
-
 #pragma mark - OUZipMember subclass
 
 - (NSFileWrapper *)fileWrapperRepresentation;
 {
-    NSFileWrapper *wrapper = [[[NSFileWrapper alloc] initSymbolicLinkWithDestinationURL:[NSURL fileURLWithPath:_destination]] autorelease];
+    NSFileWrapper *wrapper = [[NSFileWrapper alloc] initSymbolicLinkWithDestinationURL:[NSURL fileURLWithPath:_destination]];
     [wrapper setFilename:[self name]];
     [wrapper setPreferredFilename:[self name]];
     return wrapper;

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,16 +17,21 @@ RCS_ID("$Id$");
 
 @implementation NSColor (ColorSyncExtensions)
 
-static IMP originalPatternImp, originalCalibratedRGBImp, originalCalibratedGrayImp, originalDeviceRGBImp, originalDeviceGrayImp, originalDeviceCMYKImp;
+static void (*originalPatternImp)(NSColor *color, SEL _cmd);
+static void (*originalCalibratedRGBImp)(NSColor *color, SEL _cmd);
+static void (*originalCalibratedGrayImp)(NSColor *color, SEL _cmd);
+static void (*originalDeviceRGBImp)(NSColor *color, SEL _cmd);
+static void (*originalDeviceGrayImp)(NSColor *color, SEL _cmd);
+static void (*originalDeviceCMYKImp)(NSColor *color, SEL _cmd);
 
 + (void)performPosing;
 {
-    originalPatternImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSPatternColor"), @selector(set), self, @selector(_setPattern));
-    originalCalibratedRGBImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSCalibratedRGBColor"), @selector(set), self, @selector(_setCalibratedRGB));
-    originalCalibratedGrayImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSCalibratedWhiteColor"), @selector(set), self, @selector(_setCalibratedGray));
-    originalDeviceRGBImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceRGBColor"), @selector(set), self, @selector(_setDeviceRGB));
-    originalDeviceGrayImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceWhiteColor"), @selector(set), self, @selector(_setDeviceGray));
-    originalDeviceCMYKImp = OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceCMYKColor"), @selector(set), self, @selector(_setDeviceCMYK));
+    originalPatternImp = (typeof(originalPatternImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSPatternColor"), @selector(set), self, @selector(_setPattern));
+    originalCalibratedRGBImp = (typeof(originalCalibratedRGBImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSCalibratedRGBColor"), @selector(set), self, @selector(_setCalibratedRGB));
+    originalCalibratedGrayImp = (typeof(originalCalibratedGrayImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSCalibratedWhiteColor"), @selector(set), self, @selector(_setCalibratedGray));
+    originalDeviceRGBImp = (typeof(originalDeviceRGBImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceRGBColor"), @selector(set), self, @selector(_setDeviceRGB));
+    originalDeviceGrayImp = (typeof(originalDeviceGrayImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceWhiteColor"), @selector(set), self, @selector(_setDeviceGray));
+    originalDeviceCMYKImp = (typeof(originalDeviceCMYKImp))OBReplaceMethodImplementationWithSelectorOnClass(NSClassFromString(@"NSDeviceCMYKColor"), @selector(set), self, @selector(_setDeviceCMYK));
 }
 
 - (void)setCoreGraphicsRGBValues;

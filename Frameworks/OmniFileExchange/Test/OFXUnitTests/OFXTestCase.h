@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import "OFSTestCase.h"
+#import "ODAVTestCase.h"
 
 enum {
     AgentA = (1<<0),
@@ -23,7 +23,7 @@ enum {
 
 @class OFXAgent, OFXServerAccount, OFXFileMetadata;
 
-@interface OFXTestCase : OFSTestCase
+@interface OFXTestCase : ODAVTestCase
 
 - (OFXTestServerAccountRegistry *)makeAccountRegistry:(NSString *)suffix;
 

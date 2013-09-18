@@ -116,7 +116,14 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     NSData *data = getters.data(container, @"archive");
     if (data) {
         if ([data isKindOfClass:[NSData class]] && [data length] > 0) {
-            NSColor *unarchived = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+            NSColor *unarchived = nil;
+            @try {
+                unarchived = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+            } @catch (NSException *exc) {
+                // possible that a subclass of NSColor has produced this archive and is not present
+                NSLog(@"Exception unarchiving NSColor: %@", exc);
+            }
+            
             if ([unarchived isKindOfClass:[NSColor class]])
                 return unarchived;
         }
@@ -308,11 +315,13 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
         adders.data(container, @"tiff", [[self patternImage] TIFFRepresentation]);
     } else {
         NSColor *rgbColor = [self colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
-        if (rgbColor)
+        if (rgbColor) {
             [rgbColor _addComponentsToContainer:container adders:adders omittingDefaultValues:omittingDefaultValues];
-        NSData *archive = [NSKeyedArchiver archivedDataWithRootObject:self];
-        if (archive != nil && [archive length] > 0)
-            adders.data(container, @"archive", archive);
+        } else {
+            NSData *archive = [NSKeyedArchiver archivedDataWithRootObject:self];
+            if (archive != nil && [archive length] > 0)
+                adders.data(container, @"archive", archive);
+        }
         return;
     }
     if (hasAlpha) {

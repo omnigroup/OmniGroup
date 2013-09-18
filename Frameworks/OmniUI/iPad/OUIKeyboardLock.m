@@ -8,6 +8,7 @@
 
 #import <OmniUI/OUIKeyboardLock.h>
 
+#import <OmniUI/OUIAppController.h>
 #import <UIKit/UITextField.h>
 #import <UIKit/UITextInputTraits.h> // for UIKeyboardType
 #import <UIKit/UIView.h>
@@ -15,10 +16,13 @@
 RCS_ID("$Id$");
 
 @implementation OUIKeyboardLock
+{
+    UITextField *hackTextField;
+}
 
 + (OUIKeyboardLock *)keyboardLockForView:(UIView *)parentView keyboardType:(UIKeyboardType)keyboardType;
 {
-    return [[[self alloc] initWithParentView:parentView keyboardType:keyboardType] autorelease];
+    return [[self alloc] initWithParentView:parentView keyboardType:keyboardType];
 }
 
 - (id)initWithParentView:(UIView *)parentView keyboardType:(UIKeyboardType)keyboardType;
@@ -27,6 +31,7 @@ RCS_ID("$Id$");
     if (self) {
         hackTextField = [[UITextField alloc] initWithFrame:CGRectZero];
         hackTextField.keyboardType = keyboardType;
+        hackTextField.keyboardAppearance = [OUIAppController controller].defaultKeyboardAppearance;
         [parentView addSubview:hackTextField];
         if (![hackTextField becomeFirstResponder]) {
             OBASSERT_NOT_REACHED("Expect the hidden text field to accept first responder");
@@ -39,10 +44,6 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(![hackTextField isFirstResponder]);
     OBPRECONDITION(hackTextField.superview == nil); // call unlock after setting new first responder
-    
-    [hackTextField release];
-    
-    [super dealloc];
 }
 
 - (void)unlock;

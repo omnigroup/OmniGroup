@@ -478,6 +478,15 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 - (id)targetForAction:(SEL)theAction to:(id)theTarget from:(id)sender;
 {
+    if (theAction == @selector(validModesForFontPanel:) && ![OFVersionNumber isOperatingSystemMavericksOrLater] && [[NSProcessInfo processInfo] isSandboxed]) {
+        // Workaround for <bug:///90003> (Slow performance if font panel is up while exporting on 10.8)
+        NSWindow *mainWindow = [self mainWindow];
+        NSWindow *keyWindow = [self keyWindow];
+        if ([keyWindow isSheet] && [mainWindow attachedSheet] == keyWindow && [[[keyWindow contentView] subviews] count] == 0) {
+            return nil;
+        }
+    }
+
     if (!theAction || !OATargetSelection)
         return [super targetForAction:theAction to:theTarget from:sender];
     

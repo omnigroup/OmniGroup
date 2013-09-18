@@ -36,8 +36,9 @@ static void checkDeprecatedSelector(Class subclass, Class klass, SEL sel)
     Class *classes = NULL;
     while (classCount < newClassCount) {
 	classCount = newClassCount;
-	classes = realloc(classes, sizeof(Class) * classCount);
-	newClassCount = objc_getClassList(classes, classCount);
+	classes = reallocf(classes, sizeof(Class) * classCount);
+        if (classes != NULL)
+            newClassCount = objc_getClassList(classes, classCount);
     }
     
     if (classes != NULL) {

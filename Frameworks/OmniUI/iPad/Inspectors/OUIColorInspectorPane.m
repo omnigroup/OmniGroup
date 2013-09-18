@@ -9,8 +9,8 @@
 
 #import <OmniUI/OUIColorPicker.h>
 #import <OmniUI/OUIColorValue.h>
-#import <OmniUI/OUIInspectorSegmentedControl.h>
-#import <OmniUI/OUIInspectorSegmentedControlButton.h>
+#import <OmniUI/OUISegmentedControl.h>
+#import <OmniUI/OUISegmentedControlButton.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIColorInspectorPaneParentSlice.h>
@@ -25,18 +25,6 @@ RCS_ID("$Id$");
 
     [_colorTypeSegmentedControl removeFromSuperview];
     [_colorTypeSegmentedControl removeAllSegments];
-    [_colorTypeSegmentedControl release];
-    
-    [_shadowDivider release];
-    [_currentColorPicker release];
-
-    [_paletteColorPicker release];
-    [_hsvColorPicker release];
-    [_rgbColorPicker release];
-    [_grayColorPicker release];
-    [_noneColorPicker release];
-
-    [super dealloc];
 }
 
 @synthesize colorTypeSegmentedControl = _colorTypeSegmentedControl;
@@ -61,15 +49,15 @@ RCS_ID("$Id$");
     
     [_colorTypeSegmentedControl setSelectedSegmentIndex:_colorTypeIndex];
     
-    OUIInspectorSegmentedControlButton *segment = [_colorTypeSegmentedControl segmentAtIndex:_colorTypeIndex];
+    OUISegmentedControlButton *segment = [_colorTypeSegmentedControl segmentAtIndex:_colorTypeIndex];
     OUIColorPicker *colorPicker = segment.representedObject;
     if (colorPicker == _currentColorPicker)
         return;
     
     OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
     
-    OUIColorPicker *previousColorPicker = _currentColorPicker; // Released below.
-    _currentColorPicker = [colorPicker retain];
+    OUIColorPicker *previousColorPicker = _currentColorPicker;
+    _currentColorPicker = colorPicker;
     if (previousColorPicker)
         [previousColorPicker willMoveToParentViewController:nil];
     
@@ -78,26 +66,17 @@ RCS_ID("$Id$");
     if (_currentColorPicker) {
         [self addChildViewController:_currentColorPicker];
         _currentColorPicker.selectionValue = slice.selectionValue;
-        
-        // leaves the inspector at the same height if we somehow get no selection, which we shouldn't
-        const CGFloat kSpaceBetweenSegmentedControllAndColorPicker = 8;
-        
-        CGRect typeFrame = _colorTypeSegmentedControl.frame;
-        
+                        
         // Keep only the height of the picker's view
         pickerView = _currentColorPicker.view;
-
-        UIView *view = self.view;
-        CGRect frame = view.frame;
-        
-        CGFloat yOffset = CGRectGetMaxY(typeFrame) + kSpaceBetweenSegmentedControllAndColorPicker - CGRectGetMinY(frame);
-        CGRect segmentedControlAndPaddingFrame, pickerFrame;
-        CGRectDivide(view.frame, &segmentedControlAndPaddingFrame, &pickerFrame, yOffset, CGRectMinYEdge);
-        
-        pickerView.frame = pickerFrame;
-
+        pickerView.frame = self.view.bounds;
         pickerView.alpha = 0.0;
-        [self.view insertSubview:pickerView belowSubview:self.shadowDivider];
+        [self.view addSubview:pickerView];
+        
+        if ([pickerView isKindOfClass:[UIScrollView class]]) {
+            UIScrollView *scrollview = (UIScrollView *)pickerView;
+            scrollview.contentInset = UIEdgeInsetsMake(44+CGRectGetHeight(_colorTypeSegmentedControl.frame)+7,0,0,0);
+        }
     }
 
     void (^viewChangeAnimation)(void) = ^{
@@ -113,7 +92,6 @@ RCS_ID("$Id$");
         if (previousColorPicker)
             [previousColorPicker.view removeFromSuperview];
         [previousColorPicker removeFromParentViewController];
-        [previousColorPicker release];
         [_currentColorPicker didMoveToParentViewController:self];
     };
 
@@ -149,7 +127,7 @@ RCS_ID("$Id$");
 
 - (IBAction)colorTypeSegmentedControlSelectionChanged:(id)sender;
 {
-    OUIColorPicker *oldPicker = [[_currentColorPicker retain] autorelease];
+    OUIColorPicker *oldPicker = _currentColorPicker;
     
     [self _setSelectedColorTypeIndex:[_colorTypeSegmentedControl selectedSegmentIndex]];
     
@@ -171,6 +149,12 @@ RCS_ID("$Id$");
 
 #pragma mark -
 #pragma mark UIViewController subclass
+
+- (UIView *)navigationBarAccessoryView;
+{
+    [self view]; // load view if we haven't yet
+    return _colorTypeSegmentedControl;
+}
 
 - (void)viewDidLoad;
 {

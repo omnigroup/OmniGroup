@@ -49,8 +49,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 
 - (CGFloat)fullScreenScaleForCanvasSize:(CGSize)canvasSize;
 {
-    UIViewController *topViewController = [[OUIAppController controller] topViewController];
-    CGRect scrollBounds = topViewController.contentViewFullScreenBounds;
+    CGRect scrollBounds = [self.delegate scallingScrollViewContentViewFullScreenBounds:self];
 
     CGFloat fitXScale = CGRectGetWidth(scrollBounds) / canvasSize.width;
     CGFloat fitYScale = CGRectGetHeight(scrollBounds) / canvasSize.height;
@@ -156,15 +155,6 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 - (void)layoutSubviews;
 {
     [self adjustContentInsetAnimated:NO];
-}
-
-@end
-
-@implementation UIViewController (OUIScalingScrollView)
-
-- (CGRect)contentViewFullScreenBounds;
-{
-    return self.view.bounds;
 }
 
 @end

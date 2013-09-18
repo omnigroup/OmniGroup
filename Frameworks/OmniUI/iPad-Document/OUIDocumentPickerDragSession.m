@@ -8,12 +8,12 @@
 #import "OUIDocumentPickerDragSession.h"
 
 #import <OmniFoundation/OFExtent.h>
-#import <OmniFileStore/OFSDocumentStore.h>
-#import <OmniFileStore/OFSDocumentStoreFileItem.h>
-#import <OmniFileStore/OFSDocumentStoreGroupItem.h>
+#import <OmniDocumentStore/ODSStore.h>
+#import <OmniDocumentStore/ODSFileItem.h>
+//#import <OmniDocumentStore/ODSGroupItem.h>
 #import <OmniUI/OUIAnimationSequence.h>
 #import <OmniUI/OUIAppController.h>
-#import <OmniUIDocument/OUIDocumentPicker.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 #import <OmniUIDocument/OUIDocumentPickerFileItemView.h>
 #import <OmniUIDocument/OUIDocumentPreviewView.h>
 #import <OmniUI/OUIDragGestureRecognizer.h>
@@ -21,6 +21,7 @@
 #import <OmniUI/UIScrollView-OUIExtensions.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
+#import "OUIDocumentPickerViewController-Internal.h"
 #import "OUIDocumentPickerItemView-Internal.h"
 
 RCS_ID("$Id$");
@@ -41,7 +42,7 @@ RCS_ID("$Id$");
 
 @implementation OUIDocumentPickerDragSession
 {
-    OUIDocumentPicker *_picker;
+    OUIDocumentPickerViewController *_picker;
     NSSet *_fileItems;
     OUIDragGestureRecognizer *_dragRecognizer;
     
@@ -53,7 +54,7 @@ RCS_ID("$Id$");
     NSTimer *_autoscrollTimer;
 }
 
-- initWithDocumentPicker:(OUIDocumentPicker *)picker fileItems:(NSSet *)fileItems recognizer:(OUIDragGestureRecognizer *)dragRecognizer;
+- initWithDocumentPicker:(OUIDocumentPickerViewController *)picker fileItems:(NSSet *)fileItems recognizer:(OUIDragGestureRecognizer *)dragRecognizer;
 {
     OBFinishPorting;
 #if 0
@@ -114,11 +115,13 @@ RCS_ID("$Id$");
     /*
      To avoid complicating OUIDocumentPickerScrollView (as much), we don't steal its item views for the drag, but make our own. We *do* let the scroll view know that the file items are the source of a drag so that it can draw blank placeholders for them.
      */
+    OBFinishPorting; // <bug:///92418> (Decide if we want the drag-to-folder shortcut for moving stuff into a folder) -- Need to move dragging source from OUIDocumentPreviewView to OUIDocumentPickerItemView
+#if 0
     OUIWithoutAnimating(^{
-        OUIDocumentPickerScrollView *pickerScrollView = _picker.activeScrollView;
+        OUIDocumentPickerScrollView *pickerScrollView = _picker.mainScrollView;
         
         NSMutableArray *fileItemViews = [[NSMutableArray alloc] init];
-        for (OFSDocumentStoreFileItem *fileItem in _fileItems) {
+        for (ODSFileItem *fileItem in _fileItems) {
             fileItem.draggingSource = YES;
             
             OUIDocumentPickerFileItemView *originalFileItemView = [pickerScrollView fileItemViewForFileItem:fileItem];
@@ -133,7 +136,7 @@ RCS_ID("$Id$");
             
             OUIDocumentPreview *preview = originalFileItemView.preview;
             if (preview)
-                [dragFileItemView.previewView addPreview:preview];
+                dragFileItemView.previewView.preview = preview;
             
             [pickerScrollView addSubview:dragFileItemView];
             [fileItemViews addObject:dragFileItemView];
@@ -147,7 +150,7 @@ RCS_ID("$Id$");
     
     // Remember the touch offset within the file item view that initiated the drag
     {
-        OUIDocumentPickerScrollView *pickerScrollView = _picker.activeScrollView;
+        OUIDocumentPickerScrollView *pickerScrollView = _picker.mainScrollView;
         UIView *hitView = _dragRecognizer.hitView;
         OUIDocumentPickerFileItemView *fileItemView = [hitView containingViewOfClass:[OUIDocumentPickerFileItemView class]];
         OBASSERT(fileItemView);
@@ -157,19 +160,22 @@ RCS_ID("$Id$");
         
         _startingOffsetWithinDraggingFileItemView = CGPointMake(location.x - fileItemFrame.origin.x, location.y - fileItemFrame.origin.y);
     }
+#endif
 }
 
 - (void)_updateDrag;
 {
-    OUIDocumentPickerScrollView *pickerScrollView = _picker.activeScrollView;
+    OBFinishPorting; // <bug:///92418> (Decide if we want the drag-to-folder shortcut for moving stuff into a folder)
+#if 0
+    OUIDocumentPickerScrollView *pickerScrollView = _picker.mainScrollView;
     
     // TODO: Collapse the dragged file item views into a single group when the drag has proceeded far enough
 
     // Adjust the postion of the drag.
     CGPoint dragPoint = [_dragRecognizer locationInView:pickerScrollView];
     for (OUIDocumentPickerFileItemView *fileItemView in _fileItemViews) {
-        OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)fileItemView.item;
-        OBASSERT([fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
+        ODSFileItem *fileItem = (ODSFileItem *)fileItemView.item;
+        OBASSERT([fileItem isKindOfClass:[ODSFileItem class]]);
         
         CGRect frame = [_picker.mainScrollView frameForItem:fileItem]; // normal position
         
@@ -181,8 +187,8 @@ RCS_ID("$Id$");
     
     // Hit test the original file items and see if we are over something
     {
-        OUIDocumentPickerItemView *itemView = [_picker.activeScrollView itemViewHitInPreviewAreaByRecognizer:_dragRecognizer];
-        OFSDocumentStoreItem *item = itemView.item;
+        OUIDocumentPickerItemView *itemView = [_picker.mainScrollView itemViewHitInPreviewAreaByRecognizer:_dragRecognizer];
+        ODSItem *item = itemView.item;
         
         id dragDestinationItem = nil;
         if (item && [_fileItems member:item] == nil)
@@ -192,7 +198,7 @@ RCS_ID("$Id$");
             _dragDestinationItem = dragDestinationItem;
             
             // This will update flags on the scroll view's item views and relayout
-            _picker.activeScrollView.draggingDestinationItem = dragDestinationItem;
+            _picker.mainScrollView.draggingDestinationItem = dragDestinationItem;
         }
     }
     
@@ -210,6 +216,7 @@ RCS_ID("$Id$");
             }
         }
     }
+#endif
 }
 
 - (void)_finishDrag;
@@ -224,8 +231,8 @@ RCS_ID("$Id$");
          ^{
              for (OUIDocumentPickerFileItemView *fileItemView in _fileItemViews) {
                  // Don't ask for the original item view; the rect for where that would appear may be off screen and the scroll view may not have a view assigned to that file.
-                 OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)fileItemView.item;
-                 OBASSERT([fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
+                 ODSFileItem *fileItem = (ODSFileItem *)fileItemView.item;
+                 OBASSERT([fileItem isKindOfClass:[ODSFileItem class]]);
 
                  fileItemView.frame = [_picker.mainScrollView frameForItem:fileItem];
              }
@@ -238,19 +245,19 @@ RCS_ID("$Id$");
     }
     
 #if 0
-    if ([_dragDestinationItem isKindOfClass:[OFSDocumentStoreFileItem class]]) {
+    if ([_dragDestinationItem isKindOfClass:[ODSFileItem class]]) {
         // make a new group
-        [_picker.documentStore makeGroupWithFileItems:[_fileItems setByAddingObject:_dragDestinationItem] completionHandler:^(OFSDocumentStoreGroupItem *group, NSError *error){
+        [_picker.documentStore makeGroupWithFileItems:[_fileItems setByAddingObject:_dragDestinationItem] completionHandler:^(ODSGroupItem *group, NSError *error){
             if (!group) {
                 OUI_PRESENT_ERROR(error);
             } else {
                 OBFinishPortingLater("after various animations, the group expands to be given an initial name"); OB_UNUSED_VALUE(group);
             }
         }];
-    } else if ([_dragDestinationItem isKindOfClass:[OFSDocumentStoreGroupItem class]]) {
+    } else if ([_dragDestinationItem isKindOfClass:[ODSGroupItem class]]) {
         // add to an existing group
-        OFSDocumentStoreGroupItem *group = _dragDestinationItem;
-        [_picker.documentStore moveItems:_fileItems toFolderNamed:group.name completionHandler:^(OFSDocumentStoreGroupItem *group, NSError *error){
+        ODSGroupItem *group = _dragDestinationItem;
+        [_picker.documentStore moveItems:_fileItems toFolderNamed:group.name completionHandler:^(ODSGroupItem *group, NSError *error){
             OBFinishPortingLater("Do some animation/report error");
         }];
     } else if (!_dragDestinationItem) {
@@ -268,13 +275,13 @@ RCS_ID("$Id$");
 
 - (void)_cancelDrag;
 {
-    OUIDocumentPickerScrollView *pickerScrollView = _picker.activeScrollView;
+    OUIDocumentPickerScrollView *pickerScrollView = _picker.mainScrollView;
 
     OUIWithoutAnimating(^{
         for (OUIDocumentPickerFileItemView *fileItemView in _fileItemViews)
             [fileItemView removeFromSuperview];
     
-        for (OFSDocumentStoreFileItem *fileItem in _fileItems) {
+        for (ODSFileItem *fileItem in _fileItems) {
             fileItem.draggingSource = NO;
             
             OUIDocumentPickerFileItemView *originalFileItemView = [pickerScrollView fileItemViewForFileItem:fileItem];
@@ -294,7 +301,7 @@ RCS_ID("$Id$");
 
 - (void)_dragAutoscrollTimerFired:(NSTimer *)timer;
 {
-    OUIDocumentPickerScrollView *pickerScrollView = _picker.activeScrollView;
+    OUIDocumentPickerScrollView *pickerScrollView = _picker.mainScrollView;
     
     [pickerScrollView performAutoscrollWithRecognizer:_dragRecognizer allowedDirections:OUIAutoscrollDirectionUp|OUIAutoscrollDirectionDown];
     

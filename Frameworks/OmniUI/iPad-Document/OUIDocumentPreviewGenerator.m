@@ -5,29 +5,57 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIDocumentPreviewGenerator.h"
+#import <OmniUIDocument/OUIDocumentPreviewGenerator.h>
 
-#import <OmniFileStore/OFSDocumentStoreFileItem.h>
+#import <OmniDocumentStore/ODSFileItem.h>
+#import <OmniUI/OUIInteractionLock.h>
 #import <OmniUIDocument/OUIDocument.h>
 #import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
+#import <OmniFoundation/OFBackgroundActivity.h>
 
 #import "OUIDocument-Internal.h"
 
 RCS_ID("$Id$");
 
-@interface OUIDocumentPreviewGenerator ()
-- (void)_continueUpdatingPreviewsOrOpenDocument;
-- (void)_finishedUpdatingPreview;
-- (void)_previewUpdateBackgroundTaskFinished;
-@end
-
 @implementation OUIDocumentPreviewGenerator
 {
+    OUIInteractionLock *_interactionLock;
     NSMutableSet *_fileItemsNeedingUpdatedPreviews;
-    OFSDocumentStoreFileItem *_currentPreviewUpdatingFileItem;
-    OFSDocumentStoreFileItem *_fileItemToOpenAfterCurrentPreviewUpdateFinishes; // We block user interaction while this is set.
-    UIBackgroundTaskIdentifier _previewUpdatingBackgroundTaskIdentifier;
+    ODSFileItem *_currentPreviewUpdatingFileItem;
+    ODSFileItem *_fileItemToOpenAfterCurrentPreviewUpdateFinishes; // We block user interaction while this is set.
+    OFBackgroundActivity *_previewUpdatingBackgroundActivity;
+}
+
+static NSUInteger disableCount = 0;
+static NSMutableArray *blocksWhileDisabled = nil;
+
++ (void)disablePreviewsForAnimation;
+{
+    disableCount++;
+}
+
++ (void)enablePreviewsForAnimation;
+{
+   disableCount--;
+    
+    while (!disableCount && blocksWhileDisabled.count) {
+        void (^block)() = [blocksWhileDisabled objectAtIndex:0];
+        [blocksWhileDisabled removeObjectAtIndex:0];
+        block();
+    }
+}
+
++ (void)_performOrQueueBlock:(void (^)())block;
+{
+    if (disableCount) {
+        if (!blocksWhileDisabled)
+            blocksWhileDisabled = [[NSMutableArray alloc] init];
+        [blocksWhileDisabled addObject:block];
+    } else {
+        OBASSERT([NSThread isMainThread]);
+        block();
+    }
 }
 
 @synthesize delegate = _weak_delegate;
@@ -37,21 +65,13 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(_weak_delegate == nil); // It should be retaining us otherwise
     
-    if (_fileItemToOpenAfterCurrentPreviewUpdateFinishes) {
-        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
-    }
-
-    if (_previewUpdatingBackgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-        [[UIApplication sharedApplication] endBackgroundTask:_previewUpdatingBackgroundTaskIdentifier];
-        _previewUpdatingBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    }
+    if (_fileItemToOpenAfterCurrentPreviewUpdateFinishes)
+        [_interactionLock unlock];
 }
 
-static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, OFSDocumentStoreFileItem *fileItem, NSURL *fileURL, NSDate *date)
+static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, ODSFileItem *fileItem, NSURL *fileURL, NSDate *date)
 {
-    if (![OUIDocumentPreview hasPreviewForFileURL:fileURL date:date withLandscape:YES] ||
-        ![OUIDocumentPreview hasPreviewForFileURL:fileURL date:date withLandscape:NO]) {
-        
+    if (![OUIDocumentPreview hasPreviewsForFileURL:fileURL date:date]) {
         if (!self->_fileItemsNeedingUpdatedPreviews)
             self->_fileItemsNeedingUpdatedPreviews = [[NSMutableSet alloc] init];
         [self->_fileItemsNeedingUpdatedPreviews addObject:fileItem];
@@ -65,7 +85,7 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, OFSD
     id <OUIDocumentPreviewGeneratorDelegate> delegate = _weak_delegate;
     OBASSERT(delegate);
     
-    for (OFSDocumentStoreFileItem *fileItem in fileItems) {
+    for (ODSFileItem *fileItem in fileItems) {
         if ([_fileItemsNeedingUpdatedPreviews member:fileItem])
             continue; // Already queued up.
         
@@ -84,19 +104,19 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, OFSD
 {
     if (_currentPreviewUpdatingFileItem) {
         // We'll call -_previewUpdateBackgroundTaskFinished when we finish up.
-        OBASSERT(_previewUpdatingBackgroundTaskIdentifier != UIBackgroundTaskInvalid);
+        OBASSERT(_previewUpdatingBackgroundActivity);
     } else {
         [self _previewUpdateBackgroundTaskFinished];
     }
 }
 
-- (BOOL)shouldOpenDocumentWithFileItem:(OFSDocumentStoreFileItem *)fileItem;
+- (BOOL)shouldOpenDocumentWithFileItem:(ODSFileItem *)fileItem;
 {
     OBPRECONDITION(_fileItemToOpenAfterCurrentPreviewUpdateFinishes == nil);
     OBPRECONDITION(fileItem);
     
     if (_currentPreviewUpdatingFileItem == nil) {
-        OBASSERT(_previewUpdatingBackgroundTaskIdentifier == UIBackgroundTaskInvalid);
+        OBASSERT(_previewUpdatingBackgroundActivity == nil);
         return YES;
     }
     
@@ -106,13 +126,14 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, OFSD
     _fileItemToOpenAfterCurrentPreviewUpdateFinishes = fileItem;
     
     // Hacky, but if we defer the action (which would have paused user interaction while opening a document), we shouldn't let another action creep in (like tapping the + button to add a new document) and then fire off our delayed open.
-    if (_fileItemToOpenAfterCurrentPreviewUpdateFinishes)
-        [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+    if (_fileItemToOpenAfterCurrentPreviewUpdateFinishes) {
+        _interactionLock = [OUIInteractionLock applicationLock];
+    }
 
     return NO;
 }
 
-- (void)fileItemNeedsPreviewUpdate:(OFSDocumentStoreFileItem *)fileItem;
+- (void)fileItemNeedsPreviewUpdate:(ODSFileItem *)fileItem;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
@@ -145,13 +166,20 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, OFSD
 
 #pragma mark - Private
 
-static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocumentStoreFileItem *fileItem)
+static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, ODSFileItem *fileItem)
 {
     // Be careful to use the modification date we'd get otherwise for the current version. They should be the same, but...
     NSURL *fileURL = fileItem.fileURL;
     NSDate *date = fileItem.fileModificationDate;
     
     id <OUIDocumentPreviewGeneratorDelegate> delegate = self->_weak_delegate;
+    
+    if (![delegate previewGenerator:self shouldGeneratePreviewForURL:fileURL]) {
+        [OUIDocumentPreview writeEmptyPreviewsForFileURL:fileURL date:date];
+        [self _finishedUpdatingPreview];
+        return;
+    }
+
     Class cls = [delegate previewGenerator:self documentClassForFileURL:fileURL];
     OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
     if (!cls)
@@ -170,26 +198,25 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
     
     // Write blank previews before we start the opening process in case it crashes. Without this we could get into a state where launching the app would crash over and over. Now we should only crash once per bad document (still bad, but recoverable for the user). In addition to caching placeholder previews, this will write the empty marker preview files too.
     [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage) {
-        cacheImage(fileURL, date, YES/*landscape*/, NULL);
-        cacheImage(fileURL, date, NO/*landscape*/, NULL);
+        cacheImage(fileURL, date, NULL);
     }];
     
     [document openWithCompletionHandler:^(BOOL success){
         OBASSERT([NSThread isMainThread]);
         
         if (success) {
-            [document _writePreviewsIfNeeded:NO /* have to pass NO since we just write bogus previews */ withCompletionHandler:^{
-                OBASSERT([NSThread isMainThread]);
-                
-                [document closeWithCompletionHandler:^(BOOL success){
-                    OBASSERT([NSThread isMainThread]);
-                    
-                    [document willClose];
-                    
-                    DEBUG_PREVIEW_GENERATION(@"Finished preview update of %@", fileURL);
-                    
-                    // Wait until the close is done to end our background task (in case we are being backgrounded, we don't want an open document alive that might point at a document the user might delete externally).
-                    [self _finishedUpdatingPreview];
+            [OUIDocumentPreviewGenerator _performOrQueueBlock:^{
+                [document _writePreviewsIfNeeded:NO /* have to pass NO since we just write bogus previews */ withCompletionHandler:^{
+                    [OUIDocumentPreviewGenerator _performOrQueueBlock:^{
+                        [document closeWithCompletionHandler:^(BOOL success){
+                            [document didClose];
+                            
+                            DEBUG_PREVIEW_GENERATION(@"Finished preview update of %@", fileURL);
+                            
+                            // Wait until the close is done to end our background task (in case we are being backgrounded, we don't want an open document alive that might point at a document the user might delete externally).
+                            [self _finishedUpdatingPreview];
+                        }];
+                    }];
                 }];
             }];
         } else {
@@ -205,10 +232,10 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
     OBPRECONDITION([NSThread isMainThread]);
     
     if (_currentPreviewUpdatingFileItem) {
-        OBASSERT(_previewUpdatingBackgroundTaskIdentifier != UIBackgroundTaskInvalid);
+        OBASSERT(_previewUpdatingBackgroundActivity != nil);
         return; // Already updating one. When this finishes, this method will be called again
     } else {
-        OBASSERT(_previewUpdatingBackgroundTaskIdentifier == UIBackgroundTaskInvalid);
+        OBASSERT(_previewUpdatingBackgroundActivity == nil);
     }
     
     // If someone else happens to call after we've completed our background task, ignore it.
@@ -222,9 +249,11 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
     if (_fileItemToOpenAfterCurrentPreviewUpdateFinishes) {
         DEBUG_PREVIEW_GENERATION(@"Performing delayed open of document at %@", _fileItemToOpenAfterCurrentPreviewUpdateFinishes.fileURL);
         
-        OFSDocumentStoreFileItem *fileItem = _fileItemToOpenAfterCurrentPreviewUpdateFinishes;
+        ODSFileItem *fileItem = _fileItemToOpenAfterCurrentPreviewUpdateFinishes;
         _fileItemToOpenAfterCurrentPreviewUpdateFinishes = nil;
-        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+        
+        [_interactionLock unlock];
+        _interactionLock = nil;
         
         [delegate previewGenerator:self performDelayedOpenOfFileItem:fileItem];
         return;
@@ -243,8 +272,10 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
         if (!_currentPreviewUpdatingFileItem)
             return; // No more to do!
         
-        // We don't want to open the document and provoke download. If the user taps it to provoke download, or iCloud auto-downloads it, we'll get notified via the document store's metadata query and will update the preview again.
-        if ([_currentPreviewUpdatingFileItem isDownloaded] == NO) {
+        BOOL shouldForget = !_currentPreviewUpdatingFileItem.isValid; // If this file item has been deleted since it was queued, skip it.
+        shouldForget = shouldForget || ([_currentPreviewUpdatingFileItem isDownloaded] == NO); // We don't want to open the document and provoke download. If the user taps it to provoke download, or iCloud auto-downloads it, we'll get notified via the document store's metadata query and will update the preview again.
+
+        if (shouldForget) {
             OBASSERT([_fileItemsNeedingUpdatedPreviews member:_currentPreviewUpdatingFileItem] == _currentPreviewUpdatingFileItem);
             [_fileItemsNeedingUpdatedPreviews removeObject:_currentPreviewUpdatingFileItem];
             _currentPreviewUpdatingFileItem = nil;
@@ -252,38 +283,41 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
     }
     
     // Make a background task for this so that we don't get stuck with an open document in the background (which might be deleted via iTunes or iCloud).
-    if (_previewUpdatingBackgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+    if (_previewUpdatingBackgroundActivity) {
         OBASSERT_NOT_REACHED("Background task left running somehow");
-        [[UIApplication sharedApplication] endBackgroundTask:_previewUpdatingBackgroundTaskIdentifier];
-        _previewUpdatingBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
+        [_previewUpdatingBackgroundActivity finished];
+        _previewUpdatingBackgroundActivity = nil;
     }
     DEBUG_PREVIEW_GENERATION(@"beginning background task to generate preview");
-    _previewUpdatingBackgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-        DEBUG_PREVIEW_GENERATION(@"Preview update task expired!");
-    }];
-    OBASSERT(_previewUpdatingBackgroundTaskIdentifier != UIBackgroundTaskInvalid);
+    _previewUpdatingBackgroundActivity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniUI.OUIDocumentPreviewGenerator.finish_preview"];
     
     DEBUG_PREVIEW_GENERATION(@"Starting preview update for %@ at %@", _currentPreviewUpdatingFileItem.fileURL, [_currentPreviewUpdatingFileItem.fileModificationDate xmlString]);
     
-    _writePreviewsForFileItem(self, _currentPreviewUpdatingFileItem);
+    // If there is user-interaction blocking work going on (moving items in the document picker, for example), try to stay out of the way of completion handlers that would resume user interaction.
+    NSBlockOperation *previewOperation = [NSBlockOperation blockOperationWithBlock:^{
+        _writePreviewsForFileItem(self, _currentPreviewUpdatingFileItem);
+    }];
+    previewOperation.queuePriority = NSOperationQueuePriorityLow;
+    [[NSOperationQueue mainQueue] addOperation:previewOperation];
 }
 
 - (void)_finishedUpdatingPreview;
 {
     OBPRECONDITION(_currentPreviewUpdatingFileItem != nil);
-    OBPRECONDITION(_previewUpdatingBackgroundTaskIdentifier != UIBackgroundTaskInvalid);
+    OBPRECONDITION(_previewUpdatingBackgroundActivity != nil);
     
-    OFSDocumentStoreFileItem *fileItem = _currentPreviewUpdatingFileItem;
+    ODSFileItem *fileItem = _currentPreviewUpdatingFileItem;
     _currentPreviewUpdatingFileItem = nil;
     
     OBASSERT([_fileItemsNeedingUpdatedPreviews member:fileItem] == fileItem);
     [_fileItemsNeedingUpdatedPreviews removeObject:fileItem];
 
     // Do this after cleaning out our other ivars since we could get suspended
-    if (_previewUpdatingBackgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+    if (_previewUpdatingBackgroundActivity != nil) {
         DEBUG_PREVIEW_GENERATION(@"Preview update task finished!");
-        UIBackgroundTaskIdentifier task = _previewUpdatingBackgroundTaskIdentifier;
-        _previewUpdatingBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
+        
+        OFBackgroundActivity *activity = _previewUpdatingBackgroundActivity;
+        _previewUpdatingBackgroundActivity = nil;
 
         // If we got backgrounded while finishing a preview update, we deferred this call.
         if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateActive)
@@ -291,9 +325,7 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
         
         // Let the app run for just a bit longer to let queues clean up references to blocks. Also, route this through the preview generation queue to make sure it has flushed out any queued I/O on our behalf. The delay bit isn't really guaranteed to work, but by intrumenting -[OUIDocument dealloc], we can see that it seems to work. Waiting for the document to be deallocated isn't super important, but nice to make our memory usage lower while in the background.
         [OUIDocumentPreview afterAsynchronousPreviewOperation:^{
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [[UIApplication sharedApplication] endBackgroundTask:task];
-            }];
+            [activity finished];
         }];
     }
     
@@ -303,13 +335,14 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFSDocu
 - (void)_previewUpdateBackgroundTaskFinished;
 {
     OBPRECONDITION(_currentPreviewUpdatingFileItem == nil);
-    OBPRECONDITION(_previewUpdatingBackgroundTaskIdentifier == UIBackgroundTaskInvalid);
+    OBPRECONDITION(_previewUpdatingBackgroundActivity == nil);
     
     // Forget any request to open a file after a preview update
     if (_fileItemToOpenAfterCurrentPreviewUpdateFinishes) {
         _fileItemToOpenAfterCurrentPreviewUpdateFinishes = nil;
         
-        [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+        [_interactionLock unlock];
+        _interactionLock = nil;
     }
     
     // On our next foregrounding, we'll restart our preview updating anyway. If we have a preview generation in progress, try to wait for that to complete, though. Otherwise if it happens to complete after we say we can get backgrounded, our read/writing of the image can fail with EINVAL (presumably they close up the sandbox).

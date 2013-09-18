@@ -75,21 +75,20 @@ RCS_ID("$Id$");
     /* Make a big random plist */
     NSData *pldata;
     {
-        NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
-        NSMutableArray *a = [NSMutableArray array];
-        int i;
-        for(i = 0; i < 300; i++) {
-            NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
-            int j;
-            for(j = 0; j < 250; j++) {
-                NSString *s = [[NSData randomDataOfLength:15] lowercaseHexString];
-                [d setObject:[NSData randomDataOfLength:72] forKey:s];
+        @autoreleasepool {
+            NSMutableArray *a = [NSMutableArray array];
+            int i;
+            for(i = 0; i < 300; i++) {
+                NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
+                int j;
+                for(j = 0; j < 250; j++) {
+                    NSString *s = [[NSData randomDataOfLength:15] lowercaseHexString];
+                    [d setObject:[NSData randomDataOfLength:72] forKey:s];
+                }
+                [a addObject:d];
             }
-            [a addObject:d];
-            [d release];
+            pldata = CFBridgingRelease(CFPropertyListCreateXMLData(kCFAllocatorDefault, (__bridge CFPropertyListRef)a));
         }
-        pldata = NSMakeCollectable(CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)a));
-        [p drain];
     }
     
     NSData *bzipme = [pldata filterDataThroughCommandAtPath:@"/usr/bin/bzip2" withArguments:[NSArray arrayWithObject:@"--compress"] error:NULL];
@@ -100,7 +99,6 @@ RCS_ID("$Id$");
     NSData *ungzipt = [gzipme filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObject:@"-cd"] error:NULL];
     STAssertEqualObjects(pldata, ungzipt, @"gzip+gunzip");
     
-    [pldata release];
 }
 
 - (void)testPipeRunloop
@@ -110,21 +108,20 @@ RCS_ID("$Id$");
     /* Make a moderately-large random plist */
     NSData *pldata;
     {
-        NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
-        NSMutableArray *a = [NSMutableArray array];
-        int i;
-        for(i = 0; i < 100; i++) {
-            NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
-            int j;
-            for(j = 0; j < 100; j++) {
-                NSString *s = [[NSData randomDataOfLength:15] lowercaseHexString];
-                [d setObject:[NSData randomDataOfLength:72] forKey:s];
+        @autoreleasepool {
+            NSMutableArray *a = [NSMutableArray array];
+            int i;
+            for(i = 0; i < 100; i++) {
+                NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
+                int j;
+                for(j = 0; j < 100; j++) {
+                    NSString *s = [[NSData randomDataOfLength:15] lowercaseHexString];
+                    [d setObject:[NSData randomDataOfLength:72] forKey:s];
+                }
+                [a addObject:d];
             }
-            [a addObject:d];
-            [d release];
+            pldata = CFBridgingRelease(CFPropertyListCreateXMLData(kCFAllocatorDefault, (__bridge CFPropertyListRef)a));
         }
-        pldata = NSMakeCollectable(CFPropertyListCreateXMLData(kCFAllocatorDefault, (CFPropertyListRef)a));
-        [p release];
     }
     
 
@@ -169,23 +166,21 @@ RCS_ID("$Id$");
                                                   standardOutput:resultStream3
                                                    standardError:nil];
             [bunzip scheduleInRunLoop:l forMode:NSRunLoopCommonModes];
-            [bzip release];
             bzip = nil;
         }
         
         if (gzip && ![gzip isRunning]) {
             resultStream4 = [NSOutputStream outputStreamToMemory];
             gunzip = [[OFFilterProcess alloc] initWithParameters:[NSDictionary dictionaryWithObjectsAndKeys:
-                                                                  @"/usr/bin/gzip", OFFilterProcessCommandPathKey,
-                                                                  [NSArray arrayWithObject:@"-cd"], OFFilterProcessArgumentsKey,
-                                                                  [resultStream2 propertyForKey:NSStreamDataWrittenToMemoryStreamKey], OFFilterProcessInputDataKey,
-                                                                  @"NO", OFFilterProcessDetachTTYKey,
-                                                                  nil]
-                                                  standardOutput:resultStream4
-                                                   standardError:nil];
+                                                                   @"/usr/bin/gzip", OFFilterProcessCommandPathKey,
+                                                                   [NSArray arrayWithObject:@"-cd"], OFFilterProcessArgumentsKey,
+                                                                   [resultStream2 propertyForKey:NSStreamDataWrittenToMemoryStreamKey], OFFilterProcessInputDataKey,
+                                                                   @"NO", OFFilterProcessDetachTTYKey,
+                                                                   nil]
+                                                   standardOutput:resultStream4
+                                                    standardError:nil];
             [gunzip scheduleInRunLoop:l forMode:NSRunLoopCommonModes];
             [gzip removeFromRunLoop:l forMode:NSRunLoopCommonModes];
-            [gzip autorelease];
             gzip = nil;
         }
         
@@ -194,13 +189,10 @@ RCS_ID("$Id$");
             break;
     }
     
-    [bunzip release];
-    [gunzip release];
         
     STAssertEqualObjects(pldata, [resultStream3 propertyForKey:NSStreamDataWrittenToMemoryStreamKey], @"bzip+unbzip");
     STAssertEqualObjects(pldata, [resultStream4 propertyForKey:NSStreamDataWrittenToMemoryStreamKey], @"gzip+gunzip");
     
-    [pldata release];
 }
 
 - (void)testPipeFailure

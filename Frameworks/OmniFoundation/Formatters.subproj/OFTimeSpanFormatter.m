@@ -201,7 +201,7 @@ static NSArray *TimeSpanUnits = nil;
         return nil;
 
     numberFormatter = [[NSNumberFormatter alloc] init];
-    OBASSERT([numberFormatter formatterBehavior] == NSNumberFormatterBehavior10_4);
+    OBASSERT([numberFormatter formatterBehavior] == NSNumberFormatterBehavior10_4 || ([numberFormatter formatterBehavior] == NSNumberFormatterBehaviorDefault && [NSNumberFormatter defaultFormatterBehavior] == NSNumberFormatterBehavior10_4));
     [numberFormatter setNumberStyle:NSNumberFormatterDecimalStyle];
     [numberFormatter setGeneratesDecimalNumbers:NO];
     [numberFormatter setZeroSymbol:@"0"];
@@ -810,13 +810,6 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
                 if ([scanner scanString:unit.localizedPluralString intoString:NULL] || [scanner scanString:unit.localizedSingularString intoString:NULL])
                     break;
             }
-            if (unitIndex == UNITS_COUNT) 
-                for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
-                    OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
-                    // Didn't match any localized version, try non-localized
-                    if ([scanner scanString:unit.pluralString intoString:NULL] || [scanner scanString:unit.singularString intoString:NULL])
-                        break;
-                }
             if (unitIndex == UNITS_COUNT) {
                 // Didn't match any long forms, try abbreviations instead
                 for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
@@ -825,6 +818,13 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
                         break;
                 }
             }
+            if (unitIndex == UNITS_COUNT)
+                for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {
+                    OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
+                    // Didn't match any localized version, try non-localized
+                    if ([scanner scanString:unit.pluralString intoString:NULL] || [scanner scanString:unit.singularString intoString:NULL])
+                        break;
+                }
             if (unitIndex == UNITS_COUNT) {
                 // unlocalized abbreviations?
                 for (unitIndex = 0; unitIndex < UNITS_COUNT; unitIndex++) {

@@ -231,6 +231,8 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
     NSDictionary *scriptFileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
     NSDate *scriptModificationDate = [scriptFileAttributes fileModificationDate];
     
+    OBASSERT_NOTNULL(scriptModificationDate); // clang can't tell that this shouldn't happen
+    
     NSDictionary *cachedScriptInfoDictionary = [_cachedScriptInfoDictionaries objectForKey:path];
     if (cachedScriptInfoDictionary == nil || OFNOTEQUAL(scriptModificationDate, [cachedScriptInfoDictionary objectForKey:ScriptInfoModificationDateKey])) {
         // We don't have a cached script yet, or the script has been modified since it was cached

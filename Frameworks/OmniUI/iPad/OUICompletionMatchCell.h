@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,11 +12,6 @@
 @class OFCompletionMatch, OFCompletionMatchLabel;
 
 @interface OUICompletionMatchCell : UITableViewCell
-{
-@private
-    OFCompletionMatch *_completionMatch;
-    OFCompletionMatchLabel *_completionMatchLabel;
-}
 
 // Designated initializer
 - (id)initWithStyle:(UITableViewCellStyle)style completionMatch:(OFCompletionMatch *)completionMatch reuseIdentifier:(NSString *)reuseIdentifier;
@@ -25,6 +20,6 @@
 // Generally, clients of this class should set the completionMatch and not set the label contents or attributes directly.
 // We'll do the right thing based on whether or not we can draw attributed strings on the target OS.
 
-@property (nonatomic, retain) OFCompletionMatch *completionMatch;
+@property (nonatomic, strong) OFCompletionMatch *completionMatch;
 
 @end

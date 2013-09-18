@@ -36,7 +36,6 @@ RCS_ID("$Id$");
     [label sizeToFit];
     
     self.view = label;
-    [label release];
 }
 
 #pragma mark -
@@ -56,7 +55,6 @@ RCS_ID("$Id$");
 
 static void _sendColor(OUINoneColorPicker *self, OQColor *color, OUIColorInspectorPane *pane)
 {
-    [self->_selectedColor release];
     self->_selectedColor = [color copy];
 
     if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:pane from:self forEvent:nil])

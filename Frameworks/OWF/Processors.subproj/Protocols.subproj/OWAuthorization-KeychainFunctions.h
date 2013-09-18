@@ -1,4 +1,4 @@
-// Copyright 2001-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2013 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 
 @class NSData, NSDictionary, NSMutableDictionary, NSString;
 
+#if 0
 /* Get the raw bytes representing an item attribute. Returns nil if the item does not have that attribute. Raises an exception if an error occurs. */
 OWF_PRIVATE_EXTERN NSData *OWKCGetItemAttribute(SecKeychainItemRef item, SecItemAttr attrTag);
 
@@ -22,8 +23,10 @@ OWF_PRIVATE_EXTERN NSMutableDictionary *OWKCExtractItemAttributes(SecKeychainIte
 /* A cover for SecKeychainSearchCreateFromAttributes() which gets the item attributes from a dictionary. Dictionary keys & values are the same as would be returned by OWKCGetItemAttribute(). */
 OWF_PRIVATE_EXTERN OSStatus OWKCBeginKeychainSearch(CFTypeRef chains, NSDictionary *attributes, SecKeychainSearchRef *grepstate);
 
-/* Extracts the secret data from the keychain item (typically, this is the password) and returns it */
-OWF_PRIVATE_EXTERN OSStatus OWKCExtractKeyData(SecKeychainItemRef item, NSData **password);
+#endif
 
 /* Updates a keychain item with the specified information */
-OWF_PRIVATE_EXTERN OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSString *realm, NSString *username, int portNumber, OSType protocol, OSType authType, NSData *passwordData);
+OWF_PRIVATE_EXTERN OSStatus OWKCUpdateInternetPassword(NSString *hostname, NSString *realm, NSString *username, int portNumber, SecProtocolType protocol, SecAuthenticationType authType, NSData *passwordData);
+
+/* Extracts the secret data from the keychain item (typically, this is the password) and returns it */
+OWF_PRIVATE_EXTERN OSStatus OWKCExtractKeyData(SecKeychainItemRef item, NSData **password);

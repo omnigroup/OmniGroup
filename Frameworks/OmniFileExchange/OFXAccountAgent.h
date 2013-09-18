@@ -9,6 +9,8 @@
 
 #import <Foundation/NSObject.h>
 
+#import <OmniFileExchange/OFXSyncSchedule.h>
+
 @class OFXRegistrationTable;
 @class OFXServerAccount, OFXContainerAgent, OFXAccountClientParameters;
 
@@ -41,8 +43,6 @@
 @property(nonatomic,readonly,copy) NSString *netStateRegistrationGroupIdentifier;
 
 - (void)addContainerForIdentifierIfMissing:(NSString *)containerIdentifier;
-
-- (void)removeLocalAndRemoteData; // Discards data with extreme prejudice. Requires that the agent is stopped.
 
 - (BOOL)containsLocalDocumentFileURL:(NSURL *)fileURL;
 

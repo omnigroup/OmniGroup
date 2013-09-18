@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,55 +7,60 @@
 
 #import "OUILaunchViewController.h"
 
-RCS_ID("$Id$");
+RCS_ID("$Id$")
 
-/*
- This is only shown right when the app is launching. This lets us use OUIMainViewController's layout for innerViewControllers before we know if we want to go to the document picker or open a document.
- Without this, the Default.png image would be shown and we'd pop to a view w/o a toolbar (but with our background shadow for the toolbar) and then a toolbar would pop back atop it. Ugly!
- We don't want to unconditionally load the document picker on launch since if we are going to load a document, firing up the loading of the previews is wasted effort.
- */
+@interface OUILaunchViewController ()
+
+@property (nonatomic, strong) UIActivityIndicatorView *activityIndicatorView;
+
+@end
 
 @implementation OUILaunchViewController
 {
-    UIToolbar *_toolbar;
+    BOOL _permanentConstraintsAdded;
 }
 
-
-#pragma mark - View lifecycle
-
-// Implement loadView to create a view hierarchy programmatically, without using a nib.
-- (void)loadView
+- (id)initWithActivityIndicatorStyle:(UIActivityIndicatorViewStyle)style color:(UIColor *)color;
 {
-    UIView *view = [[UIView alloc] init];
-    self.view = view;
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        // Custom initialization
+        _activityIndicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:style];
+        [_activityIndicatorView setTranslatesAutoresizingMaskIntoConstraints:NO];
+        _activityIndicatorView.color = color;
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+
+    self.view.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:_activityIndicatorView];
+    [_activityIndicatorView startAnimating];
     
-    _toolbar = [[UIToolbar alloc] init];
-
-    [_toolbar sizeToFit];
-    _toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    _toolbar.barStyle = UIBarStyleBlack;
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"OUIDocumentPickerBackgroundTile.png"]];
+    
+    [self.view setNeedsUpdateConstraints];
 }
 
-- (BOOL)shouldAutorotate;
+- (void)updateViewConstraints;
 {
-    // Return YES for supported orientations
-    return YES;
+    if (!_permanentConstraintsAdded) {
+        [self.view addConstraint:[NSLayoutConstraint constraintWithItem:_activityIndicatorView attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1 constant:0]];
+        [self.view addConstraint:[NSLayoutConstraint constraintWithItem:_activityIndicatorView attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeCenterY multiplier:1 constant:0]];
+        
+        _permanentConstraintsAdded = YES;
+    }
+
+    [super updateViewConstraints];
 }
 
-#pragma mark -
-#pragma mark UIViewController (OUIMainViewControllerExtensions)
-
-- (UIToolbar *)toolbarForMainViewController;
+- (void)didReceiveMemoryWarning
 {
-    if (!_toolbar)
-        [self view]; // create it
-    OBASSERT(_toolbar);
-    return _toolbar;
-}
-
-- (BOOL)isEditingViewController;
-{
-    return NO;
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
 }
 
 @end

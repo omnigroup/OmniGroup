@@ -16,4 +16,4 @@ NSLocalizedStringFromTableInBundle(@"Ellipsis...", @"Ellipsis", nil, @"three per
 
 NSLocalizedStringFromTableInBundle(@"5 inches = 5\"", @"UnmatchedQuotes", nil, @"unmatched quotes shouldn't get curlied");
 
-NSLocalizedStringFromTableInBundle(@"Level %[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]@ rows", @"MultiplePairsForOneComment", nil, @"genstrings can report multiple key/value pairs for the cross-product style source strings");
+NSLocalizedStringFromTableInBundle(@"Level %[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]@ Rows", @"MultiplePairsForOneComment", nil, @"genstrings can report multiple key/value pairs for the cross-product style source strings");

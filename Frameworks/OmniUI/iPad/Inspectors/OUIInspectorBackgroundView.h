@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,15 +10,9 @@
 #import <UIKit/UIView.h>
 
 @interface OUIInspectorBackgroundView : UIView
-{
-@private
-    NSArray *_colors;
-}
-
-- (UIColor *)colorForYPosition:(CGFloat)yPosition inView:(UIView *)view;
-
+- (UIColor *)inspectorBackgroundViewColor;
 @end
 
 @interface UIView (OUIInspectorBackgroundView)
-- (void)containingInspectorBackgroundViewColorsChanged;
+- (void)containingInspectorBackgroundViewColorChanged;
 @end

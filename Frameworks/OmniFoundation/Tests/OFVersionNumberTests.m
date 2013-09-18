@@ -1,4 +1,4 @@
-// Copyright 2004-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2006, 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,19 +22,19 @@ RCS_ID("$Id$");
 {
     OFVersionNumber *vn;
 
-    vn = [[[OFVersionNumber alloc] initWithVersionString:@"v1.2"] autorelease];
+    vn = [[OFVersionNumber alloc] initWithVersionString:@"v1.2"];
     should(vn != nil);
     should([vn componentCount] == 2);
     should([vn componentAtIndex:0] == 1);
     should([vn componentAtIndex:1] == 2);
 
-    vn = [[[OFVersionNumber alloc] initWithVersionString:@"V1.2"] autorelease];
+    vn = [[OFVersionNumber alloc] initWithVersionString:@"V1.2"];
     should(vn != nil);
     should([vn componentCount] == 2);
     should([vn componentAtIndex:0] == 1);
     should([vn componentAtIndex:1] == 2);
 
-    vn = [[[OFVersionNumber alloc] initWithVersionString:@"vv1.2"] autorelease];
+    vn = [[OFVersionNumber alloc] initWithVersionString:@"vv1.2"];
     should(vn == nil); // Only one 'v' allowed
 }
 
@@ -42,25 +42,25 @@ RCS_ID("$Id$");
 {
     OFVersionNumber *vn;
 
-    vn = [[[OFVersionNumber alloc] initWithVersionString:@"v1.2xyz"] autorelease];
+    vn = [[OFVersionNumber alloc] initWithVersionString:@"v1.2xyz"];
     should(vn != nil);
     should([vn componentCount] == 2);
     should([vn componentAtIndex:0] == 1);
     should([vn componentAtIndex:1] == 2);
 
-    vn = [[[OFVersionNumber alloc] initWithVersionString:@"v1.2.xyz"] autorelease];
+    vn = [[OFVersionNumber alloc] initWithVersionString:@"v1.2.xyz"];
     should(vn != nil);
     should([vn componentCount] == 2);
     should([vn componentAtIndex:0] == 1);
     should([vn componentAtIndex:1] == 2);
 
-    vn = [[[OFVersionNumber alloc] initWithVersionString:@"v1.2 xyz"] autorelease];
+    vn = [[OFVersionNumber alloc] initWithVersionString:@"v1.2 xyz"];
     should(vn != nil);
     should([vn componentCount] == 2);
     should([vn componentAtIndex:0] == 1);
     should([vn componentAtIndex:1] == 2);
 
-    vn = [[[OFVersionNumber alloc] initWithVersionString:@"v1.2."] autorelease];
+    vn = [[OFVersionNumber alloc] initWithVersionString:@"v1.2."];
     should(vn != nil);
     should([vn componentCount] == 2);
     should([vn componentAtIndex:0] == 1);
@@ -69,19 +69,19 @@ RCS_ID("$Id$");
 
 - (void)testInvalid;
 {
-    shouldBeEqual([[[OFVersionNumber alloc] initWithVersionString:@""] autorelease], nil);
-    shouldBeEqual([[[OFVersionNumber alloc] initWithVersionString:@"v"] autorelease], nil);
-    shouldBeEqual([[[OFVersionNumber alloc] initWithVersionString:@"v."] autorelease], nil);
-    shouldBeEqual([[[OFVersionNumber alloc] initWithVersionString:@".1"] autorelease], nil);
-    shouldBeEqual([[[OFVersionNumber alloc] initWithVersionString:@"-.1"] autorelease], nil);
-    shouldBeEqual([[[OFVersionNumber alloc] initWithVersionString:@" v1"] autorelease], nil); // We don't allow leading whitespace right now; maybe we should
+    shouldBeEqual([[OFVersionNumber alloc] initWithVersionString:@""], nil);
+    shouldBeEqual([[OFVersionNumber alloc] initWithVersionString:@"v"], nil);
+    shouldBeEqual([[OFVersionNumber alloc] initWithVersionString:@"v."], nil);
+    shouldBeEqual([[OFVersionNumber alloc] initWithVersionString:@".1"], nil);
+    shouldBeEqual([[OFVersionNumber alloc] initWithVersionString:@"-.1"], nil);
+    shouldBeEqual([[OFVersionNumber alloc] initWithVersionString:@" v1"], nil); // We don't allow leading whitespace right now; maybe we should
 }
 
 - (void)testVersionStrings;
 {
     OFVersionNumber *vn;
 
-    vn = [[[OFVersionNumber alloc] initWithVersionString:@"v1.2xyz"] autorelease];
+    vn = [[OFVersionNumber alloc] initWithVersionString:@"v1.2xyz"];
     shouldBeEqual([vn originalVersionString], @"v1.2xyz");
     shouldBeEqual([vn cleanVersionString], @"1.2");
 }
@@ -91,56 +91,56 @@ RCS_ID("$Id$");
     OFVersionNumber *a, *b;
 
     //
-    a = [[[OFVersionNumber alloc] initWithVersionString:@"1"] autorelease];
-    b = [[[OFVersionNumber alloc] initWithVersionString:@"1"] autorelease];
+    a = [[OFVersionNumber alloc] initWithVersionString:@"1"];
+    b = [[OFVersionNumber alloc] initWithVersionString:@"1"];
     should([a compareToVersionNumber:b] == NSOrderedSame);
     should([b compareToVersionNumber:a] == NSOrderedSame);
 
     //
-    a = [[[OFVersionNumber alloc] initWithVersionString:@"1"] autorelease];
-    b = [[[OFVersionNumber alloc] initWithVersionString:@"1.0"] autorelease];
+    a = [[OFVersionNumber alloc] initWithVersionString:@"1"];
+    b = [[OFVersionNumber alloc] initWithVersionString:@"1.0"];
     should([a compareToVersionNumber:b] == NSOrderedSame);
     should([b compareToVersionNumber:a] == NSOrderedSame);
 
     //
-    a = [[[OFVersionNumber alloc] initWithVersionString:@"1"] autorelease];
-    b = [[[OFVersionNumber alloc] initWithVersionString:@"1.0.0"] autorelease];
+    a = [[OFVersionNumber alloc] initWithVersionString:@"1"];
+    b = [[OFVersionNumber alloc] initWithVersionString:@"1.0.0"];
     should([a compareToVersionNumber:b] == NSOrderedSame);
     should([b compareToVersionNumber:a] == NSOrderedSame);
 
     //
-    a = [[[OFVersionNumber alloc] initWithVersionString:@"1.0"] autorelease];
-    b = [[[OFVersionNumber alloc] initWithVersionString:@"1.0.0"] autorelease];
+    a = [[OFVersionNumber alloc] initWithVersionString:@"1.0"];
+    b = [[OFVersionNumber alloc] initWithVersionString:@"1.0.0"];
     should([a compareToVersionNumber:b] == NSOrderedSame);
     should([b compareToVersionNumber:a] == NSOrderedSame);
 
     //
-    a = [[[OFVersionNumber alloc] initWithVersionString:@"1"] autorelease];
-    b = [[[OFVersionNumber alloc] initWithVersionString:@"2"] autorelease];
+    a = [[OFVersionNumber alloc] initWithVersionString:@"1"];
+    b = [[OFVersionNumber alloc] initWithVersionString:@"2"];
     should([a compareToVersionNumber:b] == NSOrderedAscending);
     should([b compareToVersionNumber:a] == NSOrderedDescending);
 
     //
-    a = [[[OFVersionNumber alloc] initWithVersionString:@"1"] autorelease];
-    b = [[[OFVersionNumber alloc] initWithVersionString:@"1.1"] autorelease];
-    should([a compareToVersionNumber:b] == NSOrderedAscending);
-    should([b compareToVersionNumber:a] == NSOrderedDescending);
-    
-    //
-    a = [[[OFVersionNumber alloc] initWithVersionString:@"1"] autorelease];
-    b = [[[OFVersionNumber alloc] initWithVersionString:@"1.1.0"] autorelease];
+    a = [[OFVersionNumber alloc] initWithVersionString:@"1"];
+    b = [[OFVersionNumber alloc] initWithVersionString:@"1.1"];
     should([a compareToVersionNumber:b] == NSOrderedAscending);
     should([b compareToVersionNumber:a] == NSOrderedDescending);
     
     //
-    a = [[[OFVersionNumber alloc] initWithVersionString:@"1"] autorelease];
-    b = [[[OFVersionNumber alloc] initWithVersionString:@"1.0.1"] autorelease];
+    a = [[OFVersionNumber alloc] initWithVersionString:@"1"];
+    b = [[OFVersionNumber alloc] initWithVersionString:@"1.1.0"];
+    should([a compareToVersionNumber:b] == NSOrderedAscending);
+    should([b compareToVersionNumber:a] == NSOrderedDescending);
+    
+    //
+    a = [[OFVersionNumber alloc] initWithVersionString:@"1"];
+    b = [[OFVersionNumber alloc] initWithVersionString:@"1.0.1"];
     should([a compareToVersionNumber:b] == NSOrderedAscending);
     should([b compareToVersionNumber:a] == NSOrderedDescending);
     
     // OBS #35289
-    a = [[[OFVersionNumber alloc] initWithVersionString:@"121"] autorelease];
-    b = [[[OFVersionNumber alloc] initWithVersionString:@"121.1"] autorelease];
+    a = [[OFVersionNumber alloc] initWithVersionString:@"121"];
+    b = [[OFVersionNumber alloc] initWithVersionString:@"121.1"];
     should([a compareToVersionNumber:b] == NSOrderedAscending);
     should([b compareToVersionNumber:a] == NSOrderedDescending);
 }

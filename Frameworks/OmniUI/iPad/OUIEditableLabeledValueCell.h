@@ -12,16 +12,9 @@
 @protocol OUIEditableLabeledValueCellDelegate;
 
 @interface OUIEditableLabeledValueCell : OUILabeledValueCell <UITextFieldDelegate>
-{
-@private
-    id _delegate;
-    id _target;
-    SEL _action;
-    UITextField *_valueField;
-}
 
-@property (nonatomic, assign) id <OUIEditableLabeledValueCellDelegate> delegate;
-@property (nonatomic, assign) id target;
+@property (nonatomic, weak) id <OUIEditableLabeledValueCellDelegate> delegate;
+@property (nonatomic, weak) id target;
 @property (nonatomic, assign) SEL action;
 @property (nonatomic, readonly) UITextField *valueField;
 
@@ -30,7 +23,7 @@
 @end
 
 
-@protocol OUIEditableLabeledValueCellDelegate
+@protocol OUIEditableLabeledValueCellDelegate <NSObject>
 @optional
 
 - (BOOL)editableLabeledValueCell:(OUIEditableLabeledValueCell *)cell textFieldShouldBeginEditing:(UITextField *)textField;

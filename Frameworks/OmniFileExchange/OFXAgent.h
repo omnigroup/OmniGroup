@@ -8,9 +8,9 @@
 // $Id$
 
 #import <OmniBase/OBObject.h>
+#import <OmniFileExchange/OFXSyncSchedule.h>
 
-@class OFNetReachability;
-@class OFXServerAccountRegistry, OFXServerAccount, OFXRegistrationTable, OFXAccountClientParameters;
+@class OFXServerAccountRegistry, OFXServerAccount, OFXRegistrationTable, OFXAccountClientParameters, OFXFileMetadata;
 
 @interface OFXAgent : OBObject
 
@@ -27,8 +27,6 @@
 - initWithAccountRegistry:(OFXServerAccountRegistry *)accountRegistry remoteDirectoryName:(NSString *)remoteDirectoryName syncPathExtensions:(id <NSFastEnumeration>)syncPathExtensions;
 - initWithAccountRegistry:(OFXServerAccountRegistry *)accountRegistry remoteDirectoryName:(NSString *)remoteDirectoryName syncPathExtensions:(id <NSFastEnumeration>)syncPathExtensions extraPackagePathExtensions:(id <NSFastEnumeration>)extraPackagePathExtensions;
 
-@property(nonatomic,readonly) OFNetReachability *netReachability;
-
 @property(nonatomic,readonly) OFXServerAccountRegistry *accountRegistry;
 @property(nonatomic,readonly) NSSet *syncPathExtensions;
 @property(nonatomic,readonly) NSString *remoteDirectoryName; // For testing -- must be a plain string (no slashes)
@@ -36,9 +34,13 @@
 
 @property(nonatomic,readonly) BOOL started;
 - (void)applicationLaunched; // Starts syncing asynchronously
-- (void)applicationWillEnterForeground; // Pauses syncing
-- (void)applicationDidEnterBackground; // Resumes syncing
 - (void)applicationWillTerminateWithCompletionHandler:(void (^)(void))completionHandler; // Waits for syncing to finish and shuts down the agent
+
+@property(nonatomic,readonly) BOOL foregrounded;
+- (void)applicationWillEnterForeground; // Reenables Bonjour and timer based sync events.
+- (void)applicationDidEnterBackground; // Disables Bonjour and timer based sync events.
+
+@property(nonatomic) OFXSyncSchedule syncSchedule; // Defaults to OFXSyncScheduleAutomatic, but can be adjusted before -applicationLaunched to prevent automatic syncing.
 
 @property(readonly,nonatomic) NSSet *runningAccounts; // KVO observable. Updated after a OFXServerAccount is added to our OFXServerAccountRegistry, once syncing has actually started with that account. Until this point, -metadataItemRegistrationTableForAccount: is not valid.
 - (OFXRegistrationTable *)metadataItemRegistrationTableForAccount:(OFXServerAccount *)account; // Returns nil until the account agent is registered
@@ -46,12 +48,11 @@
 
 - (NSOperation *)afterAsynchronousOperationsFinish:(void (^)(void))block;
 
-@property(nonatomic) BOOL syncingEnabled; // Turn off timer and net state based automatic sync. This will be initialized to YES by default, but can be turned off before -applicationLaunched to prevent automatic syncing.
-
-- (void)deleteCloudContentsForAccount:(OFXServerAccount *)account;
 
 // Changes to this will not change in-flight downloads. Mostly this is for test cases and the Mac app.
 @property(nonatomic) BOOL automaticallyDownloadFileContents;
+
+- (BOOL)shouldAutomaticallyDownloadItemWithMetadata:(OFXFileMetadata *)metadataItem;
 
 // Requests a sync operation (which might do nothing if we are offline).
 - (void)sync:(void (^)(void))completionHandler;

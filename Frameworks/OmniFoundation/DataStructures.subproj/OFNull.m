@@ -17,7 +17,7 @@ RCS_ID("$Id$")
 
 @implementation OFNull
 
-NSString *OFNullStringObject;
+NSString *OFNullStringObject = nil;
 static OFNull *nullObject;
 
 + (void) initialize;

@@ -14,14 +14,11 @@
 RCS_ID("$Id$");
 
 @implementation OUIColorSwatchPickerInspectorSlice
-
-- (void)dealloc;
 {
-    [_swatchPicker release];
-    [super dealloc];
+    BOOL _hasAddedColorSinceShowingDetail;
+    OUIColorSwatchPicker *_swatchPicker;
 }
 
-@synthesize swatchPicker = _swatchPicker;
 - (OUIColorSwatchPicker *)swatchPicker;
 {
     OBPRECONDITION(_swatchPicker); // Call -view first. Could do that here, but then we'd could the view if this was called when closing/unloading the view.
@@ -110,7 +107,6 @@ RCS_ID("$Id$");
         label.frame = labelFrame;
         
         [view addSubview:label];
-        [label release];
         
         yOffset = CGRectGetMaxY(labelFrame) + kLabelToSwatchPadding;
     }
@@ -130,7 +126,6 @@ RCS_ID("$Id$");
     view.frame = viewFrame;
     
     self.view = view;
-    [view release];
 }
 
 @end

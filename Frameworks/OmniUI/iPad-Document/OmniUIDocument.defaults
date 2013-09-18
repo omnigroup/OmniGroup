@@ -5,6 +5,8 @@
 
 	<key>OUIDocumentPickerSelectedScope</key>
 	<string>local</string>
+        <key>OUIDocumentPickerSelectedFolderPath</key>
+        <string/>
 	<key>OUIDocumentPickerSelectedFilter</key>
 	<string/>
 	<key>OUIDocumentPickerSortKey</key>
@@ -12,6 +14,7 @@
 	
 	<key>OUIDocumentPickerShouldCrashBasedOnFileName</key>
 	<false/>
-	
+	<key>OUIDocumentPickerUseTestCode</key>
+	<false/>
 </dict>
 </plist>

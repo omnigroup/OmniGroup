@@ -27,6 +27,8 @@
 
 @property(nonatomic,readonly) BOOL hasDownloadQueued;
 
+@property(nonatomic,readonly) uint64_t totalSize;
+
 @property(nonatomic,readonly,getter=isDownloaded) BOOL downloaded;
 @property(nonatomic,readonly,getter=isDownloading) BOOL downloading;
 @property(nonatomic,readonly) float percentDownloaded; // 0..1

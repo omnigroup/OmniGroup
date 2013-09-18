@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,13 +15,13 @@ extern NSString *OUIDisplayNameForFontFaceName(NSString *displayName, NSString *
 extern NSString *OUIBaseFontNameForFamilyName(NSString *family);
 extern BOOL OUIIsBaseFontNameForFamily(NSString *fontName, NSString *familyName);
 
-typedef struct {
-    // Uniqued values
-    NSArray *fontDescriptors;
-    NSArray *fontSizes;
-    OFExtent fontSizeExtent;
-} OUIFontSelection;
+@interface OUIFontSelection : NSObject
+// Uniqued values
+@property(nonatomic,copy) NSArray *fontDescriptors;
+@property(nonatomic,copy) NSArray *fontSizes;
+@property(nonatomic) OFExtent fontSizeExtent;
+@end
 
 @class OUIInspectorSlice;
-extern OUIFontSelection OUICollectFontSelection(OUIInspectorSlice *self, id <NSFastEnumeration> objects);
+extern OUIFontSelection *OUICollectFontSelection(OUIInspectorSlice *self, id <NSFastEnumeration> objects);
 

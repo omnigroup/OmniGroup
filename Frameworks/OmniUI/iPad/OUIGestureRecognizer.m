@@ -11,6 +11,34 @@
 
 RCS_ID("$Id$");
 
+
+#if 0 && defined(DEBUG_curt) && defined(DEBUG)
+#define SHOULD_DEBUG_TOUCHES
+#define DEBUG_TOUCHES(format, ...) NSLog(@"TOUCHES: In %@ with %@, likelihood: %f, touches: %@. " format, NSStringFromSelector(_cmd), _nameForState(self.state), _likelihood, touches, ## __VA_ARGS__)
+#else
+#define DEBUG_TOUCHES(format, ...)
+#endif
+
+#ifdef SHOULD_DEBUG_TOUCHES
+static NSString *_nameForState(UIGestureRecognizerState state) {
+    switch (state) {
+        case UIGestureRecognizerStatePossible:
+            return @"UIGestureRecognizerStatePossible";
+        case UIGestureRecognizerStateBegan:
+            return @"UIGestureRecognizerStateBegan";
+        case UIGestureRecognizerStateChanged:
+            return @"UIGestureRecognizerStateChanged";
+        case UIGestureRecognizerStateEnded:
+            return @"UIGestureRecognizerStateEnded/Recognized";
+        case UIGestureRecognizerStateCancelled:
+            return @"UIGestureRecognizerStateCancelled";
+        case UIGestureRecognizerStateFailed:
+            return @"UIGestureRecognizerStateFailed";
+    }
+    return nil;
+}
+#endif
+
 @implementation OUIGestureRecognizer
 
 - (id)initWithTarget:(id)target action:(SEL)action;
@@ -27,15 +55,9 @@ RCS_ID("$Id$");
     return self;
 }
 
-- (void)dealloc;
-{
-    [_capturedTouches release];
-    
-    [super dealloc];
-}
-
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 {
+    DEBUG_TOUCHES(@"");
     [super touchesBegan:touches withEvent:event];
     
     // If we've already begun, ignore extra touches
@@ -68,6 +90,7 @@ RCS_ID("$Id$");
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 {
+    DEBUG_TOUCHES(@"");
     [super touchesMoved:touches withEvent:event];
     
     _previousTimestamp = _latestTimestamp;
@@ -76,6 +99,7 @@ RCS_ID("$Id$");
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 {
+    DEBUG_TOUCHES(@"");
     [super touchesEnded:touches withEvent:event];
     
     if (_holdTimer) {
@@ -88,6 +112,7 @@ RCS_ID("$Id$");
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
 {
+    DEBUG_TOUCHES(@"");
     [super touchesCancelled:touches withEvent:event];
     
     if (_holdTimer) {
@@ -114,6 +139,14 @@ RCS_ID("$Id$");
     _beginTimestampReference = 0;
     _endTimestamp = 0;
 }
+
+#ifdef SHOULD_DEBUG_TOUCHES
+- (void)setState:(UIGestureRecognizerState)state;
+{
+    NSLog(@"TOUCHES: changing state from %@ to %@", _nameForState(self.state), _nameForState(state));
+    [super setState:state];
+}
+#endif
 
 #pragma mark api
 - (void)setLikelihood:(CGFloat)newLikelihood;

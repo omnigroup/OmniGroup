@@ -52,6 +52,18 @@ static inline void OBCallVoidIMP(IMP imp, id self, SEL _cmd)
     f(self, _cmd);
 }
 
+static inline void OBCallVoidIMPWithObject(IMP imp, id self, SEL _cmd, id object)
+{
+    void (*f)(id, SEL, id) = (typeof(f))imp;
+    f(self, _cmd, object);
+}
+
+static inline void OBCallVoidIMPWithObjectObject(IMP imp, id self, SEL _cmd, id object1, id object2)
+{
+    void (*f)(id, SEL, id, id) = (typeof(f))imp;
+    f(self, _cmd, object1, object2);
+}
+
 static inline id OBCallObjectReturnIMP(IMP imp, id self, SEL _cmd)
 {
     id (*f)(id, SEL) = (typeof(f))imp;
@@ -63,7 +75,22 @@ static inline void OBSendVoidMessage(id self, SEL _cmd)
     OBCallVoidIMP(objc_msgSend, self, _cmd);
 }
 
+static inline void OBSendVoidMessageWithObject(id self, SEL _cmd, id object)
+{
+    OBCallVoidIMPWithObject(objc_msgSend, self, _cmd, object);
+}
+
+static inline void OBSendVoidMessageWithObjectObject(id self, SEL _cmd, id object1, id object2)
+{
+    OBCallVoidIMPWithObjectObject(objc_msgSend, self, _cmd, object1, object2);
+}
+
 static inline id OBSendObjectReturnMessage(id self, SEL _cmd)
 {
     return OBCallObjectReturnIMP(objc_msgSend, self, _cmd);
 }
+
+// In a few cases we retain and release things in ways that clang-sa isn't happy about (e.g., callbacks and state machines). These macros let us hide the retain/release from the static analyzer.
+#define OBAnalyzerProofRetain(obj) OBSendObjectReturnMessage((obj), @selector(retain))
+#define OBAnalyzerProofRelease(obj) OBSendVoidMessage((obj), @selector(release))
+#define OBAnalyzerProofAutorelease(obj) OBSendVoidMessage((obj), @selector(autorelease))

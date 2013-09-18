@@ -15,9 +15,6 @@
 RCS_ID("$Id$");
 
 @implementation OUICloudSetupViewController
-{
-    UINavigationController *_navigationController;
-}
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
@@ -35,29 +32,13 @@ RCS_ID("$Id$");
         topViewController = [[OUIAddCloudAccountViewController alloc] init];
     }
     
-    _navigationController = [[UINavigationController alloc] initWithRootViewController:topViewController];
+    [self setViewControllers:@[topViewController] animated:NO];
     
     return self;
 }
 
 
 #pragma mark - UIViewController subclass
-
-- (void)loadView;
-{
-    UIImage *image = [UIImage imageNamed:@"OUICloudSetupBackground.png"];
-    OBASSERT(image);
-    
-    CGSize imageSize = image.size;
-    UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, imageSize.width, imageSize.height)];
-    imageView.image = image;
-    imageView.userInteractionEnabled = YES; // since we have subviews that need interaction and UIImageView defaults to NO.
-    self.view = imageView;
-
-    UIView *navigationView = _navigationController.view;
-    navigationView.frame = imageView.bounds;
-    [imageView addSubview:navigationView];
-}
 
 - (BOOL)disablesAutomaticKeyboardDismissal;
 {

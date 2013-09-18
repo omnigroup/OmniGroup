@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,34 +19,20 @@ RCS_ID("$Id$");
 
 @implementation CFArrayExtensionsTests
 
+#define INT_TO_ID(x) ((__bridge __unsafe_unretained id)((void *)x))
 - (void)testPointerArray;
 {
-    NSMutableArray *array = [NSMakeCollectable(OFCreateNonOwnedPointerArray()) autorelease];
-    [array addObject:(id)0xdeadbeef];
+    NSMutableArray *array = CFBridgingRelease(OFCreateNonOwnedPointerArray());
+    [array addObject:INT_TO_ID(0xdeadbeef)];
     should([array count] == 1);
-    should([array objectAtIndex:0] == (id)0xdeadbeef);
-    should([array indexOfObject:(id)0xdeadbeef] == 0);
+    should([array objectAtIndex:0] == INT_TO_ID(0xdeadbeef));
+    should([array indexOfObject:INT_TO_ID(0xdeadbeef)] == 0);
     
     // This crashes; -[NSArray description] isn't the same, apparently
     //NSString *description = [array description];
-    NSString *description = [NSMakeCollectable(CFCopyDescription(array)) autorelease];
+    NSString *description = CFBridgingRelease(CFCopyDescription((__bridge CFArrayRef)array));
     
     should([description containsString:@"0xdeadbeef"]);
-}
-
-- (void)testIntegerArray;
-{
-    NSMutableArray *array = [NSMakeCollectable(OFCreateIntegerArray()) autorelease];
-    [array addObject:(id)6060842];
-    should([array count] == 1);
-    should([array objectAtIndex:0] == (id)6060842);
-    should([array indexOfObject:(id)6060842] == 0);
-
-    // This crashes; -[NSArray description] isn't the same, apparently
-    //NSString *description = [array description];
-    NSString *description = [NSMakeCollectable(CFCopyDescription(array)) autorelease];
-    
-    should([description containsString:@"6060842"]);
 }
 
 @end

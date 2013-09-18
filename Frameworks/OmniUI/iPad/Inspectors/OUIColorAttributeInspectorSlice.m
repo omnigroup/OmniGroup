@@ -33,11 +33,6 @@ RCS_ID("$Id$")
     return self;
 }
 
-- (void)dealloc;
-{
-    [_textWell release];
-    [super dealloc];
-}
 
 #pragma mark -
 #pragma mark UIViewController subclass
@@ -50,7 +45,7 @@ RCS_ID("$Id$")
     _textWell.style = OUIInspectorTextWellStyleSeparateLabelAndText;
     _textWell.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     _textWell.cornerType = OUIInspectorWellCornerTypeLargeRadius;
-    _textWell.backgroundType = OUIInspectorWellBackgroundTypeButton;
+    _textWell.backgroundType = OUIInspectorWellBackgroundTypeNormal;
     _textWell.label = self.title;
     
     [_textWell addTarget:self action:@selector(showDetails:) forControlEvents:UIControlEventTouchUpInside];

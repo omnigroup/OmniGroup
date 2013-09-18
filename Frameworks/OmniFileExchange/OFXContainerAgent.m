@@ -7,13 +7,10 @@
 
 #import "OFXContainerAgent-Internal.h"
 
+#import <OmniDAV/ODAVErrors.h>
+#import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileExchange/OFXAgent.h>
 #import <OmniFileExchange/OFXServerAccount.h>
-#import <OmniFileStore/Errors.h>
-#import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/OFSFileManagerDelegate.h>
-#import <OmniFileStore/OFSURL.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 
@@ -21,7 +18,6 @@
 #import "OFXContainerDocumentIndex.h"
 #import "OFXContainerScan.h"
 #import "OFXContentIdentifier.h"
-#import "OFXDAVUtilities.h"
 #import "OFXDownloadFileSnapshot.h"
 #import "OFXFileItem-Internal.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
@@ -155,7 +151,7 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
     _documentIndex = nil;
 }
 
-- (BOOL)syncIfChanged:(OFSFileInfo *)containerFileInfo serverDate:(NSDate *)serverDate remoteFileManager:(OFSDAVFileManager *)remoteFileManager error:(NSError **)outError;
+- (BOOL)syncIfChanged:(ODAVFileInfo *)containerFileInfo serverDate:(NSDate *)serverDate connection:(OFXConnection *)connection error:(NSError **)outError;
 {
     NSUInteger retries = 0;
     
@@ -163,7 +159,7 @@ tryAgain:
     OBPRECONDITION([self _checkInvariants]); // checks the queue too
     OBPRECONDITION(containerFileInfo);
     OBPRECONDITION(serverDate);
-    OBPRECONDITION(remoteFileManager);
+    OBPRECONDITION(connection);
     OBPRECONDITION([NSThread isMainThread] == NO); // We operate on a background queue managed by our agent
 
     // Our locally stored snapshots were scanned while starting up.
@@ -181,7 +177,7 @@ tryAgain:
     // Ensure we create the container directory so that other clients will know that this path extension signifies a wrapper file type (rather than waiting for a file of this type to be uploaded).
     // TODO: If we have local snapshots, but the remote directory has been deleted, should we interpret that the same as the individual files being deleted? Or should we treat it as some sort of error/reset and instead upload all our documents? If two clients are out in the world, the second client will treat missing server documents as deletes for local documents. For now, treating removal of the container as removal of all the files w/in it.
     __autoreleasing NSError *error;
-    NSArray *fileInfos = OFXFetchDocumentFileInfos(remoteFileManager, remoteContainerDirectory, nil/*identifier*/, &error);
+    NSArray *fileInfos = OFXFetchDocumentFileInfos(connection, remoteContainerDirectory, nil/*identifier*/, &error);
     if (!fileInfos) {
         if (outError)
             *outError = error;
@@ -199,10 +195,11 @@ tryAgain:
     {
         NSMutableSet *documentIdentifiersNowMissingOnServer = [_documentIndex copyRegisteredFileItemIdentifiers];
         
-        [self _enumerateDocumentFileInfos:fileInfos with:^(NSString *fileIdentifier, NSUInteger fileVersion, OFSFileInfo *fileInfo){
+        [self _enumerateDocumentFileInfos:fileInfos with:^(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo){
             [documentIdentifiersNowMissingOnServer removeObject:fileIdentifier];
         }];
         
+
         for (NSString *documentIdentifier in documentIdentifiersNowMissingOnServer) {
             OFXFileItem *missingFileItem = [_documentIndex fileItemWithIdentifier:documentIdentifier];
             if (missingFileItem.remoteState.missing) {
@@ -210,6 +207,14 @@ tryAgain:
                 continue;
             }
             
+            // We don't have a 'download delete' transfer, so we need to do the notification here for the benefit of background syncing
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+            NSString *description = [NSString stringWithFormat:@"delete %@", missingFileItem.localDocumentURL];
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:OFXAccountTransfersNeededNotification object:_account userInfo:@{OFXAccountTransfersNeededDescriptionKey:description}];
+            }];
+#endif
+
             __autoreleasing NSError *error;
             if (![missingFileItem handleIncomingDeleteWithFilePresenter:filePresenter error:&error]) {
                 NSLog(@"Error handling incoming delete of %@ <%@>: %@", missingFileItem, missingFileItem.localDocumentURL, [error toPropertyList]);
@@ -221,7 +226,7 @@ tryAgain:
     
     __block BOOL tryAgain = NO;
     __block BOOL needsDownload = NO;
-    [self _enumerateDocumentFileInfos:fileInfos with:^(NSString *fileIdentifier, NSUInteger fileVersion, OFSFileInfo *fileInfo){
+    [self _enumerateDocumentFileInfos:fileInfos with:^(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo){
         OFXFileItem *fileItem = [_documentIndex fileItemWithIdentifier:fileIdentifier];
         if (fileItem) {
             if (fileItem.version == fileVersion) {
@@ -249,9 +254,9 @@ tryAgain:
         } else {
             // New remote document
             __autoreleasing NSError *documentError = nil;
-            fileItem = [[OFXFileItem alloc] initWithNewRemoteSnapshotAtURL:fileInfo.originalURL container:self filePresenter:filePresenter fileManager:remoteFileManager error:&documentError];
+            fileItem = [[OFXFileItem alloc] initWithNewRemoteSnapshotAtURL:fileInfo.originalURL container:self filePresenter:filePresenter connection:connection error:&documentError];
             if (!fileItem) {
-                if ([documentError hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_NOT_FOUND] && retries < 100) {
+                if ([documentError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND] && retries < 100) {
                     // Modified while fetching
                     tryAgain = YES;
                     NSLog(@"Expected version missing while fetching remote document at %@ ... will try again", [fileInfo.originalURL absoluteString]);
@@ -313,15 +318,20 @@ tryAgain:
     }
     
     [_documentIndex enumerateFileItems:^(NSString *identifier, OFXFileItem *fileItem) {
+        DEBUG_TRANSFER(2, @"Checking document %@ %@.", identifier, fileItem.localDocumentURL);
+        
         OFXFileState *localState = fileItem.localState;
         OFXFileState *remoteState = fileItem.remoteState;
         
-        if (localState.normal && remoteState.normal)
+        if (localState.normal && remoteState.normal) {
+            DEBUG_TRANSFER(2, @"  Already downloaded, no remote updates.");
             return;
+        }
         
         // Do local deletes before downloads so that delete/missing will actually push a delete rather than trying a download.
         if (localState.deleted) {
             // If the remote side is edited, this will result in a conflict in the transfer itself.
+            DEBUG_TRANSFER(2, @"  Locally deleted, queuing remote delete.");
             OBASSERT(fileItem.hasBeenLocallyDeleted);
             addTransfer(fileItem, OFXFileItemDeleteTransferKind);
             return;
@@ -332,15 +342,18 @@ tryAgain:
             OBASSERT(remoteState.moved == NO, "We don't actually know about remote renames until we download the snapshot");
             // May have a local edit or locally created file -- we resolve conflicts when committing the download
             //OBASSERT(localState.normal || localState.moved, "Handle content conflicts before this. We preserve local renames for name v. name conflict resolution.");
+            DEBUG_TRANSFER(2, @"  Remotely edited or moved, queuing download.");
             addTransfer(fileItem, OFXFileItemDownloadTransferKind);
             return;
         }
         
         if (remoteState.missing) {
+            DEBUG_TRANSFER(2, @"  Locally added, queuing upload.");
             addTransfer(fileItem, OFXFileItemUploadTransferKind);
             return;
         }
         if (localState.edited || localState.moved) {
+            DEBUG_TRANSFER(2, @"  Locally edited more moved, queuing upload.");
             addTransfer(fileItem, OFXFileItemUploadTransferKind);
             return;
         }
@@ -348,6 +361,7 @@ tryAgain:
         // This goes at the end (or at least after local.move so that we can upload a rename of a local.missing item). Also, don't do redundant metadata downloads of local missing file items. We only need to do this download if the file is actually missing.
         if (localState.missing) {
             if (fileItem.contentsRequested) {
+                DEBUG_TRANSFER(2, @"  Remotely added and contents requested, downloading");
                 addTransfer(fileItem, OFXFileItemDownloadTransferKind);
             } else {
                 // No worries, it can just hang out on the server.
@@ -371,14 +385,14 @@ tryAgain:
     }
     OBASSERT(fileItem.remoteState.missing || fileItem.localState.edited || fileItem.localState.moved);
 
-    OFSDAVFileManager *fileManager = [self _makeFileManager:outError];
-    if (!fileManager)
-        return NO;
+    OFXConnection *connection = [self _makeConnection];
+    if (!connection)
+        return nil;
     
     DEBUG_SYNC(1, @"Preparing upload of %@", fileItem);
         
     __autoreleasing NSError *error;
-    OFXFileSnapshotTransfer *transfer = [fileItem prepareUploadTransferWithFileManager:fileManager error:&error];
+    OFXFileSnapshotTransfer *transfer = [fileItem prepareUploadTransferWithConnection:connection error:&error];
     if (!transfer)
         return NO;
 
@@ -466,8 +480,8 @@ tryAgain:
         return nil;
     }
     
-    OFSDAVFileManager *fileManager = [self _makeFileManager:outError];
-    if (!fileManager)
+    OFXConnection *connection = [self _makeConnection];
+    if (!connection)
         return nil;
     
     DEBUG_SYNC(1, @"Preparing download of %@", fileItem);
@@ -476,7 +490,7 @@ tryAgain:
     
     id <NSFilePresenter> filePresenter = _weak_filePresenter;
     
-    OFXFileSnapshotTransfer *transfer = [fileItem prepareDownloadTransferWithFileManager:fileManager filePresenter:filePresenter];
+    OFXFileSnapshotTransfer *transfer = [fileItem prepareDownloadTransferWithConnection:connection filePresenter:filePresenter];
     OBASSERT(fileItem.isDownloading); // should be set even before the operation starts so that our queue won't start more.
     
     transfer.validateCommit = ^NSError *{
@@ -552,14 +566,14 @@ tryAgain:
         return nil;
     }
     
-    OFSDAVFileManager *fileManager = [self _makeFileManager:outError];
-    if (!fileManager)
+    OFXConnection *connection = [self _makeConnection];
+    if (!connection)
         return nil;
     
     DEBUG_SYNC(1, @"Preparing delete of %@", fileItem);
     
     id <NSFilePresenter> filePresenter = _weak_filePresenter;
-    OFXFileSnapshotTransfer *transfer = [fileItem prepareDeleteTransferWithFileManager:fileManager filePresenter:filePresenter];
+    OFXFileSnapshotTransfer *transfer = [fileItem prepareDeleteTransferWithConnection:connection filePresenter:filePresenter];
     OBASSERT(fileItem.isDeleting); // should be set even before the operation starts so that our queue won't start more.
     
     transfer.validateCommit = ^NSError *{
@@ -760,7 +774,7 @@ tryAgain:
     NSString *newRelativePath = [self _localRelativePathForFileURL:newURL];
     OBASSERT(OFNOTEQUAL(oldRelativePath, newRelativePath));
     
-    OBASSERT(fileItem.localState.missing || OFSURLIsStandardizedOrMissing(newURL)); // standardizing non-existent URLS doesn't work so don't check if we are renaming something that isn't downloaded. It might have also been moved and then quickly moved again or deleted before we could process the rename.
+    OBASSERT(fileItem.localState.missing || OFURLIsStandardizedOrMissing(newURL)); // standardizing non-existent URLS doesn't work so don't check if we are renaming something that isn't downloaded. It might have also been moved and then quickly moved again or deleted before we could process the rename.
 
     // If this is coming from the server, don't call back to the item (it will update itself) or provoke an upload of the move.
     if (byUser) {
@@ -859,6 +873,8 @@ tryAgain:
     OBASSERT(OFISEQUAL(originalFileURL, fileItem.localDocumentURL));
     
     if (fileItem.localState.missing) {
+        OBASSERT(OFURLContainsURL(_account.localDocumentsURL, updatedFileURL), "Attempting to move the file out of our domain?");
+        
         // No local file to move; just tweak the metadata.
         TRACE_SIGNAL(OFXContainerAgent.move_item.metadata);
         [self fileItemMoved:fileItem fromURL:originalFileURL toURL:updatedFileURL byUser:byUser];
@@ -922,6 +938,8 @@ tryAgain:
 
 - (NSString *)_localRelativePathForFileURL:(NSURL *)fileURL;
 {
+    OBPRECONDITION(OFURLContainsURL(_account.localDocumentsURL, fileURL));
+    
     return OFFileURLRelativePath(_account.localDocumentsURL, fileURL);
 }
 
@@ -1129,7 +1147,7 @@ tryAgain:
     return fileItem;
 }
 
-- (OFSDAVFileManager *)_makeFileManager:(NSError **)outError;
+- (OFXConnection *)_makeConnection;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 
@@ -1138,7 +1156,7 @@ tryAgain:
         OBASSERT_NOT_REACHED("Account agent didn't wait for background operations to finish?");
         return nil;
     }
-    return [accountAgent _makeFileManager:outError];
+    return [accountAgent _makeConnection];
 }
 
 - (void)_hasCreatedRemoteDirectory;
@@ -1179,14 +1197,14 @@ tryAgain:
     }
 }
 
-- (void)_enumerateDocumentFileInfos:(id <NSFastEnumeration>)fileInfos with:(void (^)(NSString *fileIdentifier, NSUInteger fileVersion, OFSFileInfo *fileInfo))applier;
+- (void)_enumerateDocumentFileInfos:(id <NSFastEnumeration>)fileInfos with:(void (^)(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo))applier;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 
     NSMutableDictionary *fileIdentifierToLatestFileInfo = [NSMutableDictionary new];
     
     
-    for (OFSFileInfo *fileInfo in fileInfos) {
+    for (ODAVFileInfo *fileInfo in fileInfos) {
         if (!fileInfo.isDirectory) {
             NSLog(@"%@: Found flat file %@ where only document directories were expected", [self shortDescription], fileInfo.originalURL);
             continue;
@@ -1202,7 +1220,7 @@ tryAgain:
             continue;
         }
         
-        OFSFileInfo *otherFileInfo = fileIdentifierToLatestFileInfo[identifier];
+        ODAVFileInfo *otherFileInfo = fileIdentifierToLatestFileInfo[identifier];
         BOOL newer = YES;
         
         if (otherFileInfo) {
@@ -1224,7 +1242,7 @@ tryAgain:
             OBFinishPortingLater("Add superseded items to an array to remove");
     }
     
-    [fileIdentifierToLatestFileInfo enumerateKeysAndObjectsUsingBlock:^(NSString *existingIdentifier, OFSFileInfo *fileInfo, BOOL *stop) {
+    [fileIdentifierToLatestFileInfo enumerateKeysAndObjectsUsingBlock:^(NSString *existingIdentifier, ODAVFileInfo *fileInfo, BOOL *stop) {
         NSUInteger version;
         NSString *identifier = OFXFileItemIdentifierFromRemoteSnapshotURL(fileInfo.originalURL, &version, NULL);
         OBASSERT([identifier isEqual:existingIdentifier]); OB_UNUSED_VALUE(identifier);

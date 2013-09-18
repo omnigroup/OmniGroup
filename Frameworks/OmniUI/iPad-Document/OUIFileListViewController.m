@@ -7,9 +7,10 @@
 
 #import "OUIFileListViewController.h"
 
+#import <OmniDAV/ODAVFileInfo.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
-#import <OmniFileStore/OFSFileInfo.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 
 RCS_ID("$Id$");
 
@@ -18,6 +19,14 @@ RCS_ID("$Id$");
     NSArray *_files;
 }
 
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        self.shouldShowLastModifiedDate = YES;
+    }
+    return self;
+}
 
 @synthesize files = _files;
 - (void)setFiles:(NSArray *)newFiles;
@@ -36,7 +45,7 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark Private
 
-- (BOOL)_canOpenFile:(OFSFileInfo *)fileInfo;
+- (BOOL)_canOpenFile:(ODAVFileInfo *)fileInfo;
 {
     return [[OUIDocumentAppController controller] canViewFileTypeWithIdentifier:[fileInfo UTI]];
 }
@@ -58,7 +67,7 @@ RCS_ID("$Id$");
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
     }
     
-    OFSFileInfo *fileInfo = [_files objectAtIndex:indexPath.row];
+    ODAVFileInfo *fileInfo = [_files objectAtIndex:indexPath.row];
     BOOL isDocument = [self _canOpenFile:fileInfo];
     BOOL isFolder = !isDocument && fileInfo.isDirectory; // Things that we can open might be directories, but we won't let the user navigate into them.s
     
@@ -79,7 +88,7 @@ RCS_ID("$Id$");
     BOOL canOpenFile = (isFolder || isDocument) && [fileInfo exists];
     cell.textLabel.textColor = canOpenFile ? [UIColor blackColor] : [UIColor grayColor];
     
-    if (isDocument) {
+    if (self.shouldShowLastModifiedDate && isDocument) {
         NSDate *lastModifiedDate = [fileInfo lastModifiedDate];
         if (lastModifiedDate) {
             NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -94,11 +103,13 @@ RCS_ID("$Id$");
     
     UIImage *icon = nil;
     if (isDocument) {
-        OUIDocumentPicker *picker = [[OUIDocumentAppController controller] documentPicker];
+        OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
         icon = [picker iconForUTI:[fileInfo UTI]];
-    } else if (isFolder) {
+        OBASSERT(icon);
+    }
+    if (isFolder) {
         icon = [UIImage imageNamed:@"OUIFolder.png"];
-    } else {
+    } else if (!icon) {
         icon = [UIImage imageNamed:@"OUIDocument.png"];
     }
     

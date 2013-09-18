@@ -7,17 +7,34 @@
 
 #import "OUIRestoreSampleDocumentListController.h"
 
-#import <OmniFileStore/OFSDocumentStore.h>
+#import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDocumentStore/ODSScope.h>
+#import <OmniDocumentStore/ODSStore.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 #import <OmniUI/OUIBarButtonItem.h>
-
-#import <OmniFileStore/OFSFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 
 RCS_ID("$Id$");
 
+@interface OUIRestoreSampleDocumentListController ()
+
+@property (nonatomic, strong) NSURL *sampleDocumentsURL;
+
+@end
+
 @implementation OUIRestoreSampleDocumentListController
+
+- (instancetype)initWithSampleDocumentsURL:(NSURL *)sampleDocumentsURL;
+{
+    self = [super initWithNibName:nil bundle:nil];
+    if (self) {
+        self.sampleDocumentsURL = sampleDocumentsURL;
+        self.shouldShowLastModifiedDate = NO;
+    }
+    return self;
+}
 
 - (void)cancel:(id)sender;
 {
@@ -29,59 +46,80 @@ RCS_ID("$Id$");
     return [[OUIDocumentAppController controller] localizedNameForSampleDocumentNamed:fileName];
 }
 
-#pragma mark -
-#pragma mark UIViewController
+#pragma mark - UIViewController
 
 - (void)viewDidLoad;
 {
     [super viewDidLoad];
     
-    self.navigationItem.title = [[OUIDocumentAppController controller] sampleDocumentsDirectoryTitle];
-    
     UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel:)];
     self.navigationItem.leftBarButtonItem = cancel;
     
     // Load sample documents.
-    NSURL *sampleDocumentsURL = [[OUIDocumentAppController controller] sampleDocumentsDirectoryURL];
+    OBASSERT([self.sampleDocumentsURL isFileURL]);
     
     __autoreleasing NSError *error = nil;
-    OFSFileManager *fileManager = [[OFSFileManager alloc] initWithBaseURL:sampleDocumentsURL delegate:nil error:&error];
-    if (error) {
+    
+    NSArray *propertyKeys = @[NSURLIsDirectoryKey, NSURLAttributeModificationDateKey, NSURLTotalFileSizeKey];
+    NSArray *fileURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:self.sampleDocumentsURL includingPropertiesForKeys:propertyKeys options:0 error:&error];
+    if (!fileURLs) {
         OUI_PRESENT_ERROR(error);
         return;
     }
     
-    NSArray *sampleFiles = [fileManager directoryContentsAtURL:sampleDocumentsURL havingExtension:nil error:&error];
-    if (error) {
-        OUI_PRESENT_ERROR(error);
-        return;
+    // Filter
+    NSArray *filteredFileURLs = fileURLs;
+    if (self.fileFilterPredicate) {
+        filteredFileURLs = [fileURLs filteredArrayUsingPredicate:self.fileFilterPredicate];
     }
     
-    sampleFiles = [sampleFiles sortedArrayUsingComparator:^(OFSFileInfo *fileInfo1, OFSFileInfo *fileInfo2) {
-        NSString *fileInfo1LocalizedName = [self localizedNameForFileName:[[fileInfo1 name] stringByDeletingPathExtension]];
-        if (!fileInfo1LocalizedName)
-            fileInfo1LocalizedName = [[fileInfo1 name] stringByDeletingPathExtension];
+    NSArray *sampleFileInfos = [filteredFileURLs arrayByPerformingBlock:^id(NSURL *fileURL) {
+        BOOL isDirectory;
+        if (!OFGetBoolResourceValue(fileURL, NSURLIsDirectoryKey, &isDirectory, NULL))
+            OBASSERT_NOT_REACHED("Should be able to read our samples");
+        NSDate *modificationDate = nil;
+        if (![fileURL getResourceValue:&modificationDate forKey:NSURLAttributeModificationDateKey error:NULL])
+            OBASSERT_NOT_REACHED("Should be able to read our samples");
+        NSNumber *fileSize;
+        if (![fileURL getResourceValue:&fileSize forKey:NSURLTotalFileSizeKey error:NULL])
+            OBASSERT_NOT_REACHED("Should be able to read our samples");
         
-        NSString *fileInfo2LocalizedName = [self localizedNameForFileName:[[fileInfo2 name] stringByDeletingPathExtension]];
+        return [[ODAVFileInfo alloc] initWithOriginalURL:fileURL name:[ODAVFileInfo nameForURL:fileURL] exists:YES directory:isDirectory size:[fileSize unsignedLongLongValue] lastModifiedDate:modificationDate];
+    }];
+    
+    sampleFileInfos = [sampleFileInfos sortedArrayUsingComparator:^(ODAVFileInfo *fileInfo1, ODAVFileInfo *fileInfo2) {
+        NSString *fileInfo1LocalizedName = [self localizedNameForFileName:[fileInfo1.name stringByDeletingPathExtension]];
+        if (!fileInfo1LocalizedName)
+            fileInfo1LocalizedName = [fileInfo1.name stringByDeletingPathExtension];
+        
+        NSString *fileInfo2LocalizedName = [self localizedNameForFileName:[fileInfo2.name stringByDeletingPathExtension]];
         if (!fileInfo2LocalizedName)
-            fileInfo2LocalizedName = [[fileInfo2 name] stringByDeletingPathExtension];
+            fileInfo2LocalizedName = [fileInfo2.name stringByDeletingPathExtension];
         
         return [fileInfo1LocalizedName compare:fileInfo2LocalizedName];
     }];
     
-    self.files = sampleFiles;
+    self.files = sampleFileInfos;
 }
 
-#pragma mark -
-#pragma mark UITableViewDeletage
+#pragma mark - UITableViewDelegate
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    // Get fileInfo
-    OFSFileInfo *fileInfo = [self.files objectAtIndex:indexPath.row];
+    ODAVFileInfo *fileInfo = self.files[indexPath.row];
     
-    [[[OUIDocumentAppController controller] documentPicker] addSampleDocumentFromURL:[fileInfo originalURL]];
-    
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self dismissViewControllerAnimated:YES completion:^{
+        OUIDocumentPickerViewController *scopeViewController = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+        if (scopeViewController)
+            [scopeViewController addSampleDocumentFromURL:fileInfo.originalURL];
+        else {
+            NSString *fileName = [fileInfo.originalURL lastPathComponent];
+            NSString *localizedBaseName = [[OUIDocumentAppController controller] localizedNameForSampleDocumentNamed:[fileName stringByDeletingPathExtension]];
+            
+            ODSScope *scope = [[[OUIDocumentAppController controller] documentPicker] localDocumentsScope];
+            [scope addDocumentInFolder:scope.rootFolder baseName:localizedBaseName fromURL:fileInfo.originalURL option:ODSStoreAddByRenaming completionHandler:nil];
+        }
+    }];
 }
 
 @end

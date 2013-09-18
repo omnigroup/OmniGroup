@@ -23,10 +23,10 @@ RCS_ID("$Id$");
 {
     OFOffsetMutableArray *target;
     
-    target = [[[OFOffsetMutableArray alloc] init] autorelease];
+    target = [[OFOffsetMutableArray alloc] init];
     STAssertEqualObjects(target, @[], @"New empty offset array should be equivalent to a regular empty array");
     
-    target = [[[OFOffsetMutableArray alloc] initWithArray:@[]] autorelease];
+    target = [[OFOffsetMutableArray alloc] initWithArray:@[]];
     STAssertEqualObjects(target, @[], @"New empty offset array (from empty array) should be equivalent to a regular empty array");
 }
 
@@ -35,11 +35,11 @@ RCS_ID("$Id$");
     OFOffsetMutableArray *target;
     NSArray *template = @[ @1, @2, @3 ];
     
-    target = [[[OFOffsetMutableArray alloc] initWithArray:template] autorelease];
+    target = [[OFOffsetMutableArray alloc] initWithArray:template];
     STAssertEqualObjects(target, template, @"New offset array from non-empty array should be equivalent to that array");
     STAssertEqualObjects(target.unadjustedArray, template, @"For zero offset, the unadjusted array should be equivalent to the original array");
     
-    target = [[[OFOffsetMutableArray alloc] init] autorelease];
+    target = [[OFOffsetMutableArray alloc] init];
     [target addObjectsFromArray:template];
     STAssertEqualObjects(target, template, @"New offset array with items added from array should be equivalent to that array");
     STAssertEqualObjects(target.unadjustedArray, template, @"For zero offset, the unadjusted array (after adding items) should be equivalent to the original array");
@@ -50,7 +50,7 @@ RCS_ID("$Id$");
     OFOffsetMutableArray *target;
     NSArray *template = @[ @1, @2, @3, @4, @5 ];
     
-    target = [[[OFOffsetMutableArray alloc] initWithArray:template] autorelease];
+    target = [[OFOffsetMutableArray alloc] initWithArray:template];
     for (NSUInteger offset = 0; offset < template.count; offset++) {
         target.offset = offset;
         STAssertEqualObjects(target, [template subarrayWithRange:NSMakeRange(offset, template.count - offset)], @"Offset arrays should be equivalent to their underlying arrays shifted to the left");
@@ -60,7 +60,7 @@ RCS_ID("$Id$");
 
 - (void)testNonzeroOffsetMutation;
 {
-    OFOffsetMutableArray *target = [[[OFOffsetMutableArray alloc] init] autorelease];
+    OFOffsetMutableArray *target = [[OFOffsetMutableArray alloc] init];
     target.offset = 1;
     
     [target addObject:@"foo"];
@@ -76,7 +76,7 @@ RCS_ID("$Id$");
 - (void)testRelativeMutatorMethods;
 {
     NSArray *template = @[ @1, @2, @3 ];
-    OFOffsetMutableArray *target = [[[OFOffsetMutableArray alloc] initWithArray:template] autorelease];
+    OFOffsetMutableArray *target = [[OFOffsetMutableArray alloc] initWithArray:template];
     target.offset = template.count;
     
     STAssertEqualObjects(target, @[], @"Offset array shifted by its unadjusted array's count should appear empty");
@@ -97,7 +97,7 @@ RCS_ID("$Id$");
 - (void)testAbsoluteMutatorMethods;
 {
     NSArray *template = @[ @1, @2, @3, @4, @5 ];
-    OFOffsetMutableArray *target = [[[OFOffsetMutableArray alloc] init] autorelease];
+    OFOffsetMutableArray *target = [[OFOffsetMutableArray alloc] init];
     
     for (id anObj in template) {
         [target insertObject:anObj atIndex:0];
@@ -108,7 +108,7 @@ RCS_ID("$Id$");
     }
     
     for (NSUInteger offset = 1; offset <= template.count; offset++) {
-        target = [[[OFOffsetMutableArray alloc] initWithArray:template] autorelease];
+        target = [[OFOffsetMutableArray alloc] initWithArray:template];
         target.offset = offset;
         
         [target insertObject:@6 atIndex:template.count - offset];
@@ -119,7 +119,7 @@ RCS_ID("$Id$");
 - (void)testIndexOfObject;
 {
     NSArray *template = @[ @1, @2, @3, @4, @5 ];
-    OFOffsetMutableArray *target = [[[OFOffsetMutableArray alloc] initWithArray:template] autorelease];
+    OFOffsetMutableArray *target = [[OFOffsetMutableArray alloc] initWithArray:template];
     
     for (id anObj in template)
         STAssertEquals([target indexOfObject:anObj], [template indexOfObject:anObj], @"Unshifted arrays should match object indexes with their underlying arrays");
@@ -139,7 +139,7 @@ RCS_ID("$Id$");
 - (void)testObjectAtIndex;
 {
     NSArray *template = @[ @1, @2, @3, @4, @5 ];
-    OFOffsetMutableArray *target = [[[OFOffsetMutableArray alloc] initWithArray:template] autorelease];
+    OFOffsetMutableArray *target = [[OFOffsetMutableArray alloc] initWithArray:template];
     
     for (NSUInteger offset = 0; offset <= template.count; offset++) { // <= is deliberate here; what happens when the offset is greater than the number of items in the array?
         target.offset = offset;

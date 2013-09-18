@@ -20,13 +20,7 @@ RCS_ID("$Id$")
 #endif
 
 @interface OUISpecialURLActionSheetDelegate : NSObject <UIActionSheetDelegate>
-{
-    NSURL *_url;
-    OUISpecialURLHandler _handler;
-}
-
 - (id)initWithURL:(NSURL *)url handler:(OUISpecialURLHandler)urlHandler;
-
 @end
 
 OUISpecialURLHandler OUIChangePreferenceURLHandler = ^(NSURL *url) {
@@ -59,7 +53,7 @@ OUISpecialURLHandler OUIChangePreferenceURLHandler = ^(NSURL *url) {
         }
         id updatedValue = [preferences valueForKey:key];
         NSLog(@"... %@: %@ (%@) -> %@ (%@)", key, oldValue, [oldValue class], updatedValue, [updatedValue class]);
-        UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Preference changed", @"OmniUI", OMNI_BUNDLE, @"alert title") message:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Changed the '%@' preference from '%@' to '%@'", @"OmniUI", OMNI_BUNDLE, @"alert message"), key, oldValue, updatedValue] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] autorelease];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Preference changed", @"OmniUI", OMNI_BUNDLE, @"alert title") message:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Changed the '%@' preference from '%@' to '%@'", @"OmniUI", OMNI_BUNDLE, @"alert message"), key, oldValue, updatedValue] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
         [alert show];
     }
     return YES;
@@ -73,8 +67,9 @@ OUISpecialURLHandler OUIChangePreferenceURLHandler = ^(NSURL *url) {
     NSString *commandDescription = [url query];
     NSString *title = [NSString stringWithFormat:titleFormat, commandDescription];
     
-    OUISpecialURLActionSheetDelegate *delegate = [[[OUISpecialURLActionSheetDelegate alloc] initWithURL:url handler:urlHandler] autorelease]; // retained; releases self in button press
-    objc_msgSend(delegate, @selector(retain));
+    OUISpecialURLActionSheetDelegate *delegate = [[OUISpecialURLActionSheetDelegate alloc] initWithURL:url handler:urlHandler]; // retained; releases self in button press
+    OBStrongRetain(delegate);
+
     // We add the 'Cancel' button as an 'other button' instead of the designated 'cancelButtonTitle' to force it to show on iPad.
     return [self initWithTitle:title delegate:delegate cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:NSLocalizedStringFromTableInBundle(@"Accept", @"OmniUI", OMNI_BUNDLE, @"alert button title"), NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title"), nil];
 }
@@ -82,6 +77,10 @@ OUISpecialURLHandler OUIChangePreferenceURLHandler = ^(NSURL *url) {
 @end
 
 @implementation OUISpecialURLActionSheetDelegate
+{
+    NSURL *_url;
+    OUISpecialURLHandler _handler;
+}
 
 - (id)initWithURL:(NSURL *)url handler:(OUISpecialURLHandler)urlHandler;
 {
@@ -92,27 +91,18 @@ OUISpecialURLHandler OUIChangePreferenceURLHandler = ^(NSURL *url) {
     return self;
 }
 
-- (void)dealloc;
-{
-    [_url release];
-    [_handler release];
-    [super dealloc];
-}
-
 - (void)actionSheet:(UIActionSheet *)actionSheet willDismissWithButtonIndex:(NSInteger)buttonIndex;
 {
     // NOTE: This simple approach works fine for current needs, but we may want to move to something more robust like OmniFocus's DebugURLAlert.m, which handles parsing of arguments and turning them into selectors.
     
     // We're left retained by our caller
-    [self autorelease];
+    OBAutorelease(self);
     
     BOOL cancelled = (buttonIndex != 0);
-    
     if (cancelled)
         return;
 
     BOOL handled = _handler(_url);
-        
     if (!handled) {
         NSString *title = NSLocalizedStringFromTableInBundle(@"Could not perform command", @"OmniUI", OMNI_BUNDLE, @"setting failure alert title");
         
@@ -121,7 +111,7 @@ OUISpecialURLHandler OUIChangePreferenceURLHandler = ^(NSURL *url) {
         NSString *message = [NSString stringWithFormat:messageFormat, commandDescription];
         
         NSString *okButtonLabel = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"OK button label");
-        UIAlertView *alert = [[[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:okButtonLabel otherButtonTitles:nil] autorelease];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title message:message delegate:nil cancelButtonTitle:okButtonLabel otherButtonTitles:nil];
         [alert show];
     }
 }

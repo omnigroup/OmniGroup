@@ -9,19 +9,17 @@
 
 #import "OFXFileSnapshot.h"
 
-#import <OmniFileStore/OFSDAVFileManager.h>
-
 RCS_ID("$Id$")
 
 @implementation OFXFileSnapshotUploadTransfer
 
-- (id)initWithFileManager:(OFSDAVFileManager *)fileManager currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory;
+- (id)initWithConnection:(OFXConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory;
 {
     OBPRECONDITION(currentSnapshot, "Should always have a starting snapshot, but it might be locally created on the first upload");
     OBPRECONDITION(remoteTemporaryDirectory);
     OBPRECONDITION([[remoteTemporaryDirectory lastPathComponent] isEqual:@"tmp"], "should be the tmp directory, not a the full container/account");
     
-    if (!(self = [super initWithFileManager:fileManager]))
+    if (!(self = [super initWithConnection:connection]))
         return nil;
     
     _currentSnapshot = currentSnapshot;

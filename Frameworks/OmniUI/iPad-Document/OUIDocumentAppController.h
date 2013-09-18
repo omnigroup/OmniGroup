@@ -9,59 +9,41 @@
 
 #import <OmniUI/OUIAppController.h>
 
-#import <OmniFileStore/OFSDocumentStoreDelegate.h>
+#import <OmniDocumentStore/ODSStoreDelegate.h>
 #import <OmniUI/OUIUndoBarButtonItem.h>
-#import <OmniUI/OUIBarButtonItemBackgroundType.h>
-#import <OmniFileStore/OFSDocumentStoreDelegate.h>
-#import <OmniUI/OUIMenuController.h>
+#import <OmniDocumentStore/ODSStoreDelegate.h>
 
-@class OFSDocumentStoreFileItem, OFSDocumentStoreScope;
+@class ODSFileItem, ODSScope;
 @class OFXAgentActivity, OFXServerAccount;
-@class OUIDocument, OUIDocumentPicker, OUIMainViewController, OUIBarButtonItem;
+@class OUIDocument, OUIDocumentPicker, OUIDocumentPickerViewController, OUIBarButtonItem;
 
-typedef enum {
-    OUIDocumentAnimationTypeZoom,
-    OUIDocumentAnimationTypeDissolve,
-} OUIDocumentAnimationType;
-
-@interface OUIDocumentAppController : OUIAppController <UITextFieldDelegate, OUIUndoBarButtonItemTarget, OFSDocumentStoreDelegate, OUIMenuControllerDelegate, OFSDocumentStoreDelegate>
+@interface OUIDocumentAppController : OUIAppController <OUIUndoBarButtonItemTarget, ODSStoreDelegate, ODSStoreDelegate>
 
 @property(nonatomic,retain) IBOutlet UIWindow *window;
 - (UIWindow *)makeMainWindow; // Called at app startup if the main xib didn't have a window outlet hooked up.
 
-@property(nonatomic,retain) IBOutlet OUIMainViewController *mainViewController;
+@property(nonatomic,retain) OUIDocumentPicker *documentPicker;
 
-@property(nonatomic,readonly) UIBarButtonItem *appMenuBarItem;
-@property(nonatomic,readonly) OUIMenuController *appMenuController;
-
-@property(nonatomic,retain) IBOutlet OUIDocumentPicker *documentPicker;
-
-@property(nonatomic,readonly) UIBarButtonItem *documentTitleToolbarItem;
 @property(nonatomic,readonly) UIBarButtonItem *closeDocumentBarButtonItem;
 @property(nonatomic,readonly) OUIUndoBarButtonItem *undoBarButtonItem;
 @property(nonatomic,readonly) UIBarButtonItem *infoBarButtonItem;
-@property(nonatomic,readonly) BOOL shouldOpenWelcomeDocumentOnFirstLaunch;
 
 @property(nonatomic,readonly) OFXAgentActivity *agentActivity;
 
 - (NSArray *)editableFileTypes;
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 
-- (void)createNewDocumentAtURL:(NSURL *)url completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)createNewDocumentAtURL:(NSURL *)url templateURL:(NSURL *)templateURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 - (IBAction)makeNewDocument:(id)sender;
 - (IBAction)closeDocument:(id)sender;
-- (void)closeDocumentWithAnimationType:(OUIDocumentAnimationType)animation completionHandler:(void (^)(void))completionHandler;
+- (void)closeDocumentWithCompletionHandler:(void(^)(void))completionHandler;
 
-- (void)documentDidDisableEnditing:(OUIDocument *)document; // Incoming iCloud edit on an open document
+// Incoming iCloud edit on an open document
+- (void)documentDidDisableEnditing:(OUIDocument *)document;
+- (void)documentWillRebuildViewController:(OUIDocument *)document;
+- (void)documentDidRebuildViewController:(OUIDocument *)document;
 
-- (void)updateDocumentTitle:(NSString *)newTitle;
-- (void)updateTitleBarButtonItemSizeUsingInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
-
-- (OUIBarButtonItemBackgroundType)defaultBarButtonBackgroundType;
-
-- (void)duplicateAndOpenFileItem:(OFSDocumentStoreFileItem *)fileItem completionHandler:(void (^)(OFSDocumentStoreFileItem *duplicateFileItem))completionHandler;
-
-- (void)openDocument:(OFSDocumentStoreFileItem *)fileItem animation:(OUIDocumentAnimationType)animation showActivityIndicator:(BOOL)showActivityIndicator;
+- (void)openDocument:(ODSFileItem *)fileItem showActivityIndicator:(BOOL)showActivityIndicator;
 
 @property(nonatomic,readonly) OUIDocument *document;
 
@@ -71,12 +53,16 @@ typedef enum {
 // Sample documents
 - (NSString *)sampleDocumentsDirectoryTitle;
 - (NSURL *)sampleDocumentsDirectoryURL;
+- (NSPredicate *)sampleDocumentsFilterPredicate;
 - (void)copySampleDocumentsToUserDocumentsWithCompletionHandler:(void (^)(NSDictionary *nameToURL))completionHandler;
-- (void)copySampleDocumentsFromDirectoryURL:(NSURL *)sampleDocumentsDirectoryURL toScope:(OFSDocumentStoreScope *)scope stringTableName:(NSString *)stringTableName completionHandler:(void (^)(NSDictionary *nameToURL))completionHandler;
+- (void)copySampleDocumentsFromDirectoryURL:(NSURL *)sampleDocumentsDirectoryURL toScope:(ODSScope *)scope stringTableName:(NSString *)stringTableName completionHandler:(void (^)(NSDictionary *nameToURL))completionHandler;
 
 - (NSString *)stringTableNameForSampleDocuments;
 - (NSString *)localizedNameForSampleDocumentNamed:(NSString *)documentName;
 - (NSURL *)URLForSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
+
+// Background fetch helper for OmniPresence-enabled apps
+- (void)performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler;
 
 // UIApplicationDelegate methods we implement (see OUIAppController too)
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
@@ -84,15 +70,17 @@ typedef enum {
 - (void)applicationWillEnterForeground:(UIApplication *)application;
 - (void)applicationDidEnterBackground:(UIApplication *)application;
 
-// OFSDocumentStoreDelegate methods we implement
-- (void)documentStore:(OFSDocumentStore *)store addedFileItems:(NSSet *)addedFileItems;
-- (void)documentStore:(OFSDocumentStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date didMoveToURL:(NSURL *)newURL;
-- (void)documentStore:(OFSDocumentStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)oldDate didCopyToURL:(NSURL *)newURL andDate:(NSDate *)newDate;
-- (OFSDocumentStoreFileItem *)documentStore:(OFSDocumentStore *)store preferredFileItemForNextAutomaticDownload:(NSSet *)fileItems;
+// ODSStoreDelegate methods we implement
+- (void)documentStore:(ODSStore *)store addedFileItems:(NSSet *)addedFileItems;
+- (void)documentStore:(ODSStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)oldDate willMoveToURL:(NSURL *)newURL;
+- (void)documentStore:(ODSStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date finishedMoveToURL:(NSURL *)newURL successfully:(BOOL)successfully;
+- (void)documentStore:(ODSStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)oldDate willCopyToURL:(NSURL *)newURL;
+- (void)documentStore:(ODSStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)oldDate finishedCopyToURL:(NSURL *)newURL andDate:(NSDate *)newDate successfully:(BOOL)successfully;
+- (ODSFileItem *)documentStore:(ODSStore *)store preferredFileItemForNextAutomaticDownload:(NSSet *)fileItems;
 
 // OUIDocumentPickerDelegate methods we implement
-- (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(OFSDocumentStoreFileItem *)fileItem;
-- (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(OFSDocumentStoreFileItem *)fileItem;
+- (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(ODSFileItem *)fileItem;
+- (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(ODSFileItem *)fileItem;
 
 // Subclass responsibility
 - (Class)documentClassForURL:(NSURL *)url;
@@ -101,18 +89,11 @@ typedef enum {
 - (void)showInspectorFromBarButtonItem:(UIBarButtonItem *)item;
 - (void)mainThreadFinishedLoadingDocument:(OUIDocument *)document;  // For handling any loading that can't be done in a thread
 
-// NSObject (OUIAppMenuTarget)
-- (NSString *)aboutMenuTitle;
-- (NSString *)feedbackMenuTitle;
-- (void)sendFeedback:(id)sender;
-- (void)showAppMenu:(id)sender;
-
-// Optional OFSDocumentStoreDelegate that we implement
-- (NSArray *)documentStoreEditableDocumentTypes:(OFSDocumentStore *)store;
+// Optional ODSStoreDelegate that we implement
+- (NSArray *)documentStoreEditableDocumentTypes:(ODSStore *)store;
 
 // Helpful dialogs
-- (void)presentSyncError:(NSError *)syncError inNavigationController:(UINavigationController *)navigationController retryBlock:(void (^)(void))retryBlock;
-- (void)presentSyncError:(NSError *)syncError retryBlock:(void (^)(void))retryBlock;
+- (void)presentSyncError:(NSError *)syncError inViewController:(UIViewController *)viewController retryBlock:(void (^)(void))retryBlock;
 - (void)warnAboutDiscardingUnsyncedEditsInAccount:(OFXServerAccount *)account withCancelAction:(void (^)(void))cancelAction discardAction:(void (^)(void))discardAction;
 
 // document state

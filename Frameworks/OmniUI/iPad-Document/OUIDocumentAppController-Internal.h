@@ -12,7 +12,6 @@
 @class OFXServerAccount;
 
 @interface OUIDocumentAppController ()
-- (void)_setupCloud:(id)sender;
 - (void)_didAddSyncAccount:(OFXServerAccount *)account;
 - (void)_selectScopeWithAccount:(OFXServerAccount *)account completionHandler:(void (^)(void))completionHandler;
 @end

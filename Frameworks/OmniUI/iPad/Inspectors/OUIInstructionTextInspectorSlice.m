@@ -18,9 +18,19 @@ RCS_ID("$Id$");
 
 @implementation OUIInstructionTextInspectorSlice
 
++ (UIEdgeInsets)sliceAlignmentInsets;
+{
+    // Explano-text should be indented relative to the inset of other slices
+    UIEdgeInsets sliceAlignmentInsets = [super sliceAlignmentInsets];
+    sliceAlignmentInsets.left += 6;
+    sliceAlignmentInsets.right += 6;
+
+    return sliceAlignmentInsets;
+}
+
 + (instancetype)sliceWithInstructionText:(NSString *)text; 
 {
-    return [[[self alloc] initWithInstructionText:text] autorelease];
+    return [[self alloc] initWithInstructionText:text];
 }
 
 - initWithInstructionText:(NSString *)text;
@@ -39,7 +49,6 @@ RCS_ID("$Id$");
     if (OFISEQUAL(_instructionText, text))
         return;
     
-    [_instructionText release];
     _instructionText = [text copy];
     
     if ([self isViewLoaded]) {
@@ -62,12 +71,6 @@ RCS_ID("$Id$");
     return [label sizeThatFits:CGSizeMake(width, 0)].height;
 }
 
-- (CGFloat)paddingToInspectorSides;
-{
-    // Explano-text should be indented relative to the inset of other slices
-    return [super paddingToInspectorSides] + 6.0f;
-}
-
 #pragma mark - UIViewController subclass
 
 - (void)loadView;
@@ -81,7 +84,6 @@ RCS_ID("$Id$");
     label.lineBreakMode = NSLineBreakByWordWrapping;
     
     self.view = label;
-    [label release];
     
     [self sizeChanged];
 }

@@ -7,36 +7,36 @@
 
 #import "OUIServerAccountSetupViewController.h"
 
+#import <OmniDAV/ODAVErrors.h> // For OFSShouldOfferToReportError()
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
-#import <OmniFileStore/OFSURL.h>
-#import <OmniFileStore/Errors.h> // For OFSShouldOfferToReportError()
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 #import <OmniFoundation/NSRegularExpression-OFExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFCredentials.h>
 #import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIAppController.h>
-#import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIEditableLabeledTableViewCell.h>
 #import <OmniUI/OUIEditableLabeledValueCell.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUI/OUIAppearance.h>
 
 #import "OUIServerAccountValidationViewController.h"
 
 RCS_ID("$Id$")
 
+static const CGFloat TableViewIndent = 15;
+
 @interface OUIServerAccountSetupViewControllerSectionLabel : UILabel
 @end
 
 @implementation OUIServerAccountSetupViewControllerSectionLabel
-const CGFloat OUIServerAccountSetupViewControllerSectionLabelIndent = 32;    // default grouped, table row indent
-// it would be more convenient to use -textRectForBounds:limitedToNumberOfLines: but that is not getting called
 - (void)drawTextInRect:(CGRect)rect;
 {
-    rect.origin.x += 2*OUIServerAccountSetupViewControllerSectionLabelIndent;
-    rect.size.width -= 3*OUIServerAccountSetupViewControllerSectionLabelIndent;
+    // Would be less lame to make containing UIView with a label inset from the edges so that UITableView could set the frame of our view as it wishes w/o this hack.
+    rect.origin.x += TableViewIndent;
+    rect.size.width -= TableViewIndent;
     
     [super drawTextInRect:rect];
 }
@@ -230,7 +230,7 @@ typedef enum {
             [self.navigationController popToViewController:self animated:YES];
             
             if (![errorOrNil causedByUserCancelling]) {
-                [[OUIDocumentAppController controller] presentSyncError:errorOrNil inNavigationController:self.navigationController retryBlock:NULL];
+                [[OUIDocumentAppController controller] presentSyncError:errorOrNil inViewController:self.navigationController retryBlock:NULL];
             }
         } else
             [self finishWithError:errorOrNil];
@@ -247,8 +247,8 @@ typedef enum {
     _tableView.delegate = self;
     
     _tableView.scrollEnabled = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone;
-    _tableView.backgroundColor = [UIColor clearColor];
-    _tableView.backgroundView = nil;
+//    _tableView.backgroundColor = [UIColor clearColor];
+//    _tableView.backgroundView = nil;
 
     self.view = _tableView;
 }
@@ -264,7 +264,7 @@ typedef enum {
     }
     
     NSString *syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Connect", @"OmniUIDocument", OMNI_BUNDLE, @"Account setup toolbar button title to save account settings");
-    UIBarButtonItem *syncBarButtonItem = [[OUIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(saveSettingsAndSync:)];
+    UIBarButtonItem *syncBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(saveSettingsAndSync:)];
     self.navigationItem.rightBarButtonItem = syncBarButtonItem;
     
     self.navigationItem.title = _accountType.setUpAccountTitle;
@@ -279,23 +279,26 @@ typedef enum {
     OBFinishPortingLater("This isn't reliable -- it works in the WebDAV case, but not OSS, for whatever reason (likely because our UITableView isn't in the window yet");
     [_tableView layoutIfNeeded];
     
-    if (_accountType.requiresServerURL && [NSString isEmptyString:self.location])
-        [CELL_AT(ServerAccountAddressSection, 0).editableValueCell.valueField becomeFirstResponder];
-    else if (_accountType.requiresUsername && [NSString isEmptyString:self.accountName])
-        [CELL_AT(ServerAccountCredentialsSection, ServerAccountCredentialsUsernameRow).editableValueCell.valueField becomeFirstResponder];
-    else if (_accountType.requiresPassword && [NSString isEmptyString:self.password])
-        [CELL_AT(ServerAccountCredentialsSection, ServerAccountCredentialsPasswordRow).editableValueCell.valueField becomeFirstResponder];
-
 #ifdef DEBUG_bungi
     // Speedy account creation
     if (_account == nil) {
-        CELL_AT(ServerAccountAddressSection, 0).editableValueCell.valueField.text = @"https://crispy.local:8001/test";
+        CELL_AT(ServerAccountAddressSection, 0).editableValueCell.valueField.text = @"https://crispix.local:8001/test";
         CELL_AT(ServerAccountCredentialsSection, ServerAccountCredentialsUsernameRow).editableValueCell.valueField.text = @"test";
         CELL_AT(ServerAccountCredentialsSection, ServerAccountCredentialsPasswordRow).editableValueCell.valueField.text = @"password";
     }
 #endif
 
     [self _validateSignInButton];
+}
+
+- (void)viewDidAppear:(BOOL)animated;
+{
+    if (_accountType.requiresServerURL && [NSString isEmptyString:self.location])
+        [CELL_AT(ServerAccountAddressSection, 0).editableValueCell.valueField becomeFirstResponder];
+    else if (_accountType.requiresUsername && [NSString isEmptyString:self.accountName])
+        [CELL_AT(ServerAccountCredentialsSection, ServerAccountCredentialsUsernameRow).editableValueCell.valueField becomeFirstResponder];
+    else if (_accountType.requiresPassword && [NSString isEmptyString:self.password])
+        [CELL_AT(ServerAccountCredentialsSection, ServerAccountCredentialsPasswordRow).editableValueCell.valueField becomeFirstResponder];
 }
 
 - (BOOL)shouldAutorotate;
@@ -356,7 +359,7 @@ typedef enum {
         if (!cell) {
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:accountTypeIdentifier];
             cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-            cell.textLabel.font = [OUIEditableLabeledValueCell labelFontForStyle:OUILabeledValueCellStyleDefault];
+            cell.textLabel.font = [OUIEditableLabeledValueCell labelFont];
         }
 
         switch (indexPath.row) {
@@ -386,7 +389,7 @@ typedef enum {
     if (cell == nil) {
         cell = [[OUIEditableLabeledTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:nil];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
-        
+
         OUIEditableLabeledValueCell *contents = cell.editableValueCell;
         contents.valueField.autocorrectionType = UITextAutocorrectionTypeNo;
         contents.valueField.autocapitalizationType = UITextAutocapitalizationTypeNone;
@@ -403,16 +406,18 @@ typedef enum {
     NSString *localizedNicknameLabelString = NSLocalizedStringFromTableInBundle(@"Nickname", @"OmniUIDocument", OMNI_BUNDLE, @"Server Account Setup label: nickname");
     NSString *localizedUsernameLabelString = NSLocalizedStringFromTableInBundle(@"Account Name", @"OmniUIDocument", OMNI_BUNDLE, @"Server Account Setup label: account name");
     NSString *localizedPasswordLabelString = NSLocalizedStringFromTableInBundle(@"Password", @"OmniUIDocument", OMNI_BUNDLE, @"Server Account Setup label: password");
-    UIFont *font = [OUIEditableLabeledValueCell labelFontForStyle:contents.style];
+    
+    NSDictionary *attributes = @{NSFontAttributeName: [OUIEditableLabeledValueCell labelFont]};
 
     static CGFloat minWidth = 0.0f;
 
     if (minWidth == 0.0f) {
-        CGSize locationLabelSize = [localizedLocationLabelString sizeWithFont:font];
-        CGSize usernameLabelSize = [localizedUsernameLabelString sizeWithFont:font];
-        CGSize passwordLabelSize = [localizedPasswordLabelString sizeWithFont:font];
-        CGSize nicknameLabelSize = [localizedNicknameLabelString sizeWithFont:font];
-        minWidth = MAX(locationLabelSize.width, MAX(usernameLabelSize.width, MAX(passwordLabelSize.width, nicknameLabelSize.width)));
+        // Lame... should really use the UITextField's width, not NSStringDrawing
+        CGSize locationLabelSize = [localizedLocationLabelString sizeWithAttributes:attributes];
+        CGSize usernameLabelSize = [localizedUsernameLabelString sizeWithAttributes:attributes];
+        CGSize passwordLabelSize = [localizedPasswordLabelString sizeWithAttributes:attributes];
+        CGSize nicknameLabelSize = [localizedNicknameLabelString sizeWithAttributes:attributes];
+        minWidth = ceil(4 + MAX(locationLabelSize.width, MAX(usernameLabelSize.width, MAX(passwordLabelSize.width, nicknameLabelSize.width))));
     }
 
     switch (section) {
@@ -484,7 +489,7 @@ typedef enum {
 
 static const CGFloat OUIOmniSyncServerSetupHeaderHeight = 44;
 static const CGFloat OUIServerAccountSetupViewControllerHeaderHeight = 40;
-static const CGFloat OUIServerAccountSendSettingsFooterHeight = 140;
+static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
 {
@@ -497,19 +502,19 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 140;
         }];
         
         // Account Info Button
-        _accountInfoButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        _accountInfoButton.frame = (CGRect){
-            .origin.x = 30,
-            .origin.y = OUIOmniSyncServerSetupHeaderHeight - 44 /* my height */,
-            .size.width = (tableView.frame.size.width - 60),
-            .size.height = 44
-        };
-        _accountInfoButton.titleLabel.font = [UIFont boldSystemFontOfSize:17];
-        
+        _accountInfoButton = [UIButton buttonWithType:UIButtonTypeSystem];
+
+        _accountInfoButton.titleLabel.font = [UIFont systemFontOfSize:17];
         [_accountInfoButton addTarget:self action:@selector(accountInfoButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
         [_accountInfoButton setTitle:NSLocalizedStringFromTableInBundle(@"Sign Up For a New Account", @"OmniUIDocument", OMNI_BUNDLE, @"Omni Sync Server sign up button title")
                             forState:UIControlStateNormal];
-        [_accountInfoButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [_accountInfoButton sizeToFit];
+        
+        CGRect frame = _accountInfoButton.frame;
+        frame.origin.x = TableViewIndent;
+        frame.origin.y = OUIOmniSyncServerSetupHeaderHeight - 44;
+        _accountInfoButton.frame = frame;
+        
         [headerView addSubview:_accountInfoButton];
 
 #if 0
@@ -528,7 +533,7 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 140;
     }
 
     if (section == ServerAccountAddressSection && _accountType.requiresServerURL) {
-        UILabel *header = [self _sectionLabelWithFrame:CGRectMake(150, 0, tableView.bounds.size.width-150, OUIServerAccountSetupViewControllerHeaderHeight)];
+        UILabel *header = [self _sectionLabelWithFrame:CGRectMake(TableViewIndent, 0, tableView.bounds.size.width - TableViewIndent, OUIServerAccountSetupViewControllerHeaderHeight)];
         header.text = NSLocalizedStringFromTableInBundle(@"Enter the location of your WebDAV space.", @"OmniUIDocument", OMNI_BUNDLE, @"webdav help");
         return header;
     }
@@ -584,20 +589,20 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 140;
             OFXServerAccountRegistry *serverAccountRegistry = [OFXServerAccountRegistry defaultAccountRegistry];
             BOOL shouldEnableSettingsButton = [serverAccountRegistry.validCloudSyncAccounts containsObject:self.account] || [serverAccountRegistry.validImportExportAccounts containsObject:self.account];
             
-            UIButton *settingsButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-            settingsButton.frame = (CGRect){
-                .origin.x = 30,
-                .origin.y = OUIServerAccountSendSettingsFooterHeight - 44 /* my height */,
-                .size.width = (tableView.frame.size.width - 60),
-                .size.height = 44
-            };
-            settingsButton.titleLabel.font = [UIFont boldSystemFontOfSize:17];
+            UIButton *settingsButton = [UIButton buttonWithType:UIButtonTypeSystem];
+            settingsButton.titleLabel.font = [UIFont systemFontOfSize:17];
             settingsButton.enabled = shouldEnableSettingsButton;
             
             [settingsButton addTarget:self action:@selector(sendSettingsButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
             [settingsButton setTitle:NSLocalizedStringFromTableInBundle(@"Send Settings via Email", @"OmniUIDocument", OMNI_BUNDLE, @"Omni Sync Server send settings button title")
                                 forState:UIControlStateNormal];
-            [settingsButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+            [settingsButton sizeToFit];
+            
+            CGRect frame = settingsButton.frame;
+            frame.origin.x = TableViewIndent;
+            frame.origin.y = OUIServerAccountSendSettingsFooterHeight - 44;
+            settingsButton.frame = frame;
+            
             [footerView addSubview:settingsButton];
         }
         
@@ -663,7 +668,7 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 140;
 
 - (void)editableLabeledValueCellTextDidChange:(OUIEditableLabeledValueCell *)cell;
 {
-    UITableViewCell *tableCell = (UITableViewCell *)cell.superview.superview;
+    UITableViewCell *tableCell = [cell containingTableViewCell];
     NSIndexPath *indexPath = [_tableView indexPathForCell:tableCell];
     if (cell.value)
         [_cachedTextValues setObject:cell.value forKey:indexPath];
@@ -712,6 +717,7 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 140;
         // Validate Account 'button'
         [_accountInfoButton setTitle:hasUsername ? NSLocalizedStringFromTableInBundle(@"Account Info", @"OmniUIDocument", OMNI_BUNDLE, @"Omni Sync Server account info button title") : NSLocalizedStringFromTableInBundle(@"Sign Up For a New Account", @"OmniUIDocument", OMNI_BUNDLE, @"Omni Sync Server sign up button title")
                             forState:UIControlStateNormal];
+        [_accountInfoButton sizeToFit];
     }
 }
 
@@ -722,9 +728,7 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 140;
     header.font = [UIFont systemFontOfSize:14];
     header.backgroundColor = [UIColor clearColor];
     header.opaque = NO;
-    header.textColor = [UIColor colorWithRed:0.196 green:0.224 blue:0.29 alpha:1];
-    header.shadowColor = [UIColor colorWithWhite:1 alpha:.5];
-    header.shadowOffset = CGSizeMake(0, 1);
+    header.textColor = [UIColor omniNeutralDeemphasizedColor];
     header.numberOfLines = 0 /* no limit */;
     
     return header;
@@ -738,7 +742,7 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 140;
 - (NSString *)_accountName;
 {
     NSString *currentNickname = TEXT_AT(ServerAccountDescriptionSection, 0);
-    if (currentNickname != nil)
+    if (![NSString isEmptyString:currentNickname])
         return currentNickname;
     else
         return [self _suggestedNickname];
@@ -754,8 +758,12 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 140;
         [contents setObject:TEXT_AT(ServerAccountAddressSection, 0) forKey:@"location" defaultObject:nil];
     [contents setObject:TEXT_AT(ServerAccountDescriptionSection, 0) forKey:@"nickname" defaultObject:nil];
 
-    NSString *error;
-    NSData *configData = [NSPropertyListSerialization dataFromPropertyList:contents format:NSPropertyListXMLFormat_v1_0 errorDescription:&error];
+    NSError *error;
+    NSData *configData = [NSPropertyListSerialization dataWithPropertyList:contents format:NSPropertyListXMLFormat_v1_0 options:0 error:&error];
+    if (!configData) {
+        OUI_PRESENT_ALERT(error);
+        return;
+    }
     
     MFMailComposeViewController *composer = [[MFMailComposeViewController alloc] init];
     composer.mailComposeDelegate = self;

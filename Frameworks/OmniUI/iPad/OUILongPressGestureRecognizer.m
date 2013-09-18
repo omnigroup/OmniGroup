@@ -80,7 +80,8 @@ RCS_ID("$Id$")
         _movementTimer = nil;
     }
     
-    if (self.state == UIGestureRecognizerStateBegan)
+    UIGestureRecognizerState state = self.state;
+    if (state == UIGestureRecognizerStateBegan || state == UIGestureRecognizerStateChanged)
         self.state = UIGestureRecognizerStateEnded;
     else
         self.state = UIGestureRecognizerStateCancelled;

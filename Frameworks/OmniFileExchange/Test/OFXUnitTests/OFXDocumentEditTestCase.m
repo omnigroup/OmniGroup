@@ -10,7 +10,7 @@
 #import "OFXTrace.h"
 
 #import <OmniFoundation/OFNull.h>
-#import <OmniFileStore/Errors.h>
+#import <OmniDAV/ODAVErrors.h>
 
 RCS_ID("$Id$")
 
@@ -201,7 +201,7 @@ RCS_ID("$Id$")
     // Download the first version and then go offline
     OFXFileMetadata *currentMetadataB = [self waitForFileMetadata:self.agentB where:nil];
     [self downloadWithMetadata:currentMetadataB agent:self.agentB];
-    self.agentB.syncingEnabled = NO;
+    self.agentB.syncSchedule = OFXSyncScheduleNone;
 
     // Update the file a couple times to step the version counter past what agentB knows about.
     for (NSUInteger uploadIndex = 0; uploadIndex < 3; uploadIndex++) {
@@ -212,7 +212,7 @@ RCS_ID("$Id$")
     }
     
     // Go back online and wait for the download to update to the latest version
-    self.agentB.syncingEnabled = YES;
+    self.agentB.syncSchedule = OFXSyncScheduleAutomatic;
     [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata) {
         return metadata.downloaded && [metadata.editIdentifier isEqual:currentMetadataA.editIdentifier];
     }];
@@ -375,7 +375,7 @@ RCS_ID("$Id$")
     OFXAgent *agentB = self.agentB;
     [self downloadFileWithIdentifier:originalMetadata.fileIdentifier untilPercentage:0.1 agent:agentB];
 
-    [NSError suppressingLogsWithUnderlyingDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_NOT_FOUND action:^{
+    [NSError suppressingLogsWithUnderlyingDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND action:^{
         // Replace the file that is downloading
         OFXAgent *agentA = self.agentA;
         OFXServerAccount *accountA = [agentA.accountRegistry.validCloudSyncAccounts lastObject];
@@ -474,8 +474,8 @@ RCS_ID("$Id$")
         return metadata.downloaded;
     }];
     
-    agentA.syncingEnabled = NO;
-    agentB.syncingEnabled = NO;
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
     
     // Move on A
     [self movePath:@"test.package" toPath:@"test-A.package" ofAccount:[self singleAccountInAgent:agentA]];
@@ -483,8 +483,8 @@ RCS_ID("$Id$")
     // Add a new file on B
     [self copyFixtureNamed:@"test2.package" toPath:@"test-B.package" ofAccount:[self singleAccountInAgent:agentB]];
     
-    agentA.syncingEnabled = YES;
-    agentB.syncingEnabled = YES;
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
     
     // Make sure the changes are acknowledged
     [self waitForChangeToMetadata:originalMetadata inAgent:agentA];

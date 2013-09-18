@@ -7,11 +7,11 @@
 
 #import "OFXFileSnapshotDownloadTransfer.h"
 
-#import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmnifileStore/OFSAsynchronousOperation.h>
+#import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDAV/ODAVOperation.h>
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 
+#import "OFXConnection.h"
 #import "OFXDownloadFileSnapshot.h"
 #import "OFXFileState.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
@@ -26,7 +26,7 @@ RCS_ID("$Id$")
     
     OFXDownloadFileSnapshot *_downloadingSnapshot;
     NSMutableDictionary *_readOperationToLocalFileURL;
-    id <OFSAsynchronousOperation> _runningOperation;
+    ODAVOperation *_runningOperation;
     NSMutableData *_resultData; // Would need a separate map for op->results if we run more than one at a time.
     
     BOOL _cancelled;
@@ -36,12 +36,12 @@ RCS_ID("$Id$")
     long long _totalBytesRead;
 }
 
-- initWithFileManager:(OFSDAVFileManager *)fileManager remoteSnapshotURL:(NSURL *)remoteSnapshotURL localTemporaryDocumentContentsURL:(NSURL *)localTemporaryDocumentContentsURL currentSnapshot:(OFXFileSnapshot *)currentSnapshot;
+- initWithConnection:(OFXConnection *)connection remoteSnapshotURL:(NSURL *)remoteSnapshotURL localTemporaryDocumentContentsURL:(NSURL *)localTemporaryDocumentContentsURL currentSnapshot:(OFXFileSnapshot *)currentSnapshot;
 {
     OBPRECONDITION(currentSnapshot, "should at least be a metadata stub");
     OBPRECONDITION(remoteSnapshotURL);
     
-    if (!(self = [super initWithFileManager:fileManager]))
+    if (!(self = [super initWithConnection:connection]))
         return nil;
     
     _currentSnapshot = currentSnapshot;
@@ -56,7 +56,7 @@ RCS_ID("$Id$")
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
 
-    OFSDAVFileManager *fileManager = self.fileManager;
+    OFXConnection *connection = self.connection;
     
     __autoreleasing NSError *error;
     
@@ -70,7 +70,7 @@ RCS_ID("$Id$")
     if (!temporaryLocalSnapshotURL)
         OFXFileSnapshotTransferReturnWithError(error);
     
-    if (![OFXDownloadFileSnapshot writeSnapshotToTemporaryURL:temporaryLocalSnapshotURL byFetchingMetadataOfRemoteSnapshotAtURL:_remoteSnapshotURL fileIdentifier:NULL fileManager:fileManager error:&error])
+    if (![OFXDownloadFileSnapshot writeSnapshotToTemporaryURL:temporaryLocalSnapshotURL byFetchingMetadataOfRemoteSnapshotAtURL:_remoteSnapshotURL fileIdentifier:NULL connection:connection error:&error])
         OFXFileSnapshotTransferReturnWithError(error);
     
     _downloadingSnapshot = [[OFXDownloadFileSnapshot alloc] initWithExistingLocalSnapshotURL:temporaryLocalSnapshotURL error:&error];
@@ -105,10 +105,10 @@ RCS_ID("$Id$")
             DEBUG_TRANSFER(2, @"  Reading %@ -> %@", remoteFileURL, fileURL);
             
             // No need to use an ETag here since the data is SHA-1 indexed.
-            id <OFSAsynchronousOperation> readOperation = [fileManager asynchronousReadContentsOfURL:remoteFileURL];
+            ODAVOperation *readOperation = [connection asynchronousGetContentsOfURL:remoteFileURL];
             
             __weak OFXFileSnapshotDownloadTransfer *weakSelf = self;
-            readOperation.didFinish = ^(id <OFSAsynchronousOperation> op, NSError *errorOrNil){
+            readOperation.didFinish = ^(ODAVOperation *op, NSError *errorOrNil){
                 OFXFileSnapshotDownloadTransfer *strongSelf = weakSelf;
                 if (!strongSelf)
                     return; // Operation cancelled.
@@ -117,7 +117,7 @@ RCS_ID("$Id$")
                 }];
             };
             
-            readOperation.didReceiveData = ^(id <OFSAsynchronousOperation> op, NSData *data){
+            readOperation.didReceiveData = ^(ODAVOperation *op, NSData *data){
                 OFXFileSnapshotDownloadTransfer *strongSelf = weakSelf;
                 if (!strongSelf)
                     return; // Operation cancelled.
@@ -156,7 +156,7 @@ RCS_ID("$Id$")
     // We *might* get more delegate messages, or we might not. In particular we might get -fileManager:operationDidFinish:withError:, which could call -finished:...
     _cancelled = YES;
     [self _cleanupDownloadingSnapshot];
-    [_runningOperation stopOperation];
+    [_runningOperation cancel];
 }
 
 - (void)invalidate;
@@ -185,7 +185,7 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)_readOperation:(id <OFSAsynchronousOperation>)operation didReceiveData:(NSData *)data;
+- (void)_readOperation:(ODAVOperation *)operation didReceiveData:(NSData *)data;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
     OBPRECONDITION(operation == _runningOperation);
@@ -202,7 +202,7 @@ RCS_ID("$Id$")
     [self updatePercentCompleted:CLAMP(percentComplete, 0.0, 1.0)];
 }
 
-- (void)_readOperation:(id <OFSAsynchronousOperation>)operation finishedWithError:(NSError *)errorOrNil;
+- (void)_readOperation:(ODAVOperation *)operation finishedWithError:(NSError *)errorOrNil;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
     OBPRECONDITION(operation == _runningOperation);
@@ -249,7 +249,7 @@ RCS_ID("$Id$")
     _runningOperation = [[_readOperationToLocalFileURL allKeys] lastObject];
     if (_runningOperation) {
         _resultData = [NSMutableData new];
-        [_runningOperation startOperationOnQueue:self.transferOperationQueue];
+        [_runningOperation startWithCallbackQueue:self.transferOperationQueue];
         return;
     }
     

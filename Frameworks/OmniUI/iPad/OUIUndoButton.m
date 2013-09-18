@@ -14,7 +14,7 @@ RCS_ID("$Id$");
 static id _commonInit(OUIUndoButton *self)
 {
     [self setTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title") forState:UIControlStateNormal];
-    
+
     return self;
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,11 +7,12 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
+
 #import <OmniUI/OUIInspectorDelegate.h>
 #import <OmniUI/OUIInspectorUpdateReason.h>
+#import <OmniAppKit/OATextAttributes.h>
 #import <CoreGraphics/CGBase.h>
-#import <CoreText/CTStringAttributes.h>
 
 @class OUIStackedSlicesInspectorPane, OUIInspectorPane, OUIInspectorSlice, OUIInspectorPopoverController, OUIBarButtonItem;
 @class UIBarButtonItem, UINavigationController, UIPopoverController;
@@ -24,14 +25,16 @@ extern NSString * const OUIInspectorDidPresentNotification;
 extern NSString * const OUIInspectorWillBeginChangingInspectedObjectsNotification;
 extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
-@interface OUIInspector : OFObject
+@interface OUIInspector : NSObject
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 
++ (UIColor *)backgroundColor;
 + (UIColor *)disabledLabelTextColor;
 + (UIColor *)labelTextColor;
 + (UIFont *)labelFont;
 + (UIColor *)valueTextColor;
++ (UIColor *)indirectValueTextColor; // This is the color for Value text that isn't actionable in-place. For instance, a value on a cell with a chevron for drilling down to a detail view.
 
 // Defaults to making a OUIStackedSlicesInspectorPane if mainPane is nil (or if -init is called).
 - initWithMainPane:(OUIInspectorPane *)mainPane height:(CGFloat)height;
@@ -40,10 +43,10 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 @property(readonly,nonatomic) CGFloat height;
 @property(assign,nonatomic) BOOL alwaysShowToolbar;
 
-@property(assign,nonatomic) id <OUIInspectorDelegate> delegate;
+@property(weak,nonatomic) id <OUIInspectorDelegate> delegate;
 
 // this is exposed so that OG-iPad can swap to the image picker. It probably shouldn't be used for much, if anything else.
-@property(readwrite,retain,nonatomic) UINavigationController *navigationController;
+@property(readwrite,strong,nonatomic) UINavigationController *navigationController;
 
 - (BOOL)isEmbededInOtherNavigationController; // Subclass to return YES if you intend to embed the inspector into a your own navigation controller (you might not yet have the navigation controller, though).
 - (UINavigationController *)embeddingNavigationController; // Needed when pushing detail panes with -isEmbededInOtherNavigationController.
@@ -58,9 +61,12 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 - (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 
+- (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects animated:(BOOL)animated withPushTransition:(id <UIViewControllerAnimatedTransitioning>)pushTransition popTransition:(id <UIViewControllerAnimatedTransitioning>)popTransition;
 - (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects animated:(BOOL)animated;
 - (void)pushPane:(OUIInspectorPane *)pane inspectingObjects:(NSArray *)inspectedObjects;
 - (void)pushPane:(OUIInspectorPane *)pane; // clones the inspected objects of the current top pane
+- (void)popToPane:(OUIInspectorPane *)pane;
+
 @property(readonly,nonatomic) OUIInspectorPane *topVisiblePane;
 
 - (void)willBeginChangingInspectedObjects; // start of ui action
@@ -89,18 +95,18 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 - (CGFloat)fontSizeForInspectorSlice:(OUIInspectorSlice *)inspector;
 - (void)setFontSize:(CGFloat)fontSize fromInspectorSlice:(OUIInspectorSlice *)inspector;
 
-- (CTUnderlineStyle)underlineStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
-- (void)setUnderlineStyle:(CTUnderlineStyle)underlineStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
+- (OAUnderlineStyle)underlineStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
+- (void)setUnderlineStyle:(OAUnderlineStyle)underlineStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
 
-- (CTUnderlineStyle)strikethroughStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
-- (void)setStrikethroughStyle:(CTUnderlineStyle)strikethroughStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
+- (OAUnderlineStyle)strikethroughStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
+- (void)setStrikethroughStyle:(OAUnderlineStyle)strikethroughStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
 
 @end
 
-@class OAParagraphStyle;
+@class NSParagraphStyle;
 @protocol OUIParagraphInspection <NSObject>
-- (OAParagraphStyle *)paragraphStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
-- (void)setParagraphStyle:(OAParagraphStyle *)paragraphStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
+- (NSParagraphStyle *)paragraphStyleForInspectorSlice:(OUIInspectorSlice *)inspector;
+- (void)setParagraphStyle:(NSParagraphStyle *)paragraphStyle fromInspectorSlice:(OUIInspectorSlice *)inspector;
 @end
 
 

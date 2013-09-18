@@ -7,9 +7,9 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
 
-@interface OUIInspectorSelectionValue : OFObject
+@interface OUIInspectorSelectionValue : NSObject
 
 - initWithValue:(id)value;
 - initWithValues:(NSArray *)values;

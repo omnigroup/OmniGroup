@@ -7,25 +7,25 @@
 
 #import "OUIWebDAVSyncListController.h"
 
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/OFSFileManager.h>
-#import <OmniFileStore/OFSFileManagerDelegate.h>
-#import <OmniFileStore/OFSURL.h>
+#import <OmniDAV/ODAVConnection.h>
+#import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileExchange/OFXServerAccount.h>
-#import <OmniUI/OUIAppController.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFCredentials.h>
+#import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUICertificateTrustAlert.h>
 
 #import "OUIWebDAVSyncDownloader.h"
 
 RCS_ID("$Id$");
 
-@interface OUIWebDAVSyncListController () <OFSFileManagerDelegate>
+@interface OUIWebDAVSyncListController () // <OFSFileManagerDelegate>
 @end
 
 @implementation OUIWebDAVSyncListController
 {
-    NSURLCredential *_credentials;
-    OFSFileManager *_fileManager;
+    ODAVConnection *_connection;
+    NSURLAuthenticationChallenge *_certificateChallenge;
 }
 
 - initWithServerAccount:(OFXServerAccount *)serverAccount exporting:(BOOL)exporting error:(NSError **)outError;
@@ -33,29 +33,36 @@ RCS_ID("$Id$");
     if (!(self = [super initWithServerAccount:serverAccount exporting:exporting error:outError]))
         return nil;
     
-    _credentials = OFReadCredentialsForServiceIdentifier(serverAccount.credentialServiceIdentifier, outError);
-    if (!_credentials)
+    NSURLCredential *credentials = OFReadCredentialsForServiceIdentifier(serverAccount.credentialServiceIdentifier, outError);
+    if (!credentials)
         return nil;
     
-    _fileManager = [[OFSFileManager alloc] initWithBaseURL:serverAccount.remoteBaseURL delegate:self error:outError];
-    if (!_fileManager)
+    self.navigationItem.title = serverAccount.displayName;
+    ODAVConnectionConfiguration *configuration = [[ODAVConnectionConfiguration alloc] init];
+    configuration.allowsCellularAccess = YES; // Import/export is a specific user action, so let go through.
+    
+    _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration];
+    
+    __weak OUIWebDAVSyncListController *weakSelf = self;
+    _connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
+        OUIWebDAVSyncListController *strongSelf = weakSelf;
+        if (strongSelf)
+            strongSelf->_certificateChallenge = challenge;
+    };
+    _connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
+        if ([challenge previousFailureCount] < 2)
+            return credentials;
         return nil;
+    };
     
     return self;
 }
 
-
-- (void)dealloc;
-{
-    [_fileManager invalidate];
-}
-
-#pragma mark -
-#pragma mark API
+#pragma mark - API
 
 - (void)addDownloaderWithURL:(NSURL *)exportURL toCell:(UITableViewCell *)cell;
 {
-    self.downloader = [[OUIWebDAVSyncDownloader alloc] initWithFileManager:_fileManager];
+    self.downloader = [[OUIWebDAVSyncDownloader alloc] initWithConnection:_connection];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadFinished:) name:OUISyncDownloadFinishedNotification object:self.downloader];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadCanceled:) name:OUISyncDownloadCanceledNotification object:self.downloader];
@@ -71,31 +78,33 @@ RCS_ID("$Id$");
         
     self.navigationItem.rightBarButtonItem.enabled = NO; /* 'Copy' button */
     
-    NSURL *directoryURL = (self.address != nil) ? self.address : [_fileManager baseURL];
+    NSURL *directoryURL = self.address ?: self.serverAccount.remoteBaseURL;
     NSURL *fileURL = nil;
+    
+    OBFinishPortingLater("Why are we doing this instead of using the URL path utilities?");
     // gotta use the CF version, beacuse it allows us to specify extra character's to escape, in this case '?'
     CFStringRef tempString = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef )self.exportFileWrapper.preferredFilename, NULL, CFSTR("?"), kCFStringEncodingUTF8);
-    fileURL = OFSURLRelativeToDirectoryURL(directoryURL, (__bridge NSString *)tempString);
+    fileURL = OFURLRelativeToDirectoryURL(directoryURL, (__bridge NSString *)tempString);
     CFRelease(tempString);
-    __autoreleasing NSError *error = nil;
     
-    OBFinishPortingLater("Avoid synchronous API here");
-    OFSFileInfo *fileCheck = [_fileManager fileInfoAtURL:fileURL error:&error];
-    if (!fileCheck) {
-        OUI_PRESENT_ALERT(error);
-        return;
-    }
-    
-    // to account for any redirecty goodness that we might've enjoyed.
-    fileURL = [fileCheck originalURL];
-    
-    if ([fileCheck exists]) {
-        [self _displayDuplicateFileAlertForFile:fileURL];
+    [_connection fileInfoAtURL:fileURL ETag:nil completionHandler:^(ODAVSingleFileInfoResult *result, NSError *error) {
+        if (!self.parentViewController)
+            return; // Cancelled
         
-        return;
-    }
-    
-    [self _exportToURL:fileURL];
+        if (!result) {
+            OUI_PRESENT_ALERT(error);
+            return;
+        }
+        
+        ODAVFileInfo *fileInfo = result.fileInfo;
+        NSURL *redirectedURL = fileInfo.originalURL;
+        if (fileInfo.exists) {
+            [self _displayDuplicateFileAlertForFile:redirectedURL];
+            return;
+        }
+        
+        [self _exportToURL:redirectedURL];
+    }];
 }
 
 #pragma mark -
@@ -107,24 +116,56 @@ RCS_ID("$Id$");
     
     OBFinishPortingLater("Test changing credentials on another device"); // Used to validate the connection here; what if we add the account, change the password elsewhere and then try to use the account here?
         
-    NSURL *url = (self.address != nil) ? self.address : [_fileManager baseURL];
-    __autoreleasing NSError *error = nil;
-    // TODO: would be nice if -directoryContentsAtURL was asynchronous
-    NSArray *fileInfos = [_fileManager directoryContentsAtURL:url havingExtension:nil options:(OFSDirectoryEnumerationSkipsSubdirectoryDescendants | OFSDirectoryEnumerationSkipsHiddenFiles) error:&error];
-    if (!fileInfos) {
-        OUI_PRESENT_ALERT(error);
-        return;
-    }
+    NSURL *url = self.address ?: self.serverAccount.remoteBaseURL;
     
-    [self setFiles:[fileInfos sortedArrayUsingSelector:@selector(compareByName:)]];
-    [self _stopConnectingIndicator];
+    [_connection directoryContentsAtURL:url withETag:nil completionHandler:^(ODAVMultipleFileInfoResult *properties, NSError *errorOrNil) {
+        if (!self.parentViewController)
+            return; // Cancelled
+        
+        if (!properties) {
+            if (_certificateChallenge) {
+                NSURLAuthenticationChallenge *challenge = _certificateChallenge;
+                _certificateChallenge =  nil;
+                
+                OUICertificateTrustAlert *certAlert = [[OUICertificateTrustAlert alloc] initForChallenge:challenge];
+                certAlert.trustBlock = ^(OFCertificateTrustDuration trustDuration) {
+                    // Our superclass will reload its list of files when this happens, due to OFCertificateTrustUpdatedNotification being posted.
+                    OFAddTrustForChallenge(challenge, trustDuration);
+                };
+                certAlert.cancelBlock = ^{
+                    [self cancel:nil];
+                };
+                [certAlert show];
+            } else {
+                OUI_PRESENT_ALERT(errorOrNil);
+            }
+            return;
+        }
+        
+        NSArray *files = [properties.fileInfos select:^BOOL(ODAVFileInfo *fileInfo) {
+            return [fileInfo.name hasPrefix:@"."] == NO;
+        }];
+        
+        [self setFiles:[files sortedArrayUsingSelector:@selector(compareByName:)]];
+        [self _stopConnectingIndicator];
+    }];
 }
 
 - (void)_exportToNewPathGeneratedFromURL:(NSURL *)documentURL;
 {
-    NSURL *newURL = [_fileManager availableURL:documentURL];
-    OBASSERT(newURL);
-    [self _exportToURL:newURL];
+    [_connection directoryContentsAtURL:[documentURL URLByDeletingLastPathComponent] withETag:nil completionHandler:^(ODAVMultipleFileInfoResult *properties, NSError *errorOrNil) {
+        if (!self.parentViewController)
+            return; // Cancelled
+        
+        if (!properties) {
+            OUI_PRESENT_ALERT(errorOrNil);
+            return;
+        }
+            
+        NSURL *url = [ODAVFileInfo availableURL:documentURL avoidingFileInfos:properties.fileInfos];
+        OBASSERT(url);
+        [self _exportToURL:url];
+    }];
 }
 
 #pragma mark -
@@ -135,7 +176,7 @@ RCS_ID("$Id$");
     if (_isDownloading)
         return;
     
-    OFSFileInfo *fileInfo = [self.files objectAtIndex:indexPath.row];
+    ODAVFileInfo *fileInfo = [self.files objectAtIndex:indexPath.row];
     if (![self _canOpenFile:fileInfo] && [fileInfo isDirectory]) {
         __autoreleasing NSError *error = nil;
         OUIWebDAVSyncListController *subfolderController = [[OUIWebDAVSyncListController alloc] initWithServerAccount:self.serverAccount exporting:self.isExporting error:&error];
@@ -144,7 +185,7 @@ RCS_ID("$Id$");
             return;
         }
         subfolderController.title = fileInfo.name;
-        subfolderController.contentSizeForViewInPopover = self.contentSizeForViewInPopover;
+        subfolderController.preferredContentSize = self.preferredContentSize;
         subfolderController.address = fileInfo.originalURL;
         subfolderController.exportFileWrapper = self.exportFileWrapper;
         
@@ -152,7 +193,7 @@ RCS_ID("$Id$");
     } else {
         [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
         
-        self.downloader = [[OUIWebDAVSyncDownloader alloc] initWithFileManager:_fileManager];
+        self.downloader = [[OUIWebDAVSyncDownloader alloc] initWithConnection:_connection];
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadFinished:) name:OUISyncDownloadFinishedNotification object:self.downloader];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(downloadCanceled:) name:OUISyncDownloadCanceledNotification object:self.downloader];
@@ -162,20 +203,6 @@ RCS_ID("$Id$");
         _isDownloading = YES;
         [self.downloader download:fileInfo];
     }
-}
-
-#pragma mark - OFSFileManagerDelegate
-
-- (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    if ([challenge previousFailureCount] <= 2)
-        return _credentials;
-    return nil;
-}
-
-- (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    OBFinishPortingLater("Could get this if a server changes its certificate after we create & validate it");
 }
 
 @end

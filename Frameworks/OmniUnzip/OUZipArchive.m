@@ -22,7 +22,7 @@ RCS_ID("$Id$");
 
 + (BOOL)createZipFile:(NSString *)zipPath fromFilesAtPaths:(NSArray *)paths error:(NSError **)outError;
 {
-    OUZipArchive *zip = [[[OUZipArchive alloc] initWithPath:zipPath error:outError] autorelease];
+    OUZipArchive *zip = [[OUZipArchive alloc] initWithPath:zipPath error:outError];
     if (!zip) {
         OBASSERT(outError == NULL || *outError != nil);
         return NO;
@@ -36,7 +36,6 @@ RCS_ID("$Id$");
         if (![zipMember appendToZipArchive:zip fileNamePrefix:@"" error:&error]) {
             // Unable to add one of the files to the zip archive.  Just skipping it for now.
         }
-        [zipMember release];
     }
 
     return [zip close:outError];
@@ -44,7 +43,7 @@ RCS_ID("$Id$");
 
 + (BOOL)createZipFile:(NSString *)zipPath fromFileWrappers:(NSArray *)fileWrappers error:(NSError **)outError;
 {
-    OUZipArchive *zip = [[[OUZipArchive alloc] initWithPath:zipPath error:outError] autorelease];
+    OUZipArchive *zip = [[OUZipArchive alloc] initWithPath:zipPath error:outError];
     if (!zip) {
         OBASSERT(outError == NULL || *outError != nil);
         return NO;
@@ -57,7 +56,6 @@ RCS_ID("$Id$");
         if (![zipMember appendToZipArchive:zip fileNamePrefix:@"" error:&error]) {
             // Unable to add one of the files to the zip archive.  Just skipping it for now.
         }
-        [zipMember release];
     }
 
     return [zip close:outError];
@@ -76,7 +74,6 @@ RCS_ID("$Id$");
         NSString *reason = @"zipOpen returned NULL.";
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create zip file.", @"OmniUnzip", OMNI_BUNDLE, @"error reason");
         OmniUnzipError(outError, OmniUnzipUnableToCreateZipFile, description, reason);
-        [self release];
         return nil;
     }
     
@@ -92,9 +89,6 @@ RCS_ID("$Id$");
         if (![self close:&error])
             NSLog(@"Error closing zip file: %@", [error toPropertyList]);
     }
-    [_path release];
-    
-    [super dealloc];
 }
 
 static BOOL _zipError(id self, const char *func, int err, NSError **outError)

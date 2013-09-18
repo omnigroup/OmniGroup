@@ -10,6 +10,7 @@
 #import <OmniFileExchange/OFXAgent.h>
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXAccountActivity.h>
+#import <OmniFoundation/OFBackgroundActivity.h>
 
 RCS_ID("$Id$")
 
@@ -21,6 +22,10 @@ RCS_ID("$Id$")
 @implementation OFXAgentActivity
 {
     NSMutableDictionary *_accountUUIDToActivity;
+    
+    // Used to keep iOS apps running while background fetching is going on.
+    OFBackgroundActivity *_backgroundActivity;
+    NSTimer *_backgroundActivityFinishedTimer;
 }
 
 static unsigned AgentContext;
@@ -48,6 +53,9 @@ static unsigned AccountContext;
     [_accountUUIDToActivity enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXAccountActivity *accountActivity, BOOL *stop) {
         _stopObservingAccountActivity(self, accountActivity);
     }];
+    
+    [_backgroundActivityFinishedTimer invalidate];
+    [_backgroundActivity finished];
 }
 
 - (OFXAccountActivity *)activityForAccount:(OFXServerAccount *)account;
@@ -147,11 +155,36 @@ static void _stopObservingAccountActivity(OFXAgentActivity *self, OFXAccountActi
     if (_isActive != isActive) {
         self.isActive = isActive;
         DEBUG_ACTIVITY(1, "active:%d", self.isActive);
+        
+        // The goal here is to stay away for 3 seconds until after our last observed activity on any account (since we don't have a good notion of 'completion' for sync operations).
+
+        if (_isActive) {
+            [_backgroundActivityFinishedTimer invalidate];
+            _backgroundActivityFinishedTimer = nil;
+            if (!_backgroundActivity)
+                _backgroundActivity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniFileExchange.OFXAgentActivity"];
+        } else if (!_isActive && _backgroundActivity && !_backgroundActivityFinishedTimer) {
+            _backgroundActivityFinishedTimer = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(_finishBackgroundActivityTimerFired:) userInfo:nil repeats:NO];
+#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || (defined(MAC_OS_X_VERSION_10_9) && MAC_OS_X_VERSION_10_9 >= MAC_OS_X_VERSION_MIN_REQUIRED)
+            [_backgroundActivityFinishedTimer setTolerance:1];
+#endif
+        }
     }
     if (OFNOTEQUAL(_accountUUIDsWithErrors, accountUUIDsWithErrors)) {
         self.accountUUIDsWithErrors = accountUUIDsWithErrors;
         DEBUG_ACTIVITY(1, "uuids with errors:%@", [[self.accountUUIDsWithErrors allObjects] sortedArrayUsingSelector:@selector(compare:)]);
     }
+}
+
+- (void)_finishBackgroundActivityTimerFired:(NSTimer *)timer;
+{
+    OBPRECONDITION(timer == _backgroundActivityFinishedTimer);
+    OBPRECONDITION(_isActive == NO, "Timer should have been cancelled if new activity started");
+    
+    OFBackgroundActivity *activity = _backgroundActivity;
+    _backgroundActivity = nil;
+    
+    [activity finished];
 }
 
 @end

@@ -51,7 +51,6 @@ RCS_ID("$Id$");
     should([heap count] == 0);
     [heap removeAllObjects];
     should([heap count] == 0);
-    [heap release];
 }
 
 - (void)testHeapPermutations
@@ -72,33 +71,29 @@ RCS_ID("$Id$");
     };
 
     for (NSUInteger group = 0; groups[group].field > 0; group ++) {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
         OFHeap *heap = [[OFHeap alloc] init];
         should([heap count] == 0);
-
-        NSUInteger element = groups[group].generator;
-        for (NSUInteger elementCount = 0; elementCount < (groups[group].field-1); elementCount ++) {
-            should([heap count] == elementCount);
-            [heap addObject:[NSString stringWithFormat:@"%06lu in (%ld,%ld)", element, groups[group].field, groups[group].generator]];
-            element = (element * groups[group].generator ) % groups[group].field;
+        
+        @autoreleasepool {
+            NSUInteger element = groups[group].generator;
+            for (NSUInteger elementCount = 0; elementCount < (groups[group].field-1); elementCount ++) {
+                should([heap count] == elementCount);
+                [heap addObject:[NSString stringWithFormat:@"%06lu in (%ld,%ld)", element, groups[group].field, groups[group].generator]];
+                element = (element * groups[group].generator ) % groups[group].field;
+            }
         }
-
-        [pool drain];
 
         should([heap count] == (groups[group].field-1));
 
         for (NSUInteger elementCount = 1; elementCount < (groups[group].field); elementCount ++) {
-            pool = [[NSAutoreleasePool alloc] init];
+            @autoreleasepool {
+                NSString *str = [heap removeObject];
+                should([str unsignedLongValue] == elementCount);
+            }
 
-            NSString *str = [heap removeObject];
-            should([str unsignedLongValue] == elementCount);
-
-            [pool drain];
             should([heap count] == (groups[group].field - elementCount - 1));
         }
 
-        [heap release];
     }
 }
 
@@ -110,7 +105,6 @@ RCS_ID("$Id$");
     @autoreleasepool {
         OFHeapTestObject *object = [OFHeapTestObject new];
         [heap addObject:object];
-        [object release];
     }
     
     //NSLog(@"starting remove");
@@ -121,7 +115,6 @@ RCS_ID("$Id$");
     }
     //NSLog(@"finished remove");
     
-    [heap release];
 }
 
 @end

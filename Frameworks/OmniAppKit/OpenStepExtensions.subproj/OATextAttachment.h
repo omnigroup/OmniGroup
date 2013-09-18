@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,18 +7,21 @@
 //
 // $Id$
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#import <OmniFoundation/OFObject.h>
+#import <Availability.h>
 
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+// 14207119: TextKit: NSTextAttachment.h is not usable as a standalone import
+@class NSData;
+#import <UIKit/NSAttributedString.h>
+
+#import <UIKit/NSTextAttachment.h>
+
+// TextKit's NSTextAttachment only supports flat-files (14181271: TextKit: NSTextAttachment needs file wrapper support).
+// It also removes the notion of a cell which we might want to keep for now at least.
 @class NSFileWrapper;
 @protocol OATextAttachmentCell;
 
-@interface OATextAttachment : OFObject
-{
-@private
-    NSFileWrapper *_fileWrapper;
-    id <OATextAttachmentCell> _cell;
-}
+@interface OATextAttachment : NSTextAttachment
 
 - initWithFileWrapper:(NSFileWrapper *)fileWrapper;
 

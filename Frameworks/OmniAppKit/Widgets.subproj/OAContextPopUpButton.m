@@ -29,18 +29,38 @@ RCS_ID("$Id$");
     return gearImage;
 }
 
+- (void)_commonInit;
+{
+    gearItem = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
+    [gearItem setImage:[[self class] gearImage]];
+    
+    // First item is always the label
+    [[self menu] addItem:gearItem];
+    
+    [self setToolTip:OAContextControlToolTip()];
+}
+
+- (id)initWithCoder:(NSCoder *)aDecoder;
+{
+    if (!(self = [super initWithCoder:aDecoder]))
+        return nil;
+    
+    [self _commonInit];
+    
+    return self;
+}
+
+- (id)initWithFrame:(NSRect)frameRect;
+{
+    return [self initWithFrame:frameRect pullsDown:NO];
+}
+
 - (id)initWithFrame:(NSRect)buttonFrame pullsDown:(BOOL)flag;
 {
     if (!(self = [super initWithFrame:buttonFrame pullsDown:flag]))
         return nil;
 
-    gearItem = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
-    [gearItem setImage:[[self class] gearImage]];
-
-    // First item is always the label
-    [[self menu] addItem:gearItem];
-
-    [self setToolTip:OAContextControlToolTip()];
+    [self _commonInit];
 
     return self;
 }
@@ -72,7 +92,7 @@ RCS_ID("$Id$");
 
     NSView *targetView;
     NSMenu *menu;
-    OAContextControlGetMenu(delegate, self, &menu, &targetView);
+    OAContextControlGetMenu(_delegate, self, &menu, &targetView);
 
     if (targetView == nil)
         menu = OAContextControlNoActionsMenu();
@@ -102,7 +122,7 @@ RCS_ID("$Id$");
 - (NSMenu *)locateActionMenu;
 {
     NSMenu *menu;
-    OAContextControlGetMenu(delegate, self, &menu, NULL);
+    OAContextControlGetMenu(_delegate, self, &menu, NULL);
     return menu;
 }
 

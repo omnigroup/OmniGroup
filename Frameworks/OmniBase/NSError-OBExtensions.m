@@ -49,13 +49,12 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
         if (frameCount > 0) {
             NSData *frameData = [[NSData alloc] initWithBytes:frames length:sizeof(frames[0]) * frameCount];
             if (dict) {
-                NSMutableDictionary *updatedInfo = [[[NSMutableDictionary alloc] initWithDictionary:dict] autorelease];
+                NSMutableDictionary *updatedInfo = [[NSMutableDictionary alloc] initWithDictionary:dict];
                 updatedInfo[OBBacktraceAddressesErrorKey] = frameData;
                 dict = updatedInfo;
             } else {
                 dict = @{OBBacktraceAddressesErrorKey:frameData};
             }
-            [frameData release];
         }
     }
 #endif

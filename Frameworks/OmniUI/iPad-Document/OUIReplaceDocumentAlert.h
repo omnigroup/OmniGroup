@@ -7,14 +7,14 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
 
 @class OUIReplaceDocumentAlert;
 @protocol OUIReplaceDocumentAlertDelegate
 - (void)replaceDocumentAlert:(OUIReplaceDocumentAlert *)alert didDismissWithButtonIndex:(NSInteger)buttonIndex documentURL:(NSURL *)documentURL;
 @end
 
-@interface OUIReplaceDocumentAlert : OFObject <UIAlertViewDelegate>
+@interface OUIReplaceDocumentAlert : NSObject <UIAlertViewDelegate>
 - (id)initWithDelegate:(id <OUIReplaceDocumentAlertDelegate>)delegate documentURL:(NSURL *)aURL;
 - (void)show;
 @end

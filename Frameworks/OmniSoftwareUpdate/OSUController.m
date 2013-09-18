@@ -38,11 +38,18 @@ NSString * const OSUReleaseMinorSummaryKey = @"minorReleaseSummary";
 NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  Do we really want this, or just the majorReleaseSummary?
 
 
-@interface OSUController (Private)
+@interface OSUController (/*Private*/)
+@property (retain, nonatomic) IBOutlet NSWindow *privacyNoticePanel;
 - (BOOL)_loadNib:(BOOL)hasSeenPreviousVersion;
 @end
 
 @implementation OSUController
+
+- (void)dealloc;
+{
+    [privacyNoticePanel release];
+    [super dealloc];
+}
 
 // API
 
@@ -226,22 +233,17 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
     [NSApp stopModalWithCode:OSUPrivacyNoticeResultShowPreferences];
 }
 
-@end
+#pragma mark - Private
 
-@implementation OSUController (Private)
+@synthesize privacyNoticePanel=privacyNoticePanel;
 
 - (BOOL)_loadNib:(BOOL)hasSeenPreviousVersion;
 {
     if (privacyNoticePanel)
         return YES;
 
-    @try {
-        [[OSUController bundle] loadNibNamed:@"OSUController" owner:self];
-    } @catch (NSException *exc) {
-        OB_UNUSED_VALUE(exc);
-#ifdef DEBUG    
-        NSLog(@"Unable to load nib: %@", exc);
-#endif	
+    if (![[OSUController bundle] loadNibNamed:@"OSUController" owner:self topLevelObjects:NULL]) {
+        NSLog(@"Unable to load nib");
         return NO;
     }
 

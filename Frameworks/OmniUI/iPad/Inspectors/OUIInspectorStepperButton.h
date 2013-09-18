@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,8 +19,8 @@
 @property(assign,nonatomic) BOOL repeats;
 
 @property(copy,nonatomic) NSString *title;
-@property(retain,nonatomic) UIFont *titleFont;
-@property(retain,nonatomic) UIColor *titleColor;
-@property(retain,nonatomic) UIImage *image;
+@property(strong,nonatomic) UIFont *titleFont;
+@property(strong,nonatomic) UIColor *titleColor;
+@property(strong,nonatomic) UIImage *image;
 
 @end

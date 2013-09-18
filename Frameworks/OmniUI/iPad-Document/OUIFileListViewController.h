@@ -9,15 +9,20 @@
 
 #import <UIKit/UITableViewController.h>
 
-@class OFSFileInfo;
+@class ODAVFileInfo;
 
 @interface OUIFileListViewController : UITableViewController
 
-@property (nonatomic, strong) NSArray *files;
+@property (nonatomic, copy) NSArray *files;
+
+/*!
+ * \brief Defaults to YES.
+ */
+@property (nonatomic, assign) BOOL shouldShowLastModifiedDate;
 
 - (NSString *)localizedNameForFileName:(NSString *)fileName;
 
 // Private
-- (BOOL)_canOpenFile:(OFSFileInfo *)fileInfo;
+- (BOOL)_canOpenFile:(ODAVFileInfo *)fileInfo;
 
 @end

@@ -28,6 +28,12 @@
 - (id)any:(OFPredicateBlock)predicate;
 - (BOOL)all:(OFPredicateBlock)predicate;
 
+- (id)min:(NSComparator)comparator;
+- (id)max:(NSComparator)comparator;
+
+- (id)minValueForKey:(NSString *)key comparator:(NSComparator)comparator;
+- (id)maxValueForKey:(NSString *)key comparator:(NSComparator)comparator;
+
 - (NSSet *)select:(OFPredicateBlock)predicate;
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2005-2007, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2007, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -224,6 +224,24 @@ static void initializeDepressionImages(void)
         }
     }
     
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)theEvent;
+{
+    if ([theEvent type] != NSKeyDown)
+        return NO;
+    
+    NSString *fullString = [NSString stringForKeyEquivalent:[theEvent charactersIgnoringModifiers] andModifierMask:[theEvent modifierFlags]];
+    for (OITabCell *cell in [self cells]) {
+        NSString *keyEquivalent = [cell keyEquivalent];        
+        if ([keyEquivalent isEqualToString:fullString]) {
+            [self selectCell:cell];
+            [self performClick:nil];
+            return YES;
+        }
+    }
+    
+    return NO;
 }
 
 @end

@@ -24,6 +24,7 @@ RCS_ID("$Id$")
     dict[@"creationDate"] = _creationDate;
     dict[@"modificationDate"] = _modificationDate;
     dict[@"hasDownloadQueued"] = @(_hasDownloadQueued);
+    dict[@"totalSize"] = @(_totalSize);
     dict[@"downloaded"] = @(self.downloaded);
     dict[@"downloading"] = @(_downloading);
     dict[@"percentDownloaded"] = @(_percentDownloaded);

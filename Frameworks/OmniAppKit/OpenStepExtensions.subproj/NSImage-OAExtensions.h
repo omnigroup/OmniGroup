@@ -27,8 +27,10 @@ extern NSString * const OAInfoTemplateImageName;
    // Returns an image with the specified name from the specified bundle
 + (NSImage *)imageNamed:(NSString *)imageName inBundle:(NSBundle *)aBundle;
    // Returns an image with the specified control tint if one is available, otherwise returns the image with the specified name. Tinted images are searched for by appending the name of the tint ("Graphite", "Aqua", "Clear") to the image, with an optional hyphen separating the name from the tint.
-+ (NSImage *)imageNamed:(NSString *)imageName withTint:(NSControlTint)imageTint inBundle:(NSBundle *)aBundle;
++ (NSImage *)imageNamed:(NSString *)imageStem withTint:(NSControlTint)imageTint inBundle:(NSBundle *)aBundle allowingNil:(BOOL)allowNil;
++ (NSImage *)imageNamed:(NSString *)imageStem withTint:(NSControlTint)imageTint inBundle:(NSBundle *)aBundle;
    // Calls imageNamed:withTint:inBundle:, using the current control tint.
++ (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle allowingNil:(BOOL)allowNil;
 + (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle;
 + (NSImage *)imageForFileType:(NSString *)fileType;
     // Caching wrapper for -[NSWorkspace iconForFileType:].  This method is not thread-safe at the moment.

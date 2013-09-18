@@ -2,119 +2,191 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-        <key>CFBundleDevelopmentRegion</key>
-        <string>English</string>
-        <key>CFBundleDisplayName</key>
-        <string>${PRODUCT_NAME}</string>
-        <key>CFBundleDocumentTypes</key>
-        <array>
-                <dict>
-                        <key>CFBundleTypeIconFiles</key>
-                        <array>
-                                <string>Document-rtf-64.png</string>
-                                <string>Document-rtf-320.png</string>
-                        </array>
-                        <key>CFBundleTypeName</key>
-                        <string>RTF Document</string>
-                        <key>CFBundleTypeRole</key>
-                        <string>Editor</string>
-                        <key>LSItemContentTypes</key>
-                        <array>
-                                <string>public.rtf</string>
-                        </array>
-                        <key>LSHandlerRank</key>
-                        <string>Default</string>
-                </dict>
-        </array>
-        <key>CFBundleExecutable</key>
-        <string>${EXECUTABLE_NAME}</string>
-        <key>CFBundleIconFiles</key>
-        <array>
-                <string>OmniText-72.png</string>
-        </array>
-        <key>CFBundleIdentifier</key>
-        <string>${OMNI_BUNDLE_IDENTIFIER}</string>
-        <key>CFBundleInfoDictionaryVersion</key>
-        <string>6.0</string>
-        <key>CFBundleName</key>
-        <string>${PRODUCT_NAME}</string>
-        <key>CFBundlePackageType</key>
-        <string>APPL</string>
-        <key>CFBundleSignature</key>
-        <string>????</string>
-        <key>CFBundleVersion</key>
-        <string>1.0</string>
-		<key>CFBundleShortVersionString</key>
-		<string>1.0</string>
-        <key>LSRequiresIPhoneOS</key>
-        <true/>
-        <key>NSMainNibFile</key>
-        <string>MainWindow</string>
-		<key>NSHumanReadableCopyright</key>
-		<string>© 2010-2011 The Omni Group</string>
-	<key>UIFileSharingEnabled</key>
-	<true/>
-        <key>OFRegistrations</key>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>English</string>
+    <key>CFBundleDisplayName</key>
+    <string>${PRODUCT_NAME}</string>
+    <key>CFBundleDocumentTypes</key>
+    <array>
         <dict>
-                <key>NSUserDefaults</key>
-                <dict>
-                        <key>defaultsDictionary</key>
-                        <dict>
-			        <!-- OmniUI -->
-				<key>OUIDocumentProxyPreviewAspectRatioByURL</key>
-				<dict/>
-				<key>OUIWebDAVLocation</key>
-				<string></string>
-				<key>OUIWebDAVUsername</key>
-				<string></string>
-				<key>OUIOmniSyncUsername</key>
-				<string></string>
-				<key>OUIImportEnabled</key>
-				<true/>
-				<key>OUIExportEnabled</key>
-				<true/>
-				<key>IPadRetailDemo</key>
-				<false/>
-                        </dict>
-                </dict>
+            <key>CFBundleTypeIconFiles</key>
+            <array>
+                <string>Document-rtf-64.png</string>
+                <string>Document-rtf-320.png</string>
+            </array>
+            <key>CFBundleTypeName</key>
+            <string>RTF Document</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.rtf</string>
+            </array>
+            <key>LSHandlerRank</key>
+            <string>Default</string>
         </dict>
-    	<key>OFXSyncPathExtensions</key>
-    	<array>
-    		<string>rtf</string>
-    	</array>
-        <key>UISupportedInterfaceOrientations</key>
-        <array>
-                <string>UIInterfaceOrientationPortrait</string>
-                <string>UIInterfaceOrientationPortraitUpsideDown</string>
-                <string>UIInterfaceOrientationLandscapeLeft</string>
-                <string>UIInterfaceOrientationLandscapeRight</string>
-        </array>
-        
-        <!-- This gets defined on the device for iOS 3.2, but not for the simulator, for some reason. Radar 8219167. -->
-        <key>UTImportedTypeDeclarations</key>
-        <array>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<string>public.text</string>
-			<key>UTTypeDescription</key>
-			<string>rich text (RTF)</string>
-			<key>UTTypeIdentifier</key>
-			<string>public.rtf</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>com.apple.nspboard-type</key>
-				<array>
-					<string>NeXT Rich Text Format v1.0 pasteboard type</string>
-					<string>NSRTFPboardType</string>
-				</array>
-				<key>com.apple.ostype</key>
-				<string>RTF </string>
-				<key>public.filename-extension</key>
-				<string>rtf</string>
-				<key>public.mime-type</key>
-				<string>text/rtf</string>
-			</dict>
-		</dict>
-        </array>
+        <dict>
+            <key>CFBundleTypeIconFiles</key>
+            <array>
+                <string>Document-rtf-64.png</string>
+                <string>Document-rtf-320.png</string>
+            </array>
+            <key>CFBundleTypeName</key>
+            <string>RTFD Document</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.apple.rtfd</string>
+            </array>
+            <key>LSHandlerRank</key>
+            <string>Default</string>
+        </dict>
+        <dict>
+            <key>CFBundleTypeIconFiles</key>
+            <array>
+                <string>Document-rtf-64.png</string>
+                <string>Document-rtf-320.png</string>
+            </array>
+            <key>CFBundleTypeName</key>
+            <string>Text Document</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.plain-text</string>
+            </array>
+            <key>LSHandlerRank</key>
+            <string>Default</string>
+        </dict>
+    </array>
+    <key>CFBundleExecutable</key>
+    <string>${EXECUTABLE_NAME}</string>
+    <key>CFBundleIconFiles</key>
+    <array>
+        <string>OmniText-72.png</string>
+    </array>
+    <key>CFBundleIdentifier</key>
+    <string>${OMNI_BUNDLE_IDENTIFIER}</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>${PRODUCT_NAME}</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>NSHumanReadableCopyright</key>
+    <string>© 2010-2011 The Omni Group</string>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <key>OFRegistrations</key>
+    <dict>
+        <key>NSUserDefaults</key>
+        <dict>
+            <key>defaultsDictionary</key>
+            <dict>
+                <!-- OmniUI -->
+                <key>OUIDocumentProxyPreviewAspectRatioByURL</key>
+                <dict/>
+                <key>OUIWebDAVLocation</key>
+                <string></string>
+                <key>OUIWebDAVUsername</key>
+                <string></string>
+                <key>OUIOmniSyncUsername</key>
+                <string></string>
+                <key>OUIImportEnabled</key>
+                <true/>
+                <key>OUIExportEnabled</key>
+                <true/>
+                <key>IPadRetailDemo</key>
+                <false/>
+            </dict>
+        </dict>
+    </dict>
+    <key>OFXSyncPathExtensions</key>
+    <array>
+        <string>rtf</string>
+        <string>rtfd</string>
+        <string>txt</string>
+        <string>text</string>
+    </array>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+
+    <!-- This gets defined on the device for iOS 3.2, but not for the simulator, for some reason. Radar 8219167. -->
+    <key>UTImportedTypeDeclarations</key>
+    <array>
+        <dict>
+            <key>UTTypeConformsTo</key>
+            <string>public.text</string>
+            <key>UTTypeDescription</key>
+            <string>rich text (RTF)</string>
+            <key>UTTypeIdentifier</key>
+            <string>public.rtf</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>com.apple.nspboard-type</key>
+                <array>
+                    <string>NeXT Rich Text Format v1.0 pasteboard type</string>
+                    <string>NSRTFPboardType</string>
+                </array>
+                <key>com.apple.ostype</key>
+                <string>RTF </string>
+                <key>public.filename-extension</key>
+                <string>rtf</string>
+                <key>public.mime-type</key>
+                <string>text/rtf</string>
+            </dict>
+        </dict>
+
+        <dict>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>com.apple.package</string>
+                <string>public.composite-content</string>
+            </array>
+            <key>UTTypeDescription</key>
+            <string>rich text with attachments (RTFD)</string>
+            <key>UTTypeIdentifier</key>
+            <string>com.apple.rtfd</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <string>rtfd</string>
+            </dict>
+        </dict>
+
+        <dict>
+            <key>UTTypeConformsTo</key>
+            <string>public.text</string>
+            <key>UTTypeDescription</key>
+            <string>plain text</string>
+            <key>UTTypeIdentifier</key>
+            <string>public.plain-text</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>txt</string>
+                    <string>text</string>
+                </array>
+                <key>public.mime-type</key>
+                <string>text/plain</string>
+            </dict>
+        </dict>
+				
+    </array>
 </dict>
 </plist>

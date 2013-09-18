@@ -74,6 +74,12 @@ else
 fi
 mkdir -p "$RESOURCE_DIR"
 
+if [ -d "$RESOURCE_DIR" ]; then
+    echo "Created resource dir: $RESOURCE_DIR"
+else
+    echo "Failed to create resource dir: $RESOURCE_DIR"
+fi
+
 # Copy each expected string table
 while [ $# != 0 ]; do
     table_name=$1; shift;
@@ -94,13 +100,16 @@ while [ $# != 0 ]; do
     
 	if [ "${STRINGS_FILE_OUTPUT_ENCODING-}" = "binary" ]; then
 		# In the case that we are building on iOS and these strings are in the main app wrapper, they won't go through CopyLibraryResource (which does the binary-ification for those resources).
+		echo "We gonna try to plutil -convert $table_file now"
 		/usr/bin/plutil -convert binary1 "$table_file"
+		echo "one way or another, plutil exited"
 	fi
 	
     # Make sure not to re-copy if only the source timestamp has changed. That will invalidate timestamps that may cause further copying into the app bundle. This in turn can invalidate signing, which is very annoying if we are doing incremental device builds.
     rsync -v --recursive --checksum "$table_file" "$RESOURCE_DIR/${table_file:t}"
     
     # Remove the processed files (so that we can check for unexpected files)
+    echo "removing $table_file, having just copied it to $RESOURCE_DIR"
     rm "$table_file"
 done
 

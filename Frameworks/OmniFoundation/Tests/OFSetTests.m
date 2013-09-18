@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -125,7 +125,6 @@ RCS_ID("$Id$");
         STAssertEqualObjects([fillMe sortedArrayUsingSelector:@selector(compare:)], numbers,
                              [NSString stringWithFormat:@"Trial %d: setsize=%u (%u probes), setbase=%u", trial, setsize, c, setbase]);
         
-        [numbers release];        
     }
 }
 

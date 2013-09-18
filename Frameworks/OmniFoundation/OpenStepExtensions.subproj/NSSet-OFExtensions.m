@@ -159,6 +159,48 @@ static void comparatorInsertionSort(const void *anObject, void *_context)
     return YES;
 }
 
+- (id)min:(NSComparator)comparator;
+{
+    id minimumValue = nil;
+    for (id value in self) {
+        if (!minimumValue || comparator(minimumValue, value) == NSOrderedDescending)
+            minimumValue = value;
+    }
+    return minimumValue;
+}
+
+- (id)max:(NSComparator)comparator;
+{
+    id maximumValue = nil;
+    for (id value in self) {
+        if (!maximumValue || comparator(maximumValue, value) == NSOrderedAscending)
+            maximumValue = value;
+    }
+    return maximumValue;
+}
+
+- (id)minValueForKey:(NSString *)key comparator:(NSComparator)comparator;
+{
+    id minimumValue = nil;
+    for (id object in self) {
+        id value = [object valueForKey:key];
+        if (!minimumValue || (value && comparator(minimumValue, value) == NSOrderedDescending))
+            minimumValue = value;
+    }
+    return minimumValue;
+}
+
+- (id)maxValueForKey:(NSString *)key comparator:(NSComparator)comparator;
+{
+    id maximumValue = nil;
+    for (id object in self) {
+        id value = [object valueForKey:key];
+        if (!maximumValue || (value && comparator(maximumValue, value) == NSOrderedAscending))
+            maximumValue = value;
+    }
+    return maximumValue;
+}
+
 - (NSSet *)select:(OFPredicateBlock)predicate;
 {
     NSMutableSet *matches = [NSMutableSet set];
@@ -167,5 +209,6 @@ static void comparatorInsertionSort(const void *anObject, void *_context)
             [matches addObject:obj];
     return matches;
 }
+
 
 @end

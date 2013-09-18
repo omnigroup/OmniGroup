@@ -9,9 +9,6 @@ ARCHS = $(VALID_ARCHS)
 // Consider locally installed Mac frameworks
 FRAMEWORK_SEARCH_PATHS = $(value) /Library/Frameworks
 
-// The Mac has both 64- and 32-bit architectures. Turning this on globally results in only spurious warnings on iPhone OS when implicitly converting from double to float.
-GCC_WARN_64_TO_32_BIT_CONVERSION = YES
-
 // libbz2 is present, but the headers aren't (its considered private API) on iPhone OS, so only define this here instead of globally.
 BZ2_LDFLAGS = -lbz2
 

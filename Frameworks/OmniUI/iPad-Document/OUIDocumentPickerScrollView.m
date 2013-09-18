@@ -7,8 +7,8 @@
 
 #import <OmniUIDocument/OUIDocumentPickerScrollView.h>
 
-#import <OmniFileStore/OFSDocumentStoreFileItem.h>
-#import <OmniFileStore/OFSDocumentStoreGroupItem.h>
+#import <OmniDocumentStore/ODSFileItem.h>
+#import <OmniDocumentStore/ODSFolderItem.h>
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/OFCFCallbacks.h>
 #import <OmniFoundation/OFExtent.h>
@@ -22,10 +22,11 @@
 #import <OmniUIDocument/OUIDocumentPickerGroupItemView.h>
 #import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniUIDocument/OUIDocumentPreviewView.h>
-#import <OmniUIDocument/OUIMainViewController.h>
+#import <OmniUIDocument/OUIDocumentPickerItemMetadataView.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 
 #import "OUIDocumentPickerItemView-Internal.h"
-#import "OUIMainViewControllerBackgroundView.h"
+#import "OUIDocumentRenameSession.h"
 
 RCS_ID("$Id$");
 
@@ -38,10 +39,10 @@ NSString * const OUIDocumentPickerScrollViewItemsBinding = @"items";
 #endif
 
 static const CGFloat kItemVerticalPadding = 27;
-static const CGFloat kItemHorizontalPadding = 28;
-static const UIEdgeInsets kEdgeInsets = (UIEdgeInsets){35/*top*/, 35/*left*/, 35/*bottom*/, 35/*right*/};
+static const CGFloat kItemHorizontalPadding = 27;
 
 typedef struct LayoutInfo {
+    CGFloat topControlsHeight;
     CGRect contentRect;
     CGSize itemSize;
     NSUInteger itemsPerRow;
@@ -50,16 +51,22 @@ typedef struct LayoutInfo {
 static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self);
 
 // Items are laid out in a fixed size grid.
-static CGRect _frameForPositionAtIndex(NSUInteger itemIndex, CGSize itemSize, NSUInteger itemsPerRow)
+static CGRect _frameForPositionAtIndex(NSUInteger itemIndex, LayoutInfo layoutInfo)
 {
-    OBPRECONDITION(itemSize.width > 0);
-    OBPRECONDITION(itemSize.height > 0);
-    OBPRECONDITION(itemsPerRow > 0);
+    OBPRECONDITION(layoutInfo.itemSize.width > 0);
+    OBPRECONDITION(layoutInfo.itemSize.height > 0);
+    OBPRECONDITION(layoutInfo.itemsPerRow > 0);
     
-    NSUInteger row = itemIndex / itemsPerRow;
-    NSUInteger column = itemIndex % itemsPerRow;
+    NSUInteger row = itemIndex / layoutInfo.itemsPerRow;
+    NSUInteger column = itemIndex % layoutInfo.itemsPerRow;
     
-    CGRect frame = CGRectMake(column * (itemSize.width + kItemHorizontalPadding), row * (itemSize.height + kItemVerticalPadding), itemSize.width, itemSize.height);
+    // If the item views plus their padding don't completely fill our layoutWidth, distribute the remaining space as margins on either sides of the scrollview.
+    CGFloat sideMargin = MAX(0, (layoutInfo.contentRect.size.width - (kItemHorizontalPadding + layoutInfo.itemsPerRow * (layoutInfo.itemSize.width + kItemHorizontalPadding))) / 2);
+    
+    CGRect frame = (CGRect){
+        .origin.x = kItemHorizontalPadding + column * (layoutInfo.itemSize.width + kItemHorizontalPadding) + sideMargin,
+        .origin.y = layoutInfo.topControlsHeight + kItemVerticalPadding + row * (layoutInfo.itemSize.height + kItemVerticalPadding),
+        .size = layoutInfo.itemSize};
     
     // CGRectIntegral can make the rect bigger when the size is integral but the position is fractional. We want the size to remain the same.
     CGRect integralFrame;
@@ -70,15 +77,15 @@ static CGRect _frameForPositionAtIndex(NSUInteger itemIndex, CGSize itemSize, NS
     return CGRectIntegral(integralFrame);
 }
 
-static CGPoint _clampContentOffset(CGPoint contentOffset, CGRect bounds, CGSize contentSize)
+static CGPoint _clampContentOffset(OUIDocumentPickerScrollView *self, CGPoint contentOffset)
 {
-    OFExtent contentOffsetYExtent = OFExtentMake(-kEdgeInsets.top, MAX(0, contentSize.height - bounds.size.height + kEdgeInsets.top + kEdgeInsets.bottom));
+    UIEdgeInsets contentInset = self.contentInset;
+    OFExtent contentOffsetYExtent = OFExtentMake(-contentInset.top, MAX(0, self.contentSize.height - self.bounds.size.height + contentInset.top + self.contentInset.bottom));
     CGPoint clampedContentOffset = CGPointMake(contentOffset.x, OFExtentClampValue(contentOffsetYExtent, contentOffset.y));
     return clampedContentOffset;
 }
 
 @interface OUIDocumentPickerScrollView (/*Private*/)
-- (void)_itemViewTapped:(UITapGestureRecognizer *)recognizer;
 + (CGSize)_gridSizeForLandscape:(BOOL)landscape;
 - (void)_startDragRecognizer:(OUIDragGestureRecognizer *)recognizer;
 @end
@@ -99,6 +106,7 @@ static CGPoint _clampContentOffset(CGPoint contentOffset, CGRect bounds, CGSize 
     struct {
         unsigned int isAnimatingRotationChange:1;
         unsigned int isEditing:1;
+        unsigned int isAddingItems:1;
     } _flags;
     
     OUIDocumentPickerItemSort _itemSort;
@@ -110,6 +118,8 @@ static CGPoint _clampContentOffset(CGPoint contentOffset, CGRect bounds, CGSize 
     OUIDragGestureRecognizer *_startDragRecognizer;
     
     NSTimeInterval _rotationDuration;
+    
+    NSMutableArray *_scrollFinishedCompletionHandlers;
 }
 
 static id _commonInit(OUIDocumentPickerScrollView *self)
@@ -119,11 +129,11 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
     self->_itemsBeingRemoved = [[NSMutableSet alloc] init];
     self->_itemsIgnoredForLayout = [[NSMutableSet alloc] init];
     
+    self.backgroundColor = nil;
+    
     self.showsVerticalScrollIndicator = YES;
     self.showsHorizontalScrollIndicator = NO;
-    
     self.alwaysBounceVertical = YES;
-    
     return self;
 }
 
@@ -143,7 +153,7 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
 
 - (void)dealloc;
 {    
-    [_fileItemToPreview enumerateKeysAndObjectsUsingBlock:^(OFSDocumentStore *fileItem, OUIDocumentPreview *preview, BOOL *stop) {
+    [_fileItemToPreview enumerateKeysAndObjectsUsingBlock:^(ODSStore *fileItem, OUIDocumentPreview *preview, BOOL *stop) {
         [preview decrementDisplayCount];
     }];
     
@@ -213,14 +223,6 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
     
     DEBUG_LAYOUT(@"didRotate");
     
-    // Tell the new views we are done with the rotation
-    if (_flags.isAnimatingRotationChange) {
-        for (OUIDocumentPickerItemView *itemView in _fileItemViews)
-            itemView.animatingRotationChange = YES;
-        for (OUIDocumentPickerItemView *itemView in _groupItemViews)
-            itemView.animatingRotationChange = YES;
-    }
-
     _flags.isAnimatingRotationChange = NO;
     
     // Ditch the old fully faded previews 
@@ -241,7 +243,7 @@ static NSUInteger _itemViewsForGridSize(CGSize gridSize)
     return width * height;
 }
 
-static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewClass)
+static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewClass, BOOL isReadOnly)
 {
     OBASSERT(OBClassIsSubclassOfClass(itemViewClass, [OUIDocumentPickerItemView class]));
     OBASSERT(itemViewClass != [OUIDocumentPickerItemView class]);
@@ -250,13 +252,13 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
 
     NSUInteger neededItemViewCount = _itemViewsForGridSize([[self class] _gridSizeForLandscape:self->_landscape]);
     while (neededItemViewCount--) {
+
         OUIDocumentPickerItemView *itemView = [[itemViewClass alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
-        itemView.landscape = self->_landscape;
+        itemView.isReadOnly = isReadOnly;
         
         [itemViews addObject:itemView];
-        
-        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_itemViewTapped:)];
-        [itemView addGestureRecognizer:tap];
+
+        [itemView addTarget:self action:@selector(_itemViewTapped:) forControlEvents:UIControlEventTouchUpInside];
         
         itemView.hidden = YES;
         [self addSubview:itemView];
@@ -288,24 +290,22 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     
     // Figure out whether we should do the animation outside of the OUIWithoutAnimating block (else +areAnimationsEnabled will be trivially NO).
     BOOL shouldCrossFade = _flags.isAnimatingRotationChange && [UIView areAnimationsEnabled];
-    
+
+    BOOL isReadOnly = [self.delegate isReadyOnlyForDocumentPickerScrollView:self];
     // Make the new views (which will start out hidden).
     OUIWithoutAnimating(^{
+        Class fileItemViewClass = [OUIDocumentPickerFileItemView class];
         [_fileItemViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        _fileItemViews = _newItemViews(self, [OUIDocumentPickerFileItemView class]);
+        _fileItemViews = _newItemViews(self, fileItemViewClass, isReadOnly);
         
         [_groupItemViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        _groupItemViews = _newItemViews(self, [OUIDocumentPickerGroupItemView class]);
+        _groupItemViews = _newItemViews(self, [OUIDocumentPickerGroupItemView class], isReadOnly);
         
-        // Tell the new views that they shouldn't animate layout, if we are rotating.
-        // We do want to fade them in, though.
         if (shouldCrossFade) {
             for (OUIDocumentPickerItemView *itemView in _fileItemViews) {
-                itemView.animatingRotationChange = YES;
                 itemView.alpha = 0;
             }
             for (OUIDocumentPickerItemView *itemView in _groupItemViews) {
-                itemView.animatingRotationChange = YES;
                 itemView.alpha = 0;
             }
         }
@@ -327,6 +327,8 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
         [UIView commitAnimations];
     }
     
+    _shouldHideTopControlsOnNextLayout = YES;
+    
     [self setNeedsLayout];
 }
 
@@ -339,9 +341,6 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
 
     [_items unionSet:toAdd];
     [_itemsBeingAdded unionSet:toAdd];
-    
-    [self sortItems];
-    [self setNeedsLayout];
 }
 
 - (void)finishAddingItems:(NSSet *)toAdd;
@@ -351,7 +350,7 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
 
     [_itemsBeingAdded minusSet:toAdd];
     
-    for (OFSDocumentStoreItem *item in toAdd) {
+    for (ODSItem *item in toAdd) {
         OUIDocumentPickerItemView *itemView = [self itemViewForItem:item];
         OBASSERT(!itemView || itemView.shrunken);
         itemView.shrunken = NO;
@@ -369,7 +368,7 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
 
     [_itemsBeingRemoved unionSet:toRemove];
 
-    for (OFSDocumentStoreItem *item in toRemove) {
+    for (ODSItem *item in toRemove) {
         OUIDocumentPickerItemView *itemView = [self itemViewForItem:item];
         itemView.shrunken = YES;
     }
@@ -380,7 +379,7 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     OBPRECONDITION([toRemove isSubsetOfSet:_items]);
     OBPRECONDITION([toRemove isSubsetOfSet:_itemsBeingRemoved]);
 
-    for (OFSDocumentStoreItem *item in toRemove) {
+    for (ODSItem *item in toRemove) {
         OUIDocumentPickerItemView *itemView = [self itemViewForItem:item];
         OBASSERT(!itemView || itemView.shrunken);
         itemView.shrunken = NO;
@@ -388,39 +387,22 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
 
     [_itemsBeingRemoved minusSet:toRemove];
     [_items minusSet:toRemove];
-    [self sortItems]; // The order hasn't changed, but w/o this the sorted array would still have the removed items
-    
-    [self setNeedsLayout];
-    
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
 }
 
 @synthesize itemsBeingRemoved = _itemsBeingRemoved;
-
-- (NSArray *)_sortDescriptors;
-{
-    NSMutableArray *descriptors = [NSMutableArray array];
-    
-    if (_itemSort == OUIDocumentPickerItemSortByDate) {
-        NSSortDescriptor *dateSort = [[NSSortDescriptor alloc] initWithKey:OFSDocumentStoreItemUserModificationDateBinding ascending:NO];
-        [descriptors addObject:dateSort];
-        
-        // fall back to name sorting if the dates are equal
-    }
-    
-    NSSortDescriptor *nameSort = [[NSSortDescriptor alloc] initWithKey:OFSDocumentStoreItemNameBinding ascending:YES selector:@selector(localizedStandardCompare:)];
-    [descriptors addObject:nameSort];
-    
-    return descriptors;
-}
 
 - (void)sortItems;
 {
     OBASSERT(_items);
     if (!_items)
         return;
-    
-    NSArray *newSort = [[_items allObjects] sortedArrayUsingDescriptors:[self _sortDescriptors]];
+    NSArray *sortDescriptors = nil;
+    if ([[self delegate] respondsToSelector:@selector(sortDescriptorsForDocumentPickerScrollView:)])
+        sortDescriptors = [[self delegate] sortDescriptorsForDocumentPickerScrollView:self];
+    else
+        sortDescriptors = [OUIDocumentPickerViewController sortDescriptors];
+    NSArray *newSort = [[_items allObjects] sortedArrayUsingDescriptors:sortDescriptors];
     if (OFNOTEQUAL(newSort, _sortedItems)) {
         _sortedItems = [newSort copy];
         [self setNeedsLayout];
@@ -441,6 +423,13 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
 {
     _itemSort = _sort;
     [self sortItems];
+
+    if (self.window != nil) {
+        [UIView animateWithDuration:0.3 delay:0 usingSpringWithDamping:0.75 initialSpringVelocity:0 options:0 animations:^{
+            [self layoutIfNeeded];
+        } completion:^(BOOL finished){
+        }];
+    }
 }
 
 @synthesize sortedItems = _sortedItems;
@@ -458,15 +447,22 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
 
 static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self, CGRect itemFrame)
 {
-    return CGPointMake(-kEdgeInsets.left, floor(CGRectGetMidY(itemFrame) - self.bounds.size.height / 2));
+    UIEdgeInsets contentInset = self.contentInset;
+    CGRect viewportRect = UIEdgeInsetsInsetRect(self.bounds, contentInset);
+    return CGPointMake(-contentInset.left, floor(CGRectGetMinY(itemFrame) + CGRectGetHeight(itemFrame) - (CGRectGetHeight(viewportRect) / 2) - contentInset.top));
 }
 
-- (void)scrollItemToVisible:(OFSDocumentStoreItem *)item animated:(BOOL)animated;
+- (void)scrollItemToVisible:(ODSItem *)item animated:(BOOL)animated;
 {
-    return [self scrollItemsToVisible:[NSArray arrayWithObjects:item, nil] animated:animated];
+    [self scrollItemsToVisible:[NSArray arrayWithObjects:item, nil] animated:animated];
 }
 
 - (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated;
+{
+    [self scrollItemsToVisible:items animated:animated completion:nil];
+}
+
+- (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated completion:(void (^)(void))completion;
 {
     [self layoutIfNeeded];
 
@@ -478,7 +474,7 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
     contentRect.size = bounds.size;
     
     CGRect itemsFrame = CGRectNull;
-    for (OFSDocumentStoreItem *item in items) {
+    for (ODSItem *item in items) {
         CGRect itemFrame = [self frameForItem:item];
         if (CGRectIsNull(itemFrame))
             itemsFrame = itemFrame;
@@ -487,11 +483,21 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
     }
 
     // If all the rects are fully visible, nothing to do.
-    if (CGRectContainsRect(contentRect, itemsFrame))
+    if (CGRectContainsRect(contentRect, itemsFrame)) {
+        // If we have some pending handlers, calling this one first would mean we're calling handlers out of order with when they were specified. Likely this is a bug (but we have to call it anway)
+        OBASSERT(_scrollFinishedCompletionHandlers == nil);
+        if (completion)
+            completion();
         return;
+    }
     
-    CGSize contentSize = self.contentSize;
-    CGPoint clampedContentOffset = _clampContentOffset(_contentOffsetForCenteringItem(self, itemsFrame), bounds, contentSize);
+    if (completion) {
+        if (!_scrollFinishedCompletionHandlers)
+            _scrollFinishedCompletionHandlers = [NSMutableArray new];
+        [_scrollFinishedCompletionHandlers addObject:[completion copy]];
+    }
+    
+    CGPoint clampedContentOffset = _clampContentOffset(self, _contentOffsetForCenteringItem(self, itemsFrame));
     
     if (!CGPointEqualToPoint(contentOffset, clampedContentOffset)) {
         [self setContentOffset:clampedContentOffset animated:animated];
@@ -500,11 +506,19 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
     }
 }
 
-- (CGRect)frameForItem:(OFSDocumentStoreItem *)item;
+- (void)performScrollFinishedHandlers;
+{
+    NSArray *handlers = _scrollFinishedCompletionHandlers;
+    _scrollFinishedCompletionHandlers = nil;
+    
+    for (void (^handler)(void) in handlers)
+        handler();
+}
+
+- (CGRect)frameForItem:(ODSItem *)item;
 {
     LayoutInfo layoutInfo = _updateLayout(self);
     CGSize itemSize = layoutInfo.itemSize;
-    NSUInteger itemsPerRow = layoutInfo.itemsPerRow;
 
     if (itemSize.width <= 0 || itemSize.height <= 0) {
         // We aren't sized right yet
@@ -517,7 +531,7 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
         positionIndex = NSNotFound;
         
         NSUInteger itemIndex = 0;
-        for (OFSDocumentStoreItem *sortedItem in _sortedItems) {
+        for (ODSItem *sortedItem in _sortedItems) {
             if ([_itemsIgnoredForLayout member:sortedItem])
                 continue;
             if (sortedItem == item) {
@@ -536,10 +550,10 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
         return CGRectZero;
     }
 
-    return _frameForPositionAtIndex(positionIndex, itemSize, itemsPerRow);
+    return _frameForPositionAtIndex(positionIndex, layoutInfo);
 }
 
-- (OUIDocumentPickerItemView *)itemViewForItem:(OFSDocumentStoreItem *)item;
+- (OUIDocumentPickerItemView *)itemViewForItem:(ODSItem *)item;
 {
     for (OUIDocumentPickerFileItemView *itemView in _fileItemViews) {
         if (itemView.item == item)
@@ -554,7 +568,7 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
     return nil;
 }
 
-- (OUIDocumentPickerFileItemView *)fileItemViewForFileItem:(OFSDocumentStoreFileItem *)fileItem;
+- (OUIDocumentPickerFileItemView *)fileItemViewForFileItem:(ODSFileItem *)fileItem;
 {
     for (OUIDocumentPickerFileItemView *fileItemView in _fileItemViews) {
         if (fileItemView.item == fileItem)
@@ -565,38 +579,32 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
 }
 
 // We don't use -[UIGestureRecognizer(OUIExtensions) hitView] or our own -hitTest: since while we are in the middle of dragging, extra item views will be added to us by the drag session.
-static OUIDocumentPickerItemView *_itemViewHitInPreviewAreaByRecognizer(NSArray *itemViews, UIGestureRecognizer *recognizer)
+static OUIDocumentPickerItemView *_itemViewHitByRecognizer(NSArray *itemViews, UIGestureRecognizer *recognizer)
 {
     for (OUIDocumentPickerItemView *itemView in itemViews) {
         // The -hitTest:withEvent: below doesn't consider ancestor isHidden flags.
         if (itemView.hidden)
             continue;
-        OUIDocumentPreviewView *previewView = itemView.previewView;
-        UIView *hitView = [previewView hitTest:[recognizer locationInView:previewView] withEvent:nil];
+        UIView *hitView = [itemView hitTest:[recognizer locationInView:itemView] withEvent:nil];
         if (hitView)
             return itemView;
     }
     return nil;
 }
 
-- (OUIDocumentPickerItemView *)itemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
+- (OUIDocumentPickerItemView *)itemViewHitByRecognizer:(UIGestureRecognizer *)recognizer;
 {
-    OUIDocumentPickerItemView *itemView = _itemViewHitInPreviewAreaByRecognizer(_fileItemViews, recognizer);
+    OUIDocumentPickerItemView *itemView = _itemViewHitByRecognizer(_fileItemViews, recognizer);
     if (itemView)
         return itemView;
-    return _itemViewHitInPreviewAreaByRecognizer(_groupItemViews, recognizer);
-}
-
-- (OUIDocumentPickerFileItemView *)fileItemViewHitInPreviewAreaByRecognizer:(UIGestureRecognizer *)recognizer;
-{
-    return (OUIDocumentPickerFileItemView *)_itemViewHitInPreviewAreaByRecognizer(_fileItemViews, recognizer);
+    return _itemViewHitByRecognizer(_groupItemViews, recognizer);
 }
 
 // Used to pick file items that are visible for automatic download (if they are small and we are on wi-fi) or preview generation.
-- (OFSDocumentStoreFileItem *)preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
+- (ODSFileItem *)preferredVisibleItemFromSet:(NSSet *)fileItemsNeedingPreviewUpdate;
 {
     // Prefer to update items that are visible, and then among those, do items starting at the top-left.
-    OFSDocumentStoreFileItem *bestFileItem = nil;
+    ODSFileItem *bestFileItem = nil;
     CGFloat bestVisiblePercentage = 0;
     CGPoint bestOrigin = CGPointZero;
 
@@ -612,7 +620,7 @@ static OUIDocumentPickerItemView *_itemViewHitInPreviewAreaByRecognizer(NSArray 
         return nil; // Avoid divide by zero below.
     
     for (OUIDocumentPickerFileItemView *fileItemView in _fileItemViews) {
-        OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)fileItemView.item;
+        ODSFileItem *fileItem = (ODSFileItem *)fileItemView.item;
         if ([fileItemsNeedingPreviewUpdate member:fileItem] == nil)
             continue;
 
@@ -635,7 +643,7 @@ static OUIDocumentPickerItemView *_itemViewHitInPreviewAreaByRecognizer(NSArray 
     return bestFileItem;
 }
 
-- (void)previewsUpdatedForFileItem:(OFSDocumentStoreFileItem *)fileItem;
+- (void)previewsUpdatedForFileItem:(ODSFileItem *)fileItem;
 {
     for (OUIDocumentPickerFileItemView *fileItemView in _fileItemViews) {
         if (fileItemView.item == fileItem) {
@@ -645,34 +653,38 @@ static OUIDocumentPickerItemView *_itemViewHitInPreviewAreaByRecognizer(NSArray 
     }
     
     for (OUIDocumentPickerGroupItemView *groupItemView in _groupItemViews) {
-        OFSDocumentStoreGroupItem *groupItem = (OFSDocumentStoreGroupItem *)groupItemView.item;
-        if ([groupItem.fileItems member:fileItem]) {
+        ODSFolderItem *groupItem = (ODSFolderItem *)groupItemView.item;
+        if ([groupItem.childItems member:fileItem]) {
             [groupItemView previewsUpdated];
             return;
         }
     }
 }
 
-- (void)startIgnoringItemForLayout:(OFSDocumentStoreItem *)item;
+- (void)previewedItemsChangedForGroups;
+{
+    [_groupItemViews makeObjectsPerformSelector:@selector(previewedItemsChanged)];
+}
+
+- (void)startIgnoringItemForLayout:(ODSItem *)item;
 {
     OBASSERT(!([_itemsIgnoredForLayout containsObject:item]));
     [_itemsIgnoredForLayout addObject:item];
 }
 
-- (void)stopIgnoringItemForLayout:(OFSDocumentStoreItem *)item;
+- (void)stopIgnoringItemForLayout:(ODSItem *)item;
 {
     OBASSERT([_itemsIgnoredForLayout containsObject:item]);
     [_itemsIgnoredForLayout removeObject:item];
 }
 
-#pragma mark -
-#pragma mark UIView
+#pragma mark - UIView
 
 - (void)willMoveToWindow:(UIWindow *)newWindow;
 {
     [super willMoveToWindow:newWindow];
     
-    if (newWindow && _startDragRecognizer == nil) {
+    if (newWindow && _startDragRecognizer == nil && ![self.delegate isReadyOnlyForDocumentPickerScrollView:self]) {
         // UIScrollView has recognizers, but doesn't delcare that it is their delegate. Hopefully they are leaving this open for subclassers.
         OBASSERT([UIScrollView conformsToProtocol:@protocol(UIGestureRecognizerDelegate)] == NO);
 
@@ -697,30 +709,8 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
     OBASSERT(gridSize.height >= 1);
     
     NSUInteger itemsPerRow = gridSize.width;
-    
-    // Calculate the item size we'll use. The results of this can be non-integral, allowing for accumulated round-off
-    
-    // Don't compute the item size based off our bounds. If the keyboard comes up we don't want our items to get smaller!
-    CGSize layoutSize;
-    {
-        OUIMainViewController *mainViewController = [[OUIDocumentAppController controller] mainViewController];
-        OUIMainViewControllerBackgroundView *layoutReferenceView = (OUIMainViewControllerBackgroundView *)mainViewController.view;
-        CGRect layoutRect = [layoutReferenceView contentViewFullScreenBounds]; // Excludes the toolbar, but doesn't exclude the keyboard
-        
-        // We can get asked to lay out before we are in the view hierarchy, which will cause assertions to fire in this conversion. We don't expect to ever have a scaling applied, so since we just want the size, this works. Still would be nice to do the convertRect:fromView:...
-        //layoutRect = [self convertRect:layoutRect fromView:layoutReferenceView];
-        
-        layoutSize = CGSizeMake(layoutRect.size.width - kEdgeInsets.left - kEdgeInsets.right, layoutRect.size.height - kEdgeInsets.top); // Don't subtract kEdgeInsets.bottom since the previews scroll off the bottom of the screen
-    }
-    
-    CGSize itemSize;
-    {
-        // We may need to accumulate partial pixels to make the spacing as even as possible in width, so we only ceil the height (which we don't need to do such accumulation and which we *do* need to be integral to make it easier to determine the full content size).
-        itemSize.width = (layoutSize.width - (itemsPerRow - 1) * kItemHorizontalPadding) / gridSize.width;
-        itemSize.height = ceil((layoutSize.height - (floor(gridSize.height) * kItemVerticalPadding)) / gridSize.height);
-    }
-    
-    DEBUG_LAYOUT(@"%@ Laying out %ld items with size %@", [self shortDescription], [self->_items count], NSStringFromCGSize(itemSize));
+    CGSize layoutSize = self.bounds.size;
+    CGSize itemSize = CGSizeMake(220.0, 220.0);
     
     if (itemSize.width <= 0 || itemSize.height <= 0) {
         // We aren't sized right yet
@@ -730,17 +720,17 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
         return layoutInfo;
     }
     
-    
+    CGFloat topControlsHeight = CGRectGetHeight(self->_topControls.frame);
     CGRect contentRect;
     {
         NSUInteger itemCount = [self->_sortedItems count];
         NSUInteger rowCount = (itemCount / itemsPerRow) + ((itemCount % itemsPerRow) == 0 ? 0 : 1);
         
         CGRect bounds = self.bounds;
-        CGSize contentSize = CGSizeMake(layoutSize.width, itemSize.height * rowCount + kItemVerticalPadding * (rowCount - 1));
+        CGSize contentSize = CGSizeMake(layoutSize.width, rowCount * (itemSize.height + kItemVerticalPadding) + topControlsHeight + kItemVerticalPadding);
+        contentSize.height = MAX(contentSize.height, layoutSize.height);
         
         self.contentSize = contentSize;
-        self.contentInset = kEdgeInsets;
         
         // Now, clamp the content offset. This can get out of bounds if we are scrolled way to the end in portait mode and flip to landscape.
         
@@ -749,7 +739,7 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
         //        NSLog(@"self.contentOffset = %@", NSStringFromCGPoint(self.contentOffset));
         
         CGPoint contentOffset = self.contentOffset;
-        CGPoint clampedContentOffset = _clampContentOffset(contentOffset, bounds, contentSize);
+        CGPoint clampedContentOffset = _clampContentOffset(self, contentOffset);
         if (!CGPointEqualToPoint(contentOffset, clampedContentOffset))
             self.contentOffset = contentOffset; // Don't reset if it is the same, or this'll kill off any bounce animation
         
@@ -759,6 +749,7 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
     }
     
     return (LayoutInfo){
+        .topControlsHeight = topControlsHeight,
         .contentRect = contentRect,
         .itemSize = itemSize,
         .itemsPerRow = itemsPerRow
@@ -770,12 +761,33 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
     LayoutInfo layoutInfo = _updateLayout(self);
     CGSize itemSize = layoutInfo.itemSize;
     CGRect contentRect = layoutInfo.contentRect;
-    NSUInteger itemsPerRow = layoutInfo.itemsPerRow;
     
     if (itemSize.width <= 0 || itemSize.height <= 0) {
         // We aren't sized right yet
         DEBUG_LAYOUT(@"  Bailing since we have zero size");
         return;
+    }
+    
+    [_renameSession layoutDimmingView];
+    
+    if (_topControls) {
+        _topControls.center = CGPointMake(CGRectGetWidth(contentRect) / 2, (CGRectGetHeight(_topControls.frame) / 2));
+        
+        if ([_topControls superview] != self)
+            [self addSubview:_topControls];
+
+        // Scroll past the top controls if they are visible and we are supposed to (coming on screen).
+        if (_shouldHideTopControlsOnNextLayout) {
+            _shouldHideTopControlsOnNextLayout = NO;
+
+            UIEdgeInsets contentInset = self.contentInset;
+            CGPoint offset = self.contentOffset;
+            offset.y = (layoutInfo.topControlsHeight - contentInset.top);
+            
+            if (offset.y > self.contentOffset.y) {
+                self.contentOffset = offset;
+            }
+        }
     }
 
     // Expand the visible content rect to preload nearby previews
@@ -783,7 +795,7 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
     
     // We don't need this for the scroller and calling it causes our item views to layout their contents out before we've adjusted their frames (and we don't even want to layout the hidden views).
     // [super layoutSubviews];
-
+    
     // The newly created views need to get laid out the first time w/o animation on.
     OUIWithAnimationsDisabled(_flags.isAnimatingRotationChange, ^{
         // Keep track of which item views are in use by visible items
@@ -801,36 +813,36 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
         NSMutableDictionary *itemToView = [[NSMutableDictionary alloc] init];
         {
             for (OUIDocumentPickerFileItemView *itemView in _fileItemViews) {
-                OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)itemView.item;
+                ODSFileItem *fileItem = (ODSFileItem *)itemView.item;
                 if (fileItem)
                     [itemToView setObject:itemView forKey:fileItem];
             }
             
             for (OUIDocumentPickerGroupItemView *itemView in _groupItemViews) {
-                OFSDocumentStoreGroupItem *groupItem = (OFSDocumentStoreGroupItem *)itemView.item;
+                ODSFolderItem *groupItem = (ODSFolderItem *)itemView.item;
                 if (groupItem)
-                    ;//                    [itemToView setObject:itemView forKey:groupItem];
+                    [itemToView setObject:itemView forKey:groupItem];
             }
         }
         
-        for (OFSDocumentStoreItem *item in _sortedItems) {        
+        for (ODSItem *item in _sortedItems) {        
             // Calculate the frame we would use for each item.
             DEBUG_LAYOUT(@"item (%ld,%ld) %@", row, column, [item shortDescription]);
             
-            CGRect frame = _frameForPositionAtIndex(positionIndex, itemSize, itemsPerRow);
+            CGRect frame = _frameForPositionAtIndex(positionIndex, layoutInfo);
             
             // If the item is on screen, give it a view to use
             BOOL itemVisible = CGRectIntersectsRect(frame, contentRect);
             
             BOOL shouldLoadPreview = CGRectIntersectsRect(frame, previewLoadingRect);
-            if ([item isKindOfClass:[OFSDocumentStoreFileItem class]]) {
-                OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)item;
+            if ([item isKindOfClass:[ODSFileItem class]]) {
+                ODSFileItem *fileItem = (ODSFileItem *)item;
                 OUIDocumentPreview *preview = [previousFileItemToPreview objectForKey:fileItem];
                 
                 if (shouldLoadPreview) {
                     if (!preview) {
                         Class documentClass = [[OUIDocumentAppController controller] documentClassForURL:fileItem.fileURL];
-                        preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:fileItem.fileURL date:fileItem.fileModificationDate withLandscape:_landscape];
+                        preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:fileItem.fileURL date:fileItem.fileModificationDate withArea:OUIDocumentPreviewAreaLarge];
                         [preview incrementDisplayCount];
                     }
                     [updatedFileItemToPreview setObject:preview forKey:fileItem];
@@ -840,8 +852,11 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
                 }
                 
                 [previousFileItemToPreview removeObjectForKey:fileItem];
-            } else {
-                OBASSERT_NOT_REACHED("Load previews for the group members");
+            } else if ([item isKindOfClass:[ODSFolderItem class]]) {
+                if (shouldLoadPreview) {
+                    OUIDocumentPickerItemView *itemView = [self itemViewForItem:item];
+                    [itemView loadPreviews];
+                }
             }
             
             DEBUG_LAYOUT(@"  assigned frame %@, visible %d", NSStringFromCGRect(frame), itemVisible);
@@ -872,18 +887,15 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
         
         _fileItemToPreview = [updatedFileItemToPreview copy];
         
-        [previousFileItemToPreview enumerateKeysAndObjectsUsingBlock:^(OFSDocumentStoreFileItem *fileItem, OUIDocumentPreview *preview, BOOL *stop) {
+        [previousFileItemToPreview enumerateKeysAndObjectsUsingBlock:^(ODSFileItem *fileItem, OUIDocumentPreview *preview, BOOL *stop) {
             [preview decrementDisplayCount];
         }];
         
-        // Check if item views that are changing items are (probably) doing so because we are scrolling
-        BOOL disableAnimationOnItemChange = self.dragging || self.decelerating;
-        
         // Now, assign views to visibile or nearly visible items that don't have them. First, union the two lists.
-        for (OFSDocumentStoreItem *item in visibleItemsWithoutView) {            
+        for (ODSItem *item in visibleItemsWithoutView) {            
             
             NSMutableArray *itemViews = nil;
-            if ([item isKindOfClass:[OFSDocumentStoreFileItem class]]) {
+            if ([item isKindOfClass:[ODSFileItem class]]) {
                 itemViews = unusedFileItemViews;
             } else {
                 itemViews = unusedGroupItemViews;
@@ -894,19 +906,17 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
                 OBASSERT(itemView.superview == self); // we keep these views as subviews, just hide them.
                 
                 // Make the view start out at the "original" position instead of flying from where ever it was last left.
-                OUIBeginWithoutAnimating
-                {
+                [UIView performWithoutAnimation:^{
                     itemView.hidden = NO;
                     itemView.frame = [self frameForItem:item];
                     itemView.shrunken = ([_itemsBeingAdded member:item] != nil);
                     [itemView setEditing:_flags.isEditing animated:NO];
-                }
-                OUIEndWithoutAnimating;
-                
-                OUIWithAnimationsDisabled(disableAnimationOnItemChange, ^{
                     itemView.item = item;
-                });
+                }];
                 
+                if ([self.delegate respondsToSelector:@selector(documentPickerScrollView:willDisplayItemView:)])
+                    [self.delegate documentPickerScrollView:self willDisplayItemView:itemView];
+
                 [itemViews removeLastObject];
                 DEBUG_LAYOUT(@"Assigned view %@ to item %@", [itemView shortDescription], item.name);
             } else {
@@ -922,8 +932,8 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
                 continue;
             }
             
-            OFSDocumentStoreFileItem *fileItem = (OFSDocumentStoreFileItem *)fileItemView.item;
-            OBASSERT([fileItem isKindOfClass:[OFSDocumentStoreFileItem class]]);
+            ODSFileItem *fileItem = (ODSFileItem *)fileItemView.item;
+            OBASSERT([fileItem isKindOfClass:[ODSFileItem class]]);
             
             OBASSERT(!fileItem.draggingSource || fileItem != _draggingDestinationItem); // can't be both the source and destination of a drag!
             
@@ -939,18 +949,20 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
         for (OUIDocumentPickerFileItemView *view in unusedFileItemViews) {
             view.hidden = YES;
             [view prepareForReuse];
+            if ([self.delegate respondsToSelector:@selector(documentPickerScrollView:willEndDisplayingItemView:)])
+                [self.delegate documentPickerScrollView:self willEndDisplayingItemView:view];
+            
         }
         for (OUIDocumentPickerGroupItemView *view in unusedGroupItemViews) {
             view.hidden = YES;
             [view prepareForReuse];
+            if ([self.delegate respondsToSelector:@selector(documentPickerScrollView:willEndDisplayingItemView:)])
+                [self.delegate documentPickerScrollView:self willEndDisplayingItemView:view];
         }
-        
-        
     });
 }
 
-#pragma mark -
-#pragma mark UIGestureRecognizerDelegate
+#pragma mark - UIGestureRecognizerDelegate
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer;
 {
@@ -959,27 +971,44 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
             return NO;
         
         // Only start editing and float up a preview if we hit a file preview
-        return ([self fileItemViewHitInPreviewAreaByRecognizer:_startDragRecognizer] != nil);
+        return ([self itemViewHitByRecognizer:_startDragRecognizer] != nil);
     }
     
     return YES;
 }
 
-#pragma mark -
-#pragma mark Private
+#pragma mark - NSObject (OUIDocumentPickerItemMetadataView)
 
-- (void)_itemViewTapped:(UITapGestureRecognizer *)recognizer;
+- (void)documentPickerItemNameStartedEditing:(id)sender;
 {
-    UIView *hitView = [recognizer hitView];
-    OUIDocumentPickerItemView *itemView = [hitView containingViewOfClass:[OUIDocumentPickerItemView class]];
-    if (itemView) {
-        // should be one of ours, not some other temporary animating item view        
-        OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
+    UIView *view = sender; // This is currently the private name+date view. Could hook this up better if this all works out (maybe making our item view publish a 'started editing' control event.
+    OUIDocumentPickerItemView *itemView = [view containingViewOfClass:[OUIDocumentPickerItemView class]];
+    
+    // should be one of ours, not some other temporary animating item view
+    OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
+
+    [self.delegate documentPickerScrollView:self itemViewStartedEditingName:itemView];
+}
+
+- (void)documentPickerItemNameEndedEditing:(id)sender withName:(NSString *)name;
+{
+    UIView *view = sender; // This is currently the private name+date view. Could hook this up better if this all works out (maybe making our item view publish a 'started editing' control event.
+    OUIDocumentPickerItemView *itemView = [view containingViewOfClass:[OUIDocumentPickerItemView class]];
+    
+    // should be one of ours, not some other temporary animating item view
+    OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
+    
+    [self.delegate documentPickerScrollView:self itemView:itemView finishedEditingName:(NSString *)name];
+}
+
+#pragma mark - Private
+
+- (void)_itemViewTapped:(OUIDocumentPickerItemView *)itemView;
+{
+    // should be one of ours, not some other temporary animating item view
+    OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
         
-        OUIDocumentPickerItemViewTapArea area;
-        if ([itemView getHitTapArea:&area withRecognizer:recognizer])
-            [self.delegate documentPickerScrollView:self itemViewTapped:itemView inArea:area];
-    }
+    [self.delegate documentPickerScrollView:self itemViewTapped:itemView];
 }
 
 // The size of the document prevew grid in items. That is, if gridSize.width = 4, then 4 items will be shown across the width.

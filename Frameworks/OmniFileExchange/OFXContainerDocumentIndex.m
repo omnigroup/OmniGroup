@@ -11,8 +11,6 @@
 #import "OFXContainerAgent.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
 
-#import <OmniFileStore/OFSURL.h>
-
 RCS_ID("$Id$")
 
 @implementation OFXContainerDocumentIndex

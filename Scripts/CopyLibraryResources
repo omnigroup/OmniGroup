@@ -116,6 +116,8 @@ StaticLibraryResourceDirectories.each {|dirname|
       case source
       when /\.xib/
         dest_file = "#{dest_dir}/#{File.basename(source, ".xib")}.nib"
+      when /\.storyboard/
+        dest_file = "#{dest_dir}/#{File.basename(source, ".storyboard")}.storyboardc"
       else
         dest_file = "#{dest_dir}/#{File.basename(source)}"
       end
@@ -132,8 +134,8 @@ StaticLibraryResourceDirectories.each {|dirname|
         #STDERR.print "  skipping up to date #{source} -> #{dest_file}\n"
         next
       end
-      STDERR.print "  source_mtime = #{source_mtime} dest_mtime = #{dest_mtime}\n"
-      STDERR.print "  copying #{source} -> #{dest_file}\n"
+      #STDERR.print "  source_mtime = #{source_mtime} dest_mtime = #{dest_mtime}\n"
+      #STDERR.print "  copying #{source} -> #{dest_file}\n"
       
       FileUtils.mkdir_p(File.dirname(dest_file))
 
@@ -145,6 +147,12 @@ StaticLibraryResourceDirectories.each {|dirname|
         # Xcode runs the version in /Developer instead of the version in the SDK (it is a shim to pick up the right version based on xcode-select)
         `set -x; "#{ENV['DEVELOPER_USR_DIR']}/bin/ibtool" --errors --warnings --notices --output-format human-readable-text --compile "#{dest_file}" "#{source}"`
         fail unless $?.exitstatus == 0
+      when /\.storyboard$/
+        # Need to compile storyboards into storyboardc folders (which contain nibs)
+        ENV["IBC_MINIMUM_COMPATIBILITY_VERSION"] = ENV["IPHONEOS_DEPLOYMENT_TARGET"]
+      
+        # Xcode runs the version in /Developer instead of the version in the SDK (it is a shim to pick up the right version based on xcode-select)
+        `set -x; "#{ENV['DEVELOPER_USR_DIR']}/bin/ibtool" --errors --warnings --notices --compile "#{dest_file}" "#{source}"`
       when /\.strings$/
         output_encoding=ENV["STRINGS_FILE_OUTPUT_ENCODING"].downcase
         ENV["ICONV"] = "/usr/bin/iconv"

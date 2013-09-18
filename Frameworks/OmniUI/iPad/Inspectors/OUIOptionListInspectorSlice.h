@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,5 +14,7 @@
 + (instancetype)optionListSliceWithObjectClass:(Class)objectClass
                                        keyPath:(NSString *)keyPath
                 titlesSubtitlesAndObjectValues:(NSString *)title, ... NS_REQUIRES_NIL_TERMINATION;
+
+@property(nonatomic,copy) void (^optionChangedBlock)(NSString *valueKeyPath, NSNumber *value);
 
 @end

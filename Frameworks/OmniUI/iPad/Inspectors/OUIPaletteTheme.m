@@ -28,11 +28,10 @@ RCS_ID("$Id$");
         return nil;
     }
     
-    NSString *errorDescription = nil;
+    __strong NSString *errorDescription = nil; // API says we own the result, so make sure this doesn't get turned into __autoreleasing...
     NSArray *dictionaries = [NSPropertyListSerialization propertyListFromData:data mutabilityOption:NSPropertyListImmutable format:NULL errorDescription:&errorDescription];
     if (!dictionaries) {
         NSLog(@"Unable to parse theme file %@: %@", path, errorDescription);
-        [errorDescription release]; // API says we own this.
         return nil;
     }
     
@@ -44,7 +43,6 @@ RCS_ID("$Id$");
             continue;
         }
         [themes addObject:theme];
-        [theme release];
     }
     
     return themes;
@@ -57,7 +55,6 @@ RCS_ID("$Id$");
     
     _identifier = [[dict objectForKey:@"identifier"] copy];
     if (!_identifier) {
-        [self release];
         return nil;
     }
     
@@ -80,21 +77,12 @@ RCS_ID("$Id$");
     
     if ([colors count] == 0) {
         OBASSERT_NOT_REACHED("No colors read");
-        [self release];
         return nil;
     }
     
     _colors = [colors copy];
     
     return self;
-}
-
-- (void)dealloc;
-{
-    [_identifier release];
-    [_displayName release];
-    [_colors release];
-    [super dealloc];
 }
 
 @end

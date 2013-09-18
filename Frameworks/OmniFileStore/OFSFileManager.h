@@ -9,19 +9,9 @@
 
 #import <Foundation/NSObject.h>
 
-@protocol OFSAsynchronousOperation;
+@protocol ODAVAsynchronousOperation;
 
 extern NSInteger OFSFileManagerDebug;
-
-// intentionally similar to NSFileManager NSDirectoryEnumerationOptions
-enum {
-    OFSDirectoryEnumerationSkipsSubdirectoryDescendants = 1UL << 0,     /* shallow, non-deep */
-    /* OFSDirectoryEnumerationSkipsPackageDescendants = 1UL << 1, */    /* no package contents, not currently supported */
-    OFSDirectoryEnumerationSkipsHiddenFiles = 1UL << 2,                 /* no hidden files */
-    OFSDirectoryEnumerationForceRecursiveDirectoryRead = 1UL << 3,       /* useful when the server does not implement PROPFIND requests with Depth:infinity */
-};
-typedef NSUInteger OFSDirectoryEnumerationOptions;
-
 
 @protocol OFSFileManagerDelegate;
 
@@ -36,23 +26,21 @@ typedef NSUInteger OFSDirectoryEnumerationOptions;
 
 - (void)invalidate;
 
-- (id <OFSAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url;
-- (id <OFSAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url atomically:(BOOL)atomically;
-
-- (NSURL *)availableURL:(NSURL *)startingURL;
+- (id <ODAVAsynchronousOperation>)asynchronousReadContentsOfURL:(NSURL *)url;
+- (id <ODAVAsynchronousOperation>)asynchronousWriteData:(NSData *)data toURL:(NSURL *)url;
 
 - (NSURL *)createDirectoryAtURLIfNeeded:(NSURL *)directoryURL error:(NSError **)outError;
 
 @end
 
-@class OFSFileInfo;
+@class ODAVFileInfo;
 
 @protocol OFSConcreteFileManager
 
 + (BOOL)shouldHaveHostInURL;
 
-// Returns an OFSFileInfo. If we determine that the file does not exist, returns an OFSFileInfo with exists=NO.
-- (OFSFileInfo *)fileInfoAtURL:(NSURL *)url error:(NSError **)outError;
+// Returns an ODAVFileInfo. If we determine that the file does not exist, returns an ODAVFileInfo with exists=NO.
+- (ODAVFileInfo *)fileInfoAtURL:(NSURL *)url error:(NSError **)outError;
 
 // For the following methods, a few underlying scheme-specific errors are translated/wrapped into XMLData error codes for consistency:
 //   Directory operation on nonexistent directory  -->  OFSNoSuchDirectory
@@ -60,11 +48,10 @@ typedef NSUInteger OFSDirectoryEnumerationOptions;
 
 // Returns an array of OFSFileInfos for the immediate children of the given URL.  The results are in no particular order.
 // Returns nil and sets *outError if the URL does not refer to a directory/folder/collection (among other possible reasons).
-- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension options:(OFSDirectoryEnumerationOptions)options error:(NSError **)outError;
-- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;  // passes OFSDirectoryEnumerationSkipsSubdirectoryDescendants for option
+- (NSArray *)directoryContentsAtURL:(NSURL *)url havingExtension:(NSString *)extension error:(NSError **)outError;
 
 // Only published since OmniFocus was using this method on a generic OFSFileManager (for test cases that run vs. file: URLs). Once we switch that to always using DAV, this could go away
-- (NSMutableArray *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections options:(OFSDirectoryEnumerationOptions)options error:(NSError **)outError;
+- (NSMutableArray *)directoryContentsAtURL:(NSURL *)url collectingRedirects:(NSMutableArray *)redirections error:(NSError **)outError;
 
 - (NSData *)dataWithContentsOfURL:(NSURL *)url error:(NSError **)outError;
 

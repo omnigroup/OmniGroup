@@ -9,22 +9,12 @@
 
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorPane.h>
+#import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
 @implementation OUIDetailInspectorSliceItem
-
-@synthesize title, value, image, enabled, boldValue;
-
-- (void)dealloc;
-{
-    [title release];
-    [value release];
-    [image release];
-    [super dealloc];
-}
-
 @end
 
 @interface OUIDetailInspectorSliceTableViewCell : UITableViewCell
@@ -32,11 +22,10 @@ RCS_ID("$Id$");
 @end
 
 @implementation OUIDetailInspectorSliceTableViewCell
-@synthesize enabled;
 @end
 
 @interface OUIDetailInspectorSlice() <UITableViewDataSource, UITableViewDelegate>
-@property(nonatomic,retain) UITableView *tableView;
+@property(nonatomic,strong) UITableView *tableView;
 @end
 
 @implementation OUIDetailInspectorSlice
@@ -57,9 +46,6 @@ RCS_ID("$Id$");
 {
     _tableView.delegate = nil;
     _tableView.dataSource = nil;
-    [_tableView release];
-
-    [super dealloc];
 }
 
 @synthesize tableView = _tableView;
@@ -96,8 +82,12 @@ RCS_ID("$Id$");
     return nil;
 }
 
-#pragma mark -
-#pragma mark OUIInspectorSlice subclass
+#pragma mark - OUIInspectorSlice subclass
+
+- (CGFloat)bottomInsetFromSliceBackgroundView;
+{
+    return 0.0f; // We provide our own bottom separator
+}
 
 - (void)showDetails:(id)sender;
 {
@@ -112,14 +102,16 @@ RCS_ID("$Id$");
     OUITableViewAdjustHeightToFitContents(_tableView);
 }
 
-#pragma mark -
-#pragma mark UIViewController subclass
+#pragma mark - UIViewController subclass
 
 - (void)loadView;
 {
     OBPRECONDITION(_tableView == nil);
     
-    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 420) style:UITableViewStyleGrouped];
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 44) style:UITableViewStylePlain];
+
+    // iOS 7 GM bug: separators are not reliably drawn. This doesn't actually fix the color after the first display, but at least it gets the separators to show up.
+    _tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
     
     _tableView.delegate = self;
     _tableView.dataSource = self;
@@ -142,8 +134,7 @@ RCS_ID("$Id$");
     OUITableViewAdjustHeightToFitContents(_tableView);
 }
 
-#pragma mark -
-#pragma mark UITableViewDataSource
+#pragma mark - UITableViewDataSource
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
 {
@@ -157,12 +148,11 @@ RCS_ID("$Id$");
     NSString *reuseIdentifier = [[NSString alloc] initWithFormat:@"%ld", indexPath.row];
     OUIDetailInspectorSliceTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
     if (!cell) {
-        cell = [[[OUIDetailInspectorSliceTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:reuseIdentifier] autorelease];
+        cell = [[OUIDetailInspectorSliceTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:reuseIdentifier];
         
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
         cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     }
-    [reuseIdentifier release];
     
     NSUInteger itemIndex = (NSUInteger)indexPath.row;
     OUIDetailInspectorSliceItem *item = [[OUIDetailInspectorSliceItem alloc] init];
@@ -180,6 +170,7 @@ RCS_ID("$Id$");
         placeholder = YES;
         title = [self placeholderTitleForItemAtIndex:itemIndex];
     }
+    cell.backgroundColor = [OUIInspectorSlice sliceBackgroundColor];
     cell.textLabel.text = title;
     cell.textLabel.textColor = placeholder ? [OUIInspector disabledLabelTextColor] : nil;
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
@@ -198,19 +189,23 @@ RCS_ID("$Id$");
     static UIColor *defaultDetailTextColor = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        defaultDetailTextColor = [cell.detailTextLabel.textColor retain];
+        defaultDetailTextColor = cell.detailTextLabel.textColor;
     });
     
     cell.detailTextLabel.text = value;
-    cell.detailTextLabel.textColor = placeholder ? [OUIInspector disabledLabelTextColor] : defaultDetailTextColor;
+    if (placeholder) {
+        cell.detailTextLabel.textColor = [OUIInspector disabledLabelTextColor];
+    } else if (cell.accessoryType == UITableViewCellAccessoryDisclosureIndicator) {
+        cell.detailTextLabel.textColor = [OUIInspector indirectValueTextColor];
+    } else {
+        cell.detailTextLabel.textColor = defaultDetailTextColor;
+    }
     if (item.boldValue == YES)
         cell.detailTextLabel.font = [OUIInspectorTextWell defaultLabelFont];
     else
         cell.detailTextLabel.font = [OUIInspectorTextWell defaultFont];
 
     cell.enabled = item.enabled;
-    
-    [item release];
     
     return cell;
 }
@@ -220,13 +215,21 @@ RCS_ID("$Id$");
     return [self groupTitle];
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
-{
-    return 12;
-}
+#pragma mark - UITableViewDelegate protocol
 
-#pragma mark -
-#pragma mark UITableViewDelegate protocol
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    // If our inspector slice group position is Alone or Last we want the bottom cell to draw its bottom separator for the full width (instead of inset).
+    OUIInspectorSliceGroupPosition groupPosition = self.groupPosition;
+    if ((groupPosition == OUIInspectorSliceGroupPositionAlone) || (groupPosition == OUIInspectorSliceGroupPositionLast)) {
+        if (indexPath.row == [self tableView:tableView numberOfRowsInSection:indexPath.section] - 1) {
+            UIEdgeInsets separatorInsets = tableView.separatorInset;
+            separatorInsets.left = 0.0f;
+            separatorInsets.right = 0.0f;
+            cell.separatorInset = separatorInsets;
+        }
+    }
+}
 
 - (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2011, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,12 @@
 @interface NSObject (OBDebuggingExtensions)
 - (NSMutableDictionary *)debugDictionary;
 - (NSString *)shortDescription;
+#ifdef DEBUG
+- (NSString *)ivars; // "po [value ivars]" to get a runtime dump of ivars
+- (NSString *)methods; // "po [value methods]" to get a runtime dump of methods
++ (NSString *)instanceMethods;
++ (NSString *)classMethods;
+#endif
 @end
 
 @interface OBObject (OBDebugging)

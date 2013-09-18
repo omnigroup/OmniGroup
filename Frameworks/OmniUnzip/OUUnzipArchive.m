@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,6 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
     
     NSLog(@"%s returned %d", func, err);
     
-    [self release];
     return nil;
 }
 #define UNZIP_ERROR(f) _unzipError(self, #f, err, outError)
@@ -47,7 +46,6 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to open zip archive.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The unzip library failed to open %@.", @"OmniUnzip", OMNI_BUNDLE, @"error reason"), path];
         OmniUnzipError(outError, OmniUnzipUnableToOpenZipFile, description, reason);
-        [self release];
         return nil;
     }
     
@@ -129,11 +127,9 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
             [components setMinute:fileInfo.tmu_date.tm_min];
             [components setSecond:fileInfo.tmu_date.tm_sec];
             NSDate *date = [[NSCalendar currentCalendar] dateFromComponents:components];
-            [components release];
 
             OUUnzipEntry *entry = [[OUUnzipEntry alloc] initWithName:fileName fileType:fileType date:date positionInFile:position.pos_in_zip_directory fileNumber:position.num_of_file compressionMethod:fileInfo.compression_method compressedSize:fileInfo.compressed_size uncompressedSize:fileInfo.uncompressed_size crc:fileInfo.crc];
             [entries addObject:entry];
-            [entry release];
             
             err = unzGoToNextFile(unzip);
             if (err == UNZ_END_OF_LIST_OF_FILE)
@@ -151,13 +147,6 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
     return self;
 }
 #undef UNZIP_ERROR
-
-- (void)dealloc;
-{
-    [_path release];
-    [_entries release];
-    [super dealloc];
-}
 
 - (NSString *)path;
 {
@@ -182,6 +171,9 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
 
 - (NSArray *)entriesWithNamePrefix:(NSString *)prefix;
 {
+    if ([NSString isEmptyString:prefix])
+        return _entries;
+
     NSMutableArray *matches = [NSMutableArray array];
     
     for (OUUnzipEntry *entry in _entries)
@@ -212,7 +204,6 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip data.", @"OmniUnzip", OMNI_BUNDLE, @"error reason");
         NSString *reason = [NSString stringWithFormat:@"Unable to open zip file \"%@\".", _path];
         OmniUnzipError(outError, OmniUnzipUnableToOpenZipFile, description, reason);
-        [self release];
         return nil;
     }
 
@@ -285,53 +276,61 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
     return [self dataForEntry:entry raw:NO error:outError];
 }
 
-- (NSURL *)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)topLevelEntryName error:(NSError **)outError;
+- (BOOL)_writeEntriesWithPrefix:(NSString *)prefix toURL:(NSURL *)writeURL error:(NSError **)outError;
 {
-    NSArray *entries = [self entriesWithNamePrefix:topLevelEntryName];
     NSFileManager *defaultManager = [NSFileManager defaultManager];
-    
-    NSString *writeFileName = [NSString stringWithFormat:@"%@_temp", [topLevelEntryName stringByDeletingPathExtension]];
-    NSString *writePath = [defaultManager temporaryPathForWritingToPath:[NSTemporaryDirectory() stringByAppendingPathComponent:writeFileName]
-                                                 allowOriginalDirectory:YES
-                                                                 create:NO
-                                                                  error:outError];
-    if (!writePath) {
-        return nil;
-    }
-    
-    NSURL *writeURL = [NSURL fileURLWithPath:writePath isDirectory:YES];
+    if (![defaultManager createDirectoryAtURL:writeURL withIntermediateDirectories:NO attributes:nil error:outError])
+        return NO;
 
-    if (![defaultManager createDirectoryAtURL:writeURL withIntermediateDirectories:NO attributes:nil error:outError]) {
-        return nil;
-    }
-
-    
+    NSArray *entries = [self entriesWithNamePrefix:prefix];
     for (OUUnzipEntry *entry in entries) {
         NSString *entryName = [entry name];
+        if ([entryName hasPrefix:@"__MACOSX/"])
+            continue; // Skip over any __MACOSX metadata (resource forks, etc.)
+
         NSURL *entryTempURL = [writeURL URLByAppendingPathComponent:entryName];
         
         // We need to check [entry name] here instead of entryTempPath because the trailing / will be lost when using -stringByAppendingPathComponent:
         if (([entryName hasSuffix:@"/"] && ([entry uncompressedSize] == 0))) {
             // This entry is a folder, let's make sure it exists in our temp path.
             if (![defaultManager fileExistsAtPath:[entryTempURL path]]) {
-                if (![defaultManager createDirectoryAtURL:entryTempURL withIntermediateDirectories:YES attributes:nil error:outError]) {
-                    return nil;
-                }
+                if (![defaultManager createDirectoryAtURL:entryTempURL withIntermediateDirectories:YES attributes:nil error:outError])
+                    return NO;
             }
         }
         else {
             // Entry is a file, write it to entryTempURL.
-            NSData *entryData = [self dataForEntry:entry error:outError];
-            if (!entryData) {
-                return nil;
-            }
-            
-            if (![entryData writeToURL:entryTempURL options:0 error:outError]) {
-                return nil;
+            @autoreleasepool {
+                NSData *entryData = [self dataForEntry:entry error:outError];
+                if (entryData == nil)
+                    return NO;
+
+                if (![entryData writeToURL:entryTempURL options:0 error:outError])
+                    return NO;
             }
         }
     }
     
+    return YES;
+}
+
+- (BOOL)unzipArchiveToURL:(NSURL *)targetURL error:(NSError **)outError;
+{
+    return [self _writeEntriesWithPrefix:nil toURL:targetURL error:outError];
+}
+
+- (NSURL *)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)topLevelEntryName error:(NSError **)outError;
+{
+    NSFileManager *defaultManager = [NSFileManager defaultManager];
+    NSString *writeFileName = [NSString stringWithFormat:@"%@_temp", [topLevelEntryName stringByDeletingPathExtension]];
+    NSString *writePath = [defaultManager temporaryPathForWritingToPath:[NSTemporaryDirectory() stringByAppendingPathComponent:writeFileName] allowOriginalDirectory:YES create:NO error:outError];
+    if (writePath == nil)
+        return nil;
+
+    NSURL *writeURL = [NSURL fileURLWithPath:writePath];
+    if (![self _writeEntriesWithPrefix:topLevelEntryName toURL:writeURL error:outError])
+        return nil;
+
     return [writeURL URLByAppendingPathComponent:topLevelEntryName];
 }
 

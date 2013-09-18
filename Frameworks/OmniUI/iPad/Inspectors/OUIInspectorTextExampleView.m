@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,9 @@
 RCS_ID("$Id$");
 
 @implementation OUIInspectorTextExampleView
+{
+    OUITextLayout *_textLayout;
+}
 
 @synthesize styleBackgroundColor = _styleBackgroundColor;
 @synthesize attributedString = _attributedString;
@@ -23,9 +26,6 @@ RCS_ID("$Id$");
 static id _commonInit(OUIInspectorTextExampleView *self)
 {
     self.opaque = YES; // we fill with the opaque background from OUIDrawTransparentColorBackground() if needed.
-    self->_bottomGradientView = [[OUIGradientView horizontalShadow:NO/*top-to-bottom*/] retain];
-    [self addSubview:self->_bottomGradientView];
-    
     return self;
 }
 
@@ -43,20 +43,10 @@ static id _commonInit(OUIInspectorTextExampleView *self)
     return _commonInit(self);
 }
 
-- (void)dealloc;
-{
-    [_styleBackgroundColor release];
-    [_textLayout release];
-    [_attributedString release];
-    [_bottomGradientView release];
-    [super dealloc];
-}
-
 - (void)setStyleBackgroundColor:(OQColor *)color;
 {
     if (OFISEQUAL(_styleBackgroundColor, color))
         return;
-    [_styleBackgroundColor release];
     _styleBackgroundColor = [color copy];
     
     [self setNeedsDisplay];
@@ -67,17 +57,14 @@ static id _commonInit(OUIInspectorTextExampleView *self)
     if (OFISEQUAL(_attributedString, attributedString))
         return;
     
-    [_attributedString release];
     _attributedString = [attributedString copy];
     
-    [_textLayout release];
     _textLayout = [[OUITextLayout alloc] initWithAttributedString:_attributedString constraints:CGSizeMake(OUITextLayoutUnlimitedSize, OUITextLayoutUnlimitedSize)];
     
     [self setNeedsDisplay];
 }
 
-#pragma mark -
-#pragma mark UIView (OUIExtensions)
+#pragma mark - UIView (OUIExtensions)
 
 - (UIEdgeInsets)borderEdgeInsets;
 {
@@ -85,15 +72,7 @@ static id _commonInit(OUIInspectorTextExampleView *self)
     return UIEdgeInsetsZero;
 }
 
-#pragma mark -
-#pragma mark UIView subclass
-
-- (void)layoutSubviews;
-{
-    CGRect shadowFrame, dummy;
-    CGRectDivide(self.bounds, &shadowFrame, &dummy, 4, CGRectMaxYEdge);
-    _bottomGradientView.frame = shadowFrame;
-}
+#pragma mark - UIView subclass
 
 - (void)drawRect:(CGRect)rect;
 {
@@ -115,14 +94,14 @@ static id _commonInit(OUIInspectorTextExampleView *self)
         if (backgroundAlpha < 1.0) {
             OUIDrawPatternBackground(ctx, @"OUITransparencyCheckerboardBackground-24", bounds, CGSizeZero);
         }
-    
+        
         [[_styleBackgroundColor toColor] set];
         UIRectFillUsingBlendMode(bounds, kCGBlendModeNormal);
     }
     
     CGSize usedSize = _textLayout.usedSize;
     CGRect textRect = OQCenteredIntegralRectInRect(self.bounds, usedSize);
-        
+    
     // Make sure that the origin of the text doesn't go off the edge when it gets too big.
     textRect.origin.x = MAX(textRect.origin.x, bounds.origin.x);
     textRect.origin.y = MAX(textRect.origin.y, bounds.origin.y);

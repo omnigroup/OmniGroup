@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,16 +27,7 @@ extern NSString * const OSUReleaseApplicationSummaryKey;
 
 @interface OSUController : NSObject <OSUCheckerTarget>
 {
-    // Unused currently
-    //IBOutlet NSPanel *panel;
-    //IBOutlet NSImageView *appIconView;
-    //IBOutlet NSTextField *mainMessageField;
-    //IBOutlet NSTextField *moreMessageField;
-    //IBOutlet NSTextView *releaseNotesView;
-    //IBOutlet NSTextField *warningField;
-    //IBOutlet NSImageView *warningIconView;
-
-    IBOutlet NSPanel     *privacyNoticePanel;
+    NSPanel     *privacyNoticePanel;
     IBOutlet NSImageView *privacyNoticeAppIconImageView;
     IBOutlet NSTextField *privacyNoticeTitleTextField;
     IBOutlet NSTextField *privacyNoticeMessageTextField;

@@ -12,7 +12,7 @@
 
 @interface OUISyncMenuController : UIViewController
 
-+ (void)displayInSheet;
++ (void)displayAsSheetInViewController:(UIViewController *)viewController;
 
 - initForExporting:(BOOL)exporting;
 

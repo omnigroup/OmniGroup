@@ -24,18 +24,26 @@ OBDEPRECATED_METHOD(-_releaseFromWeakRetainHelper);
 
 @implementation OFWeakReference
 {
-    __weak id _weak_object;
+    __weak id _weakObject;
+    void *_nonretainedObjectPointer;
 }
 
-@synthesize object = _weak_object;
+@synthesize object = _weakObject;
 
 - initWithObject:(id)object;
 {
     if (!(self = [super init]))
         return nil;
     
-    _weak_object = object;
+    _weakObject = object;
+    _nonretainedObjectPointer = (__bridge void *)object;
+
     return self;
+}
+
+- (BOOL)referencesObject:(void *)objectPointer;
+{
+    return _nonretainedObjectPointer == objectPointer;
 }
 
 @end

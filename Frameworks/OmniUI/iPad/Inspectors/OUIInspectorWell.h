@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,7 @@ extern void OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect fr
 extern CGRect OUIInspectorWellInnerRect(CGRect frame);
 
 extern void OUIInspectorWellDraw(CGContextRef ctx, CGRect frame,
-                                 OUIInspectorWellCornerType cornerType, OUIInspectorWellBorderType borderType, BOOL innerShadow,
+                                 OUIInspectorWellCornerType cornerType, OUIInspectorWellBorderType borderType, BOOL innerShadow, BOOL outerShadow,
                                  void (^drawInterior)(CGRect interior));
 
 
@@ -50,8 +50,12 @@ extern void OUIInspectorWellDraw(CGContextRef ctx, CGRect frame,
 @property(readonly,nonatomic) BOOL shouldDrawHighlighted;
 @property(nonatomic) OUIInspectorWellBackgroundType backgroundType;
 
-@property(nonatomic,retain) UIView *leftView;
-@property(nonatomic,retain) UIView *rightView;
+@property(nonatomic,strong) UIView *leftView;
+@property(nonatomic,strong) UIView *rightView;
+
+// Use these to shift the views relative to their calculated position. See the implementation of -setNavigationArrowRightView for an example of how it uses the rightViewEdgeInsets in order to make the navigation arrow position to perfectly align with that in table cells.
+@property(nonatomic) UIEdgeInsets leftViewEdgeInsets;
+@property(nonatomic) UIEdgeInsets rightViewEdgeInsets;
 
 @property(readonly,nonatomic) CGRect contentsRect; // Insets from the edges and avoids the navigation arrow if present.
 
@@ -60,6 +64,8 @@ extern void OUIInspectorWellDraw(CGContextRef ctx, CGRect frame,
 
 // Subclassing points
 - (UIColor *)textColor; // Returns the text color to use for the current state (defaulting to the class +textColor or +highlightedTextColor)
+
+// <bug:///94098> (Remove -drawInteriorFillWithRect: on our controls and subclass in OmniGraffle)
 - (void)drawInteriorFillWithRect:(CGRect)rect; // Draws the interior gradient
 
 @end

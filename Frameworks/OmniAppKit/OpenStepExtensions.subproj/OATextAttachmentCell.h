@@ -7,7 +7,19 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Availability.h>
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+// NSTextAttachment conforms to NSTextAttachmentContainer and there doesn't seem to be any separate NSTextAttachmentCell
+@class NSData;
+@class NSLayoutManager;
+#import <UIKit/NSAttributedString.h>
+#import <UIKit/NSTextAttachment.h>
+#else
+#import <AppKit/NSTextAttachment.h>
+#endif
+
+#import <Foundation/NSObject.h>
 #import <OmniAppKit/OATextAttachment.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -17,7 +29,7 @@
 @class UIView;
 
 @protocol OATextAttachmentCell <NSObject>
-- (void)drawWithFrame:(CGRect)cellFrame inView:(UIView *)controlView;
+- (void)drawWithFrame:(CGRect)cellFrame inView:(UIView *)controlView characterIndex:(NSUInteger)charIndex layoutManager:(NSLayoutManager *)layoutManager;
 #if 0
 - (BOOL)wantsToTrackMouse;
 - (void)highlight:(BOOL)flag withFrame:(NSRect)cellFrame inView:(NSView *)controlView;
@@ -39,7 +51,7 @@
 @end
 
 // Subclasses NSCell on the Mac, but no such thing here.
-@interface OATextAttachmentCell : OFObject <OATextAttachmentCell>
+@interface OATextAttachmentCell : NSObject <OATextAttachmentCell>
 {
 @private
     OATextAttachment *_nonretained_attachment;

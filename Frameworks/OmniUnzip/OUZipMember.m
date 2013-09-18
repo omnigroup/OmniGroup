@@ -22,15 +22,13 @@ RCS_ID("$Id$");
     OBPRECONDITION([self class] == [OUZipMember class]);
     OBPRECONDITION(![NSString isEmptyString:name]);
     
-    if ([fileWrapper isRegularFile]) {
-        [self release];
+    if ([fileWrapper isRegularFile])
         return [[OUZipFileMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] contents:[fileWrapper regularFileContents]];
-    } else if ([fileWrapper isSymbolicLink]) {
-        [self release];
-        return [[OUZipLinkMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] destination:[[fileWrapper symbolicLinkDestinationURL] path]];
-    } else if ([fileWrapper isDirectory]) {
-        [self release];
 
+    if ([fileWrapper isSymbolicLink])
+        return [[OUZipLinkMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] destination:[[fileWrapper symbolicLinkDestinationURL] path]];
+    
+    if ([fileWrapper isDirectory]) {
         OUZipDirectoryMember *directory = [[OUZipDirectoryMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] children:nil archive:YES];
         NSDictionary *childWrappers = [fileWrapper fileWrappers];
         NSArray *childKeys = [[childWrappers allKeys] sortedArrayUsingSelector:@selector(compare:)];
@@ -40,7 +38,6 @@ RCS_ID("$Id$");
             // Note: this loses the preferred filenames of our children, but zip files don't have a notion of preferred filename vs. actual filename the way file wrappers do
             OUZipMember *child = [[OUZipMember alloc] _initWithFileWrapper:childWrapper name:childKey];
             [directory addChild:child];
-            [child release];
         }
         return directory;
     }
@@ -67,23 +64,25 @@ RCS_ID("$Id$");
     OBPRECONDITION([self class] == [OUZipMember class]);
     OBPRECONDITION(![NSString isEmptyString:[path lastPathComponent]]);
 
-    [self release]; self = nil; // We won't be returning an abstract class
-    OB_UNUSED_VALUE(self);
-    
     NSString *preferredFilename = [path lastPathComponent];
     
     NSDictionary *fileAttributes = [fileManager attributesOfItemAtPath:path error:NULL];
     if (!fileAttributes)
         return nil;
-        
-    if ([[fileAttributes fileType] isEqualToString:NSFileTypeRegular]) {
+    
+    NSString *fileType = [fileAttributes fileType];
+    
+    if ([fileType isEqualToString:NSFileTypeRegular])
         return [[OUZipFileMember alloc] initWithName:preferredFilename date:[fileAttributes fileModificationDate] mappedFilePath:path];
-    } else if ([[fileAttributes fileType] isEqualToString:NSFileTypeSymbolicLink]) {
+
+    if ([fileType isEqualToString:NSFileTypeSymbolicLink]) {
         NSString *destination = [fileManager destinationOfSymbolicLinkAtPath:path error:NULL];
         if (!destination)
             return nil;
         return [[OUZipLinkMember alloc] initWithName:preferredFilename date:[fileAttributes fileModificationDate] destination:destination];
-    } else if ([[fileAttributes fileType] isEqualToString:NSFileTypeDirectory]) {
+    }
+    
+    if ([fileType isEqualToString:NSFileTypeDirectory]) {
         OUZipDirectoryMember *directory = [[OUZipDirectoryMember alloc] initWithName:preferredFilename date:[fileAttributes fileModificationDate] children:nil archive:YES];
         NSArray *childNames = [fileManager contentsOfDirectoryAtPath:path error:NULL];
         NSUInteger childIndex, childCount = [childNames count];
@@ -94,13 +93,12 @@ RCS_ID("$Id$");
             if (child == nil)
                 continue;
             [directory addChild:child];
-            [child release];
         }
         return directory;
-    } else {
-        // Silently skip file types we don't know how to archive (sockets, character special, block special, and unknown)
-        return nil;
     }
+
+    // Silently skip file types we don't know how to archive (sockets, character special, block special, and unknown)
+    return nil;
 }
 
 - initWithName:(NSString *)name date:(NSDate *)date;
@@ -116,13 +114,6 @@ RCS_ID("$Id$");
     _date = [date copy];
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [_name release];
-    [_date release];
-    [super dealloc];
 }
 
 - (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString *)fileNamePrefix error:(NSError **)outError;

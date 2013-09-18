@@ -57,13 +57,6 @@ static NSString * const OUZipRootDirectoryName = @".";  // We'll want to strip t
     OBRejectUnusedImplementation(self, _cmd);
 }
 
-- (void)dealloc;
-{
-    [_children release];
-    [_childrenByName release];
-    [super dealloc];
-}
-
 - (BOOL)isRootDirectory;
 {
     return [[self name] isEqualToString:OUZipRootDirectoryName];

@@ -91,7 +91,6 @@
 		5F1C023A16DC8D82006F9D51 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F1C023916DC8D82006F9D51 /* Foundation.framework */; };
 		5F1C024316DC8D82006F9D51 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 5F1C024216DC8D82006F9D51 /* main.m */; };
 		5F1C024F16DC8FC2006F9D51 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerService.xpc in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 5F1C023716DC8D82006F9D51 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerService.xpc */; };
-		5F1C025416DC9916006F9D51 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5F1C025216DC9916006F9D51 /* InfoPlist.strings */; };
 		5F1C025716DD2F45006F9D51 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34821F2D063409180097A113 /* OmniBase.framework */; };
 		5F234E7F16E90942000E2C0E /* OSUInstallerPrivilegedHelperVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 5F234E7E16E90942000E2C0E /* OSUInstallerPrivilegedHelperVersion.h */; };
 		5F234E8216E9607D000E2C0E /* ServiceManagement.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F234E8116E9607D000E2C0E /* ServiceManagement.framework */; };
@@ -391,7 +390,6 @@
 		5F1C023D16DC8D82006F9D51 /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
 		5F1C024116DC8D82006F9D51 /* OSUInstallerService-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OSUInstallerService-Prefix.pch"; sourceTree = "<group>"; };
 		5F1C024216DC8D82006F9D51 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		5F1C025316DC9916006F9D51 /* English */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		5F1C68F016F7C1AE00D0F98B /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = ../OmniBase/OmniBase.xcodeproj; sourceTree = SOURCE_ROOT; };
 		5F234E7E16E90942000E2C0E /* OSUInstallerPrivilegedHelperVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUInstallerPrivilegedHelperVersion.h; sourceTree = "<group>"; };
 		5F234E8116E9607D000E2C0E /* ServiceManagement.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ServiceManagement.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/ServiceManagement.framework; sourceTree = DEVELOPER_DIR; };
@@ -786,7 +784,6 @@
 			isa = PBXGroup;
 			children = (
 				5F1C023D16DC8D82006F9D51 /* Info.plist */,
-				5F1C025216DC9916006F9D51 /* InfoPlist.strings */,
 				5F1C024116DC8D82006F9D51 /* OSUInstallerService-Prefix.pch */,
 			);
 			name = "Supporting Files";
@@ -1060,7 +1057,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0500;
 			};
 			buildConfigurationList = 4A40EBE308AB009200E1769D /* Build configuration list for PBXProject "OmniSoftwareUpdate" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1208,7 +1205,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5F1C025416DC9916006F9D51 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1476,14 +1472,6 @@
 				4AA5E8FD148D608F00633311 /* English */,
 			);
 			name = OSUController.xib;
-			sourceTree = "<group>";
-		};
-		5F1C025216DC9916006F9D51 /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				5F1C025316DC9916006F9D51 /* English */,
-			);
-			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 		BF3171EC062F41740097A147 /* Preferences.strings */ = {

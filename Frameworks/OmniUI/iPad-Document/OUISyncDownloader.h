@@ -10,7 +10,7 @@
 #import <UIKit/UIViewController.h>
 
 @class NSFileWrapper;
-@class OFSFileInfo;
+@class ODAVFileInfo;
 
 extern NSString * const OUISyncDownloadFinishedNotification;
 extern NSString * const OUISyncDownloadURL;
@@ -29,7 +29,7 @@ extern NSString * const OUISyncDownloadCanceledNotification;
 @end
 
 @protocol OUIConcreteSyncDownloader <NSObject>
-- (void)download:(OFSFileInfo *)aFile;
+- (void)download:(ODAVFileInfo *)aFile;
 - (IBAction)cancelDownload:(id)sender;
 - (void)uploadFileWrapper:(NSFileWrapper *)fileWrapper toURL:(NSURL *)targetURL;
 @end

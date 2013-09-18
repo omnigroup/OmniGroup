@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,20 +9,23 @@
 
 #import <Foundation/NSObject.h>
 
-@class OFSDocumentStoreFileItem;
+@class ODSFileItem;
 @class OUIDocumentPreviewGenerator;
 
 @protocol OUIDocumentPreviewGeneratorDelegate <NSObject>
 
 // If YES, the preview generator won't bother generating a preview for this file item since the user is editing it
-- (BOOL)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator isFileItemCurrentlyOpen:(OFSDocumentStoreFileItem *)fileItem;
+- (BOOL)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator isFileItemCurrentlyOpen:(ODSFileItem *)fileItem;
 
 // If YES, the preview generator will pause updating previews
 - (BOOL)previewGeneratorHasOpenDocument:(OUIDocumentPreviewGenerator *)previewGenerator;
 
-- (void)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator performDelayedOpenOfFileItem:(OFSDocumentStoreFileItem *)fileItem;
+- (void)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator performDelayedOpenOfFileItem:(ODSFileItem *)fileItem;
 
-- (OFSDocumentStoreFileItem *)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator preferredFileItemForNextPreviewUpdate:(NSSet *)fileItems;
+- (ODSFileItem *)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator preferredFileItemForNextPreviewUpdate:(NSSet *)fileItems;
+
+// if preview generation is too expensive, return no, and we'll write zero length previews and stop trying
+- (BOOL)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator shouldGeneratePreviewForURL:(NSURL *)fileURL;
 
 // Takes a fileURL instead of the fileItem since (hypothetically) the file type could change between two different conflict versions (rtf -> rtfd, for example).
 - (Class)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator documentClassForFileURL:(NSURL *)fileURL;
@@ -34,15 +37,18 @@
  */
 @interface OUIDocumentPreviewGenerator : NSObject
 
++ (void)disablePreviewsForAnimation;
++ (void)enablePreviewsForAnimation;
+
 @property(nonatomic,weak) id <OUIDocumentPreviewGeneratorDelegate> delegate;
 
 - (void)enqueuePreviewUpdateForFileItemsMissingPreviews:(id <NSFastEnumeration>)fileItems;
 - (void)applicationDidEnterBackground;
 
-@property(nonatomic,readonly) OFSDocumentStoreFileItem *fileItemToOpenAfterCurrentPreviewUpdateFinishes;
-- (BOOL)shouldOpenDocumentWithFileItem:(OFSDocumentStoreFileItem *)fileItem; // sets -fileItemToOpenAfterCurrentPreviewUpdateFinishes and returns NO if a preview is being generate
+@property(nonatomic,readonly) ODSFileItem *fileItemToOpenAfterCurrentPreviewUpdateFinishes;
+- (BOOL)shouldOpenDocumentWithFileItem:(ODSFileItem *)fileItem; // sets -fileItemToOpenAfterCurrentPreviewUpdateFinishes and returns NO if a preview is being generate
 
-- (void)fileItemNeedsPreviewUpdate:(OFSDocumentStoreFileItem *)fileItem;
+- (void)fileItemNeedsPreviewUpdate:(ODSFileItem *)fileItem;
 - (void)documentClosed;
 
 @end

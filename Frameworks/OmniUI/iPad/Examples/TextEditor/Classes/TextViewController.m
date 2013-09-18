@@ -7,19 +7,19 @@
 
 #import "TextViewController.h"
 
-#import <OmniUI/OUIEditableFrame.h>
+#import <OmniUI/OUIScalingTextStorage.h>
+#import <OmniUI/OUITextView.h>
+#import <OmniUI/NSTextStorage-OUIExtensions.h>
 #import <OmniUI/UIView-OUIExtensions.h>
-#import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OUIDocumentNavigationItem.h>
 
-#import <QuartzCore/QuartzCore.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <OmniFoundation/OFExtent.h>
+#import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/OATextAttachment.h>
-#import <OmniAppKit/OATextStorage.h>
 
 #import "AppController.h"
-#import "RTFDocument.h"
-#import "ImageAttachmentCell.h"
+#import "TextDocument.h"
 
 RCS_ID("$Id$");
 
@@ -28,7 +28,20 @@ RCS_ID("$Id$");
 
 @implementation TextViewController
 {
-    RTFDocument *_nonretained_document;
+    TextDocument *_nonretained_document;
+    OUIDocumentNavigationItem *_documentNavigationItem;
+
+    BOOL _receivedDocumentDidClose;
+}
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
+        return nil;
+    
+    _scale = 1;
+    
+    return self;
 }
 
 - init;
@@ -38,27 +51,62 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
-    [_toolbar release];
-    [_editor release];
+    [_documentNavigationItem release];
     [super dealloc];
 }
 
-#pragma mark -
-#pragma mark UIResponder subclass
+- (OUITextView *)textView;
+{
+    return (OUITextView *)self.view;
+}
+
+- (void)setScale:(CGFloat)scale;
+{
+    _scale = scale;
+    
+    if ([self isViewLoaded]) {
+        OUIScalingTextStorage *scalingTextStorage = (OUIScalingTextStorage *)self.textView.textStorage;
+        scalingTextStorage.scale = scale;
+    }
+}
+
+- (void)documentDidClose;
+{
+    OBPRECONDITION(_receivedDocumentDidClose == NO);
+
+    _receivedDocumentDidClose = YES;
+
+    // Break retain cycle.
+    [_documentNavigationItem release];
+    _documentNavigationItem = nil;
+}
+
+#pragma mark - UIResponder subclass
 
 - (NSUndoManager *)undoManager;
 {
-    // Make sure we get the document's undo manager, not an implicitly created one from UIWindow!
-    return [_nonretained_document undoManager];
+    // UITextView has a private text view and it doesn't currently like to send its undos to the document undo manager.
+    // Hook up our undo/redo options to the text view.
+    return self.textView.undoManager;
 }
 
-#pragma mark -
-#pragma mark OUIDocumentViewController protocol
+#pragma mark - OUIDocumentViewController protocol
 
 @synthesize document = _nonretained_document;
 
-#pragma mark -
-#pragma mark UIViewController subclass
+#pragma mark - UIViewController subclass
+
+- (UINavigationItem *)navigationItem;
+{
+    OBPRECONDITION(self.document);
+    
+    // Don't re-establish a retain cycle we broke.
+    if (!_receivedDocumentDidClose && _documentNavigationItem == nil) {
+        _documentNavigationItem = [[OUIDocumentNavigationItem alloc] initWithDocument:self.document];
+    }
+    
+    return _documentNavigationItem;
+}
 
 - (void)viewDidLoad;
 {
@@ -67,105 +115,59 @@ RCS_ID("$Id$");
     OUIWithoutAnimating(^{
         // Don't steal the toolbar items from any possibly open document
         if (!self.forPreviewGeneration) {
-            _toolbar.items = [[OUIDocumentAppController controller] toolbarItemsForDocument:self.document];
-            [_toolbar layoutIfNeeded];
+            AppController *controller = [AppController controller];
+            // Listed left to right.
+            self.navigationItem.leftBarButtonItems = @[
+                                                       controller.closeDocumentBarButtonItem,
+                                                       controller.undoBarButtonItem
+                                                       ];
+            
+            // Custom title view and OmniPresence Sync button are handled by the OUIDocumentNavigatonItem.
+            
+            // Listed right to left
+            self.navigationItem.rightBarButtonItems = @[
+                                                        [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:self action:@selector(attachImage:)] autorelease],
+                                                        controller.infoBarButtonItem
+                                                        ];
+            
         }
         
 #if 0
         self.view.layer.borderColor = [[UIColor blueColor] CGColor];
         self.view.layer.borderWidth = 2;
-        
-        _editor.layer.borderColor = [[UIColor colorWithRed:0.33 green:1.0 blue:0.33 alpha:1.0] CGColor];
-        _editor.layer.borderWidth = 4;
 #endif
         
-        _editor.textInset = UIEdgeInsetsMake(4, 4, 4, 4);
-        _editor.delegate = self;
-        
         OBASSERT(_nonretained_document);
-        _editor.attributedText = _nonretained_document.text;
-        [self _updateEditorFrame];
         
-        [self adjustScaleTo:1];
-        [self adjustContentInset];
+        NSTextStorage *textStorage = [[NSTextStorage alloc] initWithAttributedString:_nonretained_document.text];
+        OUIScalingTextStorage *scalingTextStorage = [[OUIScalingTextStorage alloc] initWithUnderlyingTextStorage:textStorage scale:_scale];
+        [textStorage release];
+        
+        [self.textView replaceTextStorage:scalingTextStorage];
+        [scalingTextStorage release];
+        
         [self _scrollTextSelectionToVisibleWithAnimation:NO];
     });
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;
+#pragma mark OUITextViewDelegate
+
+- (void)textViewDidChange:(UITextView *)textView;
 {
-    [self _updateTitleBarButtonItemSizeUsingInterfaceOrientation:toInterfaceOrientation];
-    
-    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
-}
-
-- (void)willMoveToParentViewController:(UIViewController *)parent;
-{
-    if (parent) {
-        [self _updateTitleBarButtonItemSizeUsingInterfaceOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
-    }
-    
-    [super willMoveToParentViewController:parent];
-}
-
-#pragma mark -
-#pragma mark UIViewController (OUIMainViewControllerExtensions)
-
-- (UIToolbar *)toolbarForMainViewController;
-{
-    if (!_toolbar)
-        [self view]; // It's in our xib
-    OBASSERT(_toolbar);
-    return _toolbar;
-}
-
-#pragma mark OUIEditableFrameDelegate
-
-static CGFloat kPageWidth = (72*8.5); // Vaguely something like 8.5x11 width.
-
-- (void)textViewContentsChanged:(OUIEditableFrame *)textView;
-{
-    [self _updateEditorFrame];
-    
-    // We need more of a text storage model so that selection changes can participate in undo.
-    _nonretained_document.text = textView.attributedText;
-
-    // Setting the frame will invalidate layout, which we need for selection rect queries.
-    [_editor textUsedSize];
+    // TODO: Just queue an autosave here and make the document vend a text storage.
+    NSAttributedString *text = [[NSAttributedString alloc] initWithAttributedString:[textView.textStorage underlyingTextStorage]];
+    _nonretained_document.text = text;
+    [text release];
     
     [self _scrollTextSelectionToVisibleWithAnimation:YES];
 }
 
-- (void)textViewSelectionChanged:(OUIEditableFrame *)textView;
+- (void)textViewDidChangeSelection:(UITextView *)textView;
 {
     [self _scrollTextSelectionToVisibleWithAnimation:YES];
 }
 
-#pragma mark -
-#pragma mark OUIScalingViewController subclass
-
-- (CGSize)canvasSize;
-{
-    if (!_editor)
-        return CGSizeZero; // Don't know our canvas size yet. We'll set up initial scaling in -viewDidLoad.
-    
-    CGSize size;
-    size.width = kPageWidth;
-    size.height = _editor.textUsedSize.height;
-
-    return size;
-}
-
-#pragma mark -
-#pragma mark UIScrollViewDelegate
-
-- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView;
-{
-    return _editor;
-}
-
-#pragma mark -
-#pragma mark Actions
+#pragma mark - Actions
 
 - (void)attachImage:(id)sender;
 {    
@@ -179,46 +181,54 @@ static CGFloat kPageWidth = (72*8.5); // Vaguely something like 8.5x11 width.
     [popover release];
 }
 
-#pragma mark -
-#pragma mark UIImagePickerControllerDelegate
+#pragma mark - UIImagePickerControllerDelegate
 
 - (void)_addAttachmentFromAsset:(ALAsset *)asset;
 {
     ALAssetRepresentation *rep = [asset defaultRepresentation];
-    NSMutableData *data = [NSMutableData dataWithLength:[rep size]];
+    OBASSERT([rep size] <= NSUIntegerMax); // -size returns long long, which warns on 32-bit
+    NSMutableData *data = [NSMutableData dataWithLength:(NSUInteger)[rep size]];
     
     NSError *error = nil;
-    if ([rep getBytes:[data mutableBytes] fromOffset:0 length:[rep size] error:&error] == 0) {
+    if ([rep getBytes:[data mutableBytes] fromOffset:0 length:(NSUInteger)[rep size] error:&error] == 0) {
         NSLog(@"error getting asset data %@", [error toPropertyList]);
-    } else {
-        NSFileWrapper *wrapper = [[[NSFileWrapper alloc] initRegularFileWithContents:data] autorelease];
-        wrapper.filename = [[rep url] lastPathComponent];
+    } else {        
+        NSTextAttachment *attachment = [[[NSTextAttachment alloc] initWithData:data ofType:rep.UTI] autorelease];
         
-        // a real implementation would really check that the UTI inherits from public.image here (we could get movies any maybe PDFs in the future) and would provide an appropriate cell class for the type (or punt and not create an attachment).
-        OATextAttachment *attachment = [[[OATextAttachment alloc] initWithFileWrapper:wrapper] autorelease];
-        ImageAttachmentCell *cell = [[ImageAttachmentCell alloc] init];
-        attachment.attachmentCell = cell;
-        OBASSERT(cell.attachment == attachment); // sets the backpointer
-        [cell release];
-        
-        UITextRange *selectedTextRange = [_editor selectedTextRange];
-        if (!selectedTextRange) {
-            UITextPosition *endOfDocument = [_editor endOfDocument];
-            selectedTextRange = [_editor textRangeFromPosition:endOfDocument toPosition:endOfDocument];
+        OUITextView *textView = self.textView;
+        NSRange selectedTextRange = textView.selectedRange;
+        if (selectedTextRange.location == NSNotFound) {
+            selectedTextRange = NSMakeRange(0, [textView.textStorage length]);
         }
-        UITextPosition *startPosition = [[[selectedTextRange start] copy] autorelease]; // hold onto this since the edit will drop the -selectedTextRange
 
-        // TODO: Clone attributes of the beginning of the selected range?
-        unichar attachmentCharacter = OAAttachmentCharacter;
-        [_editor replaceRange:selectedTextRange withText:[NSString stringWithCharacters:&attachmentCharacter length:1]];
+        // Keep whatever other attributes we had; doesn't matter now, but if we wanted to draw a label on the attachment, it would be nice to have it know that its foreground color should match the color of the surrounding text.
+        NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithDictionary:textView.typingAttributes];
+        attributes[NSAttachmentAttributeName] = attachment;
         
-        // This will have changed the selection
-        UITextPosition *endPosition = [_editor positionFromPosition:startPosition offset:1];
-        selectedTextRange = [_editor textRangeFromPosition:startPosition toPosition:endPosition];
-
-        [_editor setValue:attachment forAttribute:OAAttachmentAttributeName inRange:selectedTextRange];
+        NSAttributedString *attachmentAttributedString = [[NSAttributedString alloc] initWithString:[NSAttributedString attachmentString] attributes:attributes];
+        [attributes release];
         
-        //NSLog(@"_editor = %@, text = %@", _editor, [_editor attributedText]);
+        // This will change the selection, possibly putting the old selection out of bounds. Don't depend on UITextView handling this...
+        BOOL didChangeSelection = NO;
+        if (selectedTextRange.length > 1/*[attachmentAttributedString length]*/) {
+            // Selection is getting shorter; adjust it now.
+            textView.selectedRange = NSMakeRange(selectedTextRange.location + 1, 0);
+            didChangeSelection = YES;
+        }
+        
+        NSTextStorage *textStorage = [textView.textStorage underlyingTextStorage];
+        [textStorage beginEditing];
+        [textStorage replaceCharactersInRange:selectedTextRange withAttributedString:attachmentAttributedString];
+        [textStorage endEditing];
+        [attachmentAttributedString release];
+        
+        if (!didChangeSelection) {
+            // Selection is growing, so we waited until now to change it.
+            textView.selectedRange = NSMakeRange(selectedTextRange.location + 1, 0);
+        }
+        
+        // Otherwise, this won't mark the document dirty.
+        [self textViewDidChange:textView];
     }
 }
 
@@ -242,14 +252,7 @@ static CGFloat kPageWidth = (72*8.5); // Vaguely something like 8.5x11 width.
     [[OUIAppController controller] dismissPopoverAnimated:YES];
 }
 
-#pragma mark -
-#pragma mark Private
-
-- (void)_updateEditorFrame;
-{
-    CGFloat usedHeight = _editor.viewUsedSize.height;
-    _editor.frame = CGRectMake(0, 0, kPageWidth, usedHeight);
-}
+#pragma mark - Private
 
 static const CGFloat kScrollContext = 66;
 
@@ -273,23 +276,20 @@ static CGFloat _scrollCoord(OFExtent containerExtent, OFExtent innerExtent)
     }
 }
 
-static void _scrollVerticallyInView(UIScrollView *scrollView, UIView *view, CGRect viewRect, BOOL animated)
+static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL animated)
 {
     DEBUG_SCROLL(@"vertical: view:%@ viewRect %@ animated", [view shortDescription], NSStringFromCGRect(viewRect));
     
-    CGRect targetViewRect = [scrollView convertRect:viewRect fromView:view];
-    DEBUG_SCROLL(@"  targetViewRect %@", NSStringFromCGRect(targetViewRect));
+    CGRect scrollBounds = textView.bounds;
     
-    CGRect scrollBounds = scrollView.bounds;
-    
-    OFExtent targetViewYExtent = OFExtentFromRectYRange(targetViewRect);
+    OFExtent targetViewYExtent = OFExtentFromRectYRange(viewRect);
     OFExtent scrollBoundsYExtent = OFExtentFromRectYRange(scrollBounds);
     
     DEBUG_SCROLL(@"  targetViewYExtent = %@, scrollBoundsYExtent = %@", OFExtentToString(targetViewYExtent), OFExtentToString(scrollBoundsYExtent));
     DEBUG_SCROLL(@"  scroll bounds %@, scroll offset %@", NSStringFromCGRect(scrollView.bounds), NSStringFromCGPoint(scrollView.contentOffset));
     
     if (OFExtentMin(targetViewYExtent) < OFExtentMin(scrollBoundsYExtent) + kScrollContext) {
-        CGFloat extraScrollPadding = CLAMP(kScrollContext, 0.0f, scrollView.contentOffset.y);
+        CGFloat extraScrollPadding = CLAMP(kScrollContext, 0.0f, textView.contentOffset.y);
         targetViewYExtent.length += extraScrollPadding; // When we scroll, try to show a little context on the other side
         targetViewYExtent.location -= extraScrollPadding; // If we're scrolling up, we want our target to extend up rather than down
     } else {
@@ -307,40 +307,23 @@ static void _scrollVerticallyInView(UIScrollView *scrollView, UIView *view, CGRe
         return; // Everything visible is already within the target
     }
     
-    CGPoint contentOffset = scrollView.contentOffset;
+    CGPoint contentOffset = textView.contentOffset;
     contentOffset.y = _scrollCoord(scrollBoundsYExtent, targetViewYExtent);
     
     // UIScrollView ignores +[UIView areAnimationsEnabled]. Don't provoke animation when we shouldn't be animating.
     animated &= [UIView areAnimationsEnabled];
     
-    [scrollView setContentOffset:contentOffset animated:animated];
+    [textView setContentOffset:contentOffset animated:animated];
 }
 
 - (void)_scrollTextSelectionToVisibleWithAnimation:(BOOL)animated;
 {
-    UITextRange *selection = _editor.selectedTextRange;
-    if (selection && [_editor window]) {
-        CGRect selectionRect = [_editor boundsOfRange:_editor.selectedTextRange];
-        _scrollVerticallyInView(self.scrollView, _editor, selectionRect, animated);
+    OUITextView *textView = self.textView;
+    UITextRange *selection = textView.selectedTextRange;
+    if (selection && textView.window) {
+        CGRect selectionRect = [textView boundsOfRange:selection];
+        _scrollVerticallyInView(textView, selectionRect, animated);
     }
-}
-
-- (void)_updateTitleBarButtonItemSizeUsingInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
-{
-    AppController *controller = [AppController controller];    
-    UIBarButtonItem *titleItem = [controller documentTitleToolbarItem];
-    UIView *customView = titleItem.customView;
-    
-    OBASSERT_NOTNULL(customView);
-
-    CGFloat newWidth = UIInterfaceOrientationIsPortrait(interfaceOrientation) ? 400 : 550;
-
-    customView.frame = (CGRect){
-        .origin.x = customView.frame.origin.x,
-        .origin.y = customView.frame.origin.y,
-        .size.width = newWidth,
-        .size.height = customView.frame.size.height
-    };
 }
 
 @end

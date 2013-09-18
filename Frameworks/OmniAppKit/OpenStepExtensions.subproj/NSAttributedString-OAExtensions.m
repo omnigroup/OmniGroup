@@ -16,7 +16,7 @@ RCS_ID("$Id$")
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 @interface OAInlineImageTextAttachmentCell : NSImageCell /* <NSTextAttachmentCell> */
-@property (nonatomic,assign) NSTextAttachment *attachment;
+@property (nonatomic,assign) OATextAttachment *attachment;
 @end
 #endif
 
@@ -49,26 +49,56 @@ static NSString *blackColorString;
 {
     static NSString *AttachmentString = nil;
     if (!AttachmentString) {
-        unichar c = OAAttachmentCharacter;
+        unichar c = NSAttachmentCharacter;
         AttachmentString = [[NSString alloc] initWithCharacters:&c length:1];
     }
     return AttachmentString;
 }
 
-- (void)eachAttachment:(void (^)(OATextAttachment *))applier;
+- (BOOL)containsAttribute:(NSString *)attributeName;
+{
+    return [self containsAttribute:attributeName inRange:NSMakeRange(0, [self length])];
+}
+
+- (BOOL)containsAttribute:(NSString *)attributeName inRange:(NSRange)range;
+{
+    NSUInteger position = range.location, end = NSMaxRange(range);
+    
+    while (position < end) {
+        NSRange effectiveRange;
+        if ([self attribute:attributeName atIndex:position effectiveRange:&effectiveRange])
+            return YES;
+        position = NSMaxRange(effectiveRange);
+    }
+    
+    return NO;
+}
+
+- (BOOL)containsAttachments;
+{
+    return [self containsAttribute:NSAttachmentAttributeName];
+}
+
+- (id)attachmentAtCharacterIndex:(NSUInteger)characterIndex;
+{
+    return [self attribute:NSAttachmentAttributeName atIndex:characterIndex effectiveRange:NULL];
+}
+
+- (void)eachAttachment:(void (^)(OATextAttachment *, BOOL *stop))applier;
 {
     NSString *string = [self string];
     NSString *attachmentString = [NSAttributedString attachmentString];
     
     NSUInteger location = 0, end = [self length];
-    while (location < end) {
+    BOOL stop = NO;
+    while (location < end && !stop) {
         NSRange attachmentRange = [string rangeOfString:attachmentString options:0 range:NSMakeRange(location,end-location)];
         if (attachmentRange.length == 0)
             break;
         
-        OATextAttachment *attachment = [self attribute:OAAttachmentAttributeName atIndex:attachmentRange.location effectiveRange:NULL];
+        OATextAttachment *attachment = [self attribute:NSAttachmentAttributeName atIndex:attachmentRange.location effectiveRange:NULL];
         OBASSERT(attachment);
-        applier(attachment);
+        applier(attachment, &stop);
         
         location = NSMaxRange(attachmentRange);
     }
@@ -78,7 +108,7 @@ static NSString *blackColorString;
 + (NSAttributedString *)attributedStringWithImage:(NSImage *)anImage;
 {
     OAInlineImageTextAttachmentCell *imageCell = [[OAInlineImageTextAttachmentCell alloc] initImageCell:anImage];
-    NSTextAttachment *attach = [[NSTextAttachment alloc] initWithFileWrapper:nil];
+    OATextAttachment *attach = [[OATextAttachment alloc] initWithFileWrapper:nil];
     [attach setAttachmentCell:(id <NSTextAttachmentCell>)imageCell];
     [imageCell release];
     
@@ -573,7 +603,7 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 @implementation OAInlineImageTextAttachmentCell
 {
-    NSTextAttachment *_nonretained_attachment;
+    OATextAttachment *_nonretained_attachment;
 }
 
 // Many of the NSTextAttachmentCell protocol's methods are supplied by NSCell.

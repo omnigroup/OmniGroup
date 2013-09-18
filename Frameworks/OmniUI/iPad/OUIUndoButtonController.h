@@ -7,23 +7,19 @@
 //
 // $Id$
 
-#import <UIKit/UIViewController.h>
-#import <UIKit/UIPopoverController.h>
+#import <Foundation/NSObject.h>
+
 #import <OmniUI/OUIUndoBarButtonItem.h>
 
-@protocol OUIUndoButtonTarget, OUIUndoBarButtonItem;
+@protocol OUIUndoBarButtonItem;
 
-@interface OUIUndoButtonController : UIViewController <UIPopoverControllerDelegate>
+@interface OUIUndoButtonController : NSObject
 
-@property(nonatomic,retain) IBOutlet UIButton *undoButton;
-@property(nonatomic,retain) IBOutlet UIButton *redoButton;
-
-- (IBAction)undoButtonAction:(id)sender;
-- (IBAction)redoButtonAction:(id)sender;
 - (void)showUndoMenuFromItem:(OUIUndoBarButtonItem *)item;
 - (BOOL)dismissUndoMenu;
 - (BOOL)isMenuVisible;
 
-@property(nonatomic,assign) id <OUIUndoBarButtonItemTarget> undoBarButtonItemTarget;
+@property(nonatomic,copy) UIColor *tintColor;
+@property(nonatomic,weak) id <OUIUndoBarButtonItemTarget> undoBarButtonItemTarget;
 
 @end

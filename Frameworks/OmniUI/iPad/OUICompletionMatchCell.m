@@ -7,7 +7,6 @@
 
 #import <OmniUI/OUICompletionMatchCell.h>
 
-#import <CoreText/CoreText.h>
 #import <OmniFoundation/OFIndexPath.h>
 #import <OmniFoundation/OFCompletionMatch.h>
 
@@ -15,26 +14,15 @@ RCS_ID("$Id$");
 
 static const CGFloat _CompletionCellMargin = 10.0f;
 
-@interface OFCompletionMatchLabel : UIView {
-  @private
-    BOOL _highlighted;
-    UIFont *_textFont;
-    UIColor *_textColor;
-    UIColor *_highlightedTextColor;
-    NSAttributedString *_attributedString;
-}
-
-+ (BOOL)isSupportedOnCurrentOS;
+@interface OFCompletionMatchLabel : UIView
 + (NSAttributedString *)attributedStringForCompletionMatch:(OFCompletionMatch *)completionMatch;
 
 @property (nonatomic, getter=isHighlighted) BOOL highlighted;
-@property (nonatomic, retain) UIFont *textFont;
-@property (nonatomic, retain) UIColor *textColor;
-@property (nonatomic, retain) UIColor *highlightedTextColor;
+@property (nonatomic, strong) UIFont *textFont;
+@property (nonatomic, strong) UIColor *textColor;
+@property (nonatomic, strong) UIColor *highlightedTextColor;
 
 @property (nonatomic, copy) NSAttributedString *attributedString;
-
-- (CTFontRef)newCTFontWithUIFont:(UIFont *)font;
 
 @end
 
@@ -43,12 +31,14 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
 #pragma mark -
 
 @interface OUICompletionMatchCell ()
-
-@property (nonatomic, readonly) OFCompletionMatchLabel *completionMatchLabel;
-
+@property(nonatomic,readonly) OFCompletionMatchLabel *completionMatchLabel;
 @end
 
 @implementation OUICompletionMatchCell
+{
+    OFCompletionMatch *_completionMatch;
+    OFCompletionMatchLabel *_completionMatchLabel;
+}
 
 - (id)initWithCompletionMatch:(OFCompletionMatch *)completionMatch reuseIdentifier:(NSString *)reuseIdentifier;
 {
@@ -62,16 +52,9 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
         return nil;
     
     self.textLabel.font = [UIFont boldSystemFontOfSize:15.0];
-    _completionMatch = [completionMatch retain];
+    _completionMatch = completionMatch;
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [_completionMatch release];
-    [_completionMatchLabel release];
-    [super dealloc];
 }
 
 - (OFCompletionMatch *)completionMatch;
@@ -84,8 +67,7 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
     if (completionMatch == _completionMatch)
         return;
         
-    [_completionMatch release];
-    _completionMatch = [completionMatch retain];
+    _completionMatch = completionMatch;
 
     [self setNeedsLayout];
     [self setNeedsDisplay];
@@ -104,14 +86,12 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
     self.textLabel.hidden = YES;
     
     // Layout our own subviews
-    if (completionMatchLabel) {
-        completionMatchLabel.attributedString = [OFCompletionMatchLabel attributedStringForCompletionMatch:_completionMatch];
-        completionMatchLabel.textFont = self.textLabel.font;
-        completionMatchLabel.textColor = self.textLabel.textColor;
-        completionMatchLabel.highlightedTextColor = self.textLabel.highlightedTextColor;
+    completionMatchLabel.attributedString = [OFCompletionMatchLabel attributedStringForCompletionMatch:_completionMatch];
+    completionMatchLabel.textFont = self.textLabel.font;
+    completionMatchLabel.textColor = self.textLabel.textColor;
+    completionMatchLabel.highlightedTextColor = self.textLabel.highlightedTextColor;
 
-        completionMatchLabel.frame = self.textLabel.frame;
-    }
+    completionMatchLabel.frame = self.textLabel.frame;
 }
 
 #pragma mark -
@@ -122,9 +102,6 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
     if (_completionMatchLabel)
         return _completionMatchLabel;
         
-    if (![OFCompletionMatchLabel isSupportedOnCurrentOS])
-        return nil;
-
     _completionMatchLabel = [[OFCompletionMatchLabel alloc] initWithFrame:CGRectZero];
     
     [self.contentView addSubview:_completionMatchLabel];
@@ -139,25 +116,17 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
 
 @implementation OFCompletionMatchLabel
 
-+ (BOOL)isSupportedOnCurrentOS;
-{
-    return (NSClassFromString(@"NSAttributedString") != Nil && CTLineCreateWithAttributedString != NULL);
-}
-
 + (NSAttributedString *)attributedStringForCompletionMatch:(OFCompletionMatch *)completionMatch;
 {
     OBPRECONDITION(completionMatch);
 
-    Class cls = NSClassFromString(@"NSMutableAttributedString");
-    OBASSERT(cls);
-
-    NSMutableAttributedString *attributedString = [[[cls alloc] initWithString:[completionMatch string]] autorelease];
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:[completionMatch string]];
     OFIndexPath *characterIndexPath = [completionMatch characterIndexPath];
     unsigned int indexCount = [characterIndexPath length];
 
     if (indexCount > 0) {
         NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:
-            [NSNumber numberWithInt:kCTUnderlineStyleSingle], (id)kCTUnderlineStyleAttributeName,
+            [NSNumber numberWithInt:NSUnderlineStyleSingle], (id)NSUnderlineStyleAttributeName,
             nil
         ];
 
@@ -185,127 +154,60 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
     return self;
 }
 
-- (void)dealloc;
-{
-    [_textFont release];
-    [_textColor release];
-    [_highlightedTextColor release];
-    [_attributedString release];
-
-    [super dealloc];
-}
-
-@synthesize highlighted = _highlighted;
-
-- (UIFont *)textFont;
-{
-    return _textFont;
-}
-
 - (void)setTextFont:(UIFont *)textFont;
 {
     if (_textFont != textFont) {
-        [_textFont release];
-        _textFont = [textFont retain];
-
+        _textFont = textFont;
         [self setNeedsDisplay];
     }
-}
-
-- (UIColor *)textColor;
-{
-    return _textColor;
 }
 
 - (void)setTextColor:(UIColor *)textColor;
 {
     if (_textColor != textColor) {
-        [_textColor release];
-        _textColor = [textColor retain];
-
+        _textColor = textColor;
         [self setNeedsDisplay];
     }
-}
-
-- (UIColor *)highlightedTextColor;
-{
-    return _highlightedTextColor;
 }
 
 - (void)setHighlightedTextColor:(UIColor *)highlightedTextColor;
 {
     if (_highlightedTextColor != highlightedTextColor) {
-        [_highlightedTextColor release];
-        _highlightedTextColor = [highlightedTextColor retain];
-
+        _highlightedTextColor = highlightedTextColor;
         [self setNeedsDisplay];
     }
-}
-
-- (NSAttributedString *)attributedString;
-{
-    return _attributedString;
 }
 
 - (void)setAttributedString:(NSAttributedString *)attributedString;
 {
     if (_attributedString != attributedString) {
-        [_attributedString release];
-        _attributedString = [attributedString retain];
-
+        _attributedString = attributedString;
         [self setNeedsDisplay];
     }
 }
 
 - (void)drawRect:(CGRect)clipRect;
 {
-    // REVIEW It might be nice to build and cache these CTLine instances once, and invalidate as necessary.
-    // However, in practice since our drawing is cached to our underlying layer, this probably isn't important.
-    
-    CTFontRef font = NULL;
-    CTLineRef line = NULL;
-    
-    UIFont *textFont = self.textFont;
-    if (!textFont)
-        textFont = [UIFont systemFontOfSize:[UIFont labelFontSize]];
-    font = [self newCTFontWithUIFont:textFont];
-    OBASSERT(font);
+    UIFont *font = self.textFont;
+    if (!font)
+        font = [UIFont systemFontOfSize:[UIFont labelFontSize]];
     
     UIColor *textColor = [self isHighlighted] ? self.highlightedTextColor : self.textColor;
     if (!textColor) 
         textColor = [self isHighlighted] ? [UIColor whiteColor] : [UIColor blackColor];
 
-    Class cls = NSClassFromString(@"NSMutableAttributedString");
-    OBASSERT(cls);
-
-    NSMutableAttributedString *displayString = [[self.attributedString mutableCopy] autorelease];
-    _SetAttributedStringAttribute(displayString, (id)kCTForegroundColorAttributeName, (id)[textColor CGColor]);
-    _SetAttributedStringAttribute(displayString, (id)kCTFontAttributeName, (id)font);
-
-    line = CTLineCreateWithAttributedString((CFAttributedStringRef)displayString);
-    OBASSERT(line);
+    NSMutableAttributedString *displayString = [self.attributedString mutableCopy];
     
-    if (CTLineGetTypographicBounds(line, NULL, NULL, NULL) > CGRectGetWidth(self.bounds)) {        
-        CTLineRef truncationToken = NULL;
-        CTLineRef truncatedLine = NULL;
-
-        NSMutableAttributedString *truncationString = [[[cls alloc] initWithString:@"…" attributes:nil] autorelease];
-        _SetAttributedStringAttribute(truncationString, (id)kCTForegroundColorAttributeName,  (id)[textColor CGColor]);
-        _SetAttributedStringAttribute(truncationString, (id)kCTFontAttributeName, (id)font);
-
-        truncationToken = CTLineCreateWithAttributedString((CFAttributedStringRef)truncationString);
-        OBASSERT(truncationToken);
-        
-        truncatedLine = CTLineCreateTruncatedLine(line, CGRectGetWidth(self.bounds), kCTLineTruncationMiddle, truncationToken);
-        OBASSERT(truncatedLine);
-
-        CFRelease(line);
-        line = (CTLineRef)CFRetain(truncatedLine);
-
-        CFRelease(truncationToken);
-        CFRelease(truncatedLine);
-    }
-
+    NSMutableParagraphStyle *paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+    paragraphStyle.lineBreakMode = NSLineBreakByTruncatingMiddle;
+    
+    _SetAttributedStringAttribute(displayString, NSForegroundColorAttributeName, textColor);
+    _SetAttributedStringAttribute(displayString, NSFontAttributeName, font);
+    _SetAttributedStringAttribute(displayString, NSParagraphStyleAttributeName, paragraphStyle);
+    
+    NSStringDrawingContext *stringContext = [NSStringDrawingContext new];
+    NSStringDrawingOptions options = 0;
+    
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     if ([self isOpaque]) {
@@ -313,31 +215,12 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
         CGContextFillRect(context, self.bounds);
     }
     
-    CGRect textRect = self.bounds;
-    CGRect lineBounds = CGRectIntegral(CTLineGetImageBounds(line, context));
-    CGPoint pt = CGPointZero;
-    pt.y = ceil(0.5 * (CGRectGetHeight(textRect) - CGRectGetHeight(lineBounds) - CGRectGetMinY(lineBounds)) - 1);
+    CGRect textBounds = [displayString boundingRectWithSize:self.bounds.size options:options context:stringContext];
+    CGRect bounds = self.bounds;
+
+    textBounds.origin.y = ceil(0.5 * (CGRectGetHeight(bounds) - CGRectGetHeight(textBounds)));
     
-    CGContextSaveGState(context);
-    {
-        CGContextSetTextPosition(context, 0, 0);
-        CGContextTranslateCTM(context, pt.x + CGRectGetMinX(lineBounds), pt.y + CGRectGetMaxY(lineBounds));
-        CGContextScaleCTM(context, 1, -1);
-        CTLineDraw(line, context);
-    }
-    CGContextRestoreGState(context);
-
-    if (font != NULL)
-        CFRelease(font);
-    CFRelease(line);
-}
-
-- (CTFontRef)newCTFontWithUIFont:(UIFont *)font;
-{
-    if (!font)
-        font = [UIFont systemFontOfSize:[UIFont labelFontSize]];
-
-    return CTFontCreateWithName((CFStringRef)[font fontName], [font pointSize], NULL);
+    [displayString drawWithRect:textBounds options:options context:stringContext];
 }
 
 @end

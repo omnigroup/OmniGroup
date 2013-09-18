@@ -9,7 +9,7 @@
 
 #import <OmniUI/OUIInspectorSlice.h>
 
-@class OUIInspectorSegmentedControl;
+@class OUISegmentedControl;
 
 @interface OUISegmentedControlInspectorSlice : OUIInspectorSlice
 

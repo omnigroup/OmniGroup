@@ -19,12 +19,6 @@ RCS_ID("$Id$");
 
 @implementation OUIComponentColorPicker
 
-- (void)dealloc;
-{
-    [_componentSliders release];
-    [super dealloc];
-}
-
 // Required subclass methods
 - (OQColorSpace)colorSpace;
 {
@@ -91,7 +85,8 @@ RCS_ID("$Id$");
 
 - (void)loadView;
 {
-    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
+    UIScrollView *view = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
+    view.alwaysBounceVertical = YES;
     view.autoresizingMask = UIViewAutoresizingFlexibleHeight;
     CGRect bounds = view.bounds;
     
@@ -99,12 +94,13 @@ RCS_ID("$Id$");
     _componentSliders = [[self makeComponentSliders] copy];
     OBASSERT([_componentSliders count] > 0);
     
+    const CGFloat kNavBarOverhang = 0.0f; // OUIColorInspectorPane handles this for us since we're a scrollview
     const CGFloat kSpaceBeforeFirstSlider = 8;
     const CGFloat kSpaceBetweenSliders = 27;
     const CGFloat kEdgePadding = 8;
     const CGFloat kSpaceAfterLastSlider = 8;
     
-    CGFloat yOffset = CGRectGetMinY(bounds) + kSpaceBeforeFirstSlider;
+    CGFloat yOffset = CGRectGetMinY(bounds) + kSpaceBeforeFirstSlider + kNavBarOverhang;
     for (OUIColorComponentSlider *slider in _componentSliders) {
         CGSize sliderSize = [slider sizeThatFits:CGSizeMake(bounds.size.width - 2*kEdgePadding, 0)];
         CGRect sliderFrame = CGRectMake(CGRectGetMinX(bounds) + kEdgePadding, yOffset, sliderSize.width, sliderSize.height);
@@ -120,10 +116,13 @@ RCS_ID("$Id$");
     CGRect viewFrame = view.frame;
     viewFrame.size.height = CGRectGetMaxY([[_componentSliders lastObject] frame]) - CGRectGetMinY(bounds) + kSpaceAfterLastSlider;
     view.frame = viewFrame;
+
+    // We need to let the scrollview know what its contentSize is, so that it will let you scroll everything to visible.
+    CGRect viewBounds = view.bounds;
+    view.contentSize = CGSizeMake(viewBounds.size.width, yOffset);
     
     [self _updateSliderValuesFromColor];
     [self setView:view];
-    [view release];
 }
 
 #pragma mark -
@@ -304,7 +303,7 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
     
     // Store the color in ourselves since we are the <OUIColorValue> being sent
     OQColor *updatedColor = [self makeColorWithComponents:components];
-    self.selectionValue = [[[OUIInspectorSelectionValue alloc] initWithValue:updatedColor] autorelease];
+    self.selectionValue = [[OUIInspectorSelectionValue alloc] initWithValue:updatedColor];
     free(components);
     
     if (![[UIApplication sharedApplication] sendAction:@selector(changeColor:) to:self.target from:self forEvent:nil])

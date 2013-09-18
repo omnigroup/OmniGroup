@@ -18,6 +18,7 @@
 - (NSArray *)children;
 - (OUZipMember *)childNamed:(NSString *)childName;
 - (void)addChild:(OUZipMember *)child;
+- (void)prependChild:(OUZipMember *)child;
 
 - (BOOL)appendToZipArchive:(OUZipArchive *)zip error:(NSError **)outError;
 

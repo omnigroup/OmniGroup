@@ -7,23 +7,27 @@
 //
 // $Id$
 
-#import <Foundation/NSAttributedString.h>
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    #import <Foundation/NSGeometry.h>
-#else
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    #import <UIKit/NSAttributedString.h>
     #import <CoreGraphics/CGGeometry.h>
+#else
+    #import <AppKit/NSAttributedString.h>
+    #import <Foundation/NSGeometry.h>
 #endif
-#import <OmniAppKit/OATextAttachment.h>
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-@class NSImage;
-#endif
+#import <OmniAppKit/OATextAttachment.h>
 
 @interface NSAttributedString (OAExtensions)
 
 + (NSString *)attachmentString;
 
-- (void)eachAttachment:(void (^)(OATextAttachment *))applier;
+- (BOOL)containsAttribute:(NSString *)attributeName;
+- (BOOL)containsAttribute:(NSString *)attributeName inRange:(NSRange)range;
+
+- (BOOL)containsAttachments;
+- (id)attachmentAtCharacterIndex:(NSUInteger)characterIndex;
+
+- (void)eachAttachment:(void (^)(OATextAttachment *, BOOL *stop))applier;
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 + (NSAttributedString *)attributedStringWithImage:(NSImage *)anImage;

@@ -1,4 +1,4 @@
-// Copyright 2007, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2007, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,7 @@
 RCS_ID("$Id$")
 
 @interface OISectionedInspector (/*Private*/)
+@property (retain, nonatomic) IBOutlet NSView *inspectionView;
 - (void)_layoutSections;
 @end
 
@@ -36,6 +37,7 @@ RCS_ID("$Id$")
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [_sectionInspectors release];
+    [inspectionView release];
     [super dealloc];
 }
 
@@ -120,7 +122,7 @@ RCS_ID("$Id$")
 - (NSView *)inspectorView;
 {
     if (!inspectionView)
-        [OMNI_BUNDLE loadNibNamed:@"OISectionedInspector" owner:self];
+        [OMNI_BUNDLE loadNibNamed:@"OISectionedInspector" owner:self topLevelObjects:NULL];
 
     OBPOSTCONDITION(inspectionView);
     return inspectionView;
@@ -177,6 +179,8 @@ RCS_ID("$Id$")
 
 #pragma mark -
 #pragma mark Private
+
+@synthesize inspectionView=inspectionView;
 
 - (void)_layoutSections;
 {

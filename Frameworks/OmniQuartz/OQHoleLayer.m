@@ -1,4 +1,4 @@
-// Copyright 2000-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -235,9 +235,10 @@ static CGImageRef _createShadowImageWithSize(CGSize size, NSUInteger shadowEdgeM
 #endif
     
     size_t bytesPerRow = componentCount * size.width; // alpha
-
+    
+    // We can cast directly from CGImageAlphaInfo to CGBitmapInfo because the first component in the latter is an alpha info mask
     CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(colorSpaceName);
-    CGContextRef ctx = CGBitmapContextCreate(NULL, size.width, size.height, 8/*bitsPerComponent*/, bytesPerRow, colorSpace, alphaInfo);
+    CGContextRef ctx = CGBitmapContextCreate(NULL, size.width, size.height, 8/*bitsPerComponent*/, bytesPerRow, colorSpace, (CGBitmapInfo)alphaInfo);
     CGColorSpaceRelease(colorSpace);
 
     CGRect bounds = CGRectMake(0, 0, size.width, size.height);

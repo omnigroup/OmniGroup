@@ -396,6 +396,32 @@ NSData *OFLibXMLNodeBase64Content(const xmlNode *node)
     return nil;
 }
 
+
+static int libxmlToNSData_write(void *context, const char *buffer, int len)
+{
+    if (len < 0)
+        return -1;
+    [(NSMutableData *)context appendBytes:buffer length:len];
+    return len;
+}
+
+static int libxmlToNSData_close(void *context)
+{
+    [(NSMutableData *)context autorelease];
+    return 0;
+}
+
+static xmlOutputBuffer *OFLibXMLOutputBufferToData(NSMutableData *destination)
+{
+    xmlOutputBuffer *buf = xmlOutputBufferCreateIO(libxmlToNSData_write, libxmlToNSData_close, [destination retain], NULL);
+    if (!buf) {
+        [destination release];
+        return nil;
+    } else {
+        return buf;
+    }
+}
+
 static void setNodeContentToString(xmlNode *node, NSString *toString)
 {
     xmlNodeSetContent(node, (const xmlChar *)[toString cStringUsingEncoding:NSUTF8StringEncoding]);
@@ -717,25 +743,39 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
         return NO;
     }
     
-    xmlOutputBuffer *canonicalSignedInfoBuf = xmlAllocOutputBuffer(NULL);
+    NSMutableData *canonicalSignedInfoBytes = [[NSMutableData alloc] init];
+    xmlOutputBuffer *canonicalSignedInfoBuf = OFLibXMLOutputBufferToData(canonicalSignedInfoBytes);
     BOOL canonOK = canonicalizeToBuffer(owningDocument, signedInfo, canonMethodElement, canonicalSignedInfoBuf, err);
     
     if (!canonOK) {
     unwind_sibuf:
         xmlOutputBufferClose(canonicalSignedInfoBuf);
+    unwind_sibytes:
+        [canonicalSignedInfoBytes release];
         return NO;
     }
     
-    if ((xmlOutputBufferFlush(canonicalSignedInfoBuf) < 0 ) || !canonicalSignedInfoBuf->buffer->use) {
+    if (xmlOutputBufferFlush(canonicalSignedInfoBuf) < 0) {
         signatureStructuralFailure(err, @"Unable to canonicalize SignedInfo");
         goto unwind_sibuf;
     }
-
-    /* Where possible, extract values from the canonicalized signature element, since the canonicalized version is what the signature is protecting. See XMLDSIG-CORE [3.2.2], [8.1.3]. */
-    xmlDoc *canonicalSignedInfo = xmlParseMemory((const char *)xmlBufferContent(canonicalSignedInfoBuf->buffer), xmlBufferLength(canonicalSignedInfoBuf->buffer));
+    
+    if (xmlOutputBufferClose(canonicalSignedInfoBuf) < 0) {
+        signatureStructuralFailure(err, @"Unable to canonicalize SignedInfo");
+        goto unwind_sibytes;
+    }
+    
+    if ([canonicalSignedInfoBytes length] < 1 || [canonicalSignedInfoBytes length] >= INT_MAX) {
+        /* The length arg of xmlParseMemory() is an int, not a size_t, so check that the buffer's length is within range */
+        signatureStructuralFailure(err, @"Unable to canonicalize SignedInfo");
+        goto unwind_sibytes;
+    }
+    
+    /* Always extract values from the canonicalized signature element, since the canonicalized version is what the signature is protecting. See XMLDSIG-CORE [3.2.2], [8.1.3]; and an ongoing series of CERT announcements. */
+    xmlDoc *canonicalSignedInfo = xmlParseMemory([canonicalSignedInfoBytes bytes], (int)[canonicalSignedInfoBytes length]);
     if (!canonicalSignedInfo || !isNamed(xmlDocGetRootElement(canonicalSignedInfo), "SignedInfo", XMLSignatureNamespace, NULL)) {
         signatureStructuralFailure(err, @"Unable to parse the canonicalized <SignedInfo>");
-        goto unwind_sibuf;
+        goto unwind_sibytes;
     }
     
     xmlNode *signatureMethod = OFLibXMLChildNamed(xmlDocGetRootElement(canonicalSignedInfo), "SignatureMethod", XMLSignatureNamespace, &count);
@@ -743,7 +783,7 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
         signatureStructuralFailure(err, @"Found %d <SignatureMethod> elements", count);
     unwind_sidoc:
         xmlFreeDoc(canonicalSignedInfo);
-        goto unwind_sibuf;
+        goto unwind_sibytes;
     }
     
     xmlChar *signatureAlgorithm = lessBrokenGetAttribute(signatureMethod, "Algorithm", XMLSignatureNamespace);
@@ -768,14 +808,14 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
             if (op == OFXMLSignature_Verify) {
                 success =
                     [verifier verifyInit:err] &&
-                    [verifier processBuffer:canonicalSignedInfoBuf->buffer->content length:canonicalSignedInfoBuf->buffer->use error:err] &&
+                    [verifier processBuffer:[canonicalSignedInfoBytes bytes] length:[canonicalSignedInfoBytes length] error:err] &&
                     [verifier verifyFinal:signatureValue error:err];
             } else if (op == OFXMLSignature_Sign) {
                 
                 if (![verifier generateInit:err])
                     goto failed;
                 
-                if (![verifier processBuffer:canonicalSignedInfoBuf->buffer->content length:canonicalSignedInfoBuf->buffer->use error:err])
+                if (![verifier processBuffer:[canonicalSignedInfoBytes bytes] length:[canonicalSignedInfoBytes length] error:err])
                     goto failed;
                 
                 NSData *generatedSignature = [verifier generateFinal:err];
@@ -803,7 +843,7 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
     }
     
     xmlFree(signatureAlgorithm);
-    xmlOutputBufferClose(canonicalSignedInfoBuf);
+    [canonicalSignedInfoBytes release];
     
     if (op == OFXMLSignature_Verify && (success || keepFailedSignatures)) {
         /* w00t, we have a valid signature of... something. */
@@ -1635,22 +1675,16 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
 /*" Invokes -verifyReferenceAtIndex:toBuffer:error:, accumulating the result in an NSData "*/
 - (NSData *)verifiedReferenceAtIndex:(NSUInteger)nodeIndex error:(NSError **)outError;
 {
-    xmlOutputBuffer *buf = xmlAllocOutputBuffer(NULL);
+    NSMutableData *nsbuf = [NSMutableData data];
+    xmlOutputBuffer *buf = OFLibXMLOutputBufferToData(nsbuf);
     
     BOOL ok = [self verifyReferenceAtIndex:nodeIndex toBuffer:buf error:outError];
     
+    xmlOutputBufferClose(buf);
+    
     if (ok) {
-        NSData *result = [[NSData alloc] initWithBytesNoCopy:buf->buffer->content
-                                                      length:buf->buffer->use
-                                                freeWhenDone:YES];
-        buf->buffer->content = NULL;
-        buf->buffer->use = 0;
-        buf->buffer->alloc = 0;
-        xmlOutputBufferClose(buf);
-        
-        return [result autorelease];
+        return nsbuf;
     } else {
-        xmlOutputBufferClose(buf);
         return nil;
     }
 }

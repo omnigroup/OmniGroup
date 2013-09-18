@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,18 @@
 
 RCS_ID("$Id$");
 
-void OUILoadImage(NSString *name, OUILoadedImage *info)
+@implementation OUILoadedImage
+@end
+
+OUILoadedImage *OUILoadImage(NSString *name)
 {
-    info->image = [[UIImage imageNamed:name] retain];
-    OBASSERT(info->image);
-    OBASSERT(info->image.imageOrientation == UIImageOrientationUp);
-    info->size = [info->image size];
+    UIImage *image = [UIImage imageNamed:name];
+    OBASSERT(image);
+    OBASSERT(image.imageOrientation == UIImageOrientationUp);
+
+    OUILoadedImage *info = [OUILoadedImage new];
+    info.image = image;
+    info.size = [image size];
+    return info;
 }
 

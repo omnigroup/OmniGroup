@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2008, 2010-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,13 +57,7 @@ RCS_ID("$Id$");
     shouldnt([txt4 containsData:pat2]);
     shouldEqualRange([txt4 rangeOfData:pat2], NSNotFound, 0 );
 
-    [txt1 release];
-    [txt2 release];
-    [txt3 release];
-    [txt4 release];
 
-    [pat1 release];
-    [pat2 release];
 }
 
 - (void)testContainsDataInRange
@@ -105,10 +99,6 @@ RCS_ID("$Id$");
     STAssertThrows(([[NSData data] indexOfBytes:"x" length:0 range:(NSRange){0,1}]), @"out of range");
     STAssertThrows(([[NSData data] indexOfBytes:"x" length:0 range:(NSRange){1,0}]), @"out of range");
     
-    [txt1 release];
-    [txt2 release];
-    [txt4 release];
-    [txt5 release];
 }
 
 

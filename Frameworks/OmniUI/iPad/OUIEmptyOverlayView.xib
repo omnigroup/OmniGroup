@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="4504" systemVersion="13A569" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3734.1"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="1" customClass="OUIEmptyOverlayView">
+            <rect key="frame" x="0.0" y="0.0" width="226" height="59"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" verticalHuggingPriority="750" text="«Empty Message»" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="140" translatesAutoresizingMaskIntoConstraints="NO" id="LXt-tZ-jBn">
+                    <rect key="frame" x="43" y="0.0" width="140" height="21"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qPd-2j-cvw">
+                    <rect key="frame" x="42" y="29" width="142" height="30"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <state key="normal" title="«Empty Button Title»">
+                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                    </state>
+                </button>
+            </subviews>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="qPd-2j-cvw" secondAttribute="bottom" id="5YV-DZ-CSc"/>
+                <constraint firstAttribute="centerX" secondItem="qPd-2j-cvw" secondAttribute="centerX" id="HFV-B0-PP4"/>
+                <constraint firstAttribute="trailing" secondItem="qPd-2j-cvw" secondAttribute="trailing" priority="749" id="IPh-8K-3qz"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="qPd-2j-cvw" secondAttribute="trailing" id="Isk-Qg-c5N"/>
+                <constraint firstItem="LXt-tZ-jBn" firstAttribute="leading" secondItem="1" secondAttribute="leading" priority="749" constant="28" id="Jdl-ez-XkU"/>
+                <constraint firstItem="qPd-2j-cvw" firstAttribute="leading" secondItem="1" secondAttribute="leading" priority="749" id="K2Y-d6-2BJ"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="LXt-tZ-jBn" secondAttribute="trailing" id="Ujt-ss-6SA"/>
+                <constraint firstAttribute="centerX" secondItem="LXt-tZ-jBn" secondAttribute="centerX" id="a6k-Kn-3jV"/>
+                <constraint firstItem="LXt-tZ-jBn" firstAttribute="top" secondItem="1" secondAttribute="top" id="bEj-tB-OlP"/>
+                <constraint firstItem="LXt-tZ-jBn" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="1" secondAttribute="leading" id="cuy-D5-O8O"/>
+                <constraint firstAttribute="trailing" secondItem="LXt-tZ-jBn" secondAttribute="trailing" priority="749" constant="28" id="dqu-j4-9Pk"/>
+                <constraint firstItem="qPd-2j-cvw" firstAttribute="top" secondItem="LXt-tZ-jBn" secondAttribute="bottom" constant="8" symbolic="YES" id="uRK-nB-nyD"/>
+                <constraint firstItem="qPd-2j-cvw" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="1" secondAttribute="leading" id="wAz-8o-2CA"/>
+            </constraints>
+            <connections>
+                <outlet property="button" destination="qPd-2j-cvw" id="SAY-8l-e1m"/>
+                <outlet property="messageLabel" destination="LXt-tZ-jBn" id="h0R-ia-4X1"/>
+            </connections>
+        </view>
+    </objects>
+</document>

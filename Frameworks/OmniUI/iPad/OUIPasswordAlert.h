@@ -15,7 +15,7 @@ typedef enum {
     OUIPasswordAlertActionLogIn
 } OUIPasswordAlertAction;
 
-enum {
+typedef enum {
     OUIPasswordAlertOptionShowUsername = 0x01,
     OUIPasswordAlertOptionAllowsEditingUsername = 0x02
 } OUIPasswordAlertOptions;
@@ -23,16 +23,7 @@ enum {
 // This is the placeholder we use when presenting UI with a previously stored password to obfuscate its length
 extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
 
-@interface OUIPasswordAlert : NSObject {
-  @protected
-    NSString *_title;
-    NSString *_username;
-    NSURLProtectionSpace *_protectionSpace;
-    NSUInteger _options;
-    UIAlertView *_alertView;
-    id <OUIPasswordAlertDelegate> _delegate;
-    OUIPasswordAlertAction _dismissalAction;
-}
+@interface OUIPasswordAlert : NSObject
 
 // Designated initializer
 - (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(NSString *)title options:(NSUInteger)options;
@@ -41,7 +32,7 @@ extern NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder;
 @property (nonatomic, readonly) NSString *title;
 @property (nonatomic, readonly) NSURLProtectionSpace *protectionSpace;
 
-@property (nonatomic, assign) id <OUIPasswordAlertDelegate> delegate;
+@property (nonatomic, weak) id <OUIPasswordAlertDelegate> delegate;
 
 @property (nonatomic, copy) NSString *username;
 @property (nonatomic, copy) NSString *password;

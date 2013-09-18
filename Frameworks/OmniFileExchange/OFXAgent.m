@@ -7,13 +7,14 @@
 
 #import "OFXAgent-Internal.h"
 
+#import <OmniDAV/ODAVErrors.h>
 #import <OmniFileExchange/OFXAccountClientParameters.h>
 #import <OmniFileExchange/OFXFileMetadata.h>
 #import <OmniFileExchange/OFXRegistrationTable.h>
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
-#import <OmniFileStore/Errors.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
+#import <OmniFoundation/OFBackgroundActivity.h>
 #import <OmniFoundation/OFNetReachability.h>
 #import <OmniFoundation/OFNetStateNotifier.h>
 #import <OmniFoundation/OFNetStateRegistration.h>
@@ -30,12 +31,6 @@
 #endif
 
 RCS_ID("$Id$")
-
-typedef NS_ENUM(NSUInteger, OFXAgentState) {
-    OFXAgentStateStopped,
-    OFXAgentStateStarted,
-    OFXAgentStateBackgrounded,
-};
 
 static NSTimeInterval OFXAgentSyncInterval;
 
@@ -55,8 +50,6 @@ NSInteger OFXActivityDebug = INT_MAX;
 
 @implementation OFXAgent
 {
-    OFXAgentState _state;
-    
     NSString *_memberIdentifier;
     
     NSSet *_localPackagePathExtensions;
@@ -64,11 +57,11 @@ NSInteger OFXActivityDebug = INT_MAX;
     
     NSDictionary *_uuidToAccountAgent;
     
-    BOOL _postponeRegisteredAccountsUpdatedNotifications;
     OFXRegistrationTable *_registrationTable;
 
     OFNetStateNotifier *_stateNotifier;
     
+    OFNetReachability *_netReachability;
     NSTimer *_periodicSyncTimer;
 }
 
@@ -242,8 +235,6 @@ static NSString * const CellularSyncEnabledPreferenceKey = @"OFXCellularSyncEnab
         _syncPathExtensions = [syncPathExtensionSet copy];
     }
     
-    _syncingEnabled = YES;
-    
     // TODO: Sign up for network status changes and stop trying to sync when there is no network.
     // TODO: Add preference for whether to sync over cellular or just wifi
     // TODO: Scan the local containers directory and purge containers that don't show up in our sync accounts any more (not sure how this would happen, though).
@@ -263,7 +254,14 @@ static NSString * const CellularSyncEnabledPreferenceKey = @"OFXCellularSyncEnab
     
     _accountRegistry = accountRegistry;
     
-    _state = OFXAgentStateStopped;
+    _started = NO;
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    // If we get launched into the background by iOS for a backgroun fetch, make sure we have the right state here.
+    _foregrounded = ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground);
+#else
+    _foregrounded = YES;
+#endif
+    _syncSchedule = OFXSyncScheduleAutomatic;
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_accountAgentDidStopForReplacement:) name:OFXAccountAgentDidStopForReplacementNotification object:nil];
     
@@ -272,7 +270,7 @@ static NSString * const CellularSyncEnabledPreferenceKey = @"OFXCellularSyncEnab
 
 - (void)dealloc;
 {
-    OBPRECONDITION(_state == OFXAgentStateStopped); // should have stopped the agent before owner let go of it
+    OBPRECONDITION(_started == NO); // should have stopped the agent before owner let go of it
     
     DEBUG_SYNC(1, @"Deallocating sync agent %p", self);
     
@@ -281,28 +279,23 @@ static NSString * const CellularSyncEnabledPreferenceKey = @"OFXCellularSyncEnab
     OBASSERT(_uuidToAccountAgent == nil);
 }
 
-- (BOOL)started;
-{
-    return _state == OFXAgentStateStarted;
-}
-
-- (void)_requireState:(OFXAgentState)state message:(NSString *)message;
-{
-    OBPRECONDITION([NSThread isMainThread]); // State changes should only happen on the main thread
-    if (_state != state)
-        [NSException raise:NSInternalInconsistencyException format:@"%@ Expected state %ld, but had %ld.", message, state, _state];
-}
+#define REQUIRE(var, value, message) do { \
+    OBASSERT([NSThread isMainThread], "State changes should only happen on the main thread"); \
+    if (var != value) \
+        [NSException raise:NSInternalInconsistencyException format:@"%@ Expected %s %d, but had %d.", message, #var, value, var]; \
+} while (0)
 
 static unsigned AccountRegistryContext;
 static unsigned AccountAgentNetStateRegistrationGroupIdentifierContext;
 
 - (void)applicationLaunched;
 {
-    [self _requireState:OFXAgentStateStopped message:@"Called -applicationLaunched."];
+    REQUIRE(_started, NO, @"Called -applicationLaunched.");
+
     DEBUG_SYNC(1, @"Application launched");
 
     // Start syncing!
-    _state = OFXAgentStateStarted;
+    _started = YES;
     
     OBASSERT(_registrationTable == nil);
     _registrationTable = [[OFXRegistrationTable alloc] initWithName:[NSString stringWithFormat:@"Sync Agent %p registrations", self]];
@@ -313,20 +306,25 @@ static unsigned AccountAgentNetStateRegistrationGroupIdentifierContext;
     _stateNotifier.name = _debugName;
     DEBUG_SYNC(1, @"State notifier is %@", _stateNotifier);
     
+    _netReachability = [[OFNetReachability alloc] initWithDefaultRoute:YES/*ignore ad-hoc wi-fi*/];
+    _netReachability.delegate = self;
+    
     OBASSERT([NSThread isMainThread]);
     OBASSERT(_accountRegistry);
     
     [_accountRegistry addObserver:self forKeyPath:OFValidateKeyPath(_accountRegistry, validCloudSyncAccounts) options:0 context:&AccountRegistryContext];
     [self _validatedAccountsChanged];
     
-    [self _syncAndStartTimer];
+    if (_foregrounded)
+        [self _syncAndStartTimer];
 }
 
 - (void)applicationWillEnterForeground;
 {
-    [self _requireState:OFXAgentStateBackgrounded message:@"Called -applicationWillEnterForeground."];
+    REQUIRE(_started, YES, @"Called -applicationWillEnterForeground.");
+    REQUIRE(_foregrounded, NO, @"Called -applicationWillEnterForeground.");
     
-    _state = OFXAgentStateStarted;
+    _foregrounded = YES;
     
     // Resume syncing
     [self _syncAndStartTimer];
@@ -334,43 +332,20 @@ static unsigned AccountAgentNetStateRegistrationGroupIdentifierContext;
 
 - (void)applicationDidEnterBackground;
 {
-    [self _requireState:OFXAgentStateStarted message:@"Called -applicationDidEnterBackground."];
+    REQUIRE(_foregrounded, YES, @"Called -applicationDidEnterBackground.");
 
     // Try to finish any pending uploads.
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    UIBackgroundTaskIdentifier backgroundTask = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-        // TODO: can we kill off syncing operations here? We have a few more seconds to cut out what we are doing before the system kills us.
-        NSLog(@"%s:%d -- background sync task expiring", __FILE__, __LINE__);
-    }];
-    if (backgroundTask == UIBackgroundTaskInvalid) {
-        NSLog(@"%s:%d -- Unable to start background task", __FILE__, __LINE__);
-    }
-#else
-    OBFinishPortingLater("Add Mac support for backgrounding"); // disable automatic termination while we are waiting for syncing to finish
-#endif
+    OFBackgroundActivity *activity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniFileExchange.OFXAgent.applicationDidEnterBackground"];
     
-    _netReachability = nil;
-
     // We'll sync on foregrounding, and then we'll want to reset our timer relative to that.
     [_periodicSyncTimer invalidate];
     _periodicSyncTimer = nil;
-
-    OBFinishPortingLater("Cancel downloads, but not uploads");
     
     [self afterAsynchronousOperationsFinish:^{
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-        if (backgroundTask != UIBackgroundTaskInvalid) {
-            // Delay ending the task until *this* method is done.
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [[UIApplication sharedApplication] endBackgroundTask:backgroundTask];
-            }];
-        }
-#else
-        OBFinishPortingLater("Add Mac support for backgrounding"); // disable automatic termination while we are waiting for syncing to finish
-#endif
+        [activity finished];
     }];
     
-    _state = OFXAgentStateBackgrounded;
+    _foregrounded = NO;
 }
 
 static void _startObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountAgent)
@@ -388,18 +363,19 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     DEBUG_SYNC(1, @"Application will terminate");
             
     // We currently have to be running so that we can grab a snapshot of the account agents
-    [self _requireState:OFXAgentStateStarted message:@"Called -_stop:."];
+    REQUIRE(_started, YES, @"Called -applicationWillTerminateWithCompletionHandler:.");
     
     DEBUG_SYNC(1, @"Stopping agent");
     
     // TODO: Pause whatever sync timer we add at some point.
     
     // Mark ourselves as stopped as far as the main thread is concerned. Might be operations enqueued, though.
-    _state = OFXAgentStateStopped;
+    _started = NO;
     
     [_periodicSyncTimer invalidate];
     _periodicSyncTimer = nil;
     
+    _netReachability.delegate = nil;
     _netReachability = nil;
     
     [_stateNotifier invalidate];
@@ -469,7 +445,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 {
     OBPRECONDITION([NSThread isMainThread]);
 
-    [self _requireState:OFXAgentStateStarted message:@"Called -afterAsynchronousOperationsFinish:."];
+    REQUIRE(_started, YES, @"Called -afterAsynchronousOperationsFinish:.");
 
     NSBlockOperation *blockOperation = [NSBlockOperation blockOperationWithBlock:block];
     
@@ -487,29 +463,28 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 }
 
 // We don't clear out the timer, state notifier, etc when this is NO. Rather we just ignore notifications from them while the flag is off. This is much easier and probably sufficient.
-- (void)setSyncingEnabled:(BOOL)syncingEnabled;
+- (void)setSyncSchedule:(OFXSyncSchedule)schedule;
 {
-    if (_syncingEnabled == syncingEnabled)
+    if (_syncSchedule == schedule)
         return;
     
-    _syncingEnabled = syncingEnabled;
+    _syncSchedule = schedule;
     
     [_uuidToAccountAgent enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXAccountAgent *accountAgent, BOOL *stop) {
         // If we are disabling syncing, the account will shut down in-progress transfers
-        accountAgent.syncingEnabled = syncingEnabled;
+        accountAgent.syncingEnabled = [self _syncingAllowed];
     }];
     
-    if (_syncingEnabled)
+    // If we now allow automatic sync (by schedule and foregrounded-ness), go ahead and do a sync
+    if (_foregrounded && _syncSchedule >= OFXSyncScheduleAutomatic)
         [self sync:nil];
 }
 
-- (void)deleteCloudContentsForAccount:(OFXServerAccount *)account;
+- (BOOL)syncEnabled;
 {
-    OFXAccountAgent *accountAgent = [_uuidToAccountAgent objectForKey:account.uuid];
-    
-    [[self _operationQueueForAccount:account] addOperationWithBlock:^{
-        [accountAgent removeLocalAndRemoteData];
-    }];
+    OBPRECONDITION([NSThread isMainThread]);
+
+    return _started && _syncSchedule > OFXSyncScheduleNone;
 }
 
 - (void)setAutomaticallyDownloadFileContents:(BOOL)automaticallyDownloadFileContents;
@@ -524,19 +499,40 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     }];
 }
 
+- (BOOL)shouldAutomaticallyDownloadItemWithMetadata:(OFXFileMetadata *)metadataItem;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(_netReachability);
+
+    // Automatic downloads shouldn't happen while on the user's cellular connection. Due to fallback support in iOS 7, we might return YES here, but then fail the connection later since we configure the transfer operation to not use the cellular network.
+    if (!_netReachability.reachable || _netReachability.usingCell)
+        return NO;
+    
+    // Only automatically download "small" items.
+    unsigned long long fileSize = metadataItem.fileSize;
+    
+    NSUInteger maximumAutomaticDownloadSize = [[OFPreference preferenceForKey:@"OFXMaximumAutomaticDownloadSize"] unsignedIntegerValue];
+    
+    return (fileSize <= (unsigned long long)maximumAutomaticDownloadSize);
+}
+
 // Explicit request to sync. This should typically just be done as part of application lifecycle and on a timer.
 - (void)sync:(void (^)(void))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    [self _requireState:OFXAgentStateStarted message:@"Called -sync:."];
+    REQUIRE(_started, YES, @"Called -sync:.");
     
-    if (!_syncingEnabled)
-        return;
+    // Try to stay alive while the sync is happening.
+    OFBackgroundActivity *activity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniUI.OUIDocumentAppController.performFetch"];
     
     // TODO: Discard sync requests that are made while there is an unstarted sync request already queued?
     
-    NSBlockOperation *completionOperation = completionHandler ? [NSBlockOperation blockOperationWithBlock:completionHandler] : nil;
+    NSBlockOperation *completionOperation = [NSBlockOperation blockOperationWithBlock:^{
+        if (completionHandler)
+            completionHandler();
+        [activity finished];
+    }];
     
     [_uuidToAccountAgent enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXAccountAgent *accountAgent, BOOL *stop) {
         if (!accountAgent.started)
@@ -552,15 +548,14 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
         }];
     }];
     
-    if (completionOperation)
-        [[NSOperationQueue mainQueue] addOperation:completionOperation];
+    [[NSOperationQueue mainQueue] addOperation:completionOperation];
 }
 
 - (void)_operateOnFileAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler withAction:(void (^)(OFXAccountAgent *))accountAction;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    if (_state != OFXAgentStateStarted) {
+    if (_started == NO) {
         if (completionHandler) {
             __autoreleasing NSError *error;
             OFXError(&error, OFXAgentNotStarted, @"Attempted to operate on a document while the sync agent was not started.", nil);
@@ -608,7 +603,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    if (_state != OFXAgentStateStarted) {
+    if (_started == NO) {
         if (completionHandler) {
             __autoreleasing NSError *error;
             OFXError(&error, OFXAgentNotStarted, @"Attempted to operate on a document while the sync agent was not started.", nil);
@@ -635,7 +630,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    if (_state != OFXAgentStateStarted) {
+    if (_started == NO) {
         if (completionHandler) {
             __autoreleasing NSError *error;
             OFXError(&error, OFXAgentNotStarted, @"Attempted to operate on a document while the sync agent was not started.", nil);
@@ -666,12 +661,14 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     OBPRECONDITION(_stateNotifier == nil || _stateNotifier == notifier);
     
     if (_stateNotifier == nil) {
-        OBASSERT(_state != OFXAgentStateStarted);
+        OBASSERT(_started == NO);
         return; // We were in the process of shutting down
     }
-    
     DEBUG_SYNC(1, @"State notifier changed: %@", notifier);
-        
+
+    if (!_foregrounded || _syncSchedule < OFXSyncScheduleAutomatic)
+        return;
+    
     [self sync:nil];
 }
 
@@ -679,7 +676,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 
 - (void)reachabilityDidUpdate:(OFNetReachability *)reachability reachable:(BOOL)reachable usingCell:(BOOL)usingCell;
 {
-    if (_netReachability == nil)
+    if (!_foregrounded || _syncSchedule < OFXSyncScheduleAutomatic)
         return;
 
     DEBUG_SYNC(1, @"Reachability changed: reachable=%u, usingCell=%u", reachable, usingCell);
@@ -721,7 +718,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 - (NSOperationQueue *)_operationQueueForAccount:(OFXServerAccount *)serverAccount;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(_state == OFXAgentStateStarted);
+    OBPRECONDITION(_started);
     
     OFXAccountAgent *accountAgent = _uuidToAccountAgent[serverAccount.uuid];
     OBASSERT(accountAgent, @"Passed in unknown/not-validated account?");
@@ -737,7 +734,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 - (void)_validatedAccountsChanged;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(_state == OFXAgentStateStarted); // We only sign up for this notification if we start OK.
+    OBPRECONDITION(_started); // We only sign up for this notification if we start OK.
         
     // Grab a snapshot of the server accounts that have credentials. We don't want to have a user add/remove accounts out from underneath us while syncing is going on. The most crucial properties on the server account are read-only (credentials are editable).
     NSArray *serverAccounts = [NSArray arrayWithArray:_accountRegistry.validCloudSyncAccounts];
@@ -765,9 +762,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
         if ([uuidToAccountAgent objectForKey:uuid] == nil) {
             // Delay the cleanup until the agent knows that it is stopped (so that snapshots don't disappear out from underneath file items, etc).
             void (^cleanup)(void) = ^{
-                __autoreleasing NSError *cleanupError;
-                if (![_accountRegistry _cleanupAccountAfterRemoval:accountAgent.account error:&cleanupError])
-                    [accountAgent.account reportError:cleanupError format:@"Error cleaning up after removed account %@", accountAgent.account];
+                [_accountRegistry _cleanupAccountAfterRemoval:accountAgent.account];
             };
             
             if (accountAgent.started) {
@@ -850,17 +845,18 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     return containingAccountAgent;
 }
 
+- (BOOL)_syncingAllowed;
+{
+    return _started && _syncSchedule > OFXSyncScheduleNone;
+}
+
 - (void)_syncAndStartTimer;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
-    [self _requireState:OFXAgentStateStarted message:@"Called -_syncAndStartTimer."];
+    REQUIRE(_started, YES, @"Called -_syncAndStartTimer.");
     OBPRECONDITION(_periodicSyncTimer == nil);
-    OBPRECONDITION(_netReachability == nil);
     
-    _netReachability = [[OFNetReachability alloc] initWithDefaultRoute:YES/*ignore ad-hoc wi-fi*/];
-    _netReachability.delegate = self;
-
     [self sync:nil];
 
     // ... and sign up to do syncing every once in a while. This will only matter if you have a document open, don't edit it, and no one else on your LAN edits it, don't background and re-foreground the app.
@@ -873,6 +869,9 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     
     DEBUG_SYNC(1, @"Sync timer fired");
 
+    if (!_foregrounded || _syncSchedule < OFXSyncScheduleAutomatic)
+        return;
+    
     [self sync:nil];
 }
 
@@ -883,7 +882,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     DEBUG_SYNC(1, @"Adding container agent for %@", account);
     OFXAccountAgent *accountAgent = [[OFXAccountAgent alloc] initWithAccount:account agentMemberIdentifier:_memberIdentifier registrationTable:_registrationTable remoteDirectoryName:_remoteDirectoryName localAccountDirectory:localAccountDirectory localPackagePathExtensions:_localPackagePathExtensions syncPathExtensions:_syncPathExtensions];
     accountAgent.debugName = _debugName;
-    accountAgent.syncingEnabled = _syncingEnabled;
+    accountAgent.syncingEnabled = [self _syncingAllowed];
     accountAgent.automaticallyDownloadFileContents = _automaticallyDownloadFileContents;
     accountAgent.clientParameters = _clientParameters;
     
@@ -895,7 +894,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    if (_state == OFXAgentStateStopped) {
+    if (_started == NO) {
         // Oh well, we were stopping anyway!
         return;
     }

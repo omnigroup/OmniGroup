@@ -20,7 +20,7 @@ RCS_ID("$Id$")
 
 - (void)loadView 
 {
-    UIWebView *webView = [[[UIWebView alloc] initWithFrame:CGRectMake(0, 0, 320, 100)] autorelease];
+    UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
     webView.delegate = self;
     webView.scalesPageToFit = YES;
     webView.dataDetectorTypes = UIDataDetectorTypeAll;
@@ -40,10 +40,10 @@ RCS_ID("$Id$")
 
 - (void)dealloc;
 {
-    UIWebView *webView = (UIWebView *)self.view;
-    webView.delegate = nil;
-    [_backButton release];
-    [super dealloc];
+    if ([self isViewLoaded]) {
+        UIWebView *webView = (UIWebView *)self.view;
+        webView.delegate = nil;
+    }
 }
 
 - (IBAction)openInSafari:(id)sender;
@@ -60,19 +60,20 @@ RCS_ID("$Id$")
 
 - (IBAction)close:(id)sender;
 {
-    [[[OUIAppController controller] topViewController] dismissViewControllerAnimated:YES completion:nil];
+    if ([_delegate respondsToSelector:@selector(webViewControllerDidClose:)]) {
+        [_delegate webViewControllerDidClose:self];
+    }
 }
 
 - (void)_updateBarButtonItemForURL:(NSURL *)aURL;
 {
-    self.navigationItem.rightBarButtonItem = [[[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)] autorelease];
+    self.navigationItem.rightBarButtonItem = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)];
 }
 
 - (void)setURL:(NSURL *)aURL;
 {
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:aURL];
     [(UIWebView *)self.view loadRequest:request];
-    [request autorelease];
     [self _updateBarButtonItemForURL:aURL];
 }
 
@@ -91,7 +92,7 @@ RCS_ID("$Id$")
     [(UIWebView *)self.view loadData:data MIMEType:mimeType textEncodingName:@"utf-8" baseURL:nil];
 }
 
-- (NSArray *)saveState;
+- (NSArray *)saveControllerState;
 {
     return nil;
 }
@@ -114,7 +115,6 @@ RCS_ID("$Id$")
 	    controller.mailComposeDelegate = self;
 	    [controller setToRecipients:[NSArray arrayWithObject:[[request URL] resourceSpecifier]]];
 	    [self presentViewController:controller animated:YES completion:nil];
-	    [controller release];
             return NO; // Don't load this in the WebView
 	} else if ([scheme isEqualToString:@"x-safari"]) { // Hand off x-safari URLs to the OS
             NSURL *safariURL = [NSURL URLWithString:[[request URL] resourceSpecifier]];

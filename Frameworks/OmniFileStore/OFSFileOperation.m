@@ -14,6 +14,7 @@ RCS_ID("$Id$");
 @implementation OFSFileOperation
 {
     __weak OFSFileManager *_weak_fileManager;
+    NSOperationQueue *_callbackQueue;
     NSData *_data;
     BOOL _read;
     BOOL _atomically; // for writing
@@ -50,7 +51,17 @@ RCS_ID("$Id$");
 }
 
 
-#pragma mark - OFSAsynchronousOperation
+#pragma mark - ODAVAsynchronousOperation
+
+// These callbacks should all be called with this macro
+#define PERFORM_CALLBACK(callback, ...) do { \
+    typeof(callback) _cb = (callback); \
+    if (_cb) { \
+        [_callbackQueue addOperationWithBlock:^{ \
+            _cb(__VA_ARGS__); \
+        }]; \
+    } \
+} while(0)
 
 @synthesize didFinish = _didFinish;
 @synthesize didReceiveData = _didReceiveData;
@@ -72,11 +83,16 @@ RCS_ID("$Id$");
     return [_data length];
 }
 
-- (void)startOperationOnQueue:(NSOperationQueue *)queue;
+- (void)startWithCallbackQueue:(NSOperationQueue *)queue;
 {
     OBPRECONDITION(_didFinish); // What is the purpose of an async operation that we don't track the end of?
     OBPRECONDITION(_processedLength == 0); // Don't call more than once.
     
+    if (queue)
+        _callbackQueue = queue;
+    else
+        _callbackQueue = [NSOperationQueue currentQueue];
+
     OFSFileManager *fileManager = _weak_fileManager;
     if (!fileManager) {
         OBASSERT_NOT_REACHED("File manager released with unfinished operations");
@@ -88,30 +104,31 @@ RCS_ID("$Id$");
         __autoreleasing NSError *error = nil;
         NSData *data = [fileManager dataWithContentsOfURL:_url error:&error];
         if (data == nil) {
-            if (_didFinish)
-                _didFinish(self, error);
+            NSError *strongError = error;
+            PERFORM_CALLBACK(_didFinish, self, strongError);
         } else {
             _processedLength = [data length];
-            if (_didReceiveData)
-                _didReceiveData(self, data);
-            else if (_didReceiveBytes)
-                _didReceiveBytes(self, _processedLength);
-            _didFinish(self, nil);
+            if (_didReceiveData) {
+                PERFORM_CALLBACK(_didReceiveData, self, data);
+            } else if (_didReceiveBytes) {
+                PERFORM_CALLBACK(_didReceiveBytes, self, _processedLength);
+            }
+            PERFORM_CALLBACK(_didFinish, self, nil);
         }
     } else {
         __autoreleasing NSError *error = nil;
         if (![fileManager writeData:_data toURL:_url atomically:_atomically error:&error]) {
-            _didFinish(self, error);
+            NSError *strongError = error;
+            PERFORM_CALLBACK(_didFinish, self, strongError);
         } else {
             _processedLength = [_data length];
-            if (_didSendBytes)
-                _didSendBytes(self, _processedLength);
-            _didFinish(self, nil);
+            PERFORM_CALLBACK(_didSendBytes, self, _processedLength);
+            PERFORM_CALLBACK(_didFinish, self, nil);
         }
     }
 }
 
-- (void)stopOperation;
+- (void)cancel;
 {
     // no-op: synchronous operation-only
 }

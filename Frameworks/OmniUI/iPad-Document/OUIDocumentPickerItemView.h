@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,13 +8,13 @@
 // $Id$
 
 #import <UIKit/UIView.h>
-
-#import <OmniUIDocument/OUIDocumentPickerItemViewTapArea.h>
+#import <OmniUI/OUIAppearance.h>
 
 extern NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification;
 
 @class UITapGestureRecognizer;
-@class OFSDocumentStoreItem;
+@class ODSItem;
+@class OUIDocumentPreviewView, OUIDocumentPickerItemMetadataView;
 
 typedef enum {
     OUIDocumentPickerItemViewNoneDraggingState,
@@ -25,21 +25,27 @@ typedef enum {
 /*
  A semi-concrete class that represents one of the scrollable items in the document picker, either a single file or a group of files.
  */
-@interface OUIDocumentPickerItemView : UIView
+@interface OUIDocumentPickerItemView : UIControl
 
-@property(assign,nonatomic) BOOL landscape;
-@property(retain,nonatomic) OFSDocumentStoreItem *item; // either a file or group
+@property(retain,nonatomic) ODSItem *item; // either a file or group
 
-@property(assign,nonatomic) BOOL animatingRotationChange;
+@property(readonly) UIView *contentView; // Subclasses should add OUIDocumentPreviewView instances as subviews. Previews are assigned by tag; the lowest tag gets the first preview, etc. They can do this in -layoutSubviews, or in -init.
 
+@property(readonly,nonatomic) OUIDocumentPickerItemMetadataView *metadataView;
+@property(nonatomic,readonly) OUIDocumentPreviewArea previewArea;
 @property(assign,nonatomic) OUIDocumentPickerItemViewDraggingState draggingState;
 
-@property(assign,nonatomic,getter=isRenaming) BOOL renaming;
+@property(nonatomic,retain) UIImage *statusImage;
+@property(nonatomic,assign) BOOL showsProgress;
+@property(nonatomic,assign) double progress;
+@property(nonatomic,assign) BOOL isReadOnly;
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 
 - (void)prepareForReuse;
 
-- (BOOL)getHitTapArea:(OUIDocumentPickerItemViewTapArea *)outTapArea withRecognizer:(UITapGestureRecognizer *)recognizer;
+- (void)startRenaming;
+
+- (void)bounceDown;
 
 @end

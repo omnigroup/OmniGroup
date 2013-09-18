@@ -8,18 +8,18 @@
 
 #import "OUIExportOptionsController.h"
 
+#import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
-#import <OmniFileStore/OFSDocumentStoreFileItem.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/OFSFileManager.h>
-#import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/OFUTI.h>
+#import <OmniUI/OUIAppController+InAppStore.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIOverlayView.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 #import <OmniUnzip/OUZipArchive.h>
 
 #import "OUIExportOptionsView.h"
@@ -30,10 +30,12 @@ RCS_ID("$Id$")
 static NSString * const OUIExportInfoFileWrapper = @"OUIExportInfoFileWrapper";
 static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
 
-@interface OUIExportOptionsController () <OFSFileManagerDelegate>
+@interface OUIExportOptionsController () //<OFSFileManagerDelegate>
 @property(nonatomic, strong) IBOutlet OUIExportOptionsView *exportView;
 @property(nonatomic, strong) IBOutlet UILabel *exportDescriptionLabel;
 @property(nonatomic, strong) IBOutlet UILabel *exportDestinationLabel;
+@property(nonatomic, strong) IBOutlet UILabel *inAppPurchaseLabel;
+@property(nonatomic, strong) IBOutlet UIButton *inAppPurchaseButton;
 @end
 
 
@@ -42,15 +44,20 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     OUIExportOptionsView *_exportView;
     UILabel *_exportDescriptionLabel;
     UILabel *_exportDestinationLabel;
+    UILabel *_inAppPurchaseLabel;
+    UIButton *_inAppPurchaseButton;
     
     OFXServerAccount *_serverAccount;
     OUIExportOptionsType _exportType;
     NSMutableArray *_exportFileTypes;
     
-    OUIOverlayView *_fileConversionOverlayView;
+    UIView *_fileConversionOverlayView;
     
     UIDocumentInteractionController *_documentInteractionController;
     CGRect _rectForExportOptionButtonChosen;
+    
+    BOOL _needsToCheckInAppPurchaseAvailability;
+    UIPopoverController *_activityPopoverController;
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
@@ -82,20 +89,18 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
 {
     [super viewDidLoad];
     
-    UIImage *paneBackground = [UIImage imageNamed:@"OUIExportPane.png"];
-    OBASSERT([self.view isKindOfClass:[UIImageView class]]);
-    [(UIImageView *)self.view setImage:paneBackground];
+    self.view.backgroundColor = [UIColor colorWithWhite:0.94 alpha:1.0];
     
     UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(_cancel:)];
     self.navigationItem.leftBarButtonItem = cancel;
     
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Choose Format", @"OmniUIDocument", OMNI_BUNDLE, @"export options title");
     
-    OUIDocumentPicker *picker = [[OUIDocumentAppController controller] documentPicker];
+    OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
     
     _exportFileTypes = [[NSMutableArray alloc] init];
     
-    OFSDocumentStoreFileItem *fileItem = picker.singleSelectedFileItem;
+    ODSFileItem *fileItem = picker.singleSelectedFileItem;
         
     NSArray *exportTypes = [picker availableExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
     for (NSString *exportType in exportTypes) {
@@ -107,8 +112,8 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
         if (OFISNULL(exportType)) {
             // NOTE: Adding the native type first with a null (instead of a its non-null actual type) is important for doing exports of documents exactly as they are instead of going through the exporter. Ideally both cases would be the same, but in OO/iPad the OO3 "export" path (as opposed to normal "save") has the ability to strip hidden columns, sort sorts, calculate summary values and so on for the benefit of the XSL-based exporters. If we want "export" to the OO file format to not perform these transformations, we'll need to add flags on the OOXSLPlugin to say whether the target wants them pre-applied or not.
             NSURL *documentURL = fileItem.fileURL;
-            OBFinishPortingLater("<bug:///75843> (Add a UTI property to OFSDocumentStoreFileItem)");
-            NSString *fileUTI = OFUTIForFileExtensionPreferringNative([documentURL pathExtension], NO); // NSString *fileUTI = [OFSFileInfo UTIForURL:documentURL];
+            OBFinishPortingLater("<bug:///75843> (Add a UTI property to ODSFileItem)");
+            NSString *fileUTI = OFUTIForFileExtensionPreferringNative([documentURL pathExtension], NO); // NSString *fileUTI = [ODAVFileInfo UTIForURL:documentURL];
             iconImage = [picker exportIconForUTI:fileUTI];
             
             label = [picker exportLabelForUTI:fileUTI];
@@ -126,15 +131,57 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
         [_exportView addChoiceWithImage:iconImage label:label target:self selector:@selector(_performActionForExportOptionButton:)];
     }
     
+    NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
+    if ([inAppPurchaseExportTypes count] > 0) {
+        OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
+        NSString *storeIdentifier = [inAppPurchaseExportTypes objectAtIndex:0];
+
+        [_exportFileTypes addObject:storeIdentifier];
+
+        if ([[OUIAppController controller] importIsUnlocked:storeIdentifier]) {
+            UIImage *iconImage = [picker exportIconForAppStoreIdentifier:storeIdentifier];
+            NSString *label = [picker exportLabelForAppStoreIdentifier:storeIdentifier];
+
+            [_exportView addChoiceWithImage:iconImage label:label target:self selector:@selector(_performActionForInAppPurchaseExportOptionButton:)];
+            
+            [_inAppPurchaseButton setHidden:YES];
+            [_inAppPurchaseLabel setHidden:YES];
+        } else {
+            NSString *label = [picker exportDescriptionForAppStoreIdentifier:storeIdentifier];
+            _inAppPurchaseLabel.text = label;
+            
+            [_inAppPurchaseButton setHidden:NO];
+            [_inAppPurchaseButton setTag:([_exportFileTypes count]-1)];
+            [_inAppPurchaseLabel setHidden:NO];
+        }
+    } else {
+        [_inAppPurchaseButton setHidden:YES];
+        [_inAppPurchaseLabel setHidden:YES];
+    }
+    
     [_exportView layoutSubviews];
+    
+    if (![_inAppPurchaseButton isHidden]) {
+        [_inAppPurchaseButton setBackgroundImage:[[UIImage imageNamed:@"OUIToolbarButton-Black-Normal.png"] stretchableImageWithLeftCapWidth:5 topCapHeight:0] forState:UIControlStateNormal];
+        [_inAppPurchaseButton setBackgroundImage:[[UIImage imageNamed:@"OUIToolbarButton-Black-Highlighted.png"] stretchableImageWithLeftCapWidth:5 topCapHeight:0] forState:UIControlStateHighlighted];
+        [_inAppPurchaseButton addTarget:self action:@selector(_performActionForInAppPurchaseExportOptionButton:) forControlEvents:UIControlEventTouchUpInside];
+        
+        CGRect inAppPurchaseButtonRect = _inAppPurchaseButton.frame;
+        inAppPurchaseButtonRect.origin.y = CGRectGetMaxY(_exportView.frame) + 8;
+        [_inAppPurchaseButton setFrame:inAppPurchaseButtonRect];
+        
+        CGRect inAppPurchaseLabelRect = _inAppPurchaseLabel.frame;
+        inAppPurchaseLabelRect.origin.y = CGRectGetMaxY(_exportView.frame) + 13;
+        [_inAppPurchaseLabel setFrame:inAppPurchaseLabelRect];
+    }
 }
 
 - (void)viewWillAppear:(BOOL)animated;
 {
     [super viewWillAppear:animated];
 
-    OUIDocumentPicker *picker = [[OUIDocumentAppController controller] documentPicker];
-    OFSDocumentStoreFileItem *fileItem = picker.singleSelectedFileItem;
+    OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+    ODSFileItem *fileItem = picker.singleSelectedFileItem;
     OBASSERT(fileItem != nil);
     NSString *docName = fileItem.name;
     
@@ -165,6 +212,28 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     _exportDescriptionLabel.text = actionDescription;
     
     _rectForExportOptionButtonChosen = CGRectZero;
+    
+    if (_needsToCheckInAppPurchaseAvailability && ![_inAppPurchaseButton isHidden]) {
+        NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
+        if ([inAppPurchaseExportTypes count] > 0) {
+            OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
+            NSString *storeIdentifier = [inAppPurchaseExportTypes objectAtIndex:0];
+            
+            if ([[OUIAppController controller] importIsUnlocked:storeIdentifier]) {
+                UIImage *iconImage = [picker exportIconForAppStoreIdentifier:storeIdentifier];
+                NSString *label = [picker exportLabelForAppStoreIdentifier:storeIdentifier];
+
+                if (![_exportFileTypes containsObject:storeIdentifier])
+                    [_exportFileTypes addObject:storeIdentifier];
+                [_exportView addChoiceWithImage:iconImage label:label target:self selector:@selector(_performActionForInAppPurchaseExportOptionButton:)];
+                
+                [_inAppPurchaseButton setHidden:YES];
+                [_inAppPurchaseLabel setHidden:YES];
+                
+                [_exportView layoutSubviews];
+            }
+        }
+    }
 }
 
 - (BOOL)shouldAutorotate;
@@ -195,6 +264,8 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
 @synthesize exportView = _exportView;
 @synthesize exportDestinationLabel = _exportDestinationLabel;
 @synthesize exportDescriptionLabel = _exportDescriptionLabel;
+@synthesize inAppPurchaseLabel = _inAppPurchaseLabel;
+@synthesize inAppPurchaseButton = _inAppPurchaseButton;
 
 - (IBAction)_cancel:(id)sender;
 {
@@ -228,30 +299,16 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
         }
 
         tempURL = [NSURL fileURLWithPath:tempZipPath];
-    }
-    else {
+    } else {
         tempURL = [NSURL fileURLWithPath:tempPath isDirectory:[fileWrapper isDirectory]];
         
         // Get a FileManager for our Temp Directory.
         __autoreleasing NSError *error = nil;
-        OFSFileManager *tempFileManager = [[OFSFileManager alloc] initWithBaseURL:tempURL delegate:self error:&error];
-        if (error) {
-            OUI_PRESENT_ERROR(error);
-            return;
-        }
-        
-        // Get the FileInfo for where we want to place the temp file.
-        OFSFileInfo *fileInfo = [tempFileManager fileInfoAtURL:tempURL error:&error];
-        if (error) {
-            OUI_PRESENT_ERROR(error);
-            return;
-        }
-        
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+
         // If the temp file exists, we delete it.
-        if ([fileInfo exists] == YES) {
-            [tempFileManager deleteURL:tempURL error:&error];
-            
-            if (error) {
+        if ([fileManager fileExistsAtPath:[tempURL path]]) {
+            if (![fileManager removeItemAtURL:tempURL error:&error]) {
                 OUI_PRESENT_ERROR(error);
                 return;
             }
@@ -262,7 +319,6 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
             OUI_PRESENT_ERROR(error);
             return;
         }
-        
     }
     
     [self _foreground_enableInterfaceAfterExportConversion];
@@ -270,15 +326,25 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     // By now we have written the project out to a temp dir. Time to handoff to Doc Interaction.
     self.documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:tempURL];
     self.documentInteractionController.delegate = self;
-    [self.documentInteractionController presentOpenInMenuFromRect:_rectForExportOptionButtonChosen inView:_exportView animated:YES];
+    BOOL didOpen = [self.documentInteractionController presentOpenInMenuFromRect:_rectForExportOptionButtonChosen inView:_exportView animated:YES];
+    if (didOpen == NO) {
+        // Show Activity View Controller instead.
+        UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[tempURL] applicationActivities:nil];
+        
+        if (!_activityPopoverController) {
+            _activityPopoverController = [[UIPopoverController alloc] initWithContentViewController:activityViewController];
+        }
+        
+        [[OUIDocumentAppController controller] presentPopover:_activityPopoverController fromRect:_rectForExportOptionButtonChosen inView:_exportView permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
 }
 
 - (void)_foreground_exportDocumentOfType:(NSString *)fileType;
 {
     OBPRECONDITION([NSThread isMainThread]);
     @autoreleasepool {
-        OUIDocumentPicker *documentPicker = [[OUIDocumentAppController controller] documentPicker];
-        OFSDocumentStoreFileItem *fileItem = documentPicker.singleSelectedFileItem;
+        OUIDocumentPickerViewController *documentPicker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+        ODSFileItem *fileItem = documentPicker.singleSelectedFileItem;
         if (!fileItem) {
             OBASSERT_NOT_REACHED("no selected document");
             [self _foreground_enableInterfaceAfterExportConversion];
@@ -308,10 +374,10 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     
     if (shouldDisable) {
         OBASSERT_NULL(_fileConversionOverlayView)
-        _fileConversionOverlayView = [[OUIOverlayView alloc] initWithFrame:_exportView.frame];
+        _fileConversionOverlayView = [[UIView alloc] initWithFrame:_exportView.frame];
         [self.view addSubview:_fileConversionOverlayView];
         
-        UIActivityIndicatorView *fileConversionActivityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+        UIActivityIndicatorView *fileConversionActivityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         // Figure out center of overlay view.
         CGPoint overlayCenter = _fileConversionOverlayView.center;
         CGPoint actualCenterForActivityIndicator = (CGPoint){
@@ -345,7 +411,8 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
 - (void)_beginBackgroundExportDocumentOfType:(NSString *)fileType;
 {
     [self _foreground_disableInterfaceForExportConversion];
-    [self _foreground_exportDocumentOfType:fileType];
+    [self performSelector:@selector(_foreground_exportDocumentOfType:) withObject:fileType afterDelay:0.0];
+    //[self _foreground_exportDocumentOfType:fileType];
 }
 
 - (void)_foreground_finishBackgroundEmailExportWithExportType:(NSString *)exportType fileWrapper:(NSFileWrapper *)fileWrapper;
@@ -354,9 +421,10 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     [self _foreground_enableInterfaceAfterExportConversion];
     
     if (fileWrapper) {
-        [self.navigationController dismissViewControllerAnimated:YES completion:nil];
-        OUIDocumentPicker *documentPicker = [[OUIDocumentAppController controller] documentPicker];
-        [documentPicker sendEmailWithFileWrapper:fileWrapper forExportType:exportType];
+        [self.navigationController dismissViewControllerAnimated:YES completion:^{
+            OUIDocumentPickerViewController *documentPicker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+            [documentPicker sendEmailWithFileWrapper:fileWrapper forExportType:exportType];
+        }];
     }
 }
 
@@ -367,13 +435,14 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
     @autoreleasepool {
         if (OFISNULL(exportType)) {
             // The fileType being null means that the user selected the OO3 file. This does not require a conversion.
-            [self.navigationController dismissViewControllerAnimated:YES completion:nil];
-            [[[OUIDocumentAppController controller] documentPicker] emailDocument:nil];
+            [self.navigationController dismissViewControllerAnimated:YES completion:^{
+                [[[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController] emailDocument:nil];
+            }];
             return;
         }
         
-        OUIDocumentPicker *documentPicker = [[OUIDocumentAppController controller] documentPicker];
-        OFSDocumentStoreFileItem *fileItem = documentPicker.singleSelectedFileItem;
+        OUIDocumentPickerViewController *documentPicker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+        ODSFileItem *fileItem = documentPicker.singleSelectedFileItem;
         if (!fileItem) {
             OBASSERT_NOT_REACHED("no selected document");
             [self _foreground_enableInterfaceAfterExportConversion];
@@ -405,6 +474,27 @@ static NSString * const OUIExportInfoExportType = @"OUIExportInfoExportType";
         [self _foreground_emailExportOfType:fileType];
     } else {
         [self _beginBackgroundExportDocumentOfType:fileType];
+    }
+}
+
+- (void)_performActionForInAppPurchaseExportOptionButton:(UIButton *)sender;
+{
+    OBPRECONDITION([sender isKindOfClass:[UIButton class]]);
+    OBPRECONDITION(sender.tag >= 0 && sender.tag < (signed)_exportFileTypes.count);
+    
+    NSString *productIdentifier = [_exportFileTypes objectAtIndex:sender.tag];
+    if ([[OUIAppController controller] importIsUnlocked:productIdentifier]) {
+        OBASSERT([[OUIAppController controller] documentUTIForInAppStoreProductIdentifier:productIdentifier] != nil);
+        NSString *fileType = [[OUIAppController controller] documentUTIForInAppStoreProductIdentifier:productIdentifier];
+        if (_exportType == OUIExportOptionsEmail) {
+            [self _foreground_disableInterfaceForExportConversion];
+            [self _foreground_emailExportOfType:fileType];
+        } else {
+            [self _beginBackgroundExportDocumentOfType:fileType];
+        }
+    } else {
+        _needsToCheckInAppPurchaseAvailability = YES;
+        [[OUIAppController controller] showInAppPurchases:productIdentifier navigationController:[self navigationController]];
     }
 }
 

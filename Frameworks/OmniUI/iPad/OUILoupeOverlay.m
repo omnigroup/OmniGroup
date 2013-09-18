@@ -14,6 +14,20 @@
 RCS_ID("$Id$");
 
 @implementation OUILoupeOverlay
+{
+    OUILoupeMode _mode;           // What kind of loupe we're displaying
+    CGPoint _touchPoint;          // The point (in our subject view's bounds coordinates) to display
+    CGFloat _scale;               // How much to magnify the subject view
+    __weak OUIScalingView <OUILoupeOverlaySubject> *_weak_subjectView;  // If not set, self.superview is used for the subject of display
+    
+    // These are updated based on the mode
+    UIImage *loupeFrameImage;   // The border image to draw around the zoomed view region
+    CGRect loupeFramePosition;  // The frame of the above image, expressed with (0,0) at the (unmagnified) touch point
+    CGPathRef loupeClipPath;    // The clip-path into which to draw the zoomed view region, in our bounds coordinate system
+    CGPoint loupeTouchPoint;    // The point in our bounds coordinate system at which (magnified) _touchPoint should be made to draw
+    UIImage *loupeTabImage;     // Additional image to draw, may be nil
+    CGPoint loupeTabPosition;   // The offset of loupeTabImage w.r.t. the origin of loupeFrameImage
+}
 
 #define OUILoupeDismissedTransform (CGAffineTransform){ 0.0625, 0, 0, 0.25, 0, 0 };
 
@@ -46,22 +60,17 @@ RCS_ID("$Id$");
 
 - (void)dealloc
 {
-    [loupeFrameImage release];
-    loupeFrameImage = nil;
-    [loupeTabImage release];
-    loupeTabImage = nil;
-    if (loupeClipPath) {
+    if (loupeClipPath)
         CFRelease(loupeClipPath);
-        loupeClipPath = NULL;
-    }
-    [super dealloc];
 }
 
-@synthesize subjectView;
+@synthesize subjectView = _weak_subjectView;
 
 /* Set the touch point, which is in the subject view's bounds coordinate system */
 - (void)setTouchPoint:(CGPoint)touchPoint;
 {
+    OUIScalingView <OUILoupeOverlaySubject> *subjectView = _weak_subjectView;
+    
     _touchPoint = touchPoint;
     CGPoint indicatedPoint = touchPoint; // Same, for now
     
@@ -125,6 +134,8 @@ RCS_ID("$Id$");
     if (newMode == _mode)
         return;
     
+    OUIScalingView <OUILoupeOverlaySubject> *subjectView = _weak_subjectView;
+
     [self willChangeValueForKey:@"mode"];
 
     Class animatorClass = [self class];
@@ -167,11 +178,9 @@ RCS_ID("$Id$");
             loupeClipPath = NULL;
         }
         if (loupeFrameImage) {
-            [loupeFrameImage release];
             loupeFrameImage = nil;
         }
         if (loupeTabImage) {
-            [loupeTabImage release];
             loupeTabImage = nil;
         }
         
@@ -191,7 +200,7 @@ RCS_ID("$Id$");
                 break;
             case OUILoupeOverlayCircle:
             {
-                loupeFrameImage = [[UIImage imageNamed:@"OUITextSelectionOverlay.png"] retain];
+                loupeFrameImage = [UIImage imageNamed:@"OUITextSelectionOverlay.png"];
                 CGSize loupeImageSize = [loupeFrameImage size];
 
                 CGMutablePathRef ring = CGPathCreateMutable();
@@ -209,10 +218,10 @@ RCS_ID("$Id$");
             case OUILoupeOverlayRectangle:
             {
                 UIImage *plainImage = [UIImage imageNamed:@"OUIRectangularOverlayFrame.png"];
-                loupeFrameImage = [[plainImage stretchableImageWithLeftCapWidth:RectLoupeSideCapWidth
-                                                                   topCapHeight:RectLoupeTopCapHeight] retain];
+                loupeFrameImage = [plainImage stretchableImageWithLeftCapWidth:RectLoupeSideCapWidth
+                                                                   topCapHeight:RectLoupeTopCapHeight];
                 if (!loupeTabImage)
-                    loupeTabImage = [[UIImage imageNamed:@"OUIRectangularOverlayArrow.png"] retain];
+                    loupeTabImage = [UIImage imageNamed:@"OUIRectangularOverlayArrow.png"];
                 CGSize loupeImageSize;
                 loupeImageSize = [plainImage size];
                 loupeImageSize.width = 207;
@@ -270,7 +279,10 @@ RCS_ID("$Id$");
 {
     CGRect bounds = self.bounds;
     CGContextRef ctx = UIGraphicsGetCurrentContext();
-    OUIScalingView <OUILoupeOverlaySubject> *subject = (subjectView) ? (subjectView) : (OUIScalingView <OUILoupeOverlaySubject> *)(self.superview);
+    
+    OUIScalingView <OUILoupeOverlaySubject> *subject = _weak_subjectView;
+    if (!subject)
+        subject = (OUIScalingView <OUILoupeOverlaySubject> *)self.superview;
 
     /* First draw the contents of the subject view */
     CGContextSaveGState(ctx);

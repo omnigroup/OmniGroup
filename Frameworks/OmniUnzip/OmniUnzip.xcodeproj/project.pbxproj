@@ -56,14 +56,12 @@
 		4241834E0F44C9390029B4DA /* OUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 4241834C0F44C9390029B4DA /* OUErrors.m */; };
 		424183560F44C9940029B4DA /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 424183550F44C9940029B4DA /* OmniBase.framework */; };
 		4241860F0F44E2F60029B4DA /* OmniUnzip.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4241860D0F44E2F60029B4DA /* OmniUnzip.strings */; };
-		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
-		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		32DBCF5E0370ADEE00C91783 /* OmniUnzip_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUnzip_Prefix.pch; sourceTree = "<group>"; };
 		34C63DEE10DA9C69004889BB /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
@@ -200,7 +198,6 @@
 			children = (
 				4241860D0F44E2F60029B4DA /* OmniUnzip.strings */,
 				8DC2EF5A0486A6940098B216 /* Info.plist */,
-				089C1666FE841158C02AAC07 /* InfoPlist.strings */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -424,7 +421,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0500;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniUnzip" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -452,7 +449,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */,
 				4241860F0F44E2F60029B4DA /* OmniUnzip.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -518,14 +514,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		089C1666FE841158C02AAC07 /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				089C1667FE841158C02AAC07 /* English */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
 		4241860D0F44E2F60029B4DA /* OmniUnzip.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -541,6 +529,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 424183B50F44CF990029B4DA /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				GCC_WARN_SHADOW = YES;
@@ -561,6 +550,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 424183B60F44CF990029B4DA /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				GCC_WARN_SHADOW = YES;
@@ -593,6 +583,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34E20FC2119314BE00ECA875 /* Touch-Library-Debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				PRODUCT_NAME = OmniUnzip;
 			};
@@ -602,6 +593,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34E20FC1119314BE00ECA875 /* Touch-Library-Coverage.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				PRODUCT_NAME = OmniUnzip;
 			};
@@ -611,6 +603,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34E20FC3119314BE00ECA875 /* Touch-Library-Release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				PRODUCT_NAME = OmniUnzip;
 			};
@@ -627,6 +620,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 424183B40F44CF990029B4DA /* Omni-Framework-Coverage.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				GCC_WARN_SHADOW = YES;

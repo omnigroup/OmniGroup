@@ -17,6 +17,7 @@
 #import <Foundation/Foundation.h>
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIFont.h>
+#import <CoreText/CoreText.h>
 #endif
 
 RCS_ID("$Id$");
@@ -25,6 +26,18 @@ RCS_ID("$Id$");
 #define DEBUG_FONT_LOOKUP(format, ...) NSLog(@"FONT_LOOKUP: " format, ## __VA_ARGS__)
 #else
 #define DEBUG_FONT_LOOKUP(format, ...)
+#endif
+
+// UIFont and CTFontRef are toll-free bridged on iOS
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+static inline CTFontRef UIFontToCTFont(UIFont *font)
+{
+    return (OB_BRIDGE CTFontRef)font;
+}
+static inline UIFont *UIFontFromCTFont(CTFontRef fontRef)
+{
+    return (OB_BRIDGE UIFont *)fontRef;
+}
 #endif
 
 //#define FONT_DESC_STATS
@@ -110,7 +123,7 @@ NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font)
 {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     OBPRECONDITION(font != NULL);
-    CTFontRef coreTextFont = font;
+    CTFontRef coreTextFont = UIFontToCTFont(font);
     CTFontDescriptorRef fontDescriptor = CTFontCopyFontDescriptor(coreTextFont);
     CFDictionaryRef fontAttributes = CTFontDescriptorCopyAttributes(fontDescriptor);
     NSDictionary *result = (NSDictionary *)CFDictionaryCreateCopy(NULL, fontAttributes);
@@ -291,7 +304,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 
     // Note that this leaves _font as nil so that we get the same results as forward mapping via our caching.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    CTFontDescriptorRef fontDescriptorRef = CTFontCopyFontDescriptor(font);
+    CTFontDescriptorRef fontDescriptorRef = CTFontCopyFontDescriptor(UIFontToCTFont(font));
     
     NSString *family = (NSString *)CTFontDescriptorCopyAttribute(fontDescriptorRef, kCTFontFamilyNameAttribute);
     NSNumber *sizeRef = (NSNumber *)CTFontDescriptorCopyAttribute(fontDescriptorRef, kCTFontSizeAttribute);
@@ -366,7 +379,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     
     OAFontDescriptorPlatformFont font = self.font;
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    return [(id)CTFontCopyFamilyName(font) autorelease];
+    return [(id)CTFontCopyFamilyName(UIFontToCTFont(font)) autorelease];
 #else
     return [font familyName];
 #endif
@@ -385,7 +398,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 {
     OAFontDescriptorPlatformFont font = self.font;
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    return [(id)NSMakeCollectable(CTFontCopyPostScriptName(font)) autorelease];
+    return [(id)NSMakeCollectable(CTFontCopyPostScriptName(UIFontToCTFont(font))) autorelease];
 #else
     return [font fontName];
 #endif    
@@ -394,7 +407,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 - (NSString *)localizedStyleName;
 {
-    CFStringRef styleName = CTFontCopyLocalizedName([self font], kCTFontStyleNameKey, NULL);
+    CFStringRef styleName = CTFontCopyLocalizedName(UIFontToCTFont(self.font), kCTFontStyleNameKey, NULL);
     if (styleName)
         return [(id)NSMakeCollectable(styleName) autorelease];
     
@@ -410,11 +423,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     
     
     OAFontDescriptorPlatformFont font = self.font;
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    return CTFontGetSize(font);
-#else
-    return [font pointSize];
-#endif
+    return font.pointSize;
 }
 
 - (NSNumber *)_coreTextFontWeight; // result may be nil if we don't find an explicit font weight
@@ -466,7 +475,7 @@ static CTFontSymbolicTraits _symbolicTraits(OAFontDescriptor *self)
     
     OAFontDescriptorPlatformFont font = self.font;
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    CTFontSymbolicTraits result = CTFontGetSymbolicTraits(font);
+    CTFontSymbolicTraits result = CTFontGetSymbolicTraits(UIFontToCTFont(font));
     return _clearClassMask(result);
 #else
     // NSFontTraitMask is NSUInteger; avoid a warning and assert that we aren't dropping anything by the cast.
@@ -512,7 +521,7 @@ static BOOL _hasSymbolicTrait(OAFontDescriptor *self, unsigned trait)
 static OAFontDescriptorPlatformFont _copyFont(CTFontDescriptorRef fontDesc, CGFloat size)
 {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE    
-    return CTFontCreateWithFontDescriptor(fontDesc, size/*size*/, NULL/*matrix*/);
+    return UIFontFromCTFont(CTFontCreateWithFontDescriptor(fontDesc, size/*size*/, NULL/*matrix*/));
 #else
     return [[NSFont fontWithDescriptor:(NSFontDescriptor *)fontDesc size:size] retain];
 #endif
@@ -526,7 +535,7 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
     CFStringRef desiredFamilyName = CTFontDescriptorCopyAttribute(matchingDescriptor, kCTFontFamilyNameAttribute);
     NSString *newFontFamilyName = nil;
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    CFStringRef newFontFamilyNameCF = CTFontCopyFamilyName(font);
+    CFStringRef newFontFamilyNameCF = CTFontCopyFamilyName(UIFontToCTFont(font));
     if (newFontFamilyNameCF) {
         newFontFamilyName = [NSString stringWithString:(NSString *)newFontFamilyNameCF];
         CFRelease(newFontFamilyNameCF);
@@ -565,9 +574,9 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
     
     BOOL newFontIsBold = NO;
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    newFontIsBold = (CTFontGetSymbolicTraits(font) & kCTFontTraitBold) != 0;
+    newFontIsBold = (CTFontGetSymbolicTraits(UIFontToCTFont(font)) & kCTFontTraitBold) != 0;
     if (! newFontIsBold) {
-        CFStringRef fontName = CTFontCopyFullName(font);
+        CFStringRef fontName = CTFontCopyFullName(UIFontToCTFont(font));
         newFontIsBold = [(NSString *)fontName containsString:@"bold" options:NSCaseInsensitiveSearch];
         CFRelease(fontName);
     }

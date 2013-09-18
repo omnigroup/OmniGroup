@@ -7,25 +7,26 @@
 
 #import <OmniFileExchange/OFXDocumentStoreScope.h>
 
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+
 #import <OmniFileExchange/OFXAgent.h>
 #import <OmniFileExchange/OFXErrors.h>
 #import <OmniFileExchange/OFXFileMetadata.h>
 #import <OmniFileExchange/OFXRegistrationTable.h>
 #import <OmniFileExchange/OFXServerAccount.h>
-#import <OmniFileStore/OFSDocumentStore.h>
-#import <OmniFileStore/OFSDocumentStoreFileItem.h>
-#import <OmniFileStore/OFSURL.h>
+#import <OmniDocumentStore/ODSStore.h>
+#import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/OFNetReachability.h>
 #import <OmniBase/NSError-OBExtensions.h>
 
-#import <OmniFileStore/OFSDocumentStoreScope-Subclass.h>
+#import <OmniDocumentStore/ODSScope-Subclass.h>
 
 #import "OFXAgent-Internal.h"
 
 RCS_ID("$Id$");
 
-@interface OFXDocumentStoreScope () <OFSDocumentStoreConcreteScope>
+@interface OFXDocumentStoreScope () <ODSConcreteScope>
 @end
 
 @implementation OFXDocumentStoreScope
@@ -35,7 +36,8 @@ RCS_ID("$Id$");
     NSString *_identifier;
     NSURL *_documentsURL;
     OFXRegistrationTable *_metadataItemRegistrationTable;
-
+    NSDictionary *_previouslyAppliedMetadataItemsByIdentifier;
+    
     NSMutableSet *_fileItemsToAutomaticallyDownload;
     
     // In the local directory scope, we can scan the filesystem to check the current state, here we get notified of file items in background. We could assume file stubs exist and scan, but instead we maintain a set of used URLs here.
@@ -44,7 +46,7 @@ RCS_ID("$Id$");
 
 static unsigned MetadataRegistrationContext;
 
-- initWithSyncAgent:(OFXAgent *)syncAgent account:(OFXServerAccount *)account documentStore:(OFSDocumentStore *)documentStore;
+- initWithSyncAgent:(OFXAgent *)syncAgent account:(OFXServerAccount *)account documentStore:(ODSStore *)documentStore;
 {
     OBPRECONDITION(syncAgent);
     OBPRECONDITION(account);
@@ -63,11 +65,9 @@ static unsigned MetadataRegistrationContext;
         
         [_metadataItemRegistrationTable addObserver:self forKeyPath:OFValidateKeyPath(_metadataItemRegistrationTable, values) options:0 context:&MetadataRegistrationContext];
         
-        OBFinishPortingLater("Get rid of this extra ivar if we make the account's local documents URL set-once/read-only");
         _documentsURL = [_account.localDocumentsURL copy];
         OBASSERT(_documentsURL);
         
-        OBFinishPortingLater("Might not have really finished the first scan? Add a flag on the registration table that says whether it has been filled or not, or just ensure it has been scanned by now...?");
         [self _updateFileItems];
         
         [self willChangeValueForKey:OFValidateKeyPath(self, hasFinishedInitialScan)];
@@ -83,7 +83,7 @@ static unsigned MetadataRegistrationContext;
     [_metadataItemRegistrationTable removeObserver:self forKeyPath:OFValidateKeyPath(_metadataItemRegistrationTable, values) context:&MetadataRegistrationContext];
 }
 
-#pragma mark - OFSDocumentStoreConcreteScope
+#pragma mark - ODSConcreteScope
 
 - (NSString *)identifier;
 {
@@ -93,14 +93,6 @@ static unsigned MetadataRegistrationContext;
 - (NSString *)displayName;
 {
     return _account.displayName;
-}
-
-- (NSString *)moveToActionLabelWhenInList:(BOOL)inList;
-{
-    if (inList)
-        return self.displayName;
-    else
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Move to \"%@\"", @"OmniFileExchange", OMNI_BUNDLE, @"Menu item label for moving a document to cloud storage"), self.displayName];
 }
 
 - (BOOL)hasFinishedInitialScan;
@@ -114,7 +106,7 @@ static unsigned MetadataRegistrationContext;
     return _documentsURL;
 }
 
-- (BOOL)requestDownloadOfFileItem:(OFSDocumentStoreFileItem *)fileItem error:(NSError **)outError;
+- (BOOL)requestDownloadOfFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
 {
     NSURL *fileURL = fileItem.fileURL;
     [_syncAgent requestDownloadOfItemAtURL:fileURL completionHandler:^(NSError *errorOrNil){
@@ -125,71 +117,134 @@ static unsigned MetadataRegistrationContext;
     return YES;
 }
 
-- (void)deleteItem:(OFSDocumentStoreFileItem *)fileItem completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)deleteItems:(NSSet *)items completionHandler:(void (^)(NSSet *deletedFileItems, NSArray *errorsOrNil))completionHandler;
 {
-    OBPRECONDITION(fileItem.scope == self);
+    OBPRECONDITION([items all:^BOOL(ODSItem *item) { return item.scope == self; }]);
     OBPRECONDITION([NSThread isMainThread]); // Synchronize with updating of fileItems, and this is the queue we'll invoke the completion handler on.
     
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    OFSDocumentStoreScope *trashScope = self.documentStore.trashScope;
+    completionHandler = [completionHandler copy];
+
+    // The undownloaded items can't be moved to a local scope. We'll delete them on the server and assume that some other device has a copy downloaded that'll get moved into the Trash. This may be untrue and the file may really get lost, but its either that or add server-side "trash" support or fail the delete of undownloaded items.
+    
+    // TODO: Delete of mix of downloaded/undownloaded
+    // TODO: Delete of folder with downloaded and undownloaded item
+    
+    NSMutableSet *deletedFileItems = [NSMutableSet new];
+    NSMutableArray *errors = [NSMutableArray new];
+    
+    NSBlockOperation *allDeletionsCompleted = [NSBlockOperation blockOperationWithBlock:^{
+        if (completionHandler)
+            completionHandler(deletedFileItems, errors);
+    }];
+    
+    NSMutableSet *undownloadedFileItems = [NSMutableSet new];
+    {
+        for (ODSItem *item in items) {
+            [item eachFile:^(ODSFileItem *fileItem){
+                if (fileItem.isDownloaded)
+                    return;
+                
+                [undownloadedFileItems addObject:fileItem];
+                
+                // This will do file coordination if the document is downloaded (so other presenters will notice), otherwise just a metadata-based deletion.
+                NSOperation *deletionCompleted = [NSBlockOperation blockOperationWithBlock:^{}];
+                [allDeletionsCompleted addDependency:deletionCompleted];
+                
+                [_syncAgent deleteItemAtURL:fileItem.fileURL completionHandler:^(NSError *errorOrNil){
+                    OBASSERT([NSThread isMainThread], "Writing to shared state");
+                    if (errorOrNil)
+                        [errors addObject:errorOrNil];
+                    else
+                        [deletedFileItems addObject:fileItem];
+                    [[NSOperationQueue mainQueue] addOperation:deletionCompleted];
+                }];
+            }];
+        }
+    }
+    
+    ODSScope *trashScope = self.documentStore.trashScope;
     if (trashScope != nil) {
-        [trashScope moveFileItems:[NSSet setWithObject:fileItem] completionHandler:^(OFSDocumentStoreFileItem *failingFileItem, NSError *errorOrNil) {
-            completionHandler(errorOrNil);
+        [trashScope takeItems:items toFolder:trashScope.rootFolder ignoringFileItems:undownloadedFileItems completionHandler:^(NSSet *movedFileItems, NSArray *errorsOrNil) {
+            OBASSERT([NSThread isMainThread], "Writing to shared state");
+
+            if (movedFileItems) {
+                OBASSERT([deletedFileItems intersectsSet:movedFileItems] == NO);
+                [deletedFileItems unionSet:movedFileItems];
+            }
+            if (errorsOrNil)
+                [errors addObjectsFromArray:errorsOrNil];
+            [[NSOperationQueue mainQueue] addOperation:allDeletionsCompleted];
         }];
         return;
     }
-#endif
 
+    OBFinishPorting;
+#if 0
     // This will do file coordination if the document is downloaded (so other presenters will notice), otherwise just a metadata-based deletion.
     [_syncAgent deleteItemAtURL:fileItem.fileURL completionHandler:completionHandler];
+#endif
 }
 
-- (void)performMoveFromURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL filePresenter:(id <NSFilePresenter>)filePresenter completionHandler:(void (^)(NSURL *destinationURL, NSError *errorOrNil))completionHandler;
+- (BOOL)performMoveFromURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL filePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
 {
-    // We are running on our operation queue here, which is the account agent's queue.
+    NSURL *documentsURL = self.documentsURL;
+    if (!OFURLContainsURL(documentsURL, sourceURL)) {
+        // OFXAgent can only do metadata operations on items it already had. In the case that we are moving a file in, just use the default file coordination move
+        return [super performMoveFromURL:sourceURL toURL:destinationURL filePresenter:filePresenter error:outError];
+    }
     
-    completionHandler = [completionHandler copy];
+    // We are running on the scope's queue here, but the agent wants actions invoked on the main queue. This call is expected to be blocking, so we'll dispatch and wait.
+    __block NSError *resultError;
+    NSConditionLock *lock = [[NSConditionLock alloc] initWithCondition:NO];
     
-    OBFinishPortingLater("Figure out why OFS passes the destinationURL back at the completion handler -- maybe due to races and uniquification?");
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         [_syncAgent moveItemAtURL:sourceURL toURL:destinationURL completionHandler:^(NSError *errorOrNil){
-            if (completionHandler) {
-                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                    if (errorOrNil)
-                        completionHandler(nil, errorOrNil);
-                    else
-                        completionHandler(destinationURL, errorOrNil);
-                }];
-            }
+            resultError = errorOrNil;
+            [lock lock];
+            [lock unlockWithCondition:YES];
         }];
     }];
+    
+    [lock lockWhenCondition:YES];
+    [lock unlock];
+    
+    if (resultError) {
+        if (outError)
+            *outError = resultError;
+        return NO;
+    }
+    return YES;
 }
 
-#pragma mark - OFSDocumentStoreScope subclass
+#pragma mark - ODSScope subclass
 
-- (void)setFileItems:(NSSet *)fileItems;
-{
-    // Doing this here so that we'll catch added/removed file items handled by the superclass.
-    [super setFileItems:fileItems];
-    [self _updateUsedFileURLs];
-}
-
-- (BOOL)prepareToMoveFileItem:(OFSDocumentStoreFileItem *)fileItem toScope:(OFSDocumentStoreScope *)otherScope error:(NSError **)outError;
+- (BOOL)prepareToRelinquishItem:(ODSItem *)item error:(NSError **)outError;
 {
     // Skip any files that aren't fully downloaded. There is obviously a race condition here, but the actual file transfer code will also check and will produce a conflict copy if we were about to start downloading a new version of the file.
     
-    if (!fileItem.isDownloaded) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Cannot move document.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The document \"%@\" is not fully downloaded.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description"), fileItem.name];
-        OFXError(outError, OFXFileItemNotDownloaded, description, reason);
+    __block NSError *resultError;
+    [item eachFile:^(ODSFileItem *file){
+        if (!file.isDownloaded && !resultError) {
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Cannot move document.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description");
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The document \"%@\" is not fully downloaded.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description"), file.name];
+            __autoreleasing NSError *error;
+            OFXError(&error, OFXFileItemNotDownloaded, description, reason);
+            resultError = error;
+            return;
+        }
+        OBASSERT(file.percentDownloaded == 1);
+    }];
+    
+    if (resultError) {
+        if (outError)
+            *outError = resultError;
         return NO;
     }
-    OBASSERT(fileItem.percentDownloaded == 1);
-    
-    return [super prepareToMoveFileItem:fileItem toScope:otherScope error:outError];
+        
+    return [super prepareToRelinquishItem:item error:outError];
 }
 
-static void _updateObjectValue(OFSDocumentStoreFileItem *fileItem, NSString *bindingKey, id newValue)
+static void _updateObjectValue(ODSFileItem *fileItem, NSString *bindingKey, id newValue)
 {
     OBPRECONDITION([NSThread isMainThread]); // Only fire KVO on the main thread
     
@@ -200,7 +255,7 @@ static void _updateObjectValue(OFSDocumentStoreFileItem *fileItem, NSString *bin
     }
 }
 
-static void _updateFlagFromAttributes(OFSDocumentStoreFileItem *fileItem, NSString *bindingKey, OFXFileMetadata *metadata, NSString *attributeKey, BOOL defaultValue)
+static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKey, OFXFileMetadata *metadata, NSString *attributeKey, BOOL defaultValue)
 {
     BOOL value;
     NSNumber *attributeValue = [metadata valueForKey:attributeKey];
@@ -215,24 +270,9 @@ static void _updateFlagFromAttributes(OFSDocumentStoreFileItem *fileItem, NSStri
     _updateObjectValue(fileItem, bindingKey, objectValue);
 }
 
-static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSString *bindingKey, OFXFileMetadata *metadata, NSString *attributeKey, double defaultValue)
-{
-    double value;
-    NSNumber *attributeValue = [metadata valueForKey:attributeKey];
-    if (!attributeValue) {
-        OBASSERT_NOT_REACHED("Missing attribute value");
-        value = defaultValue;
-    } else {
-        value = [attributeValue doubleValue];
-    }
-    
-    _updateObjectValue(fileItem, bindingKey, @(value));
-}
+#define UPDATE_METADATA_FLAG(keySuffix) _updateFlagFromAttributes(fileItem, ODSItem ## keySuffix ## Binding, metadata, OFXFileMetadata ## keySuffix ## Key, kODSFileItemDefault_ ## keySuffix)
 
-#define UPDATE_METADATA_FLAG(keySuffix) _updateFlagFromAttributes(fileItem, OFSDocumentStoreItem ## keySuffix ## Binding, metadata, OFXFileMetadata ## keySuffix ## Key, kOFSDocumentStoreFileItemDefault_ ## keySuffix)
-#define UPDATE_METADATA_PERCENT(keySuffix) _updatePercentFromAttributes(fileItem, OFSDocumentStoreItem ## keySuffix ## Binding, metadata, OFXFileMetadata ## keySuffix ## Key, kOFSDocumentStoreFileItemDefault_ ## keySuffix)
-
-- (void)updateFileItem:(OFSDocumentStoreFileItem *)fileItem withMetadata:(id)metadata fileModificationDate:(NSDate *)fileModificationDate;
+- (void)updateFileItem:(ODSFileItem *)fileItem withMetadata:(id)metadata fileModificationDate:(NSDate *)fileModificationDate;
 {
     OBPRECONDITION([NSThread isMainThread]); // Fire KVO from the main thread
     
@@ -262,39 +302,50 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
     
     BOOL wasDownloaded = fileItem.isDownloaded;
     
+    uint64_t totalSize = metadataItem.totalSize;
+    if (fileItem.totalSize != totalSize)
+        _updateObjectValue(fileItem, ODSItemTotalSizeBinding, @(totalSize));
+    
     UPDATE_METADATA_FLAG(IsDownloading);
     UPDATE_METADATA_FLAG(IsDownloaded);
     
-    if (fileItem.isUploading) // percent might not be in the attributes otherwise
-        UPDATE_METADATA_PERCENT(PercentUploaded);
+    uint64_t uploadedSize;
+    if (fileItem.isUploading)
+        uploadedSize = totalSize * CLAMP(metadataItem.percentUploaded, 0, 1);
     else
-        _updateObjectValue(fileItem, OFValidateKeyPath(fileItem, percentUploaded), @(kOFSDocumentStoreFileItemDefault_PercentUploaded)); // Set the default value
-    
-    if (fileItem.isDownloading) // percent might not be in the attributes otherwise
-        UPDATE_METADATA_PERCENT(PercentDownloaded);
+        uploadedSize = totalSize;
+    if (fileItem.uploadedSize != uploadedSize)
+        fileItem.uploadedSize = uploadedSize;
+
+    uint64_t downloadedSize;
+    if (fileItem.isDownloading)
+        downloadedSize = totalSize * CLAMP(metadataItem.percentDownloaded, 0, 1);
     else
-        _updateObjectValue(fileItem, OFValidateKeyPath(fileItem, percentDownloaded), @(kOFSDocumentStoreFileItemDefault_PercentDownloaded)); // Set the default value
+        downloadedSize = totalSize;
+    if (fileItem.downloadedSize != downloadedSize)
+        fileItem.downloadedSize = downloadedSize;
     
     if (!wasDownloaded && fileItem.isDownloaded) {
         [_fileItemsToAutomaticallyDownload removeObject:fileItem];
         fileItem.hasDownloadQueued = NO;
         [self _requestDownloadOfFileItem];
         
-        OFSDocumentStore *documentStore = self.documentStore;
+        ODSStore *documentStore = self.documentStore;
         if (!documentStore)
             return; // Weak pointer cleared
                 
         // The file type and modification date stored in this file item may not have changed (since undownloaded file items know those). So, -_queueContentsChanged may end up posting no notification. Rather than forcing it to do so in this case, we have a specific notification for a download finishing.
-        NSDictionary *userInfo = [NSDictionary dictionaryWithObject:fileItem forKey:OFSDocumentStoreFileItemInfoKey];
-        [[NSNotificationCenter defaultCenter] postNotificationName:OFSDocumentStoreFileItemFinishedDownloadingNotification object:documentStore userInfo:userInfo];
+        NSDictionary *userInfo = [NSDictionary dictionaryWithObject:fileItem forKey:ODSFileItemInfoKey];
+        [[NSNotificationCenter defaultCenter] postNotificationName:ODSFileItemFinishedDownloadingNotification object:documentStore userInfo:userInfo];
     }
 }
 
-- (void)fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date didMoveToURL:(NSURL *)newURL;
+- (void)fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date finishedMoveToURL:(NSURL *)newURL successfully:(BOOL)successfully;
 {
-    [super fileWithURL:oldURL andDate:date didMoveToURL:newURL];
+    [super fileWithURL:oldURL andDate:date finishedMoveToURL:newURL successfully:successfully];
     
-    [self _updateUsedFileURLs];
+    if (successfully)
+        [self _updateUsedFileURLs];
 }
 
 - (NSMutableSet *)copyCurrentlyUsedFileNamesInFolderAtURL:(NSURL *)folderURL ignoringFileURL:(NSURL *)fileURLToIgnore;
@@ -345,7 +396,7 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
     OBPRECONDITION([NSThread isMainThread]);
     
     NSMutableArray *fileURLs = [NSMutableArray new];
-    for (OFSDocumentStoreFileItem *fileItem in self.fileItems)
+    for (ODSFileItem *fileItem in self.fileItems)
         [fileURLs addObject:fileItem.fileURL];
 
     [self performAsynchronousFileAccessUsingBlock:^{
@@ -361,7 +412,7 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
     // Index the existing file items, using the persistent file identifier (so that we can detect moves). But, newly created documents will go through the fast path, which calls -makeFileItemForURL:... and inserts it into our file items w/o a scan. To avoid creating yet another file item (and discarding the one from the fast path), we need to try to match up by fileURL too.
     NSMutableDictionary *existingFileItemByIdentifier = [NSMutableDictionary new];
     NSMutableDictionary *newFileItemsByCacheKey = nil;
-    for (OFSDocumentStoreFileItem *fileItem in self.fileItems) {
+    for (ODSFileItem *fileItem in self.fileItems) {
         NSString *identifier = fileItem.scopeInfo;
         
         // Newly created documents will go through the fast path, which calls -makeFileItemForURL:... and inserts it into our file items w/o a scan. The down side of this fix is that on the next scan, we won't match up the existing file item and the URL and we'll end up creating a new file item.
@@ -372,12 +423,15 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
         } else {
             if (!newFileItemsByCacheKey)
                 newFileItemsByCacheKey = [NSMutableDictionary new];
-            NSString *cacheKey = OFSDocumentStoreScopeCacheKeyForURL(fileItem.fileURL);
+            NSString *cacheKey = ODSScopeCacheKeyForURL(fileItem.fileURL);
             OBASSERT(newFileItemsByCacheKey[cacheKey] == nil);
             newFileItemsByCacheKey[cacheKey] = fileItem;
         }
     }
-        
+    
+    NSMutableDictionary *appliedMetadataByIdentifier = [NSMutableDictionary new];
+    
+    BOOL movedFile = NO;
     NSMutableSet *updatedFileItems = [[NSMutableSet alloc] init];
     for (OFXFileMetadata *metadataItem in _metadataItemRegistrationTable.values) {
         NSURL *fileURL = metadataItem.fileURL;
@@ -386,15 +440,23 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
             // This metadataItem is for a file which has been deleted locally and the delete is not yet done syncing to the remote side
             continue;
         }
+        OBASSERT([[self class] isFile:fileURL inContainer:_documentsURL], "We shouldn't be mixing items between scopes");
         
-        if (![[self class] isFile:fileURL inContainer:_documentsURL]) {
-            OBASSERT_NOT_REACHED("We shouldn't be mixing items between scopes");
+        // Don't do redundant updates to metadata (in particular, the attribute lookup is very slow).
+        NSString *fileIdentifier = metadataItem.fileIdentifier;
+        ODSFileItem *fileItem = existingFileItemByIdentifier[fileIdentifier];
+
+        appliedMetadataByIdentifier[fileIdentifier] = metadataItem;
+        if (_previouslyAppliedMetadataItemsByIdentifier[fileIdentifier] == metadataItem) {
+            DEBUG_METADATA(2, @"metadata unchanged for %@", [fileURL absoluteString]);
+            [updatedFileItems addObject:fileItem];
+            [existingFileItemByIdentifier removeObjectForKey:fileIdentifier];
             continue;
         }
         
         DEBUG_METADATA(2, @"item %@ %@", metadataItem, [fileURL absoluteString]);
         DEBUG_METADATA(2, @"  %@", [metadataItem debugDictionary]);
-        
+
         NSDate *userModificationDate = metadataItem.modificationDate;
         OBASSERT(userModificationDate);
         
@@ -411,11 +473,9 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
         
         BOOL isNewItem = NO;
         
-        NSString *fileIdentifier = metadataItem.fileIdentifier;
-        OFSDocumentStoreFileItem *fileItem = existingFileItemByIdentifier[fileIdentifier];
         if (!fileItem) {
             // Might be a new item created by the new-document fast path. Try to associate the identifier with it instead of creating a new file item.
-            fileItem = newFileItemsByCacheKey[OFSDocumentStoreScopeCacheKeyForURL(metadataItem.fileURL)];
+            fileItem = newFileItemsByCacheKey[ODSScopeCacheKeyForURL(metadataItem.fileURL)];
             fileItem.scopeInfo = fileIdentifier;
         }
         
@@ -433,8 +493,10 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
             [updatedFileItems addObject:fileItem];
             [existingFileItemByIdentifier removeObjectForKey:fileIdentifier];
             
-            if (OFNOTEQUAL(fileItem.fileURL, metadataItem.fileURL))
+            if (OFNOTEQUAL(fileItem.fileURL, metadataItem.fileURL)) {
                 [fileItem didMoveToURL:metadataItem.fileURL];
+                movedFile = YES;
+            }
         }
         
         DEBUG_METADATA(2, @"Updating metadata properties on file item %@", [fileItem shortDescription]);
@@ -444,12 +506,13 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
         if (isNewItem)
             [self _possiblyEnqueueDownloadRequestForNewlyAddedFileItem:fileItem metadataItem:metadataItem];
     }
+    _previouslyAppliedMetadataItemsByIdentifier = appliedMetadataByIdentifier;
     
-    self.fileItems = updatedFileItems;
-    
+    [self setFileItems:updatedFileItems itemMoved:movedFile];
+
+    [self _updateUsedFileURLs];
     [self invalidateUnusedFileItems:existingFileItemByIdentifier];
     
-    OBFinishPortingLater("Maybe we should remove sync scopes from the document store when it is disabled, then we can use fileItems==nil");
     if (!_hasFinishedInitialScan) {
         [self willChangeValueForKey:OFValidateKeyPath(self, hasFinishedInitialScan)];
         _hasFinishedInitialScan = YES;
@@ -462,7 +525,7 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
     }
 }
 
-- (void)_possiblyEnqueueDownloadRequestForNewlyAddedFileItem:(OFSDocumentStoreFileItem *)fileItem metadataItem:(OFXFileMetadata *)metadataItem;
+- (void)_possiblyEnqueueDownloadRequestForNewlyAddedFileItem:(ODSFileItem *)fileItem metadataItem:(OFXFileMetadata *)metadataItem;
 {
     OBPRECONDITION([NSThread isMainThread]); // _fileItems and _fileItemsToAutomaticallyDownload are main-thread only
     
@@ -470,15 +533,7 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
     
     if (fileItem.isDownloaded)
         return;
-    OFNetReachability *netReachability = _syncAgent.netReachability;
-    if (!netReachability.reachable || netReachability.usingCell)
-        return;
-    
-    unsigned long long fileSize = metadataItem.fileSize;
-    
-    NSUInteger maximumAutomaticDownloadSize = [[OFPreference preferenceForKey:@"OFXMaximumAutomaticDownloadSize"] unsignedIntegerValue];
-    
-    if (fileSize <= (unsigned long long)maximumAutomaticDownloadSize) {
+    if ([_syncAgent shouldAutomaticallyDownloadItemWithMetadata:metadataItem]) {
         if (!_fileItemsToAutomaticallyDownload)
             _fileItemsToAutomaticallyDownload = [[NSMutableSet alloc] init];
         [_fileItemsToAutomaticallyDownload addObject:fileItem];
@@ -496,15 +551,11 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
     [_fileItemsToAutomaticallyDownload intersectSet:fileItems];
     
     // Bail if any file item is already downloading or we've asked it to start (metadata query update that it is may be pending). Manual download requests will still proceed.
-    if ([fileItems any:^BOOL(OFSDocumentStoreFileItem *fileItem) { return fileItem.isDownloading || fileItem.downloadRequested; }])
+    if ([fileItems any:^BOOL(ODSFileItem *fileItem) { return fileItem.isDownloading || fileItem.downloadRequested; }])
         return;
     
     // OBFinishPorting: iCloud supposedly eagerly downloads all files on the Mac. We don't have -preferredFileItemForNextAutomaticDownload: on the Mac (it up-calls to the UI to see what previews are on screen), and we are only downloading small files on the Mac.
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    OFSDocumentStoreFileItem *fileItem = [self.documentStore preferredFileItemForNextAutomaticDownload:_fileItemsToAutomaticallyDownload];
-#else
-    OFSDocumentStoreFileItem *fileItem = [_fileItemsToAutomaticallyDownload anyObject];
-#endif
+    ODSFileItem *fileItem = [self.documentStore preferredFileItemForNextAutomaticDownload:_fileItemsToAutomaticallyDownload];
     if (!fileItem)
         fileItem = [_fileItemsToAutomaticallyDownload anyObject];
     
@@ -521,3 +572,5 @@ static void _updatePercentFromAttributes(OFSDocumentStoreFileItem *fileItem, NSS
 }
 
 @end
+
+#endif // TARGET_OS_IPHONE

@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2005, 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -111,14 +111,12 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
 
 - (NSAppleEventDescriptor *)fixed_asDescriptor
 {
-    NSAppleEventDescriptor *seld, *testd, *obj2;
-    OSType comparisonOp;
-
     // Radar 6964125: NSSpecifierTest needs accessors
     NSScriptObjectSpecifier *objectSpecifier = [self valueForKey:@"object1"];
     id testObject = [self valueForKey:@"object2"];
     NSTestComparisonOperation comparisonOperator = [[self valueForKey:@"comparisonOperator"] intValue];
     
+    OSType comparisonOp;
     switch (comparisonOperator) {
         case NSEqualToComparison: comparisonOp = kAEEquals; break;
         case NSLessThanOrEqualToComparison: comparisonOp = kAELessThanEquals; break;
@@ -133,6 +131,7 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
     }
 
     /* Half-assed conversion of testObject into an AEDesc */
+    NSAppleEventDescriptor *obj2;
     if ([testObject respondsToSelector:@selector(_asDescriptor)])
         obj2 = [testObject _asDescriptor];
     else if ([testObject isKindOfClass:[NSNumber class]])
@@ -142,14 +141,12 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
     else
         return nil;
     
-    testd = [[NSAppleEventDescriptor alloc] initRecordDescriptor];
+    NSAppleEventDescriptor *testd = [[[NSAppleEventDescriptor alloc] initRecordDescriptor] autorelease];
     [testd setDescriptor:[NSAppleEventDescriptor descriptorWithEnumCode:comparisonOp] forKeyword:keyAECompOperator];
     [testd setDescriptor:[objectSpecifier _asDescriptor] forKeyword:keyAEObject1];
     [testd setDescriptor:obj2 forKeyword:keyAEObject2];
 
-    seld = [testd coerceToDescriptorType:typeCompDescriptor];
-    [testd autorelease];
-    return seld;
+    return [testd coerceToDescriptorType:typeCompDescriptor];
 }
 
 @end

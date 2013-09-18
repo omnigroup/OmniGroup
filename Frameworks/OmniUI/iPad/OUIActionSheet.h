@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@ extern NSString * const OUIActionSheetDidDismissNotification;
 
 @interface OUIActionSheet : UIActionSheet
 
-@property (nonatomic, readonly) NSString *identifier;
+@property(nonatomic,readonly) NSString *identifier;
 
 - (id)initWithIdentifier:(NSString *)identifier;
 

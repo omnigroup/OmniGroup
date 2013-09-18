@@ -1,4 +1,4 @@
-// Copyright 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,8 +21,11 @@ RCS_ID("$Id$");
 - (void)setTableCellParagraphStyle:(NSTextTable *)table row:(NSInteger)row column:(NSInteger)column width:(CGFloat)width padding:(CGFloat)padding
 {
     NSTextTableBlock *block = [[NSTextTableBlock alloc] initWithTable:table startingRow:row rowSpan:1 startingColumn:column columnSpan:1];
+    CGFloat localWidth = width;
+    if (padding > 0)
+        localWidth += padding;
     if (width > 0)
-        [block setValue:width type:NSTextBlockAbsoluteValueType forDimension:NSTextBlockWidth];
+        [block setValue:localWidth type:NSTextBlockAbsoluteValueType forDimension:NSTextBlockWidth];
     if (padding > 0)
         [block setWidth:padding type:NSTextBlockAbsoluteValueType forLayer:NSTextBlockPadding edge:NSMaxXEdge];
 

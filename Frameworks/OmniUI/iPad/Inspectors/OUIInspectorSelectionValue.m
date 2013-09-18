@@ -31,12 +31,6 @@ RCS_ID("$Id$");
     return self;
 }
 
-- (void)dealloc;
-{
-    [_values release];
-    [super dealloc];
-}
-
 - (id)firstValue;
 {
     if ([_values count] > 0)

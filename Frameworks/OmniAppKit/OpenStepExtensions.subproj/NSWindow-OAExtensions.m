@@ -220,7 +220,7 @@ static NSMutableArray *zOrder;
             constraintsOptions = [[NSMenu alloc] initWithTitle:@"Visualize Constraints"];
             [constraintsOptions setAutoenablesItems:NO];
             
-            headerItem = [constraintsOptions addItemWithTitle:@"<PICKED VIEW>" action:@selector(noop:) keyEquivalent:@""];
+            headerItem = [constraintsOptions addItemWithTitle:@"<PICKED VIEW>" action:NULL keyEquivalent:@""];
             [headerItem setEnabled:NO];
             
             horizontalItem = [constraintsOptions addItemWithTitle:@"Visualize horizontal constraints" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];

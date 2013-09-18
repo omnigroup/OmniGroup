@@ -7,21 +7,30 @@
 
 #import "OUIServerAccountValidationViewController.h"
 
+#import <OmniDAV/ODAVErrors.h>
 #import <OmniFileExchange/OFXErrors.h>
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniFileExchange/OFXServerAccountValidator.h>
-#import <OmniFileStore/Errors.h>
 #import <OmniUI/OUICertificateTrustAlert.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIInteractionLock.h>
+#import <OmniFoundation/NSObject-OFExtensions.h>
 
 RCS_ID("$Id$")
 
 @interface OUIServerAccountValidationViewController ()
-@property(nonatomic,strong) IBOutlet UIActivityIndicatorView *activityIndicatorView;
+
+@property(nonatomic,strong) IBOutlet UIView *statusView;
+@property(nonatomic,strong) IBOutlet UILabel *serverInfoLabel;
 @property(nonatomic,strong) IBOutlet UILabel *stateLabel;
-@property(nonatomic,strong) IBOutlet UIImageView *stateImageView;
+@property(nonatomic,strong) IBOutlet UIProgressView *progressView;
+
+@property(nonatomic,strong) IBOutlet UIView *successView;
+@property(nonatomic,strong) IBOutlet UIImageView *successImageView;
+@property(nonatomic,strong) IBOutlet UILabel *successLabel;
+
 @end
 
 @implementation OUIServerAccountValidationViewController
@@ -64,8 +73,9 @@ RCS_ID("$Id$")
         OUIServerAccountValidationViewController *strongSelf = weakSelf;
         if (!strongSelf)
             return;
-        
+                
         strongSelf->_stateLabel.text = validator.state;
+        [strongSelf->_progressView setProgress:validator.percentDone animated:YES];
     };
     
     OFXServerAccount *account = _accountValidator.account;
@@ -79,8 +89,8 @@ RCS_ID("$Id$")
         strongSelf->_accountValidator = nil;
         
         if (errorOrNil) {
-            if ([errorOrNil hasUnderlyingErrorDomain:OFSErrorDomain code:OFSCertificateNotTrusted]) {
-                NSURLAuthenticationChallenge *challenge = [[errorOrNil userInfo] objectForKey:OFSCertificateTrustChallengeErrorKey];
+            if ([errorOrNil hasUnderlyingErrorDomain:ODAVErrorDomain code:ODAVCertificateNotTrusted]) {
+                NSURLAuthenticationChallenge *challenge = [[errorOrNil userInfo] objectForKey:ODAVCertificateTrustChallengeErrorKey];
                 OUICertificateTrustAlert *certAlert = [[OUICertificateTrustAlert alloc] initForChallenge:challenge];
                 certAlert.trustBlock = ^(OFCertificateTrustDuration trustDuration) {
                     OFAddTrustForChallenge(challenge, trustDuration);
@@ -88,29 +98,19 @@ RCS_ID("$Id$")
                 };
                 certAlert.cancelBlock = ^{
                     // We already posted an alert, don't pass back the certificate failure error here.
-                    [strongSelf finishWithError:[NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil]];
+                    [strongSelf _finishedAddingAccount:nil withError:[NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil]];
                 };
                 [certAlert show];
             } else {
-                [strongSelf finishWithError:errorOrNil];
+                [strongSelf _finishedAddingAccount:nil withError:errorOrNil];
             }
         } else {
-            
-            // Determine if this is a new account or if we are changing the configuration on an existing one. We have to be careful of the case where our first attempt fails (invalid credentials, server down). In this case, _account will be non-nil on entry to this method.
-            OFXServerAccountRegistry *registry = [OFXServerAccountRegistry defaultAccountRegistry];
-            if ([[registry allAccounts] containsObject:account] == NO) {
-                __autoreleasing NSError *addError = nil;
-                if (![registry addAccount:account error:&addError]) {
-                    [strongSelf finishWithError:addError];
-                    return;
-                }
-            }
-            [strongSelf finishWithError:nil];
+            [strongSelf _finishedAddingAccount:account withError:nil];
         }
     };
     
     _stateLabel.text = NSLocalizedStringFromTableInBundle(@"Validating account...", @"OmniUIDocument", OMNI_BUNDLE, @"Account validation status string.");
-    [_activityIndicatorView startAnimating];
+    
     [_accountValidator startValidation];
 }
 
@@ -128,19 +128,69 @@ RCS_ID("$Id$")
 {
     [super viewDidLoad];
     
+    _successView.alpha = 0;
+    _successView.hidden = YES;
+    _successView.transform = CGAffineTransformMakeScale(0.75, 0.75);
+    
+    _successLabel.text = NSLocalizedStringFromTableInBundle(@"Connected", @"OmniUIDocument", OMNI_BUNDLE, @"Success label when connecting to an OmniPresence or WebDAV server account");
+    _successImageView.image = [UIImage imageNamed:@"OUIServerAccountValidationSuccess.png"];
+    
+    _serverInfoLabel.text = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Setting up \"%@\"", @"OmniUIDocument", OMNI_BUNDLE, @"Label format when setting up an OmniPresence or WebDAV server account"), _account.displayName];
+    _stateLabel.text = @" "; // Lame; reserve the space to autolayout won't squish us.
+    
     // We use white in the xib, but I suppose we could set it to clear. Setting 'Default' makes the background black in Xcode's editor.
-    self.view.backgroundColor = nil;
+//    self.view.backgroundColor = nil;
 }
 
 - (void)viewDidAppear:(BOOL)animated;
 {
-    OBPRECONDITION(_activityIndicatorView);
-    OBPRECONDITION(_stateImageView);
-    
     [super viewDidAppear:animated];
     
     if (!_accountValidator)
         [self startValidation];
+}
+
+#pragma mark - Private
+
+- (void)_finishedAddingAccount:(OFXServerAccount *)account withError:(NSError *)error;
+{
+    if (!account) {
+        [self finishWithError:error];
+        return;
+    }
+    
+    OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
+    
+    // +animateKeyframesWithDuration: ... doesn't allow selecting the spring effect, strangely.
+    [UIView animateWithDuration:0.15 animations:^{
+        // Delay a bit to let the progress bar be triumphantly at 100% for a bit. If we add the account to the registery and *then* delay, our dismissal animation can wedge (possibly due to the animations on the home screen/preview generation)
+        [_progressView setProgress:1];
+        [_progressView layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.20 animations:^{
+            _statusView.alpha = 0;
+        }];
+        [UIView animateWithDuration:0.3 delay:0.15 usingSpringWithDamping:0.75 initialSpringVelocity:0 options:0 animations:^{
+            _successView.hidden = NO;
+            _successView.alpha = 1;
+            _successView.transform = CGAffineTransformIdentity;
+        } completion:^(BOOL finished) {
+            [self afterDelay:0.8750 performBlock:^{
+                // Determine if this is a new account or if we are changing the configuration on an existing one. We have to be careful of the case where our first attempt fails (invalid credentials, server down). In this case, _account will be non-nil on entry to this method.
+                OFXServerAccountRegistry *registry = [OFXServerAccountRegistry defaultAccountRegistry];
+                if ([[registry allAccounts] containsObject:account] == NO) {
+                    __autoreleasing NSError *addError = nil;
+                    if (![registry addAccount:account error:&addError]) {
+                        [self finishWithError:addError];
+                        return;
+                    }
+                }
+                
+                [self finishWithError:error];
+                [lock unlock];
+            }];
+        }];
+    }];
 }
 
 @end

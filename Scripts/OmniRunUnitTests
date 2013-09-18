@@ -26,4 +26,8 @@ if [ "$ACTION" = "install" -o "$CONFIGURATION" = "Release" ]; then
 	export TEST_AFTER_BUILD=YES
 fi
 
-"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests"
+if [ "$XCODE_VERSION_MAJOR" -lt 0500 ]; then
+    "${SYSTEM_DEVELOPER_TOOLS}/RunUnitTests"
+else
+    "${SYSTEM_DEVELOPER_TOOLS}/RunUnitTests" | sed 's/error:/warning:/' || true
+fi

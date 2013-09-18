@@ -151,11 +151,6 @@ static id _commonInit(OUIInspectorOptionWheel *self)
 - (void)dealloc;
 {
     _scrollView.delegate = nil;
-    [_scrollView release];
-    [_selectionIndicator release];
-    [_items release];
-    [_selectedItem release];
-    [super dealloc];
 }
 
 - (OUIInspectorOptionWheelItem *)addItemWithImage:(UIImage *)image value:(id)value;
@@ -169,12 +164,11 @@ static id _commonInit(OUIInspectorOptionWheel *self)
         [item setImage:[self _imageWithHighlight:image] forState:UIControlStateSelected];
     [item addTarget:self action:@selector(_selectOptionWheelItem:) forControlEvents:UIControlEventTouchUpInside];
     [_items addObject:item];
-    [item release];
     
     [_scrollView setNeedsLayout];
     
     if (!_selectedItem) {
-        _selectedItem = [item retain];
+        _selectedItem = item;
         [self _snapToSelectionAnimated:NO];
     }
         
@@ -192,16 +186,13 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     if (OFISEQUAL(_items, items))
         return;
     
-    [_selectedItem release];
     _selectedItem = nil;
     
     // Not animating between partial changes of items... that might be cool.
     [_items makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    [_items release];
     _items = [[NSMutableArray alloc] initWithArray:items];
 
     // The caller needs to tell us where to go, though this could leave us snapped.
-    [_selectedItem release];
     _selectedItem = nil;
     
     [_scrollView setNeedsLayout];
@@ -224,8 +215,7 @@ static id _commonInit(OUIInspectorOptionWheel *self)
         if (OFISEQUAL(value, item.value)) {
             if (_showHighlight)
                 _selectedItem.selected = NO;
-            [_selectedItem release];
-            _selectedItem = [item retain];
+            _selectedItem = item;
             if (_showHighlight)
                 _selectedItem.selected = YES;
 
@@ -260,7 +250,7 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
     OUIInspectorWellDraw(ctx, self.bounds,
-                         OUIInspectorWellCornerTypeLargeRadius, OUIInspectorWellBorderTypeLight, YES/*innerShadow*/,
+                         OUIInspectorWellCornerTypeLargeRadius, OUIInspectorWellBorderTypeLight, YES/*innerShadow*/, YES/*outerShadow*/,
                          ^(CGRect interiorRect){
         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
         CGShadingRef shading = CGShadingCreateAxial(colorSpace, bounds.origin, CGPointMake(CGRectGetMaxX(bounds), CGRectGetMinY(bounds)), BackgroundShadingFunction, NO, NO);
@@ -320,8 +310,7 @@ static id _commonInit(OUIInspectorOptionWheel *self)
 {
     if (_showHighlight)
         _selectedItem.selected = NO;
-    [_selectedItem release];
-    _selectedItem = [[self _closestItemToCenter] retain];
+    _selectedItem = [self _closestItemToCenter];
     if (_showHighlight)
         _selectedItem.selected = YES;
     

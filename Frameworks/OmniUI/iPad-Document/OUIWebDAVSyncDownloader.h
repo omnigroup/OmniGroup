@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,12 +9,12 @@
 
 #import "OUISyncDownloader.h"
 
-@class OFSFileManager;
+@class ODAVConnection;
 
 @interface OUIWebDAVSyncDownloader : OUISyncDownloader <OUIConcreteSyncDownloader>
 
-- initWithFileManager:(OFSFileManager *)fileManager;
+- initWithConnection:(ODAVConnection *)connection;
 
-@property(nonatomic,readonly) OFSFileManager *fileManager;
+@property(nonatomic,readonly) ODAVConnection *connection;
 
 @end

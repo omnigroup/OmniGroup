@@ -24,6 +24,10 @@ RCS_ID("$Id$");
 #define OA_BUTTON_HEIGHT 18.0f
 
 @interface OAResizingTitleBarButton (/* private */)
+{
+    BOOL _isObservingWindowTitle;
+}
+
 - (id)initWithFrame:(NSRect)frameRect window:(NSWindow *)window textCallback:(OATitleBarButtonTextForButtonCallback)callback;
 
 @property (nonatomic,copy) OATitleBarButtonTextForButtonCallback callback; // must not retain host window, see titleBarButtonWithKey:forWindow:textCallback:
@@ -172,13 +176,10 @@ static NSButton *_OAMobileTitleBarButton(NSWindow *window)
     if (_OAValidMobileTitleBarButton(documentProxyIcon))
         return documentProxyIcon;
     
-    // Last gasp. Try the full-screen button. This will give us update on resize, but not on rename.
-    NSButton *fullScreenButton = [window standardWindowButton:NSWindowFullScreenButton];
-    if (_OAValidMobileTitleBarButton(fullScreenButton))
-        return fullScreenButton;
-    
     return nil;
 }
+
+static void *OAResizingTitleBarButtonObservingWindowContext;
 
 - (id)initWithFrame:(NSRect)frameRect window:(NSWindow *)window textCallback:(OATitleBarButtonTextForButtonCallback)callback;
 {
@@ -197,23 +198,49 @@ static NSButton *_OAMobileTitleBarButton(NSWindow *window)
     [self setAutoresizingMask:NSViewMinYMargin|NSViewMinXMargin];
 
     NSButton *mobileTitleBarButton = _OAMobileTitleBarButton(window);
-    if (mobileTitleBarButton == nil) {
-        OBASSERT_NOT_REACHED(@"Didn't find a standard title bar button to monitor for changes.");
-        [self release];
-        return nil;
+    if (mobileTitleBarButton != nil) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_titleBarDidChange:) name:NSViewFrameDidChangeNotification object:mobileTitleBarButton];
+    } else {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_titleBarDidChange:) name:NSViewFrameDidChangeNotification object:_OABorderView(window)];
+        [window addObserver:self forKeyPath:@"title" options:NSKeyValueObservingOptionNew context:&OAResizingTitleBarButtonObservingWindowContext];
+        _isObservingWindowTitle = YES;
     }
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_titleBarDidChange:) name:NSViewFrameDidChangeNotification object:mobileTitleBarButton];
 
     return self;
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+{
+    if (context == &OAResizingTitleBarButtonObservingWindowContext) {
+        OBASSERT([object isKindOfClass:[NSWindow class]]);
+        [self _updateForWindow:object];
+        return;
+    }
+
+    [super observeValueForKeyPath:keyPath ofObject:object change:change context:&OAResizingTitleBarButtonObservingWindowContext];
+}
+
 - (void)dealloc
 {
+    OBPRECONDITION(!_isObservingWindowTitle); // We should have been removed from our window and stopped observing already
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     self.callback = NULL;
     
     [super dealloc];
+}
+
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow;
+{
+    if (!_isObservingWindowTitle)
+        return;
+
+    NSWindow *oldWindow = self.window;
+    if (oldWindow == NULL)
+        return;
+
+    [oldWindow removeObserver:self forKeyPath:@"title" context:&OAResizingTitleBarButtonObservingWindowContext];
+    _isObservingWindowTitle = NO;
 }
 
 #pragma mark Public API

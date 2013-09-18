@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <OmniUI/OUISingleViewInspectorPane.h>
 
-@class OUIInspectorSegmentedControl, OUIColorPicker;
+@class OUISegmentedControl, OUIColorPicker;
 
 // posts a change whenever the colorTypeSegmentedControl is changed via the UI
 #define OUIColorTypeChangeNotification @"OUIColorTypeChangeNotification" 
@@ -17,7 +17,7 @@
 @interface OUIColorInspectorPane : OUISingleViewInspectorPane
 {
 @private
-    OUIInspectorSegmentedControl *_colorTypeSegmentedControl;
+    OUISegmentedControl *_colorTypeSegmentedControl;
     UIView *_shadowDivider;
     OUIColorPicker *_currentColorPicker;
     
@@ -31,16 +31,16 @@
     BOOL disableAutoPickingPanes;
 }
 
-@property(retain,nonatomic) IBOutlet OUIInspectorSegmentedControl *colorTypeSegmentedControl;
-@property(retain,nonatomic) IBOutlet UIView *shadowDivider;
+@property(strong,nonatomic) IBOutlet OUISegmentedControl *colorTypeSegmentedControl;
+@property(strong,nonatomic) IBOutlet UIView *shadowDivider;
 
 @property(copy,nonatomic) NSString *selectedColorPickerIdentifier;
 
-@property(retain,nonatomic) IBOutlet OUIColorPicker *noneColorPicker;
-@property(retain,nonatomic) IBOutlet OUIColorPicker *paletteColorPicker;
-@property(retain,nonatomic) IBOutlet OUIColorPicker *hsvColorPicker;
-@property(retain,nonatomic) IBOutlet OUIColorPicker *rgbColorPicker;
-@property(retain,nonatomic) IBOutlet OUIColorPicker *grayColorPicker;
+@property(strong,nonatomic) IBOutlet OUIColorPicker *noneColorPicker;
+@property(strong,nonatomic) IBOutlet OUIColorPicker *paletteColorPicker;
+@property(strong,nonatomic) IBOutlet OUIColorPicker *hsvColorPicker;
+@property(strong,nonatomic) IBOutlet OUIColorPicker *rgbColorPicker;
+@property(strong,nonatomic) IBOutlet OUIColorPicker *grayColorPicker;
 
 - (IBAction)colorTypeSegmentedControlSelectionChanged:(id)sender;
 @property (nonatomic) BOOL disableAutoPickingPanes;  // OG remembers the previous choice

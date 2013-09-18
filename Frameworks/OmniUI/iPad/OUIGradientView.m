@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@ RCS_ID("$Id$");
 
 + (OUIGradientView *)horizontalShadow:(BOOL)bottomToTop;
 {
-    OUIGradientView *instance = [[[self alloc] init] autorelease];
+    OUIGradientView *instance = [[self alloc] init];
     
     UIColor *bottomColor = [UIColor colorWithWhite:0.0 alpha:kOUIShadowEdgeMaximumAlpha];
     UIColor *topColor = [UIColor colorWithWhite:0.0 alpha:0.0];
@@ -35,7 +35,7 @@ RCS_ID("$Id$");
 
 + (OUIGradientView *)verticalShadow:(BOOL)leftToRight;
 {
-    OUIGradientView *instance = [[[self alloc] init] autorelease];
+    OUIGradientView *instance = [[self alloc] init];
     
     UIColor *leftColor = [UIColor colorWithWhite:0.0 alpha:kOUIShadowEdgeMaximumAlpha];
     UIColor *rightColor = [UIColor colorWithWhite:0.0 alpha:0.0];

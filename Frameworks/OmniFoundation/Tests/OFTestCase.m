@@ -55,7 +55,7 @@ RCS_ID("$Id$")
     
     SenTestSuite *suite = OB_AUTORELEASE([[SenTestSuite alloc] initWithName:suiteName]);
     
-    for (id testArguments in testCases) {
+    for (__unsafe_unretained id testArguments in testCases) {
         NSInvocation *testInvocation = [NSInvocation invocationWithMethodSignature:methodSignature];
         [testInvocation retainArguments]; // Do this before setting the argument so it gets captured in ARC mode
         [testInvocation setSelector:testSelector];
@@ -76,7 +76,7 @@ RCS_ID("$Id$")
     if (signature && [signature numberOfArguments] == 3) {
         const char *argt = [signature getArgumentTypeAtIndex:2];
         if (argt && (argt[0] == _C_ID)) {
-            id argv = nil;
+            __unsafe_unretained id argv = nil;
             NSString *argstr;
             [inv getArgument:&argv atIndex:2];
             if (!argv) {

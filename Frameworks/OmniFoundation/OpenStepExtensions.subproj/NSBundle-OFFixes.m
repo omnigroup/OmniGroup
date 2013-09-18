@@ -79,10 +79,10 @@ static NSBundle *(*original_bundleWithIdentifier)(id self, SEL _cmd, NSString *i
 {
     cachedBundlesForClasses = [[NSMutableDictionary alloc] init];
     cachedBundlesForClassesLock = [[NSLock alloc] init];
-    oldBundleForClass = (typeof(oldBundleForClass))OBReplaceMethodImplementationWithSelector(((Class)self)->isa /* we're replacing a class method */, @selector(bundleForClass:), @selector(replacement_bundleForClass:));
+    oldBundleForClass = (typeof(oldBundleForClass))OBReplaceMethodImplementationWithSelector(object_getClass(self)/* we're replacing a class method */, @selector(bundleForClass:), @selector(replacement_bundleForClass:));
     OBPOSTCONDITION(oldBundleForClass != NULL);
     
-    original_bundleWithIdentifier = (typeof(original_bundleWithIdentifier))OBReplaceMethodImplementationWithSelector(((Class)self)->isa /* we're replacing a class method */, @selector(bundleWithIdentifier:), @selector(replacement_bundleWithIdentifier:));
+    original_bundleWithIdentifier = (typeof(original_bundleWithIdentifier))OBReplaceMethodImplementationWithSelector(object_getClass(self) /* we're replacing a class method */, @selector(bundleWithIdentifier:), @selector(replacement_bundleWithIdentifier:));
     OBPOSTCONDITION(original_bundleWithIdentifier != NULL);
 }
 

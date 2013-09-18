@@ -11,6 +11,7 @@
 #import <OmniFoundation/CFDictionary-OFExtensions.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
+#import <OmniBase/OBUtilities.h>
 
 #include <Foundation/Foundation.h>
 

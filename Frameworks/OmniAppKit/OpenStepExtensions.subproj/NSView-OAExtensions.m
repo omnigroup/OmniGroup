@@ -1,4 +1,4 @@
-// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -193,8 +193,9 @@ static unsigned int scrollEntriesCount = 0;
 
     // We didn't find an existing entry, let's make a new one
     if (scrollEntriesCount == scrollEntriesAllocated) {
+        OBASSERT(scrollEntriesAllocated > 0); // clang-sa bug: if scrollEntriesAllocated == 0 at the beginning of this method, the analyzer can't tell that it cannot enter this block, even though it knows it re-assigned scrollEntriesAllocated above
         scrollEntriesAllocated *= 2;
-        scrollEntries = realloc(scrollEntries, scrollEntriesAllocated * sizeof(*scrollEntries));
+        scrollEntries = reallocf(scrollEntries, scrollEntriesAllocated * sizeof(*scrollEntries));
         // Zero the entries we just allocated
         unsigned int newCount = scrollEntriesAllocated / 2;
         OADeferredScrollEntry *newEntries = scrollEntries + newCount;

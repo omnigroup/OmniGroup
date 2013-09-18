@@ -7,136 +7,85 @@
 
 #import <OmniUI/OUIUndoButtonController.h>
 
+#import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIUndoButton.h>
-#import <OmniUI/OUIUndoButtonPopoverHelper.h>
+#import <OmniUI/OUIMenuController.h>
 
 RCS_ID("$Id$");
 
+@interface OUIUndoButtonController () <OUIMenuControllerDelegate>
+@end
+
 @implementation OUIUndoButtonController
 {
-    UIPopoverController *_menuPopoverController;
-    UINavigationController *_menuNavigationController;
+    OUIMenuController *_menuController;
 }
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
-{
-    return [super initWithNibName:@"OUIUndoMenu" bundle:OMNI_BUNDLE];
-}
-
-- (BOOL)shouldAutorotate;
-{
-    return YES;
-}
-
-- (void)didReceiveMemoryWarning;
-{
-    // Releases the view if it doesn't have a superview.
-    [super didReceiveMemoryWarning];
-    
-    if (_menuPopoverController) {
-        [_menuPopoverController dismissPopoverAnimated:NO];
-        
-        [_menuPopoverController release];
-        [_menuNavigationController release];
-        
-        _menuPopoverController = nil;
-        _menuNavigationController = nil;
-    }
-}
-
-- (void)dealloc;
-{
-    [_menuNavigationController release];
-    [_menuPopoverController release];
-    [_undoButton release];
-    [_redoButton release];
-    [super dealloc];
-}
-
-- (void)viewDidLoad;
-{
-    [super viewDidLoad];
-    UIImage *layoutBackgroundImage = [UIImage imageNamed:@"OUIStandardPopoverButton.png"];
-    layoutBackgroundImage = [layoutBackgroundImage stretchableImageWithLeftCapWidth:6 topCapHeight:0];
-    
-    [_undoButton setBackgroundImage:layoutBackgroundImage forState:UIControlStateNormal];
-    [_redoButton setBackgroundImage:layoutBackgroundImage forState:UIControlStateNormal];
-    
-    [_undoButton setTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title") forState:UIControlStateNormal];
-    [_redoButton setTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title") forState:UIControlStateNormal];
-}
+@synthesize undoBarButtonItemTarget = _weak_undoBarButtonItemTarget;
 
 - (void)showUndoMenuFromItem:(OUIUndoBarButtonItem *)item;
 {
-    if ([_menuPopoverController isPopoverVisible])
+    if (_menuController.visible)
         return;
+
+    if (!_menuController)
+        _menuController = [[OUIMenuController alloc] initWithDelegate:self];
     
-    self.contentSizeForViewInPopover = self.view.frame.size; // Make sure we set this before creating our popover
+    _menuController.tintColor = _tintColor;
+    _menuController.sizesToOptionWidth = YES;
+    _menuController.textAlignment = NSTextAlignmentCenter;
+    _menuController.showsDividersBetweenOptions = NO;
+    _menuController.padTopAndBottom = YES;
     
-    if (!_menuNavigationController) {
-        _menuNavigationController = [[UINavigationController alloc] initWithRootViewController:self];
-        _menuNavigationController.navigationBarHidden = YES;
-    }
-    if (!_menuPopoverController) {
-        _menuPopoverController = [[UIPopoverController alloc] initWithContentViewController:_menuNavigationController];
-        _menuPopoverController.delegate = self;
-    }
+    // We will provide exactly the same number/title options but possibly w/o an action.
+    _menuController.optionInvocationAction = OUIMenuControllerOptionInvocationActionReload;
     
-    [self _updateButtonStates];
+    // TODO: Add support to OUIMenuController to not dismiss when an action is taken, but to instead ask for actions again.
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoPopoverWillShowNotification object:self];
-
-    [[OUIUndoButtonPopoverHelper sharedPopoverHelper] presentPopover:_menuPopoverController fromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    [_menuController showMenuFromSender:item];
 }
 
 - (BOOL)dismissUndoMenu;
 {
-    if (![_menuPopoverController isPopoverVisible])
+    if (!_menuController.visible)
         return NO;
-    
-    [_menuPopoverController dismissPopoverAnimated:YES];
+    [_menuController dismissMenuAnimated:YES];
     return YES;
 }
 
 - (BOOL)isMenuVisible;
 {
-    if (_menuPopoverController && [_menuPopoverController isPopoverVisible])
-        return YES;
-    return NO;
-}
-
-#pragma mark - Actions
-
-- (void)doesNotRecognizeSelector:(SEL)aSelector;
-{
-    NSLog(@"%@", NSStringFromSelector(aSelector));
-    [super doesNotRecognizeSelector:aSelector];
-}
-
-- (IBAction)undoButtonAction:(id)sender;
-{
-    if (_undoBarButtonItemTarget)
-        [_undoBarButtonItemTarget undo:_undoButton];
-    
-    [self _updateButtonStates];
-}
-
-- (IBAction)redoButtonAction:(id)sender;
-{
-    if (_undoBarButtonItemTarget)
-        [_undoBarButtonItemTarget redo:_redoButton];
-    
-    [self _updateButtonStates];
+    return _menuController.visible;
 }
 
 #pragma mark - Private
 
-- (void)_updateButtonStates;
+- (NSArray *)menuControllerOptions:(OUIMenuController *)menu;
 {
-    if (_undoBarButtonItemTarget) {
-        [_undoButton setEnabled:[_undoBarButtonItemTarget canPerformAction:@selector(undo:) withSender:_undoButton]];
-        [_redoButton setEnabled:[_undoBarButtonItemTarget canPerformAction:@selector(redo:) withSender:_redoButton]];
+    id <OUIUndoBarButtonItemTarget> target = _weak_undoBarButtonItemTarget;
+    
+    NSMutableArray *options = [NSMutableArray array];
+    
+    OUIMenuOptionAction undoAction;
+    if ([target canPerformAction:@selector(undo:) withSender:nil]) {
+        undoAction = [^{
+            if (target)
+                [target undo:nil];
+        } copy];
     }
+    [options addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title") action:undoAction]];
+    
+    OUIMenuOptionAction redoAction;
+    if ([target canPerformAction:@selector(redo:) withSender:nil]) {
+        redoAction = [^{
+            if (target)
+                [target redo:nil];
+        } copy];
+    }
+    [options addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title") action:redoAction]];
+    
+    return options;
 }
 
 @end

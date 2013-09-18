@@ -7,11 +7,11 @@
 
 #import "OFXDownloadFileSnapshot.h"
 
-#import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/OFSURL.h>
+#import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDAV/ODAVOperation.h>
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 
+#import "OFXConnection.h"
 #import "OFXFileSnapshotContentsActions.h"
 #import "OFXFileSnapshot-Internal.h"
 #import "OFXFileState.h"
@@ -28,12 +28,12 @@ RCS_ID("$Id$")
 }
 
 // Downloads the info about the snapshot from the server and writes it to a local snapshot, which is expected to be in a temporary location.
-+ (BOOL)writeSnapshotToTemporaryURL:(NSURL *)temporaryLocalSnapshotURL byFetchingMetadataOfRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL fileIdentifier:(NSString **)outFileIdentifier fileManager:(OFSDAVFileManager *)fileManager error:(NSError **)outError;
++ (BOOL)writeSnapshotToTemporaryURL:(NSURL *)temporaryLocalSnapshotURL byFetchingMetadataOfRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL fileIdentifier:(NSString **)outFileIdentifier connection:(OFXConnection *)connection error:(NSError **)outError;
 {
     OBPRECONDITION(temporaryLocalSnapshotURL);
-    OBPRECONDITION(fileManager);
+    OBPRECONDITION(connection);
     OBPRECONDITION([temporaryLocalSnapshotURL checkResourceIsReachableAndReturnError:NULL] == NO); // we create this
-    OBPRECONDITION(OFSURLIsStandardized([temporaryLocalSnapshotURL URLByDeletingLastPathComponent])); // make sure the eventual path is standardized
+    OBPRECONDITION(OFURLIsStandardized([temporaryLocalSnapshotURL URLByDeletingLastPathComponent])); // make sure the eventual path is standardized
     
 
     DEBUG_TRANSFER(1, @"Making new snapshot at %@ by downloading metadata from %@", temporaryLocalSnapshotURL, remoteSnapshotURL);
@@ -48,9 +48,23 @@ RCS_ID("$Id$")
     // Grab the manifest property list. No need to do any ETag predication since the remote document's URL has a content-based hash.
     NSURL *infoURL = [remoteSnapshotURL URLByAppendingPathComponent:@"Info.plist" isDirectory:NO];
     
-    NSData *infoData = [fileManager dataWithContentsOfURL:infoURL error:outError];
+    __block NSData *infoData;
+    __block NSError *infoError;
+    
+    ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done) {
+        [connection getContentsOfURL:infoURL ETag:nil completionHandler:^(ODAVOperation *op) {
+            if (op.error)
+                infoError = op.error;
+            else
+                infoData = op.resultData;
+            done();
+        }];
+    });
+    
     if (!infoData) {
         // Document modified/removed while we were attempting to download it?
+        if (outError)
+            *outError = infoError;
         OBChainError(outError);
         return NO;
     }
@@ -123,13 +137,6 @@ RCS_ID("$Id$")
     BOOL success = [downloadActions applyToContents:contents localContentsURL:temporaryDocumentURL error:outError];
     OBPOSTCONDITION([self _checkInvariants]);
     return success;
-}
-
-// Downloads the contents for the snapshot to the specified location (which is assumed to be somewhere temporary).
-- (BOOL)downloadFromRemoteDocumentURL:(NSURL *)remoteDocumentURL toTemporaryDocumentURL:(NSURL *)temporaryDocumentURL withPreviousSnapshot:(OFXFileSnapshot *)previousSnapshot fileManager:(OFSFileManager *)fileManager error:(NSError **)outError;
-{
-    
-    return [self finishedDownloadingToURL:temporaryDocumentURL error:outError];
 }
 
 - (BOOL)finishedDownloadingToURL:(NSURL *)temporaryDocumentURL error:(NSError **)outError;

@@ -1,4 +1,4 @@
-// Copyright 1998-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,9 +7,11 @@
 //
 // $Id$
 
+#import <Foundation/NSObjCRuntime.h>
+
 @class NSString;
 
-extern NSString *OFCopyNumericBacktraceString(int framesToSkip);
-extern NSString *OFCopySymbolicBacktrace(void);
-extern NSString *OFCopySymbolicBacktraceForNumericBacktrace(NSString *numericTrace);
+extern NSString *OFCopyNumericBacktraceString(int framesToSkip) NS_RETURNS_RETAINED;
+extern NSString *OFCopySymbolicBacktrace(void) NS_RETURNS_RETAINED;
+extern NSString *OFCopySymbolicBacktraceForNumericBacktrace(NSString *numericTrace) NS_RETURNS_RETAINED;
 

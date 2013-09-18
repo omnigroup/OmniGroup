@@ -1,4 +1,4 @@
-// Copyright 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,7 @@
 @interface OFWeakReference : NSObject
 
 - initWithObject:(id)object;
+- (BOOL)referencesObject:(void *)objectPointer;
 
 #if OB_ARC
 @property(nonatomic,weak) id object;

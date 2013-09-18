@@ -66,7 +66,7 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
 #endif
 
 @interface NSTextStorage (NSScripting)
-- (void)setFontSize:(float)size;
+- (void)setFontSize:(CGFloat)size;
 @end
 
 @interface NSScriptSuiteRegistry (PrivateAPI)
@@ -421,8 +421,7 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
     [tempDict release];
     
     if (fontSize != nil)
-        [result setFontSize:[fontSize floatValue]];
-    /* NSTextStorage -setFontSize: takes an actual float, not a CGFloat */
+        [result setFontSize:[fontSize cgFloatValue]];
     
     return result;
 }
@@ -473,11 +472,6 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
         [result appendString:@"}"];
         return result;
     }
-}
-
-- (id)attachmentAtCharacterIndex:(NSUInteger)characterIndex;
-{
-    return [self attribute:NSAttachmentAttributeName atIndex:characterIndex effectiveRange:NULL];
 }
 
 @end

@@ -7,11 +7,11 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
 
 @class NSArray, NSDictionary, NSString;
 
-@interface OUIPaletteTheme : OFObject
+@interface OUIPaletteTheme : NSObject
 
 + (NSArray *)defaultThemes;
 

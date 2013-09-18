@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import <OmniUI/OUIInspectorWell.h>
 
+#import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/OUIDrawing.h>
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniBase/OmniBase.h>
@@ -15,6 +16,8 @@
 #import "OUIParameters.h"
 
 RCS_ID("$Id$");
+
+#define DEBUG_VIEW_PLACEMENT (0)
 
 static CGColorRef InnerShadowColor = NULL;
 static CGColorRef OuterShadowColor = NULL;
@@ -135,8 +138,6 @@ static UIImage *_OUIInspectorWellCachedImage(NSCache *cache, OUIDrawIntoImageCac
         [cache setObject:image forKey:cacheKey];
     }
     
-    [cacheKey release];
-    
     return image;
 }
 
@@ -249,18 +250,17 @@ void OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect frame, OU
 
 CGRect OUIInspectorWellInnerRect(CGRect frame)
 {
-    CGRect rect = CGRectInset(frame, 1, 1); // border
-    rect.size.height -= 1; // shadow
-    return rect;
+    return frame;
 }
 
 void OUIInspectorWellDraw(CGContextRef ctx, CGRect frame,
-                          OUIInspectorWellCornerType cornerType, OUIInspectorWellBorderType borderType, BOOL innerShadow,
+                          OUIInspectorWellCornerType cornerType, OUIInspectorWellBorderType borderType, BOOL innerShadow, BOOL outerShadow,
                           void (^drawInterior)(CGRect interior))
 {
     OBPRECONDITION(CGRectEqualToRect(CGRectIntegral(frame), frame));
 
-    OUIInspectorWellDrawOuterShadow(ctx, frame, cornerType);
+    if (outerShadow)
+        OUIInspectorWellDrawOuterShadow(ctx, frame, cornerType);
     
     // Fill the gradient
     CGContextSaveGState(ctx);
@@ -351,12 +351,27 @@ static CGGradientRef HighlightedButtonGradient = NULL;
     return [UIImage imageNamed:@"OUINavigationArrow-White.png"];
 }
 
-- (void)dealloc;
+static id _commonInit(OUIInspectorWell *self)
 {
-    [_rightView release];
-    [_leftView release];
-    
-    [super dealloc];
+    self->_leftViewEdgeInsets = UIEdgeInsetsZero;
+    self->_rightViewEdgeInsets = UIEdgeInsetsZero;
+    return self;
+}
+
+- (id)initWithFrame:(CGRect)frame;
+{
+    if ((self = [super initWithFrame:frame]) == nil) {
+        return nil;
+    }
+    return _commonInit(self);
+}
+
+- (id)initWithCoder:(NSCoder *)coder;
+{
+    if ((self = [super initWithCoder:coder]) == nil) {
+        return nil;
+    }
+    return _commonInit(self);
 }
 
 @synthesize cornerType = _cornerType;
@@ -391,8 +406,11 @@ static CGGradientRef HighlightedButtonGradient = NULL;
     if (_leftView == leftView)
         return;
     [_leftView removeFromSuperview];
-    _leftView = [leftView retain];
+    _leftView = leftView;
     [self addSubview:_leftView];
+#if DEBUG_VIEW_PLACEMENT
+    _leftView.backgroundColor = [UIColor blueColor];
+#endif // DEBUG_VIEW_PLACEMENT
     
     // contentsRect probably changed
     [self setNeedsDisplay];
@@ -404,42 +422,33 @@ static CGGradientRef HighlightedButtonGradient = NULL;
     if (_rightView == rightView)
         return;
     [_rightView removeFromSuperview];
-    _rightView = [rightView retain];
+    _rightView = rightView;
     [self addSubview:_rightView];
+#if DEBUG_VIEW_PLACEMENT
+    _rightView.backgroundColor = [UIColor redColor];
+#endif // DEBUG_VIEW_PLACEMENT
     
     // contentsRect probably changed
     [self setNeedsDisplay];
 }
 
+- (BOOL)recurseWhenComputingBorderEdgeInsets;
+{
+    return NO;
+}
+
 - (CGRect)contentsRect;
 {
-    CGRect contentsRect = OUIInspectorWellInnerRect(self.bounds);
-    
-    static const CGFloat edgeInset = 10; // To match UITableViewCell
-    
-    UIEdgeInsets edgeInsets = {.left = edgeInset, .right = edgeInset};
-    
-    // The left/right views are currently expected to have built-in padding.
-    if (_leftView) {
-        CGRect leftRect;
-        CGRectDivide(contentsRect, &leftRect, &contentsRect, CGRectGetHeight(contentsRect), CGRectMinXEdge);
-        edgeInsets.left = 0;
-    }
-    
-    if (_rightView) {
-        CGRect rightRect;
-        CGRectDivide(contentsRect, &rightRect, &contentsRect, CGRectGetHeight(contentsRect), CGRectMaxXEdge);
-        edgeInsets.right = 0;
-    }
-    
-    return UIEdgeInsetsInsetRect(contentsRect, edgeInsets);
+    return OUIInspectorWellInnerRect(self.bounds);
 }
 
 - (void)setNavigationArrowRightView;
 {
     UIImageView *imageView = [[UIImageView alloc] initWithImage:[[self class] navigationArrowImage]];
+    imageView.autoresizingMask = imageView.autoresizingMask | UIViewAutoresizingFlexibleLeftMargin;
+    imageView.contentMode = UIViewContentModeRight; // This causes us to right-align the view
     self.rightView = imageView;
-    [imageView release];
+    self.rightViewEdgeInsets = (UIEdgeInsets){ .right = -2.0f, .left = 2.0f, .top = 0.0f, .bottom = 0.0f, };
 }
 
 - (void)setNavigationTarget:(id)target action:(SEL)action;
@@ -460,6 +469,7 @@ static CGGradientRef HighlightedButtonGradient = NULL;
     return [[self class] textColor];
 }
 
+// <bug:///94098> (Remove -drawInteriorFillWithRect: on our controls and subclass in OmniGraffle)
 - (void)drawInteriorFillWithRect:(CGRect)rect; // Draws the interior gradient
 {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
@@ -489,19 +499,13 @@ static CGGradientRef HighlightedButtonGradient = NULL;
 }
 
 #pragma mark -
-#pragma mark UIView (OUIExtensions)
-
-- (UIEdgeInsets)borderEdgeInsets
-{
-    // 1px white shadow at the bottom.
-    return UIEdgeInsetsMake(0/*top*/, 0/*left*/, kOuterShadowOffset/*bottom*/, 0/*right*/);
-}
-
-#pragma mark -
 #pragma mark UIView subclass
 
 - (void)layoutSubviews;
 {
+#if DEBUG_VIEW_PLACEMENT
+    self.backgroundColor = [UIColor greenColor];
+#endif // DEBUG_VIEW_PLACEMENT
     CGRect contentsRect = OUIInspectorWellInnerRect(self.bounds);
 
     [super layoutSubviews];
@@ -513,25 +517,79 @@ static CGGradientRef HighlightedButtonGradient = NULL;
         CGRect leftRect;
         CGRectDivide(contentsRect, &leftRect, &contentsRect, CGRectGetHeight(contentsRect), CGRectMinXEdge);
         
-        _leftView.frame = OQCenteredIntegralRectInRect(leftRect, _leftView.bounds.size);
+        CGRect frame = _rectWithSizePositionedInRectForContentMode(_leftView.bounds.size, leftRect, _leftView.contentMode);
+        frame = UIEdgeInsetsInsetRect(frame, self.leftViewEdgeInsets);
+        _leftView.frame = frame;
     }
     
     if (_rightView) {
         CGRect rightRect;
         CGRectDivide(contentsRect, &rightRect, &contentsRect, CGRectGetHeight(contentsRect), CGRectMaxXEdge);
 
-        _rightView.frame = OQCenteredIntegralRectInRect(rightRect, _rightView.bounds.size);
+        CGRect frame = _rectWithSizePositionedInRectForContentMode(_rightView.bounds.size, rightRect, _rightView.contentMode);
+        frame = UIEdgeInsetsInsetRect(frame, self.rightViewEdgeInsets);
+        _rightView.frame = frame;
     }
 }
 
-- (void)drawRect:(CGRect)rect;
+static CGRect _rectWithSizePositionedInRectForContentMode(CGSize size, CGRect bounds, UIViewContentMode contentMode)
 {
-    CGContextRef ctx = UIGraphicsGetCurrentContext();
-    BOOL innerShadow = _backgroundType == OUIInspectorWellBackgroundTypeNormal;
-
-    OUIInspectorWellDraw(ctx, self.bounds, _cornerType, OUIInspectorWellBorderTypeLight, innerShadow, ^(CGRect interiorRect){
-        [self drawInteriorFillWithRect:interiorRect];
-    });
+    CGRect frame;
+    switch (contentMode) {
+        case UIViewContentModeTopLeft:
+            frame = CGRectMake(CGRectGetMinX(bounds), CGRectGetMinY(bounds), size.width, size.height);
+            break;
+            
+        case UIViewContentModeBottomLeft:
+            frame = CGRectMake(CGRectGetMinX(bounds), CGRectGetMaxY(bounds) - size.height, size.width, size.height);
+            break;
+            
+        case UIViewContentModeLeft:
+        {
+            CGFloat offset = (CGRectGetHeight(bounds) - size.height) / 2.0f;
+            offset = round(offset);
+            frame = CGRectMake(CGRectGetMinX(bounds), CGRectGetMinY(bounds) + offset, size.width, size.height);
+            break;
+        }
+            
+        case UIViewContentModeTopRight:
+            frame = CGRectMake(CGRectGetMaxX(bounds) - size.width, CGRectGetMinY(bounds), size.width, size.height);
+            break;
+            
+        case UIViewContentModeBottomRight:
+            frame = CGRectMake(CGRectGetMaxX(bounds) - size.width, CGRectGetMaxY(bounds) - size.height, size.width, size.height);
+            break;
+            
+        case UIViewContentModeRight:
+        {
+            CGFloat offset = (CGRectGetHeight(bounds) - size.height) / 2.0f;
+            offset = round(offset);
+            frame = CGRectMake(CGRectGetMaxX(bounds) - size.width, CGRectGetMinY(bounds) + offset, size.width, size.height);
+            break;
+        }
+            
+        case UIViewContentModeTop:
+        {
+            CGFloat offset = (CGRectGetWidth(bounds) - size.width) / 2.0f;
+            offset = round(offset);
+            frame = CGRectMake(CGRectGetMinX(bounds) + offset, CGRectGetMinY(bounds), size.width, size.height);
+            break;
+        }
+            
+        case UIViewContentModeBottom:
+        {
+            CGFloat offset = (CGRectGetWidth(bounds) - size.width) / 2.0f;
+            offset = round(offset);
+            frame = CGRectMake(CGRectGetMinX(bounds) + offset, CGRectGetMaxY(bounds) - size.height, size.width, size.height);
+            break;
+        }
+            
+        case UIViewContentModeCenter:
+        default: // Anything else, default to centering
+            frame = OQCenteredIntegralRectInRect(bounds, size);
+            break;
+    }
+    return frame;
 }
 
 @end

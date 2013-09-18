@@ -54,11 +54,9 @@ do { \
     \
     OBShouldNotError([[NSFileManager defaultManager] removeItemAtPath:fileName error:&error]); \
     \
-    NSString *string = NSMakeCollectable(CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)data, [doc stringEncoding])); \
-    [data release]; \
+    NSString *string = CFBridgingRelease(CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)data, [doc stringEncoding])); \
     \
     STAssertEqualObjects(string, expectedString, @"SAVE_AND_COMPARE"); \
-    [string release]; \
 } while (0)
 
 @interface OFXMLDocumentTests : OFTestCase
@@ -90,7 +88,6 @@ do { \
                      @"<!DOCTYPE root-element PUBLIC \"-//omnigroup.com//XML Document Test//EN\" \"root-element.dtd\">\n"
                      @"<root-element/>\n");
     
-    [doc release];
 }
 
 - (void) testWriteDocumentWithOneChild;
@@ -122,7 +119,6 @@ do { \
                      @"  </child>\n"
                      @"</root-element>\n");
 
-    [doc release];
 }
 
 - (void) testWriteSpacePreservation;
@@ -138,7 +134,6 @@ do { \
                                                      whitespaceBehavior:whitespace
                                                          stringEncoding:kCFStringEncodingUTF8
                                                                   error:&error];
-    [whitespace release];
 
     [doc pushElement: @"child"];
     {
@@ -164,7 +159,6 @@ do { \
                      @"  </child>\n"
                      @"</root-element>\n");
     
-    [doc release];
 }
 
 - (void) testReadingFile;
@@ -179,24 +173,22 @@ do { \
 
     NSData *expectedData = [[NSData alloc] initWithContentsOfFile:inputFile];
     CFStringRef expectedString = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)expectedData, [doc stringEncoding]);
-    [expectedData release];
     
     should(expectedString != nil);
     if (expectedString)
         CFRelease(expectedString);
-    [doc release];
 }
 
 - (void) testEntityWriting_ASCII;
 {
     NSString *stringElementName = @"s";
     NSError *error = nil;
-    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithRootElementName:DTDName
+    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithRootElementName:DTDName
                                                              dtdSystemID:dtdURL
                                                              dtdPublicID:@"-//omnigroup.com//XML Document Test//EN"
                                                       whitespaceBehavior:nil
                                                           stringEncoding:kCFStringEncodingASCII
-                                                                   error:&error] autorelease];
+                                                                   error:&error];
 
     NSString *supplementalChararacter1 = [NSString stringWithCharacter:0x12345];
     NSString *supplementalChararacter2 = [NSString stringWithCharacter:0xFEDCB];
@@ -224,7 +216,7 @@ do { \
     OBShouldNotError(xmlData != nil);
     
     NSString *resultString;
-    resultString = [(NSString *)CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)xmlData, [doc stringEncoding]) autorelease];
+    resultString = (NSString *)CFBridgingRelease(CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)xmlData, [doc stringEncoding]));
 
     NSString *expectedOutput =
         @"<root-element>"
@@ -250,12 +242,12 @@ do { \
 {
     NSString *stringElementName = @"s";
     NSError *error = nil;
-    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithRootElementName:DTDName
+    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithRootElementName:DTDName
                                                              dtdSystemID:dtdURL
                                                              dtdPublicID:@"-//omnigroup.com//XML Document Test//EN"
                                                       whitespaceBehavior:nil
                                                           stringEncoding:kCFStringEncodingUTF8
-                                                                   error:&error] autorelease];
+                                                                   error:&error];
 
     NSString *supplementalChararacter1 = [NSString stringWithCharacter:0x12345];
     NSString *supplementalChararacter2 = [NSString stringWithCharacter:0xFEDCB];
@@ -304,7 +296,7 @@ do { \
         @"</root-element>";
         
     // Test that the result, as data, is what we expect it to be (this ensures that we're getting the correct UTF8 byte sequence for the supplementary characters)
-    NSMutableData *expectedData = [[[expectedOutputFormat dataUsingEncoding:NSASCIIStringEncoding] mutableCopy] autorelease];
+    NSMutableData *expectedData = [[expectedOutputFormat dataUsingEncoding:NSASCIIStringEncoding] mutableCopy];
     NSData *patternData = [@"%@" dataUsingEncoding:NSASCIIStringEncoding];
     [expectedData replaceBytesInRange:[expectedData rangeOfData:patternData] withBytes:supplementalCharacter1UTF8 length:SUPP1_UTF8_LEN];
     [expectedData replaceBytesInRange:[expectedData rangeOfData:patternData] withBytes:supplementalCharacter1UTF8 length:SUPP1_UTF8_LEN];
@@ -315,7 +307,7 @@ do { \
     
     // Test that the result, converted to a string, is the same as we think it should be
     NSString *resultString, *expectedResultString;
-    resultString = [(NSString *)CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)xmlData, [doc stringEncoding]) autorelease];
+    resultString = (NSString *)CFBridgingRelease(CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)xmlData, [doc stringEncoding]));
     expectedResultString = [NSString stringWithFormat:expectedOutputFormat,
         supplementalChararacter1, supplementalChararacter1,
         supplementalChararacter2, supplementalChararacter2];
@@ -329,7 +321,7 @@ do { \
     NSData *xmlData = [xmlString dataUsingEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
     
-    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithData:xmlData whitespaceBehavior:nil error:&error] autorelease];
+    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:xmlData whitespaceBehavior:nil error:&error];
     
     OFXMLElement *rootElement = [doc rootElement];
     STAssertEqualObjects([rootElement name], @"root", @"root name");
@@ -366,7 +358,7 @@ do { \
 
     xmlData = [sourceString dataUsingEncoding: NSUTF8StringEncoding];
     NSError *error = nil;
-    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithData:xmlData whitespaceBehavior:nil error:&error] autorelease];
+    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:xmlData whitespaceBehavior:nil error:&error];
 
     NSArray *elements = [[doc rootElement] children];
 
@@ -425,13 +417,10 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
     should(doc != nil);
     
     NSData *inputData = [[NSData alloc] initWithContentsOfFile:inputFile];
-    CFStringRef inputString = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)inputData, [doc stringEncoding]);
-    [inputData release];
+    NSString *inputString = CFBridgingRelease(CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)inputData, [doc stringEncoding]));
 
-    SAVE_AND_COMPARE((NSString *)inputString);
-    CFRelease(inputString);
+    SAVE_AND_COMPARE(inputString);
 
-    [doc release];
 }
 
 - (void)testRoundTripProcessingInstructions;
@@ -444,7 +433,7 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
 
     NSData *inputData = [inputString dataUsingEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
-    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithData:inputData whitespaceBehavior:IgnoreAllWhitespace() error:&error] autorelease];
+    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:inputData whitespaceBehavior:IgnoreAllWhitespace() error:&error];
     OBShouldNotError(doc != nil);
     
     NSData *outputData = [doc xmlData:&error];
@@ -465,7 +454,7 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
 
     NSData *inputData = [inputString dataUsingEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
-    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithData:inputData whitespaceBehavior:IgnoreAllWhitespace() error:&error] autorelease];
+    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:inputData whitespaceBehavior:IgnoreAllWhitespace() error:&error];
     OFXMLElement *rootElement = [doc rootElement];
     
     should([[rootElement children] count] == 1);
@@ -475,7 +464,7 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
 - (void)testNilInputData;
 {
     NSError *error = nil;
-    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithData:nil whitespaceBehavior:IgnoreAllWhitespace() error:&error] autorelease];
+    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:nil whitespaceBehavior:IgnoreAllWhitespace() error:&error];
     should(doc == nil);
 }
 
@@ -493,7 +482,7 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
     
     NSData *inputData = [inputString dataUsingEncoding:NSUTF8StringEncoding];
     //NSError *error = nil;
-    OFXMLDocument *doc = [[[OFXMLDocument alloc] initWithData:inputData whitespaceBehavior:[[[OFXMLWhitespaceBehavior alloc] init] autorelease] error:NULL] autorelease];
+    OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:inputData whitespaceBehavior:[[OFXMLWhitespaceBehavior alloc] init] error:NULL];
     should(doc == nil);
 }
 

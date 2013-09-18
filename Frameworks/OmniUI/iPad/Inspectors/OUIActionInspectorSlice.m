@@ -60,13 +60,6 @@ RCS_ID("$Id$");
     return _textWell;
 }
 
-- (void)dealloc;
-{
-    [_textWell release];
-    [super dealloc];
-}
-
-
 #pragma mark -
 #pragma mark UIViewController
 

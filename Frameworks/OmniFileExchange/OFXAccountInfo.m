@@ -7,14 +7,17 @@
 
 #import "OFXAccountInfo.h"
 
+#import <OmniDAV/ODAVErrors.h>
+#import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDAV/ODAVOperation.h>
+#import <OmniFoundation/OFPreference.h>
 #import <OmniFileExchange/OFXAccountClientParameters.h>
-#import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSFileInfo.h>
-#import <OmniFileStore/OFSURL.h>
-#import <OmniFileStore/Errors.h>
 #import <OmniBase/macros.h>
 
+#import "OFXConnection.h"
 #import "OFXDAVUtilities.h"
+#import "OFXPropertyListCache.h"
+#import "OFXSyncClient.h"
 
 RCS_ID("$Id$")
 
@@ -26,19 +29,16 @@ static NSInteger OFXAccountInfoDebug = INT_MAX;
 
 @implementation OFXAccountInfo
 {
-    NSDate *_lastServerDate;
+    OFXPropertyListCache *_propertyListCache;
     
     NSURL *_temporaryDirectoryURL;
-    OFSFileInfo *_accountFileInfo;
+    ODAVFileInfo *_accountFileInfo;
     NSDictionary *_accountPropertyList;
     OFVersionNumber *_accountVersion;
     
     OFXAccountClientParameters *_clientParameters;
-    OFSyncClient *_localClient;
-    NSDate *_localClientWriteDate;
+    OFXSyncClient *_ourClient;
     
-    NSDate *_lastUpdateDate;
-    NSDate *_lastUpdateServerDate;
     NSDictionary *_clientByIdentifier;
 }
 
@@ -52,28 +52,34 @@ static OFVersionNumber *MinimumCompatibleAccountVersionNumber;
     MinimumCompatibleAccountVersionNumber = [[OFVersionNumber alloc] initWithVersionString:@"2"];
 }
 
-- initWithAccountURL:(NSURL *)accountURL temporaryDirectoryURL:(NSURL *)temporaryDirectoryURL clientParameters:(OFXAccountClientParameters *)clientParameters error:(NSError **)outError;
+- initWithLocalAccountInfoCache:(NSURL *)localAccountInfoCacheURL remoteAccountURL:(NSURL *)remoteAccountURL temporaryDirectoryURL:(NSURL *)temporaryDirectoryURL clientParameters:(OFXAccountClientParameters *)clientParameters error:(NSError **)outError;
 {
-    OBPRECONDITION(accountURL);
+    OBPRECONDITION([localAccountInfoCacheURL isFileURL]);
+    OBPRECONDITION(remoteAccountURL);
+    OBPRECONDITION(![remoteAccountURL isFileURL]);
     OBPRECONDITION(temporaryDirectoryURL);
-    OBPRECONDITION(!OFURLEqualsURL(accountURL, temporaryDirectoryURL));
+    OBPRECONDITION(!OFURLEqualsURL(remoteAccountURL, temporaryDirectoryURL));
     OBPRECONDITION(clientParameters);
     
     if (!(self = [super init]))
         return nil;
     
-    _accountURL = [accountURL copy];
+    _propertyListCache = [[OFXPropertyListCache alloc] initWithCacheFileURL:localAccountInfoCacheURL remoteTemporaryDirectoryURL:temporaryDirectoryURL remoteBaseDirectoryURL:remoteAccountURL];
+    
+    _remoteAccountURL = [remoteAccountURL copy];
+    
     _temporaryDirectoryURL = [temporaryDirectoryURL copy];
     _clientParameters = clientParameters;
-    
-    NSString *localClientIdentifier = _clientParameters.defaultClientIdentifier;
-    NSURL *localClientURL = [_accountURL URLByAppendingPathComponent:[localClientIdentifier stringByAppendingPathExtension:OFXClientPathExtension]];
-    _localClient = [[OFSyncClient alloc] initWithURL:localClientURL previousClient:_localClient parameters:clientParameters error:outError];
-    if (!_localClient) {
+
+    // Set up clients from the cache w/o fetching (connection == nil, server date == nil)
+    NSString *ourClientIdentifier = _clientParameters.defaultClientIdentifier;
+    NSURL *ourClientURL = [_remoteAccountURL URLByAppendingPathComponent:[ourClientIdentifier stringByAppendingPathExtension:OFXClientPathExtension]];
+    _ourClient = [[OFXSyncClient alloc] initWithURL:ourClientURL previousClient:_ourClient parameters:clientParameters error:outError];
+    if (!_ourClient) {
         OBChainError(outError);
         return nil;
     }
-
+    
     return self;
 }
 
@@ -83,43 +89,81 @@ NSString * const OFXClientPathExtension = @"client";
 NSString * const OFXAccountInfo_Group = @"NetStateGroup";
 NSString * const OFXAccountInfo_Version = @"Version";
 
-static NSTimeInterval _fileInfoAge(OFSFileInfo *fileInfo, NSDate *serverDateNow)
+static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow)
 {
     // Do a slightly better job of calculating the file item's age than assuming that our local clock and the server clock agree.
     return [serverDateNow timeIntervalSinceReferenceDate] - [fileInfo.lastModifiedDate timeIntervalSinceReferenceDate];
 }
 
-- (BOOL)_updateAccountInfo:(OFSFileInfo *)accountFileInfo withFileManager:(OFSDAVFileManager *)fileManager error:(NSError **)outError;
+- (BOOL)_updateAccountInfo:(ODAVFileInfo *)accountFileInfo serverDate:(NSDate *)serverDate withConnection:(OFXConnection *)connection error:(NSError **)outError;
 {
-    if (_accountFileInfo && _lastServerDate && [_accountFileInfo isSameAsFileInfo:accountFileInfo asOfServerDate:_lastServerDate])
-        // We've fetched this version before -- all done
-        return YES;
+    __block NSDictionary *infoDictionary;
     
-    NSURL *infoURL = [_accountURL URLByAppendingPathComponent:OFXInfoFileName];
-    NSData *infoData;
     if (accountFileInfo) {
-        // There is a remote file -- fetch it.
-        if (!(infoData = [fileManager dataWithContentsOfURL:infoURL error:outError]))
+        __autoreleasing NSError *fetchError;
+        infoDictionary = [_propertyListCache propertyListWithFileInfo:accountFileInfo serverDate:serverDate connection:connection error:&fetchError];
+        if (!infoDictionary && ![fetchError hasUnderlyingErrorDomain:ODAVErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
+            if (outError)
+                *outError = fetchError;
+            OBChainError(outError);
             return NO;
-    } else {
+        }
+    }
+
+    NSURL *infoURL = [_remoteAccountURL URLByAppendingPathComponent:OFXInfoFileName];
+
+    if (!infoDictionary) {
         // There doesn't seem to be a remote file -- create it.
+        infoDictionary = [self _makeInfoDictionary];
+
         __autoreleasing NSError *writeError;
-        if (!(infoData = [self _writeInfoDictionary:fileManager toURL:infoURL error:&writeError])) {
-            if (![writeError hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_PRECONDITION_FAILED]) {
+        if (![_propertyListCache writePropertyList:infoDictionary toURL:infoURL overwrite:NO connection:connection error:&writeError]) {
+            // Maybe we are racing and some other client uploaded an info file.
+            if ([writeError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_PRECONDITION_FAILED]) {
+                // Maybe we are racing and some other client uploaded an info file.
+            } else {
                 if (outError)
                     *outError = writeError;
+                OBChainError(outError);
                 return NO;
             }
-            // Try fetching again since our MOVE presumably failed due another client writing the Info.plist
-            if (!(infoData = [fileManager dataWithContentsOfURL:infoURL error:outError]))
-                return NO;
         }
     }
     
-    // TODO: If we fail to validate the Info.plist, we could write a new one.
-    NSDictionary *infoDictionary = [NSPropertyListSerialization propertyListWithData:infoData options:0 format:NULL error:outError];
-    if (!infoDictionary)
-        return NO;
+    // Try refetching one more time if we were racing with a writer
+    if (!infoDictionary) {
+        __block ODAVFileInfo *resultFileInfo;
+        __block NSDate *resultServerDate;
+        __block NSError *resultError;
+        
+        ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done) {
+            [connection fileInfoAtURL:infoURL ETag:nil completionHandler:^(ODAVSingleFileInfoResult *result, NSError *error) {
+                resultFileInfo = result.fileInfo;
+                resultServerDate = result.serverDate;
+                resultError = error;
+                done();
+            }];
+        });
+        
+        if (!resultFileInfo) {
+            if (outError)
+                *outError = resultError;
+            OBChainError(outError);
+            return NO;
+        }
+        
+        accountFileInfo = resultFileInfo;
+        serverDate = resultServerDate;
+        
+        if (!(infoDictionary = [_propertyListCache propertyListWithFileInfo:accountFileInfo serverDate:serverDate connection:connection error:outError])) {
+            OBChainError(outError);
+            return NO;
+        }
+    }
+    
+    // We don't currently validate the Info.plist and rewrite another if invalid (except for it not being a dictionary). The issue is that all we'd really be able to check is the OFXAccountInfo_Version (since the other keys might change) and the account info comes from the _clientParameters (an instance variable for testing), while we have a single cache for all account infos.
+    // So, if an account gets an invalid Info.plist written, we just wedge on syncing and the user will need to manually intervene if there is something legitimately wrong (better than clobbering some valid but newer version plist).
+
     if (![infoDictionary[OFXAccountInfo_Group] isKindOfClass:[NSString class]]) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Cannot sync with account.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
         OFXError(outError, OFXAccountRepositoryCorrupt, description, @"Info dictionary has no group identifier");
@@ -143,18 +187,18 @@ static NSTimeInterval _fileInfoAge(OFSFileInfo *fileInfo, NSDate *serverDateNow)
     return YES;
 }
 
-- (BOOL)updateWithFileManager:(OFSDAVFileManager *)fileManager accountFileInfo:(OFSFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos serverDate:(NSDate *)serverDate error:(NSError **)outError;
+- (BOOL)updateWithConnection:(OFXConnection *)connection accountFileInfo:(ODAVFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos serverDate:(NSDate *)serverDate error:(NSError **)outError;
 {
-    if (![self _updateAccountInfo:accountFileInfo withFileManager:fileManager error:outError])
+    if (![self _updateAccountInfo:accountFileInfo serverDate:serverDate withConnection:connection error:outError])
         return NO;
 
     // Check if the account repository is too new for us and bail right away if so.
     OBASSERT(_accountVersion);
-    OBASSERT(_localClient.currentFrameworkVersion);
-    if ([_localClient.currentFrameworkVersion compareToVersionNumber:_accountVersion] == NSOrderedAscending) {
+    OBASSERT(_ourClient.currentFrameworkVersion);
+    if ([_ourClient.currentFrameworkVersion compareToVersionNumber:_accountVersion] == NSOrderedAscending) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Sync failed: OmniPresence upgrade required.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence.", @"OmniFileExchange", OMNI_BUNDLE, @"error reason"), [_accountVersion originalVersionString], [_localClient.currentFrameworkVersion originalVersionString]];
-        OFXErrorWithInfo(outError, OFXAccountRepositoryTooNew, description, reason, @"client", _localClient.propertyList, @"server", _accountPropertyList, nil);
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence.", @"OmniFileExchange", OMNI_BUNDLE, @"error reason"), [_accountVersion originalVersionString], [_ourClient.currentFrameworkVersion originalVersionString]];
+        OFXErrorWithInfo(outError, OFXAccountRepositoryTooNew, description, reason, @"client", _ourClient.propertyList, @"server", _accountPropertyList, nil);
         return NO;
     }
 
@@ -168,109 +212,56 @@ static NSTimeInterval _fileInfoAge(OFSFileInfo *fileInfo, NSDate *serverDateNow)
     
     // Unlike OmniFocus, our client files do change over time (OmniFocus uses transaction identifiers in the clients to peg them in time, we just step the sync date forward).
             
-    NSString *localClientIdentifier = _localClient.identifier;
-    OBASSERT(![NSString isEmptyString:localClientIdentifier]);
+    NSString *ourClientIdentifier = _clientParameters.defaultClientIdentifier;
+    OBASSERT_NOTNULL(ourClientIdentifier); // help out clang-sa
+    OBASSERT(![NSString isEmptyString:ourClientIdentifier]);
     
-    // ETag is of questionable utility, but we could use it too. Right now we are just using the server timestamp to detect if the client info has changed.
-    NSMutableDictionary *clientByIdentifier = [NSMutableDictionary new];
-    for (OFSFileInfo *clientFileInfo in clientFileInfos) {
-        NSURL *clientURL = clientFileInfo.originalURL;
-        if (OFNOTEQUAL([clientURL pathExtension], OFXClientPathExtension)) {
-            OBASSERT_NOT_REACHED("Non-client file info in clientFileInfos");
-            continue;
-        }
-        
-        NSString *clientIdentifier = [[clientURL lastPathComponent] stringByDeletingPathExtension];
-        OBASSERT_NOTNULL(clientIdentifier); // help clang-sa
-        
-        // If this is some other client and is old enough, prune it. We don't delete our client file if it is old since we assume we'll overwrite it below anyway (if we've launched after a long absence and somehow someone else hasn't deleted it -- maybe we are the only client).
-        if (OFNOTEQUAL(localClientIdentifier, clientIdentifier) && _fileInfoAge(clientFileInfo, serverDate) > _clientParameters.staleInterval) {
-            DEBUG_CLIENT(1, @"Client is stale %@", clientURL);
-            
-            __autoreleasing NSError *removeError;
-            if (![fileManager deleteURL:clientURL withETag:clientFileInfo.ETag error:&removeError]) {
-                if ([removeError hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_NOT_FOUND] ||
-                    [removeError hasUnderlyingErrorDomain:OFSDAVHTTPErrorDomain code:OFS_HTTP_PRECONDITION_FAILED]) {
-                    // Someone else removed it, or it got updated *just* now.
-                } else {
-                    [removeError log:@"Error removing stale client at %@", clientURL];
-                }
-            }
-            OBFinishPortingLater("Prune stale client");
-        }
-        
-        // Use the previously cached contents of this client state if we have one and it hasn't changed on the server
-        OFSyncClient *client;
-        if (_lastUpdateServerDate && [_lastUpdateServerDate isAfterDate:clientFileInfo.lastModifiedDate]) {
-            client = _clientByIdentifier[clientIdentifier];
-        }
-        
-        if (!client) {
-            __autoreleasing NSError *error;
-            NSData *clientData = [fileManager dataWithContentsOfURL:clientURL withETag:nil error:&error];
-            if (!clientData) {
-                [error log:@"Error fetching client data from %@", clientURL];
-                continue;
-            }
-            
-            NSDictionary *clientState = [NSPropertyListSerialization propertyListWithData:clientData options:NSPropertyListImmutable format:NULL error:&error];
-            if (!clientState) {
-                [error log:@"Error unarchiving client data from %@", clientURL];
-                continue;
-            }
-            
-            if (![clientState isKindOfClass:[NSDictionary class]]) {
-                [error log:@"Error client data is not a dictionary at %@", clientURL];
-                continue;
-            }
-            
-            if (!(client = [[OFSyncClient alloc] initWithURL:clientURL propertyList:clientState error:&error])) {
-                [error log:@"Error creating client from dictionary at %@", clientURL];
-                continue;
-            }
-        }
-        
-        // Don't log redundant GETs of clients (which happens a bunch in tests since they run quickly and so our timestamps are often w/in one second of the server date).
-        OFSyncClient *oldClient = _clientByIdentifier[clientIdentifier];
-        if (OFNOTEQUAL(oldClient.propertyList, client.propertyList)) {
-            DEBUG_CLIENT(1, @"Updated state for client %@ to %@", clientIdentifier, [client shortDescription]);
-        }
-        
-        clientByIdentifier[clientIdentifier] = client;
-    }
-    _lastUpdateServerDate = serverDate;
+    NSMutableDictionary *clientByIdentifier = [[self class] _updatedClientByIdentifierWithOriginal:_clientByIdentifier
+                                                                                 propertyListCache:_propertyListCache
+                                                                              cachingFromFileInfos:clientFileInfos serverDate:serverDate
+                                                                               ourClientIdentifier:ourClientIdentifier
+                                                                                     staleInterval:_clientParameters.staleInterval
+                                                                                        connection:connection];
 
-    if (!_localClientWriteDate || -[_localClientWriteDate timeIntervalSinceNow] > _clientParameters.writeInterval) {
+    // Clean up entries that were deleted by some other device.
+    NSArray *allFileInfos = clientFileInfos;
+    if (accountFileInfo)
+        allFileInfos = [allFileInfos arrayByAddingObject:accountFileInfo];
+    [_propertyListCache pruneCacheKeepingEntriesForFileInfos:allFileInfos];
+    
+    // Make sure our client file exists and is up to date. Make sure to compare server dates to server dates to avoid clock skew issues.
+    _ourClient = clientByIdentifier[ourClientIdentifier];
+    OBASSERT(!_ourClient || OFISEQUAL(_ourClient.identifier, ourClientIdentifier));
+
+    if (!_ourClient || -[_ourClient.fileInfo.lastModifiedDate timeIntervalSinceDate:serverDate] > _clientParameters.writeInterval) {
         // We use the same 'domain' for all our sync accounts -- this just controls the host id.
-        OFSyncClient *localClient = [[OFSyncClient alloc] initWithURL:_localClient.clientURL previousClient:_localClient parameters:_clientParameters error:outError];
-        if (!localClient) {
+        NSURL *clientURL = [_remoteAccountURL URLByAppendingPathComponent:[ourClientIdentifier stringByAppendingPathExtension:OFXClientPathExtension]];
+        OFXSyncClient *updatedClient = [[OFXSyncClient alloc] initWithURL:clientURL previousClient:_ourClient parameters:_clientParameters error:outError];
+        if (!updatedClient) {
             OBChainError(outError);
             return NO;
         }
         
-        _localClient = localClient;
-        DEBUG_CLIENT(1, @"Local client now %@", [_localClient shortDescription]);
-        
-        clientByIdentifier[localClientIdentifier] = _localClient;
+        DEBUG_CLIENT(1, @"Updating local client to %@", [updatedClient shortDescription]);
         
         __autoreleasing NSError *error;
-        NSData *clientData = [NSPropertyListSerialization dataWithPropertyList:_localClient.propertyList format:NSPropertyListXMLFormat_v1_0 options:0 error:&error];
-        if (!clientData) {
-            [error log:@"Error serializing client property list %@", _localClient.propertyList];
-        } else {
-            NSURL *clientURL = _localClient.clientURL;
-            if (!OFXWriteDataToURLAtomically(fileManager, clientData, clientURL, _temporaryDirectoryURL, YES/*overwrite*/, outError)) {
-                if (outError)
-                    [*outError log:@"Error writing client property list to %@", clientURL];
-
+        OFXPropertyListCacheEntry *cacheEntry = [_propertyListCache writePropertyList:updatedClient.propertyList toURL:clientURL overwrite:YES connection:connection error:&error];
+        if (!cacheEntry) {
+            [error log:@"Error writing client property list to %@", clientURL];
+            
+            if (outError) {
+                *outError = error;
                 NSString *description = NSLocalizedStringFromTableInBundle(@"Sync failed: unable to update device registration.", @"OmniFileExchange", OMNI_BUNDLE, @"error description");
                 NSString *reason = NSLocalizedStringFromTableInBundle(@"Unable to update device registration on the cloud server.", @"OmniFileExchange", OMNI_BUNDLE, @"error reason");
-
-                OFXErrorWithInfo(outError, OFXAccountUnableToStoreClientInfo, description, reason, nil);
-                return NO;
+                OFXErrorWithInfo(&error, OFXAccountUnableToStoreClientInfo, description, reason, nil);
             }
+            return NO;
         }
-        _localClientWriteDate = [NSDate date];
+
+        updatedClient.fileInfo = cacheEntry.fileInfo;
+        
+        clientByIdentifier[ourClientIdentifier] = updatedClient;
+        _ourClient = updatedClient;
     }
     
     _clientByIdentifier = [clientByIdentifier copy];
@@ -286,23 +277,69 @@ static NSTimeInterval _fileInfoAge(OFSFileInfo *fileInfo, NSDate *serverDateNow)
     return group;
 }
 
+#pragma mark - Private
 
-- (NSData *)_writeInfoDictionary:(OFSDAVFileManager *)fileManager toURL:(NSURL *)infoURL error:(NSError **)outError;
+- (NSDictionary *)_makeInfoDictionary;
 {
-    NSString *groupIdentifier = OFXMLCreateID();
-    
-    NSDictionary *infoDictionary = @{OFXAccountInfo_Group:groupIdentifier, OFXAccountInfo_Version:[_clientParameters.currentFrameworkVersion cleanVersionString]};
-    
-    NSData *infoData = [NSPropertyListSerialization dataWithPropertyList:infoDictionary format:NSPropertyListXMLFormat_v1_0 options:0 error:outError];
-    if (!infoData) {
-        OBChainError(outError);
-        return nil;
+    return @{OFXAccountInfo_Group:OFXMLCreateID(), OFXAccountInfo_Version:[_clientParameters.currentFrameworkVersion cleanVersionString]};
+}
+
++ (NSMutableDictionary *)_updatedClientByIdentifierWithOriginal:(NSDictionary *)previousClientByIdentifier
+                                              propertyListCache:(OFXPropertyListCache *)propertyListCache
+                                           cachingFromFileInfos:(NSArray *)clientFileInfos
+                                                     serverDate:(NSDate *)serverDate
+                                            ourClientIdentifier:(NSString *)ourClientIdentifier
+                                                  staleInterval:(NSTimeInterval)staleInterval
+                                                     connection:(OFXConnection *)connection;
+{
+    NSMutableDictionary *resultClientByIdentifier = [NSMutableDictionary new];
+
+    for (ODAVFileInfo *clientFileInfo in clientFileInfos) {
+        NSURL *clientURL = clientFileInfo.originalURL;
+        if (OFNOTEQUAL([clientURL pathExtension], OFXClientPathExtension)) {
+            OBASSERT_NOT_REACHED("Non-client file info in clientFileInfos");
+            continue;
+        }
+
+        NSString *clientIdentifier = [[clientURL lastPathComponent] stringByDeletingPathExtension];
+        OBASSERT_NOTNULL(clientIdentifier); // help clang-sa
+        
+        // If this is some other client and is old enough, prune it. We don't delete our client file if it is old since we assume we'll overwrite it below anyway (if we've launched after a long absence and somehow someone else hasn't deleted it -- maybe we are the only client).
+        if (OFNOTEQUAL(ourClientIdentifier, clientIdentifier) && _fileInfoAge(clientFileInfo, serverDate) > staleInterval) {
+            ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done) {
+                DEBUG_CLIENT(1, @"Client is stale %@", clientURL);
+                
+                __autoreleasing NSError *removeError;
+                if (![propertyListCache removePropertyListWithFileInfo:clientFileInfo connection:connection error:&removeError]) {
+                    [removeError log:@"Error removing stale client at %@", clientURL];
+                }
+                done();
+            });
+            continue;
+        }
+        
+        __autoreleasing NSError *clientError;
+        OFXPropertyListCacheEntry *cacheEntry = [propertyListCache cacheEntryWithFileInfo:clientFileInfo serverDate:serverDate connection:connection error:&clientError];
+        if (!cacheEntry) {
+            [clientError log:@"Error fetching client data from %@", clientURL];
+            continue;
+        }
+        
+        OFXSyncClient *client = previousClientByIdentifier[clientIdentifier];
+        
+        if (cacheEntry.fileInfo != client.fileInfo) {
+            // New contents cached --  update our client object
+            NSError *clientError;
+            if (!(client = [[OFXSyncClient alloc] initWithURL:cacheEntry.fileInfo.originalURL propertyList:cacheEntry.contents error:&clientError])) {
+                [clientError log:@"Error creating client from dictionary at %@", clientURL];
+                continue;
+            }
+            client.fileInfo = cacheEntry.fileInfo;
+        }
+        resultClientByIdentifier[clientIdentifier] = client;
     }
-    
-    // Make sure we don't clobber another Info.plist that has been written in the mean time.
-    if (!OFXWriteDataToURLAtomically(fileManager, infoData, infoURL, _temporaryDirectoryURL, NO/*overwrite*/, outError))
-        return nil;
-    return infoData;
+
+    return resultClientByIdentifier;
 }
 
 @end

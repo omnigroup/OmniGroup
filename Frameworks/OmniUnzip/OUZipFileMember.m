@@ -39,13 +39,6 @@ RCS_ID("$Id$");
     return self;
 }
 
-- (void)dealloc;
-{
-    [_contents release];
-    [_filePath release];
-    [super dealloc];
-}
-
 - (NSData *)contents;
 {
     if (_contents != nil)
@@ -59,7 +52,7 @@ RCS_ID("$Id$");
 
 - (NSFileWrapper *)fileWrapperRepresentation;
 {
-    NSFileWrapper *wrapper = [[[NSFileWrapper alloc] initRegularFileWithContents:[self contents]] autorelease];
+    NSFileWrapper *wrapper = [[NSFileWrapper alloc] initRegularFileWithContents:[self contents]];
     [wrapper setFilename:[self name]];
     [wrapper setPreferredFilename:[self name]];
     return wrapper;

@@ -9,12 +9,11 @@
 
 #import "OFXFileSnapshotTransfer.h"
 
-@class OFSDAVFileManager;
-@class OFXFileSnapshot;
+@class OFXConnection, OFXFileSnapshot;
 
 @interface OFXFileSnapshotUploadTransfer : OFXFileSnapshotTransfer
 
-- (id)initWithFileManager:(OFSDAVFileManager *)fileManager currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory;
+- (id)initWithConnection:(OFXConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory;
 
 @property(nonatomic,readonly) NSURL *remoteTemporaryDirectoryURL;
 @property(nonatomic,copy) NSURL *temporaryRemoteSnapshotURL; // Subclasses can update with the redirected URL

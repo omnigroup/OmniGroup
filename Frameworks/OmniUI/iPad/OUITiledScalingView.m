@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,9 @@
 RCS_ID("$Id$");
 
 @implementation OUITiledScalingView
+{
+    NSMutableArray *_tiles;
+}
 
 static id _commonInit(OUITiledScalingView *self)
 {
@@ -52,14 +55,7 @@ static id _commonInit(OUITiledScalingView *self)
     return _commonInit(self);
 }
 
-- (void)dealloc;
-{
-    [_tiles release];
-    [super dealloc];
-}
-
-#pragma mark -
-#pragma mark UIView subclass
+#pragma mark - UIView subclass
 
 - (void)setNeedsDisplay;
 {
@@ -183,15 +179,12 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
                 tile = [[OUIScalingViewTile alloc] init];
                 [tiles addObject:tile];
                 [self addSubview:tile];
-                [tile release];
                 
                 DEBUG_TILE_LAYOUT(@"    Created new tile %@ for rect %@", [tile shortDescription], NSStringFromCGRect(tileFrame));
             }
             
             tile.frame = tileFrame;
         }
-        
-        [neededRects release];
     }
     
     // Finally, hide any remaining tiles that didn't get reused.
@@ -199,8 +192,6 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
         DEBUG_TILE_LAYOUT(@"  Hiding unused tile %@", [tile shortDescription]);
         tile.hidden = YES;
     }
-    
-    [availableTiles release];
 }
 
 + (OUITiledScalingViewTiling)tiling;

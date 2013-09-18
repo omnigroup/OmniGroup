@@ -11,12 +11,6 @@ RCS_ID("$Id$");
 
 NSString * const OUIActionSheetDidDismissNotification = @"OUIActionSheetDidDismissNotification";
 
-@interface OUIActionSheet (/* Private */)
-
-- (void)_addAction:(void(^)(void))action;
-
-@end
-
 @implementation OUIActionSheet
 {
     NSMutableArray *_actions;
@@ -41,13 +35,6 @@ NSString * const OUIActionSheetDidDismissNotification = @"OUIActionSheetDidDismi
     OBRejectUnusedImplementation(self, _cmd);
 }
 
-- (void)dealloc;
-{
-    [_identifier release];
-    [_actions release];
-    
-    [super dealloc];
-}
 
 #pragma mark -
 #pragma mark Public
@@ -97,7 +84,6 @@ NSString * const OUIActionSheetDidDismissNotification = @"OUIActionSheetDidDismi
     
     action = [action copy];
     [_actions addObject:action];
-    [action release];
 }
 
 
@@ -116,7 +102,6 @@ NSString * const OUIActionSheetDidDismissNotification = @"OUIActionSheetDidDismi
         }
     }
     
-    [_actions release];
     _actions = nil;
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIActionSheetDidDismissNotification object:self];

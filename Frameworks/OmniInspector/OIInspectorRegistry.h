@@ -35,6 +35,7 @@
 	unsigned int isListeningForNotifications:1;
     } registryFlags;
     
+    NSPanel *_saveWorkspacePanel, *_editWorkspacePanel;
     IBOutlet NSTextField *newWorkspaceTextField;
     IBOutlet NSTableView *editWorkspaceTable;
     IBOutlet NSButtonCell *deleteWorkspaceButton;

@@ -12,6 +12,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 
+#import <CoreText/CoreText.h> // OAFontDescriptor maps to CTFontDescriptor, so we'll need to adjust all this if we switch to NSFontDescriptor/UIFontDescriptor.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #endif
@@ -293,20 +294,15 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 - (void)testRoundTripForFontNamed:(NSString *)fontName;
 {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    CTFontRef fontRef = CTFontCreateWithName((CFStringRef)fontName, 12.0f, NULL);
-    NSString *nameFromFontRef = (NSString *)CTFontCopyAttribute(fontRef, kCTFontNameAttribute);
-    STAssertEqualObjects(fontName, nameFromFontRef, @"Asked for font named “%@”, but got font named “%@”.", fontName, nameFromFontRef);
+    UIFont *font = [UIFont fontWithName:fontName size:12];
+    NSString *nameFromFont = font.fontName;
+    STAssertEqualObjects(fontName, nameFromFont, @"Asked for font named “%@”, but got font named “%@”.", fontName, nameFromFont);
     
-    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFont:fontRef] autorelease];
+    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFont:font] autorelease];
     
-    CTFontRef roundTrippedFontRef = descriptor.font;
-    NSString *nameFromRoundTrippedFontRef = (NSString *)CTFontCopyAttribute(roundTrippedFontRef, kCTFontNameAttribute);
-    STAssertEqualObjects(nameFromFontRef, nameFromRoundTrippedFontRef, @"Started with font named “%@”. After round-tripping got “%@”.", nameFromFontRef, nameFromRoundTrippedFontRef);
-
-    CFRelease(fontRef);
-    CFRelease(roundTrippedFontRef);
-    [nameFromFontRef release];
-    [nameFromRoundTrippedFontRef release];
+    UIFont *roundTrippedFont = descriptor.font;
+    NSString *nameFromRoundTrippedFont = roundTrippedFont.fontName;
+    STAssertEqualObjects(nameFromFont, nameFromRoundTrippedFont, @"Started with font named “%@”. After round-tripping got “%@”.", nameFromFont, nameFromRoundTrippedFont);
 #else
     NSFont *font = [NSFont fontWithName:fontName size:12.0f];
     NSString *nameFromFontRef = font.fontName;

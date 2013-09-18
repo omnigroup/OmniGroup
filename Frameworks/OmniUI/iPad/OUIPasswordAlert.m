@@ -7,20 +7,35 @@
 
 #import <OmniUI/OUIPasswordAlert.h>
 
+#import <OmniFoundation/OFVersionNumber.h>
+
 RCS_ID("$Id$");
 
 NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
 @interface OUIPasswordAlert () <UITextFieldDelegate>
-
-- (void)_dismissWithAction:(OUIPasswordAlertAction)action;
-- (void)_applicationDidEnterBackground:(NSNotification *)notification;
-
 @end
 
 #pragma mark -
 
 @implementation OUIPasswordAlert
+{
+    NSString *_username;
+    NSString *_password;
+    NSUInteger _options;
+    UIAlertView *_alertView;
+    OUIPasswordAlertAction _dismissalAction;
+}
+
++ (NSMutableSet *)_visibleAlerts;
+{
+    static NSMutableSet *_alerts = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _alerts = [[NSMutableSet alloc] init];
+    });
+    return _alerts;
+}
 
 - (id)initWithProtectionSpace:(NSURLProtectionSpace *)protectionSpace title:(NSString *)title options:(NSUInteger)options;
 {
@@ -33,7 +48,6 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     _options = options;
 
     if ([NSString isEmptyString:_title]) {
-        [_title release];
         _title = nil;
 
         NSString *name = [protectionSpace realm];
@@ -76,33 +90,18 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-
-    [_title release];
-    [_username release];
-    [_protectionSpace release];
-    
     [_alertView setDelegate:nil];
-    [_alertView release];
-    
-    [super dealloc];
-}
-
-- (NSString *)title;
-{
-    return _title;
 }
 
 - (void)setTitle:(NSString *)title;
 {
     if (_title != title) {
-        [_title release];
         _title = [title copy];
         _alertView.title = _title;
     }
 }
 
-@synthesize protectionSpace = _protectionSpace;
-@synthesize delegate = _delegate;
+@synthesize delegate = _weak_delegate;
 
 - (NSString *)username;
 {
@@ -122,7 +121,6 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     self.usernameTextField.text = username;
     
     if (_username != username) {
-        [_username release];
         _username = [username copy];
     }
 }
@@ -137,6 +135,20 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
 - (void)setPassword:(NSString *)password;
 {
+    // OUIPasswordAlert has support for a placeholder password (to indicate that you've previously typed a value, and simply pressing return will retry that value. If a client sets the password to OUIPasswordAlertObfuscatedPasswordPlaceholder, we display a placeholder, and clear it when the first character is typed.
+    //
+    // This is currently disabled when running on iOS 7 due to 2 bugs:
+    //
+    // rdar://problem/14515061 - Programmatically set text for field in secure style UIAlertView isn't drawn
+    // rdar://problem/14517882 - Regression: UITextField in secure mode drops input when delegate changes text value
+    //
+    // The second is more serious, because it drops the first character after you've typed the second, and you probably won't have noticed it did that.
+    
+    if ([password isEqualToString:OUIPasswordAlertObfuscatedPasswordPlaceholder] && [OFVersionNumber isOperatingSystemiOS7OrLater]) {
+        self.passwordTextField.text = nil;
+        return;
+    }
+
     self.passwordTextField.text = password;
 }
 
@@ -163,7 +175,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
 - (void)show;
 {
-    [self retain]; // we hold a reference to ourselves until -_dismissWithAction
+    [[OUIPasswordAlert _visibleAlerts] addObject:self]; // we hold a reference to ourselves until -_dismissWithAction
     [_alertView show];
 }   
 
@@ -195,6 +207,11 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     OBPRECONDITION(textField == self.passwordTextField);
 
     if ([self isUsingObfuscatedPasswordPlaceholder]) {
+        if ([OFVersionNumber isOperatingSystemiOS7OrLater]) {
+            OBASSERT_NOT_REACHED("We shouldn't be taking this code path on iOS 7; see comment in -setPassword:.");
+            return YES;
+        }
+        
         textField.text = string;
         return NO;
     }
@@ -224,7 +241,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     _dismissalAction = action;
     [self.delegate passwordAlert:self didDismissWithAction:action];
 
-    [self autorelease]; // balance -retain in -show
+    [[OUIPasswordAlert _visibleAlerts] removeObject:self]; // balance the retain in -show
 }
 
 - (void)_applicationDidEnterBackground:(NSNotification *)notification;

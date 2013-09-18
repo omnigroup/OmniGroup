@@ -238,6 +238,33 @@ void OQAppendRoundedRectWithMask_c(CFTypeRef ctxtOrPath, CGRect rect, CGFloat ra
     }
 }
 
+void OQPathAddIveCorner(CGMutablePathRef path, CGPoint from, CGPoint corner, CGFloat radius, BOOL handedness, BOOL lineto)
+{
+    /* Un-normalized vectors for drawing the shape; f is a normalization factor */
+    CGFloat ux = from.x - corner.x;
+    CGFloat uy = from.y - corner.y;
+    CGFloat vx = handedness? uy : -uy;
+    CGFloat vy = handedness? -ux : ux;
+    CGFloat f = radius / hypot(ux, uy);
+    
+    /* Use the basis vectors to construct a transform from (u,v)-space to caller's space */
+    CGAffineTransform b = (CGAffineTransform){
+        .a  = f*ux,     .b  = f*uy,
+        .c  = f*vx,     .d  = f*vy,
+        .tx = corner.x, .ty = corner.y
+    };
+    
+    /* Arguments are aligned below so that the symmetry of the figure is more obvious */
+    if (lineto) {
+        CGPathAddLineToPoint(path, &b,                                      1.528665, 0.000000);
+    } else {
+        CGPathMoveToPoint(path, &b,                                         1.528665, 0.000000);
+    }
+    CGPathAddCurveToPoint(path, &b, 1.088493, 0.000000, 0.868407, 0.000000, 0.631494, 0.074911);
+    CGPathAddCurveToPoint(path, &b, 0.372824, 0.169060, 0.169060, 0.372824, 0.074911, 0.631494);
+    CGPathAddCurveToPoint(path, &b, 0.000000, 0.868407, 0.000000, 1.088493, 0.000000, 1.528665);
+}
+
 // No size change -- might even overflow
 CGRect OQCenteredIntegralRectInRect(CGRect enclosingRect, CGSize toCenter)
 {
@@ -364,6 +391,9 @@ CGImageRef OQCreateImageWithSize(CGImageRef image, CGSize size, CGInterpolationQ
     OBPRECONDITION(size.height == floor(size.height));
     OBPRECONDITION(size.width >= 1);
     OBPRECONDITION(size.height >= 1);
+    
+    if (size.width == CGImageGetWidth(image) && size.height == CGImageGetHeight(image))
+        return CGImageRetain(image);
     
     // Try building a bitmap context with the same settings as the input image.
     // We can cast CGImageAlphaInfo to CGBitmapInfo here because the lower 0x1F of the latter are an alpha-info mask

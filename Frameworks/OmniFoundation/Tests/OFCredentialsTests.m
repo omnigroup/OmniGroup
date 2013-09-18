@@ -29,7 +29,6 @@ RCS_ID("$Id$");
 
 - (void)tearDown;
 {
-    [_serviceIdentifier release];
     _serviceIdentifier = nil;
     
     [super tearDown];
@@ -56,7 +55,7 @@ RCS_ID("$Id$");
 
 - (void)testWriteAndReadCredential;
 {
-    NSString *password = [OFXMLCreateID() autorelease];
+    NSString *password = OFXMLCreateID();
     STAssertTrue(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password, NULL), nil);
     NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, NULL);
     STAssertEqualObjects(credential.user, @"user", nil);
@@ -65,14 +64,14 @@ RCS_ID("$Id$");
 
 - (void)testUpdateCredential;
 {
-    NSString *password1 = [OFXMLCreateID() autorelease];
+    NSString *password1 = OFXMLCreateID();
     STAssertTrue(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password1, NULL), nil);
 
     NSURLCredential *credential1 = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, NULL);
     STAssertEqualObjects(credential1.user, @"user", nil);
     STAssertEqualObjects(credential1.password, password1, nil);
 
-    NSString *password2 = [OFXMLCreateID() autorelease];
+    NSString *password2 = OFXMLCreateID();
     STAssertTrue(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password2, NULL), nil);
     
     NSURLCredential *credential2 = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, NULL);

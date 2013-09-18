@@ -12,7 +12,7 @@
 #import <OmniUIDocument/OUIReplaceDocumentAlert.h>
 
 @class NSFileWrapper;
-@class OFSFileInfo, OFXServerAccount;
+@class ODAVFileInfo, OFXServerAccount;
 @class OUISyncDownloader;
 
 @interface OUISyncListController : OUIFileListViewController <OUIReplaceDocumentAlertDelegate>
@@ -26,6 +26,8 @@
 }
 
 - initWithServerAccount:(OFXServerAccount *)serverAccount exporting:(BOOL)exporting error:(NSError **)outError;
+
+- (IBAction)cancel:(id)sender;
 
 @property(nonatomic,readonly) OFXServerAccount *serverAccount;
 @property(nonatomic,readonly) BOOL isExporting;

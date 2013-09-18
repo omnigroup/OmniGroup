@@ -20,3 +20,4 @@
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniFileExchange/OFXServerAccountValidator.h>
+#import <OmniFileExchange/OFXSyncSchedule.h>

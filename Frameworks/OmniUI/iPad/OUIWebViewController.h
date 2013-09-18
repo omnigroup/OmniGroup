@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2013 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,15 +9,30 @@
 
 #import <UIKit/UIViewController.h>
 
+@protocol OUIWebViewControllerDelegate;
+
 @interface OUIWebViewController : UIViewController <UIWebViewDelegate>
 {
 @private
     UIBarButtonItem *_backButton;
 }
 
-@property (retain) NSURL *URL;
-@property (nonatomic, readonly, retain) UIWebView *webView;
+@property (nonatomic, weak) id<OUIWebViewControllerDelegate> delegate;
+
+@property (strong) NSURL *URL;
+@property (nonatomic, readonly, strong) UIWebView *webView;
 
 - (void)loadData:(NSData *)data ofType:(NSString *)mimeType;
+
+@end
+
+
+@protocol OUIWebViewControllerDelegate <NSObject>
+
+@optional
+/*!
+ * \brief Called when the close button is tapped. It is the delegate's responsibility to dismiss the OUIWebViewController.
+ */
+- (void)webViewControllerDidClose:(OUIWebViewController *)webViewController;
 
 @end

@@ -7,17 +7,12 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
 
-#import <CoreText/CTFramesetter.h>
-#import <CoreText/CTFont.h>
+#import <OmniAppKit/OATextAttachment.h>
 
-extern const CGFloat OUITextLayoutUnlimitedSize;
+#define OUITextLayoutUnlimitedSize (CGFLOAT_MAX)
 
-#define OUICTLineAttachmentAttributeName       CFSTR("OUICTLineAttachment")   // A CTLineRef
-#define OUICTLineAttachmentOffsetAttributeName CFSTR("OUICTLineAttachmentOffset")  // A NSValue<CGPoint>
-
-typedef BOOL (^OUITextLayoutSpanBackgroundFilter)(NSRange spanRange, CGColorRef spanColor);
 typedef void (^OUITextLayoutExtraBackgroundRangesAndColors)(CGContextRef ctx, void (^rangeAndColor)(NSRange range, CGColorRef color));
 
 typedef enum {
@@ -27,63 +22,39 @@ typedef enum {
     OUITextLayoutDisableFlipping = (1 << 2),
 } OUITextLayoutDrawingOptions;
 
-@interface OUITextLayout : OFObject
-{
-@private
-    NSAttributedString *_attributedString;
-    CTFrameRef _frame;
-    CGSize _layoutSize;
-    CGRect _usedSize;
-}
+@interface OUITextLayout : NSObject
 
-+ (NSDictionary *)defaultLinkTextAttributes;
++ (CGFloat)defaultLineFragmentPadding;
 
 + (UIImage *)imageFromAttributedString:(NSAttributedString *)attString;
 
 - initWithAttributedString:(NSAttributedString *)attributedString constraints:(CGSize)constraints;
-- initWithAttributedString:(NSAttributedString *)attributedString_ constraints:(CGSize)constraints includeTrailingWhitespace:(BOOL)includeTrailingWhitespace;
+- initWithAttributedString:(NSAttributedString *)attributedString_ constraints:(CGSize)constraints lineFragmentPadding:(CGFloat)lineFragmentPadding includeTrailingWhitespace:(BOOL)includeTrailingWhitespace;
 
-@property(readonly,nonatomic) NSAttributedString *attributedString;
+- (NSString *)copyString NS_RETURNS_RETAINED;
+- (NSAttributedString *)copyAttributedString NS_RETURNS_RETAINED;
+- (NSDictionary *)copyAttributesAtCharacterIndex:(NSUInteger)characterIndex effectiveRange:(NSRange *)outEffectiveRange NS_RETURNS_RETAINED;
+- (NSRange)effectiveRangeOfAttribute:(NSString *)attributeName atCharacterIndex:(NSUInteger)characterIndex;
+
+- (BOOL)contentsAreSameAsAttributedString:(NSAttributedString *)attributedString;
+- (void)eachAttachment:(void (^)(OATextAttachment *, BOOL *stop))applier;
+
 @property(readonly,nonatomic) CGSize usedSize;
 
-- (void)drawInContext:(CGContextRef)ctx bounds:(CGRect)bounds options:(NSUInteger)options filter:(OUITextLayoutSpanBackgroundFilter)filter;
-- (void)drawInContext:(CGContextRef)ctx bounds:(CGRect)bounds options:(NSUInteger)options filter:(OUITextLayoutSpanBackgroundFilter)filter extraBackgroundRangesAndColors:(OUITextLayoutExtraBackgroundRangesAndColors)extraBackgroundRangesAndColors;
+- (void)drawInContext:(CGContextRef)ctx bounds:(CGRect)bounds options:(NSUInteger)options;
+- (void)drawInContext:(CGContextRef)ctx bounds:(CGRect)bounds options:(NSUInteger)options extraBackgroundRangesAndColors:(OUITextLayoutExtraBackgroundRangesAndColors)extraBackgroundRangesAndColors;
 
 - (void)drawInContext:(CGContextRef)ctx; // Draws at (0,0) in the current coordinate system. Text draws upside down normally and with the last line that the origin.
 - (void)drawFlippedInContext:(CGContextRef)ctx bounds:(CGRect)bounds; // Draws like you'd expect text to be drawn -- with the text stuck to the top of the given bounds and right side up.
-- (CGFloat)topTextInsetToCenterFirstLineAtY:(CGFloat)centerFirstLineAtY forEdgeInsets:(UIEdgeInsets)edgeInsets;
 - (CGFloat)firstLineAscent;
+
+- (CGRect)boundsOfCharacterRange:(NSRange)range;
 
 - (CGRect)firstRectForRange:(NSRange)range;
 
+// Intended for link/attachment hit testing, not for selection (since this doesn't handle ligatures/partial glyph fractions).
+- (NSUInteger)hitCharacterIndexForPoint:(CGPoint)pt;
+
 @end
 
-extern CGRect OUITextLayoutMeasureFrame(CTFrameRef frame, BOOL includeTrailingWhitespace, BOOL widthIsConstrained);
-extern CGPoint OUITextLayoutOrigin(CGRect typographicFrame, UIEdgeInsets textInset, // in text coordinates
-                                   CGRect bounds, // view rect we want to draw in
-                                   CGFloat scale); // scale factor from text to view
-extern CGFloat OUITopTextInsetToCenterFirstLineAtY(CTFrameRef frame, CGFloat centerFirstLineAtY, UIEdgeInsets minimumInset);
-extern CGFloat OUIFirstLineAscent(CTFrameRef frame);
-
-extern void OUITextLayoutDrawFrame(CGContextRef ctx, CTFrameRef frame, CGRect bounds, CGPoint layoutOrigin);
-
-extern CGRect OUITextLayoutFirstRectForRange(CTFrameRef frame, NSRange characterRange);
-
-extern BOOL OUITextLayoutDrawRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFrame, NSAttributedString *immutableContent,
-                                            CGPoint layoutOrigin, CGFloat leftEdge, CGFloat rightEdge,
-                                            OUITextLayoutSpanBackgroundFilter filter);
-
-extern void OUITextLayoutDrawExtraRunBackgrounds(CGContextRef ctx, CTFrameRef drawnFrame, CGPoint layoutOrigin, CGFloat leftEdge, CGFloat rightEdge,
-                                                 OUITextLayoutExtraBackgroundRangesAndColors extraBackgroundRangesAndColors);
-
-extern void OUITextLayoutFixupParagraphStyles(NSMutableAttributedString *content);
-
-extern CTFontRef OUIGlobalDefaultFont(void);
-
-extern NSAttributedString *OUICreateTransformedAttributedString(NSAttributedString *source, NSDictionary *linkAttributes);
-
-// Given attributes to apply, this makes a new set of attributes that don't have entries that shouldn't be applied to the extra newline that CoreText needs. Not really applicable outside OmniUI, so this should eventually be made private.
-extern NSDictionary *OUITextLayoutCopyExtraNewlineAttributes(NSDictionary *attributes);
-
-void OUIGetSuperSubScriptPositions(CTFontRef font, CGRect *supersub);
-
+extern NSAttributedString *OUICreateTransformedAttributedString(NSAttributedString *source, NSDictionary *linkAttributes) NS_RETURNS_RETAINED;

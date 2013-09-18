@@ -8,20 +8,20 @@
 #import "OUISyncMenuController.h"
 
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <OmniDAV/ODAVFileInfo.h>
+#import <OmniDocumentStore/ODSFileItem.h>
+#import <OmniDocumentStore/ODSStore.h>
 #import <OmniFileExchange/OFXAgent.h>
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
-#import <OmniFileStore/OFSDocumentStore.h>
-#import <OmniFileStore/OFSDocumentStoreFileItem.h>
-#import <OmniFileStore/OFSFileInfo.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
-#import <OmniUIDocument/OUIDocumentPicker.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 
 #import "OUICloudSetupViewController.h"
 #import "OUIExportOptionsController.h"
@@ -54,10 +54,10 @@ enum {
     BOOL _isExporting;
 }
 
-+ (void)displayInSheet;
++ (void)displayAsSheetInViewController:(UIViewController *)viewController;
 {
     OUISyncMenuController *controller = [[OUISyncMenuController alloc] initForExporting:YES];
-    [controller _displayInSheet];
+    [controller _displayAsSheetInViewController:viewController];
 }
 
 - init;
@@ -90,12 +90,9 @@ enum {
 {
     OBPRECONDITION(_sheetNavigationController == nil);
     
-    if ([[OUIAppController controller] dismissPopover:_menuPopoverController animated:YES])
-        return; // Hide if it was visible
-    
     [self _reloadAccountsAndAdjustSize];
     
-    self.contentSizeForViewInPopover = self.view.frame.size; // Make sure we set this before creating our popover
+    self.preferredContentSize = self.view.frame.size; // Make sure we set this before creating our popover
 
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Import Document\u2026", @"OmniUIDocument", OMNI_BUNDLE, @"Import document title");
     
@@ -250,15 +247,15 @@ enum {
     
     if (indexPath.section == CloudSetupSection) {
         OUICloudSetupViewController *setup = [[OUICloudSetupViewController alloc] init];
-        OUIAppController *controller = [OUIAppController controller];
+        UIViewController *presentingViewController = self.presentingViewController;
 
         if (_isExporting) {
-            [controller.topViewController dismissViewControllerAnimated:YES completion:^{
-                [controller.topViewController presentViewController:setup animated:YES completion:nil];
+            [presentingViewController dismissViewControllerAnimated:YES completion:^{
+                [presentingViewController presentViewController:setup animated:YES completion:nil];
             }];
         }
         else {
-            [controller.topViewController presentViewController:setup animated:YES completion:nil];
+            [presentingViewController presentViewController:setup animated:YES completion:nil];
         }
         return;
     }
@@ -371,7 +368,7 @@ enum {
     [self.navigationController dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)_displayInSheet;
+- (void)_displayAsSheetInViewController:(UIViewController *)viewController;
 {
     OBPRECONDITION(self.navigationController == nil);
     OBPRECONDITION(_sheetNavigationController == nil);
@@ -383,8 +380,8 @@ enum {
     _sheetNavigationController = [[OUISheetNavigationController alloc] initWithRootViewController:self];
     _sheetNavigationController.modalPresentationStyle = UIModalPresentationFormSheet;
     _sheetNavigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    OUIAppController *appController = [OUIAppController controller];
-    [appController.topViewController presentViewController:_sheetNavigationController animated:YES completion:nil];
+
+    [viewController presentViewController:_sheetNavigationController animated:YES completion:nil];
 }
 
 - (void)_pushViewControllerInSheet:(UIViewController *)viewController inNewSheet:(BOOL)inNewSheet;
@@ -396,8 +393,7 @@ enum {
         _sheetNavigationController.modalPresentationStyle = UIModalPresentationFormSheet;
         _sheetNavigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
         
-        OUIAppController *appController = [OUIAppController controller];
-        [appController.topViewController presentViewController:_sheetNavigationController animated:YES completion:nil];
+        [viewController presentViewController:_sheetNavigationController animated:YES completion:nil];
     } else {
         if (inNewSheet) {
             // This path exists so that we can get rid of the keyboard shown from the previous sheet. If we instead replace the top view controller or push a new controller, the keyboard would hang out, covering up part of the file listing.

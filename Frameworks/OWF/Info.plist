@@ -32,6 +32,24 @@
 			<dict>
 				<key>OW5AddressShortcuts</key>
 				<dict>
+					<key>bing@</key>
+					<dict>
+						<key>format</key>
+						<string>http://www.bing.com/search?q=%@</string>
+						<key>method</key>
+						<string>GET</string>
+						<key>name</key>
+						<string>Bing</string>
+					</dict>
+					<key>ddg@</key>
+					<dict>
+						<key>format</key>
+						<string>https://duckduckgo.com/?q=%@</string>
+						<key>method</key>
+						<string>GET</string>
+						<key>name</key>
+						<string>DuckDuckGo</string>
+					</dict>
 					<key>google@</key>
 					<dict>
 						<key>format</key>

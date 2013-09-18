@@ -9,11 +9,11 @@
 
 #import <Foundation/NSObject.h>
 
-#import <OmniFileStore/OFSAsynchronousOperation.h>
+#import <OmniDAV/ODAVAsynchronousOperation.h>
 
 @class OFSFileManager;
 
-@interface OFSFileOperation : NSObject <OFSAsynchronousOperation>
+@interface OFSFileOperation : NSObject <ODAVAsynchronousOperation>
 
 - initWithFileManager:(OFSFileManager *)fileManager readingURL:(NSURL *)url;
 - initWithFileManager:(OFSFileManager *)fileManager writingData:(NSData *)data atomically:(BOOL)atomically toURL:(NSURL *)url;

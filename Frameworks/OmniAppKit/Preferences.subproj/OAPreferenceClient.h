@@ -19,6 +19,7 @@
 @interface OAPreferenceClient : NSUserDefaultsController
 {
 @private
+    NSArray *_topLevelObjects;
     NSView *_controlBox;
     NSView *_initialFirstResponder;
     NSView *_lastKeyView;

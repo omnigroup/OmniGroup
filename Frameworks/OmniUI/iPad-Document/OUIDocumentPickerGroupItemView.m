@@ -7,23 +7,28 @@
 
 #import <OmniUIDocument/OUIDocumentPickerGroupItemView.h>
 
-#import <OmniFileStore/OFSDocumentStoreGroupItem.h>
+#import "OUIDocumentParameters.h"
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 #import <OmniUIDocument/OUIDocumentPreviewView.h>
+#import <OmniDocumentStore/ODSFolderItem.h>
+#import <OmniDocumentStore/ODSScope.h>
+#import <OmniDocumentStore/ODSStore.h>
 
+#import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OUIDocumentPickerFilter.h>
 #import "OUIDocumentPickerItemView-Internal.h"
 
 RCS_ID("$Id$");
 
 @implementation OUIDocumentPickerGroupItemView
+{
+    CGSize _lastKnownBoundsSize;
+}
 
 static id _commonInit(OUIDocumentPickerGroupItemView *self)
 {
-#if 1 && defined(DEBUG_bungi)
-    self.backgroundColor = [UIColor blueColor];
-#endif
-    
-    self.previewView.group = YES;
-    
+    self.backgroundColor = [UIColor lightGrayColor];
+    self->_lastKnownBoundsSize = self.contentView.bounds.size;
     return self;
 }
 
@@ -41,28 +46,76 @@ static id _commonInit(OUIDocumentPickerGroupItemView *self)
     return _commonInit(self);
 }
 
-#pragma mark -
-#pragma mark OUIDocumentPickerItemView subclass
+#pragma mark - OUIDocumentPickerItemView subclass
 
 static unsigned GroupItemContext;
 
 - (void)startObservingItem:(id)item;
 {
     [super startObservingItem:item];
-    [item addObserver:self forKeyPath:OFSDocumentStoreGroupItemFileItemsBinding options:0 context:&GroupItemContext];
+    [item addObserver:self forKeyPath:ODSFolderItemChildItemsBinding options:0 context:&GroupItemContext];
 }
 
 - (void)stopObservingItem:(id)item;
 {
     [super stopObservingItem:item];
-    [item removeObserver:self forKeyPath:OFSDocumentStoreGroupItemFileItemsBinding context:&GroupItemContext];
+    [item removeObserver:self forKeyPath:ODSFolderItemChildItemsBinding context:&GroupItemContext];
 }
 
-- (NSSet *)previewedFileItems;
+- (OUIDocumentPreviewArea)previewArea;
 {
-    OFSDocumentStoreGroupItem *item = (OFSDocumentStoreGroupItem *)self.item;
-    OBASSERT(!item || [item isKindOfClass:[OFSDocumentStoreGroupItem class]]);
-    return item.fileItems;
+    return OUIDocumentPreviewAreaSmall;
+}
+
+- (NSArray *)previewedItems;
+{
+    ODSFolderItem *item = (ODSFolderItem *)self.item;
+    OBASSERT(!item || [item isKindOfClass:[ODSFolderItem class]]);
+    
+    OUIDocumentPickerFilter *filter = [OUIDocumentPickerViewController selectedFilterForPicker:[[OUIDocumentAppController controller] documentPicker]];
+    
+    NSSet *filteredItems;
+    if (filter)
+        filteredItems = [item.childItems filteredSetUsingPredicate:filter.predicate];
+    else
+        filteredItems = item.childItems;
+    NSArray *sortedItems = [filteredItems sortedArrayUsingDescriptors:[OUIDocumentPickerViewController sortDescriptors]];
+    return sortedItems;
+}
+
+- (void)layoutSubviews;
+{
+    UIView *contentView = self.contentView;
+    CGRect bounds = contentView.bounds;
+    
+    if (!(CGSizeEqualToSize(bounds.size, _lastKnownBoundsSize))) {
+        NSMutableArray *subviewsToRemove = [[NSMutableArray alloc] init];
+        for (UIView *subview in self.subviews) {
+            if ([subview isKindOfClass:[OUIDocumentPreviewView class]])
+                [subviewsToRemove addObject:subview];
+        }
+        
+        [subviewsToRemove makeObjectsPerformSelector:@selector(removeFromSuperview)];
+        
+        CGSize miniPreviewSize = kOUIDocumentPickerFolderItemMiniPreviewSize;
+        UIEdgeInsets miniPreviewInsets = kOUIDocumentPickerFolderItemMiniPreviewInsets;
+        CGFloat spacing = kOUIDocumentPickerFolderItemMiniPreviewSpacing;
+        
+        NSUInteger tag = 0;
+        for (CGFloat y = miniPreviewInsets.top; y < CGRectGetMaxY(bounds) - miniPreviewInsets.bottom; y += miniPreviewSize.height + spacing) {
+            for (CGFloat x = miniPreviewInsets.left; x < CGRectGetMaxX(bounds) - miniPreviewInsets.right; x += miniPreviewSize.width + spacing) {
+                OUIDocumentPreviewView *previewView = [[OUIDocumentPreviewView alloc] initWithFrame:(CGRect){.origin = CGPointMake(x, y), .size = miniPreviewSize}];
+                OUIDocumentPreviewViewSetNormalBorder(previewView);
+                previewView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
+                previewView.tag = tag++;
+                [contentView addSubview:previewView];
+            }
+        }
+        
+        _lastKnownBoundsSize = bounds.size;
+    }
+
+    [super layoutSubviews];
 }
 
 #pragma mark -
@@ -71,8 +124,8 @@ static unsigned GroupItemContext;
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
 {
     if (context == &GroupItemContext) {
-        if (OFISEQUAL(keyPath, OFSDocumentStoreGroupItemFileItemsBinding))
-            [self previewedFileItemsChanged];
+        if (OFISEQUAL(keyPath, ODSFolderItemChildItemsBinding))
+            [self previewedItemsChanged];
         else
             OBASSERT_NOT_REACHED("Unknown KVO keyPath");
         return;

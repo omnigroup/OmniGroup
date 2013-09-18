@@ -19,6 +19,8 @@
 // As the document is opening, animation will be disabled in -didMoveToParentViewController:. This will be called after the animation to make the view controller the main view controller's inner view controller is totally done (and animation is enabled again). This can be used, for example, to start editing and have the keyboard animate out.
 - (void)documentFinishedOpening;
 
+@property(nonatomic,readonly) UIResponder *defaultFirstResponder;
+
 - (void)documentDidOpenUndoGroup;
 - (void)documentWillCloseUndoGroup;
 
