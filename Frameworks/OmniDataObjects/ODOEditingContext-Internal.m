@@ -440,13 +440,13 @@ static BOOL _fetchObjectCallback(struct sqlite3 *sqlite, ODOSQLStatement *statem
             return NO; // object will remain a fault but might have some values in it.  they'll get reset if we get fetched again.  might be nice to clean them out, though.
         }
         [object _setIsFault:NO];
+        [ctx->results addObject:object];
     } else {
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), objectID];
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to fulfill fault.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
         ODOError(outError, ODOUnableToFetchFault, description, reason);
     }
     
-    [ctx->results addObject:object];
     [objectID release];
     
     return YES;

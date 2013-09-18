@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0460"
+   LastUpgradeVersion = "0500"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -210,6 +210,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8DC2EF4F0486A6940098B216"
+               BuildableName = "OmniDAV.framework"
+               BlueprintName = "OmniDAV"
+               ReferencedContainer = "container:../Frameworks/OmniDAV/OmniDAV.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "4AA1E7FA08AA764600E2FF6B"
                BuildableName = "OAUnitTests.octest"
                BlueprintName = "OAUnitTests"
@@ -270,6 +284,20 @@
                BuildableName = "OBUnitTests.octest"
                BlueprintName = "OBUnitTests"
                ReferencedContainer = "container:../Frameworks/OmniBase/OmniBase.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "349F978E15DEA87B00D7677C"
+               BuildableName = "ODAVUnitTests.octest"
+               BlueprintName = "ODAVUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniDAV/OmniDAV.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry

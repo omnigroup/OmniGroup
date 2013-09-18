@@ -20,6 +20,9 @@
       location = "group:../Frameworks/OmniFileStore/OmniFileStore.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:../Frameworks/OmniDAV/OmniDAV.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:../Frameworks/OmniFileExchange/OmniFileExchange.xcodeproj">
    </FileRef>
    <FileRef

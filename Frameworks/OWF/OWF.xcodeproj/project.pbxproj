@@ -89,7 +89,7 @@
 		4AA535BE08B27DE600F0872D /* OWFTPSession.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E5FE8AB39F11C9CC38 /* OWFTPSession.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4AA535C008B27DE600F0872D /* OWMacOSPeterLewisFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E6FE8AB39F11C9CC38 /* OWMacOSPeterLewisFTPProcessor.h */; settings = {ATTRIBUTES = (); }; };
 		4AA535C108B27DE600F0872D /* OWUnixFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E7FE8AB39F11C9CC38 /* OWUnixFTPProcessor.h */; settings = {ATTRIBUTES = (); }; };
-		4AA535C208B27DE600F0872D /* NSDate-OWExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520F6FE8AB39F11C9CC38 /* NSDate-OWExtensions.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
+		4AA535C208B27DE600F0872D /* NSDate-OWExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520F6FE8AB39F11C9CC38 /* NSDate-OWExtensions.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4AA535C308B27DE600F0872D /* OWAuthSchemeHTTPBasic.h in Headers */ = {isa = PBXBuildFile; fileRef = 0343449E001D106CC697A146 /* OWAuthSchemeHTTPBasic.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4AA535C408B27DE600F0872D /* OWAuthSchemeHTTPDigest.h in Headers */ = {isa = PBXBuildFile; fileRef = 4278DE7D0039AFDDC697A146 /* OWAuthSchemeHTTPDigest.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4AA535C508B27DE600F0872D /* OWCookie.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520F9FE8AB39F11C9CC38 /* OWCookie.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
@@ -404,6 +404,20 @@
 			proxyType = 2;
 			remoteGlobalIDString = 4AFE72E408A02E9E00ED9F2D;
 			remoteInfo = ONThreadedLookupTest;
+		};
+		34E6D44717EA1EA000B5543B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34D029D1167E5CB8005E680B /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 344D562417BD47110049F9E5;
+			remoteInfo = OFNetStateNotifierTest;
+		};
+		34E6D44917EA1EA000B5543B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34D029D1167E5CB8005E680B /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 342691D317C578F600B1372F;
+			remoteInfo = OFNetStateNotifier;
 		};
 		4AA536CA08B27DE600F0872D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1176,6 +1190,8 @@
 				344B89C616C9A2BC004C709D /* OFRandomRepeatTest */,
 				344B89C816C9A2BC004C709D /* OFXMLParsingTest */,
 				34C0337A174E9F6600FE3E6D /* OFXMLIdHash */,
+				34E6D44817EA1EA000B5543B /* OFNetStateNotifierTest */,
+				34E6D44A17EA1EA000B5543B /* OFNetStateNotifier.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1196,7 +1212,7 @@
 			isa = PBXGroup;
 			children = (
 				34D02A13167E5CCB005E680B /* OmniNetworking.framework */,
-				34D02A15167E5CCB005E680B /* ONUnitTests.otest */,
+				34D02A15167E5CCB005E680B /* ONUnitTests.octest */,
 				34D02A17167E5CCB005E680B /* ListInterfaces */,
 				34D02A19167E5CCB005E680B /* ONThreadedLookupTest */,
 			);
@@ -1683,7 +1699,7 @@
 		00E52059FE8AB39F11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0500;
 			};
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1851,7 +1867,7 @@
 			remoteRef = 34D02A12167E5CCB005E680B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34D02A15167E5CCB005E680B /* ONUnitTests.otest */ = {
+		34D02A15167E5CCB005E680B /* ONUnitTests.octest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = ONUnitTests.octest;
@@ -1870,6 +1886,20 @@
 			fileType = "compiled.mach-o.executable";
 			path = ONThreadedLookupTest;
 			remoteRef = 34D02A18167E5CCB005E680B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34E6D44817EA1EA000B5543B /* OFNetStateNotifierTest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFNetStateNotifierTest;
+			remoteRef = 34E6D44717EA1EA000B5543B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34E6D44A17EA1EA000B5543B /* OFNetStateNotifier.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = OFNetStateNotifier.app;
+			remoteRef = 34E6D44917EA1EA000B5543B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

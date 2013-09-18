@@ -503,7 +503,6 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     NSString *port;
     ONInternetSocket *socket;
     ONHost *host;
-    Class socketClass;
     NSBundle *myBundle = [OWHTTPSession bundle];
     
     requestsSentThisConnection = 0;
@@ -515,8 +514,8 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     flags.serverIsLocal = [host isLocalHost]?1:0;
 
     // Sadly, we have two socket methods, +[ONInternetSocket socket] and -[ONSocketStream socket], and the compiler doesn't know which it's getting without the final cast.  (There's no way to cast +socketClass to disambiguate ahead of time.)
-    socketClass = [[self class] socketClass];
-    socket = (ONInternetSocket *)objc_msgSend(socketClass, @selector(socket));
+    ONInternetSocket *(*imp)(Class cls, SEL _cmd) = (typeof(imp))objc_msgSend;
+    socket = imp([[self class] socketClass], @selector(socket));
     [socket setReadBufferSize:32 * 1024];
 
     OBASSERT(!socketStream);
