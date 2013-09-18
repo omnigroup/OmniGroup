@@ -234,6 +234,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		347797AF17EA28F3005E6DC6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34AFACD8164B0E70009E39AB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34AFACE1164B0E70009E39AB;
+			remoteInfo = OmniFileExchange;
+		};
 		34824B091742E5B200253D52 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34824B051742E5B200253D52 /* OmniCommandLine.xcodeproj */;
@@ -1016,6 +1023,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				347797B017EA28F3005E6DC6 /* PBXTargetDependency */,
 			);
 			name = OFXUnitTests;
 			productName = OFXUnitTests;
@@ -1257,6 +1265,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		347797B017EA28F3005E6DC6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34AFACE1164B0E70009E39AB /* OmniFileExchange */;
+			targetProxy = 347797AF17EA28F3005E6DC6 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		34824B031742E55600253D52 /* Debug */ = {

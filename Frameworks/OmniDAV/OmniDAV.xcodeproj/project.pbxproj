@@ -64,6 +64,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3425320817EA279100EAB990 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34D06C53125D202500CA3963;
+			remoteInfo = OmniDAVTouch;
+		};
 		349464AF179F283000865885 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 349464AB179F283000865885 /* OmniCommandLine.xcodeproj */;
@@ -464,6 +471,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				3425320917EA279100EAB990 /* PBXTargetDependency */,
 			);
 			name = ODAVUnitTestsTouch;
 			productName = ODAVUnitTestsTouch;
@@ -717,6 +725,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		3425320917EA279100EAB990 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34D06C53125D202500CA3963 /* OmniDAVTouch */;
+			targetProxy = 3425320817EA279100EAB990 /* PBXContainerItemProxy */;
+		};
 		34C017AA1099527E001C110D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* OmniDAV */;

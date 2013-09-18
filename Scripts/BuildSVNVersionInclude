@@ -18,6 +18,11 @@ Usage () {
     exit 1
 }
 
+# If we are running for the public source, which is not in svn, quitely exit
+if [ -d .git ]; then
+    exit;
+fi
+
 GENERATE_VERSIONS_TXT=NO
 while [ $# -gt 0 ]
 do

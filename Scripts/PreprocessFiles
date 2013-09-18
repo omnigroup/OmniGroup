@@ -1,0 +1,166 @@
+#!/usr/bin/env ruby
+#
+# $Id$
+
+require 'fileutils'
+require 'optparse'
+require 'stringio'
+
+OPTIONS = {}
+INCLUDE_FILES = []
+INCLUDE_PATHS = []
+MACROS=[]
+
+def main
+  optparse = OptionParser.new do |opts|
+    opts.banner = "Usage: #{File.basename($0)} [options] [files]"
+    OPTIONS[:expand_build_settings] = true
+    opts.on('-E', '--[no-]expand-build-settings', 'Expand build settings in the output file; default is YES') do |value|
+      OPTIONS[:expand_build_settings] = value
+    end
+    opts.on('-X', '--strip-xml-comments', 'Remove XML comments from the output; default is NO') do |value|
+      OPTIONS[:strip_xml_comments] = value
+    end
+    opts.on('-D MACRO', '--define MACRO', 'Predefine a macro') do |value|
+      MACROS << value
+    end
+    opts.on('-o FILE', '--output FILE', 'The output file; if more than one input file was specified this must be a directory; default is stdout') do |value|
+      OPTIONS[:output_specifier] = value
+    end
+    opts.on('-i FILE', '--include FILE', 'Adds an implicit #include into the predefines buffer which is read before the source file is preprocessed') do |value|
+      INCLUDE_FILES << value
+    end
+    opts.on('-I DIRECTORY', '--include-path DIRECTORY', 'Add the specified directory to the search path for include files') do |value|
+      INCLUDE_PATHS << value
+    end
+    opts.on('-h', '--help', 'Display this screen') do
+      puts opts
+      exit 1
+    end
+  end
+  
+  if ENV['OTHER_PREPROCESSOR_DEFINITIONS'] then
+    additional_macros = ENV['OTHER_PREPROCESSOR_DEFINITIONS']
+    MACROS.push(*additional_macros.split)
+  end
+  
+  optparse.parse!
+  OPTIONS.freeze
+  INCLUDE_FILES.freeze
+  INCLUDE_PATHS.freeze
+  MACROS.freeze
+
+  if ARGV.length == 0
+    STDERR.write(optparse)
+    exit 1
+  end
+
+  ARGV.each do |f|
+    if !File.exists?(f) || File.directory?(f) then
+      STDERR.write("Invalid path - #{f}\n")
+      exit 1
+    end
+    preprocess_file(f)
+  end
+end
+
+def args_for_file(f)
+  args = %w[xcrun clang -x c -E]
+  INCLUDE_FILES.each do |include_file|
+    args << '-include'
+    args << include_file
+  end
+  INCLUDE_PATHS.each do |include_path|
+    args << '-I'
+    args << include_path
+  end
+  MACROS.each do |macro|
+    args << "-D#{macro}"
+  end
+  args << f
+end
+
+def shell_escape(str)
+    # An empty argument will be skipped, so return empty quotes.
+    return "''" if str.empty?
+    
+    str = str.dup
+    
+    # Process as a single byte sequence because not all shell
+    # implementations are multibyte aware.
+    str.gsub!(/([^A-Za-z0-9_\-.,:\/@\n])/n, "\\\\\\1")
+    
+    # A LF cannot be escaped with a backslash because a backslash + LF
+    # combo is regarded as line continuation and simply ignored.
+    str.gsub!(/\n/, "'\n'")
+    
+    return str
+end
+
+def command_string_from_args(args)
+    # Argh! IO.popen doesn't accept an array on Ruby 1.8.x
+    command_string = ''
+    args.each do |arg|
+        command_string << shell_escape(arg)
+        command_string << ' ' 
+    end
+    return command_string
+end
+
+def filter_output(output)
+  filter_re = /# \d+ "(.*)"( \d+)*\n/
+  buffer = StringIO.new()
+  processing_first_chunk = true
+  output.each_line do |l|
+    if l == "\n" && processing_first_chunk then
+      # skip this line
+    elsif !filter_re.match(l) then
+      processing_first_chunk = false
+      buffer << l
+    end
+  end
+  s = buffer.string
+  if OPTIONS[:expand_build_settings] then
+    ENV.each_pair do |key, value|
+      key = "${#{key}}"
+      s.gsub!(key, value)
+    end
+  end
+  if OPTIONS[:strip_xml_comments] then
+    s.gsub!(/[ \t]*<!--.*?-->[ \t]*\n?/m, '')
+  end
+  return s
+end
+
+def preprocess_file(f)
+  args = args_for_file(f)
+  output = nil
+  command_string = command_string_from_args(args)
+  IO.popen(command_string) do |f|
+      output = f.read()
+  end
+  if $?.success? then
+    output = filter_output(output)
+    output_specifier = OPTIONS[:output_specifier]
+    if output_specifier then
+      if File.directory?(output_specifier) then
+        output_file = File.join(output_specifier, File.basename(f)) 
+      else
+        FileUtils.mkdir_p(File.dirname(output_specifier))
+        output_file = output_specifier
+      end
+      File.open(output_file, 'w') do |f|
+        f.write(output)
+      end
+    else
+      STDOUT.write(output)
+    end
+  else
+    STDERR.write(output)
+    exit $?.exitstatus
+  end
+end
+
+if __FILE__ == $0
+  main
+end

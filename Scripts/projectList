@@ -25,12 +25,17 @@ OmniGroup/Frameworks/OmniUnzip(OmniUnzipTouch)
 OmniGroup/Frameworks/OmniDataObjects(OmniDataObjectsTouch)
 OmniGroup/Frameworks/OmniAppKit(OmniAppKitTouchTests)
 OmniGroup/Frameworks/OmniQuartz(OmniQuartzTouch)
+OmniGroup/Frameworks/OmniDAV(ODAVUnitTestsTouch)
 OmniGroup/Frameworks/OmniFileStore(OmniFileStoreTouch)
+OmniGroup/Frameworks/OmniDocumentStore
+OmniGroup/Frameworks/OmniFileExchange(OmniFileExchangeTouch)
 OmniGroup/Frameworks/OmniSoftwareUpdate(OmniSoftwareUpdateTouch)
 OmniGroup/Frameworks/OmniBase
 OmniGroup/Frameworks/OmniFoundation
 OmniGroup/Frameworks/OmniUnzip
+OmniGroup/Frameworks/OmniDAV(OmniDAV)
 OmniGroup/Frameworks/OmniFileStore
+OmniGroup/Frameworks/OmniFileExchange(OFXUnitTests)
 OmniGroup/Frameworks/OmniDataObjects
 OmniGroup/Frameworks/OmniNetworking
 OmniGroup/Frameworks/OmniAppKit
