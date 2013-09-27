@@ -296,17 +296,11 @@ static NSLock *instanceCountLock;
 
 - (void)invokeEvents:(NSArray *)events;
 {
-    NSUInteger eventIndex, eventCount = [events count];
-    for (eventIndex = 0; eventIndex < eventCount; eventIndex++) {
-        OFScheduledEvent *event = [events objectAtIndex:eventIndex];
-        @try {
-            OMNI_POOL_START {
-                if (OFSchedulerDebug)
-                    NSLog(@"%@: invoking %@", [self shortDescription], [event shortDescription]);
-                [event invoke];
-            } OMNI_POOL_END;
-        } @catch (NSException *exc) {
-            NSLog(@"%@: exception raised in %@: %@", [self shortDescription], [event shortDescription], [exc reason]);
+    for (OFScheduledEvent *event in events) {
+        @autoreleasepool {
+            if (OFSchedulerDebug)
+                NSLog(@"%@: invoking %@", [self shortDescription], [event shortDescription]);
+            [event invoke];
         }
     }
 }

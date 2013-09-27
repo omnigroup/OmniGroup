@@ -14,4 +14,6 @@
 @property(nonatomic) NSTimeInterval writeInterval;
 @property(nonatomic) NSTimeInterval staleInterval;
 
+@property(nonatomic) NSTimeInterval remoteTemporaryFileCleanupInterval; // How often we check for stale files. Also used for the age of files (vs the server date) for how old they should be before we remove them.
+
 @end

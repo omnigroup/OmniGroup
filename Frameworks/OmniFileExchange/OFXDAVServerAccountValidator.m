@@ -190,11 +190,12 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
             }
             
             if (!fileInfo.exists) {
-                // Credentials worked out, but the specified URL doesn't exist (wrong path w/in the account possibly).
-                __autoreleasing NSError *fileMissingError;
-                OFXError(&fileMissingError, OFXServerAccountNotConfigured,
+                // Credentials worked out, but the specified URL doesn't exist (wrong path w/in the account possibly). Build a 404 as the base error (since this signals the UI that it shouldn't offer to report the error to support -- we can't do anything about it).
+                
+                __autoreleasing NSError *fileMissingError = [NSError errorWithDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND userInfo:nil];
+                OFXError(&fileMissingError, OFXServerAccountLocationNotFound,
                          NSLocalizedStringFromTableInBundle(@"Server location not found", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error description"),
-                         NSLocalizedStringFromTableInBundle(@"This location does not appear to exist in the cloud.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
+                         NSLocalizedStringFromTableInBundle(@"Please check that the account information you entered is correct.", @"OmniFileExchange", OMNI_BUNDLE, @"account validation error suggestion"));
                 finishWithError(fileMissingError);
             }
             

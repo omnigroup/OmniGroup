@@ -135,22 +135,27 @@ RCS_ID("$Id$");
 {
     // clean up by nuking the Inbox.
     __block BOOL success = NO;
-    __autoreleasing NSError *coordinatorError = nil;
+    __block NSError *deleteError = nil;
+    
     NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
     
     NSURL *inboxURL = [[ODSLocalDirectoryScope userDocumentsDirectoryURL] URLByAppendingPathComponent:ODSDocumentInteractionInboxFolderName isDirectory:YES];
     
-    [coordinator coordinateWritingItemAtURL:inboxURL  options:NSFileCoordinatorWritingForDeleting error:&coordinatorError byAccessor:^(NSURL *newURL) {
-        __autoreleasing NSError *deleteError = nil;
-        if (![[NSFileManager defaultManager] removeItemAtURL:newURL error:&deleteError]) {
+    [coordinator coordinateWritingItemAtURL:inboxURL options:NSFileCoordinatorWritingForDeleting error:outError byAccessor:^(NSURL *newURL) {
+        __autoreleasing NSError *error = nil;
+        if (![[NSFileManager defaultManager] removeItemAtURL:newURL error:&error]) {
             // Deletion of zip file failed.
-            NSLog(@"Deletion of inbox file failed: %@", [deleteError toPropertyList]);
+            NSLog(@"Deletion of inbox file failed: %@", [error toPropertyList]);
+            deleteError = error; // strong-ify
             return;
         }
         
         success = YES;
     }];
     
+    if (!success && outError)
+        *outError = deleteError;
+        
     return success;
 }
 

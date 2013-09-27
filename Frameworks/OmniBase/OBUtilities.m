@@ -23,15 +23,13 @@ static BOOL _OBRegisterMethod(IMP imp, Class cls, const char *types, SEL name)
 
 IMP OBRegisterInstanceMethodWithSelector(Class aClass, SEL oldSelector, SEL newSelector)
 {
-    Method thisMethod;
-    IMP oldImp = NULL;
-
-    if ((thisMethod = class_getInstanceMethod(aClass, oldSelector))) {
-        oldImp = method_getImplementation(thisMethod);
-        _OBRegisterMethod(oldImp, aClass, method_getTypeEncoding(thisMethod), newSelector);
+    Method newMethod = class_getInstanceMethod(aClass, newSelector);
+    if (!newMethod) {
+        OBASSERT_NOT_REACHED("No method for given new selector");
+        return NULL;
     }
-
-    return oldImp;
+    
+    return OBReplaceMethodImplementationFromMethod(aClass, oldSelector, newMethod);
 }
 
 IMP OBReplaceMethodImplementation(Class aClass, SEL oldSelector, IMP newImp)

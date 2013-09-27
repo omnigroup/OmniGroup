@@ -82,43 +82,6 @@ static void (*original_setFrameSize)(id self, SEL _cmd, NSSize newSize);
     return [[self window] convertRectToScreen:windowRect].origin;
 }
 
-#pragma mark Snapping to base coordinates.
-
-// Might want floor, truncate, or rint, but at least we say what we are doing.
-- (NSPoint)floorSnappedPoint:(NSPoint)point;
-{
-    point = [self convertPointToBase:point];
-    point.x = (CGFloat)floor(point.x);
-    point.y = (CGFloat)floor(point.y);
-    return [self convertPointFromBase:point];
-}
-
-- (NSSize)floorSnappedSize:(NSSize)size;
-{
-    size = [self convertSizeToBase:size];
-    size.width = (CGFloat)floor(size.width);
-    size.height = (CGFloat)floor(size.height);
-    return [self convertSizeFromBase:size];
-}
-
-// Rects are likely be more tricky since we may want to floor the origin and extent, or maybe we want to floor the origin and ceil the extent.  This will floor the origin and extent.
-- (NSRect)floorSnappedRect:(NSRect)rect;
-{
-    rect = [self convertRectToBase:rect];
-    NSPoint extent = NSMakePoint(NSMaxX(rect), NSMaxY(rect));
-    
-    rect.origin.x = (CGFloat)floor(rect.origin.x);
-    rect.origin.y = (CGFloat)floor(rect.origin.y);
-    
-    extent.x = (CGFloat)floor(extent.x);
-    extent.y = (CGFloat)floor(extent.y);
-    
-    rect.size.width = extent.x - rect.origin.x;
-    rect.size.height = extent.y - rect.origin.y;
-    
-    return [self convertRectFromBase:rect];
-}
-
 // Drawing
 
 + (void)drawRoundedRect:(NSRect)rect cornerRadius:(CGFloat)radius color:(NSColor *)color isFilled:(BOOL)isFilled;

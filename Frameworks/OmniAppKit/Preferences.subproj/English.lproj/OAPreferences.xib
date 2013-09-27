@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1080</int>
-		<string key="IBDocument.SystemVersion">12C60</string>
-		<string key="IBDocument.InterfaceBuilderVersion">2840</string>
-		<string key="IBDocument.AppKitVersion">1187.34</string>
-		<string key="IBDocument.HIToolboxVersion">625.00</string>
+		<string key="IBDocument.SystemVersion">12E55</string>
+		<string key="IBDocument.InterfaceBuilderVersion">4510</string>
+		<string key="IBDocument.AppKitVersion">1187.39</string>
+		<string key="IBDocument.HIToolboxVersion">626.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">2840</string>
+			<string key="NS.object.0">4510</string>
 		</object>
 		<array key="IBDocument.IntegratedClassDependencies">
 			<string>NSBox</string>
@@ -142,7 +142,7 @@
 					<object class="NSButton" id="386211114">
 						<reference key="NSNextResponder" ref="685056586"/>
 						<int key="NSvFlags">261</int>
-						<string key="NSFrame">{{14, 13}, {80, 32}}</string>
+						<string key="NSFrame">{{14, 13}, {92, 32}}</string>
 						<reference key="NSSuperview" ref="685056586"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="748521431"/>
@@ -181,6 +181,7 @@
 			</object>
 		</array>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
+			<bool key="usesAutoincrementingIDs">NO</bool>
 			<array class="NSMutableArray" key="connectionRecords">
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -188,7 +189,7 @@
 						<reference key="source" ref="757761939"/>
 						<reference key="destination" ref="685056586"/>
 					</object>
-					<int key="connectionID">177</int>
+					<string key="id">177</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -196,7 +197,7 @@
 						<reference key="source" ref="757761939"/>
 						<reference key="destination" ref="748521431"/>
 					</object>
-					<int key="connectionID">178</int>
+					<string key="id">178</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -204,7 +205,7 @@
 						<reference key="source" ref="757761939"/>
 						<reference key="destination" ref="395211983"/>
 					</object>
-					<int key="connectionID">179</int>
+					<string key="id">179</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -212,7 +213,7 @@
 						<reference key="source" ref="757761939"/>
 						<reference key="destination" ref="386211114"/>
 					</object>
-					<int key="connectionID">180</int>
+					<string key="id">180</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -220,7 +221,7 @@
 						<reference key="source" ref="757761939"/>
 						<reference key="destination" ref="132402265"/>
 					</object>
-					<int key="connectionID">181</int>
+					<string key="id">181</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
@@ -228,7 +229,7 @@
 						<reference key="source" ref="757761939"/>
 						<reference key="destination" ref="386211114"/>
 					</object>
-					<int key="connectionID">185</int>
+					<string key="id">185</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
@@ -236,7 +237,7 @@
 						<reference key="source" ref="757761939"/>
 						<reference key="destination" ref="748521431"/>
 					</object>
-					<int key="connectionID">186</int>
+					<string key="id">186</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -244,7 +245,7 @@
 						<reference key="source" ref="132402265"/>
 						<reference key="destination" ref="757761939"/>
 					</object>
-					<int key="connectionID">182</int>
+					<string key="id">182</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -252,7 +253,7 @@
 						<reference key="source" ref="386211114"/>
 						<reference key="destination" ref="748521431"/>
 					</object>
-					<int key="connectionID">183</int>
+					<string key="id">183</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -260,31 +261,31 @@
 						<reference key="source" ref="748521431"/>
 						<reference key="destination" ref="386211114"/>
 					</object>
-					<int key="connectionID">184</int>
+					<string key="id">184</string>
 				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<array key="orderedObjects">
 					<object class="IBObjectRecord">
-						<int key="objectID">0</int>
+						<string key="id">0</string>
 						<array key="object" id="0"/>
 						<reference key="children" ref="824996145"/>
 						<nil key="parent"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">-2</int>
+						<string key="id">-2</string>
 						<reference key="object" ref="757761939"/>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">File's Owner</string>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">-1</int>
+						<string key="id">-1</string>
 						<reference key="object" ref="750950517"/>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">First Responder</string>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">169</int>
+						<string key="id">169</string>
 						<reference key="object" ref="132402265"/>
 						<array class="NSMutableArray" key="children">
 							<reference ref="915247566"/>
@@ -292,7 +293,7 @@
 						<reference key="parent" ref="0"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">170</int>
+						<string key="id">170</string>
 						<reference key="object" ref="915247566"/>
 						<array class="NSMutableArray" key="children">
 							<reference ref="395211983"/>
@@ -300,12 +301,12 @@
 						<reference key="parent" ref="132402265"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">171</int>
+						<string key="id">171</string>
 						<reference key="object" ref="395211983"/>
 						<reference key="parent" ref="915247566"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">172</int>
+						<string key="id">172</string>
 						<reference key="object" ref="685056586"/>
 						<array class="NSMutableArray" key="children">
 							<reference ref="386211114"/>
@@ -314,7 +315,7 @@
 						<reference key="parent" ref="0"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">173</int>
+						<string key="id">173</string>
 						<reference key="object" ref="386211114"/>
 						<array class="NSMutableArray" key="children">
 							<reference ref="101294692"/>
@@ -322,12 +323,12 @@
 						<reference key="parent" ref="685056586"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">174</int>
+						<string key="id">174</string>
 						<reference key="object" ref="101294692"/>
 						<reference key="parent" ref="386211114"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">175</int>
+						<string key="id">175</string>
 						<reference key="object" ref="748521431"/>
 						<array class="NSMutableArray" key="children">
 							<reference ref="625073856"/>
@@ -335,12 +336,12 @@
 						<reference key="parent" ref="685056586"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">176</int>
+						<string key="id">176</string>
 						<reference key="object" ref="625073856"/>
 						<reference key="parent" ref="748521431"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">-3</int>
+						<string key="id">-3</string>
 						<reference key="object" ref="200223341"/>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">Application</string>
@@ -372,7 +373,6 @@
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">188</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -392,6 +392,42 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/NSApplication.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">changeFontColor:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">changeFontColor:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">changeFontColor:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/NSObject.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">visualizeConstraintsForPickedView:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">visualizeConstraintsForPickedView:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">visualizeConstraintsForPickedView:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/NSWindow.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -493,6 +529,15 @@
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
+		<bool key="IBDocument.previouslyAttemptedUpgradeToXcode5">YES</bool>
+		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencyDefaults">
+			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
+			<real value="1080" key="NS.object.0"/>
+		</object>
+		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDevelopmentDependencies">
+			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.InterfaceBuilder3</string>
+			<integer value="4600" key="NS.object.0"/>
+		</object>
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 	</data>

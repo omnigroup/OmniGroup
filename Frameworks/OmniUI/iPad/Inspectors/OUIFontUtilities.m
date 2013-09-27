@@ -177,3 +177,10 @@ OUIFontSelection *OUICollectFontSelection(OUIInspectorSlice *self, id <NSFastEnu
     return result;
 }
 
+// Radar 15080687: Need API to determine if a font is dynamic type
+// This also catches things like +boldSystemFontOfSize
+BOOL OUIFontIsDynamicType(UIFont *font)
+{
+    return [font.fontName hasPrefix:@"."];
+}
+

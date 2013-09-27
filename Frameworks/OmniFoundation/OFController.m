@@ -427,16 +427,27 @@ static void _OFControllerCheckTerminated(void)
 
 - (void)crashWithException:(NSException *)exception mask:(NSUInteger)mask;
 {
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    NSString *numericBacktrace = [[exception userInfo] objectForKey:NSStackTraceKey];
-    NSString *symbolicBacktrace = numericBacktrace ? [OFCopySymbolicBacktraceForNumericBacktrace(numericBacktrace) autorelease] : @"No numeric backtrace found";
+    NSString *symbolicBacktrace = nil;
+
+    // Try the system method
+    NSArray *symbols = [exception callStackSymbols];
+    if ([symbols count] > 0) {
+        symbolicBacktrace = [symbols componentsJoinedByString:@"\n"];
+    }
+
+    // Otherwise, look for the info key and do it ourselves...
+    if (!symbolicBacktrace) {
+        NSString *numericBacktrace = [[exception userInfo] objectForKey:NSStackTraceKey];
+        if (![NSString isEmptyString:numericBacktrace])
+            symbolicBacktrace = [OFCopySymbolicBacktraceForNumericBacktrace(numericBacktrace) autorelease];
+    }
     
-    NSString *report = [NSString stringWithFormat:@"Exception raised:\n---------------------------\nMask: 0x%08lx\nName: %@\nReason: %@\nInfo:\n%@\nBacktrace:%@\n---------------------------",
+    if (!symbolicBacktrace)
+        symbolicBacktrace = @"No numeric backtrace found";
+    
+    NSString *report = [NSString stringWithFormat:@"Exception raised:\n---------------------------\nMask: 0x%08lx\nName: %@\nReason: %@\nInfo:\n%@\nBacktrace:\n%@\n---------------------------",
                         mask, [exception name], [exception reason], [exception userInfo], symbolicBacktrace];
-#else
-    NSString *report = [NSString stringWithFormat:@"Exception raised:\n---------------------------\nMask: 0x%08lx\nName: %@\nReason: %@\nInfo:\n%@\n---------------------------",
-                        mask, [exception name], [exception reason], [exception userInfo]];
-#endif
+
     [self crashWithReport:report];
 }
 

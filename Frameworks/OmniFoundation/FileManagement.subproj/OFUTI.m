@@ -185,7 +185,7 @@ static void EnumerateIdentifiersForTagInDictionary(NSDictionary *dictionary, NSS
 NSString *OFUTIForFileURLPreferringNative(NSURL *fileURL, NSError **outError)
 {
     if (![fileURL isFileURL])
-        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Argument to OFUTIForFileURL must be a file URL." userInfo:nil];
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Argument to OFUTIForFileURL must be a file URL, not %@", [fileURL absoluteString]] userInfo:nil];
     
     __autoreleasing NSNumber *isDirectory = nil;
     if (![fileURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:outError])

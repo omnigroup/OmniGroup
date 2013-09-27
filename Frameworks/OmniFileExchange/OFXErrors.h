@@ -13,6 +13,7 @@ enum {
     // OFXServerAccountType account validation
     OFXServerAccountCannotLoad = 1,
     OFXServerAccountNotConfigured,
+    OFXServerAccountLocationNotFound,
     
     OFXLocalAccountDocumentsDirectoryMissing,
     OFXCannotResolveLocalDocumentsURL,

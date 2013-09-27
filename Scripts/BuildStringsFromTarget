@@ -70,7 +70,9 @@ if [ -n "${LOCALIZED_RESOURCES_FOLDER_PATH-}" ]; then
 else
     # We're building a static library (for an iOS "framework", most likely)
     # Publish the results for the app to pick up.
-    RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/Resources/$PRODUCT_NAME/English.lproj"
+#   BASE_LOCALIZATION_NAME=`$SCRIPTS_DIR/GetProjectBaseLocalization $PROJECT_FILE_PATH`
+    BASE_LOCALIZATION_NAME="English"
+    RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/Resources/$PRODUCT_NAME/$BASE_LOCALIZATION_NAME.lproj"
 fi
 mkdir -p "$RESOURCE_DIR"
 

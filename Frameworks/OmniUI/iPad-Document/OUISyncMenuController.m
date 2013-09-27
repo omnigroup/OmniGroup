@@ -243,19 +243,27 @@ enum {
 {
     OBPRECONDITION(self.editing == NO); // Tapping rows doesn't select them in edit mode
     
-    [[OUIAppController controller] dismissPopover:_menuPopoverController animated:YES];
+    OUIAppController *controller = [OUIAppController controller];
+    [controller dismissPopover:_menuPopoverController animated:YES];
     
     if (indexPath.section == CloudSetupSection) {
-        OUICloudSetupViewController *setup = [[OUICloudSetupViewController alloc] init];
-        UIViewController *presentingViewController = self.presentingViewController;
-
-        if (_isExporting) {
-            [presentingViewController dismissViewControllerAnimated:YES completion:^{
-                [presentingViewController presentViewController:setup animated:YES completion:nil];
-            }];
+        
+        // Don't allow cloud setup in retail demo builds.
+        if ([controller isRunningRetailDemo]) {
+            [controller showFeatureDisabledForRetailDemoAlert];
         }
         else {
-            [presentingViewController presentViewController:setup animated:YES completion:nil];
+            OUICloudSetupViewController *setup = [[OUICloudSetupViewController alloc] init];
+            UIViewController *presentingViewController = self.presentingViewController;
+            
+            if (_isExporting) {
+                [presentingViewController dismissViewControllerAnimated:YES completion:^{
+                    [presentingViewController presentViewController:setup animated:YES completion:nil];
+                }];
+            }
+            else {
+                [presentingViewController presentViewController:setup animated:YES completion:nil];
+            }
         }
         return;
     }

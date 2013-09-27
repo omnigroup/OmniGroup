@@ -938,9 +938,10 @@ tryAgain:
 
 - (NSString *)_localRelativePathForFileURL:(NSURL *)fileURL;
 {
-    OBPRECONDITION(OFURLContainsURL(_account.localDocumentsURL, fileURL));
+    NSURL *localDocumentsURL = _account.localDocumentsURL;
+    OBASSERT(OFURLContainsURL(localDocumentsURL, fileURL));
     
-    return OFFileURLRelativePath(_account.localDocumentsURL, fileURL);
+    return OFFileURLRelativePath(localDocumentsURL, fileURL);
 }
 
 - (NSURL *)_URLForLocalRelativePath:(NSString *)relativePath isDirectory:(BOOL)isDirectory;

@@ -129,6 +129,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     
     UIBarButtonItem *_duplicateDocumentBarButtonItem;
     UIBarButtonItem *_exportBarButtonItem;
+    UIBarButtonItem *_moveBarButtonItem;
     UIBarButtonItem *_deleteBarButtonItem;
     UIBarButtonItem *_appTitleToolbarItem;
     UIButton *_appTitleToolbarButton;
@@ -1127,6 +1128,49 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     return NSLocalizedStringFromTableInBundle(@"Print", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view");
 }
 
+- (IBAction)move:(id)sender;
+{
+    if (!self.canPerformActions)
+        return;
+    
+    ODSScope *currentScope = self.selectedScope;
+
+    BOOL willAddNewFolder = !currentScope.isTrash;
+    
+    NSString *topLevelMenuTitle;
+    NSMutableArray *topLevelMenuOptions = [NSMutableArray array];
+
+    // "Move" options
+    NSMutableArray *moveOptions = [[NSMutableArray alloc] init];
+    NSString *moveMenuTitle = [self _menuTitleAfterAddingMoveOptions:moveOptions fromCurrentScope:currentScope willAddOtherOptions:willAddNewFolder];
+    
+    // Move submenu
+    if (willAddNewFolder && [moveOptions count] > 0) {
+        topLevelMenuTitle = NSLocalizedStringFromTableInBundle(@"Move", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view");
+        [topLevelMenuOptions addObject:[[OUIMenuOption alloc] initWithTitle:moveMenuTitle image:[UIImage imageNamed:@"OUIMenuItemMoveToScope"]
+                                                                    options:moveOptions destructive:NO action:nil]];
+    } else {
+        topLevelMenuTitle = moveMenuTitle;
+        [topLevelMenuOptions addObjectsFromArray:moveOptions];
+    }
+    
+    // New folder
+    OUIMenuOption *newFolderOption = nil;
+    if (willAddNewFolder) {
+        newFolderOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"New folder", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet title for making a new folder from the selected documents") image:[UIImage imageNamed:@"OUIMenuItemNewFolder"] action:^{
+            [self _makeFolderFromSelectedDocuments];
+        }];
+        [topLevelMenuOptions addObject:newFolderOption];
+    }
+    
+    OUIMenuController *menu = [[OUIMenuController alloc] initWithOptions:topLevelMenuOptions];
+    if (topLevelMenuTitle)
+        menu.title = topLevelMenuTitle;
+    menu.tintColor = self.navigationController.navigationBar.tintColor;
+    
+    [menu showMenuFromSender:sender];
+}
+
 - (IBAction)export:(id)sender;
 {
     if (!self.canPerformActions)
@@ -1155,34 +1199,16 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         }
     }
     
-    // "Move" options
-    NSMutableArray *moveOptions = [[NSMutableArray alloc] init];
-    NSString *moveMenuTitle = [self _menuTitleAfterAddingMoveOptions:moveOptions fromCurrentScope:currentScope willAddOtherOptions:(exportableFileItem != nil)];
-    
-    // New folder
-    OUIMenuOption *newFolderOption = nil;
-    if (!currentScope.isTrash && (self.selectedItemCount > 1)) {
-        newFolderOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"New folder", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet title for making a new folder from the selected documents") image:[UIImage imageNamed:@"OUIMenuItemNewFolder"] action:^{
-            [self _makeFolderFromSelectedDocuments];
-        }];
-    }
-    
     NSMutableArray *topLevelMenuOptions;
     NSString *topLevelMenuTitle;
     
     if (!exportableFileItem) {
-        topLevelMenuTitle = moveMenuTitle;
-        topLevelMenuOptions = moveOptions;
-        
-        if (newFolderOption)
-            [topLevelMenuOptions addObject:newFolderOption];
+        OBASSERT_NOT_REACHED("Should be disabled");
+        return;
     } else {
         // Single file export options
         topLevelMenuTitle = NSLocalizedStringFromTableInBundle(@"Actions", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view");
         topLevelMenuOptions = [[NSMutableArray alloc] init];
-        
-        // Move submenu
-        [topLevelMenuOptions addObject:[[OUIMenuOption alloc] initWithTitle:moveMenuTitle image:[UIImage imageNamed:@"OUIMenuItemMoveToScope"] options:moveOptions destructive:NO action:nil]];
         
         id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
         
@@ -2183,13 +2209,13 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
 - (NSString *)_menuTitleAfterAddingMoveOptions:(NSMutableArray *)options fromCurrentScope:(ODSScope *)currentScope willAddOtherOptions:(BOOL)willAddOtherOptions;
 {
-    NSMutableArray *otherScopes = [_documentStore.scopes mutableCopy];
-    [otherScopes removeObject:_documentStore.trashScope];
-    [otherScopes removeObject:_documentStore.templateScope];
-    [otherScopes sortUsingSelector:@selector(compareDocumentScope:)];
+    NSMutableArray *destinationScopes = [_documentStore.scopes mutableCopy];
+    [destinationScopes removeObject:_documentStore.trashScope];
+    [destinationScopes removeObject:_documentStore.templateScope];
+    [destinationScopes sortUsingSelector:@selector(compareDocumentScope:)];
     
     // Want to allow moving to other folders in a scope if the selection is in a subfolder right now.
-    //[otherScopes removeObject:currentScope];
+    //[destinationScopes removeObject:currentScope];
     
     // Don't allow moving items to the folder the are already in, or the subtrees defined by the possibly moving selection
     ODSFolderItem *currentFolder = _folderItem;
@@ -2201,7 +2227,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     else
         menuTitle = NSLocalizedStringFromTableInBundle(@"Move to...", @"OmniUIDocument", OMNI_BUNDLE, @"Share menu title");
     
-    for (ODSScope *scope in otherScopes) {
+    for (ODSScope *scope in destinationScopes) {
         NSMutableArray *folderOptions = [NSMutableArray array];
         [self _addMoveToFolderOptions:folderOptions candidateParentFolder:scope.rootFolder currentFolder:currentFolder excludedTreeFolders:selectedFolders];
         
@@ -2221,8 +2247,13 @@ static UIImage *ImageForScope(ODSScope *scope) {
                 [folderOptions insertObject:moveToScopeRootOption atIndex:0];
             }
             
-            OUIMenuOption *option = [[OUIMenuOption alloc] initWithTitle:scope.displayName image:scopeImage options:folderOptions destructive:NO action:nil];
-            [options addObject:option];
+            // If this is the only scope, don't wrap it up in another level of menus
+            if ([destinationScopes count] == 1) {
+                [options addObjectsFromArray:folderOptions];
+            } else {
+                OUIMenuOption *option = [[OUIMenuOption alloc] initWithTitle:scope.displayName image:scopeImage options:folderOptions destructive:NO action:nil];
+                [options addObject:option];
+            }
         } else if (currentFolder != scope.rootFolder) {
             // No valid folders in this scope, but the root is a valid destination. Make its root item selectable.
             OUIMenuOption *option = [OUIMenuOption optionWithTitle:scope.displayName image:scopeImage action:moveToScopeRootAction];
@@ -2413,6 +2444,10 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
             // We keep pointers to a few toolbar items that we need to update enabledness on.
             _exportBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIDocumentExport.png"] style:UIBarButtonItemStylePlain target:self action:@selector(export:)];
             _exportBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Export", @"OmniUIDocument", OMNI_BUNDLE, @"Export toolbar item accessibility label.");
+            
+            _moveBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIMenuItemFolder"] style:UIBarButtonItemStylePlain target:self action:@selector(move:)];
+            _moveBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Move", @"OmniUIDocument", OMNI_BUNDLE, @"Move toolbar item accessibility label.");
+
             _duplicateDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIDocumentDuplicate.png"] style:UIBarButtonItemStylePlain target:self action:@selector(duplicateDocument:)];
             _duplicateDocumentBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Duplicate", @"OmniUIDocument", OMNI_BUNDLE, @"Duplicate toolbar item accessibility label.");
         }
@@ -2427,10 +2462,12 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
         }
         
         _exportBarButtonItem.enabled = NO;
+        _exportBarButtonItem.enabled = NO;
         _duplicateDocumentBarButtonItem.enabled = NO;
         _deleteBarButtonItem.enabled = NO;
         
         [leftItems addObject:_exportBarButtonItem];
+        [leftItems addObject:_moveBarButtonItem];
         if (!self.selectedScope.isTrash) {
             [leftItems addObject:_duplicateDocumentBarButtonItem];
         }
@@ -2529,6 +2566,7 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
         NSUInteger count = self.selectedItemCount;
         if (count == 0) {
             _exportBarButtonItem.enabled = NO;
+            _moveBarButtonItem.enabled = NO;
             _duplicateDocumentBarButtonItem.enabled = NO;
             _deleteBarButtonItem.enabled = NO;
         } else {
@@ -2543,6 +2581,7 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
                 canExport = NO;
 
             _exportBarButtonItem.enabled = canExport;
+            _moveBarButtonItem.enabled = canExport;
             _duplicateDocumentBarButtonItem.enabled = YES;
             _deleteBarButtonItem.enabled = YES;
         }

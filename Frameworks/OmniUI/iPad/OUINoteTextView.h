@@ -9,10 +9,16 @@
 
 #import <UIKit/UITextView.h>
 
-@interface OUIEditableDataDetectingTextView : UITextView
+@interface OUINoteTextView : UITextView
 
 @property (nonatomic, copy) NSString *placeholder;
 @property (nonatomic) BOOL drawsPlaceholder;
+@property (nonatomic) CGFloat placeholderTopMargin; // Default is OUINoteTextViewPlacholderTopMarginAutomatic
+
 @property (nonatomic) BOOL drawsBorder;
 
 @end
+
+#pragma mark -
+
+extern CGFloat OUINoteTextViewPlacholderTopMarginAutomatic;

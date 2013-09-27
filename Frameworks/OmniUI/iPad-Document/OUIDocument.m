@@ -471,9 +471,10 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         // Instead, we should commit any partial edits, but leave the editor up.
         
         [self _willSave];
-        //[_window endEditing:YES];
         
+        // When saving, we don't end editing since the user might just be switching to another app quickly and coming right back (maybe to paste something at us). But here we are closing and should commit our edits and shut down the field editor. The edits should have been committed when we were backgrounded, but it is nicer to clean up any editor here before views get removed from the view hierarchy.
         UIWindow *window = [[OUIDocumentAppController controller] window];
+        [window endEditing:YES];
         [window layoutIfNeeded];
         
         // Make sure -setNeedsDisplay calls (provoked by -_willSave) have a chance to get flushed before we invalidate the document contents

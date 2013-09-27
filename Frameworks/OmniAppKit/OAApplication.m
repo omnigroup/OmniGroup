@@ -73,24 +73,6 @@ static NSImage *CautionIcon = nil;
     return omniApplication;
 }
 
-+ (void)workAroundCocoaScriptingLazyInitBug;
-{
-    // This is a workaround for <rdar://problem/7257705>.
-    // Cocoa scripting initialization is too lazy, and things are not set up correctly for custom receivers of the 'open' command.
-    // The symptom is that if your first interaction with the application is:
-    // 
-    //    tell application "OmniFocus"
-    //        open quick entry
-    //    end tell
-    //        
-    // that it just fails (without error on 10.6, with an error on 10.5)
-    // 
-    // Any other event not in the required suite (even one implemented by a scripting addition) kicks things into the working state.
-    // Forcing the shared instance of the script suite registry to come into existance also works around the problem. (This costs us a few hundredths of a second at startup.)
-
-    [NSScriptSuiteRegistry sharedScriptSuiteRegistry];
-}
-
 - (void)dealloc;
 {
     [exceptionCheckpointDate release];
@@ -105,8 +87,6 @@ static NSImage *CautionIcon = nil;
     sheetQueue = [[NSMutableArray alloc] init];
 
     [super finishLaunching];
-
-    [[self class] workAroundCocoaScriptingLazyInitBug];
 }
 
 - (void)run;

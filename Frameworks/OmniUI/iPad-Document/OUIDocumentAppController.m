@@ -414,7 +414,7 @@ static unsigned SyncAgentRunningAccountsContext;
     };
 
     if (_document) {
-        // If we have a document open, wait for it to close before starting to open the new one.
+        // If we have a document open, wait for it to close before starting to open the new one. This can happen if the user backgrounds the app and then taps on a document in Mail.
         doOpen = [doOpen copy];
 
         OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
@@ -669,8 +669,14 @@ static unsigned SyncAgentRunningAccountsContext;
         __weak OUIDocumentAppController *weakSelf = self;
         OUIMenuOption *cloudSetupOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Cloud Setup", @"OmniUIDocument", OMNI_BUNDLE, @"App menu item title") image:[[UIImage imageNamed:@"OUIMenuItemCloudSetUp"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] action:^{
             
-            if (![weakSelf.documentPicker.delegate respondsToSelector:@selector(documentPickerPresentCloudSetup:)] || ![weakSelf.documentPicker.delegate documentPickerPresentCloudSetup:weakSelf.documentPicker]) {
-                [weakSelf.window.rootViewController presentViewController:[[OUICloudSetupViewController alloc] init] animated:YES completion:NULL];
+            // Don't allow cloud setup in retail demo builds.
+            if ([self isRunningRetailDemo]) {
+                [self showFeatureDisabledForRetailDemoAlert];
+            }
+            else {
+                if (![weakSelf.documentPicker.delegate respondsToSelector:@selector(documentPickerPresentCloudSetup:)] || ![weakSelf.documentPicker.delegate documentPickerPresentCloudSetup:weakSelf.documentPicker]) {
+                    [weakSelf.window.rootViewController presentViewController:[[OUICloudSetupViewController alloc] init] animated:YES completion:NULL];
+                }
             }
         }];
         [options addObject:cloudSetupOption];

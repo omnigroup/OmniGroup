@@ -128,12 +128,7 @@ static OFRunLoopQueueProcessor *mainThreadProcessor = nil;
 - (void)processQueueUntilEmpty;
 {
     [self disable];
-    NS_DURING {
-        [super processQueueUntilEmpty];
-    } NS_HANDLER {
-        [self enable];
-        [localException raise];
-    } NS_ENDHANDLER;
+    [super processQueueUntilEmpty];
     [self enable];
 }
 

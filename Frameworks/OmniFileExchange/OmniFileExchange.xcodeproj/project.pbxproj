@@ -29,6 +29,10 @@
 		34119024170CB84C008332E5 /* OFXContentIdentifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 34119023170CB84C008332E5 /* OFXContentIdentifier.m */; };
 		34119025170CB84C008332E5 /* OFXContentIdentifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 34119023170CB84C008332E5 /* OFXContentIdentifier.m */; };
 		3420CA891682491800553D1C /* OFXConflictTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3420CA881682491800553D1C /* OFXConflictTestCase.m */; };
+		3422A9B817F4A9D200ACA42E /* OFXPersistentPropertyList.h in Headers */ = {isa = PBXBuildFile; fileRef = 3422A9B617F4A9D200ACA42E /* OFXPersistentPropertyList.h */; };
+		3422A9B917F4A9D200ACA42E /* OFXPersistentPropertyList.h in Headers */ = {isa = PBXBuildFile; fileRef = 3422A9B617F4A9D200ACA42E /* OFXPersistentPropertyList.h */; };
+		3422A9BA17F4A9D200ACA42E /* OFXPersistentPropertyList.m in Sources */ = {isa = PBXBuildFile; fileRef = 3422A9B717F4A9D200ACA42E /* OFXPersistentPropertyList.m */; };
+		3422A9BB17F4A9D200ACA42E /* OFXPersistentPropertyList.m in Sources */ = {isa = PBXBuildFile; fileRef = 3422A9B717F4A9D200ACA42E /* OFXPersistentPropertyList.m */; };
 		343BE00516E7BAEF0060AFD5 /* OFXContainerScan.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BE00316E7BAEE0060AFD5 /* OFXContainerScan.h */; };
 		343BE00616E7BAEF0060AFD5 /* OFXContainerScan.h in Headers */ = {isa = PBXBuildFile; fileRef = 343BE00316E7BAEE0060AFD5 /* OFXContainerScan.h */; };
 		343BE00716E7BAEF0060AFD5 /* OFXContainerScan.m in Sources */ = {isa = PBXBuildFile; fileRef = 343BE00416E7BAEF0060AFD5 /* OFXContainerScan.m */; };
@@ -286,6 +290,8 @@
 		34119020170CB816008332E5 /* OFXContentIdentifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXContentIdentifier.h; sourceTree = SOURCE_ROOT; };
 		34119023170CB84C008332E5 /* OFXContentIdentifier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXContentIdentifier.m; sourceTree = SOURCE_ROOT; };
 		3420CA881682491800553D1C /* OFXConflictTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXConflictTestCase.m; sourceTree = "<group>"; };
+		3422A9B617F4A9D200ACA42E /* OFXPersistentPropertyList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXPersistentPropertyList.h; sourceTree = SOURCE_ROOT; };
+		3422A9B717F4A9D200ACA42E /* OFXPersistentPropertyList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXPersistentPropertyList.m; sourceTree = SOURCE_ROOT; };
 		343BE00316E7BAEE0060AFD5 /* OFXContainerScan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXContainerScan.h; sourceTree = SOURCE_ROOT; };
 		343BE00416E7BAEF0060AFD5 /* OFXContainerScan.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXContainerScan.m; sourceTree = SOURCE_ROOT; };
 		3441607116B07DBF00E917F5 /* OFXServerAccountValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXServerAccountValidator.h; sourceTree = SOURCE_ROOT; };
@@ -689,6 +695,8 @@
 				340ECC9017A1882400CABA13 /* OFXConnection.m */,
 				349E084617B0CEE100495835 /* OFXPropertyListCache.h */,
 				349E084717B0CEE100495835 /* OFXPropertyListCache.m */,
+				3422A9B617F4A9D200ACA42E /* OFXPersistentPropertyList.h */,
+				3422A9B717F4A9D200ACA42E /* OFXPersistentPropertyList.m */,
 				34FF45FB17B19F0B00E6AFCA /* OFXSyncClient.h */,
 				34FF45FC17B19F0B00E6AFCA /* OFXSyncClient.m */,
 			);
@@ -877,6 +885,7 @@
 				347601C016C4841E00675597 /* OFXFileItemTransfers.h in Headers */,
 				3452DE9816C5A3F900C83DB5 /* OFXRegistrationTable.h in Headers */,
 				340135B816DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.h in Headers */,
+				3422A9B817F4A9D200ACA42E /* OFXPersistentPropertyList.h in Headers */,
 				340135C416DBEABC00BCC654 /* OFXFileSnapshotUploadRenameTransfer.h in Headers */,
 				340135CE16DC1B9B00BCC654 /* OFXUploadRenameFileSnapshot.h in Headers */,
 				343BE00516E7BAEF0060AFD5 /* OFXContainerScan.h in Headers */,
@@ -937,6 +946,7 @@
 				347601C116C4841E00675597 /* OFXFileItemTransfers.h in Headers */,
 				3452DE9916C5A3F900C83DB5 /* OFXRegistrationTable.h in Headers */,
 				340135B916DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.h in Headers */,
+				3422A9B917F4A9D200ACA42E /* OFXPersistentPropertyList.h in Headers */,
 				340135C516DBEABC00BCC654 /* OFXFileSnapshotUploadRenameTransfer.h in Headers */,
 				340135CF16DC1B9B00BCC654 /* OFXUploadRenameFileSnapshot.h in Headers */,
 				343BE00616E7BAEF0060AFD5 /* OFXContainerScan.h in Headers */,
@@ -1176,6 +1186,7 @@
 				34FF8D0B16A759390089ED25 /* OFXFileSnapshotContentsActions.m in Sources */,
 				34FF8D1116A86FDB0089ED25 /* OFXDownloadFileSnapshot.m in Sources */,
 				34A847DE16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.m in Sources */,
+				3422A9BA17F4A9D200ACA42E /* OFXPersistentPropertyList.m in Sources */,
 				347601B616C4741D00675597 /* OFXFileSnapshotDeleteTransfer.m in Sources */,
 				347601C216C4841E00675597 /* OFXFileItemTransfers.m in Sources */,
 				3452DE9A16C5A3F900C83DB5 /* OFXRegistrationTable.m in Sources */,
@@ -1224,6 +1235,7 @@
 				34FF8D0C16A759390089ED25 /* OFXFileSnapshotContentsActions.m in Sources */,
 				34FF8D1216A86FDB0089ED25 /* OFXDownloadFileSnapshot.m in Sources */,
 				34A847DF16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.m in Sources */,
+				3422A9BB17F4A9D200ACA42E /* OFXPersistentPropertyList.m in Sources */,
 				347601B716C4741D00675597 /* OFXFileSnapshotDeleteTransfer.m in Sources */,
 				347601C316C4841E00675597 /* OFXFileItemTransfers.m in Sources */,
 				3452DE9B16C5A3F900C83DB5 /* OFXRegistrationTable.m in Sources */,

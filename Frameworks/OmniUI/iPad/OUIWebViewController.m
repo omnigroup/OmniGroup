@@ -104,30 +104,50 @@ RCS_ID("$Id$")
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType;
 {
+    NSURL *requestURL = [request URL];
+    
     if (navigationType == UIWebViewNavigationTypeLinkClicked) {
 #ifdef DEBUG_kc
-        NSLog(@"WebView link: %@", [request URL]);
+        NSLog(@"WebView link: %@", requestURL);
 #endif
-	NSString *scheme = [[[request URL] scheme] lowercaseString];
+        
+	NSString *scheme = [[requestURL scheme] lowercaseString];
 	
+        // Mailto link
 	if ([scheme isEqualToString:@"mailto"]) {
 	    MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
 	    controller.mailComposeDelegate = self;
-	    [controller setToRecipients:[NSArray arrayWithObject:[[request URL] resourceSpecifier]]];
+	    [controller setToRecipients:[NSArray arrayWithObject:[requestURL resourceSpecifier]]];
 	    [self presentViewController:controller animated:YES completion:nil];
             return NO; // Don't load this in the WebView
-	} else if ([scheme isEqualToString:@"x-safari"]) { // Hand off x-safari URLs to the OS
-            NSURL *safariURL = [NSURL URLWithString:[[request URL] resourceSpecifier]];
+	}
+        
+        // Explicitly kick over to Safari
+        if ([scheme isEqualToString:@"x-safari"]) { // Hand off x-safari URLs to the OS
+            NSURL *safariURL = [NSURL URLWithString:[requestURL resourceSpecifier]];
             if (safariURL != nil && [[UIApplication sharedApplication] openURL:safariURL])
                 return NO; // Don't load this in the WebView
-        } else {
-            if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:nil handleOpenURL:[request URL]])
+        }
+        
+        // Implicitly kick web URLs not pointing to *.omnigroup.com over to Safari
+        BOOL isWebURL = ![requestURL isFileURL];
+        NSURLComponents *components = [NSURLComponents componentsWithURL:requestURL resolvingAgainstBaseURL:NO];
+        NSString *host = [components.host lowercaseString];
+        
+        if (isWebURL && ([host hasSuffix:@"omnigroup.com"] == NO)) {
+            // Open in Safari.
+            if ([[UIApplication sharedApplication] openURL:requestURL])
+                return NO;
+        }
+
+        // Special URL
+        if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:nil handleOpenURL:requestURL]) {
                 return NO; // Don't load this in the WebView
         }
     }
 
     // Go ahead and load this in the WebView
-    [self _updateBarButtonItemForURL:[request URL]];
+    [self _updateBarButtonItemForURL:requestURL];
 
     
     return YES;

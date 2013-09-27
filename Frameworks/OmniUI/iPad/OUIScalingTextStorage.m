@@ -10,6 +10,7 @@
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniAppKit/OATextAttributes.h>
 #import <OmniUI/NSTextStorage-OUIExtensions.h>
+#import <OmniUI/OUIFontUtilities.h>
 
 RCS_ID("$Id$");
 
@@ -23,6 +24,10 @@ RCS_ID("$Id$");
 
 static void _scaleAttributes(NSMutableDictionary *scaledAttributes, NSDictionary *originalAttributes, CGFloat scale)
 {
+    // Make sure dynamic type fonts don't make it in here
+    OBPRECONDITION(OUIFontIsDynamicType(originalAttributes[NSFontAttributeName]) == NO);
+    OBPRECONDITION(OUIFontIsDynamicType([originalAttributes[OAFontDescriptorAttributeName] font]) == NO);
+
     // This gets called in our -fixAttributesInRange: where we might have a OAFontDescriptor specifying Helvetica Neue but with a NSFont that has already undergone font substitution for the characters in the given range ("STHeitiSC-Light" for example).
     // So, here we prefer the face from the font to the font descriptor, assuming the underlying text storage has already done font descriptor->font descriptor if it wanted to. We prefer the size from the font scriptor, though, to avoid repeated scaling of the font.
 
@@ -140,6 +145,10 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
  */
 - (void)setAttributes:(NSDictionary *)attributes range:(NSRange)attributeRange;
 {
+    // Make sure dynamic type fonts don't make it in here
+    OBPRECONDITION(OUIFontIsDynamicType(attributes[NSFontAttributeName]) == NO);
+    OBPRECONDITION(OUIFontIsDynamicType([attributes[OAFontDescriptorAttributeName] font]) == NO);
+    
     // This also gets called to set typing attributes, so we can't reject it. We want font edits to normally go through our text spans.
     [_backingStore setAttributes:attributes range:attributeRange];
     [self edited:NSTextStorageEditedAttributes range:attributeRange changeInLength:0];
@@ -162,6 +171,9 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
         if (underlyingFontDescriptor) {
             // Just set the font descriptor -- we assume that if the underlying text storage knows about this, it will fix its own font.
             if (requestedFont) {
+                // Make sure dynamic type fonts don't make it in here
+                OBASSERT(OUIFontIsDynamicType(requestedFont) == NO);
+
                 OAFontDescriptor *updatedFontDescriptor = [[OAFontDescriptor alloc] initWithFont:[requestedFont fontWithSize:[underlyingFontDescriptor size]]];
                 attributesToSetOnUnderlyingTextStorage[OAFontDescriptorAttributeName] = updatedFontDescriptor;
             } else {
@@ -174,6 +186,7 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
         UIFont *underlyingFont = originalUnderlyingAttributes[NSFontAttributeName];
         if (underlyingFont) {
             if (requestedFont) {
+                OBASSERT(OUIFontIsDynamicType(underlyingFont) == NO);
                 UIFont *updatedFont = [requestedFont fontWithSize:[underlyingFont pointSize]];
                 attributesToSetOnUnderlyingTextStorage[NSFontAttributeName] = updatedFont;
             } else {

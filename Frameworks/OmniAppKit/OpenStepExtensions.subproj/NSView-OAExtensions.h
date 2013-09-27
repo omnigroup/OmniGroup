@@ -1,4 +1,4 @@
-// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,11 +22,6 @@
 // Coordinate conversion
 - (NSPoint)convertPointFromScreen:(NSPoint)point;
 - (NSPoint)convertPointToScreen:(NSPoint)point;
-
-// Snapping to base coordinates.
-- (NSPoint)floorSnappedPoint:(NSPoint)point;
-- (NSSize)floorSnappedSize:(NSSize)size;
-- (NSRect)floorSnappedRect:(NSRect)rect;
 
 // Drawing
 + (void)drawRoundedRect:(NSRect)rect cornerRadius:(CGFloat)radius color:(NSColor *)color isFilled:(BOOL)isFilled;

@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <Foundation/Foundation.h>
+#import <Foundation/NSDictionary.h>
 
 @interface OFOrderedMutableDictionary : NSMutableDictionary
 

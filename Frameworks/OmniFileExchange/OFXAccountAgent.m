@@ -849,6 +849,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     NSMutableArray *containerFileInfos = [NSMutableArray new];
     ODAVFileInfo *accountFileInfo;
     
+    ODAVFileInfo *remoteTemporaryDirectoryFileInfo;
     for (ODAVFileInfo *fileInfo in fileInfos) {
         NSURL *fileURL = fileInfo.originalURL;
         NSString *pathExtension = [fileURL pathExtension];
@@ -860,6 +861,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
         else if ([[fileURL lastPathComponent] isEqual:OFXInfoFileName]) {
             accountFileInfo = fileInfo;
         } else if ([[fileURL lastPathComponent] isEqual:RemoteTemporaryDirectoryName]) {
+            remoteTemporaryDirectoryFileInfo = fileInfo;
             // skip the temporary directory
         } else {
             NSLog(@"Unrecognized item in remote account %@", [fileInfo shortDescription]);
@@ -867,15 +869,14 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     }
     
     if (!_info) {
-        NSURL *accountInfoCacheURL = [_localAccountDirectory URLByAppendingPathComponent:@"InfoCache.plist"];
-        _info = [[OFXAccountInfo alloc] initWithLocalAccountInfoCache:accountInfoCacheURL remoteAccountURL:[self _remoteSyncDirectory] temporaryDirectoryURL:[self _remoteTemporaryDirectory] clientParameters:_clientParameters error:outError];
+        _info = [[OFXAccountInfo alloc] initWithLocalAccountDirectory:_localAccountDirectory remoteAccountURL:[self _remoteSyncDirectory] temporaryDirectoryURL:[self _remoteTemporaryDirectory] clientParameters:_clientParameters error:outError];
         if (!_info) {
             OFXError(outError, OFXAccountScanFailed, @"Error creating account info", nil);
             return nil;
         }
     }
     
-    if (![_info updateWithConnection:connection accountFileInfo:accountFileInfo clientFileInfos:clientFileInfos serverDate:serverDate error:outError]) {
+    if (![_info updateWithConnection:connection accountFileInfo:accountFileInfo clientFileInfos:clientFileInfos remoteTemporaryDirectoryFileInfo:remoteTemporaryDirectoryFileInfo serverDate:serverDate error:outError]) {
         OFXError(outError, OFXAccountScanFailed, @"Error updating account info", nil);
         return nil;
     }

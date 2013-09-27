@@ -18,6 +18,7 @@
 #import "OFXDAVUtilities.h"
 #import "OFXPropertyListCache.h"
 #import "OFXSyncClient.h"
+#import "OFXPersistentPropertyList.h"
 
 RCS_ID("$Id$")
 
@@ -27,9 +28,13 @@ static NSInteger OFXAccountInfoDebug = INT_MAX;
         NSLog(@"ACCT INFO %@: " format, [self shortDescription], ## __VA_ARGS__); \
 } while (0)
 
+static NSString * const LocalStatePropertyListName = @"LocalState.plist";
+static NSString * const LocalState_LastRemoteTemporaryFileCleanupDate = @"LastTemporaryFileCleanupDate";
+
 @implementation OFXAccountInfo
 {
     OFXPropertyListCache *_propertyListCache;
+    OFXPersistentPropertyList *_localStatePropertyList;
     
     NSURL *_temporaryDirectoryURL;
     ODAVFileInfo *_accountFileInfo;
@@ -52,9 +57,9 @@ static OFVersionNumber *MinimumCompatibleAccountVersionNumber;
     MinimumCompatibleAccountVersionNumber = [[OFVersionNumber alloc] initWithVersionString:@"2"];
 }
 
-- initWithLocalAccountInfoCache:(NSURL *)localAccountInfoCacheURL remoteAccountURL:(NSURL *)remoteAccountURL temporaryDirectoryURL:(NSURL *)temporaryDirectoryURL clientParameters:(OFXAccountClientParameters *)clientParameters error:(NSError **)outError;
+- initWithLocalAccountDirectory:(NSURL *)localAccountDirectoryURL remoteAccountURL:(NSURL *)remoteAccountURL temporaryDirectoryURL:(NSURL *)temporaryDirectoryURL clientParameters:(OFXAccountClientParameters *)clientParameters error:(NSError **)outError;
 {
-    OBPRECONDITION([localAccountInfoCacheURL isFileURL]);
+    OBPRECONDITION([localAccountDirectoryURL isFileURL]);
     OBPRECONDITION(remoteAccountURL);
     OBPRECONDITION(![remoteAccountURL isFileURL]);
     OBPRECONDITION(temporaryDirectoryURL);
@@ -64,7 +69,11 @@ static OFVersionNumber *MinimumCompatibleAccountVersionNumber;
     if (!(self = [super init]))
         return nil;
     
-    _propertyListCache = [[OFXPropertyListCache alloc] initWithCacheFileURL:localAccountInfoCacheURL remoteTemporaryDirectoryURL:temporaryDirectoryURL remoteBaseDirectoryURL:remoteAccountURL];
+    NSURL *accountInfoCacheURL = [localAccountDirectoryURL URLByAppendingPathComponent:@"InfoCache.plist"];
+    _propertyListCache = [[OFXPropertyListCache alloc] initWithCacheFileURL:accountInfoCacheURL remoteTemporaryDirectoryURL:temporaryDirectoryURL remoteBaseDirectoryURL:remoteAccountURL];
+    
+    NSURL *localStateURL = [localAccountDirectoryURL URLByAppendingPathComponent:LocalStatePropertyListName];
+    _localStatePropertyList = [[OFXPersistentPropertyList alloc] initWithFileURL:localStateURL];
     
     _remoteAccountURL = [remoteAccountURL copy];
     
@@ -187,7 +196,7 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
     return YES;
 }
 
-- (BOOL)updateWithConnection:(OFXConnection *)connection accountFileInfo:(ODAVFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos serverDate:(NSDate *)serverDate error:(NSError **)outError;
+- (BOOL)updateWithConnection:(OFXConnection *)connection accountFileInfo:(ODAVFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos remoteTemporaryDirectoryFileInfo:(ODAVFileInfo *)remoteTemporaryDirectoryFileInfo serverDate:(NSDate *)serverDate error:(NSError **)outError;
 {
     if (![self _updateAccountInfo:accountFileInfo serverDate:serverDate withConnection:connection error:outError])
         return NO;
@@ -267,6 +276,10 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
     _clientByIdentifier = [clientByIdentifier copy];
     DEBUG_CLIENT(2, @"Client by identifier now %@", _clientByIdentifier);
     
+    // Periodically clean up leaked remote temporary files
+    if (remoteTemporaryDirectoryFileInfo)
+        [self _cleanupRemoteTemporaryDirectory:remoteTemporaryDirectoryFileInfo connection:connection];
+    
     return YES;
 }
 
@@ -340,6 +353,36 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
     }
 
     return resultClientByIdentifier;
+}
+
+- (void)_cleanupRemoteTemporaryDirectory:(ODAVFileInfo *)remoteTemporaryDirectoryFileInfo connection:(ODAVConnection *)connection;
+{
+    OBPRECONDITION(remoteTemporaryDirectoryFileInfo);
+    
+    NSDate *lastCleanup = _localStatePropertyList[LocalState_LastRemoteTemporaryFileCleanupDate];
+    if (lastCleanup && [lastCleanup timeIntervalSinceNow] < _clientParameters.remoteTemporaryFileCleanupInterval)
+        // Only need to do this once in a while
+        return;
+    
+    __autoreleasing NSError *fileInfoError;
+    ODAVMultipleFileInfoResult *result = [connection synchronousDirectoryContentsAtURL:remoteTemporaryDirectoryFileInfo.originalURL withETag:nil error:&fileInfoError];
+    if (!result) {
+        [fileInfoError log:@"Error checking remote temporary directory contents at %@", remoteTemporaryDirectoryFileInfo.originalURL];
+        return;
+    }
+    
+    // Update our last-tried time no matter whether we delete anything or not.
+    _localStatePropertyList[LocalState_LastRemoteTemporaryFileCleanupDate] = [NSDate date];
+    
+    NSTimeInterval staleInterval = _clientParameters.remoteTemporaryFileCleanupInterval; // We use this for both the check interval and the stale age
+    NSDate *serverDate = result.serverDate;
+    for (ODAVFileInfo *fileInfo in result.fileInfos) {
+        if ([serverDate timeIntervalSinceDate:fileInfo.lastModifiedDate] > staleInterval) {
+            // Removing stale files should be relatively rare since during normal operations we should clean up after ourselves. Log when we do this.
+            NSLog(@"Removing stale temporary file at %@ with modification date %@ vs server date of %@", fileInfo.originalURL, fileInfo.lastModifiedDate, serverDate);
+            [connection deleteURL:fileInfo.originalURL withETag:nil completionHandler:nil];
+        }
+    }
 }
 
 @end

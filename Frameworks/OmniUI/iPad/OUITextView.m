@@ -19,6 +19,7 @@
 #import <OmniUI/OUISingleViewInspectorPane.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniUI/OUITextSelectionSpan.h>
+#import <OmniUI/OUIFontUtilities.h>
 #import <OmniFoundation/OFGeometry.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
@@ -985,6 +986,10 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
         return self.selectedRange.length > 0;
     
     if (action == @selector(moveUpAtTop:)) {
+        // If we have marked text, then the keyboard input system should get this (like via the Japanese-Kana keyboard)
+        if (self.markedTextRange)
+            return NO;
+        
         // For now, we handle all up/down cursor motion, due to 14962103: UITextView doesn't support up/down arrow for moving through lines
         return YES;
 #if 0
@@ -999,6 +1004,10 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
 #endif
     }
     if (action == @selector(moveDownAtBottom:)) {
+        // If we have marked text, then the keyboard input system should get this (like via the Japanese-Kana keyboard)
+        if (self.markedTextRange)
+            return NO;
+
         // For now, we handle all up/down cursor motion, due to 14962103: UITextView doesn't support up/down arrow for moving through lines
         return YES;
 #if 0
@@ -1013,12 +1022,20 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
 #endif
     }
     if (action == @selector(moveRightAtEnd:)) {
+        // If we have marked text, then the keyboard input system should get this (like via the Japanese-Kana keyboard)
+        if (self.markedTextRange)
+            return NO;
+
         if (![self.delegate respondsToSelector:@selector(textViewMoveRightAtEnd:)])
             return NO;
         UITextPosition *position = self.selectedTextRange.start;
         return [self comparePosition:position toPosition:self.endOfDocument] == NSOrderedSame;
     }
     if (action == @selector(moveLeftAtBeginning:)) {
+        // If we have marked text, then the keyboard input system should get this (like via the Japanese-Kana keyboard)
+        if (self.markedTextRange)
+            return NO;
+
         if (![self.delegate respondsToSelector:@selector(textViewMoveLeftAtBeginning:)])
             return NO;
         UITextPosition *position = self.selectedTextRange.start;
@@ -1212,6 +1229,13 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
                 [result appendAttributedString:attributedString];
             }
         });
+        
+        [result enumerateAttribute:NSFontAttributeName inRange:NSMakeRange(0, [result length]) options:0 usingBlock:^(UIFont *font, NSRange range, BOOL *stop) {
+            // Text pasted from Notes will have dynamic type fonts, but we want to control our sizes in our document-based apps. Might need a setting on OUITextView for clients that *do* want dynamic type.
+            if (OUIFontIsDynamicType(font)) {
+                [result removeAttribute:NSFontAttributeName range:range];
+            }
+        }];
         
         attributedString = [result copy];
     }

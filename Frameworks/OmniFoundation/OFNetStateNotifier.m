@@ -327,6 +327,9 @@ static NSInteger OFNetStateNotifierDebug;
     
     // Called when our -resolveWithTimeout: call finishes. We shuld have received -netServiceDidResolveAddress: or -netService:didNotResolve: already
     DEBUG_NOTIFIER(2, @"service did stop %@, entry %@", service, entry);
+    
+    // We ignore entries that are still resolving, so we need to update again now that this one has finished.
+    [self _queueUpdateState];
 }
 
 - (void)netService:(NSNetService *)service didUpdateTXTRecordData:(NSData *)data;
@@ -443,7 +446,7 @@ static const NSTimeInterval kUpdateStateCoalesceInterval = 0.25;
         }
         [entries sortUsingSelector:@selector(comparyByDiscoveryTimeInterval:)];
         
-        DEBUG_NOTIFIER(0, @"Updating state based on entries:\n%@", [entries arrayByPerformingSelector:@selector(shortDescription)]);
+        DEBUG_NOTIFIER(0, @"Updating state based on monitored groups %@ and entries:\n%@", [[_monitoredGroupIdentifiers allObjects] sortedArrayUsingSelector:@selector(compare:)], [entries arrayByPerformingSelector:@selector(shortDescription)]);
     }
     
     /*
@@ -461,32 +464,45 @@ static const NSTimeInterval kUpdateStateCoalesceInterval = 0.25;
     
     for (NSNetService *service in _serviceToEntry) {
         OFNetStateRegistrationEntry *entry = [_serviceToEntry objectForKey:service];
-        if (!entry.resolveStopped)
+        DEBUG_NOTIFIER(2, @"  looking for updates for entry %@", [entry shortDescription]);
+
+        if (!entry.resolveStopped) {
+            DEBUG_NOTIFIER(2, @"  still resolving");
             continue;
+        }
         
         NSDictionary *txtRecord = entry.txtRecord;
-        if (!txtRecord)
+        if (!txtRecord) {
             // Failed to resolve or we aren't even interested in it.
+            DEBUG_NOTIFIER(2, @"  no TXT record -- failed to resolve or we haven't asked it to");
             continue;
+        }
         
         // Ignore registrations that are from the same member (possibly more than one in the same process, so this is not a host check).
         NSString *memberIdentifier = txtRecord[OFNetStateRegistrationMemberIdentifierKey];
-        if ([NSString isEmptyString:memberIdentifier] || [_memberIdentifier isEqual:memberIdentifier])
+        if ([NSString isEmptyString:memberIdentifier] || [_memberIdentifier isEqual:memberIdentifier]) {
+            DEBUG_NOTIFIER(2, @"  no member identifier (or it is us)");
             continue;
+        }
         
         // Ignore invalid TXT records, or those from groups we don't care about.
         NSString *groupIdentifier = txtRecord[OFNetStateRegistrationGroupIdentifierKey];
-        if ([NSString isEmptyString:groupIdentifier] || [_monitoredGroupIdentifiers member:groupIdentifier] == nil)
+        if ([NSString isEmptyString:groupIdentifier] || [_monitoredGroupIdentifiers member:groupIdentifier] == nil) {
+            DEBUG_NOTIFIER(2, @"  no group identifier, or it is not a monitored group");
             continue;
+        }
         
         // Ignore registrations that haven't published a state yet. An empty string is considered a valid state, unlike the member/group strings (might be a list of document identifiers, so the empty string would be "no documents").
         NSString *state = txtRecord[OFNetStateRegistrationStateKey];
-        if (!state)
+        if (!state) {
+            DEBUG_NOTIFIER(2, @"  no state");
             continue;
+        }
         
         NSString *version = txtRecord[OFNetStateRegistrationVersionKey];
         if (!version) {
             OBASSERT_NOT_REACHED("Bad client? Should include a version if there is a state");
+            DEBUG_NOTIFIER(2, @"  no version");
             continue;
         }
         
@@ -495,6 +511,8 @@ static const NSTimeInterval kUpdateStateCoalesceInterval = 0.25;
             DEBUG_NOTIFIER(1, @"State version of service %@ changed from %@ to %@", service, version, reportedVersion);
             entry.reportedVersion = version;
             changed = YES;
+        } else {
+            DEBUG_NOTIFIER(2, @"  reported version hasn't changed");
         }
     }
     

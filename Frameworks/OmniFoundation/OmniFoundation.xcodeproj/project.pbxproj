@@ -106,6 +106,8 @@
 		3448244E17AB148200889E8F /* OFBackgroundActivity.h in Headers */ = {isa = PBXBuildFile; fileRef = 3448244B17AB148200889E8F /* OFBackgroundActivity.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3448244F17AB148200889E8F /* OFBackgroundActivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 3448244C17AB148200889E8F /* OFBackgroundActivity.m */; };
 		3448245017AB148200889E8F /* OFBackgroundActivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 3448244C17AB148200889E8F /* OFBackgroundActivity.m */; };
+		344A91AB17F174870074151F /* NSScriptSuiteRegistry-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 344A91A917F174870074151F /* NSScriptSuiteRegistry-OFExtensions.h */; };
+		344A91AC17F174870074151F /* NSScriptSuiteRegistry-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 344A91AA17F174870074151F /* NSScriptSuiteRegistry-OFExtensions.m */; };
 		344AD00C172740D2004B30B1 /* NSURL-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 344AD00A172740D2004B30B1 /* NSURL-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		344AD00D172740D2004B30B1 /* NSURL-OFExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 344AD00A172740D2004B30B1 /* NSURL-OFExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		344AD00E172740D2004B30B1 /* NSURL-OFExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 344AD00B172740D2004B30B1 /* NSURL-OFExtensions.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
@@ -1331,6 +1333,8 @@
 		343E5FBA0F77E69500F9982D /* OFXMLQName.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXMLQName.m; sourceTree = "<group>"; };
 		3448244B17AB148200889E8F /* OFBackgroundActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFBackgroundActivity.h; sourceTree = "<group>"; };
 		3448244C17AB148200889E8F /* OFBackgroundActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFBackgroundActivity.m; sourceTree = "<group>"; };
+		344A91A917F174870074151F /* NSScriptSuiteRegistry-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSScriptSuiteRegistry-OFExtensions.h"; sourceTree = "<group>"; };
+		344A91AA17F174870074151F /* NSScriptSuiteRegistry-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSScriptSuiteRegistry-OFExtensions.m"; sourceTree = "<group>"; };
 		344AD00A172740D2004B30B1 /* NSURL-OFExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL-OFExtensions.h"; sourceTree = "<group>"; };
 		344AD00B172740D2004B30B1 /* NSURL-OFExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL-OFExtensions.m"; sourceTree = "<group>"; };
 		344D08BA1190D47300264D89 /* libOmniFoundation.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniFoundation.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2569,6 +2573,8 @@
 				34B4392D0AED91F8002FB0E1 /* NSScriptCommand-OFExtensions.m */,
 				3431F4F20CD24BBE000D6E70 /* NSScriptObjectSpecifier-OFExtensions.h */,
 				3431F4F30CD24BBE000D6E70 /* NSScriptObjectSpecifier-OFExtensions.m */,
+				344A91A917F174870074151F /* NSScriptSuiteRegistry-OFExtensions.h */,
+				344A91AA17F174870074151F /* NSScriptSuiteRegistry-OFExtensions.m */,
 				34A71C400663D4F40097A113 /* OFAddScriptCommand.h */,
 				34A71C410663D4F40097A113 /* OFAddScriptCommand.m */,
 				34A71C420663D4F40097A113 /* OFRemoveScriptCommand.h */,
@@ -3083,6 +3089,7 @@
 				4A4E064108AA72B10098FF0F /* OFUppercaseFormatter.h in Headers */,
 				4A4E064208AA72B10098FF0F /* OFZipCodeFormatter.h in Headers */,
 				4A4E064408AA72B10098FF0F /* OFReadWriteLock.h in Headers */,
+				344A91AB17F174870074151F /* NSScriptSuiteRegistry-OFExtensions.h in Headers */,
 				4A4E064508AA72B10098FF0F /* OFSimpleLock-hppa.h in Headers */,
 				4A4E064608AA72B10098FF0F /* OFSimpleLock-i386.h in Headers */,
 				4A4E064708AA72B10098FF0F /* OFSimpleLock-ppc.h in Headers */,
@@ -3914,6 +3921,7 @@
 				4A4E06D308AA72B10098FF0F /* OFSparseArray.m in Sources */,
 				4A4E06D408AA72B10098FF0F /* OFStack.m in Sources */,
 				4A4E06D708AA72B10098FF0F /* OFTrie.m in Sources */,
+				344A91AC17F174870074151F /* NSScriptSuiteRegistry-OFExtensions.m in Sources */,
 				4A4E06D808AA72B10098FF0F /* OFTrieBucket.m in Sources */,
 				4A4E06D908AA72B10098FF0F /* OFTrieEnumerator.m in Sources */,
 				4A4E06DA08AA72B10098FF0F /* OFTrieNode.m in Sources */,

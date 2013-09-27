@@ -25,3 +25,4 @@ extern BOOL OUIIsBaseFontNameForFamily(NSString *fontName, NSString *familyName)
 @class OUIInspectorSlice;
 extern OUIFontSelection *OUICollectFontSelection(OUIInspectorSlice *self, id <NSFastEnumeration> objects);
 
+extern BOOL OUIFontIsDynamicType(UIFont *font);

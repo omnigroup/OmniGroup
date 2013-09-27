@@ -1808,16 +1808,32 @@ static NSString *ClientComputerName(void)
     
     // It might be good to just 'prepare' for the conflictURL here and then check if it already exists inside the coordinator (and not actually declare our write). But, really, if we are racing against someone else creating a conflict with the same name, something goofy is going on.
     __block BOOL success = NO;
+    __block NSError *conflictError = nil;
+    
     [coordinator coordinateWritingItemAtURL:_localDocumentURL options:NSFileCoordinatorWritingForMoving writingItemAtURL:conflictURL options:NSFileCoordinatorWritingForReplacing error:outError byAccessor:^(NSURL *newURL1, NSURL *newURL2) {
         
         __autoreleasing NSError *error;
-        if ([[NSFileManager defaultManager] moveItemAtURL:newURL1 toURL:newURL2 error:&error]) {
+        BOOL moveSuccess = [[NSFileManager defaultManager] moveItemAtURL:newURL1 toURL:newURL2 error:&error];
+        if (!moveSuccess) {
+            [error log:@"Error moving %@ to %@ -- will try a guaranteed unique URL", newURL1, newURL2];
+            
+            // This will be an ugly file name, and won't be perfect for file coordination, but will let the user continue.
+            // Sadly, we've never hit this case ourselves, or we might have a better fix.
+            NSString *pathExtension = [conflictURL pathExtension];
+            NSString *baseName = [[[conflictURL lastPathComponent] stringByDeletingPathExtension] stringByAppendingFormat:@" %@", OFXMLCreateID()];
+            
+            newURL2 = [[conflictURL URLByDeletingLastPathComponent] URLByAppendingPathComponent:[baseName stringByAppendingPathExtension:pathExtension]];
+            error = nil;
+            moveSuccess = [[NSFileManager defaultManager] moveItemAtURL:newURL1 toURL:newURL2 error:&error];
+        }
+        
+        if (moveSuccess) {
             OFXNoteContentMoved(self, newURL1, newURL2);
             [coordinator itemAtURL:newURL1 didMoveToURL:newURL2];
         } else {
             // Hit in http://rt.omnigroup.com/Ticket/Display.html?id=887601
             [error log:@"Error moving %@ to %@", newURL1, newURL2];
-            OBFinishPorting; // If the target already exists, try a different conflict file name?
+            conflictError = error; // strong-ify
             return;
         }
 
@@ -1826,8 +1842,11 @@ static NSString *ClientComputerName(void)
         [container _fileItemDidGenerateConflict:self];
         
         // Mark our snapshot as being locally missing and re-publish a stub file.
-        if (![_snapshot didGiveUpLocalContents:outError])
+        error = nil;
+        if (![_snapshot didGiveUpLocalContents:&error]) {
+            conflictError = error;
             return;
+        }
         
         // Some checks to make sure we've fully gone back to being not-downloaded
         OBASSERT(self.presentOnServer == YES);
@@ -1838,6 +1857,12 @@ static NSString *ClientComputerName(void)
         OBFinishPortingLater("Deal with local moves -- might need to get the old URL from the snapshot");
         success = YES;
     }];
+    
+    if (!success) {
+        OBASSERT(conflictError);
+        if (outError)
+            *outError = conflictError;
+    }
     
     return success;
 }
