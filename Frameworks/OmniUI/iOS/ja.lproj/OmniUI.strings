@@ -1,0 +1,184 @@
+/* setting failure alert message */
+"“%@”\nwas not successful" = "“%@”\nは成功しませんでした";
+
+/* OUITabBar N of M accessibility value */
+"%@ of %@" = "%1$@ / %2$@";
+
+/* title for successful in app purchase */
+"%@ Purchased" = "%@ 購入済み";
+
+/* Default title for the About menu item */
+"About %@" = "%@ について";
+
+/* alert button title */
+"Accept" = "同意する";
+
+/* OmniSoftwareUpdate privacy notice message format */
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ にハードウェアモデルと iOS のバージョンを定期的にレポートさせますか？\nレポートしていただくと、サポートを行うにあたっての一番大切な組み合わせを知ることができます。この回答は環境設定で後から変更できます。";
+
+/* Web view nagivation button for going back in history. */
+"Back" = "戻る";
+
+/* Bold button accessibility label */
+"Bold" = "ボールド";
+
+/* 'Buy' button title format. The currency symbol will be provided at run time. */
+"Buy %@" = "%@ を購入";
+
+/* 'Buy' and a currency symbol for purchase button */
+"Buy $%@" = "$%@ を購入";
+
+/* button title
+   cancel button title
+   toolbar item title */
+
+
+"Cancel" = "キャンセル";
+
+/* Center Text Align button accessibility label. */
+"Center text align" = "テキストの中央揃え";
+
+/* Certificate trust alert title */
+"Certificate Trust" = "証明書の信頼";
+
+/* alert message */
+"Changed the '%@' preference from '%@' to '%@'" = "'%1$@' 環境設定を '%2$@' から '%3$@' に変更しました";
+
+/* Certificate trust alert button title */
+"Continue" = "続ける";
+
+/* setting failure alert title */
+"Could not perform command" = "コマンドを実行できませんでした";
+
+/* Button is disabled due to purchase restrictions */
+"Disabled" = "無効";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Don't Report" = "レポートしない";
+
+/* Done
+   toolbar item title */
+
+"Done" = "完了";
+
+/* toolbar item title */
+"Edit" = "編集";
+
+/* In app Buy button error title */
+"Error" = "エラー";
+
+/* Alert title for error loading product information */
+"Error Loading Store" = "ストアの読み込みエラー";
+
+/* disabled for demo */
+"Feature not enabled for this demo" = "このデモには機能が無効です";
+
+/* Overlay text when zoomed to fit screen */
+"Fit" = "合わせる";
+
+/* Help and Settings toolbar item accessibility label. */
+"Help and Settings" = "ヘルプと設定";
+
+/* Purchasing is disabled details */
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "このデバイスではアプリ内購入が利用できない、または許可されていません。設定アプリの機能制限をチェックしてください。";
+
+/* Italic button accessibility label */
+"Italic" = "イタリック";
+
+/* Justified Text Align button accessibility label. */
+"Justified text align" = "テキストの両端揃え";
+
+/* Left Text Align button accessibility label. */
+"Left text align" = "テキストの左揃え";
+
+/* Web view error opening URL title. */
+"Link could not be opend. Please check Safari restrictions in Settings." = "リンクを開くことができません。Safari の設定をチェックしてください。";
+
+/* Buy button title while app store is loading */
+"Loading" = "読み込み中";
+
+/* empty value cell placeholder */
+"None" = "なし";
+
+/* button title
+   OK button label */
+
+
+
+
+"OK" = "OK";
+
+/* OmniSoftwareUpdate privacy notice alert title */
+"Omni Software Update" = "Omni ソフトウェア アップデート";
+
+/* placeholder text */
+"password" = "パスワード";
+
+/* alert title */
+"Preference changed" = "環境設定の変更";
+
+/* title for successful in app purchase */
+"Purchase %@" = "%@ を購入";
+
+/* Purchase failed alert title */
+"Purchase Failed" = "購入に失敗しました";
+
+/* Buy button thank you message */
+"Purchased. Thank you!" = "購入しました。ありがとうございます！";
+
+/* Purchasing is disabled alert title */
+"Purchasing is Disabled" = "購入が無効です";
+
+/* Redo button title */
+"Redo" = "やり直し";
+
+/* App menu item title
+   release notes html screen title */
+
+"Release Notes" = "リリースノート";
+
+/* Restore purchases button title */
+"Restore" = "復元";
+
+/* Restore failed alert title */
+"Restore Failed" = "復元に失敗";
+
+/* Right Text Align button accessibility label. */
+"Right text align" = "テキストの右揃え";
+
+/* App menu item title */
+"Run Tests" = "テストを実行";
+
+/* Search field placeholder text */
+"Search" = "検索";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Send Reports" = "レポートを送信";
+
+/* Strike Through button accessibility label */
+"Strike Through" = "打ち消し線";
+
+/* Alert description for error loading product information */
+"There was an error loading information from the App Store" = "App Store からの情報を読み込み中にエラーがありました";
+
+/* Certificate trust alert button title */
+"Trust Always" = "常に信頼する";
+
+/* Underline button accessibility label */
+"Underline" = "アンダーライン";
+
+/* Undo button title */
+"Undo" = "取り消す";
+
+/* default for WebDAV username edit field
+   placeholder text */
+"username" = "ユーザ名";
+
+/* alert message */
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "以下の環境設定を変更するリンクをタップしました:\n\n“%@”\n\nこれらの変更を受け入れますか？";
+
+/* debug setting alert message */
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "以下のデバッグコマンドを実行するリンクをタップしました:\n\n“%@”\n\nOmni のサポートスタッフからの指示がない場合には、実行しないでください。\nこのコマンドを実行しますか？";
+
+/* zoom label */
+"Zoom" = "拡大／縮小";

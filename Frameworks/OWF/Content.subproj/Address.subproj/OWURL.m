@@ -1330,17 +1330,19 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
     if (schemeSpecificPart) {
         [compositeString appendString:schemeSpecificPart];
     } else {
-        if ((netLocation != nil && ![scheme isEqualToString:@"mailto"]) || [scheme isEqualToString:@"file"])
+        if (netLocation != nil || [scheme isEqualToString:@"file"]) {
             [compositeString appendString:@"//"];
-        if (netLocation != nil)
-            [compositeString appendString:(shouldEncode ? [ONHost IDNEncodedHostname:netLocation] : netLocation)];
-        if (![scheme isEqualToString:@"mailto"])
+            if (netLocation != nil)
+                [compositeString appendString:(shouldEncode ? [ONHost IDNEncodedHostname:netLocation] : netLocation)];
+        }
+        if (netLocation != nil || path != nil || params != nil) {
             [compositeString appendString:@"/"];
-        if (path != nil)
-            [compositeString appendString:path];
-        if (params != nil) {
-            [compositeString appendString:@";"];
-            [compositeString appendString:params];
+            if (path != nil)
+                [compositeString appendString:path];
+            if (params != nil) {
+                [compositeString appendString:@";"];
+                [compositeString appendString:params];
+            }
         }
         if (query != nil) {
             [compositeString appendString:@"?"];

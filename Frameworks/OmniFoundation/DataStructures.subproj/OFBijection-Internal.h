@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import "OFBijection.h"
+#import <OmniFoundation/OFBijection.h>
 
 @class NSMapTable;
 

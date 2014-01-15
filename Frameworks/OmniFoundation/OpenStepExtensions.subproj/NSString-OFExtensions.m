@@ -148,7 +148,7 @@ static NSCharacterSet *nonAtomCharsExceptLWSP = nil;
     
     rounded = rintf((float)interval / 30.0f) * 30;
     if (rounded < 3600)
-        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d minutes", @"OmniFoundation", OMNI_BUNDLE, @"approximate time interval: some minutes since start or until finish"), (rounded + roundUpSeconds)/60];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"about %d minutes", @"OmniFoundation", OMNI_BUNDLE, @"approximate time interval: some minutes since start or until finish"), (int)floor((rounded + roundUpSeconds)/60)];
     
     if (rounded < 3600 + 360)
         return NSLocalizedStringFromTableInBundle(@"about an hour", @"OmniFoundation", OMNI_BUNDLE, @"approximate time interval: one hour");

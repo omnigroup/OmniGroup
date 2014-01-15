@@ -262,27 +262,19 @@ static NSString * const OAPreferenceClientRecordIconNameAppPrefix = @"app:"; // 
 
 - (NSMutableDictionary *) debugDictionary;
 {
-    NSMutableDictionary *dict;
-    
-    dict = [super debugDictionary];
-    if (className)
-        [dict setObject:className forKey:@"className"];
-    if (identifier)
-        [dict setObject:identifier forKey:@"identifier"];
-    if (title)
-        [dict setObject:title forKey:@"title"];
-    if (shortTitle)
-        [dict setObject:shortTitle forKey:@"shortTitle"];
-    if (iconName)
-        [dict setObject:iconName forKey:@"iconName"];
-    if (nibName)
-        [dict setObject:nibName forKey:@"nibName"];
-    if (defaultsDictionary)
-        [dict setObject:defaultsDictionary forKey:@"defaultsDictionary"];
-    if (defaultsArray)
-        [dict setObject:defaultsArray forKey:@"defaultsArray"];
-    if (iconImage)
-        [dict setObject:iconImage forKey:@"iconImage"];
+    NSMutableDictionary *dict = [super debugDictionary];
+    [dict setObject:categoryName forKey:@"01_categoryName" defaultObject:nil];
+    [dict setObject:identifier forKey:@"02_identifier" defaultObject:nil];
+    [dict setObject:className forKey:@"03_className" defaultObject:nil];
+    [dict setObject:title forKey:@"04_title" defaultObject:nil];
+    [dict setObject:shortTitle forKey:@"05_shortTitle" defaultObject:nil];
+    [dict setObject:iconName forKey:@"06_iconName" defaultObject:nil];
+    [dict setObject:nibName forKey:@"07_nibName" defaultObject:nil];
+    [dict setObject:helpURL forKey:@"08_helpURL" defaultObject:nil];
+    [dict setObject:ordering forKey:@"09_ordering" defaultObject:nil];
+    [dict setObject:defaultsDictionary forKey:@"10_defaultsDictionary" defaultObject:nil];
+    [dict setObject:defaultsArray forKey:@"11_defaultsArray" defaultObject:nil];
+    [dict setObject:iconImage forKey:@"12_iconImage" defaultObject:nil];
     return dict;
 }
 

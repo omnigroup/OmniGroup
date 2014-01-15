@@ -12,8 +12,7 @@
 #import <CoreFoundation/CFSet.h>
 #import <OmniFoundation/OFUtilities.h>
 
-@class NSDecimalNumber, NSSet;
-@class OFMultiValueDictionary;
+@class NSSet;
 
 @interface NSArray (OFExtensions)
 
@@ -77,12 +76,14 @@
 - (BOOL)anyObjectSatisfiesCondition:(SEL)sel;
 - (BOOL)anyObjectSatisfiesCondition:(SEL)sel withObject:(id)object;
 - (BOOL)anyObjectSatisfiesPredicate:(OFPredicateBlock)pred;
+- (BOOL)allObjectsSatisfyPredicate:(OFPredicateBlock)pred;
 
 - (NSMutableArray *)deepMutableCopy NS_RETURNS_RETAINED;
 
 - (NSArray *)reversedArray;
 
 - (BOOL)isIdenticalToArray:(NSArray *)otherArray;
+- (BOOL)hasIdenticalSubarray:(NSArray *)otherArray atIndex:(NSUInteger)startingIndex;
 
 - (BOOL)containsObjectsInOrder:(NSArray *)orderedObjects;
 - (BOOL)containsObjectIdenticalTo:anObject;

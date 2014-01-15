@@ -27,7 +27,8 @@
 
 @end
 
-@interface NSObject (OAToolbarDelegate)
+@protocol OAToolbarDelegate <NSToolbarDelegate>
+@optional
 - (void)toolbar:(OAToolbar *)aToolbar willSetVisible:(BOOL)visible;
 - (void)toolbar:(OAToolbar *)aToolbar didSetVisible:(BOOL)visible;
 - (void)toolbar:(OAToolbar *)aToolbar willSetDisplayMode:(NSToolbarDisplayMode)displayMode;

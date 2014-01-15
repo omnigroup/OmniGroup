@@ -45,8 +45,7 @@ RCS_ID("$Id$");
 
     NSArray *evaluatedParameters = [self collectFlattenedParametersRequiringClass:Nil];
     if (!evaluatedParameters) {
-        // Error information is already set
-        OBASSERT([self scriptErrorNumber] != NSNoScriptError);
+        OBASSERT([self scriptErrorNumber] != NSNoScriptError, "Script error should already be set");
         return nil;
     }
 

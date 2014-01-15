@@ -11,22 +11,25 @@
 
 #include <tgmath.h>
 
+#import "InfoPlist.h"
+
 #ifdef __OBJC__
     #import <Foundation/Foundation.h>
 
     #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
         #import <UIKit/UIKit.h>
-    #else
-        #import <AppKit/AppKit.h>
-    #endif
-
-    // Command line tool shouldn't bring in all of OmniBase
-    #ifdef OMNI_BUNDLE_IDENTIFIER
         #import <OmniBase/OmniBase.h>
     #else
-        // Instead, the tool uses one code-less header from OmniBase and then directly references two source files from it.
-        #import <OmniBase/rcsid.h>
-        #import <OmniBase/assertions.h>
-        #import <OmniBase/NSError-OBExtensions.h>
+        #import <AppKit/AppKit.h>
+
+        // Command line tool shouldn't bring in all of OmniBase
+        #ifdef OMNI_BUNDLE_IDENTIFIER
+            #import <OmniBase/OmniBase.h>
+        #else
+            // Instead, the tool uses one code-less header from OmniBase and then directly references two source files from it.
+            #import <OmniBase/rcsid.h>
+            #import <OmniBase/assertions.h>
+            #import <OmniBase/NSError-OBExtensions.h>
+        #endif
     #endif
 #endif

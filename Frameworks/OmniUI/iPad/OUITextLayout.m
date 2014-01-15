@@ -241,27 +241,6 @@ RCS_ID("$Id$");
 #endif
 }
 
-- (CGRect)boundsOfCharacterRange:(NSRange)range;
-{
-    NSRange glyphRange = [_layoutManager glyphRangeForCharacterRange:range actualCharacterRange:NULL];
-    if (glyphRange.location == NSNotFound)
-        return CGRectNull;
-
-    CGRect result = CGRectZero;
-    NSUInteger glyphIndex = glyphRange.location;
-    while (glyphIndex < NSMaxRange(glyphRange)) {
-        NSRange effectiveGlyphRange;
-        CGRect fragmentRect = [_layoutManager lineFragmentUsedRectForGlyphAtIndex:glyphIndex effectiveRange:&effectiveGlyphRange];
-        if (glyphIndex == glyphRange.location)
-            result = fragmentRect;
-        else
-            result = CGRectUnion(result, fragmentRect);
-        glyphIndex = NSMaxRange(effectiveGlyphRange);
-    }
-
-    return result;
-}
-
 - (CGRect)firstRectForRange:(NSRange)range;
 {
     NSRange glyphRange = [_layoutManager glyphRangeForCharacterRange:range actualCharacterRange:NULL];

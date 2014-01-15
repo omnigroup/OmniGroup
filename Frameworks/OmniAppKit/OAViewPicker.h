@@ -17,12 +17,14 @@ typedef BOOL (^OAViewPickerCompletionHandler)(NSView *pickedView); // completion
     NSBox *_nonretained_highlightBox;
     id _nonretained_parentWindowObserver;
     NSView *_pickedView;
+    BOOL _trackingMouse;
     BOOL _isInMouseDown;
     
     OAViewPickerCompletionHandler _completionHandler;
 }
 
 + (void)beginPickingForWindow:(NSWindow *)window withCompletionHandler:(OAViewPickerCompletionHandler)completionHandler;
++ (void)pickView:(NSView *)view;
 + (BOOL)cancelActivePicker; // returns YES if there was a picker session that was canceled
 
 @end

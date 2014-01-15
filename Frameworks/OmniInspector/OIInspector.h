@@ -19,29 +19,21 @@ typedef enum {
     OIPinnedVisibilityState
 } OIVisibilityState;
 
+typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
+    OIInspectorInterfaceTypeFloating = 0, // default, window-based floating inspectors
+    OIInspectorInterfaceTypeEmbedded, // no windows; suitable for sticking in e.g. a sidebar
+};
+
 // This uses rendering code that is only available on 10.5, but this whole framework is 10.5+ now
 #define OITabbedInspectorUnifiedLookDefaultsKey (@"OITabbedInspectorUnifiedLook")
 
 @interface OIInspector : NSResponder
-{
-@private
-    NSString *_identifier;
-    NSString *_displayName;
-    OIVisibilityState _defaultVisibilityState;
-    NSString *_shortcutKey;
-    NSUInteger _shortcutModifierFlags;
-    NSBundle *resourceBundle;
-    BOOL _allowImagesFromApplication;
-    NSString *_imageName, *tabImageName;
-    NSImage  *_image;
-    NSUInteger _defaultOrderingWithinGroup;
-}
 
 + (OFEnumNameTable *)visibilityStateNameTable;
 
-+ newInspectorWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
++ (instancetype)newInspectorWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
 
-- initWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
+- (id)initWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
 
 - (NSString *)identifier;
 - (OIVisibilityState)defaultVisibilityState;
@@ -76,6 +68,9 @@ typedef enum {
 
 // Subclasses should override this if they may need to do something in response to an inspector view programmatically resizing. They should also override this to pass it on to any inspectors they manage. (See OITabbedInspector and OISectionedInspector.) Inspectors which programmatically change the size of their inspectorView should then call this method on their inspectorController so it can notify the inspector chain. This allows an inspector view which contains a child inspector view to know to resize to accommodate changes in the size of that child.
 - (void)inspectorDidResize:(OIInspector *)resizedInspector;
+
+/// The interface type that this inspector would prefer the app to use. (Inspectors should support all interface types, but can have a weak preference for a certain type if that type suits its intended use better.)
+- (OIInspectorInterfaceType)preferredInterfaceType;
 
 @end
 

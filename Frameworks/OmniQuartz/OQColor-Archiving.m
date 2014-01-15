@@ -70,9 +70,8 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
         if ([data isKindOfClass:[NSData class]] && [data length] > 0) {
             NSColor *unarchived = [NSKeyedUnarchiver unarchiveObjectWithData:data];
             if ([unarchived isKindOfClass:[NSColor class]]) {
-                // <bug://bugs/60464> (Deal with custom (NSKeyedArchiver) color archive/unarchive in OQColor on iPad)
-                OBFinishPorting; // Need a +colorWithPlatformColor:
-                //return unarchived;
+                OBASSERT_NOT_REACHED("<bug://bugs/60464> (Deal with custom (NSKeyedArchiver) color archive/unarchive in OQColor on iPad)");
+                return [OQColor colorWithPlatformColor:unarchived];
             }
         }
         
@@ -94,9 +93,8 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
         if ([catalog isKindOfClass:[NSString class]] && [name isKindOfClass:[NSString class]]) {
             NSColor *color = [NSColor colorWithCatalogName:catalog colorName:name];
             if (color) {
-                // <bug://bugs/60463> (Deal with named color archive/unarchive in OQColor on iPad)
-                OBFinishPorting; // What should we do if we get a Mac platform color on the iPhone/iPad?
-                //return color;
+                OBASSERT_NOT_REACHED("<bug://bugs/60463> (Deal with named color archive/unarchive in OQColor on iPad)");
+                return [OQColor colorWithPlatformColor:color];
             }
         }
         
@@ -238,8 +236,9 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
         adders.component(container, @"v", [self brightnessComponent]);
         hasAlpha = YES;
     } else if (colorSpace == OQColorSpaceCMYK) {
-        // <bug://bugs/60461> (Deal with CMYK color archive/unarchive in OQColor on iPad)
-        OBFinishPorting; // CMYK archiving
+        OBASSERT_NOT_REACHED("<bug://bugs/60461> (Deal with CMYK color archive/unarchive in OQColor on iPad)");
+        adders.component(container, @"w", 0);
+        adders.component(container, @"a", 0);
 #if 0
         // The -{cyan,magenta,yellow,black}Component methods are only valid for RGB colors, intuitively.
         CGFloat components[5]; // Assuming that it'll write out alpha too.
@@ -252,14 +251,16 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
         hasAlpha = YES;
 #endif
     } else if (colorSpace == OQColorSpacePattern) {
-        // <bug://bugs/60462> (Deal with pattern color archive/unarchive in OQColor on iPad)
-        OBFinishPorting; // pattern archiving
+        OBASSERT_NOT_REACHED("<bug://bugs/60462> (Deal with pattern color archive/unarchive in OQColor on iPad)");
+        adders.component(container, @"w", 0);
+        adders.component(container, @"a", 0);
 #if 0
         adders.data(container, @"tiff", [[self patternImage] TIFFRepresentation]);
 #endif
     } else if (colorSpace == OQColorSpaceNamed) {
-        // <bug://bugs/60463> (Deal with named color archive/unarchive in OQColor on iPad)
-        OBFinishPorting; // named color archiving
+        OBASSERT_NOT_REACHED("<bug://bugs/60463> (Deal with named color archive/unarchive in OQColor on iPad)");
+        adders.component(container, @"w", 0);
+        adders.component(container, @"a", 0);
 #if 0
         adders.string(container, @"catalog", [self catalogNameComponent]);
         adders.string(container, @"name", [self colorNameComponent]);
@@ -269,8 +270,9 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
         if (rgbColor)
             [rgbColor _addComponentsToContainer:container adders:adders omittingDefaultValues:omittingDefaultValues];
 	else {
-            // <bug://bugs/60464> (Deal with custom (NSKeyedArchiver) color archive/unarchive in OQColor on iPad)
-	    OBFinishPorting; // custom color archiving
+            OBASSERT_NOT_REACHED("<bug://bugs/60464> (Deal with custom (NSKeyedArchiver) color archive/unarchive in OQColor on iPad)");
+            adders.component(container, @"w", 0);
+            adders.component(container, @"a", 0);
 #if 0
 	    NSData *archive = [NSKeyedArchiver archivedDataWithRootObject:self];
 	    if (archive != nil && [archive length] > 0)

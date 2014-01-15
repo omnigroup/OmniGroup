@@ -29,7 +29,6 @@
 #import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFUTI.h>
-#import <OmniUI/OUIAboutPanel.h>
 #import <OmniUI/OUIActivityIndicator.h>
 #import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIBarButtonItem.h>
@@ -131,9 +130,9 @@ static unsigned SyncAgentRunningAccountsContext;
 {
     OBINITIALIZE;
 
-    OBInitializeDebugLogLevel(OUIBackgroundFetchDebug);
-    OBInitializeDebugLogLevel(OUIApplicationLaunchDebug);
-    OBInitializeTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
+    OFInitializeDebugLogLevel(OUIBackgroundFetchDebug);
+    OFInitializeDebugLogLevel(OUIApplicationLaunchDebug);
+    OFInitializeTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
     
 #if 0 && defined(DEBUG) && OUI_GESTURE_RECOGNIZER_DEBUG
     [UIGestureRecognizer enableStateChangeLogging];

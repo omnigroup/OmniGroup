@@ -103,7 +103,7 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
     if ([self _unpackInstallerArguments:arguments error:&error]) {
         reply = [[reply copy] autorelease];
         
-        [self checkPrivilegedHelperToolVersionWithReply:^(BOOL versionMismatch) {
+        [self checkPrivilegedHelperToolVersionWithReply:^(BOOL versionMismatch, NSInteger installedToolVersion) {
             NSData *authorizationData = nil;
             BOOL shouldInstallOrUpdateTool = versionMismatch;
             BOOL requiresPrivilegedInstall = NO;
@@ -219,7 +219,7 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
                 
                 // Install/update the tool if necessary
                 
-                if (shouldInstallOrUpdateTool && ![self updatePrivilegedHelperToolWithAuthorizationData:authorizationData error:&error]) {
+                if (shouldInstallOrUpdateTool && ![self updatePrivilegedHelperToolWithAuthorizationData:authorizationData installedToolVersion:installedToolVersion error:&error]) {
                     reply(NO, error, nil);
                     return;
                 }
@@ -285,7 +285,7 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
 
 #pragma mark Privileged Helper Installer
 
-- (void)checkPrivilegedHelperToolVersionWithReply:(void (^)(BOOL versionMismatch))reply;
+- (void)checkPrivilegedHelperToolVersionWithReply:(void (^)(BOOL versionMismatch, NSInteger installedToolVersion))reply;
 {
     // We require that the installed tool have the same version as our embedded tool to ensure we have precisely compatible protocols.
     // SMBlessJob automatically takes care of upgrading the tool if necessary (but only does so after forcing you to prompt for credentials.)
@@ -300,37 +300,39 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
     BOOL privilegedHelperInstalled = NO;
     CFDictionaryRef jobDictionary = SMJobCopyDictionary(kSMDomainSystemLaunchd, (CFStringRef)OSUInstallerPrivilegedHelperJobLabel);
     if (jobDictionary != NULL) {
-        privilegedHelperInstalled = YES;
+        // Check to make sure that the helper tool actually exists. If it doesn't, the error handler on the remote proxy is never called (Neither are the invalidation or interruption handlers on the NSXPCConnection.)
+        NSString *executablePath = [[(NSDictionary *)jobDictionary objectForKey:@"ProgramArguments"] firstObject];
+        BOOL executableExists = [[NSFileManager defaultManager] fileExistsAtPath:executablePath];
+        privilegedHelperInstalled = executableExists;
+
         CFRelease(jobDictionary);
         jobDictionary = NULL;
     }
     
     if (privilegedHelperInstalled) {
-        NSXPCConnection *connection = [[NSXPCConnection alloc] initWithMachServiceName:OSUInstallerPrivilegedHelperJobLabel options:NSXPCConnectionPrivileged];
+        NSXPCConnection *connection = [[[NSXPCConnection alloc] initWithMachServiceName:OSUInstallerPrivilegedHelperJobLabel options:NSXPCConnectionPrivileged] autorelease];
         connection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(OSUInstallerPrivilegedHelper)];
         [connection resume];
 
         reply = [[reply copy] autorelease];
         
         id <OSUInstallerPrivilegedHelper> remoteProxy = [connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
-            // Clear our connection to the privileged helper before sending the reply so that the connection ref-counting in the helper works correctly.
             [connection invalidate];
-            reply(YES);
+            reply(YES, 0);
         }];
         
         [remoteProxy getVersionWithReply:^(NSUInteger version) {
-            // Clear our connection to the privileged helper before sending the reply so that the connection ref-counting in the helper works correctly.
             [connection invalidate];
-            reply(version != OSUInstallerPrivilegedHelperVersion);
+            reply(version != OSUInstallerPrivilegedHelperVersion, version);
         }];
     } else {
-        reply(YES);
+        reply(YES, 0);
     }
 }
 
-- (BOOL)updatePrivilegedHelperToolWithAuthorizationData:(NSData *)authorizationData error:(NSError **)error;
+- (BOOL)updatePrivilegedHelperToolWithAuthorizationData:(NSData *)authorizationData installedToolVersion:(NSInteger)installedToolVersion error:(NSError **)error;
 {
-    if (![self uninstallPrivilegedHelperToolWithAuthorizationData:authorizationData error:error]) {
+    if (![self uninstallPrivilegedHelperToolWithAuthorizationData:authorizationData installedToolVersion:installedToolVersion error:error]) {
         return NO;
     }
     
@@ -358,7 +360,7 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
     return YES;
 }
 
-- (BOOL)uninstallPrivilegedHelperToolWithAuthorizationData:(NSData *)authorizationData error:(NSError **)error;
+- (BOOL)uninstallPrivilegedHelperToolWithAuthorizationData:(NSData *)authorizationData installedToolVersion:(NSInteger)installedToolVersion error:(NSError **)error;
 {
     BOOL privilegedHelperInstalled = NO;
     CFDictionaryRef jobDictionary = SMJobCopyDictionary(kSMDomainSystemLaunchd, (CFStringRef)OSUInstallerPrivilegedHelperJobLabel);
@@ -369,6 +371,34 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
     }
     
     if (!privilegedHelperInstalled) {
+        return YES;
+    }
+    
+    // We want to politely uninstall the tool.
+    // -uninstallPrivilegedHelperToolWithAuthorizationData:error: will refuse to install the tool if there is work in progress, but the logic was broken for versions of the tool prior to 4, so just remove the job in that case.
+    
+    if (installedToolVersion < 4) {
+        AuthorizationRef authorizationRef = [self createAuthorizationRefFromExternalAuthorizationData:authorizationData error:error];
+        if (authorizationRef == NULL) {
+            return NO;
+        }
+        
+        CFErrorRef jobRemoveError = NULL;
+        BOOL success = SMJobRemove(kSMDomainSystemLaunchd, (CFStringRef)OSUInstallerPrivilegedHelperJobLabel, authorizationRef, YES, &jobRemoveError);
+        if (!success) {
+            AuthorizationFree(authorizationRef, kAuthorizationFlagDefaults);
+            authorizationRef = NULL;
+            
+            if (error != NULL) {
+                *error = [[(id)jobRemoveError copy] autorelease];
+            }
+            
+            return NO;
+        }
+        
+        AuthorizationFree(authorizationRef, kAuthorizationFlagDefaults);
+        authorizationRef = NULL;
+        
         return YES;
     }
     
@@ -694,7 +724,7 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
     NSString *pathToArchive = nil;
     NSString *archivePath = nil;
 
-    BOOL requiresPrivelegedInstall = NO;  // Are we going to need to authenticate/escalate privileges in order to install?
+    BOOL requiresPrivilegedInstall = NO;  // Are we going to need to authenticate/escalate privileges in order to install?
     
     // UID, GID, and uimmutable settings for the new application
     uid_t destinationUID = getuid();
@@ -710,7 +740,7 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
         if (stat(posixPath, &dest_stat) == 0) {
             // Decide whether we should chown the app to some other uid or gid
             _CheckInstallAsOtherUser(&dest_stat, &destinationUID, &destinationGID);
-            _CheckInstallWithFlags(posixPath, &dest_stat, &setImmutable, &requiresPrivelegedInstall);
+            _CheckInstallWithFlags(posixPath, &dest_stat, &setImmutable, &requiresPrivilegedInstall);
             
             pathToArchive = _installedVersionPath;
         }
@@ -734,7 +764,7 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
         if (stat(posixPath, &dest_stat) == 0) {
             // Decide whether we should chown the app to some other uid or gid
             _CheckInstallAsOtherUser(&dest_stat, &destinationUID, &destinationGID);
-            _CheckInstallWithFlags(posixPath, &dest_stat, &setImmutable, &requiresPrivelegedInstall);
+            _CheckInstallWithFlags(posixPath, &dest_stat, &setImmutable, &requiresPrivilegedInstall);
 
             // Can we simply trash the other guy now? Can we, can we? Huh boss? Can we?
             BOOL doArchiveDance = YES;
@@ -745,7 +775,7 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
                         doArchiveDance = NO;
                     }
                 } else {
-                    if (_PerformTrashFile(finalInstalledPath, @"other version", requiresPrivelegedInstall, self.authorizationData)) {
+                    if (_PerformTrashFile(finalInstalledPath, @"other version", requiresPrivilegedInstall, self.authorizationData)) {
                         doArchiveDance = NO;
                     }
                 }
@@ -796,11 +826,11 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
     
     // Check for some other reasons we'll need to authenticate/escalate privileges.
     if (_NeedsPrivilegedInstall_DestDir(_installationDirectory)) {
-        requiresPrivelegedInstall = YES;
+        requiresPrivilegedInstall = YES;
     }
 
     if (_NeedsPrivilegedInstall_Ownership(destinationUID, destinationGID)) {
-        requiresPrivelegedInstall = YES;
+        requiresPrivilegedInstall = YES;
     }
     
     // If we want to archive the existing version, pass the -a flag
@@ -809,7 +839,7 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
         
         // Even though we're just moving the old version, we'll need write permission in order to do so
         // (the UNIX reason for this is that we need access to modify the '..' entry in its directory but I'm guessing that that's just historical at this point)
-        if (!requiresPrivelegedInstall && ![fileManager isWritableFileAtPath:pathToArchive]) {
+        if (!requiresPrivilegedInstall && ![fileManager isWritableFileAtPath:pathToArchive]) {
             NSDictionary *movingAttributes = [fileManager attributesOfItemAtPath:pathToArchive error:NULL];
             BOOL unwritable = YES;
             
@@ -826,7 +856,7 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
             
             if (unwritable) {
                 NSLog(@"Installed path '%@' is not writable.  Will request privileges so that we can move it aside.", pathToArchive);
-                requiresPrivelegedInstall = YES;
+                requiresPrivilegedInstall = YES;
             }
         }
     }
@@ -838,13 +868,13 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
     }
     
 #ifdef DEBUG
-    NSLog(@"[%@auth%@] <INSTALLER_SCRIPT> %@", (dryRun ? @"dry-run " : @""), (requiresPrivelegedInstall ? @"" : @"no"), [installerArguments componentsJoinedByString:@" "]);
+    NSLog(@"[%@auth%@] <INSTALLER_SCRIPT> %@", (dryRun ? @"dry-run " : @""), (requiresPrivilegedInstall ? @"" : @"no"), [installerArguments componentsJoinedByString:@" "]);
 #endif
     
     BOOL success = NO;
-    
+
     if (!dryRun) {
-        if (requiresPrivelegedInstall) {
+        if (requiresPrivilegedInstall) {
             success = _PerformPrivilegedInstall(installerArguments, self.authorizationData, outError);
         } else {
             success = _PerformNormalInstall(installerArguments, outError);
@@ -853,11 +883,11 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
         // If we moved something aside, but don't want to keep it, then move it to the trash now.
         if (success) {
             if (archivePath != nil && !keepExistingVersion) {
-                _PerformTrashFile(archivePath, @"previous version", requiresPrivelegedInstall, self.authorizationData);
+                _PerformTrashFile(archivePath, @"previous version", requiresPrivilegedInstall, self.authorizationData);
             }
             
             if ([fileManager fileExistsAtPath:_installedVersionPath] && !keepInstalledVersion) {
-                _PerformTrashFile(_installedVersionPath, @"previous version", requiresPrivelegedInstall, self.authorizationData);
+                _PerformTrashFile(_installedVersionPath, @"previous version", requiresPrivilegedInstall, self.authorizationData);
             }
         }
     } else {
@@ -865,7 +895,7 @@ static void _CheckInstallWithFlags(const char *posixPath, const struct stat *sbu
     }
     
     if (outRequiresPrivilegedInstall != NULL) {
-        *outRequiresPrivilegedInstall = requiresPrivelegedInstall;
+        *outRequiresPrivilegedInstall = requiresPrivilegedInstall;
     }
 
     return success;

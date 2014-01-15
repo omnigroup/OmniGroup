@@ -35,13 +35,30 @@ static void _scaleAttributes(NSMutableDictionary *scaledAttributes, NSDictionary
     OAFontDescriptor *fontDescriptor = originalAttributes[OAFontDescriptorAttributeName];
     CGFloat pointSize = fontDescriptor ? fontDescriptor.size : 12;
     
+    /*
+     This odd ordering is due to Radar 15323244: Crash due to missing font in iOS 7.0.3 (Helvetica Neue italic)
+     
+     In the crashing case, we had a *non-nil* font, <UICTFont: 0x1966a470> font-family: "Helvetica Neue"; font-weight: normal; font-style: italic; font-size: 12.00pt
+     We would then try to scale it with -fontWithSize: and would get back nil. Really, -fontWithSize: should never return nil for non-nil receivers.
+     We handle this now by trying the scaling first and by double-checking before assigning into the text attributes (in case the fallback path fails).
+     */
+    
+    if (font) {
+        UIFont *scaledFont = [font fontWithSize:pointSize*scale];
+        if (scaledFont == nil && [[fontDescriptor family] isEqualToString:@"Helvetica Neue"] && [fontDescriptor italic]) {
+            // Possibly hitting the bug noted above!
+            font = [UIFont fontWithName:@"Helvetica Oblique" size:pointSize*scale]; // This is close, and our font descriptor based approach should hopefully let us go back to the right thing when unitalicising
+        } else
+            font = scaledFont;
+    }
     if (!font) {
-        font = [fontDescriptor font];
+        font = [[fontDescriptor font] fontWithSize:pointSize*scale];
         if (font == nil)
-            font = [UIFont fontWithName:@"Helvetica" size:pointSize]; // Document default for nil.
+            font = [UIFont fontWithName:@"Helvetica" size:pointSize*scale]; // Document default for nil.
     }
     
-    scaledAttributes[NSFontAttributeName] = [font fontWithSize:pointSize*scale];
+    if (font) // just in case the fallback path's scaling doesn't work. We'll get the wrong size text, but won't explode
+        scaledAttributes[NSFontAttributeName] = font;
 }
 
 NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat scale)

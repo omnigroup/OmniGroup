@@ -280,11 +280,11 @@ int main(int argc, char *argv[])
 
         ODAVConnection *connection = [[ODAVConnection alloc] init];
 
-        connection.validateCertificateForChallenge = ^(ODAVConnection *conn, NSURLAuthenticationChallenge *challenge){
+        connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
             OBFinishPortingLater("Adding trust for certificate blindly");
             OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
         };
-        connection.findCredentialsForChallenge = ^NSURLCredential *(ODAVConnection *conn, NSURLAuthenticationChallenge *challenge){
+        connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
             OBFinishPortingLater("Making up credentials");
             return [NSURLCredential credentialWithUser:@"test" password:@"password" persistence:NSURLCredentialPersistenceForSession];
         };

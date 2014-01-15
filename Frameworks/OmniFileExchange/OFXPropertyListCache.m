@@ -11,6 +11,7 @@
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniDAV/ODAVOperation.h>
+#import <OmniFoundation/OFPreference.h>
 
 #import "OFXConnection.h"
 #import "OFXDAVUtilities.h"
@@ -100,7 +101,7 @@ static NSString * const   FileInfoLastModifiedDateKey = @"lastModifiedDate";
 {
     OBINITIALIZE;
     
-    OBInitializeDebugLogLevel(OFXPropertyListCacheDebug);
+    OFInitializeDebugLogLevel(OFXPropertyListCacheDebug);
 }
 
 - init;

@@ -12,8 +12,6 @@
 
 RCS_ID("$Id$");
 
-static const CGFloat _CompletionCellMargin = 10.0f;
-
 @interface OFCompletionMatchLabel : UIView
 + (NSAttributedString *)attributedStringForCompletionMatch:(OFCompletionMatch *)completionMatch;
 

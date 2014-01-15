@@ -34,8 +34,8 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
 {
     OBINITIALIZE;
     
-    OBInitializeDebugLogLevel(OFXSyncDebug);
-    OBInitializeDebugLogLevel(OFXMetadataDebug);
+    OFInitializeDebugLogLevel(OFXSyncDebug);
+    OFInitializeDebugLogLevel(OFXMetadataDebug);
 }
 
 + (OFXServerAccountRegistry *)defaultAccountRegistry;

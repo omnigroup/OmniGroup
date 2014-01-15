@@ -205,12 +205,6 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 // NSControl overrides
 //
 
-+ (Class)cellClass;
-{
-    // We need to have an NSActionCell (or subclass of that) to handle the target and action; otherwise, you just can't set those values.
-    return [NSActionCell class];
-}
-
 - (BOOL)acceptsFirstResponder;
 {
     return YES;
@@ -607,13 +601,14 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     return button;
 }
 
-- (void)setTarget:(id)value;
+- (void)setDelegate:(NSObject <OACalendarViewDelegate> *)delegate;
 {
-    [super setTarget:value];
-    flags.targetProvidesHighlightMask = [value respondsToSelector:@selector(calendarView:highlightMaskForVisibleMonth:)];
-    flags.targetWatchesCellDisplay = [value respondsToSelector:@selector(calendarView:willDisplayCell:forDate:)];
-    flags.targetApprovesDateSelection = [value respondsToSelector:@selector(calendarView:shouldSelectDate:)];
-    flags.targetWatchesVisibleMonth = [value respondsToSelector:@selector(calendarView:didChangeVisibleMonth:)];
+    _delegate = delegate;
+    
+    flags.targetProvidesHighlightMask = [delegate respondsToSelector:@selector(calendarView:highlightMaskForVisibleMonth:)];
+    flags.targetWatchesCellDisplay = [delegate respondsToSelector:@selector(calendarView:willDisplayCell:forDate:)];
+    flags.targetApprovesDateSelection = [delegate respondsToSelector:@selector(calendarView:shouldSelectDate:)];
+    flags.targetWatchesVisibleMonth = [delegate respondsToSelector:@selector(calendarView:didChangeVisibleMonth:)];
 }
 
 - (void)_calculateSizes;

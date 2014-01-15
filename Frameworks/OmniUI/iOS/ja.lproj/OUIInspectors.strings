@@ -1,0 +1,68 @@
+/* font size label format string in points */
+"%@ points" = "%@ ポイント";
+
+/* title format for color component slider */
+"<alpha title+value>" = "不透明度: %d%%";
+
+/* title format for color component slider */
+"<blue title+value>" = "ブルー: %d";
+
+/* title format for color component slider */
+"<brightness title+value>" = "明度: %d%%";
+
+/* title format for color component slider */
+"<green title+value>" = "グリーン: %d";
+
+/* title format for color component slider */
+"<hue title+value>" = "色相: %d°";
+
+/* title format for color component slider */
+"<red title+value>" = "レッド: %d";
+
+/* title format for color component slider */
+"<saturation title+value>" = "彩度: %d%%";
+
+/* title format for color component slider */
+"<white title+value>" = "ホワイト: %d%%";
+
+/* Title for section of font list */
+"All Fonts" = "すべてのフォント";
+
+/* Title above color swatch picker for the text color. */
+"Background color" = "背景色";
+
+/* color inspector title */
+"Color" = "色";
+
+/* Title for the font family list in the inspector */
+"Font" = "フォント";
+
+/* Increment font size button accessibility label */
+"Font bigger" = "フォントを大きく";
+
+/* Decrement font size button accessibility label */
+"Font smaller" = "フォントを小さく";
+
+/* popover inspector label title for mulitple selection */
+"Multiple Selection" = "複数選択";
+
+/* Descriptive text on the no color pane of the color picker */
+"No color selected" = "色が選択されていません";
+
+/* popover inspector label title for no selected objects */
+"No Selection" = "選択なし";
+
+/* Title for section of font list */
+"Recommended Fonts" = "推奨フォント";
+
+/* Name for the variant of a font with out any special attributes */
+"Regular" = "標準";
+
+/* Label for font size controls */
+"Size" = "サイズ";
+
+/* Title above color swatch picker for the text color. */
+"Text color" = "テキストの色";
+
+/* Inspector title */
+"Text Style" = "テキスト スタイル";

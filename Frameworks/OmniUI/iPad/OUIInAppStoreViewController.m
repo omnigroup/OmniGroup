@@ -181,9 +181,14 @@ RCS_ID("$Id$");
         if ([productIdentifier isEqualToString:product.productIdentifier]) {
             purchaseProduct = product;
             
-            NSString *localizedPriceString = NSLocalizedStringFromTableInBundle(@"Buy $%@", @"OmniUI", OMNI_BUNDLE, @"'Buy' and a currency symbol for purchase button");
+            NSNumberFormatter *priceFormatter = [[NSNumberFormatter alloc] init];
+            [priceFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
+            [priceFormatter setLocale:product.priceLocale];
+            NSString *localizedPrice = [priceFormatter stringForObjectValue:purchaseProduct.price];
             
-            NSString *buyWithPriceString = [NSString stringWithFormat:localizedPriceString, purchaseProduct.price];
+            NSString *localizedPriceString = NSLocalizedStringFromTableInBundle(@"Buy %@", @"OmniUI", OMNI_BUNDLE, @"'Buy' button title format. The currency symbol will be provided at run time.");
+            
+            NSString *buyWithPriceString = [NSString stringWithFormat:localizedPriceString, localizedPrice];
             [buyButton setTitle:buyWithPriceString forState:UIControlStateNormal];
             [buyButton setEnabled:YES];
             [restoreButton setEnabled:YES];

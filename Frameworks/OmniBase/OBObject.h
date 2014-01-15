@@ -18,12 +18,20 @@
 @interface NSObject (OBDebuggingExtensions)
 - (NSMutableDictionary *)debugDictionary;
 - (NSString *)shortDescription;
+
 #ifdef DEBUG
+
+// Runtime introspection
 - (NSString *)ivars; // "po [value ivars]" to get a runtime dump of ivars
 - (NSString *)methods; // "po [value methods]" to get a runtime dump of methods
 + (NSString *)instanceMethods;
 + (NSString *)classMethods;
+
+// Leak/retain cycle warnings
+- (void)expectDeallocationSoon;
+
 #endif
+
 @end
 
 @interface OBObject (OBDebugging)

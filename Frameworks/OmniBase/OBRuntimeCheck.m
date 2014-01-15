@@ -179,7 +179,8 @@ static NSString *describeMethod(Method m, BOOL *nonSystem)
             ![path hasPrefix:@"/Library/"] &&
             ![path hasPrefix:@"/usr/lib/"] &&
             ([path rangeOfString:@"/Developer/Platforms/"].location == NSNotFound) && // iPhone simulator
-            ![path hasSuffix:@"FBAccess"]) // Special case for FrontBase framework
+            ![path hasSuffix:@"FBAccess"] && // Special case for FrontBase framework
+            ![path hasSuffix:@"Growl"]) // Special case for Growl framework
             *nonSystem = YES;
     }
     

@@ -63,12 +63,12 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
     OFLockFileOverrideLockRecoveryOption = [recoveryOption copy];
 }
 
-+ (id <OFLockUnavailableHandler>)lockUnavailableHandler;
++ (id <OFLockUnavailableHandler>)defaultLockUnavailableHandler;
 {
     return OFLockFileLockUnavailableHandler;
 }
 
-+ (void)setLockUnavailableHandler:(id <OFLockUnavailableHandler>)handler;
++ (void)setDefaultLockUnavailableHandler:(id <OFLockUnavailableHandler>)handler;
 {
     OBPRECONDITION(!handler || [handler conformsToProtocol:@protocol(OFLockUnavailableHandler)]);
     if (OFLockFileLockUnavailableHandler != handler) {
@@ -81,7 +81,7 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
 {
     NSString *localizedCannotCreateLockErrorReason = nil;
     
-    id <OFLockUnavailableHandler> lockUnavailableHandler = [self lockUnavailableHandler];
+    id <OFLockUnavailableHandler> lockUnavailableHandler = [self defaultLockUnavailableHandler];
     if (lockUnavailableHandler != nil && [lockUnavailableHandler respondsToSelector:@selector(localizedCannotCreateLockErrorReason)]) {
         localizedCannotCreateLockErrorReason = [lockUnavailableHandler localizedCannotCreateLockErrorReason];
     }
@@ -351,7 +351,7 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
         return _lockUnavailableHandler;
     }
     
-    return [[self class] lockUnavailableHandler];
+    return [[self class] defaultLockUnavailableHandler];
 }
 
 - (NSError *)_errorForLockOperationWithOptions:(OFLockFileLockOperationOptions)options lockUnavailableHandler:(id <OFLockUnavailableHandler>)lockUnavailableHandler existingLock:(NSDictionary *)existingLock proposedLock:(NSDictionary *)proposedLock;

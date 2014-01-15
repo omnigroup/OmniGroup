@@ -132,32 +132,6 @@ static const CSSM_API_MEMORY_FUNCS libcMemoryFuncs = {
     cssmLibcMalloc, cssmLibcFree, cssmLibcRealloc, cssmLibcCalloc, NULL
 };
 
-static void *cssmCFMalloc(CSSM_SIZE size, void *allocref)
-{
-    return CFAllocatorAllocate((CFAllocatorRef)allocref, size, 0);
-}
-
-static void cssmCFFree (void *memblock, void *allocref)
-{
-    CFAllocatorDeallocate((CFAllocatorRef)allocref, memblock);
-}
-
-static void *cssmCFRealloc(void *memblock, CSSM_SIZE size, void *allocref)
-{
-    return CFAllocatorReallocate((CFAllocatorRef)allocref, memblock, size, 0);
-}
-
-static void *cssmCFCalloc(uint32 num, CSSM_SIZE size, void *allocref)
-{
-    void *memblock = CFAllocatorAllocate((CFAllocatorRef)allocref, num * size, 0);
-    memset(memblock, 0, num * size);
-    return memblock;
-}
-
-static const CSSM_API_MEMORY_FUNCS coreFoundationMemoryFuncsPrototype = {
-    cssmCFMalloc, cssmCFFree, cssmCFRealloc, cssmCFCalloc, NULL
-};
-
 static const CSSM_VERSION callingApiVersion = {2,0};
 
 + (OFCDSAModule *)moduleWithGUID:(const CSSM_GUID *)auid type:(CSSM_SERVICE_TYPE)serviceType

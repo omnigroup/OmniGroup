@@ -93,7 +93,6 @@
 #import <OmniAppKit/OAInternetConfig.h>
 #import <OmniAppKit/OALabelField.h>
 #import <OmniAppKit/OAMouseTipWindow.h>
-#import <OmniAppKit/OAOpaqueTextField.h>
 #import <OmniAppKit/OAOutlineViewEnumerator.h>
 #import <OmniAppKit/OAPageSelectableDocumentProtocol.h>
 #import <OmniAppKit/OAParagraphStyle.h>

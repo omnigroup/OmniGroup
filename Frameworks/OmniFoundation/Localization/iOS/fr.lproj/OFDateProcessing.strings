@@ -1,0 +1,126 @@
+/* modifier, used for scanning user input */
+"-" = "-";
+
+/* modifier, used for scanning user input */
+"+" = "+";
+
+/* modifier, used for scanning user input */
+"~" = "~";
+
+/* one-letter abbreviation for day or days, used for scanning user input */
+"d" = "j";
+
+/* day, singular, used for scanning user input */
+"day" = "jour";
+
+/* days, plural, used for scanning user input */
+"days" = "jours";
+
+/* one-letter abbreviation for hour or hours, for scanning user input
+   one-letter abbreviation for hour or hours, used for scanning user input */
+"h" = "h";
+
+/* hour, singular, used for scanning user input */
+"hour" = "heure";
+
+/* hours, plural, used for scanning user input */
+"hours" = "heures";
+
+/* modifier, used for scanning user input */
+"last" = "dernier";
+
+/* last month, used for scanning user input */
+"last month" = "le mois dernier";
+
+/* time, used for scanning user input */
+"last week" = "la semaine dernière";
+
+/* last year, used for scanning user input */
+"last year" = "l’année dernière";
+
+/* one-letter abbreviation for month or months, used for scanning user input */
+"m" = "m";
+
+/* month, singular, used for scanning user input */
+"month" = "mois";
+
+/* months, plural, used for scanning user input */
+"months" = "mois";
+
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input */
+"next" = "prochain";
+
+/* next month, used for scanning user input */
+"next month" = "le mois prochain";
+
+/* time, used for scanning user input */
+"next week" = "la semaine prochaine";
+
+/* next year, used for scanning user input */
+"next year" = "l’année prochaine";
+
+/* noon, used for scanning user input */
+"noon" = "midi";
+
+/* now, used for scanning user input */
+"now" = "maintenant";
+
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input */
+"this" = "ce";
+
+/* this month, used for scanning user input */
+"this month" = "ce mois-ci";
+
+/* time, used for scanning user input */
+"this week" = "cette semaine";
+
+/* this year, used for scanning user input */
+"this year" = "cette année";
+
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input */
+"tod" = "auj";
+
+/* today, used for scanning user input */
+"today" = "aujourd’hui";
+
+/* Today */
+"Today" = "Auj.";
+
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input */
+"tom" = "dem";
+
+/* tomorrow */
+"tomorrow" = "demain";
+
+/* Tomorrow */
+"Tomorrow" = "Demain";
+
+/* tonight, used for scanning user input */
+"tonight" = "ce soir";
+
+/* one-letter abbreviation for week or weeks, used for scanning user input */
+"w" = "s";
+
+/* week, singular, used for scanning user input */
+"week" = "sem.";
+
+/* weeks, plural, used for scanning user input */
+"weeks" = "sem.";
+
+/* one-letter abbreviation for year or years, used for scanning user input */
+"y" = "a";
+
+/* year, singular, used for scanning user input */
+"year" = "année";
+
+/* years, plural, used for scanning user input */
+"years" = "années";
+
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input */
+"yes" = "oui";
+
+/* yesterday, used for scanning user input */
+"yesterday" = "hier";
+
+/* Yesterday */
+"Yesterday" = "Hier";

@@ -8,5 +8,5 @@
 // $Id$
 
 
-#define OSUInstallerPrivilegedHelperVersion 3
+#define OSUInstallerPrivilegedHelperVersion 4
 

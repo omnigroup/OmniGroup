@@ -10,6 +10,7 @@
 #import <Foundation/Foundation.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/OFNetStateRegistration.h>
+#import <OmniFoundation/OFPreference.h>
 #import <Foundation/NSNetServices.h>
 #import <Foundation/NSMapTable.h>
 
@@ -93,7 +94,7 @@ static NSInteger OFNetStateNotifierDebug;
 + (void)initialize;
 {
     OBINITIALIZE;
-    OBInitializeDebugLogLevel(OFNetStateNotifierDebug);
+    OFInitializeDebugLogLevel(OFNetStateNotifierDebug);
 }
 
 @synthesize delegate = _weak_delegate;
@@ -421,7 +422,7 @@ static const NSTimeInterval kUpdateStateCoalesceInterval = 0.25;
     if (_updateStateTimer)
         return;
     _updateStateTimer = [NSTimer scheduledTimerWithTimeInterval:kUpdateStateCoalesceInterval target:self selector:@selector(_updateStateTimerFired:) userInfo:nil repeats:NO];
-#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || (defined(MAC_OS_X_VERSION_10_9) && MAC_OS_X_VERSION_10_9 >= MAC_OS_X_VERSION_MIN_REQUIRED)
+#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || defined(MAC_OS_X_VERSION_10_9)
     if ([_updateStateTimer respondsToSelector:@selector(setTolerance:)]) {
         [_updateStateTimer setTolerance:kUpdateStateCoalesceInterval];
     }

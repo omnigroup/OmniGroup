@@ -24,9 +24,13 @@
 #import <OmniFoundation/OFPreference.h>
 #import <OmniBase/OmniBase.h>
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-#import "OSUController.h"
-#import "OSUItem.h"
+#import "OSUFeatures.h"
+
+#if OSU_FULL
+    #import "OSUController.h"
+    #import "OSUItem.h"
+#elif (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
+    #import "OSUPrivacyAlertWindowController.h"
 #endif
 #import "OSUPreferences.h"
 #import "OSURunTime.h"
@@ -34,12 +38,15 @@
 #import "OSUErrors.h"
 #import "OSUAppcastSignature.h"
 #import "InfoPlist.h"
+#import "OSUCheckerTarget.h"
 
 RCS_ID("$Id$");
 
-#if DEBUG_kc0
-#define OSU_DEBUG 1
-#endif
+static NSInteger OSUDebug = NSIntegerMax;
+#define OSU_DEBUG(level, format, ...) do { \
+    if (OSUDebug >= (level)) \
+        NSLog(@"OSU: " format, ## __VA_ARGS__); \
+} while (0)
 
 #ifdef DEBUG
 #define ITEM_DEBUG(...) do{ if(OSUItemDebug) NSLog(__VA_ARGS__); }while(0)
@@ -49,9 +56,24 @@ RCS_ID("$Id$");
 
 #define VERIFY_APPCAST 1
 
-#if 1 && defined(DEBUG_correia)
+#if 0 && defined(DEBUG_correia)
     #undef VERIFY_APPCAST
     #define VERIFY_APPCAST 0
+#endif
+
+#if (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE) && !OSU_FULL
+// Need a stub target for checks
+@interface OSUSystemInfoController : NSObject <OSUCheckerTarget>
+@end
+@implementation OSUSystemInfoController
+
+- (OSUPrivacyNoticeResult)checker:(OSUChecker *)checker runPrivacyNoticePanelHavingSeenPreviousVersion:(BOOL)hasSeenPreviousVersion;
+{
+    OSUPrivacyAlertWindowController *alert = [[[OSUPrivacyAlertWindowController alloc] init] autorelease];
+    return [alert runHavingSeenPreviousVersion:hasSeenPreviousVersion];
+}
+
+@end
 #endif
 
 // Strings of interest
@@ -82,34 +104,12 @@ NSString * const OSULicenseTypeRetail = @"retail";
 NSString * const OSULicenseTypeBundle = @"bundle";
 NSString * const OSULicenseTypeTrial = @"trial";
 NSString * const OSULicenseTypeExpiring = @"expiring";
+NSString * const OSULicenseTypeAppStore = @"appstore";
 
 #define MINIMUM_CHECK_INTERVAL (60.0 * 15.0) // Cannot automatically check more frequently than every fifteen minutes
 
-NSString * const OSUSoftwareUpdateExceptionName = @"OSUSoftwareUpdateException";
-
-@interface OSUChecker (/*Private*/)
-
+@interface OSUChecker ()
 @property(nonatomic,retain) id <OSUCheckerTarget> target;
-
-- (BOOL)_shouldCheckAtLaunch;
-- (void)_scheduleNextCheck;
-- (void)_initiateCheck;
-- (void)_beginLoadingURLInitiatedByUser:(BOOL)initiatedByUser;
-- (void)_clearCurrentCheckOperation;
-- (void)_checkOperationCompleted:(NSNotification *)note;
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-- (BOOL)_interpretSoftwareUpdateData:(NSData *)data operation:(OSUCheckOperation *)operation error:(NSError **)outError;
-#endif
-- (BOOL)_shouldLoadAfterWarningUserAboutNewVersion;
-- (BOOL)_postponeCheckForURL;
-
-- (BOOL)_startWatchingNetworkReachability;
-- (void)_stopWatchingNetworkReachability;
-
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-- (void)_significantTimeChangeNotification:(NSNotification *)note;
-#endif
-
 @end
 
 @implementation OSUChecker
@@ -136,9 +136,7 @@ static inline void _scheduleCheckForDate(OSUChecker *self, NSDate *date)
 {
     OBASSERT(!_hasScheduledCheck(self));
     
-#ifdef OSU_DEBUG
-    NSLog(@"OSU: Scheduling check for %@ (%f seconds from now)", date, [date timeIntervalSinceNow]);
-#endif
+    OSU_DEBUG(1, @"Scheduling check for %@ (%f seconds from now)", date, [date timeIntervalSinceNow]);
     
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     self->_automaticUpdateTimer = [[NSTimer alloc] initWithFireDate:date interval:0 target:self selector:@selector(_initiateCheck) userInfo:nil repeats:NO];
@@ -154,11 +152,9 @@ static inline void _cancelScheduledCheck(OSUChecker *self)
     if (!_hasScheduledCheck(self))
         return;
     
-#ifdef OSU_DEBUG
-    NSLog(@"OSU: Cancelling scheduled check");
-#endif
+    OSU_DEBUG(1, @"Cancelling scheduled check");
 
-    [[self retain] autorelease];
+    OBRetainAutorelease(self);
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     [self->_automaticUpdateTimer invalidate];
@@ -185,11 +181,13 @@ static void OSUAtExitHandler(void)
 {
     OBINITIALIZE;
     
+    OFInitializeDebugLogLevel(OSUDebug);
+    
 #ifdef OMNI_ASSERTIONS_ON
     atexit(OSUAtExitHandler);
 #endif
 
-#if 0 && defined(OSU_DEBUG)
+#if 0 && defined(DEBUG)
     // Useful if you are checking various cases for timed checking
     [[NSUserDefaults standardUserDefaults] setObject:[NSDate dateWithTimeIntervalSinceNow:60] forKey:OSUNextCheckKey];
 #endif
@@ -243,10 +241,14 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 #pragma mark -
 #pragma mark Activation / Deactivation
 
+// On iOS, lifecycle notifications are managed externally, currently via OSUController.
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 + (void)applicationDidBecomeActive:(NSNotification *)notification;
 {
-    if (OSURunTimeHasHandledApplicationTermination())
-        OSURunTimeApplicationActivated();
+    if (OSURunTimeHasHandledApplicationTermination()) {
+        NSBundle *bundle = [NSBundle mainBundle];
+        OSURunTimeApplicationActivated([bundle bundleIdentifier], OSUBundleVersionForBundle(bundle));
+    }
 }
 
 + (void)applicationDidResignActive:(NSNotification *)notification;
@@ -254,15 +256,14 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     NSBundle *bundle = [NSBundle mainBundle];
     OSURunTimeApplicationDeactivated([bundle bundleIdentifier], OSUBundleVersionForBundle(bundle), NO/*crashed*/);
 }
+#endif
 
 #pragma mark -
 #pragma mark Start / Terminate
 
 + (void)startWithTarget:(id <OSUCheckerTarget>)target;
 {
-#ifdef OSU_DEBUG
-    NSLog(@"OSU: Starting with target %@", [(id)target shortDescription]);
-#endif
+    OSU_DEBUG(1, @"Starting with target %@", [(id)target shortDescription]);
     
     OBPRECONDITION(OSUCheckerRunning == NO);
     
@@ -288,8 +289,8 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     OSUChecker *checker = [self sharedUpdateChecker];
     [checker setTarget:target];
     
-    // On iOS we currently ignore the results and don't care what track we are on. OSUItem isn't part of the iOS library (and would need work to avoid using NSXMLDocument).
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    // On iOS/MAS we currently ignore the results and don't care what track we are on. OSUItem isn't part of the OmniSystemInfo/OmniSoftwareUpdateTouch subset (and would need work to avoid using NSXMLDocument on iOS).
+#if OSU_FULL
     {
         /* Add our release track to the list of release tracks the user might be interested in seeing (unless it's already there, which is the common case of course) */
         NSString *runningTrack = [checker applicationTrack];
@@ -311,11 +312,11 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_significantTimeChangeNotification:) name:UIApplicationSignificantTimeChangeNotification object:nil];
 #endif
     
-    OSURunTimeApplicationActivated();
+    NSBundle *bundle = [NSBundle mainBundle];
+    OSURunTimeApplicationActivated([bundle bundleIdentifier], OSUBundleVersionForBundle(bundle));
     
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidResignActive:) name:UIApplicationWillResignActiveNotification object:nil];
+    // The iPad version of OSUController handles telling us about application lifecycle changes
 #else
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActive:) name:NSApplicationDidBecomeActiveNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidResignActive:) name:NSApplicationDidResignActiveNotification object:nil];
@@ -327,9 +328,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 
 + (void)shutdown;
 {
-#ifdef OSU_DEBUG
-    NSLog(@"OSU: Shutting down");
-#endif
+    OSU_DEBUG(1, @"Shutting down");
     
     OBPRECONDITION(OSUCheckerRunning == YES);
     
@@ -487,7 +486,11 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 + (void)controllerStartedRunning:(OFController *)controller;
 {
+#if OSU_FULL
     [self startWithTarget:[OSUController sharedController]];
+#else
+    [self startWithTarget:[[[OSUSystemInfoController alloc] init] autorelease]];
+#endif
 }
 
 + (void)controllerWillTerminate:(OFController *)controller;
@@ -504,17 +507,15 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 {
     OBPRECONDITION(reachability == _netReachability);
     
-#ifdef DEBUG
-    NSLog(@"%@: Network configuration has changed", NSStringFromClass([self class]));
-#endif
+    OSU_DEBUG(1, @"Network configuration has changed");
+
     [self _initiateCheck];
 }
 
-#pragma mark -
-#pragma mark NSURLConnection delegates
+#pragma mark - NSURLConnection delegates
 
-// On iOS we don't download track information from the update feed since we ignore the result items anyway.
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+// On iOS/MAS we don't download track information from the update feed since we ignore the result items anyway.
+#if OSU_FULL
 
 /* Zero or more connection:didReceiveResponse: messages will be sent to the delegate before receiving a connection:didReceiveData: message. */
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
@@ -619,7 +620,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 
 - (BOOL)_shouldCheckAtLaunch;
 {
-#if 0 && defined(OSU_DEBUG)
+#if 0 && defined(DEBUG)
     return YES;
 #endif
 
@@ -665,7 +666,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     }
     
     // Determine when we should make the next check
-#if 0 && defined(OSU_DEBUG)
+#if 0 && defined(DEBUG)
     NSTimeInterval checkInterval = 60;
 #else
     NSTimeInterval checkInterval = MAX([[OSUPreferences checkInterval] floatValue] * 60.0 * 60.0, MINIMUM_CHECK_INTERVAL);
@@ -784,7 +785,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:OSUNextCheckKey];
         // Removing the nextCheckKey will cause _scheduleNextCheck to schedule a check in the future
 
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if OSU_FULL
         [self _interpretSoftwareUpdateData:data operation:operation error:&error];
 #endif
     }
@@ -799,8 +800,8 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
         [self _scheduleNextCheck];
 }
 
-// On iOS we ignore the results of the feed since this would require much more porting and is of limited utility anyway. We could eventually do this and be able to tell the user about updates, but they'd have to go to the App Store app to install them anyway.
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+// On iOS/MAS we ignore the results of the feed since this would require much more porting and is of limited utility anyway. We could eventually do this and be able to tell the user about updates, but they'd have to go to the App Store app to install them anyway.
+#if OSU_FULL
 - (BOOL)_interpretSoftwareUpdateData:(NSData *)data operation:(OSUCheckOperation *)operation error:(NSError **)outError;
 {
     OBPRECONDITION(data);
@@ -815,9 +816,8 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 #if VERIFY_APPCAST
     NSString *trust = [OMNI_BUNDLE pathForResource:@"AppcastTrustRoot" ofType:@"pem"];
     if (trust) {
-#ifdef DEBUG
-        NSLog(@"OSU: Using %@", trust);
-#endif
+        OSU_DEBUG(1, @"Using %@", trust);
+
         NSArray *verifiedPortions = OSUGetSignedPortionsOfAppcast(data, trust, outError);
         if (!verifiedPortions || ![verifiedPortions count]) {
             if (outError) {
@@ -973,9 +973,8 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     
     // May still be NO if the query takes a while to resolve, but then we expect the delegate hook to be pinged.
     BOOL reachable = _netReachability.reachable;
-#ifdef OSU_DEBUG
-    NSLog(@"Returning reachable = %d", reachable);
-#endif
+    OSU_DEBUG(1, @"Returning reachable = %d", reachable);
+    
     return reachable;
 }
 
@@ -1052,13 +1051,9 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
             connected = YES;
 
         if (connected) {
-#ifdef DEBUG
-            NSLog(@"%@: Cannot reach host, but will watch for changes.", NSStringFromClass([self class]));
-#endif
+            OSU_DEBUG(1, @"Cannot reach host, but will watch for changes.");
         } else {
-#ifdef DEBUG
-            NSLog(@"Cannot connect to configd. Will not automatically perform software update.");
-#endif	    
+            OSU_DEBUG(1, @"Cannot connect to configd. Will not automatically perform software update.");
         }
     }
 
@@ -1082,19 +1077,16 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     _netReachability = [[OFNetReachability alloc] initWithHostName:hostname];
     _netReachability.delegate = self;
     
-#ifdef OSU_DEBUG
-    NSLog(@"Started network reachability check for %@ -> %@", hostname, _netReachability);
-#endif
+    OSU_DEBUG(1, @"Started network reachability check for %@ -> %@", hostname, _netReachability);
     
     return _netReachability != nil;
 }
 
 - (void)_stopWatchingNetworkReachability;
 {
-#ifdef OSU_DEBUG
-    if (_netReachability)
-        NSLog(@"Stopping network reachability check %@", _netReachability);
-#endif
+    if (_netReachability) {
+        OSU_DEBUG(1, @"Stopping network reachability check %@", _netReachability);
+    }
 
     _netReachability.delegate = nil;
     [_netReachability release];

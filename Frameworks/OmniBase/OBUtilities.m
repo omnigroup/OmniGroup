@@ -14,6 +14,11 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/macros.h>
 
+
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/sysctl.h>
+
 RCS_ID("$Id$")
 
 static BOOL _OBRegisterMethod(IMP imp, Class cls, const char *types, SEL name)
@@ -275,39 +280,42 @@ void _OBFinishPorting(const char *header, const char *function)
 
 void _OBFinishPortingLater(const char *header, const char *function, const char *message)
 {
+#ifdef DEBUG
     NSLog(@"%s in %s -- %s", header, function, message);
+#else
+    NSLog(@"%s in %s", header, function);
+#endif
+}
+
+BOOL OBIsBeingDebugged(void)
+{
+    struct kinfo_proc info = {};
+    size_t size = sizeof(info);
+    int mib[4] = {
+        CTL_KERN,
+        KERN_PROC,
+        KERN_PROC_PID,
+        getpid()
+    };
+
+    int rc = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
+    OBASSERT(rc == 0);
+    
+    // We're being debugged if the P_TRACED flag is set.
+    return (rc == 0 && (info.kp_proc.p_flag & P_TRACED) != 0);
+}
+
+void _OBStopInDebugger(const char *file, unsigned int line, const char *function, const char *message)
+{
+    NSLog(@"OBStopInDebugger at %s:%d in %s -- %s", file, line, function, message);
+    
+    BOOL isBeingDebugged = OBIsBeingDebugged();
+    OBASSERT(isBeingDebugged);
+    if (isBeingDebugged) {
+        kill(getpid(), SIGTRAP);
+    }
 }
 
 DEFINE_NSSTRING(OBAbstractImplementation);
 DEFINE_NSSTRING(OBUnusedImplementation);
 
-void _OBInitializeDebugLogLevel(NSInteger *outLevel, NSString *name)
-{
-    NSInteger level;
-
-    const char *env = getenv([name UTF8String]); /* easier for command line tools */
-    if (env)
-        level = strtoul(env, NULL, 0);
-    else
-        level = [[NSUserDefaults standardUserDefaults] integerForKey:name];
-    
-    if (level)
-        NSLog(@"DEBUG LEVEL %@ = %ld", name, level);
-    *outLevel = level;
-}
-
-void _OBInitializeTimeInterval(NSTimeInterval *outInterval, NSString *name, NSTimeInterval default_value, NSTimeInterval min_value, NSTimeInterval max_value)
-{
-    NSTimeInterval value = default_value;
-    
-    const char *env = getenv([name UTF8String]); /* easier for command line tools */
-    if (env)
-        value = strtod(env, NULL);
-    else if ([[NSUserDefaults standardUserDefaults] objectForKey:name])
-        value = [[NSUserDefaults standardUserDefaults] doubleForKey:name];
-
-    value = CLAMP(value, min_value, max_value);
-    if (value != default_value)
-        NSLog(@"TIME INTERVAL %@ = %lf", name, value);
-    *outInterval = value;
-}

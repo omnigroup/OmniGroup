@@ -7,9 +7,8 @@
 
 #import "OFTestCase.h"
 
-#import "OFBijection.h"
-
 #import <OmniBase/OmniBase.h>
+#import <OmniFoundation/OFBijection.h>
 
 RCS_ID("$Id$");
 

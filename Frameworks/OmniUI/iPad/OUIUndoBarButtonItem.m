@@ -75,7 +75,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     self.customView = self->_undoButton;
 
     // adjust the text label because UIButton and UITitleBarButton place their labels 1 apple point off from each other by default.
-    [self->_undoButton setTitleEdgeInsets:UIEdgeInsetsMake(0,0,-3,0)];
+    [self->_undoButton setTitleEdgeInsets:UIEdgeInsetsMake(0,0,-2,0)];
 
     [self->_undoButton addTarget:self action:@selector(_touchDown:) forControlEvents:UIControlEventTouchDown];
 

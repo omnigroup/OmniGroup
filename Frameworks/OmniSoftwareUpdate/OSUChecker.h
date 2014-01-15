@@ -9,7 +9,6 @@
 
 #import <OmniFoundation/OFObject.h>
 #import <OmniFoundation/OFNetReachability.h>
-#import <OmniSoftwareUpdate/OSUCheckerTarget.h>
 
 @class OFVersionNumber;
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -18,8 +17,7 @@
 @class NSTimer;
 #endif
 @class OSUCheckOperation;
-
-extern NSString * const OSUSoftwareUpdateExceptionName;
+@protocol OSUCheckerTarget;
 
 // 
 extern NSString * const OSULicenseTypeUnset;
@@ -29,6 +27,7 @@ extern NSString * const OSULicenseTypeRetail;
 extern NSString * const OSULicenseTypeBundle;
 extern NSString * const OSULicenseTypeTrial;
 extern NSString * const OSULicenseTypeExpiring;
+extern NSString * const OSULicenseTypeAppStore;
 
 #define OSUCheckerCheckInProgressBinding (@"checkInProgress")
 #define OSUCheckerLicenseTypeBinding (@"licenseType")

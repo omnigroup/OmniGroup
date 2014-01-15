@@ -9,6 +9,7 @@
 
 #import <Foundation/NSScriptWhoseTests.h>
 #import <Foundation/NSAppleEventDescriptor.h>
+#import <Foundation/NSScriptClassDescription.h>
 
 RCS_ID("$Id$");
 
@@ -98,13 +99,6 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
 
 @end
 
-@interface NSAppleEventDescriptor (JaguarAPI)
-+ (NSAppleEventDescriptor *)descriptorWithInt32:(SInt32)signedInt;
-+ (NSAppleEventDescriptor *)descriptorWithString:(NSString *)string;
-+ (NSAppleEventDescriptor *)descriptorWithEnumCode:(OSType)enumerator;
-+ (NSAppleEventDescriptor *)descriptorWithDescriptorType:(DescType)descriptorType bytes:(const void *)bytes length:(unsigned int)byteCount;
-@end
-
 
 /* This allows us to convert an NSSpecifierTest to its corresponding typeCompDescriptor. */
 @implementation NSSpecifierTest (OFFixes)
@@ -150,3 +144,42 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
 }
 
 @end
+
+
+#if 1 && defined(DEBUG)
+
+// Add assertions on initializer arguments for the object specifier classes. In at least one, case 10.9 didn't catch a bad argument and silently produced corrupt object specifier AppleEvents. 15181769: NSUniqueIDSpecifier should warn on bad input instead of producing garbage output
+
+static id (*original_NSScriptObjectSpecifier_initWithContainerClassDescription_containerSpecifier_property)(NSScriptObjectSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key) = NULL;
+static id replacement_NSScriptObjectSpecifier_initWithContainerClassDescription_containerSpecifier_property(NSScriptObjectSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key)
+{
+    OBPRECONDITION(container);
+    OBPRECONDITION(key);
+    OBPRECONDITION([classDesc classDescriptionForKey:key]);
+    
+    return original_NSScriptObjectSpecifier_initWithContainerClassDescription_containerSpecifier_property(self, _cmd, classDesc, container, key);
+}
+
+static id (*original_NSUniqueIDSpecifier_initWithContainerClassDescription_containerSpecifier_key_uniqueID)(NSUniqueIDSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key, id uniqueID) = NULL;
+static id replacement_NSUniqueIDSpecifier_initWithContainerClassDescription_containerSpecifier_key_uniqueID(NSUniqueIDSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key, id uniqueID)
+{
+    OBPRECONDITION(classDesc);
+    OBPRECONDITION(container || [classDesc.className isEqual:@"application"]);
+    OBPRECONDITION(key);
+    OBPRECONDITION([classDesc classDescriptionForKey:key]);
+    OBPRECONDITION(uniqueID);
+    
+    return original_NSUniqueIDSpecifier_initWithContainerClassDescription_containerSpecifier_key_uniqueID(self, _cmd, classDesc, container, key, uniqueID);
+}
+
+#define REPLACE(f, cls, sel) original_ ## cls ## _ ## f = (typeof(original_ ## cls ## _ ## f))OBReplaceMethodImplementation([cls class], @selector(sel), (IMP)replacement_ ## cls ## _ ## f)
+
+static void initSpecifierAssertions(void) __attribute__((constructor));
+static void initSpecifierAssertions(void)
+{
+    REPLACE(initWithContainerClassDescription_containerSpecifier_property, NSScriptObjectSpecifier, initWithContainerClassDescription:containerSpecifier:property:);
+    REPLACE(initWithContainerClassDescription_containerSpecifier_key_uniqueID, NSUniqueIDSpecifier, initWithContainerClassDescription:containerSpecifier:key:uniqueID:);
+}
+
+
+#endif

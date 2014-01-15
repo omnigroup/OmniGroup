@@ -131,17 +131,26 @@ This method does the work of looping over the runtime searching for implementati
 // When octest loads a unit test bundle, we get a whole slew of notifications for each dependent framework. We'll keep track of the last set of bundles that were around when this method got called and only +processClasses if it changes.
 + (void)_bundleDidLoad:(NSNotification *)notification;
 {
-    OBPRECONDITION([NSThread isMainThread]); // Not making this static variable thread-safe for now.
-    
     static NSSet *PreviouslySeenBundles = nil;
+    static NSRecursiveLock *PreviouslySeenBundlesLock = nil;
+    static dispatch_once_t once = 0;
     
-    NSMutableSet *LoadedBundles = [[NSMutableSet alloc] init];
-    [LoadedBundles addObjectsFromArray:[NSBundle allBundles]];
-    [LoadedBundles addObjectsFromArray:[NSBundle allFrameworks]];
-    
-    if (![PreviouslySeenBundles isEqualToSet:LoadedBundles]) {
-        PreviouslySeenBundles = [LoadedBundles copy];
-        [self processClasses];
+    dispatch_once(&once, ^{
+        PreviouslySeenBundlesLock = [[NSRecursiveLock alloc] init];
+    });
+
+    [PreviouslySeenBundlesLock lock];
+    @try {
+        NSMutableSet *LoadedBundles = [[NSMutableSet alloc] init];
+        [LoadedBundles addObjectsFromArray:[NSBundle allBundles]];
+        [LoadedBundles addObjectsFromArray:[NSBundle allFrameworks]];
+
+        if (![PreviouslySeenBundles isEqualToSet:LoadedBundles]) {
+            PreviouslySeenBundles = [LoadedBundles copy];
+            [self processClasses];
+        }
+    } @finally {
+        [PreviouslySeenBundlesLock unlock];
     }
 }
 

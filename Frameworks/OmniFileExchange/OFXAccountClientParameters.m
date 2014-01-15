@@ -7,6 +7,8 @@
 
 #import <OmniFileExchange/OFXAccountClientParameters.h>
 
+#import <OmniFoundation/OFPreference.h>
+
 RCS_ID("$Id$")
 
 static NSTimeInterval OFXAccountInfoClientWriteInterval;
@@ -19,9 +21,9 @@ static NSTimeInterval OFXAccountInfoRemoteTemporaryFileCleanupInterval;
 {
     OBINITIALIZE;
     
-    OBInitializeTimeInterval(OFXAccountInfoClientWriteInterval, 60*60, 10, 60*60); // Update our client record about every hour.
-    OBInitializeTimeInterval(OFXAccountInfoClientStaleInterval, 14*24*60*60, 15, 14*24*60*60); // Remove old clients that haven't been updated in a couple weeks or so.
-    OBInitializeTimeInterval(OFXAccountInfoRemoteTemporaryFileCleanupInterval, 2*60*60, 1*60*60, 24*60*60); // Remove stale items in the server "tmp" directory after a couple hours.
+    OFInitializeTimeInterval(OFXAccountInfoClientWriteInterval, 60*60, 10, 60*60); // Update our client record about every hour.
+    OFInitializeTimeInterval(OFXAccountInfoClientStaleInterval, 14*24*60*60, 15, 14*24*60*60); // Remove old clients that haven't been updated in a couple weeks or so.
+    OFInitializeTimeInterval(OFXAccountInfoRemoteTemporaryFileCleanupInterval, 2*60*60, 30, 24*60*60); // Remove stale items in the server "tmp" directory after a couple hours.
 }
 
 - initWithDefaultClientIdentifierPreferenceKey:(NSString *)defaultClientIdentifierPreferenceKey hostIdentifierDomain:(NSString *)hostIdentifierDomain currentFrameworkVersion:(OFVersionNumber *)currentFrameworkVersion;

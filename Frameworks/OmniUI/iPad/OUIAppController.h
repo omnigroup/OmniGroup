@@ -16,10 +16,6 @@
 
 @class UIBarButtonItem;
 
-#if OUI_SOFTWARE_UPDATE_CHECK
-@class OUISoftwareUpdateController;
-#endif
-
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) file:__FILE__ line:__LINE__]
 #define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) file:__FILE__ line:__LINE__]
 

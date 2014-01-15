@@ -1,0 +1,68 @@
+/* font size label format string in points */
+"%@ points" = "%@ puntos";
+
+/* title format for color component slider */
+"<alpha title+value>" = "Opacidad: %d%%";
+
+/* title format for color component slider */
+"<blue title+value>" = "Azul: %d";
+
+/* title format for color component slider */
+"<brightness title+value>" = "Brillo: %d%%";
+
+/* title format for color component slider */
+"<green title+value>" = "Verde: %d";
+
+/* title format for color component slider */
+"<hue title+value>" = "Matiz: %d°";
+
+/* title format for color component slider */
+"<red title+value>" = "Rojo: %d";
+
+/* title format for color component slider */
+"<saturation title+value>" = "Saturación: %d%%";
+
+/* title format for color component slider */
+"<white title+value>" = "Blanco: %d%%";
+
+/* Title for section of font list */
+"All Fonts" = "Todos los tipos de letra";
+
+/* Title above color swatch picker for the text color. */
+"Background color" = "Color de fondo";
+
+/* color inspector title */
+"Color" = "Color";
+
+/* Title for the font family list in the inspector */
+"Font" = "Tipo de letra";
+
+/* Increment font size button accessibility label */
+"Font bigger" = "Tipo de letra más grande";
+
+/* Decrement font size button accessibility label */
+"Font smaller" = "Tipo de letra más pequeña";
+
+/* popover inspector label title for mulitple selection */
+"Multiple Selection" = "Selección múltiple";
+
+/* Descriptive text on the no color pane of the color picker */
+"No color selected" = "Ningún color seleccionado";
+
+/* popover inspector label title for no selected objects */
+"No Selection" = "Sin selección";
+
+/* Title for section of font list */
+"Recommended Fonts" = "Tipos de letra recomendados";
+
+/* Name for the variant of a font with out any special attributes */
+"Regular" = "Normal";
+
+/* Label for font size controls */
+"Size" = "Tamaño";
+
+/* Title above color swatch picker for the text color. */
+"Text color" = "Color del texto";
+
+/* Inspector title */
+"Text Style" = "Estilo del texto";

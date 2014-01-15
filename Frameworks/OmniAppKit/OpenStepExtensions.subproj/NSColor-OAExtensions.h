@@ -28,10 +28,10 @@
 - (NSString *)similarColorNameFromColorLists;
 + (NSColor *)colorWithSimilarName:(NSString *)aName;
 
-- (CGColorRef)newCGColor;
+- (CGColorRef)newCGColor CF_RETURNS_RETAINED;
 
 + (NSColor *)colorFromCGColor:(CGColorRef)colorRef;
-- (CGColorRef)newCGColorWithCGColorSpace:(CGColorSpaceRef)destinationColorSpace;
+- (CGColorRef)newCGColorWithCGColorSpace:(CGColorSpaceRef)destinationColorSpace CF_RETURNS_RETAINED;
 
 // XML Archiving
 + (NSString *)xmlElementName;

@@ -19,7 +19,24 @@ RCS_ID("$Id$")
 - (void)_noMoreData;
 @end
 
+#define OWObjectStreamBuffer_BufferedObjectsLength 128
+
+typedef struct _OWObjectStreamBuffer {
+    unsigned int nextIndex;
+    id objects[OWObjectStreamBuffer_BufferedObjectsLength];
+    struct _OWObjectStreamBuffer *next;
+} OWObjectStreamBuffer;
+
 @implementation OWObjectStream
+{
+    id *nextObjectInBuffer, *beyondBuffer;
+    OWObjectStreamBuffer *first, *last;
+    unsigned int count;
+    BOOL endOfObjects;
+    
+    NSConditionLock *objectsLock;
+    NSConditionLock *endOfDataLock;
+}
 
 enum {
     OBJECTS_AVAILABLE, READERS_WAITING

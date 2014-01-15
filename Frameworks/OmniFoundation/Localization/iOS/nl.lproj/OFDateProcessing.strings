@@ -1,0 +1,126 @@
+/* modifier, used for scanning user input */
+"-" = "-";
+
+/* modifier, used for scanning user input */
+"+" = "+";
+
+/* modifier, used for scanning user input */
+"~" = "~";
+
+/* one-letter abbreviation for day or days, used for scanning user input */
+"d" = "d";
+
+/* day, singular, used for scanning user input */
+"day" = "dag";
+
+/* days, plural, used for scanning user input */
+"days" = "dgn.";
+
+/* one-letter abbreviation for hour or hours, for scanning user input
+   one-letter abbreviation for hour or hours, used for scanning user input */
+"h" = "u";
+
+/* hour, singular, used for scanning user input */
+"hour" = "uur";
+
+/* hours, plural, used for scanning user input */
+"hours" = "uur";
+
+/* modifier, used for scanning user input */
+"last" = "afgelopen";
+
+/* last month, used for scanning user input */
+"last month" = "vorige maand";
+
+/* time, used for scanning user input */
+"last week" = "vorige week";
+
+/* last year, used for scanning user input */
+"last year" = "vorig jaar";
+
+/* one-letter abbreviation for month or months, used for scanning user input */
+"m" = "m";
+
+/* month, singular, used for scanning user input */
+"month" = "maand";
+
+/* months, plural, used for scanning user input */
+"months" = "mnd.";
+
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input */
+"next" = "volgend(e)";
+
+/* next month, used for scanning user input */
+"next month" = "volgende maand";
+
+/* time, used for scanning user input */
+"next week" = "volgende week";
+
+/* next year, used for scanning user input */
+"next year" = "volgend jaar";
+
+/* noon, used for scanning user input */
+"noon" = "middag";
+
+/* now, used for scanning user input */
+"now" = "nu";
+
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input */
+"this" = "deze/dit";
+
+/* this month, used for scanning user input */
+"this month" = "deze maand";
+
+/* time, used for scanning user input */
+"this week" = "deze week";
+
+/* this year, used for scanning user input */
+"this year" = "dit jaar";
+
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input */
+"tod" = "vand";
+
+/* today, used for scanning user input */
+"today" = "vandaag";
+
+/* Today */
+"Today" = "Nu";
+
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input */
+"tom" = "mor";
+
+/* tomorrow */
+"tomorrow" = "morgen";
+
+/* Tomorrow */
+"Tomorrow" = "Morgen";
+
+/* tonight, used for scanning user input */
+"tonight" = "vanavond";
+
+/* one-letter abbreviation for week or weeks, used for scanning user input */
+"w" = "w";
+
+/* week, singular, used for scanning user input */
+"week" = "week";
+
+/* weeks, plural, used for scanning user input */
+"weeks" = "wkn";
+
+/* one-letter abbreviation for year or years, used for scanning user input */
+"y" = "j";
+
+/* year, singular, used for scanning user input */
+"year" = "jaar";
+
+/* years, plural, used for scanning user input */
+"years" = "jaar";
+
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input */
+"yes" = "ja";
+
+/* yesterday, used for scanning user input */
+"yesterday" = "gisteren";
+
+/* Yesterday */
+"Yesterday" = "Gisteren";

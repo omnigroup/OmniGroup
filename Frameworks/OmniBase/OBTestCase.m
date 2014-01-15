@@ -77,7 +77,7 @@ static void OBTestCaseAssertionHandler(const char *type, const char *expression,
 #endif
     }
     
-    abort();
+//    abort();
 }
 #endif
 

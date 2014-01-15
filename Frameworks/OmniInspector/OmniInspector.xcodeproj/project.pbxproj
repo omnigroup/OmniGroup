@@ -109,12 +109,12 @@
 /* Begin PBXFileReference section */
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
-		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		089C1667FE841158C02AAC07 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0A6C01C20CC046EF0014024A /* OIWorkspaceRestore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIWorkspaceRestore.png; sourceTree = "<group>"; };
 		0A6C01C30CC046EF0014024A /* OIWorkspaceStore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIWorkspaceStore.png; sourceTree = "<group>"; };
 		0A6C028F0CC04ABB0014024A /* OIWorkspaceSnap.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = OIWorkspaceSnap.aiff; sourceTree = "<group>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		274EC2171774D89200E87888 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/OIInspectorWorkspacePanels.xib; sourceTree = "<group>"; };
+		274EC2171774D89200E87888 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/OIInspectorWorkspacePanels.xib; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* OmniInspector_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniInspector_Prefix.h; sourceTree = "<group>"; };
 		346DEF3009992425008F5B5F /* OIInspectorTabController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorTabController.h; sourceTree = "<group>"; };
 		346DEF3109992425008F5B5F /* OIInspectorTabController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorTabController.m; sourceTree = "<group>"; };
@@ -526,10 +526,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				Japanese,
-				French,
-				German,
+				en,
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* OmniInspector */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -645,7 +642,7 @@
 		089C1666FE841158C02AAC07 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				089C1667FE841158C02AAC07 /* English */,
+				089C1667FE841158C02AAC07 /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -653,7 +650,7 @@
 		274EC2161774D89200E87888 /* OIInspectorWorkspacePanels.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				274EC2171774D89200E87888 /* English */,
+				274EC2171774D89200E87888 /* en */,
 			);
 			name = OIInspectorWorkspacePanels.xib;
 			sourceTree = "<group>";

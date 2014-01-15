@@ -196,6 +196,8 @@ static UIFont *_DefaultSelectedTabTitleFont;
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGRect bounds = self.bounds;
     CGFloat widths[_tabTitles.count];
+    
+    memset(widths, 0, sizeof(widths));
     [self computeTabWidths:widths];
     
     CGFloat halfPixel = 0.5f / self.contentScaleFactor;

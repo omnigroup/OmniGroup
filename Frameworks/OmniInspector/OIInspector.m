@@ -21,6 +21,20 @@ static OFEnumNameTable *ModifierMaskNameTable = nil;
 static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 
 @implementation OIInspector
+{
+@private
+    NSString *_identifier;
+    NSString *_displayName;
+    OIVisibilityState _defaultVisibilityState;
+    NSString *_shortcutKey;
+    NSUInteger _shortcutModifierFlags;
+    NSBundle *resourceBundle;
+    BOOL _allowImagesFromApplication;
+    NSString *_imageName, *tabImageName;
+    NSImage  *_image;
+    NSUInteger _defaultOrderingWithinGroup;
+    OIInspectorInterfaceType _preferredInterfaceType;
+}
 
 + (void)initialize;
 {
@@ -52,7 +66,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 //    return [self newInspectorWithDictionary:dict bundle:nil];
 //}
 
-+ newInspectorWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
++ (instancetype)newInspectorWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
 {
     // Do the OS version check before allocating an instance
     NSString *minimumOSVersionString = [dict objectForKey:@"minimumOSVersion"];
@@ -92,13 +106,13 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 }
 
 // Make sure inspector subclasses are calling [super initWithDictionary:bundle:]
-- init;
+- (id)init;
 {
     OBRejectUnusedImplementation([self class], _cmd);
     return nil;
 }
 
-- initWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
+- (id)initWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
 {
     OBPRECONDITION(dict);
     OBPRECONDITION([self conformsToProtocol:@protocol(OIConcreteInspector)]);
@@ -178,6 +192,13 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         _defaultOrderingWithinGroup = [dict unsignedIntForKey:@"order"];
     else
         _defaultOrderingWithinGroup = NSNotFound;
+    
+    if ([dict objectForKey:@"preferredInterfaceType"]) {
+        _preferredInterfaceType = [dict unsignedIntForKey:@"preferredInterfaceType"];
+    } else {
+        // Apps that haven't concerned themselves with recent changes to OmniInspector won't specify a preferredInterfaceType. These apps universally expect OI to provide a floating interface. Oblige them.
+        _preferredInterfaceType = OIInspectorInterfaceTypeFloating;
+    }
     
     return self;
 }
@@ -358,6 +379,11 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 - (void)inspectorDidResize:(OIInspector *)resizedInspector;
 {
     OBASSERT_NOT_REACHED("This should only be called on inspectors which are ancestors of the resized inspector.");
+}
+
+- (OIInspectorInterfaceType)preferredInterfaceType;
+{
+    return _preferredInterfaceType;
 }
 
 #pragma mark -

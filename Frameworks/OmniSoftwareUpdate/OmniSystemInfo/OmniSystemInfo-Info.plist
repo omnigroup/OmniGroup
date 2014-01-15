@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+ // XML comment around #defines so this will validate with plutil before preprocessing.
+ #include "../InfoPlist.h"
+ -->
+<plist version="1.0">
+  <dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>English</string>
+    <key>CFBundleExecutable</key>
+    <string>OmniSystemInfo</string>
+    <key>CFBundleGetInfoString</key>
+    <string></string>
+    <key>CFBundleIconFile</key>
+    <string></string>
+    <key>CFBundleIdentifier</key>
+    <string>$(OMNI_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string></string>
+    <key>CFBundlePackageType</key>
+    <string>FMWK</string>
+    <key>CFBundleShortVersionString</key>
+    <string></string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    <key>CFBundleVersion</key>
+    <string>OSU_VERSION_NUMBER</string>
+    <key>OFRegistrations</key>
+    <dict>
+      <key>OAPreferenceController</key>
+      <dict>
+        <key>OmniSystemInfoPreferenceClient</key>
+        <dict>
+          <key>category</key>
+          <string>Basic</string>
+          <key>defaultsArray</key>
+          <array>
+            <string>OSUSendSystemInfoEnabled</string>
+            <string>OSUCheckInterval</string>
+          </array>
+          <key>icon</key>
+          <string>OmniSystemInfo</string>
+          <key>identifier</key>
+          <string>$(OMNI_BUNDLE_IDENTIFIER).preferences</string>
+          <key>nib</key>
+          <string>OmniSystemInfoPreferences</string>
+          <key>ordering</key>
+          <integer>200</integer>
+          <key>shortTitle</key>
+          <string>System</string>
+          <key>title</key>
+          <string>System Information</string>
+        </dict>
+      </dict>
+    </dict>
+    <key>OFRequiredSoftwareVersions</key>
+    <dict>
+      <key>OmniAppKit</key>
+      <string>2004A</string>
+    </dict>
+  </dict>
+</plist>

@@ -28,69 +28,6 @@ typedef enum {
 @protocol OWCacheArc, OWPipelineDeallocationObserver;
 
 @interface OWPipeline : OWTask <OWFWeakRetain>
-{
-    OWFWeakRetainConcreteImplementation_IVARS;
-
-    // Unless otherwise noted, instance variables are protected by the global pipeline lock.
-
-    id <OWTarget, OWFWeakRetain, NSObject> _target; // protected by displayablesSimpleLock
-
-    struct {
-        unsigned int pipelineDidBegin: 1;
-        unsigned int pipelineDidEnd: 1;
-        unsigned int pipelineTreeDidActivate: 1;
-        unsigned int pipelineTreeDidDeactivate: 1;
-        unsigned int updateStatusForPipeline: 1;
-        unsigned int expectedContentDescriptionString: 1;
-        unsigned int pipelineHasNewMetadata: 1;
-        unsigned int preferenceForKey: 1;
-    } targetRespondsTo;               // initialized in -init, and readonly thereafter
-
-    NSMutableDictionary *costEstimates;  // Maps OWContentType to NSNumber. Lazily filled by _traverseArcFromEntry:.
-    OWContentCacheGroup *caches;      // List of (id <OWCacheArcProvider>) instances, in search order
-    NSMutableSet *rejectedArcs;       // Arcs we've thought about and rejected
-    NSMutableArray *followedArcs;     // Arcs we've traversed, corresponding to entries in followedContent
-    NSMutableArray *followedContent;  // Content we've found, in traversal order
-    NSMutableArray *activeArcs;       // Arcs we've traversed which have not yet retired
-    NSMutableSet *followedArcsWithThreads; // Arcs in followedArcs whose state was Running last we checked
-    NSMutableArray *givenArcs;        // Arcs provided to us in -init, and considered to be 'free'
-    OWCacheSearch *cacheSearch;       // The state of our search for suitable arcs, or nil
-    NSUInteger firstErrorContent;     // Index of first content that's an error or error-result
-    NSDictionary *targetAcceptableContentTypes;  // Read-only after -init; no lock required
-    
-    OWContent *mostRecentAddress;     // Latest content that represents an OWAddress; prot. by contextLock
-    unsigned int addressCount;        // The number of addresses we've seen; protected by contextLock
-    OWContent *mostRecentlyOffered;   // To avoid offering the same content repeatedly
-    id <OWCacheArc> mostRecentArcProducingSource; // Basis for -workDone, -workToBeDone, protected by contextLock
-    
-    NSLock *contextLock;              // Protects a few ivars. NOTE: This is a 'leaf' lock. It is vital that no other locks be acquired while this lock is held.
-    NSMutableDictionary *context;     // Miscellaneous context information. Protected by contextLock
-    NSMutableArray *deallocationObservers; // Protected by contextLock
-
-    struct {
-        unsigned int contentError:1;
-        unsigned int everHadContentError:1;
-
-        unsigned int processingError:1;
-        unsigned int delayedForError:1;
-        
-        // new
-        unsigned int traversingLastArc:1;
-        unsigned int delayedNotificationWaitingArc:1;
-
-        unsigned int debug:1;
-    } flags;
-    OFInvocation *continuationEvent;
-
-    NSString *targetTypeFormatString;
-    size_t maximumWorkToBeDone;
-    NSUInteger threadsUsedCount;
-
-    NSString *errorNameString;
-    NSString *errorReasonString;
-    NSDate *errorDelayDate;
-}
-
 // For notification of pipeline fetches. Notifications' objects are a pipeline, their info dictionary keys are listed below. 
 + (void)addObserver:(id)anObserver selector:(SEL)aSelector address:(OWAddress *)anAddress;
 - (void)addObserver:(id)anObserver selector:(SEL)aSelector;
@@ -173,8 +110,6 @@ typedef enum {
 - (OWPipeline *)cloneWithTarget:(id <OWTarget, OWFWeakRetain, NSObject>)aTarget;
 
 - (NSNumber *)estimateCostFromType:(OWContentType *)aType;
-
-OWFWeakRetainConcreteImplementation_INTERFACE
 
 // Messages sent to us by our arcs
 

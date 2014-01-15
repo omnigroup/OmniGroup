@@ -93,3 +93,13 @@ NSString *OFCopySymbolicBacktraceForNumericBacktrace(NSString *numericTrace)
     return outputString;
 #endif
 }
+
+void OFLogBacktrace(void)
+{
+    NSString *backtrace = OFCopySymbolicBacktrace();
+    NSData *data = [backtrace dataUsingEncoding:NSUTF8StringEncoding];
+    [backtrace release];
+    
+    fwrite([data bytes], [data length], 1, stderr);
+}
+

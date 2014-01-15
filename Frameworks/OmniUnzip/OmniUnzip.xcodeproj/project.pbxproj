@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1571136718637798002F6107 /* ja.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 157113661863778F002F6107 /* ja.lproj */; };
+		15F7CC3A185F9CB700EFB846 /* de.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC31185F9C7F00EFB846 /* de.lproj */; };
+		15F7CC3B185F9CB700EFB846 /* es.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC32185F9C7F00EFB846 /* es.lproj */; };
+		15F7CC3C185F9CB700EFB846 /* fr.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC33185F9C7F00EFB846 /* fr.lproj */; };
+		15F7CC3D185F9CB700EFB846 /* it.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC34185F9C7F00EFB846 /* it.lproj */; };
+		15F7CC3E185F9CB700EFB846 /* nl.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC35185F9C7F00EFB846 /* nl.lproj */; };
+		15F7CC3F185F9CB700EFB846 /* ru.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC36185F9C7F00EFB846 /* ru.lproj */; };
+		15F7CC40185F9CB700EFB846 /* zh-Hans.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC37185F9C7F00EFB846 /* zh-Hans.lproj */; };
 		34E20FCE1193151200ECA875 /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 424182440F44B7930029B4DA /* ioapi.c */; };
 		34E20FCF1193151300ECA875 /* ioapi.h in Headers */ = {isa = PBXBuildFile; fileRef = 424182450F44B7930029B4DA /* ioapi.h */; };
 		34E20FD01193151A00ECA875 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 4241824D0F44B7930029B4DA /* unzip.c */; };
@@ -59,10 +67,38 @@
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		15F7CC39185F9CAE00EFB846 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "Resources/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				15F7CC3A185F9CB700EFB846 /* de.lproj in CopyFiles */,
+				15F7CC3B185F9CB700EFB846 /* es.lproj in CopyFiles */,
+				15F7CC3C185F9CB700EFB846 /* fr.lproj in CopyFiles */,
+				15F7CC3D185F9CB700EFB846 /* it.lproj in CopyFiles */,
+				1571136718637798002F6107 /* ja.lproj in CopyFiles */,
+				15F7CC3E185F9CB700EFB846 /* nl.lproj in CopyFiles */,
+				15F7CC3F185F9CB700EFB846 /* ru.lproj in CopyFiles */,
+				15F7CC40185F9CB700EFB846 /* zh-Hans.lproj in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		157113661863778F002F6107 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = Localization/iOS/ja.lproj; sourceTree = "<group>"; };
+		15F7CC31185F9C7F00EFB846 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
+		15F7CC32185F9C7F00EFB846 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
+		15F7CC33185F9C7F00EFB846 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fr.lproj; path = Localization/iOS/fr.lproj; sourceTree = "<group>"; };
+		15F7CC34185F9C7F00EFB846 /* it.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = it.lproj; path = Localization/iOS/it.lproj; sourceTree = "<group>"; };
+		15F7CC35185F9C7F00EFB846 /* nl.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = nl.lproj; path = Localization/iOS/nl.lproj; sourceTree = "<group>"; };
+		15F7CC36185F9C7F00EFB846 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ru.lproj; path = Localization/iOS/ru.lproj; sourceTree = "<group>"; };
+		15F7CC37185F9C7F00EFB846 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "zh-Hans.lproj"; path = "Localization/iOS/zh-Hans.lproj"; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* OmniUnzip_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUnzip_Prefix.pch; sourceTree = "<group>"; };
 		34C63DEE10DA9C69004889BB /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		34C63DEF10DA9C69004889BB /* Omni-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
@@ -135,7 +171,7 @@
 		424183BF0F44CF990029B4DA /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
 		424183C00F44CF990029B4DA /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		424183C10F44CF990029B4DA /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
-		4241860E0F44E2F60029B4DA /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniUnzip.strings; sourceTree = "<group>"; };
+		4241860E0F44E2F60029B4DA /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/OmniUnzip.strings; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* OmniUnzip.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniUnzip.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -180,6 +216,7 @@
 				089C1665FE841158C02AAC07 /* Resources */,
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				034768DFFF38A50411DB9C8B /* Products */,
+				15F7CC38185F9C8400EFB846 /* Localization */,
 			);
 			name = OmniUnzip;
 			sourceTree = "<group>";
@@ -232,6 +269,21 @@
 				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
 			);
 			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		15F7CC38185F9C8400EFB846 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				157113661863778F002F6107 /* ja.lproj */,
+				15F7CC31185F9C7F00EFB846 /* de.lproj */,
+				15F7CC32185F9C7F00EFB846 /* es.lproj */,
+				15F7CC33185F9C7F00EFB846 /* fr.lproj */,
+				15F7CC34185F9C7F00EFB846 /* it.lproj */,
+				15F7CC35185F9C7F00EFB846 /* nl.lproj */,
+				15F7CC36185F9C7F00EFB846 /* ru.lproj */,
+				15F7CC37185F9C7F00EFB846 /* zh-Hans.lproj */,
+			);
+			name = Localization;
 			sourceTree = "<group>";
 		};
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
@@ -386,6 +438,7 @@
 				34E20FC7119314D200ECA875 /* Sources */,
 				34E20FC8119314D200ECA875 /* Frameworks */,
 				341FE0331193170F003F4192 /* Build Strings */,
+				15F7CC39185F9CAE00EFB846 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -428,10 +481,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				Japanese,
-				French,
-				German,
+				en,
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* OmniUnzip */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -517,7 +567,7 @@
 		4241860D0F44E2F60029B4DA /* OmniUnzip.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				4241860E0F44E2F60029B4DA /* English */,
+				4241860E0F44E2F60029B4DA /* en */,
 			);
 			name = OmniUnzip.strings;
 			sourceTree = "<group>";

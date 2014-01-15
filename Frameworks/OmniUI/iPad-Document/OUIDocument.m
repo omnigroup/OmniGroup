@@ -111,14 +111,12 @@ static int32_t OUIDocumentInstanceCount = 0;
     return [self initEmptyDocumentToBeSavedToURL:url templateURL:nil error:outError];
 }
 
-#ifdef DEBUG_bungi
 // Use one of our two initializers
 - initWithFileURL:(NSURL *)fileURL;
 {
     OBRejectUnusedImplementation(self, _cmd);
     return nil;
 }
-#endif
 
 - initWithFileItem:(ODSFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
 {

@@ -17,7 +17,7 @@
 
 RCS_ID("$Id$");
 
-static NSString * const DefaultDateBinding = @"defaultDateBinding";
+//static NSString * const DefaultDateBinding = @"defaultDateBinding";
 
 @interface OADatePickerTextField (Private)
 - (id)_initDatePickerTextFieldPost;

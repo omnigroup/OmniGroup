@@ -39,7 +39,7 @@ static void checkDeprecatedSelector(Class documentSubclass, Class documentClass,
     Class *classes = NULL;
     while (classCount < newClassCount) {
 	classCount = newClassCount;
-	classes = realloc(classes, sizeof(Class) * classCount);
+	classes = reallocf(classes, sizeof(Class) * classCount);
 	newClassCount = objc_getClassList(classes, classCount);
     }
     

@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
+#import <OmniBase/macros.h>
 
 @class OFVersionNumber;
 
@@ -39,6 +40,7 @@ extern NSString * const OSUCheckOperationCompletedNotification;
 
 extern NSDictionary *OSUPerformCheck(NSURL *url);
 
+#if !OB_ARC // Should convert this struct to an object
 typedef struct {
     NSString *firstHopHost;
     NSString *baseURLString;
@@ -46,13 +48,13 @@ typedef struct {
     NSString *appVersionString;
     NSString *track;
     BOOL includeHardwareInfo;
-    BOOL includeOpenGLInfo;
     BOOL reportMode;
     NSString *licenseType;
     NSString *osuVersionString;
 } OSURunOperationParameters;
 
 extern NSDictionary *OSURunOperation(const OSURunOperationParameters *params, NSError **outError);
+#endif // !OB_ARC
 
 // Keys for 'query' mode results (reportMode == NO)
 #define OSUCheckResultsURLKey @"url"  // The URL that was actually fetched, as an NSString

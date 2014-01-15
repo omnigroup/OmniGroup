@@ -190,6 +190,25 @@ static NSMutableArray *zOrder;
     [self visualizeConstraints:[view constraintsAffectingLayoutForOrientation:orientation]];
 }
 
+- (void)_stopVisualizingConstraintsMenuAction:(id)sender;
+{
+    [self visualizeConstraints:nil];
+}
+
+- (void)_pickSuperviewMenuAction:(id)sender;
+{
+    NSView *superview = [(NSView *)[sender representedObject] superview];
+    NSRect superviewScreenFrame = [[superview window] convertRectToScreen:[superview convertRect:[superview bounds] toView:nil]];
+    NSPoint offsetOrigin = NSMakePoint(NSMinX(superviewScreenFrame) + 20, NSMaxY(superviewScreenFrame) - 20);
+    
+    [OAViewPicker pickView:superview];
+    
+    if ([self _showMenuForPickedView:superview atScreenLocation:offsetOrigin])
+        [OAViewPicker cancelActivePicker];
+    else
+        [self visualizeConstraintsForPickedView:nil];
+}
+
 - (void)_logSubtreeDescriptionMenuAction:(id)sender;
 {
     NSView *view = [sender representedObject];
@@ -207,50 +226,85 @@ static NSMutableArray *zOrder;
     [pboard writeObjects:[NSArray arrayWithObject:addressString]];
 }
 
+- (BOOL)_showMenuForPickedView:(NSView *)pickedView atScreenLocation:(NSPoint)point;
+{
+    static NSMenu *constraintsOptions;
+    static NSMenuItem *headerItem, *frameItem, *alignmentRectItem, *ambiguousItem, *translatesItem, *horizontalItem, *verticalItem, *pickSuperviewItem, *logSubtreeItem, *copyAddressItem;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        constraintsOptions = [[NSMenu alloc] initWithTitle:@"View Debugging"];
+        [constraintsOptions setAutoenablesItems:NO];
+        
+        headerItem = [constraintsOptions addItemWithTitle:@"<PICKED VIEW>" action:NULL keyEquivalent:@""];
+        [headerItem setEnabled:NO];
+        
+        frameItem = [constraintsOptions addItemWithTitle:@"<FRAME>" action:NULL keyEquivalent:@""];
+        [frameItem setEnabled:NO];
+        
+        alignmentRectItem = [constraintsOptions addItemWithTitle:@"<ALIGNMENT RECT>" action:NULL keyEquivalent:@""];
+        [alignmentRectItem setEnabled:NO];
+        
+        [constraintsOptions addItem:[NSMenuItem separatorItem]];
+        
+        ambiguousItem = [constraintsOptions addItemWithTitle:@"<AMBIGIOUS CONSTRAINTS>" action:NULL keyEquivalent:@""];
+        [ambiguousItem setEnabled:NO];
+        
+        translatesItem = [constraintsOptions addItemWithTitle:@"<TRANSLATES AUTORESIZING MASK>" action:NULL keyEquivalent:@""];
+        [translatesItem setEnabled:NO];
+        
+        horizontalItem = [constraintsOptions addItemWithTitle:@"Visualize horizontal constraints" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
+        [horizontalItem setIndentationLevel:1];
+        [horizontalItem setTag:NSLayoutConstraintOrientationHorizontal];
+        [horizontalItem setEnabled:YES];
+        
+        verticalItem = [constraintsOptions addItemWithTitle:@"Visualize vertical constraints" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
+        [verticalItem setIndentationLevel:1];
+        [verticalItem setTag:NSLayoutConstraintOrientationVertical];
+        [verticalItem setEnabled:YES];
+        
+        [constraintsOptions addItemWithTitle:@"Stop visualizing constraints" action:@selector(_stopVisualizingConstraintsMenuAction:) keyEquivalent:@""];
+        
+        [constraintsOptions addItem:[NSMenuItem separatorItem]];
+        
+        pickSuperviewItem = [constraintsOptions addItemWithTitle:@"<SUPERVIEW>" action:@selector(_pickSuperviewMenuAction:) keyEquivalent:@""];
+        
+        logSubtreeItem = [constraintsOptions addItemWithTitle:@"Log subview hierarchy" action:@selector(_logSubtreeDescriptionMenuAction:) keyEquivalent:@""];
+        [logSubtreeItem setEnabled:YES];
+        
+        copyAddressItem = [constraintsOptions addItemWithTitle:@"Copy address" action:@selector(_copyAddressMenuAction:) keyEquivalent:@""];
+        [copyAddressItem setEnabled:YES];
+    });
+    
+    [headerItem setTitle:[NSString stringWithFormat:@"%@", [pickedView shortDescription]]];
+    [frameItem setTitle:[NSString stringWithFormat:@"Frame: %@", NSStringFromRect([pickedView frame])]];
+    [alignmentRectItem setTitle:[NSString stringWithFormat:@"Alignment Rect: %@", NSStringFromRect([pickedView alignmentRectForFrame:[pickedView frame]])]];
+    [ambiguousItem setTitle:[pickedView hasAmbiguousLayout] ? @"Has ambiguous layout" : @"Does not have ambiguous layout"];
+    [translatesItem setTitle:[pickedView translatesAutoresizingMaskIntoConstraints] ? @"Translates autoresizing mask into constraints" : @"Does not translate autoresizing mask into constraints"];
+    
+    NSView *superview = [pickedView superview];
+    [pickSuperviewItem setTitle:(superview != nil) ? [NSString stringWithFormat:@"Superview: %@…", [superview shortDescription]] : @"No superview"];
+    [pickSuperviewItem setEnabled:superview != nil];
+    
+    for (NSMenuItem *item in constraintsOptions.itemArray) {
+        item.representedObject = pickedView;
+        item.target = self;
+    }
+    
+    BOOL picked = [constraintsOptions popUpMenuPositioningItem:headerItem atLocation:point inView:nil];
+    
+    [horizontalItem setRepresentedObject:nil];
+    [verticalItem setRepresentedObject:nil];
+    
+    return picked;
+}
+
 - (void)visualizeConstraintsForPickedView:(id)sender;
 {
     [OAViewPicker beginPickingForWindow:self withCompletionHandler:^(NSView *pickedView) {
-        if (!pickedView)
+        if (pickedView)
+            return [self _showMenuForPickedView:pickedView atScreenLocation:[NSEvent mouseLocation]];
+        else
             return NO;
-        
-        static NSMenu *constraintsOptions;
-        static NSMenuItem *headerItem, *horizontalItem, *verticalItem, *logSubtreeItem, *copyAddressItem;
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            constraintsOptions = [[NSMenu alloc] initWithTitle:@"Visualize Constraints"];
-            [constraintsOptions setAutoenablesItems:NO];
-            
-            headerItem = [constraintsOptions addItemWithTitle:@"<PICKED VIEW>" action:NULL keyEquivalent:@""];
-            [headerItem setEnabled:NO];
-            
-            horizontalItem = [constraintsOptions addItemWithTitle:@"Visualize horizontal constraints" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
-            [horizontalItem setTag:NSLayoutConstraintOrientationHorizontal];
-            [horizontalItem setEnabled:YES];
-            
-            verticalItem = [constraintsOptions addItemWithTitle:@"Visualize vertical constraints" action:@selector(_visualizeConstraintsMenuAction:) keyEquivalent:@""];
-            [verticalItem setTag:NSLayoutConstraintOrientationVertical];
-            [verticalItem setEnabled:YES];
-            
-            logSubtreeItem = [constraintsOptions addItemWithTitle:@"Log subview hierarchy" action:@selector(_logSubtreeDescriptionMenuAction:) keyEquivalent:@""];
-            [logSubtreeItem setEnabled:YES];
-            
-            copyAddressItem = [constraintsOptions addItemWithTitle:@"Copy address" action:@selector(_copyAddressMenuAction:) keyEquivalent:@""];
-            [copyAddressItem setEnabled:YES];
-        });
-        
-        [headerItem setTitle:[NSString stringWithFormat:@"%@", [pickedView shortDescription]]];
-        
-        for (NSMenuItem *item in constraintsOptions.itemArray) {
-            item.representedObject = pickedView;
-            item.target = self;
-        }
-
-        BOOL picked = [constraintsOptions popUpMenuPositioningItem:headerItem atLocation:[NSEvent mouseLocation] inView:nil];
-        
-        [horizontalItem setRepresentedObject:nil];
-        [verticalItem setRepresentedObject:nil];
-        
-        return picked;
     }];
 }
 

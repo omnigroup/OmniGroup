@@ -1122,7 +1122,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 {
     id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
     if ([delegate respondsToSelector:@selector(documentPicker:printButtonTitleForFileItem:)]) {
-        return [delegate documentPicker:_documentPicker printButtonTitleForFileItem:nil];
+        return [delegate documentPicker:_documentPicker printButtonTitleForFileItem:self.singleSelectedFileItem];
     }
     
     return NSLocalizedStringFromTableInBundle(@"Print", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view");
@@ -1698,6 +1698,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         blockSelf->_documentStoreFilter.filterPredicate = filter.predicate;
     }];
 
+    // For now our filters are exclusive, but if they stop being so someday, we could filter our selection instead of clearing it entirely.
+    [self clearSelection:NO];
+    
     // The delegate likely wants to update the title displayed in the document picker toolbar.
     [self updateTitle];
     [_mainScrollView previewedItemsChangedForGroups];
@@ -2462,7 +2465,6 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
         }
         
         _exportBarButtonItem.enabled = NO;
-        _exportBarButtonItem.enabled = NO;
         _duplicateDocumentBarButtonItem.enabled = NO;
         _deleteBarButtonItem.enabled = NO;
         
@@ -2570,20 +2572,28 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
             _duplicateDocumentBarButtonItem.enabled = NO;
             _deleteBarButtonItem.enabled = NO;
         } else {
-            BOOL canExport;
-            if (([_documentStore.scopes count] > 2) || (self.selectedScope.isTrash))
-                canExport = YES;
-            else if (count > 1 && !self.selectedScope.isTrash)
-                canExport = YES; // Make new folder
-            else if (count == 1 && !self.hasSelectedFolder)
-                canExport = ([[self availableExportTypesForFileItem:self.singleSelectedFileItem serverAccount:nil exportOptionsType:OUIExportOptionsNone] count] > 0);
+            BOOL isViewingTrash = self.selectedScope.isTrash;
+            ODSFileItem *singleSelectedFileItem = (count == 1) ? self.singleSelectedFileItem : nil;
+            
+            // Disable the export option while in the trash. We also don't support exporting multiple documents at the same time.
+            BOOL canExport = !isViewingTrash && (singleSelectedFileItem != nil);
+            if (canExport)
+                canExport = ([[self availableExportTypesForFileItem:singleSelectedFileItem serverAccount:nil exportOptionsType:OUIExportOptionsNone] count] > 0);
+            
+            BOOL canMove;
+            if (isViewingTrash)
+                canMove = YES; // Restore from trash
+            else if ([_documentStore.scopes count] > 2)
+                canMove = YES; // Move between scopes
+            else if (count > 1 && !isViewingTrash)
+                canMove = YES; // Make new folder
             else
-                canExport = NO;
-
+                canMove = NO;
+            
             _exportBarButtonItem.enabled = canExport;
-            _moveBarButtonItem.enabled = canExport;
+            _moveBarButtonItem.enabled = canMove;
             _duplicateDocumentBarButtonItem.enabled = YES;
-            _deleteBarButtonItem.enabled = YES;
+            _deleteBarButtonItem.enabled = YES; // Deletion while in the trash is just an immediate removal.
         }
     }
 }

@@ -10,6 +10,7 @@
 #import <OmniBase/OBUtilities.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
+#import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFUTI.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -299,7 +300,7 @@ BOOL OFURLIsStandardizedOrMissing(NSURL *url)
 {
     OBPRECONDITION([url isFileURL]);
     
-    NSError *error;
+    OB_AUTORELEASING NSError *error;
     if (![url checkResourceIsReachableAndReturnError:&error]) {
         if ([error causedByMissingFile])
             return YES; // -URLByStandardizingPath won't do anything useful in this case.
@@ -523,7 +524,7 @@ static NSInteger OFPackageDebug = NSIntegerMax;
 static void initialize(void) __attribute__((constructor));
 static void initialize(void)
 {
-    OBInitializeDebugLogLevel(OFPackageDebug);
+    OFInitializeDebugLogLevel(OFPackageDebug);
 }
 
 #define DEBUG_PACKAGE(level, format, ...) do { \

@@ -9,6 +9,7 @@
 
 #import <Foundation/Foundation.h>
 #import <OmniFoundation/OFNull.h> // For OFNOTEQUAL
+#import <OmniFoundation/OFPreference.h>
 
 RCS_ID("$Id$");
 
@@ -28,33 +29,51 @@ static NSString * const OSUVersionKey = @"version";
 
 static BOOL OSURunTimeHasRunningSession = NO;
 
+static NSInteger OSURuntimeDebug = NSIntegerMax;
+#define OSU_RUNTIME_DEBUG(level, format, ...) do { \
+    if (OSURuntimeDebug >= (level)) \
+        NSLog(@"OSU: " format, ## __VA_ARGS__); \
+} while (0)
+
+static void OSURuntimeDebugInitialize(void) __attribute__((constructor));
+static void OSURuntimeDebugInitialize(void)
+{
+    OFInitializeDebugLogLevel(OSURuntimeDebug);
+}
+
 BOOL OSURunTimeHasHandledApplicationTermination(void)
 {
     return (OSURunTimeHasRunningSession == NO);
 }
 
-void OSURunTimeApplicationActivated(void)
+void OSURunTimeApplicationActivated(NSString *appIdentifier, NSString *bundleVersion)
 {
-    OBPRECONDITION(OSURunTimeHasRunningSession == NO);
-    OSURunTimeHasRunningSession = YES;
-    
     // Record the time we started this run of the application.  Also, increment the number of runs.
     // If we crash, OCC will handle calculating how long we ran until we crashed.  If we quit normally, we will do it.
     // Thus, if we launch and a preference exists for the 'last start time', then there is a bug.
     NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    // Can't really OBASSERT on this since it'll fire over and over when in the debugger.  So, we just log and only when not building for DEBUG to avoid accumulating log spam.
+    // Can't really OBASSERT on this since it'll fire over and over when in the debugger. So, we just log and only when not building for DEBUG to avoid accumulating log spam.
 #if !defined(DEBUG) || defined(DEBUG_kc)
     if ([defaults objectForKey:OSULastRunStartIntervalKey] != nil) {
         NSLog(@"%@ default is non-nil; unless you forcibly killed the app and restarted it it should be nil at launch time.", OSULastRunStartIntervalKey);
+        
+        // If we aren't in the debugger and we get activated when we don't expect to, then we signal this as a crash. On the Mac, OmniCrashCatcher will have called this on our app's behalf, but on iOS we do it ourselves.
+        OSURunTimeApplicationDeactivated(appIdentifier, bundleVersion, YES/*crashed*/);
     }
 #endif
-    
+
+    OBASSERT(OSURunTimeHasRunningSession == NO);
+    OSURunTimeHasRunningSession = YES;
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     [[NSProcessInfo processInfo] disableSuddenTermination];
 #endif
-    [defaults setObject:[NSNumber numberWithDouble:now] forKey:OSULastRunStartIntervalKey];
+    NSNumber *startIntervalNumber = @(now);
+    [defaults setObject:startIntervalNumber forKey:OSULastRunStartIntervalKey];
+    OSU_RUNTIME_DEBUG(1, @"Activating %@ at %@", appIdentifier, startIntervalNumber);
+    
     [defaults synchronize]; // Make sure we save in case we crash before NSUserDefaults automatically synchronizes
 }
 
@@ -135,8 +154,8 @@ void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleV
     OBPRECONDITION(appIdentifier);
     OBPRECONDITION(bundleVersion);
     
-    OBPRECONDITION(OSURunTimeHasRunningSession == YES);
-    if (OSURunTimeHasRunningSession == NO)
+    OBPRECONDITION(crashed || OSURunTimeHasRunningSession);
+    if (!crashed && !OSURunTimeHasRunningSession)
         return;
     OSURunTimeHasRunningSession = NO;
 
@@ -160,16 +179,21 @@ void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleV
     NSDictionary *current = _OSURunTimeUpdateStatisticsScope([statistics objectForKey:OSURunTimeStatisticsCurrentVersionsScopeKey], bundleVersion, startTimeNumber, now, crashed, firstCallForThisRun);
     
     statistics = [[NSDictionary alloc] initWithObjectsAndKeys:all, OSURunTimeStatisticsAllVersionsScopeKey, current, OSURunTimeStatisticsCurrentVersionsScopeKey, nil];
+    OSU_RUNTIME_DEBUG(1, @"Deactivating %@ with %@", appIdentifier, statistics);
+
     CFPreferencesSetAppValue((CFStringRef)OSURunTimeStatisticsKey, (CFDictionaryRef)statistics, (CFStringRef)appIdentifier);
     [statistics release];
-
+    
     CFPreferencesSetAppValue((CFStringRef)OSULastRunStartIntervalKey, NULL, (CFStringRef)appIdentifier);
 
     CFPreferencesAppSynchronize((CFStringRef)appIdentifier);
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     [[NSProcessInfo processInfo] enableSuddenTermination];
 #endif
-    firstCallForThisRun = NO;
+    
+    // On iOS, let the crash cleanup go through w/o flagging this
+    if (!crashed)
+        firstCallForThisRun = NO;
 }
 
 // This gets called from within a short-lived tool.  We'll feel free to leak.

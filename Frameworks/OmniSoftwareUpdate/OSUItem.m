@@ -10,7 +10,7 @@
 #import "OSUErrors.h"
 #import "OSUInstaller.h"
 #import "OSUChecker.h"
-#import "OSUPreferences.h"
+#import "OSUPreferences-Items.h"
 
 #import <OmniAppKit/NSFileManager-OAExtensions.h>
 #import <OmniFoundation/OmniFoundation.h>
@@ -209,12 +209,16 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
 
 - (void)_updateIgnoredState:(id)sender
 {
+#if OSU_FULL
     BOOL amIgnored = [OSUPreferences itemIsIgnored:self];
     if (amIgnored != _ignored) {
         [self willChangeValueForKey:OSUItemIgnoredBinding];
         _ignored =  amIgnored;
         [self didChangeValueForKey:OSUItemIgnoredBinding];
     }
+#else
+    OBASSERT_NOT_REACHED("This code gets compiled when building from the workspace for MAS builds, but should never be linked/executed");
+#endif
 }
 
 - initWithRSSElement:(NSXMLElement *)element error:(NSError **)outError;
@@ -486,7 +490,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     if (!_priceFormatter) {
         // Make sure that we display the feed's specified currency according to the user's specified locale.  For example, if the user is Australia, we need to specify that the price is in US dollars instead of just using '$'.
         NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
-        OBASSERT([formatter formatterBehavior] == NSNumberFormatterBehavior10_4);
+        OBASSERT([formatter formatterBehavior] != NSDateFormatterBehavior10_0);
         [formatter setNumberStyle:NSNumberFormatterCurrencyStyle];
         [formatter setLocale:[NSLocale currentLocale]];
         [formatter setCurrencyCode:_currencyCode];

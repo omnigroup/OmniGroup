@@ -31,4 +31,11 @@ RCS_ID("$Id$")
     return [self nextEventMatchingMask:(NSAnyEventMask & ~NSSystemDefinedMask) untilDate:[NSDate distantPast] inMode:mode dequeue:NO];
 }
 
+- (void)flushTopLevelAutoreleasePool;
+{
+    // In some cases, the top-level pool doesn't get flushed as soon as we'd like (for example if the app is in the background and responding to AppleEvents, reloading documents for coordinated writes to documents, etc.
+    NSEvent *event = [NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint modifierFlags:0 timestamp:[NSDate timeIntervalSinceReferenceDate] windowNumber:0 context:NULL subtype:-1 data1:0 data2:0];
+    [NSApp postEvent:event atStart:NO];
+}
+
 @end

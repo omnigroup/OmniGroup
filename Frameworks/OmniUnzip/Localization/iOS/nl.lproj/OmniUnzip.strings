@@ -1,0 +1,37 @@
+/* error reason */
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Een van de onderdelen in het zipbestand heeft een naam die niet naar een pad in het bestandssysteem kan worden geconverteerd.";
+
+/* error description */
+"Duplicate zip member name \"%@\"." = "Naam ziponderdeel “%@” komt dubbel voor.";
+
+/* error reason */
+"The unzip library failed to open %@." = "De unzipbibliotheek kan %@ niet openen.";
+
+/* error reason */
+"The zip library function %s returned %d" = "De zipbibliotheekfunctie %1$s heeft %2$d geretourneerd.";
+
+/* error reason */
+"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "De zipbibliotheekfunctie %1$s heeft %2$d geretourneerd bij een poging de gegevens voor onderdeel “%3$@” in “%4$@” te lezen.";
+
+/* error reason */
+"Unable to close zip data." = "Zipgegevens kunnen niet worden gesloten.";
+
+/* error reason */
+"Unable to close zip file." = "Zipbestand kan niet worden gesloten.";
+
+/* error reason */
+"Unable to create zip file." = "Zipbestand kan niet worden aangemaakt.";
+
+/* error description */
+"Unable to open zip archive." = "Ziparchief kan niet worden geopend.";
+
+/* error description
+   error reason */
+"Unable to read zip data." = "Zipgegevens kunnen niet worden gelezen.";
+
+/* error description */
+"Unable to read zip file." = "Zipbestand kan niet worden gelezen.";
+
+/* error description */
+"Unable to write zip file." = "Zipbestand kan niet worden geschreven.";
+

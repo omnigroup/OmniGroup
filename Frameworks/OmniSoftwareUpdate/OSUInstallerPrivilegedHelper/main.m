@@ -27,7 +27,7 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
 
 @interface OSUInstallerPrivilegedHelper : NSObject <NSXPCListenerDelegate, OSUInstallerPrivilegedHelper> {
   @private
-    NSMutableSet *_activeConnections;
+    NSUInteger _activeConnectionCount;
 }
 
 @end
@@ -35,24 +35,6 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
 #pragma mark -
 
 @implementation OSUInstallerPrivilegedHelper
-
-- (id)init;
-{
-    self = [super init];
-    if (self == nil) {
-        return nil;
-    }
-    
-    _activeConnections = [[NSMutableSet alloc] init];
-    
-    return self;
-}
-
-- (void)dealloc;
-{
-    [_activeConnections release];
-    [super dealloc];
-}
 
 #pragma mark OSUInstallerPrivilegedHelper
 
@@ -65,8 +47,8 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
 {
     NSError *error = nil;
 
-    // We can only uninstall ourselves if there is a single active connection
-    if ([_activeConnections count] > 1) {
+    // We can only uninstall ourselves if there are no active connections doing useful work
+    if (_activeConnectionCount > 0) {
         NSDictionary *userInfo = @{
             OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey : ERROR_FILENAME_AND_NUMBER,
         };
@@ -106,56 +88,68 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
 
 - (void)runInstallerScriptWithArguments:(NSArray *)arguments localizationBundleURL:(NSURL *)bundleURL authorizationData:(NSData *)authorizationData reply:(void (^)(BOOL success, NSError *error))reply;
 {
-    NSError *error = nil;
-    NSBundle *localizationBundle = [NSBundle bundleWithURL:bundleURL];
+    _activeConnectionCount++;
     
-    if (![self _validateAuthorizationData:authorizationData forRightWithName:OSUInstallUpdateRightName error:&error]) {
-        reply(NO, error);
-        return;
+    @try {
+        NSError *error = nil;
+        NSBundle *localizationBundle = [NSBundle bundleWithURL:bundleURL];
+        
+        if (![self _validateAuthorizationData:authorizationData forRightWithName:OSUInstallUpdateRightName error:&error]) {
+            reply(NO, error);
+            return;
+        }
+        
+        BOOL success = [OSUInstallerScript runWithArguments:arguments localizationBundle:localizationBundle error:&error];
+        reply(success, error);
+    } @finally {
+        _activeConnectionCount--;
     }
-
-    BOOL success = [OSUInstallerScript runWithArguments:arguments localizationBundle:localizationBundle error:&error];
-    reply(success, error);
 }
 
 - (void)removeItemAtURL:(NSURL *)itemURL trashDirectoryURL:(NSURL *)trashDirectoryURL authorizationData:(NSData *)authorizationData reply:(void (^)(BOOL success, NSError *error))reply;
 {
-    NSError *error = nil;
-    NSFileManager *fileManager = [NSFileManager defaultManager];
+    _activeConnectionCount++;
     
-    // Use the same right as we use for updating, since we only ever do this as part of the update process.
-    if (![self _validateAuthorizationData:authorizationData forRightWithName:OSUInstallUpdateRightName error:&error]) {
-        reply(NO, error);
-        return;
-    }
-    
-    BOOL success = NO;
-    
-    if (trashDirectoryURL != nil) {
-        NSURL *destinationURL = [trashDirectoryURL URLByAppendingPathComponent:[itemURL lastPathComponent]];
-        while ([fileManager fileExistsAtPath:[destinationURL path]]) {
-            // Add a timestamp to the destination file
-            NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
-            [formatter setDateFormat:@" HH-mm-ss-SSS"];
-            
-            NSString *timestamp = [formatter stringFromDate:[NSDate date]];
-            NSString *lastPathComponent = [itemURL lastPathComponent];
-            NSString *basename = [lastPathComponent stringByDeletingPathExtension];
-            NSString *extension = [lastPathComponent pathExtension];
-            NSString *filename = [[basename stringByAppendingString:timestamp] stringByAppendingPathExtension:extension];
-            
-            destinationURL = [trashDirectoryURL URLByAppendingPathComponent:filename];
+    @try {
+        NSError *error = nil;
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        
+        // Use the same right as we use for updating, since we only ever do this as part of the update process.
+        if (![self _validateAuthorizationData:authorizationData forRightWithName:OSUInstallUpdateRightName error:&error]) {
+            reply(NO, error);
+            return;
         }
         
-        success = [fileManager moveItemAtURL:itemURL toURL:destinationURL error:&error];
+        BOOL success = NO;
+        
+        if (trashDirectoryURL != nil) {
+            NSURL *destinationURL = [trashDirectoryURL URLByAppendingPathComponent:[itemURL lastPathComponent]];
+            while ([fileManager fileExistsAtPath:[destinationURL path]]) {
+                // Add a timestamp to the destination file
+                NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
+                [formatter setDateFormat:@" HH-mm-ss-SSS"];
+                
+                NSString *timestamp = [formatter stringFromDate:[NSDate date]];
+                NSString *lastPathComponent = [itemURL lastPathComponent];
+                NSString *basename = [lastPathComponent stringByDeletingPathExtension];
+                NSString *extension = [lastPathComponent pathExtension];
+                NSString *filename = [[basename stringByAppendingString:timestamp] stringByAppendingPathExtension:extension];
+                
+                destinationURL = [trashDirectoryURL URLByAppendingPathComponent:filename];
+            }
+            
+            success = [fileManager moveItemAtURL:itemURL toURL:destinationURL error:&error];
+        }
+        
+        // If we couldn't move it the the trash, just delete it outright
+        if (!success) {
+            success = [fileManager removeItemAtURL:itemURL error:&error];
+        }
+        
+        reply(success, error);
+    } @finally {
+        _activeConnectionCount--;
     }
-    
-    // If we couldn't move it the the trash, just delete it outright
-    if (!success) {
-        success = [fileManager removeItemAtURL:itemURL error:&error];
-    }
-    
-    reply(success, error);
 }
 
 #pragma mark Private
@@ -208,8 +202,10 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
         items[0].valueLength = 0;
         items[0].value = NULL;
         items[0].flags = 0;
-        
-        OSStatus status = AuthorizationCopyRights(authorizationRef, &rights, kAuthorizationEmptyEnvironment, kAuthorizationFlagDefaults, NULL);
+
+        // The client should have pre-authorized these rights, but allow interaction here as a last resort.
+        AuthorizationFlags flags = kAuthorizationFlagExtendRights | kAuthorizationFlagInteractionAllowed;
+        OSStatus status = AuthorizationCopyRights(authorizationRef, &rights, kAuthorizationEmptyEnvironment, flags, NULL);
         if (status != noErr) {
             if (error != NULL) {
                 NSDictionary *userInfo = @{
@@ -233,13 +229,9 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
 {
     connection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(OSUInstallerPrivilegedHelper)];
     connection.exportedObject = self;
-    connection.invalidationHandler = ^{
-        [_activeConnections removeObject:connection];
-    };
-    
-    [_activeConnections addObject:connection];
+
     [connection resume];
-    
+
     return YES;
 }
 

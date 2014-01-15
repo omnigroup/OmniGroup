@@ -93,17 +93,35 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
         _documentTitleTextField.textAlignment = NSTextAlignmentCenter;
         _documentTitleTextField.autocapitalizationType = UITextAutocapitalizationTypeWords;
         _documentTitleTextField.borderStyle = UITextBorderStyleNone;
-        _documentTitleTextField.backgroundColor = [UIColor clearColor];
         _documentTitleTextField.textColor = _titleColor;
         _documentTitleTextField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
         _documentTitleTextField.delegate = self;
-        _documentTitleTextField.clearButtonMode = UITextFieldViewModeWhileEditing;
+        
+        // Custom clear button.
+        _documentTitleTextField.clearButtonMode = UITextFieldViewModeNever;
+        UIImage *clearButtonImage = [[UIImage imageNamed:@"OUITextField-ClearButton"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        UIButton *customClearButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        customClearButton.frame = (CGRect){
+            .size.width = 31.0f,
+            .size.height = 31.0f
+        };
+        [customClearButton addTarget:self action:@selector(_clearDocumentTitleTextField:) forControlEvents:UIControlEventTouchUpInside];
+        [customClearButton setImage:clearButtonImage forState:UIControlStateNormal];
+        _documentTitleTextField.rightView = customClearButton;
+        _documentTitleTextField.rightViewMode = UITextFieldViewModeAlways;
 
+
+        // Keep text centered by evening out the padding on the left.
         UIView *leftView = [[UIView alloc] init];
-        CGRect clearButtonRect = [_documentTitleTextField clearButtonRectForBounds:_documentTitleTextField.bounds];
-        CGRect leftViewFrame = CGRectMake(0, clearButtonRect.origin.y, clearButtonRect.size.width + _documentTitleTextField.frame.size.width - clearButtonRect.origin.x - clearButtonRect.size.width, clearButtonRect.size.height);
+        CGRect clearButtonRect = _documentTitleTextField.rightView.frame;
+        
+        CGRect leftViewFrame = (CGRect){
+            .origin = CGPointZero,
+            .size.width = clearButtonRect.size.width,
+            .size.height = 6.0f // Just some height so it can be seen in debug when using a background color.
+        };
+        
         leftView.frame = leftViewFrame;
-        leftView.backgroundColor = [UIColor clearColor];
         _documentTitleTextField.leftView = leftView;
         _documentTitleTextField.leftViewMode = UITextFieldViewModeAlways;
         
@@ -258,14 +276,6 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
         return NO;
     }
 
-    // TODO: Currently, the UITextViewModeWhileEditing doesn't behave in the same manner for the clear button and the left view, it is unclear from documentation as to whether or not they should behave in the same way.
-    if (range.location == 0 && range.length == textField.text.length && [NSString isEmptyString:string]) {
-        OBFinishPortingLater("Use UITextFieldViewModeWhileEditing when initializing the text field's left view, instead of doing these hacky swaps");
-        _documentTitleTextField.leftViewMode = UITextFieldViewModeNever;
-    } else {
-        _documentTitleTextField.leftViewMode = UITextFieldViewModeAlways;
-    }
-
     return YES;
 }
 
@@ -356,6 +366,11 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
         [self endRenaming];
     }
+}
+
+- (void)_clearDocumentTitleTextField:(id)sender;
+{
+    _documentTitleTextField.text = nil;
 }
 
 @end

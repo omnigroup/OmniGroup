@@ -113,6 +113,7 @@
     #import <OmniFoundation/OFDateFormatter.h>
     #import <OmniFoundation/OFMetricPrefixFormatter.h>
     #import <OmniFoundation/OFMultipleNumberFormatter.h>
+    #import <OmniFoundation/OFNumberFormatter.h>
     #import <OmniFoundation/OFSimpleStringFormatter.h>
     #import <OmniFoundation/OFSocialSecurityFormatter.h>
     #import <OmniFoundation/OFTelephoneFormatter.h>

@@ -16,6 +16,11 @@
 RCS_ID("$Id$");
 
 @implementation OIInspectorWindow
+{
+    struct {
+        unsigned int isBeingResizedByResizer:1;
+    } _inspectorWindowFlags;
+}
 
 - (id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag;
 {

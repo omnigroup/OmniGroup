@@ -1,0 +1,37 @@
+/* error reason */
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Имя элемента в zip-файле не удалось преобразовать в путь файловой системы.";
+
+/* error description */
+"Duplicate zip member name \"%@\"." = "Дублирующееся имя члена zip «%@».";
+
+/* error reason */
+"The unzip library failed to open %@." = "Библиотеке распаковки zip не удалось открыть %@.";
+
+/* error reason */
+"The zip library function %s returned %d" = "Функция библиотеки zip %1$s вернула %2$d";
+
+/* error reason */
+"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "Функция библиотеки zip %1$s вернула %2$d при попытке чтения данных записи «%3$@» в «%4$@».";
+
+/* error reason */
+"Unable to close zip data." = "Не удается закрыть данные zip.";
+
+/* error reason */
+"Unable to close zip file." = "Не удается закрыть zip-файл.";
+
+/* error reason */
+"Unable to create zip file." = "Не удается создать файл zip.";
+
+/* error description */
+"Unable to open zip archive." = "Не удается открыть zip-архив.";
+
+/* error description
+   error reason */
+"Unable to read zip data." = "Не удается прочитать данные zip.";
+
+/* error description */
+"Unable to read zip file." = "Не удается прочитать zip-файл.";
+
+/* error description */
+"Unable to write zip file." = "Не удается записать zip-файл.";
+

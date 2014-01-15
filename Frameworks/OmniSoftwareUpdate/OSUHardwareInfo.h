@@ -7,4 +7,17 @@
 //
 // $Id$
 
-extern CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collectHardwareInformation, bool collectOpenGLInformation, NSString *licenseType, bool reportMode);
+extern CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collectHardwareInformation, NSString *licenseType, bool reportMode);
+
+#define OSUReportInfoUUIDKey (@"uuid")
+#define OSUReportInfoLicenseTypeKey (@"license-type")
+#define OSUReportInfoOSVersionKey (@"os")
+#define OSUReportInfoLanguageKey (@"lang")
+#define OSUReportInfoMachineNameKey (@"machine_name")
+#define OSUReportInfoHardwareModelKey (@"hw-model")
+#define OSUReportInfoCPUCountKey (@"ncpu")
+#define OSUReportInfoCPUTypeKey (@"cpu")
+#define OSUReportInfoCPUFrequencyKey (@"cpuhz")
+#define OSUReportInfoBusFrequencyKey (@"bushz")
+#define OSUReportInfoMemorySizeKey (@"mem")
+#define OSUReportInfoVolumeSizeKey (@"vol") // Total size of local volumes

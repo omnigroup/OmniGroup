@@ -208,6 +208,11 @@ static NSString *methodsWithPrefix(Class cls, char prefix)
     return methodsWithPrefix(object_getClass(self), '+');
 }
 
+- (void)expectDeallocationSoon;
+{
+    
+}
+
 #endif
 
 @end

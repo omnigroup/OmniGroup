@@ -9,10 +9,11 @@
 
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFileInfo.h>
-#import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/NSString-OFConversion.h>
 #import <OmniFoundation/NSString-OFURLEncoding.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
+#import <OmniFoundation/OFCredentials.h>
+#import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/OFXMLCursor.h>
 #import <OmniFoundation/OFXMLDocument.h>
@@ -124,9 +125,9 @@ static NSString *ClientComputerName(void)
 {
     OBINITIALIZE;
     
-    OBInitializeDebugLogLevel(ODAVConnectionDebug);
-    OBInitializeDebugLogLevel(ODAVConnectionTaskDebug);
-    OBInitializeDebugLogLevel(ODAVConnectionSessionDebug);
+    OFInitializeDebugLogLevel(ODAVConnectionDebug);
+    OFInitializeDebugLogLevel(ODAVConnectionTaskDebug);
+    OFInitializeDebugLogLevel(ODAVConnectionSessionDebug);
     
 #if defined(OMNI_ASSERTIONS_ON) && (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
     if ([[NSProcessInfo processInfo] isSandboxed]) {

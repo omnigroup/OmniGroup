@@ -171,7 +171,7 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
 
 - (NSArray *)entriesWithNamePrefix:(NSString *)prefix;
 {
-    if ([NSString isEmptyString:prefix])
+    if (prefix == nil || [prefix isEqualToString:@""])
         return _entries;
 
     NSMutableArray *matches = [NSMutableArray array];

@@ -18,7 +18,6 @@
 #import <OmniFoundation/NSString-OFCharacterEnumeration.h>
 #import <OmniBase/objc.h>
 
-#import <Foundation/NSDecimalNumber.h>
 #import <Foundation/NSDate.h> // For NSTimeInterval
 
 #import <CoreFoundation/CFString.h>  // for CFStringEncoding

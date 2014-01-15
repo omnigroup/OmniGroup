@@ -15,6 +15,7 @@
 
 @interface NSView (OAExtensions)
 
+- (BOOL)isDescendantOfFirstResponder;
 - (BOOL)isOrContainsFirstResponder;
 - (void)windowDidChangeKeyOrFirstResponder; // calls -setNeedsDisplay: if -needsDisplayOnWindowDidChangeKeyOrFirstResponder returns YES; then sends -windowDidChangeKeyOrFirstResponder to subviews
 - (BOOL)needsDisplayOnWindowDidChangeKeyOrFirstResponder; // returns NO by default

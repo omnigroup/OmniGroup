@@ -14,6 +14,7 @@
 
 @class NSDate, NSException, NSMutableArray, NSMutableDictionary;
 @class NSPanel;
+@class OADocument;
 
 @interface OAApplication : NSApplication
 {
@@ -63,6 +64,11 @@
 - (IBAction)showPreferencesPanel:(id)sender;
 
 - (void)miniaturizeWindows:(NSArray *)windows;
+
+// AppleScript
+- (id)valueInOrderedDocumentsWithUniqueID:(NSString *)identifier ignoringDocument:(OADocument *)ignoringDocument;
+- (id)valueInOrderedDocumentsWithUniqueID:(NSString *)identifier;
+- (id)valueInOrderedDocumentsWithName:(NSString *)name;
 
 @end
 

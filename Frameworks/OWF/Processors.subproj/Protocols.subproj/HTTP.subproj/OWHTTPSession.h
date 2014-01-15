@@ -76,6 +76,7 @@
 + (NSString *)preferredDateFormat;
 + (NSArray *)acceptLanguages;
 + (NSString *)acceptLanguageValue;
++ (NSString *)acceptEncodingValue;
 
 + (NSCharacterSet *)nonTokenCharacterSet;  // set of characters not allowed in "token"s, RFC2068
 
@@ -109,6 +110,9 @@ typedef enum {
     HTTP_STATUS_SEE_OTHER = 303,
     HTTP_STATUS_NOT_MODIFIED = 304,
     HTTP_STATUS_USE_PROXY = 305,
+    HTTP_STATUS_SWITCH_PROXY = 306,
+    HTTP_STATUS_TEMPORARY_REDIRECT = 307,
+    HTTP_STATUS_PERMANENT_REDIRECT = 308,
 
     HTTP_STATUS_BAD_REQUEST = 400,
     HTTP_STATUS_UNAUTHORIZED = 401,

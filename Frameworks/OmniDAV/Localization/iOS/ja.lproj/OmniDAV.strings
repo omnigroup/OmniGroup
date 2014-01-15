@@ -1,0 +1,35 @@
+/* error description */
+"Could not access the WebDAV location <%@>." = "WebDAV の場所 <%@> にアクセスできませんでした。";
+
+/* Text for HTTP error code 507 (insufficient storage) */
+"insufficient storage" = "ストレージが足りません";
+
+/* error reason - listing contents of a nonexistent directory */
+"No document exists at \"%@\"." = "“%@” に書類はありません。";
+
+/* error reason */
+"No such file \"%@\"." = "“%@” というファイルはありません。";
+
+/* error suggestion */
+"Please check that the user name and password you provided are correct." = "入力したユーザー名とパスワードが正しいことを確認してください。";
+
+/* error reason */
+"Please make sure that the account information is correct." = "アカウント情報が正しいかもう一度確認してください。";
+
+/* error reason */
+"Please make sure that the destination folder exists." = "移動先フォルダが存在することを確認してください。";
+
+/* error reason */
+"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\"." = "“%4$@ %5$@” へのリクエストに対するレスポンスとして、%1$@ サーバーが “%2$@” (%3$d) を返しました。";
+
+/* error description */
+"Unable to delete file." = "ファイルを削除できません。";
+
+/* error description */
+"Unable to perform WebDAV operation." = "WebDAV の操作を実行できません。";
+
+/* error description */
+"Unable to read document." = "書類を読み込みできませんでした。";
+
+/* Error description */
+"WebDAV server failed conformance test." = "WebDAV サーバーは適合テストに失敗しました。";

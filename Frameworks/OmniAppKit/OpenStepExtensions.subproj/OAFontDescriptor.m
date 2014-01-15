@@ -8,6 +8,7 @@
 #import <OmniAppKit/OAFontDescriptor.h>
 
 #import <OmniFoundation/OFCFCallbacks.h>
+#import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
@@ -18,6 +19,8 @@
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIFont.h>
 #import <CoreText/CoreText.h>
+#else
+#import <AppKit/NSFontManager.h>
 #endif
 
 RCS_ID("$Id$");
@@ -250,7 +253,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     return self;
 }
 
-+ (NSDictionary *)_attributesDictionaryForFamily:(NSString *)family size:(CGFloat)size weight:(NSInteger)weight italic:(BOOL)italic condensed:(BOOL)condensed fixedPitch:(BOOL)fixedPitch;
++ (NSMutableDictionary *)_attributesDictionaryForFamily:(NSString *)family size:(CGFloat)size weight:(NSInteger)weight italic:(BOOL)italic condensed:(BOOL)condensed fixedPitch:(BOOL)fixedPitch;
 {
     NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
     {
@@ -298,6 +301,15 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     return self;
 }
 
+- initWithName:(NSString *)name size:(CGFloat)size;
+{
+    OBPRECONDITION(![NSString isEmptyString:name]);
+    OBPRECONDITION(size > 0.0f);
+    
+    OAFontDescriptorPlatformFont font = [OAPlatformFontClass fontWithName:name size:size];
+    return [self initWithFont:font];
+}
+
 - initWithFont:(OAFontDescriptorPlatformFont)font;
 {
     OBPRECONDITION(font);
@@ -305,8 +317,12 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     // Note that this leaves _font as nil so that we get the same results as forward mapping via our caching.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     CTFontDescriptorRef fontDescriptorRef = CTFontCopyFontDescriptor(UIFontToCTFont(font));
-    
+#else
+    CTFontDescriptorRef fontDescriptorRef = CTFontDescriptorCreateWithNameAndSize((CFStringRef)font.fontName, font.pointSize);
+#endif
+
     NSString *family = (NSString *)CTFontDescriptorCopyAttribute(fontDescriptorRef, kCTFontFamilyNameAttribute);
+    NSString *name = (NSString *)CTFontDescriptorCopyAttribute(fontDescriptorRef, kCTFontNameAttribute);
     NSNumber *sizeRef = (NSNumber *)CTFontDescriptorCopyAttribute(fontDescriptorRef, kCTFontSizeAttribute);
     CGFloat size;
     if (sizeRef != nil) {
@@ -327,16 +343,25 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     BOOL isCondensed = (symbolicTraits & kCTFontTraitCondensed) != 0;
     BOOL isFixedPitch = (symbolicTraits & kCTFontMonoSpaceTrait) != 0;
 
-    NSDictionary *attributes = [OAFontDescriptor _attributesDictionaryForFamily:family size:size weight:fontManagerWeight italic:isItalic condensed:isCondensed fixedPitch:isFixedPitch];
-    self = [self initWithFontAttributes:attributes];
+    NSMutableDictionary *attributes = [OAFontDescriptor _attributesDictionaryForFamily:family size:size weight:fontManagerWeight italic:isItalic condensed:isCondensed fixedPitch:isFixedPitch];
+    
+    // Try just the basic attributes to see if that resolves to the font we want.
+    OAFontDescriptor *basic = [[[self class] alloc] initWithFontAttributes:attributes];
+    if (OFISEQUAL(basic.font, font)) {
+        [self release];
+        self = basic;
+    } else {
+        // Otherwise, insert the specific font name, but keep the symbolic attributes as a backup so that if this descriptor is archived and unarchived later on a machine w/o this font, we'll at least get a similar weight/italic/etc.
+        [basic release];
+        attributes[(NSString *)kCTFontNameAttribute] = name;
+        
+        self = [self initWithFontAttributes:attributes];
+    }
     [family release];
+    [name release];
     [sizeRef release];
     [traits release];
     CFRelease(fontDescriptorRef);
-#else
-    NSDictionary *attributes = [[font fontDescriptor] fontAttributes];
-    self = [self initWithFontAttributes:attributes];
-#endif
 
     return self;
 }
@@ -392,6 +417,11 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
         return fontName;
     
     return [self postscriptName];
+}
+
+- (NSString *)desiredFontName;
+{
+    return [_attributes objectForKey:(id)kCTFontNameAttribute];
 }
 
 - (NSString *)postscriptName
@@ -628,7 +658,6 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
 // Returns an array of NSNumbers representing "nearby" existing weights in the current font family. Result may be empty.
 - (NSArray *)_neighboringWeightsForAttemptedMatchingOfWeight:(NSNumber *)originalWeightRef;
 {
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     // Can't use self.family here as that would (mutually) recursively call -font and we'd end up here again.
     CTFontDescriptorRef matchingDescriptor = CTFontDescriptorCreateWithAttributes((CFDictionaryRef)_attributes);
     NSString *familyName = (NSString *)CTFontDescriptorCopyAttribute(matchingDescriptor, kCTFontFamilyNameAttribute);
@@ -638,7 +667,13 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
         return [NSArray array];
     }
 
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     NSArray *fontNamesInFamily = [UIFont fontNamesForFamilyName:familyName];
+#else
+    NSArray *fontNamesInFamily = [[[NSFontManager sharedFontManager] availableMembersOfFontFamily:familyName] arrayByPerformingBlock:^(id value) {
+        return [value objectAtIndex:0];
+    }];
+#endif
     [familyName release];
     NSSet *availableWeights = [fontNamesInFamily setByPerformingBlock:^id(id anObject) {
         NSString *fontName = anObject;
@@ -669,9 +704,6 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
             return NSOrderedSame;
     }];
     return weightsSortedByDistanceFromOriginal;
-#else
-    return [NSArray array];
-#endif
 }
 
 - (OAFontDescriptorPlatformFont)font;
@@ -833,7 +865,7 @@ static OAFontDescriptor *_newWithFontDescriptorHavingTrait(OAFontDescriptor *sel
 
 - (OAFontDescriptor *)newFontDescriptorWithWeight:(NSInteger)weight;
 {
-    if (weight == self.weight && self.hasExplicitWeight)
+    if (self.hasExplicitWeight && weight == self.weight)
         return [self retain];
     
     OAFontDescriptor *result = [[OAFontDescriptor alloc] initFromFontDescriptor:self mutatingWith:^(NSMutableDictionary *attributes, NSMutableDictionary *traits, CTFontSymbolicTraits *symbolicTraitsRef) {
@@ -862,6 +894,11 @@ static OAFontDescriptor *_newWithFontDescriptorHavingTrait(OAFontDescriptor *sel
 - (OAFontDescriptor *)newFontDescriptorWithCondensed:(BOOL)flag;
 {
     return [self newFontDescriptorWithValue:flag forTrait:kCTFontCondensedTrait];
+}
+
+- (OAFontDescriptor *)newFontDescriptorWithFixedPitch:(BOOL)fixedPitch;
+{
+    return [self newFontDescriptorWithValue:fixedPitch forTrait:kCTFontMonoSpaceTrait];
 }
 
 #pragma mark -

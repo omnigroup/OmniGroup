@@ -14,7 +14,7 @@
 // This is linked by both OmniSoftwareUpdate and OmniCrashCatcher.
 BOOL OSURunTimeHasHandledApplicationTermination(void) OB_HIDDEN;
 
-void OSURunTimeApplicationActivated(void) OB_HIDDEN;
+void OSURunTimeApplicationActivated(NSString *appIdentifier, NSString *bundleVersion) OB_HIDDEN;
 void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleVersion, BOOL crashed) OB_HIDDEN;
 
 void OSURunTimeAddStatisticsToInfo(NSString *appIdentifier, NSMutableDictionary *info) OB_HIDDEN;

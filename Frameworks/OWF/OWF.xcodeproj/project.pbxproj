@@ -720,7 +720,7 @@
 		B59C0A5505474D3C0097A10E /* OWSitePreference.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWSitePreference.m; sourceTree = "<group>"; };
 		B6520A7A0152E76B0F97A14A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = /System/Library/Frameworks/SystemConfiguration.framework; sourceTree = "<absolute>"; };
 		B6827658012DF7920F97A14A /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
-		E2ED6D5F05C5C72D0097A12E /* BrowserIdentity.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist.xml; path = BrowserIdentity.plist; sourceTree = "<group>"; };
+		E2ED6D5F05C5C72D0097A12E /* BrowserIdentity.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 30; path = BrowserIdentity.plist; sourceTree = "<group>"; usesTabs = 1; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

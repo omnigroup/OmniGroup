@@ -1,0 +1,184 @@
+/* setting failure alert message */
+"“%@”\nwas not successful" = "“%@”\n不成功";
+
+/* OUITabBar N of M accessibility value */
+"%@ of %@" = "%2$@ 的 %1$@";
+
+/* title for successful in app purchase */
+"%@ Purchased" = "已购买 %@";
+
+/* Default title for the About menu item */
+"About %@" = "关于 %@";
+
+/* alert button title */
+"Accept" = "接受";
+
+/* OmniSoftwareUpdate privacy notice message format */
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "允许 %@ 定期报告有关硬件型号和 iOS 版本的信息？\n这样以来，我们就知道最需要支持哪些配置。 可在以后通过 MUMBLE MUMBLE MUMBLE 在预置中更改回答。";
+
+/* Web view nagivation button for going back in history. */
+"Back" = "后移";
+
+/* Bold button accessibility label */
+"Bold" = "粗体";
+
+/* 'Buy' button title format. The currency symbol will be provided at run time. */
+"Buy %@" = "购买 %@";
+
+/* 'Buy' and a currency symbol for purchase button */
+"Buy $%@" = "购买 $%@";
+
+/* button title
+   cancel button title
+   toolbar item title */
+
+
+"Cancel" = "取消";
+
+/* Center Text Align button accessibility label. */
+"Center text align" = "文本居中对齐";
+
+/* Certificate trust alert title */
+"Certificate Trust" = "证书信任";
+
+/* alert message */
+"Changed the '%@' preference from '%@' to '%@'" = "已将“%1$@”预置从“%2$@”更改为“%3$@”";
+
+/* Certificate trust alert button title */
+"Continue" = "继续";
+
+/* setting failure alert title */
+"Could not perform command" = "无法执行命令";
+
+/* Button is disabled due to purchase restrictions */
+"Disabled" = "已禁用";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Don't Report" = "不报告";
+
+/* Done
+   toolbar item title */
+
+"Done" = "完成";
+
+/* toolbar item title */
+"Edit" = "编辑";
+
+/* In app Buy button error title */
+"Error" = "错误";
+
+/* Alert title for error loading product information */
+"Error Loading Store" = "加载存储项时出错";
+
+/* disabled for demo */
+"Feature not enabled for this demo" = "本试用版未启用此功能";
+
+/* Overlay text when zoomed to fit screen */
+"Fit" = "适合";
+
+/* Help and Settings toolbar item accessibility label. */
+"Help and Settings" = "帮助和设置";
+
+/* Purchasing is disabled details */
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "该设备无法或不允许应用程序内置购买功能。要启用购买功能，请勾选“设置”应用程序中的“限制”。";
+
+/* Italic button accessibility label */
+"Italic" = "斜体";
+
+/* Justified Text Align button accessibility label. */
+"Justified text align" = "文本两边对齐";
+
+/* Left Text Align button accessibility label. */
+"Left text align" = "文本左对齐";
+
+/* Web view error opening URL title. */
+"Link could not be opend. Please check Safari restrictions in Settings." = "无法打开链接。请勾选“设置”中的 Safari 限制。";
+
+/* Buy button title while app store is loading */
+"Loading" = "加载中";
+
+/* empty value cell placeholder */
+"None" = "无";
+
+/* button title
+   OK button label */
+
+
+
+
+"OK" = "好";
+
+/* OmniSoftwareUpdate privacy notice alert title */
+"Omni Software Update" = "Omni 软件更新";
+
+/* placeholder text */
+"password" = "密码";
+
+/* alert title */
+"Preference changed" = "预置已更改";
+
+/* title for successful in app purchase */
+"Purchase %@" = "购买 %@";
+
+/* Purchase failed alert title */
+"Purchase Failed" = "购买失败";
+
+/* Buy button thank you message */
+"Purchased. Thank you!" = "已购买。谢谢！";
+
+/* Purchasing is disabled alert title */
+"Purchasing is Disabled" = "已禁用购买功能";
+
+/* Redo button title */
+"Redo" = "重做";
+
+/* App menu item title
+   release notes html screen title */
+
+"Release Notes" = "版本注释";
+
+/* Restore purchases button title */
+"Restore" = "还原";
+
+/* Restore failed alert title */
+"Restore Failed" = "还原失败";
+
+/* Right Text Align button accessibility label. */
+"Right text align" = "文本右对齐";
+
+/* App menu item title */
+"Run Tests" = "运行测试";
+
+/* Search field placeholder text */
+"Search" = "搜索";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Send Reports" = "发送报告";
+
+/* Strike Through button accessibility label */
+"Strike Through" = "透印";
+
+/* Alert description for error loading product information */
+"There was an error loading information from the App Store" = "从 App Store 加载信息时出错";
+
+/* Certificate trust alert button title */
+"Trust Always" = "总是信任";
+
+/* Underline button accessibility label */
+"Underline" = "下划线";
+
+/* Undo button title */
+"Undo" = "还原";
+
+/* default for WebDAV username edit field
+   placeholder text */
+"username" = "用户名";
+
+/* alert message */
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "已轻按一个将会更改以下偏好设置的链接：\n\n“%@”\n\n是否要接受这些变更？";
+
+/* debug setting alert message */
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "您已轻按链接，此举将会运行以下调试命令：\n\n“%@”\n\n在未受到 Omni 支持专家指导的情况下，请勿执行此操作。\n您是否要执行此命令？";
+
+/* zoom label */
+"Zoom" = "缩放";

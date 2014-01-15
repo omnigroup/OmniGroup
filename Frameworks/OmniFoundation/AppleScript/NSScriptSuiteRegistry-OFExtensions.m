@@ -20,18 +20,22 @@ static NSScriptSuiteRegistry *(*original_sharedScriptSuiteRegistry)(Class cls, S
 
 + (NSScriptSuiteRegistry *)replacement_sharedScriptSuiteRegistry;
 {
-    NSString *registryClassName = [[NSUserDefaults standardUserDefaults] stringForKey:@"OFScriptSuiteRegistryClassName"];
-    if (![NSString isEmptyString:registryClassName]) {
-        Class cls = NSClassFromString(registryClassName);
-        OBASSERT(cls);
-        if (cls) {
-            NSScriptSuiteRegistry *registry = [[cls alloc] init];
-            OBStrongRetain(registry); // -setSharedScriptSuiteRegistry: doesn't retain the instance...
-            [NSScriptSuiteRegistry setSharedScriptSuiteRegistry:registry];
-            [registry release];
-            return registry;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *registryClassName = [[NSUserDefaults standardUserDefaults] stringForKey:@"OFScriptSuiteRegistryClassName"];
+        if (![NSString isEmptyString:registryClassName]) {
+            Class cls = NSClassFromString(registryClassName);
+            OBASSERT(cls);
+            if (cls) {
+                NSScriptSuiteRegistry *registry = [[cls alloc] init];
+                OBStrongRetain(registry); // -setSharedScriptSuiteRegistry: doesn't retain the instance...
+                [NSScriptSuiteRegistry setSharedScriptSuiteRegistry:registry];
+                
+                OBASSERT(original_sharedScriptSuiteRegistry(self, _cmd) == registry);
+                [registry release];
+            }
         }
-    }
+    });
     
     return original_sharedScriptSuiteRegistry(self, _cmd);
 }

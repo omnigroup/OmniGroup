@@ -21,7 +21,6 @@ RCS_ID("$Id$")
 - (OFRegularExpressionMatch *)of_firstMatchInString:(NSString *)string range:(NSRange)range;
 {
     if (!string) // NSRegularExpression raises in this case, but apparently our old code didn't.
-        
         return nil;
     
     NSTextCheckingResult *result = [self firstMatchInString:string options:0 range:range];
@@ -34,6 +33,22 @@ RCS_ID("$Id$")
 - (BOOL)hasMatchInString:(NSString *)string;
 {
     return [self firstMatchInString:string options:0 range:NSMakeRange(0, [string length])] != nil;
+}
+
+- (NSTextCheckingResult *)exactMatchInString:(NSString *)string;
+{
+    if (!string)
+        return NO;
+    
+    NSRange fullRange = NSMakeRange(0, [string length]);
+    NSTextCheckingResult *result = [self firstMatchInString:string options:0 range:fullRange];
+    if (!result)
+        return NO;
+    
+    if (!NSEqualRanges(result.range, fullRange))
+        return nil;
+    
+    return result;
 }
 
 - (OFRegularExpressionMatch *)matchInScanner:(OFStringScanner *)stringScanner;

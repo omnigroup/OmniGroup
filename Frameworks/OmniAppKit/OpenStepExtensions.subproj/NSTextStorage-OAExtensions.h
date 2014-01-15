@@ -34,4 +34,6 @@
 
 - (BOOL)findPattern:(id <OAFindPattern>)pattern inRange:(NSRange)searchRange foundRange:(NSRange *)foundRange;
 
+- (void)handleReplaceScriptCommand:(NSScriptCommand *)command;
+
 @end

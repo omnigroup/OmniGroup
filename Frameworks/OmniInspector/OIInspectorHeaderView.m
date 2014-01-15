@@ -298,7 +298,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     NSRect closeRect = NSMakeRect(NSMinX(bounds) + 6.0f, NSMaxY(bounds)-1.0f - 14.0f, 14.0f, 14.0f);
     NSPoint newTopLeft = NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame));
     CGFloat dragWindowHeight = 0.0f;
-    BOOL isInOriginalFrame = NSPointInRect([theEvent locationInWindow], [self frame]);  // don't collapse if the mousedown is not within the header frame (as when this is called from tab area)
+    BOOL isInOriginalFrame = NSPointInRect([self convertPoint:[theEvent locationInWindow] fromView:nil], [self bounds]);  // don't collapse if the mousedown is not within the header frame (as when this is called from tab area)
     
     click = [self convertPoint:[theEvent locationInWindow] fromView:nil];
     
@@ -320,7 +320,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
                 clickingClose = newCloseState;
                 [self display];
             }
-        } else if (!isDragging && !NSMouseInRect(click, hysterisisRect, NO)) {
+        } else if (!isDragging && !NSMouseInRect(click, hysterisisRect, NO) && [delegate headerViewShouldAllowDragging:self]) {
             if ([theEvent clickCount] > 1) // don't drag on double-clicks
                 break; 
             dragWindowHeight = [delegate headerViewDraggingHeight:self];

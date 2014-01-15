@@ -73,8 +73,15 @@ static NSString *inspectorDefaultsVersion = nil;
 
 + (OIInspectorController *)controllerWithInspector:(OIInspector *)inspector;
 {
+    return [[self sharedInspector] controllerWithInspector:inspector];
+}
+
+- (OIInspectorController *)controllerWithInspector:(OIInspector *)inspector;
+{
     // This method is here so that it can be overridden by app-specific subclasses of OIInspectorRegistry
-    return [[[OIInspectorController alloc] initWithInspector:inspector] autorelease];
+    OIInspectorController *controller = [[[OIInspectorController alloc] initWithInspector:inspector] autorelease];
+    controller.nonretained_inspectorRegistry = self;
+    return controller;
 }
 
 + (void)registerAdditionalPanel:(NSWindowController *)additionalController;
@@ -245,18 +252,33 @@ static NSMutableArray *hiddenPanels = nil;
 
 + (void)updateInspector;
 {
-    [[self sharedInspector] _inspectWindow:[NSApp mainWindow] queue:YES onlyIfVisible:YES updateInspectors:YES];
+    [[self sharedInspector] updateInspectorForWindow:[NSApp mainWindow]];
 }
 
 + (void)updateInspectionSetImmediatelyAndUnconditionally;
 {
-    [[self sharedInspector] _inspectWindow:[NSApp mainWindow] queue:NO onlyIfVisible:NO updateInspectors:NO];
+    [[self sharedInspector] updateInspectionSetImmediatelyAndUnconditionallyForWindow:[NSApp mainWindow]];
 }
 
 + (void)clearInspectionSet;
 {
-    [[[self sharedInspector] inspectionSet] removeAllObjects];
-    [[self sharedInspector] _postInspectionSetChangedNotificationAndUpdateInspectors:YES];
+    [[self sharedInspector] clearInspectionSet];
+}
+
+- (void)updateInspectorForWindow:(NSWindow *)window;
+{
+    [self _inspectWindow:window queue:YES onlyIfVisible:YES updateInspectors:YES];
+}
+
+- (void)updateInspectionSetImmediatelyAndUnconditionallyForWindow:(NSWindow *)window;
+{
+    [self _inspectWindow:window queue:NO onlyIfVisible:NO updateInspectors:NO];
+}
+
+- (void)clearInspectionSet;
+{
+    [[self inspectionSet] removeAllObjects];
+    [self _postInspectionSetChangedNotificationAndUpdateInspectors:YES];
 }
 
 - (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
@@ -269,6 +291,11 @@ static NSMutableArray *hiddenPanels = nil;
     return nil;
 }
 
+- (NSArray *)controllers;
+{
+    return [[inspectorControllers copy] autorelease];
+}
+
 - (BOOL)hasSingleInspector;
 {
     return ([inspectorControllers count] == 1);
@@ -277,9 +304,12 @@ static NSMutableArray *hiddenPanels = nil;
 - (BOOL)hasVisibleInspector;
 /*" Returns YES if any of the registered inspectors are on screen and expanded. "*/
 {
-    for (OIInspectorController *controller in inspectorControllers)
-        if ([[controller window] isVisible] && [controller isExpanded])
+    for (OIInspectorController *controller in inspectorControllers) {
+        // We use the -containerView here instead of just -window to cover the embedded-inspector case.
+        if ([[[controller containerView] window] isVisible] && [controller isExpanded]) {
             return YES;
+        }
+    }
     return NO;
 }
 
@@ -328,7 +358,7 @@ static NSMutableArray *hiddenPanels = nil;
         return @"InspectorWorkspaces";
 }
 
-- init
+- (id)init;
 {
     self = [super init];
     if (!self)
@@ -911,7 +941,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (OIInspectorController *)_registerInspector:(OIInspector *)inspector;
 {
     OBPRECONDITION(inspector);
-    OIInspectorController *controller = [[self class] controllerWithInspector:inspector];    
+    OIInspectorController *controller = [self controllerWithInspector:inspector];    
     [inspectorControllers addObject:controller];
     return controller;
 }

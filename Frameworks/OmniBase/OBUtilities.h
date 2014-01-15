@@ -106,17 +106,14 @@ extern void _OBFinishPortingLater(const char *header, const char *function, cons
         _OBFinishPortingLater__(__FILE__, __LINE__, __PRETTY_FUNCTION__, (msg)); \
     } \
 } while(0)
-
+    
+extern BOOL OBIsBeingDebugged(void);
+extern void _OBStopInDebugger(const char *file, unsigned int line, const char *function, const char *message);
+#define OBStopInDebugger(message) _OBStopInDebugger(__FILE__, __LINE__, __PRETTY_FUNCTION__, (message))
+#define OBStepThroughAndVerify() _OBStopInDebugger(__FILE__, __LINE__, __PRETTY_FUNCTION__, "Step through and verify.")
+    
 extern NSString * const OBAbstractImplementation;
 extern NSString * const OBUnusedImplementation;
-
-// Helper for initializing debug log level globals
-extern void _OBInitializeDebugLogLevel(NSInteger *outLevel, NSString *name);
-#define OBInitializeDebugLogLevel(name) _OBInitializeDebugLogLevel(&name, @#name)
-    
-// Helper for initializing time interval globals
-extern void _OBInitializeTimeInterval(NSTimeInterval *outInterval, NSString *name, NSTimeInterval default_value, NSTimeInterval min_value, NSTimeInterval max_value);
-#define OBInitializeTimeInterval(name, default_value, min_value, max_value) _OBInitializeTimeInterval(&name, @#name, (default_value), (min_value), (max_value))
 
 #if defined(DEBUG)
 #define OB_DEBUG_LOG_CALLER() do { NSArray *syms = [NSThread callStackSymbols]; if ([syms count] > 1) NSLog(@"caller: %@", [syms objectAtIndex:1U]); } while (0)

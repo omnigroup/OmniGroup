@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+<dictionary title="OmniQuartz">
+	<suite name="OmniQuartz Scripting" code="OQss" description="Scripting for Omni's OmniQuartz framework.">
+    
+    <!-- This gets merged into OmniStyle currently, so this suite never appears in the app's sdef and the 4CCs used here are 'OS' prefixed. But, since the code for generating these is in OmniQuartz, we'll put the sdef here too -->
+		<record-type name="generic color" code="OSco">
+      <cocoa class="OQColor"/>
+      
+      <!-- This doesn't seem to matter. In some cases, it seems like Cocoa Scripting will use this to build a selector -scripting<Name>Descriptor, but with this record-type, it uses the type alternatives in the containing property for the values of 'Name', so we get asked about -scriptingColorDescriptor, -scriptingTextDescriptor, etc. no matter what.
+      <type type="color"/>
+      -->
+      
+			<property name="r" code="OSrv" type="real" description="If the color is in a RGB color space, this is the calibrated floating point red component, from zero to one.">
+				<cocoa key="r"/>
+			</property>
+			<property name="g" code="OSgv" type="real" description="If the color is in a RGB color space, this is the calibrated floating point green component, from zero to one.">
+				<cocoa key="g"/>
+			</property>
+			<property name="b" code="OSbv" type="real" description="If the color is in a RGB color space, this is the calibrated floating point blue component, from zero to one.">
+				<cocoa key="b"/>
+			</property>
+			
+			<property name="w" code="OSwv" type="real" description="If the color is in a White color space, this is the calibrated floating point white component, from zero to one, with zero being totally black and one being totally white.">
+				<cocoa key="w"/>
+			</property>
+
+			<property name="c" code="OScv" type="real" description="If the color is in a CMYK color space, this is the device-specific floating point cyan component, from zero to one.  There is currently no support for calibrated CYMK color spaces.">
+				<cocoa key="c"/>
+			</property>
+			<property name="y" code="OSyv" type="real" description="If the color is in a CMYK color space, this is the device-specific floating point yellow component, from zero to one.  There is currently no support for calibrated CYMK color spaces.">
+				<cocoa key="y"/>
+			</property>
+			<property name="m" code="OSym" type="real" description="If the color is in a CMYK color space, this is the device-specific floating point magenta component, from zero to one.  There is currently no support for calibrated CYMK color spaces.">
+				<cocoa key="m"/>
+			</property>
+			<property name="k" code="OSyk" type="real" description="If the color is in a CMYK color space, this is the device-specific floating point black component, from zero to one.  There is currently no support for calibrated CYMK color spaces.">
+				<cocoa key="k"/>
+			</property>
+
+			<property name="h" code="OShv" type="real" description="If the color is in a HSV color space, this is the calibrated floating point hue component, from zero to one.">
+				<cocoa key="h"/>
+			</property>
+			<property name="s" code="OSsv" type="real" description="If the color is in a HSV color space, this is the calibrated floating point saturation component, from zero to one.">
+				<cocoa key="s"/>
+			</property>
+			<property name="v" code="OSvv" type="real" description="If the color is in a HSV color space, this is the calibrated floating point value component, from zero to one.">
+				<cocoa key="v"/>
+			</property>
+			
+			<property name="a" code="OSav" type="real" description="The opacity or alpha of the color as a floating point number from zero to one with zero being totally transparent and one being totally opaque.">
+				<cocoa key="a"/>
+			</property>
+			
+			<property name="catalog" code="OScC" type="text" description="If the color is in a catalog color space, this is the name of the catalog.">
+				<cocoa key="catalog"/>
+			</property>
+			<property name="name" code="pnam" type="text" description="If the color is in a catalog color space, this is the name of color with in the catalog.">
+				<cocoa key="name"/>
+			</property>
+			
+			<property name="png" code="OScp" type="PNG data" description="If the color is in a pattern color space, this is PNG data for the image representing the pattern.">
+				<cocoa key="png"/>
+			</property>
+			<property name="tiff" code="OSct" type="TIFF data" description="If the color is in a pattern color space, this is TIFF data for the image representing the pattern.">
+				<cocoa key="tiff"/>
+			</property>
+
+			<property name="archive" code="OScA" type="archive data" description="If the color cannot be represented in any other format, a binary archive is placed in this property.">
+				<cocoa key="archive"/>
+			</property>
+		</record-type>
+  </suite>
+</dictionary>

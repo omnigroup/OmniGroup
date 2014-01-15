@@ -530,6 +530,15 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return NO;
 }
 
+- (BOOL)allObjectsSatisfyPredicate:(OFPredicateBlock)pred;
+{
+    for (id element in self) {
+        if (!pred(element))
+            return NO;
+    }
+    return YES;
+}
+
 - (NSMutableArray *)deepMutableCopy;
 {
     NSMutableArray *newArray = [[NSMutableArray alloc] init];
@@ -577,6 +586,22 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     while (objectIndex--)
         if (CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex) != CFArrayGetValueAtIndex((CFArrayRef)otherArray, objectIndex))
             return NO;
+    return YES;
+}
+
+- (BOOL)hasIdenticalSubarray:(NSArray *)otherArray atIndex:(NSUInteger)startingIndex;
+{
+    NSUInteger length = CFArrayGetCount((CFArrayRef)self);
+    NSUInteger otherLength = CFArrayGetCount((CFArrayRef)otherArray);
+
+    if (startingIndex + otherLength > length)
+        return NO; // Not enoufh objects past the starting index to match up
+    
+    for (NSUInteger testIndex = 0; testIndex < otherLength; testIndex++) {
+        if (CFArrayGetValueAtIndex((CFArrayRef)self, startingIndex + testIndex) != CFArrayGetValueAtIndex((CFArrayRef)otherArray, testIndex))
+            return NO;
+    }
+    
     return YES;
 }
 

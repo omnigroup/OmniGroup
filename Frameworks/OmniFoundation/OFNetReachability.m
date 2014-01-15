@@ -76,6 +76,10 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 #import <SystemConfiguration/SCNetworkReachability.h>
 #import <netinet/in.h>
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#import <OmniFoundation/NSProcessInfo-OFExtensions.h>
+#endif
+
 RCS_ID("$Id$")
 
 //MACROS:
@@ -95,6 +99,19 @@ RCS_ID("$Id$")
 //CLASS IMPLEMENTATION:
 
 @implementation OFNetReachability
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+#if defined(OMNI_ASSERTIONS_ON) && (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
+    if ([[NSProcessInfo processInfo] isSandboxed]) {
+        // Sandboxed Mac applications cannot talk to the network by default. Give a better hint about why stuff is failing than reachability silently always being false.
+        NSDictionary *entitlements = [[NSProcessInfo processInfo] codeSigningEntitlements];
+        OBASSERT([entitlements[@"com.apple.security.network.client"] boolValue]);
+    }
+#endif
+}
 
 static void _ReachabilityCallBack(SCNetworkReachabilityRef target, SCNetworkConnectionFlags flags, void* info)
 {

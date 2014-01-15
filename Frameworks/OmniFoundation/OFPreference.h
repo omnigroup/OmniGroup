@@ -106,3 +106,14 @@
 
 - (BOOL)synchronize;
 @end
+
+#import <Foundation/NSDate.h>
+
+// Helper for initializing debug log level globals
+extern void _OFInitializeDebugLogLevel(NSInteger *outLevel, NSString *name);
+#define OFInitializeDebugLogLevel(name) _OFInitializeDebugLogLevel(&name, @#name)
+
+// Helper for initializing time interval globals
+extern void _OFInitializeTimeInterval(NSTimeInterval *outInterval, NSString *name, NSTimeInterval default_value, NSTimeInterval min_value, NSTimeInterval max_value);
+#define OFInitializeTimeInterval(name, default_value, min_value, max_value) _OFInitializeTimeInterval(&name, @#name, (default_value), (min_value), (max_value))
+

@@ -19,16 +19,28 @@ RCS_ID("$Id$")
 
 NSString * const OAStackViewDidLayoutSubviews = @"OAStackViewDidLayoutSubviews";
 
+static unsigned OASVHiddenSubviewContext;
+static NSString * const OASVHiddenSubviewProperty = @"isHidden";
 
-@interface OAStackView (PrivateAPI)
-- (void) _loadSubviews;
-- (void) _layoutSubviews;
+@interface OAStackView ()
+{
+    NSMutableArray *_availableSubviews;
+}
+
 @end
 
 /*"
 OAStackView assumes that all of its subviews line up in one direction (only vertical stacks are supported currently).  When a view is removed, the space is taken up by other views (currently the last view takes all the extra space) and the gap is removed by sliding adjacent views into that space.
 "*/
 @implementation OAStackView
+
+- (void)dealloc;
+{
+    for (NSView *view in _availableSubviews)
+        [view removeObserver:self forKeyPath:OASVHiddenSubviewProperty context:&OASVHiddenSubviewContext];
+    [_availableSubviews release];
+    [super dealloc];
+}
 
 //
 // API
@@ -42,12 +54,16 @@ OAStackView assumes that all of its subviews line up in one direction (only vert
 - (void) setDataSource: (id) aDataSource;
 {
     dataSource = aDataSource;
-    flags.needsReload = 1;
+    flags.needsReload = YES;
 
     // This is really a bug.  If we don't do this (not sure if the layout is necessary, but the reload is), then the first window in OmniWeb will not show up (it gets an exception down in the drawing code).  While it seems permissible to ask the data source as soon as we have one, the data source might have some setup of its own left to do.  This way, we force it to be valid immediately which could be bad, but not much we can do with NSView putting the smack down on us.
     // This is bad because if we're unarchiving self and dataSource and establishing the datasource connection from a nib, it imposes nib ordering requirements.  The datasource may not have its outlets hooked up that it needs for subviewsForStackView:, for example.  <bug://bugs/53121> (-[OAStackView setDataSource:] implementation imposes nib ordering requirements)
     [self _loadSubviews];
     [self _layoutSubviews];
+
+    if (dataSource != nil && dataSource != self && _availableSubviews.count != 0)
+        [NSException raise:NSInternalInconsistencyException format:@"Do not add views directly to a OAStackView -- use the dataSource"];
+
 }
 
 - (void) reloadSubviews;
@@ -60,7 +76,7 @@ OAStackView assumes that all of its subviews line up in one direction (only vert
 - (void) subviewSizeChanged;
 {
     //NSLog(@"subviewSizeChanged");
-    flags.needsLayout = 1;
+    flags.needsLayout = YES;
     [self setNeedsDisplay: YES];
 }
 
@@ -82,25 +98,47 @@ OAStackView assumes that all of its subviews line up in one direction (only vert
 
 - (void) drawRect: (NSRect) rect;
 {
-    if (flags.needsReload)
-        [self _loadSubviews];
-    if (flags.needsLayout)
+    if (flags.needsReload || flags.needsLayout)
         [self _layoutSubviews];
 
     // This doesn't draw the subviews, we're just hooking the reset of the subviews here since this should get done before they are drawn.
     [super drawRect: rect];
 }
 
-// This doesn't protect against having a subview removed, but some checking is better than none.
 - (void) addSubview: (NSView *) view;
 {
-    [NSException raise: NSInternalInconsistencyException
-                format: @"Do not add views directly to a OAStackView -- use the dataSource"];
+    if (dataSource != nil && dataSource != self) {
+        // This doesn't protect against having a subview removed, but some checking is better than none.
+        [NSException raise:NSInternalInconsistencyException format:@"Do not add views directly to a OAStackView -- use the dataSource"];
+    }
+
+    [super addSubview:view];
+
+    if (OFISEQUAL(NSStringFromClass([view class]), @"NSCustomView")) {
+        // Ignore this cruft from a xib
+        return;
+    }
+
+    if (_availableSubviews == nil)
+        _availableSubviews = [[NSMutableArray alloc] init];
+
+    [_availableSubviews insertObject:view inArraySortedUsingComparator:^NSComparisonResult(NSView *view1, NSView *view2) {
+        CGFloat y1 = view1.frame.origin.y;
+        CGFloat y2 = view2.frame.origin.y;
+        if (y1 > y2)
+            return NSOrderedAscending;
+        else if (y1 < y2)
+            return NSOrderedDescending;
+        else
+            return NSOrderedSame;
+    }];
+
+    [view addObserver:self forKeyPath:OASVHiddenSubviewProperty options:NSKeyValueObservingOptionNew context:&OASVHiddenSubviewContext];
+
+    [self _setNeedsReload];
 }
 
-@end
-
-@implementation OAStackView (PrivateAPI)
+#pragma mark - OAStackView private API
 
 static NSComparisonResult compareBasedOnArray(id object1, id object2, void *orderedObjects)
 {
@@ -114,11 +152,16 @@ static NSComparisonResult compareBasedOnArray(id object1, id object2, void *orde
         return NSOrderedDescending;
 }
 
+- (NSArray *)_visibleAvailableSubviews;
+{
+    return [_availableSubviews select:^BOOL(NSView *view) { return ![view isHidden]; }];
+}
+
 - (void)_loadSubviews;
 {
     nonretained_stretchyView = nil;
-    flags.needsReload = 0;
-    flags.needsLayout = 1;
+    flags.needsReload = NO;
+    flags.needsLayout = YES;
     
     NSWindow *window = [self window];    
     BOOL oldAutodisplay = [window isAutodisplay];
@@ -127,6 +170,9 @@ static NSComparisonResult compareBasedOnArray(id object1, id object2, void *orde
     
     NS_DURING {
         NSArray *subviews = [dataSource subviewsForStackView: self];
+        if (subviews == nil) {
+            subviews = [self _visibleAvailableSubviews];
+        }
         
         // Remove any current subviews that aren't in the new list.  We assume that the number of views is small so an O(N*M) loop is OK
         {
@@ -165,9 +211,6 @@ static NSComparisonResult compareBasedOnArray(id object1, id object2, void *orde
                 [super addSubview: view];
         }
         [self sortSubviewsUsingFunction:compareBasedOnArray context:subviews];
-        
-        if (!nonretained_stretchyView)
-            NSLog(@"OAStackView: No vertically resizable subview returned from dataSource.");
     } NS_HANDLER {
         NSLog(@"Exception ignored during -[OAStackView _loadSubviews]: %@", localException);
     } NS_ENDHANDLER;
@@ -188,7 +231,10 @@ Goes through the subviews and finds the first subview that is willing to stretch
     if (flags.layoutDisabled)
         return;
         
-    flags.needsLayout = 0;
+    if (flags.needsReload)
+        [self _loadSubviews];
+
+    flags.needsLayout = NO;
     NSWindow *window = [self window];    
     NSRect spaceLeft = [self bounds];
     //NSLog(@"total bounds = %@", NSStringFromRect(spaceLeft));
@@ -214,9 +260,17 @@ Goes through the subviews and finds the first subview that is willing to stretch
         
         //NSLog(@"stretchyHeight = %f", stretchyHeight);
         
-        if (stretchyHeight < 0.0)
+        if (nonretained_stretchyView && stretchyHeight < 0.0f)
             stretchyHeight = 0.0f;
         
+        if (nonretained_stretchyView == nil) {
+            NSRect newFrame = self.frame;
+            newFrame.size.height -= stretchyHeight;
+            self.frame = newFrame;
+            spaceLeft = self.bounds;
+            stretchyHeight = 0.0f;
+        }
+
         // Now set the frame of each of the rectangles
         NSUInteger viewIndex = viewCount;
         while (viewIndex--) {
@@ -239,8 +293,7 @@ Goes through the subviews and finds the first subview that is willing to stretch
             spaceLeft.size.height -= subviewFrame.size.height;
         }
         
-        [[NSNotificationCenter defaultCenter] postNotificationName: OAStackViewDidLayoutSubviews
-                                                            object: self];
+        [[NSNotificationCenter defaultCenter] postNotificationName:OAStackViewDidLayoutSubviews object:self];
         
     } NS_HANDLER {
         NSLog(@"Exception ignored during -[OAStackView _layoutSubviews]: %@", localException);
@@ -256,6 +309,24 @@ Goes through the subviews and finds the first subview that is willing to stretch
 {
     [self _layoutSubviews];
 }
+
+#pragma mark - NSObject (NSKeyValueObserving)
+
+- (void)_setNeedsReload;
+{
+    flags.needsReload = YES;
+    [self setNeedsDisplay:YES];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
+{
+    if (context == &OASVHiddenSubviewContext) {
+        [self _setNeedsReload];
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+}
+
 
 @end
 

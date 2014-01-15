@@ -1,0 +1,184 @@
+/* setting failure alert message */
+"“%@”\nwas not successful" = "“%@”\nno se completó correctamente";
+
+/* OUITabBar N of M accessibility value */
+"%@ of %@" = "%1$@ de %2$@";
+
+/* title for successful in app purchase */
+"%@ Purchased" = "%@ comprado";
+
+/* Default title for the About menu item */
+"About %@" = "Acerca de %@";
+
+/* alert button title */
+"Accept" = "Aceptar";
+
+/* OmniSoftwareUpdate privacy notice message format */
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "¿Desea que %@ envíe informes periódicos sobre su modelo de hardware y versión de iOS?\nEsto nos permitirá saber qué configuraciones necesitan más soporte. Puede cambiar su respuesta más adelante en las preferencias MUMBLE MUMBLE MUMBLE.";
+
+/* Web view nagivation button for going back in history. */
+"Back" = "Atrás";
+
+/* Bold button accessibility label */
+"Bold" = "Negrita";
+
+/* 'Buy' button title format. The currency symbol will be provided at run time. */
+"Buy %@" = "Adquirir %@";
+
+/* 'Buy' and a currency symbol for purchase button */
+"Buy $%@" = "Adquirir $%@";
+
+/* button title
+   cancel button title
+   toolbar item title */
+
+
+"Cancel" = "Cancelar";
+
+/* Center Text Align button accessibility label. */
+"Center text align" = "Alinear texto en el centro";
+
+/* Certificate trust alert title */
+"Certificate Trust" = "Certificado de confianza";
+
+/* alert message */
+"Changed the '%@' preference from '%@' to '%@'" = "Preferencia “%1$@” modificada de “%2$@” a “%3$@”";
+
+/* Certificate trust alert button title */
+"Continue" = "Continuar";
+
+/* setting failure alert title */
+"Could not perform command" = "No se ha podido ejecutar el comando";
+
+/* Button is disabled due to purchase restrictions */
+"Disabled" = "Desactivado";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Don't Report" = "No comunicar";
+
+/* Done
+   toolbar item title */
+
+"Done" = "Salir";
+
+/* toolbar item title */
+"Edit" = "Editar";
+
+/* In app Buy button error title */
+"Error" = "Error";
+
+/* Alert title for error loading product information */
+"Error Loading Store" = "Error al cargar la tienda";
+
+/* disabled for demo */
+"Feature not enabled for this demo" = "Función no activada para esta demo";
+
+/* Overlay text when zoomed to fit screen */
+"Fit" = "Ajustar";
+
+/* Help and Settings toolbar item accessibility label. */
+"Help and Settings" = "Ayuda y Ajustes";
+
+/* Purchasing is disabled details */
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "La compra integrada no está disponible o no se permite en este dispositivo. Para activar la opción de compra, compruebe las Restricciones en la aplicación Ajustes.";
+
+/* Italic button accessibility label */
+"Italic" = "Cursiva";
+
+/* Justified Text Align button accessibility label. */
+"Justified text align" = "Alinear texto justificado";
+
+/* Left Text Align button accessibility label. */
+"Left text align" = "Alinear texto a la izquierda";
+
+/* Web view error opening URL title. */
+"Link could not be opend. Please check Safari restrictions in Settings." = "No se ha podido abrir el enlace. Consulte las restricciones de Safari en Ajustes.";
+
+/* Buy button title while app store is loading */
+"Loading" = "Cargando";
+
+/* empty value cell placeholder */
+"None" = "Ninguno";
+
+/* button title
+   OK button label */
+
+
+
+
+"OK" = "OK";
+
+/* OmniSoftwareUpdate privacy notice alert title */
+"Omni Software Update" = "Actualización de software de Omni";
+
+/* placeholder text */
+"password" = "contraseña";
+
+/* alert title */
+"Preference changed" = "Preferencia modificada";
+
+/* title for successful in app purchase */
+"Purchase %@" = "Comprar %@";
+
+/* Purchase failed alert title */
+"Purchase Failed" = "Error en la compra";
+
+/* Buy button thank you message */
+"Purchased. Thank you!" = "Comprado. Gracias";
+
+/* Purchasing is disabled alert title */
+"Purchasing is Disabled" = "La compra está desactivada";
+
+/* Redo button title */
+"Redo" = "Rehacer";
+
+/* App menu item title
+   release notes html screen title */
+
+"Release Notes" = "Notas de la versión";
+
+/* Restore purchases button title */
+"Restore" = "Restaurar";
+
+/* Restore failed alert title */
+"Restore Failed" = "Error al restaurar";
+
+/* Right Text Align button accessibility label. */
+"Right text align" = "Alinear texto a la derecha";
+
+/* App menu item title */
+"Run Tests" = "Ejecutar pruebas";
+
+/* Search field placeholder text */
+"Search" = "Búsqueda";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Send Reports" = "Enviar informes";
+
+/* Strike Through button accessibility label */
+"Strike Through" = "Tachar";
+
+/* Alert description for error loading product information */
+"There was an error loading information from the App Store" = "Se ha producido un error al cargar la información desde la App Store";
+
+/* Certificate trust alert button title */
+"Trust Always" = "Confiar siempre";
+
+/* Underline button accessibility label */
+"Underline" = "Subrayado";
+
+/* Undo button title */
+"Undo" = "Deshacer";
+
+/* default for WebDAV username edit field
+   placeholder text */
+"username" = "nombre de usuario";
+
+/* alert message */
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Ha pulsado un enlace que modificará las siguientes preferencias:\n\n“%@”\n\n¿Desea aceptar estos cambios?";
+
+/* debug setting alert message */
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Ha pulsado sobre un enlace que ejecutará el siguiente comando de depuración:\n\n“%@”\n\nSi no ha recibido instrucciones específicas del equipo de soporte de Omni, no lo haga.\n¿Desea ejecutar este comando?";
+
+/* zoom label */
+"Zoom" = "Zoom";

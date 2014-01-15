@@ -12,10 +12,12 @@ RCS_ID("$Id$");
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
-#if 0 && defined(DEBUG_curt) && defined(DEBUG)
-#define DEBUG_TITLE_BAR_BUTTON(format, ...) NSLog(@"TITLE_BAR_BUTTON: " format, ## __VA_ARGS__)
+#if 0 && defined(DEBUG)
+    #define DEBUG_TITLE_BAR_BUTTON_ENABLED 1
+    #define DEBUG_TITLE_BAR_BUTTON(format, ...) NSLog(@"TITLE_BAR_BUTTON %p: " format, self, ## __VA_ARGS__)
 #else
-#define DEBUG_TITLE_BAR_BUTTON(format, ...)
+    #define DEBUG_TITLE_BAR_BUTTON_ENABLED 0
+    #define DEBUG_TITLE_BAR_BUTTON(format, ...)
 #endif
 
 #define OA_BUTTON_SPACER 3
@@ -24,15 +26,7 @@ RCS_ID("$Id$");
 #define OA_BUTTON_HEIGHT 18.0f
 
 @interface OAResizingTitleBarButton (/* private */)
-{
-    BOOL _isObservingWindowTitle;
-}
-
-- (id)initWithFrame:(NSRect)frameRect window:(NSWindow *)window textCallback:(OATitleBarButtonTextForButtonCallback)callback;
-
 @property (nonatomic,copy) OATitleBarButtonTextForButtonCallback callback; // must not retain host window, see titleBarButtonWithKey:forWindow:textCallback:
-- (void)_titleBarDidChange:(NSNotification *)notification;
-- (void)_updateForWindow:(NSWindow *)window;
 @end
 
 static NSFont *_OAButtonTitleFont(void)
@@ -104,6 +98,9 @@ static CGFloat _OAWidthAvailableForButtonText(NSWindow * window)
 }
 
 @implementation OAResizingTitleBarButton
+{
+    BOOL _isObservingWindowTitle;
+}
 
 // The window will retain the returned instance using an associated object. The returned instance will retain the callback. To avoid retain cycles, the callback must not retain the window. If called again with the same key-window pair, the existing button will be assigned a new callback block and will be updated in place.
 + (instancetype)titleBarButtonWithKey:(const void *)key forWindow:(NSWindow *)window textCallback:(OATitleBarButtonTextForButtonCallback)callback;
@@ -132,7 +129,7 @@ static CGFloat _OAWidthAvailableForButtonText(NSWindow * window)
         button.callback = callback;
     }
     
-    [button _updateForWindow:window];
+    [button _updateTitleBarButtonFrame];
     return button;
 }
 
@@ -197,14 +194,7 @@ static void *OAResizingTitleBarButtonObservingWindowContext;
     [self setShowsBorderOnlyWhileMouseInside:YES];
     [self setAutoresizingMask:NSViewMinYMargin|NSViewMinXMargin];
 
-    NSButton *mobileTitleBarButton = _OAMobileTitleBarButton(window);
-    if (mobileTitleBarButton != nil) {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_titleBarDidChange:) name:NSViewFrameDidChangeNotification object:mobileTitleBarButton];
-    } else {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_titleBarDidChange:) name:NSViewFrameDidChangeNotification object:_OABorderView(window)];
-        [window addObserver:self forKeyPath:@"title" options:NSKeyValueObservingOptionNew context:&OAResizingTitleBarButtonObservingWindowContext];
-        _isObservingWindowTitle = YES;
-    }
+    DEBUG_TITLE_BAR_BUTTON(@"Created");
 
     return self;
 }
@@ -213,18 +203,19 @@ static void *OAResizingTitleBarButtonObservingWindowContext;
 {
     if (context == &OAResizingTitleBarButtonObservingWindowContext) {
         OBASSERT([object isKindOfClass:[NSWindow class]]);
-        [self _updateForWindow:object];
+        [self _updateTitleBarButtonFrame];
         return;
     }
 
-    [super observeValueForKeyPath:keyPath ofObject:object change:change context:&OAResizingTitleBarButtonObservingWindowContext];
+    [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
 - (void)dealloc
 {
     OBPRECONDITION(!_isObservingWindowTitle); // We should have been removed from our window and stopped observing already
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
     
+    DEBUG_TITLE_BAR_BUTTON(@"Deallocating");
+
     self.callback = NULL;
     
     [super dealloc];
@@ -232,16 +223,48 @@ static void *OAResizingTitleBarButtonObservingWindowContext;
 
 - (void)viewWillMoveToWindow:(NSWindow *)newWindow;
 {
-    if (!_isObservingWindowTitle)
-        return;
-
-    NSWindow *oldWindow = self.window;
-    if (oldWindow == NULL)
-        return;
-
-    [oldWindow removeObserver:self forKeyPath:@"title" context:&OAResizingTitleBarButtonObservingWindowContext];
-    _isObservingWindowTitle = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSViewFrameDidChangeNotification object:nil];
+    
+    if (_isObservingWindowTitle) {
+        [self.window removeObserver:self forKeyPath:@"title" context:&OAResizingTitleBarButtonObservingWindowContext];
+        _isObservingWindowTitle = NO;
+    }
+    DEBUG_TITLE_BAR_BUTTON(@"Unsubscribed to frame changes");
 }
+
+- (void)viewDidMoveToWindow;
+{
+    NSWindow *window = self.window;
+    
+    if (!window)
+        return;
+    
+    NSButton *mobileTitleBarButton = _OAMobileTitleBarButton(window);
+    if (mobileTitleBarButton != nil) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_titleBarDidChange:) name:NSViewFrameDidChangeNotification object:mobileTitleBarButton];
+        DEBUG_TITLE_BAR_BUTTON(@"Subscribed to frame changes mobileTitleBarButton %@", OBShortObjectDescription(mobileTitleBarButton));
+        _isObservingWindowTitle = NO;
+    } else {
+        NSView *borderView = _OABorderView(window);
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_titleBarDidChange:) name:NSViewFrameDidChangeNotification object:borderView];
+        [window addObserver:self forKeyPath:@"title" options:NSKeyValueObservingOptionNew context:&OAResizingTitleBarButtonObservingWindowContext];
+        DEBUG_TITLE_BAR_BUTTON(@"Subscribed to frame changes borderView %@", OBShortObjectDescription(borderView));
+        _isObservingWindowTitle = YES;
+    }
+}
+
+#if DEBUG_TITLE_BAR_BUTTON_ENABLED
+- (void)viewWillMoveToSuperview:(NSView *)newSuperview;
+{
+    DEBUG_TITLE_BAR_BUTTON(@"Will move to superview %@", OBShortObjectDescription(newSuperview));
+    [super viewWillMoveToSuperview:newSuperview];
+}
+- (void)viewDidMoveToSuperview;
+{
+    [super viewDidMoveToSuperview];
+    DEBUG_TITLE_BAR_BUTTON(@"Did move to superview");
+}
+#endif
 
 #pragma mark Public API
 
@@ -273,19 +296,26 @@ static void *OAResizingTitleBarButtonObservingWindowContext;
     if ( ! [window isKindOfClass:[NSWindow class]])
         return; // shouldn't happen, but better safe than sorry
     
-    [self _updateForWindow:window];
+    // <bug:///97746> (Assertions when opening and closing windows quickly)
+    // It's possible the view whose frame we're observing has been deallocated, and a view in another window has taken its place
+    if (window != self.window)
+        return;
+    
+    [self _updateTitleBarButtonFrame];
 }
 
-- (void)_updateForWindow:(NSWindow *)window;
+- (void)_updateTitleBarButtonFrame;
 {
+    DEBUG_TITLE_BAR_BUTTON(@"Updating button %@", [self shortDescription]);
+
     OBPRECONDITION(self.callback != NULL);
-    OBPRECONDITION(self.window == window, @"Expect to be asked to update only on the window to which we've been added. We're on %@ but were asked to update for %@", self.window, window);
     
-    DEBUG_TITLE_BAR_BUTTON(@"Updating button %@ for window %@", [self shortDescription], window);
     if (self.callback == NULL) {
         OBASSERT_NOT_REACHED("Expected to have callback function but did not. Bailing without updating.");
         return;
     }
+    
+    NSWindow *window = self.window;
     
     BOOL shouldHideButton = ([window styleMask] & NSFullScreenWindowMask) ? YES : NO;
     if (shouldHideButton && self.isHidden) {

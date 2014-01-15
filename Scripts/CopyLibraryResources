@@ -51,8 +51,8 @@ end
 ScriptDir = File.dirname(__FILE__)
 StaticLibraryResourceDirectories = []
 `#{ScriptDir}/ListSourceFilesInTarget "#{ENV['TARGET_NAME']}" a "#{ENV['PROJECT_FILE_PATH']}"`.each_line {|l|
-  l =~ /lib([^\.]+)\.a/
-  
+  l =~ /\blib([^\.]+)\.a$/
+
   resource_dir = "#{ResourcesRoot}/#{$1}"
   StaticLibraryResourceDirectories << resource_dir if File.directory?(resource_dir)
 }

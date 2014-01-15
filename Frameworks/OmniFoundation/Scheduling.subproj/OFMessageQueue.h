@@ -45,12 +45,4 @@
 
 @end
 
-#if 0
-/*
- The current implementation of these functions isns't portable to machines with different sizes for pointers and ints.
- Right now we're not actually using these functions, so I'm not going to update them.
- If we need them we could reimplement them using libffi.
-*/
-extern void OFQueueFunction(void (*func)(void *arg), void *arg);
-extern BOOL OFMainThreadPerformFunction(void (*func)(void *arg), void *arg);
-#endif
+extern void OFMainThreadPerformBlock(void (^block)(void));

@@ -181,7 +181,9 @@ static NSArray *oldDisabledBundleNames;
 @implementation OFBundleRegistry (Private)
 
 static NSString * const OFBundleRegistryConfig = @"OFBundleRegistryConfig";
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
 static NSString * const OFRequiredSoftwareVersions = @"OFRequiredSoftwareVersions";
+#endif
 static NSString * const OFRegistrations = @"OFRegistrations";
 
 static NSString * const OFBundleRegistryConfigSearchPaths = @"SearchPaths";
@@ -515,6 +517,11 @@ static NSString *_normalizedPath(NSString *path)
     // We do this before the entries from the bundle infoDictionary so that the main app can override defaults from static libraries.
     for (NSString *path in [bundle pathsForResourcesOfType:@"defaults" inDirectory:nil]) {
         NSError *error = nil;
+        
+        if ([path hasPrefix:@"/System/"]) {
+            // Don't grab stuff from "/System/Library/Frameworks/PreferencePanes.framework/Resources/global.defaults"
+            continue;
+        }
         
         CFPropertyListRef plist = OFCreatePropertyListFromFile((CFStringRef)path, kCFPropertyListImmutable, (CFErrorRef *)&error);
         if (!plist) {

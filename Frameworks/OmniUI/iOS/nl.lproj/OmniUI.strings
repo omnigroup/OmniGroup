@@ -1,0 +1,184 @@
+/* setting failure alert message */
+"“%@”\nwas not successful" = "“%@”\nis niet gelukt";
+
+/* OUITabBar N of M accessibility value */
+"%@ of %@" = "%1$@ van %2$@";
+
+/* title for successful in app purchase */
+"%@ Purchased" = "%@ aangeschaft";
+
+/* Default title for the About menu item */
+"About %@" = "Over %@";
+
+/* alert button title */
+"Accept" = "Accepteer";
+
+/* OmniSoftwareUpdate privacy notice message format */
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ toestaan om periodiek informatie over uw hardwaremodel en iOS-versie door te geven?\nHiermee kunnen we weten welke configuraties het belangrijkst zijn voor de ondersteuning. U kunt uw antwoord later wijzigen in de voorkeuren.";
+
+/* Web view nagivation button for going back in history. */
+"Back" = "Achteraan";
+
+/* Bold button accessibility label */
+"Bold" = "Vet";
+
+/* 'Buy' button title format. The currency symbol will be provided at run time. */
+"Buy %@" = "Koop %@";
+
+/* 'Buy' and a currency symbol for purchase button */
+"Buy $%@" = "Koop $%@";
+
+/* button title
+   cancel button title
+   toolbar item title */
+
+
+"Cancel" = "Annuleer";
+
+/* Center Text Align button accessibility label. */
+"Center text align" = "Tekst centreren";
+
+/* Certificate trust alert title */
+"Certificate Trust" = "Vertrouwd certificaat";
+
+/* alert message */
+"Changed the '%@' preference from '%@' to '%@'" = "De voorkeur “%1$@” is gewijzigd van “%2$@” naar “%3$@”";
+
+/* Certificate trust alert button title */
+"Continue" = "Ga door";
+
+/* setting failure alert title */
+"Could not perform command" = "Kan de opdracht niet uitvoeren";
+
+/* Button is disabled due to purchase restrictions */
+"Disabled" = "Uitgeschakeld";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Don't Report" = "Rapporteer niet";
+
+/* Done
+   toolbar item title */
+
+"Done" = "Gereed";
+
+/* toolbar item title */
+"Edit" = "Wijzig";
+
+/* In app Buy button error title */
+"Error" = "Fout";
+
+/* Alert title for error loading product information */
+"Error Loading Store" = "Fout bij het laden van winkel";
+
+/* disabled for demo */
+"Feature not enabled for this demo" = "Functie niet ingeschakeld voor deze demo";
+
+/* Overlay text when zoomed to fit screen */
+"Fit" = "Pas aan";
+
+/* Help and Settings toolbar item accessibility label. */
+"Help and Settings" = "Help en instellingen";
+
+/* Purchasing is disabled details */
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "In-app aankoop is niet beschikbaar of niet toegestaan op dit apparaat. Om het aanschaffen in te schakelen, schakelt u Beperkingen in de app Instellingen in.";
+
+/* Italic button accessibility label */
+"Italic" = "Cursief";
+
+/* Justified Text Align button accessibility label. */
+"Justified text align" = "Tekst uitvullen";
+
+/* Left Text Align button accessibility label. */
+"Left text align" = "Tekst links uitlijnen";
+
+/* Web view error opening URL title. */
+"Link could not be opend. Please check Safari restrictions in Settings." = "Koppeling kan niet worden geopend. Controleer de beperkingen voor Safari in Instellingen.";
+
+/* Buy button title while app store is loading */
+"Loading" = "Laden";
+
+/* empty value cell placeholder */
+"None" = "Geen";
+
+/* button title
+   OK button label */
+
+
+
+
+"OK" = "OK";
+
+/* OmniSoftwareUpdate privacy notice alert title */
+"Omni Software Update" = "Omni Software Update";
+
+/* placeholder text */
+"password" = "wachtwoord";
+
+/* alert title */
+"Preference changed" = "Voorkeur gewijzigd";
+
+/* title for successful in app purchase */
+"Purchase %@" = "Koop %@";
+
+/* Purchase failed alert title */
+"Purchase Failed" = "Aankoop mislukt";
+
+/* Buy button thank you message */
+"Purchased. Thank you!" = "Aangeschaft. Bedankt.";
+
+/* Purchasing is disabled alert title */
+"Purchasing is Disabled" = "Kopen is uitgeschakeld";
+
+/* Redo button title */
+"Redo" = "Opnieuw";
+
+/* App menu item title
+   release notes html screen title */
+
+"Release Notes" = "Versie-info";
+
+/* Restore purchases button title */
+"Restore" = "Herstel";
+
+/* Restore failed alert title */
+"Restore Failed" = "Herstel mislukt";
+
+/* Right Text Align button accessibility label. */
+"Right text align" = "Tekst rechts uitlijnen";
+
+/* App menu item title */
+"Run Tests" = "Voert tests uit";
+
+/* Search field placeholder text */
+"Search" = "Zoek";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Send Reports" = "Verzend rapporten";
+
+/* Strike Through button accessibility label */
+"Strike Through" = "Doorhalen";
+
+/* Alert description for error loading product information */
+"There was an error loading information from the App Store" = "Er is een fout opgetreden bij het laden van informatie van de App Store";
+
+/* Certificate trust alert button title */
+"Trust Always" = "Vertrouw altijd";
+
+/* Underline button accessibility label */
+"Underline" = "Onderstreping";
+
+/* Undo button title */
+"Undo" = "Herstel";
+
+/* default for WebDAV username edit field
+   placeholder text */
+"username" = "gebruikersnaam";
+
+/* alert message */
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "U hebt op een koppeling getikt die de volgende voorkeuren zal wijzigen:\n\n“%@”\n\nWilt u deze wijzigingen accepteren?";
+
+/* debug setting alert message */
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "U hebt op een koppeling getikt die de volgende foutopsporingsopdracht zal uitvoeren:\n\n“%@”\n\nDoe dit niet als u dit niet bent gevraagd door de mensen van de Omni-ondersteuningsdienst.\nWilt u deze opdracht uitvoeren?";
+
+/* zoom label */
+"Zoom" = "Zoom";

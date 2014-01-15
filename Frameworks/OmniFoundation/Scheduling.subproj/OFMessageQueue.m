@@ -486,35 +486,14 @@ static BOOL OFMessageQueueDebug = NO;
     [queueProcessorsLock unlock];
 }
 
-#if 0
-// Used by OFQueueFunction() / OFMainThreadPerformFunction() which are also commented out
-- (void)_callFunction:(void (*)())aFunction argument:(void *)argument;
-{
-    aFunction(argument);
-}
-#endif
-
 @end
 
-#if 0
+#import <Foundation/NSThread.h>
+#import <dispatch/queue.h>
 
-void OFQueueFunction(void (*aFunction)(void *arg), void *arg)
-{
-    OFMessageQueue *queue;
-    
-    queue = [OFMessageQueue mainQueue];
-    [queue queueSelector:@selector(_callFunction:argument:) forObject:queue withInt:(int)aFunction withInt:(int)arg];
+void OFMainThreadPerformBlock(void (^block)(void)) {
+    if ([NSThread isMainThread])
+        block();
+    else
+        dispatch_async(dispatch_get_main_queue(), block);
 }
-
-BOOL OFMainThreadPerformFunction(void (*aFunction)(void *arg), void *arg)
-{
-    if ([NSThread isMainThread]) {
-        aFunction(arg);
-        return YES;
-    } else {
-        OFQueueFunction(aFunction, arg);
-        return NO;
-    }
-}
-
-#endif

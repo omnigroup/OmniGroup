@@ -1,0 +1,17 @@
+/* crash report body text */
+"\n\nPlease add any details you recall about how to reproduce the problem.\n\n" = "\n\nBitte fügen Sie alle Details hinzu, an die Sie sich erinnern und die zum Reproduzieren des Problems erforderlich sind.\n\n";
+
+/* alert button title */
+"Discard Report" = "Bericht verwerfen";
+
+/* alert button title */
+"Not Now" = "Nicht jetzt";
+
+/* alert button title */
+"Send Report" = "Bericht senden";
+
+/* crash report alert title */
+"Submit Report?" = "Bericht senden?";
+
+/* crash report alert message */
+"The last time you used %@, it unexpectedly quit. Submitting a report will help us fix the problem in future releases." = "Als Sie %@ das letzte Mal verwendet haben, wurde es unerwartet beendet. Wenn Sie uns einen Bericht senden, unterstützen Sie uns dabei, dass das Problem in künftigen Versionen behoben werden kann.";

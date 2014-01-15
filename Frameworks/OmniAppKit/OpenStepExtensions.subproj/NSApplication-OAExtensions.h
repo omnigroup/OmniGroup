@@ -12,4 +12,7 @@
 @interface NSApplication (OAExtensions)
 - (BOOL)useColor;
 - (NSEvent *) peekEvent;
+
+- (void)flushTopLevelAutoreleasePool;
+
 @end

@@ -130,6 +130,13 @@ void OFDiffData(SenTestCase *testCase, NSData *expected, NSData *actual)
     [diffTask waitUntilExit]; // result should be 1 if they are different, so not worth checking
 }
 
+void OFDiffDataFiles(SenTestCase *testCase, NSString *expectedPath, NSString *actualPath)
+{    
+    NSLog(@"Diffs:\nopendiff '%@' '%@' -merge '%@'", expectedPath, actualPath, expectedPath);
+    NSTask *diffTask = [NSTask launchedTaskWithLaunchPath:@"/usr/bin/diff" arguments:[NSArray arrayWithObjects:@"-u", expectedPath, actualPath, nil]];
+    [diffTask waitUntilExit]; // result should be 1 if they are different, so not worth checking
+}
+
 #endif
 
 static BOOL _addRelativePaths(NSMutableSet *relativePaths, NSString *base, OFDiffFilesPathFilter pathFilter, NSError **outError)
@@ -159,7 +166,13 @@ static BOOL _OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path
 
     // Collect all the files, as relative paths from the two inputs
     NSMutableSet *files1 = [NSMutableSet set];
-    OBShouldNotError(_addRelativePaths(files1, path1, pathFilter, &error));
+    if (!_addRelativePaths(files1, path1, pathFilter, &error)) {
+        NSLog(@"Missing expected output:\n\n\tcp -r \"%@\" \"%@\"\n\n", path2, path1);
+        STFail(@"Unable to find files at \"%@\": %@", path1, error);
+        return NO;
+    }
+        
+        
     if ([files1 count] == 0) {
         if (requireSame)
             STFail(@"No files at \"%@\"", path1);
@@ -167,7 +180,10 @@ static BOOL _OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path
     }
     
     NSMutableSet *files2 = [NSMutableSet set];
-    OBShouldNotError(_addRelativePaths(files2, path2, pathFilter, &error));
+    if (!_addRelativePaths(files2, path2, pathFilter, &error)) {
+        STFail(@"Unable to find files at \"%@\": %@", path2, error);
+        return NO;
+    }
     if ([files2 count] == 0) {
         if (requireSame)
             STFail(@"No files at \"%@\"", path2);
@@ -197,7 +213,7 @@ static BOOL _OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path
                 STFail(@"Unable to read attributes");
             return NO;
         }
-        NSDictionary *attributes2 = [[NSFileManager defaultManager] attributesOfItemAtPath:map1 error:&error];
+        NSDictionary *attributes2 = [[NSFileManager defaultManager] attributesOfItemAtPath:map2 error:&error];
         if (!attributes2) {
             if (requireSame)
                 STFail(@"Unable to read attributes");
@@ -239,7 +255,7 @@ static BOOL _OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path
             }
 #else
             if (requireSame)
-                OFDataShouldBeEqual(data1, data2);
+                OFFileDataShouldBeEqual(data1, map1, data2, map2);
 #endif
             
             OB_RELEASE(data1);
@@ -288,21 +304,27 @@ static BOOL OFCheckFilesSame(SenTestCase *self, NSString *path1, NSString *path2
     NSURL *fileURL1 = [NSURL fileURLWithPath:path1];
     NSURL *fileURL2 = [NSURL fileURLWithPath:path2];
     
-    __block BOOL result = NO;
-    
     NSArray *readFileURLs = [NSArray arrayWithObjects:fileURL1, fileURL2, nil];
-    __autoreleasing NSError *error;
+    __autoreleasing NSError *error = nil;
+    __block NSException *raisedException = nil;
     BOOL success = [coordinator prepareToReadItemsAtURLs:readFileURLs withChanges:YES error:&error byAccessor:^BOOL(NSError **outPrepareError){
         return [coordinator readItemAtURL:fileURL1 withChanges:YES error:outPrepareError byAccessor:^BOOL(NSURL *newURL1, NSError **outRead1Error) {
             return [coordinator readItemAtURL:fileURL2 withChanges:YES error:outRead1Error byAccessor:^BOOL(NSURL *newURL2, NSError **outRead2Error) {
-                result = _OFCheckFilesSame(self, [[newURL1 absoluteURL] path], [[newURL2 absoluteURL] path], requireSame, pathFilter);
-                return YES;
+                @try {
+                    return _OFCheckFilesSame(self, [[newURL1 absoluteURL] path], [[newURL2 absoluteURL] path], requireSame, pathFilter);
+                }
+                @catch (NSException *exception) {
+                    raisedException = exception;
+                }
             }];
         }];
     }];
 
-    STAssertTrue(success, @"File coordination failed");
-    return result;
+    if (raisedException)
+        [raisedException raise]; // Likely a STAssert failure
+    if (requireSame)
+        STAssertTrue(success, @"Comparison failed: %@", [error toPropertyList]);
+    return success;
 }
 
 BOOL OFSameFiles(SenTestCase *self, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter)

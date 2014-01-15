@@ -74,16 +74,6 @@ static CFStringEncoding urlEncoding = kCFStringEncodingUTF8;
     return urlEncoding;
 }
 
-static inline unichar hexDigit(unichar digit)
-{
-    if (isdigit(digit))
-	return digit - '0';
-    else if (isupper(digit))
-	return 10 + digit - 'A';
-    else 
-	return 10 + digit - 'a';
-}
-
 static inline int_fast16_t valueOfHexPair(unichar highNybble, unichar lowNybble)
 {
     uint_fast8_t hnValue, lnValue;

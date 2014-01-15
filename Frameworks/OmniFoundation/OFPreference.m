@@ -966,3 +966,34 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 
 @end
 
+void _OFInitializeDebugLogLevel(NSInteger *outLevel, NSString *name)
+{
+    NSInteger level;
+    
+    const char *env = getenv([name UTF8String]); /* easier for command line tools */
+    if (env)
+        level = strtoul(env, NULL, 0);
+    else
+        level = [[NSUserDefaults standardUserDefaults] integerForKey:name];
+    
+    if (level)
+        NSLog(@"DEBUG LEVEL %@ = %ld", name, level);
+    *outLevel = level;
+}
+
+void _OFInitializeTimeInterval(NSTimeInterval *outInterval, NSString *name, NSTimeInterval default_value, NSTimeInterval min_value, NSTimeInterval max_value)
+{
+    NSTimeInterval value = default_value;
+    
+    const char *env = getenv([name UTF8String]); /* easier for command line tools */
+    if (env)
+        value = strtod(env, NULL);
+    else if ([[NSUserDefaults standardUserDefaults] objectForKey:name])
+        value = [[NSUserDefaults standardUserDefaults] doubleForKey:name];
+    
+    value = CLAMP(value, min_value, max_value);
+    if (value != default_value)
+        NSLog(@"TIME INTERVAL %@ = %lf", name, value);
+    *outInterval = value;
+}
+

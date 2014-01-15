@@ -1,0 +1,68 @@
+/* font size label format string in points */
+"%@ points" = "%@ punten";
+
+/* title format for color component slider */
+"<alpha title+value>" = "Doorzichtigheid: %d%%";
+
+/* title format for color component slider */
+"<blue title+value>" = "Blauw: %d";
+
+/* title format for color component slider */
+"<brightness title+value>" = "Helderheid: %d%%";
+
+/* title format for color component slider */
+"<green title+value>" = "Groen: %d";
+
+/* title format for color component slider */
+"<hue title+value>" = "Tint: %d°";
+
+/* title format for color component slider */
+"<red title+value>" = "Rood: %d";
+
+/* title format for color component slider */
+"<saturation title+value>" = "Verzadiging: %d%%";
+
+/* title format for color component slider */
+"<white title+value>" = "Wit: %d%%";
+
+/* Title for section of font list */
+"All Fonts" = "Alle lettertypen";
+
+/* Title above color swatch picker for the text color. */
+"Background color" = "Achtergrondkleur";
+
+/* color inspector title */
+"Color" = "Kleur";
+
+/* Title for the font family list in the inspector */
+"Font" = "Lettertype";
+
+/* Increment font size button accessibility label */
+"Font bigger" = "Groter lettertype";
+
+/* Decrement font size button accessibility label */
+"Font smaller" = "Kleiner lettertype";
+
+/* popover inspector label title for mulitple selection */
+"Multiple Selection" = "Meervoudige selectie";
+
+/* Descriptive text on the no color pane of the color picker */
+"No color selected" = "Geen kleur geselecteerd";
+
+/* popover inspector label title for no selected objects */
+"No Selection" = "Geen selectie";
+
+/* Title for section of font list */
+"Recommended Fonts" = "Aanbevolen lettertypen";
+
+/* Name for the variant of a font with out any special attributes */
+"Regular" = "Normaal";
+
+/* Label for font size controls */
+"Size" = "Grootte";
+
+/* Title above color swatch picker for the text color. */
+"Text color" = "Tekstkleur";
+
+/* Inspector title */
+"Text Style" = "Tekststijl";

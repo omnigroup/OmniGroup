@@ -315,6 +315,57 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     return acceptLanguageValue;
 }
 
+/* A comparison function which we use for sorting the types we place in the Accept headers */
+static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
+{
+    OBPRECONDITION([a isKindOfClass:[NSString class]]);
+    OBPRECONDITION([b isKindOfClass:[NSString class]]);
+
+    float aPriority = [encodingPriorityDictionary floatForKey:a defaultValue:encodingPriorityDictionaryDefaultValue];
+    float bPriority = [encodingPriorityDictionary floatForKey:b defaultValue:encodingPriorityDictionaryDefaultValue];
+
+    if (aPriority == bPriority)
+        return [(NSString *)a compare:(NSString *)b];
+    else if (aPriority > bPriority)
+        return NSOrderedAscending;
+    else // (aPriority < bPriority)
+        return NSOrderedDescending;
+}
+
++ (NSString *)acceptEncodingValue;
+{
+    static NSString *_acceptEncodingsValue = nil;
+    
+    if (_acceptEncodingsValue != nil)
+        return _acceptEncodingsValue;
+
+    // Determine the Accept-Encoding header
+    NSArray *encodings = [OWDataStreamCursor availableEncodingsToRemove];
+    NSMutableArray *acceptsArray = [[NSMutableArray alloc] initWithCapacity:[encodings count]];
+    
+    for (OWContentType *possibleType in encodings) {
+        if (![possibleType isPublic])
+            continue;
+
+        NSString *encodingString = [[possibleType contentTypeString] stringByRemovingPrefix:@"encoding/"];
+#if 0
+        if (![possibleType isInteresting])
+            encodingString = [encodingString stringByAppendingString:@";q=0.5"];
+#endif
+        
+        [acceptsArray addObject:encodingString];
+    }
+
+    [acceptsArray addObject:@"identity"];
+    [acceptsArray sortUsingFunction:acceptEncodingHeaderOrdering context:NULL];
+    
+    // Note: We always send the Accept-Encoding header, even if we have no encodings.  In fact, especially when we have no encodings, since according to RFC 2616 no Accept-Encoding header means the server can assume we understand compress and gzip, while an empty header value means the server can only assume that we understand the "identity" encoding.
+    _acceptEncodingsValue = [[acceptsArray componentsJoinedByString:@", "] retain];
+    [acceptsArray release];
+
+    return _acceptEncodingsValue;
+}
+
 + (NSCharacterSet *)nonTokenCharacterSet
 {
     return nonTokenCharacterSet;
@@ -1089,60 +1140,9 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     }
 }
 
-/* A comparison function which we use for sorting the types we place in the Accept headers */
-static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
-{
-    OBPRECONDITION([a isKindOfClass:[NSString class]]);
-    OBPRECONDITION([b isKindOfClass:[NSString class]]);
-
-    float aPriority = [encodingPriorityDictionary floatForKey:a defaultValue:encodingPriorityDictionaryDefaultValue];
-    float bPriority = [encodingPriorityDictionary floatForKey:b defaultValue:encodingPriorityDictionaryDefaultValue];
-
-    if (aPriority == bPriority)
-        return [(NSString *)a compare:(NSString *)b];
-    else if (aPriority > bPriority)
-        return NSOrderedAscending;
-    else // (aPriority < bPriority)
-        return NSOrderedDescending;
-}
-
 + (NSString *)_acceptEncodingsHeaderString;
 {
-    static NSString *acceptEncodingsString = nil;
-    
-    if (acceptEncodingsString != nil)
-        return acceptEncodingsString;
-
-    NSMutableArray *acceptsArray;
-    NSArray *encodings;
-    NSEnumerator *possibleTypesEnumerator;
-    OWContentType *possibleType;
-    NSString *encodingString;
-
-    // Determine the Accept-Encoding header
-    encodings = [OWDataStreamCursor availableEncodingsToRemove];
-    acceptsArray = [[NSMutableArray alloc] initWithCapacity:[encodings count]];
-    
-    possibleTypesEnumerator = [encodings objectEnumerator];
-    while ((possibleType = [possibleTypesEnumerator nextObject])) {
-        if (![possibleType isPublic])
-            continue;
-        encodingString = [[possibleType contentTypeString] stringByRemovingPrefix:@"encoding/"];
-#if 0
-        if (![possibleType isInteresting])
-            encodingString = [encodingString stringByAppendingString:@";q=0.5"];
-#endif
-        
-        [acceptsArray addObject:encodingString];
-    }
-    [acceptsArray addObject:@"identity"];
-    [acceptsArray sortUsingFunction:acceptEncodingHeaderOrdering context:NULL];
-    
-    // Note: We always send the Accept-Encoding header, even if we have no encodings.  In fact, especially when we have no encodings, since according to RFC 2616 no Accept-Encoding header means the server can assume we understand compress and gzip, while an empty header value means the server can only assume that we understand the "identity" encoding.
-    acceptEncodingsString = [[self stringForHeader:@"Accept-Encoding" value:[acceptsArray componentsJoinedByString:@", "]] retain];
-    [acceptsArray release];
-
-    return acceptEncodingsString;
+    return [self stringForHeader:@"Accept-Encoding" value:[self acceptEncodingValue]];
 }
 
 + (NSDictionary *)_customBrowserIdentityDictionary;

@@ -10,7 +10,6 @@
 #import <OmniFoundation/OFObject.h>
 
 @class OFPreference;
-@class OSUItem;
 
 /* Some of our preference keys aren't accessible through NSUserDefaults */
 #define OSUSharedPreferencesDomain CFSTR("com.omnigroup.OmniSoftwareUpdate")
@@ -23,13 +22,7 @@
 + (OFPreference *)automaticSoftwareUpdateCheckEnabled;
 + (OFPreference *)checkInterval;
 + (OFPreference *)includeHardwareDetails;
-+ (OFPreference *)includeOpenGLDetails;
 + (OFPreference *)ignoredUpdates;
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE // Not including OSUItem on iOS currently
-+ (void)setItem:(OSUItem *)anItem isIgnored:(BOOL)shouldBeIgnored;
-+ (BOOL)itemIsIgnored:(OSUItem *)anItem;
-#endif
 
 + (NSArray *)visibleTracks;
 + (void)setVisibleTracks:(NSArray *)orderedTrackList;

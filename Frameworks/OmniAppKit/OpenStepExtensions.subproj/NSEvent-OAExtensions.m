@@ -75,6 +75,15 @@ RCS_ID("$Id$");
     }
 }
 
+- (BOOL)isKeyDownWithUnmodifiedCharacter:(unichar)c;
+{
+    if ([self type] != NSKeyDown)
+        return NO;
+    
+    NSString *string = [self charactersIgnoringModifiers];
+    return ([string length] == 1) && [string characterAtIndex:0] == c;
+}
+
 static BOOL _checkModifierFlags(NSUInteger current, NSUInteger desired, NSUInteger prohibited, BOOL requireAll)
 {
     OBPRECONDITION((desired & prohibited) == 0);

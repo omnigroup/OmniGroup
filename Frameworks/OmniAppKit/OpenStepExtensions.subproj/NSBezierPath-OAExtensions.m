@@ -1647,6 +1647,7 @@ static inline BOOL pdrangeCoversPDrange(double rstart, double rlength, double r2
     return (rstart <= r2start) && (rlength - r2length >= r2start - rstart);
 }
 
+#if 0
 static inline BOOL drangeCoversDrange(double rstart, double rlength, double r2start, double r2length)
 {
     if (r2length < 0)
@@ -1654,6 +1655,7 @@ static inline BOOL drangeCoversDrange(double rstart, double rlength, double r2st
     else
         return drangeCoversPDrange(rstart, rlength, r2start, r2length);
 }
+#endif
 
 static BOOL drangeIntersectsDrange(double r1start, double r1length, double r2start, double r2length)
 {
@@ -1679,6 +1681,7 @@ static inline void combinePDranges(double *r, double *len, double r1, double r1l
     *len = MAX(newDL, newDR);
 }
 
+#if 0
 static inline void combineNDranges(double *r, double *len, double r1, double r1len, double r2, double r2len)
 {
     double newP, newDL, newDR;
@@ -1699,6 +1702,7 @@ static inline void combineDranges(double *r, double *len, double r1, double r1le
     else
         combineNDranges(r, len, r1, r1len, r2, r2len);
 }
+#endif
 
 NSString *_roundedStringForPoint(NSPoint point)
 {
@@ -1951,6 +1955,7 @@ static inline double evaluateCubicSecondDerivative(const double *c, double x)
     return  6 * c[3] * x + 2 * c[2] ;
 }
 
+#if 0
 static inline OAdPoint evaluateCubicPt(const OAdPoint *c, double t)
 {
     return (OAdPoint){
@@ -1958,6 +1963,7 @@ static inline OAdPoint evaluateCubicPt(const OAdPoint *c, double t)
         (( c[3].y * t + c[2].y ) * t + c[1].y ) * t + c[0].y
     };
 }
+#endif
 
 static inline OAdPoint evaluateCubicDerivativePt(const NSPoint *c, double t)
 {

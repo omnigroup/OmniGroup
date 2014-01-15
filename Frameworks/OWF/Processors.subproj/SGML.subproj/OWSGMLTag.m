@@ -85,17 +85,13 @@ static NSMutableCharacterSet *requiresQuotesCharacterSet = nil;
 
 - (NSDictionary *)attributes;
 {
-    NSMutableDictionary *result;
-    NSArray *attributeNames;
-    unsigned int attributeIndex;
-
-    result = [NSMutableDictionary dictionary];
-    attributeNames = [nonretainedTagType attributeNames];
-    for (attributeIndex = 0; attributeIndex < attributeCount; attributeIndex++) {
-        NSString *attributeName, *attributeValue;
-
-        attributeName = [attributeNames objectAtIndex:attributeIndex];
-        if ((attributeValue = attributes[attributeIndex]))
+    NSMutableDictionary *result = [NSMutableDictionary dictionary];
+    NSArray *attributeNames = [nonretainedTagType attributeNames];
+    for (unsigned int attributeIndex = 0; attributeIndex < attributeCount; attributeIndex++) {
+        NSString *attributeName = [attributeNames objectAtIndex:attributeIndex];
+        OBASSERT(attributeName != nil);
+        NSString *attributeValue = attributes[attributeIndex];
+        if (attributeValue != nil)
             [result setObject:attributeValue forKey:attributeName];
     }
     return result;

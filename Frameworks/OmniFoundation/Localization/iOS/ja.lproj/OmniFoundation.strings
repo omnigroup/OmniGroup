@@ -1,0 +1,225 @@
+/* abbreviated string for bytes format */
+"%0.1f GB" = "%0.1f GB";
+
+/* abbreviated string for gigahertz format */
+"%0.1f GHz" = "%0.1f GHz";
+
+/* abbreviated string for bytes format */
+"%0.1f kB" = "%0.1f kB";
+
+/* abbreviated string for kilohertz format */
+"%0.1f KHz" = "%0.1f KHz";
+
+/* abbreviated string for bytes format */
+"%0.1f MB" = "%0.1f MB";
+
+/* abbreviated string for megahertz format */
+"%0.1f MHz" = "%0.1f MHz";
+
+/* abbreviated string for bytes format */
+"%0.1f PB" = "%0.1f PB";
+
+/* abbreviated string for bytes format */
+"%0.1f TB" = "%0.1f TB";
+
+/* abbreviated string for terahertz format */
+"%0.1f THz" = "%0.1f THz";
+
+/* abbreviated string for bytes format */
+"%d bytes" = "%d バイト";
+
+/* abbreviated string for hertz format */
+"%u Hz" = "%u ヘルツ";
+
+/* approximate time interval: more than one hour */
+"about %.1f hours" = "およそ %.1f 時間";
+
+/* approximate time interval: some minutes since start or until finish */
+"about %d minutes" = "およそ %d 分";
+
+/* approximate time interval: seconds since start or until finish */
+"about %d seconds" = "およそ %d 秒";
+
+/* approximate time interval: one minute */
+"about a minute" = "およそ 1 分";
+
+/* approximate time interval: one hour */
+"about an hour" = "およそ 1 時間";
+
+/* error reason */
+"Another application has overridden the lock at \"%@\"." = "別のアプリケーションが “%@” でロックを上書きしました。";
+
+/* invalid bundle reason */
+"Bundle is obsolete" = "古いバンドルです";
+
+/* invalid bundle reason */
+"Bundle requires additional software" = "バンドルには追加のソフトウェアが必要です";
+
+/* compression error reason */
+"bzip2 library returned error code %d when finishing compression. %s." = "圧縮処理の終了時に、bzip2 ライブラリからエラーコード %1$d が返されました。%2$s。";
+
+/* decompression error reason */
+"bzip2 library returned error code %d when reading data. %s." = "データ読み取り時に bzip2 ライブラリからエラーコード %1$d が返されました。%2$s。";
+
+/* compression error reason */
+"bzip2 library returned error code %d when writing data. %s." = "データ書き込み時に bzip2 ライブラリからエラーコード %1$d が返されました。%2$s。";
+
+/* OFLockFile recovery option */
+"Cancel" = "キャンセル";
+
+/* error recovery option */
+"Cancel <error recovery>" = "キャンセル";
+
+/* error description */
+"Cannot create socket." = "ソケットを作成できません。";
+
+/* Error message when mkdir() fails
+   Error message when mkdir() will fail because there's a file in the way
+   Error message when stat() fails when trying to create a directory tree */
+
+
+"Could not create directory" = "ディレクトリを作成できませんでした";
+
+/* time span formatter span */
+"d" = "日";
+
+/* time span formatter span */
+"day" = "日";
+
+/* time span formatter span */
+"days" = "日間";
+
+/* invalid bundle reason */
+"Duplicate bundle name" = "バンドル名を複製";
+
+/* exception reason */
+"Element '%@' not allowed at path: %@" = "エレメント '%1$@' は次のパスへアクセスできません: %2$@";
+
+/* error reason */
+"Failed to create directory for lock file at \"%@\"." = "“%@” でロックされたファイルのディレクトリの作成に失敗しました。";
+
+/* error reason */
+"Failed to serialize lock information.  %@" = "ロック情報のシリアライズに失敗しました。%@";
+
+/* error reason */
+"Failed to write lock file.  %@" = "ロックされたファイルの書き込みに失敗しました。%@";
+
+/* time span formatter span */
+"h" = "時";
+
+/* time span formatter span */
+"hour" = "時";
+
+/* time span formatter span */
+"hours" = "時間";
+
+/* formatter input error */
+"Invalid time span format" = "期間のフォーマットが無効です";
+
+/* local bundle path readable string */
+"local configuration file" = "ローカル設定ファイル";
+
+/* time span formatter span */
+"m" = "分";
+
+/* time span formatter span */
+"minute" = "分";
+
+/* time span formatter span */
+"minutes" = "分間";
+
+/* time span formatter span */
+"mo" = "月";
+
+/* time span formatter span */
+"month" = "月";
+
+/* time span formatter span */
+"months" = "ヶ月";
+
+/* error reason */
+"No root element was found" = "ルート要素が見つかりませんでした";
+
+/* invalid bundle reason */
+"Not a valid bundle" = "有効なバンドルではありません";
+
+/* OFLockFile recovery option */
+"Override Lock" = "ロックを上書き";
+
+/* time span formatter span */
+"s" = "秒";
+
+/* time span formatter span */
+"second" = "秒";
+
+/* time span formatter span */
+"seconds" = "秒間";
+
+/* server certificate rejected */
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバーの証明書が無効のようです。このサイトの信用性には問題があります。それでも接続しますか？";
+
+/* server certificate out of date */
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@” に対するサーバーの証明書の日付が無効です。有効期限が切れたか、まだ有効ではない可能性があります。それでも接続しますか？";
+
+/* server certificate has unknown root */
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバーの証明書にはいずれのルートサーバーからも署名がありません。このサイトの信用性には問題があります。それでも接続しますか？";
+
+/* server certificate not yet valid */
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバーの証明書がまだ有効になっていません。このサイトの信用性には問題があります。それでも接続しますか？";
+
+/* server certificate untrusted */
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバーの証明書には信頼されていないルートサーバーからの署名があります。このサイトの信用性には問題があります。それでも接続しますか？";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "この書類は %3$@ %4$@ にコンピュータ “%2$@” の %1$@ によってロックされました。";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "この書類は %3$@ %4$@ にコンピュータ “%2$@” の %1$@ によってロックされました。\n\nこのロックを上書きできますが、他のアプリケーションが実行中の場合には、データを失う可能性があります。";
+
+/* compression error description */
+"Unable to compress data." = "データを圧縮できません。";
+
+/* decompression error description */
+"Unable to decompress data." = "データを解凍できません。";
+
+/* decompression exception format */
+"Unable to decompress gzip data: invalid header" = "gzip データを解凍できません: 無効なヘッダです";
+
+/* compression exception format */
+"Unable to initialize compression" = "圧縮処理を初期化できません";
+
+/* decompression exception format */
+"Unable to initialize decompression" = "解凍処理を初期化できません";
+
+/* error description */
+"Unable to lock document." = "書類をロックできません。";
+
+/* decompression error reason */
+"unrecognized compression format." = "認識できない圧縮形式です。";
+
+/* time span formatter span */
+"w" = "週";
+
+/* error description */
+"Warning encountered while loading XML." = "XML 読み込み中に警告に遭遇しました。";
+
+/* time span formatter span */
+"week" = "週";
+
+/* time span formatter span */
+"weeks" = "週間";
+
+/* time span formatter span */
+"y" = "年";
+
+/* time span formatter span */
+"year" = "年";
+
+/* time span formatter span */
+"years" = "年間";
+
+/* zlib error reason */
+"zlib returned error code %d." = "zlib がエラーコード %d を返しました。";
+
+/* zlib error reason */
+"zlib returned error code %d. %s." = "zlib がエラーコード %1$d.を返しました。%2$s。";

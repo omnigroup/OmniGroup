@@ -16,6 +16,7 @@
 #else
     #define OSU_IPHONE 0
     #define OSU_MAC 1
+    #import <OmniFoundation/NSProcessInfo-OFExtensions.h>
 #endif
 
 #if OSU_MAC
@@ -30,6 +31,7 @@
 
 #if OSU_IPHONE
 #import <OpenGLES/EAGL.h>
+#import <sys/mount.h>
 #endif
 
 #import <mach-o/arch.h>
@@ -91,9 +93,14 @@ static void setSysctlIntKey(CFMutableDictionaryRef dict, CFStringRef key, int na
     
     size_t valueSize = sizeof(value);
     if (sysctl(name, nameCount, &value, &valueSize, NULL, 0) < 0) {
-        perror("sysctl");
-        value.ui32 = (uint32_t)-1;
-        valueSize  = sizeof(value.ui32);
+        if (errno == ENOENT) {
+            // Doesn't exist -- this happens on iOS when we ask for {CTL_HW, HW_CPU_FREQ} for example
+            return;
+        } else {
+            perror("sysctl");
+            value.ui32 = (uint32_t)-1;
+            valueSize  = sizeof(value.ui32);
+        }
     }
     
     // Might get back a 64-bit value for size/cycle values
@@ -116,9 +123,10 @@ static void setSysctlStringKey(CFMutableDictionaryRef dict, CFStringRef key, int
     char *value = calloc(1, bufSize + 1);
     
     if (sysctl(name, nameCount, value, &bufSize, NULL, 0) < 0) {
-	// Not expecting any errors now!
 	free(value);
-	perror("sysctl");
+        if (errno != ENOENT) {
+            perror("sysctl");
+        }
 	return;
     }
     
@@ -229,7 +237,7 @@ static NSString *clGetPlatformInfoString(cl_platform_id plat, cl_platform_info w
 static NSString *clGetDeviceInfoString(cl_device_id device, cl_device_info what);
 #endif /* CL_VERSION_1_0 */
 
-CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collectHardwareInformation, bool collectOpenGLInformation, NSString *licenseType, bool reportMode)
+CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collectHardwareInformation, NSString *licenseType, bool reportMode)
 {
     CFMutableDictionaryRef info = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     
@@ -242,13 +250,26 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
     
     // License type (bundle, retail, demo, etc)
     {
-        CFDictionarySetValue(info, CFSTR("license-type"), licenseType);
+        CFDictionarySetValue(info, OSUReportInfoLicenseTypeKey, licenseType);
     }
     
     // UUID for the user's machine
     {
         CFStringRef domain = CFSTR("com.omnigroup.OmniSoftwareUpdate");
-        CFStringRef key    = CFSTR("uuid");
+#if OSU_MAC && defined(OMNI_ASSERTIONS_ON)
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            if ([[NSProcessInfo processInfo] isSandboxed]) {
+                NSDictionary *entitlements = [[NSProcessInfo processInfo] codeSigningEntitlements];
+                id value = [entitlements objectForKey:@"com.apple.security.temporary-exception.shared-preference.read-write"];
+                if (value == nil)
+                    value = [NSArray array];
+                NSArray *preferenceDomains = [value isKindOfClass:[NSArray class]] ? value : [NSArray arrayWithObject:value];
+                assert([preferenceDomains containsObject:(NSString *)domain]);
+            }
+        });
+#endif
+        CFStringRef key = (CFStringRef)OSUReportInfoUUIDKey;
         
         CFStringRef uuidString = CFPreferencesCopyAppValue(key, domain);
         if (!uuidString) {
@@ -287,7 +308,7 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
         CFStringRef userVisibleSystemVersion = CFStringCreateCopy(kCFAllocatorDefault, (CFStringRef)[[UIDevice currentDevice] systemVersion]);
 #endif
         
-        CFDictionarySetValue(info, CFSTR("os"), userVisibleSystemVersion);
+        CFDictionarySetValue(info, OSUReportInfoOSVersionKey, userVisibleSystemVersion);
         CFRelease(userVisibleSystemVersion);
     }
     
@@ -298,7 +319,7 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
             if (CFGetTypeID(languages) == CFArrayGetTypeID() && CFArrayGetCount(languages) > 0) {
                 // Only log their most prefered language
                 CFStringRef language = CFArrayGetValueAtIndex(languages, 0);
-                setStringValue(info, CFSTR("lang"), language);
+                setStringValue(info, (CFStringRef)OSUReportInfoLanguageKey, language);
             }
             CFRelease(languages);
         }
@@ -307,13 +328,13 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
     // Computer model
     {
         int name[] = {CTL_HW, HW_MODEL};
-        setSysctlStringKey(info, CFSTR("hw-model"), name, 2);
+        setSysctlStringKey(info, (CFStringRef)OSUReportInfoHardwareModelKey, name, 2);
     }
     
     // Number of processors
     {
         int name[] = {CTL_HW, HW_NCPU};
-        setSysctlIntKey(info, CFSTR("ncpu"), name, 2);
+        setSysctlIntKey(info, (CFStringRef)OSUReportInfoCPUCountKey, name, 2);
     }
     
     // Type/Subtype of processors
@@ -322,7 +343,7 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
         const NXArchInfo *archInfo = NXGetLocalArchInfo();
         if (archInfo) {
             CFStringRef value = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%d,%d"), archInfo->cputype, archInfo->cpusubtype);
-            CFDictionarySetValue(info, CFSTR("cpu"), value);
+            CFDictionarySetValue(info, (CFStringRef)OSUReportInfoCPUTypeKey, value);
             CFRelease(value);
             
             // Radar #3624895: This will report 'ppc' instead of 'ppc970' when DYLD_IMAGE_SUFFIX=_debug
@@ -334,13 +355,13 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
     // CPU Hz
     {
         int name[] = {CTL_HW, HW_CPU_FREQ};
-        setSysctlIntKey(info, CFSTR("cpuhz"), name, 2);
+        setSysctlIntKey(info, (CFStringRef)OSUReportInfoCPUFrequencyKey, name, 2);
     }
     
     // Bus Hz
     {
         int name[] = {CTL_HW, HW_BUS_FREQ};
-        setSysctlIntKey(info, CFSTR("bushz"), name, 2);
+        setSysctlIntKey(info, (CFStringRef)OSUReportInfoBusFrequencyKey, name, 2);
     }
     
     // MB of memory
@@ -350,8 +371,33 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
 #define HW_MEMSIZE      24              /* uint64_t: physical ram size */
 #endif
         int name[] = {CTL_HW, HW_MEMSIZE};
-        setSysctlIntKey(info, CFSTR("mem"), name, 2);
+        setSysctlIntKey(info, (CFStringRef)OSUReportInfoMemorySizeKey, name, 2);
     }
+    
+    // Total local volumes size -- mostly of interest on iOS, so only reporting it there for now. Also, we'd need to be careful to only probe local filesystems on the Mac.
+#if OSU_IPHONE
+    {
+        // -[NSFileManager mountedVolumeURLsIncludingResourceValuesForKeys:options:] just returns nil on iOS...
+        unsigned long long totalSize = 0;
+        struct statfs *mountStats = NULL;
+        int mountCount = getmntinfo(&mountStats, MNT_NOWAIT);
+        if (mountCount == 0) {
+            perror("getmntinfo");
+        } else {
+            for (int mountIndex = 0; mountIndex < mountCount; mountIndex++) {
+                struct statfs mountStat = mountStats[mountIndex];
+                unsigned long long size = (unsigned long long)mountStat.f_blocks * (unsigned long long)mountStat.f_bsize;
+                totalSize += size;
+            }
+        }
+        
+        if (totalSize > 0) {
+            NSString *value = [[NSString alloc] initWithFormat:@"%qu", totalSize];
+            CFDictionarySetValue(info, (CFStringRef)OSUReportInfoVolumeSizeKey, value);
+            [value release];
+        }
+    }
+#endif
     
     // Displays and accelerators
     {
@@ -555,13 +601,14 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
     }
     
     // OpenGL extensions for the main display adaptor.
-    if (collectOpenGLInformation) {
+    {
 #if OSU_MAC
 	NSOpenGLPixelFormatAttribute attributes[] = {
 	    NSOpenGLPFAFullScreen,
 	    NSOpenGLPFAScreenMask, CGDisplayIDToOpenGLDisplayMask(CGMainDisplayID()),
 	    NSOpenGLPFAAccelerated,
 	    NSOpenGLPFANoRecovery,
+            kCGLPFASupportsAutomaticGraphicsSwitching, // Don't force use of the discrete GPU forever
 	    0
 	};
 	
@@ -622,20 +669,20 @@ CFDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, bool collec
         // The GL info is implicit in the hardware model, but it might be useful for us to collect that instead of having to have one of every device and manually collect it.
 #endif
     }
-        
+
     // More info on the general hardware from system_profiler
     {
 #if OSU_MAC
 	NSDictionary *profile = copySystemProfileForDataType(@"SPHardwareDataType");
 	
         setStringValue(info, CFSTR("cpu_type"), (CFStringRef)[profile objectForKey:@"cpu_type"]);
-        setStringValue(info, CFSTR("machine_name"), (CFStringRef)[profile objectForKey:@"machine_name"]);
+        setStringValue(info, (CFStringRef)OSUReportInfoMachineNameKey, (CFStringRef)[profile objectForKey:@"machine_name"]);
         
 	[profile release];
 #endif
         
 #if OSU_IPHONE
-        setStringValue(info, CFSTR("machine_name"), (CFStringRef)[[UIDevice currentDevice] model]);
+        setStringValue(info, (CFStringRef)OSUReportInfoMachineNameKey, (CFStringRef)[[UIDevice currentDevice] model]);
 #endif
     }
     

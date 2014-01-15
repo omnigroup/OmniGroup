@@ -9,7 +9,6 @@
 #
 # $Id$
 
-
 #
 # Xcode doesn't go out of its way to make it easy to figure out which source
 # files were a part of which target.
@@ -18,61 +17,76 @@
 SCRIPTS_DIR=$0:h
 
 # Require the caller to provide a list of expected string table names. This prevents cases where NSLocalizedStringXXX calls are moved from one framework to another without fixing the table name (and thus possibly resulting in collisions)
-if [ $# = 0 ]; then
-    echo "No expected strings file names given!"
-    echo "usage: $0 table-name1 ..."
-    exit 1
-fi
+# Localizable nib filenames should _not_ be passed on the command line; they will be determined automatically. (This means it is valid to have a BuildStringsFromTarget step that has no arguments if the only localizable resources are nibs.)
+typeset -a EXPECTED_STRINGS_FILES
+EXPECTED_STRINGS_FILES=($*)
+
+# Always build strings into en.lproj.
+DEVELOPMENT_REGION="en"
 
 # Build the strings file(s) into a separate directory so we can avoid mucking with timestamps in the build output unless needed (see below). Don’t move the file list into place unless building it succeeds.
 STRINGS_DIR="$DERIVED_FILES_DIR/BuildStringsFromTarget-$TARGET_NAME"
-TMP_OUTPUT="$STRINGS_DIR"/English.lproj
-FILE_LIST="$TMP_OUTPUT"/files
+TMP_OUTPUT="$STRINGS_DIR/$DEVELOPMENT_REGION".lproj
+LOCALIZABLE_FILE_LIST="$TMP_OUTPUT"/files
 
 if [ -d "$STRINGS_DIR" ]; then
-  # If we've run before and nothing has changed, bail
-  if [ -f "$FILE_LIST" ]; then
-      NEWER="no"
-      cat "$FILE_LIST" | while read file; do
-          if [ "$file" -nt "$FILE_LIST" ]; then
+    if [ -f "$LOCALIZABLE_FILE_LIST" ]; then
+        # If we've run before and nothing has changed, bail
+        NEWER="no"
+        
+        echo "$LOCALIZABLE_FILE_LIST has mtime `stat -f m $LOCALIZABLE_FILE_LIST`"
+        cat "$LOCALIZABLE_FILE_LIST" | while read file; do
+            if [ "$file" -nt "$LOCALIZABLE_FILE_LIST" ]; then
               NEWER="yes"
-          fi
-      done
-      if [ "$NEWER" = "no" ]; then
-          exit 0
-      fi
-  fi
-  
-  # Otherwise start from scratch and continue on
-  rm -rf "$STRINGS_DIR"
+            fi
+        done
+        
+        if [ "$NEWER" = "no" ]; then
+            echo "No new localizable files since `stat -f %Sm $LOCALIZABLE_FILE_LIST`; exiting"
+            exit 0
+        fi
+    fi
+    
+    # Otherwise start from scratch and continue on
+    rm -rf "$STRINGS_DIR"
 fi
 
 mkdir -p "$STRINGS_DIR"
 mkdir "$TMP_OUTPUT"
 
 # Gather the source files and the project file that defined them into a list, which we'll use for early-out
-echo "$PROJECT_FILE_PATH"/project.pbxproj  > "$FILE_LIST"-tmp
+echo "$PROJECT_FILE_PATH"/project.pbxproj  > "$LOCALIZABLE_FILE_LIST"-tmp
 source_files=()
 $SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" c,m "$PROJECT_FILE_PATH" | while read f; do
    source_files+=($f)
-   echo "$f" >> "$FILE_LIST"-tmp
+   echo "$f" >> "$LOCALIZABLE_FILE_LIST"-tmp
 done
 
 if [ $#source_files -gt 0 ]; then
 	/usr/bin/genstrings -u -q -o "$TMP_OUTPUT" $source_files
 fi
 
+# Build English strings for every xib using base localizations
+$SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" xib "$PROJECT_FILE_PATH" | while read x; do
+    xib_basename=`basename $x`
+    if [[ "$x" =~ "Base.lproj/$xib_basename\$" ]]; then
+        string_table_name="${xib_basename%.xib}"
+        echo "Creating string table '$string_table_name' from $x" # without this line here, zsh segfaults. (!?)
+        ibtool --output-format human-readable-text --export-strings-file "$TMP_OUTPUT/${string_table_name}.strings" "$SRCROOT/$x"
+        echo "$x" >> "$LOCALIZABLE_FILE_LIST"-tmp
+        EXPECTED_STRINGS_FILES+=$string_table_name
+    fi
+done
+
 FIX_STRINGS_FILE="$BUILD_DIR/$CONFIGURATION"/FixStringsFile
 
 # If we are building a real bundle (Mac framework or app) sync the built files into that bundle.
-if [ -n "${LOCALIZED_RESOURCES_FOLDER_PATH-}" ]; then
-    RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/$LOCALIZED_RESOURCES_FOLDER_PATH"
+if [ -n "${UNLOCALIZED_RESOURCES_FOLDER_PATH-}" ]; then
+    RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/$DEVELOPMENT_REGION.lproj"
 else
     # We're building a static library (for an iOS "framework", most likely)
     # Publish the results for the app to pick up.
-#   BASE_LOCALIZATION_NAME=`$SCRIPTS_DIR/GetProjectBaseLocalization $PROJECT_FILE_PATH`
-    BASE_LOCALIZATION_NAME="English"
-    RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/Resources/$PRODUCT_NAME/$BASE_LOCALIZATION_NAME.lproj"
+    RESOURCE_DIR="$CONFIGURATION_BUILD_DIR/Resources/$PRODUCT_NAME/$DEVELOPMENT_REGION.lproj"
 fi
 mkdir -p "$RESOURCE_DIR"
 
@@ -83,8 +97,8 @@ else
 fi
 
 # Copy each expected string table
-while [ $# != 0 ]; do
-    table_name=$1; shift;
+while [ $#EXPECTED_STRINGS_FILES != 0 ]; do
+    table_name=${EXPECTED_STRINGS_FILES[1]}; shift 1 EXPECTED_STRINGS_FILES;
     
     table_file="$TMP_OUTPUT/${table_name}.strings"
     if [ ! -f "$table_file" ]; then
@@ -115,14 +129,20 @@ while [ $# != 0 ]; do
     rm "$table_file"
 done
 
-unexpected=0
+unexpected="no"
 for x in "$TMP_OUTPUT"/*(N); do
-    if [ "$x" != "$FILE_LIST"-tmp ]; then
+    echo "Checking $x against ${LOCALIZABLE_FILE_LIST}-tmp"
+    if [ "$x" != "$LOCALIZABLE_FILE_LIST"-tmp ]; then
         echo "Unexpected string file emitted: $x"
-        unexpected=1
+        unexpected="yes"
     fi
 done
-exit $unexpected
 
-mv "$FILE_LIST"-tmp "$FILE_LIST"
-cat "$FILE_LIST"
+if [ $unexpected = "no" ]; then
+    mv "$LOCALIZABLE_FILE_LIST"-tmp "$LOCALIZABLE_FILE_LIST"
+fi
+
+echo "Localized files:"
+cat "$LOCALIZABLE_FILE_LIST"
+
+exit $unexpected

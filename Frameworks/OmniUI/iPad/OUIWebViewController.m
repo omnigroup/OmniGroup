@@ -8,6 +8,7 @@
 #import <OmniUI/OUIWebViewController.h>
 
 #import <MessageUI/MessageUI.h>
+#import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
 
@@ -129,15 +130,24 @@ RCS_ID("$Id$")
                 return NO; // Don't load this in the WebView
         }
         
-        // Implicitly kick web URLs not pointing to *.omnigroup.com over to Safari
-        BOOL isWebURL = ![requestURL isFileURL];
+        
+        // Implicitly kick web URLs not pointing to *.omnigroup.com over to Safari (or all URLs in retail demos)
+        BOOL isWebURL = !([requestURL isFileURL]);
         NSURLComponents *components = [NSURLComponents componentsWithURL:requestURL resolvingAgainstBaseURL:NO];
         NSString *host = [components.host lowercaseString];
+        BOOL isOmniURL = isWebURL && ([host hasSuffix:@"omnigroup.com"] || [host hasSuffix:@"sync.omnigroup.com"]);
         
-        if (isWebURL && ([host hasSuffix:@"omnigroup.com"] == NO)) {
-            // Open in Safari.
-            if ([[UIApplication sharedApplication] openURL:requestURL])
-                return NO;
+        if (isWebURL && (!isOmniURL || [[OUIAppController controller] isRunningRetailDemo])) {
+            if ([[UIApplication sharedApplication] openURL:requestURL] == NO) {
+                NSString *alertTitle = NSLocalizedStringFromTableInBundle(@"Link could not be opened. Please check Safari restrictions in Settings.", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL title.");
+                
+                OUIAlert *alert = [[OUIAlert alloc] initWithTitle:alertTitle message:nil cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL cancel button.") cancelAction:NULL];
+                
+                [alert show];
+            }
+            
+            // The above call to -openURL can return no if Safari is off due to restriction. We still don't want to handle the URL.
+            return NO;
         }
 
         // Special URL

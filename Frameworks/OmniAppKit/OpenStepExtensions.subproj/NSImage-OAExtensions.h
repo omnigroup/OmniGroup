@@ -38,6 +38,16 @@ extern NSString * const OAInfoTemplateImageName;
 
 + (NSImage *)draggingIconWithTitle:(NSString *)title andImage:(NSImage *)image;
 
+/** Returns an image tinted with the passed in color, using NSCompositeSourceAtop (R = S*Da + D*(1 - Sa)).
+ This is a convenience for -imageByTintingWithColor:alpha: with an alpha value of 1.0.
+ */
+- (NSImage *)imageByTintingWithColor:(NSColor *)tintColor;
+
+/** Returns an image tinted with the passed in color, using NSCompositeSourceAtop (R = S*Da + D*(1 - Sa)).
+ The alpha value controls the overal value of the resulting image.
+ */
+- (NSImage *)imageByTintingWithColor:(NSColor *)tintColor alpha:(CGFloat)alpha;
+
 - (void)drawFlippedInRect:(NSRect)rect fromRect:(NSRect)sourceRect operation:(NSCompositingOperation)op fraction:(CGFloat)delta;
 - (void)drawFlippedInRect:(NSRect)rect fromRect:(NSRect)sourceRect operation:(NSCompositingOperation)op;
 - (void)drawFlippedInRect:(NSRect)rect operation:(NSCompositingOperation)op fraction:(CGFloat)delta;

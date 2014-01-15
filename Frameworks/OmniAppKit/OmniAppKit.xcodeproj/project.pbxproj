@@ -14,14 +14,10 @@
 		271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 271A9D9E1533DA2800A78CCB /* OAAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 271A9D9F1533DA2800A78CCB /* OAAnimation.m */; };
 		272023F315C06D7D0089BC49 /* OAInfoTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */; };
-		272A315B1666BABB00110B0B /* OANoExpansionFrameTextFieldCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 272A315A1666BABB00110B0B /* OANoExpansionFrameTextFieldCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		272A315E1666BAFF00110B0B /* OANoExpansionFrameTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 272A315D1666BAFF00110B0B /* OANoExpansionFrameTextFieldCell.m */; };
 		2730CF3B144E205B007C3A99 /* OADocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 2730CF39144E205B007C3A99 /* OADocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2730CF3C144E205B007C3A99 /* OADocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 2730CF3A144E205B007C3A99 /* OADocument.m */; };
-		273647A21641D0AF00036839 /* OASolidColorView.h in Headers */ = {isa = PBXBuildFile; fileRef = 273647A01641D0AF00036839 /* OASolidColorView.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		273647A31641D0AF00036839 /* OASolidColorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 273647A11641D0AF00036839 /* OASolidColorView.m */; };
-		273AF0F415CC8C6E00655DC0 /* OAOpaqueTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = 273AF0F215CC8C6E00655DC0 /* OAOpaqueTextField.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		273AF0F515CC8C6E00655DC0 /* OAOpaqueTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 273AF0F315CC8C6E00655DC0 /* OAOpaqueTextField.m */; };
+		27495032182C955600BCBA6A /* OASubtleScroller.h in Headers */ = {isa = PBXBuildFile; fileRef = 27495030182C955600BCBA6A /* OASubtleScroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		27495033182C955600BCBA6A /* OASubtleScroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 27495031182C955600BCBA6A /* OASubtleScroller.m */; };
 		2779DD8716BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m in Sources */ = {isa = PBXBuildFile; fileRef = 2779DD8616BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m */; };
 		2779DDBC16BB328500A2BC8F /* OAViewPicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 2779DDBB16BB328500A2BC8F /* OAViewPicker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2779DDBE16BB338400A2BC8F /* OAViewPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2779DDBD16BB338400A2BC8F /* OAViewPicker.m */; };
@@ -39,6 +35,8 @@
 		34013D811193654E00371920 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; };
 		340DD56109AD38E900E8A437 /* NSFileWrapper-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		340DD56209AD38E900E8A437 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; };
+		340DF1371846BB6800B9F375 /* NSScriptCommand-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DF1351846BB6800B9F375 /* NSScriptCommand-OAExtensions.h */; };
+		340DF1381846BB6800B9F375 /* NSScriptCommand-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DF1361846BB6800B9F375 /* NSScriptCommand-OAExtensions.m */; };
 		341AB85911935816005E6F74 /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		341AB85A11935816005E6F74 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; };
 		3425E49009C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -664,14 +662,10 @@
 		271A9D9E1533DA2800A78CCB /* OAAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAnimation.h; sourceTree = "<group>"; };
 		271A9D9F1533DA2800A78CCB /* OAAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAnimation.m; sourceTree = "<group>"; };
 		272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = OAInfoTemplate.pdf; sourceTree = "<group>"; };
-		272A315A1666BABB00110B0B /* OANoExpansionFrameTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OANoExpansionFrameTextFieldCell.h; sourceTree = "<group>"; };
-		272A315D1666BAFF00110B0B /* OANoExpansionFrameTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OANoExpansionFrameTextFieldCell.m; sourceTree = "<group>"; };
 		2730CF39144E205B007C3A99 /* OADocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADocument.h; sourceTree = "<group>"; };
 		2730CF3A144E205B007C3A99 /* OADocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADocument.m; sourceTree = "<group>"; };
-		273647A01641D0AF00036839 /* OASolidColorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASolidColorView.h; sourceTree = "<group>"; };
-		273647A11641D0AF00036839 /* OASolidColorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASolidColorView.m; sourceTree = "<group>"; };
-		273AF0F215CC8C6E00655DC0 /* OAOpaqueTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAOpaqueTextField.h; sourceTree = "<group>"; };
-		273AF0F315CC8C6E00655DC0 /* OAOpaqueTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAOpaqueTextField.m; sourceTree = "<group>"; };
+		27495030182C955600BCBA6A /* OASubtleScroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASubtleScroller.h; sourceTree = "<group>"; };
+		27495031182C955600BCBA6A /* OASubtleScroller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASubtleScroller.m; sourceTree = "<group>"; };
 		2779DD8616BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSClipView-OAUpdateConstraintsFix.m"; sourceTree = "<group>"; };
 		2779DDBB16BB328500A2BC8F /* OAViewPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAViewPicker.h; sourceTree = "<group>"; };
 		2779DDBD16BB338400A2BC8F /* OAViewPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAViewPicker.m; sourceTree = "<group>"; };
@@ -691,6 +685,8 @@
 		3401163511E5181A0016ADB3 /* libOmniAppKitTouchTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniAppKitTouchTests.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileWrapper-OAExtensions.h"; sourceTree = "<group>"; };
 		340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileWrapper-OAExtensions.m"; sourceTree = "<group>"; };
+		340DF1351846BB6800B9F375 /* NSScriptCommand-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSScriptCommand-OAExtensions.h"; sourceTree = "<group>"; };
+		340DF1361846BB6800B9F375 /* NSScriptCommand-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSScriptCommand-OAExtensions.m"; sourceTree = "<group>"; };
 		3412B1D2089EE7E10046872B /* OAAutosizingHorizontalRule.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OAAutosizingHorizontalRule.h; sourceTree = "<group>"; };
 		3412B1D3089EE7E10046872B /* OAAutosizingHorizontalRule.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OAAutosizingHorizontalRule.m; sourceTree = "<group>"; };
 		341513E8FFA7B9E0C697A14A /* NSFontManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFontManager-OAExtensions.h"; sourceTree = "<group>"; };
@@ -702,7 +698,7 @@
 		34275D1C13981621003F28F5 /* OAFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFeatures.h; sourceTree = "<group>"; };
 		342B41150A4C6B62002BFC4B /* NSWindowController-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSWindowController-OAExtensions.h"; sourceTree = "<group>"; };
 		342B41160A4C6B62002BFC4B /* NSWindowController-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSWindowController-OAExtensions.m"; sourceTree = "<group>"; };
-		342D1D8E16C9584100692117 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/OAFindPanel.xib; sourceTree = "<group>"; };
+		342D1D8E16C9584100692117 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/OAFindPanel.xib; sourceTree = "<group>"; };
 		3431F12E0B1B7847002B728E /* OADatePickerTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADatePickerTextFieldCell.h; sourceTree = "<group>"; };
 		3431F12F0B1B7847002B728E /* OADatePickerTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADatePickerTextFieldCell.m; sourceTree = "<group>"; };
 		3434791511923B54007D0CE5 /* libOmniAppKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniAppKit.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -741,7 +737,7 @@
 		3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATextAttachmentCell.m; sourceTree = "<group>"; };
 		3457306005D00FD50097A113 /* OAPatternColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPatternColorPicker.h; sourceTree = "<group>"; };
 		3457306105D00FD50097A113 /* OAPatternColorPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPatternColorPicker.m; sourceTree = "<group>"; };
-		3457306505D011B00097A113 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OAPatternColorPicker.nib; sourceTree = "<group>"; };
+		3457306505D011B00097A113 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/OAPatternColorPicker.nib; sourceTree = "<group>"; };
 		345E74230C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASendFeedbackErrorRecovery.h; sourceTree = "<group>"; };
 		345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASendFeedbackErrorRecovery.m; sourceTree = "<group>"; };
 		346A548A0551B08600C03EF8 /* OAUnitTests_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAUnitTests_Prefix.h; sourceTree = "<group>"; };
@@ -810,7 +806,7 @@
 		4A5F17B61727772C001A60E5 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
 		4A785F570B040C3A00B513F3 /* OAPopupDatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPopupDatePicker.h; sourceTree = "<group>"; };
 		4A785F580B040C3A00B513F3 /* OAPopupDatePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPopupDatePicker.m; sourceTree = "<group>"; };
-		4A785F5F0B040CAE00B513F3 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/OAPopupDatePicker.nib; sourceTree = "<group>"; };
+		4A785F5F0B040CAE00B513F3 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/OAPopupDatePicker.nib; sourceTree = "<group>"; };
 		4A785F610B040CF500B513F3 /* OADatePickerTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADatePickerTextField.h; sourceTree = "<group>"; };
 		4A785F620B040CF500B513F3 /* OADatePickerTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADatePickerTextField.m; sourceTree = "<group>"; };
 		4A785F650B040D2E00B513F3 /* OASteppableTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASteppableTextField.h; sourceTree = "<group>"; };
@@ -889,7 +885,7 @@
 		6CBB57EB0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage-ColorSyncExtensions.m"; sourceTree = "<group>"; };
 		70BA5ED6FF72DDC0C697A146 /* OAHierarchicalPopUpController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAHierarchicalPopUpController.h; sourceTree = "<group>"; };
 		70BA5ED7FF72DDC0C697A146 /* OAHierarchicalPopUpController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAHierarchicalPopUpController.m; sourceTree = "<group>"; };
-		7F54986F041FDCAE0097A14E /* English */ = {isa = PBXFileReference; lastKnownFileType = file; name = English; path = "English.lproj/Classic Crayons.clr"; sourceTree = "<group>"; };
+		7F54986F041FDCAE0097A14E /* en */ = {isa = PBXFileReference; lastKnownFileType = file; name = en; path = "en.lproj/Classic Crayons.clr"; sourceTree = "<group>"; };
 		94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OACloseButtonOverlay.h; sourceTree = "<group>"; };
 		94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OACloseButtonOverlay.m; sourceTree = "<group>"; };
 		9FFB676B0C18A44000910EEF /* OADatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADatePicker.h; sourceTree = "<group>"; };
@@ -1025,14 +1021,14 @@
 		E235B69E15CC836000E162D6 /* OAToolbarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbarButton.m; sourceTree = "<group>"; };
 		E274EDCB056D99550097A12E /* OAGradientTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAGradientTableView.h; sourceTree = "<group>"; };
 		E274EDCC056D99550097A12E /* OAGradientTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGradientTableView.m; sourceTree = "<group>"; };
-		E2B8A8D715BE016E00B5F26B /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = English.lproj/OAPreferences.xib; sourceTree = "<group>"; };
+		E2B8A8D715BE016E00B5F26B /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/OAPreferences.xib; sourceTree = "<group>"; };
 		E2B8AA0D15BE06F300B5F26B /* OALeftArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OALeftArrow@2x.png"; sourceTree = "<group>"; };
 		E2B8AA0E15BE06F300B5F26B /* OALeftArrowPressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OALeftArrowPressed@2x.png"; sourceTree = "<group>"; };
 		E2B8AA0F15BE06F300B5F26B /* OARightArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OARightArrow@2x.png"; sourceTree = "<group>"; };
 		E2B8AA1015BE06F300B5F26B /* OARightArrowPressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OARightArrowPressed@2x.png"; sourceTree = "<group>"; };
 		E2CBC36006EF77CE0097A11C /* OASpringLoadHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASpringLoadHelper.h; sourceTree = "<group>"; };
 		E2CBC36106EF77CE0097A11C /* OASpringLoadHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASpringLoadHelper.m; sourceTree = "<group>"; };
-		E2D7993506DD0F730097A11C /* CharsetCategories.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist; name = CharsetCategories.plist; path = English.lproj/CharsetCategories.plist; sourceTree = SOURCE_ROOT; };
+		E2D7993506DD0F730097A11C /* CharsetCategories.plist */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.plist; name = CharsetCategories.plist; path = en.lproj/CharsetCategories.plist; sourceTree = SOURCE_ROOT; };
 		F07B9A0D022AB6663897A113 /* NSToolbarItem-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSToolbarItem-OAExtensions.h"; sourceTree = "<group>"; };
 		F07B9A0E022AB6663897A113 /* NSToolbarItem-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSToolbarItem-OAExtensions.m"; sourceTree = "<group>"; };
 		F500F43B0204C91901648025 /* NSFileManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager-OAExtensions.h"; sourceTree = "<group>"; };
@@ -1501,6 +1497,8 @@
 				6C72445A03E88BCE00E7FE1C /* OAMouseTipView.m */,
 				6C72445503E886EE00E7FE1C /* OAMouseTipWindow.h */,
 				6C72445603E886EE00E7FE1C /* OAMouseTipWindow.m */,
+				27495030182C955600BCBA6A /* OASubtleScroller.h */,
+				27495031182C955600BCBA6A /* OASubtleScroller.m */,
 				1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */,
 				1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */,
 				4D92F56F174C10BA00E251EF /* OAResizingTitleBarButton.h */,
@@ -1603,8 +1601,6 @@
 				3FDA4139020970130297A14E /* NSControl */,
 				3FDA4141020970CB0297A14E /* NSScrollView */,
 				3FDA41420209714E0297A14E /* NSSplitView */,
-				273647A01641D0AF00036839 /* OASolidColorView.h */,
-				273647A11641D0AF00036839 /* OASolidColorView.m */,
 			);
 			name = NSView;
 			sourceTree = "<group>";
@@ -1674,8 +1670,6 @@
 				3F51348201C5B6D40297A14E /* OAShrinkyTextField.m */,
 				00E51F96FE8AB2E911C9CC38 /* OATextField.h */,
 				00E51F84FE8AB2E911C9CC38 /* OATextField.m */,
-				273AF0F215CC8C6E00655DC0 /* OAOpaqueTextField.h */,
-				273AF0F315CC8C6E00655DC0 /* OAOpaqueTextField.m */,
 			);
 			name = NSTextField;
 			sourceTree = "<group>";
@@ -1697,8 +1691,6 @@
 			children = (
 				00E51F89FE8AB2E911C9CC38 /* OABrowserCell.h */,
 				00E51F79FE8AB2E911C9CC38 /* OABrowserCell.m */,
-				272A315A1666BABB00110B0B /* OANoExpansionFrameTextFieldCell.h */,
-				272A315D1666BAFF00110B0B /* OANoExpansionFrameTextFieldCell.m */,
 			);
 			name = NSCell;
 			sourceTree = "<group>";
@@ -2127,6 +2119,8 @@
 			children = (
 				66D9C71B029F51620097A138 /* NSAppleScript-OAExtensions.h */,
 				66D9C71C029F51620097A138 /* NSAppleScript-OAExtensions.m */,
+				340DF1351846BB6800B9F375 /* NSScriptCommand-OAExtensions.h */,
+				340DF1361846BB6800B9F375 /* NSScriptCommand-OAExtensions.m */,
 			);
 			name = NSAppleScript;
 			sourceTree = "<group>";
@@ -2448,6 +2442,7 @@
 				4AA1E6CB08AA764600E2FF6B /* OAPreferencesToolbar.h in Headers */,
 				4AA1E6CC08AA764600E2FF6B /* OAPreferencesWindow.h in Headers */,
 				4AA1E6CF08AA764600E2FF6B /* OAAquaButton.h in Headers */,
+				27495032182C955600BCBA6A /* OASubtleScroller.h in Headers */,
 				4AA1E6D008AA764600E2FF6B /* OABackgroundImageControl.h in Headers */,
 				4AA1E6D108AA764600E2FF6B /* OABrowserCell.h in Headers */,
 				4AA1E6D208AA764600E2FF6B /* OACalendarView.h in Headers */,
@@ -2468,6 +2463,7 @@
 				4AA1E6E508AA764600E2FF6B /* OAHierarchicalPopUpController.h in Headers */,
 				4AA1E6E708AA764600E2FF6B /* OAMouseTipView.h in Headers */,
 				4AA1E6E808AA764600E2FF6B /* OAMouseTipWindow.h in Headers */,
+				340DF1371846BB6800B9F375 /* NSScriptCommand-OAExtensions.h in Headers */,
 				4AA1E6EA08AA764600E2FF6B /* OAOutlineViewEnumerator.h in Headers */,
 				4AA1E6EB08AA764600E2FF6B /* OAPageSelectableDocumentProtocol.h in Headers */,
 				4AA1E6EC08AA764600E2FF6B /* OAPatternColorPicker.h in Headers */,
@@ -2535,10 +2531,7 @@
 				27AC122D15BA295400B726A7 /* NSView-OALayerBackedFix.h in Headers */,
 				E235B46415CC771600E162D6 /* OATrackingLoop.h in Headers */,
 				E235B69F15CC836000E162D6 /* OAToolbarButton.h in Headers */,
-				273AF0F415CC8C6E00655DC0 /* OAOpaqueTextField.h in Headers */,
 				49EF503D15F6EAD000254849 /* OALabelField.h in Headers */,
-				273647A21641D0AF00036839 /* OASolidColorView.h in Headers */,
-				272A315B1666BABB00110B0B /* OANoExpansionFrameTextFieldCell.h in Headers */,
 				2779DDBC16BB328500A2BC8F /* OAViewPicker.h in Headers */,
 				4A5F17B3172772F5001A60E5 /* OAWebPageViewer.h in Headers */,
 				4D92F571174C10BA00E251EF /* OAResizingTitleBarButton.h in Headers */,
@@ -2704,10 +2697,8 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				Japanese,
-				French,
-				German,
+				en,
+				Base,
 			);
 			mainGroup = 00E51EF2FE8AB2E911C9CC38 /* OmniAppKit */;
 			projectDirPath = "";
@@ -2968,6 +2959,7 @@
 				4AA1E76D08AA764600E2FF6B /* OAColorProfile.m in Sources */,
 				4AA1E76E08AA764600E2FF6B /* OACompositeColorProfile.m in Sources */,
 				4AA1E77A08AA764600E2FF6B /* OAAppKitQueueProcessor.m in Sources */,
+				340DF1381846BB6800B9F375 /* NSScriptCommand-OAExtensions.m in Sources */,
 				4AA1E77B08AA764600E2FF6B /* OAApplication.m in Sources */,
 				4AA1E77C08AA764600E2FF6B /* OAColorPalette.m in Sources */,
 				4AA1E77D08AA764600E2FF6B /* OAController.m in Sources */,
@@ -3050,6 +3042,7 @@
 				4AA1E7D508AA764600E2FF6B /* OAShrinkyTextField.m in Sources */,
 				4AA1E7D608AA764600E2FF6B /* OASplitView.m in Sources */,
 				4AA1E7D708AA764600E2FF6B /* OAStackView.m in Sources */,
+				27495033182C955600BCBA6A /* OASubtleScroller.m in Sources */,
 				4AA1E7D808AA764600E2FF6B /* OASwitcherBarButtonCell.m in Sources */,
 				4AA1E7D908AA764600E2FF6B /* OASwitcherBarMatrix.m in Sources */,
 				4AA1E7DA08AA764600E2FF6B /* OASwoopView.m in Sources */,
@@ -3104,11 +3097,8 @@
 				27AC122E15BA295400B726A7 /* NSView-OALayerBackedFix.m in Sources */,
 				E235B46515CC771600E162D6 /* OATrackingLoop.m in Sources */,
 				E235B6A015CC836000E162D6 /* OAToolbarButton.m in Sources */,
-				273AF0F515CC8C6E00655DC0 /* OAOpaqueTextField.m in Sources */,
 				49EF503E15F6EAD000254849 /* OALabelField.m in Sources */,
 				3E80E9F81614EFC20078A123 /* OAGradientBoxSeparator.m in Sources */,
-				273647A31641D0AF00036839 /* OASolidColorView.m in Sources */,
-				272A315E1666BAFF00110B0B /* OANoExpansionFrameTextFieldCell.m in Sources */,
 				2779DD8716BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m in Sources */,
 				2779DDBE16BB338400A2BC8F /* OAViewPicker.m in Sources */,
 				4A5F17B4172772F5001A60E5 /* OAWebPageViewer.m in Sources */,
@@ -3165,7 +3155,7 @@
 		342D1D8D16C9584100692117 /* OAFindPanel.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				342D1D8E16C9584100692117 /* English */,
+				342D1D8E16C9584100692117 /* en */,
 			);
 			name = OAFindPanel.xib;
 			sourceTree = "<group>";
@@ -3173,7 +3163,7 @@
 		3457306405D011B00097A113 /* OAPatternColorPicker.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				3457306505D011B00097A113 /* English */,
+				3457306505D011B00097A113 /* en */,
 			);
 			name = OAPatternColorPicker.nib;
 			sourceTree = SOURCE_ROOT;
@@ -3181,7 +3171,7 @@
 		4AA05CC60B0414F400EDED39 /* OAPopupDatePicker.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				4A785F5F0B040CAE00B513F3 /* English */,
+				4A785F5F0B040CAE00B513F3 /* en */,
 			);
 			name = OAPopupDatePicker.nib;
 			sourceTree = "<group>";
@@ -3189,7 +3179,7 @@
 		7F549877041FECFE0097A14E /* Classic Crayons.clr */ = {
 			isa = PBXVariantGroup;
 			children = (
-				7F54986F041FDCAE0097A14E /* English */,
+				7F54986F041FDCAE0097A14E /* en */,
 			);
 			name = "Classic Crayons.clr";
 			sourceTree = "<group>";
@@ -3197,7 +3187,7 @@
 		E2B8A8D615BE016E00B5F26B /* OAPreferences.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				E2B8A8D715BE016E00B5F26B /* English */,
+				E2B8A8D715BE016E00B5F26B /* en */,
 			);
 			name = OAPreferences.xib;
 			sourceTree = "<group>";

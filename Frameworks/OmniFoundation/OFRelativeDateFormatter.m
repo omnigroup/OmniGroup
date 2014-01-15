@@ -122,7 +122,10 @@ dateString = [super stringForObjectValue:obj]; \
     
     NSDateFormatterStyle dateStyle = [self dateStyle];
     [self setDateStyle:NSDateFormatterNoStyle];
-    dateString = [dateString stringByAppendingFormat:@" %@", [super stringForObjectValue:obj]]; 
+    NSString *timeString = [super stringForObjectValue:obj];
+    if ( ! [NSString isEmptyString:timeString]) {
+        dateString = [dateString stringByAppendingFormat:@" %@", timeString];
+    }
     [self setDateStyle:dateStyle];
     return dateString;
 }

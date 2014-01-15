@@ -14,6 +14,7 @@
 @class OFXMLDocument, OFXMLElement;
 
 typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);
+typedef void (^OFXMLElementApplierBlock)(OFXMLElement *element);
 
 
 @interface OFXMLElement : OFObject
@@ -84,6 +85,7 @@ typedef void (*OFXMLElementApplier)(OFXMLElement *element, void *context);
 - (void)sortAttributesUsingSelector:(SEL)comparator;
 
 - (void)applyFunction:(OFXMLElementApplier)applier context:(void *)context;
+- (void)applyBlock:(OFXMLElementApplierBlock)applierBlock;
 
 - (NSData *)xmlDataAsFragment:(NSError **)outError; // Mostly useful for debugging since this assumes no whitespace is important
 

@@ -1,0 +1,36 @@
+/* error title */
+"An error has occurred." = "Si è verificato un errore.";
+
+/* error description */
+"Could not find \"%@\"." = "Impossibile trovare “%@”.";
+
+/* error description */
+"Ensure that the address is correct and please try again." = "Verifica che l’indirizzo sia corretto e riprova.";
+
+/* error description */
+"Ensure that the server address, user name, and password are correct and please try again." = "Verifica che indirizzo server, nome utente e password siano corretti e riprova.";
+
+/* error reason */
+"Failed to delete \"%@\"." = "Impossibile eliminare “%@”.";
+
+/* error reason */
+"Failed to move \"%@\" to \"%@\"." = "Impossibile spostare “%1$@” in “%2$@”.";
+
+/* error reason - listing a directory that doesn't exist
+   error reason - listing contents of a nonexistent directory */
+"No document exists at \"%@\"." = "Non esiste nessun documento in “%@”.";
+
+/* error reason */
+"No such file \"%@\"." = "Nessun documento \"%@\".";
+
+/* error reason */
+"Please make sure that the destination folder exists." = "Assicurati che la cartella di destinazione esista.";
+
+/* error description */
+"Unable to delete file." = "Impossibile eliminare il documento.";
+
+/* error description */
+"Unable to move file." = "Impossibile spostare il documento.";
+
+/* error description */
+"Unable to read document." = "Impossibile leggere il documento.";

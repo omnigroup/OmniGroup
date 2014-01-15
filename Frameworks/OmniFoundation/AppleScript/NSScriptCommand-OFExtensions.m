@@ -17,6 +17,32 @@ RCS_ID("$Id$");
 
 @implementation NSScriptCommand (OFExtensions)
 
++ (Class)requireObjectsInArray:(NSArray *)objects toAllHaveSameClassfromClasses:(Class)cls1, ... NS_REQUIRES_NIL_TERMINATION;
+{
+    va_list args;
+    va_start(args, cls1);
+    
+    Class cls = cls1;
+    while (cls) {
+        BOOL allSame = YES;
+        for (id object in objects) {
+            if (![object isKindOfClass:cls]) {
+                allSame = NO;
+                break;
+            }
+        }
+        if (allSame) {
+            va_end(args);
+            return cls;
+        } else {
+            cls = va_arg(args, Class);
+        }
+    }
+    
+    va_end(args);
+    return Nil;
+}
+
 - (NSScriptObjectSpecifier *)directParameterSpecifier;
 {
     NSAppleEventDescriptor *descriptor = [[self appleEvent] attributeDescriptorForKeyword:keyDirectObject];
@@ -77,6 +103,19 @@ static BOOL _checkObjectClass(NSScriptCommand *self, id object, Class cls)
 // On return, if outArraySpecified is non NULL, is informs the caller whether the arguments tried to specify one object or more than one.  An index specifier would result in a single object always, but if you do a whose, or even a range specifier *outArraySpecified will be YES (even if only zero or one object is matched).
 - (NSArray *)collectFlattenedObjectsFromArguments:(id)arguments requiringClass:(Class)cls arraySpecified:(BOOL *)outArraySpecified;
 {
+    // This can happen, at least on 10.9, if we do something like "remove every row from selected rows". The -directParameter will be a specifier while the -directParameterSpecifier will be nil. That seems like a bug, but lets handle it...
+    if ([arguments isKindOfClass:[NSScriptObjectSpecifier class]]) {
+        NSScriptObjectSpecifier *argumentSpecifier = arguments;
+        
+        // Try resolving this directly -- it might have a full path back to the application. If we naively pass the receiver to -objectsByEvaluatingWithContainers:, then 'row 1' can end up evaluating against itself (so you get row 1.1 in the document).
+        // BUT, if we wait to resolve the receiver until after we've failed to resolve the arguments, resolving the receiver will return nil when it wouldn't have otherwise. Terrible.
+        id receiver = [[self receiversSpecifier] objectsByEvaluatingSpecifier];
+        arguments = [argumentSpecifier objectsByEvaluatingSpecifier];
+        if (!arguments) {
+            arguments = [argumentSpecifier objectsByEvaluatingWithContainers:receiver];
+        }
+    }
+
     if (!arguments) {
         [self setScriptErrorNumber:NSRequiredArgumentsMissingScriptError];
         [self setScriptErrorString:[NSString stringWithFormat:@"The '%@' command requires a list of %@, but was passed nothing", [[self commandDescription] commandName], NSStringFromClass(cls)]];
@@ -95,10 +134,7 @@ static BOOL _checkObjectClass(NSScriptCommand *self, id object, Class cls)
     
     // Collect the flattened list of objects to operate on.  The input specifiers can be things like 'every row' which will return an array when evaluated.
     NSMutableArray *collectedObjects = [NSMutableArray array];
-    NSUInteger argumentIndex, argumentCount = [arguments count];
-    for (argumentIndex = 0; argumentIndex < argumentCount; argumentIndex++) {
-        id argument = [arguments objectAtIndex:argumentIndex];
-
+    for (id argument in arguments) {
         // Handle this before we convert argument to an array unconditionally.
         if ([argument isKindOfClass:[NSArray class]])
             arraySpecified = YES;
@@ -139,7 +175,7 @@ static BOOL _checkObjectClass(NSScriptCommand *self, id object, Class cls)
 		result = [argument objectsByEvaluatingWithContainers:receiver];
 	    
             if (!result) {
-                NSLog(@"Unable to resolve object specifier '%@' for command %@", argument, self);
+                //NSLog(@"Unable to resolve object specifier '%@' for command %@", argument, self);
                 [self setScriptErrorNumber:NSArgumentEvaluationScriptError];
                 [self setScriptErrorString:[NSString stringWithFormat:@"The '%@' command was unable to locate the indicated object.", [[self commandDescription] commandName]]];
                 return nil;

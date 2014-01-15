@@ -1,0 +1,184 @@
+/* setting failure alert message */
+"“%@”\nwas not successful" = "Операция «%@»\nне была успешно выполнена";
+
+/* OUITabBar N of M accessibility value */
+"%@ of %@" = "%1$@ из %2$@";
+
+/* title for successful in app purchase */
+"%@ Purchased" = "%@ приобретено";
+
+/* Default title for the About menu item */
+"About %@" = "О программе %@";
+
+/* alert button title */
+"Accept" = "Принять";
+
+/* OmniSoftwareUpdate privacy notice message format */
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Разрешить %@ периодически отправлять данные о модели устройства и версии iOS?\nЭто поможет нам определить приоритетные для поддержки конфигурации. Этот параметр можно будет изменить в параметрах MUMBLE MUMBLE MUMBLE.";
+
+/* Web view nagivation button for going back in history. */
+"Back" = "Назад";
+
+/* Bold button accessibility label */
+"Bold" = "Жирный";
+
+/* 'Buy' button title format. The currency symbol will be provided at run time. */
+"Buy %@" = "Приобрести %@";
+
+/* 'Buy' and a currency symbol for purchase button */
+"Buy $%@" = "Приобрести $%@";
+
+/* button title
+   cancel button title
+   toolbar item title */
+
+
+"Cancel" = "Отмена";
+
+/* Center Text Align button accessibility label. */
+"Center text align" = "Выравнивание по центру";
+
+/* Certificate trust alert title */
+"Certificate Trust" = "Доверительные сертификаты";
+
+/* alert message */
+"Changed the '%@' preference from '%@' to '%@'" = "Значение параметра '%1$@' изменено с '%2$@' на '%3$@'";
+
+/* Certificate trust alert button title */
+"Continue" = "Продолжить";
+
+/* setting failure alert title */
+"Could not perform command" = "Не удалось выполнить команду";
+
+/* Button is disabled due to purchase restrictions */
+"Disabled" = "Отключено";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Don't Report" = "Не сообщать";
+
+/* Done
+   toolbar item title */
+
+"Done" = "Готово";
+
+/* toolbar item title */
+"Edit" = "Изменить";
+
+/* In app Buy button error title */
+"Error" = "Ошибка";
+
+/* Alert title for error loading product information */
+"Error Loading Store" = "Ошибка загрузки магазина";
+
+/* disabled for demo */
+"Feature not enabled for this demo" = "Данная функция недоступна в этой демонстрации";
+
+/* Overlay text when zoomed to fit screen */
+"Fit" = "Подогнать";
+
+/* Help and Settings toolbar item accessibility label. */
+"Help and Settings" = "Справка и настройки";
+
+/* Purchasing is disabled details */
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "Покупки в программе недоступны или не разрешены на этом устройстве. Чтобы разрешить покупки, проверьте ограничения в программе «Настройки».";
+
+/* Italic button accessibility label */
+"Italic" = "Курсив";
+
+/* Justified Text Align button accessibility label. */
+"Justified text align" = "Выравнивание по ширине";
+
+/* Left Text Align button accessibility label. */
+"Left text align" = "Выравнивание по левому краю";
+
+/* Web view error opening URL title. */
+"Link could not be opend. Please check Safari restrictions in Settings." = "Не удалось открыть ссылку. Проверьте ограничения Safari в настройках.";
+
+/* Buy button title while app store is loading */
+"Loading" = "Загрузка";
+
+/* empty value cell placeholder */
+"None" = "Нет";
+
+/* button title
+   OK button label */
+
+
+
+
+"OK" = "OK";
+
+/* OmniSoftwareUpdate privacy notice alert title */
+"Omni Software Update" = "Обновление ПО Omni";
+
+/* placeholder text */
+"password" = "пароль";
+
+/* alert title */
+"Preference changed" = "Параметр изменен";
+
+/* title for successful in app purchase */
+"Purchase %@" = "Купить %@";
+
+/* Purchase failed alert title */
+"Purchase Failed" = "Сбой покупки";
+
+/* Buy button thank you message */
+"Purchased. Thank you!" = "Приобретено. Спасибо!";
+
+/* Purchasing is disabled alert title */
+"Purchasing is Disabled" = "Возможность покупок отключена";
+
+/* Redo button title */
+"Redo" = "Повторить";
+
+/* App menu item title
+   release notes html screen title */
+
+"Release Notes" = "Сведения о выпуске";
+
+/* Restore purchases button title */
+"Restore" = "Восстановить";
+
+/* Restore failed alert title */
+"Restore Failed" = "Сбой восстановления";
+
+/* Right Text Align button accessibility label. */
+"Right text align" = "Выравнивание по правому краю";
+
+/* App menu item title */
+"Run Tests" = "Запустить проверки";
+
+/* Search field placeholder text */
+"Search" = "Поиск";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Send Reports" = "Отправить отчеты";
+
+/* Strike Through button accessibility label */
+"Strike Through" = "Зачеркивание";
+
+/* Alert description for error loading product information */
+"There was an error loading information from the App Store" = "При загрузке данных из App Store произошла ошибка";
+
+/* Certificate trust alert button title */
+"Trust Always" = "Всегда доверять";
+
+/* Underline button accessibility label */
+"Underline" = "Подчеркивание";
+
+/* Undo button title */
+"Undo" = "Отменить";
+
+/* default for WebDAV username edit field
+   placeholder text */
+"username" = "имя пользователя";
+
+/* alert message */
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Выбор ссылки изменит следующие настройки:\n\n«%@»\n\nПрименить эти изменения?";
+
+/* debug setting alert message */
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Нажата ссылка, запускающая следующую команду отладки:\n\n«%@»\n\nЕсли это не было рекомендовано специалистами службы поддержки Omni, не выполняйте это действие.\nЗапустить эту команду?";
+
+/* zoom label */
+"Zoom" = "Масштаб";

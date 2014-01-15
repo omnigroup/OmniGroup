@@ -1,0 +1,17 @@
+/* crash report body text */
+"\n\nPlease add any details you recall about how to reproduce the problem.\n\n" = "\n\\nVoeg zo veel mogelijk gegevens toe, zodat het probleem door ons kan worden gereproduceerd.\n\n";
+
+/* alert button title */
+"Discard Report" = "Wis rapport";
+
+/* alert button title */
+"Not Now" = "Niet nu";
+
+/* alert button title */
+"Send Report" = "Verzend rapport";
+
+/* crash report alert title */
+"Submit Report?" = "Rapport versturen?";
+
+/* crash report alert message */
+"The last time you used %@, it unexpectedly quit. Submitting a report will help us fix the problem in future releases." = "De laatste keer dat u %@ hebt gebruikt, is deze onverwacht afgesloten. Als u dat rapport indient, helpt u ons bij het oplossen van problemen in toekomstige uitgaven.";

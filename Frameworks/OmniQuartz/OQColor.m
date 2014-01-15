@@ -286,33 +286,6 @@ CGColorRef OQCreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpac
 {
     OBPRECONDITION(CGColorGetAlpha((CGColorRef)[colors objectAtIndex:0]) == 1.0f);
 
-    static NSMapTable *compositedColorCache;
-    static NSLock *cacheLock;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        // Mapping CFHashCodes to CGColorRefs that we'll retain ourselves.
-        NSPointerFunctions *keyFunctions = [NSPointerFunctions pointerFunctionsWithOptions:NSPointerFunctionsIntegerPersonality|NSPointerFunctionsOpaqueMemory];
-        NSPointerFunctions *valueFunctions = [NSPointerFunctions pointerFunctionsWithOptions:NSPointerFunctionsStructPersonality | NSPointerFunctionsOpaqueMemory];
-        compositedColorCache = [[NSMapTable alloc] initWithKeyPointerFunctions:keyFunctions valuePointerFunctions:valueFunctions capacity:10];
-        cacheLock = [[NSLock alloc] init];
-    });
-
-    CFHashCode hashCode = CFHash(destinationColorSpace);
-#define ROLL_AMOUNT (7)
-    for (id obj in colors) {
-        hashCode = (hashCode << ROLL_AMOUNT) | (hashCode >> (CHAR_BIT * sizeof(CFHashCode) - ROLL_AMOUNT));
-        hashCode ^= CFHash((CGColorRef)obj);
-    }
-    
-    [cacheLock lock];
-    id cachedObj = [compositedColorCache objectForKey:(id)hashCode];
-    [cacheLock unlock];
-    if (cachedObj != nil) {
-        CGColorRef cachedColor = (CGColorRef)cachedObj;
-        CGColorRetain(cachedColor);
-        return cachedColor;
-    }
-    
     // We calculate the composite color by rendering into a 1x1px 8888RGBA bitmap.
     unsigned char bitmapData[4] = {0, 0, 0, 0};
     CGContextRef ctx = CGBitmapContextCreate(bitmapData, 1, 1, 8, 4, destinationColorSpace, kCGImageAlphaPremultipliedLast|kCGBitmapByteOrder32Big);
@@ -336,24 +309,6 @@ CGColorRef OQCreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpac
     
     CGColorRef color = CGColorCreate(destinationColorSpace, floatComponents);
 
-    // Since individual calculations are inexpensive, lets try the cheapest cache management strategy: dump everything once we're full.
-    NSUInteger maximumCacheSize = 100;
-    [cacheLock lock];
-    {
-        if ([compositedColorCache count] >= maximumCacheSize) {
-            NSEnumerator *objectEnumerator = [compositedColorCache objectEnumerator];
-            for (id colorObject in objectEnumerator) {
-                CGColorRef color = (CGColorRef)colorObject;
-                CGColorRelease(color);
-            }
-            [compositedColorCache removeAllObjects];
-        }
-        
-        CGColorRetain(color); // extra retain since we're managing memory for the cache
-        [compositedColorCache setObject:(id)color forKey:(id)hashCode];
-    }
-    [cacheLock unlock];
-    
     CGContextRelease(ctx);
     return color;
 }
@@ -485,6 +440,17 @@ OQLinearRGBA OQHSVToRGB(OSHSV c)
             return (OQLinearRGBA){v, p, q, c.a};
     }
 }
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+static void _addComponent(NSAppleEventDescriptor *record, FourCharCode code, CGFloat component)
+{
+    // Cast up to double always for now.
+    double d = component;
+    NSAppleEventDescriptor *desc = [[NSAppleEventDescriptor alloc] initWithDescriptorType:typeIEEE64BitFloatingPoint bytes:&d length:(sizeof(d))];
+    [record setDescriptor:desc forKeyword:code];
+    [desc release];
+}
+#endif
 
 static void OQColorInitPlatformColor(OQColor *self);
 static OQColor *OSRGBAColorCreate(OQLinearRGBA rgba);
@@ -655,6 +621,19 @@ static OQLinearRGBA interpRGBA(OQLinearRGBA c0, OQLinearRGBA c1, CGFloat t)
 {
     return [NSColor colorWithCalibratedRed:_rgba.r green:_rgba.g blue:_rgba.b alpha:_rgba.a];
 }
+
+- (NSAppleEventDescriptor *)scriptingColorDescriptor;
+{
+    NSAppleEventDescriptor *result = [[[NSAppleEventDescriptor alloc] initRecordDescriptor] autorelease];
+    
+    // The order is significant when the result is coerced to a list.
+    _addComponent(result, 'OSrv', _rgba.r);
+    _addComponent(result, 'OSgv', _rgba.g);
+    _addComponent(result, 'OSbv', _rgba.b);
+    _addComponent(result, 'OSav', _rgba.a);
+    
+    return result;
+}
 #endif
 
 @end
@@ -801,6 +780,18 @@ static OQColor *OSHSVAColorCreate(OSHSV hsva)
     OQLinearRGBA rgba = OQHSVToRGB(_hsva);
     return [NSColor colorWithCalibratedRed:rgba.r green:rgba.g blue:rgba.b alpha:rgba.a];
 }
+- (NSAppleEventDescriptor *)scriptingColorDescriptor;
+{
+    NSAppleEventDescriptor *result = [[[NSAppleEventDescriptor alloc] initRecordDescriptor] autorelease];
+    
+    // The order is significant when the result is coerced to a list.
+    _addComponent(result, 'OShv', _hsva.h);
+    _addComponent(result, 'OSsv', _hsva.s);
+    _addComponent(result, 'OSvv', _hsva.v);
+    _addComponent(result, 'OSav', _hsva.a);
+    
+    return result;
+}
 #endif
 
 @end
@@ -941,6 +932,18 @@ static OQColor *OSWhiteColorCreate(CGFloat white, CGFloat alpha)
 {
     return [NSColor colorWithCalibratedWhite:_white alpha:_alpha];
 }
+
+- (NSAppleEventDescriptor *)scriptingColorDescriptor;
+{
+    NSAppleEventDescriptor *result = [[[NSAppleEventDescriptor alloc] initRecordDescriptor] autorelease];
+    
+    // The order is significant when the result is coerced to a list.
+    _addComponent(result, 'OSwv', _white);
+    _addComponent(result, 'OSav', _alpha);
+    
+    return result;
+}
+
 #endif
 
 @end
@@ -1017,7 +1020,8 @@ static OQColor *_colorWithCGColorRef(CGColorRef cgColor)
         return [OSWhiteColorCreate(white, alpha) autorelease];
     }
     
-    OBRequestConcreteImplementation(self, _cmd);
+    OBASSERT_NOT_REACHED("Unknown color space");
+    return [OQColor blackColor];
 }
 #endif
 

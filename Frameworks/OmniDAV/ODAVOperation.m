@@ -646,7 +646,7 @@ static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
     }
     
     info[NSLocalizedDescriptionKey] = NSLocalizedStringFromTableInBundle(@"Unable to perform WebDAV operation.", @"OmniDAV", OMNI_BUNDLE, @"error description");
-    info[NSLocalizedRecoverySuggestionErrorKey] = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\".", @"OmniDAV", OMNI_BUNDLE, @"error reason"), [[_request URL] host], [self _localizedStringForStatusCode:statusCode], statusCode, [_request HTTPMethod], [[_request URL] path]];
+    info[NSLocalizedRecoverySuggestionErrorKey] = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The %@ server returned \"%@\" (%ld) in response to a request to \"%@ %@\".", @"OmniDAV", OMNI_BUNDLE, @"error reason"), [[_request URL] host], [self _localizedStringForStatusCode:statusCode], statusCode, [_request HTTPMethod], [[_request URL] path]];
     
     // We should always have a response and request when generating the error.
     // There is at least one case in the field where this is not true, and we are aborting due to an unhandled exception trying to stuff nil into the error dictionary. (See <bug:///84169> (Crash (unhandled exception) writing ICS file to sync server))

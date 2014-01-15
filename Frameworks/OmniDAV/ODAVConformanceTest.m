@@ -862,10 +862,10 @@ static BOOL _ODAVConformanceError(NSError **outError, NSError *originalError, co
     DAV_mkdir(a);
     
     NSURL *dirB = [main URLByAppendingPathComponent:@"b" isDirectory:YES];
-    NSURL *destB = [dirB URLByAppendingPathComponent:@"file" isDirectory:NO];
+    NSURL *destB = [dirB URLByAppendingPathComponent:@"dir" isDirectory:YES];
     
     NSURL *dirC = [dirB URLByAppendingPathComponent:@"c" isDirectory:YES];
-    NSURL *destC = [dirC URLByAppendingPathComponent:@"file" isDirectory:NO];
+    NSURL *destC = [dirC URLByAppendingPathComponent:@"dir" isDirectory:YES];
     
     // Apache returns ODAV_HTTP_INTERNAL_SERVER_ERROR for both these ><
     ODAVReject([_connection synchronousMoveURL:a toMissingURL:destB error:&error], @"Should not be able to move a collection inside a missing collection.");

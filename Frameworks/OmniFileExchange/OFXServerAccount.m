@@ -14,8 +14,9 @@
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
-#import <OmniFoundation/OFCredentials.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
+#import <OmniFoundation/OFCredentials.h>
+#import <OmniFoundation/OFPreference.h>
 
 RCS_ID("$Id$")
 
@@ -112,7 +113,7 @@ static NSURL *URLWithBookmarkData(NSData *data, NSError **outError)
     OBINITIALIZE;
 
 #if OFX_MAC_STYLE_ACCOUNT
-    OBInitializeDebugLogLevel(OFXBookmarkDebug);
+    OFInitializeDebugLogLevel(OFXBookmarkDebug);
 #endif
 }
 

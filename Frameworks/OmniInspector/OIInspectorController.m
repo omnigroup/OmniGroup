@@ -26,12 +26,25 @@
 
 RCS_ID("$Id$");
 
+NSString * const OIInspectorControllerDidChangeExpandednessNotification = @"OIInspectorControllerDidChangeExpandedness";
+
 @interface OIInspectorController (/*Private*/) <OIInspectorHeaderViewDelegateProtocol>
+
+@property (nonatomic, assign) OIInspectorInterfaceType interfaceType;
+@property (nonatomic, strong) NSView *embeddedContainerView;
+
 - (void)_buildHeadingView;
 - (void)_buildWindow;
+- (void)_populateContainerView;
+
 - (NSView *)_inspectorView;
-- (void)_setExpandedness:(BOOL)expanded updateInspector:(BOOL)updateInspector withNewTopLeftPoint:(NSPoint)topLeftPoint animate:(BOOL)animate;
+- (void)_setFloatingExpandedness:(BOOL)expanded updateInspector:(BOOL)updateInspector withNewTopLeftPoint:(NSPoint)topLeftPoint animate:(BOOL)animate;
+- (void)_setEmbeddedExpandedness:(BOOL)expanded updateInspector:(BOOL)updateInspector;
+- (void)_postExpandednessChangedNotification;
 - (void)_saveInspectorHeight;
+
+- (BOOL)_groupCanBeginResizingOperation;
+
 @end
 
 NSComparisonResult sortByDefaultDisplayOrderInGroup(OIInspectorController *a, OIInspectorController *b, void *context)
@@ -78,13 +91,14 @@ static BOOL animateInspectorToggles;
     }
 }
 
-- initWithInspector:(OIInspector *)anInspector;
+- (id)initWithInspector:(OIInspector *)anInspector;
 {
     if (!(self = [super init]))
         return nil;
 
     inspector = [anInspector retain];
     isExpanded = NO;
+    self.interfaceType = anInspector.preferredInterfaceType;
     
     if ([inspector respondsToSelector:@selector(setInspectorController:)])
         [(id)inspector setInspectorController:self];
@@ -125,7 +139,15 @@ static BOOL animateInspectorToggles;
 
 - (void)setExpanded:(BOOL)newState withNewTopLeftPoint:(NSPoint)topLeftPoint;
 {
-    [self _setExpandedness:newState updateInspector:YES withNewTopLeftPoint:topLeftPoint animate:NO];
+    switch (self.interfaceType) {
+        case OIInspectorInterfaceTypeFloating:
+            [self _setFloatingExpandedness:newState updateInspector:YES withNewTopLeftPoint:topLeftPoint animate:NO];
+            break;
+        case OIInspectorInterfaceTypeEmbedded:
+            [self _setEmbeddedExpandedness:newState updateInspector:YES];
+            break;
+        // No default so the compiler warns if we add an item to the enum definition and don't handle it here
+    }
 }
 
 - (NSString *)identifier;
@@ -208,13 +230,33 @@ static BOOL animateInspectorToggles;
 
 - (void)toggleExpandednessWithNewTopLeftPoint:(NSPoint)topLeftPoint animate:(BOOL)animate;
 {
-    [self _setExpandedness:!isExpanded updateInspector:YES withNewTopLeftPoint:topLeftPoint animate:animate];
+    switch (self.interfaceType) {
+        case OIInspectorInterfaceTypeFloating:
+            [self _setFloatingExpandedness:!isExpanded updateInspector:YES withNewTopLeftPoint:topLeftPoint animate:animate];
+            break;
+        case OIInspectorInterfaceTypeEmbedded:
+            [self _setEmbeddedExpandedness:!isExpanded updateInspector:YES];
+            break;
+    }
 }
 
 - (void)updateExpandedness:(BOOL)allowAnimation; // call when the inspector sets its size internally by itself
 {
-    NSRect windowFrame = [window frame];
-    [self _setExpandedness:isExpanded updateInspector:NO withNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame)) animate:allowAnimation&&animateInspectorToggles];
+    switch (self.interfaceType) {
+        case OIInspectorInterfaceTypeFloating:
+        {
+            NSRect windowFrame = [window frame];
+            [self _setFloatingExpandedness:isExpanded
+                           updateInspector:NO
+                       withNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame))
+                                   animate:(allowAnimation && animateInspectorToggles)];
+        }
+            break;
+        case OIInspectorInterfaceTypeEmbedded:
+            [self _setEmbeddedExpandedness:isExpanded updateInspector:NO];
+            break;
+    }
+    
     if (isExpanded && resizerView != nil)
         [self queueSelectorOnce:@selector(_saveInspectorHeight)];
 }
@@ -257,14 +299,17 @@ static BOOL animateInspectorToggles;
 
 - (void)loadInterface;
 {
-    if (!window)
-        [self _buildWindow];
+    if ([[[self containerView] subviews] count] == 0) {
+        [self _populateContainerView];
+    }
+    
     needsToggleBeforeDisplay = ([[[OIInspectorRegistry sharedInspector] workspaceDefaults] objectForKey:[self identifier]] != nil) != isExpanded;
 }
 
 - (void)prepareWindowForDisplay;
 {
-    OBPRECONDITION(window);  // -loadInterface should have been called by this point.
+    OBPRECONDITION(window != nil);  // -loadInterface should have been called by this point.
+    OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeFloating);
     
     if (needsToggleBeforeDisplay && window) {
         
@@ -303,6 +348,7 @@ static BOOL animateInspectorToggles;
 
 - (void)displayWindow;
 {
+    OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeFloating);
     [window orderFront:self];
     [window resetCursorRects];
 }
@@ -315,7 +361,10 @@ static BOOL animateInspectorToggles;
         return;
     }
 
-    if (![group isVisible] || !isExpanded)
+    if (self.interfaceType == OIInspectorInterfaceTypeFloating && ![group isVisible])
+        return;
+    
+    if (!isExpanded)
         return;
 
     NSArray *list = nil;
@@ -323,7 +372,7 @@ static BOOL animateInspectorToggles;
     NS_DURING {
         
         // Don't update the inspector if the list of objects to inspect hasn't changed. -inspectedObjectsOfClass: returns a pointer-sorted list of objects, so we can just to 'identical' on the array.
-        list = [[OIInspectorRegistry sharedInspector] copyObjectsInterestingToInspector:inspector];
+        list = [self.nonretained_inspectorRegistry copyObjectsInterestingToInspector:inspector];
         if ((!list && !currentlyInspectedObjects) || [list isIdenticalToArray:currentlyInspectedObjects]) {
             [list release];
             NS_VOIDRETURN;
@@ -455,16 +504,40 @@ static BOOL animateInspectorToggles;
 
 - (void)_buildWindow;
 {
-    [self _buildHeadingView];
     window = [[OIInspectorWindow alloc] initWithContentRect:NSMakeRect(500.0f, 300.0f, NSWidth([headingButton frame]), OIInspectorStartingHeaderButtonHeight + OIInspectorSpaceBetweenButtons) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
     [window setDelegate:self];
     [window setBecomesKeyOnlyIfNeeded:YES];
-    [[window contentView] addSubview:headingButton];
+}
 
+- (void)_populateContainerView;
+{
+    [self _buildHeadingView];
+    
+    [[self containerView] addSubview:headingButton];
+    
     headingBackground = [[OIInspectorHeaderBackground alloc] initWithFrame:[headingButton frame]];
     [headingBackground setAutoresizingMask:[headingButton autoresizingMask]];
     [headingBackground setHeaderView:headingButton];
-    [[window contentView] addSubview:headingBackground positioned:NSWindowBelow relativeTo:nil];
+    [[self containerView] addSubview:headingBackground positioned:NSWindowBelow relativeTo:nil];
+}
+
+- (NSView *)containerView;
+{
+    if (self.interfaceType == OIInspectorInterfaceTypeFloating) {
+        if (window == nil) {
+            [self _buildWindow];
+        }
+        
+        return [window contentView];
+    } else if (self.interfaceType == OIInspectorInterfaceTypeEmbedded) {
+        if (self.embeddedContainerView == nil) {
+            self.embeddedContainerView = [[[NSView alloc] init] autorelease];
+        }
+        
+        return self.embeddedContainerView;
+    } else {
+        return nil;
+    }
 }
 
 - (NSView *)_inspectorView;
@@ -501,8 +574,9 @@ static BOOL animateInspectorToggles;
     return inspectorView;
 }
 
-- (void)_setExpandedness:(BOOL)expanded updateInspector:(BOOL)updateInspector withNewTopLeftPoint:(NSPoint)topLeftPoint animate:(BOOL)animate;
+- (void)_setFloatingExpandedness:(BOOL)expanded updateInspector:(BOOL)updateInspector withNewTopLeftPoint:(NSPoint)topLeftPoint animate:(BOOL)animate;
 {
+    OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeFloating);
     NSView *view = [self _inspectorView];
     BOOL hadVisibleInspectors = [[OIInspectorRegistry sharedInspector] hasVisibleInspector];
 
@@ -546,7 +620,7 @@ static BOOL animateInspectorToggles;
         
         [view setFrame:viewFrame];
         [view setAutoresizingMask:NSViewNotSizable];
-        [[window contentView] addSubview:view positioned:NSWindowBelow relativeTo:headingButton];
+        [[self containerView] addSubview:view positioned:NSWindowBelow relativeTo:headingButton];
         [window setFrame:windowFrame display:YES animate:animate];
         if (forceResizeWidget || heightSizable) {
             if (!resizerView) {
@@ -554,7 +628,7 @@ static BOOL animateInspectorToggles;
                 [resizerView setAutoresizingMask:NSViewMinXMargin | NSViewMaxYMargin];
             }
             [resizerView setFrameOrigin:NSMakePoint(NSMaxX(newContentRect) - OIInspectorResizerWidth, 0)];
-            [[window contentView] addSubview:resizerView];
+            [[self containerView] addSubview:resizerView];
         }
         [view setAutoresizingMask:NSViewHeightSizable | NSViewMinXMargin | NSViewMaxXMargin];
         [[[OIInspectorRegistry sharedInspector] workspaceDefaults] setObject:@"YES" forKey:[self identifier]];
@@ -600,6 +674,68 @@ static BOOL animateInspectorToggles;
     
     [group setScreenChangesEnabled:YES];
     isSettingExpansion = NO;
+    
+    [self _postExpandednessChangedNotification];
+}
+
+- (void)_setEmbeddedExpandedness:(BOOL)expanded updateInspector:(BOOL)updateInspector;
+{
+    OBFinishPortingLater("Add back animated argument?");
+    OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeEmbedded);
+    
+    if (expanded == isExpanded)
+        return;
+    BOOL hadVisibleInspector = [self.nonretained_inspectorRegistry hasVisibleInspector];
+    isExpanded = expanded;
+    
+    if (updateInspector) {
+        if (!hadVisibleInspector) {
+            [self.nonretained_inspectorRegistry updateInspectionSetImmediatelyAndUnconditionallyForWindow:[[self containerView] window]];
+        }
+        [self updateInspector];
+    }
+    
+    NSView *inspectorView = [self _inspectorView];
+    if (expanded) {
+        // Ensure the container view has some sort of reasonable frame (so the autoresizing masks work). It'll get re-laid-out later.
+        if (NSEqualRects(NSZeroRect, [[self containerView] frame])) {
+            [[self containerView] setFrame:NSMakeRect(0, 0, 200, 200)];
+        }
+        
+        [[self containerView] addSubview:inspectorView];
+        NSRect containerBounds = [[self containerView] bounds];
+        CGFloat headerHeight = NSHeight(headingBackground.frame);
+        inspectorView.frame = (NSRect){
+            .origin = (NSPoint){
+                .x = 0,
+                .y = [[self containerView] isFlipped] ? headerHeight : 0
+            },
+            .size = (NSSize){
+                .width = NSWidth(containerBounds),
+                .height = MAX(NSHeight(containerBounds) - headerHeight, 0)
+            }
+        };
+        inspectorView.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
+    } else {
+        [inspectorView removeFromSuperview];
+    }
+    
+    for (NSView *view in @[ headingButton, headingBackground] ){
+        NSRect frame = view.frame;
+        frame.origin.y = NSMaxY([[self containerView] bounds]) - [self headingHeight];
+        view.frame = frame;
+    }
+    
+    [self _postExpandednessChangedNotification];
+}
+
+- (void)_postExpandednessChangedNotification;
+{
+    NSDictionary *userInfo = @{ @"isExpanded" : @(isExpanded) };
+    NSNotification *notification = [[[NSNotification alloc] initWithName:OIInspectorControllerDidChangeExpandednessNotification
+                                                                  object:self
+                                                                userInfo:userInfo] autorelease];
+    [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
 - (void)_saveInspectorHeight;
@@ -609,6 +745,15 @@ static BOOL animateInspectorToggles;
 
     [[registry workspaceDefaults] setObject:[NSNumber numberWithCGFloat:size.height] forKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
     [registry defaultsDidChange];
+}
+
+- (BOOL)_groupCanBeginResizingOperation;
+{
+    if (group) {
+        return [group canBeginResizingOperation];
+    } else {
+        return (self.interfaceType == OIInspectorInterfaceTypeEmbedded);
+    }
 }
 
 #pragma mark NSWindow delegate
@@ -725,6 +870,11 @@ static BOOL animateInspectorToggles;
     return [group isHeadOfGroup:self];
 }
 
+- (BOOL)headerViewShouldAllowDragging:(OIInspectorHeaderView *)view;
+{
+    return (self.interfaceType == OIInspectorInterfaceTypeFloating);
+}
+
 - (CGFloat)headerViewDraggingHeight:(OIInspectorHeaderView *)view;
 {
     NSRect myGroupFrame;
@@ -739,6 +889,7 @@ static BOOL animateInspectorToggles;
 
 - (void)headerViewDidBeginDragging:(OIInspectorHeaderView *)view;
 {
+    OBPRECONDITION([self headerViewShouldAllowDragging:view]);
     [group detachFromGroup:self];
 }
 
@@ -751,6 +902,7 @@ static BOOL animateInspectorToggles;
 
 - (void)headerViewDidEndDragging:(OIInspectorHeaderView *)view toFrame:(NSRect)aFrame;
 {
+    OBPRECONDITION([self headerViewShouldAllowDragging:view]);
     [group windowsDidMoveToFrame:aFrame];
 }
 
@@ -758,7 +910,7 @@ static BOOL animateInspectorToggles;
 {
     OBPRECONDITION(senderButton);
     
-    if ([group canBeginResizingOperation]) {
+    if ([self _groupCanBeginResizingOperation]) {
         NSRect windowFrame = [window frame];
         [self toggleExpandednessWithNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame)) animate:YES];
     } else {

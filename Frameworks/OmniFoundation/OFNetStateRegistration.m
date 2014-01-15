@@ -13,6 +13,7 @@
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFXMLIdentifier.h>
 #import <Foundation/Foundation.h>
 
@@ -86,7 +87,7 @@ static const NSTimeInterval kCoalesceTimeInterval = 3;
 {
     OBINITIALIZE;
     
-    OBInitializeDebugLogLevel(OFNetStateRegistrationDebug);
+    OFInitializeDebugLogLevel(OFNetStateRegistrationDebug);
 
 #ifdef OMNI_ASSERTIONS_ON
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE

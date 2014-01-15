@@ -35,23 +35,15 @@ RCS_ID("$Id$");
     
     UIView *fromView = [fromViewController view];
     UIView *toView = [toViewController view];
-    UIView *containerView = [transitionContext containerView];
     
-    OBASSERT([fromView isDescendantOfView:containerView]);
-    OBASSERT(![toView isDescendantOfView:containerView]);
-    
-    [containerView insertSubview:toView aboveSubview:fromView];
-    toView.alpha = 0.0f;
+    OBASSERT([fromView isDescendantOfView:[transitionContext containerView]]);
+    OBASSERT(![toView isDescendantOfView:[transitionContext containerView]]);
+
     toView.frame = [transitionContext finalFrameForViewController:toViewController];
     
-    [UIView animateWithDuration:[self transitionDuration:transitionContext]
-                     animations:^{
-                         toView.alpha = 1.0f;
-                     }
-                     completion:^(BOOL finished) {
-                         [fromView removeFromSuperview];
-                         [transitionContext completeTransition:YES];
-                     }];
+    [UIView transitionFromView:fromView toView:toView duration:[self transitionDuration:transitionContext] options:UIViewAnimationOptionTransitionCrossDissolve completion:^(BOOL finished) {
+        [transitionContext completeTransition:finished];
+    }];
 }
 
 @end

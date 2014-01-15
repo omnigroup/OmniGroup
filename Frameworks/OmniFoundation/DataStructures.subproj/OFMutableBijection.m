@@ -27,7 +27,7 @@ RCS_ID("$Id$");
         [self.objectsToKeys setObject:aKey forKey:anObject];
     }
     
-    OBINVARIANT([self checkInvariants]);
+    OBINVARIANT_EXPENSIVE([self checkInvariants]); // Potentially called in a very tight loop
 }
 
 - (void)setKey:(id)aKey forObject:(id)anObject;
@@ -44,7 +44,7 @@ RCS_ID("$Id$");
         [self.keysToObjects setObject:anObject forKey:aKey];
     }
     
-    OBINVARIANT([self checkInvariants]);
+    OBINVARIANT_EXPENSIVE([self checkInvariants]); // Potentially called in a very tight loop
 }
 
 - (void)invert;

@@ -1,0 +1,37 @@
+/* error reason */
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "zip ファイルに内包されたエントリにファイルシステムのパスに変換できない名前があります。";
+
+/* error description */
+"Duplicate zip member name \"%@\"." = "zip メンバー名 “%@” が重複しています。";
+
+/* error reason */
+"The unzip library failed to open %@." = "unzip ライブラリは %@ を開けませんでした。";
+
+/* error reason */
+"The zip library function %s returned %d" = "zip ライブラリの関数 %1$s に %2$d が返されました。";
+
+/* error reason */
+"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "“%4$@” のエントリ “%3$@” のデータを読み込もうとした際、zip ライブラリの関数 %1$s に %2$d が返されました。";
+
+/* error reason */
+"Unable to close zip data." = "zip データを閉じられません。";
+
+/* error reason */
+"Unable to close zip file." = "zip ファイルを閉じられません。";
+
+/* error reason */
+"Unable to create zip file." = "zip ファイルを作成できません。";
+
+/* error description */
+"Unable to open zip archive." = "zip アーカイブを開けません。";
+
+/* error description
+   error reason */
+
+"Unable to read zip data." = "zip データを読み込めません。";
+
+/* error description */
+"Unable to read zip file." = "zip ファイルを読み込めません。";
+
+/* error description */
+"Unable to write zip file." = "zip ファイルを書き込めません。";

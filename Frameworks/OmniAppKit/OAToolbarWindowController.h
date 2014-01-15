@@ -8,7 +8,7 @@
 // $Id$
 
 #import <AppKit/NSWindowController.h>
-#import <AppKit/NSToolbar.h>
+#import <OmniAppKit/OAToolbar.h>
 
 @class OAToolbar;
 @class NSToolbarItem;
@@ -21,7 +21,7 @@
 - (void)finishSetupForToolbarItem:(NSToolbarItem *)item toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 @end
 
-@interface OAToolbarWindowController : NSWindowController <NSToolbarDelegate>
+@interface OAToolbarWindowController : NSWindowController <OAToolbarDelegate>
 {
 @private
     OAToolbar *_toolbar;

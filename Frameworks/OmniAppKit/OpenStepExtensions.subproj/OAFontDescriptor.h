@@ -42,6 +42,7 @@ extern NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font);
 - initWithFontAttributes:(NSDictionary *)fontAttributes;
 - initWithFamily:(NSString *)family size:(CGFloat)size;
 - initWithFamily:(NSString *)family size:(CGFloat)size weight:(NSInteger)weight italic:(BOOL)italic condensed:(BOOL)condensed fixedPitch:(BOOL)fixedPitch;
+- initWithName:(NSString *)name size:(CGFloat)size;
 - initWithFont:(OAFontDescriptorPlatformFont)font;
 
 - (NSDictionary *)fontAttributes;
@@ -58,6 +59,9 @@ extern NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font);
 - (NSString *)postscriptName;
 - (OAFontDescriptorPlatformFont)font;
 
+// These return the desired values, where as our other properties return calculated values. If a value doesn't have a desired setting, it will return nil.
+@property(nonatomic,readonly) NSString *desiredFontName;
+
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 - (NSString *)localizedStyleName;
 #endif
@@ -69,4 +73,6 @@ extern NSDictionary *attributesFromFont(OAFontDescriptorPlatformFont font);
 - (OAFontDescriptor *)newFontDescriptorWithBold:(BOOL)bold;
 - (OAFontDescriptor *)newFontDescriptorWithItalic:(BOOL)italic;
 - (OAFontDescriptor *)newFontDescriptorWithCondensed:(BOOL)condensed;
+- (OAFontDescriptor *)newFontDescriptorWithFixedPitch:(BOOL)fixedPitch;
+
 @end

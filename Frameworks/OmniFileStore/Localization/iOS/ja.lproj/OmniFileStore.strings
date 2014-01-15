@@ -1,0 +1,36 @@
+/* error title */
+"An error has occurred." = "エラーが発生しました。";
+
+/* error description */
+"Could not find \"%@\"." = "“%@” が見つかりませんでした。";
+
+/* error description */
+"Ensure that the address is correct and please try again." = "アドレスが正しいことを確認してもう一度試してください。";
+
+/* error description */
+"Ensure that the server address, user name, and password are correct and please try again." = "サーバアドレス、ユーザ名、パスワードが正しいことを確認してもう一度行ってください。";
+
+/* error reason */
+"Failed to delete \"%@\"." = "“%@” の削除に失敗しました。";
+
+/* error reason */
+"Failed to move \"%@\" to \"%@\"." = "“%1$@” を “%2$@” へ移動するのに失敗しました。";
+
+/* error reason - listing a directory that doesn't exist
+   error reason - listing contents of a nonexistent directory */
+"No document exists at \"%@\"." = "“%@” に書類はありません。";
+
+/* error reason */
+"No such file \"%@\"." = "“%@” というファイルはありません。";
+
+/* error reason */
+"Please make sure that the destination folder exists." = "移動先フォルダが存在することを確認してください。";
+
+/* error description */
+"Unable to delete file." = "ファイルを削除できません。";
+
+/* error description */
+"Unable to move file." = "ファイルを移動できません。";
+
+/* error description */
+"Unable to read document." = "書類を読み込めません。";

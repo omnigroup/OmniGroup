@@ -340,26 +340,25 @@ static id (*originalValueInCharactersAtIndex)(id self, SEL _cmd, CHARACTER_INDEX
 
 + (NSObject <OAFindPattern>*)findPatternForReplaceCommand:(NSScriptCommand *)command;
 {
-    NSString *string, *replacement;
-    NSDictionary *args;
-    NSObject <OAFindPattern>*pattern;
-    
-    args = [command evaluatedArguments];
-    replacement = [args objectForKey:@"replacement"];
+    NSDictionary *args = [command evaluatedArguments];
+    NSString *replacement = [args objectForKey:@"replacement"];
     if (!replacement) {
 	[NSException raise:NSInvalidArgumentException format:@"No replacement specified."];
         return nil;
     }
     
-    BOOL ignoreCase = [[args objectForKey:@"ignoreCase"] boolValue];
-    BOOL wholeWords = [[args objectForKey:@"wholeWords"] boolValue];
+    BOOL ignoreCase = [args[@"ignoreCase"] boolValue];
+    BOOL wholeWords = [args[@"wholeWords"] boolValue];
     
-    if ((string = [args objectForKey:@"string"])) {
-        pattern = [[OAFindPattern alloc] initWithString:string ignoreCase:ignoreCase wholeWord:wholeWords backwards:NO];
-    } else if ((string = [args objectForKey:@"regexp"])) {
-        pattern = [[OARegExFindPattern alloc] initWithPattern:string selectedCaptureGroup:SELECT_FULL_EXPRESSION backwards:NO];
+    NSString *argumentValue;
+    NSObject <OAFindPattern> *pattern;
+    if ((argumentValue = args[@"string"])) {
+        pattern = [[OAFindPattern alloc] initWithString:argumentValue ignoreCase:ignoreCase wholeWord:wholeWords backwards:NO];
+    } else if ((argumentValue = args[@"pattern"])) {
+        pattern = [[OARegExFindPattern alloc] initWithPattern:argumentValue selectedCaptureGroup:SELECT_FULL_EXPRESSION backwards:NO];
     } else {
-	[NSException raise:NSInvalidArgumentException format:@"No 'string' or 'regexp' specified."];
+        [command setScriptErrorNumber:NSArgumentsWrongScriptError];
+        [command setScriptErrorString:NSLocalizedStringFromTableInBundle(@"Must supply either a \"string\" or \"regular expression\" argument.", @"OmniAppKit", OMNI_BUNDLE, @"script error string")];
         return nil;
     }
     

@@ -9,6 +9,7 @@
 
 #import <Foundation/NSString.h>
 #import <OmniBase/macros.h>
+#import <OmniFoundation/OFPreference.h>
 #import <dispatch/dispatch.h>
 
 RCS_ID("$Id$")
@@ -32,7 +33,7 @@ static NSInteger OFXRegistrationTableDebug = INT_MAX; // Make sure to log if we 
 {
     OBINITIALIZE;
     
-    OBInitializeDebugLogLevel(OFXRegistrationTableDebug);
+    OFInitializeDebugLogLevel(OFXRegistrationTableDebug);
 }
 
 - init;

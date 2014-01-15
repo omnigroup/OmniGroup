@@ -50,7 +50,7 @@ def do_target(target)
   cwd = Pathname.new(".").realpath
   
   $Project.each_file_in_target(target) {|buildFileID, buildFile, fileRefID, fileRef|
-      name = fileRef['name'] || fileRef['path']
+      name = File.basename(fileRef['path'])
       ext = File.extname(name) # "foo.h" -> ".h"
       next unless $Extensions.index(ext)
 

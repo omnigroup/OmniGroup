@@ -6,10 +6,3 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
 // $Id$
-
-// Experimental for now
-#if 0 && defined(DEBUG_bungi)
-    #define OUI_SOFTWARE_UPDATE_CHECK 1
-#else
-    #define OUI_SOFTWARE_UPDATE_CHECK 0
-#endif

@@ -177,8 +177,9 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
 
 - (void)scrollRangeToVisible:(NSRange)range;
 {
-    // TODO: Review and file radar.
     // I've re-implemented -scrollRangeToVisible: because UITextView's implementation doesn't work when typing in a text view with a bottom content inset in the item editor in OmniFocus.
+    //
+    // rdar://problem/14397663
     
     // Need to ensure layout for the entire range or we get the wrong behavior in the edge case of typing at the end of the text.
     NSLayoutManager *layoutManager = self.layoutManager;

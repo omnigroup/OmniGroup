@@ -20,11 +20,14 @@
 
 RCS_ID("$Id$")
 
+@interface OFController ()
+@property (nonatomic, assign) OFControllerStatus status;
+@end
 
 /*" OFController is used to represent the current state of the application and to receive notifications about changes in that state. "*/
 @implementation OFController
 {
-    OFControllerStatus status;
+    OFControllerStatus _status;
     NSLock *observerLock;
     NSMutableArray *_observerReferences; // OFWeakReferences holding the observers
     NSMutableSet *postponingObservers;
@@ -32,6 +35,7 @@ RCS_ID("$Id$")
 }
 
 static OFController *sharedController = nil;
+static BOOL CrashOnAssertionOrUnhandledException = NO; // Cached so we can get this w/in the handler w/o calling into ObjC (since it might be unsafe)
 
 #ifdef OMNI_ASSERTIONS_ON
 static void _OFControllerCheckTerminated(void)
@@ -44,7 +48,7 @@ static void _OFControllerCheckTerminated(void)
         [[environment objectForKey:@"XCInjectBundleInto"] hasPrefix:[[NSBundle mainBundle] bundlePath]]) {
         // We need to skip this check for otest host apps since +[SenTestProbe runTests:] just calls exit() rather than -terminate:.        
     } else {
-        OBASSERT(!sharedController || sharedController->status == OFControllerTerminatingStatus || sharedController->status == OFControllerNotInitializedStatus);
+        OBASSERT(!sharedController || sharedController->_status == OFControllerTerminatingStatus || sharedController->_status == OFControllerNotInitializedStatus);
     }
     
     [p drain];
@@ -171,6 +175,8 @@ static void _OFControllerCheckTerminated(void)
     if (!(self = [super init]))
         return nil;
     
+    CrashOnAssertionOrUnhandledException = [self crashOnAssertionOrUnhandledException];
+    
     NSExceptionHandler *handler = [NSExceptionHandler defaultExceptionHandler];
     [handler setDelegate:self];
     [handler setExceptionHandlingMask:[self exceptionHandlingMask]];
@@ -179,7 +185,7 @@ static void _OFControllerCheckTerminated(void)
     [[[NSThread currentThread] threadDictionary] setObject:self forKey:@"NSAssertionHandler"];
     
     observerLock = [[NSLock alloc] init];
-    status = OFControllerNotInitializedStatus;
+    _status = OFControllerNotInitializedStatus;
     _observerReferences = [[NSMutableArray alloc] init];
     postponingObservers = [[NSMutableSet alloc] init];
     
@@ -205,7 +211,15 @@ static void _OFControllerCheckTerminated(void)
 {
     OBPRECONDITION([NSThread isMainThread]);
 
-    return status;
+    return _status;
+}
+
+- (void)setStatus:(OFControllerStatus)newStatus;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+
+    _status = newStatus;
+    [self _runQueues];
 }
 
 - (NSUInteger)_locked_indexOfObserver:(id)observer;
@@ -252,7 +266,7 @@ static void _OFControllerCheckTerminated(void)
     if (!receiver)
         return;
     
-    if (status <= state) {
+    if (state <= _status) {
         [receiver performSelector:message];
     } else {
         OFInvocation *queueEntry = [[OFInvocation alloc] initForObject:receiver selector:message];
@@ -268,7 +282,7 @@ static void _OFControllerCheckTerminated(void)
         return;
     
     [observerLock lock];
-    if (status <= state) {
+    if (state <= _status) {
         [observerLock unlock];
         [action invoke];
     } else {
@@ -291,9 +305,9 @@ static void _OFControllerCheckTerminated(void)
 - (void)didInitialize;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(status == OFControllerNotInitializedStatus);
+    OBPRECONDITION(_status == OFControllerNotInitializedStatus);
     
-    status = OFControllerInitializedStatus;
+    self.status = OFControllerInitializedStatus;
     [self _makeObserversPerformSelector:@selector(controllerDidInitialize:)];
 }
 
@@ -301,9 +315,9 @@ static void _OFControllerCheckTerminated(void)
 - (void)startedRunning;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(status == OFControllerInitializedStatus);
+    OBPRECONDITION(_status == OFControllerInitializedStatus);
     
-    status = OFControllerRunningStatus;
+    self.status = OFControllerRunningStatus;
     [self _makeObserversPerformSelector:@selector(controllerStartedRunning:)];
 }
     
@@ -311,9 +325,9 @@ static void _OFControllerCheckTerminated(void)
 - (OFControllerTerminateReply)requestTermination;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(status == OFControllerRunningStatus);
+    OBPRECONDITION(_status == OFControllerRunningStatus);
     
-    status = OFControllerRequestingTerminateStatus;
+    self.status = OFControllerRequestingTerminateStatus;
     
     for (id anObserver in [self _observersSnapshot]) {
         if ([anObserver respondsToSelector:@selector(controllerRequestsTerminate:)]) {
@@ -325,18 +339,18 @@ static void _OFControllerCheckTerminated(void)
         }
         
         // Break if the termination was cancelled
-        if (status == OFControllerRunningStatus)
+        if (_status == OFControllerRunningStatus)
             break;
     }
 
-    if (status != OFControllerRunningStatus && [postponingObservers count] > 0)
-        status = OFControllerPostponingTerminateStatus;
+    if (_status != OFControllerRunningStatus && [postponingObservers count] > 0)
+        self.status = OFControllerPostponingTerminateStatus;
 
-    switch (status) {
+    switch (_status) {
         case OFControllerRunningStatus:
             return OFControllerTerminateCancel;
         case OFControllerRequestingTerminateStatus:
-            status = OFControllerTerminatingStatus;
+            self.status = OFControllerTerminatingStatus;
             return OFControllerTerminateNow;
         case OFControllerPostponingTerminateStatus:
             return OFControllerTerminateLater;
@@ -351,13 +365,13 @@ static void _OFControllerCheckTerminated(void)
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    switch (status) {
+    switch (_status) {
         case OFControllerRequestingTerminateStatus:
-            status = OFControllerRunningStatus;
+            self.status = OFControllerRunningStatus;
             break;
         case OFControllerPostponingTerminateStatus:
             [self gotPostponedTerminateResult:NO];
-            status = OFControllerRunningStatus;
+            self.status = OFControllerRunningStatus;
             break;
         default:
             break;
@@ -378,8 +392,8 @@ static void _OFControllerCheckTerminated(void)
     
     [postponingObservers removeObject:observer];
     if ([postponingObservers count] == 0) {
-        [self gotPostponedTerminateResult:(status != OFControllerRunningStatus)];
-    } else if ((status == OFControllerRequestingTerminateStatus || status == OFControllerPostponingTerminateStatus || status == OFControllerTerminatingStatus)) {
+        [self gotPostponedTerminateResult:(_status != OFControllerRunningStatus)];
+    } else if ((_status == OFControllerRequestingTerminateStatus || _status == OFControllerPostponingTerminateStatus || _status == OFControllerTerminatingStatus)) {
         [self _makeObserversPerformSelector:@selector(controllerRequestsTerminate:)];
     }
 }
@@ -387,7 +401,7 @@ static void _OFControllerCheckTerminated(void)
 - (void)willTerminate;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(status == OFControllerTerminatingStatus); // We should have requested termination and not had it cancelled or postponed.
+    OBPRECONDITION(_status == OFControllerTerminatingStatus); // We should have requested termination and not had it cancelled or postponed.
     
     [self _makeObserversPerformSelector:@selector(controllerWillTerminate:)];
 }
@@ -395,7 +409,7 @@ static void _OFControllerCheckTerminated(void)
 - (void)gotPostponedTerminateResult:(BOOL)isReadyToTerminate;
 {
     if (isReadyToTerminate)
-        self->status = OFControllerTerminatingStatus;
+        self.status = OFControllerTerminatingStatus;
 }
 
 // Allow subclasses to override this
@@ -415,14 +429,18 @@ static void _OFControllerCheckTerminated(void)
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"OFCrashOnAssertionOrUnhandledException"];
 }
 
+static void OFCrashImmediately(void)
+{
+    unsigned int *bad = (unsigned int *)sizeof(unsigned int);
+    bad[-1] = 0; // Crash immediately; crazy approach is to defeat the clang error about dereferencing NULL, which is the point!
+}
+
 - (void)crashWithReport:(NSString *)report;
 {
     // OmniCrashCatcher overrides this method to do something more useful
     NSLog(@"Crashing with report:\n%@", report);
     
-    //OCCCrashImmediately();
-    unsigned int *bad = (unsigned int *)sizeof(unsigned int);
-    bad[-1] = 0; // Crash immediately; crazy approach is to defeat the clang error about dereferencing NULL, which is the point!
+    OFCrashImmediately();
 }
 
 - (void)crashWithException:(NSException *)exception mask:(NSUInteger)mask;
@@ -459,6 +477,9 @@ static void _OFControllerCheckTerminated(void)
 
 - (BOOL)shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
 {
+    if ([exception.name isEqual:@"SenTestFailureException"])
+        return NO;
+    
     return YES;
 }
 
@@ -491,7 +512,7 @@ static void _OFControllerCheckTerminated(void)
 
     OBRecordBacktrace(NULL, OBBacktraceBuffer_NSAssertionFailure);
     
-    if (![self crashOnAssertionOrUnhandledException]) {
+    if (!CrashOnAssertionOrUnhandledException) {
 	NSString *numericTrace = OFCopyNumericBacktraceString(0);
 	NSString *symbolicTrace = OFCopySymbolicBacktraceForNumericBacktrace(numericTrace);
 	[numericTrace release];
@@ -541,7 +562,7 @@ static void _OFControllerCheckTerminated(void)
     
     OBRecordBacktrace(NULL, OBBacktraceBuffer_NSAssertionFailure);
 
-    if (![self crashOnAssertionOrUnhandledException]) {
+    if (!CrashOnAssertionOrUnhandledException) {
 	NSString *symbolicTrace = OFCopySymbolicBacktrace();
 	
 	NSString *description = [[NSString alloc] initWithFormat:format arguments:args];
@@ -573,7 +594,24 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 {
     OBRecordBacktrace(NULL, OBBacktraceBuffer_NSException);
 
-    if ([self crashOnAssertionOrUnhandledException] && ((aMask & NSLogUncaughtExceptionMask) != 0)) {
+    /*
+     At some point (10.9?) CFRelease(NULL) (and possibly all such NULL dereferences) started hitting this path:
+     
+     0x7fff93f5fc71 -- 0   ExceptionHandling                   0x00007fff93f5fc71 NSExceptionHandlerUncaughtSignalHandler + 35
+     0x7fff9277d5aa -- 1   libsystem_platform.dylib            0x00007fff9277d5aa _sigtramp + 26
+     0x6080000bb780 -- 2   ???                                 0x00006080000bb780 0x0 + 106102872848256
+
+     and sending us NSLogUncaughtSystemExceptionMask. It seems very odd that they are calling into ObjC from a signal handler.
+     Without checking for all the 'log uncaught' masks, our process would simply exit instead of bringing up the crash catcher.
+     */
+    
+    if (CrashOnAssertionOrUnhandledException && (aMask & (NSLogUncaughtExceptionMask|NSLogUncaughtSystemExceptionMask|NSLogUncaughtRuntimeErrorMask))) {
+        if (aMask & (NSLogUncaughtSystemExceptionMask|NSLogUncaughtRuntimeErrorMask)) {
+            // Radar 15415081: ExceptionHandling framework calls into ObjC from a signal handler.
+            // It is unclear which hits on this will come from w/in a signal handler, so let's crash immediately w/o calling any ObjC (and hope that NSExceptionHandler really is caching the IMP of the delegate callbacks rather than going through dispatch and possibly deadlocking...)
+            OFCrashImmediately();
+        }
+
         [self crashWithException:exception mask:aMask];
         return YES; // normal handler; we shouldn't get here, though.
     }
@@ -627,8 +665,6 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
             };
         }
     }
-    
-    [self _runQueues];
 }
 
 - (void)_makeObserversPerformSelector:(SEL)aSelector withObject:(id)object;
@@ -644,8 +680,6 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
             };
         }
     }
-    
-    [self _runQueues];
 }
 
 - (NSArray *)_observersSnapshot;
@@ -673,7 +707,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
         NSMutableArray *toRun = nil;
         [observerLock lock];
         for (NSNumber *targetState in [queues keyEnumerator]) {
-            if ([targetState intValue] <= (int)status) {
+            if ([targetState intValue] <= (int)_status) {
                 toRun = [[queues objectForKey:targetState] retain];
                 [queues removeObjectForKey:targetState];
                 break;

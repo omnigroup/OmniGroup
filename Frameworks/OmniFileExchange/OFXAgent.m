@@ -18,6 +18,7 @@
 #import <OmniFoundation/OFNetReachability.h>
 #import <OmniFoundation/OFNetStateNotifier.h>
 #import <OmniFoundation/OFNetStateRegistration.h>
+#import <OmniFoundation/OFPreference.h>
 
 #import "OFXAccountAgent-Internal.h"
 #import "OFXServerAccountRegistry-Internal.h"
@@ -69,16 +70,16 @@ NSInteger OFXActivityDebug = INT_MAX;
 {
     OBINITIALIZE;
     
-    OBInitializeDebugLogLevel(OFXSyncDebug);
-    OBInitializeDebugLogLevel(OFXFileCoordinatonDebug);
-    OBInitializeDebugLogLevel(OFXScanDebug);
-    OBInitializeDebugLogLevel(OFXLocalRelativePathDebug);
-    OBInitializeDebugLogLevel(OFXTransferDebug);
-    OBInitializeDebugLogLevel(OFXConflictDebug);
-    OBInitializeDebugLogLevel(OFXContentDebug);
-    OBInitializeDebugLogLevel(OFXActivityDebug);
+    OFInitializeDebugLogLevel(OFXSyncDebug);
+    OFInitializeDebugLogLevel(OFXFileCoordinatonDebug);
+    OFInitializeDebugLogLevel(OFXScanDebug);
+    OFInitializeDebugLogLevel(OFXLocalRelativePathDebug);
+    OFInitializeDebugLogLevel(OFXTransferDebug);
+    OFInitializeDebugLogLevel(OFXConflictDebug);
+    OFInitializeDebugLogLevel(OFXContentDebug);
+    OFInitializeDebugLogLevel(OFXActivityDebug);
     
-    OBInitializeTimeInterval(OFXAgentSyncInterval, 5*60, 5, 5*60);
+    OFInitializeTimeInterval(OFXAgentSyncInterval, 5*60, 5, 5*60);
     
     OBASSERT([[[NSBundle mainBundle] infoDictionary] objectForKey:@"OFSSyncContainerIdentifiers"] == nil); // Old key.
 }

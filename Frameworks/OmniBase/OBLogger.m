@@ -58,9 +58,9 @@ static void _RemoveLogFiles(NSString *loggerName, NSDate *olderThanDate)
     NSArray *subitems = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:documentsDirectoryURL includingPropertiesForKeys:@[NSURLNameKey, NSURLCreationDateKey] options:0 error:NULL];
     
     for (NSURL *itemURL in subitems) {
-        NSString *itemName = nil;
+        OB_AUTORELEASING NSString *itemName = nil;
         BOOL fetchSucceeded = [itemURL getResourceValue:&itemName forKey:NSURLNameKey error:NULL];
-        NSDate *creationDate = nil;
+        OB_AUTORELEASING NSDate *creationDate = nil;
         fetchSucceeded |= [itemURL getResourceValue:&creationDate forKey:NSURLCreationDateKey error:NULL];
         if (!fetchSucceeded)
             continue; // default to keeping data
@@ -69,7 +69,7 @@ static void _RemoveLogFiles(NSString *loggerName, NSDate *olderThanDate)
             continue; // new enough to keep
         
         if ([itemName hasPrefix:loggerName] && [itemName hasSuffix:_logFileSuffix]) {
-            NSError *error = nil;
+            OB_AUTORELEASING NSError *error = nil;
             if (![[NSFileManager defaultManager] removeItemAtURL:itemURL error:&error]) {
                 NSLog(@"Couldn't remove log file with URL \"%@\": %@", itemURL, error);
             }
@@ -212,7 +212,7 @@ static void _setPOSIXError(NSError **error, NSString *description)
             return;
         }
         
-        NSError *error = nil;
+        OB_AUTORELEASING NSError *error = nil;
         if (![timeStampedMessage appendToURL:logFileURL atomically:YES error:&error]) {
             NSLog(@"Error logging for %@: %@", weakSelf.name, error);
         }

@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15711357186375F0002F6107 /* ja.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 15711356186375E5002F6107 /* ja.lproj */; };
+		15F7CBE8185F98E300EFB846 /* de.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 15F7CBE0185F980800EFB846 /* de.lproj */; };
+		15F7CBE9185F98E300EFB846 /* es.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 15F7CBE1185F980800EFB846 /* es.lproj */; };
+		15F7CBEA185F98E300EFB846 /* fr.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 15F7CBE2185F980800EFB846 /* fr.lproj */; };
+		15F7CBEB185F98E300EFB846 /* it.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 15F7CBE3185F980800EFB846 /* it.lproj */; };
+		15F7CBEC185F98E300EFB846 /* nl.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 15F7CBE4185F980800EFB846 /* nl.lproj */; };
+		15F7CBED185F98E300EFB846 /* ru.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 15F7CBE5185F980900EFB846 /* ru.lproj */; };
+		15F7CBEE185F98E300EFB846 /* zh-Hans.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 15F7CBE6185F980900EFB846 /* zh-Hans.lproj */; };
 		340ECC9717A1A16200CABA13 /* ODAVOperation-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 340ECC9617A1A16200CABA13 /* ODAVOperation-Internal.h */; };
 		340ECC9817A1A16200CABA13 /* ODAVOperation-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 340ECC9617A1A16200CABA13 /* ODAVOperation-Internal.h */; };
 		34201EE21464897900A45403 /* ODAVFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34201EE11464897900A45403 /* ODAVFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -110,6 +118,14 @@
 			dstPath = "Resources/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				15F7CBE8185F98E300EFB846 /* de.lproj in Copy Resources */,
+				15F7CBE9185F98E300EFB846 /* es.lproj in Copy Resources */,
+				15F7CBEA185F98E300EFB846 /* fr.lproj in Copy Resources */,
+				15F7CBEB185F98E300EFB846 /* it.lproj in Copy Resources */,
+				15711357186375F0002F6107 /* ja.lproj in Copy Resources */,
+				15F7CBEC185F98E300EFB846 /* nl.lproj in Copy Resources */,
+				15F7CBED185F98E300EFB846 /* ru.lproj in Copy Resources */,
+				15F7CBEE185F98E300EFB846 /* zh-Hans.lproj in Copy Resources */,
 			);
 			name = "Copy Resources";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -118,7 +134,15 @@
 
 /* Begin PBXFileReference section */
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		089C1667FE841158C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		089C1667FE841158C02AAC07 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		15711356186375E5002F6107 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = Localization/iOS/ja.lproj; sourceTree = "<group>"; };
+		15F7CBE0185F980800EFB846 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
+		15F7CBE1185F980800EFB846 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
+		15F7CBE2185F980800EFB846 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fr.lproj; path = Localization/iOS/fr.lproj; sourceTree = "<group>"; };
+		15F7CBE3185F980800EFB846 /* it.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = it.lproj; path = Localization/iOS/it.lproj; sourceTree = "<group>"; };
+		15F7CBE4185F980800EFB846 /* nl.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = nl.lproj; path = Localization/iOS/nl.lproj; sourceTree = "<group>"; };
+		15F7CBE5185F980900EFB846 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ru.lproj; path = Localization/iOS/ru.lproj; sourceTree = "<group>"; };
+		15F7CBE6185F980900EFB846 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "zh-Hans.lproj"; path = "Localization/iOS/zh-Hans.lproj"; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* OmniDAV_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDAV_Prefix.h; sourceTree = "<group>"; };
 		340490AC15E53DDC0044F67F /* libODAVUnitTestsTouch.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libODAVUnitTestsTouch.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		340ECC9617A1A16200CABA13 /* ODAVOperation-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODAVOperation-Internal.h"; sourceTree = "<group>"; };
@@ -273,6 +297,7 @@
 				349F97A015DEA89500D7677C /* Tests */,
 				0867D69AFE84028FC02AAC07 /* Frameworks and Libraries */,
 				034768DFFF38A50411DB9C8B /* Products */,
+				15F7CBE7185F980E00EFB846 /* Localization */,
 			);
 			name = OmniDAV;
 			sourceTree = "<group>";
@@ -318,6 +343,21 @@
 				3444B0B90F72022C005CFD59 /* ODAVErrors.m */,
 			);
 			name = Source;
+			sourceTree = "<group>";
+		};
+		15F7CBE7185F980E00EFB846 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				15711356186375E5002F6107 /* ja.lproj */,
+				15F7CBE0185F980800EFB846 /* de.lproj */,
+				15F7CBE1185F980800EFB846 /* es.lproj */,
+				15F7CBE2185F980800EFB846 /* fr.lproj */,
+				15F7CBE3185F980800EFB846 /* it.lproj */,
+				15F7CBE4185F980800EFB846 /* nl.lproj */,
+				15F7CBE5185F980900EFB846 /* ru.lproj */,
+				15F7CBE6185F980900EFB846 /* zh-Hans.lproj */,
+			);
+			name = Localization;
 			sourceTree = "<group>";
 		};
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
@@ -566,10 +606,6 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
-				English,
-				Japanese,
-				French,
-				German,
 				en,
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* OmniDAV */;
@@ -746,7 +782,7 @@
 		089C1666FE841158C02AAC07 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				089C1667FE841158C02AAC07 /* English */,
+				089C1667FE841158C02AAC07 /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";

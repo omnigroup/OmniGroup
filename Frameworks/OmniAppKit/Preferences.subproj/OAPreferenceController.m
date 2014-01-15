@@ -311,6 +311,8 @@ static NSString *windowFrameSaveName = @"Preferences";
     NSRect newWindowFrame = [NSWindow frameRectForContentRect:NSMakeRect(NSMinX(windowFrame), NSMaxY(windowFrame) - newWindowHeight, MAX(idealWidth, NSWidth(controlBoxFrame)), newWindowHeight) styleMask:[_window styleMask]];
     [_window setFrame:newWindowFrame display:YES animate:[_window isVisible]];
     
+    [_nonretained_helpButton setHidden:[clientRecord helpURL] == nil];
+
     // Do this before putting the view in the view hierarchy to avoid flashiness in the controls.
     if ([_window isVisible])
         [self validateRestoreDefaultsButton];
@@ -609,11 +611,6 @@ static NSString *windowFrameSaveName = @"Preferences";
     [_window center];
     [_window setFrameAutosaveName:windowFrameSaveName];
     [_window setFrameUsingName:windowFrameSaveName force:YES];
-    
-    if (![[_clientRecords objectAtIndex:0] helpURL]) {
-        [_nonretained_helpButton removeFromSuperview];
-        _nonretained_helpButton = nil;
-    }
     
     if ([_clientRecords count] == 1) {
         viewStyle = OAPreferencesViewSingle;
@@ -1022,6 +1019,27 @@ static NSAppleEventDescriptor *whose(OSType form, OSType want, NSAppleEventDescr
 
 BOOL OAOpenSystemPreferencePane(NSString *paneIdentifier, NSString *tabIdentifier)
 {
+#ifdef OMNI_ASSERTIONS_ON
+    /* You'll need this entitlement in order for this code to work from a sandboxed application:
+     
+       <key>com.apple.security.scripting-targets</key>
+       <dict>
+           <!-- Open System Preference panes -->
+           <key>com.apple.systempreferences</key>
+           <array>
+               <string>preferencepane.reveal</string>
+           </array>
+       </dict>
+    */
+
+    if ([[NSProcessInfo processInfo] isSandboxed]) {
+        NSDictionary *entitlements = [[NSProcessInfo processInfo] effectiveCodeSigningEntitlements:NULL];
+        NSDictionary *scriptingTargets = entitlements[@"com.apple.security.scripting-targets"];
+        NSArray *accessGroups = scriptingTargets[@"com.apple.systempreferences"];
+        OBASSERT([accessGroups containsObject:@"preferencepane.reveal"], "Missing scripting target entitlement needed in order to open System Preference panes.");
+    }
+#endif
+
     NSString *systemPreferencesBundleID = @"com.apple.systempreferences";
     NSAppleEventDescriptor *target = whose(formUniqueID, 'xppb', [NSAppleEventDescriptor descriptorWithString:paneIdentifier], nil);
     if (tabIdentifier)
@@ -1073,6 +1091,10 @@ BOOL OAOpenSystemPreferencePane(NSString *paneIdentifier, NSString *tabIdentifie
         }
     }
     AEDisposeDesc(&reply);
+    
+    // Finally, bring System Preferences to the foreground
+    NSRunningApplication *application = [[NSRunningApplication runningApplicationsWithBundleIdentifier:systemPreferencesBundleID] lastObject];
+    [application activateWithOptions:0];
 
     return successResponse;
 }

@@ -1,0 +1,126 @@
+/* modifier, used for scanning user input */
+"-" = "-";
+
+/* modifier, used for scanning user input */
+"+" = "+";
+
+/* modifier, used for scanning user input */
+"~" = "~";
+
+/* one-letter abbreviation for day or days, used for scanning user input */
+"d" = "日";
+
+/* day, singular, used for scanning user input */
+"day" = "日";
+
+/* days, plural, used for scanning user input */
+"days" = "日間";
+
+/* one-letter abbreviation for hour or hours, for scanning user input
+   one-letter abbreviation for hour or hours, used for scanning user input */
+"h" = "時";
+
+/* hour, singular, used for scanning user input */
+"hour" = "時";
+
+/* hours, plural, used for scanning user input */
+"hours" = "時間";
+
+/* modifier, used for scanning user input */
+"last" = "先";
+
+/* last month, used for scanning user input */
+"last month" = "先月";
+
+/* time, used for scanning user input */
+"last week" = "先週";
+
+/* last year, used for scanning user input */
+"last year" = "昨年";
+
+/* one-letter abbreviation for month or months, used for scanning user input */
+"m" = "月";
+
+/* month, singular, used for scanning user input */
+"month" = "月";
+
+/* months, plural, used for scanning user input */
+"months" = "ヶ月";
+
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input */
+"next" = "次";
+
+/* next month, used for scanning user input */
+"next month" = "来月";
+
+/* time, used for scanning user input */
+"next week" = "来週";
+
+/* next year, used for scanning user input */
+"next year" = "来年";
+
+/* noon, used for scanning user input */
+"noon" = "正午";
+
+/* now, used for scanning user input */
+"now" = "現在";
+
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input */
+"this" = "今";
+
+/* this month, used for scanning user input */
+"this month" = "今月";
+
+/* time, used for scanning user input */
+"this week" = "今週";
+
+/* this year, used for scanning user input */
+"this year" = "今年";
+
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input */
+"tod" = "今";
+
+/* today, used for scanning user input */
+"today" = "今日";
+
+/* Today */
+"Today" = "今日";
+
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input */
+"tom" = "明";
+
+/* tomorrow */
+"tomorrow" = "明日";
+
+/* Tomorrow */
+"Tomorrow" = "明日";
+
+/* tonight, used for scanning user input */
+"tonight" = "今夜";
+
+/* one-letter abbreviation for week or weeks, used for scanning user input */
+"w" = "週";
+
+/* week, singular, used for scanning user input */
+"week" = "週";
+
+/* weeks, plural, used for scanning user input */
+"weeks" = "週間";
+
+/* one-letter abbreviation for year or years, used for scanning user input */
+"y" = "年";
+
+/* year, singular, used for scanning user input */
+"year" = "年";
+
+/* years, plural, used for scanning user input */
+"years" = "年間";
+
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input */
+"yes" = "はい";
+
+/* yesterday, used for scanning user input */
+"yesterday" = "昨日";
+
+/* Yesterday */
+"Yesterday" = "昨日";

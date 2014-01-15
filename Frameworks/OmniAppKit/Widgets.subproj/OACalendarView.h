@@ -13,7 +13,8 @@
 
 #import <AppKit/NSNibDeclarations.h>
 
-@interface NSObject (OACalendarViewDelegate)
+@protocol OACalendarViewDelegate
+@optional
 - (int)calendarView:(OACalendarView *)aCalendarView highlightMaskForVisibleMonth:(NSDate *)visibleMonth;
 - (void)calendarView:(OACalendarView *)aCalendarView willDisplayCell:(id)aCell forDate:(NSDate *)aDate;	// implement this on the target if you want to be able to set up the date cell. The cell is only used for drawing (and is reused for every date), so you can not, for instance, enable/disable dates by enabling or disabling the cell.
 - (BOOL)calendarView:(OACalendarView *)aCalendarView shouldSelectDate:(NSDate *)aDate;	// implement this on the target if you need to prevent certain dates from being selected. The target is responsible for taking into account the selection type
@@ -30,6 +31,9 @@ typedef enum _OACalendarViewSelectionType {
 @interface OACalendarView : NSControl
 
 @property(nonatomic,retain) NSCalendar *calendar;
+@property(nonatomic,assign) id<OACalendarViewDelegate> delegate;
+@property(nonatomic,assign) IBOutlet id target;
+@property(nonatomic,assign) SEL action;
 
 - (NSDate *)visibleMonth;
 - (void)setVisibleMonth:(NSDate *)aDate;

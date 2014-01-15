@@ -17,10 +17,10 @@
 
 RCS_ID("$Id$");
 
-#if 0 && defined(DEBUG_curt) && defined(DEBUG)
-#define DEBUG_IDREG(format, ...) NSLog(@"IDREG: " format, ## __VA_ARGS__)
+#if 0 && defined(DEBUG)
+    #define DEBUG_IDREG(format, ...) NSLog(@"IDREG: " format, ## __VA_ARGS__)
 #else
-#define DEBUG_IDREG(format, ...)
+    #define DEBUG_IDREG(format, ...)
 #endif
 
 /*" Creates a valid XML ID string from the input string under the constraints that (a) if the input is already valid, it is returned exactly (b) two identical inputs will produce two identical outputs and (c) two different inputs will produce two different outputs.  We probably don't conform to (c) exactly since we conform to (a).  That is, since (a) requres that valid inputs are returned, no matter what function we chose to encode invalid inputs into valid ones, someone could pass in a 'pre-fixed' invalid output and get a duplicate.  This shouldn't happen give our current caller.

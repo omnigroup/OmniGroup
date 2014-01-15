@@ -32,7 +32,7 @@ RCS_ID("$Id$");
         OUZipMember *zipMember = [[OUZipMember alloc] initWithPath:path fileManager:fileManager];
         if (zipMember == nil)
             continue;
-        NSError *error = nil;
+        OB_AUTORELEASING NSError *error = nil;
         if (![zipMember appendToZipArchive:zip fileNamePrefix:@"" error:&error]) {
             // Unable to add one of the files to the zip archive.  Just skipping it for now.
         }
@@ -52,7 +52,7 @@ RCS_ID("$Id$");
         OUZipMember *zipMember = [[OUZipMember alloc] initWithFileWrapper:fileWrapper];
         if (zipMember == nil)
             continue;
-        NSError *error = nil;
+        OB_AUTORELEASING NSError *error = nil;
         if (![zipMember appendToZipArchive:zip fileNamePrefix:@"" error:&error]) {
             // Unable to add one of the files to the zip archive.  Just skipping it for now.
         }
@@ -85,7 +85,7 @@ RCS_ID("$Id$");
     OBPRECONDITION(_zip == NULL); // Owner should have closed it, even if there is an error appending.
     
     if (_zip) {
-        NSError *error = nil;
+        OB_AUTORELEASING NSError *error = nil;
         if (![self close:&error])
             NSLog(@"Error closing zip file: %@", [error toPropertyList]);
     }

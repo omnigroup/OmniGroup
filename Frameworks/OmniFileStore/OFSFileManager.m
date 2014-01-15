@@ -15,6 +15,7 @@
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
+#import <OmniFoundation/OFPreference.h>
 
 #import "OFSFileOperation.h"
 
@@ -35,7 +36,7 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 {
     OBINITIALIZE;
     
-    OBInitializeDebugLogLevel(OFSFileManagerDebug);
+    OFInitializeDebugLogLevel(OFSFileManagerDebug);
 }
 
 + (Class)fileManagerClassForURLScheme:(NSString *)scheme;

@@ -185,17 +185,17 @@
       allowLocationSimulation = "YES">
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "OFSAccountUsername"
+            key = "ODAVAccountUsername"
             value = "test"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "OFSAccountPassword"
+            key = "ODAVAccountPassword"
             value = "password"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "OFSAccountRemoteBaseURL"
+            key = "ODAVAccountRemoteBaseURL"
             value = "https://LOCAL_HOST:8001/"
             isEnabled = "YES">
          </EnvironmentVariable>

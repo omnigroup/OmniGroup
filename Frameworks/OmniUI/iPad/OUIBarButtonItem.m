@@ -74,7 +74,7 @@ static NSString *_titleForItemStyle(UIBarButtonSystemItem itemStyle)
     OUIBarButtonItem *item = [self initWithTintColor:nil image:image title:nil target:target action:action];
     
     if (style == UIBarButtonItemStylePlain)
-        item.button.showsTouchWhenHighlighted = YES;
+        item.button.showsTouchWhenHighlighted = NO; // iOS 7iffy this thang!
     
     return item;
 }

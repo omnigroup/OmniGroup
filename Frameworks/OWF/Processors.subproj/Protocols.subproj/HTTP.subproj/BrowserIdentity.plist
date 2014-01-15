@@ -152,11 +152,11 @@
 		<key>AppName</key>
 		<string>Netscape</string>
 		<key>AppVersion</key>
-		<string>5.0 (Macintosh; en-US)</string>
+		<string>5.0 (Macintosh; Intel Mac OS X 10_9) AppleWebKit/537.71 (KHTML, like Gecko) Version/7.0 Safari/537.71</string>
 		<key>Platform</key>
 		<string>MacIntel</string>
 		<key>userAgentHeaderFormat</key>
-		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X $(OS_VERSION); en-US) AppleWebKit/$(WEBKIT_VERSION) (KHTML, like Gecko, Safari/528.16) %@</string>
+		<string>Mozilla/5.0 (Macintosh; $(ARCH) Mac OS X $(OS_VERSION); en-US) AppleWebKit/$(WEBKIT_VERSION) (KHTML, like Gecko) Version/7.0 Safari/537.71 %@</string>
 	</dict>
 	<key>OmniWeb 4.2</key>
 	<dict>
@@ -235,6 +235,19 @@
 		<string>MacIntel</string>
 		<key>userAgentHeaderFormat</key>
 		<string>Mozilla/5.0 (Macintosh; U; $(ARCH) Mac OS X $(OS_VERSION); en-us) AppleWebKit/528.16 (KHTML, like Gecko) Version/4.0 Safari/528.16</string>
+	</dict>
+	<key>Safari 7.0 (537.71)</key>
+	<dict>
+		<key>AppCodeName</key> <!-- navigator.appCodeName -->
+		<string>Mozilla</string>
+		<key>AppName</key> <!-- navigator.appName -->
+		<string>Netscape</string>
+		<key>AppVersion</key> <!-- navigator.appVersion -->
+		<string>5.0 (Macintosh; Intel Mac OS X 10_9) AppleWebKit/537.71 (KHTML, like Gecko) Version/7.0 Safari/537.71</string>
+		<key>Platform</key> <!-- navigator.platform -->
+		<string>MacIntel</string>
+		<key>userAgentHeaderFormat</key> <!-- navigator.userAgent -->
+		<string>Mozilla/5.0 (Macintosh; $(ARCH) Mac OS X $(OS_VERSION); en-us) AppleWebKit/537.71 (KHTML, like Gecko) Version/7.0 Safari/537.71</string>
 	</dict>
 	<key>iPhone Safari 3.1.1 (v525.20)</key>
 	<dict>

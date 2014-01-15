@@ -163,9 +163,7 @@ static BOOL OATrackingLoopDebug = YES;
             _draggedEventType = NSLeftMouseDragged;
             break;
         default:
-        case NSRightMouseDown:
-        case NSOtherMouseDown:
-            OBFinishPorting; // Need to record which mouse button went down and only signal up when *that* button goes up.
+            OBASSERT_NOT_REACHED("Need to record which mouse button went down and only signal up when *that* button goes up.");
             break;
     }
     

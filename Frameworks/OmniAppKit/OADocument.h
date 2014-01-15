@@ -10,7 +10,12 @@
 #import <AppKit/NSDocument.h>
 
 @interface OADocument : NSDocument
-{
-}
+
+// We use 'id' based object specifiers.
+@property(nonatomic,readonly) NSString *scriptIdentifier;
+@property(nonatomic,readonly) NSString *scriptIdentifierIfSet;
+
+// Block-based version of -canCloseDocumentWithDelegate:shouldCloseSelector:contextInfo:.
+- (void)canCloseDocument:(void (^)(BOOL shouldClose))completion;
 
 @end

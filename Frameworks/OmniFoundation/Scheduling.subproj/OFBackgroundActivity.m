@@ -7,6 +7,7 @@
 
 #import <OmniFoundation/OFBackgroundActivity.h>
 
+#import <OmniFoundation/OFPreference.h>
 #import <Foundation/Foundation.h>
 #import <libkern/OSAtomic.h>
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -39,7 +40,7 @@ static int32_t RunningActivityCount = 0;
 {
     OBINITIALIZE;
     
-    OBInitializeDebugLogLevel(OFBackgroundActivityDebug);
+    OFInitializeDebugLogLevel(OFBackgroundActivityDebug);
 }
 
 + (instancetype)backgroundActivityWithIdentifier:(NSString *)identifier;

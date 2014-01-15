@@ -18,7 +18,6 @@
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFVersionNumber.h>
-#import <OmniUI/OUIAboutPanel.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUIMenuOption.h>
@@ -31,7 +30,6 @@
 #import <sys/sysctl.h>
 
 #import "OUIParameters.h"
-#import "OUISoftwareUpdateController.h"
 
 RCS_ID("$Id$");
 
@@ -41,10 +39,6 @@ RCS_ID("$Id$");
 @implementation OUIAppController
 {
     NSMutableArray *_launchActions;
-
-#if OUI_SOFTWARE_UPDATE_CHECK
-    OUISoftwareUpdateController *_softwareUpdateController;
-#endif
     
     UIPopoverController *_possiblyVisiblePopoverController;
     UIPopoverArrowDirection _possiblyVisiblePopoverControllerArrowDirections;
@@ -225,18 +219,6 @@ static void __iOS7B5CleanConsoleOutput(void)
 + (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line;
 {
     [self _presentError:error file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
-}
-
-- (id)init;
-{
-    if (!(self = [super init]))
-        return nil;
-    
-#if OUI_SOFTWARE_UPDATE_CHECK
-    _softwareUpdateController = [[OUISoftwareUpdateController alloc] init];
-#endif
-    
-    return self;
 }
 
 - (void)resetKeychain;
@@ -697,7 +679,7 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     webController.title = title;
     webController.URL = url;
     UINavigationController *webNavigationController = [[UINavigationController alloc] initWithRootViewController:webController];
-    webNavigationController.navigationBar.barStyle = UIBarStyleBlack;
+    webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
     
     [self.window.rootViewController presentViewController:webNavigationController animated:YES completion:nil];
 }
@@ -721,11 +703,6 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     [self _showWebViewWithURL:helpIndexURL title:webViewTitle];
 }
 
-- (void)_showAboutPanel:(id)sender;
-{
-    [OUIAboutPanel displayAsSheetInViewController:self.window.rootViewController];
-}
-
 - (void)_runTests:(id)sender;
 {
     Class cls = NSClassFromString(@"SenTestSuite");
@@ -736,8 +713,6 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 }
 
 #pragma mark - OUIMenuControllerDelegate
-
-//#define SHOW_ABOUT_MENU_ITEM 1
 
 static UIImage *menuImage(NSString *name)
 {
@@ -754,22 +729,18 @@ static UIImage *menuImage(NSString *name)
     OUIMenuOption *option;
     NSArray *additionalOptions;
     
-#ifdef SHOW_ABOUT_MENU_ITEM
-    option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showAboutPanel:)
-                                                       title:NSLocalizedStringFromTableInBundle(@"About", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
-                                                       image:menuImage(@"OUIMenuItemAbout.png")];
-    [options addObject:option];
-#endif
-    
     option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showOnlineHelp:)
                                                        title:[[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"] table:@"InfoPlist"]
                                                        image:menuImage(@"OUIMenuItemHelp.png")];
     [options addObject:option];
     
-    option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_sendFeedback:)
-                                                       title:[self feedbackMenuTitle]
-                                                       image:menuImage(@"OUIMenuItemSendFeedback.png")];
-    [options addObject:option];
+    NSString *feedbackMenuTitle = [self feedbackMenuTitle];
+    if (![NSString isEmptyString:feedbackMenuTitle]) {
+        option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_sendFeedback:)
+                                                           title:[self feedbackMenuTitle]
+                                                           image:menuImage(@"OUIMenuItemSendFeedback.png")];
+        [options addObject:option];
+    }
     
     option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showReleaseNotes:)
                                                        title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"App menu item title")

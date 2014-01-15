@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		2309E15217D7FE14001F05E1 /* OUILaunchViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 2309E15017D7FE14001F05E1 /* OUILaunchViewController.h */; };
 		2309E15317D7FE14001F05E1 /* OUILaunchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2309E15117D7FE14001F05E1 /* OUILaunchViewController.m */; };
+		230FEFA017FB48BA0081F754 /* OUITextField-ClearButton.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 230FEF9E17FB48990081F754 /* OUITextField-ClearButton.png */; };
+		230FEFA117FB48BA0081F754 /* OUITextField-ClearButton@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 230FEF9F17FB48990081F754 /* OUITextField-ClearButton@2x.png */; };
 		23786B4F179DCBAE00AE06A8 /* OUIDocumentTitleView.h in Headers */ = {isa = PBXBuildFile; fileRef = 23786B4D179DCBAE00AE06A8 /* OUIDocumentTitleView.h */; };
 		23786B50179DCBAE00AE06A8 /* OUIDocumentTitleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 23786B4E179DCBAE00AE06A8 /* OUIDocumentTitleView.m */; };
 		23848D5D17C6CAE9003FA7BD /* OUIImportWebDAVAccountListViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 23848D5B17C6CAE9003FA7BD /* OUIImportWebDAVAccountListViewController.h */; };
@@ -210,6 +212,8 @@
 			dstPath = "Resources/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				230FEFA017FB48BA0081F754 /* OUITextField-ClearButton.png in Copy Resources */,
+				230FEFA117FB48BA0081F754 /* OUITextField-ClearButton@2x.png in Copy Resources */,
 				343190FA17DBE1C20089BDD6 /* OUIServerAccountValidationSuccess.png in Copy Resources */,
 				343190FB17DBE1C20089BDD6 /* OUIServerAccountValidationSuccess@2x.png in Copy Resources */,
 				27BA615117D148BB00DD4B3D /* OUIMenuItemConvertToFile.png in Copy Resources */,
@@ -325,6 +329,8 @@
 /* Begin PBXFileReference section */
 		2309E15017D7FE14001F05E1 /* OUILaunchViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUILaunchViewController.h; sourceTree = SOURCE_ROOT; };
 		2309E15117D7FE14001F05E1 /* OUILaunchViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUILaunchViewController.m; sourceTree = SOURCE_ROOT; };
+		230FEF9E17FB48990081F754 /* OUITextField-ClearButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITextField-ClearButton.png"; sourceTree = "<group>"; };
+		230FEF9F17FB48990081F754 /* OUITextField-ClearButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITextField-ClearButton@2x.png"; sourceTree = "<group>"; };
 		23786B4D179DCBAE00AE06A8 /* OUIDocumentTitleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentTitleView.h; sourceTree = SOURCE_ROOT; };
 		23786B4E179DCBAE00AE06A8 /* OUIDocumentTitleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentTitleView.m; sourceTree = SOURCE_ROOT; };
 		23848D5B17C6CAE9003FA7BD /* OUIImportWebDAVAccountListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIImportWebDAVAccountListViewController.h; sourceTree = SOURCE_ROOT; };
@@ -597,6 +603,8 @@
 		3424E52916780DAA0019328E /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				230FEF9E17FB48990081F754 /* OUITextField-ClearButton.png */,
+				230FEF9F17FB48990081F754 /* OUITextField-ClearButton@2x.png */,
 				27AD126317D7E1D200758C67 /* OmniUIDocumentImages.h */,
 				27AD126517D7E2B700758C67 /* OmniUIDocumentImages.m */,
 				4ABDA3F11733F80400369B3C /* OmniPresenceConfigDocumentIcon-128.png */,

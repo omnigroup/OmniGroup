@@ -6,9 +6,11 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniAppKit/OATextAttachmentCell.h>
+#import <OmniFoundation/OFXMLDocument.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
+#import <CoreGraphics/CoreGraphics.h>
 #import <OmniBase/OBUtilities.h>
 #import <OmniBase/rcsid.h>
 
@@ -34,6 +36,31 @@ RCS_ID("$Id$");
     return CGPointZero;
 }
 
+- (void)appendXMLForNonDefaultCellInformation:(OFXMLDocument *)doc;
+{
+    // Nothing; subclasses should override this to write any extra attributes
+}
+
 @end
 
 #endif
+
+@implementation OATextAttachmentCell (OATextAttachmentCellXML)
+
++ (void)appendXMLForNonDefaultCellInformation:(OFXMLDocument *)doc image:(id)image;
+{
+    if (image) {
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+        CGImageRef imageRef = (CGImageRef)image;
+        CGSize size = CGSizeMake(CGImageGetWidth(imageRef), CGImageGetHeight(imageRef));
+#else
+        CGSize size = [(NSImage *)image size];
+#endif
+        OBASSERT(size.width >= FLT_MIN && size.width <= FLT_MAX);
+        OBASSERT(size.height >= FLT_MIN && size.height <= FLT_MAX);
+        [doc setAttribute:@"width" real:(float)size.width];
+        [doc setAttribute:@"height" real:(float)size.height];
+    }
+}
+
+@end

@@ -9,22 +9,9 @@
 
 #import <OmniAppKit/OAPreferenceClient.h>
 
-@class OSUItem;
-@class NSButton, NSPopUpButton, NSTextField, NSTextView;
-@class WebView;
-
 @interface OSUPreferenceClient : OAPreferenceClient
-{
-    IBOutlet NSTextField   *infoTextField;
-    IBOutlet NSButton      *enableButton;
-    IBOutlet NSPopUpButton *frequencyPopup;
-    IBOutlet NSButton      *checkNowButton;
-    IBOutlet NSButton      *includeHardwareButton;
-    IBOutlet WebView       *systemConfigurationWebView;
-}
 
 - (IBAction)checkNow:(id)sender;
 - (IBAction)showSystemConfigurationDetailsSheet:(id)sender;
-- (IBAction)dismissSystemConfigurationDetailsSheet:(id)sender;
 
 @end

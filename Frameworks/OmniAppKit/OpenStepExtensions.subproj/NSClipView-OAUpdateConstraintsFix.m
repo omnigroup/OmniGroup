@@ -8,6 +8,7 @@
 #import <AppKit/NSClipView.h>
 #import <Foundation/Foundation.h>
 #import <OmniBase/OBUtilities.h>
+#import <OmniAppKit/OAVersion.h>
 
 RCS_ID("$Id$")
 
@@ -32,11 +33,16 @@ RCS_ID("$Id$")
 
 static NSMutableSet *ClipViewsCurrentlyUpdatingConstraints;
 static void (*_original_updateConstraints)(id self, SEL _cmd);
+static void (*_original_setAutoresizingMask)(id self, SEL _cmd, NSUInteger mask);
 
-- (void)setAutoresizingMask:(NSUInteger)mask;
+- (void)_replacement_setAutoresizingMask:(NSUInteger)mask;
 {
-    if (!([ClipViewsCurrentlyUpdatingConstraints containsObject:self]))
-        [super setAutoresizingMask:mask];
+    if (!([ClipViewsCurrentlyUpdatingConstraints containsObject:self])) {
+        if (_original_setAutoresizingMask)
+            _original_setAutoresizingMask(self, _cmd, mask);
+        else
+            [super setAutoresizingMask:mask];
+    }
 }
 
 - (void)_replacement_updateConstraints;
@@ -50,9 +56,17 @@ static void (*_original_updateConstraints)(id self, SEL _cmd);
 
 + (void)performPosing;
 {
-    _original_updateConstraints = (typeof(_original_updateConstraints))OBReplaceMethodImplementationWithSelector(self, @selector(updateConstraints), @selector(_replacement_updateConstraints));
-    
-    ClipViewsCurrentlyUpdatingConstraints = [[NSMutableSet alloc] init];
+    if (NSAppKitVersionNumber < OAAppKitVersionNumber10_9) {
+        _original_updateConstraints = (typeof(_original_updateConstraints))OBReplaceMethodImplementationWithSelector(self, @selector(updateConstraints), @selector(_replacement_updateConstraints));
+        
+        if (OBClassImplementingMethod(self, @selector(setAutoresizingMask:)) == self) {
+            _original_setAutoresizingMask = (typeof(_original_setAutoresizingMask))OBReplaceMethodImplementationWithSelector(self, @selector(setAutoresizingMask:), @selector(_replacement_setAutoresizingMask:));
+        } else {
+            OBRegisterInstanceMethodWithSelector(self, @selector(_replacement_setAutoresizingMask:), @selector(setAutoresizingMask:));
+        }
+        
+        ClipViewsCurrentlyUpdatingConstraints = [[NSMutableSet alloc] init];
+    }
 }
 
 @end

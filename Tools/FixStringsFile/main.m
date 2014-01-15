@@ -192,7 +192,7 @@ static NSData *fixedStringRepresentationForStringsFile(NSData *fileData, NSStrin
     uint8_t byte0 = ((const uint8_t *)[fileData bytes])[0];
     uint8_t byte1 = ((const uint8_t *)[fileData bytes])[1];
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     if (byte0 == 'b' && byte1 == 'p') {
         id plist = [NSPropertyListSerialization propertyListWithData:fileData options:0 format:NULL error:&error];
         if (!plist) {
@@ -241,7 +241,7 @@ static NSData *fixedStringRepresentationForStringsFile(NSData *fileData, NSStrin
 	    exit(1);
 	}
         
-	NSString *commentString = nil;
+	__autoreleasing NSString *commentString = nil;
 	if (![scanner scanUpToString:@"*/" intoString:&commentString]) {
 	    NSLog(@"Unterminated comment!");
             return nil;
@@ -261,7 +261,7 @@ static NSData *fixedStringRepresentationForStringsFile(NSData *fileData, NSStrin
 	}
 	[comments sortUsingSelector:@selector(localizedStandardCompare:)];
 	
-	NSString *keyValue;
+	__autoreleasing NSString *keyValue;
 	if (![scanner scanUpToString:@"/*" intoString:&keyValue]) {
 	    NSLog(@"Missing key-value pair!");
             return nil;
@@ -335,7 +335,7 @@ static void fixStringsFile(NSString *path, NSString *outputEncodingName, NSStrin
     else
         outputPath = path;
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     if (![resultData writeToFile:outputPath options:NSDataWritingAtomic error:&error]) {
         NSLog(@"Unable to write '%@': %@", outputPath, error);
         exit(1);

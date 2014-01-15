@@ -355,8 +355,10 @@ static NSSize calendarImageSize;
 - (void)_configureTimePickerFromFormatter:(NSFormatter *)formatter;
 {
     NSWindow *popupWindow = [self window];
-    
-    if ([formatter isKindOfClass:[NSDateFormatter class]] && [(NSDateFormatter *)formatter timeStyle] == kCFDateFormatterNoStyle) {
+
+    // we want to display the time for all custom date formatters.
+    BOOL isCustomDateFormatter = ([formatter isKindOfClass:[NSDateFormatter class]] && [(NSDateFormatter *)formatter dateStyle] == kCFDateFormatterNoStyle && [(NSDateFormatter *)formatter timeStyle] == kCFDateFormatterNoStyle);
+    if ([formatter isKindOfClass:[NSDateFormatter class]] && (!isCustomDateFormatter) && [(NSDateFormatter *)formatter timeStyle] == kCFDateFormatterNoStyle) {
         if ([timePicker superview]) {
             NSRect frame = popupWindow.frame;
             frame.size.height -= NSHeight([timePicker frame]);

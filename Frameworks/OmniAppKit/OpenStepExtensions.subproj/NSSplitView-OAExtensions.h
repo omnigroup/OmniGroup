@@ -10,9 +10,9 @@
 #import <AppKit/NSSplitView.h>
 
 @interface NSSplitView (OAExtensions)
-- (CGFloat)positionOfDividerAtIndex:(NSInteger)dividerIndex;
+- (CGFloat)oa_positionOfDividerAtIndex:(NSInteger)dividerIndex;
 
-// positionOfDividerAtIndex: is better API.  But not deprecating this since it supports old file formats (OmniPlan-1.x)
+// -oa_positionOfDividerAtIndex: is better API.  But not deprecating this since it supports old file formats (OmniPlan-1.x)
 - (CGFloat)fraction;
 
 - (void)animateSubviewResize:(NSView *)resizingSubview startValue:(CGFloat)startValue endValue:(CGFloat)endValue;

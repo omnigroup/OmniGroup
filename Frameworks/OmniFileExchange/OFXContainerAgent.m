@@ -890,10 +890,11 @@ tryAgain:
         NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:filePresenter];
         if (![coordinator moveItemAtURL:originalFileURL toURL:updatedFileURL createIntermediateDirectories:YES error:&moveError]) {
             // Maybe hit in http://rt.omnigroup.com/Ticket/Display.html?id=886781 and http://rt.omnigroup.com/Ticket/Display.html?id=886777
+            // Definitely hit in http://rt.omnigroup.com/Ticket/Attachment/14329504/8130862/
+            // Presumably we've downloaded conflict resolution done on another machine, but there have been multiple conflicts or conflicting resolutions. Punt instead of OBFinishPorting, and we'll hopefully retry on the next sync when we have more info.
             [moveError log:@"Error moving %@ to %@", originalFileURL, updatedFileURL];
             if (outError)
                 *outError = moveError;
-            OBFinishPorting; // If the target already exists, we need to move it aside as a new conflict document (and then queue an upload for it).
             return NO;
         } else {
             OFXNoteContentMoved(self, originalFileURL, updatedFileURL);

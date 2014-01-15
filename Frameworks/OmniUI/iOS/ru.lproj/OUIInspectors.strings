@@ -1,0 +1,68 @@
+/* font size label format string in points */
+"%@ points" = "%@ точек";
+
+/* title format for color component slider */
+"<alpha title+value>" = "Непрозрачность: %d%%";
+
+/* title format for color component slider */
+"<blue title+value>" = "Синий: %d";
+
+/* title format for color component slider */
+"<brightness title+value>" = "Яркость: %d%%";
+
+/* title format for color component slider */
+"<green title+value>" = "Зеленый: %d";
+
+/* title format for color component slider */
+"<hue title+value>" = "Оттенок: %d°";
+
+/* title format for color component slider */
+"<red title+value>" = "Красный: %d";
+
+/* title format for color component slider */
+"<saturation title+value>" = "Насыщенность: %d%%";
+
+/* title format for color component slider */
+"<white title+value>" = "Белый: %d%%";
+
+/* Title for section of font list */
+"All Fonts" = "Все шрифты";
+
+/* Title above color swatch picker for the text color. */
+"Background color" = "Цвет фона";
+
+/* color inspector title */
+"Color" = "Цвет";
+
+/* Title for the font family list in the inspector */
+"Font" = "Шрифт";
+
+/* Increment font size button accessibility label */
+"Font bigger" = "Увеличить шрифт";
+
+/* Decrement font size button accessibility label */
+"Font smaller" = "Уменьшить шрифт";
+
+/* popover inspector label title for mulitple selection */
+"Multiple Selection" = "Множественный выбор";
+
+/* Descriptive text on the no color pane of the color picker */
+"No color selected" = "Цвет не выбран";
+
+/* popover inspector label title for no selected objects */
+"No Selection" = "Ничего не выбрано";
+
+/* Title for section of font list */
+"Recommended Fonts" = "Рекомендуемые шрифты";
+
+/* Name for the variant of a font with out any special attributes */
+"Regular" = "Обычная";
+
+/* Label for font size controls */
+"Size" = "Размер";
+
+/* Title above color swatch picker for the text color. */
+"Text color" = "Цвет текста";
+
+/* Inspector title */
+"Text Style" = "Стиль текста";

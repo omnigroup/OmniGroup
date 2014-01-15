@@ -62,19 +62,24 @@
 + (BOOL)showAllInspectors;
 + (BOOL)hideAllInspectors;
 + (void)toggleAllInspectors;
-+ (void)updateInspector;
-+ (void)updateInspectionSetImmediatelyAndUnconditionally;
-+ (void)clearInspectionSet;
+
+- (void)updateInspectorForWindow:(NSWindow *)window;
+- (void)updateInspectionSetImmediatelyAndUnconditionallyForWindow:(NSWindow *)window;
+- (void)clearInspectionSet;
 
 - (BOOL)hasSingleInspector;
 
 - (BOOL)hasVisibleInspector;
 - (void)forceInspectorsVisible:(NSSet *)preferred;
 
-// This method is here so that it can be overridden by app-specific subclasses of OIInspectorRegistry
-+ (OIInspectorController *)controllerWithInspector:(OIInspector *)inspector;
+/// Creates a new OIInspectorController for the given OIInspector. This method is here so that it can be overridden by app-specific subclasses of OIInspectorRegistry. If the inspector already has a controller registered in this registry, this method will still create a new controller and return it, duplicating the inspector in the registry; it will never return an existing controller.
+- (OIInspectorController *)controllerWithInspector:(OIInspector *)inspector;
 
+/// Finds an existing OIInspectorController for the given OIInspector's identifier. This method will never create a new controller, and returns nil if the identifier is not associated with an existing controller's inspector.
 - (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
+
+/// Return all the OIInspectorController instances registered with this registry.
+- (NSArray *)controllers;
 
 - (NSArray *)inspectedObjects;
 - (NSArray *)copyObjectsInterestingToInspector:(OIInspector *)anInspector;
@@ -115,6 +120,17 @@
 
 @property (nonatomic, readonly) BOOL applicationDidFinishRestoringWindows;
 - (void)addGroupToShowAfterWindowRestoration:(OIInspectorGroup *)group;
+
+@end
+
+// In general, class methods in this category call through to their instance method counterparts on the shared registry
+@interface OIInspectorRegistry (Compatibility)
+
++ (void)updateInspector;
++ (void)updateInspectionSetImmediatelyAndUnconditionally;
++ (void)clearInspectionSet;
+
++ (OIInspectorController *)controllerWithInspector:(OIInspector *)inspector;
 
 @end
 

@@ -1,0 +1,225 @@
+/* abbreviated string for bytes format */
+"%0.1f GB" = "%0.1f GB";
+
+/* abbreviated string for gigahertz format */
+"%0.1f GHz" = "%0.1f GHz";
+
+/* abbreviated string for bytes format */
+"%0.1f kB" = "%0.1f kB";
+
+/* abbreviated string for kilohertz format */
+"%0.1f KHz" = "%0.1f kHz";
+
+/* abbreviated string for bytes format */
+"%0.1f MB" = "%0.1f MB";
+
+/* abbreviated string for megahertz format */
+"%0.1f MHz" = "%0.1f MHz";
+
+/* abbreviated string for bytes format */
+"%0.1f PB" = "%0.1f PB";
+
+/* abbreviated string for bytes format */
+"%0.1f TB" = "%0.1f TB";
+
+/* abbreviated string for terahertz format */
+"%0.1f THz" = "%0.1f THz";
+
+/* abbreviated string for bytes format */
+"%d bytes" = "%d bytes";
+
+/* abbreviated string for hertz format */
+"%u Hz" = "%u Hz";
+
+/* approximate time interval: more than one hour */
+"about %.1f hours" = "ongeveer %.1f uur";
+
+/* approximate time interval: some minutes since start or until finish */
+"about %d minutes" = "ongeveer %d minuten";
+
+/* approximate time interval: seconds since start or until finish */
+"about %d seconds" = "ongeveer %d seconden";
+
+/* approximate time interval: one minute */
+"about a minute" = "ongeveer een minuut";
+
+/* approximate time interval: one hour */
+"about an hour" = "ongeveer een uur";
+
+/* error reason */
+"Another application has overridden the lock at \"%@\"." = "De vergrendeling op \"%@\" is opgeheven door een andere toepassing.";
+
+/* invalid bundle reason */
+"Bundle is obsolete" = "Verouderde bundel";
+
+/* invalid bundle reason */
+"Bundle requires additional software" = "Voor de bundel is extra software vereist";
+
+/* compression error reason */
+"bzip2 library returned error code %d when finishing compression. %s." = "bzip2-bibliotheek heeft een foutcode %1$d geretourneerd bij het voltooien van de compressie. %2$s.";
+
+/* decompression error reason */
+"bzip2 library returned error code %d when reading data. %s." = "bzip2-bibliotheek heeft een foutcode %1$d geretourneerd bij het lezen van de gegevens. %2$s.";
+
+/* compression error reason */
+"bzip2 library returned error code %d when writing data. %s." = "bzip2-bibliotheek heeft een foutcode %1$d geretourneerd bij het schrijven van de gegevens. %2$s.";
+
+/* OFLockFile recovery option */
+"Cancel" = "Annuleer";
+
+/* error recovery option */
+"Cancel <error recovery>" = "Annuleer";
+
+/* error description */
+"Cannot create socket." = "Kan socket niet aanmaken.";
+
+/* Error message when mkdir() fails
+   Error message when mkdir() will fail because there's a file in the way
+   Error message when stat() fails when trying to create a directory tree */
+
+
+"Could not create directory" = "Map kan niet worden gemaakt";
+
+/* time span formatter span */
+"d" = "d";
+
+/* time span formatter span */
+"day" = "dag";
+
+/* time span formatter span */
+"days" = "dgn";
+
+/* invalid bundle reason */
+"Duplicate bundle name" = "Bundelnaam komt dubbel voor";
+
+/* exception reason */
+"Element '%@' not allowed at path: %@" = "Element '%1$@' niet toegestaan in pad: %2$@";
+
+/* error reason */
+"Failed to create directory for lock file at \"%@\"." = "Map voor vergrendelingsbestand op '%@' kan niet worden gemaakt.";
+
+/* error reason */
+"Failed to serialize lock information.  %@" = "Vergrendelingsinformatie kan niet worden geserialiseerd.  %@";
+
+/* error reason */
+"Failed to write lock file.  %@" = "Vergrendelingsbestand kan niet worden geschreven.  %@";
+
+/* time span formatter span */
+"h" = "u";
+
+/* time span formatter span */
+"hour" = "uur";
+
+/* time span formatter span */
+"hours" = "uur";
+
+/* formatter input error */
+"Invalid time span format" = "Ongeldige structuur van tijdbereik";
+
+/* local bundle path readable string */
+"local configuration file" = "lokaal configuratiebestand";
+
+/* time span formatter span */
+"m" = "m";
+
+/* time span formatter span */
+"minute" = "minuut";
+
+/* time span formatter span */
+"minutes" = "minuten";
+
+/* time span formatter span */
+"mo" = "md";
+
+/* time span formatter span */
+"month" = "maand";
+
+/* time span formatter span */
+"months" = "mnd.";
+
+/* error reason */
+"No root element was found" = "Geen rootelement gevonden";
+
+/* invalid bundle reason */
+"Not a valid bundle" = "Geen geldige bundel";
+
+/* OFLockFile recovery option */
+"Override Lock" = "Hef vergrendeling op";
+
+/* time span formatter span */
+"s" = "s";
+
+/* time span formatter span */
+"second" = "seconde";
+
+/* time span formatter span */
+"seconds" = "seconden";
+
+/* server certificate rejected */
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Het servercertificaat voor “%@” lijkt niet geldig. Deze site is mogelijk niet betrouwbaar. Wilt u toch een verbinding maken?";
+
+/* server certificate out of date */
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "Het servercertificaat voor “%@” heeft een ongeldige datum. Het kan vervallen of nog niet actief zijn. Wilt u toch een verbinding maken?";
+
+/* server certificate has unknown root */
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "Het servercertificaat voor “%@” is niet ondertekend door een rootserver. Deze site is mogelijk niet betrouwbaar. Wilt u toch een verbinding maken?";
+
+/* server certificate not yet valid */
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "Het servercertificaat voor “%@” is nog niet geldig. Deze site is mogelijk niet betrouwbaar. Wilt u toch een verbinding maken?";
+
+/* server certificate untrusted */
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Het servercertificaat voor “%@” is ondertekend door een niet-vertrouwde rootserver. Deze site is mogelijk niet betrouwbaar. Wilt u toch een verbinding maken?";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "De vergrendeling is uitgevoerd door %1$@ met de computer “%2$@” op %3$@ om %4$@.";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Deze vergrendeling is uitgevoerd door %1$@ met de computer \"%2$@\" op %3$@ om %4$@.\n\nU kunt deze vergrendeling opheffen, maar daardoor kan de andere toepassing gegevens verliezen als deze nog steeds actief is.";
+
+/* compression error description */
+"Unable to compress data." = "Gegevenscompressie niet mogelijk.";
+
+/* decompression error description */
+"Unable to decompress data." = "Gegevensdecompressie niet mogelijk.";
+
+/* decompression exception format */
+"Unable to decompress gzip data: invalid header" = "Decompressie gzip-gegevens niet mogelijk: ongeldige koptekst";
+
+/* compression error description */
+"Unable to initialize compression" = "Comprimeren kan niet worden gestart";
+
+/* decompression error description */
+"Unable to initialize decompression" = "Decomprimeren kan niet worden gestart";
+
+/* error description */
+"Unable to lock document." = "Document kan niet worden vergrendeld.";
+
+/* decompression error reason */
+"unrecognized compression format." = "compressiestructuur niet herkend.";
+
+/* time span formatter span */
+"w" = "w";
+
+/* error description */
+"Warning encountered while loading XML." = "Waarschuwing bij laden van XML.";
+
+/* time span formatter span */
+"week" = "week";
+
+/* time span formatter span */
+"weeks" = "wkn";
+
+/* time span formatter span */
+"y" = "j";
+
+/* time span formatter span */
+"year" = "jaar";
+
+/* time span formatter span */
+"years" = "jaar";
+
+/* zlib error reason */
+"zlib returned error code %d." = "zlib heeft foutcode %d geretourneerd.";
+
+/* zlib error reason */
+"zlib returned error code %d. %s." = "zlib heeft foutcode %1$d geretourneerd. %2$s.";

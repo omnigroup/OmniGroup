@@ -1,0 +1,35 @@
+/* error description */
+"Could not access the WebDAV location <%@>." = "Impossible d’accéder à l’emplacement WebDAV <%@>.";
+
+/* Text for HTTP error code 507 (insufficient storage) */
+"insufficient storage" = "espace de stockage insuffisant";
+
+/* error reason - listing contents of a nonexistent directory */
+"No document exists at \"%@\"." = "Aucun document n’existe dans “%@”.";
+
+/* error reason */
+"No such file \"%@\"." = "Aucun fichier “%@”.";
+
+/* error suggestion */
+"Please check that the user name and password you provided are correct." = "Assurez-vous que le mot de passe et le nom d’utilisateur que vous avez indiqués sont corrects.";
+
+/* error reason */
+"Please make sure that the account information is correct." = "Assurez-vous que les informations de compte sont correctes.";
+
+/* error reason */
+"Please make sure that the destination folder exists." = "Assurez-vous que le dossier de destination existe.";
+
+/* error reason */
+"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\"." = "Le serveur %1$@ a renvoyé “%2$@” (%3$d) en réponse à une demande de “%4$@ %5$@”.";
+
+/* error description */
+"Unable to delete file." = "Impossible de supprimer le fichier.";
+
+/* error description */
+"Unable to perform WebDAV operation." = "Impossible d’effectuer l’opération WebDAV.";
+
+/* error description */
+"Unable to read document." = "Impossible de lire le document.";
+
+/* Error description */
+"WebDAV server failed conformance test." = "Le serveur WebDAV a échoué au test de conformité.";

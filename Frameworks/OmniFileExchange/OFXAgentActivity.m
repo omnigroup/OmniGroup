@@ -166,7 +166,8 @@ static void _stopObservingAccountActivity(OFXAgentActivity *self, OFXAccountActi
         } else if (!_isActive && _backgroundActivity && !_backgroundActivityFinishedTimer) {
             _backgroundActivityFinishedTimer = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(_finishBackgroundActivityTimerFired:) userInfo:nil repeats:NO];
 #if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || (defined(MAC_OS_X_VERSION_10_9) && MAC_OS_X_VERSION_10_9 >= MAC_OS_X_VERSION_MIN_REQUIRED)
-            [_backgroundActivityFinishedTimer setTolerance:1];
+            if ([_backgroundActivityFinishedTimer respondsToSelector:@selector(setTolerance:)])
+                [_backgroundActivityFinishedTimer setTolerance:1];
 #endif
         }
     }

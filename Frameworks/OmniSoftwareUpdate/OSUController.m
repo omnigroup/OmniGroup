@@ -23,6 +23,7 @@
 #import "OSUItem.h"
 #import "OSUCheckOperation.h"
 #import "OSUSendFeedbackErrorRecovery.h"
+#import "OSUPrivacyAlertWindowController.h"
 
 RCS_ID("$Id$");
 
@@ -37,19 +38,7 @@ NSString * const OSUReleaseMajorSummaryKey = @"majorReleaseSummary";
 NSString * const OSUReleaseMinorSummaryKey = @"minorReleaseSummary";
 NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  Do we really want this, or just the majorReleaseSummary?
 
-
-@interface OSUController (/*Private*/)
-@property (retain, nonatomic) IBOutlet NSWindow *privacyNoticePanel;
-- (BOOL)_loadNib:(BOOL)hasSeenPreviousVersion;
-@end
-
 @implementation OSUController
-
-- (void)dealloc;
-{
-    [privacyNoticePanel release];
-    [super dealloc];
-}
 
 // API
 
@@ -125,28 +114,9 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
 
 - (OSUPrivacyNoticeResult)checker:(OSUChecker *)checker runPrivacyNoticePanelHavingSeenPreviousVersion:(BOOL)hasSeenPreviousVersion;
 {
-    if (![self _loadNib:hasSeenPreviousVersion])
-        return OSUPrivacyNoticeResultShowPreferences;
+    OSUPrivacyAlertWindowController *alert = [[[OSUPrivacyAlertWindowController alloc] init] autorelease];
+    return [alert runHavingSeenPreviousVersion:hasSeenPreviousVersion];
     
-    // Prepopulate the checkbox with your current setting.
-    [enableHardwareCollectionButton setState:[[OSUPreferences includeHardwareDetails] boolValue]];
-    
-    OSUPrivacyNoticeResult rc = (OSUPrivacyNoticeResult)[NSApp runModalForWindow:privacyNoticePanel];
-    [privacyNoticePanel orderOut:nil];
-    
-    // Store what they said either way
-    [[OSUPreferences includeHardwareDetails] setBoolValue:[enableHardwareCollectionButton state]];
-    [[NSUserDefaults standardUserDefaults] synchronize]; // Make sure we don't lose this one, espeically if they turn it off!
-    
-    if (rc != OSUPrivacyNoticeResultOK) {
-        OBASSERT(rc == OSUPrivacyNoticeResultShowPreferences);
-
-        OAPreferenceController *prefsController = [OAPreferenceController sharedPreferenceController];
-        [prefsController showPreferencesPanel:nil];
-        [prefsController setCurrentClientByClassName:NSStringFromClass([OSUPreferences class])];
-    }
-    
-    return rc;
 }
 
 - (void)checker:(OSUChecker *)checker check:(OSUCheckOperation *)op failedWithError:(NSError *)error;
@@ -218,47 +188,6 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
     
     if (!quiet)
         [availableUpdateController showWindow:nil];
-}
-
-#pragma mark -
-#pragma mark Actions
-
-- (IBAction)privacyNoticePanelOK:(id)sender;
-{
-    [NSApp stopModalWithCode:OSUPrivacyNoticeResultOK];
-}
-
-- (IBAction)privacyNoticePanelShowPreferences:(id)sender;
-{
-    [NSApp stopModalWithCode:OSUPrivacyNoticeResultShowPreferences];
-}
-
-#pragma mark - Private
-
-@synthesize privacyNoticePanel=privacyNoticePanel;
-
-- (BOOL)_loadNib:(BOOL)hasSeenPreviousVersion;
-{
-    if (privacyNoticePanel)
-        return YES;
-
-    if (![[OSUController bundle] loadNibNamed:@"OSUController" owner:self topLevelObjects:NULL]) {
-        NSLog(@"Unable to load nib");
-        return NO;
-    }
-
-    // If we *had* seen the panel before, replace the title string
-    NSString *titleFormat = [privacyNoticeTitleTextField stringValue];
-    if (hasSeenPreviousVersion)
-	titleFormat = NSLocalizedStringFromTableInBundle(@"This version of %@ sends additional information using your Internet connection (when active) to check for new and updated versions of itself.", @"OmniSoftwareUpdate", OMNI_BUNDLE, "text of dialog box informing user of change in software update query");
-    
-    
-    NSString *bundleName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-    [privacyNoticeTitleTextField setStringValue:[NSString stringWithFormat:titleFormat, bundleName]];
-    [privacyNoticeMessageTextField setStringValue:[NSString stringWithFormat:[privacyNoticeMessageTextField stringValue], bundleName]];
-    [privacyNoticeAppIconImageView setImage:[NSApp applicationIconImage]];
-    
-    return YES;
 }
 
 @end

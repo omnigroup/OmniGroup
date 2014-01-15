@@ -11,9 +11,6 @@
 
 @class OFKnownKeyDictionaryTemplate;
 
-typedef void (*OFMutableKnownKeyDictionaryApplier)(id key, id value, void *context);
-typedef void (*OFMutableKnownKeyDictionaryPairApplier)(id key, id value1, id value2, void *context);
-
 @interface OFMutableKnownKeyDictionary : NSMutableDictionary
 /*.doc.
 This subclass of NSMutableDictionary should be used when the set of possible keys is small and known ahead of time.  Due to the variable size of instances, this class cannot be easily subclassed.
@@ -37,9 +34,7 @@ Returns a new retained mutable copy of the receive.  This is named as it is so t
 
 - (void)addLocallyAbsentValuesFromDictionary:(OFMutableKnownKeyDictionary *)fromDictionary;
 
-- (void)applyFunction:(OFMutableKnownKeyDictionaryApplier)function context:(void *)context;
-
-- (void)applyPairFunction:(OFMutableKnownKeyDictionaryPairApplier)function pairDictionary:(OFMutableKnownKeyDictionary *)pairDictionary context:(void *)context;
+- (void)enumerateKeysAndObjectPairsWithDictionary:(OFMutableKnownKeyDictionary *)pairDictionary usingBlock:(void (^)(id key, id object1, id object2, BOOL *))block;
 
 @end
 

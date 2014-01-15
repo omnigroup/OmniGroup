@@ -744,15 +744,17 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     UITextPosition *position = self.selectedTextRange.start;
     UITextPosition *upPosition = [self _closestPositionByMovingUpFromPosition:position];
     
-    if ([self comparePosition:upPosition toPosition:position] == NSOrderedSame ||
-        [self comparePosition:upPosition toPosition:self.beginningOfDocument] == NSOrderedSame) {
+    if ([self.delegate respondsToSelector:@selector(textViewMoveUpAtTop:)] &&
+        ([self comparePosition:upPosition toPosition:position] == NSOrderedSame ||
+        [self comparePosition:upPosition toPosition:self.beginningOfDocument] == NSOrderedSame)) {
         [self.delegate textViewMoveUpAtTop:self];
     } else {
         // This calls -textViewDidChangeSelection:
         self.selectedTextRange = [self textRangeFromPosition:upPosition toPosition:upPosition];
     }
 #else
-    [self.delegate textViewMoveUpAtTop:self];
+    if ([self.delegate respondsToSelector:@selector(textViewMoveUpAtTop:)])
+        [self.delegate textViewMoveUpAtTop:self];
 #endif
 }
 
@@ -763,26 +765,30 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     UITextPosition *position = self.selectedTextRange.start;
     UITextPosition *downPosition = [self _closestPositionByMovingDownFromPosition:position];
     
-    if ([self comparePosition:downPosition toPosition:position] == NSOrderedSame ||
-        [self comparePosition:downPosition toPosition:self.endOfDocument] == NSOrderedSame) {
+    if ([self.delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)] &&
+        ([self comparePosition:downPosition toPosition:position] == NSOrderedSame ||
+         [self comparePosition:downPosition toPosition:self.endOfDocument] == NSOrderedSame)) {
         [self.delegate textViewMoveDownAtBottom:self];
     } else {
         // This calls -textViewDidChangeSelection:
         self.selectedTextRange = [self textRangeFromPosition:downPosition toPosition:downPosition];
     }
 #else
-    [self.delegate textViewMoveDownAtBottom:self];
+    if ([self.delegate respondsToSelector:@selector(textViewMoveDownAtBottom:)])
+        [self.delegate textViewMoveDownAtBottom:self];
 #endif
 }
 
 - (void)moveRightAtEnd:(id)sender;
 {
-    [self.delegate textViewMoveRightAtEnd:self];
+    if ([self.delegate respondsToSelector:@selector(textViewMoveRightAtEnd:)])
+        [self.delegate textViewMoveRightAtEnd:self];
 }
 
 - (void)moveLeftAtBeginning:(id)sender;
 {
-    [self.delegate textViewMoveLeftAtBeginning:self];
+    if ([self.delegate respondsToSelector:@selector(moveLeftAtBeginning:)])
+        [self.delegate textViewMoveLeftAtBeginning:self];
 }
 
 - (void)moveToBeginningOfParagraph:(id)sender;
@@ -1210,7 +1216,8 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 
     NSAttributedString *attributedString = nil;
     id <OUITextViewDelegate> delegate = self.delegate;
-    if ([delegate respondsToSelector:@selector(textView:readTextFromItemSet:inPasteboard:)]) {
+    if ([delegate respondsToSelector:@selector(textView:readTextFromItemSet:inPasteboard:)] &&
+        [delegate respondsToSelector:@selector(textViewReadablePasteboardTypes:)]) {
         NSArray *types = [delegate textViewReadablePasteboardTypes:self];
         NSIndexSet *itemSet = [pasteboard itemSetWithPasteboardTypes:types];
         if ([itemSet count] > 0)

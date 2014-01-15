@@ -1,0 +1,225 @@
+/* abbreviated string for bytes format */
+"%0.1f GB" = "%0.1f ГБ";
+
+/* abbreviated string for gigahertz format */
+"%0.1f GHz" = "%0.1f ГГц";
+
+/* abbreviated string for bytes format */
+"%0.1f kB" = "%0.1f КБ";
+
+/* abbreviated string for kilohertz format */
+"%0.1f KHz" = "%0.1f кГц";
+
+/* abbreviated string for bytes format */
+"%0.1f MB" = "%0.1f МБ";
+
+/* abbreviated string for megahertz format */
+"%0.1f MHz" = "%0.1f МГц";
+
+/* abbreviated string for bytes format */
+"%0.1f PB" = "%0.1f ПБ";
+
+/* abbreviated string for bytes format */
+"%0.1f TB" = "%0.1f ТБ";
+
+/* abbreviated string for terahertz format */
+"%0.1f THz" = "%0.1f ТГц";
+
+/* abbreviated string for bytes format */
+"%d bytes" = "%d байт";
+
+/* abbreviated string for hertz format */
+"%u Hz" = "%u Гц";
+
+/* approximate time interval: more than one hour */
+"about %.1f hours" = "около %.1f часов";
+
+/* approximate time interval: some minutes since start or until finish */
+"about %d minutes" = "около %d минут";
+
+/* approximate time interval: seconds since start or until finish */
+"about %d seconds" = "около %d секунд";
+
+/* approximate time interval: one minute */
+"about a minute" = "около минуты";
+
+/* approximate time interval: one hour */
+"about an hour" = "около часа";
+
+/* error reason */
+"Another application has overridden the lock at \"%@\"." = "%@ заблокирован другой программой.";
+
+/* invalid bundle reason */
+"Bundle is obsolete" = "Пакет устарел";
+
+/* invalid bundle reason */
+"Bundle requires additional software" = "Для пакета требуется дополнительное ПО";
+
+/* compression error reason */
+"bzip2 library returned error code %d when finishing compression. %s." = "Библиотека bzip2 при завершении сжатия вернула ошибку с кодом %1$d. %2$s.";
+
+/* decompression error reason */
+"bzip2 library returned error code %d when reading data. %s." = "Библиотека bzip2 при чтении данных вернула ошибку с кодом %1$d. %2$s.";
+
+/* compression error reason */
+"bzip2 library returned error code %d when writing data. %s." = "Библиотека bzip2 при записи данных вернула ошибку с кодом %1$d. %2$s.";
+
+/* OFLockFile recovery option */
+"Cancel" = "Отмена";
+
+/* error recovery option */
+"Cancel <error recovery>" = "Отмена";
+
+/* error description */
+"Cannot create socket." = "Невозможно создать сокет.";
+
+/* Error message when mkdir() fails
+   Error message when mkdir() will fail because there's a file in the way
+   Error message when stat() fails when trying to create a directory tree */
+
+
+"Could not create directory" = "Не удалось создать папку";
+
+/* time span formatter span */
+"d" = "д";
+
+/* time span formatter span */
+"day" = "день";
+
+/* time span formatter span */
+"days" = "дней";
+
+/* invalid bundle reason */
+"Duplicate bundle name" = "Дублирующееся имя пакета";
+
+/* exception reason */
+"Element '%@' not allowed at path: %@" = "Элемент «%1$@» не разрешен для пути: %2$@";
+
+/* error reason */
+"Failed to create directory for lock file at \"%@\"." = "Сбой создания каталога для блокирования файла по адресу %@.";
+
+/* error reason */
+"Failed to serialize lock information.  %@" = "Сбой сериализации данных блокировки.  %@";
+
+/* error reason */
+"Failed to write lock file.  %@" = "Сбой записи заблокированного файла.  %@";
+
+/* time span formatter span */
+"h" = "ч";
+
+/* time span formatter span */
+"hour" = "час";
+
+/* time span formatter span */
+"hours" = "часов";
+
+/* formatter input error */
+"Invalid time span format" = "Неверный формат временного интервала";
+
+/* local bundle path readable string */
+"local configuration file" = "файл локальной конфигурации";
+
+/* time span formatter span */
+"m" = "м";
+
+/* time span formatter span */
+"minute" = "мин.";
+
+/* time span formatter span */
+"minutes" = "мин.";
+
+/* time span formatter span */
+"mo" = "мес.";
+
+/* time span formatter span */
+"month" = "мес.";
+
+/* time span formatter span */
+"months" = "мес.";
+
+/* error reason */
+"No root element was found" = "Корневой элемент не найден";
+
+/* invalid bundle reason */
+"Not a valid bundle" = "Недопустимый пакет";
+
+/* OFLockFile recovery option */
+"Override Lock" = "Перезаписать блокировку";
+
+/* time span formatter span */
+"s" = "с";
+
+/* time span formatter span */
+"second" = "секунда";
+
+/* time span formatter span */
+"seconds" = "секунд";
+
+/* server certificate rejected */
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Возможно, сертификат сервера «%@» недействителен. Этот сайт может являться ненадежным. Подключиться в любом случае?";
+
+/* server certificate out of date */
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "Сертификат сервера «%@» имеет недопустимую дату. Возможно, сертификат истек или еще не действует. Подключиться в любом случае?";
+
+/* server certificate has unknown root */
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "Сертификат сервера «%@» не подписан корневым сервером. Этот сайт может являться ненадежным. Подключиться в любом случае?";
+
+/* server certificate not yet valid */
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "Сертификат сервера «%@» еще не действителен. Этот сайт может являться ненадежным. Подключиться в любом случае?";
+
+/* server certificate untrusted */
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Сертификат сервера «%@» подписан ненадежным корневым сервером. Этот сайт может являться ненадежным. Подключиться в любом случае?";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена %1$@ с компьютера %2$@ %3$@ в %4$@.";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера %2$@ %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
+
+/* compression error description */
+"Unable to compress data." = "Не удается сжать данные.";
+
+/* decompression error description */
+"Unable to decompress data." = "Не удается распаковать данные.";
+
+/* decompression exception format */
+"Unable to decompress gzip data: invalid header" = "Не удается распаковать данные gzip: недопустимый заголовок";
+
+/* compression error description */
+"Unable to initialize compression" = "Не удается инициализировать сжатие";
+
+/* decompression error description */
+"Unable to initialize decompression" = "Не удается инициализировать распаковку";
+
+/* error description */
+"Unable to lock document." = "Не удается заблокировать документ.";
+
+/* decompression error reason */
+"unrecognized compression format." = "неизвестный формат сжатия.";
+
+/* time span formatter span */
+"w" = "н";
+
+/* error description */
+"Warning encountered while loading XML." = "При загрузке XML было создано предупреждение.";
+
+/* time span formatter span */
+"week" = "неделя";
+
+/* time span formatter span */
+"weeks" = "недель";
+
+/* time span formatter span */
+"y" = "г";
+
+/* time span formatter span */
+"year" = "год";
+
+/* time span formatter span */
+"years" = "лет";
+
+/* zlib error reason */
+"zlib returned error code %d." = "Функция zlib вернула код ошибки zlib %d.";
+
+/* zlib error reason */
+"zlib returned error code %d. %s." = "Функция zlib вернула код ошибки %1$d. %2$s.";

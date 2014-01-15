@@ -1,0 +1,36 @@
+/* error title */
+"An error has occurred." = "Произошла ошибка.";
+
+/* error description */
+"Could not find \"%@\"." = "Не удалось найти «%@».";
+
+/* error description */
+"Ensure that the address is correct and please try again." = "Убедитесь, что адрес указан правильно, затем повторите попытку.";
+
+/* error description */
+"Ensure that the server address, user name, and password are correct and please try again." = "Убедитесь, что адрес сервера, имя пользователя и пароль указаны правильно, затем повторите попытку.";
+
+/* error reason */
+"Failed to delete \"%@\"." = "Сбой при удалении «%@».";
+
+/* error reason */
+"Failed to move \"%@\" to \"%@\"." = "Сбой при перемещении «%1$@» в «%2$@».";
+
+/* error reason - listing a directory that doesn't exist
+   error reason - listing contents of a nonexistent directory */
+"No document exists at \"%@\"." = "Документ отсутствует в «%@».";
+
+/* error reason */
+"No such file \"%@\"." = "Файл %@ не найден.";
+
+/* error reason */
+"Please make sure that the destination folder exists." = "Убедитесь, что папка назначения существует.";
+
+/* error description */
+"Unable to delete file." = "Не удается удалить файл.";
+
+/* error description */
+"Unable to move file." = "Не удается переместить файл.";
+
+/* error description */
+"Unable to read document." = "Не удается прочитать документ.";

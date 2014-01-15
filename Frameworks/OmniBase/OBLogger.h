@@ -37,7 +37,7 @@
  \param format a format string, as in -[NSString initWithFormat:]
  \param ... additional arguments to format string
  */
-extern inline void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ...);
+extern void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ...);
 
 /// Helper for initializing log level globals. Invokes -[OBLogger initWithName:shouldLogToFile] and sets outLogger to point to the result.
 extern void _OBLoggerInitializeLogLevel(OBLogger **outLogger, NSString *name, BOOL useFile);

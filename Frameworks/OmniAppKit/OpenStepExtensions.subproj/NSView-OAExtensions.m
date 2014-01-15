@@ -42,11 +42,21 @@ static void (*original_setFrameSize)(id self, SEL _cmd, NSSize newSize);
 
 #endif
 
+- (BOOL)isDescendantOfFirstResponder;
+{
+    NSResponder *firstResponder = [[self window] firstResponder];
+    if (![firstResponder isKindOfClass:[NSView class]])
+        return NO;
+    
+    return (self == (NSView *)firstResponder || [self isDescendantOf:(NSView *)firstResponder]);
+}
+
 - (BOOL)isOrContainsFirstResponder;
 {
     NSResponder *firstResponder = [[self window] firstResponder];
     if (![firstResponder isKindOfClass:[NSView class]])
         return NO;
+    
     return (self == (NSView *)firstResponder || [(NSView *)firstResponder isDescendantOf:self]);
 }
 
@@ -671,10 +681,14 @@ unsigned int NSViewMaxDebugDepth = 10;
         return [self shortDescription];
 }
 
+// [TAB] I believe this is a false positive?
+#pragma clang diagnostic push ignored 
+#pragma clang diagnostic ignored "-Wobjc-protocol-method-implementation"
 - (NSString *)description;
 {
     return [self descriptionWithLocale:nil indent:0];
 }
+#pragma clang diagnostic pop
 
 - (NSString *)shortDescription;
 {

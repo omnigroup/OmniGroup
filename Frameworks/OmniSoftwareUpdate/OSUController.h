@@ -27,12 +27,6 @@ extern NSString * const OSUReleaseApplicationSummaryKey;
 
 @interface OSUController : NSObject <OSUCheckerTarget>
 {
-    NSPanel     *privacyNoticePanel;
-    IBOutlet NSImageView *privacyNoticeAppIconImageView;
-    IBOutlet NSTextField *privacyNoticeTitleTextField;
-    IBOutlet NSTextField *privacyNoticeMessageTextField;
-    IBOutlet NSButton    *enableHardwareCollectionButton;
-    
     OSUDownloadController *_currentDownloadController;
 }
 
@@ -46,8 +40,5 @@ extern NSString * const OSUReleaseApplicationSummaryKey;
 //- (IBAction)downloadNow:(id)sender;
 //- (IBAction)showMoreInfo:(id)sender;
 //- (IBAction)cancel:(id)sender;
-
-- (IBAction)privacyNoticePanelOK:(id)sender;
-- (IBAction)privacyNoticePanelShowPreferences:(id)sender;
 
 @end

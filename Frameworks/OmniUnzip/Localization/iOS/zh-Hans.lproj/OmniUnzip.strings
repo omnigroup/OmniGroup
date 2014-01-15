@@ -1,0 +1,37 @@
+/* error reason */
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "zip 文件中某个条目的名称无法转换为文件系统路径。";
+
+/* error description */
+"Duplicate zip member name \"%@\"." = "复制 zip 成员名称“%@”。";
+
+/* error reason */
+"The unzip library failed to open %@." = "unzip 资源库打开 %@ 失败。";
+
+/* error reason */
+"The zip library function %s returned %d" = "zip 资源库函数 %1$s 返回 %2$d";
+
+/* error reason */
+"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "尝试读取“%4$@”中条目“%3$@”的数据时，zip 资源库函数 %1$s 返回 %2$d。";
+
+/* error reason */
+"Unable to close zip data." = "无法关闭 zip 数据。";
+
+/* error reason */
+"Unable to close zip file." = "无法关闭 zip 文件。";
+
+/* error reason */
+"Unable to create zip file." = "无法创建 zip 文件。";
+
+/* error description */
+"Unable to open zip archive." = "无法打开 zip 归档文件。";
+
+/* error description
+   error reason */
+"Unable to read zip data." = "无法读取 zip 数据。";
+
+/* error description */
+"Unable to read zip file." = "无法读取 zip 文件。";
+
+/* error description */
+"Unable to write zip file." = "无法写入 zip 文件。";
+

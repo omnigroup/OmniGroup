@@ -9,6 +9,8 @@
 
 #import <Availability.h>
 
+@class OFXMLDocument;
+
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 // NSTextAttachment conforms to NSTextAttachmentContainer and there doesn't seem to be any separate NSTextAttachmentCell
 @class NSData;
@@ -48,6 +50,10 @@
 - (BOOL)trackMouse:(NSEvent *)theEvent inRect:(NSRect)cellFrame ofView:(NSView *)controlView atCharacterIndex:(NSUInteger)charIndex untilMouseUp:(BOOL)flag;
 - (NSRect)cellFrameForTextContainer:(NSTextContainer *)textContainer proposedLineFragment:(NSRect)lineFrag glyphPosition:(NSPoint)position characterIndex:(NSUInteger)charIndex;
 #endif
+
+@optional
+- (void)appendXMLForNonDefaultCellInformation:(OFXMLDocument *)doc;
+
 @end
 
 // Subclasses NSCell on the Mac, but no such thing here.
@@ -67,3 +73,9 @@
 #define OATextAttachmentCell NSTextAttachmentCell
 
 #endif
+
+@interface OATextAttachmentCell (OATextAttachmentCellXML)
+
++ (void)appendXMLForNonDefaultCellInformation:(OFXMLDocument *)doc image:(id)image;
+
+@end

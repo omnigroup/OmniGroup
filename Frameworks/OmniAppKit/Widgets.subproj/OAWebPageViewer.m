@@ -104,7 +104,7 @@ RCS_ID("$Id$")
         if ([self _urlIsFromAllowedBundle:url])
             [listener use];
         else {
-            NSLog(@"Attempted to load from '%@', but this is URL is not within the app.", url);
+            NSLog(@"Attempted to load from '%@', but this URL is not within the app.", url);
             [listener ignore];
         }
         return;

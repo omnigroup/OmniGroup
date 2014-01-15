@@ -23,11 +23,11 @@
     } flags;
 }
 
-- (id) dataSource;
-- (void) setDataSource: (id) dataSource;
+- (id)dataSource;
+- (void)setDataSource:(id)dataSource;
 
-- (void) reloadSubviews;
-- (void) subviewSizeChanged;
+- (void)reloadSubviews;
+- (void)subviewSizeChanged;
 
 - (void)setLayoutEnabled:(BOOL)layoutEnabled display:(BOOL)display;
 

@@ -21,12 +21,22 @@
 #define OFDataShouldBeEqual(expected, actual) STAssertEquals(expected, actual, nil)
 #else
 extern void OFDiffData(SenTestCase *testCase, NSData *expected, NSData *actual);
+extern void OFDiffDataFiles(SenTestCase *testCase, NSString *expectedPath, NSString *actualPath);
 
 #define OFDataShouldBeEqual(expected,actual) \
 do { \
     BOOL dataEqual = [expected isEqual:actual]; \
     if (!dataEqual) { \
         OFDiffData(self, expected, actual); \
+        STAssertTrue(dataEqual, nil); \
+    } \
+} while (0)
+
+#define OFFileDataShouldBeEqual(expected,expectedPath,actual,actualPath) \
+do { \
+    BOOL dataEqual = [expected isEqual:actual]; \
+    if (!dataEqual) { \
+        OFDiffDataFiles(self, expectedPath, actualPath); \
         STAssertTrue(dataEqual, nil); \
     } \
 } while (0)

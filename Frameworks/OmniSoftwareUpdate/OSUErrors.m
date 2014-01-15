@@ -10,6 +10,4 @@
 
 RCS_ID("$Id$");
 
-
 NSString * const OSUErrorDomain = @"com.omnigroup.framework.OmniSoftwareUpdate.ErrorDomain";
-

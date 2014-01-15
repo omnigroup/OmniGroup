@@ -301,6 +301,28 @@ static NSDictionary *titleFontAttributes;
     return [drawImage autorelease];
 }
 
+- (NSImage *)imageByTintingWithColor:(NSColor *)tintColor;
+{
+    return [self imageByTintingWithColor:tintColor alpha:1.0];
+}
+
+- (NSImage *)imageByTintingWithColor:(NSColor *)tintColor alpha:(CGFloat)alpha;
+{
+    OBPRECONDITION(tintColor != nil);
+    OBPRECONDITION(alpha >= 0 && alpha <= 1.0);
+    
+    NSImage *image = [[self copy] autorelease];
+    NSImage *tintedImage = [NSImage imageWithSize:self.size flipped:NO drawingHandler:^BOOL(NSRect dstRect) {
+        NSRect srcRect = { .origin = NSZeroPoint, .size = image.size };
+        [image drawInRect:dstRect fromRect:srcRect operation:NSCompositeSourceOver fraction:alpha respectFlipped:NO hints:nil];
+        [tintColor set];
+        NSRectFillUsingOperation(dstRect, NSCompositeSourceAtop);
+        return YES;
+    }];
+    
+    return tintedImage;
+}
+
 //
 
 - (void)drawFlippedInRect:(NSRect)rect fromRect:(NSRect)sourceRect operation:(NSCompositingOperation)op fraction:(CGFloat)delta;

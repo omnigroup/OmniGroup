@@ -10,14 +10,6 @@
 #import <AppKit/NSPanel.h>
 
 @interface OIInspectorWindow : NSPanel
-{
-    struct {
-        unsigned int isBeingResizedByResizer:1;
-    } _inspectorWindowFlags;
-}
-
-// API
-
 @end
 
 @protocol OIInspectorWindowDelegate <NSWindowDelegate>

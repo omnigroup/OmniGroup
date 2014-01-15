@@ -16,27 +16,38 @@ static OAViewPicker *ActivePicker;
 
 + (void)beginPickingForWindow:(NSWindow *)window withCompletionHandler:(OAViewPickerCompletionHandler)completionHandler;
 {
-    OAViewPicker *picker = [[self alloc] initWithContentRect:[window frame] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+    OAViewPicker *picker = [[self alloc] _initWithParentWindow:window];
     OBASSERT_NOTNULL(picker);
     
     if (!picker) {
-        completionHandler(nil);
+        if (completionHandler)
+            completionHandler(nil);
+        
         return;
     }
-    
-    [picker setOpaque:NO];
-    [picker setBackgroundColor:[NSColor clearColor]];
-    [picker setOneShot:YES];
-    [picker setReleasedWhenClosed:NO];
-    [picker setAcceptsMouseMovedEvents:YES];
-    [picker setIgnoresMouseEvents:NO];
     
     [ActivePicker close];
     
     OBASSERT_NULL(ActivePicker);
-    ActivePicker = [picker retain];
+    ActivePicker = picker;
     
-    [picker _beginPickingForWindow:window withCompletionHandler:completionHandler];
+    [picker _trackMouseWithCompletionHandler:completionHandler];
+}
+
++ (void)pickView:(NSView *)view;
+{
+    OAViewPicker *picker = [[self alloc] _initWithParentWindow:view.window];
+    OBASSERT_NOTNULL(picker);
+    
+    if (!picker)
+        return;
+    
+    [ActivePicker close];
+    
+    OBASSERT_NULL(ActivePicker);
+    ActivePicker = picker;
+    
+    [picker _setPickedView:view];
 }
 
 + (BOOL)cancelActivePicker;
@@ -49,8 +60,18 @@ static OAViewPicker *ActivePicker;
     }
 }
 
-- (void)_beginPickingForWindow:(NSWindow *)window withCompletionHandler:(OAViewPickerCompletionHandler)completionHandler;
+- (instancetype)_initWithParentWindow:(NSWindow *)window;
 {
+    if (!(self = [super initWithContentRect:[window frame] styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO]))
+        return nil;
+    
+    [self setOpaque:NO];
+    [self setBackgroundColor:[NSColor clearColor]];
+    [self setOneShot:YES];
+    [self setReleasedWhenClosed:NO];
+    [self setAcceptsMouseMovedEvents:YES];
+    [self setIgnoresMouseEvents:NO];
+    
     [window addChildWindow:self ordered:NSWindowAbove];
     
     OBASSERT_NULL(_nonretained_parentWindowObserver);
@@ -58,7 +79,13 @@ static OAViewPicker *ActivePicker;
         [self close];
     }];
     
+    return self;
+}
+
+- (void)_trackMouseWithCompletionHandler:(OAViewPickerCompletionHandler)completionHandler;
+{
     _completionHandler = Block_copy(completionHandler);
+    _trackingMouse = YES;
     
     [self orderFront:nil];
     [self _updatePickedView:[self mouseLocationOutsideOfEventStream]];
@@ -108,9 +135,16 @@ static NSView *_rootView(NSView *view)
     NSView *otherRootView = _rootView([parentWindow contentView]);
     NSPoint pointInOtherRootView = [otherRootView convertPoint:[self mouseLocation:mouseLocationInOurWindow inWindow:parentWindow] fromView:nil];
     
-    NSView *hitView = [[otherRootView hitTest:pointInOtherRootView] retain];
+    [self _setPickedView:[otherRootView hitTest:pointInOtherRootView]];
+}
+
+- (void)_setPickedView:(NSView *)view;
+{
+    OBASSERT_IF(view != nil, view.window == self.parentWindow);
+    
+    view = [view retain];
     [_pickedView release];
-    _pickedView = hitView;
+    _pickedView = view;
     
     [self _updateHighlight];
 }
@@ -159,7 +193,7 @@ static NSView *_rootView(NSView *view)
 
 - (void)mouseMoved:(NSEvent *)theEvent;
 {
-    if (!_isInMouseDown)
+    if (_trackingMouse && !_isInMouseDown)
         [self _updatePickedView:[theEvent locationInWindow]];
 }
 

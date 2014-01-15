@@ -36,13 +36,13 @@ static NSArray * OSUInstallerAuthoriziationRights(void)
     dispatch_once(&onceToken, ^{
         NSArray *rights = @[
             @{
-                OSUInstallerRightNameKey : OSUInstallUpdateRightName,
-                OSUInstallerRightDescriptionKey : OSUInstallUpdateDescription,
-                OSUInstallerRightDefaultKey : @{
-                    @"rule" : @[
-                        @(kAuthorizationRuleAuthenticateAsAdmin),
-                    ],
-                    @"timeout" : @(300),
+                OSUInstallerRightNameKey: OSUInstallUpdateRightName,
+                OSUInstallerRightDescriptionKey: OSUInstallUpdateDescription,
+                OSUInstallerRightDefaultKey: @{
+                    @"class": @"user",
+                    @"group": @"admin",
+                    @"timeout": @(300),
+                    @"version": @(1),
                 },
             }
         ];
@@ -72,18 +72,38 @@ void OSUInstallerSetUpAuthorizationRights(void)
     for (NSDictionary *right in rightsArray) {
         // Attempt to get the right. If we get back errAuthorizationDenied that means there's no current definition, so we add our default one.
         NSString *authRightName = right[OSUInstallerRightNameKey];
-        NSString *authRightDefault = right[OSUInstallerRightDefaultKey];
+        NSDictionary *authRightDefault = right[OSUInstallerRightDefaultKey];
         NSString *authRightDescription = right[OSUInstallerRightDescriptionKey];
-
-        status = AuthorizationRightGet([authRightName UTF8String], NULL);
+        CFDictionaryRef right = NULL;
+        
+        status = AuthorizationRightGet([authRightName UTF8String], &right);
         if (status == errAuthorizationDenied) {
             status = AuthorizationRightSet(authRef, [authRightName UTF8String], (CFTypeRef)authRightDefault, (CFStringRef)authRightDescription,  NULL, CFSTR("OSUInstallerRights"));
             if (status != errAuthorizationSuccess) {
                 NSLog(@"AuthorizationRightSet failed with (%d).", status);
             }
+        } else if (status == errAuthorizationSuccess) {
+            // If a right already exists (status == errAuthorizationSuccess) check to see if the version is current.
+            NSCAssert(right != NULL, @"Expected non-NULL right.");
+            if (right != NULL) {
+                NSDictionary *rightDictionary = (NSDictionary *)right;
+                NSInteger version = [rightDictionary[@"version"] integerValue];
+                if (version < [authRightDefault[@"version"] integerValue]) {
+                    // Update the right to the current version
+                    status = AuthorizationRightRemove(authRef, [authRightName UTF8String]);
+                    NSLog(@"AuthorizationRightRemove failed with (%d).", status);
+
+                    status = AuthorizationRightSet(authRef, [authRightName UTF8String], (CFTypeRef)authRightDefault, (CFStringRef)authRightDescription,  NULL, CFSTR("OSUInstallerRights"));
+                    NSLog(@"AuthorizationRightSet failed with (%d).", status);
+                }
+            }
         } else {
-            // If a right already exists (status == noErr) or any other error occurs, we assume that it has been set up in advance by the system administrator or this is the second time we've run.
-            // Either way, there's nothing more for us to do.
+            // If any other error occurs, there's nothing more we can do here.
+            NSLog(@"AuthorizationRightGet failed with (%d).", status);
+        }
+        
+        if (right != NULL) {
+            CFRelease(right);
         }
     }
     

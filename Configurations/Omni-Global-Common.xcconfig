@@ -8,7 +8,7 @@
 // Also, define a few useful macros for making configuration-specific builds. We do NOT append OMNI_BUILD_IDENTIFIER_SUFFIX on OMNI_BUNDLE_IDENTIFIER here, but we would in the end application.
 // Note that the OMNI_BUILD_IDENTIFIER_SUFFIX and OMNI_BUILD_FILE_SUFFIX are declared in the individual specific configuration files Omni-Global-{Debug,Release,Coverage}.xcconfig, which seems to work fine.
 // Targets still need to use these in their configurations in their bundle identifier, product name and in the source where needed.
-OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64 -DOBJC_OLD_DISPATCH_PROTOTYPES=0 -DOMNI_BUILD_IDENTIFIER_SUFFIX=@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\" -DOMNI_BUILD_FILE_SUFFIX=@\"$(OMNI_BUILD_FILE_SUFFIX)\"
+OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64 -DOBJC_OLD_DISPATCH_PROTOTYPES=0 -DOMNI_BUILD_IDENTIFIER_SUFFIX=@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\" -DOMNI_BUILD_FILE_SUFFIX=@\"$(OMNI_BUILD_FILE_SUFFIX)\" -DNON_OMNI_BUILD_ENVIRONMENT
 
 // Keep precomps in the build dir so that switching branches/products doesn't confuse the precomp builds
 SHARED_PRECOMPS_DIR = $(CONFIGURATION_BUILD_DIR)/SharedPrecompiledHeaders
@@ -50,6 +50,7 @@ GCC_WARN_64_TO_32_BIT_CONVERSION = YES
 // Greg Parker reports something about this flag is usable clang with the sign conversion noise turned off (NSUInteger vs CFIndex), <https://twitter.com/#!/gparker/status/78039974372573184>
 CLANG_WARN_ENUM_CONVERSION = YES
 CLANG_WARN_INT_CONVERSION = YES
+CLANG_WARN_BOOL_CONVERSION = YES
 //CLANG_WARN_IMPLICIT_SIGN_CONVERSION
 GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES
 GCC_WARN_ABOUT_RETURN_TYPE = YES
@@ -142,6 +143,7 @@ GCC_VERSION = com.apple.compilers.llvm.clang.1_0
 //CC[sdk=macos*]=/Users/bungi/Source/LLVM/llvm/Release+Asserts/bin/clang
 
 RUN_CLANG_STATIC_ANALYZER = YES
+CLANG_STATIC_ANALYZER_MODE = deep
 
 // Build setting overrides for the current store target
 #include "Omni-Global-Common-Store.xcconfig"

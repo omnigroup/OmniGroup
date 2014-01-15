@@ -10,11 +10,10 @@
 #import <Availability.h>
 
 // THESE MUST MATCH APPKIT: In NSDocument-OAExtensions.h we add a mapping function, but we need some sort of symbol for this concept to share in model-level code for Mac/iPhone compatibility. Has slightly different names (for now at least), but they have the same meaning as their NSDocument-defined counterparts.
-enum {
+typedef NS_ENUM(NSUInteger, OFSaveType) {
     OFSaveTypeReplaceExisting, // NSSaveOperation
     OFSaveTypeNew, // NSSaveAsOperation
     OFSaveTypeExport, // NSSaveToOperation
     OFSaveTypeAutosaveElsewhere, // NSAutosaveElsewhereOperation
     OFSaveTypeAutosaveInPlace, // NSAutosaveInPlaceOperation
 };
-typedef NSUInteger OFSaveType;

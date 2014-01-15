@@ -169,7 +169,7 @@ RCS_ID("$Id$");
 
 - (void)_drawBackgroundImage;
 {
-    [backgroundImage compositeToPoint:NSMakePoint(0, 0) operation:NSCompositeSourceOver];
+    [backgroundImage drawAtPoint:NSZeroPoint fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
 }
 
 - (BOOL)_shouldDrawFocusRing;

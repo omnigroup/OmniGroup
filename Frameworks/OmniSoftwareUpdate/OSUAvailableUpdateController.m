@@ -10,7 +10,7 @@
 #import "OSUChecker.h"
 #import "OSUItem.h"
 #import "OSUController.h"
-#import "OSUPreferences.h"
+#import "OSUPreferences-Items.h"
 #import "OSUFlippedView.h"
 #import "OSUThinBorderView.h"
 
@@ -328,6 +328,7 @@ RCS_ID("$Id$");
 
 - (IBAction)ignoreSelectedItem:(id)sender;
 {
+#if OSU_FULL
     OSUItem *anItem = [self selectedItem];
     if (!anItem)
         return;  // Shouldn't happen; button should be disabled.
@@ -343,6 +344,9 @@ RCS_ID("$Id$");
     if (!_checkInProgress && [[_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]] count] == 0) {
         [[self window] performClose:nil];
     }
+#else
+    OBASSERT_NOT_REACHED("This code gets compiled when building from the workspace for MAS builds, but should never be linked/executed");
+#endif
 }
 
 #define itemAlertPane_IgnoreOneTrackTag  2

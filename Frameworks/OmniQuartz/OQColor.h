@@ -13,6 +13,7 @@
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Foundation/NSGeometry.h>
 @class NSColor;
+@class NSAppleEventDescriptor;
 #else
 #import <CoreGraphics/CGGeometry.h>
 #import <CoreGraphics/CGColor.h>
@@ -164,6 +165,10 @@ extern OQLinearRGBA OQHSVToRGB(OSHSV c);
 - (NSUInteger)hash;
 
 @property(readonly,nonatomic) OQ_PLATFORM_COLOR_CLASS *toColor;
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+- (NSAppleEventDescriptor *)scriptingColorDescriptor;
+#endif
+
 @end
 @interface OQColor (OQColor) <OQColor>
 @end

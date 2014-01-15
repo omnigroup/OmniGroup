@@ -1,0 +1,126 @@
+/* modifier, used for scanning user input */
+"-" = "-";
+
+/* modifier, used for scanning user input */
+"+" = "+";
+
+/* modifier, used for scanning user input */
+"~" = "~";
+
+/* one-letter abbreviation for day or days, used for scanning user input */
+"d" = "d";
+
+/* day, singular, used for scanning user input */
+"day" = "día";
+
+/* days, plural, used for scanning user input */
+"days" = "días";
+
+/* one-letter abbreviation for hour or hours, for scanning user input
+   one-letter abbreviation for hour or hours, used for scanning user input */
+"h" = "h";
+
+/* hour, singular, used for scanning user input */
+"hour" = "hora";
+
+/* hours, plural, used for scanning user input */
+"hours" = "horas";
+
+/* modifier, used for scanning user input */
+"last" = "pasado";
+
+/* last month, used for scanning user input */
+"last month" = "el mes pasado";
+
+/* time, used for scanning user input */
+"last week" = "la semana pasada";
+
+/* last year, used for scanning user input */
+"last year" = "el año pasado";
+
+/* one-letter abbreviation for month or months, used for scanning user input */
+"m" = "m";
+
+/* month, singular, used for scanning user input */
+"month" = "mes";
+
+/* months, plural, used for scanning user input */
+"months" = "meses";
+
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input */
+"next" = "próximo";
+
+/* next month, used for scanning user input */
+"next month" = "el próximo mes";
+
+/* time, used for scanning user input */
+"next week" = "la próxima semana";
+
+/* next year, used for scanning user input */
+"next year" = "el próximo año";
+
+/* noon, used for scanning user input */
+"noon" = "mediodía";
+
+/* now, used for scanning user input */
+"now" = "ahora";
+
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input */
+"this" = "este";
+
+/* this month, used for scanning user input */
+"this month" = "este mes";
+
+/* time, used for scanning user input */
+"this week" = "esta semana";
+
+/* this year, used for scanning user input */
+"this year" = "este año";
+
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input */
+"tod" = "hoy";
+
+/* today, used for scanning user input */
+"today" = "hoy";
+
+/* Today */
+"Today" = "Hoy";
+
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input */
+"tom" = "mñn";
+
+/* tomorrow */
+"tomorrow" = "mañana";
+
+/* Tomorrow */
+"Tomorrow" = "Mañana";
+
+/* tonight, used for scanning user input */
+"tonight" = "esta noche";
+
+/* one-letter abbreviation for week or weeks, used for scanning user input */
+"w" = "s";
+
+/* week, singular, used for scanning user input */
+"week" = "semana";
+
+/* weeks, plural, used for scanning user input */
+"weeks" = "sem.";
+
+/* one-letter abbreviation for year or years, used for scanning user input */
+"y" = "a";
+
+/* year, singular, used for scanning user input */
+"year" = "año";
+
+/* years, plural, used for scanning user input */
+"years" = "años";
+
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input */
+"yes" = "sí";
+
+/* yesterday, used for scanning user input */
+"yesterday" = "ayer";
+
+/* Yesterday */
+"Yesterday" = "Ayer";

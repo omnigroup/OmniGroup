@@ -33,11 +33,16 @@
 @class NSScreen;
 
 @protocol OIInspectorHeaderViewDelegateProtocol
+
 - (BOOL)headerViewShouldDisplayCloseButton:(OIInspectorHeaderView *)view;
+- (void)headerViewDidClose:(OIInspectorHeaderView *)view;
+
+- (BOOL)headerViewShouldAllowDragging:(OIInspectorHeaderView *)view;
 - (CGFloat)headerViewDraggingHeight:(OIInspectorHeaderView *)view;
 - (void)headerViewDidBeginDragging:(OIInspectorHeaderView *)view;
 - (NSRect)headerView:(OIInspectorHeaderView *)view willDragWindowToFrame:(NSRect)aFrame onScreen:(NSScreen *)aScreen;
 - (void)headerViewDidEndDragging:(OIInspectorHeaderView *)view toFrame:(NSRect)aFrame;
+
 - (void)headerViewDidToggleExpandedness:(OIInspectorHeaderView *)view;
-- (void)headerViewDidClose:(OIInspectorHeaderView *)view;
+
 @end

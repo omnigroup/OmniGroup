@@ -171,9 +171,7 @@ static inline void _nonNilKey(id key)
     [super dealloc];
 }
 
-//
-// NSDictionary methods that we either must implement or should for speed.
-//
+#pragma mark - NSDictionary subclass
 
 - (NSUInteger)count;
 {
@@ -270,9 +268,28 @@ static inline void _nonNilKey(id key)
                                                                             owner:self] autorelease];
 }
 
-//
-// NSMutableDictionary methods that we either must implement or should for speed.
-//
+- (void)enumerateKeysAndObjectsUsingBlock:(void (^)(id, id, BOOL *))block;
+/*" Calls the block for each key/value pair with non-nil value.  Much faster than using a keyEnumerator. Unlike normal dictionaries, the block may modify the value for the key being processed (but still should not modify values for other keys). "*/
+{
+    if (!block)
+        return;
+    
+    BOOL stop = NO;
+    
+    NSUInteger valueIndex = _template->_keyCount;
+    NSObject **values = object_getIndexedIvars(self);
+    
+    while (valueIndex--) {
+        id value = values[valueIndex];
+        if (value)
+            block(_template->_keys[valueIndex], value, &stop);
+        if (stop)
+            break;
+    }
+}
+
+#pragma mark - NSMutableDictionary subclass
+
 
 - (void)removeObjectForKey:(id)aKey;
 {
@@ -294,9 +311,7 @@ static inline void _nonNilKey(id key)
     }
 }
 
-//
-// Local methods
-//
+#pragma mark - API
 
 - (OFMutableKnownKeyDictionary *)mutableKnownKeyCopyWithZone:(NSZone *)zone;
 {
@@ -334,32 +349,24 @@ static inline void _nonNilKey(id key)
     }
 }
 
-- (void)applyFunction:(OFMutableKnownKeyDictionaryApplier)function context:(void *)context;
-/*" Calls the function for each key/value pair with non-nil value.  Much faster than using a keyEnumerator.  The function may modify the value for the key being processed, but should not modify values for other keys. "*/
-{
-    NSUInteger valueIndex = _template->_keyCount;
-    NSObject **values = object_getIndexedIvars(self);
-
-    while (valueIndex--) {
-        id value = values[valueIndex];
-        if (value)
-            function(_template->_keys[valueIndex], value, context);
-    }
-}
-
-- (void)applyPairFunction:(OFMutableKnownKeyDictionaryPairApplier)function pairDictionary:(OFMutableKnownKeyDictionary *)pairDictionary context:(void *)context;
-/*" Calls the function for key in the receiver and another dictionary.  The key and the two objects are passed to the function.  Since two dictionaries are consulted for key/value pairs, the function may get one value that is nil and another that isn't, but it should never get two nil values (i.e., the key isn't in either dictionary).  The two dictionaries must share the same template. "*/
+- (void)enumerateKeysAndObjectPairsWithDictionary:(OFMutableKnownKeyDictionary *)pairDictionary usingBlock:(void (^)(id key, id object1, id object2, BOOL *))block;
+/*" Calls the block for key in the receiver and another dictionary. The key and the two objects are passed to the function. Since two dictionaries are consulted for key/value pairs, the function may get one value that is nil and another that isn't, but it should never get two nil values (i.e., the key isn't in either dictionary). The two dictionaries must share the same template. "*/
 {
     OBPRECONDITION(_template == pairDictionary->_template);
 
     NSUInteger valueIndex = _template->_keyCount;
     NSObject **values = object_getIndexedIvars(self);
     NSObject **pairValues = object_getIndexedIvars(pairDictionary);
+    BOOL stop = NO;
+    
     while (valueIndex--) {
         id value1 = values[valueIndex];
         id value2 = pairValues[valueIndex];
-        if (value1 || value2)
-            function(_template->_keys[valueIndex], value1, value2, context);
+        if (value1 || value2) {
+            block(_template->_keys[valueIndex], value1, value2, &stop);
+            if (stop)
+                break;
+        }
     }
 }
 

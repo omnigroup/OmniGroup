@@ -1,0 +1,68 @@
+/* font size label format string in points */
+"%@ points" = "%@ punti";
+
+/* title format for color component slider */
+"<alpha title+value>" = "Opacità: %d%%";
+
+/* title format for color component slider */
+"<blue title+value>" = "Blu: %d";
+
+/* title format for color component slider */
+"<brightness title+value>" = "Luminosità: %d%%";
+
+/* title format for color component slider */
+"<green title+value>" = "Verde: %d";
+
+/* title format for color component slider */
+"<hue title+value>" = "Tinta: %d°";
+
+/* title format for color component slider */
+"<red title+value>" = "Rosso: %d";
+
+/* title format for color component slider */
+"<saturation title+value>" = "Saturazione: %d%%";
+
+/* title format for color component slider */
+"<white title+value>" = "Bianco: %d%%";
+
+/* Title for section of font list */
+"All Fonts" = "Tutti i font";
+
+/* Title above color swatch picker for the text color. */
+"Background color" = "Colore di sfondo";
+
+/* color inspector title */
+"Color" = "Colore";
+
+/* Title for the font family list in the inspector */
+"Font" = "Font";
+
+/* Increment font size button accessibility label */
+"Font bigger" = "Font più grande";
+
+/* Decrement font size button accessibility label */
+"Font smaller" = "Font più piccolo";
+
+/* popover inspector label title for mulitple selection */
+"Multiple Selection" = "Selezione multipla";
+
+/* Descriptive text on the no color pane of the color picker */
+"No color selected" = "Nessun colore selezionato";
+
+/* popover inspector label title for no selected objects */
+"No Selection" = "Nessuna selezione";
+
+/* Title for section of font list */
+"Recommended Fonts" = "Font consigliati";
+
+/* Name for the variant of a font with out any special attributes */
+"Regular" = "Regolare";
+
+/* Label for font size controls */
+"Size" = "Dimensioni";
+
+/* Title above color swatch picker for the text color. */
+"Text color" = "Colore testo";
+
+/* Inspector title */
+"Text Style" = "Stile testo";

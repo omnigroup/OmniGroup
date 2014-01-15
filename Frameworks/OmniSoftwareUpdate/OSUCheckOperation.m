@@ -129,7 +129,6 @@ NSString * const OSUCheckOperationCompletedNotification = @"OSUCheckOperationCom
 
     // If we aren't actually submitting the query, this is probably due to the user popping up the sheet in the preferences to see what we *would* submit.
     BOOL includeHardwareDetails = !_forQuery || [[OSUPreferences includeHardwareDetails] boolValue];
-    BOOL includeOpenGLDetails = [[OSUPreferences includeOpenGLDetails] boolValue]; // ... whether to include OpenGL details within those hardware details
     
     // Send the current track to the server so it can make decisions about what we'll see.
     NSArray *tracks = [OSUPreferences visibleTracks];
@@ -142,7 +141,6 @@ NSString * const OSUCheckOperationCompletedNotification = @"OSUCheckOperationCom
         .appVersionString = [checker applicationEngineeringVersion],
         .track = track,
         .includeHardwareInfo = includeHardwareDetails,
-        .includeOpenGLInfo = includeOpenGLDetails,
         .reportMode = !_forQuery,
         .licenseType = _licenseType,
         .osuVersionString = [versionNumber cleanVersionString]
@@ -193,7 +191,7 @@ static BOOL OSUCheckReachability(NSString *hostname, NSError **outError)
     if (!canDetermineReachability) {
         // Unable to determine whether the host is reachable. Most likely problem is that we failed to look up the host name. Most likely reason for that is a network partition, or a multiple failure of name servers (because, of course, EVERYONE actually READS the dns specs and maintains at least two nameservers with decent geographical and topological separation, RIGHT?). Another possibility is that configd is screwed up somehow. At any rate, it's unlikely that we'd be able to retrieve the status info, so return an error.
         // TODO: Localize these.  We are running in a tool that doesn't have direct access to the .strings files, so we'll need to look them up out of our containing .framework's bundle.
-        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not contact %s.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error text generated when software update is unable to retrieve the list of current software versions"), hostname];
+        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Could not contact %@.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error text generated when software update is unable to retrieve the list of current software versions"), hostname];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, suggestion, NSLocalizedRecoverySuggestionErrorKey, nil];
         if (outError)
             *outError = [NSError errorWithDomain:OSUErrorDomain code:OSURemoteNetworkFailure userInfo:userInfo];
@@ -203,7 +201,7 @@ static BOOL OSUCheckReachability(NSString *hostname, NSError **outError)
     Boolean reachable = ((flags & kSCNetworkReachabilityFlagsReachable) != 0);
     
     if (!reachable) {
-        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%s is not reachable.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - the host from which we retrieve updates is unreachable"), hostname];
+        NSString *description = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ is not reachable.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - the host from which we retrieve updates is unreachable"), hostname];
         NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, suggestion, NSLocalizedRecoverySuggestionErrorKey, nil];
         if (outError)
             *outError = [NSError errorWithDomain:OSUErrorDomain code:OSULocalNetworkFailure userInfo:userInfo];
@@ -359,7 +357,7 @@ NSDictionary *OSURunOperation(const OSURunOperationParameters *params, NSError *
     }
     
     @try {
-        CFDictionaryRef hardwareInfo = OSUCopyHardwareInfo(params->appIdentifier, params->includeHardwareInfo, params->includeOpenGLInfo, params->licenseType, params->reportMode);
+        CFDictionaryRef hardwareInfo = OSUCopyHardwareInfo(params->appIdentifier, params->includeHardwareInfo, params->licenseType, params->reportMode);
         
         NSURL *url = OSUMakeCheckURL(params->baseURLString, params->appIdentifier, params->appVersionString, params->track, params->osuVersionString, params->reportMode ? NULL : hardwareInfo);
         

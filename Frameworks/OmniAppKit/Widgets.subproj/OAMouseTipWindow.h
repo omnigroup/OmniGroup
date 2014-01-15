@@ -20,8 +20,8 @@ typedef enum {
     OAMouseTipDockStyle,
 } OAMouseTipStyle;
 
-#define OAMouseTipsEnabledPreferenceKey (@"DisplayMouseTips")
-#define OAMouseTipsNotesEnabledPreferenceKey (@"DisplayNoteMouseTips")
+#define OAMouseTipsEnabledPreferenceKey (@"OADisplayMouseTips")
+#define OAMouseTipsNotesEnabledPreferenceKey (@"OADisplayNoteMouseTips")
 
 @interface OAMouseTipWindow : NSPanel
 {

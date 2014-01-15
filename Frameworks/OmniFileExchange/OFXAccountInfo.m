@@ -53,7 +53,7 @@ static OFVersionNumber *MinimumCompatibleAccountVersionNumber;
 {
     OBINITIALIZE;
     
-    OBInitializeDebugLogLevel(OFXAccountInfoDebug);
+    OFInitializeDebugLogLevel(OFXAccountInfoDebug);
     MinimumCompatibleAccountVersionNumber = [[OFVersionNumber alloc] initWithVersionString:@"2"];
 }
 
@@ -359,10 +359,16 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
 {
     OBPRECONDITION(remoteTemporaryDirectoryFileInfo);
     
+    // Only need to do this once in a while
     NSDate *lastCleanup = _localStatePropertyList[LocalState_LastRemoteTemporaryFileCleanupDate];
-    if (lastCleanup && [lastCleanup timeIntervalSinceNow] < _clientParameters.remoteTemporaryFileCleanupInterval)
-        // Only need to do this once in a while
-        return;
+    if (lastCleanup) {
+        NSTimeInterval timeSinceLastCleanup = -[lastCleanup timeIntervalSinceNow];
+        DEBUG_CLIENT(2, @"Remove temporary cleanup last happened %f seconds ago", timeSinceLastCleanup);
+        if (timeSinceLastCleanup < _clientParameters.remoteTemporaryFileCleanupInterval) {
+            DEBUG_CLIENT(2, @"  ... which is more recent than the cleanup interval of %f seconds", _clientParameters.remoteTemporaryFileCleanupInterval);
+            return;
+        }
+    }
     
     __autoreleasing NSError *fileInfoError;
     ODAVMultipleFileInfoResult *result = [connection synchronousDirectoryContentsAtURL:remoteTemporaryDirectoryFileInfo.originalURL withETag:nil error:&fileInfoError];

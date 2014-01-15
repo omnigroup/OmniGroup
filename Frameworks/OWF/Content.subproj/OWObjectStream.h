@@ -9,26 +9,5 @@
 
 #import <OWF/OWAbstractObjectStream.h>
 
-@class NSConditionLock, NSLock, NSMutableArray, NSRecursiveLock;
-
-#define OWObjectStreamBuffer_BufferedObjectsLength 128
-
-typedef struct _OWObjectStreamBuffer {
-    unsigned int nextIndex;
-    id objects[OWObjectStreamBuffer_BufferedObjectsLength];
-    struct _OWObjectStreamBuffer *next;
-} OWObjectStreamBuffer;
-
-
 @interface OWObjectStream : OWAbstractObjectStream
-{
-    id *nextObjectInBuffer, *beyondBuffer;
-    OWObjectStreamBuffer *first, *last;
-    unsigned int count;
-    BOOL endOfObjects;
-    
-    NSConditionLock *objectsLock;
-    NSConditionLock *endOfDataLock;
-}
-
 @end

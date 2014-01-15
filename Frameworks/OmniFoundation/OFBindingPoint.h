@@ -28,7 +28,9 @@ static inline OFBindingPoint * OFBindingPointMake(id object, NSString *keyPath)
 #endif
 }
 
-#define OFValidateKeyPath(object, keyPath) (NO && object.keyPath ? @#keyPath : @#keyPath)
+#define OFValidateKeyPath(object, keyPath) (NO && (object).keyPath ? @#keyPath : @#keyPath)
+#define OFKeyPathWithClass(cls, keyPath) OFValidateKeyPath((cls *)nil, keyPath)
 #define OFBindingKeyPath(object, keyPath) OFBindingPointMake(object, OFValidateKeyPath(object, keyPath))
 
 extern BOOL OFBindingPointsEqual(OFBindingPoint *a, OFBindingPoint *b);
+

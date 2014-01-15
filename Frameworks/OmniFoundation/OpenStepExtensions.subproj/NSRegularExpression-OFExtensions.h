@@ -18,6 +18,7 @@
 - (OFRegularExpressionMatch *)of_firstMatchInString:(NSString *)string;
 - (OFRegularExpressionMatch *)of_firstMatchInString:(NSString *)string range:(NSRange)range;
 - (BOOL)hasMatchInString:(NSString *)string;
+- (NSTextCheckingResult *)exactMatchInString:(NSString *)string;
 
 - (OFRegularExpressionMatch *)matchInScanner:(OFStringScanner *)stringScanner;
 

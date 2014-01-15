@@ -218,7 +218,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         return;
     }
     
-    // Preflight any Authorization Rights we'll need to install/update the priveleged helper tool, and install the update
+    // Preflight any Authorization Rights we'll need to install/update the privileged helper tool, and install the update
 
     NSXPCConnection *connection = self.connection;
     id <OSUInstallerService> remoteObjectProxy = [connection remoteObjectProxyWithErrorHandler:^(NSError *error) {

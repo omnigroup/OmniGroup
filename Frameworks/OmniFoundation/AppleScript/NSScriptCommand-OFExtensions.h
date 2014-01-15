@@ -13,6 +13,8 @@
 
 @interface NSScriptCommand (OFExtensions)
 
++ (Class)requireObjectsInArray:(NSArray *)objects toAllHaveSameClassfromClasses:(Class)cls1, ... NS_REQUIRES_NIL_TERMINATION;
+
 - (NSScriptObjectSpecifier *)directParameterSpecifier;
 - (NSScriptObjectSpecifier *)subjectSpecifier;
 

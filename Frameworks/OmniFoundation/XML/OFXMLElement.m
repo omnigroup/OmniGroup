@@ -410,6 +410,18 @@ RCS_ID("$Id$");
     }
 }
 
+- (void)applyBlock:(OFXMLElementApplierBlock)applierBlock;
+{
+    OBPRECONDITION(applierBlock != nil);
+    
+    applierBlock(self);
+    
+    for (id child in _children) {
+	if ([child respondsToSelector:_cmd])
+	    [(OFXMLElement *)child applyBlock:applierBlock];
+    }
+}
+
 - (NSData *)xmlDataAsFragment:(NSError **)outError; // Mostly useful for debugging since this assumes no whitespace is important
 {
     OFXMLWhitespaceBehavior *whitespace = [[OFXMLWhitespaceBehavior alloc] init];

@@ -1,0 +1,36 @@
+/* error title */
+"An error has occurred." = "Er is een fout opgetreden.";
+
+/* error description */
+"Could not find \"%@\"." = "Kan “%@” niet vinden.";
+
+/* error description */
+"Ensure that the address is correct and please try again." = "Controleer of het adres correct is en probeer het opnieuw.";
+
+/* error description */
+"Ensure that the server address, user name, and password are correct and please try again." = "Controleer of het serveradres, de gebruikersnaam en het wachtwoord correct zijn en probeer het opnieuw.";
+
+/* error reason */
+"Failed to delete \"%@\"." = "Kan “%@” niet verwijderen.";
+
+/* error reason */
+"Failed to move \"%@\" to \"%@\"." = "“%1$@” kan niet naar “%2$@” worden verplaatst.";
+
+/* error reason - listing a directory that doesn't exist
+   error reason - listing contents of a nonexistent directory */
+"No document exists at \"%@\"." = "In “%@” staan geen documenten.";
+
+/* error reason */
+"No such file \"%@\"." = "Geen dergelijk bestand \"%@\".";
+
+/* error reason */
+"Please make sure that the destination folder exists." = "Controleer of de doelmap bestaat.";
+
+/* error description */
+"Unable to delete file." = "Bestand kan niet worden verwijderd.";
+
+/* error description */
+"Unable to move file." = "Bestand kan niet worden verplaatst.";
+
+/* error description */
+"Unable to read document." = "Document kan niet worden gelezen.";

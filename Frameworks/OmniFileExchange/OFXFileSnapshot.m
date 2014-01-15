@@ -11,6 +11,7 @@
 #import <OmniFoundation/NSData-OFSignature.h>
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
+#import <OmniFoundation/OFPreference.h>
 
 #import "OFXFileSnapshot-Internal.h"
 #import "OFXFileState.h"
@@ -251,7 +252,7 @@ static NSDictionary *_recordVersionContents(NSURL *localDocumentURL, NSFileCoord
 {
     OBINITIALIZE;
     
-    OBInitializeDebugLogLevel(OFXSnapshotDebug);
+    OFInitializeDebugLogLevel(OFXSnapshotDebug);
 }
 
 - initWithExistingLocalSnapshotURL:(NSURL *)localSnapshotURL error:(NSError **)outError;

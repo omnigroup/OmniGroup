@@ -16,7 +16,8 @@ RCS_ID("$Id$")
 
 @implementation NSSplitView (OAExtensions)
 
-- (CGFloat)positionOfDividerAtIndex:(NSInteger)dividerIndex;
+// FI_TSplitView in FinderKit.framework defines this method, but with an unsigned argument.
+- (CGFloat)oa_positionOfDividerAtIndex:(NSInteger)dividerIndex;
 {
     // It looks like NSSplitView relies on its subviews being ordered left->right or top->bottom so we can too.  It also raises w/ array bounds exception if you use its API with dividerIndex > count of subviews.
     while (dividerIndex >= 0 && [self isSubviewCollapsed:[[self subviews] objectAtIndex:dividerIndex]])

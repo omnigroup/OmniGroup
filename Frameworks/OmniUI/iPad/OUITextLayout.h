@@ -48,8 +48,6 @@ typedef enum {
 - (void)drawFlippedInContext:(CGContextRef)ctx bounds:(CGRect)bounds; // Draws like you'd expect text to be drawn -- with the text stuck to the top of the given bounds and right side up.
 - (CGFloat)firstLineAscent;
 
-- (CGRect)boundsOfCharacterRange:(NSRange)range;
-
 - (CGRect)firstRectForRange:(NSRange)range;
 
 // Intended for link/attachment hit testing, not for selection (since this doesn't handle ligatures/partial glyph fractions).

@@ -429,6 +429,9 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
         NSPasteboard *tempPasteboard = [NSPasteboard pasteboardWithUniqueName];
         if ([self _copyToPasteboard:tempPasteboard] && [self _dataSourceHandlesPaste])
             [self _pasteFromPasteboard:tempPasteboard];
+        
+        [tempPasteboard clearContents];
+        [tempPasteboard releaseGlobally]; // Otherwise, the unique named pasteboard will hang out forever.
     }
 }
 

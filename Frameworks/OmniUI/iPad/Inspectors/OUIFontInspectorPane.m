@@ -39,7 +39,7 @@ static UIFont *_baseFontForFamily(NSString *familyName)
     static NSSet *names = nil;
     if (!names)
         // Lucida Grande isn't available on the device right now, but add it to the preferred list in case it ever shows up.
-        names = [[NSSet alloc] initWithObjects:@"Didot", @"Futura", @"Georgia", @"Gill Sans", @"Helvetica Neue", @"Hoefler Text", @"Lucida Grande", @"Optima", @"Palatino", nil];
+        names = [[NSSet alloc] initWithObjects:@"Avenir Next", @"Futura", @"Georgia", @"Gill Sans", @"Helvetica Neue", @"Hoefler Text", @"Iowan Old Style", @"Lucida Grande", @"Optima", @"Palatino", nil];
     return names;
 }
 

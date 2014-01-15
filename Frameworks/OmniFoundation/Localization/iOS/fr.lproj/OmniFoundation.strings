@@ -1,0 +1,225 @@
+/* abbreviated string for bytes format */
+"%0.1f GB" = "%0.1f Go";
+
+/* abbreviated string for gigahertz format */
+"%0.1f GHz" = "%0.1f GHz";
+
+/* abbreviated string for bytes format */
+"%0.1f kB" = "%0.1f Ko";
+
+/* abbreviated string for kilohertz format */
+"%0.1f KHz" = "%0.1f KHz";
+
+/* abbreviated string for bytes format */
+"%0.1f MB" = "%0.1f Mo";
+
+/* abbreviated string for megahertz format */
+"%0.1f MHz" = "%0.1f MHz";
+
+/* abbreviated string for bytes format */
+"%0.1f PB" = "%0.1f Po";
+
+/* abbreviated string for bytes format */
+"%0.1f TB" = "%0.1f To";
+
+/* abbreviated string for terahertz format */
+"%0.1f THz" = "%0.1f THz";
+
+/* abbreviated string for bytes format */
+"%d bytes" = "%d octets";
+
+/* abbreviated string for hertz format */
+"%u Hz" = "%u Hz";
+
+/* approximate time interval: more than one hour */
+"about %.1f hours" = "environ %.1f heures";
+
+/* approximate time interval: some minutes since start or until finish */
+"about %d minutes" = "environ %d minutes";
+
+/* approximate time interval: seconds since start or until finish */
+"about %d seconds" = "environ %d secondes";
+
+/* approximate time interval: one minute */
+"about a minute" = "environ une minute";
+
+/* approximate time interval: one hour */
+"about an hour" = "environ une heure";
+
+/* error reason */
+"Another application has overridden the lock at \"%@\"." = "Une autre application a ignoré le verrou sur “%@”.";
+
+/* invalid bundle reason */
+"Bundle is obsolete" = "Le lot est obsolète";
+
+/* invalid bundle reason */
+"Bundle requires additional software" = "Le lot requiert un logiciel supplémentaire";
+
+/* compression error reason */
+"bzip2 library returned error code %d when finishing compression. %s." = "La bibliothèque bzip2 a renvoyé le code d’erreur %1$d lors de la finalisation de la compression. %2$s.";
+
+/* decompression error reason */
+"bzip2 library returned error code %d when reading data. %s." = "La bibliothèque bzip2 a renvoyé le code d’erreur %1$d lors de la lecture des données. %2$s.";
+
+/* compression error reason */
+"bzip2 library returned error code %d when writing data. %s." = "La bibliothèque bzip2 a renvoyé le code d’erreur %1$d lors de l’écriture des données. %2$s.";
+
+/* OFLockFile recovery option */
+"Cancel" = "Annuler";
+
+/* error recovery option */
+"Cancel <error recovery>" = "Annuler";
+
+/* error description */
+"Cannot create socket." = "Impossible de créer une interface de connexion.";
+
+/* Error message when mkdir() fails
+   Error message when mkdir() will fail because there's a file in the way
+   Error message when stat() fails when trying to create a directory tree */
+
+
+"Could not create directory" = "Impossible de créer le répertoire";
+
+/* time span formatter span */
+"d" = "j";
+
+/* time span formatter span */
+"day" = "jour";
+
+/* time span formatter span */
+"days" = "jours";
+
+/* invalid bundle reason */
+"Duplicate bundle name" = "Nom de lot en double";
+
+/* exception reason */
+"Element '%@' not allowed at path: %@" = "L’élément « %1$@ » n’est pas autorisé dans le chemin : %2$@.";
+
+/* error reason */
+"Failed to create directory for lock file at \"%@\"." = "La création du répertoire du fichier de verrouillage dans “%@” a échoué.";
+
+/* error reason */
+"Failed to serialize lock information.  %@" = "Échec de la numérotation des informations de verrouillage.  %@";
+
+/* error reason */
+"Failed to write lock file.  %@" = "Échec de l’écriture du fichier de verrouillage.  %@";
+
+/* time span formatter span */
+"h" = "h";
+
+/* time span formatter span */
+"hour" = "heure";
+
+/* time span formatter span */
+"hours" = "heures";
+
+/* formatter input error */
+"Invalid time span format" = "Format de temps non valide";
+
+/* local bundle path readable string */
+"local configuration file" = "fichier de configuration locale";
+
+/* time span formatter span */
+"m" = "min";
+
+/* time span formatter span */
+"minute" = "minute";
+
+/* time span formatter span */
+"minutes" = "minutes";
+
+/* time span formatter span */
+"mo" = "mo";
+
+/* time span formatter span */
+"month" = "mois";
+
+/* time span formatter span */
+"months" = "mois";
+
+/* error reason */
+"No root element was found" = "Aucun élément racine n’a été découvert";
+
+/* invalid bundle reason */
+"Not a valid bundle" = "N’est pas un lot valide";
+
+/* OFLockFile recovery option */
+"Override Lock" = "Ignorer le verrou";
+
+/* time span formatter span */
+"s" = "s";
+
+/* time span formatter span */
+"second" = "seconde";
+
+/* time span formatter span */
+"seconds" = "secondes";
+
+/* server certificate rejected */
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Le certificat de serveur de “%@” ne semble pas valide. Ce site n’est peut-être pas fiable. Voulez-vous quand même vous y connecter ?";
+
+/* server certificate out of date */
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "La date du certificat de serveur de “%@” n’est pas valide. Il se peut que ce certificat soit périmé ou pas encore actif. Voulez-vous quand même vous y connecter ?";
+
+/* server certificate has unknown root */
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "Le certificat de serveur de “%@” n’est signé par aucun serveur racine. Ce site n’est peut-être pas fiable. Voulez-vous quand même vous y connecter ?";
+
+/* server certificate not yet valid */
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "Le certificat de serveur de “%@” n’est pas encore valide. Ce site n’est peut-être pas fiable. Voulez-vous quand même vous y connecter ?";
+
+/* server certificate untrusted */
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Le certificat de serveur de “%@” a été signé par un serveur racine qui n’est pas de confiance. Ce site n’est peut-être pas fiable. Voulez-vous quand même vous y connecter ?";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Ce verrou a été pris par %1$@ à l’aide de l’ordinateur “%2$@” sur %3$@ dans %4$@.";
+
+/* error reason */
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Ce verrou a été pris par %1$@ à l’aide de l’ordinateur “%2$@” sur %3$@ dans %4$@.\n\nVous pouvez ignorer ce verrou, mais cela peut provoquer une perte de données pour l’autre application si elle est en cours d’exécution.";
+
+/* compression error description */
+"Unable to compress data." = "Impossible de compresser les données.";
+
+/* decompression error description */
+"Unable to decompress data." = "Impossible de décompresser les données.";
+
+/* decompression exception format */
+"Unable to decompress gzip data: invalid header" = "Impossible de décompresser les données gzip : en-tête non valide";
+
+/* compression error description */
+"Unable to initialize compression" = "Impossible d’initialiser la compression";
+
+/* decompression error description */
+"Unable to initialize decompression" = "Impossible d’initialiser la décompression";
+
+/* error description */
+"Unable to lock document." = "Impossible de verrouiller le document.";
+
+/* decompression error reason */
+"unrecognized compression format." = "format de compression non reconnu.";
+
+/* time span formatter span */
+"w" = "s";
+
+/* error description */
+"Warning encountered while loading XML." = "Avertissement lors du chargement du fichier XML.";
+
+/* time span formatter span */
+"week" = "semaine";
+
+/* time span formatter span */
+"weeks" = "semaines";
+
+/* time span formatter span */
+"y" = "a";
+
+/* time span formatter span */
+"year" = "année";
+
+/* time span formatter span */
+"years" = "années";
+
+/* zlib error reason */
+"zlib returned error code %d." = "zlib a renvoyé le code d’erreur %d.";
+
+/* zlib error reason */
+"zlib returned error code %d. %s." = "zlib a renvoyé le code d’erreur %1$d. %2$s.";

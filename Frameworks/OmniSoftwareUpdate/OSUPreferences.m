@@ -8,13 +8,6 @@
 #import "OSUPreferences.h"
 
 #import <OmniFoundation/OFPreference.h>
-#import <OmniFoundation/OFVersionNumber.h>
-#import <OmniFoundation/NSUserDefaults-OFExtensions.h>
-#import <OmniBase/OmniBase.h>
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE // Not including OSUItem on iOS currently
-#import "OSUItem.h"
-#endif
 
 RCS_ID("$Id$");
 
@@ -23,7 +16,6 @@ typedef enum { Daily, Weekly, Monthly } CheckFrequencyMark;
 static OFPreference *automaticSoftwareUpdateCheckEnabled = nil;
 static OFPreference *checkInterval = nil;
 static OFPreference *includeHardwareDetails = nil;
-static OFPreference *includeOpenGLDetails = nil;
 static OFPreference *updatesToIgnore = nil;
 static OFPreference *visibleTracks = nil;
 
@@ -32,10 +24,14 @@ static OFPreference *visibleTracks = nil;
 + (void)initialize;
 {
     OBINITIALIZE;
+
+#if MAC_APP_STORE
+    automaticSoftwareUpdateCheckEnabled = [[OFPreference preferenceForKey:@"OSUSendSystemInfoEnabled"] retain];
+#else
     automaticSoftwareUpdateCheckEnabled = [[OFPreference preferenceForKey:@"AutomaticSoftwareUpdateCheckEnabled"] retain];
+#endif
     checkInterval = [[OFPreference preferenceForKey:@"OSUCheckInterval"] retain];
     includeHardwareDetails = [[OFPreference preferenceForKey:@"OSUIncludeHardwareDetails"] retain];
-    includeOpenGLDetails = [[OFPreference preferenceForKey:@"OSUIncludeOpenGLDetails"] retain];
     updatesToIgnore = [[OFPreference preferenceForKey:@"OSUIgnoredUpdates"] retain];
     visibleTracks = [[OFPreference preferenceForKey:@"OSUVisibleTracks"] retain];
 }
@@ -55,57 +51,10 @@ static OFPreference *visibleTracks = nil;
     return includeHardwareDetails;
 }
 
-+ (OFPreference *)includeOpenGLDetails;
-{
-    return includeOpenGLDetails;
-}
-
 + (OFPreference *)ignoredUpdates;
 {
     return updatesToIgnore;
 }
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE // Not including OSUItem on iOS currently
-+ (void)setItem:(OSUItem *)anItem isIgnored:(BOOL)shouldBeIgnored;
-{
-    NSString *itemRepr = [[anItem buildVersion] cleanVersionString];
-    if (!itemRepr)
-        return;
-    itemRepr = [@"v" stringByAppendingString:itemRepr];
-    
-    OFPreference *currentlyIgnored = [self ignoredUpdates];
-    NSMutableArray *ignorance = [[currentlyIgnored stringArrayValue] mutableCopy];
-    
-    if (shouldBeIgnored && ![ignorance containsObject:itemRepr]) {
-        [ignorance addObject:itemRepr];
-        [ignorance sortUsingSelector:@selector(compare:)];
-        [currentlyIgnored setArrayValue:ignorance];
-    } else if (!shouldBeIgnored && [ignorance containsObject:itemRepr]) {
-        [ignorance removeObject:itemRepr];
-        [currentlyIgnored setArrayValue:ignorance];
-        if (![currentlyIgnored hasNonDefaultValue])
-            [currentlyIgnored restoreDefaultValue];
-    }
-    
-    [ignorance release];
-}
-
-
-+ (BOOL)itemIsIgnored:(OSUItem *)anItem;
-{
-    OFVersionNumber *itemRepr = [anItem buildVersion];
-    if (itemRepr) {
-        if([[[self ignoredUpdates] stringArrayValue] containsObject:[@"v" stringByAppendingString:[itemRepr cleanVersionString]]])
-            return YES;
-    }
-    
-    NSString *itemTrack = [anItem track];
-    if (![OSUItem isTrack:itemTrack includedIn:[self visibleTracks]])
-        return YES;
-    
-    return NO;
-}
-#endif
 
 + (NSArray *)visibleTracks;
 {

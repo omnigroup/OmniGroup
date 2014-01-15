@@ -15,3 +15,4 @@ extern NSString *OFCopyNumericBacktraceString(int framesToSkip) NS_RETURNS_RETAI
 extern NSString *OFCopySymbolicBacktrace(void) NS_RETURNS_RETAINED;
 extern NSString *OFCopySymbolicBacktraceForNumericBacktrace(NSString *numericTrace) NS_RETURNS_RETAINED;
 
+extern void OFLogBacktrace(void);

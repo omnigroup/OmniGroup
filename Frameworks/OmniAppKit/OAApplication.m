@@ -12,31 +12,26 @@
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
+#import <OmniAppKit/OADocument.h>
 #import <OmniAppKit/NSResponder-OAExtensions.h>
+#import <OmniAppKit/OAViewPicker.h>
 
 #import <Carbon/Carbon.h>
 #import <ExceptionHandling/NSExceptionHandler.h>
 
-#import <OmniAppKit/OAViewPicker.h>
+#import "NSEvent-OAExtensions.h"
 #import "NSView-OAExtensions.h"
 #import "NSWindow-OAExtensions.h"
 #import "NSImage-OAExtensions.h"
 #import "OAAppKitQueueProcessor.h"
 #import "OAPreferenceController.h"
 #import "OASheetRequest.h"
-#import "NSEvent-OAExtensions.h"
+#import "OAWebPageViewer.h"
 
 RCS_ID("$Id$")
 
 NSString * const OAFlagsChangedNotification = @"OAFlagsChangedNotification";
 NSString * const OAFlagsChangedQueuedNotification = @"OAFlagsChangedNotification (Queued)";
-
-@interface OAApplication (/*Private*/)
-+ (void)_setupOmniApplication;
-- (void)processMouseButtonsChangedEvent:(NSEvent *)event;
-- (void)_scheduleModalPanelWithInvocation:(NSInvocation *)modalInvocation;
-- (void)_rescheduleModalPanel:(NSTimer *)timer;
-@end
 
 static NSUInteger launchModifierFlags;
 static BOOL OATargetSelection;
@@ -426,16 +421,28 @@ static BOOL _applySearchToWindow(NSWindow *window, SEL theAction, id theTarget, 
 // Does the full search documented for -targetForAction:to:from:
 static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, id sender, OAResponderChainApplier applier)
 {
-    // Try the key window
-    NSWindow *keyWindow = self.keyWindow;
-    if (!_applySearchToWindow(keyWindow, theAction, theTarget, sender, applier)) {
-        return;
-    }
-    
-    // Try the main window (if it is not the same window as the key window)
-    NSWindow *mainWindow = self.mainWindow;
-    if ((mainWindow != keyWindow) && !_applySearchToWindow(mainWindow, theAction, theTarget, sender, applier)) {
-        return;
+    // Toolbar items always validate from the view they belong to, but there's no public way to get at that window (because NSToolbarItem is a model object).
+    if ([sender isKindOfClass:[NSToolbarItem class]]) {
+        Ivar itemViewerIvar = class_getInstanceVariable([NSToolbarItem class], "_itemViewer");
+        if (itemViewerIvar) {
+            id itemViewer = object_getIvar(sender, itemViewerIvar);
+            if (itemViewer) {
+                OBASSERT([itemViewer respondsToSelector:@selector(window)]);
+                _applySearchToWindow([itemViewer window], theAction, theTarget, sender, applier);
+            }
+        }
+    } else {
+        // Try the key window
+        NSWindow *keyWindow = self.keyWindow;
+        if (!_applySearchToWindow(keyWindow, theAction, theTarget, sender, applier)) {
+            return;
+        }
+        
+        // Try the main window (if it is not the same window as the key window)
+        NSWindow *mainWindow = self.mainWindow;
+        if ((mainWindow != keyWindow) && !_applySearchToWindow(mainWindow, theAction, theTarget, sender, applier)) {
+            return;
+        }
     }
     
     if (![self applyToResponderChain:applier]) {
@@ -514,8 +521,9 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     // The caller had a specific target in mind.  Start there and follow the responder chain.  The documentation states that if the target is non-nil, it is returned (which is silly since why would you call this method then?)
     if (theTarget)
         [theTarget applyToResponderChain:applier];
-    else
+    else {
         _applyFullSearch(self, theAction, theTarget, sender, applier);
+    }
     
     DEBUG_TARGET_SELECTION(@" ... using %@", [target shortDescription]);
     return target;
@@ -696,50 +704,92 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 }
 
 // Prefix the URL string with "anchor:" if the string is the name of an anchor in the help files. Prefix it with "search:" to search for the string in the help book.
-- (void)showHelpURL:(NSString *)helpURL;
+- (void)showHelpURL:(NSString *)helpURLString;
 {
+    // We prefer to display help in an internal help viewer
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSDictionary *infoDict = [mainBundle infoDictionary];
+    NSString *helpFolder = [infoDict objectForKey:@"OAHelpFolder"];
+    if (helpFolder != nil) { // Display our help internally
+        NSURL *indexPageURL = [[NSBundle mainBundle] URLForResource:@"index" withExtension:@"html" subdirectory:helpFolder];
+        NSURL *targetURL = [NSURL URLWithString:helpURLString relativeToURL:indexPageURL];
+        if (OFISEQUAL([targetURL scheme], @"anchor")) {
+            NSURL *anchorsPlistURL = [[NSBundle mainBundle] URLForResource:@"anchors" withExtension:@"plist" subdirectory:helpFolder];
+            NSDictionary *anchorsDictionary = [NSDictionary dictionaryWithContentsOfURL:anchorsPlistURL];
+            NSString *anchorURLString = [anchorsDictionary objectForKey:helpURLString];
+            if (anchorURLString == nil) {
+                NSLog(@"Warning: undefined anchor %@", helpURLString);
+                NSBeep();
+                return;
+            }
+            targetURL = [NSURL URLWithString:anchorURLString relativeToURL:indexPageURL];
+        }
+
+        OAWebPageViewer *viewer = [OAWebPageViewer sharedViewerNamed:@"Help"];
+        [[viewer window] setTitle:NSLocalizedStringFromTableInBundle(@"Help", @"OmniAppKit", [OAApplication bundle], "Help window default title")];
+        NSURLRequest *request = [NSURLRequest requestWithURL:targetURL];
+        [viewer loadRequest:request];
+        return;
+    }
+
+    // OmniWeb displays its help in one of its browser windows
     id applicationDelegate = [NSApp delegate];
     if ([applicationDelegate respondsToSelector:@selector(openAddressWithString:)]) {
         // We're presumably in OmniWeb, in which case we display our help internally
         NSString *omniwebHelpBaseURL = @"omniweb:/Help/";
-        if([helpURL isEqualToString:@"anchor:SoftwareUpdatePreferences_Help"])
-            helpURL = @"reference/preferences/Update.html";
-        [applicationDelegate performSelector:@selector(openAddressWithString:) withObject:[omniwebHelpBaseURL stringByAppendingString:helpURL]];
-    } else {
-	NSBundle *mainBundle = [NSBundle mainBundle];
-        NSString *bookName = [mainBundle localizedStringForKey:@"CFBundleHelpBookName" value:@"" table:@"InfoPlist"];
-        if (![bookName isEqualToString:@"CFBundleHelpBookName"]) {
-            // We've got Apple Help.  First, make sure the help book is registered.  NSHelpManager would do this for us, but we use AHGotoPage, which it doesn't cover.
-	    static BOOL helpBookRegistered = NO;
-	    if (!helpBookRegistered) {
-		helpBookRegistered = YES;
-		NSURL *appBundleURL = [NSURL fileURLWithPath:[mainBundle bundlePath]];
-		FSRef appBundleRef;
-		if (!CFURLGetFSRef((CFURLRef)appBundleURL, &appBundleRef))
-		    NSLog(@"Unable to get FSRef for app bundle URL of '%@' for bundle '%@'", appBundleURL, mainBundle);
-		else
-		    AHRegisterHelpBook(&appBundleRef);
-	    }
-	    
-	    
-            OSStatus err;
-            NSRange range = [helpURL rangeOfString:@"search:"];
-            if ((range.length != 0) || (range.location == 0))
-                err = AHSearch((CFStringRef)bookName, (CFStringRef)[helpURL substringFromIndex:NSMaxRange(range)]);
-            else {
-                range = [helpURL rangeOfString:@"anchor:"];
-                if ((range.length != 0) || (range.location == 0))
-                    err = AHLookupAnchor((CFStringRef)bookName, (CFStringRef)[helpURL substringFromIndex:NSMaxRange(range)]);
-                else
-                    err = AHGotoPage((CFStringRef)bookName, (CFStringRef)helpURL, NULL);
-            }
-            
-            if (err != noErr)
-                NSLog(@"Apple Help error: %@", OFOSStatusDescription(err));
-        } else {
-            // We can let the system decide who to open the URL with
-            [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:helpURL]];
+        if ([helpURLString isEqualToString:@"anchor:updatepreferences"])
+            helpURLString = @"reference/preferences/Update.html";
+        [applicationDelegate performSelector:@selector(openAddressWithString:) withObject:[omniwebHelpBaseURL stringByAppendingString:helpURLString]];
+        return;
+    }
+
+    // Standard Apple Help
+    NSString *bookName = [mainBundle localizedStringForKey:@"CFBundleHelpBookName" value:@"" table:@"InfoPlist"];
+    if (![bookName isEqualToString:@"CFBundleHelpBookName"]) {
+        // We've got Apple Help.  First, make sure the help book is registered.  NSHelpManager would do this for us, but we use AHGotoPage, which it doesn't cover.
+        static BOOL helpBookRegistered = NO;
+        if (!helpBookRegistered) {
+            helpBookRegistered = YES;
+            NSURL *appBundleURL = [NSURL fileURLWithPath:[mainBundle bundlePath]];
+            FSRef appBundleRef;
+            if (!CFURLGetFSRef((CFURLRef)appBundleURL, &appBundleRef))
+                NSLog(@"Unable to get FSRef for app bundle URL of '%@' for bundle '%@'", appBundleURL, mainBundle);
+            else
+                AHRegisterHelpBook(&appBundleRef);
         }
+
+
+        OSStatus err;
+        NSRange range = [helpURLString rangeOfString:@"search:"];
+        if ((range.length != 0) || (range.location == 0))
+            err = AHSearch((CFStringRef)bookName, (CFStringRef)[helpURLString substringFromIndex:NSMaxRange(range)]);
+        else {
+            range = [helpURLString rangeOfString:@"anchor:"];
+            if ((range.length != 0) || (range.location == 0))
+                err = AHLookupAnchor((CFStringRef)bookName, (CFStringRef)[helpURLString substringFromIndex:NSMaxRange(range)]);
+            else
+                err = AHGotoPage((CFStringRef)bookName, (CFStringRef)helpURLString, NULL);
+        }
+
+        if (err != noErr)
+            NSLog(@"Apple Help error: %@", OFOSStatusDescription(err));
+        return;
+    }
+
+    // No help?
+    NSLog(@"Warning: could not find built-in help for %@", helpURLString);
+    NSBeep();
+}
+
+- (IBAction)showHelp:(id)sender;
+{
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSDictionary *infoDict = [mainBundle infoDictionary];
+    NSString *helpFolder = [infoDict objectForKey:@"OAHelpFolder"];
+    if (helpFolder != nil) { // Display our help internally
+        [self showHelpURL:@""];
+    } else {
+        [super showHelp:nil];
     }
 }
 
@@ -980,6 +1030,39 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     }
 
     return orderedWindows;
+}
+
+- (id)valueInOrderedDocumentsWithUniqueID:(NSString *)identifier ignoringDocument:(OADocument *)ignoringDocument;
+{
+    // Probably not worth building a hash table for the (likely) low number of documents.
+    for (OADocument *document in [self orderedDocuments]) {
+        // Needed so that -identifer on OADocument(Scriptability) doesn't recurse infinitely
+        if (document == ignoringDocument)
+            continue;
+        
+        // -scriptIdentifierIfSet so that if there are two documents w/o identifiers we don't ping/pong between them infinitely.
+        if ([document.scriptIdentifierIfSet isEqual:identifier])
+            return document;
+    }
+    return nil;
+}
+
+- (id)valueInOrderedDocumentsWithUniqueID:(NSString *)identifier;
+{
+    return [self valueInOrderedDocumentsWithUniqueID:identifier ignoringDocument:nil];
+}
+
+- (id)valueInOrderedDocumentsWithName:(NSString *)name;
+{
+    // The "name" property maps to -displayName
+    // Name lookups are supposed to be case-insensitive. We could prefer exact matches, but then 'every document whose name is "foo"' might return objects a first object that is different than 'document "foo"'...
+    
+    for (OADocument *document in [NSApp orderedDocuments]) {
+        if ([name localizedCaseInsensitiveCompare:document.displayName] == NSOrderedSame)
+	    return document;
+    }
+    
+    return nil;
 }
 
 #pragma mark -

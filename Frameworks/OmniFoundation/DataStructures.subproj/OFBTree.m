@@ -115,18 +115,22 @@ static inline BOOL _isAtLeafNode(const OFBTree *btree, const OFBTreeCursor *curs
     return (cursor->nodeStackDepth+1 >= btree->height);
 }
 
+#define LEAF_STRIDE(tree) (tree->elementSize)
+#define NODE_STRIDE(tree) (tree->elementSize + sizeof(OFBTreeChildPointer))
+
+#if 0
 static inline ptrdiff_t _OFBTreeValueStride(const OFBTree *btree, const OFBTreeCursor *cursor)
 {
     if (_isAtLeafNode(btree, cursor)) {
         /* Leaf node, no child pointers */
-#define LEAF_STRIDE(tree) (tree->elementSize)
-        return LEAF_STRIDE(btree); 
+        return LEAF_STRIDE(btree);
     } else {
         /* Interior node, has child pointers */
-#define NODE_STRIDE(tree) (tree->elementSize + sizeof(OFBTreeChildPointer))
         return NODE_STRIDE(btree);
     }
 }
+#endif
+
 #define ELEMENT_AT_INDEX(node, stride, index) ( (void *)((node)->contents) + (index)*(stride) )
 
 extern void OFBTreeDeleteAll(OFBTree *tree)

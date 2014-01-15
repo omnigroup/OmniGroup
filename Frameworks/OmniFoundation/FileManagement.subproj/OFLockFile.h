@@ -28,8 +28,8 @@ typedef NS_OPTIONS(NSUInteger, OFLockFileLockOperationOptions) {
 
 @interface OFLockFile : NSObject
 
-+ (void)setLockUnavailableHandler:(id <OFLockUnavailableHandler>)handler;
-+ (id <OFLockUnavailableHandler>)lockUnavailableHandler;
++ (void)setDefaultLockUnavailableHandler:(id <OFLockUnavailableHandler>)handler;
++ (id <OFLockUnavailableHandler>)defaultLockUnavailableHandler;
 
 - (id)initWithURL:(NSURL *)lockFileURL; // The URL of the lock file itself, not the item to be locked.
 
