@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -88,7 +88,8 @@ RCS_ID("$Id$")
 
 // plain -release w/o -init will crash on 10.4.11/Intel
 #define BAD_INIT do { \
-    [[self init] release]; \
+    self = [self init]; \
+    OB_RELEASE(self); \
     return nil; \
 } while(0)
 
@@ -206,7 +207,7 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
         
     // NOTE: CFCalendarComposeAbsoluteTime is not thread-safe and doesn't deal with floating-point seconds, but CFGregorianDateGetAbsoluteTime is and has nicer API for what we need.
     // TODO: Leap seconds can cause the maximum allowed second value to be 58 or 60 depending on whether the adjustment is +/-1.  RFC 3339 has a table of some leap seconds up to 1998 that we could test with.
-    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (CFTimeZoneRef)timeZone);
+    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (OB_BRIDGE CFTimeZoneRef)timeZone);
     
     DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
         
@@ -290,7 +291,7 @@ static unsigned int _parse4Digits(const char *buf, unsigned int offset)
     if (!CFGregorianDateIsValid(date, kCFGregorianAllUnits)) {
         BAD_INIT;
     }
-    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (CFTimeZoneRef)cachedTimeZone);
+    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (OB_BRIDGE CFTimeZoneRef)cachedTimeZone);
 
     DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
     
@@ -305,7 +306,7 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 {
     DEBUG_XML_STRING(@"%s: input: %@ %f", __PRETTY_FUNCTION__, self, [self timeIntervalSinceReferenceDate]);
     
-    CFTimeZoneRef timeZone = (CFTimeZoneRef)(currentTimeZone ? [NSTimeZone localTimeZone] : [NSDate UTCTimeZone]);
+    CFTimeZoneRef timeZone = (OB_BRIDGE CFTimeZoneRef)(currentTimeZone ? [NSTimeZone localTimeZone] : [NSDate UTCTimeZone]);
     CFAbsoluteTime timeInterval = CFDateGetAbsoluteTime((CFDateRef)self);
     
     CFGregorianDate date = CFAbsoluteTimeGetGregorianDate(timeInterval, timeZone);
@@ -374,7 +375,7 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
 	BAD_INIT;
     }
         
-    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (CFTimeZoneRef)cachedTimeZone);
+    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (OB_BRIDGE CFTimeZoneRef)cachedTimeZone);
 
     DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
     
@@ -426,7 +427,7 @@ static NSString *_xmlStyleDateStringWithFormat(NSDate *self, SEL _cmd, NSString 
     if (!CFGregorianDateIsValid(date, kCFGregorianAllUnits))
         BAD_INIT;
 
-    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (CFTimeZoneRef)cachedTimeZone);
+    CFAbsoluteTime absoluteTime = CFGregorianDateGetAbsoluteTime(date, (OB_BRIDGE CFTimeZoneRef)cachedTimeZone);
 
     DEBUG_XML_STRING(@"absoluteTime: %f", absoluteTime);
     

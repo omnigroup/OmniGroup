@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,6 @@
 
 #import <OmniFoundation/OFCFCallbacks.h>
 #import <OmniBase/rcsid.h>
-#import <Foundation/NSZone.h> // NSMakeCollectable
 
 RCS_ID("$Id$");
 

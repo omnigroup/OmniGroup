@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -182,8 +182,8 @@ RCS_ID("$Id$");
         value = [self placeholderValueForItemAtIndex:itemIndex];
     }
 
-    if (item.image != nil) 
-        cell.imageView.image = item.image;
+    if (item.image != nil)
+        cell.imageView.image = [item.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     
     // No entry in UIInterface for this.
     static UIColor *defaultDetailTextColor = nil;

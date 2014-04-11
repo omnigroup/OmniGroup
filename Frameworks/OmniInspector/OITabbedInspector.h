@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,12 +18,11 @@
 
 @interface OITabbedInspector : OIInspector <OIConcreteInspector> 
 {
-    NSView *inspectionView;
     IBOutlet NSView *contentView;
     IBOutlet OITabMatrix *buttonMatrix;
     NSArray *_tabControllers;
     NSMutableArray *_trackingRectTags;
-    OIInspectorController *_nonretained_inspectorController;
+    __weak OIInspectorController *_weak_inspectorController;
     BOOL _singleSelection;
     BOOL _shouldInspectNothing;
     BOOL _autoSelection;
@@ -35,7 +34,7 @@
 - (void)loadConfiguration:(NSDictionary *)dict;
 - (NSDictionary *)configuration;
 
-- (void)registerInspectorDictionary:(NSDictionary *)tabPlist bundle:(NSBundle *)sourceBundle;
+- (void)registerInspectorDictionary:(NSDictionary *)tabPlist inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)sourceBundle;
 
 - (NSArray *)tabIdentifiers;
 - (NSArray *)selectedTabIdentifiers;

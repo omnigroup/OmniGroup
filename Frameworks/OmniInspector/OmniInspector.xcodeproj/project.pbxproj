@@ -14,10 +14,10 @@
 		346DEF3209992425008F5B5F /* OIInspectorTabController.h in Headers */ = {isa = PBXBuildFile; fileRef = 346DEF3009992425008F5B5F /* OIInspectorTabController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		346DEF3309992425008F5B5F /* OIInspectorTabController.m in Sources */ = {isa = PBXBuildFile; fileRef = 346DEF3109992425008F5B5F /* OIInspectorTabController.m */; };
 		346E4371151A9550001C7496 /* OIInspectorGroup-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E4370151A954F001C7496 /* OIInspectorGroup-Internal.h */; };
-		346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E4373151A95EA001C7496 /* OIInspectorController-Internal.h */; };
+		346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 346E4373151A95EA001C7496 /* OIInspectorController-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		34A652370D0A0A7D003F4D4C /* OISectionedInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A652350D0A0A7D003F4D4C /* OISectionedInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A652380D0A0A7D003F4D4C /* OISectionedInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */; };
-		34A6524A0D0A0B0B003F4D4C /* OISectionedInspector.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34A652490D0A0B0B003F4D4C /* OISectionedInspector.nib */; };
+		34A6524A0D0A0B0B003F4D4C /* OISectionedInspector.xib in Resources */ = {isa = PBXBuildFile; fileRef = 34A652490D0A0B0B003F4D4C /* OISectionedInspector.xib */; };
 		34B2544408D0DCEE00DD2070 /* OIColorInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2542708D0DCEE00DD2070 /* OIColorInspector.h */; };
 		34B2544508D0DCEE00DD2070 /* OIColorInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B2542808D0DCEE00DD2070 /* OIColorInspector.m */; };
 		34B2544608D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B2542908D0DCEE00DD2070 /* OIDynamicInspectorMenuItem.h */; };
@@ -47,7 +47,7 @@
 		34B2549708D0DE8900DD2070 /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34B2549408D0DE8900DD2070 /* OmniAppKit.framework */; };
 		34B2549808D0DE8900DD2070 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34B2549508D0DE8900DD2070 /* OmniBase.framework */; };
 		34B2549908D0DE8900DD2070 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34B2549608D0DE8900DD2070 /* OmniFoundation.framework */; };
-		34B443AB09F595BE008956F6 /* Tabbed.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34B443AA09F595BE008956F6 /* Tabbed.nib */; };
+		34B443AB09F595BE008956F6 /* Tabbed.xib in Resources */ = {isa = PBXBuildFile; fileRef = 34B443AA09F595BE008956F6 /* Tabbed.xib */; };
 		34BA7D6F0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BA7D6D0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h */; };
 		34BA7D700A6D904000E029F8 /* OIButtonMatrixBackgroundView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BA7D6E0A6D904000E029F8 /* OIButtonMatrixBackgroundView.m */; };
 		34C4FA900D19B3BE0009E860 /* OIInspectorSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C4FA8E0D19B3BE0009E860 /* OIInspectorSection.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -82,7 +82,7 @@
 		4914964D0C9B39DF006E9EAB /* OITabLock.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 4914964C0C9B39DF006E9EAB /* OITabLock.pdf */; };
 		6C34FC2B08DA46430055F81A /* OITabbedInspector.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC2908DA46430055F81A /* OITabbedInspector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C34FC2C08DA46430055F81A /* OITabbedInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC2A08DA46430055F81A /* OITabbedInspector.m */; };
-		6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC3A08DA47590055F81A /* OITabMatrix.h */; settings = {ATTRIBUTES = (); }; };
+		6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC3A08DA47590055F81A /* OITabMatrix.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C34FC3D08DA47590055F81A /* OITabMatrix.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC3B08DA47590055F81A /* OITabMatrix.m */; };
 		6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC4908DA478D0055F81A /* OITabCell.h */; };
 		6C34FC4C08DA478D0055F81A /* OITabCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC4A08DA478D0055F81A /* OITabCell.m */; };
@@ -122,7 +122,7 @@
 		346E4373151A95EA001C7496 /* OIInspectorController-Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OIInspectorController-Internal.h"; sourceTree = "<group>"; };
 		34A652350D0A0A7D003F4D4C /* OISectionedInspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OISectionedInspector.h; sourceTree = "<group>"; };
 		34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OISectionedInspector.m; sourceTree = "<group>"; };
-		34A652490D0A0B0B003F4D4C /* OISectionedInspector.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = OISectionedInspector.nib; sourceTree = "<group>"; };
+		34A652490D0A0B0B003F4D4C /* OISectionedInspector.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OISectionedInspector.xib; sourceTree = "<group>"; };
 		34B253CE08D0D6BD00DD2070 /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34B253CF08D0D6BD00DD2070 /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		34B253D008D0D6BD00DD2070 /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
@@ -167,7 +167,7 @@
 		34B2549408D0DE8900DD2070 /* OmniAppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34B2549508D0DE8900DD2070 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		34B2549608D0DE8900DD2070 /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		34B443AA09F595BE008956F6 /* Tabbed.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = Tabbed.nib; sourceTree = "<group>"; };
+		34B443AA09F595BE008956F6 /* Tabbed.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Tabbed.xib; sourceTree = "<group>"; };
 		34BA7D6D0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIButtonMatrixBackgroundView.h; sourceTree = "<group>"; };
 		34BA7D6E0A6D904000E029F8 /* OIButtonMatrixBackgroundView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIButtonMatrixBackgroundView.m; sourceTree = "<group>"; };
 		34C4FA8E0D19B3BE0009E860 /* OIInspectorSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorSection.h; sourceTree = "<group>"; };
@@ -364,7 +364,7 @@
 				34A652360D0A0A7D003F4D4C /* OISectionedInspector.m */,
 				34C4FA8E0D19B3BE0009E860 /* OIInspectorSection.h */,
 				34C4FA8F0D19B3BE0009E860 /* OIInspectorSection.m */,
-				34A652490D0A0B0B003F4D4C /* OISectionedInspector.nib */,
+				34A652490D0A0B0B003F4D4C /* OISectionedInspector.xib */,
 			);
 			name = Sectioned;
 			sourceTree = "<group>";
@@ -446,7 +446,7 @@
 				34BA7D6E0A6D904000E029F8 /* OIButtonMatrixBackgroundView.m */,
 				6C34FC4908DA478D0055F81A /* OITabCell.h */,
 				6C34FC4A08DA478D0055F81A /* OITabCell.m */,
-				34B443AA09F595BE008956F6 /* Tabbed.nib */,
+				34B443AA09F595BE008956F6 /* Tabbed.xib */,
 			);
 			name = Tabbed;
 			sourceTree = "<group>";
@@ -474,6 +474,7 @@
 				34B2546008D0DCEE00DD2070 /* OmniInspector.h in Headers */,
 				34D2B7A908D0E17C00C74260 /* OAApplication-OIExtensions.h in Headers */,
 				34D2B7D008D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h in Headers */,
+				346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */,
 				6C34FC2B08DA46430055F81A /* OITabbedInspector.h in Headers */,
 				6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */,
 				6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */,
@@ -486,7 +487,6 @@
 				34A652370D0A0A7D003F4D4C /* OISectionedInspector.h in Headers */,
 				34C4FA900D19B3BE0009E860 /* OIInspectorSection.h in Headers */,
 				346E4371151A9550001C7496 /* OIInspectorGroup-Internal.h in Headers */,
-				346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -519,7 +519,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -565,13 +565,13 @@
 				34D2B78A08D0E09C00C74260 /* OIWindowSmallCloseBox-Pressed-Ice.png in Resources */,
 				34D2B78B08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Graphite.png in Resources */,
 				34D2B78C08D0E09C00C74260 /* OIWindowSmallCloseBox-Rollover-Ice.png in Resources */,
-				34B443AB09F595BE008956F6 /* Tabbed.nib in Resources */,
+				34B443AB09F595BE008956F6 /* Tabbed.xib in Resources */,
 				A2F861290C960DAF00BE4827 /* OITabDepressionBackground.png in Resources */,
 				4914964D0C9B39DF006E9EAB /* OITabLock.pdf in Resources */,
 				0A6C01C40CC046EF0014024A /* OIWorkspaceRestore.png in Resources */,
 				0A6C01C50CC046EF0014024A /* OIWorkspaceStore.png in Resources */,
 				0A6C02900CC04ABB0014024A /* OIWorkspaceSnap.aiff in Resources */,
-				34A6524A0D0A0B0B003F4D4C /* OISectionedInspector.nib in Resources */,
+				34A6524A0D0A0B0B003F4D4C /* OISectionedInspector.xib in Resources */,
 				E2B8A8C915BDF90B00B5F26B /* OICollapsed@2x.png in Resources */,
 				E2B8A8CA15BDF90B00B5F26B /* OIExpanded@2x.png in Resources */,
 				E2B8A8CB15BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Graphite@2x.png in Resources */,
@@ -662,6 +662,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34B253D508D0D6BD00DD2070 /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
 				PRODUCT_NAME = OmniInspector;
@@ -672,6 +673,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34B253D608D0D6BD00DD2070 /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
 				PRODUCT_NAME = OmniInspector;
@@ -688,6 +690,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34B253D408D0D6BD00DD2070 /* Omni-Framework-Coverage.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
 				PRODUCT_NAME = OmniInspector;

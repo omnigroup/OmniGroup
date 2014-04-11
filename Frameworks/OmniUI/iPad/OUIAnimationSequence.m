@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,7 @@ const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
 @implementation OUIAnimationSequence
 {
     OUIInteractionLock *_lock;
+    id _retainCycleWhileRunning;
     NSTimeInterval _duration;
     CFAbsoluteTime _startTime;
     NSArray *_steps;
@@ -48,7 +49,7 @@ const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
         DEBUG_SEQ(@"done at %f", CFAbsoluteTimeGetCurrent() - _startTime);
         [_lock unlock];
         _lock = nil;
-        OBStrongRelease(self); // matching -run
+        _retainCycleWhileRunning = nil; // Set up in -run
         return;
     }
     
@@ -98,7 +99,8 @@ const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
     // Turn off interaction and fire up the animations.
     _lock = [OUIInteractionLock applicationLock];
     
-    OBStrongRetain(self); // so the caller can -release us w/o clang-sa complaining.
+    // so the caller can -release us w/o clang-sa complaining.
+    _retainCycleWhileRunning = self;
     
     _startTime = CFAbsoluteTimeGetCurrent();
     [self _runNextStep];

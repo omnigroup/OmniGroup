@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,12 +27,11 @@ static NSScriptSuiteRegistry *(*original_sharedScriptSuiteRegistry)(Class cls, S
             Class cls = NSClassFromString(registryClassName);
             OBASSERT(cls);
             if (cls) {
-                NSScriptSuiteRegistry *registry = [[cls alloc] init];
-                OBStrongRetain(registry); // -setSharedScriptSuiteRegistry: doesn't retain the instance...
-                [NSScriptSuiteRegistry setSharedScriptSuiteRegistry:registry];
+                static NSScriptSuiteRegistry *registry;
                 
+                registry = [[cls alloc] init]; // -setSharedScriptSuiteRegistry: doesn't retain the instance, so we keep a reference
+                [NSScriptSuiteRegistry setSharedScriptSuiteRegistry:registry];
                 OBASSERT(original_sharedScriptSuiteRegistry(self, _cmd) == registry);
-                [registry release];
             }
         }
     });

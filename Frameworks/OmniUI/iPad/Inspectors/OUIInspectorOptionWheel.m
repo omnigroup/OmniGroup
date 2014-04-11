@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,6 @@
 
 #import <OmniUI/OUIInspectorOptionWheelItem.h>
 #import <OmniUI/OUIInspectorOptionWheelSelectionIndicator.h>
-#import <OmniUI/OUIInspectorWell.h>
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 
@@ -45,7 +44,7 @@ RCS_ID("$Id$");
     
     CGRect bounds = self.bounds;
     
-    const CGFloat kItemSpacingX = 1;
+    const CGFloat kItemSpacingX = 13;
     const CGFloat kItemSpacingY = 3;
     
     const CGFloat itemSize = CGRectGetHeight(bounds) - 2*kItemSpacingY;
@@ -75,38 +74,8 @@ RCS_ID("$Id$");
     OUIInspectorOptionWheelScrollView *_scrollView;
     NSMutableArray *_items;
     OUIInspectorOptionWheelItem *_selectedItem; // might be animating to this, but not there yet
-}
-
-static CGFunctionRef BackgroundShadingFunction;
-
-static void _backgroundShadingEvaluate(void *info, const CGFloat *in, CGFloat *out)
-{
-    OBPRECONDITION(info == NULL);
-    
-    CGFloat t = *in;
-    
-    t = 2*fabs(t - 0.5); // ramp up/down
-    t = pow(t, kOUIInspectorOptionWheelGradientPower); // flatten the curve
-
-    // Interpolate between two grays.
-    const CGFloat minGray = kOUIInspectorOptionWheelEdgeGradientGray;
-    const CGFloat maxGray = kOUIInspectorOptionWheelMiddleGradientGray;
-    out[0] = t*minGray + (1-t)*maxGray;
-    out[1] = 1; // alpha;
-}
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    CGFloat domain[] = {0, 1}; // 0..1 input
-    CGFloat range[] = {0, 1, 0, 1}; // gray/alpha output
-    
-    CGFunctionCallbacks callbacks;
-    memset(&callbacks, 0, sizeof(callbacks));
-    callbacks.evaluate = _backgroundShadingEvaluate;
-    
-    BackgroundShadingFunction = CGFunctionCreate(NULL/*info*/, 1/*domain*/, domain, 2/*range*/, range, &callbacks);
+    UIView *_leftShieldView;
+    UIView *_rightShieldView;
 }
 
 static id _commonInit(OUIInspectorOptionWheel *self)
@@ -125,12 +94,22 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     [self addSubview:self->_scrollView];
     
     self->_selectionIndicator = [[OUIInspectorOptionWheelSelectionIndicator alloc] init];
-    self->_selectionIndicator.layer.zPosition = 1;
+    self->_selectionIndicator.userInteractionEnabled = NO;
     [self addSubview:self->_selectionIndicator];
     
     self->_items = [[NSMutableArray alloc] init];
     [self setNeedsLayout];
-    
+
+    self->_leftShieldView = [[UIView alloc] init];
+    self->_leftShieldView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.5];
+    self->_leftShieldView.userInteractionEnabled = NO;
+    [self addSubview:self->_leftShieldView];
+
+    self->_rightShieldView = [[UIView alloc] init];
+    self->_rightShieldView.backgroundColor = [UIColor colorWithWhite:1.0 alpha:0.5];
+    self->_rightShieldView.userInteractionEnabled = NO;
+    [self addSubview:self->_rightShieldView];
+
     return self;
 }
 
@@ -159,6 +138,7 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     
     OUIInspectorOptionWheelItem *item = [[OUIInspectorOptionWheelItem alloc] init];
     item.value = value;
+    item.contentMode = UIViewContentModeCenter;
     [item setImage:image forState:UIControlStateNormal];
     if (_showHighlight)
         [item setImage:[self _imageWithHighlight:image] forState:UIControlStateSelected];
@@ -242,23 +222,6 @@ static id _commonInit(OUIInspectorOptionWheel *self)
 #pragma mark -
 #pragma mark UIView subclass
 
-- (void)drawRect:(CGRect)rect;
-{
-    [_selectionIndicator updateColor];
-
-    CGRect bounds = self.bounds;
-    CGContextRef ctx = UIGraphicsGetCurrentContext();
-    
-    OUIInspectorWellDraw(ctx, self.bounds,
-                         OUIInspectorWellCornerTypeLargeRadius, OUIInspectorWellBorderTypeLight, YES/*innerShadow*/, YES/*outerShadow*/,
-                         ^(CGRect interiorRect){
-        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
-        CGShadingRef shading = CGShadingCreateAxial(colorSpace, bounds.origin, CGPointMake(CGRectGetMaxX(bounds), CGRectGetMinY(bounds)), BackgroundShadingFunction, NO, NO);
-        CGColorSpaceRelease(colorSpace);
-        CGContextDrawShading(ctx, shading);
-        CGShadingRelease(shading);
-    });
-}
 
 - (void)layoutSubviews;
 {
@@ -266,9 +229,16 @@ static id _commonInit(OUIInspectorOptionWheel *self)
     
     _scrollView.frame = CGRectInset(bounds, 1, 1);
 
-    CGRect indicatorFrame = _selectionIndicator.frame;
-    _selectionIndicator.frame = CGRectMake(CGRectGetMidX(bounds) - CGRectGetWidth(indicatorFrame)/2,
-                                           CGRectGetMinY(bounds), indicatorFrame.size.width, indicatorFrame.size.height);
+    const CGFloat kItemSpacingX = 6;
+    const CGFloat kItemSpacingY = 3;
+    const CGFloat itemSize = CGRectGetHeight(bounds) - 2*kItemSpacingY;
+
+    _selectionIndicator.frame = CGRectMake(CGRectGetMidX(bounds) - itemSize/2 - kItemSpacingX,
+                                           CGRectGetMinY(bounds), itemSize + 2*kItemSpacingX, _scrollView.frame.size.height);
+
+    _leftShieldView.frame = CGRectMake(CGRectGetMinX(bounds), CGRectGetMinY(bounds), CGRectGetMidX(bounds) - itemSize/2 - kItemSpacingX, _scrollView.frame.size.height);
+    _rightShieldView.frame = CGRectMake(CGRectGetMaxX(_selectionIndicator.frame), CGRectGetMinY(bounds), CGRectGetMidX(bounds) - itemSize/2 - kItemSpacingX, _scrollView.frame.size.height);
+
 }
 
 #pragma mark -

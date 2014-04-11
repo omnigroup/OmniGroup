@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -415,6 +415,8 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     should(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:2],(NSRange){2,1}));
 }
 
+#define CFStringFromUnicharArray(x) CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, x, sizeof(x)/sizeof(x[0]), kCFAllocatorNull)
+
 - (void)testInvalidSequence
 {
     static const unichar good0[0] = { };                               // zero-length string is valid
@@ -432,7 +434,7 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     static const unichar bad7[4] = { 0xFFFE, 'H', 'i', '!' };  // reversed BOM
     static const unichar bad8[4] = { 'H', 'i', '0', 0xDFEE };  // broken pair
 
-#define USTR(x) (__bridge CFStringRef)CFBridgingRelease(CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, x, sizeof(x)/sizeof(x[0]), kCFAllocatorNull))
+#define USTR(x) (__bridge CFStringRef)CFBridgingRelease(CFStringFromUnicharArray(x))
     STAssertTrue(OFStringContainsInvalidSequences(USTR(bad1)), nil);
     STAssertTrue(OFStringContainsInvalidSequences(USTR(bad2)), nil);
     STAssertTrue(OFStringContainsInvalidSequences(USTR(bad3)), nil);
@@ -448,6 +450,65 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     STAssertFalse(OFStringContainsInvalidSequences(USTR(good3)), nil);
     STAssertFalse(OFStringContainsInvalidSequences(USTR(good4)), nil);
 #undef USTR
+}
+
+- (void)testCharacterSets
+{
+    static const char t0_utf8[] = { 't', 0xEF, 0xBF, 0xBE, 0 }; // Valid UTF8 for 0xFFFE
+    static const char t1_utf8[] = { 't', 0xEF, 0xBF, 0xBF, 0 }; // Valid UTF8 for 0xFFFF
+    static const char t2_utf8[] = { 't', 0xEF, 0xBB, 0xBF, 0 }; // Valid UTF8 for 0xFEFF
+
+    NSCharacterSet *illegal = [NSString invalidXMLCharacterSet];
+    NSCharacterSet *discouraged = [NSString discouragedXMLCharacterSet];
+    
+    STAssertTrue([[NSString stringWithUTF8String:t0_utf8] containsCharacterInSet:illegal], @"0xFFFE in +invalidXMLCharacterSet");
+    STAssertTrue([[NSString stringWithUTF8String:t1_utf8] containsCharacterInSet:illegal], @"0xFFFF in +invalidXMLCharacterSet");
+    STAssertFalse([[NSString stringWithUTF8String:t2_utf8] containsCharacterInSet:illegal], @"0xFEFF not in +invalidXMLCharacterSet");
+    
+    STAssertTrue([@"\x0B" containsCharacterInSet:illegal], @"Page-feed in +invalidXMLCharacterSet");
+    STAssertFalse([@"\x0D" containsCharacterInSet:illegal], @"Carriage-return in +invalidXMLCharacterSet");
+
+    STAssertFalse([[NSString stringWithCharacter:0x8A] containsCharacterInSet:illegal], nil);
+    STAssertTrue([[NSString stringWithCharacter:0x8A] containsCharacterInSet:discouraged], nil);
+    STAssertFalse([[NSString stringWithCharacter:0x85] containsCharacterInSet:discouraged], nil);
+    
+    /* Check some non-BMP characters. NSString represents those using surrogate pairs internally, and those use UTF-16 values which map to invalid codepoints if you interpret them directly. So make sure we're not breaking all non-BMP strings by forbidding those codepoints. */
+    
+    static const char t3_utf8[] = { 't', 0xf0, 0x9a, 0xaf, 0x8d, 0 }; // Valid UTF8 for 0x01ABCD
+    static const char t4_utf8[] = { 't', 0xf0, 0xaf, 0xbf, 0xbe, 0 }; // Valid UTF8 for 0x02FFFE
+    STAssertFalse([[NSString stringWithUTF8String:t3_utf8] containsCharacterInSet:illegal], nil);
+    STAssertFalse([[NSString stringWithUTF8String:t4_utf8] containsCharacterInSet:illegal], nil);
+    STAssertTrue([[NSString stringWithUTF8String:t4_utf8] containsCharacterInSet:discouraged], nil);
+    
+    /* Check some invalid UTF-16 sequences. I'm not entirely sure how these occur in practice, but users have managed to get broken surrogate pairs into their documents on multiple occasions. */
+    CFStringRef s;
+    
+#if 0 /* It seems that -containsCharacterInSet: can't detect the reserved codepoints in the surrogate range */
+    static const unichar t5_utf16[] = { 't', 0xDFFF, 'k' };          // unpaired low surrogate
+    s = CFStringFromUnicharArray(t5_utf16);
+    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:illegal], @"t5 - broken surrogate");
+    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t5 - broken surrogate");
+    CFRelease(s);
+    
+    static const unichar t6_utf16[] = { 't', 0xD801, 'k' };          // unpaired high surrogate
+    s = CFStringFromUnicharArray(t6_utf16);
+    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:illegal], @"t6 - broken surrogate");
+    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t6 - broken surrogate");
+    CFRelease(s);
+#endif
+    
+    static const unichar t7_utf16[] = { 't', 0xD83D, 0xDCA9, 'k' };  // valid UTF-16 for U+1F4A9 PILE OF POO
+    s = CFStringFromUnicharArray(t7_utf16);
+    STAssertFalse([(__bridge NSString *)s containsCharacterInSet:illegal], @"t7 - valid surrogate");
+    STAssertFalse([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t7 - valid surrogate");
+    CFRelease(s);
+
+    static const unichar t8_utf16[] = { 't', 0xD83F, 0xDFFF, 'z' };  // valid surrogate pair encoding an invalid codepoint
+    s = CFStringFromUnicharArray(t8_utf16);
+    STAssertFalse([(__bridge NSString *)s containsCharacterInSet:illegal], @"t8 - valid surrogate, reserved codepoint");
+    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:discouraged], @"t8 - valid surrogate, reserved codepoint");
+    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t8 - valid surrogate, invalid codepoint");
+    CFRelease(s);
 }
 
 - (void)testReplaceRegex;

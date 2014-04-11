@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -226,7 +226,7 @@ static inline void ascii85put(OFDataBuffer *buffer, unsigned long tuple, int byt
     OFDataBufferRelease(&buffer, kCFAllocatorDefault, &resultData);
     
     [self release];
-    return NSMakeCollectable(resultData);
+    return (OB_BRIDGE NSData *)resultData;
 }
 
 static inline void encode85(OFDataBuffer *dataBuffer, unsigned long tuple, int count)
@@ -394,7 +394,7 @@ XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX, XX,XX,XX,XX,
     OFDataBufferRelease(buffer, kCFAllocatorDefault, &resultData);
 
     [self release];
-    return NSMakeCollectable(resultData);
+    return (OB_BRIDGE NSData *)resultData;
 }
 
 static const char basis_64[] =
@@ -568,7 +568,7 @@ static inline void ascii26put(OFDataBuffer *buffer, unsigned long tuple, int cou
     OFDataBufferRelease(&buffer, kCFAllocatorDefault, &resultData);
     
     [self release];
-    return NSMakeCollectable(resultData);
+    return (OB_BRIDGE NSData *)resultData;
 }
 
 static inline void encode26(OFDataBuffer *dataBuffer, unsigned long tuple, int count256)
@@ -706,8 +706,7 @@ static inline unichar hex(int i)
         }
     }
     
-    CFStringRef resultString = CFStringCreateWithBytesNoCopy(kCFAllocatorDefault, destinationBuffer, destinationIndex, kCFStringEncodingISOLatin1, FALSE, kCFAllocatorMalloc);
-    return [NSMakeCollectable(resultString) autorelease];
+    return CFBridgingRelease(CFStringCreateWithBytesNoCopy(kCFAllocatorDefault, destinationBuffer, destinationIndex, kCFStringEncodingISOLatin1, FALSE, kCFAllocatorMalloc));
 }
 
 

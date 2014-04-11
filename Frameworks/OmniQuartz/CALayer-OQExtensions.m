@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -632,7 +632,6 @@ static void _writeString(NSString *str)
         }
         
         CGColorRef backgroundColor = GET_VALUE(backgroundColor);
-        CGColorRef borderColor = GET_VALUE(borderColor);
         if ([self isKindOfClass:[CAShapeLayer class]]) {
 #define SHAPE_LAYER_GET_VALUE(x) (((CAShapeLayer *)self).x)
 
@@ -666,7 +665,7 @@ static void _writeString(NSString *str)
                 
                 CGContextDrawPath(ctx, fillColor? (strokeColor? kCGPathFillStroke : kCGPathFill) : kCGPathStroke);
             }
-        } else if ((self.borderWidth && borderColor) || backgroundColor) {
+        } else if (backgroundColor && CGColorGetAlpha(backgroundColor) != 0.0f) {
 #if DEBUG_RENDER_ON
             {
                 CGRect clip = CGContextGetClipBoundingBox(ctx);
@@ -688,7 +687,7 @@ static void _writeString(NSString *str)
             } else
                 CGContextAddRect(ctx, localBounds);
 
-            if (backgroundColor && CGColorGetAlpha(borderColor) != 0.0f) {
+            if (backgroundColor) {
                 CGContextSetFillColorWithColor(ctx, backgroundColor);
                 CGContextFillPath(ctx);
             }
@@ -717,13 +716,20 @@ static void _writeString(NSString *str)
             }
         }
         
-        if (self.borderWidth && borderColor && CGColorGetAlpha(borderColor) != 0.0f) {
-            // the clipping & path was already set above while doing the background
-            CGContextSetLineWidth(ctx, self.borderWidth);
-            CGContextSetStrokeColorWithColor(ctx, borderColor);
-            CGContextStrokePath(ctx);
+        if (![self isKindOfClass:[CAShapeLayer class]]) {
+            CGColorRef borderColor = GET_VALUE(borderColor);
+            if (self.borderWidth > 0.0 && borderColor && CGColorGetAlpha(borderColor) != 0.0f) {
+                if (self.cornerRadius != 0.0f) {
+                    OQAppendRoundedRect(ctx, localBounds, self.cornerRadius);
+                } else
+                    CGContextAddRect(ctx, localBounds);
+                
+                CGContextSetLineWidth(ctx, self.borderWidth);
+                CGContextSetStrokeColorWithColor(ctx, borderColor);
+                CGContextStrokePath(ctx);
+            }
         }
-
+        
         NSArray *sublayers = self.sublayers;
         if ([sublayers count] > 0) {
             CATransform3D sublayerTransform = self.sublayerTransform;

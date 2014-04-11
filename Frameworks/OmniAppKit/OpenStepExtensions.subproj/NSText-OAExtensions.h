@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2008, 2010, 2012, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 #import <AppKit/NSNibDeclarations.h> // For IBAction
 #import <OmniAppKit/OAFindControllerTargetProtocol.h>
 
-@interface NSText (OAExtensions) <OAFindControllerTarget, OASearchableContent>
+@interface NSText (OAExtensions) <OAFindControllerTarget>
 - (IBAction)jumpToSelection:(id)sender;
 - (NSUInteger)textLength;
 - (void)appendTextString:(NSString *)string;
@@ -28,4 +28,5 @@
 - (void)setTextFromString:(NSString *)aString;
 - (NSString *)substringWithRange:(NSRange)aRange;
 - (NSRange)trackingAndKerningRange; // tracking/kerning is special because it refers to space between characters, but the attribute is attached _to_ characters, so the tracking and kerning range is based on the selection range, but is usually different.
+- (BOOL)findPattern:(id <OAFindPattern>)pattern backwards:(BOOL)backwards ignoreSelection:(BOOL)ignoreSelection;
 @end

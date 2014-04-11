@@ -1,4 +1,4 @@
-// Copyright 2007-2013 The Omni Group.  All rights reserved.
+// Copyright 2007-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 #import <OmniFoundation/OFErrors.h>
 #import <Foundation/NSDateFormatter.h>
 #import <Foundation/NSPropertyList.h>
+#import <Foundation/NSUUID.h>
 #import <sys/sysctl.h>
 
 #import <ApplicationServices/ApplicationServices.h>
@@ -22,6 +23,7 @@ RCS_ID("$Id$");
 
 // Somewhat inspired by the NSFileManager(OFExtensions), but with a cleaner API and support for sandboxing.
 
+static NSString * const LockFileInstanceIdentifierKey = @"lock_id";
 static NSString * const LockFileShortUserNameKey = @"login";
 static NSString * const LockFileLongUserNameKey = @"user";
 static NSString * const LockFileHostNameKey = @"host";
@@ -30,6 +32,7 @@ static NSString * const LockFileProcessNumberKey = @"pid";
 static NSString * const LockFileProcessLaunchDateKey = @"launchDate";
 static NSString * const LockFileProcessBundleIdentifierKey = @"process_bundle_identifier";
 static NSString * const LockFileLockDateKey = @"date";
+static NSString * const LockFileLockErrorKey = @"error";
 
 static BOOL DebugLockFile = NO;
 #define DEBUG_LOCKFILE(format, ...) do { \
@@ -41,8 +44,22 @@ static NSString * OFLockFileOverrideLockRecoveryOption = nil;
 
 static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
 
+// Forward declare this class. Sadly it is in AppKit instead of in Foundation (say, by extending NSProcessInfo).
+// If we don't find it at runtime, we'll get nil from BundleIdentifierForPID(), which just means we'll be slightly less likely to automatically clean up stale locks (and will instead prompt the user).
+@interface NSRunningApplication : NSObject
++ (instancetype)runningApplicationWithProcessIdentifier:(pid_t)pid;
+- (NSString *)bundleIdentifier;
+@end
+
+static NSString *BundleIdentifierForPID(pid_t pid)
+{
+    NSRunningApplication *runningApplication = [NSClassFromString(@"NSRunningApplication") runningApplicationWithProcessIdentifier:pid];
+    return [runningApplication bundleIdentifier];
+}
+
 @implementation OFLockFile
 {
+    NSString *_lockIdentifier; // Instance specific lock identifier -- prevents us from stealing the lock from another instance in this process.
     BOOL _ownsLock; // At least, last we knew -- someone else can force the lock.
     BOOL _invalidated; // Someone has obliterated our lock; the contents we protect are now suspect.
     NSDictionary *_currentLockFileContents; // As of the last time we checked.
@@ -101,6 +118,8 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
     _URL = [lockFileURL copy];
     DEBUG_LOCKFILE(@"Creating lock file at '%@'", lockFileURL);
     
+    _lockIdentifier = [[[NSUUID UUID] UUIDString] copy];
+    
     [self _readCurrentLockContents];
     
     return self;
@@ -111,6 +130,7 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
     [self unlockIfLocked];
     
     [_URL release];
+    [_lockIdentifier release];
     [_currentLockFileContents release];
     [_lockUnavailableHandler release];
     
@@ -165,8 +185,8 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
                 }
 
                 // If the process exists, but the bundle identifier doesn't match the one in the lock file, it is not the process which took out the lock
-                NSString *lockBundleIdentifier = [localLock objectForKey:LockFileProcessBundleIdentifierKey];
-                NSString *pidBundleIdentifier = [self _bundleIdentifierForPID:processNumber];
+                NSString *lockBundleIdentifier = [_currentLockFileContents objectForKey:LockFileProcessBundleIdentifierKey];
+                NSString *pidBundleIdentifier = BundleIdentifierForPID(processNumber);
                 if (lockBundleIdentifier && pidBundleIdentifier && ![lockBundleIdentifier isEqualToString:pidBundleIdentifier]) {
                     DEBUG_LOCKFILE(@"Existing lock seems to be from a dead process on this machine '%@'", _URL);
                     // Ignore the lock file contents -- the writer is dead.
@@ -243,7 +263,7 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
         return NO;
     }
 
-    if (![lockData writeToURL:_URL options:NSAtomicWrite error:outError]) {
+    if (![lockData writeToURL:_URL options:NSDataWritingAtomic error:outError]) {
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to write lock file.  %@", @"OmniFoundation", OMNI_BUNDLE, @"error reason"), [*outError localizedDescription]];
         OFError(outError, OFCannotCreateLock, NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), reason);
         return NO;
@@ -359,10 +379,18 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
     NSError *error = nil;
     
     if (((options & OFLockFileLockOperationAllowRecoveryOption) != 0) || lockUnavailableHandler != nil) {
-        NSString *reasonFormat = NSLocalizedStringFromTableInBundle(@"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running.", @"OmniFoundation", OMNI_BUNDLE, @"error reason");
         
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniFoundation", OMNI_BUNDLE, @"error description");
-        NSString *reason = [self _lockUnavailableErrorReasonWithFormat:reasonFormat];
+        
+        NSError *underlyingError = existingLock[LockFileLockErrorKey];
+        NSString *reason;
+        if (underlyingError) {
+            reason = [underlyingError localizedDescription];
+        } else {
+            NSString *reasonFormat = NSLocalizedStringFromTableInBundle(@"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running.", @"OmniFoundation", OMNI_BUNDLE, @"error reason");
+            reason = [self _lockUnavailableErrorReasonWithFormat:reasonFormat];
+        }
+        
         NSArray *recoveryOptions = @[OFLockFileOverrideLockRecoveryOption, OFLockFileCancelRecoveryOption];
         
         OFErrorWithInfo(&error, OFLockUnavailable, description, reason,
@@ -411,6 +439,7 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
 {
     NSMutableDictionary *contents = [NSMutableDictionary dictionary];
     
+    [contents setObject:_lockIdentifier forKey:LockFileInstanceIdentifierKey];
     [contents setObject:OFUniqueMachineIdentifier() forKey:LockFileHostIdentifierKey defaultObject:nil];
     [contents setObject:OFHostName() forKey:LockFileHostNameKey defaultObject:nil];
     [contents setObject:NSUserName() forKey:LockFileShortUserNameKey defaultObject:nil];
@@ -425,10 +454,15 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
 
 - (BOOL)_lockMatches:(NSDictionary *)lock otherLock:(NSDictionary *)otherLock;
 {    
+    if (![[lock objectForKey:LockFileInstanceIdentifierKey] isEqual:[otherLock objectForKey:LockFileInstanceIdentifierKey]])
+        return NO;
+
     if (![[lock objectForKey:LockFileHostIdentifierKey] isEqual:[otherLock objectForKey:LockFileHostIdentifierKey]])
         return NO;
+
     if (![[lock objectForKey:LockFileShortUserNameKey] isEqual:[otherLock objectForKey:LockFileShortUserNameKey]])
         return NO;
+
     if (![[lock objectForKey:LockFileProcessNumberKey] isEqual:[otherLock objectForKey:LockFileProcessNumberKey]])
         return NO;
     
@@ -440,13 +474,28 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
     [_currentLockFileContents release];
     _currentLockFileContents = nil;
     
-    // TODO: Read via the NSData methods and check for ENOENT instead of probe/read, which race anyway.
-    if ([[NSFileManager defaultManager] fileExistsAtPath:[_URL path]]) {
-        _currentLockFileContents = [[NSDictionary alloc] initWithContentsOfFile:[_URL path]];
-        if (!_currentLockFileContents)
-            _currentLockFileContents = [[NSDictionary alloc] init]; // someone has a bogus lock out there, at any rate, it isn't our lock and someone tried to lock it.
+    __autoreleasing NSError *readError = nil;
+    NSData *lockData = [[NSData alloc] initWithContentsOfURL:_URL options:0 error:&readError];
+    if (!lockData) {
+        if ([readError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) {
+            // No lock file -- great!
+        } else {
+            // We can't read the lock file, but we should note that there is one there. We'll also keep the error here for later presentation.
+            _currentLockFileContents = [@{LockFileLockErrorKey : readError} copy];
+        }
+    } else {
+        __autoreleasing NSError *plistError = nil;
+        _currentLockFileContents = [[NSPropertyListSerialization propertyListWithData:lockData options:0 format:NULL error:&plistError] copy];
+        [lockData release];
+        if (!_currentLockFileContents) {
+            // We can't read the lock file, but we should note that there is one there. We'll also keep the error here for later presentation.
+            _currentLockFileContents = [@{LockFileLockErrorKey : plistError} copy];
+        }
     }
-    
+
+    // Log the error if we got one.
+    [_currentLockFileContents[LockFileLockErrorKey] log:@"Error reading lock file at %@", _URL];
+
     DEBUG_LOCKFILE(@"Lock file contents at %@ is %@", _URL, _currentLockFileContents);
 }
 
@@ -457,9 +506,10 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
         return;
 
     [self _readCurrentLockContents];
-    
-    // We don't require full dictionary equality (particularly the date).  Just the pid and host identifier are considered.
+
+    // We don't require full dictionary equality (particularly the date).  Just the identifier, pid, and host identifier are considered.
     if (!_currentLockFileContents || // someone might have overridden the lock and then removed it.
+        OFNOTEQUAL([_currentLockFileContents objectForKey:LockFileInstanceIdentifierKey], [localLock objectForKey:LockFileInstanceIdentifierKey]) ||
         OFNOTEQUAL([_currentLockFileContents objectForKey:LockFileProcessNumberKey], [localLock objectForKey:LockFileProcessNumberKey]) ||
         OFNOTEQUAL([_currentLockFileContents objectForKey:LockFileHostIdentifierKey], [localLock objectForKey:LockFileHostIdentifierKey])) {
         // We had the lock and now someone else does!
@@ -503,36 +553,6 @@ static id <OFLockUnavailableHandler> OFLockFileLockUnavailableHandler = nil;
     }
     
     return NO;
-}
-
-- (NSString *)_bundleIdentifierForPID:(pid_t)pid;
-{
-#if 1
-    ProcessSerialNumber psn = {0};
-    
-    OSStatus stat = GetProcessForPID(pid, &psn);
-    if (stat != noErr) {
-        NSLog(@"Error getting process info for pid %d: GetProcessForPID returned %d", pid, stat);
-        return nil;
-    }
-    
-    NSDictionary *infoDict = CFBridgingRelease(ProcessInformationCopyDictionary(&psn, kProcessDictionaryIncludeAllInformationMask));
-    if (!infoDict) {
-        NSLog(@"Error copying process info for pid %d: ProcessInformationCopyDictionary returned NULL", pid);
-        return nil;
-    }
-    
-    NSString *bundleIdentifier = infoDict[(OB_BRIDGE NSString *)kCFBundleIdentifierKey];
-    if (!bundleIdentifier) {
-        NSLog(@"ProcessInformationCopyDictionary returned a dictionary without a bundle identifier: %@", infoDict);
-        return nil;
-    }
-    
-    return bundleIdentifier;
-#else
-    NSRunningApplication *runningApplication = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
-    return [runningApplication bundleIdentifier];
-#endif
 }
 
 - (NSDate *)_launchDateForPID:(pid_t)pid;

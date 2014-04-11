@@ -14,7 +14,7 @@ BZ2_LDFLAGS = -lbz2
 
 // Use the latest SDK with a specific target OS as our default
 SDKROOT = macosx
-MACOSX_DEPLOYMENT_TARGET = 10.8
+MACOSX_DEPLOYMENT_TARGET = 10.9
 
 // Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.
 SKIP_INSTALL = YES

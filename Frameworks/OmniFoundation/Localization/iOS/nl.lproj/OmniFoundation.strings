@@ -87,10 +87,10 @@
 "day" = "dag";
 
 /* time span formatter span */
-"days" = "dgn";
+"days" = "dagen";
 
 /* invalid bundle reason */
-"Duplicate bundle name" = "Bundelnaam komt dubbel voor";
+"Duplicate bundle name" = "Bundelnaam komt meer dan één keer voor";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "Element '%1$@' niet toegestaan in pad: %2$@";
@@ -111,7 +111,7 @@
 "hour" = "uur";
 
 /* time span formatter span */
-"hours" = "uur";
+"hours" = "uren";
 
 /* formatter input error */
 "Invalid time span format" = "Ongeldige structuur van tijdbereik";
@@ -135,10 +135,10 @@
 "month" = "maand";
 
 /* time span formatter span */
-"months" = "mnd.";
+"months" = "maanden";
 
 /* error reason */
-"No root element was found" = "Geen rootelement gevonden";
+"No root element was found" = "Geen hoofdelement gevonden";
 
 /* invalid bundle reason */
 "Not a valid bundle" = "Geen geldige bundel";
@@ -207,7 +207,7 @@
 "week" = "week";
 
 /* time span formatter span */
-"weeks" = "wkn";
+"weeks" = "weken";
 
 /* time span formatter span */
 "y" = "j";
@@ -216,7 +216,7 @@
 "year" = "jaar";
 
 /* time span formatter span */
-"years" = "jaar";
+"years" = "jaren";
 
 /* zlib error reason */
 "zlib returned error code %d." = "zlib heeft foutcode %d geretourneerd.";

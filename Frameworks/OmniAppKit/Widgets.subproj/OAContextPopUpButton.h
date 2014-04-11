@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2005, 2007, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,14 +9,11 @@
 
 #import <AppKit/NSPopUpButton.h>
 
+@protocol OAContextControlDelegate;
 
 @interface OAContextPopUpButton : NSPopUpButton
-{
-    NSMenuItem *gearItem;
-    id _delegate;
-}
 
-@property (nonatomic,assign) IBOutlet id delegate;
+@property (nonatomic,weak) IBOutlet id <OAContextControlDelegate> delegate;
 - (NSMenu *)locateActionMenu;
 - (BOOL)validate;
 

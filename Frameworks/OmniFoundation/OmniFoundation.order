@@ -58,7 +58,6 @@ OFDatedMutableDictionary.o:___rcs_id_hack
 OFDedicatedThreadScheduler.o:___rcs_id_hack
 OFDelayedEvent.o:___rcs_id_hack
 OFEnumNameTable.o:___rcs_id_hack
-OFFastMutableData.o:___rcs_id_hack
 OFGeometry.o:___rcs_id_hack
 OFHeap.o:___rcs_id_hack
 OFIObjectNSInvocation.o:___rcs_id_hack
@@ -98,7 +97,6 @@ OFScriptPlaceholder.o:___rcs_id_hack
 OFSignature.o:___rcs_id_hack
 OFSimpleStringFormatter.o:___rcs_id_hack
 OFSparseArray.o:___rcs_id_hack
-OFStack.o:___rcs_id_hack
 OFStringDecoder.o:___rcs_id_hack
 OFStringScanner.o:___rcs_id_hack
 OFTelephoneFormatter.o:___rcs_id_hack
@@ -185,7 +183,6 @@ OFCharacterScanner.o:+[OFCharacterScanner initialize]
 OFController.o:+[OFController initialize]
 OFDataCursor.o:+[OFDataCursor initialize]
 OFDedicatedThreadScheduler.o:+[OFDedicatedThreadScheduler initialize]
-OFFastMutableData.o:+[OFFastMutableData initialize]
 OFIObjectNSInvocation.o:+[OFIObjectNSInvocation initialize]
 OFIObjectSelector.o:+[OFIObjectSelector initialize]
 OFIObjectSelectorBool.o:+[OFIObjectSelectorBool initialize]

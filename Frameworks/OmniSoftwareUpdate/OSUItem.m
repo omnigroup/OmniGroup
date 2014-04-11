@@ -1,4 +1,4 @@
-// Copyright 2001-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -596,7 +596,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     
     if (_checksums) {
         NSError *fileError = nil;
-        NSData *fileData = [[NSData alloc] initWithContentsOfFile:path options:NSMappedRead error:&fileError];
+        NSData *fileData = [[NSData alloc] initWithContentsOfFile:path options:NSDataReadingMapped error:&fileError];
         if (!fileData) {
             return [fileError localizedDescription];
         }

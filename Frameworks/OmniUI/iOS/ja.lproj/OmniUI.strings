@@ -1,4 +1,4 @@
-/* setting failure alert message */
+﻿/* setting failure alert message */
 "“%@”\nwas not successful" = "“%@”\nは成功しませんでした";
 
 /* OUITabBar N of M accessibility value */
@@ -11,10 +11,10 @@
 "About %@" = "%@ について";
 
 /* alert button title */
-"Accept" = "同意する";
+"Accept" = "承認する";
 
 /* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ にハードウェアモデルと iOS のバージョンを定期的にレポートさせますか？\nレポートしていただくと、サポートを行うにあたっての一番大切な組み合わせを知ることができます。この回答は環境設定で後から変更できます。";
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ にハードウェアモデルと iOS のバージョンを定期的にレポートさせますか？\nレポートいただくと、サポートを行うにあたっての一番大切な組み合わせを知ることができます。この回答は環境設定で後から変更できます。";
 
 /* Web view nagivation button for going back in history. */
 "Back" = "戻る";
@@ -26,7 +26,7 @@
 "Buy %@" = "%@ を購入";
 
 /* 'Buy' and a currency symbol for purchase button */
-"Buy $%@" = "$%@ を購入";
+"Buy $%@" = "%@ を購入";
 
 /* button title
    cancel button title
@@ -56,8 +56,7 @@
 /* OmniSoftwareUpdate privacy notice button title */
 "Don't Report" = "レポートしない";
 
-/* Done
-   toolbar item title */
+/* toolbar item title */
 
 "Done" = "完了";
 
@@ -71,7 +70,7 @@
 "Error Loading Store" = "ストアの読み込みエラー";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "このデモには機能が無効です";
+"Feature not enabled for this demo" = "このデモでは機能が無効になっています";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "合わせる";
@@ -80,7 +79,7 @@
 "Help and Settings" = "ヘルプと設定";
 
 /* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "このデバイスではアプリ内購入が利用できない、または許可されていません。設定アプリの機能制限をチェックしてください。";
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "このデバイスでは App 内での購入が利用できない、または許可されていません。設定アプリの機能制限をチェックしてください。";
 
 /* Italic button accessibility label */
 "Italic" = "イタリック";
@@ -100,8 +99,7 @@
 /* empty value cell placeholder */
 "None" = "なし";
 
-/* button title
-   OK button label */
+/* button title */
 
 
 
@@ -127,7 +125,7 @@
 "Purchased. Thank you!" = "購入しました。ありがとうございます！";
 
 /* Purchasing is disabled alert title */
-"Purchasing is Disabled" = "購入が無効です";
+"Purchasing is Disabled" = "購入方法が無効です";
 
 /* Redo button title */
 "Redo" = "やり直し";
@@ -168,17 +166,16 @@
 "Underline" = "アンダーライン";
 
 /* Undo button title */
-"Undo" = "取り消す";
+"Undo" = "取り消し";
 
-/* default for WebDAV username edit field
-   placeholder text */
+/* default for WebDAV username edit field */
 "username" = "ユーザ名";
 
 /* alert message */
-"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "以下の環境設定を変更するリンクをタップしました:\n\n“%@”\n\nこれらの変更を受け入れますか？";
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "以下の環境設定を変更するリンクをタップしました:\n\n\"%@\"\n\n変更を承認しますか？";
 
 /* debug setting alert message */
-"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "以下のデバッグコマンドを実行するリンクをタップしました:\n\n“%@”\n\nOmni のサポートスタッフからの指示がない場合には、実行しないでください。\nこのコマンドを実行しますか？";
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "次のデバッグ用コマンドを実行するリンクをタップしました:\n\n“%@”\n\nOmni のサポートスタッフからの指示でない場合には実行しないでください。\nこのコマンドを実行しますか？";
 
 /* zoom label */
-"Zoom" = "拡大／縮小";
+"Zoom" = "拡大/縮小";

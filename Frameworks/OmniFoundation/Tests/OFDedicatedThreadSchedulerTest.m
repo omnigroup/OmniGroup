@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2007, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,7 +38,7 @@ RCS_ID("$Id$")
 - (void)scheduleFireMessages;
 {
     while (YES) {
-        OMNI_POOL_START {
+        @autoreleasepool {
             OFScheduler *scheduler;
             unsigned int count;
 
@@ -60,8 +60,8 @@ RCS_ID("$Id$")
 
             NSLog(@"STOP");
             [scheduler abortSchedule];
-        } OMNI_POOL_END;
-        OMNI_POOL_START {
+        }
+        @autoreleasepool {
             [fireLock lock];
             NSLog(@"Valid count = %d, last fired %f seconds ago", fireCount, [NSDate timeIntervalSinceReferenceDate] - lastFireDate);
             fireCount = 100000;
@@ -74,7 +74,7 @@ RCS_ID("$Id$")
             NSLog(@"Straggler count = %d, last fired %f seconds ago", fireCount - 100000, [NSDate timeIntervalSinceReferenceDate] - lastFireDate);
             fireCount = 0;
             [fireLock unlock];
-        } OMNI_POOL_END;
+        }
     }
 }
 

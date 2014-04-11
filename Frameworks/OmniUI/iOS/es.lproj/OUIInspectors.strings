@@ -56,7 +56,7 @@
 "Recommended Fonts" = "Tipos de letra recomendados";
 
 /* Name for the variant of a font with out any special attributes */
-"Regular" = "Normal";
+"Regular" = "Regular";
 
 /* Label for font size controls */
 "Size" = "Tamaño";

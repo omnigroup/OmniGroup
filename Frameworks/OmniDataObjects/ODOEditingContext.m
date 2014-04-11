@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,9 +27,7 @@
 #import <objc/message.h>
 #endif
 
-#if ODO_SUPPORT_UNDO
 #import <Foundation/NSUndoManager.h>
-#endif
 #import <Foundation/FoundationErrors.h>
 
 #if 0 && defined(DEBUG)
@@ -47,10 +45,8 @@ RCS_ID("$Id$")
 - (BOOL)_sendWillSave:(NSError **)outError;
 - (BOOL)_validateInsertsAndUpdates:(NSError **)outError;
 - (BOOL)_writeProcessedEdits:(NSError **)outError;
-#if ODO_SUPPORT_UNDO
 - (void)_registerUndoForRecentChanges;
 - (void)_undoWithObjectIDsAndSnapshotsToInsert:(NSArray *)objectIDsAndSnapshotsToInsert updates:(NSArray *)updates objectIDsToDelete:(NSArray *)objectIDsToDelete;
-#endif
 @end
 
 @implementation ODOEditingContext
@@ -100,10 +96,8 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
     // TODO: Deregister with the database so we can ensure there is only one editing context at a time (not supporting edit merging).
     [[NSNotificationCenter defaultCenter] removeObserver:self name:ODODatabaseConnectedURLChangedNotification object:_database];
     [_database release];
-#if ODO_SUPPORT_UNDO
     [_undoManager removeAllActionsWithTarget:self];
     [_undoManager release];
-#endif
     
     if (_runLoopObserver) {
         // Retain the runloop?  Assert we are in the main thread in both?
@@ -137,7 +131,6 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
     return _database;
 }
 
-#if ODO_SUPPORT_UNDO
 - (NSUndoManager *)undoManager;
 {
     return _undoManager;
@@ -151,7 +144,6 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
     }
     _undoManager = [undoManager retain];
 }
-#endif
 
 // Empties the reciever of all objects.
 - (void)reset;
@@ -163,10 +155,8 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
     @try {
         [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextWillResetNotification object:self];
         
-#if ODO_SUPPORT_UNDO
         // Clear any undos we have logged
         [_undoManager removeAllActionsWithTarget:self];
-#endif
         
         // get rid of pending, processed changes and snapshots
         [_objectIDToCommittedPropertySnapshot release];
@@ -559,9 +549,7 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     OBPRECONDITION(object);
     OBPRECONDITION([object editingContext] == self);
     OBPRECONDITION([_registeredObjectByID objectForKey:[object objectID]] == object); // has to be registered
-#if ODO_SUPPORT_UNDO
     OBPRECONDITION(![_undoManager isUndoing] && ![_undoManager isRedoing]); // this public API shouldn't be called to undo/redo.  Only to 'do'.
-#endif
     
     // Bail on objects that are already deleted or invalid instead of crashing.  This can easily happen if UI code can select both a parent and child and delete them w/o knowing that the deletion of the parent will get the child too.  Nice if the UI handles it, but shouldn't crash or do something crazy otherwise.
     if ([object isInvalid] || [object isDeleted]) {
@@ -734,10 +722,8 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet *inserted, NSSet
     // Register undos based on the recent changes, if we have an undo manager, along with any snapshots necessary to get back into the right state after undoing.
     // TODO: Record only the object IDs and snapshots?
     // TODO: These snapshots aren't right -- they are from the last *save* but we need snapshots from the last -processPendingChanges.
-#if ODO_SUPPORT_UNDO
     if (_undoManager)
         [self _registerUndoForRecentChanges];
-#endif
     
     //
     // Merge the recent changes into the processed changes.
@@ -1503,8 +1489,6 @@ static void _writeDeleteApplier(const void *value, void *context)
     return YES;
 }
 
-#if ODO_SUPPORT_UNDO
-
 static void _appendObjectID(const void *value, void *context)
 {
     ODOObject *object = (ODOObject *)value;
@@ -1786,8 +1770,6 @@ static void _updateRelationshipsForUndo(ODOObject *object, ODOEntity *entity, OD
     // Process changes immediately.  This will log our opposite undo/redo action.
     [self processPendingChanges];
 }
-
-#endif
 
 @end
 

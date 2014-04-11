@@ -1,4 +1,4 @@
-// Copyright 1998-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,8 +25,6 @@ RCS_ID("$Id$")
     [(NSSliderCell *)cell setMinValue: [self minValue]];
     [(NSSliderCell *)cell setMaxValue: [self maxValue]];
     [(NSSliderCell *)cell setAltIncrementValue: [self altIncrementValue]];
-    [(NSSliderCell *)cell setTitleCell: [self titleCell]];
-    [(NSSliderCell *)cell setKnobThickness: [self knobThickness]];
     [(NSSliderCell *)cell setNumberOfTickMarks: [self numberOfTickMarks]];
     [(NSSliderCell *)cell setTickMarkPosition: [self tickMarkPosition]];
     [(NSSliderCell *)cell setAllowsTickMarkValuesOnly: [self allowsTickMarkValuesOnly]];

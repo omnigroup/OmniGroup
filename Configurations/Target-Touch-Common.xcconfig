@@ -11,9 +11,6 @@ DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 SDKROOT = iphoneos
 IPHONEOS_DEPLOYMENT_TARGET = 7.0
 
-// iPhone OS 3.2+ only supports armv7. If we have a target that wants armv6 it'll already need to override the SDK to be 3.1.
-ARCHS[sdk=iphoneos*] = armv7
-VALID_ARCHS[sdk=iphoneos*] = armv7
 GCC_THUMB_SUPPORT = NO
 
 // Unlike gcc and llvm-gcc, clang emits ObjC runtime info for class extensions conforming to protocols. Also, clang has more warning checks than gcc.

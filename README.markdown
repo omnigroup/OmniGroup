@@ -7,18 +7,18 @@ Checking out the source
     git clone git://github.com/omnigroup/OmniGroup
     git submodule update --init
 
-Configuring Xcode 4
+Xcode
 -------------------
 
-- We currently use Xcode 4.6.3 and Xcode 5. You'll probably have the best results if you do too.
+- We currently use Xcode 5.1. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace.
-- If building for iOS, you need to edit your scheme to turn off implicit dependencies and parallel builds. Xcode 4 doesn't understand implicit dependencies with static libraries, so you'll need to add the dependencies to your scheme in the right order.
+- If building for iOS, you need to edit your scheme to turn off implicit dependencies and parallel builds. Xcode doesn't understand implicit dependencies with static libraries, so you'll need to add the dependencies to your scheme in the right order.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
 
 Supported Targets
 ----------------------
 
-- We require iOS 7 and Mac OS X 10.8.
+- We require iOS 7.1 and Mac OS X 10.9.
 
 Configuring the Source
 ----------------------

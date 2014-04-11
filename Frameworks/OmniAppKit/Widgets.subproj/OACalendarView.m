@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,8 +25,6 @@ RCS_ID("$Id$")
     - Setting the View Size: see the notes in -initWithFrame: for some guidelines for determining what size you will want to give this view. Those notes also give information about font sizes and how they affect us and the size calculations. If you set the view size to a non-optimal size, we won't use all the space.
     
     - Dynamically Adjusting the Cell Display: check out the "delegate" method -calendarView:willDisplayCell:forDate: in order to adjust the cell attributes (such as the font color, etc.). Note that if you make any changes which impact the cell size, the calendar is unlikely to draw as desired, so this is mostly useful for color changes. You can also use -calendarView:highlightMaskForVisibleMonth: to get highlighting of certain days. This is more efficient since we need only ask once for the month rather than once for each cell, but it is far less flexible, and currently doesn't allow control over the highlight color used. Also, don't bother to implement both methods: only the former will be used if it is available.
-    
-    - We should have a real delegate instead of treating the target as the delgate.
     
     - We could benefit from some more configurability: specify whether or not to draw vertical/horizontal grid lines, grid and border widths, fonts, whether or not to display the top control area, whether or not the user can change the displayed month/year independant of whether they can change the selected date, etc.
     
@@ -300,7 +298,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
             id target;
 
             target = [self target];
-            if (!flags.targetApprovesDateSelection || [target calendarView:self shouldSelectDate:hitDate]) {
+            if (!flags.targetApprovesDateSelection || [_delegate calendarView:self shouldSelectDate:hitDate]) {
                 [self setSelectedDay:hitDate];
                 if (flags.showsDaysForOtherMonths)
                     [self setVisibleMonth:hitDate];
@@ -310,7 +308,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
         } else if (selectionType == OACalendarViewSelectByWeekday) {
             NSDate *hitWeekday = [self _hitWeekdayWithLocation:location];
             if (hitWeekday) {
-                if (!flags.targetApprovesDateSelection || [[self target] calendarView:self shouldSelectDate:hitWeekday]) {
+                if (!flags.targetApprovesDateSelection || [_delegate calendarView:self shouldSelectDate:hitWeekday]) {
                     [self setSelectedDay:hitWeekday];
                     [self sendAction:[self action] to:[self target]];
                 }
@@ -347,7 +345,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
     [self setNeedsDisplay:YES];
     
     if (flags.targetWatchesVisibleMonth)
-        [[self target] calendarView:self didChangeVisibleMonth:visibleMonth];
+        [_delegate calendarView:self didChangeVisibleMonth:visibleMonth];
 }
 
 - (NSDate *)selectedDay;
@@ -422,7 +420,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 {
     if (flags.targetProvidesHighlightMask) {
         int mask;
-        mask = [[self target] calendarView:self highlightMaskForVisibleMonth:visibleMonth];
+        mask = [_delegate calendarView:self highlightMaskForVisibleMonth:visibleMonth];
         [self setDayHighlightMask:mask];
     } else
         [self setDayHighlightMask:0];
@@ -779,7 +777,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
             }
             	    
             if (flags.targetWatchesCellDisplay) {
-                [[self target] calendarView:self willDisplayCell:dayOfMonthCell forDate:thisDay];
+                [_delegate calendarView:self willDisplayCell:dayOfMonthCell forDate:thisDay];
             } else {
                 if ((dayHighlightMask & (1 << index)) == 0) {
                     textColor = (isVisibleMonth ? [NSColor blackColor] : [NSColor grayColor]);

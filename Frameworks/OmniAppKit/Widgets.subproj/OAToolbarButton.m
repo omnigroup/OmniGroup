@@ -1,4 +1,4 @@
-// Copyright 2002, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -109,10 +109,10 @@ RCS_ID("$Id$");
     __block BOOL longPress = NO;
     
     OATrackingLoop *loop = [self trackingLoopForMouseDown:mouseDownEvent];
-    loop.insideVisibleRectChanged = ^{
+    loop.insideVisibleRectChanged = ^(OATrackingLoop *loop){
         [self highlight:loop.insideVisibleRect];
     };
-    loop.longPress = ^{
+    loop.longPress = ^(OATrackingLoop *loop){
         [self _showMenu];
         longPress = YES;
         [loop stop];

@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,13 +30,13 @@ extern NSString * const OIInspectorControllerDidChangeExpandednessNotification;
 {
     NSArray *currentlyInspectedObjects;
     OIInspector *inspector;
-    OIInspectorGroup *group;
+    __weak OIInspectorGroup *_weak_group;
     OIInspectorWindow *window;
     OIInspectorHeaderView *headingButton;
     OIInspectorHeaderBackground *headingBackground;
     OIInspectorResizer *resizerView;
     NSView *controlsView;
-    BOOL loadedInspectorView, isExpanded, isSettingExpansion, isBottommostInGroup, collapseOnTakeNewPosition, heightSizable, forceResizeWidget, needsToggleBeforeDisplay;
+    BOOL loadedInspectorView, isExpanded, isSettingExpansion, isBottommostInGroup, collapseOnTakeNewPosition, heightSizable, forceResizeWidget;
     CGFloat _minimumHeight;
     NSPoint newPosition;
 }
@@ -46,7 +46,7 @@ extern NSString * const OIInspectorControllerDidChangeExpandednessNotification;
 - (id)initWithInspector:(OIInspector *)anInspector;
 
 @property (nonatomic, readonly) OIInspectorInterfaceType interfaceType;
-@property (nonatomic, unsafe_unretained) OIInspectorRegistry *nonretained_inspectorRegistry;
+@property (nonatomic, weak) OIInspectorRegistry *inspectorRegistry;
 
 - (void)setGroup:(OIInspectorGroup *)aGroup;
 - (OIInspector *)inspector;

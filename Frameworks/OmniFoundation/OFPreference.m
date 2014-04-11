@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,6 +34,7 @@ static NSObject *unset = nil;
 static volatile unsigned registrationGeneration = 1;
 static NSNotificationCenter *preferenceNotificationCenter = nil;
 
+NSString * const OFPreferenceObjectValueBinding = @"objectValue";
 NSString * const OFPreferenceDidChangeNotification = @"OFPreferenceDidChangeNotification";
 
 @interface OFPreference (Private)
@@ -95,6 +96,8 @@ static void _setValueUnderlyingValue(OFPreference *self, id controller, NSString
     if (setUpdating)
         self->_updatingController = YES;
     
+    [self willChangeValueForKey:OFPreferenceObjectValueBinding];
+    
     @try {
         if (value) {
             [standardUserDefaults setObject:value forKey:key];
@@ -106,6 +109,8 @@ static void _setValueUnderlyingValue(OFPreference *self, id controller, NSString
                 [controller setValue:nil forKeyPath:keyPath];
         }
     } @finally {
+        [self didChangeValueForKey:OFPreferenceObjectValueBinding];
+
         if (setUpdating)
             self->_updatingController = NO;
     }
@@ -648,9 +653,12 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 
 - (NSScriptObjectSpecifier *)objectSpecifier;
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
     // We assume that preferences will be owned by the application with an element of @"scriptPreferences".  This is what OAApplication does.
     id application = [NSClassFromString(@"NSApplication") performSelector:@selector(sharedApplication)];
     return [[[NSUniqueIDSpecifier alloc] initWithContainerClassDescription:(NSScriptClassDescription *)[application classDescription] containerSpecifier:[application objectSpecifier] key:@"scriptPreferences" uniqueID:_key] autorelease];
+#pragma clang diagnostic pop
 }
 
 - (NSString *)scriptIdentifier;

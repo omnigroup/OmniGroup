@@ -11,6 +11,9 @@
 		2309E15317D7FE14001F05E1 /* OUILaunchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2309E15117D7FE14001F05E1 /* OUILaunchViewController.m */; };
 		230FEFA017FB48BA0081F754 /* OUITextField-ClearButton.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 230FEF9E17FB48990081F754 /* OUITextField-ClearButton.png */; };
 		230FEFA117FB48BA0081F754 /* OUITextField-ClearButton@2x.png in Copy Resources */ = {isa = PBXBuildFile; fileRef = 230FEF9F17FB48990081F754 /* OUITextField-ClearButton@2x.png */; };
+		231CB7DB1899AD7B004CD1DC /* OUIExportOptionViewCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 231CB7D91899AD7B004CD1DC /* OUIExportOptionViewCell.h */; };
+		231CB7DC1899AD7B004CD1DC /* OUIExportOptionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 231CB7DA1899AD7B004CD1DC /* OUIExportOptionViewCell.m */; };
+		231CB8311899CCD2004CD1DC /* OUIExportOptionViewCell.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 231CB7DD1899AD95004CD1DC /* OUIExportOptionViewCell.xib */; };
 		23786B4F179DCBAE00AE06A8 /* OUIDocumentTitleView.h in Headers */ = {isa = PBXBuildFile; fileRef = 23786B4D179DCBAE00AE06A8 /* OUIDocumentTitleView.h */; };
 		23786B50179DCBAE00AE06A8 /* OUIDocumentTitleView.m in Sources */ = {isa = PBXBuildFile; fileRef = 23786B4E179DCBAE00AE06A8 /* OUIDocumentTitleView.m */; };
 		23848D5D17C6CAE9003FA7BD /* OUIImportWebDAVAccountListViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 23848D5B17C6CAE9003FA7BD /* OUIImportWebDAVAccountListViewController.h */; };
@@ -67,7 +70,6 @@
 		3424E4F816780D8A0019328E /* OUICloudAccountListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E4F416780D8A0019328E /* OUICloudAccountListViewController.m */; };
 		3424E4F916780D8A0019328E /* OUICloudSetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E4F616780D8A0019328E /* OUICloudSetupViewController.m */; };
 		3424E51C16780D970019328E /* OUIExportOptionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E4FF16780D970019328E /* OUIExportOptionsController.m */; };
-		3424E51D16780D970019328E /* OUIExportOptionsView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E50216780D970019328E /* OUIExportOptionsView.m */; };
 		3424E51E16780D970019328E /* OUIFileListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E50416780D970019328E /* OUIFileListViewController.m */; };
 		3424E52116780D970019328E /* OUIReplaceDocumentAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E50B16780D970019328E /* OUIReplaceDocumentAlert.m */; };
 		3424E52216780D970019328E /* OUIRestoreSampleDocumentListController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3424E50D16780D970019328E /* OUIRestoreSampleDocumentListController.m */; };
@@ -268,6 +270,7 @@
 				3441608016B1A9B700E917F5 /* OUIServerAccountValidationViewController.xib in Copy Resources */,
 				3424E6C016784EA90019328E /* OUIDocumentPicker.xib in Copy Resources */,
 				3424E6C116784EA90019328E /* OUIExportOptions.xib in Copy Resources */,
+				231CB8311899CCD2004CD1DC /* OUIExportOptionViewCell.xib in Copy Resources */,
 				3424E6C216784EA90019328E /* OUISyncDownloader.xib in Copy Resources */,
 				3424E5D41678255A0019328E /* OUIAppMenu.png in Copy Resources */,
 				3424E5D51678255A0019328E /* OUIAppMenu@2x.png in Copy Resources */,
@@ -331,6 +334,9 @@
 		2309E15117D7FE14001F05E1 /* OUILaunchViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUILaunchViewController.m; sourceTree = SOURCE_ROOT; };
 		230FEF9E17FB48990081F754 /* OUITextField-ClearButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITextField-ClearButton.png"; sourceTree = "<group>"; };
 		230FEF9F17FB48990081F754 /* OUITextField-ClearButton@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITextField-ClearButton@2x.png"; sourceTree = "<group>"; };
+		231CB7D91899AD7B004CD1DC /* OUIExportOptionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIExportOptionViewCell.h; sourceTree = SOURCE_ROOT; };
+		231CB7DA1899AD7B004CD1DC /* OUIExportOptionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIExportOptionViewCell.m; sourceTree = SOURCE_ROOT; };
+		231CB7DD1899AD95004CD1DC /* OUIExportOptionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUIExportOptionViewCell.xib; sourceTree = SOURCE_ROOT; };
 		23786B4D179DCBAE00AE06A8 /* OUIDocumentTitleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentTitleView.h; sourceTree = SOURCE_ROOT; };
 		23786B4E179DCBAE00AE06A8 /* OUIDocumentTitleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentTitleView.m; sourceTree = SOURCE_ROOT; };
 		23848D5B17C6CAE9003FA7BD /* OUIImportWebDAVAccountListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIImportWebDAVAccountListViewController.h; sourceTree = SOURCE_ROOT; };
@@ -393,8 +399,6 @@
 		3424E4FE16780D970019328E /* OUIExportOptionsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIExportOptionsController.h; sourceTree = SOURCE_ROOT; };
 		3424E4FF16780D970019328E /* OUIExportOptionsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIExportOptionsController.m; sourceTree = SOURCE_ROOT; };
 		3424E50016780D970019328E /* OUIExportOptionsType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIExportOptionsType.h; sourceTree = SOURCE_ROOT; };
-		3424E50116780D970019328E /* OUIExportOptionsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIExportOptionsView.h; sourceTree = SOURCE_ROOT; };
-		3424E50216780D970019328E /* OUIExportOptionsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIExportOptionsView.m; sourceTree = SOURCE_ROOT; };
 		3424E50316780D970019328E /* OUIFileListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFileListViewController.h; sourceTree = SOURCE_ROOT; };
 		3424E50416780D970019328E /* OUIFileListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFileListViewController.m; sourceTree = SOURCE_ROOT; };
 		3424E50A16780D970019328E /* OUIReplaceDocumentAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIReplaceDocumentAlert.h; sourceTree = SOURCE_ROOT; };
@@ -886,9 +890,10 @@
 				3424E4FB16780D970019328E /* OUIExportOptions.xib */,
 				3424E4FE16780D970019328E /* OUIExportOptionsController.h */,
 				3424E4FF16780D970019328E /* OUIExportOptionsController.m */,
+				231CB7D91899AD7B004CD1DC /* OUIExportOptionViewCell.h */,
+				231CB7DA1899AD7B004CD1DC /* OUIExportOptionViewCell.m */,
+				231CB7DD1899AD95004CD1DC /* OUIExportOptionViewCell.xib */,
 				3424E50016780D970019328E /* OUIExportOptionsType.h */,
-				3424E50116780D970019328E /* OUIExportOptionsView.h */,
-				3424E50216780D970019328E /* OUIExportOptionsView.m */,
 				3424E50316780D970019328E /* OUIFileListViewController.h */,
 				3424E50416780D970019328E /* OUIFileListViewController.m */,
 				23848D5B17C6CAE9003FA7BD /* OUIImportWebDAVAccountListViewController.h */,
@@ -988,6 +993,7 @@
 				34C1BC03179DD5600095744C /* OUIErrors.h in Headers */,
 				3424E55616781B100019328E /* OUIDocumentViewController.h in Headers */,
 				3424E55716781B670019328E /* OUIDocumentPickerViewController.h in Headers */,
+				231CB7DB1899AD7B004CD1DC /* OUIExportOptionViewCell.h in Headers */,
 				3424E55816781BB90019328E /* OUIDocumentPickerScrollView.h in Headers */,
 				2792C23617B6E53700CBB64A /* OUIDocumentPicker.h in Headers */,
 				23FE1F0817A87ABC00126F2A /* OUIFullWidthNavigationItemTitleView.h in Headers */,
@@ -1048,7 +1054,7 @@
 		342F48B8167799AC007C5FFB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "The Omni Group";
 			};
 			buildConfigurationList = 342F48BB167799AC007C5FFB /* Build configuration list for PBXProject "OmniUIDocument" */;
@@ -1109,6 +1115,7 @@
 				342F493B16779B89007C5FFB /* OUIDocumentPickerItemMetadataView.m in Sources */,
 				6C660BB017BD321500950C60 /* OUIDocumentOpenAnimator.m in Sources */,
 				342F493C16779B89007C5FFB /* OUIDocumentPickerItemView.m in Sources */,
+				231CB7DC1899AD7B004CD1DC /* OUIExportOptionViewCell.m in Sources */,
 				4268D9D217C51A4C005D95ED /* OUIDocumentCreationTemplatePickerViewController.m in Sources */,
 				342F493D16779B89007C5FFB /* OUIDocumentPickerScrollView.m in Sources */,
 				342F494016779B89007C5FFB /* OUIDocumentPreview.m in Sources */,
@@ -1122,7 +1129,6 @@
 				3424E4F816780D8A0019328E /* OUICloudAccountListViewController.m in Sources */,
 				3424E4F916780D8A0019328E /* OUICloudSetupViewController.m in Sources */,
 				3424E51C16780D970019328E /* OUIExportOptionsController.m in Sources */,
-				3424E51D16780D970019328E /* OUIExportOptionsView.m in Sources */,
 				3424E51E16780D970019328E /* OUIFileListViewController.m in Sources */,
 				3424E52116780D970019328E /* OUIReplaceDocumentAlert.m in Sources */,
 				3424E52216780D970019328E /* OUIRestoreSampleDocumentListController.m in Sources */,
@@ -1168,6 +1174,7 @@
 					"$(inherited)",
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 				);
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 			};
@@ -1182,6 +1189,7 @@
 					"$(inherited)",
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 				);
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 			};

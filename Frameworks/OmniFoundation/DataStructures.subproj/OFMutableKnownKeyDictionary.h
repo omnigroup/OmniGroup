@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,10 +15,6 @@
 /*.doc.
 This subclass of NSMutableDictionary should be used when the set of possible keys is small and known ahead of time.  Due to the variable size of instances, this class cannot be easily subclassed.
 */
-{
-    OFKnownKeyDictionaryTemplate *_template;
-    // ... indexed ivars for values
-}
 
 + (OFMutableKnownKeyDictionary *) newWithTemplate: (OFKnownKeyDictionaryTemplate *)aTemplate;
 /*.doc.

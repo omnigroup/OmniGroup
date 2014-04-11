@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,9 +16,7 @@
 #import "ODOObject-Internal.h"
 #import "ODOSQLStatement.h"
 
-#if ODO_SUPPORT_UNDO
 #import <Foundation/NSUndoManager.h>
-#endif
 
 #import <sqlite3.h>
 
@@ -265,7 +263,6 @@ NSMutableSet *ODOEditingContextCreateRecentSet(ODOEditingContext *self)
 {
     OBPRECONDITION([self isKindOfClass:[ODOEditingContext class]]);
     
-#if ODO_SUPPORT_UNDO
     // We don't log an undo until -processPendingChanges, but we want to at least start a group here.
     // TODO: OmniFocus is a NSUndoManager observer and will call -processPendingChanges and -save: on use when the group is about to close.  But we should really do the -processPendingChanges ourselves for apps other than OmniFocus.
     if (self->_undoManager && !self->_recentlyInsertedObjects && !self->_recentlyUpdatedObjects && !self->_recentlyDeletedObjects) {
@@ -274,7 +271,6 @@ NSMutableSet *ODOEditingContextCreateRecentSet(ODOEditingContext *self)
             //[self->_undoManager beginUndoGrouping];  // Horrifying.  If -groupsByEvent is set, calling this will create an undo grouping and we'll end up at level 2.
             [[self->_undoManager prepareWithInvocationTarget:self] _undoGroupStarterHack];
     }
-#endif
     
     return [[NSMutableSet alloc] init];
 }

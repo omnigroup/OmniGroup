@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2005, 2007, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -148,17 +148,20 @@ static BOOL (*originalPutKeyFormAndDataInRecord)(id self, SEL _cmd, NSAppleEvent
 
 #if 1 && defined(DEBUG)
 
+// This produces a false positive in at least some cases. In OmniFocus, for example, "tell MyDocument / duplicate every inbox task whose name is "a" to end of inbox tasks / end". We get called with a nil container and the 'inbox task' class description. Presumably they call back later and set the container. If we want to bring this back, we'd maybe want to override the evaluation methods instead...
+#if 0
 // Add assertions on initializer arguments for the object specifier classes. In at least one, case 10.9 didn't catch a bad argument and silently produced corrupt object specifier AppleEvents. 15181769: NSUniqueIDSpecifier should warn on bad input instead of producing garbage output
 
 static id (*original_NSScriptObjectSpecifier_initWithContainerClassDescription_containerSpecifier_property)(NSScriptObjectSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key) = NULL;
 static id replacement_NSScriptObjectSpecifier_initWithContainerClassDescription_containerSpecifier_property(NSScriptObjectSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key)
 {
-    OBPRECONDITION(container);
+    OBPRECONDITION(container || [classDesc.className isEqual:@"application"]);
     OBPRECONDITION(key);
-    OBPRECONDITION([classDesc classDescriptionForKey:key]);
+    OBPRECONDITION([classDesc classDescriptionForKey:key]/*element*/ || [classDesc typeForKey:key]/*property*/, "No class description or type registered for the key \"%@\" of class description \"%@\"", key, classDesc);
     
     return original_NSScriptObjectSpecifier_initWithContainerClassDescription_containerSpecifier_property(self, _cmd, classDesc, container, key);
 }
+#endif
 
 static id (*original_NSUniqueIDSpecifier_initWithContainerClassDescription_containerSpecifier_key_uniqueID)(NSUniqueIDSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key, id uniqueID) = NULL;
 static id replacement_NSUniqueIDSpecifier_initWithContainerClassDescription_containerSpecifier_key_uniqueID(NSUniqueIDSpecifier *self, SEL _cmd, NSScriptClassDescription *classDesc, NSScriptObjectSpecifier *container, NSString *key, id uniqueID)
@@ -177,7 +180,7 @@ static id replacement_NSUniqueIDSpecifier_initWithContainerClassDescription_cont
 static void initSpecifierAssertions(void) __attribute__((constructor));
 static void initSpecifierAssertions(void)
 {
-    REPLACE(initWithContainerClassDescription_containerSpecifier_property, NSScriptObjectSpecifier, initWithContainerClassDescription:containerSpecifier:property:);
+//    REPLACE(initWithContainerClassDescription_containerSpecifier_property, NSScriptObjectSpecifier, initWithContainerClassDescription:containerSpecifier:key:);
     REPLACE(initWithContainerClassDescription_containerSpecifier_key_uniqueID, NSUniqueIDSpecifier, initWithContainerClassDescription:containerSpecifier:key:uniqueID:);
 }
 

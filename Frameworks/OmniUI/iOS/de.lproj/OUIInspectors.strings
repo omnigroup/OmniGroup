@@ -14,7 +14,7 @@
 "<green title+value>" = "Grün: %d";
 
 /* title format for color component slider */
-"<hue title+value>" = "Farbton: %d°";
+"<hue title+value>" = "Farbton: %d";
 
 /* title format for color component slider */
 "<red title+value>" = "Rot: %d";

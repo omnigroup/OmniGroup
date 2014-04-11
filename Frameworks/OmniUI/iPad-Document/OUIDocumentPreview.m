@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -856,7 +856,8 @@ static void _copyPreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     DEBUG_PREVIEW_CACHE(@"copying preview %@ -> %@", sourcePreviewFileURL, targetPreviewFileURL);
     
     OUIDocumentPreview *sourcePreview = [PreviewFileNameToPreview objectForKey:[sourcePreviewFileURL lastPathComponent]];
-    if (sourcePreview->_type != OUIDocumentPreviewTypeRegular) // -type asserts we've loaded the file, but we might not have loaded all the preview sizes. We just want to copy whatever is on disk.
+    // Need to check for nil here becuase of this bug. <bug:///98537> (Wrong date is bing used to generate preview filename)
+    if (!sourcePreview || (sourcePreview->_type != OUIDocumentPreviewTypeRegular)) // -type asserts we've loaded the file, but we might not have loaded all the preview sizes. We just want to copy whatever is on disk.
         return; // Not a worthwhile thing to copy.
     
     NSFileManager *defaultManager = [NSFileManager defaultManager];

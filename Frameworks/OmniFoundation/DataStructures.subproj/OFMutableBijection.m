@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,7 @@ RCS_ID("$Id$");
 {
     id previousObject = [self objectForKey:aKey];
     
-    if (OFISNULL(anObject)) {
+    if (anObject == nil) {
         [self.keysToObjects removeObjectForKey:aKey];
         [self.objectsToKeys removeObjectForKey:previousObject];
     } else {
@@ -34,7 +34,7 @@ RCS_ID("$Id$");
 {
     id previousKey = [self keyForObject:anObject];
     
-    if (OFISNULL(aKey)) {
+    if (aKey == nil) {
         [self.objectsToKeys removeObjectForKey:anObject];
         [self.keysToObjects removeObjectForKey:previousKey];
     } else {
@@ -45,6 +45,12 @@ RCS_ID("$Id$");
     }
     
     OBINVARIANT_EXPENSIVE([self checkInvariants]); // Potentially called in a very tight loop
+}
+
+- (void)setObject:(id)anObject forKeyedSubscript:(id)aKey;
+{
+    // Documentation: "This method is identical to setObject:forKey:."
+    [self setObject:anObject forKey:aKey];
 }
 
 - (void)invert;

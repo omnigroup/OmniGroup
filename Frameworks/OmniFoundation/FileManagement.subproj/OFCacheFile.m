@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -168,8 +168,6 @@ RCS_ID("$Id$");
 
 - (void)setPropertyList:(id)newPlist;
 {
-    CFDataRef plistData;
-    
     if (newPlist == nil) {
         [self setContentData:nil];
         return;
@@ -177,9 +175,9 @@ RCS_ID("$Id$");
     
     // TODO: Old-style or new-style plists? Old-style are more compact and more readable, but can't contain some types (e.g. dates) and can have problems with non-ASCII characters if not used properly. So for now we use the XML format.
 
-    plistData = CFPropertyListCreateXMLData(kCFAllocatorDefault, newPlist);
+    CFDataRef plistData = CFPropertyListCreateXMLData(kCFAllocatorDefault, (OB_BRIDGE CFTypeRef)newPlist);
     OBASSERT(plistData != NULL);
-    [self setContentData:(NSData *)plistData];
+    [self setContentData:(OB_BRIDGE NSData *)plistData];
     CFRelease(plistData);
 }
 

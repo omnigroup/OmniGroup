@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,7 @@ static void (*oldResignKeyWindow)(id self, SEL _cmd);
 static void (*oldMakeKeyAndOrderFront)(id self, SEL _cmd, id sender);
 static void (*oldDidChangeValueForKey)(id self, SEL _cmd, NSString *key);
 static id (*oldSetFrameDisplayAnimateIMP)(id self, SEL _cmd, NSRect newFrame, BOOL shouldDisplay, BOOL shouldAnimate);
+static id (*oldDisplayIfNeededIMP)(id, SEL) = NULL;
 static NSWindow *becomingKeyWindow = nil;
 
 @implementation NSWindow (OAExtensions)
@@ -38,6 +39,7 @@ static NSWindow *becomingKeyWindow = nil;
     oldMakeKeyAndOrderFront = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(makeKeyAndOrderFront:), @selector(replacement_makeKeyAndOrderFront:));
     oldDidChangeValueForKey = (void *)OBReplaceMethodImplementationWithSelector(self, @selector(didChangeValueForKey:), @selector(replacement_didChangeValueForKey:));
     oldSetFrameDisplayAnimateIMP = (typeof(oldSetFrameDisplayAnimateIMP))OBReplaceMethodImplementationWithSelector(self, @selector(setFrame:display:animate:), @selector(replacement_setFrame:display:animate:));    
+    oldDisplayIfNeededIMP = (typeof(oldDisplayIfNeededIMP))OBReplaceMethodImplementationWithSelector(self, @selector(displayIfNeeded), @selector(_OA_replacement_displayIfNeeded));
 }
 
 static NSMutableArray *zOrder;
@@ -56,6 +58,59 @@ static NSMutableArray *zOrder;
     NSArray *result = zOrder;
     zOrder = nil;
     return [result autorelease];
+}
+
+static NSLock *displayIfNeededBlocksLock = nil;
+static NSMutableArray *displayIfNeededBlocks = nil;
+static BOOL displayIfNeededBlocksInProgress = NO;
+
++ (void)beforeDisplayIfNeededPerformBlock:(void (^)(void))block;
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        displayIfNeededBlocks = [[NSMutableArray alloc] init];
+        displayIfNeededBlocksLock = [[NSLock alloc] init];
+    });
+
+    void (^copiedBlock)(void) = [block copy];
+    [displayIfNeededBlocksLock lock];
+    BOOL needsQueue = !displayIfNeededBlocksInProgress && displayIfNeededBlocks.count == 0;
+    [displayIfNeededBlocks addObject:copiedBlock];
+    [displayIfNeededBlocksLock unlock];
+    [copiedBlock release];
+
+    if (needsQueue)
+        [self queueSelector:@selector(performDisplayIfNeededBlocks)];
+}
+
++ (void)performDisplayIfNeededBlocks;
+{
+    [displayIfNeededBlocksLock lock];
+    if (displayIfNeededBlocks.count != 0) {
+#ifdef DEBUG_kc
+        NSLog(@"-[%@ %@]: begin", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
+#endif
+        displayIfNeededBlocksInProgress = YES;
+
+        while (displayIfNeededBlocks.count != 0) {
+            NSArray *queuedBlocks = displayIfNeededBlocks;
+            displayIfNeededBlocks = [[NSMutableArray alloc] init];
+            [displayIfNeededBlocksLock unlock];
+
+            for (void (^block)(void) in queuedBlocks) {
+                block();
+            }
+
+            [queuedBlocks release];
+            [displayIfNeededBlocksLock lock];
+        }
+
+        displayIfNeededBlocksInProgress = NO;
+#ifdef DEBUG_kc
+        NSLog(@"-[%@ %@]: end", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
+#endif
+    }
+    [displayIfNeededBlocksLock unlock];
 }
 
 - (NSPoint)frameTopLeftPoint;
@@ -134,6 +189,12 @@ static NSMutableArray *zOrder;
     OBASSERT([animatingWindows member:self] == self);
     [animatingWindows removeObject:self];
 #endif
+}
+
+- (void)_OA_replacement_displayIfNeeded;
+{
+    [NSWindow performDisplayIfNeededBlocks];
+    oldDisplayIfNeededIMP(self, _cmd);
 }
 
 - (BOOL)isBecomingKey;
@@ -229,7 +290,7 @@ static NSMutableArray *zOrder;
 - (BOOL)_showMenuForPickedView:(NSView *)pickedView atScreenLocation:(NSPoint)point;
 {
     static NSMenu *constraintsOptions;
-    static NSMenuItem *headerItem, *frameItem, *alignmentRectItem, *ambiguousItem, *translatesItem, *horizontalItem, *verticalItem, *pickSuperviewItem, *logSubtreeItem, *copyAddressItem;
+    static NSMenuItem *headerItem, *frameItem, *alignmentRectItem, *intrinsicContentSizeItem, *ambiguousItem, *translatesItem, *horizontalItem, *verticalItem, *pickSuperviewItem, *logSubtreeItem, *copyAddressItem;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         constraintsOptions = [[NSMenu alloc] initWithTitle:@"View Debugging"];
@@ -243,6 +304,9 @@ static NSMutableArray *zOrder;
         
         alignmentRectItem = [constraintsOptions addItemWithTitle:@"<ALIGNMENT RECT>" action:NULL keyEquivalent:@""];
         [alignmentRectItem setEnabled:NO];
+        
+        intrinsicContentSizeItem = [constraintsOptions addItemWithTitle:@"<INTRINSIC CONTENT SIZE>" action:NULL keyEquivalent:@""];
+        [intrinsicContentSizeItem setEnabled:NO];
         
         [constraintsOptions addItem:[NSMenuItem separatorItem]];
         
@@ -278,6 +342,7 @@ static NSMutableArray *zOrder;
     [headerItem setTitle:[NSString stringWithFormat:@"%@", [pickedView shortDescription]]];
     [frameItem setTitle:[NSString stringWithFormat:@"Frame: %@", NSStringFromRect([pickedView frame])]];
     [alignmentRectItem setTitle:[NSString stringWithFormat:@"Alignment Rect: %@", NSStringFromRect([pickedView alignmentRectForFrame:[pickedView frame]])]];
+    [intrinsicContentSizeItem setTitle:[NSString stringWithFormat:@"Intrinsic Content Size: %@", NSStringFromSize([pickedView intrinsicContentSize])]];
     [ambiguousItem setTitle:[pickedView hasAmbiguousLayout] ? @"Has ambiguous layout" : @"Does not have ambiguous layout"];
     [translatesItem setTitle:[pickedView translatesAutoresizingMaskIntoConstraints] ? @"Translates autoresizing mask into constraints" : @"Does not translate autoresizing mask into constraints"];
     

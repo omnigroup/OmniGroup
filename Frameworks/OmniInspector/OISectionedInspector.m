@@ -1,4 +1,4 @@
-// Copyright 2007, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,7 @@
 RCS_ID("$Id$")
 
 @interface OISectionedInspector (/*Private*/)
-@property (retain, nonatomic) IBOutlet NSView *inspectionView;
+@property (strong, nonatomic) IBOutlet NSView *inspectionView;
 - (void)_layoutSections;
 @end
 
@@ -36,14 +36,11 @@ RCS_ID("$Id$")
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [_sectionInspectors release];
-    [inspectionView release];
-    [super dealloc];
 }
 
 - (void)awakeFromNib;
 {
-    float inspectorWidth = [[OIInspectorRegistry sharedInspector] inspectorWidth];
+    float inspectorWidth = [[OIInspectorRegistry inspectorRegistryForMainWindow] inspectorWidth];
     
     NSRect inspectionFrame = [inspectionView frame];
     OBASSERT(inspectionFrame.size.width <= inspectorWidth); // OK to make views from nibs wider, but probably indicates a problem if we are making them smaller.
@@ -57,9 +54,9 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark OIInspector subclass
 
-- initWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
+- initWithDictionary:(NSDictionary *)dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)sourceBundle;
 {
-    if (!(self = [super initWithDictionary:dict bundle:sourceBundle]))
+    if (!(self = [super initWithDictionary:dict inspectorRegistry:inspectorRegistry bundle:sourceBundle]))
 	return nil;
     
     NSMutableArray *sectionInspectors = [[NSMutableArray alloc] init];
@@ -73,29 +70,24 @@ RCS_ID("$Id$")
         } else {
             if (!inspectorPlist) {
                 OBASSERT_NOT_REACHED("No inspector specified for section");
-                [sectionInspectors release];
-                [self release];
                 return nil;
             }
         }
         
-        OIInspector *inspector = [OIInspector newInspectorWithDictionary:inspectorPlist bundle:sourceBundle];
+        OIInspector *inspector = [OIInspector newInspectorWithDictionary:inspectorPlist inspectorRegistry:inspectorRegistry bundle:sourceBundle];
         if (!inspector)
             // Don't log an error; OIInspector should have already if it is an error (might just be an OS version check)
             continue;
 
         if (![inspector isKindOfClass:[OIInspectorSection class]]) {
             NSLog(@"%@ is not a subclass of OIInspectorSection.", inspector);
-            [inspector release];
             continue;
         }
         
 	[sectionInspectors addObject:inspector];
-	[inspector release];
     }
     
     _sectionInspectors = [[NSArray alloc] initWithArray:sectionInspectors];
-    [sectionInspectors release];
     
     return self;
 }
@@ -103,10 +95,10 @@ RCS_ID("$Id$")
 - (void)inspectorDidResize:(OIInspector *)resizedInspector;
 {
     OBASSERT(resizedInspector != self); // Don't call us if we are the resized inspector, only on ancestors of that inspector
-    NSView *resizedView = [resizedInspector inspectorView];
-    OBASSERT([resizedView isDescendantOf:[self inspectorView]]);
+    NSView *resizedView = [resizedInspector view];
+    OBASSERT([resizedView isDescendantOf:self.view]);
     for (OIInspectorSection *section in _sectionInspectors) {
-        if ([resizedView isDescendantOf:[section inspectorView]]) {
+        if ([resizedView isDescendantOf:[section view]]) {
             if (resizedInspector != section) {
                 [section inspectorDidResize:resizedInspector];
             }
@@ -119,13 +111,14 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark OIConcreteInspector protocol
 
-- (NSView *)inspectorView;
+- (NSString *)nibName;
 {
-    if (!inspectionView)
-        [OMNI_BUNDLE loadNibNamed:@"OISectionedInspector" owner:self topLevelObjects:NULL];
+    return @"OISectionedInspector";
+}
 
-    OBPOSTCONDITION(inspectionView);
-    return inspectionView;
+- (NSBundle *)nibBundle;
+{
+    return OMNI_BUNDLE;
 }
 
 - (NSPredicate *)inspectedObjectsPredicate;
@@ -135,7 +128,7 @@ RCS_ID("$Id$")
     
     static NSPredicate *truePredicate = nil;
     if (!truePredicate)
-        truePredicate = [[NSPredicate predicateWithValue:YES] retain];
+        truePredicate = [NSPredicate predicateWithValue:YES];
     return truePredicate;
 }
 
@@ -150,7 +143,7 @@ RCS_ID("$Id$")
 
 - (void)setInspectorController:(OIInspectorController *)aController;
 {
-    _nonretained_inspectorController = aController;
+    _weak_inspectorController = aController;
 
     // Set the controller on all of our child inspectors as well
     for (OIInspector *inspector in _sectionInspectors) {
@@ -165,7 +158,7 @@ RCS_ID("$Id$")
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 {
-    BOOL isVisible = [_nonretained_inspectorController isExpanded] && [_nonretained_inspectorController isVisible];
+    BOOL isVisible = [_weak_inspectorController isExpanded] && [_weak_inspectorController isVisible];
     
     if  (!isVisible) {
         [item setState:NSOffState];
@@ -207,12 +200,11 @@ RCS_ID("$Id$")
             [divider setBoxType:NSBoxSeparator];
             
             [inspectionView addSubview:divider];
-            [divider release];
             
             size.height += 1;
 	}
 	
-        NSView *view = [section inspectorView];
+        NSView *view = [section view];
         NSRect viewFrame = [view frame];
 	OBASSERT(viewFrame.size.width <= size.width); // make sure it'll fit
 	
@@ -254,7 +246,7 @@ RCS_ID("$Id$")
     [inspectionView setFrame:contentFrame];
     
     [inspectionView setNeedsDisplay:YES];
-    [_nonretained_inspectorController prepareWindowForDisplay];
+    [_weak_inspectorController prepareWindowForDisplay];
     
     
 }

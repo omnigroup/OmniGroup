@@ -5,16 +5,13 @@
 "%@ of %@" = "%1$@ sur %2$@";
 
 /* title for successful in app purchase */
-"%@ Purchased" = "%@ achetés";
+"%@ Purchased" = "%@ acheté";
 
 /* Default title for the About menu item */
 "About %@" = "À propos de %@";
 
 /* alert button title */
 "Accept" = "Accepter";
-
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Souhaitez-vous autoriser %@ à envoyer périodiquement des informations sur votre modèle de matériel et votre version iOS ?\nNous pourrons ainsi connaître les configurations pour lesquelles il est prioritaire de fournir une assistance. Vous pourrez changer votre réponse ultérieurement dans les préférences.";
 
 /* Web view nagivation button for going back in history. */
 "Back" = "Retour";
@@ -53,9 +50,6 @@
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "Désactivé";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "Ne pas signaler";
-
 /* Done
    toolbar item title */
 
@@ -71,7 +65,7 @@
 "Error Loading Store" = "Erreur de chargement de la boutique";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "Fonction inactive pour cette démo";
+"Feature not enabled for this demo" = "Fonction inactive pour cette démo.";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Ajuster";
@@ -80,7 +74,7 @@
 "Help and Settings" = "Aide et réglages";
 
 /* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "L’achat intégré n’est pas disponible ou autorisé sur cet appareil. Pour activer l’achat, vérifiez les Restrictions dans l’app Réglages.";
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "L’achat intégré n’est pas disponible ou autorisé sur cet appareil. Pour activer l’achat, vérifiez les restrictions dans l’app Réglages.";
 
 /* Italic button accessibility label */
 "Italic" = "Italique";
@@ -92,13 +86,16 @@
 "Left text align" = "Texte aligné à gauche";
 
 /* Web view error opening URL title. */
-"Link could not be opend. Please check Safari restrictions in Settings." = "Impossible d’ouvrir le lien. Vérifiez les restrictions de Safari dans Réglages.";
+"Link could not be opened. Please check Safari restrictions in Settings." = "Impossible d’ouvrir le lien. Vérifiez les restrictions de Safari dans Réglages.";
 
 /* Buy button title while app store is loading */
 "Loading" = "Chargement";
 
 /* empty value cell placeholder */
-"None" = "Aucun(e)";
+"None" = "Aucun";
+
+/* Full screen note editor title */
+"Note" = "Note";
 
 /* button title
    OK button label */
@@ -107,9 +104,6 @@
 
 
 "OK" = "OK";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Mise à jour des logiciels Omni";
 
 /* placeholder text */
 "password" = "mot de passe";
@@ -152,9 +146,6 @@
 /* Search field placeholder text */
 "Search" = "Rechercher";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "Envoyer les rapports";
-
 /* Strike Through button accessibility label */
 "Strike Through" = "Barré";
 
@@ -170,9 +161,8 @@
 /* Undo button title */
 "Undo" = "Annuler";
 
-/* default for WebDAV username edit field
-   placeholder text */
-"username" = "nom d'utilisateur";
+/* placeholder text */
+"username" = "nom d’utilisateur";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Vous avez touché un lien qui modifiera les préférences suivantes :\n\n\“%@”\n\nSouhaitez-vous accepter ces modifications ?";

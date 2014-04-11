@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,8 @@
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>
 #endif
+
+RCS_ID("$Id$")
 
 // Make sure to log if we hit a log call before this is loaded from preferences/environment
 static NSInteger OFBackgroundActivityDebug = NSIntegerMax;

@@ -1,4 +1,4 @@
-// Copyright 2006-2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2007, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniFoundation/OFObject.h>
 #import "OIInspector.h"
+#import "OIInspectorRegistry.h"
 
 @class NSArray, NSBundle; // Foundation
 @class NSBox, NSImage, NSMenuItem, NSView; // AppKit
@@ -29,9 +30,11 @@
     OIVisibilityState _visibilityState;
 }
 
-- initWithInspectorDictionary:(NSDictionary *)tabPlist containingInspector:(OITabbedInspector *)containingInspector bundle:(NSBundle *)bundle;
+- initWithInspectorDictionary:(NSDictionary *)tabPlist containingInspector:(OITabbedInspector *)containingInspector inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)fromBundle;
 
 - (OIInspector *)inspector;
+@property (nonatomic, weak) OIInspectorRegistry *inspectorRegistry;
+
 - (NSImage *)image;
 - (NSView *)inspectorView;
 - (NSView *)dividerView;

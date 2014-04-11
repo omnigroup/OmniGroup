@@ -1,4 +1,4 @@
-// Copyright 2004-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,11 +48,12 @@ void OAContextControlGetMenu(id delegate, NSControl *control, NSMenu **outMenu, 
     } else {
         // TODO: Check if any of the menu items in the resulting menu are valid?
 
-        id target = [NSApp targetForAction:@selector(menuForContextControl:)];
+        id <OAContextControlDelegate> target = [NSApp targetForAction:@selector(menuForContextControl:)];
         if (target) {
             if ([target isKindOfClass:[NSView class]]) {
-                targetView = target;
-                menu       = [targetView menuForContextControl:control];
+                // Only needs to implement the menu generating method (and we checked for that with -targetForAction:).
+                targetView = (NSView *)target;
+                menu       = [(id <OAContextControlDelegate>)targetView menuForContextControl:control];
             } else {
                 // Not a view, must respond to both
                 targetView = [target targetViewForContextControl:control];
@@ -60,7 +61,7 @@ void OAContextControlGetMenu(id delegate, NSControl *control, NSMenu **outMenu, 
             }
         } else if ((target = [NSApp targetForAction:@selector(menu)])) {
             if ([target isKindOfClass:[NSView class]]) {
-                targetView = target;
+                targetView = (NSView *)target;
                 menu       = [targetView menu];
             } else {
                 // This can happen when the responder we get to -menu is NSApp

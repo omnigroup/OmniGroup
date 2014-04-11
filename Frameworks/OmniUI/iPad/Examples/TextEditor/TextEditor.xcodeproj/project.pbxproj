@@ -247,13 +247,6 @@
 			remoteGlobalIDString = 4AA1E81E08AA764700E2FF6B;
 			remoteInfo = OAMakeImageSizeIntegral;
 		};
-		34272199119480C400B39788 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3427218B119480C400B39788 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4AA1E82C08AA764700E2FF6B;
-			remoteInfo = OAPatternColorPicker;
-		};
 		3427219B119480C400B39788 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3427218B119480C400B39788 /* OmniAppKit.xcodeproj */;
@@ -759,7 +752,6 @@
 				34272194119480C400B39788 /* OmniAppKit.framework */,
 				34272196119480C400B39788 /* OAUnitTests.octest */,
 				34272198119480C400B39788 /* OAMakeImageSizeIntegral */,
-				3427219A119480C400B39788 /* OAPatternColorPicker.bundle */,
 				3427219C119480C400B39788 /* libOmniAppKit.a */,
 				34C6FE5011E644A600496375 /* libOmniAppKitTouchTests.a */,
 			);
@@ -835,7 +827,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TextEditor" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1093,13 +1085,6 @@
 			fileType = "compiled.mach-o.executable";
 			path = OAMakeImageSizeIntegral;
 			remoteRef = 34272197119480C400B39788 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3427219A119480C400B39788 /* OAPatternColorPicker.bundle */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = OAPatternColorPicker.bundle;
-			remoteRef = 34272199119480C400B39788 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		3427219C119480C400B39788 /* libOmniAppKit.a */ = {

@@ -1,0 +1,44 @@
+﻿/* error description */
+"%s is not reachable." = "%s に接続できません。";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "チェック操作に失敗しました。";
+
+/* error text generated when software update is unable to retrieve the list of current software versions */
+"Could not contact %s." = "%s に接続できませんでした。";
+
+/* error description */
+"Error fetching software update information." = "ソフトウェアアップデート情報の取得中にエラー";
+
+/* error description */
+"Error while checking for updated version." = "更新されたバージョンの確認中にエラー";
+
+/* error reason */
+"Exception raised: %@" = "例外が発生: %@";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "後ほどやり直すか、テクニカルサポートまでご連絡ください。";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "<%@> から返されたデータは有効な XML 書類ではありませんでした。";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "アップデート情報に署名がありません。";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "署名の確認で問題がありました。";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "ツールから何もデータが返されませんでした";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "ソフトウェアアップデートサーバーからの応答を認証できません。";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "ソフトウェアアップデート情報を読み込めません。";
+
+/* error description */
+"Unable to parse response from the software update server." = "ソフトウェアアップデートサーバーからの応答を解釈できませんでした。";
+
+/* error text generated when software update is unable to retrieve the list of current software versions */
+"Your Internet connection might not be active, or there might be a problem somewhere along the network." = "インターネットへ接続していないか、ネットワークに問題がある可能性があります。";

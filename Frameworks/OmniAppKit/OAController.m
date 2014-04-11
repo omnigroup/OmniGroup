@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2011-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2011-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,6 +62,14 @@ RCS_ID("$Id$")
 	aboutPanelController = [[class alloc] init];
     }
     return aboutPanelController;
+}
+
+- (NSString *)appName;
+{
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *appName = [infoDictionary objectForKey:@"CFBundleName"];
+    appName = appName ? appName : @"CFBundleName not set!";
+    return appName;
 }
 
 - (void)getFeedbackAddress:(NSString **)feedbackAddress andSubject:(NSString **)subjectLine;
@@ -174,6 +182,24 @@ RCS_ID("$Id$")
     [viewer setMediaStyle:@"release-notes"];
 
     [viewer loadPath:path];
+}
+
+- (IBAction)openApplicationScriptsFolder:(id)sender;
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationScriptsDirectory, NSUserDomainMask, YES);
+    if (paths.count == 0) {
+        NSBeep();
+        return;
+    }
+
+    NSString *scriptsFolder = paths[0];
+    NSError *error = nil;
+    if (![[NSFileManager defaultManager] createDirectoryAtPath:scriptsFolder withIntermediateDirectories:YES attributes:nil error:&error]) {
+        [NSApp presentError:error];
+        return;
+    }
+
+    [[NSWorkspace sharedWorkspace] openFile:scriptsFolder];
 }
 
 - (void)checkMessageOfTheDay;

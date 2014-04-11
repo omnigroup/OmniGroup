@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,7 @@ RCS_ID("$Id$");
     NSTextStorage *_underlyingTextStorage;
     NSMutableAttributedString *_backingStore;
     BOOL _isEditingUnderlyingTextStorage;
-    BOOL _fixAttributesNestingLevel;
+    NSInteger _fixAttributesNestingLevel;
 }
 
 static void _scaleAttributes(NSMutableDictionary *scaledAttributes, NSDictionary *originalAttributes, CGFloat scale)

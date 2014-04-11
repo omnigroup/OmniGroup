@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -126,13 +126,13 @@ HandleUnicode:
 
 Boolean OFCaseInsensitiveStringIsEqual(const void *value1, const void *value2)
 {
-    OBASSERT([(id)value1 isKindOfClass:[NSString class]] && [(id)value2 isKindOfClass:[NSString class]]);
+    OBASSERT([(OB_BRIDGE id)value1 isKindOfClass:[NSString class]] && [(OB_BRIDGE id)value2 isKindOfClass:[NSString class]]);
     return CFStringCompare((CFStringRef)value1, (CFStringRef)value2, kCFCompareCaseInsensitive) == kCFCompareEqualTo;
 }
 
 CFHashCode OFCaseInsensitiveStringHash(const void *value)
 {
-    OBASSERT([(id)value isKindOfClass:[NSString class]]);
+    OBASSERT([(OB_BRIDGE id)value isKindOfClass:[NSString class]]);
     
     // This is the only interesting function in the bunch.  We need to ensure that all
     // case variants of the same string (when 'same' is determine case insensitively)
@@ -201,7 +201,7 @@ unsigned long OFStringHash_djb2(CFStringRef string)
         }
     } else {
         /* Otherwise, use a character buffer */
-        OFStringStartLoopThroughCharacters((NSString *)string, character) {
+        OFStringStartLoopThroughCharacters((OB_BRIDGE NSString *)string, character) {
             hash = ((hash << 5) + hash) + character; /* hash * 33 + character */
         } OFStringEndLoopThroughCharacters;
     }
@@ -255,5 +255,57 @@ BOOL OFStringContainsInvalidSequences(CFStringRef str)
     /* Nothing invalid here! */
     return NO;
 }
+
+CFRange OFStringRangeOfNextInvalidCodepoint(CFStringRef str, CFRange searchRange, CFCharacterSetRef additionalInvalides)
+{
+    CFStringInlineBuffer buf;
+    
+    /* Almost everything we call in this function is a simple inline, so this should be reasonably fast */
+    
+    CFStringInitInlineBuffer(str, &buf, searchRange);
+    for(CFIndex strIndex = 0; strIndex < searchRange.length; strIndex ++) {
+        /* CFStrings are a sequence of UTF-16 words. Most of these map directly to Unicode code points, except for the surrogate pair range. */
+        
+        UniChar ch = CFStringGetCharacterFromInlineBuffer(&buf, strIndex);
+        if (__builtin_expect((ch & 0xF800) == 0xD800, 0)) {
+            if ((ch & 0x0400) == 0) {
+                /* A high surrogate must be immediately followed by a low surrogate */
+                
+                /* CFStringGetCharacterFromInlineBuffer() will safely return 0 if strIndex+1 is out of range */
+                UniChar nextCh = CFStringGetCharacterFromInlineBuffer(&buf, strIndex+1);
+                if (!CFStringIsSurrogateLowCharacter(nextCh))
+                    return (CFRange){ .location = strIndex + searchRange.location, .length = 1 };
+                
+                UnicodeScalarValue longch = OFCharacterFromSurrogatePair(ch, nextCh);
+                if ((longch & 0xFFFE) == 0xFFFE) {
+                    // All code points eding in FFFE or FFFF are invalid, for some reason (possibly to make BOMs work?)
+                    return (CFRange){ .location = strIndex + searchRange.location, .length = 2 };
+                }
+                
+                if (additionalInvalides && CFCharacterSetIsLongCharacterMember(additionalInvalides, longch)) {
+                    return (CFRange){ .location = strIndex + searchRange.location, .length = 2 };
+                }
+                
+                // Skip past the low surrogate we've already checked
+                strIndex ++;
+            } else {
+                /* If we run into a low surrogate half not preceded by a high surrogate, then fail. */
+                return (CFRange){ .location = strIndex + searchRange.location, .length = 1 };
+            }
+        } else {
+            /* The common case: not a surrogate. */
+            /* Common case: Not a surrogate pair, but a Basic-Multilingual-Plane character. */
+            /* Check for a handful of invalid code points. */
+            if (ch == 0xFFFE || ch == 0xFFFF || (ch >= 0xFDD0 && ch < 0xFDF0))
+                return (CFRange){ .location = strIndex + searchRange.location, .length = 1 };
+            if (additionalInvalides && CFCharacterSetIsCharacterMember(additionalInvalides, ch))
+                return (CFRange){ .location = strIndex + searchRange.location, .length = 1 };
+        }
+    }
+    
+    /* Nothing invalid here! */
+    return (CFRange){ .location = kCFNotFound, .length = 0 };
+}
+
 
 

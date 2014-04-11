@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -473,6 +473,7 @@ static NSString *ODAVDepthName(ODAVDepth depth)
                 off_t size = 0;
                 NSDate *dateModified = nil;
                 NSString *ETag = nil;
+                NSMutableArray *unexpectedPropstatElements = nil;
                 
                 while ([cursor openNextChildElementNamed:@"propstat"]) {
                     hasPropstat = YES;
@@ -507,7 +508,16 @@ static NSString *ODAVDepthName(ODAVDepth depth)
                             // If we get a 404, or other error, that doesn't mean this resource doesn't exist: it just means this property doesn't exist on this resource.
                             // But every resource should have either a resourcetype or getcontentlength property, which will be returned to us with a 2xx status.
                         } else {
+#ifdef OMNI_ASSERTIONS_ON
+                            // Always log the unexpected element if assertions are enabled.
                             NSLog(@"Unexpected propstat element: %@", [anElement name]);
+#endif
+                            // Collect the unexpected propstat elements for logging later, if necessary.
+                            if (unexpectedPropstatElements == nil)
+                                unexpectedPropstatElements = [NSMutableArray array];
+                            
+                            [unexpectedPropstatElements addObject:anElement];
+                            
                         }
                     }
                     [cursor closeElement]; // propstat
@@ -515,6 +525,9 @@ static NSString *ODAVDepthName(ODAVDepth depth)
                 
                 if (!hasPropstat) {
                     NSLog(@"No propstat element found for path '%@' of propfind of %@", encodedPath, url);
+                    if ([unexpectedPropstatElements count] > 0)
+                        NSLog(@"Unexpected propstat elements: %@", [unexpectedPropstatElements valueForKey:@"name"]);
+                        
                     continue;
                 }
                 

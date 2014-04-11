@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -79,15 +79,15 @@ RCS_ID("$Id$");
     if (!(self = [super init]))
         return nil;
     
-    self.keysToObjects = [[[NSMapTable alloc] initWithKeyOptions:NSMapTableStrongMemory valueOptions:NSMapTableStrongMemory capacity:keys.count] autorelease];
-    self.objectsToKeys = [[[NSMapTable alloc] initWithKeyOptions:NSMapTableStrongMemory valueOptions:NSMapTableStrongMemory capacity:objects.count] autorelease];
+    _keysToObjects = [[NSMapTable alloc] initWithKeyOptions:NSMapTableStrongMemory valueOptions:NSMapTableStrongMemory capacity:keys.count];
+    _objectsToKeys = [[NSMapTable alloc] initWithKeyOptions:NSMapTableStrongMemory valueOptions:NSMapTableStrongMemory capacity:objects.count];
     
     for (NSUInteger i = 0; i < keys.count; i++) {
         id key = keys[i];
         id object = objects[i];
         
-        [self.keysToObjects setObject:object forKey:key];
-        [self.objectsToKeys setObject:key forKey:object];
+        [_keysToObjects setObject:object forKey:key];
+        [_objectsToKeys setObject:key forKey:object];
     }
     
     OBPOSTCONDITION(self.count == keys.count); // and therefore == objects.count
@@ -128,6 +128,13 @@ RCS_ID("$Id$");
     return [self initWithObjects:objects forKeys:keys];
 }
 
+- (void)dealloc;
+{
+    [_keysToObjects release];
+    [_objectsToKeys release];
+    [super dealloc];
+}
+
 #pragma mark Core functions
 
 - (NSUInteger)count;
@@ -143,6 +150,12 @@ RCS_ID("$Id$");
 - (id)keyForObject:(id)anObject;
 {
     return [self.objectsToKeys objectForKey:anObject];
+}
+
+- (id)objectForKeyedSubscript:(id)aKey;
+{
+    // Documentation: "This method behaves the same as objectForKey:."
+    return [self objectForKey:aKey];
 }
 
 - (NSArray *)allKeys;

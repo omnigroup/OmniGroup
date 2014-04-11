@@ -42,7 +42,7 @@ ResourcesRoot = "#{ENV["CONFIGURATION_BUILD_DIR"]}/Resources"
 $PNGCrush = nil
 if ENV['PLATFORM_NAME'] == 'iphoneos'
     $PNGCrush = ENV['PLATFORM_DEVELOPER_BIN_DIR'] + "/pngcrush"
-    if !File.exists?($PNGCrush)
+    if !File.exist?($PNGCrush)
         $PNGCrush = nil
     end
 end
@@ -76,7 +76,7 @@ $SourcePathByDestinationPath = {}
 
 # We use this to copy, sort, and convert encodings. This is a Mac tool, so CONFIGURATION_BUILD_DIR needs to have any iOS suffix expunged
 $FixStringsFile="#{ENV['CONFIGURATION_BUILD_DIR'].sub(/-iphone[^\/]*/, "")}/FixStringsFile"
-fail "FixStringsFile not found at #{$FixStringsFile}!" if !File.exists?($FixStringsFile)
+fail "FixStringsFile not found at #{$FixStringsFile}!" if !File.exist?($FixStringsFile)
 
 StaticLibraryResourceDirectories.each {|dirname|
   STDERR.print "scanning #{dirname} ...\n"
@@ -128,7 +128,7 @@ StaticLibraryResourceDirectories.each {|dirname|
       $SourcePathByDestinationPath[dest_file] = source
       
       source_mtime = File.new(source).mtime
-      dest_mtime = File.exists?(dest_file) ? File.new(dest_file).mtime : nil
+      dest_mtime = File.exist?(dest_file) ? File.new(dest_file).mtime : nil
       
       if dest_mtime && dest_mtime >= source_mtime
         #STDERR.print "  skipping up to date #{source} -> #{dest_file}\n"

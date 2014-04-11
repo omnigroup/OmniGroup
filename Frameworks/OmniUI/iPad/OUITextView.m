@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1199,6 +1199,11 @@ static void _enumerateBestDataForTypes(UIPasteboard *pasteboard, NSArray *types,
     if ([delegate respondsToSelector:@selector(textViewShouldPreserveStylesWhenPasting:)])
         preserveStyles = ![delegate textViewShouldPreserveStylesWhenPasting:self];
     [self _pastePreservingStyles:preserveStyles];
+}
+
+- (void)pasteAsPlainText:(id)sender;
+{
+    [self _pastePreservingStyles:NO];
 }
 
 static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSString *key)

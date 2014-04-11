@@ -1,4 +1,4 @@
-// Copyright 2005-2006, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2006, 2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@ RCS_ID("$Id$")
 - (IBAction)toggleInspectorPanel:(id)sender;
 {
     // [OIInspectorRegistry toggleAllInspectors] seems inviting, but it makes _all_ inspectors visible, or hides them all if they were already all visible. We, instead, want to toggle between the user's chosen visible set and hiding them all.
-    [OIInspectorRegistry tabShowHidePanels];
+    [[OIInspectorRegistry inspectorRegistryForMainWindow] tabShowHidePanels];
 }
 
 - (IBAction)toggleFrontColorPanel:(id)sender;
@@ -39,7 +39,7 @@ RCS_ID("$Id$")
     if (action == @selector(toggleInspectorPanel:)) {
         NSString *showString = nil;
         NSString *hideString = nil;
-        if ([[OIInspectorRegistry sharedInspector] hasSingleInspector]) {
+        if ([[OIInspectorRegistry inspectorRegistryForMainWindow] hasSingleInspector]) {
             showString = NSLocalizedStringFromTableInBundle(@"Show Inspector", @"OmniInspector", [OIInspectorRegistry bundle], "menu title");
             hideString = NSLocalizedStringFromTableInBundle(@"Hide Inspector", @"OmniInspector", [OIInspectorRegistry bundle], "menu title");
         } else {
@@ -47,7 +47,7 @@ RCS_ID("$Id$")
             hideString = NSLocalizedStringFromTableInBundle(@"Hide Inspectors", @"OmniInspector", [OIInspectorRegistry bundle], "menu title");
         }
 	
-        if ([[OIInspectorGroup visibleGroups] count] > 0) {
+        if ([[[OIInspectorRegistry inspectorRegistryForMainWindow] visibleGroups] count] > 0) {
             [item setTitle:hideString];
         } else {
             [item setTitle:showString];

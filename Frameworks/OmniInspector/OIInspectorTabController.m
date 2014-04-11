@@ -1,4 +1,4 @@
-// Copyright 2006-2007, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2007, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,11 +25,13 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- initWithInspectorDictionary:(NSDictionary *)tabPlist containingInspector:(OITabbedInspector *)containingInspector bundle:(NSBundle *)fromBundle;
+- initWithInspectorDictionary:(NSDictionary *)tabPlist containingInspector:(OITabbedInspector *)containingInspector inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)fromBundle;
 {
     if (!(self = [super init]))
         return nil;
 
+    self.inspectorRegistry = inspectorRegistry;
+    
     NSString *imageName;
     NSDictionary *inspectorPlist = [tabPlist objectForKey:@"inspector"];
         
@@ -39,16 +41,14 @@ RCS_ID("$Id$");
     } else {
 	if (!inspectorPlist) {
 	    OBASSERT_NOT_REACHED("No inspector specified for tab");
-	    [self release];
 	    return nil;
 	}
 	imageName = [tabPlist objectForKey:@"image"];
     }
     
-    _inspector = [OIInspector newInspectorWithDictionary:inspectorPlist bundle:fromBundle];
+    _inspector = [OIInspector newInspectorWithDictionary:inspectorPlist inspectorRegistry:inspectorRegistry bundle:fromBundle];
     if (!_inspector) {
 	// Don't log an error; OIInspector should have already if it is an error (might just be an OS version check)
-	[self release];
 	return nil;
     }
     
@@ -56,12 +56,11 @@ RCS_ID("$Id$");
         [_inspector setContainingTabbedInspector:containingInspector];
     
     if (imageName) {
-	_image = [[_inspector imageNamed:imageName] retain];
+	_image = [_inspector imageNamed:imageName];
     } else
-	_image = [[_inspector tabImage] retain];
+	_image = [_inspector tabImage];
     if (!_image) {
 	OBASSERT_NOT_REACHED("No image specified for tab (or can't find it)");
-	[self release];
 	return nil;
     }
 
@@ -79,12 +78,7 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {
-    [_currentlyInspectedObjects release];
-    [_inspector release];
-    [_image release];
     [_dividerView removeFromSuperview];
-    [_dividerView release];
-    [super dealloc];
 }
 
 - (NSImage *)image;
@@ -95,7 +89,7 @@ RCS_ID("$Id$");
 - (NSView *)inspectorView;
 {
     _flags.hasLoadedView = 1;
-    NSView *view = [_inspector inspectorView];
+    NSView *view = [_inspector view];
     
 #if 0 && defined(OMNI_ASSERTIONS_ON)
     if ([view autoresizingMask] != 0) {
@@ -166,14 +160,12 @@ RCS_ID("$Id$");
     if (inspectNothing)
 	newObjectsToInspect = nil;
     else
-	newObjectsToInspect = [[OIInspectorRegistry sharedInspector] copyObjectsInterestingToInspector:_inspector];
+	newObjectsToInspect = [self.inspectorRegistry copyObjectsInterestingToInspector:_inspector];
     
     if (!_flags.needsInspectObjects && ((!newObjectsToInspect && !_currentlyInspectedObjects) || [newObjectsToInspect isIdenticalToArray:_currentlyInspectedObjects])) {
-	[newObjectsToInspect release];
 	return;
     }
     
-    [_currentlyInspectedObjects release];
     _currentlyInspectedObjects = newObjectsToInspect;
 
     if (!_flags.hasLoadedView) {

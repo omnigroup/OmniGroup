@@ -77,6 +77,11 @@ static inline OUIAppearance *AppearanceForClass(Class cls)
 
 - (id)_objectOfClass:(Class)cls forPlistKeyPath:(NSString *)keyPath;
 {
+    // Can enable this to check if appearance values are being looked up on commonly hit drawing paths.
+#if 0 && defined(DEBUG)
+    NSLog(@"Looking up %@/%@ in %@", NSStringFromClass(cls), keyPath, self);
+#endif
+    
     id obj = _plist;
     
     NSArray *keys = OFKeysForKeyPath(keyPath);
@@ -444,6 +449,11 @@ static void EnsureSystemColorsObserver(void)
 + (UIColor *)omniGraphiteColor;
 {
     CACHED_COLOR(@"OmniGraphite");
+}
+
++ (UIColor *)omniCremaColor;
+{
+    CACHED_COLOR(@"OmniCrema");
 }
 
 + (UIColor *)omniAlternateRedColor;

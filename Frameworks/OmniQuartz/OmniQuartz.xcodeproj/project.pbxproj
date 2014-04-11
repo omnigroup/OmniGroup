@@ -481,7 +481,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 34DB335E08C62AB500BC2748 /* Build configuration list for PBXProject "OmniQuartz" */;
 			compatibilityVersion = "Xcode 3.2";

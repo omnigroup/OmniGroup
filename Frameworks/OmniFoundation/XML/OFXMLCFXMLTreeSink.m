@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2009-2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2005, 2009-2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,11 +43,11 @@ static NSCharacterSet *attributeDangerChars, *textDangerChars;
     
     if (toplevel == NULL) {
         CFXMLNodeRef rootNodeInfo = CFXMLNodeCreate(kCFAllocatorDefault, kCFXMLNodeTypeDocumentFragment, NULL, NULL, kCFXMLNodeCurrentVersion);
-        topNode = OBCFMakeCollectable(CFXMLTreeCreateWithNode(kCFAllocatorDefault, rootNodeInfo));
+        topNode = CFXMLTreeCreateWithNode(kCFAllocatorDefault, rootNodeInfo);
         CFRelease(rootNodeInfo);
     } else {
         CFRetain(toplevel);
-        topNode = OBCFMakeCollectable(toplevel);
+        topNode = toplevel;
     }
     
     currentEltTree = topNode;
@@ -60,7 +60,8 @@ static NSCharacterSet *attributeDangerChars, *textDangerChars;
 
 - (void)dealloc
 {
-    CFRelease(topNode);
+    if (topNode)
+        CFRelease(topNode);
     [encodingName release];
     [super dealloc];
 }
@@ -89,8 +90,7 @@ static NSCharacterSet *attributeDangerChars, *textDangerChars;
 
 - (NSData *)xmlData
 {
-    CFDataRef outData = CFXMLTreeCreateXMLData(kCFAllocatorDefault, topNode);
-    return [NSMakeCollectable(outData) autorelease];
+    return CFBridgingRelease(CFXMLTreeCreateXMLData(kCFAllocatorDefault, topNode));
 }
 
 - (void)addCFXMLNode:(CFXMLNodeRef)newNode

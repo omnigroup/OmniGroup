@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,8 +14,8 @@
 
 RCS_ID("$Id$")
 
-@interface OFMutableKnownKeyDictionary (PrivateAPI)
-- _initWithTemplate: (OFKnownKeyDictionaryTemplate *) template;
+@interface OFMutableKnownKeyDictionary ()
+- _initWithTemplate:(OFKnownKeyDictionaryTemplate *) template;
 @end
 
 @interface _OFMutableKnownKeyDictionaryEnumerator : NSEnumerator
@@ -150,6 +150,10 @@ static inline void _nonNilKey(id key)
 
 
 @implementation OFMutableKnownKeyDictionary
+{
+    OFKnownKeyDictionaryTemplate *_template;
+    // ... indexed ivars for values
+}
 
 + (OFMutableKnownKeyDictionary *)newWithTemplate:(OFKnownKeyDictionaryTemplate *)template;
 {
@@ -382,10 +386,9 @@ static inline void _nonNilKey(id key)
     return [self mutableKnownKeyCopyWithZone:zone];
 }
 
-@end
+#pragma mark - Private
 
-@implementation OFMutableKnownKeyDictionary (PrivateAPI)
-- _initWithTemplate: (OFKnownKeyDictionaryTemplate *) template
+- (id)_initWithTemplate:(OFKnownKeyDictionaryTemplate *)template
 {
     // Don't retain.  Templates are uniqued and live forever.
     _template = template;

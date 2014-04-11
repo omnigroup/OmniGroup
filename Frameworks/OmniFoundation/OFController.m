@@ -1,4 +1,4 @@
-// Copyright 1998-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -225,7 +225,7 @@ static void _OFControllerCheckTerminated(void)
 - (NSUInteger)_locked_indexOfObserver:(id)observer;
 {
     return [_observerReferences indexOfObjectPassingTest:^BOOL(OFWeakReference *ref, NSUInteger idx, BOOL *stop) {
-        return [ref referencesObject:observer];
+        return [ref referencesObject:(OB_BRIDGE void *)observer];
     }];
 }
 
@@ -534,6 +534,8 @@ static void OFCrashImmediately(void)
         
         BOOL crash = YES;
         
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
         // NSRemoteSavePanel sometimes fails an assertion when it turns on the "hide extension" checkbox on by itself. Seems harmless?
         if (selector == @selector(connection:didReceiveRequest:) && [NSStringFromClass([object class]) isEqualToString:@"NSRemoteSavePanel"])
             crash = NO;
@@ -545,6 +547,7 @@ static void OFCrashImmediately(void)
         // Bringing up security options for print-to-pdf in a sandboxed app causes a harmless failure. <bug:///87161>
         if (selector == @selector(sendEvent:) && [NSStringFromClass([object class]) isEqualToString:@"NSAccessoryWindow"])
             crash = NO;
+#pragma clang diagnostic pop
         
         if (crash)
             [self crashWithReport:report];

@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,6 +73,11 @@ static NSMutableDictionary *helpersByExtension = nil;
 
 - (void)dealloc;
 {
+    for (OAToolbarItem *item in _toolbar.items) {
+        if ([item isKindOfClass:[OAToolbarItem class]] && item.delegate == self)
+            item.delegate = nil;
+    }
+    
     [_toolbar setDelegate:nil];
     [_toolbar release];
     [super dealloc];
@@ -128,7 +133,7 @@ static NSMutableDictionary *helpersByExtension = nil;
 	
 	_toolbar = [[toolbarClass alloc] initWithIdentifier:[self toolbarIdentifier]];
 	[_toolbar setAllowsUserCustomization:[self shouldAllowUserToolbarCustomization]];
-        [_toolbar setDisplayMode:NSToolbarDisplayModeIconOnly];
+	[_toolbar setDisplayMode:[self defaultToolbarDisplayMode]];
 
 	NSDictionary *config = nil;
 	if ([self shouldAutosaveToolbarConfiguration])
@@ -211,6 +216,11 @@ static NSMutableDictionary *helpersByExtension = nil;
 - (BOOL)shouldAutosaveToolbarConfiguration;
 {
     return YES;
+}
+
+- (NSToolbarDisplayMode)defaultToolbarDisplayMode;
+{
+    return NSToolbarDisplayModeDefault;
 }
 
 - (NSDictionary *)toolbarConfigurationDictionary;
@@ -370,9 +380,9 @@ static void copyProperty(NSToolbarItem *anItem,
     }
         
     if (helper)
-        [helper finishSetupForToolbarItem:newItem toolbar:toolbar willBeInsertedIntoToolbar:willInsert];
-        
-    return newItem;
+        return [helper finishSetupForToolbarItem:newItem toolbar:toolbar willBeInsertedIntoToolbar:willInsert];
+    else
+        return newItem;
 }
 
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar;

@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,5 +25,8 @@
 + (NSString *)controlKeyIndicatorString;
 + (NSString *)alternateKeyIndicatorString;
 + (NSString *)shiftKeyIndicatorString;
+
++ (NSCharacterSet *)invalidXMLCharacterSet;  // Characters forbidden in an XML document
++ (NSCharacterSet *)discouragedXMLCharacterSet;  // Characters discouraged in an XML document (a superset of -invalidXMLCharacterSet)
 
 @end

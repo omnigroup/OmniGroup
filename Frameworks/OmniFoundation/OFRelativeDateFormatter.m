@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,12 @@
 RCS_ID("$Id$");
 
 @implementation OFRelativeDateFormatter
+{
+    NSDateComponents *_defaultTimeDateComponents;
+    BOOL _useEndOfDuration;
+    BOOL _useRelativeDayNames;
+    BOOL _wantsTruncatedTime;
+}
 
 - (void)dealloc;
 {
@@ -106,25 +112,27 @@ dateString = [super stringForObjectValue:obj]; \
     
     // construct relative day names
     NSDateComponents *today = [cal components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit fromDate:[NSDate date]];
-        
+    
     // if today, and no time set, just say "Today", if there is a time, return the time
-    if ([today year] == [value year] && [today month] == [value month] && [today day] == [value day])
-	dateString = NSLocalizedStringFromTableInBundle(@"Today", @"OFDateProcessing", OMNI_BUNDLE, @"Today");
+    if ([self dateStyle] == NSDateFormatterNoStyle)
+        DATE_STRING();
+    else if ([today year] == [value year] && [today month] == [value month] && [today day] == [value day])
+        dateString = NSLocalizedStringFromTableInBundle(@"Today", @"OFDateProcessing", OMNI_BUNDLE, @"Today");
     else if ([today year] == [value year] && [today month] == [value month] && [today day]+1 == [value day])
-	dateString = NSLocalizedStringFromTableInBundle(@"Tomorrow", @"OFDateProcessing", OMNI_BUNDLE, @"Tomorrow");
+        dateString = NSLocalizedStringFromTableInBundle(@"Tomorrow", @"OFDateProcessing", OMNI_BUNDLE, @"Tomorrow");
     else if ([today year] == [value year] && [today month] == [value month] && [today day]-1 == [value day])
-	dateString = NSLocalizedStringFromTableInBundle(@"Yesterday", @"OFDateProcessing", OMNI_BUNDLE, @"Yesterday");
+        dateString = NSLocalizedStringFromTableInBundle(@"Yesterday", @"OFDateProcessing", OMNI_BUNDLE, @"Yesterday");
     else 
-	DATE_STRING();
+        DATE_STRING();
     
     if (_wantsTruncatedTime)
-	return [dateString stringByAppendingFormat:@" %@", truncatedTimeString(value, _defaultTimeDateComponents)];
+	return [[dateString stringByAppendingFormat:@" %@", truncatedTimeString(value, _defaultTimeDateComponents)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     
     NSDateFormatterStyle dateStyle = [self dateStyle];
     [self setDateStyle:NSDateFormatterNoStyle];
     NSString *timeString = [super stringForObjectValue:obj];
     if ( ! [NSString isEmptyString:timeString]) {
-        dateString = [dateString stringByAppendingFormat:@" %@", timeString];
+        dateString = [[dateString stringByAppendingFormat:@" %@", timeString] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     }
     [self setDateStyle:dateStyle];
     return dateString;
@@ -150,7 +158,7 @@ dateString = [super stringForObjectValue:obj]; \
     NSError *relativeError = nil;
     NSDate *date = nil;
     
-    BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] error:&relativeError];
+    BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string fromStartingDate:_referenceDate useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] error:&relativeError];
 
     if (success)
         *obj = date;
@@ -162,13 +170,13 @@ dateString = [super stringForObjectValue:obj]; \
 {
     NSError *relativeError = nil;
     NSDate *date = nil;
-    return [[OFRelativeDateParser sharedParser] getDateValue:&date forString:*partialStringPtr useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] error:&relativeError];
+    return [[OFRelativeDateParser sharedParser] getDateValue:&date forString:*partialStringPtr fromStartingDate:_referenceDate useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] error:&relativeError];
 }
 
 - (BOOL)getObjectValue:(out id *)obj forString:(NSString *)string range:(inout NSRange *)rangep error:(out NSError **)error;
 {
     NSDate *date = nil;
-    BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] error:error];
+    BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string fromStartingDate:_referenceDate useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] error:error];
 
     if (success)
         *obj = date;

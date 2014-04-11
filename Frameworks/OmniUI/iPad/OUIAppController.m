@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -523,9 +523,10 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     
     if (actionSheet) {
         [actionSheet showInView:activeView]; // returns immediately
+        return YES;
     }
 
-    return YES;
+    return NO;
 }
 
 - (OUISpecialURLHandler)debugURLHandler;
@@ -735,12 +736,13 @@ static UIImage *menuImage(NSString *name)
     [options addObject:option];
     
     NSString *feedbackMenuTitle = [self feedbackMenuTitle];
-    if (![NSString isEmptyString:feedbackMenuTitle]) {
+    if (![NSString isEmptyString:feedbackMenuTitle] && ![self isRunningRetailDemo]) {
         option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_sendFeedback:)
-                                                           title:[self feedbackMenuTitle]
+                                                           title:feedbackMenuTitle
                                                            image:menuImage(@"OUIMenuItemSendFeedback.png")];
         [options addObject:option];
     }
+
     
     option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showReleaseNotes:)
                                                        title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"App menu item title")

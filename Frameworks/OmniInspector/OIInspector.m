@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 #import "OIInspector.h"
 
 #import "OITabbedInspector.h"
+#import "OIInspectorRegistry.h"
+
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniAppKit/NSImage-OAExtensions.h>
@@ -66,7 +68,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 //    return [self newInspectorWithDictionary:dict bundle:nil];
 //}
 
-+ (instancetype)newInspectorWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
++ (instancetype)newInspectorWithDictionary:(NSDictionary *)dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)sourceBundle;
 {
     // Do the OS version check before allocating an instance
     NSString *minimumOSVersionString = [dict objectForKey:@"minimumOSVersion"];
@@ -75,11 +77,9 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         OFVersionNumber *currentOSVersion = [OFVersionNumber userVisibleOperatingSystemVersionNumber];
         
         BOOL yummy = ([currentOSVersion compareToVersionNumber:minimumOSVersion] != NSOrderedAscending);
-        
-        [minimumOSVersion release];
         if (!yummy)
             return nil;
-        }
+    }
     
     NSString *className = [dict objectForKey:@"class"];
     if (!className)
@@ -102,7 +102,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     if (!cls)
         [NSException raise:NSInvalidArgumentException format:@"Inspector dictionary specified class that doesn't exist: %@", dict];
     
-    return [[cls alloc] initWithDictionary:dict bundle:inspectorResourceBundle];
+    return [[cls alloc] initWithDictionary:dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:inspectorResourceBundle];
 }
 
 // Make sure inspector subclasses are calling [super initWithDictionary:bundle:]
@@ -112,7 +112,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return nil;
 }
 
-- (id)initWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
+- (id)initWithDictionary:(NSDictionary *)dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)sourceBundle;
 {
     OBPRECONDITION(dict);
     OBPRECONDITION([self conformsToProtocol:@protocol(OIConcreteInspector)]);
@@ -147,17 +147,16 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     resourceBundle = sourceBundle;
     if (!resourceBundle)
         resourceBundle = [self bundle]; // need something non-nil, but this likely won't work very well.
-    [resourceBundle retain];
     
     _allowImagesFromApplication = [dict boolForKey:@"allowImagesFromApplication" defaultValue:NO];
     
     _identifier = [[dict objectForKey:@"identifier"] copy];
     if (!_identifier) {
-        _identifier = [[NSString stringWithStrings:[resourceBundle bundleIdentifier], @".", NSStringFromClass([self class]), nil] retain];
+        _identifier = [NSString stringWithStrings:[resourceBundle bundleIdentifier], @".", NSStringFromClass([self class]), nil];
     }
     OBASSERT(_identifier != nil);
     
-    _displayName = [[resourceBundle localizedStringForKey:_identifier value:nil table:@"OIInspectors"] retain];
+    _displayName = [resourceBundle localizedStringForKey:_identifier value:nil table:@"OIInspectors"];
     if ([_displayName isEqualToString:_identifier])
         // _identifier is expected to be com.foo... so the two should never be equal if you've added the entry to the right OIInspectors.strings file
         NSLog(@"Inspector with identifier %@ has no display name registered in OIInspectors.strings in %@", _identifier, resourceBundle);
@@ -181,7 +180,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     
     _imageName = [[dict objectForKey:@"image"] copy];
     if (_imageName) {
-        _image = [[self imageNamed:_imageName] retain]; // cache up front so we don't need a 'cached' flag (very likely to get used ASAP)
+        _image = [self imageNamed:_imageName]; // cache up front so we don't need a 'cached' flag (very likely to get used ASAP)
 	if (!_image)
 	    NSLog(@"Unable to find image '%@' for %@ in bundle %@", _imageName, self, resourceBundle);
     }
@@ -201,16 +200,6 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     }
     
     return self;
-}
-
-- (void)dealloc;
-{
-    [_identifier release];
-    [_displayName release];
-    [_shortcutKey release];
-    [_imageName release];
-    [_image release];
-    [super dealloc];
 }
 
 - (NSString *)identifier;
@@ -313,7 +302,6 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 	keyEquivalent = @"";
     
     NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle:[self displayName] action:action keyEquivalent:keyEquivalent];
-    [menuItem autorelease];
     [menuItem setTarget:target];
     [menuItem setRepresentedObject:self];
     
@@ -335,7 +323,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 // Useful utility method in -inspectObjects:.  Not currently called automatically anywhere, just intended for subclasses at the moment.
 - (void)setControlsEnabled:(BOOL)enabled;
 {
-    [self setControlsEnabled:enabled inView:[self inspectorView]];
+    [self setControlsEnabled:enabled inView:self.view];
 }
 
 - (void)setControlsEnabled:(BOOL)enabled inView:(NSView *)view;
@@ -398,7 +386,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         [dict setObject:_shortcutKey forKey:@"shortcutKey"];
     if (_shortcutModifierFlags) {
         OBASSERT(_shortcutModifierFlags < UINT32_MAX); // Need to make OFEnumNameTable do NSInteger instead of int?
-        [dict setObject:[[ModifierMaskNameTable copyStringForMask:(uint32_t)_shortcutModifierFlags withSeparator:'|'] autorelease] forKey:@"shortcutModifierFlags"];
+        [dict setObject:[ModifierMaskNameTable copyStringForMask:(uint32_t)_shortcutModifierFlags withSeparator:'|'] forKey:@"shortcutModifierFlags"];
     }
     if (_imageName) {
         [dict setObject:_imageName forKey:@"imageName"];

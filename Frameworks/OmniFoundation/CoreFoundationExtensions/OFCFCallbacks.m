@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007, 2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2005, 2007, 2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <Foundation/NSString.h>
 #import <OmniBase/rcsid.h>
+#import <OmniBase/OBUtilities.h>
+#import <OmniBase/macros.h>
 #import <inttypes.h>
 
 RCS_ID("$Id$");
@@ -17,22 +19,23 @@ RCS_ID("$Id$");
 
 const void * OFNSObjectRetain(CFAllocatorRef allocator, const void *value)
 {
-    return [(id)value retain];
+    OBStrongRetain((OB_BRIDGE id)value);
+    return value;
 }
 
 const void * OFNSObjectRetainCopy(CFAllocatorRef allocator, const void *value)
 {
-    return [(id)value copyWithZone:NULL];
+    return [(OB_BRIDGE id)value copyWithZone:NULL];
 }
 
 void OFNSObjectRelease(CFAllocatorRef allocator, const void *value)
 {
-    [(id)value release];
+    OBStrongRelease((OB_BRIDGE id)value);
 }
 
 CFStringRef OFNSObjectCopyDescription(const void *value)
 {
-    CFStringRef str = (CFStringRef)[(id)value description];
+    CFStringRef str = (CFStringRef)[(OB_BRIDGE id)value description];
     if (str)
         CFRetain(str);
     return str;
@@ -42,12 +45,12 @@ CFStringRef OFNSObjectCopyDescription(const void *value)
 
 Boolean OFNSObjectIsEqual(const void *value1, const void *value2)
 {
-    return [(id)value1 isEqual: (id)value2];
+    return [(OB_BRIDGE id)value1 isEqual: (OB_BRIDGE id)value2];
 }
 
 CFHashCode OFNSObjectHash(const void *value1)
 {
-    return [(id)value1 hash];
+    return [(OB_BRIDGE id)value1 hash];
 }
 
 #pragma mark CFTypeRef callbacks

@@ -1,4 +1,4 @@
-// Copyright 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,7 @@
     NSView *inspectionView;
     
     NSArray *_sectionInspectors;
-    OIInspectorController *_nonretained_inspectorController;
+    __weak OIInspectorController *_weak_inspectorController;
 }
 
 @end

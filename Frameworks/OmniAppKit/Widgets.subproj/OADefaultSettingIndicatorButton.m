@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2007, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,9 @@ static NSImage *ledOnImage = nil;
 static NSImage *ledOffImage = nil;
 const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
 
+#ifdef OMNI_ASSERTIONS_ON
 static NSString * const IndicatorImageStyleLED = @"led";
+#endif
 static NSString * const IndicatorImageStyleCircleX = @"circlex";
 
 + (void)initialize;

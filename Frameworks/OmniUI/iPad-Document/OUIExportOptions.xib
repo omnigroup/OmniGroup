@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="3.0" toolsVersion="4504" systemVersion="13A558" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="3.0" toolsVersion="4514" systemVersion="13B42" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
         <deployment defaultVersion="1792" identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3734.1"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3747"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="OUIExportOptionsController">
             <connections>
+                <outlet property="collectionView" destination="66c-YE-1E3" id="BdE-rL-OZE"/>
                 <outlet property="exportDescriptionLabel" destination="3" id="8"/>
                 <outlet property="exportDestinationLabel" destination="5" id="9"/>
-                <outlet property="exportView" destination="4" id="7"/>
                 <outlet property="inAppPurchaseButton" destination="12" id="14"/>
                 <outlet property="inAppPurchaseLabel" destination="11" id="13"/>
                 <outlet property="view" destination="2" id="6"/>
@@ -17,11 +17,11 @@
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view opaque="NO" contentMode="scaleToFill" id="2" customClass="UIImageView">
-            <rect key="frame" x="0.0" y="0.0" width="540" height="600"/>
+            <rect key="frame" x="0.0" y="0.0" width="540" height="620"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="" textAlignment="center" lineBreakMode="tailTruncation" minimumFontSize="10" id="3">
-                    <rect key="frame" x="20" y="51" width="500" height="23"/>
+                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Export diagram as: label" textAlignment="center" lineBreakMode="tailTruncation" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="3">
+                    <rect key="frame" x="20" y="51" width="500" height="20"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                     <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="16"/>
                     <color key="textColor" red="0.1944827288" green="0.2252457887" blue="0.28919735549999998" alpha="1" colorSpace="calibratedRGB"/>
@@ -29,8 +29,8 @@
                     <color key="shadowColor" red="1" green="1" blue="1" alpha="0.5" colorSpace="calibratedRGB"/>
                     <size key="shadowOffset" width="0.0" height="1"/>
                 </label>
-                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="" textAlignment="center" lineBreakMode="tailTruncation" minimumFontSize="10" id="5">
-                    <rect key="frame" x="20" y="566" width="500" height="21"/>
+                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" misplaced="YES" text="Export to here label" textAlignment="center" lineBreakMode="tailTruncation" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="5">
+                    <rect key="frame" x="201" y="579" width="139" height="20"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                     <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="16"/>
                     <color key="textColor" red="0.1420471817" green="0.17062419649999999" blue="0.22614604229999999" alpha="1" colorSpace="calibratedRGB"/>
@@ -38,32 +38,57 @@
                     <color key="shadowColor" red="0.99989897009999995" green="1" blue="0.9998418093" alpha="0.5" colorSpace="calibratedRGB"/>
                     <size key="shadowOffset" width="0.0" height="1"/>
                 </label>
-                <view contentMode="scaleToFill" id="4" customClass="OUIExportOptionsView">
-                    <rect key="frame" x="27" y="67" width="485" height="202"/>
-                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                </view>
-                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="11" userLabel="In-app purchase label">
-                    <rect key="frame" x="27" y="281" width="349" height="21"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="in app purchase label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="11" userLabel="In-app purchase label">
+                    <rect key="frame" x="20" y="549.00000306032575" width="147" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
                     <color key="textColor" red="0.1944827288" green="0.2252457887" blue="0.28919735549999998" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="12" userLabel="In-app purchase button">
-                    <rect key="frame" x="384" y="277" width="129" height="30"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                    <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
+                <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="12" userLabel="In-app purchase button">
+                    <rect key="frame" x="175" y="541" width="100" height="30"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
                     <state key="normal" title="Purchase Now">
-                        <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="titleColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                         <color key="titleShadowColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                     </state>
                     <state key="highlighted">
                         <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </state>
                 </button>
+                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" minimumZoomScale="0.0" maximumZoomScale="0.0" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="66c-YE-1E3">
+                    <rect key="frame" x="5" y="83" width="530" height="451"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                    <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="8" minimumInteritemSpacing="0.0" id="XBL-cx-iFc">
+                        <size key="itemSize" width="128" height="168"/>
+                        <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                        <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                        <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                    </collectionViewFlowLayout>
+                    <cells/>
+                    <connections>
+                        <outlet property="dataSource" destination="-1" id="UJJ-2X-crO"/>
+                        <outlet property="delegate" destination="-1" id="Skn-SB-mLL"/>
+                    </connections>
+                </collectionView>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstItem="3" firstAttribute="top" secondItem="2" secondAttribute="top" constant="51" id="9Jz-VD-io3"/>
+                <constraint firstAttribute="trailing" secondItem="3" secondAttribute="trailing" constant="20" symbolic="YES" id="AEt-va-Vg5"/>
+                <constraint firstItem="11" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="20" id="HuM-wV-E7p"/>
+                <constraint firstItem="11" firstAttribute="baseline" secondItem="12" secondAttribute="baseline" constant="0.5" id="U4P-fR-bYY"/>
+                <constraint firstItem="66c-YE-1E3" firstAttribute="top" secondItem="3" secondAttribute="bottom" constant="12" id="U8k-Xv-tAs"/>
+                <constraint firstAttribute="centerX" secondItem="5" secondAttribute="centerX" id="ZUO-uL-KaP"/>
+                <constraint firstAttribute="trailing" secondItem="66c-YE-1E3" secondAttribute="trailing" constant="5" id="dKp-a7-UWU"/>
+                <constraint firstItem="5" firstAttribute="top" secondItem="12" secondAttribute="bottom" constant="8" symbolic="YES" id="dgk-jj-zs6"/>
+                <constraint firstAttribute="bottom" secondItem="5" secondAttribute="bottom" constant="20" symbolic="YES" id="iBl-nb-FEV"/>
+                <constraint firstItem="12" firstAttribute="top" secondItem="66c-YE-1E3" secondAttribute="bottom" constant="8" symbolic="YES" id="mCL-bW-315"/>
+                <constraint firstItem="66c-YE-1E3" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="5" id="owx-vN-OTk"/>
+                <constraint firstItem="3" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="20" symbolic="YES" id="upW-AJ-KrR"/>
+                <constraint firstItem="12" firstAttribute="leading" secondItem="11" secondAttribute="trailing" constant="8" id="zEL-3z-lgW"/>
+            </constraints>
         </view>
     </objects>
 </document>

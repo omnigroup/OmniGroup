@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -663,7 +663,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
         return;
 
     // Even on failure, we queue up so that our completion handler will get called in the same sequence it would otherwise.
-    NSError *credentialError;
+    __autoreleasing NSError *credentialError;
     NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(self.account.credentialServiceIdentifier, &credentialError);
     if (!credential) {
         // If the keychain is locked and the user clicks cancel, we'll get userCanceledErr (which -[NSError(OBExtensions) causedByUserCancelling] understands.
@@ -1622,7 +1622,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
         if (sameContainer) {
             // Use file coordination so that if there are quick renames going on, we get in-flight info.
             NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-            NSError *error;
+            __autoreleasing NSError *error;
             __block BOOL matched = NO;
             BOOL success = [coordinator readItemAtURL:newURL withChanges:NO error:&error byAccessor:^BOOL(NSURL *newURL2, NSError **outError) {
                 // Here we look up the file item under 'newURL' (the destination state of our move operation) but look up the inode under 'newURL2' (remapped by NSFileCoordinator).

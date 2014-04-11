@@ -20,7 +20,7 @@
 "Please make sure that the destination folder exists." = "Asegúrese de que existe la carpeta de destino.";
 
 /* error reason */
-"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\"." = "El servidor %1$@ ha respondido “%2$@” (%3$d) a una solicitud de “%4$@ %5$@”.";
+"The %@ server returned \"%@\" (%ld) in response to a request to \"%@ %@\"." = "El servidor %1$@ ha respondido “%2$@” (%3$ld) a una solicitud de “%4$@ %5$@”.";
 
 /* error description */
 "Unable to delete file." = "No se ha podido eliminar el archivo.";

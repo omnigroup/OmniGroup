@@ -1,4 +1,4 @@
-/* abbreviated string for bytes format */
+﻿/* abbreviated string for bytes format */
 "%0.1f GB" = "%0.1f GB";
 
 /* abbreviated string for gigahertz format */
@@ -29,7 +29,7 @@
 "%d bytes" = "%d バイト";
 
 /* abbreviated string for hertz format */
-"%u Hz" = "%u ヘルツ";
+"%u Hz" = "%u Hz";
 
 /* approximate time interval: more than one hour */
 "about %.1f hours" = "およそ %.1f 時間";
@@ -64,21 +64,21 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "データ書き込み時に bzip2 ライブラリからエラーコード %1$d が返されました。%2$s。";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Cancel" = "キャンセル";
 
 /* error recovery option */
 "Cancel <error recovery>" = "キャンセル";
 
 /* error description */
-"Cannot create socket." = "ソケットを作成できません。";
+"Cannot create socket." = "ソケットを作成できません";
 
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
 
 
-"Could not create directory" = "ディレクトリを作成できませんでした";
+"Could not create directory" = "ディレクトリを作成できません";
 
 /* time span formatter span */
 "d" = "日";
@@ -143,7 +143,7 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "有効なバンドルではありません";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Override Lock" = "ロックを上書き";
 
 /* time span formatter span */
@@ -185,17 +185,17 @@
 /* decompression exception format */
 "Unable to decompress gzip data: invalid header" = "gzip データを解凍できません: 無効なヘッダです";
 
-/* compression exception format */
+/* compression error description */
 "Unable to initialize compression" = "圧縮処理を初期化できません";
 
-/* decompression exception format */
+/* decompression error description */
 "Unable to initialize decompression" = "解凍処理を初期化できません";
 
 /* error description */
 "Unable to lock document." = "書類をロックできません。";
 
 /* decompression error reason */
-"unrecognized compression format." = "認識できない圧縮形式です。";
+"unrecognized compression format." = "認識できない圧縮フォーマットです。";
 
 /* time span formatter span */
 "w" = "週";

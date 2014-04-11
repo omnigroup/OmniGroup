@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,27 +35,6 @@ static const CGFloat kIndicatorSize = 20;
     return self;
 }
 
-- (void)updateColor;
-{
-    UIView *topBackgroundView = nil;
-    
-    UIView *ancestor = self;
-    while (ancestor) {
-        if ([ancestor respondsToSelector:@selector(inspectorBackgroundViewColor)])
-            topBackgroundView = ancestor;
-        ancestor = ancestor.superview;
-    }
-    
-    UIColor *color = [(id)topBackgroundView inspectorBackgroundViewColor];
-    if (!color)
-        color = [OUIInspector backgroundColor];
-    
-    if (![_color isEqual:color]) {
-        _color = color;
-        [self setNeedsDisplay];
-    }
-}
-
 #pragma mark -
 #pragma mark UIView
 
@@ -68,39 +47,17 @@ static const CGFloat kIndicatorSize = 20;
     
     CGContextSaveGState(ctx);
     {
-        CGColorRef shadowColor = [OQMakeUIColor(kOUIInspectorWellInnerShadowColor) CGColor];
-        CGContextSetShadowWithColor(ctx, CGSizeMake(0, 0.5), kOUIInspectorWellInnerShadowBlur, shadowColor);
-        
-        CGContextMoveToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
-        CGContextAddLineToPoint(ctx, CGRectGetMidX(bounds), CGRectGetMaxY(bounds) - kOUIInspectorWellInnerShadowBlur);
-        CGContextAddLineToPoint(ctx, CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
-        
-        CGContextDrawPath(ctx, kCGPathFill);
-    }
-    CGContextRestoreGState(ctx);
-    
-    CGContextSaveGState(ctx);
-    {
         CGColorRef strokeColor = [OQMakeUIColor(kOUIInspectorWellLightBorderGradientStartColor) CGColor];
         CGContextSetStrokeColorWithColor(ctx, strokeColor);
         
-        CGContextMoveToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
-        CGContextAddLineToPoint(ctx, CGRectGetMidX(bounds), CGRectGetMaxY(bounds) - kOUIInspectorWellInnerShadowBlur);
-        CGContextAddLineToPoint(ctx, CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
+        CGContextMoveToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMinY(bounds) + 4);
+        CGContextAddLineToPoint(ctx, CGRectGetMinX(bounds), CGRectGetMaxY(bounds) - 4);
+        CGContextMoveToPoint(ctx, CGRectGetMaxX(bounds), CGRectGetMinY(bounds) + 4);
+        CGContextAddLineToPoint(ctx, CGRectGetMaxX(bounds), CGRectGetMaxY(bounds) - 4);
         
         CGContextDrawPath(ctx, kCGPathStroke);
     }
     CGContextRestoreGState(ctx);
-}
-
-#pragma mark -
-#pragma mark UIView (OUIInspectorBackgroundView)
-
-- (void)containingInspectorBackgroundViewColorChanged;
-{
-    [super containingInspectorBackgroundViewColorChanged];
-    
-    [self updateColor];
 }
 
 @end

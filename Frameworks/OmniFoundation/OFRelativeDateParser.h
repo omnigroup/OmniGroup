@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,7 +38,7 @@
 	   forString:(NSString *)string
    	       error:(NSError **)error;
 
-- (BOOL)getDateValue:(NSDate **)date forString:(NSString *)string useEndOfDuration:(BOOL)useEndOfDuration defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents calendar:(NSCalendar *)calendar error:(NSError **)error;
+- (BOOL)getDateValue:(NSDate **)date forString:(NSString *)string fromStartingDate:(NSDate *)startingDate useEndOfDuration:(BOOL)useEndOfDuration defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents calendar:(NSCalendar *)calendar error:(NSError **)error;
 
 - (BOOL)getDateValue:(NSDate **)date 
 	   forString:(NSString *)string 

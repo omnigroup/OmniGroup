@@ -1,4 +1,9 @@
-// Copyright 2000-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2014 Omni Development, Inc. All rights reserved.
+//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 RCS_ID("$Id$");
 
@@ -15,6 +20,7 @@ RCS_ID("$Id$");
 @end
 @implementation NSClassDescription (OFDebugging)
 
+static NSClassDescription * (*original_NSClassDescription_classDescriptionForClass)(Class self, SEL _cmd, Class aClass);
 static void (*original_NSClassDescription_registerClassDescriptionForClass)(Class self, SEL _cmd, NSClassDescription *description, Class aClass);
 
 + (void)performPosing;
@@ -22,13 +28,27 @@ static void (*original_NSClassDescription_registerClassDescriptionForClass)(Clas
     if ([[NSUserDefaults standardUserDefaults] integerForKey:@"NSScriptingDebugLogLevel"] == 0)
         return;
     
+    original_NSClassDescription_classDescriptionForClass = (typeof(original_NSClassDescription_classDescriptionForClass))OBReplaceMethodImplementationWithSelector(object_getClass(self), @selector(classDescriptionForClass:), @selector(replacement_classDescriptionForClass:));
     original_NSClassDescription_registerClassDescriptionForClass = (typeof(original_NSClassDescription_registerClassDescriptionForClass))OBReplaceMethodImplementationWithSelector(object_getClass(self), @selector(registerClassDescription:forClass:), @selector(replacement_registerClassDescription:forClass:));
 }
 
 + (void)replacement_registerClassDescription:(NSClassDescription *)description forClass:(Class)aClass;
 {
-    NSLog(@"REGISTER %@ -> %p", aClass, description);
+    NSLog(@"CLASS DESCRIPTION REGISTER %@ -> %p", aClass, description);
     original_NSClassDescription_registerClassDescriptionForClass(self, _cmd, description, aClass);
+}
+
++ (NSClassDescription *)replacement_classDescriptionForClass:(Class)aClass;
+{
+    /*
+     This can be caused by the fact that -[NSObject classDescription] calls +[NSClassDescription classDescriptionForClass:] and does *not* look up the superclass chain.
+     The confusing part is that +[NSScriptClassDescription classDescriptionForClass:] *does* look up the superclass chain. So, you'd be tempted to call that, but calling the instance method is still better since it lets you support polymorphic instances.
+     Often, this can be fixed by changing your sdef to register the exact implementation class for your document class (you can't override it in a class-extension element).
+     */
+    NSClassDescription *description = original_NSClassDescription_classDescriptionForClass(self, _cmd, aClass);
+    if (!description)
+        NSLog(@"CLASS DESCRIPTION LOOKUP %@ -> %p", aClass, description);
+    return description;
 }
 
 @end
@@ -44,7 +64,10 @@ static BOOL (*original_NSPositionalSpecifier_describedClass_isSubclassOfClass)(C
     if ([[NSUserDefaults standardUserDefaults] integerForKey:@"NSScriptingDebugLogLevel"] == 0)
         return;
     
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
     original_NSPositionalSpecifier_describedClass_isSubclassOfClass = (typeof(original_NSPositionalSpecifier_describedClass_isSubclassOfClass))OBReplaceClassMethodImplementationWithSelector(self, @selector(_describedClass:isSubclassOfClass:), @selector(_replacement_describedClass:isSubclassOfClass:));
+#pragma clang diagnostic pop
 }
 
 + (BOOL)_replacement_describedClass:(id)cls isSubclassOfClass:(Class)otherClass;

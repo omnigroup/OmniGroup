@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -178,14 +178,12 @@ static inline unsigned int parseHexString(NSString *hexString, unsigned long lon
 
 - (NSData *)dataUsingCFEncoding:(CFStringEncoding)anEncoding;
 {
-    CFDataRef result = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, CFRangeMake(0, [self length]), anEncoding, (char)0);
-    return [NSMakeCollectable(result) autorelease];
+    return CFBridgingRelease(OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, CFRangeMake(0, [self length]), anEncoding, (char)0));
 }
 
 - (NSData *)dataUsingCFEncoding:(CFStringEncoding)anEncoding allowLossyConversion:(BOOL)lossy;
 {
-    CFDataRef result = OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, CFRangeMake(0, [self length]), anEncoding, lossy?'?':0);
-    return [NSMakeCollectable(result) autorelease];
+    return CFBridgingRelease(OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, CFRangeMake(0, [self length]), anEncoding, lossy?'?':0));
 }
 
 @end

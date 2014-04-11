@@ -13,9 +13,6 @@
 /* alert button title */
 "Accept" = "Akzeptieren";
 
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Darf %@ regelmäßig Informationen über Ihr Hardwaremodell und Ihre iOS-Version übermitteln?\nAuf diese Weise erfahren wir, welche Konfigurationen wir am ehesten unterstützen müssen. Sie können Ihre Antwort später in den Einstellungen durch MURMEL MURMEL MURMEL ändern.";
-
 /* Web view nagivation button for going back in history. */
 "Back" = "Zurück";
 
@@ -42,7 +39,7 @@
 "Certificate Trust" = "Zertifikatvertrauen";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Die Einstellung „%1$@“ wurde von „%2$@“ in „%3$@“ geändert.";
+"Changed the '%@' preference from '%@' to '%@'" = "Einstellung „%1$@“ wurde von „%2$@“ in „%3$@“ geändert";
 
 /* Certificate trust alert button title */
 "Continue" = "Fortfahren";
@@ -53,16 +50,13 @@
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "Deaktiviert";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "Nicht berichten";
-
 /* Done
    toolbar item title */
 
 "Done" = "Fertig";
 
 /* toolbar item title */
-"Edit" = "Bearb.";
+"Edit" = "Bearbeiten";
 
 /* In app Buy button error title */
 "Error" = "Fehler";
@@ -71,7 +65,7 @@
 "Error Loading Store" = "Fehler beim Laden des Stores";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "Funktion ist für diese Demoversion nicht aktiviert";
+"Feature not enabled for this demo" = "Funktion nicht aktiviert für diese Demoversion";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Anpassen";
@@ -92,13 +86,16 @@
 "Left text align" = "Linksbündig ausrichten";
 
 /* Web view error opening URL title. */
-"Link could not be opend. Please check Safari restrictions in Settings." = "Der Link konnte nicht geöffnet werden. Überprüfen Sie in der App „Einstellungen“ die Safari-Einschränkungen.";
+"Link could not be opened. Please check Safari restrictions in Settings." = "Der Link konnte nicht geöffnet werden. Überprüfen Sie in der App „Einstellungen“ die Safari-Einschränkungen.";
 
 /* Buy button title while app store is loading */
 "Loading" = "Laden";
 
 /* empty value cell placeholder */
 "None" = "Ohne";
+
+/* Full screen note editor title */
+"Note" = "Notiz";
 
 /* button title
    OK button label */
@@ -108,14 +105,11 @@
 
 "OK" = "OK";
 
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Omni Software-Aktualisierung";
-
 /* placeholder text */
 "password" = "Kennwort";
 
 /* alert title */
-"Preference changed" = "Einstellung geändert";
+"Preference changed" = "Einstellung wurde geändert";
 
 /* title for successful in app purchase */
 "Purchase %@" = "%@ kaufen";
@@ -135,7 +129,7 @@
 /* App menu item title
    release notes html screen title */
 
-"Release Notes" = "Anmerkungen zu dieser Version";
+"Release Notes" = "Versionsanmerkungen";
 
 /* Restore purchases button title */
 "Restore" = "Wiederherstellen";
@@ -152,9 +146,6 @@
 /* Search field placeholder text */
 "Search" = "Suchen";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "Berichte senden";
-
 /* Strike Through button accessibility label */
 "Strike Through" = "Durchgestrichen";
 
@@ -170,8 +161,7 @@
 /* Undo button title */
 "Undo" = "Widerrufen";
 
-/* default for WebDAV username edit field
-   placeholder text */
+/* placeholder text */
 "username" = "Benutzername";
 
 /* alert message */

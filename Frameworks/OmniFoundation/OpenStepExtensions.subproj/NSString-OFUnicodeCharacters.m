@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -139,6 +139,49 @@ RCS_ID("$Id$");
     OBPOSTCONDITION(string);
     
     return string;
+}
+
+static dispatch_once_t makeXMLCharacterSetsOnce;
+static NSCharacterSet *invalidXMLCharacterSet;
+static NSCharacterSet *discouragedXMLCharacterSet;
+
+static void makeXMLCharacterSets(void *ctxt)
+{
+    NSMutableCharacterSet *set = [[NSMutableCharacterSet alloc] init];
+    
+    /* Construct the 'Char' production from REC-xml-20081126 (Extensible Markup Language 1.0 Fifth Edition), section 2.2 */
+    [set addCharactersInRange:(NSRange){0x00009, 0x00002}];
+    [set addCharactersInRange:(NSRange){0x0000D, 0x00001}];
+    [set addCharactersInRange:(NSRange){0x00020, 0x0D7E0}];
+    [set addCharactersInRange:(NSRange){0x0E000, 0x01FFE}];
+    [set addCharactersInRange:(NSRange){0x10000, 0xF0000}];
+    
+    [set invert];
+    OBPRECONDITION(invalidXMLCharacterSet == nil);
+    invalidXMLCharacterSet = [set copy];
+    
+    /* Additional discouraged characters from section 2.2 */
+    [set addCharactersInRange:(NSRange){0x0007F, 0x00006}];
+    [set addCharactersInRange:(NSRange){0x00086, 0x0001A}];
+    [set addCharactersInRange:(NSRange){0x0FDD0, 0x00020}];
+    for (NSInteger plane = 1; plane <= 16; plane ++)
+        [set addCharactersInRange:(NSRange){plane * 0x10000 + 0xFFFE, 2}];
+    
+    discouragedXMLCharacterSet = [set copy];
+    
+    [set release];
+}
+
++ (NSCharacterSet *)invalidXMLCharacterSet;  // Characters forbidden in an XML document
+{
+    dispatch_once_f(&makeXMLCharacterSetsOnce, NULL, makeXMLCharacterSets);
+    return invalidXMLCharacterSet;
+}
+
++ (NSCharacterSet *)discouragedXMLCharacterSet;  // Characters discouraged in an XML document (a superset of -invalidXMLCharacterSet)
+{
+    dispatch_once_f(&makeXMLCharacterSetsOnce, NULL, makeXMLCharacterSets);
+    return discouragedXMLCharacterSet;
 }
 
 @end

@@ -34,8 +34,6 @@
 		344E67091845535E00BEFCE3 /* OBExpectedDeallocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 344E67061845535E00BEFCE3 /* OBExpectedDeallocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		344E670A1845535E00BEFCE3 /* OBExpectedDeallocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E67071845535E00BEFCE3 /* OBExpectedDeallocation.m */; };
 		344E670B1845535E00BEFCE3 /* OBExpectedDeallocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E67071845535E00BEFCE3 /* OBExpectedDeallocation.m */; };
-		345F7117179C4A87008C798F /* OBNonARCReferences.m in Sources */ = {isa = PBXBuildFile; fileRef = 345F7116179C4A87008C798F /* OBNonARCReferences.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		345F7118179C4A87008C798F /* OBNonARCReferences.m in Sources */ = {isa = PBXBuildFile; fileRef = 345F7116179C4A87008C798F /* OBNonARCReferences.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3469EF0A0FEB5E29002FEBC5 /* NSError-OBUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 3469EF080FEB5E29002FEBC5 /* NSError-OBUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3469EF0B0FEB5E29002FEBC5 /* NSError-OBUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3469EF090FEB5E29002FEBC5 /* NSError-OBUtilities.m */; };
 		347049750CFB6612007025F7 /* NSError-OBExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 347049730CFB6612007025F7 /* NSError-OBExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -140,7 +138,6 @@
 		34354D221190BFC700FE1BEB /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		344E67061845535E00BEFCE3 /* OBExpectedDeallocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBExpectedDeallocation.h; sourceTree = "<group>"; };
 		344E67071845535E00BEFCE3 /* OBExpectedDeallocation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBExpectedDeallocation.m; sourceTree = "<group>"; };
-		345F7116179C4A87008C798F /* OBNonARCReferences.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBNonARCReferences.m; sourceTree = "<group>"; };
 		3469EF080FEB5E29002FEBC5 /* NSError-OBUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSError-OBUtilities.h"; sourceTree = "<group>"; };
 		3469EF090FEB5E29002FEBC5 /* NSError-OBUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSError-OBUtilities.m"; sourceTree = "<group>"; };
 		347049730CFB6612007025F7 /* NSError-OBExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSError-OBExtensions.h"; sourceTree = "<group>"; };
@@ -279,7 +276,6 @@
 				A27426271293799F00674569 /* OBPatchTrap.m */,
 				00E51C2BFE8AAE2511C9CC38 /* OBUtilities.h */,
 				00E51C32FE8AAE2511C9CC38 /* OBUtilities.m */,
-				345F7116179C4A87008C798F /* OBNonARCReferences.m */,
 				00E51C23FE8AAE2511C9CC38 /* assertions.h */,
 				00E51C31FE8AAE2511C9CC38 /* assertions.m */,
 				A2E007850E5CA926007709A5 /* OBBacktraceBuffer.h */,
@@ -571,7 +567,7 @@
 		00E51C1BFE8AAE2511C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 4AA3CEDC08A01555004389CD /* Build configuration list for PBXProject "OmniBase" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -645,7 +641,6 @@
 				342163C411907C7200C06E45 /* NSError-OBExtensions.m in Sources */,
 				342163C511907C7200C06E45 /* NSError-OBUtilities.m in Sources */,
 				342163C611907C7200C06E45 /* OBObject.m in Sources */,
-				345F7118179C4A87008C798F /* OBNonARCReferences.m in Sources */,
 				342163C711907C7200C06E45 /* OBUtilities.m in Sources */,
 				342163C811907C7200C06E45 /* assertions.m in Sources */,
 				342163C911907C7200C06E45 /* OBBacktraceBuffer.m in Sources */,
@@ -676,7 +671,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A33D41808A0191B003A3FA5 /* NSData-OBObjectCompatibility.m in Sources */,
-				345F7117179C4A87008C798F /* OBNonARCReferences.m in Sources */,
 				4DA2E35117A064420073144A /* OBLogger.m in Sources */,
 				4A33D41A08A0191B003A3FA5 /* OBObject.m in Sources */,
 				344E670A1845535E00BEFCE3 /* OBExpectedDeallocation.m in Sources */,

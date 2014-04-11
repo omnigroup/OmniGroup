@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -220,9 +220,6 @@ static id _commonInit(OUIInspectorStepperButton *self)
 
             if (_image) {
                 CGContextSaveGState(ctx);
-                CGContextScaleCTM(ctx, 1, -1);
-                CGContextTranslateCTM(ctx, 0, -cacheSize.height);
-                
                 UIImage *tintImage = [_image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
                 CGRect imageRect = OQCenteredIntegralRectInRect(self.bounds, [tintImage size]);
                 [tintImage drawAtPoint:imageRect.origin];

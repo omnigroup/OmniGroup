@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1367,8 +1367,7 @@ char *OFShortASCIIDecimalStringFromDouble(double value, double eDigits, BOOL all
 NSString *OFCreateDecimalStringFromDouble(double value)
 {
     char *buf = OFASCIIDecimalStringFromDouble(value);
-    CFStringRef result = CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, buf, kCFStringEncodingASCII, kCFAllocatorMalloc);
-    return NSMakeCollectable(result);
+    return (OB_BRIDGE NSString *)CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, buf, kCFStringEncodingASCII, kCFAllocatorMalloc);
 }
 
 @end

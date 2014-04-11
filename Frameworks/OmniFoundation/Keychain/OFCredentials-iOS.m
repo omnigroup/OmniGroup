@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -416,6 +416,6 @@ BOOL OFHasTrustForChallenge(NSURLAuthenticationChallenge *challenge)
     OSStatus err = SecTrustEvaluate(trust, &evaluationResult); // NB: May block for long periods (eg OCSP verification, etc)
     if (err == errSecSuccess && evaluationResult == kSecTrustResultProceed)
         return YES;
-    NSLog(@"err:%ld, evaluationResult:%lu", err, (unsigned long)evaluationResult);
+    NSLog(@"err:%ld, evaluationResult:%lu", (long)err, (unsigned long)evaluationResult);
     return NO;
 }

@@ -93,7 +93,7 @@
 "Duplicate bundle name" = "Nom de lot en double";
 
 /* exception reason */
-"Element '%@' not allowed at path: %@" = "L’élément « %1$@ » n’est pas autorisé dans le chemin : %2$@.";
+"Element '%@' not allowed at path: %@" = "L’élément “%1$@” n’est pas autorisé dans le chemin : %2$@";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "La création du répertoire du fichier de verrouillage dans “%@” a échoué.";
@@ -120,7 +120,7 @@
 "local configuration file" = "fichier de configuration locale";
 
 /* time span formatter span */
-"m" = "min";
+"m" = "m";
 
 /* time span formatter span */
 "minute" = "minute";
@@ -138,7 +138,7 @@
 "months" = "mois";
 
 /* error reason */
-"No root element was found" = "Aucun élément racine n’a été découvert";
+"No root element was found" = "Aucun élément racine n’a été trouvé";
 
 /* invalid bundle reason */
 "Not a valid bundle" = "N’est pas un lot valide";
@@ -183,7 +183,7 @@
 "Unable to decompress data." = "Impossible de décompresser les données.";
 
 /* decompression exception format */
-"Unable to decompress gzip data: invalid header" = "Impossible de décompresser les données gzip : en-tête non valide";
+"Unable to decompress gzip data: invalid header" = "Impossible de décompresser les données gzip : en-tête non valide";
 
 /* compression error description */
 "Unable to initialize compression" = "Impossible d’initialiser la compression";

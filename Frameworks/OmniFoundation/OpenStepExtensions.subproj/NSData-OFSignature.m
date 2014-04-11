@@ -1,4 +1,4 @@
-// Copyright 1998-2005,2007,2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005,2007,2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniFoundation/NSData-OFSignature.h>
 
 #import <OmniFoundation/CFData-OFExtensions.h>
+#import <OmniBase/macros.h>
 
 RCS_ID("$Id$")
 
@@ -15,8 +16,7 @@ RCS_ID("$Id$")
 
 - (NSData *)copySHA1Signature;
 {
-    CFDataRef signature = OFDataCreateSHA1Digest(kCFAllocatorDefault, (CFDataRef)self);
-    return NSMakeCollectable(signature);
+    return (OB_BRIDGE NSData *)OFDataCreateSHA1Digest(kCFAllocatorDefault, (CFDataRef)self);
 }
 
 - (NSData *)sha1Signature;
@@ -26,14 +26,12 @@ RCS_ID("$Id$")
 
 - (NSData *)sha256Signature;
 {
-    CFDataRef signature = OFDataCreateSHA256Digest(kCFAllocatorDefault, (CFDataRef)self);
-    return [NSMakeCollectable(signature) autorelease];
+    return CFBridgingRelease(OFDataCreateSHA256Digest(kCFAllocatorDefault, (CFDataRef)self));
 }
 
 - (NSData *)md5Signature;
 {
-    CFDataRef signature = OFDataCreateMD5Digest(kCFAllocatorDefault, (CFDataRef)self);
-    return [NSMakeCollectable(signature) autorelease];
+    return CFBridgingRelease(OFDataCreateMD5Digest(kCFAllocatorDefault, (CFDataRef)self));
 }
 
 - (NSData *)signatureWithAlgorithm:(NSString *)algName;

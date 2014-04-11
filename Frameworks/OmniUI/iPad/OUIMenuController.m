@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,8 @@ RCS_ID("$Id$");
 @implementation OUIMenuController
 {
     __weak id <OUIMenuControllerDelegate> _nonretained_delegate;
+    
+    id _retainCycleWhileShown;
     
     UIPopoverController *_menuPopoverController;
     UINavigationController *_menuNavigationController;
@@ -127,7 +129,7 @@ RCS_ID("$Id$");
     OBPRECONDITION([sender isKindOfClass:[UIBarButtonItem class]] || [sender isKindOfClass:[UIView class]]);
     
     // Keep ourselves alive while the popover is on screen (so that delegate calls work).
-    OBStrongRetain(self);
+    _retainCycleWhileShown = self;
     
     if (!_menuNavigationController) {
         OUIMenuOptionsController *topMenu = [self _makeTopMenu];
@@ -249,8 +251,9 @@ RCS_ID("$Id$");
         didFinish();
     }
     
-    // Matching the OBStrongRetain()self) in -showMenuFromSender:
-    OBAutorelease(self);
+    // Matching the setup in -showMenuFromSender:
+    OBRetainAutorelease(self);
+    _retainCycleWhileShown = nil;
 }
 
 @end

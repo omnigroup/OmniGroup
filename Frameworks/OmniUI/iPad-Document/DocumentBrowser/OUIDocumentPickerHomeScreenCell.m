@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -261,8 +261,8 @@ static NSDateFormatter *dateFormatter;
 
     UIColor *gray = [UIColor colorWithWhite:0.5 alpha:1.0];
     for (NSUInteger index = 0; index < count; index++) {
-        int row = index / 3;
-        int column = index % 3;
+        NSUInteger row = index / 3;
+        NSUInteger column = index % 3;
         CGRect miniRect = CGRectMake(leftBorder + column * (childLength + gap), gap + row * (childLength + gap), childLength, childLength);
         
         ODSFileItem *item = [sortedItems objectAtIndex:index];

@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -115,7 +115,7 @@ RCS_ID("$Id$")
     if (!error) {
         OBASSERT(_uploadingSnapshot.version == _currentRemoteSnapshotVersion + 1);
         
-        NSError *finishError;
+        __autoreleasing NSError *finishError;
         if (![_uploadingSnapshot finishedUploadingWithError:&finishError])
             error = OBChainedError(finishError);
         else

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -74,10 +74,10 @@ RCS_ID("$Id$")
         return nil;
     }
         
-    value = (id)CFDictionaryGetValue(dictionary, aKey);
+    value = (id)CFDictionaryGetValue(dictionary, (OB_BRIDGE void *)aKey);
     if (allocCapacity && !value) {
         value = [[NSMutableArray alloc] initWithCapacity:allocCapacity];
-        CFDictionaryAddValue(dictionary, aKey, value);
+        CFDictionaryAddValue(dictionary, (OB_BRIDGE const void *)aKey, (OB_BRIDGE void *)value);
         [value release];
     }
 
@@ -133,10 +133,10 @@ RCS_ID("$Id$")
         NSMutableArray *valueArray;
 
         valueArray = [[NSMutableArray alloc] initWithArray:replacementObjects];
-        CFDictionaryAddValue(dictionary, aKey, valueArray);
+        CFDictionaryAddValue(dictionary, (OB_BRIDGE const void *)aKey, (OB_BRIDGE const void *)valueArray);
         [valueArray release];
     } else {
-        CFDictionaryRemoveValue(dictionary, aKey);
+        CFDictionaryRemoveValue(dictionary, (OB_BRIDGE const void *)aKey);
     }
 }
 
@@ -162,7 +162,7 @@ RCS_ID("$Id$")
     [valueArray removeObjectAtIndex:objectIndex];
 
     if ([valueArray count] == 0)
-        CFDictionaryRemoveValue(dictionary, aKey);
+        CFDictionaryRemoveValue(dictionary, (OB_BRIDGE const void *)aKey);
 
     return YES;
 }
@@ -182,7 +182,7 @@ RCS_ID("$Id$")
     [valueArray removeObjectAtIndex:objectIndex];
 
     if ([valueArray count] == 0)
-        CFDictionaryRemoveValue(dictionary, aKey);
+        CFDictionaryRemoveValue(dictionary, (OB_BRIDGE const void *)aKey);
 
     return YES;
 }
@@ -194,12 +194,12 @@ RCS_ID("$Id$")
 
 - (NSEnumerator *)keyEnumerator;
 {
-    return [(NSDictionary *)dictionary keyEnumerator];
+    return [(OB_BRIDGE NSDictionary *)dictionary keyEnumerator];
 }
 
 struct copyOutContext {
-    NSMutableArray *copyKeys;
-    NSMutableArray *copyValues;
+    __unsafe_unretained NSMutableArray *copyKeys;
+    __unsafe_unretained NSMutableArray *copyValues;
 };
 
 static void copyFunction(const void *key, const void *value, void *context)
@@ -207,9 +207,9 @@ static void copyFunction(const void *key, const void *value, void *context)
     struct copyOutContext *copyOut = context;
 
     if (copyOut->copyKeys)
-        [copyOut->copyKeys addObject:(id)key];
+        [copyOut->copyKeys addObject:(OB_BRIDGE id)key];
     if (copyOut->copyValues)
-        [copyOut->copyValues addObjectsFromArray:(NSArray *)value];
+        [copyOut->copyValues addObjectsFromArray:(OB_BRIDGE NSArray *)value];
 }
 
 - (NSArray *)allKeys;
@@ -239,9 +239,9 @@ static void copyFunction(const void *key, const void *value, void *context)
 
 static void duplicateFunction(const void *key, const void *value, void *context)
 {
-    OFMultiValueDictionary *other = context;
+    OFMultiValueDictionary *other = (OB_BRIDGE OFMultiValueDictionary *)context;
 
-    [other setObjects:(NSArray *)value forKey:(id)key];
+    [other setObjects:(OB_BRIDGE NSArray *)value forKey:(OB_BRIDGE id)key];
 }
 
 - mutableCopyWithZone:(NSZone *)newZone
@@ -264,7 +264,7 @@ static void duplicateFunction(const void *key, const void *value, void *context)
     else
         return NO;
 
-    return CFEqual(dictionary, otherDictionary)? YES : NO;
+    return CFEqual(dictionary, (OB_BRIDGE CFDictionaryRef)otherDictionary)? YES : NO;
 }
 
 // If we do need to support NSCoding, we'll need to handle 64-bit key counts or at least avoid accidentally updating the archiving to an incompatible format.
@@ -363,7 +363,7 @@ static void duplicateFunction(const void *key, const void *value, void *context)
     NSMutableDictionary *debugDictionary;
 
     debugDictionary = [super debugDictionary];
-    [debugDictionary setObject:(id)dictionary forKey:@"dictionary"];
+    [debugDictionary setObject:(OB_BRIDGE id)dictionary forKey:@"dictionary"];
     return debugDictionary;
 }
 
@@ -427,8 +427,8 @@ static OFCharacterSet *_valueDelimiterOFCharacterSet(void)
         NSString *encodedValue = [scanner readFullTokenWithDelimiterOFCharacterSet:valueDelimiterSet forceLowercase:NO];
         if (scannerPeekCharacter(scanner) == '&')
             scannerSkipPeekedCharacter(scanner); // Skip '&' between value pairs
-        NSString *decodedName = [NSMakeCollectable(CFURLCreateStringByReplacingPercentEscapes(kCFAllocatorDefault, (CFStringRef)encodedName, CFSTR(""))) autorelease];
-        NSString *decodedValue = [NSMakeCollectable(CFURLCreateStringByReplacingPercentEscapes(kCFAllocatorDefault, (CFStringRef)encodedValue, CFSTR(""))) autorelease];
+        NSString *decodedName = CFBridgingRelease(CFURLCreateStringByReplacingPercentEscapes(kCFAllocatorDefault, (CFStringRef)encodedName, CFSTR("")));
+        NSString *decodedValue = CFBridgingRelease(CFURLCreateStringByReplacingPercentEscapes(kCFAllocatorDefault, (CFStringRef)encodedValue, CFSTR("")));
         if (decodedName == nil)
             decodedName = encodedName;
         if (decodedValue == nil)

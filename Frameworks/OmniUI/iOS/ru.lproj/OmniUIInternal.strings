@@ -1,8 +1,8 @@
 /* crash report body text */
-"\n\nPlease add any details you recall about how to reproduce the problem.\n\n" = "\n\Сообщите любые сведения, которые помогут нам воспроизвести проблему.\n\n";
+"\n\nPlease add any details you recall about how to reproduce the problem.\n\n" = "\n\nУкажите любые сведения, которые помогут воспроизвести проблему.\n\n";
 
 /* alert button title */
-"Discard Report" = "Отменить отчет";
+"Discard Report" = "Не отправлять отчет";
 
 /* alert button title */
 "Not Now" = "Не сейчас";

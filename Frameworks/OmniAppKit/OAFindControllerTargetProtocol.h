@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007, 2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,34 +14,24 @@
 @class NSString;
 
 @protocol OAFindControllerTarget
+
 - (BOOL)findPattern:(id <OAFindPattern>)pattern backwards:(BOOL)backwards wrap:(BOOL)wrap;
-@end
 
-@interface NSObject (OAOptionalSelectedStringForFinding)
+@optional
+
+// selected string for finding
 - (NSString *)selectedString;
-@end
+- (BOOL)isSelectedTextEditable;
 
-@interface NSObject (OAOptionalReplacement)
+// replacement
 - (void)replaceSelectionWithString:(NSString *)aString;
 - (void)replaceAllOfPattern:(id <OAFindPattern>)pattern;
-@end
 
-@interface NSObject (OAOptionalCurrentSelection)
+// replace in selection
 - (void)replaceAllOfPatternInCurrentSelection:(id <OAFindPattern>)pattern;
+
 @end
 
 @interface NSObject (OAFindControllerAware)
 - (id <OAFindControllerTarget>)omniFindControllerTarget;
-@end
-
-@protocol OASearchableContent
-- (BOOL)findPattern:(id <OAFindPattern>)pattern backwards:(BOOL)backwards ignoreSelection:(BOOL)ignoreSelection;
-@end
-
-@interface NSObject (OAOptionalSearchableCellProtocol)
-- (id <OASearchableContent>)searchableContentView;
-@end
-
-@interface NSObject (OAOptionalSelectionEditable)
-- (BOOL)isSelectedTextEditable;
 @end

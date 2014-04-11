@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -120,7 +120,7 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
 
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:[completionMatch string]];
     OFIndexPath *characterIndexPath = [completionMatch characterIndexPath];
-    unsigned int indexCount = [characterIndexPath length];
+    unsigned long indexCount = [characterIndexPath length];
 
     if (indexCount > 0) {
         NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -131,7 +131,7 @@ static void _SetAttributedStringAttribute(NSMutableAttributedString *attributedS
         NSUInteger indexes[indexCount];
         [characterIndexPath getIndexes:indexes];
         for (unsigned int indexIndex = 0; indexIndex < indexCount; indexIndex++) {
-            unsigned int indexValue = indexes[indexIndex];
+            unsigned long indexValue = indexes[indexIndex];
             NSRange range = NSMakeRange(indexValue, 1);
             [attributedString addAttributes:attributes range:range];
         }

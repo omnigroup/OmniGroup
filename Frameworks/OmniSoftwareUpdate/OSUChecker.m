@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -309,7 +309,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 #endif
     
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_significantTimeChangeNotification:) name:UIApplicationSignificantTimeChangeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:checker selector:@selector(_significantTimeChangeNotification:) name:UIApplicationSignificantTimeChangeNotification object:nil];
 #endif
     
     NSBundle *bundle = [NSBundle mainBundle];
@@ -338,12 +338,12 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     
     OSUCheckerRunning = NO;
     
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
-#endif
-    
     OSUChecker *checker = [self sharedUpdateChecker];
     [checker setTarget:nil];
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    [[NSNotificationCenter defaultCenter] removeObserver:checker name:UIApplicationSignificantTimeChangeNotification object:nil];
+#endif
     
     NSBundle *bundle = [NSBundle mainBundle];
     OSURunTimeApplicationDeactivated([bundle bundleIdentifier], OSUBundleVersionForBundle(bundle), NO/*crashed*/);
@@ -364,6 +364,10 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 {
     OBPRECONDITION(!_hasScheduledCheck(self)); // Otherwise, it would be retaining us and we wouldn't be being deallocated
     
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    // This shouldn't ever be needed, as the notification is only observed for the shared checker, and is removed on shutdown, but just in case.
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
+#endif
     [self _stopWatchingNetworkReachability];
     [_checkTarget release];
     _checkTarget = nil;
@@ -383,7 +387,17 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 
 - (NSString *)applicationIdentifier;
 {
-    return [[NSBundle mainBundle] bundleIdentifier];
+    NSString *applicationIdentifier = [[NSBundle mainBundle] bundleIdentifier];
+    
+#ifdef DEBUG
+    NSString *debugSuffix = @".debug";
+    if ([[applicationIdentifier lowercaseString] hasSuffix:debugSuffix]) {
+        NSUInteger index = [applicationIdentifier length] - [debugSuffix length];
+        applicationIdentifier = [applicationIdentifier substringToIndex:index];
+    }
+#endif
+    
+    return applicationIdentifier;
 }
 
 - (NSString *)applicationEngineeringVersion;
@@ -624,7 +638,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     return YES;
 #endif
 
-    if (!_flags.shouldCheckAutomatically)
+    if (![self _shouldCheckAutomatically])
         return NO;
 
     NSDictionary *myInfo = [[NSBundle mainBundle] infoDictionary];
@@ -654,13 +668,26 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     return YES;
 }
 
+- (BOOL)_shouldCheckAutomatically;
+{
+    // Disallow automatic checks if we are a debug build; attached to the debugger.
+    // You can still trigger a manual check to debug Software Update, or turn this off if necessary.
+    
+#ifdef DEBUG
+    if (OBIsBeingDebugged())
+        return NO;
+#endif
+    
+    return _flags.shouldCheckAutomatically;
+}
+
 - (void)_scheduleNextCheck;
 {
     // Make sure we haven't been disabled
     if (![[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue])
         _flags.shouldCheckAutomatically = 0;
 
-    if (!_flags.shouldCheckAutomatically || _currentCheckOperation) {
+    if (![self _shouldCheckAutomatically] || _currentCheckOperation) {
         _cancelScheduledCheck(self);
         return;
     }

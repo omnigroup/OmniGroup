@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,7 +48,7 @@ static inline void
 OFDataBufferRelease(OFDataBuffer *dataBuffer, CFAllocatorRef dataAllocator, CFDataRef *outData)
 {
     if (outData) {
-        // When an outData is supplied, the caller gains ownership of our internal buffer. We allow the caller to specify the allocator for the CFDataRef itself. If the caller passes in kCFAllocatorDefault, then they can make it collectable with NSMakeCollectable. But, if the caller wants to use and discard the buffer immediately in a GC environment, they can pass in kCFAllocatorMalloc.
+        // When an outData is supplied, the caller gains ownership of our internal buffer. We allow the caller to specify the allocator for the CFDataRef itself.
         *outData = CFDataCreateWithBytesNoCopy(dataAllocator, dataBuffer->buffer, dataBuffer->writeStart - dataBuffer->buffer, kCFAllocatorMalloc);
     } else if (dataBuffer->buffer)
         free(dataBuffer->buffer);
@@ -81,9 +81,12 @@ static inline void
 OFDataBufferSetCapacity(OFDataBuffer *dataBuffer, size_t capacity)
 {
     OBASSERT_IF(dataBuffer->buffer == NULL, capacity > 0); // realloc(NULL,0) is equivalent to malloc(0), which has implementation-defined behavior
+    if (capacity == 0)
+        capacity = 1;
+    
     size_t occupied = OFDataBufferSpaceOccupied(dataBuffer);
     OBASSERT(capacity >= occupied);
-    void *newBuffer = realloc(dataBuffer->buffer, capacity);
+    void *newBuffer = reallocf(dataBuffer->buffer, capacity);
     if (!newBuffer) {
         // If dataBuffer->buffer was NULL, then we have the same situation we started with. Otherwise, dataBuffer->buffer is still valid, but wasn't resized, so again, the same situation we started with. However, we can't satisfy our spec in either case, so:
         [NSException raise:NSMallocException format:@"Unable to resize buffer"];

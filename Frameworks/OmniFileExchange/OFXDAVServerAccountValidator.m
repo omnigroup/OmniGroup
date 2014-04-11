@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -291,7 +291,7 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
     _challengeServiceIdentifier = [OFMakeServiceIdentifier(_account.remoteBaseURL, _username, challenge.protectionSpace.realm) copy];
     
     // Might have old bad credentials, or even existing valid credentials. But we were given a user name and password to use, so we should use them.
-    NSError *deleteError;
+    __autoreleasing NSError *deleteError;
     if (!OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier, &deleteError))
         [deleteError log:@"Error deleting credentials for service identifier %@", _challengeServiceIdentifier];
     

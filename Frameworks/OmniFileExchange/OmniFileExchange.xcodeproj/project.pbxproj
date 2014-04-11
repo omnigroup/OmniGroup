@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15AFEB2018A06BDE00AC19A2 /* de.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB1718A06BA200AC19A2 /* de.lproj */; };
+		15AFEB2118A06BDE00AC19A2 /* es.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB1818A06BA200AC19A2 /* es.lproj */; };
+		15AFEB2218A06BDE00AC19A2 /* fr.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB1918A06BA200AC19A2 /* fr.lproj */; };
+		15AFEB2318A06BDE00AC19A2 /* it.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB1A18A06BA200AC19A2 /* it.lproj */; };
+		15AFEB2418A06BDE00AC19A2 /* ja.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB1B18A06BA200AC19A2 /* ja.lproj */; };
+		15AFEB2518A06BDE00AC19A2 /* nl.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB1C18A06BA200AC19A2 /* nl.lproj */; };
+		15AFEB2618A06BDE00AC19A2 /* ru.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB1D18A06BA200AC19A2 /* ru.lproj */; };
+		15AFEB2718A06BDE00AC19A2 /* zh-Hans.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB1E18A06BA200AC19A2 /* zh-Hans.lproj */; };
 		340135B816DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.h in Headers */ = {isa = PBXBuildFile; fileRef = 340135B616DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.h */; };
 		340135B916DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.h in Headers */ = {isa = PBXBuildFile; fileRef = 340135B616DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.h */; };
 		340135BA16DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.m in Sources */ = {isa = PBXBuildFile; fileRef = 340135B716DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.m */; };
@@ -255,6 +263,23 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		15AFEB1F18A06BD200AC19A2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "Resources/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				15AFEB2018A06BDE00AC19A2 /* de.lproj in CopyFiles */,
+				15AFEB2118A06BDE00AC19A2 /* es.lproj in CopyFiles */,
+				15AFEB2218A06BDE00AC19A2 /* fr.lproj in CopyFiles */,
+				15AFEB2318A06BDE00AC19A2 /* it.lproj in CopyFiles */,
+				15AFEB2418A06BDE00AC19A2 /* ja.lproj in CopyFiles */,
+				15AFEB2518A06BDE00AC19A2 /* nl.lproj in CopyFiles */,
+				15AFEB2618A06BDE00AC19A2 /* ru.lproj in CopyFiles */,
+				15AFEB2718A06BDE00AC19A2 /* zh-Hans.lproj in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		34824AF71742E55600253D52 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -278,6 +303,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		15AFEB1718A06BA200AC19A2 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
+		15AFEB1818A06BA200AC19A2 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
+		15AFEB1918A06BA200AC19A2 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fr.lproj; path = Localization/iOS/fr.lproj; sourceTree = "<group>"; };
+		15AFEB1A18A06BA200AC19A2 /* it.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = it.lproj; path = Localization/iOS/it.lproj; sourceTree = "<group>"; };
+		15AFEB1B18A06BA200AC19A2 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = Localization/iOS/ja.lproj; sourceTree = "<group>"; };
+		15AFEB1C18A06BA200AC19A2 /* nl.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = nl.lproj; path = Localization/iOS/nl.lproj; sourceTree = "<group>"; };
+		15AFEB1D18A06BA200AC19A2 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ru.lproj; path = Localization/iOS/ru.lproj; sourceTree = "<group>"; };
+		15AFEB1E18A06BA200AC19A2 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "zh-Hans.lproj"; path = "Localization/iOS/zh-Hans.lproj"; sourceTree = "<group>"; };
 		340135B616DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXFileSnapshotUploadTransfer.h; sourceTree = SOURCE_ROOT; };
 		340135B716DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXFileSnapshotUploadTransfer.m; sourceTree = SOURCE_ROOT; };
 		340135C216DBEABC00BCC654 /* OFXFileSnapshotUploadRenameTransfer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXFileSnapshotUploadRenameTransfer.h; sourceTree = SOURCE_ROOT; };
@@ -511,6 +544,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		15AFEB1618A06B6500AC19A2 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				15AFEB1718A06BA200AC19A2 /* de.lproj */,
+				15AFEB1818A06BA200AC19A2 /* es.lproj */,
+				15AFEB1918A06BA200AC19A2 /* fr.lproj */,
+				15AFEB1A18A06BA200AC19A2 /* it.lproj */,
+				15AFEB1B18A06BA200AC19A2 /* ja.lproj */,
+				15AFEB1C18A06BA200AC19A2 /* nl.lproj */,
+				15AFEB1D18A06BA200AC19A2 /* ru.lproj */,
+				15AFEB1E18A06BA200AC19A2 /* zh-Hans.lproj */,
+			);
+			name = Localization;
+			sourceTree = "<group>";
+		};
 		340135C816DC19F600BCC654 /* Upload */ = {
 			isa = PBXGroup;
 			children = (
@@ -596,6 +644,7 @@
 				34AFADA2164B13DA009E39AB /* Tests */,
 				34AFACE4164B0E70009E39AB /* Frameworks */,
 				34AFACE3164B0E70009E39AB /* Products */,
+				15AFEB1618A06B6500AC19A2 /* Localization */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1011,6 +1060,7 @@
 				34AFAD25164B0EC8009E39AB /* Sources */,
 				34AFAD26164B0EC8009E39AB /* Frameworks */,
 				34BAF4C2164B958B001BC4B0 /* Build String Files */,
+				15AFEB1F18A06BD200AC19A2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -1046,7 +1096,7 @@
 		34AFACD8164B0E70009E39AB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "The Omni Group";
 			};
 			buildConfigurationList = 34AFACDB164B0E70009E39AB /* Build configuration list for PBXProject "OmniFileExchange" */;

@@ -1,4 +1,4 @@
-// Copyright 1999-2006, 2008, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2006, 2008, 2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,10 +20,6 @@
     // Given absolute file paths like "/applications/omniweb/screenshots/index.html" and "/applications/omniweb/faq/content.html", returns a the common ancestor of both paths, "/applications/omniweb/". Returns nil if the paths have no common root (well, other than the root of the filesystem).
 - (NSString *)relativePathToFilename:(NSString *)otherFilename;
     // Given absolute file paths like "/applications/omniweb/screenshots/index.html" and "/applications/omniweb/faq/content.html", returns a relative path, "../../faq/content.html". If no relative path is possible (i.e. the paths have no common root), returns otherFilename.
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-- (NSString *)hfsPathFromPOSIXPath;
-#endif
 
 - (void)splitName:(NSString **)outName andCounter:(NSUInteger *)outCounter;
 

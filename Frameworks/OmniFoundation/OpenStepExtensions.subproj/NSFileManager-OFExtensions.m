@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -257,7 +257,7 @@ static int permissionsMask = 0022;
         return nil;
     }
     
-    if (![data writeToFile:lockFilePath options:NSAtomicWrite error:outError]) {
+    if (![data writeToFile:lockFilePath options:NSDataWritingAtomic error:outError]) {
         OFError(outError, OFUnableToCreateLockFileError, ([NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to create lock file '%@'.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), lockFilePath]), nil);
         [data release];
         return nil;
@@ -563,6 +563,9 @@ static int permissionsMask = 0022;
 
 - (BOOL)setQuarantineProperties:(NSDictionary *)quarantineDictionary forItemAtPath:(NSString *)path error:(NSError **)outError;
 {
+    // <bug:///98805> (Stop using deprecated CFURLGetFSRef() in NSFileManager(OFExtensions) [quarantine])
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     FSRef carbonRef;
     bzero(&carbonRef, sizeof(carbonRef));
     
@@ -583,10 +586,14 @@ errorReturn:
     if (outError)
         *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, quarantineDictionary, kLSItemQuarantineProperties, nil]];
     return NO;
+#pragma clang diagnostic pop
 }
 
 - (NSDictionary *)quarantinePropertiesForItemAtPath:(NSString *)path error:(NSError **)outError;
 {
+    // <bug:///98805> (Stop using deprecated CFURLGetFSRef() in NSFileManager(OFExtensions) [quarantine])
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     FSRef carbonRef;
     bzero(&carbonRef, sizeof(carbonRef));
     
@@ -618,6 +625,7 @@ errorReturn:
     if (outError)
         *outError = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObjectsAndKeys:path, NSFilePathErrorKey, nil]];
     return nil;
+#pragma clang diagnostic pop
 }
 
 #pragma mark Code signing

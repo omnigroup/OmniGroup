@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,4 +40,7 @@
 
 // We pass along the NSFontPanel delegate message, adding in the last font view to have been sent -setFontUsingFontPanel:
 - (BOOL)fontView:(OAFontView *)aFontView fontManager:(id)sender willIncludeFont:(NSString *)fontName;
+
+- (IBAction)changeFontFamily:(id)sender;
+
 @end

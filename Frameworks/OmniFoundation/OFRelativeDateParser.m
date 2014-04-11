@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -289,10 +289,10 @@ enum {
 	   forString:(NSString *)string
    	       error:(NSError **)error;
 {
-    return [self getDateValue:date forString:string useEndOfDuration:NO defaultTimeDateComponents:nil calendar:nil error:error];
+    return [self getDateValue:date forString:string fromStartingDate:nil useEndOfDuration:NO defaultTimeDateComponents:nil calendar:nil error:error];
 }
 
-- (BOOL)getDateValue:(NSDate **)date forString:(NSString *)string useEndOfDuration:(BOOL)useEndOfDuration defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents calendar:(NSCalendar *)calendar error:(NSError **)error;
+- (BOOL)getDateValue:(NSDate **)date forString:(NSString *)string fromStartingDate:(NSDate *)startingDate useEndOfDuration:(BOOL)useEndOfDuration defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents calendar:(NSCalendar *)calendar error:(NSError **)error;
 {
     if (!calendar)
         calendar = _defaultCalendar();
@@ -318,7 +318,7 @@ enum {
     
     return [self getDateValue:date 
 		    forString:string 
-	     fromStartingDate:[NSDate date] 
+	     fromStartingDate:startingDate
                      calendar:calendar
 	  withShortDateFormat:shortFormat
 	 withMediumDateFormat:mediumFormat
@@ -370,6 +370,9 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	date = nil;
 	return YES;
     }
+    
+    if (!startingDate)
+        startingDate = [NSDate date];
     
     if (!calendar)
         calendar = _defaultCalendar();

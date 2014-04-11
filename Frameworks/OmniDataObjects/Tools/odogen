@@ -8,11 +8,11 @@ $: << Pathname.new(File.dirname(__FILE__)).realpath
 require 'OmniDataObjects'
 include OmniDataObjects # Make the DSL live in our namespace
 
-@@prog = File.basename(__FILE__)
+$prog = File.basename(__FILE__)
 def usage
   msg = <<EOS
-#{@@prog} - Generate source files for an OmniDataObjects model.
-usage: #{@@prog} [options] Foo.odomodel
+#{$prog} - Generate source files for an OmniDataObjects model.
+usage: #{$prog} [options] Foo.odomodel
     --help [-h]                   Print this help
     --debug [-d]                  Turn on debug output
     --output-directory [-D] dir   The directory in which to place output; normally it is placed as a sibling to the input

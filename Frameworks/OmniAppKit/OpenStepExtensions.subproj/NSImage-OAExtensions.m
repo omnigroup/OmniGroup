@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,9 @@ RCS_ID("$Id$")
 NSString * const OADropDownTriangleImageName = @"OADropDownTriangle";
 NSString * const OAInfoTemplateImageName = @"OAInfoTemplate";
 
+@interface _OATintedImage : NSImage
+@end
+
 @implementation NSImage (OAExtensions)
 
 #ifdef DEBUG
@@ -35,8 +38,8 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 
 + (void)performPosing;
 {
-    original_initByReferencingFile = (typeof(original_initWithContentsOfFile))OBReplaceMethodImplementationWithSelector(self, @selector(initByReferencingFile:), @selector(replacement_initByReferencingFile:));
-    original_initWithContentsOfFile = (typeof(original_initWithContentsOfFile))OBReplaceMethodImplementationWithSelector(self, @selector(initWithContentsOfFile:), @selector(replacement_initWithContentsOfFile:));
+    original_initByReferencingFile = (typeof(original_initWithContentsOfFile))OBReplaceMethodImplementationWithSelector(self, @selector(initByReferencingFile:), @selector(_initByReferencingFile_replacement:));
+    original_initWithContentsOfFile = (typeof(original_initWithContentsOfFile))OBReplaceMethodImplementationWithSelector(self, @selector(initWithContentsOfFile:), @selector(_initWithContentsOfFile_replacement:));
 #ifdef DEBUG_NONINTEGRAL_IMAGE_SIZE
     original_initWithSize = (typeof(original_initWithSize))OBReplaceMethodImplementationWithSelector(self, @selector(initWithSize:), @selector(replacement_initWithSize:));
     original_setSize = (typeof(original_setSize))OBReplaceMethodImplementationWithSelector(self, @selector(setSize:), @selector(replacement_setSize:));
@@ -45,7 +48,7 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 
 // If you run into these assertions, consider running the OAMakeImageSizeIntegral command line tool in your image (probably only reasonable for TIFF right now).
 
-- (id)replacement_initWithContentsOfFile:(NSString *)fileName;
+- (id)_initWithContentsOfFile_replacement:(NSString *)fileName;
 {
     self = original_initWithContentsOfFile(self, _cmd, fileName);
 
@@ -65,10 +68,9 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 }
 
 // Called by +[NSImage imageNamed:]
-- (id)replacement_initByReferencingFile:(NSString *)fileName;
+- (id)_initByReferencingFile_replacement:(NSString *)fileName;
 {
     if (fileName == nil) {
-        [self release];
         return nil;
     }
     
@@ -131,7 +133,7 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 {
     NSString *tintSuffix;
     
-    switch(imageTint) {
+    switch (imageTint) {
         case NSGraphiteControlTint:
             tintSuffix = OAGraphiteImageTintSuffix;
             break;
@@ -172,12 +174,35 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 
 + (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle allowingNil:(BOOL)allowNil;
 {
-    return [self imageNamed:imageStem withTint:[NSColor currentControlTint] inBundle:aBundle allowingNil:allowNil];
+    NSImage *defaultImage = [self imageNamed:imageStem withTint:NSDefaultControlTint inBundle:aBundle allowingNil:allowNil];
+    NSImage *graphiteImage = [self imageNamed:imageStem withTint:NSGraphiteControlTint inBundle:aBundle allowingNil:allowNil];
+    NSImage *tintedImage = [self tintedImageWithSize:defaultImage.size flipped:NO drawingHandler:^BOOL(NSRect dstRect) {
+        NSRect srcRect = { .origin = NSZeroPoint, .size = defaultImage.size };
+        NSImage *sourceImage;
+        switch ([NSColor currentControlTint]) {
+            case NSGraphiteControlTint:
+                sourceImage = graphiteImage;
+                break;
+            default:
+                sourceImage = defaultImage;
+                break;
+        }
+        [sourceImage drawInRect:dstRect fromRect:srcRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:NO hints:nil];
+        return YES;
+    }];
+
+    return tintedImage;
+    // return [self imageNamed:imageStem withTint:[NSColor currentControlTint] inBundle:aBundle allowingNil:allowNil];
 }
 
 + (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle;
 {
-    return [self imageNamed:imageStem withTint:[NSColor currentControlTint] inBundle:aBundle allowingNil:NO];
+    return [self tintedImageNamed:imageStem inBundle:aBundle allowingNil:NO];
+}
+
++ (NSImage *)tintedImageWithSize:(NSSize)size flipped:(BOOL)drawingHandlerShouldBeCalledWithFlippedContext drawingHandler:(BOOL (^)(NSRect dstRect))drawingHandler;
+{
+    return [_OATintedImage imageWithSize:size flipped:drawingHandlerShouldBeCalledWithFlippedContext drawingHandler:drawingHandler];
 }
 
 + (NSImage *)imageForFileType:(NSString *)fileType;
@@ -298,25 +323,19 @@ static NSDictionary *titleFontAttributes;
 
     [drawImage unlockFocus];
 
-    return [drawImage autorelease];
+    return drawImage;
 }
 
 - (NSImage *)imageByTintingWithColor:(NSColor *)tintColor;
 {
-    return [self imageByTintingWithColor:tintColor alpha:1.0];
-}
-
-- (NSImage *)imageByTintingWithColor:(NSColor *)tintColor alpha:(CGFloat)alpha;
-{
     OBPRECONDITION(tintColor != nil);
-    OBPRECONDITION(alpha >= 0 && alpha <= 1.0);
     
-    NSImage *image = [[self copy] autorelease];
+    NSImage *image = [self copy];
     NSImage *tintedImage = [NSImage imageWithSize:self.size flipped:NO drawingHandler:^BOOL(NSRect dstRect) {
         NSRect srcRect = { .origin = NSZeroPoint, .size = image.size };
-        [image drawInRect:dstRect fromRect:srcRect operation:NSCompositeSourceOver fraction:alpha respectFlipped:NO hints:nil];
+        [image drawInRect:dstRect fromRect:srcRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:NO hints:nil];
         [tintColor set];
-        NSRectFillUsingOperation(dstRect, NSCompositeSourceAtop);
+        NSRectFillUsingOperation(dstRect, NSCompositeSourceIn);
         return YES;
     }];
     
@@ -415,9 +434,9 @@ static NSDictionary *titleFontAttributes;
 
 - (void)pasteboard:(NSPasteboard *)aPasteboard provideDataForType:(NSString *)wanted
 {
-    if (UTTypeConformsTo((CFStringRef)wanted, (CFStringRef)NSPasteboardTypePNG))
+    if (UTTypeConformsTo((__bridge CFStringRef)wanted, (CFStringRef)NSPasteboardTypePNG))
         [aPasteboard setData:[self pngData] forType:wanted];
-    else if (UTTypeConformsTo((CFStringRef)wanted, (CFStringRef)NSPasteboardTypeTIFF))
+    else if (UTTypeConformsTo((__bridge CFStringRef)wanted, (CFStringRef)NSPasteboardTypeTIFF))
         [aPasteboard setData:[self TIFFRepresentation] forType:wanted];
 }
 
@@ -442,7 +461,7 @@ static NSDictionary *titleFontAttributes;
 
 - (NSImage *)scaledImageOfSize:(NSSize)aSize;
 {
-    NSImage *scaledImage = [[[NSImage alloc] initWithSize:aSize] autorelease];
+    NSImage *scaledImage = [[NSImage alloc] initWithSize:aSize];
     [scaledImage lockFocus];
     NSGraphicsContext *currentContext = [NSGraphicsContext currentContext];
     NSImageInterpolation savedInterpolation = [currentContext imageInterpolation];
@@ -524,9 +543,8 @@ static NSDictionary *titleFontAttributes;
             [backgroundColor ? backgroundColor : [NSColor clearColor] set];
             NSRectFill(imageBounds);
             [self drawInRect:imageBounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
-            bitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:imageBounds] autorelease];
+            bitmapImageRep = [[NSBitmapImageRep alloc] initWithFocusedViewRect:imageBounds];
         } [newImage unlockFocus];
-        [newImage release];
     }
 
     // Can't export huge images; these are NSInteger
@@ -613,12 +631,36 @@ static NSDictionary *titleFontAttributes;
     if (bitmapImageRep)
         return [bitmapImageRep representationUsingType:NSPNGFileType properties:nil];
     
+    // This will log CG errors if there is just a "NSCGImageSnapshotRep", which is what you get if you've drawn into an image via -lockFocus.
+#if 0
     // Not sure what this does with there are multiples.  Does it write multi-resolution TIFF? What does it do for PNG?
-    NSArray *representations = [self representations];
-    OBASSERT([representations count] == 1);
-    NSData *result = [NSBitmapImageRep representationOfImageRepsInArray:representations usingType:NSPNGFileType properties:nil];
-    OBASSERT(result);
-    return result;
+    NSData *result = [NSBitmapImageRep representationOfImageRepsInArray:[self representations] usingType:NSPNGFileType properties:nil];
+    if (result)
+        return result;
+#endif
+    
+    CGImageRef imageRef = [self CGImageForProposedRect:NULL context:nil hints:nil];
+    if (imageRef) {
+        do {
+            NSMutableData *data = [NSMutableData data];
+            CGImageDestinationRef destination = CGImageDestinationCreateWithData((OB_BRIDGE CFMutableDataRef)data, kUTTypePNG, 1, NULL);
+            if (!destination) {
+                OBASSERT(destination);
+                break;
+            }
+            CGImageDestinationAddImage(destination, imageRef, nil);
+            if (!CGImageDestinationFinalize(destination)) {
+                CFRelease(destination);
+                OBASSERT_NOT_REACHED("Failed to archive image");
+                break;
+            }
+            
+            CFRelease(destination);
+            return data;
+        } while (0);
+    }
+    
+    return nil;
 }
 
 + (NSImage *)documentIconWithContent:(NSImage *)contentImage;
@@ -640,7 +682,7 @@ static NSDictionary *titleFontAttributes;
     NSImage *largeImage, *smallImage, *tinyImage;
     NSRect bounds;
 
-    largeImage = [[[NSImage alloc] initWithSize:ICON_SIZE_LARGE] autorelease];
+    largeImage = [[NSImage alloc] initWithSize:ICON_SIZE_LARGE];
     bounds = (NSRect){NSZeroPoint, ICON_SIZE_LARGE};
     [largeImage lockFocus];
     {
@@ -650,7 +692,7 @@ static NSDictionary *titleFontAttributes;
     }
     [largeImage unlockFocus];
 
-    smallImage = [[[NSImage alloc] initWithSize:ICON_SIZE_SMALL] autorelease];
+    smallImage = [[NSImage alloc] initWithSize:ICON_SIZE_SMALL];
     bounds = (NSRect){NSZeroPoint, ICON_SIZE_SMALL};
     [smallImage lockFocus];
     {
@@ -660,7 +702,7 @@ static NSDictionary *titleFontAttributes;
     }
     [smallImage unlockFocus];
 
-    tinyImage = [[[NSImage alloc] initWithSize:ICON_SIZE_TINY] autorelease];
+    tinyImage = [[NSImage alloc] initWithSize:ICON_SIZE_TINY];
     bounds = (NSRect){NSZeroPoint, ICON_SIZE_TINY};
     [tinyImage lockFocus];
     {
@@ -675,37 +717,33 @@ static NSDictionary *titleFontAttributes;
     [newImage addRepresentation:[[smallImage representations] objectAtIndex:0]];
     [newImage addRepresentation:[[tinyImage representations] objectAtIndex:0]];
 
-    return [newImage autorelease];
+    return newImage;
 }
 
 //
 // System Images
 //
 
-static NSImage *getSystemImage(OSType fourByteCode, BOOL flip, NSImage **buf)
+static NSImage *getSystemImage(OSType fourByteCode, BOOL flip)
 {
-    if (!*buf) {
-        IconRef iconRef;
-        
-        iconRef = 0; /* 0 is documented to be the invalid value for an IconRef */
-        OSErr result = GetIconRef(kOnSystemDisk, kSystemIconsCreator, fourByteCode, &iconRef);
-        if (result != noErr || iconRef == 0)
-            return nil;
-        
-        NSImage *iconImage = [[NSImage alloc] initWithIconRef:iconRef];
-        
-        ReleaseIconRef(iconRef);
-        
-        *buf = iconImage;
-    }
+    IconRef iconRef = 0; /* 0 is documented to be the invalid value for an IconRef */
+    OSErr result = GetIconRef(kOnSystemDisk, kSystemIconsCreator, fourByteCode, &iconRef);
+    if (result != noErr || iconRef == 0)
+        return nil;
+    
+    NSImage *iconImage = [[NSImage alloc] initWithIconRef:iconRef];
+    
+    ReleaseIconRef(iconRef);
 
-    return *buf;
+    return iconImage;
 }
 
 #define OA_SYSTEM_IMAGE(x, flip) \
 do { \
     static NSImage *image = nil; \
-    return getSystemImage(x, flip, &image); \
+    if (image != nil) return image; \
+    image = getSystemImage(x, flip); \
+    return image; \
 } while(0)
 
 + (NSImage *)httpInternetLocationImage;
@@ -801,3 +839,43 @@ static void setupTintTable(void)
 
 @end
 
+@implementation _OATintedImage
+{
+    id _tintObserver;
+}
+
+- (id)initWithSize:(NSSize)aSize;
+{
+    self = [super initWithSize:aSize];
+    if (self == nil)
+        return nil;
+
+    [self _subscribeToTintNotifications];
+
+    return self;
+}
+
+- (void)dealloc;
+{
+    if (_tintObserver != nil)
+        [[NSNotificationCenter defaultCenter] removeObserver:_tintObserver name:NSControlTintDidChangeNotification object:nil];
+}
+
+- (void)_subscribeToTintNotifications;
+{
+    if (_tintObserver != nil)
+        return;
+
+    __weak _OATintedImage *weakSelf = self;
+    _tintObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSControlTintDidChangeNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
+        _OATintedImage *strongSelf = weakSelf;
+        [strongSelf _updateTintedImage];
+    }];
+}
+
+- (void)_updateTintedImage;
+{
+    [self recache];
+}
+
+@end

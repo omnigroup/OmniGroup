@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -181,10 +181,10 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
     return profileColorSpace;
 }
     
-static unsigned int inline parseUnsignedInt(const unsigned char *buf)
-{
-    return (((buf[0] << 8) | buf[1]) << 16) | ((buf[2] << 8) | buf[3]);
-}
+//static unsigned int inline parseUnsignedInt(const unsigned char *buf)
+//{
+//    return (((buf[0] << 8) | buf[1]) << 16) | ((buf[2] << 8) | buf[3]);
+//}
 
 #define ICC_ACSP_SIGNATURE 0x61637370
 

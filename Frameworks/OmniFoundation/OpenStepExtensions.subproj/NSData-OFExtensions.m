@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -137,17 +137,16 @@ RCS_ID("$Id$")
 
 - propertyList
 {
-    CFErrorRef error = NULL;
-    CFPropertyListRef propList = CFPropertyListCreateWithData(kCFAllocatorDefault, (CFDataRef)self, kCFPropertyListImmutable, NULL, &error);
+    CFErrorRef errorRef = NULL;
+    CFPropertyListRef propList = CFPropertyListCreateWithData(kCFAllocatorDefault, (CFDataRef)self, kCFPropertyListImmutable, NULL, &errorRef);
     if (propList != NULL)
-        return [NSMakeCollectable(propList) autorelease];
+        return CFBridgingRelease(propList);
     
-    NSException *exception = [[NSException alloc] initWithName:NSParseErrorException
-                                                        reason:[(NSError *)error localizedDescription]
-                                                      userInfo:[NSDictionary dictionaryWithObject:(NSError *)error forKey:NSUnderlyingErrorKey]];
-    CFRelease(error);
+    NSError *error = CFBridgingRelease(errorRef);
+    NSException *exception = [NSException exceptionWithName:NSParseErrorException
+                                                     reason:[error localizedDescription]
+                                                   userInfo:[NSDictionary dictionaryWithObject:error forKey:NSUnderlyingErrorKey]];
     
-    [exception autorelease];
     [exception raise];
     /* NOT REACHED */
     return nil;
@@ -158,7 +157,7 @@ RCS_ID("$Id$")
     if (shouldCreateDirectories && ![[NSFileManager defaultManager] createPathToFile:path attributes:nil error:outError])
         return NO;
 
-    return [self writeToFile:path options:atomically ? NSAtomicWrite : 0 error:outError];
+    return [self writeToFile:path options:atomically ? NSDataWritingAtomic : 0 error:outError];
 }
 
 - (NSData *)dataByAppendingData:(NSData *)anotherData;

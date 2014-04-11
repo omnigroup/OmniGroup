@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,7 +70,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
             OIInspectorHeaderImageState stateIndex;
             for (stateIndex = 0; stateIndex < OIInspectorHeaderImageStateCount; stateIndex++) {
                 NSString *imageName = [NSString stringWithFormat:@"OITitlebar%@%@", OIInspectorHeaderImageKeyStatusNames[keyStatusIndex], OIInspectorHeaderImageStateNames[stateIndex]];
-                _headerImages[keyStatusIndex][stateIndex] = [[NSImage imageNamed:imageName inBundle:[OIInspectorHeaderView bundle]] retain];
+                _headerImages[keyStatusIndex][stateIndex] = [NSImage imageNamed:imageName inBundle:[OIInspectorHeaderView bundle]];
 		OBASSERT(_headerImages[keyStatusIndex][stateIndex]);
             }
         }
@@ -82,19 +82,19 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
             OIInspectorCloseButtonState stateIndex;
             for (stateIndex = 0; stateIndex < OIInspectorCloseButtonStateCount; stateIndex++) {
                 NSString *imageName = [NSString stringWithFormat:@"OIWindowSmallCloseBox%@%@", OIInspectorCloseButtonStateNames[stateIndex], OIInspectorHeaderImageTintNames[tintIndex]];
-                _closeButtonImages[tintIndex][stateIndex] = [[NSImage imageNamed:imageName inBundle:[OIInspectorHeaderView bundle]] retain];
+                _closeButtonImages[tintIndex][stateIndex] = [NSImage imageNamed:imageName inBundle:[OIInspectorHeaderView bundle]];
 		OBASSERT(_closeButtonImages[tintIndex][stateIndex]);
             }
         }
     }
 
-    _expandedImage = [[NSImage imageNamed:@"OIExpanded" inBundle:[OIInspectorHeaderView bundle]] retain];
+    _expandedImage = [NSImage imageNamed:@"OIExpanded" inBundle:[OIInspectorHeaderView bundle]];
     OBASSERT(_expandedImage);
-    _collapsedImage = [[NSImage imageNamed:@"OICollapsed" inBundle:[OIInspectorHeaderView bundle]] retain];
+    _collapsedImage = [NSImage imageNamed:@"OICollapsed" inBundle:[OIInspectorHeaderView bundle]];
     OBASSERT(_collapsedImage);
 
-    _textAttributes = [[NSDictionary dictionaryWithObjectsAndKeys:[NSFont systemFontOfSize:[NSFont labelFontSize]], NSFontAttributeName, nil] retain];
-    _keyEquivalentAttributes = [[NSDictionary dictionaryWithObjectsAndKeys:[NSFont systemFontOfSize:[NSFont labelFontSize]], NSFontAttributeName, [NSColor darkGrayColor], NSForegroundColorAttributeName, nil] retain];
+    _textAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont systemFontOfSize:[NSFont labelFontSize]], NSFontAttributeName, nil];
+    _keyEquivalentAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont systemFontOfSize:[NSFont labelFontSize]], NSFontAttributeName, [NSColor darkGrayColor], NSForegroundColorAttributeName, nil];
 
     omitTextAndStateWhenCollapsed = [[NSUserDefaults standardUserDefaults] boolForKey:@"OmitTextAndStateWhenCollapsed"];
     
@@ -106,8 +106,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 - (void)setTitle:(NSString *)aTitle;
 {
     if (title != aTitle) {
-        [title release];
-        title = [aTitle retain];
+        title = aTitle;
         [self setNeedsDisplay:YES];
     }
 }
@@ -121,8 +120,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         [anImage setScalesWhenResized:YES];
         [anImage setSize:NSMakeSize(IMAGE_SIZE, IMAGE_SIZE)];
         
-        [image release];
-        image = [anImage retain];
+        image = anImage;
         [self setNeedsDisplay:YES];
     }
 }
@@ -130,8 +128,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 - (void)setKeyEquivalent:(NSString *)anEquivalent;
 {
     if (keyEquivalent != anEquivalent) {
-        [keyEquivalent release];
-        keyEquivalent = [anEquivalent retain];
+        keyEquivalent = anEquivalent;
         [self setNeedsDisplay:YES];
     }
 }
@@ -280,7 +277,6 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         } else {
             NSAttributedString *attr = [[NSAttributedString alloc] initWithString:title attributes:_textAttributes];
             [attr drawInRectangle:rect alignment:NSLeftTextAlignment verticallyCentered:YES];
-            [attr release];
         }
     }
 
@@ -375,7 +371,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 
 - (BOOL)_allowToggleExpandedness;
 {
-    return ![[OIInspectorRegistry sharedInspector] hasSingleInspector];
+    return ![[OIInspectorRegistry inspectorRegistryForMainWindow] hasSingleInspector];
 }
 
 @end

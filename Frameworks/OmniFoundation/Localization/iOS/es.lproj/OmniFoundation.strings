@@ -93,7 +93,7 @@
 "Duplicate bundle name" = "Nombre de paquete duplicado";
 
 /* exception reason */
-"Element '%@' not allowed at path: %@" = "El elemento “%1$@” no se admite en la ruta: %2$@";
+"Element '%@' not allowed at path: %@" = "Elemento '%1$@' no admitido en la ruta: %2$@";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "No se ha podido crear el directorio del archivo de bloqueo en “%@”.";
@@ -138,7 +138,7 @@
 "months" = "meses";
 
 /* error reason */
-"No root element was found" = "No se ha encontrado ningún elemento raíz";
+"No root element was found" = "No se ha encontrado ningún elemento raíz.";
 
 /* invalid bundle reason */
 "Not a valid bundle" = "Este paquete no es válido";
@@ -183,7 +183,7 @@
 "Unable to decompress data." = "No se han podido descomprimir los datos.";
 
 /* decompression exception format */
-"Unable to decompress gzip data: invalid header" = "No se han podido descomprimir los datos gzip porque la cabecera no es válida";
+"Unable to decompress gzip data: invalid header" = "No se ha podido descomprimir la información gzip: la cabecera no es válida";
 
 /* compression error description */
 "Unable to initialize compression" = "No se ha podido iniciar la compresión";
@@ -198,10 +198,10 @@
 "unrecognized compression format." = "formato de compresión desconocido.";
 
 /* time span formatter span */
-"w" = "se";
+"w" = "s";
 
 /* error description */
-"Warning encountered while loading XML." = "Se ha producido una advertencia al cargar el XML.";
+"Warning encountered while loading XML." = "Se ha encontrado una advertencia al cargar el XML.";
 
 /* time span formatter span */
 "week" = "semana";

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,11 +22,15 @@ RCS_ID("$Id$")
 
 static inline void main_sync(void (^block)(void))
 {
+    // <bug:///98806> (Stop using deprecated dispatch_get_main_queue() in OFCredentials-Mac.m)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     dispatch_queue_t mainQueue = dispatch_get_main_queue();
     if (dispatch_get_current_queue() == mainQueue)
         block(); // else we'll deadlock since dispatch_sync doesn't check for this
     else
         dispatch_sync(mainQueue, block);
+#pragma clang diagnostic pop
 }
 
 static SecKeychainItemRef _OFKeychainItemForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)

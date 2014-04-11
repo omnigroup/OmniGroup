@@ -13,9 +13,6 @@
 /* alert button title */
 "Accept" = "Принять";
 
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Разрешить %@ периодически отправлять данные о модели устройства и версии iOS?\nЭто поможет нам определить приоритетные для поддержки конфигурации. Этот параметр можно будет изменить в параметрах MUMBLE MUMBLE MUMBLE.";
-
 /* Web view nagivation button for going back in history. */
 "Back" = "Назад";
 
@@ -42,7 +39,7 @@
 "Certificate Trust" = "Доверительные сертификаты";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Значение параметра '%1$@' изменено с '%2$@' на '%3$@'";
+"Changed the '%@' preference from '%@' to '%@'" = "Значение параметра «%1$@» изменено с «%2$@» на «%3$@»";
 
 /* Certificate trust alert button title */
 "Continue" = "Продолжить";
@@ -52,9 +49,6 @@
 
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "Отключено";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "Не сообщать";
 
 /* Done
    toolbar item title */
@@ -71,7 +65,7 @@
 "Error Loading Store" = "Ошибка загрузки магазина";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "Данная функция недоступна в этой демонстрации";
+"Feature not enabled for this demo" = "В демо-версии эта функция не работает";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Подогнать";
@@ -92,7 +86,7 @@
 "Left text align" = "Выравнивание по левому краю";
 
 /* Web view error opening URL title. */
-"Link could not be opend. Please check Safari restrictions in Settings." = "Не удалось открыть ссылку. Проверьте ограничения Safari в настройках.";
+"Link could not be opened. Please check Safari restrictions in Settings." = "Не удалось открыть ссылку. Проверьте ограничения Safari в настройках.";
 
 /* Buy button title while app store is loading */
 "Loading" = "Загрузка";
@@ -100,16 +94,16 @@
 /* empty value cell placeholder */
 "None" = "Нет";
 
+/* Full screen note editor title */
+"Note" = "Примечание";
+
 /* button title
    OK button label */
 
 
 
 
-"OK" = "OK";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Обновление ПО Omni";
+"OK" = "ОК";
 
 /* placeholder text */
 "password" = "пароль";
@@ -152,9 +146,6 @@
 /* Search field placeholder text */
 "Search" = "Поиск";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "Отправить отчеты";
-
 /* Strike Through button accessibility label */
 "Strike Through" = "Зачеркивание";
 
@@ -170,15 +161,14 @@
 /* Undo button title */
 "Undo" = "Отменить";
 
-/* default for WebDAV username edit field
-   placeholder text */
+/* placeholder text */
 "username" = "имя пользователя";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Выбор ссылки изменит следующие настройки:\n\n«%@»\n\nПрименить эти изменения?";
 
 /* debug setting alert message */
-"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Нажата ссылка, запускающая следующую команду отладки:\n\n«%@»\n\nЕсли это не было рекомендовано специалистами службы поддержки Omni, не выполняйте это действие.\nЗапустить эту команду?";
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Вы нажали ссылку, вызывающую следующую команду отладки:\n\n«%@»\n\nЕсли вы не получали такие инструкции от службы поддержки Omni, не делайте этого.\nЗапустить эту команду?";
 
 /* zoom label */
 "Zoom" = "Масштаб";

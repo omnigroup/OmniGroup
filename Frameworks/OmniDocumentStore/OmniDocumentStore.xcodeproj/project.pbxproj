@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15AFEAEF18A0687C00AC19A2 /* de.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEAE718A0673900AC19A2 /* de.lproj */; };
+		15AFEAF018A0687C00AC19A2 /* es.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEAE818A0673900AC19A2 /* es.lproj */; };
+		15AFEAF118A0687C00AC19A2 /* fr.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEAE918A0673900AC19A2 /* fr.lproj */; };
+		15AFEAF218A0687C00AC19A2 /* it.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEAEA18A0673900AC19A2 /* it.lproj */; };
+		15AFEAF318A0687C00AC19A2 /* nl.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEAEB18A0673900AC19A2 /* nl.lproj */; };
+		15AFEAF418A0687C00AC19A2 /* ru.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEAEC18A0673900AC19A2 /* ru.lproj */; };
+		15AFEAF518A0687C00AC19A2 /* zh-Hans.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEAED18A0673900AC19A2 /* zh-Hans.lproj */; };
+		15AFEAF718A068FE00AC19A2 /* ja.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEAF618A068DD00AC19A2 /* ja.lproj */; };
 		34896929179D99DD007978EC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34896928179D99DD007978EC /* Foundation.framework */; };
 		348969D5179D9C90007978EC /* ODSFileItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 348969C2179D9C90007978EC /* ODSFileItem.m */; };
 		348969D6179D9C90007978EC /* ODSFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 348969C4179D9C90007978EC /* ODSFilter.m */; };
@@ -30,7 +38,35 @@
 		34C1BC00179DCF890095744C /* ODSErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C1BBFF179DCF890095744C /* ODSErrors.m */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		15AFEAEE18A0685C00AC19A2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "Resources/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				15AFEAEF18A0687C00AC19A2 /* de.lproj in CopyFiles */,
+				15AFEAF018A0687C00AC19A2 /* es.lproj in CopyFiles */,
+				15AFEAF118A0687C00AC19A2 /* fr.lproj in CopyFiles */,
+				15AFEAF218A0687C00AC19A2 /* it.lproj in CopyFiles */,
+				15AFEAF718A068FE00AC19A2 /* ja.lproj in CopyFiles */,
+				15AFEAF318A0687C00AC19A2 /* nl.lproj in CopyFiles */,
+				15AFEAF418A0687C00AC19A2 /* ru.lproj in CopyFiles */,
+				15AFEAF518A0687C00AC19A2 /* zh-Hans.lproj in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		15AFEAE718A0673900AC19A2 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
+		15AFEAE818A0673900AC19A2 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
+		15AFEAE918A0673900AC19A2 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fr.lproj; path = Localization/iOS/fr.lproj; sourceTree = "<group>"; };
+		15AFEAEA18A0673900AC19A2 /* it.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = it.lproj; path = Localization/iOS/it.lproj; sourceTree = "<group>"; };
+		15AFEAEB18A0673900AC19A2 /* nl.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = nl.lproj; path = Localization/iOS/nl.lproj; sourceTree = "<group>"; };
+		15AFEAEC18A0673900AC19A2 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ru.lproj; path = Localization/iOS/ru.lproj; sourceTree = "<group>"; };
+		15AFEAED18A0673900AC19A2 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "zh-Hans.lproj"; path = "Localization/iOS/zh-Hans.lproj"; sourceTree = "<group>"; };
+		15AFEAF618A068DD00AC19A2 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = Localization/iOS/ja.lproj; sourceTree = "<group>"; };
 		34896925179D99DD007978EC /* libOmniDocumentStore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniDocumentStore.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		34896928179D99DD007978EC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		34896939179D99DD007978EC /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -115,6 +151,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		15AFEAE618A066EF00AC19A2 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				15AFEAE718A0673900AC19A2 /* de.lproj */,
+				15AFEAE818A0673900AC19A2 /* es.lproj */,
+				15AFEAE918A0673900AC19A2 /* fr.lproj */,
+				15AFEAEA18A0673900AC19A2 /* it.lproj */,
+				15AFEAF618A068DD00AC19A2 /* ja.lproj */,
+				15AFEAEB18A0673900AC19A2 /* nl.lproj */,
+				15AFEAEC18A0673900AC19A2 /* ru.lproj */,
+				15AFEAED18A0673900AC19A2 /* zh-Hans.lproj */,
+			);
+			name = Localization;
+			sourceTree = "<group>";
+		};
 		3489691C179D99DD007978EC = {
 			isa = PBXGroup;
 			children = (
@@ -123,6 +174,7 @@
 				3489692B179D99DD007978EC /* Supporting Files */,
 				34896927179D99DD007978EC /* Frameworks */,
 				34896926179D99DD007978EC /* Products */,
+				15AFEAE618A066EF00AC19A2 /* Localization */,
 			);
 			sourceTree = "<group>";
 		};
@@ -298,6 +350,7 @@
 				34896921179D99DD007978EC /* Sources */,
 				34896922179D99DD007978EC /* Frameworks */,
 				345B0E1C179DCE020032B1C0 /* Build Strings From Target */,
+				15AFEAEE18A0685C00AC19A2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -314,7 +367,7 @@
 		3489691D179D99DD007978EC /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "The Omni Group";
 			};
 			buildConfigurationList = 34896920179D99DD007978EC /* Build configuration list for PBXProject "OmniDocumentStore" */;

@@ -1,4 +1,4 @@
-// Copyright 2002-2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2007, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,17 +15,9 @@ RCS_ID("$Id$")
 
 @implementation OIInspectorHeaderBackground
 
-- (void)dealloc
-{
-    [windowHeader release];
-    [super dealloc];
-}
-
 - (void)setHeaderView:(OIInspectorHeaderView *)header
 {
     if (windowHeader != header) {
-        [header retain];
-        [windowHeader release];
         windowHeader = header;
         [self setNeedsDisplay:YES];
     }

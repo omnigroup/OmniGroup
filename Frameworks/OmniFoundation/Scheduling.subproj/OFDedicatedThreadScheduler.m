@@ -1,4 +1,4 @@
-// Copyright 1999-2007, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2007, 2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -99,10 +99,10 @@ static OFDedicatedThreadScheduler *dedicatedThreadSchedulerIfCreated(Class self,
 
 - (void)runScheduleForeverInCurrentThread;
 {
-    OMNI_POOL_START {
+    @autoreleasepool {
         [self runScheduleInCurrentThreadUntilEmpty:NO];
         NSLog(@"Did I not say 'Forever'?"); // Nobody lives forever. On the other hand, tomorrow never dies. Never say never again, though. GOOOOOLDFINGER!
-    } OMNI_POOL_END;
+    }
 }
 
 // OFScheduler subclass
@@ -182,7 +182,7 @@ static OFDedicatedThreadScheduler *dedicatedThreadSchedulerIfCreated(Class self,
 
     [[self retain] autorelease];
     while (continueRunning) {
-        OMNI_POOL_START {
+        @autoreleasepool {
             // Reset the scheduleConditionLock to the 'stable' state if it isn't already
             if ([scheduleConditionLock tryLockWhenCondition:SCHEDULE_CHANGED_CONDITION]) {
                 [scheduleConditionLock unlockWithCondition:SCHEDULE_STABLE_CONDITION];
@@ -238,7 +238,7 @@ static OFDedicatedThreadScheduler *dedicatedThreadSchedulerIfCreated(Class self,
             } else {
                 continueRunning = NO;
             }
-        } OMNI_POOL_END;
+        }
     }
     // -run never exits unless an exception is raised
 }

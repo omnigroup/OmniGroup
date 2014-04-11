@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,10 +35,6 @@ RCS_ID("$Id$");
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:OAFlagsChangedQueuedNotification object:nil];
-    if (observingTintChanges) {
-        observingTintChanges = NO;
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:NSControlTintDidChangeNotification object:nil];
-    }
     if (observingTintOverrideChanges) {
         observingTintOverrideChanges = NO;
         [OFPreference removeObserver:self forPreference:TINT_PREFERENCE];
@@ -186,34 +182,22 @@ RCS_ID("$Id$");
 
 - (void)_tintsDidChange:(id)sender;
 {
-    BOOL shouldBeObserving;
     NSImage *base, *opt;
     
     OFPreference *tintOverride = TINT_PREFERENCE;
     NSControlTint desiredTint = [tintOverride enumeratedValue];
     if (desiredTint == NSDefaultControlTint) {
-        shouldBeObserving = YES;
         base = [NSImage tintedImageNamed:tintedImageStem inBundle:tintedImageBundle];
         if (tintedOptionImageStem)
             opt = [NSImage tintedImageNamed:tintedOptionImageStem inBundle:tintedImageBundle];
         else
             opt = nil;
     } else {
-        shouldBeObserving = NO;
         base = [NSImage imageNamed:tintedImageStem withTint:desiredTint inBundle:tintedImageBundle];
         if (tintedOptionImageStem)
             opt = [NSImage imageNamed:tintedOptionImageStem withTint:desiredTint inBundle:tintedImageBundle];
         else
             opt = nil;
-    }
-    
-    if (observingTintChanges && !shouldBeObserving) {
-        observingTintChanges = NO;
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:NSControlTintDidChangeNotification object:nil];
-    }
-    if (!observingTintChanges && shouldBeObserving) {
-        observingTintChanges = YES;
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:_cmd name:NSControlTintDidChangeNotification object:nil];
     }
     
     if (opt != nil && inOptionKeyState)

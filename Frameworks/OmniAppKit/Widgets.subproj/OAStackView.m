@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <Foundation/NSNotification.h>
 #import <Foundation/NSInvocation.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniAppKit/NSWindow-OAExtensions.h>
 
 RCS_ID("$Id$")
 
@@ -20,7 +21,7 @@ RCS_ID("$Id$")
 NSString * const OAStackViewDidLayoutSubviews = @"OAStackViewDidLayoutSubviews";
 
 static unsigned OASVHiddenSubviewContext;
-static NSString * const OASVHiddenSubviewProperty = @"isHidden";
+static NSString * const OASVHiddenSubviewProperty = @"hidden";
 
 @interface OAStackView ()
 {
@@ -76,8 +77,7 @@ OAStackView assumes that all of its subviews line up in one direction (only vert
 - (void) subviewSizeChanged;
 {
     //NSLog(@"subviewSizeChanged");
-    flags.needsLayout = YES;
-    [self setNeedsDisplay: YES];
+    [self _queueLayout];
 }
 
 - (void)setLayoutEnabled:(BOOL)layoutEnabled display:(BOOL)display;
@@ -94,15 +94,6 @@ OAStackView assumes that all of its subviews line up in one direction (only vert
 - (BOOL)isFlipped;
 {
     return YES;
-}
-
-- (void) drawRect: (NSRect) rect;
-{
-    if (flags.needsReload || flags.needsLayout)
-        [self _layoutSubviews];
-
-    // This doesn't draw the subviews, we're just hooking the reset of the subviews here since this should get done before they are drawn.
-    [super drawRect: rect];
 }
 
 - (void) addSubview: (NSView *) view;
@@ -234,6 +225,8 @@ Goes through the subviews and finds the first subview that is willing to stretch
     if (flags.needsReload)
         [self _loadSubviews];
 
+    [self layoutSubtreeIfNeeded];
+
     flags.needsLayout = NO;
     NSWindow *window = [self window];    
     NSRect spaceLeft = [self bounds];
@@ -292,7 +285,7 @@ Goes through the subviews and finds the first subview that is willing to stretch
     
             spaceLeft.size.height -= subviewFrame.size.height;
         }
-        
+
         [[NSNotificationCenter defaultCenter] postNotificationName:OAStackViewDidLayoutSubviews object:self];
         
     } NS_HANDLER {
@@ -302,7 +295,15 @@ Goes through the subviews and finds the first subview that is willing to stretch
     [window setAutodisplay: oldAutodisplay];
     if (oldAutodisplay)
         [window setViewsNeedDisplay: YES];
+
+    [self setNeedsDisplay:YES];
     [window enableFlushWindow];
+}
+
+- (void)layout;
+{
+    [super layout];
+    [self _layoutSubviews];
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldSize;
@@ -312,9 +313,22 @@ Goes through the subviews and finds the first subview that is willing to stretch
 
 #pragma mark - NSObject (NSKeyValueObserving)
 
+- (void)_queueLayout;
+{
+    flags.needsLayout = YES;
+
+    [NSWindow beforeDisplayIfNeededPerformBlock:^{
+        [self _layoutSubviews];
+    }];
+}
+
 - (void)_setNeedsReload;
 {
+    if (flags.needsReload)
+        return;
+
     flags.needsReload = YES;
+    [self _queueLayout];
     [self setNeedsDisplay:YES];
 }
 

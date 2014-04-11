@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,19 +7,13 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
 
-@class NSArray, NSMutableSet, NSPredicate;
+#import <OmniFoundation/OFUtilities.h> // OFPredicateBlock
 
-typedef BOOL (*OIInspectionSetPredicateFunction)(id anObject, void *context);
+@class NSArray, NSPredicate;
 
-#import <CoreFoundation/CFDictionary.h> // For CFMutableDictionaryRef
-
-@interface OIInspectionSet : OFObject
-{
-    CFMutableDictionaryRef objects;
-    NSUInteger insertionSequence;
-}
+@interface OIInspectionSet : NSObject
 
 - (void)addObject:(id)object;
 - (void)addObjectsFromArray:(NSArray *)objects;
@@ -32,9 +26,9 @@ typedef BOOL (*OIInspectionSetPredicateFunction)(id anObject, void *context);
 
 - (NSArray *)allObjects;
 
+- (NSArray *)copyObjectsSatisfyingPredicateBlock:(OFPredicateBlock)predicate;
 - (NSArray *)copyObjectsSatisfyingPredicate:(NSPredicate *)predicate;
 - (void)removeObjectsSatisfyingPredicate:(NSPredicate *)predicate;
-- (NSArray *)copyObjectsSatisfyingPredicateFunction:(OIInspectionSetPredicateFunction)predicate context:(void *)context;
 
 - (NSArray *)objectsSortedByInsertionOrder:(NSArray *)someObjects;
 - (NSUInteger)insertionOrderForObject:(id)object; // NSNotFound if not present

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 
 #import <OmniFoundation/OFXMLDocument.h>
 #import <OmniFoundation/OFXMLString.h>
+#import <OmniFoundation/NSString-OFUnicodeCharacters.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSString-OFConversion.h>
 #import <OmniFoundation/CFArray-OFExtensions.h>
@@ -19,6 +20,7 @@
 
 #import <OmniFoundation/OFXMLBuffer.h>
 #import <OmniFoundation/OFXMLFrozenElement.h>
+#import <OmniFoundation/OFXMLUnparsedElement.h>
 
 #import <OmniBase/OmniBase.h>
 
@@ -129,7 +131,7 @@ RCS_ID("$Id$");
 
     if (!_children)
 	// This happens a lot; avoid the placeholder goo
-	_children = NSMakeCollectable(CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectArrayCallbacks));
+	_children = (OB_BRIDGE NSMutableArray *)CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectArrayCallbacks);
     CFArrayAppendValue((CFMutableArrayRef)_children, child);
 }
 
@@ -469,6 +471,8 @@ RCS_ID("$Id$");
             if (!value)
                 continue;
             
+            OBASSERT(![value containsCharacterInSet:[NSString discouragedXMLCharacterSet]]);
+            
             OFXMLBufferAppendUTF8CString(xml, " ");
             OFXMLBufferAppendString(xml, (CFStringRef)name);
             
@@ -542,8 +546,8 @@ RCS_ID("$Id$");
 
 - (BOOL)isEqual:(id)otherObject;
 {
-    // This means we don't consider OFXMLElement, OFXMLFrozenElement or OFXMLUnparsedElement the same, even if they would produce the same output.  Not sure if this is a bug; let's catch this case here to see if it ever hits.
-    OBPRECONDITION([otherObject isKindOfClass:[OFXMLElement class]]);
+    // We don't consider OFXMLFrozenElement or OFXMLUnparsedElement the same, even if they would produce the same output.  Not sure if this is a bug; let's catch this case here to see if it ever hits.
+    OBPRECONDITION(![otherObject isKindOfClass:[OFXMLFrozenElement class]] && ![otherObject isKindOfClass:[OFXMLUnparsedElement class]]);
     if (![otherObject isKindOfClass:[OFXMLElement class]])
         return NO;
     

@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -146,9 +146,9 @@ static ODAVFileInfo *_createFileInfoAtPath(NSString *path)
     
 #if 0
     // This seems to leak file descriptors at the moment
-    return [NSData dataWithContentsOfFile:[url path] options:NSMappedRead|NSUncachedRead error:outError];
+    return [NSData dataWithContentsOfFile:[url path] options:NSDataReadingMapped|NSDataReadingUncached error:outError];
 #else
-    return [NSData dataWithContentsOfFile:[url path] options:NSUncachedRead error:outError];
+    return [NSData dataWithContentsOfFile:[url path] options:NSDataReadingUncached error:outError];
 #endif
 }
 
@@ -157,7 +157,7 @@ static ODAVFileInfo *_createFileInfoAtPath(NSString *path)
     if (OFSFileManagerDebug > 0)
         NSLog(@"FILE operation: WRITE %@ (data of %ld bytes)", url, [data length]);
 
-    return [data writeToFile:[url path] options:(atomically ? NSAtomicWrite : 0) error:outError]? url : nil;
+    return [data writeToFile:[url path] options:(atomically ? NSDataWritingAtomic : 0) error:outError]? url : nil;
 }
 
 - (NSURL *)createDirectoryAtURL:(NSURL *)url attributes:(NSDictionary *)attributes error:(NSError **)outError;

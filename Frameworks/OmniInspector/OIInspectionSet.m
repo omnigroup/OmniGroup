@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,55 @@
 
 RCS_ID("$Id$");
 
+@interface OIInspectionSetMatchesForPredicate : NSObject
+
+@property(nonatomic,readonly) OFPredicateBlock predicate;
+@property(nonatomic,readonly) NSArray *results; // Returns an array sorted by pointer so that we can easily do an 'is identical' comparison
+
+@end
+
+@implementation OIInspectionSetMatchesForPredicate
+{
+    NSMutableArray *_results;
+}
+
+- initWithPredicate:(OFPredicateBlock)predicate;
+{
+    if (!(self = [super init]))
+        return nil;
+    
+    _predicate = [predicate copy];
+    
+    return self;
+}
+
+@synthesize results = _results;
+
+static NSComparisonResult _comparePointers(id obj1, id obj2, void *context)
+{
+    if (obj1 > obj2)
+	return NSOrderedDescending;
+    else if (obj1 < obj2)
+	return NSOrderedAscending;
+    return NSOrderedSame;
+}
+
+- (void)addObjectIfMatchesPredicate:(id)object;
+{
+    if (_predicate && !_predicate(object))
+        return;
+    if (!_results)
+        _results = [[NSMutableArray alloc] init];
+    [_results insertObject:object inArraySortedUsingFunction:_comparePointers context:NULL];
+}
+
+@end
+
 @implementation OIInspectionSet
+{
+    CFMutableDictionaryRef objects;
+    NSUInteger insertionSequence;
+}
 
 // Init and dealloc
 
@@ -34,7 +82,6 @@ RCS_ID("$Id$");
 - (void)dealloc;
 {
     CFRelease(objects);
-    [super dealloc];
 }
 
 //
@@ -44,12 +91,12 @@ RCS_ID("$Id$");
 - (void)addObject:(id)object;
 {
     OBASSERT(object != nil);
-    OFCFDictionaryAddUIntegerValue(objects, object, ++insertionSequence);
+    OFCFDictionaryAddUIntegerValue(objects, (OB_BRIDGE void *)object, ++insertionSequence);
 }
 
 - (void)addObjectsFromArray:(NSArray *)someObjects;
 {
-    OFForEachInArray(someObjects, id, anObject, OFCFDictionaryAddUIntegerValue(objects, anObject, ++insertionSequence));
+    OFForEachInArray(someObjects, id, anObject, OFCFDictionaryAddUIntegerValue(objects, (OB_BRIDGE void *)anObject, ++insertionSequence));
 }
 
 - (void)removeObject:(id)object;
@@ -61,12 +108,12 @@ RCS_ID("$Id$");
 
 - (BOOL)containsObject:(id)object;
 {
-    return CFDictionaryContainsKey(objects, object)? YES : NO;
+    return CFDictionaryContainsKey(objects, (OB_BRIDGE void *)object)? YES : NO;
 }
 
 - (NSArray *)allObjects;
 {
-    return [(NSDictionary *)objects allKeys];
+    return [(OB_BRIDGE NSDictionary *)objects allKeys];
 }
 
 - (NSUInteger)count;
@@ -74,47 +121,30 @@ RCS_ID("$Id$");
     return CFDictionaryGetCount(objects);
 }
 
-static NSComparisonResult _comparePointers(id obj1, id obj2, void *context)
-{
-    if (obj1 > obj2)
-	return NSOrderedDescending;
-    else if (obj1 < obj2)
-	return NSOrderedAscending;
-    return NSOrderedSame;
-}
-
-typedef struct {
-    NSPredicate *predicate;
-    NSMutableArray *results;
-} addIfMatchesPredicateContext;
-
 static void _addIfMatchesPredicate(const void *value, const void *sequence, void *context)
 {
-    addIfMatchesPredicateContext *ctx = context;
-    id object = (id)value;
+    OIInspectionSetMatchesForPredicate *ctx = (OB_BRIDGE OIInspectionSetMatchesForPredicate *)context;
+    id object = (OB_BRIDGE id)value;
+    [ctx addObjectIfMatchesPredicate:object];
+}
 
+- (NSArray *)copyObjectsSatisfyingPredicateBlock:(OFPredicateBlock)predicate;
+{
+    OBPRECONDITION(predicate);
     
-    if ([ctx->predicate evaluateWithObject:object]) {
-	if (!ctx->results)
-	    ctx->results = [[NSMutableArray alloc] init];
-	[ctx->results addObject:object];
-    }
+    OIInspectionSetMatchesForPredicate *ctx = [[OIInspectionSetMatchesForPredicate alloc] initWithPredicate:predicate];
+    CFDictionaryApplyFunction(objects, _addIfMatchesPredicate, (OB_BRIDGE void *)ctx);
+    
+    NSArray *results = [ctx.results copy];
+    
+    return results;
 }
 
 - (NSArray *)copyObjectsSatisfyingPredicate:(NSPredicate *)predicate;
 {
-    OBPRECONDITION(predicate);
-    
-    addIfMatchesPredicateContext ctx;
-    ctx.predicate = predicate;
-    ctx.results = nil;
-
-    CFDictionaryApplyFunction(objects, _addIfMatchesPredicate, &ctx);
-    
-    // Return an array sorted by pointer so that we can easily do an 'is identical' comparison
-    [ctx.results sortUsingFunction:_comparePointers context:NULL];
-    
-    return ctx.results;
+    return [self copyObjectsSatisfyingPredicateBlock:^BOOL(id object){
+        return [predicate evaluateWithObject:object];
+    }];
 }
 
 - (void)removeObjectsSatisfyingPredicate:(NSPredicate *)predicate;
@@ -122,42 +152,6 @@ static void _addIfMatchesPredicate(const void *value, const void *sequence, void
     // Can't modify a set we are enumerating, so collect objects to remove up front.
     NSArray *toRemove = [self copyObjectsSatisfyingPredicate:predicate];
     [self removeObjectsInArray:toRemove];
-    [toRemove release];
-}
-
-struct addIfMatchesPredicateFunctionContext {
-    OIInspectionSetPredicateFunction predicate;
-    void *subcontext;
-    NSMutableArray *results;
-};
-
-static void addIfMatchesPredicateFunction(const void *value, const void *sequence, void *context)
-{
-    struct addIfMatchesPredicateFunctionContext *ctx = context;
-    id object = (id)value;
-    
-    if (ctx->predicate(object, ctx->subcontext)) {
-	if (!ctx->results)
-	    ctx->results = [[NSMutableArray alloc] init];
-        // Return an array sorted by pointer so that we can easily do an 'is identical' comparison
-	[ctx->results insertObject:object inArraySortedUsingFunction:_comparePointers context:NULL];
-    }
-}
-
-- (NSArray *)copyObjectsSatisfyingPredicateFunction:(OIInspectionSetPredicateFunction)predicate context:(void *)context;
-{
-    OBPRECONDITION(predicate);
-    
-    struct addIfMatchesPredicateFunctionContext ctx;
-    ctx.predicate = predicate;
-    ctx.subcontext = context;
-    ctx.results = nil;
-    
-    CFDictionaryApplyFunction(objects, addIfMatchesPredicateFunction, &ctx);
-    
-    OBASSERT(ctx.results == nil || [ctx.results isSortedUsingFunction:_comparePointers context:NULL]);
-    
-    return ctx.results;
 }
 
 - (void)removeObjectsInArray:(NSArray *)toRemove;
@@ -178,8 +172,8 @@ static NSComparisonResult compareSequence(id obj1, id obj2, void *context)
     NSUInteger seq1, seq2;
     
     seq1 = seq2 = 0;
-    exists1 = OFCFDictionaryGetUIntegerValueIfPresent((CFDictionaryRef)context, obj1, &seq1);
-    exists2 = OFCFDictionaryGetUIntegerValueIfPresent((CFDictionaryRef)context, obj2, &seq2);
+    exists1 = OFCFDictionaryGetUIntegerValueIfPresent((CFDictionaryRef)context, (OB_BRIDGE void *)obj1, &seq1);
+    exists2 = OFCFDictionaryGetUIntegerValueIfPresent((CFDictionaryRef)context, (OB_BRIDGE void *)obj2, &seq2);
     
     if (exists1 && exists2) {
         if (seq1 > seq2)
@@ -204,7 +198,7 @@ static NSComparisonResult compareSequence(id obj1, id obj2, void *context)
 
 - (NSUInteger)insertionOrderForObject:(id)object;
 {
-    return OFCFDictionaryGetUIntegerValueWithDefault(objects, object, NSNotFound);
+    return OFCFDictionaryGetUIntegerValueWithDefault(objects, (OB_BRIDGE void *)object, NSNotFound);
 }
 
 //
@@ -213,14 +207,14 @@ static NSComparisonResult compareSequence(id obj1, id obj2, void *context)
 static void describeEnt(const void *k, const void *v, void *d)
 {
     uintptr_t ix = (uintptr_t)v;
-    [(NSMutableDictionary *)d setObject:[NSNumber numberWithUnsignedInteger:ix] forKey:OBShortObjectDescription((id)k)];
+    [(OB_BRIDGE NSMutableDictionary *)d setObject:[NSNumber numberWithUnsignedInteger:ix] forKey:OBShortObjectDescription((OB_BRIDGE id)k)];
 }
 
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict = [super debugDictionary];
 
-    CFDictionaryApplyFunction(objects, describeEnt, dict);
+    CFDictionaryApplyFunction(objects, describeEnt, (OB_BRIDGE void *)dict);
     [dict setIntegerValue:insertionSequence forKey:@"insertionSequence"];
     
     return dict;

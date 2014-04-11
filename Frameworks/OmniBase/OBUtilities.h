@@ -1,4 +1,4 @@
-// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,12 +10,16 @@
 #import <Foundation/NSString.h>
 #import <Foundation/NSBundle.h>
 #import <Foundation/NSDate.h>
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import <CoreGraphics/CGGeometry.h>
+#import <UIKit/UIGeometry.h>
+#else
 #import <Foundation/NSGeometry.h> // For NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 #endif
 
 #import <OmniBase/assertions.h>
 #import <OmniBase/objc.h>
+#import <OmniBase/macros.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -29,15 +33,36 @@ extern "C" {
 
 #define OB_DEPRECATED_ATTRIBUTE __attribute__((deprecated))
 
-// CFMakeCollectable loses the type of the argument, casting it to a CFTypeRef, causing warnings.
-#define OBCFMakeCollectable(x) ((typeof(x))CFMakeCollectable(x))
-
-    
 // In some cases, we really need to keep an object alive. For example, we may have a window controller that will release itself in response to its window being closed.
-extern void OBStrongRetain(id object);
-extern void OBStrongRelease(id object);
-extern void OBAutorelease(id object);
-extern void OBRetainAutorelease(id object);
+static inline void OBStrongRetain(id object)
+{
+    if (object) {
+        void *ptr = (OB_BRIDGE void *)object;
+        CFRetain(ptr);
+    }
+}
+    
+static inline void OBStrongRelease(id object)
+{
+    if (object) {
+        void *ptr = (OB_BRIDGE void *)object;
+        CFRelease(ptr);
+    }
+}
+    
+static inline void OBAutorelease(id object)
+{
+    if (object) {
+        void *ptr = (OB_BRIDGE void *)object;
+        CFAutorelease(ptr);
+    }
+}
+    
+static inline void OBRetainAutorelease(id object)
+{
+    OBStrongRetain(object);
+    OBAutorelease(object);
+}
 
 /*
  A best guess at what macros might indicate availability and usefulness of the GC APIs.
@@ -228,10 +253,35 @@ extern CFStringRef const OBBuildByCompilerVersion;
 
 
 // Sometimes a value is computed but not expected to be used and we wish to avoid clang dead store warnings.  For example, when laying out a stack of views, we might keep a running total of the used height and might want to do this for the last item stacked up (in case something is added later).
-#define OB_UNUSED_VALUE(v) do { \
-    void *__ptr __attribute__((unused)) = &v; /* ensure it is actually an l-value */ \
+// Using overloadable functions here lets us handle object types (since we can't cast those to void * w/o __bridge and we can't cast non object types to void * _with_ __bridge).
+static inline void __attribute__((overloadable)) _OBUnusedValue(id v) {
+    __strong id *__ptr __attribute__((unused)) = &v; /* ensure it is actually an l-value */ \
+    typeof(v) __unused_value __attribute__((unused)) = v;
+}
+#define OB_UNUSED_VALUE_FOR_TYPE(T) \
+static inline void __attribute__((overloadable)) _OBUnusedValue(T v) { \
+    void *__ptr __attribute__((unused)) = (void *)&v; /* ensure it is actually an l-value */ \
     typeof(v) __unused_value __attribute__((unused)) = v; \
-} while(0)
+}
+OB_UNUSED_VALUE_FOR_TYPE(int8_t)
+OB_UNUSED_VALUE_FOR_TYPE(int16_t)
+OB_UNUSED_VALUE_FOR_TYPE(int32_t)
+OB_UNUSED_VALUE_FOR_TYPE(int64_t)
+OB_UNUSED_VALUE_FOR_TYPE(uint8_t)
+OB_UNUSED_VALUE_FOR_TYPE(uint16_t)
+OB_UNUSED_VALUE_FOR_TYPE(uint32_t)
+OB_UNUSED_VALUE_FOR_TYPE(uint64_t)
+OB_UNUSED_VALUE_FOR_TYPE(NSUInteger)
+OB_UNUSED_VALUE_FOR_TYPE(NSInteger)
+OB_UNUSED_VALUE_FOR_TYPE(float)
+OB_UNUSED_VALUE_FOR_TYPE(double)
+OB_UNUSED_VALUE_FOR_TYPE(void *)
+OB_UNUSED_VALUE_FOR_TYPE(const void *)
+OB_UNUSED_VALUE_FOR_TYPE(CGPoint)
+OB_UNUSED_VALUE_FOR_TYPE(CGSize)
+OB_UNUSED_VALUE_FOR_TYPE(CGRect)
+    
+#define OB_UNUSED_VALUE(v) _OBUnusedValue(v)
 
 #ifdef USING_BUGGY_CPP_PRECOMP
 // Versions of cpp-precomp released before April 2002 have a bug that makes us have to do this

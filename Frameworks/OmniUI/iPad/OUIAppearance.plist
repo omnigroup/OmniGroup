@@ -90,6 +90,17 @@
 		<key>a</key>
 		<real>1</real>
 	</dict>
+	<key>OmniCrema</key>
+	<dict>
+            <key>h</key>
+            <real>0.032</real>
+            <key>s</key>
+            <real>0.792</real>
+            <key>b</key>
+            <real>0.689</real>
+            <key>a</key>
+            <real>1</real>
+	</dict>
 	<key>OmniAlternateRed</key>
 	<dict>
 		<key>h</key>

@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,7 +55,6 @@
     #import <OmniFoundation/OFDedicatedThreadScheduler.h>
     #import <OmniFoundation/OFDelayedEvent.h>
     #import <OmniFoundation/OFErrorRecovery.h>
-    #import <OmniFoundation/OFFastMutableData.h>
     #import <OmniFoundation/OFGeometry.h>
     #import <OmniFoundation/OFHeap.h>
     #import <OmniFoundation/OFInvocation.h>
@@ -73,7 +72,6 @@
     #import <OmniFoundation/OFScratchFile.h>
     #import <OmniFoundation/OFSignature.h>
     #import <OmniFoundation/OFSparseArray.h>
-    #import <OmniFoundation/OFStack.h>
     #import <OmniFoundation/OFTrie.h>
     #import <OmniFoundation/OFTrieBucket.h>
     #import <OmniFoundation/OFTrieNode.h>

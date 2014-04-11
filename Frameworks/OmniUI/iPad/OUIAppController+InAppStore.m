@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,7 +98,7 @@ static const UInt8 kKeychainIdentifier[] = "com.omnigroup.InAppPurchase";
                            nil];
     OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
     if (status != errSecSuccess) {
-        UIAlertView *keychainResetFailedAlert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"Couldn't Re-Lock %@", [self sheetTitleForInAppStoreProductIdentifier:productIdentifier]] message:[NSString stringWithFormat:@"Keychain error: %ld", status] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        UIAlertView *keychainResetFailedAlert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"Couldn't Re-Lock %@", [self sheetTitleForInAppStoreProductIdentifier:productIdentifier]] message:[NSString stringWithFormat:@"Keychain error: %ld", (long)status] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [keychainResetFailedAlert show];
     } else {
         UIAlertView *keychainResetSuccessAlert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"Re-Locked %@", [self sheetTitleForInAppStoreProductIdentifier:productIdentifier]] message:[NSString stringWithFormat:@"%@ is now re-locked", [self titleForInAppStoreProductIdentifier:productIdentifier]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];

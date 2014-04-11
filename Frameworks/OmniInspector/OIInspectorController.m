@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,7 +35,6 @@ NSString * const OIInspectorControllerDidChangeExpandednessNotification = @"OIIn
 
 - (void)_buildHeadingView;
 - (void)_buildWindow;
-- (void)_populateContainerView;
 
 - (NSView *)_inspectorView;
 - (void)_setFloatingExpandedness:(BOOL)expanded updateInspector:(BOOL)updateInspector withNewTopLeftPoint:(NSPoint)topLeftPoint animate:(BOOL)animate;
@@ -64,39 +63,12 @@ NSComparisonResult sortByDefaultDisplayOrderInGroup(OIInspectorController *a, OI
 
 // Init and dealloc
 
-static BOOL animateInspectorToggles;
-
-+ (void)initialize;
-{
-    NSNumber *number;
-    
-    OBINITIALIZE;
-    
-    number = [[NSUserDefaults standardUserDefaults] objectForKey:@"AnimateInspectorToggles"];
-    if (number) {
-        animateInspectorToggles = [number boolValue];
-    } else {
-        /* Take a guess as to whether we should animate. If we have multiple cores, we're on a fast-ish machine. */
-        static const int hw_activecpu[] = { CTL_HW, HW_AVAILCPU };
-        int ncpu;
-        size_t bufsize = sizeof(ncpu);
-        
-        if(sysctl((int *)hw_activecpu, sizeof(hw_activecpu)/sizeof(hw_activecpu[0]), &ncpu, &bufsize, NULL, 0) == 0 &&
-           bufsize == sizeof(ncpu)) {
-            animateInspectorToggles = ( ncpu > 1 ) ? YES : NO;
-        } else {
-            perror("sysctl(hw.activecpu)");
-            animateInspectorToggles = NO;
-        }
-    }
-}
-
 - (id)initWithInspector:(OIInspector *)anInspector;
 {
     if (!(self = [super init]))
         return nil;
 
-    inspector = [anInspector retain];
+    inspector = anInspector;
     isExpanded = NO;
     self.interfaceType = anInspector.preferredInterfaceType;
     
@@ -110,9 +82,9 @@ static BOOL animateInspectorToggles;
 
 - (void)setGroup:(OIInspectorGroup *)aGroup;
 {
-    if (group != aGroup) {
-        group = aGroup;
-        if (group != nil)
+    if (_weak_group != aGroup) {
+        _weak_group = aGroup;
+        if (_weak_group != nil)
             [headingButton setNeedsDisplay:YES];
     }
 }
@@ -158,7 +130,7 @@ static BOOL animateInspectorToggles;
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 {
     if ([item action] == @selector(toggleVisibleAction:)) {
-        [item setState:isExpanded && [group isVisible]];
+        [item setState:isExpanded && [_weak_group isVisible]];
     }
     return YES;
 }
@@ -177,7 +149,7 @@ static BOOL animateInspectorToggles;
 
 - (void)toggleDisplay;
 {
-    if ([group isVisible]) {
+    if ([_weak_group isVisible]) {
         [self loadInterface]; // Load the UI and thus 'headingButton'
         [self headerViewDidToggleExpandedness:headingButton];
     } else {
@@ -185,7 +157,7 @@ static BOOL animateInspectorToggles;
             [self loadInterface]; // Load the UI and thus 'headingButton'
             [self headerViewDidToggleExpandedness:headingButton];
         }
-        [group showGroup];
+        [_weak_group showGroup];
     }
 }
 
@@ -201,15 +173,15 @@ static BOOL animateInspectorToggles;
 
 - (void)showInspector;
 {
-    if (![group isVisible] || !isExpanded)
+    if (![_weak_group isVisible] || !isExpanded)
         [self toggleDisplay];
     else
-        [group orderFrontGroup]; 
+        [_weak_group orderFrontGroup]; 
 }
 
 - (BOOL)isVisible;
 {
-    return [group isVisible];
+    return [_weak_group isVisible];
 }
 
 - (void)setBottommostInGroup:(BOOL)isBottom;
@@ -249,7 +221,7 @@ static BOOL animateInspectorToggles;
             [self _setFloatingExpandedness:isExpanded
                            updateInspector:NO
                        withNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame))
-                                   animate:(allowAnimation && animateInspectorToggles)];
+                                   animate:allowAnimation];
         }
             break;
         case OIInspectorInterfaceTypeEmbedded:
@@ -300,10 +272,8 @@ static BOOL animateInspectorToggles;
 - (void)loadInterface;
 {
     if ([[[self containerView] subviews] count] == 0) {
-        [self _populateContainerView];
+        [self populateContainerView];
     }
-    
-    needsToggleBeforeDisplay = ([[[OIInspectorRegistry sharedInspector] workspaceDefaults] objectForKey:[self identifier]] != nil) != isExpanded;
 }
 
 - (void)prepareWindowForDisplay;
@@ -311,37 +281,37 @@ static BOOL animateInspectorToggles;
     OBPRECONDITION(window != nil);  // -loadInterface should have been called by this point.
     OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeFloating);
     
-    if (needsToggleBeforeDisplay && window) {
-        
-        needsToggleBeforeDisplay = NO;
-        
-        /* Need to reset this flag first, because expanding might cause our inspector to load its interface and lay itself out, thus informing us of the resize and reentering this method.
-         
-         Stack trace (r170537):
-         
-         #186	0x0000000100738437 in -[OIInspectorController prepareWindowForDisplay] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:271
-         #187	0x000000010075a6b0 in -[OITabbedInspector _layoutSelectedTabs] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m:721
-         #188	0x0000000100754fb9 in -[OITabbedInspector awakeFromNib] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m:109
-         #189	0x00007fff8ba07a41 in -[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:] ()
-         #190	0x00007fff8b9fdf73 in loadNib ()
-         #191	0x00007fff8b9fd676 in +[NSBundle(NSNibLoading) _loadNibFile:nameTable:withZone:ownerBundle:] ()
-         #192	0x00007fff8bb9e580 in -[NSBundle(NSNibLoading) loadNibFile:externalNameTable:withZone:] ()
-         #193	0x00000001001a06ac in -[NSBundle(OAExtensions) loadNibNamed:owner:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSBundle-OAExtensions.m:46
-         #194	0x000000010075821a in -[OITabbedInspector inspectorView] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m:477
-         #195	0x0000000100739939 in -[OIInspectorController _inspectorView] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:445
-         #196	0x0000000100739e4a in -[OIInspectorController _setExpandedness:updateInspector:withNewTopLeftPoint:animate:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:479
-         #197	0x0000000100737bb0 in -[OIInspectorController toggleExpandednessWithNewTopLeftPoint:animate:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:211
-         #198	0x0000000100738437 in -[OIInspectorController prepareWindowForDisplay] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:271
-         #199	0x0000000100743bd7 in -[OIInspectorGroup _showGroup] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorGroup.m:799
-         #200	0x000000010073f39e in -[OIInspectorGroup showGroup] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorGroup.m:356
-         #201	0x00007fff88734fb1 in -[NSObject performSelector:] ()
-         #202	0x00007fff887392dc in -[NSArray makeObjectsPerformSelector:] ()
-         #203	0x000000010074bf36 in +[OIInspectorRegistry tabShowHidePanels] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorRegistry.m:182
-         #204	0x000000010075424a in -[OAApplication(OIExtensions) toggleInspectorPanel:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OAApplication-OIExtensions.m:25
-        */
-        
-        NSRect windowFrame = [window frame];
-        [self toggleExpandednessWithNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame)) animate:NO];
+    if (window) {
+        BOOL shouldBeExpandedBeforeDisplay = [[self.inspectorRegistry workspaceDefaults] objectForKey:[self identifier]] != nil;
+        if (shouldBeExpandedBeforeDisplay != isExpanded) {
+            /* Expanding might cause our inspector to load its interface and lay itself out, thus informing us of the resize and reentering this method. So don't assume that isExpanded is false because we set it that way in init.
+             
+             Stack trace (r170537):
+             
+             #186	0x0000000100738437 in -[OIInspectorController prepareWindowForDisplay] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:271
+             #187	0x000000010075a6b0 in -[OITabbedInspector _layoutSelectedTabs] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m:721
+             #188	0x0000000100754fb9 in -[OITabbedInspector awakeFromNib] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m:109
+             #189	0x00007fff8ba07a41 in -[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:] ()
+             #190	0x00007fff8b9fdf73 in loadNib ()
+             #191	0x00007fff8b9fd676 in +[NSBundle(NSNibLoading) _loadNibFile:nameTable:withZone:ownerBundle:] ()
+             #192	0x00007fff8bb9e580 in -[NSBundle(NSNibLoading) loadNibFile:externalNameTable:withZone:] ()
+             #193	0x00000001001a06ac in -[NSBundle(OAExtensions) loadNibNamed:owner:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniAppKit/OpenStepExtensions.subproj/NSBundle-OAExtensions.m:46
+             #194	0x000000010075821a in -[OITabbedInspector inspectorView] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OITabbedInspector.m:477
+             #195	0x0000000100739939 in -[OIInspectorController _inspectorView] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:445
+             #196	0x0000000100739e4a in -[OIInspectorController _setExpandedness:updateInspector:withNewTopLeftPoint:animate:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:479
+             #197	0x0000000100737bb0 in -[OIInspectorController toggleExpandednessWithNewTopLeftPoint:animate:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:211
+             #198	0x0000000100738437 in -[OIInspectorController prepareWindowForDisplay] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorController.m:271
+             #199	0x0000000100743bd7 in -[OIInspectorGroup _showGroup] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorGroup.m:799
+             #200	0x000000010073f39e in -[OIInspectorGroup showGroup] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorGroup.m:356
+             #201	0x00007fff88734fb1 in -[NSObject performSelector:] ()
+             #202	0x00007fff887392dc in -[NSArray makeObjectsPerformSelector:] ()
+             #203	0x000000010074bf36 in +[OIInspectorRegistry tabShowHidePanels] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OIInspectorRegistry.m:182
+             #204	0x000000010075424a in -[OAApplication(OIExtensions) toggleInspectorPanel:] at /Volumes/SSD/OmniSource/MacTrunk/OmniGroup/Frameworks/OmniInspector/OAApplication-OIExtensions.m:25
+             */
+            
+            NSRect windowFrame = [window frame];
+            [self toggleExpandednessWithNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame)) animate:NO];
+        }
     }
     [self updateInspector];
 }
@@ -361,7 +331,7 @@ static BOOL animateInspectorToggles;
         return;
     }
 
-    if (self.interfaceType == OIInspectorInterfaceTypeFloating && ![group isVisible])
+    if (self.interfaceType == OIInspectorInterfaceTypeFloating && ![_weak_group isVisible])
         return;
     
     if (!isExpanded)
@@ -372,14 +342,13 @@ static BOOL animateInspectorToggles;
     NS_DURING {
         
         // Don't update the inspector if the list of objects to inspect hasn't changed. -inspectedObjectsOfClass: returns a pointer-sorted list of objects, so we can just to 'identical' on the array.
-        list = [self.nonretained_inspectorRegistry copyObjectsInterestingToInspector:inspector];
+        list = [self.inspectorRegistry copyObjectsInterestingToInspector:inspector];
         if ((!list && !currentlyInspectedObjects) || [list isIdenticalToArray:currentlyInspectedObjects]) {
-            [list release];
             NS_VOIDRETURN;
         }
         
         // Record what was first responder in the inspector before we clear it.  We want to clear it since resigning first responder can cause controls to send actions and thus we want this happen *before* we change what would be affected by the action!
-        oldResponder = [[[window firstResponder] retain] autorelease];
+        oldResponder = [window firstResponder];
         
         // See if we're dealing with the field editor - if so, we really want to deal with the view it's handling editing for instead.
         if ([oldResponder isKindOfClass:[NSText class]]) {
@@ -401,7 +370,6 @@ static BOOL animateInspectorToggles;
             OBASSERT([window firstResponder] == window);
         }
         
-        [currentlyInspectedObjects release];
         currentlyInspectedObjects = list; // takes ownership of the reference
         list = nil;
         [inspector inspectObjects:currentlyInspectedObjects];
@@ -418,13 +386,11 @@ static BOOL animateInspectorToggles;
     }
     if (oldResponder)
         [window makeFirstResponder:oldResponder];
-    [list release];
 }
 
 - (void)inspectNothing;
 {
     @try {
-	[currentlyInspectedObjects release];
 	currentlyInspectedObjects = nil;
         [inspector inspectObjects:nil];
     } @catch (NSException *exc) {
@@ -463,18 +429,30 @@ static BOOL animateInspectorToggles;
         [self toggleDisplay];
         didExpand = YES;
     }
-    if (![group isVisible]) {
-        [group showGroup];
-    } else if ([group isBelowOverlappingGroup]) {
-        [group orderFrontGroup];
+    if (![_weak_group isVisible]) {
+        [_weak_group showGroup];
+    } else if ([_weak_group isBelowOverlappingGroup]) {
+        [_weak_group orderFrontGroup];
     } else if (!didExpand) {
-        if ([group isOnlyExpandedMemberOfGroup:self])
-            [group hideGroup];
-        if ([[group inspectors] count] > 1) {
+        if ([_weak_group isOnlyExpandedMemberOfGroup:self])
+            [_weak_group hideGroup];
+        if ([[_weak_group inspectors] count] > 1) {
             [self loadInterface]; // Load the UI and thus 'headingButton'
             [self headerViewDidToggleExpandedness:headingButton];
         }
     }
+}
+
+- (void)populateContainerView;
+{
+    [self _buildHeadingView];
+    
+    [[self containerView] addSubview:headingButton];
+    
+    headingBackground = [[OIInspectorHeaderBackground alloc] initWithFrame:[headingButton frame]];
+    [headingBackground setAutoresizingMask:[headingButton autoresizingMask]];
+    [headingBackground setHeaderView:headingButton];
+    [[self containerView] addSubview:headingBackground positioned:NSWindowBelow relativeTo:nil];
 }
 
 #pragma mark - Private
@@ -484,7 +462,7 @@ static BOOL animateInspectorToggles;
     OBPRECONDITION(headingButton == nil);
     
     headingButton = [[OIInspectorHeaderView alloc] initWithFrame:NSMakeRect(0.0f, OIInspectorSpaceBetweenButtons,
-                                                                            [[OIInspectorRegistry sharedInspector] inspectorWidth],
+                                                                            [self.inspectorRegistry inspectorWidth],
                                                                             OIInspectorStartingHeaderButtonHeight)];
     [headingButton setTitle:[inspector displayName]];
 
@@ -509,18 +487,6 @@ static BOOL animateInspectorToggles;
     [window setBecomesKeyOnlyIfNeeded:YES];
 }
 
-- (void)_populateContainerView;
-{
-    [self _buildHeadingView];
-    
-    [[self containerView] addSubview:headingButton];
-    
-    headingBackground = [[OIInspectorHeaderBackground alloc] initWithFrame:[headingButton frame]];
-    [headingBackground setAutoresizingMask:[headingButton autoresizingMask]];
-    [headingBackground setHeaderView:headingButton];
-    [[self containerView] addSubview:headingBackground positioned:NSWindowBelow relativeTo:nil];
-}
-
 - (NSView *)containerView;
 {
     if (self.interfaceType == OIInspectorInterfaceTypeFloating) {
@@ -531,7 +497,7 @@ static BOOL animateInspectorToggles;
         return [window contentView];
     } else if (self.interfaceType == OIInspectorInterfaceTypeEmbedded) {
         if (self.embeddedContainerView == nil) {
-            self.embeddedContainerView = [[[NSView alloc] init] autorelease];
+            self.embeddedContainerView = [[NSView alloc] init];
         }
         
         return self.embeddedContainerView;
@@ -542,7 +508,7 @@ static BOOL animateInspectorToggles;
 
 - (NSView *)_inspectorView;
 {
-    NSView *inspectorView = [inspector inspectorView];
+    NSView *inspectorView = inspector.view;
     
     if (!loadedInspectorView) {
         forceResizeWidget = [inspector respondsToSelector:@selector(inspectorWillResizeToHeight:)]; 
@@ -556,14 +522,14 @@ static BOOL animateInspectorToggles;
             _minimumHeight = [inspectorView frame].size.height;
         }
         
-        NSString *savedHeightString = [[[OIInspectorRegistry sharedInspector] workspaceDefaults] objectForKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
+        NSString *savedHeightString = [[self.inspectorRegistry workspaceDefaults] objectForKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
 
 	NSSize size = [inspectorView frame].size;
-	OBASSERT(size.width <= [[OIInspectorRegistry sharedInspector] inspectorWidth]); // OK to make inspectors wider, but probably indicates a problem if the nib is wider than the global inspector width
-        if (size.width > [[OIInspectorRegistry sharedInspector] inspectorWidth]) {
-            NSLog(@"Inspector %@ is wider (%g) than grouped width (%g)", [self identifier], size.width, [[OIInspectorRegistry sharedInspector] inspectorWidth]);
+	OBASSERT(size.width <= [self.inspectorRegistry inspectorWidth]); // OK to make inspectors wider, but probably indicates a problem if the nib is wider than the global inspector width
+        if (size.width > [self.inspectorRegistry inspectorWidth]) {
+            NSLog(@"Inspector %@ is wider (%g) than grouped width (%g)", [self identifier], size.width, [self.inspectorRegistry inspectorWidth]);
         }
-	size.width = [[OIInspectorRegistry sharedInspector] inspectorWidth];
+	size.width = [self.inspectorRegistry inspectorWidth];
 	
         if (savedHeightString != nil && heightSizable)
 	    size.height = [savedHeightString floatValue];
@@ -578,14 +544,11 @@ static BOOL animateInspectorToggles;
 {
     OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeFloating);
     NSView *view = [self _inspectorView];
-    BOOL hadVisibleInspectors = [[OIInspectorRegistry sharedInspector] hasVisibleInspector];
-
-    if (!animateInspectorToggles)
-        animate = NO;
+    BOOL hadVisibleInspectors = [self.inspectorRegistry hasVisibleInspector];
 
     isExpanded = expanded;
     isSettingExpansion = YES;
-    [group setScreenChangesEnabled:NO];
+    [_weak_group setScreenChangesEnabled:NO];
     [headingButton setExpanded:isExpanded];
 
     CGFloat additionalHeaderHeight;
@@ -596,7 +559,7 @@ static BOOL animateInspectorToggles;
             // If no inspectors were previously visible, the inspector registry's selection set may not be up-to-date, so tell it to update
             // (an alternate approach would be to have the registry keep track of whether or not it was up to date, and here we would simply tell the registry to update if it needed to, rather than us basing this off of whether or not any inspectors were previously visible, thus requiring us to know that -[OIInspectorRegistry _recalculateInspectorsAndInspectWindow] doesn't do anything if no inspectors are visible)
             if (!hadVisibleInspectors)
-                [OIInspectorRegistry updateInspector];
+                [OIInspectorRegistry updateInspectorForWindow:[NSApp mainWindow]];
             [self updateInspector]; // call this first because the view could change sizes based on the selection in -updateInspector
         }
             
@@ -631,7 +594,7 @@ static BOOL animateInspectorToggles;
             [[self containerView] addSubview:resizerView];
         }
         [view setAutoresizingMask:NSViewHeightSizable | NSViewMinXMargin | NSViewMaxXMargin];
-        [[[OIInspectorRegistry sharedInspector] workspaceDefaults] setObject:@"YES" forKey:[self identifier]];
+        [[self.inspectorRegistry workspaceDefaults] setObject:@"YES" forKey:[self identifier]];
     } else {
 	[window makeFirstResponder:window];
 
@@ -640,10 +603,10 @@ static BOOL animateInspectorToggles;
 	
         NSRect headingFrame;
         headingFrame.origin = NSMakePoint(0, isBottommostInGroup ? 0.0f : OIInspectorSpaceBetweenButtons);
-        if (group == nil)
+        if (_weak_group == nil)
             headingFrame.size = [headingButton frame].size;
         else
-            headingFrame.size = NSMakeSize([[OIInspectorRegistry sharedInspector] inspectorWidth], [headingButton frame].size.height);
+            headingFrame.size = NSMakeSize([self.inspectorRegistry inspectorWidth], [headingButton frame].size.height);
         NSRect headingWindowFrame = [window frameRectForContentRect:headingFrame];
         headingWindowFrame.origin.x = topLeftPoint.x;
         headingWindowFrame.origin.y = topLeftPoint.y - headingWindowFrame.size.height;
@@ -655,7 +618,7 @@ static BOOL animateInspectorToggles;
         if (updateInspector)
             [self inspectNothing];
         
-        [[[OIInspectorRegistry sharedInspector] workspaceDefaults] removeObjectForKey:[self identifier]];
+        [[self.inspectorRegistry workspaceDefaults] removeObjectForKey:[self identifier]];
     }
     
     NSRect headingFrame;
@@ -670,9 +633,9 @@ static BOOL animateInspectorToggles;
         [headingBackground setNeedsDisplay:YES];
     }
     
-    [[OIInspectorRegistry sharedInspector] configurationsChanged];
+    [self.inspectorRegistry configurationsChanged];
     
-    [group setScreenChangesEnabled:YES];
+    [_weak_group setScreenChangesEnabled:YES];
     isSettingExpansion = NO;
     
     [self _postExpandednessChangedNotification];
@@ -685,12 +648,13 @@ static BOOL animateInspectorToggles;
     
     if (expanded == isExpanded)
         return;
-    BOOL hadVisibleInspector = [self.nonretained_inspectorRegistry hasVisibleInspector];
+    BOOL hadVisibleInspector = [self.inspectorRegistry hasVisibleInspector];
     isExpanded = expanded;
-    
+    [headingButton setExpanded:isExpanded];
+
     if (updateInspector) {
         if (!hadVisibleInspector) {
-            [self.nonretained_inspectorRegistry updateInspectionSetImmediatelyAndUnconditionallyForWindow:[[self containerView] window]];
+            [self.inspectorRegistry updateInspectionSetImmediatelyAndUnconditionallyForWindow:[[self containerView] window]];
         }
         [self updateInspector];
     }
@@ -732,15 +696,15 @@ static BOOL animateInspectorToggles;
 - (void)_postExpandednessChangedNotification;
 {
     NSDictionary *userInfo = @{ @"isExpanded" : @(isExpanded) };
-    NSNotification *notification = [[[NSNotification alloc] initWithName:OIInspectorControllerDidChangeExpandednessNotification
+    NSNotification *notification = [[NSNotification alloc] initWithName:OIInspectorControllerDidChangeExpandednessNotification
                                                                   object:self
-                                                                userInfo:userInfo] autorelease];
+                                                                userInfo:userInfo];
     [[NSNotificationCenter defaultCenter] postNotification:notification];
 }
 
 - (void)_saveInspectorHeight;
 {
-    OIInspectorRegistry *registry = [OIInspectorRegistry sharedInspector];
+    OIInspectorRegistry *registry = self.inspectorRegistry;
     NSSize size = [[self _inspectorView] frame].size;
 
     [[registry workspaceDefaults] setObject:[NSNumber numberWithCGFloat:size.height] forKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
@@ -749,8 +713,8 @@ static BOOL animateInspectorToggles;
 
 - (BOOL)_groupCanBeginResizingOperation;
 {
-    if (group) {
-        return [group canBeginResizingOperation];
+    if (_weak_group) {
+        return [_weak_group canBeginResizingOperation];
     } else {
         return (self.interfaceType == OIInspectorInterfaceTypeEmbedded);
     }
@@ -760,7 +724,7 @@ static BOOL animateInspectorToggles;
 
 - (void)windowDidMove:(NSNotification *)notification;
 {
-    OIInspectorRegistry *registry = [OIInspectorRegistry sharedInspector];
+    OIInspectorRegistry *registry = self.inspectorRegistry;
     [registry configurationsChanged]; 
 }
 
@@ -807,13 +771,13 @@ static BOOL animateInspectorToggles;
 - (void)windowWillBeginResizing:(NSWindow *)resizingWindow;
 {
     OBASSERT(resizingWindow == window);
-    [group inspectorWillStartResizing:self];
+    [_weak_group inspectorWillStartResizing:self];
 }
 
 - (void)windowDidFinishResizing:(NSWindow *)resizingWindow;
 {
     OBASSERT(resizingWindow == window);
-    [group inspectorDidFinishResizing:self];
+    [_weak_group inspectorDidFinishResizing:self];
 }
 
 /*"
@@ -824,7 +788,7 @@ static BOOL animateInspectorToggles;
 {
     NSRect result;
 
-    if ([group ignoreResizing]) {
+    if ([_weak_group ignoreResizing]) {
         return toRect;
     }
 
@@ -843,7 +807,7 @@ static BOOL animateInspectorToggles;
         newContentRect.size.height += OIInspectorStartingHeaderButtonHeight;
     }
 
-    newContentRect.size.width = [[OIInspectorRegistry sharedInspector] inspectorWidth];
+    newContentRect.size.width = [self.inspectorRegistry inspectorWidth];
     
     toRect = [window frameRectForContentRect:newContentRect];
     
@@ -852,8 +816,8 @@ static BOOL animateInspectorToggles;
         toRect.size.height = NSHeight(fromRect);
     }
     
-    if (group != nil) {
-        result = [group inspector:self willResizeToFrame:toRect isSettingExpansion:isSettingExpansion];
+    if (_weak_group != nil) {
+        result = [_weak_group inspector:self willResizeToFrame:toRect isSettingExpansion:isSettingExpansion];
 	OBASSERT(result.size.width == toRect.size.width); // Not allowed to width-size inspectors ever!
     } else
         result = toRect;
@@ -867,7 +831,7 @@ static BOOL animateInspectorToggles;
 
 - (BOOL)headerViewShouldDisplayCloseButton:(OIInspectorHeaderView *)view;
 {
-    return [group isHeadOfGroup:self];
+    return (self.interfaceType == OIInspectorInterfaceTypeFloating && [_weak_group isHeadOfGroup:self]);
 }
 
 - (BOOL)headerViewShouldAllowDragging:(OIInspectorHeaderView *)view;
@@ -879,7 +843,7 @@ static BOOL animateInspectorToggles;
 {
     NSRect myGroupFrame;
     
-    if (!window || ![group getGroupFrame:&myGroupFrame]) {
+    if (!window || ![_weak_group getGroupFrame:&myGroupFrame]) {
         OBASSERT_NOT_REACHED("Can't calculate headerViewDraggingHeight");
         return 1.0f;
     }
@@ -890,20 +854,20 @@ static BOOL animateInspectorToggles;
 - (void)headerViewDidBeginDragging:(OIInspectorHeaderView *)view;
 {
     OBPRECONDITION([self headerViewShouldAllowDragging:view]);
-    [group detachFromGroup:self];
+    [_weak_group detachFromGroup:self];
 }
 
 - (NSRect)headerView:(OIInspectorHeaderView *)view willDragWindowToFrame:(NSRect)aFrame onScreen:(NSScreen *)screen;
 {
-    aFrame = [group fitFrame:aFrame onScreen:screen forceVisible:NO];
-    aFrame = [group snapToOtherGroupWithFrame:aFrame];
+    aFrame = [_weak_group fitFrame:aFrame onScreen:screen forceVisible:NO];
+    aFrame = [_weak_group snapToOtherGroupWithFrame:aFrame];
     return aFrame;
 }
 
 - (void)headerViewDidEndDragging:(OIInspectorHeaderView *)view toFrame:(NSRect)aFrame;
 {
     OBPRECONDITION([self headerViewShouldAllowDragging:view]);
-    [group windowsDidMoveToFrame:aFrame];
+    [_weak_group windowsDidMoveToFrame:aFrame];
 }
 
 - (void)headerViewDidToggleExpandedness:(OIInspectorHeaderView *)senderButton;
@@ -921,7 +885,7 @@ static BOOL animateInspectorToggles;
 
 - (void)headerViewDidClose:(OIInspectorHeaderView *)view;
 {
-    [group hideGroup];
+    [_weak_group hideGroup];
 }
 
 @end

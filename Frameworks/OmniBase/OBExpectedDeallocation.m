@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2011,2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2011,2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,6 +68,9 @@ static NSTimer *WarningTimer = nil;
             [frameStrings addObject:frame];
         }
 
+        if (symbols)
+            free(symbols); // The individual strings don't need to be free'd.
+        
         _backtraceFrames = [frameStrings copy];
     }
     

@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -227,7 +227,8 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     NSString *mailApp = [self helperApplicationForScheme:@"mailto"];
 
     if (!mailApp || [mailApp isEqualToString:@"Mail"]) {
-        // Handle Mail in the fallback case below
+        script = [self _appleMailScriptForMailApp:@"Mail" receiver:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:attachmentFilenames];
+        mailApp = @"Mail";
     } else if ([mailApp isEqualToString:@"Mailsmith"]) {
         script = [self _mailSmithScriptForMailApp:mailApp receiver:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:attachmentFilenames];
     } else if ([mailApp containsString:@"entourage" options:NSCaseInsensitiveSearch]) {
@@ -235,8 +236,21 @@ static BOOL _executeScript(NSString *source, NSError **outError)
     }
 
     if (script == nil) {
-        script = [self _appleMailScriptForMailApp:@"Mail" receiver:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:attachmentFilenames];
-        mailApp = @"Mail";
+        if (attachmentFilenames.count == 0) {
+            // If we're not trying to attach a file, just use a mailto URL
+            NSString *urlString = [NSString stringWithFormat:@"mailto:%@?subject=%@", receiver, [NSString encodeURLString:subject asQuery:NO leaveSlashes:NO leaveColons:NO]];
+            if (![NSString isEmptyString:carbonCopy])
+            urlString = [urlString stringByAppendingFormat:@"&cc=%@", [NSString encodeURLString:carbonCopy asQuery:NO leaveSlashes:NO leaveColons:NO]];
+            if (![NSString isEmptyString:blindCarbonCopy])
+            urlString = [urlString stringByAppendingFormat:@"&bcc=%@", [NSString encodeURLString:blindCarbonCopy asQuery:NO leaveSlashes:NO leaveColons:NO]];
+            if (![NSString isEmptyString:body])
+            urlString = [urlString stringByAppendingFormat:@"&body=%@", [NSString encodeURLString:body asQuery:NO leaveSlashes:NO leaveColons:NO]];
+            return [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:urlString]];
+        } else {
+            // Fall back on using Mail if we need to attach a file
+            script = [self _appleMailScriptForMailApp:@"Mail" receiver:receiver carbonCopy:carbonCopy blindCarbonCopy:blindCarbonCopy subject:subject body:body attachments:attachmentFilenames];
+            mailApp = @"Mail";
+        }
     }
 
     OBASSERT(script != nil);

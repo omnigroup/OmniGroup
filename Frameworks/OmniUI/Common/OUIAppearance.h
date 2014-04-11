@@ -87,6 +87,7 @@ extern NSString *const OUIAppearanceColorsDidChangeNotification; // listen to th
 + (UIColor *)omniBlueColor;
 + (UIColor *)omniPurpleColor;
 + (UIColor *)omniGraphiteColor;
++ (UIColor *)omniCremaColor;
 
 + (UIColor *)omniAlternateRedColor;
 + (UIColor *)omniAlternateYellowColor;

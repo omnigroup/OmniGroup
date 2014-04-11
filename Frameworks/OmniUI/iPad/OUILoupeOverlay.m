@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -204,7 +204,7 @@ RCS_ID("$Id$");
                 CGSize loupeImageSize = [loupeFrameImage size];
 
                 CGMutablePathRef ring = CGPathCreateMutable();
-                CGPathAddEllipseInRect(ring, NULL, CGRectInset((CGRect){{0, 0}, loupeImageSize}, 4, 4));
+                CGPathAddEllipseInRect(ring, NULL, CGRectInset((CGRect){{0, 0}, loupeImageSize}, 6, 6));
                 loupeClipPath = CGPathCreateCopy(ring);
                 CFRelease(ring);
                 

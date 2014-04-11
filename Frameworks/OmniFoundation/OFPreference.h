@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,10 @@
 
 @class OFEnumNameTable;
 @class NSArray, NSDictionary, NSData, NSSet, NSString;
+
+// OFPreference is KVO compliant for the objectValue key.
+// Like +addObserver:selector:forPreference:, the notification will be delivered on the thread where the preference was changed.
+extern NSString * const OFPreferenceObjectValueBinding;
 
 @interface OFPreference : NSObject
 {

@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -84,82 +84,24 @@ RCS_ID("$Id$")
     return [self dictionaryWithPossiblyRemovedObject:nil forKey:key];
 }
 
-/*" Returns an object which is a shallow copy of the receiver except that the key-value pairs from aDictionary are included (overriding existing key-value associations if they existed). "*/
-
-struct dictByAddingContext {
-    id *keys;
-    id *values;
-    NSUInteger kvPairsUsed;
-    BOOL differs;
-    CFDictionaryRef older, newer;
-};
-
-static void copyWithOverride(const void *aKey, const void *aValue, void *_context)
-{
-    struct dictByAddingContext *context = _context;
-    NSUInteger used = context->kvPairsUsed;
-    
-    const void *otherValue = CFDictionaryGetValue(context->newer, aKey);
-    if (otherValue && otherValue != aValue) {
-        context->values[used] = (id)otherValue;
-        context->differs = YES;
-    } else {
-        context->values[used] = (id)aValue;
-    }
-    context->keys[used] = (id)aKey;
-    context->kvPairsUsed = used+1;
-}
-
-static void copyNewItems(const void *aKey, const void *aValue, void *_context)
-{
-    struct dictByAddingContext *context = _context;
-    
-    if(CFDictionaryContainsKey(context->older, aKey)) {
-        // Value will already have been chaecked by copyWithOverride().
-    } else {
-        NSUInteger used = context->kvPairsUsed;
-        context->keys[used] = (id)aKey;
-        context->values[used] = (id)aValue;
-        context->differs = YES;
-        context->kvPairsUsed = used+1;
-    }
-}
+/*" Returns an object which is a shallow copy of the receiver except that the key-value pairs from otherDictionary are included (overriding existing key-value associations if they existed). "*/
 
 - (NSDictionary *)dictionaryByAddingObjectsFromDictionary:(NSDictionary *)otherDictionary;
 {
-    struct dictByAddingContext context;
+    __block NSMutableDictionary *mutatedDictionary = nil;
+    
+    [otherDictionary enumerateKeysAndObjectsUsingBlock:^(id key, id otherValue, BOOL *stop) {
+        id value = self[key];
+        if (value != otherValue) {
+            if (!mutatedDictionary)
+                mutatedDictionary = [self mutableCopy];
+            mutatedDictionary[key] = otherValue;
+        }
+    }];
 
-    if (!otherDictionary)
-        goto nochange_noalloc;
-    
-    NSUInteger myKeyCount = [self count];
-    NSUInteger otherKeyCount = [otherDictionary count];
-    
-    if (!otherKeyCount)
-        goto nochange_noalloc;
-    
-    context.keys = calloc(myKeyCount+otherKeyCount, sizeof(*(context.keys)));
-    context.values = calloc(myKeyCount+otherKeyCount, sizeof(*(context.values)));
-    context.kvPairsUsed = 0;
-    context.differs = NO;
-    context.older = (CFDictionaryRef)self;
-    context.newer = (CFDictionaryRef)otherDictionary;
-    
-    CFDictionaryApplyFunction((CFDictionaryRef)self, copyWithOverride, &context);
-    CFDictionaryApplyFunction((CFDictionaryRef)otherDictionary, copyNewItems, &context);
-    if (!context.differs)
-        goto nochange;
-    
-    NSDictionary *newDictionary = [NSDictionary dictionaryWithObjects:context.values forKeys:context.keys count:context.kvPairsUsed];
-    free(context.keys);
-    free(context.values);
-    return newDictionary;
-    
-nochange:
-    free(context.keys);
-    free(context.values);
-nochange_noalloc:
-    return [NSDictionary dictionaryWithDictionary:self];
+    if (mutatedDictionary)
+        return [[mutatedDictionary copy] autorelease];
+    return [[self copy] autorelease];
 }
 
 - (NSString *)keyForObjectEqualTo:(id)anObject;
@@ -345,26 +287,31 @@ nochange_noalloc:
     return [self integerForKey:key defaultValue:0];
 }
 
-struct _makeValuesPerformSelectorContext {
-    SEL sel;
-    id object;
-};
-
-static void _makeValuesPerformSelectorApplier(const void *key, const void *value, void *context)
+- (NSUInteger)unsignedIntegerForKey:(NSString *)key defaultValue:(NSInteger)defaultValue;
 {
-    struct _makeValuesPerformSelectorContext *ctx = context;
-    [(id)value performSelector:ctx->sel withObject:ctx->object];
+    id value = [self objectForKey:key];
+    if (!value)
+        return defaultValue;
+    return [value unsignedIntegerValue];
+}
+
+- (NSUInteger)unsignedIntegerForKey:(NSString *)key;
+{
+    return [self unsignedIntegerForKey:key defaultValue:0];
 }
 
 - (void)makeValuesPerformSelector:(SEL)sel withObject:(id)object;
 {
-    struct _makeValuesPerformSelectorContext ctx = {sel, object};
-    CFDictionaryApplyFunction((CFDictionaryRef)self, _makeValuesPerformSelectorApplier, &ctx);
+    [self enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+        [value performSelector:sel withObject:object];
+    }];
 }
 
 - (void)makeValuesPerformSelector:(SEL)sel;
 {
-    [self makeValuesPerformSelector:sel withObject:nil];
+    [self enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+        [value performSelector:sel];
+    }];
 }
 
 - (id)objectForKey:(NSString *)key defaultObject:(id)defaultObject;
@@ -400,15 +347,15 @@ static id copyDictionaryKeys(CFDictionaryRef self, Class resultClass)
 {
     NSUInteger keyCount = CFDictionaryGetCount(self);
     
-    const void **keys;
+    __unsafe_unretained id *keys;
     size_t byteCount = sizeof(*keys) * keyCount;
     BOOL useMalloc = byteCount >= SAFE_ALLOCA_SIZE;
     keys = useMalloc ? malloc(byteCount) : alloca(byteCount);
     
-    CFDictionaryGetKeysAndValues((CFDictionaryRef)self, keys, NULL);
+    CFDictionaryGetKeysAndValues((CFDictionaryRef)self, (const void **)keys, NULL);
     
     id keyArray;
-    keyArray = [[resultClass alloc] initWithObjects:(id *)keys count:keyCount];
+    keyArray = [[resultClass alloc] initWithObjects:keys count:keyCount];
     
     if (useMalloc)
         free(keys);

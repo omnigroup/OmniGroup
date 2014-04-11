@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#if 0 && defined(DEBUG) && defined(ODO_SUPPORT_UNDO)
+#if 0 && defined(DEBUG)
     #define DEBUG_UNDO(format, ...) NSLog((format), ## __VA_ARGS__)
 #else
     #define DEBUG_UNDO(format, ...) do {} while (0)

@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,11 +7,12 @@
 //
 // $Id$
 
-#import <AppKit/NSResponder.h>
+#import <AppKit/NSViewController.h>
 
 @class NSBundle, NSDictionary, NSPredicate; // Foundation
 @class NSImage, NSMenuItem, NSView; // AppKit
 @class OFEnumNameTable; // OmniFoundation
+@class OIInspectorRegistry;
 
 typedef enum {
     OIHiddenVisibilityState,
@@ -27,13 +28,13 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 // This uses rendering code that is only available on 10.5, but this whole framework is 10.5+ now
 #define OITabbedInspectorUnifiedLookDefaultsKey (@"OITabbedInspectorUnifiedLook")
 
-@interface OIInspector : NSResponder
+@interface OIInspector : NSViewController
 
 + (OFEnumNameTable *)visibilityStateNameTable;
 
-+ (instancetype)newInspectorWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
++ (instancetype)newInspectorWithDictionary:(NSDictionary *)dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)sourceBundle;
 
-- (id)initWithDictionary:(NSDictionary *)dict bundle:(NSBundle *)sourceBundle;
+- (id)initWithDictionary:(NSDictionary *)dict inspectorRegistry:(OIInspectorRegistry *)inspectorRegistry bundle:(NSBundle *)sourceBundle;
 
 - (NSString *)identifier;
 - (OIVisibilityState)defaultVisibilityState;
@@ -75,9 +76,6 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 @end
 
 @protocol OIConcreteInspector
-- (NSView *)inspectorView;
-    // Returns the view which will be placed into a grouped Info window
-
 - (NSPredicate *)inspectedObjectsPredicate;
     // Return a predicate to filter the inspected objects down to what this inspector wants sent to its -inspectObjects: method
 

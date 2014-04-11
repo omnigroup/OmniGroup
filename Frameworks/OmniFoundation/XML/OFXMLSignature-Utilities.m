@@ -1,4 +1,4 @@
-// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -367,7 +367,7 @@ static BOOL describeSecItem(SecKeychainItemRef item, NSMutableString *buf)
     }
     
     if (returnedClass == kSecInternetPasswordItemClass || returnedClass == CSSM_DL_DB_RECORD_INTERNET_PASSWORD ||
-#if defined(MAC_OS_X_VERSION_MIN_REQUIRED) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_9)
+#if defined(MAC_OS_X_VERSION_MIN_REQUIRED) && (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9)
         /* Appleshare passwords are stored as kSecInternetPasswordItemClass in newer OS releases */
         returnedClass == kSecAppleSharePasswordItemClass || returnedClass == CSSM_DL_DB_RECORD_APPLESHARE_PASSWORD ||
 #endif
@@ -850,90 +850,49 @@ static void osError(NSMutableDictionary *into, OSStatus code, NSString *function
 
 static BOOL certificateMatchesSKI(SecCertificateRef aCert, NSData *subjectKeyIdentifier)
 {
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    if (SecCertificateCopyValues != NULL && kSecOIDSubjectKeyIdentifier != NULL) {
-        const void *desiredAttributeOIDs_[1] = { kSecOIDSubjectKeyIdentifier };
-        CFArrayRef desiredAttributeOIDs = CFArrayCreate(kCFAllocatorDefault, desiredAttributeOIDs_, 1, &kCFTypeArrayCallBacks);
-        CFDictionaryRef parsedCertificate = SecCertificateCopyValues(aCert, desiredAttributeOIDs, NULL);
-        CFRelease(desiredAttributeOIDs);
-        
-        if (parsedCertificate != NULL) {
-            BOOL result;
-            CFDictionaryRef skiValueInfo = NULL;
-            CFTypeRef skiValueType = NULL;
-            CFTypeRef skiContainedValue;
-            
-            //NSLog(@"CertInfo(%@) -> %@", (id)aCert, [(id)parsedCertificate description]);
-            
-            if (!CFDictionaryGetValueIfPresent(parsedCertificate, kSecOIDSubjectKeyIdentifier, (const void **)&skiValueInfo) ||
-                !CFDictionaryGetValueIfPresent(skiValueInfo, kSecPropertyKeyType, (const void **)&skiValueType)) {
-                CFRelease(parsedCertificate);
-                return NO;
-            }
-            
-            /* There's no documentation on what format SecCertificateCopyValues() returns individual values in (RADAR 10430553). SKIs appear to be returned either as a kSecPropertyTypeData, or as a "section" containing 2 elements: the critical flag (returned as a string--- WTF, Apple!?!) and the SKI. */
-            
-            if (CFEqual(skiValueType, kSecPropertyTypeSection) &&
-                CFDictionaryGetValueIfPresent(skiValueInfo, kSecPropertyKeyValue, (const void **)&skiContainedValue) &&
-                CFArrayGetCount(skiContainedValue) == 2) {
-                // 2-element "section" containing critical flag & actual value.
-                skiValueInfo = CFArrayGetValueAtIndex(skiContainedValue, 1);
-                skiValueType = CFDictionaryGetValue(skiValueInfo, kSecPropertyKeyType);
-            }
-            
-            if (CFEqual(skiValueType, kSecPropertyTypeData)) {
-                //NSLog(@"SKIv = %@", [(id)skiValueInfo description]);
-                result = [subjectKeyIdentifier isEqualToData:(NSData *)CFDictionaryGetValue(skiValueInfo, kSecPropertyKeyValue)];
-            } else {
-                result = NO;
-            }
-
-            CFRelease(parsedCertificate);
-
-            return result;
-        }
-    }
-#endif
+    const void *desiredAttributeOIDs_[1] = { kSecOIDSubjectKeyIdentifier };
+    CFArrayRef desiredAttributeOIDs = CFArrayCreate(kCFAllocatorDefault, desiredAttributeOIDs_, 1, &kCFTypeArrayCallBacks);
+    CFDictionaryRef parsedCertificate = SecCertificateCopyValues(aCert, desiredAttributeOIDs, NULL);
+    CFRelease(desiredAttributeOIDs);
     
-#if !defined(MAC_OS_X_VERSION_10_7) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
-    /* On 10.6 and earlier, we use SecKeychainItemCopyAttributesAndData() */
-    OSStatus err;
-    static const UInt32 desiredAttributeTags[1] = { kSecSubjectKeyIdentifierItemAttr };
-    static const UInt32 desiredAttributeFormats[1] = { CSSM_DB_ATTRIBUTE_FORMAT_BLOB };
-    static const SecKeychainAttributeInfo desiredAtts = {
-        .count = 1,
-        .tag = (UInt32 *)desiredAttributeTags,
-        .format = (UInt32 *)desiredAttributeFormats
-    };
-    
-    SecKeychainAttributeList *retrievedAtts = NULL;
-    
-    SecKeychainItemRef asKCItem = (SecKeychainItemRef)aCert; // Superclass, but the compiler doesn't know that for CFTypes
-    err = SecKeychainItemCopyAttributesAndData(asKCItem, (SecKeychainAttributeInfo *)&desiredAtts, NULL, &retrievedAtts, NULL, NULL);
-    
-    if (err == noErr) {
+    if (parsedCertificate != NULL) {
         BOOL result;
+        CFDictionaryRef skiValueInfo = NULL;
+        CFTypeRef skiValueType = NULL;
+        CFTypeRef skiContainedValue;
         
-        if (retrievedAtts->count == 1 &&
-            retrievedAtts->attr[0].tag == kSecSubjectKeyIdentifierItemAttr &&
-            retrievedAtts->attr[0].length == [subjectKeyIdentifier length] &&
-            !memcmp(retrievedAtts->attr[0].data, [subjectKeyIdentifier bytes], [subjectKeyIdentifier length])) {
-            result = YES;
+        //NSLog(@"CertInfo(%@) -> %@", (id)aCert, [(id)parsedCertificate description]);
+        
+        if (!CFDictionaryGetValueIfPresent(parsedCertificate, kSecOIDSubjectKeyIdentifier, (const void **)&skiValueInfo) ||
+            !CFDictionaryGetValueIfPresent(skiValueInfo, kSecPropertyKeyType, (const void **)&skiValueType)) {
+            CFRelease(parsedCertificate);
+            return NO;
+        }
+        
+        /* There's no documentation on what format SecCertificateCopyValues() returns individual values in (RADAR 10430553). SKIs appear to be returned either as a kSecPropertyTypeData, or as a "section" containing 2 elements: the critical flag (returned as a string--- WTF, Apple!?!) and the SKI. */
+        
+        if (CFEqual(skiValueType, kSecPropertyTypeSection) &&
+            CFDictionaryGetValueIfPresent(skiValueInfo, kSecPropertyKeyValue, (const void **)&skiContainedValue) &&
+            CFArrayGetCount(skiContainedValue) == 2) {
+            // 2-element "section" containing critical flag & actual value.
+            skiValueInfo = CFArrayGetValueAtIndex(skiContainedValue, 1);
+            skiValueType = CFDictionaryGetValue(skiValueInfo, kSecPropertyKeyType);
+        }
+        
+        if (CFEqual(skiValueType, kSecPropertyTypeData)) {
+            //NSLog(@"SKIv = %@", [(id)skiValueInfo description]);
+            result = [subjectKeyIdentifier isEqualToData:(NSData *)CFDictionaryGetValue(skiValueInfo, kSecPropertyKeyValue)];
         } else {
             result = NO;
         }
         
-        SecKeychainItemFreeAttributesAndData(retrievedAtts, NULL);
+        CFRelease(parsedCertificate);
         
         return result;
     }
-#else
-#if OF_ENABLE_CDSA
-    OSStatus err = errKCNotAvailable;
-#endif
-#endif    
     
 #if OF_ENABLE_CDSA
+    OSStatus err = errKCNotAvailable;
     if (err == errKCNotAvailable) {
         // Huh. I guess we have to use CSSM directly here.
         
@@ -1013,7 +972,7 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
         if (SecCertificateGetData(aCert, &bufReference) == noErr) {
             NSData *knownBlob = [[NSData alloc] initWithBytesNoCopy:bufReference.Data length:bufReference.Length freeWhenDone:NO];
 #else
-        NSData *knownBlob = NSMakeCollectable(SecCertificateCopyData(aCert));
+            NSData *knownBlob = (OB_BRIDGE NSData *)SecCertificateCopyData(aCert);
         if (knownBlob != NULL) {
 #endif
             [certBlobs removeObject:knownBlob];
@@ -1126,7 +1085,7 @@ NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputForma
     
     if (!outItems)
         return [NSArray array];
-    return [NSMakeCollectable(outItems) autorelease];
+    return CFBridgingRelease(outItems);
 }
                                  
                                  

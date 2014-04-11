@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -178,15 +178,13 @@ static NSString *hexPairInserter(NSString *string, NSRange *defRange, void *cont
         remaining.location += escapelessRange.length;
         
         if (escapelessRange.length > 0) {
-            NSData *appendage = NSMakeCollectable(OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, escapelessRange, anEncoding, lossy?'?':0));
+            NSData *appendage = CFBridgingRelease(OFCreateDataFromStringWithDeferredEncoding((CFStringRef)self, escapelessRange, anEncoding, lossy?'?':0));
             if (buffer == nil && remaining.length == 0)
-                return [appendage autorelease];
+                return appendage;
             else if (buffer == nil) {
                 buffer = [[appendage mutableCopy] autorelease];
-                [appendage release];
             } else {
                 [buffer appendData:appendage];
-                [appendage release];
             }
         } else if (buffer == nil) {
             buffer = [NSMutableData data];
@@ -368,10 +366,7 @@ static const OFQuotedPrintableMapping urlCodingVariants[8] = {
         }
     }
     
-    CFStringRef resultString = CFStringCreateWithBytes(kCFAllocatorDefault, destinationBuffer, destinationBufferUsed, kCFStringEncodingASCII, FALSE);
-    free(destinationBuffer);
-    
-    return [NSMakeCollectable(resultString) autorelease];
+    return CFBridgingRelease(CFStringCreateWithBytesNoCopy(kCFAllocatorDefault, destinationBuffer, destinationBufferUsed, kCFStringEncodingASCII, FALSE, kCFAllocatorMalloc));
 }
 
 - (NSString *)fullyEncodeAsIURIReference;

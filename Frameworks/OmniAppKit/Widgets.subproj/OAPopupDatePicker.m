@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -475,7 +475,7 @@ static NSSize calendarImageSize;
     
     NSUInteger firstDayOfWeek = [[OFPreference preferenceForKey:@"FirstDayOfTheWeek"] unsignedIntegerValue];
     
-    if (firstDayOfWeek != 0)
+    if (firstDayOfWeek == 0)
         firstDayOfWeek = [currentCalendar firstWeekday];
     
     if (firstDayOfWeek != [cal firstWeekday])

@@ -7,22 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		007E767910C8469F00313878 /* OABoxSeparator.m in Sources */ = {isa = PBXBuildFile; fileRef = 007E767710C8469F00313878 /* OABoxSeparator.m */; };
+		007E767910C8469F00313878 /* OABoxSeparator.m in Sources */ = {isa = PBXBuildFile; fileRef = 007E767710C8469F00313878 /* OABoxSeparator.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		008AB54814032D2B001F29CD /* OATinyPopUpButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 008AB54614032D2B001F29CD /* OATinyPopUpButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		008AB54914032D2B001F29CD /* OATinyPopUpButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 008AB54714032D2B001F29CD /* OATinyPopUpButton.m */; };
+		008AB54914032D2B001F29CD /* OATinyPopUpButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 008AB54714032D2B001F29CD /* OATinyPopUpButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		008AB54C14032D67001F29CD /* OADropDownTriangle.png in Resources */ = {isa = PBXBuildFile; fileRef = 008AB54B14032D67001F29CD /* OADropDownTriangle.png */; };
 		271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 271A9D9E1533DA2800A78CCB /* OAAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 271A9D9F1533DA2800A78CCB /* OAAnimation.m */; };
+		271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 271A9D9F1533DA2800A78CCB /* OAAnimation.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		272023F315C06D7D0089BC49 /* OAInfoTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */; };
 		2730CF3B144E205B007C3A99 /* OADocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 2730CF39144E205B007C3A99 /* OADocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		2730CF3C144E205B007C3A99 /* OADocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 2730CF3A144E205B007C3A99 /* OADocument.m */; };
+		2730CF3C144E205B007C3A99 /* OADocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 2730CF3A144E205B007C3A99 /* OADocument.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		27495032182C955600BCBA6A /* OASubtleScroller.h in Headers */ = {isa = PBXBuildFile; fileRef = 27495030182C955600BCBA6A /* OASubtleScroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		27495033182C955600BCBA6A /* OASubtleScroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 27495031182C955600BCBA6A /* OASubtleScroller.m */; };
-		2779DD8716BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m in Sources */ = {isa = PBXBuildFile; fileRef = 2779DD8616BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m */; };
+		27495033182C955600BCBA6A /* OASubtleScroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 27495031182C955600BCBA6A /* OASubtleScroller.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		2779DD8716BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m in Sources */ = {isa = PBXBuildFile; fileRef = 2779DD8616BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		2779DDBC16BB328500A2BC8F /* OAViewPicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 2779DDBB16BB328500A2BC8F /* OAViewPicker.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		2779DDBE16BB338400A2BC8F /* OAViewPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2779DDBD16BB338400A2BC8F /* OAViewPicker.m */; };
+		2779DDBE16BB338400A2BC8F /* OAViewPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2779DDBD16BB338400A2BC8F /* OAViewPicker.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		27AC122D15BA295400B726A7 /* NSView-OALayerBackedFix.h in Headers */ = {isa = PBXBuildFile; fileRef = 27AC122B15BA295400B726A7 /* NSView-OALayerBackedFix.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		27AC122E15BA295400B726A7 /* NSView-OALayerBackedFix.m in Sources */ = {isa = PBXBuildFile; fileRef = 27AC122C15BA295400B726A7 /* NSView-OALayerBackedFix.m */; };
+		27AC122E15BA295400B726A7 /* NSView-OALayerBackedFix.m in Sources */ = {isa = PBXBuildFile; fileRef = 27AC122C15BA295400B726A7 /* NSView-OALayerBackedFix.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3401161611E516C10016ADB3 /* OATextStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3401161411E516C10016ADB3 /* OATextStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3401161811E516C10016ADB3 /* OATextStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3401161411E516C10016ADB3 /* OATextStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3401162111E516EC0016ADB3 /* OATextStorageEditTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3401161F11E516EC0016ADB3 /* OATextStorageEditTests.m */; };
@@ -34,36 +34,36 @@
 		34013D801193654E00371920 /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34013D811193654E00371920 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; };
 		340DD56109AD38E900E8A437 /* NSFileWrapper-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		340DD56209AD38E900E8A437 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; };
+		340DD56209AD38E900E8A437 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		340DF1371846BB6800B9F375 /* NSScriptCommand-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DF1351846BB6800B9F375 /* NSScriptCommand-OAExtensions.h */; };
-		340DF1381846BB6800B9F375 /* NSScriptCommand-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DF1361846BB6800B9F375 /* NSScriptCommand-OAExtensions.m */; };
+		340DF1381846BB6800B9F375 /* NSScriptCommand-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DF1361846BB6800B9F375 /* NSScriptCommand-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		341AB85911935816005E6F74 /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		341AB85A11935816005E6F74 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; };
+		341AB85A11935816005E6F74 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3425E49009C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3425E49109C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */; };
+		3425E49109C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34275D1D13981621003F28F5 /* OAFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34275D1C13981621003F28F5 /* OAFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34275D1E13981621003F28F5 /* OAFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34275D1C13981621003F28F5 /* OAFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		342B41170A4C6B62002BFC4B /* NSWindowController-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 342B41150A4C6B62002BFC4B /* NSWindowController-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		342B41180A4C6B62002BFC4B /* NSWindowController-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342B41160A4C6B62002BFC4B /* NSWindowController-OAExtensions.m */; };
+		342B41180A4C6B62002BFC4B /* NSWindowController-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 342B41160A4C6B62002BFC4B /* NSWindowController-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		342D1D8F16C9584100692117 /* OAFindPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 342D1D8D16C9584100692117 /* OAFindPanel.xib */; };
 		3431F1300B1B7847002B728E /* OADatePickerTextFieldCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3431F12E0B1B7847002B728E /* OADatePickerTextFieldCell.h */; };
-		3431F1310B1B7847002B728E /* OADatePickerTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3431F12F0B1B7847002B728E /* OADatePickerTextFieldCell.m */; };
+		3431F1310B1B7847002B728E /* OADatePickerTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3431F12F0B1B7847002B728E /* OADatePickerTextFieldCell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3434792F11923BAE007D0CE5 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; };
 		3434793011923BAF007D0CE5 /* NSFileWrapper-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34471AC109D31320004C9DBA /* OAConstructionTimeView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34471ABF09D31320004C9DBA /* OAConstructionTimeView.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34471AC209D31320004C9DBA /* OAConstructionTimeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34471AC009D31320004C9DBA /* OAConstructionTimeView.m */; };
+		34471AC209D31320004C9DBA /* OAConstructionTimeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34471AC009D31320004C9DBA /* OAConstructionTimeView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		344B6E4912A4D3DC00D876CD /* OATextAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 344B6E4712A4D3DC00D876CD /* OATextAttachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		344B6E4A12A4D3DC00D876CD /* OATextAttachment.m in Sources */ = {isa = PBXBuildFile; fileRef = 344B6E4812A4D3DC00D876CD /* OATextAttachment.m */; };
+		344B6E4A12A4D3DC00D876CD /* OATextAttachment.m in Sources */ = {isa = PBXBuildFile; fileRef = 344B6E4812A4D3DC00D876CD /* OATextAttachment.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		344B6E6212A4D53000D876CD /* OATextAttachment.m in Sources */ = {isa = PBXBuildFile; fileRef = 344B6E4812A4D3DC00D876CD /* OATextAttachment.m */; };
 		344B6E6312A4D53100D876CD /* OATextAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 344B6E4712A4D3DC00D876CD /* OATextAttachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3451254B12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3451254912D421E6009A1AF0 /* OATextAttachmentCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		3451254C12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */; };
+		3451254C12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3451254D12D421E6009A1AF0 /* OATextAttachmentCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3451254912D421E6009A1AF0 /* OATextAttachmentCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3451254E12D421E6009A1AF0 /* OATextAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */; };
 		345E74250C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 345E74230C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		345E74260C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */; };
+		345E74260C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		346A98A215903B0F00CA3359 /* NSAnimationContext-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 346A98A015903B0F00CA3359 /* NSAnimationContext-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		346A98A315903B0F00CA3359 /* NSAnimationContext-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 346A98A115903B0F00CA3359 /* NSAnimationContext-OAExtensions.m */; };
+		346A98A315903B0F00CA3359 /* NSAnimationContext-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 346A98A115903B0F00CA3359 /* NSAnimationContext-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		346DB94B0D74BDAD00CA37DE /* ExceptionHandling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */; };
 		3473992311947194002DF726 /* OAParagraphStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473992111947194002DF726 /* OAParagraphStyle.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3473992511947194002DF726 /* OAParagraphStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473992111947194002DF726 /* OAParagraphStyle.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -75,50 +75,50 @@
 		34812ACD17726A3700C40D0A /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34812ACE17726A3C00C40D0A /* NSLayoutManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */; };
 		349F65E20EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 349F65E00EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		349F65E30EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 349F65E10EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m */; };
+		349F65E30EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 349F65E10EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34A201230FF0454400B699DB /* NSAlert-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2011E0FF0453800B699DB /* NSAlert-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */; };
+		34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34AF4BE20C99963F003DEC1B /* OAColorArchivingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AF4BE10C99963F003DEC1B /* OAColorArchivingTests.m */; };
 		34C21B3013BCF386008D756C /* OAFindPattern.h in Headers */ = {isa = PBXBuildFile; fileRef = 137CBE6F011899AF7F000001 /* OAFindPattern.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34C21B3213BCF38C008D756C /* OAFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE70011899AF7F000001 /* OAFindPattern.m */; };
-		34D04A39110E0270007399B9 /* OAUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D04A38110E0270007399B9 /* OAUtilities.m */; };
+		34D04A39110E0270007399B9 /* OAUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D04A38110E0270007399B9 /* OAUtilities.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34DDE3A7135F65C70099DCCE /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; };
 		34DDE3A8135F65D50099DCCE /* NSAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F36FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34E46E9D0CDEB7330066E943 /* OAFlippedView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E46E9B0CDEB7330066E943 /* OAFlippedView.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34E46E9E0CDEB7330066E943 /* OAFlippedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E46E9C0CDEB7330066E943 /* OAFlippedView.m */; };
+		34E46E9E0CDEB7330066E943 /* OAFlippedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E46E9C0CDEB7330066E943 /* OAFlippedView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34ED275D11DBBD2E006C33FF /* OATextAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 34ED275B11DBBD2E006C33FF /* OATextAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34ED275E11DBBD2E006C33FF /* OATextAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 34ED275C11DBBD2E006C33FF /* OATextAttributes.m */; };
 		34ED275F11DBBD2E006C33FF /* OATextAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 34ED275B11DBBD2E006C33FF /* OATextAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34ED276011DBBD2E006C33FF /* OATextAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 34ED275C11DBBD2E006C33FF /* OATextAttributes.m */; };
+		34ED276011DBBD2E006C33FF /* OATextAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 34ED275C11DBBD2E006C33FF /* OATextAttributes.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34F0990109322B800001D0D5 /* OAAboutPanelController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F098FF09322B800001D0D5 /* OAAboutPanelController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34F0990209322B800001D0D5 /* OAAboutPanelController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F0990009322B800001D0D5 /* OAAboutPanelController.m */; };
-		34F0995809322EA30001D0D5 /* OAAboutPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = 34F0995709322EA30001D0D5 /* OAAboutPanel.nib */; };
+		34F0990209322B800001D0D5 /* OAAboutPanelController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F0990009322B800001D0D5 /* OAAboutPanelController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34F0995809322EA30001D0D5 /* OAAboutPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 34F0995709322EA30001D0D5 /* OAAboutPanel.xib */; };
 		34FA961608BD15D800870B6A /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */; };
 		34FA961808BD15E600870B6A /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010AE8EBFF38DCF8C697A13D /* OmniFoundation.framework */; };
 		3E80E9F61614EFC20078A123 /* OAGradientBoxSeparator.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E80E9F41614EFC20078A123 /* OAGradientBoxSeparator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3E80E9F71614EFC20078A123 /* OAGradientBoxSeparator.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E80E9F41614EFC20078A123 /* OAGradientBoxSeparator.h */; };
-		3E80E9F81614EFC20078A123 /* OAGradientBoxSeparator.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E80E9F51614EFC20078A123 /* OAGradientBoxSeparator.m */; };
+		3E80E9F81614EFC20078A123 /* OAGradientBoxSeparator.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E80E9F51614EFC20078A123 /* OAGradientBoxSeparator.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3EA3A71A1625FD7300351F0C /* OABoxSeparator.h in Headers */ = {isa = PBXBuildFile; fileRef = 007E767610C8469F00313878 /* OABoxSeparator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4205721F0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4205721D0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		420572200CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4205721E0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m */; };
-		4268E9300DBD5319002F30B1 /* OAColorProfile-Deprecated.m in Sources */ = {isa = PBXBuildFile; fileRef = 4268E92E0DBD5319002F30B1 /* OAColorProfile-Deprecated.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations"; }; };
+		420572200CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4205721E0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4268E9300DBD5319002F30B1 /* OAColorProfile-Deprecated.m in Sources */ = {isa = PBXBuildFile; fileRef = 4268E92E0DBD5319002F30B1 /* OAColorProfile-Deprecated.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations -fno-objc-arc"; }; };
 		4268E9CC0DBE6B03002F30B1 /* OAColorProfile-Deprecated.h in Headers */ = {isa = PBXBuildFile; fileRef = 4268E9990DBE52D2002F30B1 /* OAColorProfile-Deprecated.h */; };
 		496D40E014D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOff.png in Resources */ = {isa = PBXBuildFile; fileRef = 496D40DE14D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOff.png */; };
 		496D40E114D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 496D40DF14D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOn.png */; };
 		49B035B0161D02CE0097E384 /* OAGearTemplate.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */; };
 		49B035B1161D02CE0097E384 /* OAGearTemplate@2x.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 49B035AF161D02CE0097E384 /* OAGearTemplate@2x.tiff */; };
 		49EF503D15F6EAD000254849 /* OALabelField.h in Headers */ = {isa = PBXBuildFile; fileRef = 49EF503B15F6EAD000254849 /* OALabelField.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		49EF503E15F6EAD000254849 /* OALabelField.m in Sources */ = {isa = PBXBuildFile; fileRef = 49EF503C15F6EAD000254849 /* OALabelField.m */; };
+		49EF503E15F6EAD000254849 /* OALabelField.m in Sources */ = {isa = PBXBuildFile; fileRef = 49EF503C15F6EAD000254849 /* OALabelField.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4A5F17B3172772F5001A60E5 /* OAWebPageViewer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A5F17B4172772F5001A60E5 /* OAWebPageViewer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */; };
+		4A5F17B4172772F5001A60E5 /* OAWebPageViewer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4A5F17B5172772F5001A60E5 /* OAWebPageViewer.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4A5F17B2172772F5001A60E5 /* OAWebPageViewer.xib */; };
 		4A5F17B71727772C001A60E5 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A5F17B61727772C001A60E5 /* WebKit.framework */; };
 		4A785F590B040C3A00B513F3 /* OAPopupDatePicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A785F570B040C3A00B513F3 /* OAPopupDatePicker.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A785F5A0B040C3A00B513F3 /* OAPopupDatePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A785F580B040C3A00B513F3 /* OAPopupDatePicker.m */; };
+		4A785F5A0B040C3A00B513F3 /* OAPopupDatePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A785F580B040C3A00B513F3 /* OAPopupDatePicker.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4A785F630B040CF500B513F3 /* OADatePickerTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A785F610B040CF500B513F3 /* OADatePickerTextField.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A785F640B040CF500B513F3 /* OADatePickerTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A785F620B040CF500B513F3 /* OADatePickerTextField.m */; };
+		4A785F640B040CF500B513F3 /* OADatePickerTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A785F620B040CF500B513F3 /* OADatePickerTextField.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4A785F670B040D2E00B513F3 /* OASteppableTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A785F650B040D2E00B513F3 /* OASteppableTextField.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A785F680B040D2E00B513F3 /* OASteppableTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A785F660B040D2E00B513F3 /* OASteppableTextField.m */; };
+		4A785F680B040D2E00B513F3 /* OASteppableTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A785F660B040D2E00B513F3 /* OASteppableTextField.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4A785F8B0B040E5500B513F3 /* smallcalendar.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A785F8A0B040E5500B513F3 /* smallcalendar.png */; };
 		4AA05CC70B0414F400EDED39 /* OAPopupDatePicker.nib in Resources */ = {isa = PBXBuildFile; fileRef = 4AA05CC60B0414F400EDED39 /* OAPopupDatePicker.nib */; };
 		4AA1E67C08AA764600E2FF6B /* OAInternetConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 683A0C790033CCD0CD999A52 /* OAInternetConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -207,7 +207,6 @@
 		4AA1E6E808AA764600E2FF6B /* OAMouseTipWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C72445503E886EE00E7FE1C /* OAMouseTipWindow.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6EA08AA764600E2FF6B /* OAOutlineViewEnumerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 4006B5FCFF2D5911C697A12F /* OAOutlineViewEnumerator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6EB08AA764600E2FF6B /* OAPageSelectableDocumentProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F8CFE8AB2E911C9CC38 /* OAPageSelectableDocumentProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6EC08AA764600E2FF6B /* OAPatternColorPicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 3457306005D00FD50097A113 /* OAPatternColorPicker.h */; };
 		4AA1E6ED08AA764600E2FF6B /* OAPopUpButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F8EFE8AB2E911C9CC38 /* OAPopUpButton.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
 		4AA1E6EE08AA764600E2FF6B /* OAResizingByteFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6EF08AA764600E2FF6B /* OAScrollView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F90FE8AB2E911C9CC38 /* OAScrollView.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
@@ -287,116 +286,113 @@
 		4AA1E75B08AA764600E2FF6B /* SwitcherBar_DivLeft_Select.png in Resources */ = {isa = PBXBuildFile; fileRef = B5C0124E059CD62F0097A10E /* SwitcherBar_DivLeft_Select.png */; };
 		4AA1E75C08AA764600E2FF6B /* SwitcherBar_DivRight_Select.png in Resources */ = {isa = PBXBuildFile; fileRef = B5C0124F059CD62F0097A10E /* SwitcherBar_DivRight_Select.png */; };
 		4AA1E75D08AA764600E2FF6B /* SwitcherBar_Fill_Select.png in Resources */ = {isa = PBXBuildFile; fileRef = B5C01250059CD62F0097A10E /* SwitcherBar_Fill_Select.png */; };
-		4AA1E75E08AA764600E2FF6B /* OAPatternColorPicker.nib in Resources */ = {isa = PBXBuildFile; fileRef = 3457306405D011B00097A113 /* OAPatternColorPicker.nib */; };
-		4AA1E75F08AA764600E2FF6B /* OAPatternColorPicker.png in Resources */ = {isa = PBXBuildFile; fileRef = 34BB25C80611078B00572E53 /* OAPatternColorPicker.png */; };
 		4AA1E76108AA764600E2FF6B /* CharsetCategories.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2D7993406DD0F730097A11C /* CharsetCategories.plist */; };
-		4AA1E76908AA764600E2FF6B /* OAInternetConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 683A0C7A0033CCD0CD999A52 /* OAInternetConfig.m */; };
-		4AA1E76B08AA764600E2FF6B /* NSColor-ColorSyncExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57E60416D63300E7FE1C /* NSColor-ColorSyncExtensions.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations"; }; };
-		4AA1E76C08AA764600E2FF6B /* NSImage-ColorSyncExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57EB0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations"; }; };
-		4AA1E76D08AA764600E2FF6B /* OAColorProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = F5AC9DBC032D12E201B4A65D /* OAColorProfile.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations"; }; };
-		4AA1E76E08AA764600E2FF6B /* OACompositeColorProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57E20416D5B800E7FE1C /* OACompositeColorProfile.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations"; }; };
-		4AA1E77A08AA764600E2FF6B /* OAAppKitQueueProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF4FE8AB2E911C9CC38 /* OAAppKitQueueProcessor.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E77B08AA764600E2FF6B /* OAApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF5FE8AB2E911C9CC38 /* OAApplication.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E77C08AA764600E2FF6B /* OAColorPalette.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E77D08AA764600E2FF6B /* OAController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A9FDD380655955D0097A149 /* OAController.m */; };
-		4AA1E77E08AA764600E2FF6B /* OADragController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF7FE8AB2E911C9CC38 /* OADragController.m */; };
-		4AA1E77F08AA764600E2FF6B /* OAFindController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF8FE8AB2E911C9CC38 /* OAFindController.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E78008AA764600E2FF6B /* OAFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE70011899AF7F000001 /* OAFindPattern.m */; };
-		4AA1E78108AA764600E2FF6B /* OAFontCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF9FE8AB2E911C9CC38 /* OAFontCache.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E78208AA764600E2FF6B /* OAPasteboardHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EFAFE8AB2E911C9CC38 /* OAPasteboardHelper.m */; };
-		4AA1E78308AA764600E2FF6B /* OARegExFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE740118A5EC7F000001 /* OARegExFindPattern.m */; };
-		4AA1E78508AA764600E2FF6B /* OAScriptToolbarHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = F57089B401FEA73201B4A65B /* OAScriptToolbarHelper.m */; };
-		4AA1E78608AA764600E2FF6B /* OASheetRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A04B9CC047BFCE40097A149 /* OASheetRequest.m */; };
-		4AA1E78708AA764600E2FF6B /* OAToolbarWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = F59B07D001FE36AE01B4A65D /* OAToolbarWindowController.m */; };
-		4AA1E78808AA764600E2FF6B /* NSAppleEventDescriptor-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 66D9C72B029F5AF60097A138 /* NSAppleEventDescriptor-OAExtensions.m */; };
-		4AA1E78908AA764600E2FF6B /* NSAppleScript-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 66D9C71C029F51620097A138 /* NSAppleScript-OAExtensions.m */; };
-		4AA1E78A08AA764600E2FF6B /* NSApplication-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F1FFE8AB2E911C9CC38 /* NSApplication-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E78B08AA764600E2FF6B /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E78C08AA764600E2FF6B /* NSBezierPath-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F411EA2036D27330297A14E /* NSBezierPath-OAExtensions.m */; };
-		4AA1E78D08AA764600E2FF6B /* NSBrowser-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F21FE8AB2E911C9CC38 /* NSBrowser-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E78E08AA764600E2FF6B /* NSBundle-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F22FE8AB2E911C9CC38 /* NSBundle-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E78F08AA764600E2FF6B /* NSCell-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F23FE8AB2E911C9CC38 /* NSCell-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E79008AA764600E2FF6B /* NSColor-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0145F2A8FFAFE867C697A15C /* NSColor-OAExtensions.m */; settings = {ATTRIBUTES = (); }; };
-		4AA1E79108AA764600E2FF6B /* NSControl-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F24FE8AB2E911C9CC38 /* NSControl-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E79308AA764600E2FF6B /* NSDocument-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 163F2FA9055776D80097A165 /* NSDocument-OAExtensions.m */; };
-		4AA1E79408AA764600E2FF6B /* NSDocumentController-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 000303DE014E0AC13997A12D /* NSDocumentController-OAExtensions.m */; };
-		4AA1E79508AA764600E2FF6B /* NSFileManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = F500F43C0204C91901648025 /* NSFileManager-OAExtensions.m */; };
-		4AA1E79608AA764600E2FF6B /* NSFont-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F26FE8AB2E911C9CC38 /* NSFont-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E79708AA764600E2FF6B /* NSFontManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 341513E9FFA7B9E0C697A14A /* NSFontManager-OAExtensions.m */; settings = {ATTRIBUTES = (); }; };
+		4AA1E76908AA764600E2FF6B /* OAInternetConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 683A0C7A0033CCD0CD999A52 /* OAInternetConfig.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E76B08AA764600E2FF6B /* NSColor-ColorSyncExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57E60416D63300E7FE1C /* NSColor-ColorSyncExtensions.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations -fno-objc-arc"; }; };
+		4AA1E76C08AA764600E2FF6B /* NSImage-ColorSyncExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57EB0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations -fno-objc-arc"; }; };
+		4AA1E76D08AA764600E2FF6B /* OAColorProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = F5AC9DBC032D12E201B4A65D /* OAColorProfile.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations -fno-objc-arc"; }; };
+		4AA1E76E08AA764600E2FF6B /* OACompositeColorProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = 6CBB57E20416D5B800E7FE1C /* OACompositeColorProfile.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations -fno-objc-arc"; }; };
+		4AA1E77A08AA764600E2FF6B /* OAAppKitQueueProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF4FE8AB2E911C9CC38 /* OAAppKitQueueProcessor.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E77B08AA764600E2FF6B /* OAApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF5FE8AB2E911C9CC38 /* OAApplication.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E77C08AA764600E2FF6B /* OAColorPalette.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E77D08AA764600E2FF6B /* OAController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A9FDD380655955D0097A149 /* OAController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E77E08AA764600E2FF6B /* OADragController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF7FE8AB2E911C9CC38 /* OADragController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E77F08AA764600E2FF6B /* OAFindController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF8FE8AB2E911C9CC38 /* OAFindController.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78008AA764600E2FF6B /* OAFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE70011899AF7F000001 /* OAFindPattern.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78108AA764600E2FF6B /* OAFontCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF9FE8AB2E911C9CC38 /* OAFontCache.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78208AA764600E2FF6B /* OAPasteboardHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EFAFE8AB2E911C9CC38 /* OAPasteboardHelper.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78308AA764600E2FF6B /* OARegExFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE740118A5EC7F000001 /* OARegExFindPattern.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78508AA764600E2FF6B /* OAScriptToolbarHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = F57089B401FEA73201B4A65B /* OAScriptToolbarHelper.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78608AA764600E2FF6B /* OASheetRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A04B9CC047BFCE40097A149 /* OASheetRequest.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78708AA764600E2FF6B /* OAToolbarWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = F59B07D001FE36AE01B4A65D /* OAToolbarWindowController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78808AA764600E2FF6B /* NSAppleEventDescriptor-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 66D9C72B029F5AF60097A138 /* NSAppleEventDescriptor-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78908AA764600E2FF6B /* NSAppleScript-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 66D9C71C029F51620097A138 /* NSAppleScript-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78A08AA764600E2FF6B /* NSApplication-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F1FFE8AB2E911C9CC38 /* NSApplication-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78B08AA764600E2FF6B /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78C08AA764600E2FF6B /* NSBezierPath-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F411EA2036D27330297A14E /* NSBezierPath-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78D08AA764600E2FF6B /* NSBrowser-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F21FE8AB2E911C9CC38 /* NSBrowser-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78E08AA764600E2FF6B /* NSBundle-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F22FE8AB2E911C9CC38 /* NSBundle-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78F08AA764600E2FF6B /* NSCell-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F23FE8AB2E911C9CC38 /* NSCell-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79008AA764600E2FF6B /* NSColor-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0145F2A8FFAFE867C697A15C /* NSColor-OAExtensions.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79108AA764600E2FF6B /* NSControl-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F24FE8AB2E911C9CC38 /* NSControl-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79308AA764600E2FF6B /* NSDocument-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 163F2FA9055776D80097A165 /* NSDocument-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79408AA764600E2FF6B /* NSDocumentController-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 000303DE014E0AC13997A12D /* NSDocumentController-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79508AA764600E2FF6B /* NSFileManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = F500F43C0204C91901648025 /* NSFileManager-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79608AA764600E2FF6B /* NSFont-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F26FE8AB2E911C9CC38 /* NSFont-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79708AA764600E2FF6B /* NSFontManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 341513E9FFA7B9E0C697A14A /* NSFontManager-OAExtensions.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E79808AA764600E2FF6B /* NSImage-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F27FE8AB2E911C9CC38 /* NSImage-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E79908AA764600E2FF6B /* NSMenu-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9399D7FFCA29A4C697A10E /* NSMenu-OAExtensions.m */; settings = {ATTRIBUTES = (); }; };
-		4AA1E79A08AA764600E2FF6B /* NSObject-NSDraggingInfo-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A0AC9D105F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.m */; };
-		4AA1E79B08AA764600E2FF6B /* NSOutlineView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F28FE8AB2E911C9CC38 /* NSOutlineView-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E79C08AA764600E2FF6B /* NSPasteboard-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F29FE8AB2E911C9CC38 /* NSPasteboard-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E79D08AA764600E2FF6B /* NSPopUpButton-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2AFE8AB2E911C9CC38 /* NSPopUpButton-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E79E08AA764600E2FF6B /* NSScrollView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2BFE8AB2E911C9CC38 /* NSScrollView-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E79F08AA764600E2FF6B /* NSSliderCell-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2CFE8AB2E911C9CC38 /* NSSliderCell-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7A008AA764600E2FF6B /* NSSplitView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2DFE8AB2E911C9CC38 /* NSSplitView-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7A108AA764600E2FF6B /* NSString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2EFE8AB2E911C9CC38 /* NSString-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7A208AA764600E2FF6B /* NSTableView-OAColumnConfigurationExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = B594F4B80516718E0097A10E /* NSTableView-OAColumnConfigurationExtensions.m */; };
-		4AA1E7A308AA764600E2FF6B /* NSTableView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2EAA6AE6FF476391C697A12F /* NSTableView-OAExtensions.m */; settings = {ATTRIBUTES = (); }; };
-		4AA1E7A408AA764600E2FF6B /* NSText-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2FFE8AB2E911C9CC38 /* NSText-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7A508AA764600E2FF6B /* NSTextField-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F30FE8AB2E911C9CC38 /* NSTextField-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7A608AA764600E2FF6B /* NSTextStorage-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = F54F12690204F1370127B3D4 /* NSTextStorage-OAExtensions.m */; };
-		4AA1E7A708AA764600E2FF6B /* NSToolbar-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 66CD437B0132454A0097A13E /* NSToolbar-OAExtensions.m */; };
-		4AA1E7A808AA764600E2FF6B /* NSToolbarItem-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = F07B9A0E022AB6663897A113 /* NSToolbarItem-OAExtensions.m */; };
-		4AA1E7A908AA764600E2FF6B /* NSUserDefaults-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F31FE8AB2E911C9CC38 /* NSUserDefaults-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7AA08AA764600E2FF6B /* NSView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F32FE8AB2E911C9CC38 /* NSView-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7AB08AA764600E2FF6B /* NSWindow-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F33FE8AB2E911C9CC38 /* NSWindow-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7AD08AA764600E2FF6B /* OAPreferenceClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F69FE8AB2E911C9CC38 /* OAPreferenceClient.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7AE08AA764600E2FF6B /* OAPreferenceClientRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F6AFE8AB2E911C9CC38 /* OAPreferenceClientRecord.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7AF08AA764600E2FF6B /* OAPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F6BFE8AB2E911C9CC38 /* OAPreferenceController.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7B008AA764600E2FF6B /* OAPreferencesIconView.m in Sources */ = {isa = PBXBuildFile; fileRef = 01563697FFE9F5FAC697A14E /* OAPreferencesIconView.m */; settings = {ATTRIBUTES = (); }; };
-		4AA1E7B108AA764600E2FF6B /* OAPreferencesToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6620D67B01335CA00097A13E /* OAPreferencesToolbar.m */; };
-		4AA1E7B208AA764600E2FF6B /* OAPreferencesWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 6620D674013359840097A13E /* OAPreferencesWindow.m */; };
-		4AA1E7B508AA764600E2FF6B /* OAAquaButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F87FE8AB2E911C9CC38 /* OAAquaButton.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7B608AA764600E2FF6B /* OABackgroundImageControl.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FEDAD0055862C20097A10E /* OABackgroundImageControl.m */; };
-		4AA1E7B708AA764600E2FF6B /* OABrowserCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F79FE8AB2E911C9CC38 /* OABrowserCell.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7B808AA764600E2FF6B /* OACalendarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 114343E20066D6B4C697A12D /* OACalendarView.m */; };
-		4AA1E7B908AA764600E2FF6B /* OAChasingArrowsProgressIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 6389AAF5FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.m */; settings = {ATTRIBUTES = (); }; };
-		4AA1E7BA08AA764600E2FF6B /* OAColorWell.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B14EF50573A3FF0097A113 /* OAColorWell.m */; };
-		4AA1E7BB08AA764600E2FF6B /* OAConfigurableColumnTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7BFE8AB2E911C9CC38 /* OAConfigurableColumnTableView.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7BC08AA764600E2FF6B /* OAContextButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C3F57A050FE63D0097A10E /* OAContextButton.m */; };
-		4AA1E7BD08AA764600E2FF6B /* OADataSourceTableColumn.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B14EED0572E2820097A113 /* OADataSourceTableColumn.m */; };
-		4AA1E7BE08AA764600E2FF6B /* OADefaultSettingIndicatorButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B584AFE7058A7A2F0097A10E /* OADefaultSettingIndicatorButton.m */; };
-		4AA1E7C108AA764600E2FF6B /* OADocumentPositioningView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BEAF23F01FF6D7D0297A15C /* OADocumentPositioningView.m */; };
-		4AA1E7C208AA764600E2FF6B /* OADottedLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 662681AE00DFECA50097A13D /* OADottedLine.m */; };
-		4AA1E7C508AA764600E2FF6B /* OAFileWell.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F1451400106CD07F000001 /* OAFileWell.m */; settings = {ATTRIBUTES = (); }; };
-		4AA1E7C608AA764600E2FF6B /* OAFontView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7AFE8AB2E911C9CC38 /* OAFontView.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7C708AA764600E2FF6B /* OAGradientTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = E274EDCC056D99550097A12E /* OAGradientTableView.m */; };
-		4AA1E7C808AA764600E2FF6B /* OAGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00EB4312FEF05391C697A12D /* OAGridView.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7C908AA764600E2FF6B /* OAHierarchicalPopUpController.m in Sources */ = {isa = PBXBuildFile; fileRef = 70BA5ED7FF72DDC0C697A146 /* OAHierarchicalPopUpController.m */; settings = {ATTRIBUTES = (); }; };
-		4AA1E7CB08AA764600E2FF6B /* OAMouseTipView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C72445A03E88BCE00E7FE1C /* OAMouseTipView.m */; };
-		4AA1E7CC08AA764600E2FF6B /* OAMouseTipWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C72445603E886EE00E7FE1C /* OAMouseTipWindow.m */; };
-		4AA1E7CE08AA764600E2FF6B /* OAOutlineViewEnumerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 4006B5FDFF2D5911C697A12F /* OAOutlineViewEnumerator.m */; };
-		4AA1E7CF08AA764600E2FF6B /* OAPatternColorPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 3457306105D00FD50097A113 /* OAPatternColorPicker.m */; };
-		4AA1E7D008AA764600E2FF6B /* OAPopUpButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7CFE8AB2E911C9CC38 /* OAPopUpButton.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7D108AA764600E2FF6B /* OAResizingByteFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7D208AA764600E2FF6B /* OAScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7EFE8AB2E911C9CC38 /* OAScrollView.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7D308AA764600E2FF6B /* OASearchField.m in Sources */ = {isa = PBXBuildFile; fileRef = B50281E1055710210097A10E /* OASearchField.m */; };
-		4AA1E7D408AA764600E2FF6B /* OAShrinkingTextDisplayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 13F8BB4AFF32715FC697A13D /* OAShrinkingTextDisplayer.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7D508AA764600E2FF6B /* OAShrinkyTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F51348201C5B6D40297A14E /* OAShrinkyTextField.m */; };
-		4AA1E7D608AA764600E2FF6B /* OASplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DA2DC6AFFC5E9A8C697A15C /* OASplitView.m */; settings = {ATTRIBUTES = (); }; };
-		4AA1E7D708AA764600E2FF6B /* OAStackView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00EC5D5EFF141372C697A12F /* OAStackView.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7D808AA764600E2FF6B /* OASwitcherBarButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CBF0800517D86A0097A10E /* OASwitcherBarButtonCell.m */; };
-		4AA1E7D908AA764600E2FF6B /* OASwitcherBarMatrix.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CBF0820517D86A0097A10E /* OASwitcherBarMatrix.m */; };
-		4AA1E7DA08AA764600E2FF6B /* OASwoopView.m in Sources */ = {isa = PBXBuildFile; fileRef = A2177CD504FEC4FF0097A146 /* OASwoopView.m */; };
-		4AA1E7DB08AA764600E2FF6B /* OATabView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F82FE8AB2E911C9CC38 /* OATabView.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7DC08AA764600E2FF6B /* OATabViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F83FE8AB2E911C9CC38 /* OATabViewController.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7DD08AA764600E2FF6B /* OATabbedWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F81FE8AB2E911C9CC38 /* OATabbedWindowController.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7DE08AA764600E2FF6B /* OATextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F84FE8AB2E911C9CC38 /* OATextField.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7DF08AA764600E2FF6B /* OATextWithIconCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 010A51C1005212DBC697A13D /* OATextWithIconCell.m */; };
-		4AA1E7E008AA764600E2FF6B /* OAThumbnailView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F86FE8AB2E911C9CC38 /* OAThumbnailView.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7E108AA764600E2FF6B /* OAToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 34476AE406DF790B0097A113 /* OAToolbar.m */; };
-		4AA1E7E208AA764600E2FF6B /* OAToolbarImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0147B43A003E0D307F000001 /* OAToolbarImageView.m */; };
-		4AA1E7E308AA764600E2FF6B /* OAToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 34001C4B00325FDBC697A13D /* OAToolbarItem.m */; };
-		4AA1E7E508AA764600E2FF6B /* OAVectorCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A508C05715F0A0097A113 /* OAVectorCell.m */; };
-		4AA1E7E608AA764600E2FF6B /* OAVectorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A507A0571430C0097A113 /* OAVectorView.m */; };
-		4AA1E7E708AA764600E2FF6B /* OAWindowCascade.m in Sources */ = {isa = PBXBuildFile; fileRef = 0CF02C25FF1319B8C697A12F /* OAWindowCascade.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
-		4AA1E7E808AA764600E2FF6B /* OASpringLoadHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = E2CBC36106EF77CE0097A11C /* OASpringLoadHelper.m */; };
-		4AA1E7E908AA764600E2FF6B /* OAContextPopUpButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 345057E206F207DD0097A113 /* OAContextPopUpButton.m */; };
-		4AA1E7EA08AA764600E2FF6B /* OAContextControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 345057E606F209090097A113 /* OAContextControl.m */; };
-		4AA1E7EC08AA764600E2FF6B /* OAAutosizingHorizontalRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 3412B1D3089EE7E10046872B /* OAAutosizingHorizontalRule.m */; };
+		4AA1E79908AA764600E2FF6B /* NSMenu-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B9399D7FFCA29A4C697A10E /* NSMenu-OAExtensions.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79A08AA764600E2FF6B /* NSObject-NSDraggingInfo-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A0AC9D105F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79B08AA764600E2FF6B /* NSOutlineView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F28FE8AB2E911C9CC38 /* NSOutlineView-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79C08AA764600E2FF6B /* NSPasteboard-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F29FE8AB2E911C9CC38 /* NSPasteboard-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79D08AA764600E2FF6B /* NSPopUpButton-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2AFE8AB2E911C9CC38 /* NSPopUpButton-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79E08AA764600E2FF6B /* NSScrollView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2BFE8AB2E911C9CC38 /* NSScrollView-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E79F08AA764600E2FF6B /* NSSliderCell-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2CFE8AB2E911C9CC38 /* NSSliderCell-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7A008AA764600E2FF6B /* NSSplitView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2DFE8AB2E911C9CC38 /* NSSplitView-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7A108AA764600E2FF6B /* NSString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2EFE8AB2E911C9CC38 /* NSString-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7A208AA764600E2FF6B /* NSTableView-OAColumnConfigurationExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = B594F4B80516718E0097A10E /* NSTableView-OAColumnConfigurationExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7A308AA764600E2FF6B /* NSTableView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2EAA6AE6FF476391C697A12F /* NSTableView-OAExtensions.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7A408AA764600E2FF6B /* NSText-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F2FFE8AB2E911C9CC38 /* NSText-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7A508AA764600E2FF6B /* NSTextField-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F30FE8AB2E911C9CC38 /* NSTextField-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7A608AA764600E2FF6B /* NSTextStorage-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = F54F12690204F1370127B3D4 /* NSTextStorage-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7A708AA764600E2FF6B /* NSToolbar-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 66CD437B0132454A0097A13E /* NSToolbar-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7A808AA764600E2FF6B /* NSToolbarItem-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = F07B9A0E022AB6663897A113 /* NSToolbarItem-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7A908AA764600E2FF6B /* NSUserDefaults-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F31FE8AB2E911C9CC38 /* NSUserDefaults-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7AA08AA764600E2FF6B /* NSView-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F32FE8AB2E911C9CC38 /* NSView-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7AB08AA764600E2FF6B /* NSWindow-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F33FE8AB2E911C9CC38 /* NSWindow-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7AD08AA764600E2FF6B /* OAPreferenceClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F69FE8AB2E911C9CC38 /* OAPreferenceClient.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7AE08AA764600E2FF6B /* OAPreferenceClientRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F6AFE8AB2E911C9CC38 /* OAPreferenceClientRecord.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7AF08AA764600E2FF6B /* OAPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F6BFE8AB2E911C9CC38 /* OAPreferenceController.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7B008AA764600E2FF6B /* OAPreferencesIconView.m in Sources */ = {isa = PBXBuildFile; fileRef = 01563697FFE9F5FAC697A14E /* OAPreferencesIconView.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7B108AA764600E2FF6B /* OAPreferencesToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6620D67B01335CA00097A13E /* OAPreferencesToolbar.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7B208AA764600E2FF6B /* OAPreferencesWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 6620D674013359840097A13E /* OAPreferencesWindow.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7B508AA764600E2FF6B /* OAAquaButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F87FE8AB2E911C9CC38 /* OAAquaButton.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7B608AA764600E2FF6B /* OABackgroundImageControl.m in Sources */ = {isa = PBXBuildFile; fileRef = B5FEDAD0055862C20097A10E /* OABackgroundImageControl.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7B708AA764600E2FF6B /* OABrowserCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F79FE8AB2E911C9CC38 /* OABrowserCell.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7B808AA764600E2FF6B /* OACalendarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 114343E20066D6B4C697A12D /* OACalendarView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7B908AA764600E2FF6B /* OAChasingArrowsProgressIndicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 6389AAF5FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7BA08AA764600E2FF6B /* OAColorWell.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B14EF50573A3FF0097A113 /* OAColorWell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7BB08AA764600E2FF6B /* OAConfigurableColumnTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7BFE8AB2E911C9CC38 /* OAConfigurableColumnTableView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7BC08AA764600E2FF6B /* OAContextButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C3F57A050FE63D0097A10E /* OAContextButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7BD08AA764600E2FF6B /* OADataSourceTableColumn.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B14EED0572E2820097A113 /* OADataSourceTableColumn.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7BE08AA764600E2FF6B /* OADefaultSettingIndicatorButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B584AFE7058A7A2F0097A10E /* OADefaultSettingIndicatorButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7C108AA764600E2FF6B /* OADocumentPositioningView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BEAF23F01FF6D7D0297A15C /* OADocumentPositioningView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7C208AA764600E2FF6B /* OADottedLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 662681AE00DFECA50097A13D /* OADottedLine.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7C508AA764600E2FF6B /* OAFileWell.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F1451400106CD07F000001 /* OAFileWell.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7C608AA764600E2FF6B /* OAFontView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7AFE8AB2E911C9CC38 /* OAFontView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7C708AA764600E2FF6B /* OAGradientTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = E274EDCC056D99550097A12E /* OAGradientTableView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7C808AA764600E2FF6B /* OAGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00EB4312FEF05391C697A12D /* OAGridView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7C908AA764600E2FF6B /* OAHierarchicalPopUpController.m in Sources */ = {isa = PBXBuildFile; fileRef = 70BA5ED7FF72DDC0C697A146 /* OAHierarchicalPopUpController.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7CB08AA764600E2FF6B /* OAMouseTipView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C72445A03E88BCE00E7FE1C /* OAMouseTipView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7CC08AA764600E2FF6B /* OAMouseTipWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C72445603E886EE00E7FE1C /* OAMouseTipWindow.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7CE08AA764600E2FF6B /* OAOutlineViewEnumerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 4006B5FDFF2D5911C697A12F /* OAOutlineViewEnumerator.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7D008AA764600E2FF6B /* OAPopUpButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7CFE8AB2E911C9CC38 /* OAPopUpButton.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7D108AA764600E2FF6B /* OAResizingByteFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7D208AA764600E2FF6B /* OAScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7EFE8AB2E911C9CC38 /* OAScrollView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7D308AA764600E2FF6B /* OASearchField.m in Sources */ = {isa = PBXBuildFile; fileRef = B50281E1055710210097A10E /* OASearchField.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7D408AA764600E2FF6B /* OAShrinkingTextDisplayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 13F8BB4AFF32715FC697A13D /* OAShrinkingTextDisplayer.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7D508AA764600E2FF6B /* OAShrinkyTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F51348201C5B6D40297A14E /* OAShrinkyTextField.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7D608AA764600E2FF6B /* OASplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DA2DC6AFFC5E9A8C697A15C /* OASplitView.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7D708AA764600E2FF6B /* OAStackView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00EC5D5EFF141372C697A12F /* OAStackView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7D808AA764600E2FF6B /* OASwitcherBarButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CBF0800517D86A0097A10E /* OASwitcherBarButtonCell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7D908AA764600E2FF6B /* OASwitcherBarMatrix.m in Sources */ = {isa = PBXBuildFile; fileRef = B5CBF0820517D86A0097A10E /* OASwitcherBarMatrix.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7DA08AA764600E2FF6B /* OASwoopView.m in Sources */ = {isa = PBXBuildFile; fileRef = A2177CD504FEC4FF0097A146 /* OASwoopView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7DB08AA764600E2FF6B /* OATabView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F82FE8AB2E911C9CC38 /* OATabView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7DC08AA764600E2FF6B /* OATabViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F83FE8AB2E911C9CC38 /* OATabViewController.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7DD08AA764600E2FF6B /* OATabbedWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F81FE8AB2E911C9CC38 /* OATabbedWindowController.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7DE08AA764600E2FF6B /* OATextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F84FE8AB2E911C9CC38 /* OATextField.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7DF08AA764600E2FF6B /* OATextWithIconCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 010A51C1005212DBC697A13D /* OATextWithIconCell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E008AA764600E2FF6B /* OAThumbnailView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F86FE8AB2E911C9CC38 /* OAThumbnailView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E108AA764600E2FF6B /* OAToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 34476AE406DF790B0097A113 /* OAToolbar.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E208AA764600E2FF6B /* OAToolbarImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0147B43A003E0D307F000001 /* OAToolbarImageView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E308AA764600E2FF6B /* OAToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 34001C4B00325FDBC697A13D /* OAToolbarItem.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E508AA764600E2FF6B /* OAVectorCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A508C05715F0A0097A113 /* OAVectorCell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E608AA764600E2FF6B /* OAVectorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A507A0571430C0097A113 /* OAVectorView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E708AA764600E2FF6B /* OAWindowCascade.m in Sources */ = {isa = PBXBuildFile; fileRef = 0CF02C25FF1319B8C697A12F /* OAWindowCascade.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E808AA764600E2FF6B /* OASpringLoadHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = E2CBC36106EF77CE0097A11C /* OASpringLoadHelper.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E908AA764600E2FF6B /* OAContextPopUpButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 345057E206F207DD0097A113 /* OAContextPopUpButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7EA08AA764600E2FF6B /* OAContextControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 345057E606F209090097A113 /* OAContextControl.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7EC08AA764600E2FF6B /* OAAutosizingHorizontalRule.m in Sources */ = {isa = PBXBuildFile; fileRef = 3412B1D3089EE7E10046872B /* OAAutosizingHorizontalRule.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7EE08AA764600E2FF6B /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51FBBFE8AB2E911C9CC38 /* OmniBase.framework */; };
 		4AA1E7EF08AA764600E2FF6B /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010AE8EBFF38DCF8C697A13D /* OmniFoundation.framework */; };
 		4AA1E7F008AA764600E2FF6B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6389AAFAFFFFF26AC697A14E /* Cocoa.framework */; };
@@ -416,30 +412,30 @@
 		4D7B031B16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4D7B031916A9DA7F006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png */; };
 		4D7B031C16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4D7B031A16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png */; };
 		4D92F571174C10BA00E251EF /* OAResizingTitleBarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D92F56F174C10BA00E251EF /* OAResizingTitleBarButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4D92F572174C10BA00E251EF /* OAResizingTitleBarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D92F570174C10BA00E251EF /* OAResizingTitleBarButton.m */; };
+		4D92F572174C10BA00E251EF /* OAResizingTitleBarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D92F570174C10BA00E251EF /* OAResizingTitleBarButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4DFEA4981728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
 		4DFEA4991728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
 		4DFEA49A17285B8C00149B1F /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4DFEA49B17285B8D00149B1F /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50A5C89608C5505500B1C5E4 /* NSEvent-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 50A5C89408C5505500B1C5E4 /* NSEvent-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		50A5C89708C5505500B1C5E4 /* NSEvent-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */; };
+		50A5C89708C5505500B1C5E4 /* NSEvent-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		5F25681B1606CBE5008265EA /* Automator.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F25681A1606CBE5008265EA /* Automator.framework */; };
 		5F92995C16A50A9300AA4D18 /* OAScriptIconTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92995A16A50A9300AA4D18 /* OAScriptIconTemplate.png */; };
 		5F92995D16A50A9300AA4D18 /* OAScriptIconTemplate@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92995B16A50A9300AA4D18 /* OAScriptIconTemplate@2x.png */; };
 		5F92996116A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92995F16A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate.png */; };
 		5F92996216A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92996016A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png */; };
 		94E1CE0B10D803C5000A01F9 /* OACloseButtonOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		94E1CE0C10D803C5000A01F9 /* OACloseButtonOverlay.m in Sources */ = {isa = PBXBuildFile; fileRef = 94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */; };
+		94E1CE0C10D803C5000A01F9 /* OACloseButtonOverlay.m in Sources */ = {isa = PBXBuildFile; fileRef = 94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		9FFB676D0C18A44000910EEF /* OADatePicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 9FFB676B0C18A44000910EEF /* OADatePicker.h */; };
-		9FFB676E0C18A44000910EEF /* OADatePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFB676C0C18A44000910EEF /* OADatePicker.m */; };
+		9FFB676E0C18A44000910EEF /* OADatePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFB676C0C18A44000910EEF /* OADatePicker.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		A216D1350AB61E9C00CEC8C0 /* NSBezierPath-OAInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = A216D1330AB61E9C00CEC8C0 /* NSBezierPath-OAInternal.h */; };
 		A25653B80ADDBFB400A2A25B /* OAControlTextColorTransformer.h in Headers */ = {isa = PBXBuildFile; fileRef = A25653B60ADDBFB400A2A25B /* OAControlTextColorTransformer.h */; };
-		A25653B90ADDBFB400A2A25B /* OAControlTextColorTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = A25653B70ADDBFB400A2A25B /* OAControlTextColorTransformer.m */; };
+		A25653B90ADDBFB400A2A25B /* OAControlTextColorTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = A25653B70ADDBFB400A2A25B /* OAControlTextColorTransformer.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		A268A98E09D1FE84005278DA /* OAGeometryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A268A98509D1FDF3005278DA /* OAGeometryTests.m */; };
 		A27039C30B9E006600C1D4A7 /* OATextFieldBinder.h in Headers */ = {isa = PBXBuildFile; fileRef = A27039C10B9E006600C1D4A7 /* OATextFieldBinder.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A27039C40B9E006600C1D4A7 /* OATextFieldBinder.m in Sources */ = {isa = PBXBuildFile; fileRef = A27039C20B9E006600C1D4A7 /* OATextFieldBinder.m */; };
+		A27039C40B9E006600C1D4A7 /* OATextFieldBinder.m in Sources */ = {isa = PBXBuildFile; fileRef = A27039C20B9E006600C1D4A7 /* OATextFieldBinder.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		A27FE4600CAB033300EE72BA /* OASlowLoadingImage.h in Headers */ = {isa = PBXBuildFile; fileRef = A27FE45E0CAB033300EE72BA /* OASlowLoadingImage.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A27FE4610CAB033300EE72BA /* OASlowLoadingImage.m in Sources */ = {isa = PBXBuildFile; fileRef = A27FE45F0CAB033300EE72BA /* OASlowLoadingImage.m */; };
+		A27FE4610CAB033300EE72BA /* OASlowLoadingImage.m in Sources */ = {isa = PBXBuildFile; fileRef = A27FE45F0CAB033300EE72BA /* OASlowLoadingImage.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		A2BB56380C9753BD00274A08 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2BB56370C9753BD00274A08 /* QuartzCore.framework */; };
 		A2C0C37F0E3596E600773D47 /* Catalog-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C34C0E3596E600773D47 /* Catalog-number-full.plist */; };
 		A2C0C3800E3596E600773D47 /* Catalog-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C34D0E3596E600773D47 /* Catalog-number-partial.plist */; };
@@ -492,13 +488,13 @@
 		A2C0C3AF0E3596E600773D47 /* WhiteAlpha-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37C0E3596E600773D47 /* WhiteAlpha-string-full.plist */; };
 		A2C0C3B00E3596E600773D47 /* WhiteAlpha-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37D0E3596E600773D47 /* WhiteAlpha-string-partial.plist */; };
 		A2C0C3B10E3596E600773D47 /* WhiteAlpha.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37E0E3596E600773D47 /* WhiteAlpha.xml */; };
-		E228439B115D622F00948C13 /* OAStepperTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = E228439A115D622F00948C13 /* OAStepperTextField.m */; };
+		E228439B115D622F00948C13 /* OAStepperTextField.m in Sources */ = {isa = PBXBuildFile; fileRef = E228439A115D622F00948C13 /* OAStepperTextField.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		E228439E115D623700948C13 /* OAStepperTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = E228439D115D623700948C13 /* OAStepperTextField.h */; };
 		E234124E1718D0D80009F48E /* OAAction@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E234124D1718D0D80009F48E /* OAAction@2x.png */; };
 		E235B46415CC771600E162D6 /* OATrackingLoop.h in Headers */ = {isa = PBXBuildFile; fileRef = E235B46215CC771600E162D6 /* OATrackingLoop.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E235B46515CC771600E162D6 /* OATrackingLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B46315CC771600E162D6 /* OATrackingLoop.m */; };
+		E235B46515CC771600E162D6 /* OATrackingLoop.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B46315CC771600E162D6 /* OATrackingLoop.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		E235B69F15CC836000E162D6 /* OAToolbarButton.h in Headers */ = {isa = PBXBuildFile; fileRef = E235B69D15CC836000E162D6 /* OAToolbarButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		E235B6A015CC836000E162D6 /* OAToolbarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B69E15CC836000E162D6 /* OAToolbarButton.m */; };
+		E235B6A015CC836000E162D6 /* OAToolbarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = E235B69E15CC836000E162D6 /* OAToolbarButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		E2B8A8D815BE016E00B5F26B /* OAPreferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8D615BE016E00B5F26B /* OAPreferences.xib */; };
 		E2B8AA1115BE06F300B5F26B /* OALeftArrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8AA0D15BE06F300B5F26B /* OALeftArrow@2x.png */; };
 		E2B8AA1215BE06F300B5F26B /* OALeftArrowPressed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8AA0E15BE06F300B5F26B /* OALeftArrowPressed@2x.png */; };
@@ -735,9 +731,6 @@
 		34508D6F050FAA750097A113 /* OATestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATestCase.m; sourceTree = "<group>"; };
 		3451254912D421E6009A1AF0 /* OATextAttachmentCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATextAttachmentCell.h; sourceTree = "<group>"; };
 		3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATextAttachmentCell.m; sourceTree = "<group>"; };
-		3457306005D00FD50097A113 /* OAPatternColorPicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPatternColorPicker.h; sourceTree = "<group>"; };
-		3457306105D00FD50097A113 /* OAPatternColorPicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPatternColorPicker.m; sourceTree = "<group>"; };
-		3457306505D011B00097A113 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/OAPatternColorPicker.nib; sourceTree = "<group>"; };
 		345E74230C6D07CB0034A811 /* OASendFeedbackErrorRecovery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASendFeedbackErrorRecovery.h; sourceTree = "<group>"; };
 		345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASendFeedbackErrorRecovery.m; sourceTree = "<group>"; };
 		346A548A0551B08600C03EF8 /* OAUnitTests_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAUnitTests_Prefix.h; sourceTree = "<group>"; };
@@ -763,7 +756,6 @@
 		34B14EED0572E2820097A113 /* OADataSourceTableColumn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADataSourceTableColumn.m; sourceTree = "<group>"; };
 		34B14EF40573A3FF0097A113 /* OAColorWell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAColorWell.h; sourceTree = "<group>"; };
 		34B14EF50573A3FF0097A113 /* OAColorWell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorWell.m; sourceTree = "<group>"; };
-		34BB25C80611078B00572E53 /* OAPatternColorPicker.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAPatternColorPicker.png; sourceTree = "<group>"; };
 		34D04A38110E0270007399B9 /* OAUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAUtilities.m; sourceTree = "<group>"; };
 		34DAF8660556CA0D0097A113 /* OAVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAVersion.h; sourceTree = "<group>"; };
 		34DBC8C205979AE60097A113 /* OAMakeImageSizeIntegral.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAMakeImageSizeIntegral.m; sourceTree = "<group>"; };
@@ -774,7 +766,7 @@
 		34ED275C11DBBD2E006C33FF /* OATextAttributes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATextAttributes.m; sourceTree = "<group>"; };
 		34F098FF09322B800001D0D5 /* OAAboutPanelController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAboutPanelController.h; sourceTree = "<group>"; };
 		34F0990009322B800001D0D5 /* OAAboutPanelController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAboutPanelController.m; sourceTree = "<group>"; };
-		34F0995709322EA30001D0D5 /* OAAboutPanel.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = OAAboutPanel.nib; sourceTree = "<group>"; };
+		34F0995709322EA30001D0D5 /* OAAboutPanel.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OAAboutPanel.xib; sourceTree = "<group>"; };
 		3E80E9F41614EFC20078A123 /* OAGradientBoxSeparator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAGradientBoxSeparator.h; sourceTree = "<group>"; };
 		3E80E9F51614EFC20078A123 /* OAGradientBoxSeparator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGradientBoxSeparator.m; sourceTree = "<group>"; };
 		3F411EA1036D27330297A14E /* NSBezierPath-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBezierPath-OAExtensions.h"; sourceTree = "<group>"; };
@@ -799,7 +791,6 @@
 		4A0AC9D005F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject-NSDraggingInfo-OAExtensions.h"; sourceTree = "<group>"; };
 		4A0AC9D105F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject-NSDraggingInfo-OAExtensions.m"; sourceTree = "<group>"; };
 		4A5714CD08B0436100B772DA /* Info-OAUnitTests.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-OAUnitTests.plist"; sourceTree = SOURCE_ROOT; };
-		4A5714D308B0439D00B772DA /* Info-OAPatternColorPicker.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-OAPatternColorPicker.plist"; sourceTree = SOURCE_ROOT; };
 		4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAWebPageViewer.h; sourceTree = "<group>"; };
 		4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAWebPageViewer.m; sourceTree = "<group>"; };
 		4A5F17B2172772F5001A60E5 /* OAWebPageViewer.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OAWebPageViewer.xib; sourceTree = "<group>"; };
@@ -817,7 +808,6 @@
 		4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAUnitTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OAMakeImageSizeIntegral; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AA1E82C08AA764700E2FF6B /* OAPatternColorPicker.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAPatternColorPicker.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1EBCD08AA772700E2FF6B /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AA1EBCE08AA772700E2FF6B /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AA1EBCF08AA772700E2FF6B /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
@@ -1010,7 +1000,7 @@
 		B5CBF0A50517D8860097A10E /* SwitcherBar_Fill.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SwitcherBar_Fill.png; sourceTree = "<group>"; };
 		B5FEDACF055862C20097A10E /* OABackgroundImageControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OABackgroundImageControl.h; sourceTree = "<group>"; };
 		B5FEDAD0055862C20097A10E /* OABackgroundImageControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OABackgroundImageControl.m; sourceTree = "<group>"; };
-		BF94281F062222D400B83989 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BF94281F062222D400B83989 /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 4; path = Info.plist; sourceTree = "<group>"; };
 		E20CCE8D058021200097A12E /* OAAction.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAAction.png; sourceTree = "<group>"; };
 		E228439A115D622F00948C13 /* OAStepperTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAStepperTextField.m; sourceTree = "<group>"; };
 		E228439D115D623700948C13 /* OAStepperTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAStepperTextField.h; sourceTree = "<group>"; };
@@ -1100,13 +1090,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4AA1E82408AA764700E2FF6B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1127,7 +1110,6 @@
 				4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */,
 				4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */,
 				4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */,
-				4AA1E82C08AA764700E2FF6B /* OAPatternColorPicker.bundle */,
 				3434791511923B54007D0CE5 /* libOmniAppKit.a */,
 				3401163511E5181A0016ADB3 /* libOmniAppKitTouchTests.a */,
 			);
@@ -1351,18 +1333,6 @@
 			path = Tests/UnitTests;
 			sourceTree = "<group>";
 		};
-		3457305F05D00FAE0097A113 /* NSColor */ = {
-			isa = PBXGroup;
-			children = (
-				4A5714D308B0439D00B772DA /* Info-OAPatternColorPicker.plist */,
-				3457306005D00FD50097A113 /* OAPatternColorPicker.h */,
-				3457306105D00FD50097A113 /* OAPatternColorPicker.m */,
-				34BB25C80611078B00572E53 /* OAPatternColorPicker.png */,
-				3457306405D011B00097A113 /* OAPatternColorPicker.nib */,
-			);
-			name = NSColor;
-			sourceTree = "<group>";
-		};
 		346A989E15903AF100CA3359 /* NSAnimationContext */ = {
 			isa = PBXGroup;
 			children = (
@@ -1452,7 +1422,6 @@
 				00E51EF3FE8AB2E911C9CC38 /* OmniFoundation */,
 				3FDA413602096EE50297A14E /* NSApplication */,
 				3FDA4140020970820297A14E /* NSCell */,
-				3457305F05D00FAE0097A113 /* NSColor */,
 				3FDA4138020970130297A14E /* NSView */,
 			);
 			name = "Cocoa Subclasses";
@@ -1994,7 +1963,7 @@
 				345E74240C6D07CB0034A811 /* OASendFeedbackErrorRecovery.m */,
 				34F098FF09322B800001D0D5 /* OAAboutPanelController.h */,
 				34F0990009322B800001D0D5 /* OAAboutPanelController.m */,
-				34F0995709322EA30001D0D5 /* OAAboutPanel.nib */,
+				34F0995709322EA30001D0D5 /* OAAboutPanel.xib */,
 			);
 			name = "Application Controller";
 			sourceTree = "<group>";
@@ -2466,7 +2435,6 @@
 				340DF1371846BB6800B9F375 /* NSScriptCommand-OAExtensions.h in Headers */,
 				4AA1E6EA08AA764600E2FF6B /* OAOutlineViewEnumerator.h in Headers */,
 				4AA1E6EB08AA764600E2FF6B /* OAPageSelectableDocumentProtocol.h in Headers */,
-				4AA1E6EC08AA764600E2FF6B /* OAPatternColorPicker.h in Headers */,
 				4AA1E6ED08AA764600E2FF6B /* OAPopUpButton.h in Headers */,
 				4AA1E6EE08AA764600E2FF6B /* OAResizingByteFormatter.h in Headers */,
 				4AA1E6EF08AA764600E2FF6B /* OAScrollView.h in Headers */,
@@ -2552,13 +2520,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4AA1E81308AA764700E2FF6B /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4AA1E82108AA764700E2FF6B /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2664,33 +2625,13 @@
 			productReference = 4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */;
 			productType = "com.apple.product-type.tool";
 		};
-		4AA1E82008AA764700E2FF6B /* OAPatternColorPicker */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 4AA1E82608AA764700E2FF6B /* Build configuration list for PBXNativeTarget "OAPatternColorPicker" */;
-			buildPhases = (
-				4AA1E82108AA764700E2FF6B /* Headers */,
-				4AA1E82208AA764700E2FF6B /* Resources */,
-				4AA1E82308AA764700E2FF6B /* Sources */,
-				4AA1E82408AA764700E2FF6B /* Frameworks */,
-				4AA1E82508AA764700E2FF6B /* Rez */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = OAPatternColorPicker;
-			productInstallPath = "$(USER_LIBRARY_DIR)/Bundles";
-			productName = OAPatternColorPicker;
-			productReference = 4AA1E82C08AA764700E2FF6B /* OAPatternColorPicker.bundle */;
-			productType = "com.apple.product-type.bundle";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		00E51EF1FE8AB2E911C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 4A4E085608AA75E90098FF0F /* Build configuration list for PBXProject "OmniAppKit" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2707,7 +2648,6 @@
 				4AA1E67A08AA764600E2FF6B /* OmniAppKit (Framework) */,
 				4AA1E7FA08AA764600E2FF6B /* OAUnitTests */,
 				4AA1E81208AA764700E2FF6B /* OAMakeImageSizeIntegral */,
-				4AA1E82008AA764700E2FF6B /* OAPatternColorPicker */,
 				3434791411923B54007D0CE5 /* OmniAppKitTouch */,
 				3401163411E5181A0016ADB3 /* OmniAppKitTouchTests */,
 			);
@@ -2772,10 +2712,8 @@
 				4AA1E75B08AA764600E2FF6B /* SwitcherBar_DivLeft_Select.png in Resources */,
 				4AA1E75C08AA764600E2FF6B /* SwitcherBar_DivRight_Select.png in Resources */,
 				4AA1E75D08AA764600E2FF6B /* SwitcherBar_Fill_Select.png in Resources */,
-				4AA1E75E08AA764600E2FF6B /* OAPatternColorPicker.nib in Resources */,
-				4AA1E75F08AA764600E2FF6B /* OAPatternColorPicker.png in Resources */,
 				4AA1E76108AA764600E2FF6B /* CharsetCategories.plist in Resources */,
-				34F0995809322EA30001D0D5 /* OAAboutPanel.nib in Resources */,
+				34F0995809322EA30001D0D5 /* OAAboutPanel.xib in Resources */,
 				4AA05CC70B0414F400EDED39 /* OAPopupDatePicker.nib in Resources */,
 				4A785F8B0B040E5500B513F3 /* smallcalendar.png in Resources */,
 				008AB54C14032D67001F29CD /* OADropDownTriangle.png in Resources */,
@@ -2859,13 +2797,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4AA1E82208AA764700E2FF6B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXRezBuildPhase section */
@@ -2877,13 +2808,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4AA1E81808AA764700E2FF6B /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4AA1E82508AA764700E2FF6B /* Rez */ = {
 			isa = PBXRezBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -3033,7 +2957,6 @@
 				4AA1E7CB08AA764600E2FF6B /* OAMouseTipView.m in Sources */,
 				4AA1E7CC08AA764600E2FF6B /* OAMouseTipWindow.m in Sources */,
 				4AA1E7CE08AA764600E2FF6B /* OAOutlineViewEnumerator.m in Sources */,
-				4AA1E7CF08AA764600E2FF6B /* OAPatternColorPicker.m in Sources */,
 				4AA1E7D008AA764600E2FF6B /* OAPopUpButton.m in Sources */,
 				4AA1E7D108AA764600E2FF6B /* OAResizingByteFormatter.m in Sources */,
 				4AA1E7D208AA764600E2FF6B /* OAScrollView.m in Sources */,
@@ -3129,13 +3052,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4AA1E82308AA764700E2FF6B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -3159,14 +3075,6 @@
 			);
 			name = OAFindPanel.xib;
 			sourceTree = "<group>";
-		};
-		3457306405D011B00097A113 /* OAPatternColorPicker.nib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				3457306505D011B00097A113 /* en */,
-			);
-			name = OAPatternColorPicker.nib;
-			sourceTree = SOURCE_ROOT;
 		};
 		4AA05CC60B0414F400EDED39 /* OAPopupDatePicker.nib */ = {
 			isa = PBXVariantGroup;
@@ -3288,6 +3196,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA1EBD108AA772700E2FF6B /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -3304,6 +3213,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA1EBD208AA772700E2FF6B /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -3320,6 +3230,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA1EBD008AA772700E2FF6B /* Omni-Framework-Coverage.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -3407,33 +3318,6 @@
 			};
 			name = Coverage;
 		};
-		4AA1E82708AA764700E2FF6B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AB8F09908AD0A0600DBB061 /* Omni-Bundle-Debug.xcconfig */;
-			buildSettings = {
-				INFOPLIST_FILE = "Info-OAPatternColorPicker.plist";
-				PRODUCT_NAME = OAPatternColorPicker;
-			};
-			name = Debug;
-		};
-		4AA1E82808AA764700E2FF6B /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AB8F09A08AD0A0600DBB061 /* Omni-Bundle-Release.xcconfig */;
-			buildSettings = {
-				INFOPLIST_FILE = "Info-OAPatternColorPicker.plist";
-				PRODUCT_NAME = OAPatternColorPicker;
-			};
-			name = Release;
-		};
-		4AA1E82908AA764700E2FF6B /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AB8F09808AD0A0600DBB061 /* Omni-Bundle-Coverage.xcconfig */;
-			buildSettings = {
-				INFOPLIST_FILE = "Info-OAPatternColorPicker.plist";
-				PRODUCT_NAME = OAPatternColorPicker;
-			};
-			name = Coverage;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -3493,16 +3377,6 @@
 				4AA1E81A08AA764700E2FF6B /* Debug */,
 				4AA1E81B08AA764700E2FF6B /* Release */,
 				4AA1E81C08AA764700E2FF6B /* Coverage */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		4AA1E82608AA764700E2FF6B /* Build configuration list for PBXNativeTarget "OAPatternColorPicker" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4AA1E82708AA764700E2FF6B /* Debug */,
-				4AA1E82808AA764700E2FF6B /* Release */,
-				4AA1E82908AA764700E2FF6B /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

@@ -186,7 +186,10 @@ RCS_ID("$Id$");
 - (void)_addAttachmentFromAsset:(ALAsset *)asset;
 {
     ALAssetRepresentation *rep = [asset defaultRepresentation];
+    OBASSERT([rep size] > 0);
+#if !defined(__LP64__)
     OBASSERT([rep size] <= NSUIntegerMax); // -size returns long long, which warns on 32-bit
+#endif
     NSMutableData *data = [NSMutableData dataWithLength:(NSUInteger)[rep size]];
     
     NSError *error = nil;

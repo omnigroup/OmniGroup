@@ -1,4 +1,4 @@
-/* font size label format string in points */
+﻿/* font size label format string in points */
 "%@ points" = "%@ ポイント";
 
 /* title format for color component slider */

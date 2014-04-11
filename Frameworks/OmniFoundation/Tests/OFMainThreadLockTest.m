@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2007, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@ RCS_ID("$Id$");
 
 int main(int argc, char *argv[])
 {
-    OMNI_POOL_START {
+    @autoreleasepool {
         id target;
     
         [OBPostLoader processClasses];
@@ -31,10 +31,10 @@ int main(int argc, char *argv[])
         [NSThread detachNewThreadSelector:@selector(heartbeat) toTarget:target withObject:nil];
         while (count-- != 0)
             [NSThread detachNewThreadSelector:@selector(grabMainThreadLock) toTarget:target withObject:nil];
-    } OMNI_POOL_END;
-    OMNI_POOL_START {
+    }
+    @autoreleasepool {
         [[NSRunLoop currentRunLoop] run];
-    } OMNI_POOL_END;
+    }
     return 0;
 }
 
@@ -47,22 +47,22 @@ static unsigned int completedLockCount; // Protected by the main thread's lock
     unsigned int count = LOCK_COUNT;
 
     while (count--) {
-        OMNI_POOL_START {
+        @autoreleasepool {
             [NSThread lockMainThread];
             completedLockCount++;
             [NSThread unlockMainThread];
             [[NSDate dateWithTimeIntervalSinceNow:0.01] sleepUntilDate];
-        } OMNI_POOL_END;
+        }
     }
 }
 
 + (void)heartbeat;
 {
     while (YES) {
-        OMNI_POOL_START {
+        @autoreleasepool {
             [self mainThreadPerformSelector:@selector(printCount)];
             [[NSDate dateWithTimeIntervalSinceNow:0.25] sleepUntilDate];
-        } OMNI_POOL_END;
+        }
     }
 }
 

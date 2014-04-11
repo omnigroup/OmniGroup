@@ -133,16 +133,16 @@ unexpected="no"
 for x in "$TMP_OUTPUT"/*(N); do
     echo "Checking $x against ${LOCALIZABLE_FILE_LIST}-tmp"
     if [ "$x" != "$LOCALIZABLE_FILE_LIST"-tmp ]; then
-        echo "Unexpected string file emitted: $x"
+        echo >&2 "Unexpected string file emitted: $x"
         unexpected="yes"
     fi
 done
 
-if [ $unexpected = "no" ]; then
+if [ $unexpected = "yes" ]; then
+    exit 1
+else
     mv "$LOCALIZABLE_FILE_LIST"-tmp "$LOCALIZABLE_FILE_LIST"
+
+    echo "Localized files:"
+    cat "$LOCALIZABLE_FILE_LIST"
 fi
-
-echo "Localized files:"
-cat "$LOCALIZABLE_FILE_LIST"
-
-exit $unexpected

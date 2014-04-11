@@ -1,0 +1,140 @@
+/* Software update report format for number of cores in the CPU */
+"%@ cores" = "%@ cœurs";
+
+/* error description - the host from which we retrieve updates is unreachable */
+"%@ is not reachable." = "%@ n’est pas joignable.";
+
+/* Software update report entry string for multiple crashes */
+"%ld crashes" = "%ld blocages";
+
+/* Software update report entry string for a multiple hours of use */
+"%ld hours" = "%ld heures";
+
+/* Software update report entry string for a single launch */
+"%ld launches" = "%ld lancements";
+
+/* Software update report entry string for a multiple minutes of use */
+"%ld minutes" = "%ld minutes";
+
+/* Software update report entry name for information about the runs of all versions of the app */
+"All versions" = "Toutes les versions";
+
+/* OmniSoftwareUpdate privacy notice message format */
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Souhaitez-vous autoriser %@ à envoyer périodiquement des informations sur votre modèle de matériel et votre version iOS ?\nNous pourrons ainsi connaître les configurations pour lesquelles il est prioritaire de fournir une assistance. Vous pourrez changer votre réponse ultérieurement dans les préférences.";
+
+/* Software update report entry name */
+"Application identifier" = "Identifiant d’application";
+
+/* Software update report entry name */
+"Application version" = "Version d’application";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "L’opération de vérification a échoué.";
+
+/* error text generated when software update is unable to retrieve the list of current software versions */
+"Could not contact %@." = "Impossible de contacter %@.";
+
+/* Software update report entry name */
+"CPU" = "Processeur";
+
+/* Software update report entry name */
+"Device" = "Appareil";
+
+/* software update settings title */
+"Device Information" = "Infos sur l’appareil";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Don't Report" = "Ne pas signaler";
+
+/* error description */
+"Error fetching software update information." = "Erreur lors de l’extraction des informations de mise à jour du logiciel.";
+
+/* error description */
+"Error while checking for updated version." = "Erreur lors de la recherche d’une version mise à jour.";
+
+/* error reason */
+"Exception raised: %@" = "Exception : %@";
+
+/* software update settings cell detail text */
+"Help The Omni Group decide which devices and iOS versions to support" = "Aidez Omni Group à déterminer les appareils et les versions d’iOS à prendre en charge";
+
+/* Settings preferences detail text */
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "En partageant ces informations, vous nous informerez sur les appareils et versions iOS à prendre en charge pour nos logiciels.\nCes informations resteront totalement anonymes.";
+
+/* Software update report entry name */
+"iOS version" = "Version iOS";
+
+/* Software update report entry name */
+"Language" = "Langue";
+
+/* Software update report entry name */
+"Memory" = "Mémoire";
+
+/* OmniSoftwareUpdate privacy notice alert title */
+"Omni Software Update" = "Mise à jour des logiciels Omni";
+
+/* Software update report entry string for a single crash */
+"One crash" = "Un blocage";
+
+/* Software update report entry string for a single hour of use */
+"One hour" = "Une heure";
+
+/* Software update report entry string for a single launch */
+"One launch" = "Un lancement";
+
+/* Software update report entry string for a single minute of use */
+"One minute" = "Une minute";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "Réessayez ou contactez-nous pour nous signaler que cela ne fonctionne pas.";
+
+/* Software update report entry name */
+"Report identifier" = "Identifiant de rapport";
+
+/* Software update report entry name */
+"Report version" = "Version de rapport";
+
+/* software update settings cell title */
+"Send anonymous device information" = "Envoyer des informations anonymes sur l’appareil";
+
+/* Settings option title */
+"Send anonymous device information?" = "Envoyer des informations anonymes sur l’appareil ?";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Send Reports" = "Envoyer les rapports";
+
+/* software update settings menu title */
+"Settings" = "Réglages";
+
+/* Software update report entry name */
+"Storage" = "Stockage";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "Les données renvoyées par <%@> n’étaient pas un document XML valide.";
+
+/* Settings option title */
+"The following information will be sent:" = "Les informations suivantes seront envoyées :";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "Les informations de mise à jour ne sont pas signées.";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "Un problème est survenu lors de la vérification de la signature.";
+
+/* Software update report entry name for information about the runs of the current version of the app */
+"This version" = "Cette version";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "L’outil n’a renvoyé aucune donnée.";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "Impossible d’authentifier la réponse du serveur de mise à jour de logiciels.";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "Impossible d’extraire les informations de mise à jour des logiciels.";
+
+/* error description */
+"Unable to parse response from the software update server." = "Impossible d’analyser la réponse du serveur de mise à jour de logiciels.";
+
+/* error text generated when software update is unable to retrieve the list of current software versions */
+"Your Internet connection might not be active, or there might be a problem somewhere along the network." = "Votre connexion Internet n’est peut-être pas active ou il peut y avoir un problème quelque part dans le réseau.";

@@ -38,10 +38,10 @@
 "Font" = "Lettertype";
 
 /* Increment font size button accessibility label */
-"Font bigger" = "Groter lettertype";
+"Font bigger" = "Lettertype groter";
 
 /* Decrement font size button accessibility label */
-"Font smaller" = "Kleiner lettertype";
+"Font smaller" = "Lettertype kleiner";
 
 /* popover inspector label title for mulitple selection */
 "Multiple Selection" = "Meervoudige selectie";
@@ -56,7 +56,7 @@
 "Recommended Fonts" = "Aanbevolen lettertypen";
 
 /* Name for the variant of a font with out any special attributes */
-"Regular" = "Normaal";
+"Regular" = "Regular";
 
 /* Label for font size controls */
 "Size" = "Grootte";

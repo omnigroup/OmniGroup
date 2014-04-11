@@ -135,8 +135,6 @@ INFOPLIST_PREPROCESS = YES
 // Also, look for <foo/bar.h> headers that other projects have installed
 HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR" "$CONFIGURATION_BUILD_DIR" "$(TARGET_BUILD_DIR)/include" "$(OBJROOT)/UninstalledProducts/include"
 
-// Unlike gcc and llvm-gcc, clang emits ObjC runtime info for class extensions conforming to protocols. Also, clang has more warning checks than gcc.
-//GCC_VERSION = com.apple.compilers.llvmgcc42
 GCC_VERSION = com.apple.compilers.llvm.clang.1_0
 //CC[sdk=iphone*]=/Users/bungi/Source/LLVM/llvm/Release+Asserts/bin/clang
 //CC[sdk=iphonesimulator*]=/Users/bungi/Source/LLVM/llvm/Release+Asserts/bin/clang

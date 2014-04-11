@@ -20,7 +20,7 @@
 "Please make sure that the destination folder exists." = "Убедитесь, что папка назначения существует.";
 
 /* error reason */
-"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\"." = "Сервер %1$@ вернул сообщение «%2$@» (%3$d) в ответ на запрос «%4$@ %5$@».";
+"The %@ server returned \"%@\" (%ld) in response to a request to \"%@ %@\"." = "Сервер %1$@ вернул сообщение «%2$@» (%3$ld) в ответ на запрос «%4$@ %5$@».";
 
 /* error description */
 "Unable to delete file." = "Не удается удалить файл.";

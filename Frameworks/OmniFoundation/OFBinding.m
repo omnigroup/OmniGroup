@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -474,6 +474,24 @@ NSString *OFKeyPathForKeys(NSString *firstKey, ...)
 NSArray *OFKeysForKeyPath(NSString *keyPath)
 {
     return [keyPath componentsSeparatedByString:@"."];
+}
+
+NSArray *OFPrefixedKeyPaths(NSString *prefixKey, NSArray *keyPaths)
+{
+    OBPRECONDITION(prefixKey != nil);
+    
+    if (prefixKey == nil)
+        return [[keyPaths copy] autorelease];
+    
+    NSArray *result = [keyPaths arrayByPerformingBlock:^id(id obj) {
+        NSString *keyPath = OB_CHECKED_CAST(NSString, obj);
+        NSMutableString *prefixedKeyPath = [prefixKey mutableCopy];
+        [prefixedKeyPath appendString:@"."];
+        [prefixedKeyPath appendString:keyPath];
+        return [prefixedKeyPath autorelease];
+    }];
+    
+    return result;
 }
 
 // Directly modifies the set, publishing KVO changes

@@ -5,22 +5,22 @@
 "insufficient storage" = "存储空间不足";
 
 /* error reason - listing contents of a nonexistent directory */
-"No document exists at \"%@\"." = "“%@”中没有文件。";
+"No document exists at \"%@\"." = "“%@”无文稿。";
 
 /* error reason */
-"No such file \"%@\"." = "无此文件“%@”。";
+"No such file \"%@\"." = "没有文件“%@”。";
 
 /* error suggestion */
-"Please check that the user name and password you provided are correct." = "请检查用户名和您提供的密码准确无误。";
+"Please check that the user name and password you provided are correct." = "请检查您所提供的用户名和密码是否正确。";
 
 /* error reason */
 "Please make sure that the account information is correct." = "请确保帐户信息正确。";
 
 /* error reason */
-"Please make sure that the destination folder exists." = "请确保存在目标文件夹。";
+"Please make sure that the destination folder exists." = "请确保目标文件夹存在。";
 
 /* error reason */
-"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\"." = "%1$@ 服务器返回“%2$@”(%3$d) 以回应“%4$@ %5$@”的请求。";
+"The %@ server returned \"%@\" (%ld) in response to a request to \"%@ %@\"." = "%1$@ 服务器返回“%2$@”(%3$ld) 以响应“%4$@ %5$@”的请求。";
 
 /* error description */
 "Unable to delete file." = "无法删除文件。";
@@ -29,7 +29,7 @@
 "Unable to perform WebDAV operation." = "无法执行 WebDAV 操作。";
 
 /* error description */
-"Unable to read document." = "无法读取文件。";
+"Unable to read document." = "不能读取文稿。";
 
 /* Error description */
-"WebDAV server failed conformance test." = "WebDAV 服务器无法进行一致性测试。";
+"WebDAV server failed conformance test." = "WebDAV 服务器一致性测试失败。";

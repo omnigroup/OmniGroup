@@ -1,4 +1,4 @@
-// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,7 @@ RCS_ID("$Id$");
 static const struct { SecTrustResultType code; NSString *display; } results[] = {
     { kSecTrustResultInvalid, @"Invalid" },
     { kSecTrustResultProceed, @"Proceed" },
-#if defined(MAC_OS_X_VERSION_MIN_REQUIRED) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_9)
+#if defined(MAC_OS_X_VERSION_MIN_REQUIRED) && (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9)
     { kSecTrustResultConfirm, @"Confirm" }, /* Removed in 10.9 */
 #endif
     { kSecTrustResultDeny, @"Deny" },

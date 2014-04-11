@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -88,8 +88,8 @@ static NSArray *oldDisabledBundleNames;
         // Sanity check the main bundle's Info.plist. In particular, this helps make sure we detect if the InfoPlist.h scheme we use gets broken by using Xcode's plist editor.
         NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     
-        OBASSERT([[[OFVersionNumber alloc] initWithVersionString:[infoDictionary objectForKey:(id)kCFBundleVersionKey]] autorelease]);
-        OBASSERT([[[OFVersionNumber alloc] initWithVersionString:[infoDictionary objectForKey:(id)CFSTR("CFBundleShortVersionString")]] autorelease]);
+        OBASSERT(OB_AUTORELEASE([[OFVersionNumber alloc] initWithVersionString:[infoDictionary objectForKey:(id)kCFBundleVersionKey]]));
+        OBASSERT(OB_AUTORELEASE([[OFVersionNumber alloc] initWithVersionString:[infoDictionary objectForKey:(id)CFSTR("CFBundleShortVersionString")]]));
         
         NSString *copyright = [infoDictionary objectForKey:@"NSHumanReadableCopyright"];
         NSCharacterSet *decimalDigits = [NSCharacterSet decimalDigitCharacterSet];
@@ -516,27 +516,27 @@ static NSString *_normalizedPath(NSString *path)
     // To facilitate sharing default registrations between Mac frameworks and iOS apps that link them as static libraries (but don't get the Info.plist), we allow putting the shared defaults in *.defaults resources.
     // We do this before the entries from the bundle infoDictionary so that the main app can override defaults from static libraries.
     for (NSString *path in [bundle pathsForResourcesOfType:@"defaults" inDirectory:nil]) {
-        NSError *error = nil;
-        
         if ([path hasPrefix:@"/System/"]) {
             // Don't grab stuff from "/System/Library/Frameworks/PreferencePanes.framework/Resources/global.defaults"
             continue;
         }
         
-        CFPropertyListRef plist = OFCreatePropertyListFromFile((CFStringRef)path, kCFPropertyListImmutable, (CFErrorRef *)&error);
+        CFErrorRef error = NULL;
+        CFPropertyListRef plist = OFCreatePropertyListFromFile((OB_BRIDGE CFStringRef)path, kCFPropertyListImmutable, &error);
         if (!plist) {
-            NSLog(@"Unable to parse %@ as a property list: %@", path, [error toPropertyList]);
-            [error release];
+            [(OB_BRIDGE NSError *)error log:@"Unable to parse \"%@\" as a property list", path];
+            if (error)
+                CFRelease(error);
             continue;
         }
         
-        if (![(id)plist isKindOfClass:[NSDictionary class]]) {
+        if (![(OB_BRIDGE id)plist isKindOfClass:[NSDictionary class]]) {
             NSLog(@"Contents of %@ is not a dictionary.", path);
             CFRelease(plist);
             continue;
         }
         
-        [NSUserDefaults registerItemName:OFUserDefaultsRegistrationItemName bundle:bundle description:(NSDictionary *)plist];
+        [NSUserDefaults registerItemName:OFUserDefaultsRegistrationItemName bundle:bundle description:(OB_BRIDGE NSDictionary *)plist];
         CFRelease(plist);
     }
 

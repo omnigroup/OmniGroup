@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -126,28 +126,27 @@ static void _OFXMLAppendCharacterEntityWithOptions(CFMutableStringRef result, ui
     }
 }
 
+static void createXMLEntityCharacterSet(void *tgt)
+{
+    // XML doesn't allow low ASCII characters.  See the 'Char' production in section 2.2 of the spec:
+    //
+    // Char := #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]	/* any Unicode character, excluding the surrogate blocks, FFFE, and FFFF. */
+    NSMutableCharacterSet *set = [[NSString discouragedXMLCharacterSet] mutableCopy];
+    
+    // Additionally, XML uses a few special characters for elements, entities and quoting.  We'll write character entities for all of these (unless some quoting flags tell us differently)
+    [set addCharactersInString:@"&<>\"'\n"];
+    *(CFCharacterSetRef *)tgt = CFCharacterSetCreateCopy(kCFAllocatorDefault, (OB_BRIDGE CFMutableCharacterSetRef)set);
+    [set release];
+}
+
 // Replace characters with basic entities
 static NSString *_OFXMLCreateStringWithEntityReferences(NSString *sourceString, unsigned int entityMask, NSString *optionalNewlineString) NS_RETURNS_RETAINED;
 static NSString *_OFXMLCreateStringWithEntityReferences(NSString *sourceString, unsigned int entityMask, NSString *optionalNewlineString)
 {
     // Could maybe build smaller character sets for different entityMask combinations, but this should get most of the benefit (any special character we handle here).
+    static dispatch_once_t entityCharactersOnce;
     static CFCharacterSetRef entityCharacters = NULL;
-    if (!entityCharacters) {
-	// XML doesn't allow low ASCII characters.  See the 'Char' production in section 2.2 of the spec:
-	//
-	// Char := #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]	/* any Unicode character, excluding the surrogate blocks, FFFE, and FFFF. */
-	CFMutableCharacterSetRef set = CFCharacterSetCreateMutable(kCFAllocatorDefault);
-	CFCharacterSetAddCharactersInRange(set, (CFRange){0, 0x20});
-	CFCharacterSetRemoveCharactersInRange(set, (CFRange){0x9, 1});
-	CFCharacterSetRemoveCharactersInRange(set, (CFRange){0xA, 1});
-	CFCharacterSetRemoveCharactersInRange(set, (CFRange){0xD, 1});
-	
-	// Additionally, XML uses a few special characters for elements, entities and quoting.  We'll write character entities for all of these (unless some quoting flags tell us differently)
-	CFCharacterSetAddCharactersInString(set, CFSTR("&<>\"'\n"));
-	
-        entityCharacters = CFCharacterSetCreateCopy(kCFAllocatorDefault, set);
-	CFRelease(set);
-    }
+    dispatch_once_f(&entityCharactersOnce, &entityCharacters, createXMLEntityCharacterSet);
     
     CFIndex charIndex, charCount = CFStringGetLength((CFStringRef)sourceString);
     CFRange fullRange = (CFRange){0, charCount};
@@ -190,7 +189,7 @@ static NSString *_OFXMLCreateStringWithEntityReferences(NSString *sourceString, 
             CFStringAppendCharacters(result, &c, 1);
     }
 
-    return NSMakeCollectable(result);
+    return (OB_BRIDGE NSString *)result;
 }
 
 // Replace characters not representable in string encoding with numbered character references
@@ -259,6 +258,8 @@ NSString *OFXMLCreateStringWithEntityReferencesInCFEncoding(NSString *sourceStri
     if (sourceString == nil)
         return nil;
 
+    OBASSERT(![sourceString containsCharacterInSet:[NSString invalidXMLCharacterSet]]);
+    
     str = _OFXMLCreateStringWithEntityReferences(sourceString, entityMask, optionalNewlineString);
     OBASSERT(str);
 

@@ -1,11 +1,11 @@
-// Copyright 2002-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniFoundation/OFEnumNameTable.h>
+#import "OFEnumNameTable-Internal.h"
 
 #import <OmniFoundation/CFArray-OFExtensions.h>
 #import <OmniFoundation/CFDictionary-OFExtensions.h>
@@ -38,21 +38,25 @@ The implementation does not currently assume anything about the range of the enu
     _defaultEnumValue = defaultEnumValue;
 
     // Typically the default value will be first, but not always, so we don't set its order here.
-    _enumOrder = OBCFMakeCollectable(CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFIntegerArrayCallbacks));
+    _enumOrder = CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFIntegerArrayCallbacks);
 
-    _enumToName = OBCFMakeCollectable(CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFIntegerDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks));
-    _enumToDisplayName = OBCFMakeCollectable(CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFIntegerDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks));
-    _nameToEnum = OBCFMakeCollectable(CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFIntegerDictionaryValueCallbacks));
+    _enumToName = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFIntegerDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks);
+    _enumToDisplayName = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFIntegerDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks);
+    _nameToEnum = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFIntegerDictionaryValueCallbacks);
     
     return self;
 }
 
 - (void)dealloc;
 {
-    CFRelease(_enumOrder);
-    CFRelease(_enumToName);
-    CFRelease(_enumToDisplayName);
-    CFRelease(_nameToEnum);
+    if (_enumOrder)
+        CFRelease(_enumOrder);
+    if (_enumToName)
+        CFRelease(_enumToName);
+    if (_enumToDisplayName)
+        CFRelease(_enumToDisplayName);
+    if (_nameToEnum)
+        CFRelease(_nameToEnum);
     [super dealloc];
 }
 
@@ -83,37 +87,37 @@ The implementation does not currently assume anything about the range of the enu
 
     OFCFArrayAppendIntegerValue(_enumOrder, enumValue);
 
-    OFCFDictionarySetValueForInteger(_enumToName, enumValue, (const void *)enumName);
-    OFCFDictionarySetValueForInteger(_enumToDisplayName, enumValue, (const void *)displayName);
-    OFCFDictionarySetIntegerValue(_nameToEnum, (const void *)enumName, enumValue);
+    OFCFDictionarySetValueForInteger(_enumToName, enumValue, (OB_BRIDGE const void *)enumName);
+    OFCFDictionarySetValueForInteger(_enumToDisplayName, enumValue, (OB_BRIDGE const void *)displayName);
+    OFCFDictionarySetIntegerValue(_nameToEnum, (OB_BRIDGE const void *)enumName, enumValue);
 }
 
 /*" Returns the string name corresponding to the given integer enumeration value. "*/
 - (NSString *)nameForEnum:(NSInteger)enumValue_;
 {
-    NSString *name = nil;
+    const void *name = NULL;
     intptr_t enumValue = enumValue_;
     
-    if (!CFDictionaryGetValueIfPresent(_enumToName, (const void *)enumValue, (const void **)&name)) {
+    if (!CFDictionaryGetValueIfPresent(_enumToName, (const void *)enumValue, &name)) {
         // Since the enumeration values are internal, we expect that we know all of them and all are registered.
         [NSException raise: NSInvalidArgumentException format: @"Attempted to get name for unregistered enum value %ld", enumValue];
     }
     OBASSERT(name);
-    return name;
+    return (OB_BRIDGE NSString *)name;
 }
 
 /*" Returns the display name corresponding to the given integer enumeration value. "*/
 - (NSString *)displayNameForEnum:(NSInteger)enumValue_;
 {
-    NSString *name = nil;
+    const void *name = NULL;
     intptr_t enumValue = enumValue_;
 
-    if (!CFDictionaryGetValueIfPresent(_enumToDisplayName, (const void *)enumValue, (const void **)&name)) {
+    if (!CFDictionaryGetValueIfPresent(_enumToDisplayName, (const void *)enumValue, &name)) {
         // Since the enumeration values are internal, we expect that we know all of them and all are registered.
         [NSException raise: NSInvalidArgumentException format: @"Attempted to get display name for unregistered enum value %ld", enumValue];
     }
     OBASSERT(name);
-    return name;
+    return (OB_BRIDGE NSString *)name;
 }
 
 /*" Returns the integer enumeration value corresponding to the given string. "*/

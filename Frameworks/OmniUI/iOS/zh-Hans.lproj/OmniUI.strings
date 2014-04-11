@@ -2,7 +2,7 @@
 "“%@”\nwas not successful" = "“%@”\n不成功";
 
 /* OUITabBar N of M accessibility value */
-"%@ of %@" = "%2$@ 的 %1$@";
+"%@ of %@" = "%1$@/%2$@";
 
 /* title for successful in app purchase */
 "%@ Purchased" = "已购买 %@";
@@ -12,9 +12,6 @@
 
 /* alert button title */
 "Accept" = "接受";
-
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "允许 %@ 定期报告有关硬件型号和 iOS 版本的信息？\n这样以来，我们就知道最需要支持哪些配置。 可在以后通过 MUMBLE MUMBLE MUMBLE 在预置中更改回答。";
 
 /* Web view nagivation button for going back in history. */
 "Back" = "后移";
@@ -39,7 +36,7 @@
 "Center text align" = "文本居中对齐";
 
 /* Certificate trust alert title */
-"Certificate Trust" = "证书信任";
+"Certificate Trust" = "信任证书";
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "已将“%1$@”预置从“%2$@”更改为“%3$@”";
@@ -53,9 +50,6 @@
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "已禁用";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "不报告";
-
 /* Done
    toolbar item title */
 
@@ -68,10 +62,10 @@
 "Error" = "错误";
 
 /* Alert title for error loading product information */
-"Error Loading Store" = "加载存储项时出错";
+"Error Loading Store" = "载入 Store 时出错";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "本试用版未启用此功能";
+"Feature not enabled for this demo" = "未针对此演示启用功能";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "适合";
@@ -80,7 +74,7 @@
 "Help and Settings" = "帮助和设置";
 
 /* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "该设备无法或不允许应用程序内置购买功能。要启用购买功能，请勾选“设置”应用程序中的“限制”。";
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "此设备无法使用或不允许使用应用程序内购买。要启用购买，请查看设置应用程序中的限制。";
 
 /* Italic button accessibility label */
 "Italic" = "斜体";
@@ -92,13 +86,16 @@
 "Left text align" = "文本左对齐";
 
 /* Web view error opening URL title. */
-"Link could not be opend. Please check Safari restrictions in Settings." = "无法打开链接。请勾选“设置”中的 Safari 限制。";
+"Link could not be opened. Please check Safari restrictions in Settings." = "无法打开链接。请检查设置中的 Safari 限制。";
 
 /* Buy button title while app store is loading */
-"Loading" = "加载中";
+"Loading" = "正在载入";
 
 /* empty value cell placeholder */
 "None" = "无";
+
+/* Full screen note editor title */
+"Note" = "注意";
 
 /* button title
    OK button label */
@@ -107,9 +104,6 @@
 
 
 "OK" = "好";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Omni 软件更新";
 
 /* placeholder text */
 "password" = "密码";
@@ -127,7 +121,7 @@
 "Purchased. Thank you!" = "已购买。谢谢！";
 
 /* Purchasing is disabled alert title */
-"Purchasing is Disabled" = "已禁用购买功能";
+"Purchasing is Disabled" = "购买被禁用";
 
 /* Redo button title */
 "Redo" = "重做";
@@ -135,13 +129,13 @@
 /* App menu item title
    release notes html screen title */
 
-"Release Notes" = "版本注释";
+"Release Notes" = "发布说明";
 
 /* Restore purchases button title */
-"Restore" = "还原";
+"Restore" = "恢复";
 
 /* Restore failed alert title */
-"Restore Failed" = "还原失败";
+"Restore Failed" = "恢复失败";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "文本右对齐";
@@ -152,26 +146,22 @@
 /* Search field placeholder text */
 "Search" = "搜索";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "发送报告";
-
 /* Strike Through button accessibility label */
-"Strike Through" = "透印";
+"Strike Through" = "删去";
 
 /* Alert description for error loading product information */
-"There was an error loading information from the App Store" = "从 App Store 加载信息时出错";
+"There was an error loading information from the App Store" = "从 App Store 加载信息时存在错误";
 
 /* Certificate trust alert button title */
 "Trust Always" = "总是信任";
 
 /* Underline button accessibility label */
-"Underline" = "下划线";
+"Underline" = "底线";
 
 /* Undo button title */
 "Undo" = "还原";
 
-/* default for WebDAV username edit field
-   placeholder text */
+/* placeholder text */
 "username" = "用户名";
 
 /* alert message */

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,7 +73,6 @@
 #import "OUIDocumentRenameSession.h"
 #import "OUIDocumentTitleView.h"
 #import "OUIExportOptionsController.h"
-#import "OUIExportOptionsView.h"
 #import "OUIDocumentAppController-Internal.h"
 #import "OUISyncMenuController.h"
 
@@ -561,9 +560,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 #endif
         [self clearSelection:YES];
         [self _performDelayedItemPropagationWithCompletionHandler:^{
+#ifdef OMNI_ASSERTIONS_ON
             // Make sure the duplicate items made it into the scroll view.
             for (ODSItem *item in finalItems)
                 OBASSERT([self.mainScrollView.items member:item] == item);
+#endif
             
             [self scrollItemsToVisible:finalItems animated:YES completion:^{
                 [lock unlock];

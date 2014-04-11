@@ -1,4 +1,4 @@
-// Copyright 2004-2006, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2006, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,10 @@
 RCS_ID("$Id$");
 
 @implementation OAContextPopUpButton
+{
+    NSMenuItem *gearItem;
+    __weak id _weak_delegate;
+}
 
 + (NSImage *)gearImage;
 {
@@ -82,17 +86,18 @@ RCS_ID("$Id$");
         [self setToolTip:OAContextControlToolTip()];
 }
 
-//
-// NSView subclass
-//
+#pragma mark - NSView subclass
+
 - (void)mouseDown:(NSEvent *)event;
 {
     if (![self isEnabled])
         return;
 
+    id <OAContextControlDelegate> delegate = _weak_delegate;
+    
     NSView *targetView;
     NSMenu *menu;
-    OAContextControlGetMenu(_delegate, self, &menu, &targetView);
+    OAContextControlGetMenu(delegate, self, &menu, &targetView);
 
     if (targetView == nil)
         menu = OAContextControlNoActionsMenu();
@@ -114,15 +119,21 @@ RCS_ID("$Id$");
     // We don't seem to need to reset our label
 }
 
-//
-// API
-//
+#pragma mark - API
+
+@synthesize delegate = _weak_delegate;
+- (void)setDelegate:(id<OAContextControlDelegate>)delegate;
+{
+    OBPRECONDITION(!delegate || [delegate conformsToProtocol:@protocol(OAContextControlDelegate)]);
+    _weak_delegate = delegate;
+}
 
 /*" Returns the menu to be used, or nil if no menu can be found. "*/
 - (NSMenu *)locateActionMenu;
 {
+    id <OAContextControlDelegate> delegate = _weak_delegate;
     NSMenu *menu;
-    OAContextControlGetMenu(_delegate, self, &menu, NULL);
+    OAContextControlGetMenu(delegate, self, &menu, NULL);
     return menu;
 }
 

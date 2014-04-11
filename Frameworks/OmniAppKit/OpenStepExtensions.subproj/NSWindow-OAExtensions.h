@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,8 @@
 @interface NSWindow (OAExtensions)
 
 + (NSArray *)windowsInZOrder;
++ (void)beforeDisplayIfNeededPerformBlock:(void (^)(void))block;
++ (void)performDisplayIfNeededBlocks;
 
 - (NSPoint)frameTopLeftPoint;
 

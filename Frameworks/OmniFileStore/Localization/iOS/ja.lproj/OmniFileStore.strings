@@ -1,5 +1,14 @@
+/* Error description when renaming a file to a name that is already in use. */
+"\"%@\" is already taken." = "“%@” は既に取得済みです。";
+
+/* Error reason when a file type is not recognized. */
+"%@ does not recognize this kind of file." = "%@ この種類のファイルは認識できません。";
+
 /* error title */
 "An error has occurred." = "エラーが発生しました。";
+
+/* error description */
+"Could not access the WebDAV location <%@>." = "WebDAV の場所 <%@> にアクセスできませんでした。";
 
 /* error description */
 "Could not find \"%@\"." = "“%@” が見つかりませんでした。";
@@ -8,7 +17,7 @@
 "Ensure that the address is correct and please try again." = "アドレスが正しいことを確認してもう一度試してください。";
 
 /* error description */
-"Ensure that the server address, user name, and password are correct and please try again." = "サーバアドレス、ユーザ名、パスワードが正しいことを確認してもう一度行ってください。";
+"Ensure that the server address, user name, and password are correct and please try again." = "サーバーアドレス、ユーザ名、パスワードが正しいことを確認してもう一度行ってください。";
 
 /* error reason */
 "Failed to delete \"%@\"." = "“%@” の削除に失敗しました。";
@@ -16,15 +25,49 @@
 /* error reason */
 "Failed to move \"%@\" to \"%@\"." = "“%1$@” を “%2$@” へ移動するのに失敗しました。";
 
+/* Base name for document picker folder names */
+"Folder" = "フォルダ";
+
+/* Text for HTTP error code 507 (insufficient storage) */
+"insufficient storage" = "ストレージが足りません";
+
+/* Document store scope display name */
+"Local Documents" = "ローカル書類";
+
+/* Menu item label for moving a document to local storage */
+"Move to local documents" = "ローカル書類に移動";
+
 /* error reason - listing a directory that doesn't exist
    error reason - listing contents of a nonexistent directory */
+
 "No document exists at \"%@\"." = "“%@” に書類はありません。";
 
 /* error reason */
 "No such file \"%@\"." = "“%@” というファイルはありません。";
 
+/* error suggestion */
+"Please check that the user name and password you provided are correct." = "入力したユーザ名とパスワードが正確かどうか確認してください。";
+
+/* Error suggestion when renaming a file to a name that is already in use. */
+"Please choose a different name." = "別の名前を選んでください。";
+
+/* error reason */
+"Please make sure that the account information is correct." = "アカウント情報が正しいかもう一度確認してください。";
+
 /* error reason */
 "Please make sure that the destination folder exists." = "移動先フォルダが存在することを確認してください。";
+
+/* error reason */
+"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\"." = "“%4$@ %5$@” へのリクエストに対するレスポンスとして、%1$@ サーバーが “%2$@” (%3$d) を返しました。";
+
+/* time display format for today */
+"Today, %@ <day name>" = "今日, %@";
+
+/* Document store scope display name */
+"Trash" = "ゴミ箱";
+
+/* Error description when a file type is not recognized. */
+"Unable to add document." = "書類を追加できませんでした。";
 
 /* error description */
 "Unable to delete file." = "ファイルを削除できません。";
@@ -33,4 +76,13 @@
 "Unable to move file." = "ファイルを移動できません。";
 
 /* error description */
-"Unable to read document." = "書類を読み込めません。";
+"Unable to perform WebDAV operation." = "WebDAV の操作を実行できません。";
+
+/* error description */
+"Unable to read document." = "書類を読み込みできませんでした。";
+
+/* Error description */
+"WebDAV server failed conformance test." = "WebDAV サーバーは適合テストに失敗しました。";
+
+/* time display format for yesterday */
+"Yesterday, %@ <day name>" = "昨日, %@";

@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -759,7 +759,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
 #ifdef OMNI_ASSERTIONS_ON
                 movedWhileUploading = YES;
 #endif
-                NSError *markError;
+                __autoreleasing NSError *markError;
                 if (![uploadingSnapshot markAsLocallyMovedToRelativePath:_snapshot.localRelativePath error:&markError]) {
                     [markError log:@"Error marking uploading snapshot as moved to %@", _snapshot.localRelativePath];
                     cleanup();
@@ -771,7 +771,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
             }
             
             OBASSERT(![_snapshot.localSnapshotURL isEqual:uploadingSnapshot.localSnapshotURL]);
-            NSError *replaceError;
+            __autoreleasing NSError *replaceError;
             if (![[NSFileManager defaultManager] replaceItemAtURL:_snapshot.localSnapshotURL withItemAtURL:uploadingSnapshot.localSnapshotURL backupItemName:nil options:0 resultingItemURL:NULL error:&replaceError]) {
                 [replaceError log:@"Error replacing %@ with %@", _snapshot.localSnapshotURL, uploadingSnapshot.localSnapshotURL];
                 if (outError)
@@ -1064,7 +1064,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
             OBASSERT(self.localState.normal || self.localState.moved);
             
             // We *do* want to force autosave on other presenters here since we are trying to do conflict detection.
-            NSError *sameError;
+            __autoreleasing NSError *sameError;
             NSNumber *same = [_snapshot hasSameContentsAsLocalDocumentAtURL:newReadingURL coordinator:coordinator withChanges:YES error:&sameError];
             if (!same) {
                 if ([sameError causedByMissingFile]) {

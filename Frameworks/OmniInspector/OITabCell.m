@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2008, 2010, 2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,14 +28,6 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
 @end
 
 @implementation OITabCell
-
-- (void)dealloc
-{
-    [grayscaleImage release];
-    [dimmedImage release];
-    [_imageCell release];
-    [super dealloc];
-}
 
 - (NSColor *)highlightColorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
     return [NSColor blueColor];
@@ -172,8 +164,9 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
 
     if (isPinned) {
         NSImage *image = [NSImage imageNamed:@"OITabLock.pdf" inBundle:OMNI_BUNDLE];
-        NSPoint point = NSMakePoint(NSMaxX(cellFrame) - [image size].width - 3.0f, NSMaxY(cellFrame) - 2.0f);
-        [image compositeToPoint:point operation:NSCompositeSourceOver];
+        NSSize imageSize = image.size;
+        NSPoint point = NSMakePoint(NSMaxX(cellFrame) - imageSize.width - 3.0f, NSMaxY(cellFrame) - imageSize.height - 2.0f);
+        [image drawFlippedInRect:(NSRect){point, imageSize} operation:NSCompositeSourceOver];
     }
     
     return;
@@ -184,8 +177,8 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
 - (id)copyWithZone:(NSZone *)zone;
 {
     OITabCell *copy = [super copyWithZone:zone];
-    copy->grayscaleImage = [grayscaleImage retain];
-    copy->dimmedImage = [dimmedImage retain];
+    copy->grayscaleImage = grayscaleImage;
+    copy->dimmedImage = dimmedImage;
     copy->_imageCell = [_imageCell copy];
 
     return copy;
@@ -214,12 +207,10 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
                               nil];
     
     filteredImageRep = [[NSCIImageRep alloc] initWithCIImage:[grayedFilter valueForKey:kCIOutputImageKey]];
-    [grayscaleImage release];
     
     NSSize imageSize = [[self image] size];    
     grayscaleImage = [[NSImage alloc] initWithSize:imageSize];
     [grayscaleImage addRepresentation:filteredImageRep];
-    [filteredImageRep release];
     
     static const CGFloat redVector[4]   = { 0.8f, 0.0f, 0.0f, 0.0f };
     static const CGFloat greenVector[4] = { 0.0f, 0.8f, 0.0f, 0.0f };
@@ -238,10 +229,8 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
                               nil];
     
     filteredImageRep = [[NSCIImageRep alloc] initWithCIImage:[dimmedFilter valueForKey:kCIOutputImageKey]];
-    [dimmedImage release];
     dimmedImage = [[NSImage alloc] initWithSize:imageSize];
     [dimmedImage addRepresentation:filteredImageRep];
-    [filteredImageRep release];
 }
 
 #endif /* USE_CORE_IMAGE */

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2010, 2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,4 +35,7 @@ unsigned long OFStringHash_djb2(CFStringRef string);
 
 /* Checks for some completely-invalid UTF-16 sequences; returns YES if it finds one */
 BOOL OFStringContainsInvalidSequences(CFStringRef aString);
+
+/* Like OFStringContainsInvalidSequences(), but returns the location, and can simultaneously check for other characters */
+CFRange OFStringRangeOfNextInvalidCodepoint(CFStringRef str, CFRange searchRange, CFCharacterSetRef additionalInvalides /* optional, may be NULL */);
 

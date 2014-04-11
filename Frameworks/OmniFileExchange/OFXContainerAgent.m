@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1020,6 +1020,9 @@ tryAgain:
 
 - (NSString *)debugName;
 {
+    if (![NSString isEmptyString:_debugName])
+        return _debugName;
+
     OFXAccountAgent *accountAgent = _weak_accountAgent;
     OBASSERT(accountAgent);
     return accountAgent.debugName;

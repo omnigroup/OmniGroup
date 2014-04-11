@@ -1,4 +1,4 @@
-// Copyright 2005-2006,2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2006,2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,10 +14,15 @@
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
+#import <OmniAppKit/OAApplication.h>
+#import <OmniAppKit/OAController.h>
 
 RCS_ID("$Id$");
 
 static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundleContentVariants";
+
+@interface OAAboutPanelController () <NSTextViewDelegate>
+@end
 
 @implementation OAAboutPanelController
 
@@ -42,17 +47,15 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 #pragma mark -
 #pragma mark API
 
-- (void)awakeFromNib;
+- (void)_updateFieldsAndWindowSize;
 {
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    
-    NSString *appName = [infoDictionary objectForKey:@"CFBundleName"];
-    appName = appName ? appName : @"CFBundleName not set!";
+    NSString *appName = [[OAController sharedController] appName];
     [applicationNameTextField setStringValue:appName];
     [applicationNameTextField sizeToFit];
     
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString *cfBundleVers = [infoDictionary objectForKey:@"CFBundleVersion"];
-    // The current Omni convention is to append the SVN revision number to the version number at build time, so that we don't have to explicitly increment things for nighlies and so on. This is ugly, though, so let's not display it like that.
+    // The current Omni convention is to append the SVN revision number to the version number at build time, so that we don't have to explicitly increment things for nightlies and so on. This is ugly, though, so let's not display it like that.
     NSRange zeroRange = [cfBundleVers rangeOfString:@".0."];
     if (zeroRange.length > 0) {
         NSString *after = [cfBundleVers substringFromIndex:NSMaxRange(zeroRange)];
@@ -64,6 +67,7 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
     [fullReleaseNameButton setTitle:[NSString stringWithFormat:@"%@ (v%@)", [infoDictionary objectForKey:@"CFBundleShortVersionString"], cfBundleVers]];
     [fullReleaseNameButton sizeToFit];
     
+    [creditsTextView setDelegate:self];
     [creditsTextView setEditable:NO];
     [creditsTextView setSelectable:YES];
     [[creditsTextView enclosingScrollView] setDrawsBackground:NO];
@@ -117,6 +121,13 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 
 	[panel setFrame:panelFrame display:NO];
     }
+
+    [panel center];
+}
+
+- (void)awakeFromNib;
+{
+    [self _updateFieldsAndWindowSize];
 }
 
 - (NSArray *)contentVariants;
@@ -178,6 +189,9 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 
 - (void)willShowAboutPanel;
 {
+    NSString *appName = [[OAController sharedController] appName];
+    [applicationNameTextField setStringValue:appName];
+    [applicationNameTextField sizeToFit];
 }
 
 #pragma mark -
@@ -194,7 +208,7 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 	    NSLog(@"Unable to load OAAboutPanel.nib");
 	[nib release];
     }
-    [panel center];
+    [self _updateFieldsAndWindowSize];
     [self willShowAboutPanel];
     [panel makeKeyAndOrderFront:self];
     [panel makeFirstResponder:panel];
@@ -228,6 +242,21 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 	drawBackground = (background != nil) && ![background isEqual:[NSColor clearColor]]; // not really correct since we could be (1,0,0,0)
     }
     [creditsTextView setDrawsBackground:drawBackground];
+}
+
+#pragma mark - NSTextViewDelegate protocol
+
+- (BOOL)textView:(NSTextView *)textView clickedOnLink:(id)link atIndex:(NSUInteger)charIndex;
+{
+    if ([link isKindOfClass:[NSURL class]]) {
+        NSURL *linkURL = link;
+        if (OFISEQUAL([linkURL scheme], @"help")) {
+            [NSApp showHelpURL:[linkURL resourceSpecifier]];
+            return YES; // We've handled the link
+        }
+    }
+
+    return NO; // Hand this off to [NSWorkspace openURL:]
 }
 
 @end

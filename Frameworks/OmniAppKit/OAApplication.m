@@ -1,4 +1,4 @@
-// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -428,7 +428,8 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
             id itemViewer = object_getIvar(sender, itemViewerIvar);
             if (itemViewer) {
                 OBASSERT([itemViewer respondsToSelector:@selector(window)]);
-                _applySearchToWindow([itemViewer window], theAction, theTarget, sender, applier);
+                if (!_applySearchToWindow([itemViewer window], theAction, theTarget, sender, applier))
+                    return;
             }
         }
     } else {
@@ -751,11 +752,12 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         if (!helpBookRegistered) {
             helpBookRegistered = YES;
             NSURL *appBundleURL = [NSURL fileURLWithPath:[mainBundle bundlePath]];
-            FSRef appBundleRef;
-            if (!CFURLGetFSRef((CFURLRef)appBundleURL, &appBundleRef))
-                NSLog(@"Unable to get FSRef for app bundle URL of '%@' for bundle '%@'", appBundleURL, mainBundle);
-            else
-                AHRegisterHelpBook(&appBundleRef);
+            if (appBundleURL) {
+                OSStatus status = AHRegisterHelpBookWithURL((CFURLRef)appBundleURL);
+                if (status != 0) {
+                    NSLog(@"AHRegisterHelpBookWithURL(%@) returned %ld", appBundleURL, (long)status);
+                }
+            }
         }
 
 

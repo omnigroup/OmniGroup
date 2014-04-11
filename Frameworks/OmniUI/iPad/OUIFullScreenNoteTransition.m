@@ -1,16 +1,17 @@
+// Copyright 2014 Omni Development, Inc. All rights reserved.
 //
-//  OUIFullScreenNoteTransition.m
-//  OmniUI
-//
-//  Created by tom on 11/12/13.
-//
-//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIFullScreenNoteTransition.h"
+#import <OmniUI/OUIFullScreenNoteTransition.h>
 
 #import <OmniUI/OUIFullScreenNoteTextViewController.h>
 #import <OmniUI/OUINoteTextView.h>
 #import <OmniUI/OUIKeyboardLock.h>
+
+RCS_ID("$Id$")
 
 @implementation OUIFullScreenNoteTransition
 

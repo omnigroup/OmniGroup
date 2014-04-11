@@ -11,10 +11,7 @@
 "About %@" = "Over %@";
 
 /* alert button title */
-"Accept" = "Accepteer";
-
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ toestaan om periodiek informatie over uw hardwaremodel en iOS-versie door te geven?\nHiermee kunnen we weten welke configuraties het belangrijkst zijn voor de ondersteuning. U kunt uw antwoord later wijzigen in de voorkeuren.";
+"Accept" = "Accepteren";
 
 /* Web view nagivation button for going back in history. */
 "Back" = "Achteraan";
@@ -39,7 +36,7 @@
 "Center text align" = "Tekst centreren";
 
 /* Certificate trust alert title */
-"Certificate Trust" = "Vertrouwd certificaat";
+"Certificate Trust" = "Certificaatvertrouwenslijst";
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "De voorkeur “%1$@” is gewijzigd van “%2$@” naar “%3$@”";
@@ -52,9 +49,6 @@
 
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "Uitgeschakeld";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "Rapporteer niet";
 
 /* Done
    toolbar item title */
@@ -92,13 +86,16 @@
 "Left text align" = "Tekst links uitlijnen";
 
 /* Web view error opening URL title. */
-"Link could not be opend. Please check Safari restrictions in Settings." = "Koppeling kan niet worden geopend. Controleer de beperkingen voor Safari in Instellingen.";
+"Link could not be opened. Please check Safari restrictions in Settings." = "Koppeling kan niet worden geopend. Controleer de Safari-beperkingen in Instellingen.";
 
 /* Buy button title while app store is loading */
 "Loading" = "Laden";
 
 /* empty value cell placeholder */
 "None" = "Geen";
+
+/* Full screen note editor title */
+"Note" = "Notitie";
 
 /* button title
    OK button label */
@@ -107,9 +104,6 @@
 
 
 "OK" = "OK";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Omni Software Update";
 
 /* placeholder text */
 "password" = "wachtwoord";
@@ -147,13 +141,10 @@
 "Right text align" = "Tekst rechts uitlijnen";
 
 /* App menu item title */
-"Run Tests" = "Voert tests uit";
+"Run Tests" = "Voer tests uit";
 
 /* Search field placeholder text */
 "Search" = "Zoek";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "Verzend rapporten";
 
 /* Strike Through button accessibility label */
 "Strike Through" = "Doorhalen";
@@ -170,8 +161,7 @@
 /* Undo button title */
 "Undo" = "Herstel";
 
-/* default for WebDAV username edit field
-   placeholder text */
+/* placeholder text */
 "username" = "gebruikersnaam";
 
 /* alert message */

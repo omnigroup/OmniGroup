@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2009-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2008, 2009-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -112,32 +112,48 @@ double OFRandomNextStateDouble(OFRandomState *state)
     return to_res53(OFRandomNextState64(state)); // same as genrand_res53, but tries to pretend we have state
 }
 
-static OFRandomState *_OFDefaultRandomState(void)
+static void _withDefaultRandomState(void (^block)(OFRandomState *))
 {
+    // Serialize on a queue so that this shared state can be used conveniently w/o external locking.
     static OFRandomState *defaultRandomState = NULL;
-
-    // seed the default random state
-    if (!defaultRandomState)
+    static dispatch_queue_t queue;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        queue = dispatch_queue_create("com.omnigroup.OmniFoundation.OFRandom.DefaultState", DISPATCH_QUEUE_SERIAL);
         defaultRandomState = OFRandomStateCreate();
-    
-    return defaultRandomState;
+    });
+
+    dispatch_sync(queue, ^{
+        block(defaultRandomState);
+    });
 }
 
 
-// Shared state; not thread-safe!
 uint32_t OFRandomNext32(void)
 {
-    return OFRandomNextState32(_OFDefaultRandomState());
+    __block uint32_t result = 0;
+    _withDefaultRandomState(^(OFRandomState *state){
+        result = OFRandomNextState32(state);
+    });
+    return result;
 }
 
 uint64_t OFRandomNext64(void)
 {
-    return OFRandomNextState64(_OFDefaultRandomState());
+    __block uint64_t result = 0;
+    _withDefaultRandomState(^(OFRandomState *state){
+        result = OFRandomNextState64(state);
+    });
+    return result;
 }
 
 double OFRandomNextDouble(void)
 {
-    return OFRandomNextStateDouble(_OFDefaultRandomState());
+    __block double result = 0;
+    _withDefaultRandomState(^(OFRandomState *state){
+        result = OFRandomNextStateDouble(state);
+    });
+    return result;
 }
 
 NSData *OFRandomStateCreateDataOfLength(OFRandomState *state, NSUInteger byteCount)
@@ -172,5 +188,9 @@ NSData *OFRandomStateCreateDataOfLength(OFRandomState *state, NSUInteger byteCou
 
 NSData *OFRandomCreateDataOfLength(NSUInteger byteCount)
 {
-    return OFRandomStateCreateDataOfLength(_OFDefaultRandomState(), byteCount);
+    __block NSData *result = nil;
+    _withDefaultRandomState(^(OFRandomState *state){
+        result = OFRandomStateCreateDataOfLength(state, byteCount);
+    });
+    return result;
 }

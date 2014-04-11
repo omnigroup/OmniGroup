@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -820,7 +820,7 @@ static NSURL *URLWithBookmarkData(NSData *data, NSError **outError)
     
     [self willChangeValueForKey:CredentialServiceIdentifierKey];
     {
-        NSError *writeError;
+        __autoreleasing NSError *writeError;
         if (!OFWriteCredentialsForServiceIdentifier(serviceIdentifier, credential.user, credential.password, &writeError)) {
             [writeError log:@"Error storing credentials for service identifier %@", serviceIdentifier];
             _credentialServiceIdentifier = nil;

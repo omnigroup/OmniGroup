@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,17 +22,9 @@
 
 RCS_ID("$Id$")
 
-static BOOL OAScriptToolbarHelperHasNSUserScriptTask;
-
 typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *error);
 
 @implementation OAScriptToolbarHelper
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    OAScriptToolbarHelperHasNSUserScriptTask = NSClassFromString(@"NSUserScriptTask") != Nil;
-}
 
 - (id)init;
 {
@@ -70,7 +62,7 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
     // Applications running on 10.8 and later have access to NSUserScriptTask.
     // Sandboxed applications can only execute items from NSApplicationScriptsDirectory.
     
-    if (isSandboxed && OAScriptToolbarHelperHasNSUserScriptTask) {
+    if (isSandboxed) {
         NSURL *applicationScriptsDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSApplicationScriptsDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:NULL];
         if (applicationScriptsDirectoryURL != nil && [applicationScriptsDirectoryURL checkResourceIsReachableAndReturnError:NULL]) {
             return [NSArray arrayWithObject:[applicationScriptsDirectoryURL path]];
@@ -79,13 +71,6 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
         return [NSArray array];
     }
     
-    // Sandboxed applications running on 10.7 cannot execute user scripts at all.
-    // (Technically we can execute scripts which only talk to the current application, or applications which we have a temporary exception for, but we don't have a way to calculate the AppleScript manifest to determine ahead of time if we can do this. If we could calculate the manifest, loading the script, compiling it if necessary, and determining whether the manifest was "safe", at scan time would be terrible. We'd likely need a better strategy.)
-    
-    if (isSandboxed) {
-        return [NSArray array];
-    }
-
     // Unsandboxed applications can execute scripts or workflows from any of the standard locations.
 
     NSMutableArray *scriptPaths = [NSMutableArray array];
@@ -116,14 +101,14 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
     return [_pathForItemDictionary objectForKey:[item itemIdentifier]];
 }
 
-- (void)finishSetupForToolbarItem:(NSToolbarItem *)toolbarItem toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
+- (NSToolbarItem *)finishSetupForToolbarItem:(NSToolbarItem *)toolbarItem toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 {
     // <bug:///89032> (Update OAScriptToolbarHelper to use non-deprecated API)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     NSString *path = [self pathForItem:toolbarItem];
     if (path == nil) {
-        return;
+        return nil;
     }
     
     path = [path stringByExpandingTildeInPath];
@@ -172,6 +157,8 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
         }
     }
 #pragma clang diagnostic pop
+
+    return toolbarItem;
 }
 
 - (void)executeScriptItem:(id)sender;

@@ -11,7 +11,7 @@
 "No such file \"%@\"." = "Aucun fichier “%@”.";
 
 /* error suggestion */
-"Please check that the user name and password you provided are correct." = "Assurez-vous que le mot de passe et le nom d’utilisateur que vous avez indiqués sont corrects.";
+"Please check that the user name and password you provided are correct." = "Vérifiez que le mot de passe et le nom d’utilisateur que vous avez indiqués sont corrects.";
 
 /* error reason */
 "Please make sure that the account information is correct." = "Assurez-vous que les informations de compte sont correctes.";
@@ -20,7 +20,7 @@
 "Please make sure that the destination folder exists." = "Assurez-vous que le dossier de destination existe.";
 
 /* error reason */
-"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\"." = "Le serveur %1$@ a renvoyé “%2$@” (%3$d) en réponse à une demande de “%4$@ %5$@”.";
+"The %@ server returned \"%@\" (%ld) in response to a request to \"%@ %@\"." = "Le serveur %1$@ a renvoyé “%2$@” (%3$ld) en réponse à une demande de “%4$@ %5$@”.";
 
 /* error description */
 "Unable to delete file." = "Impossible de supprimer le fichier.";

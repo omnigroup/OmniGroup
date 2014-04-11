@@ -1,4 +1,4 @@
-// Copyright 1999-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -102,24 +102,6 @@ NSArray *OFCommonRootPathComponents(NSString *filename, NSString *otherFilename,
 
     return [[NSString pathWithComponents:stepsUpArray] stringByStandardizingPath];
 }
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-- (NSString *)hfsPathFromPOSIXPath;
-{
-    CFStringRef hfsPath = NULL;
-    BOOL        isDirectoryPath = [self hasSuffix:@"/"];
-    // Note that for the usual case of absolute paths, isDirectoryPath is completely ignored by CFURLCreateWithFileSystemPath.  isDirectoryPath is only considered for relative paths. This code has not really been tested relative paths...
-        
-    CFURLRef    url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, (CFStringRef)self, kCFURLPOSIXPathStyle, isDirectoryPath);
-
-    if (NULL != url) {
-        hfsPath = CFURLCopyFileSystemPath(url, kCFURLHFSPathStyle);
-        CFRelease(url);
-    }
-    
-    return [NSMakeCollectable(hfsPath) autorelease];
-}
-#endif
 
 - (void)splitName:(NSString **)outName andCounter:(NSUInteger *)outCounter;
 {

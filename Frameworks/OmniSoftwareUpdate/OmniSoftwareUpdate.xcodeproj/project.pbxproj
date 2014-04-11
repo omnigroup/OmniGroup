@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15AFEB0D18A06AF900AC19A2 /* de.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB0418A06A1500AC19A2 /* de.lproj */; };
+		15AFEB0E18A06AF900AC19A2 /* es.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB0518A06A1500AC19A2 /* es.lproj */; };
+		15AFEB0F18A06AF900AC19A2 /* fr.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB0618A06A1500AC19A2 /* fr.lproj */; };
+		15AFEB1018A06AF900AC19A2 /* it.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB0718A06A1500AC19A2 /* it.lproj */; };
+		15AFEB1118A06AF900AC19A2 /* ja.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB0B18A06A4300AC19A2 /* ja.lproj */; };
+		15AFEB1218A06AF900AC19A2 /* nl.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB0818A06A1500AC19A2 /* nl.lproj */; };
+		15AFEB1318A06AF900AC19A2 /* ru.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB0918A06A1500AC19A2 /* ru.lproj */; };
+		15AFEB1418A06AF900AC19A2 /* zh-Hans.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15AFEB0A18A06A1500AC19A2 /* zh-Hans.lproj */; };
 		3409FDF812664BD600BA898D /* OSUCheckerTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3409FDF712664BD600BA898D /* OSUCheckerTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3409FE0A12664DF200BA898D /* OSUCheckerTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3409FDF712664BD600BA898D /* OSUCheckerTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3416044C0C6913CC002839DF /* OSUCheckOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3416044A0C6913CC002839DF /* OSUCheckOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -216,13 +224,6 @@
 			remoteGlobalIDString = 4AA1E81E08AA764700E2FF6B;
 			remoteInfo = OAMakeImageSizeIntegral;
 		};
-		1E3E271C166EA87700BFFA4C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1E095D891613C5B000D78179 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4AA1E82C08AA764700E2FF6B;
-			remoteInfo = OAPatternColorPicker;
-		};
 		1E3E271E166EA87700BFFA4C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1E095D891613C5B000D78179 /* OmniAppKit.xcodeproj */;
@@ -317,6 +318,23 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		15AFEB0C18A06AC800AC19A2 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "Resources/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				15AFEB0D18A06AF900AC19A2 /* de.lproj in CopyFiles */,
+				15AFEB0E18A06AF900AC19A2 /* es.lproj in CopyFiles */,
+				15AFEB0F18A06AF900AC19A2 /* fr.lproj in CopyFiles */,
+				15AFEB1018A06AF900AC19A2 /* it.lproj in CopyFiles */,
+				15AFEB1118A06AF900AC19A2 /* ja.lproj in CopyFiles */,
+				15AFEB1218A06AF900AC19A2 /* nl.lproj in CopyFiles */,
+				15AFEB1318A06AF900AC19A2 /* ru.lproj in CopyFiles */,
+				15AFEB1418A06AF900AC19A2 /* zh-Hans.lproj in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		34D0FD86184D04F700453075 /* Copy Resources */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -367,6 +385,14 @@
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		15AFEB0418A06A1500AC19A2 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = iOS/de.lproj; sourceTree = "<group>"; };
+		15AFEB0518A06A1500AC19A2 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = iOS/es.lproj; sourceTree = "<group>"; };
+		15AFEB0618A06A1500AC19A2 /* fr.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fr.lproj; path = iOS/fr.lproj; sourceTree = "<group>"; };
+		15AFEB0718A06A1500AC19A2 /* it.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = it.lproj; path = iOS/it.lproj; sourceTree = "<group>"; };
+		15AFEB0818A06A1500AC19A2 /* nl.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = nl.lproj; path = iOS/nl.lproj; sourceTree = "<group>"; };
+		15AFEB0918A06A1500AC19A2 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ru.lproj; path = iOS/ru.lproj; sourceTree = "<group>"; };
+		15AFEB0A18A06A1500AC19A2 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "zh-Hans.lproj"; path = "iOS/zh-Hans.lproj"; sourceTree = "<group>"; };
+		15AFEB0B18A06A4300AC19A2 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = iOS/ja.lproj; sourceTree = "<group>"; };
 		1E095D891613C5B000D78179 /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = ../OmniAppKit/OmniAppKit.xcodeproj; sourceTree = SOURCE_ROOT; };
 		32DBCF5E0370ADEE00C91783 /* OmniSoftwareUpdate_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniSoftwareUpdate_Prefix.h; sourceTree = "<group>"; };
 		3409FDF712664BD600BA898D /* OSUCheckerTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUCheckerTarget.h; sourceTree = "<group>"; };
@@ -670,6 +696,7 @@
 				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
 				5F1C023816DC8D82006F9D51 /* Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
+				15AFEAFA18A069F800AC19A2 /* Localization */,
 			);
 			name = OmniSoftwareUpdate;
 			sourceTree = "<group>";
@@ -771,13 +798,27 @@
 			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
+		15AFEAFA18A069F800AC19A2 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				15AFEB0418A06A1500AC19A2 /* de.lproj */,
+				15AFEB0518A06A1500AC19A2 /* es.lproj */,
+				15AFEB0618A06A1500AC19A2 /* fr.lproj */,
+				15AFEB0718A06A1500AC19A2 /* it.lproj */,
+				15AFEB0B18A06A4300AC19A2 /* ja.lproj */,
+				15AFEB0818A06A1500AC19A2 /* nl.lproj */,
+				15AFEB0918A06A1500AC19A2 /* ru.lproj */,
+				15AFEB0A18A06A1500AC19A2 /* zh-Hans.lproj */,
+			);
+			name = Localization;
+			sourceTree = "<group>";
+		};
 		1E3E270E166EA87700BFFA4C /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				1E3E2717166EA87700BFFA4C /* OmniAppKit.framework */,
 				1E3E2719166EA87700BFFA4C /* OAUnitTests.octest */,
 				1E3E271B166EA87700BFFA4C /* OAMakeImageSizeIntegral */,
-				1E3E271D166EA87700BFFA4C /* OAPatternColorPicker.bundle */,
 				1E3E271F166EA87700BFFA4C /* libOmniAppKit.a */,
 				1E3E2721166EA87700BFFA4C /* libOmniAppKitTouchTests.a */,
 			);
@@ -1168,6 +1209,7 @@
 				34F3FFE3126394210044AB52 /* Sources */,
 				34F3FFE4126394210044AB52 /* Frameworks */,
 				34F300041263948A0044AB52 /* Build Strings */,
+				15AFEB0C18A06AC800AC19A2 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -1300,7 +1342,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 4A40EBE308AB009200E1769D /* Build configuration list for PBXProject "OmniSoftwareUpdate" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1356,13 +1398,6 @@
 			fileType = "compiled.mach-o.executable";
 			path = OAMakeImageSizeIntegral;
 			remoteRef = 1E3E271A166EA87700BFFA4C /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1E3E271D166EA87700BFFA4C /* OAPatternColorPicker.bundle */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = OAPatternColorPicker.bundle;
-			remoteRef = 1E3E271C166EA87700BFFA4C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		1E3E271F166EA87700BFFA4C /* libOmniAppKit.a */ = {
@@ -2060,7 +2095,6 @@
 			baseConfigurationReference = 4A102C1B08AB00D00059F5BD /* Omni-Tool-Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2084,7 +2118,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -2096,7 +2129,6 @@
 			baseConfigurationReference = 4A102C1C08AB00D00059F5BD /* Omni-Tool-Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2114,7 +2146,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -2125,7 +2156,6 @@
 			baseConfigurationReference = 4A102C1A08AB00D00059F5BD /* Omni-Tool-Coverage.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2143,7 +2173,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -2154,7 +2183,6 @@
 			baseConfigurationReference = 4A102C1508AB00D00059F5BD /* Omni-Application-Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2182,7 +2210,6 @@
 				INFOPLIST_FILE = OSUInstallerService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
 				MACH_O_TYPE = mh_execute;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OMNI_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
@@ -2203,7 +2230,6 @@
 			baseConfigurationReference = 4A102C1608AB00D00059F5BD /* Omni-Application-Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2225,7 +2251,6 @@
 				INFOPLIST_FILE = OSUInstallerService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
 				MACH_O_TYPE = mh_execute;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OMNI_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
 				OTHER_LDFLAGS = (
 					"-sectcreate",
@@ -2245,7 +2270,6 @@
 			baseConfigurationReference = 4A102C1408AB00D00059F5BD /* Omni-Application-Coverage.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2267,7 +2291,6 @@
 				INFOPLIST_FILE = OSUInstallerService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
 				MACH_O_TYPE = mh_execute;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OMNI_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
 				OTHER_LDFLAGS = (
 					"-sectcreate",
@@ -2287,7 +2310,6 @@
 			baseConfigurationReference = 4A102C1B08AB00D00059F5BD /* Omni-Tool-Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2311,7 +2333,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-sectcreate",
@@ -2337,7 +2358,6 @@
 			baseConfigurationReference = 4A102C1C08AB00D00059F5BD /* Omni-Tool-Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2355,7 +2375,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,
@@ -2380,7 +2399,6 @@
 			baseConfigurationReference = 4A102C1A08AB00D00059F5BD /* Omni-Tool-Coverage.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -2398,7 +2416,6 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,

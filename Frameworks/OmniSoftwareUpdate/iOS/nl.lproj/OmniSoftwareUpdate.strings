@@ -1,0 +1,140 @@
+/* Software update report format for number of cores in the CPU */
+"%@ cores" = "%@ kernen";
+
+/* error description - the host from which we retrieve updates is unreachable */
+"%@ is not reachable." = "%@ is niet bereikbaar.";
+
+/* Software update report entry string for multiple crashes */
+"%ld crashes" = "%ld crashes";
+
+/* Software update report entry string for a multiple hours of use */
+"%ld hours" = "%ld uur";
+
+/* Software update report entry string for a single launch */
+"%ld launches" = "%ld keer gestart";
+
+/* Software update report entry string for a multiple minutes of use */
+"%ld minutes" = "%ld minuten";
+
+/* Software update report entry name for information about the runs of all versions of the app */
+"All versions" = "Alle versies";
+
+/* OmniSoftwareUpdate privacy notice message format */
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ toestaan om periodiek informatie over uw hardwaremodel en iOS-versie door te geven?\nHiermee kunnen we weten welke configuraties het belangrijkst zijn voor de ondersteuning. U kunt uw antwoord later wijzigen in de voorkeuren.";
+
+/* Software update report entry name */
+"Application identifier" = "Programma-id";
+
+/* Software update report entry name */
+"Application version" = "Programmaversie";
+
+/* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
+"Check operation failed." = "Controlebewerking mislukt.";
+
+/* error text generated when software update is unable to retrieve the list of current software versions */
+"Could not contact %@." = "Kan geen contact opnemen met %@.";
+
+/* Software update report entry name */
+"CPU" = "CPU";
+
+/* Software update report entry name */
+"Device" = "Apparaat";
+
+/* software update settings title */
+"Device Information" = "Apparaatinformatie";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Don't Report" = "Niet melden";
+
+/* error description */
+"Error fetching software update information." = "Fout bij het ophalen van informatie over de softwareupdate.";
+
+/* error description */
+"Error while checking for updated version." = "Fout bij het controleren op bijgewerkte versie.";
+
+/* error reason */
+"Exception raised: %@" = "Uitzondering opgetreden: %@";
+
+/* software update settings cell detail text */
+"Help The Omni Group decide which devices and iOS versions to support" = "Help de Omni Group te beslissen welke apparaten en iOS-versies moeten worden ondersteund";
+
+/* Settings preferences detail text */
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Als u deze info wilt delen, helpt u ons op de hoogte te blijven van te ondersteunen apparaten en iOS-versies voor onze software.\nDeze informatie wordt volledig anoniem gehouden.";
+
+/* Software update report entry name */
+"iOS version" = "iOS-versie";
+
+/* Software update report entry name */
+"Language" = "Taal";
+
+/* Software update report entry name */
+"Memory" = "Geheugen";
+
+/* OmniSoftwareUpdate privacy notice alert title */
+"Omni Software Update" = "Omni Software Update";
+
+/* Software update report entry string for a single crash */
+"One crash" = "Eén crash";
+
+/* Software update report entry string for a single hour of use */
+"One hour" = "Eén uur";
+
+/* Software update report entry string for a single launch */
+"One launch" = "Eén start";
+
+/* Software update report entry string for a single minute of use */
+"One minute" = "Eén minuut";
+
+/* error reason */
+"Please try again later or contact us to let us know this is broken." = "Probeer het later opnieuw of neem contact op met ons om te laten weten dat dit beschadigd is.";
+
+/* Software update report entry name */
+"Report identifier" = "Rapport-id";
+
+/* Software update report entry name */
+"Report version" = "Rapportversie";
+
+/* software update settings cell title */
+"Send anonymous device information" = "Stuur anonieme apparaatinformatie";
+
+/* Settings option title */
+"Send anonymous device information?" = "Anonieme apparaatinformatie sturen?";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Send Reports" = "Verzend rapporten";
+
+/* software update settings menu title */
+"Settings" = "Instellingen";
+
+/* Software update report entry name */
+"Storage" = "Opslag";
+
+/* error description */
+"The data returned from <%@> was not a valid XML document." = "De gegevens die zijn geretourneerd van <%@> zijn geen geldig XML-document.";
+
+/* Settings option title */
+"The following information will be sent:" = "De volgende informatie wordt verstuurd.";
+
+/* error description - the update information wasn't signed at all, but we require it to be signed */
+"The update information is not signed." = "De update-informatie is niet ondertekend.";
+
+/* error description - the checksum or signature didn't match - more info in underlying error */
+"There was a problem checking the signature." = "Er is een probleem opgetreden bij het controleren van de handtekening.";
+
+/* Software update report entry name for information about the runs of the current version of the app */
+"This version" = "Deze versie";
+
+/* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
+"Tool returned no data" = "Hulpprogramma heeft geen gegevens geretourneerd";
+
+/* error description - we have some update information but it doesn't look authentic */
+"Unable to authenticate the response from the software update server." = "Reactie van de server voor software-updates kan niet worden gecontroleerd.";
+
+/* error description - will be followed by more detailed error reason */
+"Unable to fetch software update information." = "Informatie over nieuwe softwareversie kan niet worden opgehaald.";
+
+/* error description */
+"Unable to parse response from the software update server." = "Reactie van de server voor nieuwe softwareversies kan niet worden ontleed.";
+
+/* error text generated when software update is unable to retrieve the list of current software versions */
+"Your Internet connection might not be active, or there might be a problem somewhere along the network." = "Uw internetverbinding is mogelijk niet actief of er kan ergens op het netwerk een probleem zijn.";

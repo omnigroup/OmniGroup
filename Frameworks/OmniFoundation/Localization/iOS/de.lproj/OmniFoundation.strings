@@ -50,10 +50,10 @@
 "Another application has overridden the lock at \"%@\"." = "Ein anderes Programm hat die Sperre in „%@“ außer Kraft gesetzt.";
 
 /* invalid bundle reason */
-"Bundle is obsolete" = "Bundle ist nicht aktuell";
+"Bundle is obsolete" = "Bundle ist überholt";
 
 /* invalid bundle reason */
-"Bundle requires additional software" = "Bundle erfordert zusätzliche Software";
+"Bundle requires additional software" = "Bundle benötigt zusätzliche Software";
 
 /* compression error reason */
 "bzip2 library returned error code %d when finishing compression. %s." = "Die bzip2-Bibliothek gab beim Abschließen der Komprimierung den Fehlercode %1$d zurück. %2$s.";
@@ -71,7 +71,7 @@
 "Cancel <error recovery>" = "Abbrechen";
 
 /* error description */
-"Cannot create socket." = "Socket kann nicht erstellt werden.";
+"Cannot create socket." = "Socket kann nicht erzeugt werden.";
 
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
@@ -90,7 +90,7 @@
 "days" = "Tage";
 
 /* invalid bundle reason */
-"Duplicate bundle name" = "Bundle-Name bereits vorhanden";
+"Duplicate bundle name" = "Bundle-Name doppelt";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "Element „%1$@“ nicht zulässig in Pfad: %2$@";
@@ -114,13 +114,13 @@
 "hours" = "Stunden";
 
 /* formatter input error */
-"Invalid time span format" = "Ungültiges Zeitspannenformat";
+"Invalid time span format" = "Ungültiges Format für Zeitraum";
 
 /* local bundle path readable string */
-"local configuration file" = "Lokale Konfigurationsdatei";
+"local configuration file" = "lokale Konfigurationsdatei";
 
 /* time span formatter span */
-"m" = "Min.";
+"m" = "M";
 
 /* time span formatter span */
 "minute" = "Minute";
@@ -129,7 +129,7 @@
 "minutes" = "Minuten";
 
 /* time span formatter span */
-"mo" = "M";
+"mo" = "Mo";
 
 /* time span formatter span */
 "month" = "Monat";
@@ -138,7 +138,7 @@
 "months" = "Monate";
 
 /* error reason */
-"No root element was found" = "Kein Root-Element gefunden";
+"No root element was found" = "Kein Stammelement gefunden";
 
 /* invalid bundle reason */
 "Not a valid bundle" = "Kein gültiges Bundle";
@@ -183,13 +183,13 @@
 "Unable to decompress data." = "Die Daten können nicht dekomprimiert werden.";
 
 /* decompression exception format */
-"Unable to decompress gzip data: invalid header" = "Komprimieren von Gzip-Daten nicht möglich: ungültiger Header";
+"Unable to decompress gzip data: invalid header" = "Gzip-Daten können nicht dekomprimiert werden: ungültiger Header";
 
 /* compression error description */
-"Unable to initialize compression" = "Komprimierung konnte nicht initialisiert werden";
+"Unable to initialize compression" = "Komprimierung kann nicht initialisiert werden";
 
 /* decompression error description */
-"Unable to initialize decompression" = "Dekomprimierung konnte nicht initialisiert werden";
+"Unable to initialize decompression" = "Dekomprimierung kann nicht initialisiert werden";
 
 /* error description */
 "Unable to lock document." = "Dokument kann nicht gesperrt werden.";
@@ -201,7 +201,7 @@
 "w" = "W";
 
 /* error description */
-"Warning encountered while loading XML." = "Warnhinweis beim Laden von XML gefunden.";
+"Warning encountered while loading XML." = "Beim Laden von XML wurde eine Warnmeldung ausgegeben.";
 
 /* time span formatter span */
 "week" = "Woche";

@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -513,6 +513,50 @@ RCS_ID("$Id$")
         
         // For now, validate on each operation
         validate(collisionIndex + 1);
+    }
+}
+
+// Trying to provoke <bug:///91387> (Continual conflicts being generated when they shouldn't be)
+// A is the only editor but B was generating conflicts based on the incoming renames.
+- (void)testRenamesWhileUploadingLotsOfFiles;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+    
+    OFXServerAccount *accountA = [self singleAccountInAgent:agentA];
+    
+    // Get two files on both sides
+    [self uploadFixture:@"flat1.txt" as:@"a.txt" replacingMetadata:nil];
+    [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
+        return metadata.downloaded;
+    }];
+    [self uploadFixture:@"flat1.txt" as:@"b.txt" replacingMetadata:nil];
+    [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
+        return metadata.downloaded;
+    }];
+    
+    // Start uploading a ton of small files.
+    for (NSUInteger fileIndex = 0; fileIndex < 300; fileIndex++)
+        [self copyFixtureNamed:@"flat1.txt" toPath:[NSString stringWithFormat:@"x/%ld.txt", fileIndex] ofAccount:accountA];
+
+    // Rename the two starting files back and forth a few times
+    for (NSUInteger renameIndex = 0; renameIndex < 20; renameIndex++) {
+        [self movePath:@"a.txt" toPath:@"c.txt" ofAccount:accountA];
+        [self waitForSeconds:1];
+        
+        [self movePath:@"b.txt" toPath:@"a.txt" ofAccount:accountA];
+        [self waitForSeconds:1];
+        
+        [self movePath:@"c.txt" toPath:@"b.txt" ofAccount:accountA];
+        [self waitForSeconds:1];
+    }
+    
+    // Wait for both sides to be idle
+    [self waitForAgentsToAgree];
+
+    // There should be no conflicts.
+    for (OFXFileMetadata *metadata in [self metadataItemsForAgent:agentA]) {
+        STAssertFalse([[[metadata.fileURL lastPathComponent] stringByDeletingPathExtension] containsString:@"Conflict" options:NSCaseInsensitiveSearch], @"should be no conflicts, but found %@", metadata.fileURL);
     }
 }
 

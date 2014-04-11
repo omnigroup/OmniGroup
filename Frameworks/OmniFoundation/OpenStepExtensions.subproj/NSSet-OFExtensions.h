@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,9 @@
 #import <Foundation/NSObjCRuntime.h> // for NSComparator
 
 @interface NSSet (OFExtensions)
+
+/// Returns YES if set is nil or is empty.
++ (BOOL)isEmptySet:(NSSet *)set;
 
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
 - (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)block;

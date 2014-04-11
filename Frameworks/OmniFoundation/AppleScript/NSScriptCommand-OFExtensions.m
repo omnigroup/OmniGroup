@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2008, 2010, 2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,8 @@
 #import <OmniBase/NSError-OBExtensions.h>
 #import <OmniFoundation/NSScriptCommand-OFExtensions.h>
 #import <OmniFoundation/NSScriptObjectSpecifier-OFExtensions.h>
+
+#import <OmniFoundation/OFSubjectTargettingScriptCommand.h>
 
 RCS_ID("$Id$");
 
@@ -107,13 +109,36 @@ static BOOL _checkObjectClass(NSScriptCommand *self, id object, Class cls)
     if ([arguments isKindOfClass:[NSScriptObjectSpecifier class]]) {
         NSScriptObjectSpecifier *argumentSpecifier = arguments;
         
+#if 1
+        // Maybe the OO issue was due to the subject targetting command? With the version below, OmniFocus fails to evaluate (every inbox task whose name is "a") correctly, returning an empty array instead of failure (so we'd never try the other version).
+        if ([self isKindOfClass:[OFSubjectTargettingScriptCommand class]] || [self isKindOfClass:[OFSubjectTargettingDeleteCommand class]]) {
+            id receiver = [[self receiversSpecifier] objectsByEvaluatingSpecifier];
+            arguments = [argumentSpecifier objectsByEvaluatingWithContainers:receiver];
+            
+            if (!arguments) {
+                // We sometimes get a fully qualified argument specifier that doesn't like being evaluated with a receiver.
+                [argumentSpecifier resetEvaluationError];
+                arguments = [argumentSpecifier objectsByEvaluatingSpecifier];
+            }
+        } else {
+            // Trying to get rid of the subject targetting nonsense. It can spuriously "work" when doing something like "every tree of tree "foo" of content of ..." and end up skipping the inner tree "foo" component.
+            id receiver = [[self receiversSpecifier] objectsByEvaluatingSpecifier];
+            arguments = [argumentSpecifier objectsByEvaluatingSpecifier];
+            if (!arguments) {
+                [argumentSpecifier resetEvaluationError]; // Otherwise it won't try again.
+                arguments = [argumentSpecifier objectsByEvaluatingWithContainers:receiver];
+            }
+        }
+#else
         // Try resolving this directly -- it might have a full path back to the application. If we naively pass the receiver to -objectsByEvaluatingWithContainers:, then 'row 1' can end up evaluating against itself (so you get row 1.1 in the document).
         // BUT, if we wait to resolve the receiver until after we've failed to resolve the arguments, resolving the receiver will return nil when it wouldn't have otherwise. Terrible.
         id receiver = [[self receiversSpecifier] objectsByEvaluatingSpecifier];
         arguments = [argumentSpecifier objectsByEvaluatingSpecifier];
         if (!arguments) {
+            [argumentSpecifier resetEvaluationError]; // Otherwise it won't try again.
             arguments = [argumentSpecifier objectsByEvaluatingWithContainers:receiver];
         }
+#endif
     }
 
     if (!arguments) {

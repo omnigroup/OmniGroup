@@ -1,4 +1,4 @@
-// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,7 @@
     #define OB_STRONG __strong
     #define OB_BRIDGE __bridge
     #define OB_AUTORELEASING __autoreleasing
+    #define OB_RETAIN(x) (x) // For assignment to a strong local, not for retain in place
     #define OB_RELEASE(x) (x = nil)
     #define OB_AUTORELEASE(x) (x)
 #else
@@ -23,6 +24,7 @@
     #define OB_STRONG
     #define OB_BRIDGE
     #define OB_AUTORELEASING
+    #define OB_RETAIN(x) [(x) retain] // For assignment to a strong local, not for retain in place
     #define OB_RELEASE(x) [(x) release]
     #define OB_AUTORELEASE(x) [(x) autorelease]
 #endif

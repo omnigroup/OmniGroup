@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,9 @@
 - (IBAction)hideAboutPanel:(id)sender;
 - (IBAction)sendFeedback:(id)sender;
 - (IBAction)showMessageOfTheDay:(id)sender;
+- (IBAction)openApplicationScriptsFolder:(id)sender;
 
+- (NSString *)appName;
 - (void)getFeedbackAddress:(NSString **)feedbackAddress andSubject:(NSString **)subjectLine;
 - (void)sendFeedbackEmailTo:(NSString *)feedbackAddress subject:(NSString *)subjectLine body:(NSString *)body;
 - (void)sendFeedbackEmailWithBody:(NSString *)body;

@@ -1,4 +1,4 @@
-// Copyright 2003-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -316,16 +316,35 @@ CGColorRef OQCreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpac
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 CGColorRef OQCreateColorRefFromColor(CGColorSpaceRef destinationColorSpace, NSColor *c)
 {
+    // <bug:///98617> (Exception nil colorspace argument in initWithColorSpace:components:count)
+    // Convert nil to nil to avoid an exception in NSColor. The call site might not be prepared to handle nil; if it turns out that all callsites are, maybe we should make nil -> nil part of the contract for this function.
+    OBASSERT_NOTNULL(destinationColorSpace, "OQCreateColorRefFromColor returning nil for nil colorspace -- didn't used to allow that, now we are.");
+    OBASSERT_NOTNULL(c, "OQCreateColorRefFromColor returning nil for nil color -- didn't used to allow that, now we are.");
+    if (!destinationColorSpace || !c)
+        return nil;
+    
     return [c newCGColorWithCGColorSpace:destinationColorSpace];
 }
 
 NSColor *OQColorFromColorRef(CGColorRef c)
 {
+    // <bug:///98617> (Exception nil colorspace argument in initWithColorSpace:components:count)
+    // Convert nil to nil to avoid an exception in NSColor. The call site might not be prepared to handle nil; if it turns out that all callsites are, maybe we should make nil -> nil part of the contract for this function.
+    OBASSERT_NOTNULL(c, "OQColorFromColorRef returning nil for nil color -- didn't used to allow that, now we are.");
+    if (!c)
+        return nil;
+    
     return [NSColor colorFromCGColor:c];
 }
 
 CGColorRef OQCreateGrayColorRefFromColor(NSColor *c)
 {
+    // <bug:///98617> (Exception nil colorspace argument in initWithColorSpace:components:count)
+    // Convert nil to nil to avoid an exception in NSColor. The call site might not be prepared to handle nil; if it turns out that all callsites are, maybe we should make nil -> nil part of the contract for this function.
+    OBASSERT_NOTNULL(c, "OQCreateGrayColorRefFromColor returning nil for nil color -- didn't used to allow that, now we are.");
+    if (!c)
+        return nil;
+    
     CGFloat alpha;
     CGFloat luma = OQGetColorLuma(c, &alpha);
     return CGColorCreateGenericGray(luma, alpha);

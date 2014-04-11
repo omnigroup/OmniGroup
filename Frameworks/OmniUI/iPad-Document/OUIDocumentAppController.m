@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1733,7 +1733,7 @@ static unsigned SyncAgentRunningAccountsContext;
         if ([crashType isEqual:@"crash-abort"])
             abort();
         if ([crashType isEqual:@"crash-null"])
-            NSLog(@"%d", *(int *)[@"0" intValue]);
+            NSLog(@"%d", *(int *)(intptr_t)[@"0" intValue]);
         if ([crashType isEqual:@"crash-exception"])
             [NSException raise:NSGenericException reason:@"testing unhandled exception"];
         if ([crashType isEqual:@"crash-signal"])

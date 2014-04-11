@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@ RCS_ID("$Id$")
 
 - (void)appendString:(NSString *)aString encoding:(NSStringEncoding)anEncoding;
 {
-    CFStringRef cfString = (CFStringRef)aString;
+    CFStringRef cfString = (OB_BRIDGE CFStringRef)aString;
     CFStringEncoding cfEncoding = CFStringConvertNSStringEncodingToEncoding(anEncoding);
     
     const char *encoded = CFStringGetCStringPtr(cfString, cfEncoding);
@@ -29,10 +29,9 @@ RCS_ID("$Id$")
         }
     }
     
-    CFDataRef block = CFStringCreateExternalRepresentation(kCFAllocatorDefault, cfString, cfEncoding, 0);
+    NSData *block = CFBridgingRelease(CFStringCreateExternalRepresentation(kCFAllocatorDefault, cfString, cfEncoding, 0));
     if (block) {
-        [self appendData:(NSData *)block];
-        CFRelease(block);
+        [self appendData:block];
         return;
     }
     

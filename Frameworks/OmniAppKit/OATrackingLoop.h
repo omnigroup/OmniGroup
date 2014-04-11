@@ -1,4 +1,4 @@
-// Copyright 2010, 2013 The Omni Group. All rights reserved.
+// Copyright 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,48 +17,16 @@ typedef enum {
     OATrackingLoopExitPointHorizontal,
 } OATrackingLoopExitPoint;
 
-typedef void (^OATrackingLoopHysteresisExit)(OATrackingLoopExitPoint exitPoint);
-typedef void (^OATrackingLoopDragged)(void);
-typedef void (^OATrackingLoopLongPress)(void);
-typedef void (^OATrackingLoopInsideVisibleRectChanged)(void);
-typedef BOOL (^OATrackingLoopShouldAutoscroll)(void);
-typedef void (^OATrackingLoopModifierFlagsChanged)(NSUInteger oldFlags);
-typedef void (^OATrackingLoopUp)(void);
+typedef void (^OATrackingLoopHysteresisExit)(OATrackingLoop *loop, OATrackingLoopExitPoint exitPoint);
+typedef void (^OATrackingLoopDragged)(OATrackingLoop *loop);
+typedef void (^OATrackingLoopLongPress)(OATrackingLoop *loop);
+typedef void (^OATrackingLoopInsideVisibleRectChanged)(OATrackingLoop *loop);
+typedef BOOL (^OATrackingLoopShouldAutoscroll)(OATrackingLoop *loop);
+typedef void (^OATrackingLoopModifierFlagsChanged)(OATrackingLoop *loop, NSUInteger oldFlags);
+typedef void (^OATrackingLoopUp)(OATrackingLoop *loop);
 
 // Tracks the mouse, starting from a -mouseDown: event.
 @interface OATrackingLoop : NSObject
-{
-@private
-    NSView *_view;
-    NSEvent *_mouseDownEvent;
-    NSEventType _upEventType;
-    NSEventType _draggedEventType;
-    NSString *_runLoopMode;
-    NSDate *_limitDate;
-    BOOL _stopped;
-    BOOL _disablesAnimation;
-    BOOL _debug;
-    BOOL _invalid;
-    
-    NSPoint _initialMouseDownPointInView;
-    NSPoint _currentMouseDraggedPointInWindow;
-    NSPoint _currentMouseDraggedPointInView;
-    
-    CGFloat _hysteresisSize;
-    BOOL _insideHysteresisRect;
-    NSRect _hysteresisViewRect;
-    BOOL _insideVisibleRect;
-    
-    NSUInteger _modifierFlags;
-    
-    OATrackingLoopHysteresisExit _hysteresisExit;
-    OATrackingLoopInsideVisibleRectChanged _insideVisibleRectChanged;
-    OATrackingLoopShouldAutoscroll _shouldAutoscroll;
-    OATrackingLoopModifierFlagsChanged _modifierFlagsChanged;
-    OATrackingLoopDragged _dragged;
-    OATrackingLoopLongPress _longPress;
-    OATrackingLoopUp _up;
-}
 
 @property(nonatomic,readonly) NSView *view;
 @property(nonatomic,readonly) NSEvent *mouseDownEvent;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2009, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2009, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,21 +32,18 @@ extern NSString * const OAInfoTemplateImageName;
    // Calls imageNamed:withTint:inBundle:, using the current control tint.
 + (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle allowingNil:(BOOL)allowNil;
 + (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle;
++ (NSImage *)tintedImageWithSize:(NSSize)size flipped:(BOOL)drawingHandlerShouldBeCalledWithFlippedContext drawingHandler:(BOOL (^)(NSRect dstRect))drawingHandler;
+    // Automatically refreshes its cache when the system tint color changes
+
 + (NSImage *)imageForFileType:(NSString *)fileType;
     // Caching wrapper for -[NSWorkspace iconForFileType:].  This method is not thread-safe at the moment.
 + (NSImage *)imageForFile:(NSString *)path;
 
 + (NSImage *)draggingIconWithTitle:(NSString *)title andImage:(NSImage *)image;
 
-/** Returns an image tinted with the passed in color, using NSCompositeSourceAtop (R = S*Da + D*(1 - Sa)).
- This is a convenience for -imageByTintingWithColor:alpha: with an alpha value of 1.0.
+/** Returns an image tinted with the passed in color, using NSCompositeSourceIn (R = S*Da), where S is the tintColor and Da is the alpha values in the image represented by self. This allows the tintColor to have an alpha value that survives into the result.
  */
 - (NSImage *)imageByTintingWithColor:(NSColor *)tintColor;
-
-/** Returns an image tinted with the passed in color, using NSCompositeSourceAtop (R = S*Da + D*(1 - Sa)).
- The alpha value controls the overal value of the resulting image.
- */
-- (NSImage *)imageByTintingWithColor:(NSColor *)tintColor alpha:(CGFloat)alpha;
 
 - (void)drawFlippedInRect:(NSRect)rect fromRect:(NSRect)sourceRect operation:(NSCompositingOperation)op fraction:(CGFloat)delta;
 - (void)drawFlippedInRect:(NSRect)rect fromRect:(NSRect)sourceRect operation:(NSCompositingOperation)op;

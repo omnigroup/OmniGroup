@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -123,7 +123,7 @@ error_out:
             CFURLRef urlRef = CFURLCreateFromFSRef(kCFAllocatorDefault, &target);
             CFStringRef urlString = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
             CFRelease(urlRef);
-            path = [NSMakeCollectable(urlString) autorelease];
+            path = CFBridgingRelease(urlString);
             break;
         } else {
             NSLog(@"FSResolveAliasWithMountFlags -> %d", result);
@@ -146,7 +146,7 @@ error_out:
             if (result != noErr) {
                 NSLog(@"FSCopyAliasInfo -> %d", result);
             }
-            path = [NSMakeCollectable(aliasPath) autorelease];
+            path = CFBridgingRelease(aliasPath);
             break;
         } else {
             NSLog(@"FSResolveAliasWithMountFlags -> %d", result);

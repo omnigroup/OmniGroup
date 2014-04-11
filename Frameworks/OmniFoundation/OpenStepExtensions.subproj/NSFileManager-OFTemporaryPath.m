@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,7 +73,7 @@ static NSLock *tempFilenameLock = nil;
         return nil;
     }
     
-    NSURL *resultURL = [NSMakeCollectable(temporaryItemsURL) autorelease];
+    NSURL *resultURL = CFBridgingRelease(temporaryItemsURL);
     
     return [resultURL URLByStandardizingPath];
 }
@@ -320,14 +320,14 @@ static BOOL _tryUniqueFilename(NSFileManager *self, NSString *candidate, BOOL cr
     OBASSERT(create, "Avoid this use to avoid race conditions");
 #endif
     
-    NSError *dummy = nil;
-    if (!outError)
-        outError = &dummy;
+    __autoreleasing NSError *error = nil;
     
-    if (allowOriginal && _tryUniqueFilename(self, filename, create, outError))
+    if (allowOriginal && _tryUniqueFilename(self, filename, create, &error))
         return filename;
-    else if (*outError) {
+    else if (error) {
         // NO will be returned from _tryUniqueFilename w/o an error if we should keep trying.
+        if (outError)
+            *outError = error;
         return nil;
     }
     

@@ -1,5 +1,5 @@
 /* font size label format string in points */
-"%@ points" = "%@ точек";
+"%@ points" = "%@ пункт.";
 
 /* title format for color component slider */
 "<alpha title+value>" = "Непрозрачность: %d%%";
@@ -56,7 +56,7 @@
 "Recommended Fonts" = "Рекомендуемые шрифты";
 
 /* Name for the variant of a font with out any special attributes */
-"Regular" = "Обычная";
+"Regular" = "Обычный";
 
 /* Label for font size controls */
 "Size" = "Размер";

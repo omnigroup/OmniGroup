@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -169,57 +169,47 @@ uint32_t OFLocalIPv4Address(void)
     SCDynamicStoreRef store = SCDynamicStoreCreate(NULL, (CFStringRef)[[NSProcessInfo processInfo] processName], NULL, NULL);
     
     CFStringRef interfacesKey = SCDynamicStoreKeyCreateNetworkInterface(NULL, kSCDynamicStoreDomainState);
-    NSDictionary *interfacesDictionary = (NSDictionary *)SCDynamicStoreCopyValue(store, interfacesKey);
+    NSDictionary *interfacesDictionary = CFBridgingRelease(SCDynamicStoreCopyValue(store, interfacesKey));
     CFRelease(interfacesKey);
     
     NSArray *interfaces = [interfacesDictionary objectForKey:(NSString *)kSCDynamicStorePropNetInterfaces];
     for (NSString *interfaceName in interfaces) {
         {
-            CFStringRef linkKey = SCDynamicStoreKeyCreateNetworkInterfaceEntity(NULL, kSCDynamicStoreDomainState, (CFStringRef)interfaceName, kSCEntNetLink);
-            CFDictionaryRef linkDictionary = SCDynamicStoreCopyValue(store, linkKey);
+            CFStringRef linkKey = SCDynamicStoreKeyCreateNetworkInterfaceEntity(NULL, kSCDynamicStoreDomainState, (OB_BRIDGE CFStringRef)interfaceName, kSCEntNetLink);
+            NSDictionary *linkDictionary = CFBridgingRelease(SCDynamicStoreCopyValue(store, linkKey));
             CFRelease(linkKey);
             
             if (!linkDictionary)
                 continue;
             
-            BOOL isActive = [(NSDictionary *)linkDictionary boolForKey:(NSString *)kSCPropNetLinkActive];
-            CFRelease(linkDictionary);
+            BOOL isActive = [linkDictionary boolForKey:(NSString *)kSCPropNetLinkActive];
             
             if (!isActive)
                 continue;
         }
 
-        CFArrayRef ipAddresses = NULL;
+        NSArray *ipAddresses = NULL;
         {
-            CFStringRef ipv4Key = SCDynamicStoreKeyCreateNetworkInterfaceEntity(NULL, kSCDynamicStoreDomainState, (CFStringRef)interfaceName, kSCEntNetIPv4);
-            CFDictionaryRef ipv4Dictionary = SCDynamicStoreCopyValue(store, ipv4Key);
-            if (ipv4Dictionary != NULL) {
-                ipAddresses = CFDictionaryGetValue(ipv4Dictionary, kSCPropNetIPv4Addresses);
-                if (ipAddresses)
-                    CFRetain(ipAddresses);
-                CFRelease(ipv4Dictionary);
-            }
+            CFStringRef ipv4Key = SCDynamicStoreKeyCreateNetworkInterfaceEntity(NULL, kSCDynamicStoreDomainState, (OB_BRIDGE CFStringRef)interfaceName, kSCEntNetIPv4);
+            NSDictionary *ipv4Dictionary = CFBridgingRelease(SCDynamicStoreCopyValue(store, ipv4Key));
+            if (ipv4Dictionary)
+                ipAddresses = [[ipv4Dictionary[(NSString *)kSCPropNetIPv4Addresses] copy] autorelease];
+
             if (ipv4Key)
                 CFRelease(ipv4Key);
         }
 
-        if (ipAddresses != NULL && CFArrayGetCount(ipAddresses) != 0) {
-            NSString *ipAddressString = [(NSArray *)ipAddresses objectAtIndex:0];
+        if ([ipAddresses count] > 0) {
+            NSString *ipAddressString = ipAddresses[0];
             in_addr_t address = inet_addr([ipAddressString UTF8String]);
             if (address != (unsigned int)-1) {
-                CFRelease(ipAddresses);
-                CFRelease(interfacesDictionary);
                 CFRelease(store);
                 
                 OBASSERT(address <= UINT32_MAX);
                 return (uint32_t)address;
             }
         }
-        if (ipAddresses)
-            CFRelease(ipAddresses);
     }
-    if (interfacesDictionary)
-        CFRelease(interfacesDictionary);
     CFRelease(store);
     return (in_addr_t)INADDR_LOOPBACK; // Localhost (127.0.0.1)
 }
@@ -377,11 +367,10 @@ NSString *OFHostName(void)
     CFStringRef hostnameKey = SCDynamicStoreKeyCreateHostNames(kCFAllocatorDefault);
     
     if (dynamicStore && hostnameKey) {
-        CFPropertyListRef value = SCDynamicStoreCopyValue(dynamicStore, hostnameKey);
+        id value = CFBridgingRelease(SCDynamicStoreCopyValue(dynamicStore, hostnameKey));
         if (value) {
-            OBASSERT(CFGetTypeID(value) == CFDictionaryGetTypeID());
-            if (CFGetTypeID(value) == CFDictionaryGetTypeID()) {
-                NSDictionary *dictionary = (NSDictionary *)value;
+            if ([value isKindOfClass:[NSDictionary class]]) {
+                NSDictionary *dictionary = value;
                 hostname = [[[dictionary objectForKey:@"HostName"] copy] autorelease];
                 if (!hostname) {
                     hostname = [dictionary objectForKey:@"LocalHostName"];
@@ -390,9 +379,9 @@ NSString *OFHostName(void)
                         hostname = [NSString stringWithFormat:@"%@.local", hostname];
                     }
                 }
-            }       
-        
-            CFRelease(value);
+            } else {
+                OBASSERT_NOT_REACHED("Unknown value type for host names");
+            }
         }
     }
     
@@ -419,7 +408,7 @@ NSString *OFLocalHostName(void)
 {
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     CFStringRef localHostName = SCDynamicStoreCopyLocalHostName(NULL);
-    return [(id)CFMakeCollectable(localHostName) autorelease];
+    return CFBridgingRelease(localHostName);
 #else
     return 
 #endif    
@@ -527,8 +516,7 @@ id OFCreatePlistFor4CC(uint32_t v)
     if (!OK(buf.c[0]) || !OK(buf.c[1]) || !OK(buf.c[2]) || !OK(buf.c[3]))
         return [[NSData alloc] initWithBytes:buf.c length:4];
     else {
-        CFStringRef s = CFStringCreateWithBytes(kCFAllocatorDefault, buf.c, 4, kCFStringEncodingMacRoman, FALSE);
-        return NSMakeCollectable(s);
+        return (OB_BRIDGE NSString *)CFStringCreateWithBytes(kCFAllocatorDefault, buf.c, 4, kCFStringEncodingMacRoman, FALSE);
     }
 }
 

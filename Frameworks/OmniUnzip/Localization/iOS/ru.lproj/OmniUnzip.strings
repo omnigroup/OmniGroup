@@ -17,21 +17,21 @@
 "Unable to close zip data." = "Не удается закрыть данные zip.";
 
 /* error reason */
-"Unable to close zip file." = "Не удается закрыть zip-файл.";
+"Unable to close zip file." = "Не удается закрыть файл zip.";
 
 /* error reason */
 "Unable to create zip file." = "Не удается создать файл zip.";
 
 /* error description */
-"Unable to open zip archive." = "Не удается открыть zip-архив.";
+"Unable to open zip archive." = "Не удается открыть архив zip.";
 
 /* error description
    error reason */
+
 "Unable to read zip data." = "Не удается прочитать данные zip.";
 
 /* error description */
-"Unable to read zip file." = "Не удается прочитать zip-файл.";
+"Unable to read zip file." = "Не удается прочитать файл zip.";
 
 /* error description */
-"Unable to write zip file." = "Не удается записать zip-файл.";
-
+"Unable to write zip file." = "Не удается записать файл zip.";

@@ -1,4 +1,4 @@
-// Copyright 2000-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2006, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,7 +52,7 @@ RCS_ID("$Id$");
     NSString *key = [containerSpec key];
     id container = [[containerSpec containerSpecifier] objectsByEvaluatingSpecifier];
     if (![container respondsToSelector:@selector(removeObjects:fromPropertyWithKey:)]) {
-        NSLog(@"Container doesn't respond to -removeObjects:toPropertyWithKey: -- container = %@", OBShortObjectDescription(container));
+        NSLog(@"Container doesn't respond to -removeObjects:fromPropertyWithKey: -- container = %@", OBShortObjectDescription(container));
         [self setScriptErrorNumber:NSReceiversCantHandleCommandScriptError];
         [self setScriptErrorString:NSLocalizedStringFromTableInBundle(@"Specified container doesn't handle the remove command.", @"OmniFoundation", [OFRemoveScriptCommand bundle], @"script exception format")];
         return nil;

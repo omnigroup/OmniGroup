@@ -13,9 +13,6 @@
 /* alert button title */
 "Accept" = "Accetta";
 
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Consentire a %@ di segnalare periodicamente informazioni sul modello hardware e sulla versione di iOS?\nIn questo modo potremo conoscere le configurazioni più importanti da supportare. Puoi anche modificare la risposta in seguito nelle preferenze mediante MUMBLE MUMBLE MUMBLE.";
-
 /* Web view nagivation button for going back in history. */
 "Back" = "Indietro";
 
@@ -36,13 +33,13 @@
 "Cancel" = "Annulla";
 
 /* Center Text Align button accessibility label. */
-"Center text align" = "Allinea testo al centro";
+"Center text align" = "Testo allineato al centro";
 
 /* Certificate trust alert title */
-"Certificate Trust" = "Attendibilità certificata";
+"Certificate Trust" = "Certificati attendibili";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Preferenza “%1$@” modificata da “%2$@” in “%3$@”";
+"Changed the '%@' preference from '%@' to '%@'" = "Preferenza \"%1$@\" modificata da \"%2$@\" in \"%3$@\"";
 
 /* Certificate trust alert button title */
 "Continue" = "Continua";
@@ -52,9 +49,6 @@
 
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "Disabilitato";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "Non segnalare";
 
 /* Done
    toolbar item title */
@@ -71,7 +65,7 @@
 "Error Loading Store" = "Errore di caricamento Store";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "Funzionalità non abilitata per questa demo";
+"Feature not enabled for this demo" = "Funzione non abilitata per questa demo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Adatta";
@@ -80,25 +74,28 @@
 "Help and Settings" = "Aiuto e impostazioni";
 
 /* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "L'acquisto dall'app non è disponibile o non è consentito su questo dispositivo. Per abilitare l'acquisto, verifica le limitazioni nelle impostazioni.";
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "L'acquisto dall'app non è disponibile o non è consentito su questo dispositivo. Per abilitare l'acquisto, verifica le restrizioni nelle Impostazioni.";
 
 /* Italic button accessibility label */
 "Italic" = "Corsivo";
 
 /* Justified Text Align button accessibility label. */
-"Justified text align" = "Giustifica testo";
+"Justified text align" = "Testo giustificato";
 
 /* Left Text Align button accessibility label. */
-"Left text align" = "Allinea testo a sinistra";
+"Left text align" = "Testo allineato a sinistra";
 
 /* Web view error opening URL title. */
-"Link could not be opend. Please check Safari restrictions in Settings." = "Impossibile aprire il link. Verifica le limitazioni di Safari nelle Impostazioni.";
+"Link could not be opened. Please check Safari restrictions in Settings." = "Impossibile aprire il link. Verifica le restrizioni di Safari nelle Impostazioni.";
 
 /* Buy button title while app store is loading */
 "Loading" = "Carico";
 
 /* empty value cell placeholder */
 "None" = "Nessuno";
+
+/* Full screen note editor title */
+"Note" = "Nota";
 
 /* button title
    OK button label */
@@ -107,9 +104,6 @@
 
 
 "OK" = "OK";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Aggiornamento Omni Software";
 
 /* placeholder text */
 "password" = "password";
@@ -124,7 +118,7 @@
 "Purchase Failed" = "Acquisto non riuscito";
 
 /* Buy button thank you message */
-"Purchased. Thank you!" = "Acquisto eseguito. Grazie.";
+"Purchased. Thank you!" = "Acquistato. Grazie.";
 
 /* Purchasing is disabled alert title */
 "Purchasing is Disabled" = "Acquisto disabilitato";
@@ -144,16 +138,13 @@
 "Restore Failed" = "Ripristino non riuscito";
 
 /* Right Text Align button accessibility label. */
-"Right text align" = "Allinea testo a destra";
+"Right text align" = "Testo allineato a destra";
 
 /* App menu item title */
 "Run Tests" = "Esegui test";
 
 /* Search field placeholder text */
 "Search" = "Cerca";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "Invia resoconto";
 
 /* Strike Through button accessibility label */
 "Strike Through" = "Barrato";
@@ -170,15 +161,14 @@
 /* Undo button title */
 "Undo" = "Annulla";
 
-/* default for WebDAV username edit field
-   placeholder text */
-"username" = "utente";
+/* placeholder text */
+"username" = "nome utente";
 
 /* alert message */
-"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Hai toccato un link che modificherà le preferenze seguenti:\n\n“%@”\n\nAccettare queste modifiche?";
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Hai toccato un link che modificherà le preferenze seguenti:\n\n\"%@\"\n\nAccettare queste modifiche?";
 
 /* debug setting alert message */
-"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Hai toccato un link che eseguirà il seguente comando di debug:\n\n\"%@\"\n\nSe non è stato il gruppo di supporto di Omni a consigliarti questa operazione, non proseguire.\nEseguire il comando?";
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Hai toccato un link che eseguirà il seguente comando di debug:\n\n“%@”\n\nSe non è stato il gruppo di supporto di Omni a consigliarti questa operazione, non proseguire.\nEseguire il comando?";
 
 /* zoom label */
 "Zoom" = "Ridimensiona";

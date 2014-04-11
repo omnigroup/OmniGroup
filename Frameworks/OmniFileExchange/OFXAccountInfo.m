@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -342,7 +342,7 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
         
         if (cacheEntry.fileInfo != client.fileInfo) {
             // New contents cached --  update our client object
-            NSError *clientError;
+            __autoreleasing NSError *clientError;
             if (!(client = [[OFXSyncClient alloc] initWithURL:cacheEntry.fileInfo.originalURL propertyList:cacheEntry.contents error:&clientError])) {
                 [clientError log:@"Error creating client from dictionary at %@", clientURL];
                 continue;

@@ -1,4 +1,4 @@
-// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -119,7 +119,7 @@ static SecKeyRef copyKeyFromKeychain(SecKeychainRef keychain, xmlNode *signature
         
         if ([fn hasSuffix:@".crt"] || [fn hasSuffix:@".der"]) {
             NSError *readError = NULL;
-            NSData *derData = [NSData dataWithContentsOfFile:[fromDir stringByAppendingPathComponent:fn] options:NSMappedRead error:&readError];
+            NSData *derData = [NSData dataWithContentsOfFile:[fromDir stringByAppendingPathComponent:fn] options:0 error:&readError];
             if (!derData) {
                 NSLog(@"*** Could not load cert from %@: %@", fn, readError);
                 continue;

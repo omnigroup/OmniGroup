@@ -1,4 +1,4 @@
-// Copyright 2005-2007, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2007, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,7 @@ static void initializeDepressionImages(void)
     if (plasticDepression != nil)
         return;
     
-    plasticDepression = [[NSImage imageNamed:@"OITabDepressionBackground" inBundle:OMNI_BUNDLE] retain];
+    plasticDepression = [NSImage imageNamed:@"OITabDepressionBackground" inBundle:OMNI_BUNDLE];
     NSSize sizes = [plasticDepression size];
     
     NSInteger pix = (NSInteger)sizes.width;
@@ -115,7 +115,7 @@ static void initializeDepressionImages(void)
 {
     [self setAllowsEmptySelection:YES];
     [self setNeedsDisplay:YES];
-    oldSelection = [[self selectedCells] retain];
+    oldSelection = [self selectedCells];
     [[self cells] makeObjectsPerformSelector:@selector(saveState)];
     
     // Wait to see if this is a double-click before proceeding
@@ -154,7 +154,6 @@ static void initializeDepressionImages(void)
     } 
     [allCells makeObjectsPerformSelector:@selector(clearState)];
     [self  setNeedsDisplay:YES];
-    [oldSelection release];
     oldSelection = nil;
 }
 

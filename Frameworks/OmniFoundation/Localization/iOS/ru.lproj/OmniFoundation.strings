@@ -38,7 +38,7 @@
 "about %d minutes" = "около %d минут";
 
 /* approximate time interval: seconds since start or until finish */
-"about %d seconds" = "около %d секунд";
+"about %d seconds" = "около %d секунды";
 
 /* approximate time interval: one minute */
 "about a minute" = "около минуты";
@@ -123,19 +123,19 @@
 "m" = "м";
 
 /* time span formatter span */
-"minute" = "мин.";
+"minute" = "минута";
 
 /* time span formatter span */
-"minutes" = "мин.";
+"minutes" = "минут";
 
 /* time span formatter span */
 "mo" = "мес.";
 
 /* time span formatter span */
-"month" = "мес.";
+"month" = "месяц";
 
 /* time span formatter span */
-"months" = "мес.";
+"months" = "месяцев";
 
 /* error reason */
 "No root element was found" = "Корневой элемент не найден";
@@ -153,7 +153,7 @@
 "second" = "секунда";
 
 /* time span formatter span */
-"seconds" = "секунд";
+"seconds" = "секунды";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Возможно, сертификат сервера «%@» недействителен. Этот сайт может являться ненадежным. Подключиться в любом случае?";
@@ -171,7 +171,7 @@
 "The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Сертификат сервера «%@» подписан ненадежным корневым сервером. Этот сайт может являться ненадежным. Подключиться в любом случае?";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена %1$@ с компьютера %2$@ %3$@ в %4$@.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ с компьютера %2$@ %3$@ в %4$@.";
 
 /* error reason */
 "This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера %2$@ %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
@@ -207,7 +207,7 @@
 "week" = "неделя";
 
 /* time span formatter span */
-"weeks" = "недель";
+"weeks" = "недели";
 
 /* time span formatter span */
 "y" = "г";

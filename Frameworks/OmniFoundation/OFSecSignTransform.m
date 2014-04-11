@@ -1,4 +1,4 @@
-// Copyright 2011-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -188,7 +188,7 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     if (0) {
     errorOut:
         if (outError)
-            *outError = [NSMakeCollectable(cfError) autorelease];
+            *outError = CFBridgingRelease(cfError);
         else
             CFRelease(cfError);
         return NO;
@@ -219,7 +219,7 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     OBASSERT(CFGetTypeID(result) == CFDataGetTypeID());
     
     // Result is presumably CFRetained by the SecTransform we got it from at this point; convert to NS retain+autorelease for our caller.
-    NSData *nsResult = NSMakeCollectable(result);
+    NSData *nsResult = (OB_BRIDGE NSData *)result;
     CFRelease(gen);
     
     if (generatorGroupOrderLog2) {
@@ -236,7 +236,7 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     if (0) {
     errorOut:
         if (outError)
-            *outError = [NSMakeCollectable(cfError) autorelease];
+            *outError = CFBridgingRelease(cfError);
         else
             CFRelease(cfError);
         return nil;

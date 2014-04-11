@@ -1,4 +1,4 @@
-// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,51 +21,81 @@ RCS_ID("$Id$")
 
 - (NSData *)compressedData:(NSError **)outError;
 {
-    NSData *result = [NSMakeCollectable(OFDataCreateCompressedData((CFDataRef)self, (CFErrorRef *)outError)) autorelease];
-    if (!result && outError)
-        [NSMakeCollectable(*(CFErrorRef *)outError) autorelease];
+    CFErrorRef error = NULL;
+    NSData *result = CFBridgingRelease(OFDataCreateCompressedData((OB_BRIDGE CFDataRef)self, &error));
+    if (!result) {
+        if (outError)
+            *outError = CFBridgingRelease(error);
+        else
+            CFRelease(error);
+    }
     return result;
 }
 
 - (NSData *)decompressedData:(NSError **)outError;
 {
-    NSData *result = [NSMakeCollectable(OFDataCreateDecompressedData(kCFAllocatorDefault, (CFDataRef)self, (CFErrorRef *)outError)) autorelease];
-    if (!result && outError)
-        [NSMakeCollectable(*(CFErrorRef *)outError) autorelease];
+    CFErrorRef error = NULL;
+    NSData *result = CFBridgingRelease(OFDataCreateDecompressedData(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, &error));
+    if (!result) {
+        if (outError)
+            *outError = CFBridgingRelease(error);
+        else
+            CFRelease(error);
+    }
     return result;
 }
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSData *)compressedBzip2Data:(NSError **)outError;
 {
-    NSData *result = [NSMakeCollectable(OFDataCreateCompressedBzip2Data((CFDataRef)self, (CFErrorRef *)outError)) autorelease];
-    if (!result && outError)
-        [NSMakeCollectable(*(CFErrorRef *)outError) autorelease];
+    CFErrorRef error = NULL;
+    NSData *result = CFBridgingRelease(OFDataCreateCompressedBzip2Data((OB_BRIDGE CFDataRef)self, &error));
+    if (!result) {
+        if (outError)
+            *outError = CFBridgingRelease(error);
+        else
+            CFRelease(error);
+    }
     return result;
 }
 
 - (NSData *)decompressedBzip2Data:(NSError **)outError;
 {
-    NSData *result = [NSMakeCollectable(OFDataCreateDecompressedBzip2Data(kCFAllocatorDefault, (CFDataRef)self, (CFErrorRef *)outError)) autorelease];
-    if (!result && outError)
-        [NSMakeCollectable(*(CFErrorRef *)outError) autorelease];
+    CFErrorRef error = NULL;
+    NSData *result = CFBridgingRelease(OFDataCreateDecompressedBzip2Data(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, &error));
+    if (!result) {
+        if (outError)
+            *outError = CFBridgingRelease(error);
+        else
+            CFRelease(error);
+    }
     return result;
 }
 #endif
 
 - (NSData *)compressedDataWithGzipHeader:(BOOL)includeHeader compressionLevel:(int)level error:(NSError **)outError;
 {
-    NSData *result = [NSMakeCollectable(OFDataCreateCompressedGzipData((CFDataRef)self, includeHeader, level, (CFErrorRef *)outError)) autorelease];
-    if (!result && outError)
-        [NSMakeCollectable(*(CFErrorRef *)outError) autorelease];
+    CFErrorRef error = NULL;
+    NSData *result = CFBridgingRelease(OFDataCreateCompressedGzipData((OB_BRIDGE CFDataRef)self, includeHeader, level, &error));
+    if (!result) {
+        if (outError)
+            *outError = CFBridgingRelease(error);
+        else
+            CFRelease(error);
+    }
     return result;
 }
 
 - (NSData *)decompressedGzipData:(NSError **)outError;
 {
-    NSData *result = [NSMakeCollectable(OFDataCreateDecompressedGzip2Data(kCFAllocatorDefault, (CFDataRef)self, (CFErrorRef *)outError)) autorelease];
-    if (!result && outError)
-        [NSMakeCollectable(*(CFErrorRef *)outError) autorelease];
+    CFErrorRef error = NULL;
+    NSData *result = CFBridgingRelease(OFDataCreateDecompressedGzip2Data(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, &error));
+    if (!result) {
+        if (outError)
+            *outError = CFBridgingRelease(error);
+        else
+            CFRelease(error);
+    }
     return result;
 }
 

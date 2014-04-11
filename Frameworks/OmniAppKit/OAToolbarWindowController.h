@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2007, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@
 - (NSString *)itemIdentifierExtension;
 - (NSString *)templateItemIdentifier;
 - (NSArray *)allowedItems;
-- (void)finishSetupForToolbarItem:(NSToolbarItem *)item toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
+- (NSToolbarItem *)finishSetupForToolbarItem:(NSToolbarItem *)item toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 @end
 
 @interface OAToolbarWindowController : NSWindowController <OAToolbarDelegate>
@@ -48,6 +48,7 @@
 - (NSString *)toolbarIdentifier; // identifier used for preferences - defaults to configurationName if unimplemented
 - (BOOL)shouldAllowUserToolbarCustomization;
 - (BOOL)shouldAutosaveToolbarConfiguration;
-- (NSDictionary *)toolbarConfigurationDictionary;
+- (NSToolbarDisplayMode)defaultToolbarDisplayMode;
+- (NSDictionary *)toolbarConfigurationDictionary; // Used when -shouldAutosaveConfiguration returns NO
 
 @end

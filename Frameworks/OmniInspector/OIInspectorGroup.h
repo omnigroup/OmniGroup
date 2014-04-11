@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2007, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <Foundation/NSObject.h>
 #import <Foundation/NSGeometry.h> // for NSRect
+
+#import "OIInspectorRegistry.h"
 
 /*
  By default, none of the inspectors in the group are expanded. To configure which inspectors you want expanded in your application, you need to register an "Inspector" default that specifies which inspectors are to be expanded. For standard Omni applications, this should go in the application's Info.plist, in OFRegistrations->NSUserDefaults->defaultsDictionary. The value for the Inspector key is a dictionary that contains boolean values for the pertinent inspectors, with the inspector identifiers as the keys. For example, OmniOutliner's entry looks similar to the following, which specifies that the "item style" and "text style" inspectors should be expanded.
@@ -40,19 +42,19 @@
 
 // API
 
-+ (void)restoreInspectorGroupsWithInspectors:(NSArray *)inspectors;
-+ (void)clearAllGroups;
 + (void)enableWorkspaces;
-+ (void)saveExistingGroups;
 + (void)useASeparateMenuForWorkspaces;
 + (BOOL)isUsingASeparateMenuForWorkspaces;
 
 + (void)setDynamicMenuPlaceholder:(NSMenuItem *)placeholder;
-+ (NSArray *)groups;
-+ (NSUInteger)groupCount;
-+ (NSArray *)visibleGroups;
-+ (NSArray *)visibleWindows;
-+ (void)forceAllGroupsToCheckScreenGeometry;
++ (void)updateMenuForControllers:(NSArray *)controllers;
+
+- (void)restoreFromIdentifier:(NSString *)identifier withInspectors:(NSMutableDictionary *)inspectorsById;
+- (void)setInitialBottommostInspector;
+
+@property (nonatomic, weak) OIInspectorRegistry *inspectorRegistry;
+
+- (NSString *)identifier;
 
 - (BOOL)defaultGroupVisibility;
 
@@ -78,6 +80,8 @@
 - (BOOL)isVisible;
 - (BOOL)isBelowOverlappingGroup;
 - (BOOL)isSettingExpansion;
+
+- (void)saveInspectorOrder;
 
 - (CGFloat)singlePaneExpandedMaxHeight;
 - (BOOL)ignoreResizing;

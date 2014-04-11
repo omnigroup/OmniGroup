@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -282,7 +282,7 @@ RCS_ID("$Id$");
     OFXMLBufferDestroy(xml);
     
     [pool drain];
-    return [NSMakeCollectable(data) autorelease];
+    return CFBridgingRelease(data);
 }
 
 - (BOOL)writeToFile:(NSString *)path error:(NSError **)outError;
@@ -291,7 +291,7 @@ RCS_ID("$Id$");
     if (!data)
         return NO;
     
-    return [data writeToFile:path options:NSAtomicWrite error:outError];
+    return [data writeToFile:path options:NSDataWritingAtomic error:outError];
 }
 
 - (NSUInteger)processingInstructionCount;

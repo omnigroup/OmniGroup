@@ -1,0 +1,35 @@
+/* Error description when renaming a file to a name that is already in use. */
+"\"%@\" is already taken." = "„%@“ ist bereits vergeben.";
+
+/* Error reason when a file type is not recognized. */
+"%@ does not recognize this kind of file." = "%@ erkennt diesen Dateityp nicht.";
+
+/* Error message when renaming a folder and there is already a folder with the requested name. */
+"Another folder already has the name \"%@\"." = "Ein anderer Ordner hat bereits den Namen „%@“.";
+
+/* Document store scope display name */
+"Built-in" = "Integriert";
+
+/* Error message when renaming a folder and there is already a folder with the requested name. */
+"Cannot rename folder." = "Der Ordner kann nicht umbenannt werden.";
+
+/* Document store scope display name */
+"Local Documents" = "Lokale Dokumente";
+
+/* Error suggestion when renaming a file to a name that is already in use. */
+"Please choose a different name." = "Wählen Sie einen anderen Namen aus.";
+
+/* time display format for today */
+"Today, %@ <day name>" = "Heute, %@";
+
+/* Document store scope display name */
+"Trash" = "Papierkorb";
+
+/* Error description when a file type is not recognized. */
+"Unable to add document." = "Das Dokument kann nicht hinzugefügt werden.";
+
+/* title for new untitled folders */
+"Untitled Folder" = "Ohne Titel";
+
+/* time display format for yesterday */
+"Yesterday, %@ <day name>" = "Gestern, %@";
