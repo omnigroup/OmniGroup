@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010-2011, 2013 Omni Development, Inc.All rights reserved.
+// Copyright 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc.All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,9 +14,17 @@
 
 RCS_ID("$Id$")
 
-@interface OAWebPageViewer () <OAFindControllerTarget>
+@interface OAWebPageViewer () <OAFindControllerTarget> {
+  @private
+    BOOL _usesWebPageTitleForWindowTitle;
+    NSMutableDictionary *_scriptObjects;
+}
+
 @property (nonatomic, copy) NSString *name;
+
 @end
+
+#pragma mark -
 
 @implementation OAWebPageViewer
 
@@ -37,8 +45,40 @@ RCS_ID("$Id$")
     OAWebPageViewer *newViewer = [[self alloc] init];
     newViewer.name = name;
     cache[name] = newViewer;
+    
+    // PlugIns are disabled by default. They can be turned on per instance if necessary.
+    // (If PlugIns are enabled, Adobe Acrobat will interfere with displaying inline PDFs in our help content.)
+    newViewer.plugInsEnabled = NO;
+    
+    newViewer.usesWebPageTitleForWindowTitle = YES;
 
-    return [newViewer autorelease];
+    return newViewer;
+}
+
+#pragma mark -
+#pragma mark API
+
+- (void)setScriptObject:(id)scriptObject forWindowKey:(NSString *)key;
+{
+    if (_scriptObjects == nil)
+        _scriptObjects = [[NSMutableDictionary alloc] init];
+    [_scriptObjects setObject:scriptObject forKey:key];
+}
+
+- (void)invalidate;
+{
+    OBPRECONDITION(_name == nil); // To invalidate a shared viewer, we'll need to remove it from the cache
+
+    [_scriptObjects removeAllObjects];
+
+    _webView.UIDelegate = nil;
+    _webView.resourceLoadDelegate = nil;
+    _webView.downloadDelegate = nil;
+    _webView.frameLoadDelegate = nil;
+    _webView.policyDelegate = nil;
+
+    [_webView removeFromSuperview];
+    _webView = nil;
 }
 
 - (void)loadPath:(NSString *)path;
@@ -55,7 +95,53 @@ RCS_ID("$Id$")
         [window setFrameAutosaveName:[NSString stringWithFormat:@"OAWebPageViewer:%@", _name]];
 
     [[_webView mainFrame] loadRequest:request];
-    [self showWindow:nil];
+}
+
+#pragma mark -
+#pragma mark Accessors
+
+- (NSString *)mediaStyle;
+{
+    [self _ensureWindowLoaded];
+    return _webView.mediaStyle;
+}
+
+- (void)setMediaStyle:(NSString *)mediaStyle;
+{
+    [self _ensureWindowLoaded];
+    _webView.mediaStyle = mediaStyle;
+}
+
+- (BOOL)plugInsEnabled;
+{
+    [self _ensureWindowLoaded];
+    return [_webView.preferences arePlugInsEnabled];
+}
+
+- (void)setPlugInsEnabled:(BOOL)plugInsEnabled;
+{
+    [self _ensureWindowLoaded];
+    [_webView.preferences setPlugInsEnabled:plugInsEnabled];
+}
+
+- (BOOL)usesWebPageTitleForWindowTitle;
+{
+    return _usesWebPageTitleForWindowTitle;
+}
+
+- (void)setUsesWebPageTitleForWindowTitle:(BOOL)flag;
+{
+    if (_usesWebPageTitleForWindowTitle != flag) {
+        _usesWebPageTitleForWindowTitle = flag;
+        
+        if (_usesWebPageTitleForWindowTitle) {
+            WebDataSource *dataSource = _webView.mainFrame.dataSource;
+            NSString *pageTitle = dataSource.pageTitle;
+            if (![NSString isEmptyString:pageTitle]) {
+                self.window.title = pageTitle;
+            }
+        }
+    }
 }
 
 #pragma mark -
@@ -69,6 +155,13 @@ RCS_ID("$Id$")
 - (id)owner;
 {
     return self;
+}
+
+- (void)windowDidLoad;
+{
+    [super windowDidLoad];
+    
+    OBASSERT(_webView != nil);
 }
 
 #pragma mark -
@@ -97,10 +190,15 @@ RCS_ID("$Id$")
 - (void)webView:(WebView *)aWebView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
 {
     NSURL *url = [actionInformation objectForKey:WebActionOriginalURLKey];
-    
+    if (OFISEQUAL([url scheme], @"help")) {
+        [NSApp showHelpURL:[url resourceSpecifier]];
+        [listener ignore];
+        return;
+    }
+
     // Initial content
     WebNavigationType webNavigationType = [[actionInformation objectForKey:WebActionNavigationTypeKey] intValue];
-    if (webNavigationType == WebNavigationTypeOther ) {
+    if (webNavigationType == WebNavigationTypeOther || webNavigationType == WebNavigationTypeReload) {
         if ([self _urlIsFromAllowedBundle:url])
             [listener use];
         else {
@@ -124,8 +222,67 @@ RCS_ID("$Id$")
 
 - (void)webView:(WebView *)sender didReceiveTitle:(NSString *)title forFrame:(WebFrame *)frame;
 {
-    if (frame == [_webView mainFrame])
+    if (_usesWebPageTitleForWindowTitle && frame == [_webView mainFrame]) {
         [[self window] setTitle:title];
+    }
+}
+
+- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
+{
+    [self showWindow:nil];
+}
+
+- (void)webView:(WebView *)sender didChangeLocationWithinPageForFrame:(WebFrame *)frame;
+{
+    // If the user clicks on a page that is already loaded, we want to show our window even though we didn't get a -webView:didFinishLoadForFrame: message.
+    [self showWindow:nil];
+}
+
+- (void)webView:(WebView *)sender didFailLoadWithError:(NSError *)error forFrame:(WebFrame *)frame;
+{
+    NSLog(@"%@ [%@]: %@ (%@)", _name, [frame.dataSource.request.URL relativeString], [error localizedDescription], [error localizedRecoverySuggestion]);
+}
+
+- (void)webView:(WebView *)sender didClearWindowObject:(WebScriptObject *)windowObject forFrame:(WebFrame *)frame
+{
+    for (NSString *key in [_scriptObjects keyEnumerator])
+        [windowObject setValue:_scriptObjects[key] forKey:key];
+}
+
+#pragma mark - NSObject (WebResourceLoadDelegate)
+
+- (void)webView:(WebView *)sender resource:(id)identifier didFailLoadingWithError:(NSError *)error fromDataSource:(WebDataSource *)dataSource
+{
+    NSLog(@"%@: error=%@", _name, error);
+}
+
+#pragma mark - NSObject (WebUIDelegate)
+
+- (void)webView:(WebView *)sender setResizable:(BOOL)resizable;
+{
+    NSLog(@"%@ [%@]: setResizable:%@", _name, [sender.mainFrame.dataSource.request.URL relativeString], resizable ? @"YES" : @"NO");
+}
+
+- (void)webView:(WebView *)sender setFrame:(NSRect)frame;
+{
+    NSLog(@"%@ [%@]: setFrame:%@", _name, [sender.mainFrame.dataSource.request.URL relativeString], NSStringFromRect(frame));
+}
+
+- (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame;
+{
+    NSLog(@"%@ [%@]: %@", _name, [frame.dataSource.request.URL relativeString], message);
+}
+
+- (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems;
+{
+    if (![self.delegate respondsToSelector:@selector(viewer:shouldDisplayContextMenuItem:forElement:)]) {
+        return defaultMenuItems;
+    }
+    
+    return [defaultMenuItems filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+        OBPRECONDITION([evaluatedObject isKindOfClass:[NSMenuItem class]]);
+        return [self.delegate viewer:self shouldDisplayContextMenuItem:evaluatedObject forElement:element];
+    }]];
 }
 
 #pragma mark - OAFindControllerTarget Protocol
@@ -175,6 +332,14 @@ RCS_ID("$Id$")
         else
             return NO;
     }
+}
+
+#pragma mark -
+#pragma mark Private
+
+- (void)_ensureWindowLoaded;
+{
+    (void)[self window];
 }
 
 @end

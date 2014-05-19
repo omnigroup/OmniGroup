@@ -83,11 +83,15 @@ static BOOL displayIfNeededBlocksInProgress = NO;
         [self queueSelector:@selector(performDisplayIfNeededBlocks)];
 }
 
+#ifdef DEBUG_kc0
+#define TIME_PERFORM_DISPLAY_IF_NEEDED 1
+#endif
+
 + (void)performDisplayIfNeededBlocks;
 {
     [displayIfNeededBlocksLock lock];
     if (displayIfNeededBlocks.count != 0) {
-#ifdef DEBUG_kc
+#if TIME_PERFORM_DISPLAY_IF_NEEDED
         NSLog(@"-[%@ %@]: begin", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 #endif
         displayIfNeededBlocksInProgress = YES;
@@ -106,7 +110,7 @@ static BOOL displayIfNeededBlocksInProgress = NO;
         }
 
         displayIfNeededBlocksInProgress = NO;
-#ifdef DEBUG_kc
+#if TIME_PERFORM_DISPLAY_IF_NEEDED
         NSLog(@"-[%@ %@]: end", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 #endif
     }

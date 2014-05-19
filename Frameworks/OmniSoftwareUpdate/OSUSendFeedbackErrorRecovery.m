@@ -1,4 +1,4 @@
-// Copyright 2007, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,8 +6,11 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OSUSendFeedbackErrorRecovery.h"
+
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniBase/rcsid.h>
+
+#import "OSUErrors.h"
 
 RCS_ID("$Id$")
 
@@ -21,6 +24,17 @@ RCS_ID("$Id$")
     if ([error causedByUnreachableHost])
         return NO; // Unreachable hosts cannot be solved by the app
 
+    NSError *osuError = [error underlyingErrorWithDomain:OSUErrorDomain];
+    if (osuError != nil) {
+        switch ([osuError code]) {
+            case OSURemoteNetworkFailure:
+            case OSULocalNetworkFailure:
+                return NO; // We can't help the user with network failures
+            default:
+                break;
+        }
+    }
+
     if ([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOSPC]) {
         // Local filesystem is out of space.
         return NO;
@@ -29,6 +43,23 @@ RCS_ID("$Id$")
     if ([error hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:errAuthorizationDenied]) {
         // User did not enter admin credentials
         return NO;
+    }
+    
+    if ([error hasUnderlyingErrorDomain:NSOSStatusErrorDomain code:errAuthorizationCanceled]) {
+        // User did not enter admin credentials
+        return NO;
+    }
+    
+    if ([error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorFileDoesNotExist]) {
+        return NO; // <bug:///101386> (Feature: NSURLErrorDomain -1100 shouldn't be sent to Omni [kCFURLErrorFileDoesNotExist]): Our understanding is that this boils down to “we couldn’t reach Omni and/or the operation was canceled”. A “try again later, and contact us if it persists” message would probably be better.
+    }
+    
+    if ([error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorCannotWriteToFile]) {
+        return NO; // <bug:///101403> (Feature: OSU shouldn't let the customer email "not enough disk space" errors to us)
+    }
+
+    if ([error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorCancelled]) {
+        return NO; // <bug:///102187> (Bug: NSURLErrorDomain error -999 when displaying release notes [NSURLErrorCancelled, kCFURLErrorCancelled])
     }
     
     return YES; // Let's report everything else

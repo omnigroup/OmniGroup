@@ -209,6 +209,8 @@
 				<false/>
 				<key>OWHTTPSessionSendAcceptLanguageHeader</key>
 				<true/>
+                                <key>OWHTTPSessionLanguageLimit</key>
+				<integer>1</integer>
 				<key>OWHTTPSessionTimeout</key>
 				<real>120</real>
 				<key>OWHTTPTrustServerContentType</key>

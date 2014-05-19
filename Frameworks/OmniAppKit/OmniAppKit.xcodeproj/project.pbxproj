@@ -99,6 +99,7 @@
 		3E80E9F71614EFC20078A123 /* OAGradientBoxSeparator.h in Headers */ = {isa = PBXBuildFile; fileRef = 3E80E9F41614EFC20078A123 /* OAGradientBoxSeparator.h */; };
 		3E80E9F81614EFC20078A123 /* OAGradientBoxSeparator.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E80E9F51614EFC20078A123 /* OAGradientBoxSeparator.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3EA3A71A1625FD7300351F0C /* OABoxSeparator.h in Headers */ = {isa = PBXBuildFile; fileRef = 007E767610C8469F00313878 /* OABoxSeparator.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3EF5F1BF19104DEF0072ED90 /* OAWebPageViewerDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EF5F1BE191049DD0072ED90 /* OAWebPageViewerDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4205721F0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4205721D0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		420572200CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4205721E0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4268E9300DBD5319002F30B1 /* OAColorProfile-Deprecated.m in Sources */ = {isa = PBXBuildFile; fileRef = 4268E92E0DBD5319002F30B1 /* OAColorProfile-Deprecated.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations -fno-objc-arc"; }; };
@@ -110,7 +111,7 @@
 		49EF503D15F6EAD000254849 /* OALabelField.h in Headers */ = {isa = PBXBuildFile; fileRef = 49EF503B15F6EAD000254849 /* OALabelField.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49EF503E15F6EAD000254849 /* OALabelField.m in Sources */ = {isa = PBXBuildFile; fileRef = 49EF503C15F6EAD000254849 /* OALabelField.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4A5F17B3172772F5001A60E5 /* OAWebPageViewer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A5F17B4172772F5001A60E5 /* OAWebPageViewer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4A5F17B4172772F5001A60E5 /* OAWebPageViewer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */; };
 		4A5F17B5172772F5001A60E5 /* OAWebPageViewer.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4A5F17B2172772F5001A60E5 /* OAWebPageViewer.xib */; };
 		4A5F17B71727772C001A60E5 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A5F17B61727772C001A60E5 /* WebKit.framework */; };
 		4A785F590B040C3A00B513F3 /* OAPopupDatePicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A785F570B040C3A00B513F3 /* OAPopupDatePicker.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -137,7 +138,7 @@
 		4AA1E69808AA764600E2FF6B /* OAFontCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F04FE8AB2E911C9CC38 /* OAFontCache.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69908AA764600E2FF6B /* OAPasteboardHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F05FE8AB2E911C9CC38 /* OAPasteboardHelper.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69A08AA764600E2FF6B /* OARegExFindPattern.h in Headers */ = {isa = PBXBuildFile; fileRef = 137CBE730118A5EC7F000001 /* OARegExFindPattern.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E69C08AA764600E2FF6B /* OAScriptToolbarHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = F57089B301FEA73201B4A65B /* OAScriptToolbarHelper.h */; };
+		4AA1E69C08AA764600E2FF6B /* OAScriptToolbarHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = F57089B301FEA73201B4A65B /* OAScriptToolbarHelper.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69D08AA764600E2FF6B /* OASheetRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A04B9CB047BFCE40097A149 /* OASheetRequest.h */; };
 		4AA1E69E08AA764600E2FF6B /* OAToolbarWindowController.h in Headers */ = {isa = PBXBuildFile; fileRef = F59B07CF01FE36AE01B4A65D /* OAToolbarWindowController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69F08AA764600E2FF6B /* OAUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A0277F608959F0400594E5E /* OAUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -424,6 +425,8 @@
 		5F92995D16A50A9300AA4D18 /* OAScriptIconTemplate@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92995B16A50A9300AA4D18 /* OAScriptIconTemplate@2x.png */; };
 		5F92996116A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92995F16A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate.png */; };
 		5F92996216A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92996016A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png */; };
+		5FC09127191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */; };
+		5FC09128191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FC09126191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m */; };
 		94E1CE0B10D803C5000A01F9 /* OACloseButtonOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		94E1CE0C10D803C5000A01F9 /* OACloseButtonOverlay.m in Sources */ = {isa = PBXBuildFile; fileRef = 94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		9FFB676D0C18A44000910EEF /* OADatePicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 9FFB676B0C18A44000910EEF /* OADatePicker.h */; };
@@ -769,6 +772,7 @@
 		34F0995709322EA30001D0D5 /* OAAboutPanel.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OAAboutPanel.xib; sourceTree = "<group>"; };
 		3E80E9F41614EFC20078A123 /* OAGradientBoxSeparator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAGradientBoxSeparator.h; sourceTree = "<group>"; };
 		3E80E9F51614EFC20078A123 /* OAGradientBoxSeparator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGradientBoxSeparator.m; sourceTree = "<group>"; };
+		3EF5F1BE191049DD0072ED90 /* OAWebPageViewerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OAWebPageViewerDelegate.h; sourceTree = "<group>"; };
 		3F411EA1036D27330297A14E /* NSBezierPath-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBezierPath-OAExtensions.h"; sourceTree = "<group>"; };
 		3F411EA2036D27330297A14E /* NSBezierPath-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBezierPath-OAExtensions.m"; sourceTree = "<group>"; };
 		3F51348101C5B6D40297A14E /* OAShrinkyTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAShrinkyTextField.h; sourceTree = "<group>"; };
@@ -838,6 +842,8 @@
 		5F92995B16A50A9300AA4D18 /* OAScriptIconTemplate@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAScriptIconTemplate@2x.png"; sourceTree = SOURCE_ROOT; };
 		5F92995F16A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAAutomatorWorkflowIconTemplate.png; sourceTree = SOURCE_ROOT; };
 		5F92996016A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OAAutomatorWorkflowIconTemplate@2x.png"; sourceTree = SOURCE_ROOT; };
+		5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAppleEventManager-OAExtensions.h"; sourceTree = "<group>"; };
+		5FC09126191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAppleEventManager-OAExtensions.m"; sourceTree = "<group>"; };
 		6389AAF4FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OAChasingArrowsProgressIndicator.h; path = Widgets.subproj/OAChasingArrowsProgressIndicator.h; sourceTree = "<group>"; };
 		6389AAF5FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OAChasingArrowsProgressIndicator.m; path = Widgets.subproj/OAChasingArrowsProgressIndicator.m; sourceTree = "<group>"; };
 		6389AAF8FFFFE828C697A14E /* OAChasingArrows.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OAChasingArrows.png; path = Widgets.subproj/OAChasingArrows.png; sourceTree = "<group>"; };
@@ -1489,6 +1495,7 @@
 				4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */,
 				4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */,
 				4A5F17B2172772F5001A60E5 /* OAWebPageViewer.xib */,
+				3EF5F1BE191049DD0072ED90 /* OAWebPageViewerDelegate.h */,
 				0CF02C24FF1319B8C697A12F /* OAWindowCascade.h */,
 				0CF02C25FF1319B8C697A12F /* OAWindowCascade.m */,
 				B5F31284051140420097A10E /* Search Field */,
@@ -1749,6 +1756,8 @@
 				4205721E0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m */,
 				66D9C72A029F5AF60097A138 /* NSAppleEventDescriptor-OAExtensions.h */,
 				66D9C72B029F5AF60097A138 /* NSAppleEventDescriptor-OAExtensions.m */,
+				5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */,
+				5FC09126191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m */,
 				00E51F38FE8AB2E911C9CC38 /* NSBundle-OAExtensions.h */,
 				00E51F22FE8AB2E911C9CC38 /* NSBundle-OAExtensions.m */,
 				F500F43B0204C91901648025 /* NSFileManager-OAExtensions.h */,
@@ -2348,6 +2357,7 @@
 			files = (
 				4AA1E67C08AA764600E2FF6B /* OAInternetConfig.h in Headers */,
 				4AA1E67E08AA764600E2FF6B /* NSColor-ColorSyncExtensions.h in Headers */,
+				3EF5F1BF19104DEF0072ED90 /* OAWebPageViewerDelegate.h in Headers */,
 				4AA1E67F08AA764600E2FF6B /* NSImage-ColorSyncExtensions.h in Headers */,
 				4AA1E68008AA764600E2FF6B /* OAColorProfile.h in Headers */,
 				4268E9CC0DBE6B03002F30B1 /* OAColorProfile-Deprecated.h in Headers */,
@@ -2439,6 +2449,7 @@
 				4AA1E6EE08AA764600E2FF6B /* OAResizingByteFormatter.h in Headers */,
 				4AA1E6EF08AA764600E2FF6B /* OAScrollView.h in Headers */,
 				4AA1E6F008AA764600E2FF6B /* OASearchField.h in Headers */,
+				5FC09127191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h in Headers */,
 				4AA1E6F108AA764600E2FF6B /* OAShrinkingTextDisplayer.h in Headers */,
 				4AA1E6F208AA764600E2FF6B /* OAShrinkyTextField.h in Headers */,
 				4AA1E6F308AA764600E2FF6B /* OASplitView.h in Headers */,
@@ -2631,6 +2642,7 @@
 		00E51EF1FE8AB2E911C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastTestingUpgradeCheck = 0510;
 				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 4A4E085608AA75E90098FF0F /* Build configuration list for PBXProject "OmniAppKit" */;
@@ -3023,6 +3035,7 @@
 				49EF503E15F6EAD000254849 /* OALabelField.m in Sources */,
 				3E80E9F81614EFC20078A123 /* OAGradientBoxSeparator.m in Sources */,
 				2779DD8716BB076F00A2BC8F /* NSClipView-OAUpdateConstraintsFix.m in Sources */,
+				5FC09128191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m in Sources */,
 				2779DDBE16BB338400A2BC8F /* OAViewPicker.m in Sources */,
 				4A5F17B4172772F5001A60E5 /* OAWebPageViewer.m in Sources */,
 				4D92F572174C10BA00E251EF /* OAResizingTitleBarButton.m in Sources */,

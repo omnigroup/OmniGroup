@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,6 +83,9 @@ RCS_ID("$Id$");
     }];
     
     _originalName = [_nameTextField.text copy];
+    if (_item.type == ODSItemTypeFile && [_item isKindOfClass:[ODSFileItem class]]) {
+        _nameTextField.text = [(ODSFileItem *)_item editingName];
+    }
     
     // TODO: Maybe -fileURL should be on ODSFolderItem too.
     if (_item.type == ODSItemTypeFolder)
@@ -139,13 +142,16 @@ RCS_ID("$Id$");
     // The rename operation doesn't call our completion block until the file presenter queue has performed the -presentedItemDidMoveToURL:, but in that case the file item will have only updated its _filePresenterURL (which must update immediately and which can be accessed from any thead) and has only enqueued a main thread operation to update its _displayedFileURL (which is what sources the -name method below). The ordering of operations will still be correct since our completion block will still get called on the main thread after the display name is updated, but we can't tell that here.
     NSString *newName = [textField text];
     BOOL isEmpty = [NSString isEmptyString:newName];
-    BOOL isSameName = isEmpty || [newName isEqualToString:_item.name];
+    BOOL usingEditingName = (_item.type == ODSItemTypeFile && [_item isKindOfClass:[ODSFileItem class]]);
+    NSString *nameTest = usingEditingName ? [(ODSFileItem *)_item editingName] : _item.name;
+    
+    BOOL isSameName = isEmpty || [newName isEqualToString:nameTest];
     if (_isAttemptingRename || _isFinishedRenaming || isSameName) {
         if (isSameName) {
             _isFinishedRenaming = YES;
             
             // Might be the "same" due to deleting everything
-            if (isEmpty)
+            if (isEmpty || (usingEditingName && !_isEndingEditing))
                 _nameTextField.text = _originalName;
         }
         

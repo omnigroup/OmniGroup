@@ -168,9 +168,7 @@ dateString = [super stringForObjectValue:obj]; \
 
 - (BOOL)isPartialStringValid:(NSString **)partialStringPtr proposedSelectedRange:(NSRangePointer)proposedSelRangePtr originalString:(NSString *)origString originalSelectedRange:(NSRange)origSelRange errorDescription:(NSString **)error;
 {
-    NSError *relativeError = nil;
-    NSDate *date = nil;
-    return [[OFRelativeDateParser sharedParser] getDateValue:&date forString:*partialStringPtr fromStartingDate:_referenceDate useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] error:&relativeError];
+    return YES;
 }
 
 - (BOOL)getObjectValue:(out id *)obj forString:(NSString *)string range:(inout NSRange *)rangep error:(out NSError **)error;

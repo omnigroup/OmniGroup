@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -125,6 +125,8 @@ static CGFloat DateHeight;
         if (OFNOTEQUAL(_nameLabel.text, label)) {
             _nameLabel.text = label;
             _nameLabelWidth = ceil([_nameLabel sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)].width);
+            
+            [self layoutSubviews];
         }
     }
 }

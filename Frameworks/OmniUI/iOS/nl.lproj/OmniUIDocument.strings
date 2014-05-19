@@ -52,8 +52,6 @@
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
-
-
 "Cancel" = "Annuleer";
 
 /* item not fully downloaded error title */
@@ -72,11 +70,10 @@
 "Choose Format" = "Kies een opmaak";
 
 /* Cloud setup modal sheet title */
-
 "Cloud Setup" = "Cloud-instelling";
 
 /* App menu item title */
-"Cloud Setup..." = "Cloud-instelling...";
+"Cloud Setup..." = "Cloud-instelling…";
 
 /* Account setup toolbar button title to save account settings */
 "Connect" = "Verbind";
@@ -136,8 +133,6 @@
    export options title
    Export toolbar item accessibility label.
    Menu option in the document picker view */
-
-
 "Export" = "Exporteer";
 
 /* export action description */
@@ -153,7 +148,6 @@
 "Finished" = "Voltooid";
 
 /* Import section title */
-
 "Import" = "Importeer";
 
 /* Import document title */
@@ -182,7 +176,6 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
-
 "Move" = "Verplaats";
 
 /* move to trash button title */
@@ -190,7 +183,6 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
-
 "Move to Trash" = "Verplaats naar prullenmand";
 
 /* Action sheet button title
@@ -226,9 +218,7 @@
 
 /* button title
    Dismiss failed purchase alert
-   Dismiss failed restore alert
-   When displaying a sync error, this is the option to ignore the error. */
-
+   Dismiss failed restore alert */
 "OK" = "OK";
 
 /* for WebDAV OmniPresence edit field */
@@ -277,7 +267,7 @@
 "Restore Sample Documents" = "Herstel voorbeelddocum.";
 
 /* Share menu title */
-"Restore to..." = "Herstel naar...";
+"Restore to..." = "Herstel naar…";
 
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "Probeer opnieuw te synchroniseren";
@@ -292,7 +282,7 @@
 "Send \"%@\" to app as:" = "Verstuur “%@” naar app als:";
 
 /* Omni Sync Server send settings button title */
-"Send Settings via Email" = "Verstuur instellingen via e-mail...";
+"Send Settings via Email" = "Verstuur instellingen via e-mail…";
 
 /* Menu option in the document picker view */
 "Send to App" = "Verstuur naar app";
@@ -302,7 +292,6 @@
 
 /* export options title
    Menu option in the document picker view */
-
 "Send via Mail" = "Verstuur via e-mail";
 
 /* email action description */
@@ -360,4 +349,5 @@
 "Use Cellular Data" = "Gebruik mobiele gegevens";
 
 /* Account validation status string. */
-"Validating account..." = "Bezig met valideren van de account...";
+"Validating account..." = "Bezig met valideren van de account…";
+

@@ -23,7 +23,7 @@
 "Cannot locate synchronized documents folder." = "Synchronisierter Dokumentordner kann nicht gefunden werden.";
 
 /* Error description */
-"Cannot move document." = "Dokument kann nicht verschoben werden.";
+"Cannot move document." = "Dokument kann nicht bewegt werden.";
 
 /* Error description */
 "Cannot start account agent." = "Account-Agent kann nicht gestartet werden.";
@@ -50,7 +50,7 @@
 "Documents" = "Dokumente";
 
 /* Add server account description */
-"Easily sync Omni documents. Signup is free!" = "Synchr. Omni-Dokumente mühelos. Die Anmeldung ist kostenlos!";
+"Easily sync Omni documents. Signup is free!" = "Synchronisieren Sie Omni-Dokumente mühelos. Die Anmeldung ist kostenlos.";
 
 /* Server account export title format */
 "Export to \"%@\"" = "Exportieren nach „%@“";
@@ -72,7 +72,6 @@
 
 /* Server account type
    Set up server account title */
-
 "Omni Sync Server" = "Omni Sync Server";
 
 /* account validation error suggestion */
@@ -109,8 +108,7 @@
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "Der vorgeschlagene lokale Dokumentordner enthält bereits Dateien. Geben Sie einen leeren Ordner oder einen nicht vorhandenen Ordner an.";
 
 /* error description */
-"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "Der vorgeschlagene lokale Dokumentordner scheint in einem Dropbox-Ordner zu sein. Die Verwendung von zwei Dateisynchronisierungssystemen für den gleichen Ordner kann zu Datenverlust führen.
-";
+"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "Der vorgeschlagene lokale Dokumentordner scheint in einem Dropbox-Ordner zu sein. Die Verwendung von zwei Dateisynchronisierungssystemen für den gleichen Ordner kann zu Datenverlust führen.";
 
 /* error description */
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "Der vorgeschlagene lokale Dokumentordner ist nicht auf einem lokalen Volume. Wählen Sie einen Ort, der lokal auf Ihrem Computer ist.";
@@ -140,10 +138,11 @@
 "Use your own WebDAV space." = "Verwenden Sie Ihren eigenen WebDAV-Speicher.";
 
 /* Account validation step description */
-"Validating Account..." = "Account überprüfen ...";
+"Validating Account..." = "Account überprüfen …";
 
 /* Server account type */
 "WebDAV" = "WebDAV";
 
 /* Set up server account title */
 "WebDAV Server" = "WebDAV-Server";
+

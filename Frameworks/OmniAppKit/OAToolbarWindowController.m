@@ -192,7 +192,7 @@ static NSMutableDictionary *helpersByExtension = nil;
         }
     }];
 
-    return [NSDictionary dictionaryWithDictionary:localizedToolbarItemInfo];;
+    return [NSDictionary dictionaryWithDictionary:localizedToolbarItemInfo];
 }
 
 // Implement in subclasses

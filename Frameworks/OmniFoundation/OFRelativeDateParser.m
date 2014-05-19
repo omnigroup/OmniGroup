@@ -12,6 +12,8 @@
 
 #import <Foundation/NSDateFormatter.h>
 #import <Foundation/NSRegularExpression.h>
+#import <Foundation/NSCache.h>
+
 #import <OmniFoundation/NSRegularExpression-OFExtensions.h>
 #import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
@@ -19,6 +21,7 @@
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 
+// This must be the last include, due to the localized string hack it includes
 #import "OFRelativeDateParser-Internal.h"
 
 RCS_ID("$Id$");
@@ -26,7 +29,8 @@ RCS_ID("$Id$");
 // http://userguide.icu-project.org/strings/regexp
 // http://icu.sourceforge.net/userguide/formatDateTime.html
 
-static NSDictionary *relativeDateNames;
+static NSDictionary *localizedRelativeDateNames;
+static NSDictionary *englishRelativeDateNames;
 static NSDictionary *specialCaseTimeNames;
 static NSDictionary *codes;
 static NSDictionary *englishCodes;
@@ -45,6 +49,12 @@ static NSArray *englishShortdays;
 #else
     #define DEBUG_DATE(format, ...) do {} while (0)
 #endif
+
+enum  {
+    DPLocalizedParsingPass,
+    DPEnglishParsingPass,
+    DPNumberOfParsingPasses
+};
 
 typedef enum {
     DPHour = 0,
@@ -79,38 +89,10 @@ static NSCalendar *_defaultCalendar(void)
     return calendar;
 }
 
-@interface OFRelativeDateParser (/*Private*/)
-- (int)_multiplierForModifer:(int)modifier;
-- (NSUInteger)_monthIndexForString:(NSString *)token;
-- (NSUInteger)_weekdayIndexForString:(NSString *)token;
-- (NSDate *)_modifyDate:(NSDate *)date withWeekday:(NSUInteger)requestedWeekday withModifier:(OFRelativeDateParserRelativity)modifier calendar:(NSCalendar *)calendar;
-- (void)_addToComponents:(NSDateComponents *)components codeString:(DPCode)dpCode codeInt:(int)codeInt withMultiplier:(int)multiplier;
-- (NSInteger)_determineYearForMonth:(NSUInteger)month withModifier:(OFRelativeDateParserRelativity)modifier fromCurrentMonth:(NSUInteger)currentMonth fromGivenYear:(NSInteger)givenYear;
-- (NSDateComponents *)_parseTime:(NSString *)timeString withDate:(NSDate *)date withTimeFormat:(NSString *)timeFormat calendar:(NSCalendar *)calendar;
-- (NSDate *)_parseFormattedDate:(NSString *)dateString withDate:(NSDate *)date withShortDateFormat:(NSString *)shortFormat withMediumDateFormat:(NSString *)mediumFormat withLongDateFormat:(NSString *)longFormat withseparator:(NSString *)separator calendar:(NSCalendar *)calendar;
-- (DateSet)_dateSetFromArray:(NSArray *)dateComponents withPositions:(DatePosition)datePosition;
-- (NSDate *)_parseDateNaturalLangauge:(NSString *)dateString withDate:(NSDate *)date timeSpecific:(BOOL *)timeSpecific useEndOfDuration:(BOOL)useEndOfDuration calendar:(NSCalendar *)calendar error:(NSError **)error;
-- (BOOL)_stringMatchesTime:(NSString *)firstString optionalSecondString:(NSString *)secondString withTimeFormat:(NSString *)timeFormat;
-- (BOOL)_stringIsNumber:(NSString *)string;
-
-// This group of methods (class and instance) normalize strings for scanning and matching user input.
-// We use this to normalize localized strings and user input so that users can type ASCII-equivalent values and still get the benefit of the natural language parser
-// See <bug:///73212>
-
 enum {
     OFRelativeDateParserNormalizeOptionsDefault = (OFStringNormlizationOptionLowercase | OFStringNormilzationOptionStripCombiningMarks),
     OFRelativeDateParserNormalizeOptionsAbbreviations = (OFRelativeDateParserNormalizeOptionsDefault | OFStringNormilzationOptionStripPunctuation)
 };
-
-+ (NSDictionary *)_dictionaryByNormalizingKeysInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options locale:(NSLocale *)locale;;
-+ (NSDictionary *)_dictionaryByNormalizingValuesInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options locale:(NSLocale *)locale;;
-+ (NSArray *)_arrayByNormalizingValuesInArray:(NSArray *)array options:(NSUInteger)options locale:(NSLocale *)locale;;
-
-- (NSDictionary *)_dictionaryByNormalizingKeysInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options;
-- (NSDictionary *)_dictionaryByNormalizingValuesInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options;
-- (NSArray *)_arrayByNormalizingValuesInArray:(NSArray *)array options:(NSUInteger)options;
-
-@end
 
 @implementation OFRelativeDateParser
 // creates a new relative date parser with your current locale
@@ -126,6 +108,18 @@ enum {
 + (void)currentLocaleDidChange:(NSNotification *)notification;
 {
     [sharedParser setLocale:[NSLocale currentLocale]];
+}
+
+static NSMutableDictionary *_localizedRelativeDateNames;
+static NSMutableDictionary *_englishRelativeDateNames;
+
++ (void)_registerRelativeDateName:(NSString *)englishName code:(DPCode)code number:(int)number relativity:(OFRelativeDateParserRelativity)relativity timeSpecific:(BOOL)timeSpecific monthSpecific:(BOOL)monthSpecific daySpecific:(BOOL)daySpecific localizedName:(NSString *)localizedName;
+{
+    OBPRECONDITION(_localizedRelativeDateNames != nil && _englishRelativeDateNames != nil);
+
+     NSArray *value = [NSArray arrayWithObjects:[NSNumber numberWithInt:code], [NSNumber numberWithInt:number], [NSNumber numberWithInt:relativity], [NSNumber numberWithBool:timeSpecific], [NSNumber numberWithBool:monthSpecific], [NSNumber numberWithBool:daySpecific], nil];
+     [_localizedRelativeDateNames setObject:value forKey:localizedName];
+     [_englishRelativeDateNames setObject:value forKey:englishName];
 }
 
 + (void)initialize;
@@ -144,30 +138,31 @@ enum {
      "demain" = {day:1}
      "avant-hier" = {day:-2}
      */
-    // array info: Code, Number, Relativitity, timeSpecific, monthSpecific, daySpecific
-    relativeDateNames = [NSDictionary dictionaryWithObjectsAndKeys:
-			 /* Specified Time, Use Current Time */
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"now", @"OFDateProcessing", OMNI_BUNDLE, @"now, used for scanning user input. Do NOT add whitespace"),
-			 /* Specified Time*/
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPHour], [NSNumber numberWithInt:12], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"noon", @"OFDateProcessing", OMNI_BUNDLE, @"noon, used for scanning user input. Do NOT add whitespace"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPHour], [NSNumber numberWithInt:23], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tonight", @"OFDateProcessing", OMNI_BUNDLE, @"tonight, used for scanning user input. Do NOT add whitespace"),
-			 /* Use default time */
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"today", @"OFDateProcessing", OMNI_BUNDLE, @"today, used for scanning user input. Do NOT add whitespace"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tod", @"OFDateProcessing", OMNI_BUNDLE, @"\"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tomorrow", @"OFDateProcessing", OMNI_BUNDLE, @"tomorrow"), 
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"tom", @"OFDateProcessing", OMNI_BUNDLE, @"\"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"yesterday", @"OFDateProcessing", OMNI_BUNDLE, @"yesterday, used for scanning user input. Do NOT add whitespace"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPDay], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], nil], NSLocalizedStringFromTableInBundle(@"yes", @"OFDateProcessing", OMNI_BUNDLE, @"\"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace"),
-			 /* use default day */
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"this month", @"OFDateProcessing", OMNI_BUNDLE, @"this month, used for scanning user input. Do NOT add whitespace"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"next month", @"OFDateProcessing", OMNI_BUNDLE, @"next month, used for scanning user input. Do NOT add whitespace"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPMonth], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"last month", @"OFDateProcessing", OMNI_BUNDLE, @"last month, used for scanning user input. Do NOT add whitespace"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPYear], [NSNumber numberWithInt:0], [NSNumber numberWithInt:OFRelativeDateParserCurrentRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"this year", @"OFDateProcessing", OMNI_BUNDLE, @"this year, used for scanning user input. Do NOT add whitespace"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPYear], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserFutureRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"next year", @"OFDateProcessing", OMNI_BUNDLE, @"next year, used for scanning user input. Do NOT add whitespace"),
-			 [NSArray arrayWithObjects:[NSNumber numberWithInt:DPYear], [NSNumber numberWithInt:1], [NSNumber numberWithInt:OFRelativeDateParserPastRelativity],  [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], nil], NSLocalizedStringFromTableInBundle(@"last year", @"OFDateProcessing", OMNI_BUNDLE, @"last year, used for scanning user input. Do NOT add whitespace"),
-			 
-			 nil];
-    relativeDateNames = [[self _dictionaryByNormalizingKeysInDictionary:relativeDateNames options:OFRelativeDateParserNormalizeOptionsDefault locale:[NSLocale currentLocale]] retain];
+    _localizedRelativeDateNames = [[NSMutableDictionary alloc] init];
+    _englishRelativeDateNames = [[NSMutableDictionary alloc] init];
+
+    /* Specified Time, Use Current Time */
+    [self _registerRelativeDateName:@"now" code:DPDay number:0 relativity:OFRelativeDateParserCurrentRelativity timeSpecific:YES monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"now", @"OFDateProcessing", OMNI_BUNDLE, @"now, used for scanning user input. Do NOT add whitespace")];
+    /* Specified Time*/
+    [self _registerRelativeDateName:@"noon" code:DPHour number:12 relativity:OFRelativeDateParserCurrentRelativity timeSpecific:NO monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"noon", @"OFDateProcessing", OMNI_BUNDLE, @"noon, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"tonight" code:DPHour number:23 relativity:OFRelativeDateParserCurrentRelativity timeSpecific:NO monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"tonight", @"OFDateProcessing", OMNI_BUNDLE, @"tonight, used for scanning user input. Do NOT add whitespace")];
+    /* Use default time */
+    [self _registerRelativeDateName:@"today" code:DPDay number:0 relativity:OFRelativeDateParserCurrentRelativity timeSpecific:NO monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"today", @"OFDateProcessing", OMNI_BUNDLE, @"today, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"tod" code:DPDay number:0 relativity:OFRelativeDateParserCurrentRelativity timeSpecific:NO monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"tod", @"OFDateProcessing", OMNI_BUNDLE, @"\"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"tomorrow" code:DPDay number:1 relativity:OFRelativeDateParserFutureRelativity timeSpecific:NO monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"tomorrow", @"OFDateProcessing", OMNI_BUNDLE, @"tomorrow")];
+    [self _registerRelativeDateName:@"tom" code:DPDay number:1 relativity:OFRelativeDateParserFutureRelativity timeSpecific:NO monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"tom", @"OFDateProcessing", OMNI_BUNDLE, @"\"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"yesterday" code:DPDay number:1 relativity:OFRelativeDateParserPastRelativity timeSpecific:NO monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"yesterday", @"OFDateProcessing", OMNI_BUNDLE, @"yesterday, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"yes" code:DPDay number:1 relativity:OFRelativeDateParserPastRelativity timeSpecific:NO monthSpecific:YES daySpecific:YES localizedName:NSLocalizedStringFromTableInBundle(@"yes", @"OFDateProcessing", OMNI_BUNDLE, @"\"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace")];
+    /* use default day */
+    [self _registerRelativeDateName:@"this month" code:DPMonth number:0 relativity:OFRelativeDateParserCurrentRelativity timeSpecific:NO monthSpecific:YES daySpecific:NO localizedName:NSLocalizedStringFromTableInBundle(@"this month", @"OFDateProcessing", OMNI_BUNDLE, @"this month, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"next month" code:DPMonth number:1 relativity:OFRelativeDateParserFutureRelativity timeSpecific:NO monthSpecific:YES daySpecific:NO localizedName:NSLocalizedStringFromTableInBundle(@"next month", @"OFDateProcessing", OMNI_BUNDLE, @"next month, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"last month" code:DPMonth number:1 relativity:OFRelativeDateParserPastRelativity timeSpecific:NO monthSpecific:YES daySpecific:NO localizedName:NSLocalizedStringFromTableInBundle(@"last month", @"OFDateProcessing", OMNI_BUNDLE, @"last month, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"this year" code:DPYear number:0 relativity:OFRelativeDateParserCurrentRelativity timeSpecific:NO monthSpecific:NO daySpecific:NO localizedName:NSLocalizedStringFromTableInBundle(@"this year", @"OFDateProcessing", OMNI_BUNDLE, @"this year, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"next year" code:DPYear number:1 relativity:OFRelativeDateParserFutureRelativity timeSpecific:NO monthSpecific:NO daySpecific:NO localizedName:NSLocalizedStringFromTableInBundle(@"next year", @"OFDateProcessing", OMNI_BUNDLE, @"next year, used for scanning user input. Do NOT add whitespace")];
+    [self _registerRelativeDateName:@"last year" code:DPYear number:1 relativity:OFRelativeDateParserPastRelativity timeSpecific:NO monthSpecific:NO daySpecific:NO localizedName:NSLocalizedStringFromTableInBundle(@"last year", @"OFDateProcessing", OMNI_BUNDLE, @"last year, used for scanning user input. Do NOT add whitespace")];
+
+    localizedRelativeDateNames = [[self _dictionaryByNormalizingKeysInDictionary:_localizedRelativeDateNames options:OFRelativeDateParserNormalizeOptionsDefault locale:[NSLocale currentLocale]] retain];
+    englishRelativeDateNames = [[self _dictionaryByNormalizingKeysInDictionary:_englishRelativeDateNames options:OFRelativeDateParserNormalizeOptionsDefault locale:[NSLocale currentLocale]] retain];
     
     // short hand codes
     codes = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -379,7 +374,8 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     
     string = [[string lowercaseString] stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace];
     NSString *dateString = nil;
-    NSString *timeString = nil;
+    NSString *timeString = nil; // just the "hh:mm" part
+    NSString *meridianString = nil;
     
     // first see if we have an @, if so then we can easily split the date and time portions of the string
     string = [string stringByReplacingOccurrencesOfString:@" at " withString:@"@"];
@@ -415,40 +411,42 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	NSArray *stringComponents = [string componentsSeparatedByString:@" "];
 	NSUInteger maxComponentIndex = [stringComponents count] - 1;
 	
-	// test for a time at the end of the string.  This will only match things that are clearly times, ie, has colons, or am/pm
-	NSInteger timeMatchIndex = -1;
-	if ([self _stringMatchesTime:[stringComponents objectAtIndex:maxComponentIndex] optionalSecondString:nil withTimeFormat:timeFormat]) {
-	    //DEBUG_DATE(@"returned a true for _stringMatchesTime and the previous thing WASN't A MONTH for the end of the string: %@", [stringComponents objectAtIndex:maxComponentIndex]);
-	    timeMatchIndex = maxComponentIndex;
-	} else if (maxComponentIndex >= 1 && [self _stringMatchesTime:[stringComponents objectAtIndex:maxComponentIndex-1] optionalSecondString:[stringComponents objectAtIndex:maxComponentIndex] withTimeFormat:timeFormat]) {
-	    //DEBUG_DATE(@"returned a true for _stringMatchesTime for (with 2 comps): %@ & %@", [stringComponents objectAtIndex:maxComponentIndex-1], [stringComponents objectAtIndex:maxComponentIndex]);
-	    timeMatchIndex = maxComponentIndex -1;
-	} else if ([self _stringIsNumber:[stringComponents objectAtIndex:maxComponentIndex]]) {
-	    int number = [[stringComponents objectAtIndex:maxComponentIndex] intValue];
+	// Test for a time at the end of the string. This will only match things that are probably times (has colons), or am/pm. We assume the time (and optionally) meridian are together at the end of the string. We allow "<time> <meridian>" and "<meridian> <time>" (for Korean).
+        NSString *lastComponent = stringComponents[maxComponentIndex];
+        NSString *secondToLastComponent = (maxComponentIndex > 0) ? stringComponents[maxComponentIndex-1] : nil;
+        
+        if (secondToLastComponent && ([self _stringMatchesTime:secondToLastComponent withTimeFormat:timeFormat] || [self _stringIsNumber:secondToLastComponent]) && [self _isMeridianString:lastComponent calendar:calendar]) {
+            // Explicit time and meridian in separate components ("4:00 pm" or "4 pm" -- the -_stringIsNumber: check is for the second of these)
+            timeString = secondToLastComponent;
+            meridianString = lastComponent;
+            dateString = [[stringComponents subarrayWithRange:NSMakeRange(0, maxComponentIndex-1)] componentsJoinedByString:@" "];
+        } else if (secondToLastComponent && [self _isMeridianString:secondToLastComponent calendar:calendar] && ([self _stringMatchesTime:lastComponent withTimeFormat:timeFormat] || [self _stringIsNumber:lastComponent])) {
+            // Explicit meridian first, time second (Korean, for example)
+            timeString = lastComponent;
+            meridianString = secondToLastComponent;
+            dateString = [[stringComponents subarrayWithRange:NSMakeRange(0, maxComponentIndex-1)] componentsJoinedByString:@" "];
+        } else if ([self _stringMatchesTime:lastComponent withTimeFormat:timeFormat]) {
+            // No merdian, or meridian combined ("4pm"), though we only support AM/PM in this case. The meridian (if present) will be split out below for this an the explicit '@' case above
+            timeString = lastComponent;
+            dateString = [[stringComponents subarrayWithRange:NSMakeRange(0, maxComponentIndex)] componentsJoinedByString:@" "];
+	} else if ([self _stringIsNumber:lastComponent]) {
+            // Plain time string w/o meridian or hour/minute separator
+	    int number = [lastComponent intValue];
 	    int minutes = number % 100;
-	    if (([timeFormat isEqualToString:@"HHmm"] || [timeFormat isEqualToString:@"kkmm"])&& ([[stringComponents objectAtIndex:maxComponentIndex] length] == 4)) {
+	    if (([timeFormat isEqualToString:@"HHmm"] || [timeFormat isEqualToString:@"kkmm"]) && ([lastComponent length] == 4)) {
 		if (number < 2500 && minutes < 60) {
 		    DEBUG_DATE(@"The time format is 24 hour time with the format: %@.  The number is: %d, and is less than 2500. The minutes are: %d, and are less than 60", timeFormat, number, minutes);
-		    timeMatchIndex = maxComponentIndex;
+                    timeString = lastComponent;
+                    dateString = [[stringComponents subarrayWithRange:NSMakeRange(0, maxComponentIndex)] componentsJoinedByString:@" "];
 		}
 	    } 
-	} 
-	
-	if (timeMatchIndex != -1) {
-	    DEBUG_DATE(@"Time String found, the time match index is: %ld", timeMatchIndex);
-	    if (maxComponentIndex == 0 && (unsigned)timeMatchIndex == 0) {
-		//DEBUG_DATE(@"count = index = 0");
-		timeString = string;
-	    } else { 
-		//DEBUG_DATE(@"maxComponentIndex: %d, timeMatchIndex: %d", maxComponentIndex, timeMatchIndex);
-		NSArray *timeComponents = [stringComponents subarrayWithRange:NSMakeRange(timeMatchIndex, maxComponentIndex-timeMatchIndex+1)];
-		timeString = [timeComponents componentsJoinedByString:@" "];
-		NSArray *dateComponents = [stringComponents subarrayWithRange:NSMakeRange(0, timeMatchIndex)];
-		dateString = [dateComponents componentsJoinedByString:@" "];
-	    }
-	} else {
-	    dateString = string;
 	}
+
+        if (!timeString) {
+            // No date found -- use the whole thing as a date
+            dateString = string;
+        }
+        
 	DEBUG_DATE( @"NO @, dateString: %@, timeString: %@", dateString, timeString );
     }
     
@@ -456,40 +454,63 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     
     if (![NSString isEmptyString:dateString]) {
         
+        // Some formats have dots and spaces as a separator and will fail to match our formattedDateRegex otherwise
+        if ([dateString rangeOfString:@". "].location != NSNotFound) {
+            dateString = [dateString stringByReplacingOccurrencesOfString:@". " withString:@"."];
+        }
+        
         OFCreateRegularExpression(spacedDateRegex, @"^(\\d{1,4})\\s(\\d{1,4})\\s?(\\d{0,4})$");
         OFCreateRegularExpression(formattedDateRegex, @"^\\w+([\\./-])\\w+");
         OFCreateRegularExpression(unSeperatedDateRegex, @"^(\\d{2,4})(\\d{2})(\\d{2})$");
         
 	OFRegularExpressionMatch *spacedDateMatch = [spacedDateRegex of_firstMatchInString:dateString];
 	OFRegularExpressionMatch *formattedDateMatch = [formattedDateRegex of_firstMatchInString:dateString];
-	OFRegularExpressionMatch *unSeperatedDateMatch = [unSeperatedDateRegex of_firstMatchInString:dateString];
+	OFRegularExpressionMatch *unseparatedDateMatch = [unSeperatedDateRegex of_firstMatchInString:dateString];
 	
-	if (unSeperatedDateMatch) {
-	    dateString = [NSString stringWithFormat:@"%@-%@-%@", [unSeperatedDateMatch captureGroupAtIndex:0], [unSeperatedDateMatch captureGroupAtIndex:1], [unSeperatedDateMatch captureGroupAtIndex:2]];
+	if (unseparatedDateMatch) {
+	    dateString = [NSString stringWithFormat:@"%@-%@-%@", [unseparatedDateMatch captureGroupAtIndex:0], [unseparatedDateMatch captureGroupAtIndex:1], [unseparatedDateMatch captureGroupAtIndex:2]];
         }
 	
-	if (formattedDateMatch || unSeperatedDateMatch || spacedDateMatch) {
+	if (formattedDateMatch || unseparatedDateMatch || spacedDateMatch) {
 	    NSString *separator = @" ";
-	    if (unSeperatedDateMatch) {
-		DEBUG_DATE(@"found an 'unseperated' date");
+	    if (unseparatedDateMatch) {
+		DEBUG_DATE(@"found an 'unseparated' date");
 		separator = @"-";
 	    } else if (formattedDateMatch) {
-		DEBUG_DATE(@"formatted date found with the seperator as: %@", [formattedDateMatch captureGroupAtIndex:0]);
+		DEBUG_DATE(@"formatted date found with the separator as: %@", [formattedDateMatch captureGroupAtIndex:0]);
 		separator = [formattedDateMatch captureGroupAtIndex:0];
 	    } else if (spacedDateMatch) {
-		DEBUG_DATE(@"numerical space delimted date found");
+		DEBUG_DATE(@"numerical space delimited date found");
 		separator = @" ";
 	    }
 	    
 	    *date = [self _parseFormattedDate:dateString withDate:startingDate withShortDateFormat:shortFormat withMediumDateFormat:mediumFormat withLongDateFormat:longFormat withseparator:separator calendar:calendar];
-	} else
-	    *date = [self _parseDateNaturalLangauge:dateString withDate:startingDate timeSpecific:&timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar error:error];
-    } else
+            OBASSERT(*date);
+	} else {
+	    *date = [self _parseDateNaturalLanguage:dateString withDate:startingDate timeSpecific:&timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar error:error];
+            if (!*date)
+                return NO;
+        }
+    } else {
 	*date = startingDate;
+        OBASSERT(*date);
+    }
     
-    if (timeString != nil)  
-	*date = [calendar dateFromComponents:[self _parseTime:timeString withDate:*date withTimeFormat:timeFormat calendar:calendar]];
-    else {
+    if (timeString != nil) {
+        if (!meridianString) {
+            // The time and meridian might have been combined
+            NSInteger letterIndex = [timeString rangeOfCharacterFromSet:[NSCharacterSet letterCharacterSet]].location;
+            if (letterIndex != NSNotFound) {
+                // Need to strip surrounding whitespace if we get here from the explicit '@' case with something like '@5 pm'
+                OBASSERT(letterIndex != 0, "Should be some digit characters first if this looks like a time.");
+                meridianString = [[timeString substringFromIndex:letterIndex] stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace];
+                timeString = [[timeString substringToIndex:letterIndex] stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace];
+            }
+        }
+        
+	*date = [calendar dateFromComponents:[self _parseTimeString:timeString meridianString:meridianString withDate:*date withTimeFormat:timeFormat calendar:calendar]];
+        OBASSERT(*date);
+    } else {
 	static NSRegularExpression *hourCodeRegex = nil;
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
@@ -498,10 +519,11 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
             NSString *pluralHourString = NSLocalizedStringFromTableInBundle(@"hours", @"OFDateProcessing", OMNI_BUNDLE, @"hours, plural, used for scanning user input. Do NOT add whitespace");
             NSString *patternString = [NSString stringWithFormat:@"\\d+(%@|%@|%@|h|hour|hours)", shortHourString, hourString, pluralHourString];
             
-            NSError *expressionError;
+            __autoreleasing NSError *expressionError = nil;
 	    hourCodeRegex = [[NSRegularExpression alloc] initWithPattern:patternString options:0 error:&expressionError];
             if (!hourCodeRegex) {
                 NSLog(@"Error creating regular expression: %@", [expressionError toPropertyList]);
+                OBASSERT_NOT_REACHED("Fix regular expression");
             }
         });
 
@@ -561,16 +583,8 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     return (numberMatch != nil);
 }
 
-- (BOOL)_stringMatchesTime:(NSString *)firstString optionalSecondString:(NSString *)secondString withTimeFormat:(NSString *)timeFormat;
+- (BOOL)_stringMatchesTime:(NSString *)firstString withTimeFormat:(NSString *)timeFormat;
 {
-    if (secondString) {
-	if (!(([secondString hasPrefix:@"a"] || [secondString hasPrefix:@"p"]) && [secondString length] <= 2)) 
-	    return NO;
-	
-	if ([self _stringIsNumber:firstString])
-	    return YES;
-    }
-
     // see if we have a european date
     OFCreateRegularExpression(timeDotRegex, @"^(\\d{1,2})\\.(\\d{1,2})\\.?(\\d{0,2})$");
     OFCreateRegularExpression(timeFormatDotRegex, @"[HhkK]'?\\.'?[m]");
@@ -585,7 +599,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     if (colonMatch)
 	return YES;
     
-    // see if we match a meridan at the end of our string
+    // see if we match a meridan at the end of our string ("4pm" or "4p"). This doesn't work with meridians other than 'am' and 'pm'.
     OFCreateRegularExpression(timeEndRegex, @"\\d[apAP][mM]?$");
     OFRegularExpressionMatch *timeEndMatch = [timeEndRegex of_firstMatchInString:firstString];
     if (timeEndMatch)
@@ -594,44 +608,110 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     return NO;
 }
 
-- (NSDateComponents *)_parseTime:(NSString *)timeString withDate:(NSDate *)date withTimeFormat:(NSString *)timeFormat calendar:(NSCalendar *)calendar;
+#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+static NSString *AMPMSymbolForCalendar(NSCalendar *calendar, BOOL isPM)
 {
-    timeString = [timeString stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace];
-    NSScanner *timeScanner = [NSScanner localizedScannerWithString:timeString];
-    [timeScanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
+    static dispatch_once_t onceToken;
+    static NSCache *AMCache;
+    static NSCache *PMCache;
+    dispatch_once(&onceToken, ^{
+        AMCache = [[NSCache alloc] init];
+        PMCache = [[NSCache alloc] init];
+    });
     
-    NSString *timeToken = nil; // this will be all of the string until we get to letters, i.e. am/pm
-    BOOL isPM = NO; // TODO: Make a default.
-    [timeScanner scanUpToCharactersFromSet:[NSCharacterSet letterCharacterSet] intoString:&timeToken];
-    [timeScanner setCaseSensitive:NO];
-    while (![timeScanner isAtEnd]) {
-	if ([timeScanner scanString:@"p" intoString:NULL]) {
-	    isPM = YES;
-	    break;
-	} else if ([timeScanner scanString:@"a" intoString:NULL]) {
-	    isPM = NO;
-	    break;
-	} else
-	    [timeScanner setScanLocation:[timeScanner scanLocation]+1];
-	
-	
-	// note to self: do I need this? I think I don't, and that I'm missing the last char
-	if ([timeScanner scanLocation] == [[timeScanner string] length])
-	    break;
+    NSString *localeIdentifier = calendar.locale.localeIdentifier;
+    
+    NSString *symbol = [(isPM ? PMCache : AMCache) objectForKey:localeIdentifier];
+    if (!symbol) {
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        [formatter setCalendar:calendar];
+        [formatter setLocale:calendar.locale];
+        
+        symbol = [formatter AMSymbol];
+        if (!symbol) {
+            OBASSERT_NOT_REACHED("Not expecting a nil AM symbol");
+            symbol = @"";
+        }
+        [AMCache setObject:symbol forKey:localeIdentifier];
+        
+        symbol = [formatter PMSymbol];
+        if (!symbol) {
+            OBASSERT_NOT_REACHED("Not expecting a nil PM symbol");
+            symbol = @"";
+        }
+        [PMCache setObject:symbol forKey:localeIdentifier];
+        
+        [formatter release];
+        
+        symbol = [(isPM ? PMCache : AMCache) objectForKey:localeIdentifier];
+        OBASSERT(symbol);
     }
+
+    return symbol;
+}
+#endif
+
+
+// Sadly, the -[NSCalendar AMSymbol] and -PMSymbol methods are not included in iOS yet.
+static NSString *AMSymbolForCalendar(NSCalendar *calendar)
+{
+#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+    return AMPMSymbolForCalendar(calendar, NO/*isPM*/);
+#else
+    return calendar.AMSymbol;
+#endif
+}
+
+static NSString *PMSymbolForCalendar(NSCalendar *calendar)
+{
+#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
+    return AMPMSymbolForCalendar(calendar, YES/*isPM*/);
+#else
+    return calendar.PMSymbol;
+#endif
+}
+
+- (BOOL)_isAntemeridianString:(NSString *)string calendar:(NSCalendar *)calendar;
+{
+    if (([string caseInsensitiveCompare:AMSymbolForCalendar(calendar)] == NSOrderedSame))
+        return YES;
+    
+    // Allow "am", and "a" input in any locale
+    return ([string caseInsensitiveCompare:@"a"] == NSOrderedSame) || ([string caseInsensitiveCompare:@"am"] == NSOrderedSame);
+}
+
+- (BOOL)_isPostmeridianString:(NSString *)string calendar:(NSCalendar *)calendar;
+{
+    if (([string caseInsensitiveCompare:PMSymbolForCalendar(calendar)] == NSOrderedSame))
+        return YES;
+    
+    // Allow "pm", and "p" input in any locale
+    return ([string caseInsensitiveCompare:@"p"] == NSOrderedSame) || ([string caseInsensitiveCompare:@"pm"] == NSOrderedSame);
+}
+
+- (BOOL)_isMeridianString:(NSString *)string calendar:(NSCalendar *)calendar;
+{
+    return [self _isAntemeridianString:string calendar:calendar] || [self _isPostmeridianString:string calendar:calendar];
+}
+
+- (NSDateComponents *)_parseTimeString:(NSString *)timeString meridianString:(NSString *)meridianString withDate:(NSDate *)date withTimeFormat:(NSString *)timeFormat calendar:(NSCalendar *)calendar;
+{
+    OBPRECONDITION([timeString isEqual:[timeString stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace]], "The caller already collapsed whitespace and broke components up by spaces");
+    
+    BOOL isPM = meridianString ? [self _isPostmeridianString:meridianString calendar:calendar] : NO;
     
     static dispatch_once_t onceToken;
     static NSRegularExpression *timeSeperatorRegex = nil;
     dispatch_once(&onceToken, ^{
 	timeSeperatorRegex = _createRegex(@"^\\d{1,4}([:.])?");
     });
-    OFRegularExpressionMatch *timeSeperatorMatch = [timeSeperatorRegex of_firstMatchInString:timeToken];
+    OFRegularExpressionMatch *timeSeperatorMatch = [timeSeperatorRegex of_firstMatchInString:timeString];
     DEBUG_DATE(@"timeSeperatorMatch = %@", timeSeperatorMatch);
     NSString *seperator = [timeSeperatorMatch captureGroupAtIndex:0];
     if ([NSString isEmptyString:seperator])
 	seperator = @":";
     
-    NSArray *timeComponents = [[timeToken stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace] componentsSeparatedByString:seperator];
+    NSArray *timeComponents = [[timeString stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace] componentsSeparatedByString:seperator];
     DEBUG_DATE( @"TimeToken: %@, isPM: %d", timeToken, isPM);
     DEBUG_DATE(@"time comps: %@", timeComponents);
     
@@ -677,6 +757,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     if (hours == -1)
 	return nil;
     
+    OBASSERT(date);
     NSDateComponents *components = [calendar components:unitFlags fromDate:date];
     if (seconds != -1)
 	[components setSecond:seconds];
@@ -938,7 +1019,15 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     return dateSet;
 }
 
-- (NSDate *)_parseDateNaturalLangauge:(NSString *)dateString withDate:(NSDate *)date timeSpecific:(BOOL *)timeSpecific useEndOfDuration:(BOOL)useEndOfDuration calendar:(NSCalendar *)calendar error:(NSError **)error;
+- (NSDate *)_parseDateNaturalLanguage:(NSString *)dateString withDate:(NSDate *)date timeSpecific:(BOOL *)timeSpecific useEndOfDuration:(BOOL)useEndOfDuration calendar:(NSCalendar *)calendar error:(NSError **)outError;
+{
+    NSDate *returnValue = [self _parseDateNaturalLanguage:dateString withDate:date timeSpecific:timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar relativeDateNames:localizedRelativeDateNames error:outError];
+    if (returnValue == nil)
+        returnValue = [self _parseDateNaturalLanguage:dateString withDate:date timeSpecific:timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar relativeDateNames:englishRelativeDateNames error:NULL];
+    return returnValue;
+}
+
+- (NSDate *)_parseDateNaturalLanguage:(NSString *)dateString withDate:(NSDate *)date timeSpecific:(BOOL *)timeSpecific useEndOfDuration:(BOOL)useEndOfDuration calendar:(NSCalendar *)calendar relativeDateNames:(NSDictionary *)relativeDateNames error:(NSError **)outError;
 {
     DEBUG_DATE(@"Parse Natural Language Date String (before normalization): \"%@\"", dateString );
     
@@ -1062,7 +1151,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 			
 			NSString *replacementString = [[specialCaseTimeNames objectForKey:match] stringByReplacingKeysInDictionary:keywordDictionary startingDelimiter:@"$(" endingDelimiter:@")" removeUndefinedKeys:YES]; 
 			DEBUG_DATE(@"found: %@, replaced with: %@ from dict: %@", [specialCaseTimeNames objectForKey:match], replacementString, keywordDictionary);
-			date = [self _parseDateNaturalLangauge:replacementString withDate:date timeSpecific:timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar error:error];
+			date = [self _parseDateNaturalLanguage:replacementString withDate:date timeSpecific:timeSpecific useEndOfDuration:useEndOfDuration calendar:calendar relativeDateNames:relativeDateNames error:outError];
 			currentComponents = [calendar components:unitFlags fromDate:date]; // update the components
 			DEBUG_DATE(@"RETURN from replacement call");
 		    }
@@ -1129,25 +1218,31 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	if (number != -1) {
 	    needToProcessNumber = NO;
 	    BOOL foundCode = NO;
-	    NSString *codeString;
-            NSMutableArray *sortedKeyArray = [codes mutableCopyKeys];
-	    [sortedKeyArray sortUsingSelector:@selector(caseInsensitiveCompare:)];
-	    NSEnumerator *codeEnum = [sortedKeyArray reverseObjectEnumerator];
-	    while ((codeString = [codeEnum nextObject]) && !foundCode && (![scanner isAtEnd])) {
-		if ([scanner scanString:codeString intoString:NULL]) {
-		    dpCode = [[codes objectForKey:codeString] intValue];
-		    if (number != 0) // if we aren't going to add anything don't call
-			[self _addToComponents:componentsToAdd codeString:dpCode codeInt:number withMultiplier:multiplier];
-		    DEBUG_DATE( @"codeString:%@, number:%d, mult:%d", codeString, number, multiplier );
-		    daySpecific = YES;
-		    isYear = NO; // '97d gets you 97 days
-		    foundCode= YES;
-		    scanned = YES;
-		    modifierForNumber = NO;
-		    number = -1;  
-		}
-	    }
-            [sortedKeyArray release];
+            int dateCodeParsingPass;
+            for (dateCodeParsingPass = DPLocalizedParsingPass; dateCodeParsingPass < DPNumberOfParsingPasses; dateCodeParsingPass++) {
+                NSArray *keys = (dateCodeParsingPass == DPLocalizedParsingPass) ? [codes allKeys] : [englishCodes allKeys];
+                NSDictionary *codesTable = (dateCodeParsingPass == DPLocalizedParsingPass) ? codes : englishCodes;
+                NSArray *sortedKeyArray = [keys sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
+                NSEnumerator *codeEnum = [[sortedKeyArray reversedArray] objectEnumerator];
+                NSString *codeString = nil;
+                while ((codeString = [codeEnum nextObject]) && !foundCode && (![scanner isAtEnd])) {
+                    if ([scanner scanString:codeString intoString:NULL]) {
+                        dpCode = [[codesTable objectForKey:codeString] intValue];
+                        if (number != 0) // if we aren't going to add anything don't call
+                            [self _addToComponents:componentsToAdd codeString:dpCode codeInt:number withMultiplier:multiplier];
+                        DEBUG_DATE( @"codeString:%@, number:%d, mult:%d", codeString, number, multiplier );
+                        daySpecific = YES;
+                        isYear = NO; // '97d gets you 97 days
+                        foundCode= YES;
+                        scanned = YES;
+                        modifierForNumber = NO;
+                        number = -1;
+                    }
+                }
+                
+                if (foundCode)
+                    break;
+            }
 	    
 	    if (isYear) {
 		year = number;
@@ -1518,6 +1613,10 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	    break;
     }
 }
+
+// This group of methods (class and instance) normalize strings for scanning and matching user input.
+// We use this to normalize localized strings and user input so that users can type ASCII-equivalent values and still get the benefit of the natural language parser
+// See <bug:///73212>
 
 + (NSDictionary *)_dictionaryByNormalizingKeysInDictionary:(NSDictionary *)dictionary options:(NSUInteger)options locale:(NSLocale *)locale;
 {

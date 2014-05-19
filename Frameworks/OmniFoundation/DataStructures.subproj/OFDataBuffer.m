@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -155,7 +155,7 @@ void OFDataBufferAppendXMLQuotedString(OFDataBuffer *dataBuffer, CFStringRef str
                 default:
                     //fprintf(stderr, "Encoding 0x%04x\n", c);
                     if (c < 0x7f) {
-                        *ptr++ = c;
+                        *ptr++ = (OFByte)c;
                     } else if (c < 0xff) {
                         *ptr++ = '&';
                         *ptr++ = '#';

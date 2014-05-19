@@ -109,7 +109,7 @@ static NSString *hexPairReplacer(NSString *string, NSRange *pairRange, void *con
     
     unichar digit1 = [string characterAtIndex:pairRange->location+1];
     unichar digit2 = [string characterAtIndex:pairRange->location+2];
-    int hexValue = valueOfHexPair(digit1, digit2);
+    int_fast16_t hexValue = valueOfHexPair(digit1, digit2);
     if (hexValue != -1) {
         pairRange->length = 3;
         return [NSString stringWithCharacter:OFCharacterForDeferredDecodedByte(hexValue)];
@@ -192,7 +192,7 @@ static NSString *hexPairInserter(NSString *string, NSRange *defRange, void *cont
         
         if (prefix.length > 0) {
             unichar highNybble, lowNybble;
-            int byteValue;
+            int_fast16_t byteValue;
             unsigned char buf[1];
             
             if (prefix.length+2 > remaining.length)
@@ -203,7 +203,7 @@ static NSString *hexPairInserter(NSString *string, NSRange *defRange, void *cont
             byteValue = valueOfHexPair(highNybble, lowNybble);
             if (byteValue < 0)
                 goto continueAndSkipBogusEscapePrefix;
-            buf[0] = byteValue;
+            buf[0] = (unsigned char)byteValue;
             [buffer appendBytes:buf length:1];
             
             remaining.location += prefix.length+2;
@@ -214,14 +214,14 @@ static NSString *hexPairInserter(NSString *string, NSRange *defRange, void *cont
     return buffer;
 }
 
-static inline unichar hex(int i)
+static inline char hex(int i)
 {
     static const char hexDigits[16] = {
         '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
     
-    return (unichar)hexDigits[i];
+    return hexDigits[i];
 }
 
 + (NSString *)encodeURLString:(NSString *)unencodedString asQuery:(BOOL)asQuery leaveSlashes:(BOOL)leaveSlashes leaveColons:(BOOL)leaveColons;

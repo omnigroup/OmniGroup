@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,6 +31,11 @@
 
 - initWithPreferenceClientRecord:(OAPreferenceClientRecord *)clientRecord controller:(OAPreferenceController *)controller;
 - initWithTitle:(NSString *)newTitle defaultsArray:(NSArray *)newDefaultsArray controller:(OAPreferenceController *)controller;
+
++ (NSString *)resetPreferencesMainPromptString;
++ (NSString *)resetPreferencesSecondaryPromptString;
++ (NSString *)resetButtonTitle;
++ (NSString *)cancelButtonTitle;
 
 @property(readonly, nonatomic) NSString *title;
 @property(readonly, nonatomic) OAPreferenceController *controller;

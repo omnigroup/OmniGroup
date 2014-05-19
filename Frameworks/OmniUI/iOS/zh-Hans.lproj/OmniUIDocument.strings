@@ -52,8 +52,6 @@
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
-
-
 "Cancel" = "取消";
 
 /* item not fully downloaded error title */
@@ -72,7 +70,6 @@
 "Choose Format" = "选择格式";
 
 /* Cloud setup modal sheet title */
-
 "Cloud Setup" = "云设置";
 
 /* App menu item title */
@@ -136,8 +133,6 @@
    export options title
    Export toolbar item accessibility label.
    Menu option in the document picker view */
-
-
 "Export" = "输出";
 
 /* export action description */
@@ -153,7 +148,6 @@
 "Finished" = "已完成";
 
 /* Import section title */
-
 "Import" = "输入";
 
 /* Import document title */
@@ -182,7 +176,6 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
-
 "Move" = "移动";
 
 /* move to trash button title */
@@ -190,7 +183,6 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
-
 "Move to Trash" = "移至废纸篓";
 
 /* Action sheet button title
@@ -226,9 +218,7 @@
 
 /* button title
    Dismiss failed purchase alert
-   Dismiss failed restore alert
-   When displaying a sync error, this is the option to ignore the error. */
-
+   Dismiss failed restore alert */
 "OK" = "好";
 
 /* for WebDAV OmniPresence edit field */
@@ -302,7 +292,6 @@
 
 /* export options title
    Menu option in the document picker view */
-
 "Send via Mail" = "通过邮件发送";
 
 /* email action description */
@@ -361,3 +350,4 @@
 
 /* Account validation status string. */
 "Validating account..." = "正在验证帐户…";
+

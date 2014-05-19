@@ -86,7 +86,7 @@ NSMutableData *OFASN1CreateForTag(uint8_t tag, NSUInteger byteCount)
         bufUsed = 2;
     } else {
         /* Longer lengths have a count-and-value representation */
-        unsigned int n;
+        uint_fast8_t n;
         uint8_t bytebuf[ sizeof(NSUInteger) ];
         for(n = 0; n < sizeof(NSUInteger); n++) {
             bytebuf[n] = ( byteCount & 0xFF );

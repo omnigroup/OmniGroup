@@ -47,7 +47,7 @@
 "about an hour" = "ongeveer een uur";
 
 /* error reason */
-"Another application has overridden the lock at \"%@\"." = "De vergrendeling op \"%@\" is opgeheven door een andere toepassing.";
+"Another application has overridden the lock at \"%@\"." = "De vergrendeling op “%@” is opgeheven door een andere toepassing.";
 
 /* invalid bundle reason */
 "Bundle is obsolete" = "Verouderde bundel";
@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "bzip2-bibliotheek heeft een foutcode %1$d geretourneerd bij het schrijven van de gegevens. %2$s.";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Cancel" = "Annuleer";
 
 /* error recovery option */
@@ -76,8 +76,6 @@
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
-
-
 "Could not create directory" = "Map kan niet worden gemaakt";
 
 /* time span formatter span */
@@ -111,7 +109,7 @@
 "hour" = "uur";
 
 /* time span formatter span */
-"hours" = "uren";
+"hours" = "uur";
 
 /* formatter input error */
 "Invalid time span format" = "Ongeldige structuur van tijdbereik";
@@ -143,7 +141,7 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Geen geldige bundel";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Override Lock" = "Hef vergrendeling op";
 
 /* time span formatter span */
@@ -174,7 +172,7 @@
 "This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "De vergrendeling is uitgevoerd door %1$@ met de computer “%2$@” op %3$@ om %4$@.";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Deze vergrendeling is uitgevoerd door %1$@ met de computer \"%2$@\" op %3$@ om %4$@.\n\nU kunt deze vergrendeling opheffen, maar daardoor kan de andere toepassing gegevens verliezen als deze nog steeds actief is.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Deze vergrendeling is uitgevoerd door %1$@ met de computer “%2$@” op %3$@ om %4$@.\n\nU kunt deze vergrendeling opheffen, maar daardoor kan de andere toepassing gegevens verliezen als deze nog steeds actief is.";
 
 /* compression error description */
 "Unable to compress data." = "Gegevenscompressie niet mogelijk.";
@@ -223,3 +221,4 @@
 
 /* zlib error reason */
 "zlib returned error code %d. %s." = "zlib heeft foutcode %1$d geretourneerd. %2$s.";
+

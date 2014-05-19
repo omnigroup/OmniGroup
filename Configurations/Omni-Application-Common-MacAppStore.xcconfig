@@ -9,3 +9,6 @@ OMNI_STORE_OTHER_LDFLAGS = $(value) -lcrypto -framework OmniSystemInfo
 
 OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX = .MacAppStore
 IS_USING_MAC_APP_STORE = YES
+
+// We don't want separate bundle ids for variant Mac App Store apps, or we can't test In-App Purchase, etc.
+OMNI_BUILD_IDENTIFIER_SUFFIX = 

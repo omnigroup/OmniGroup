@@ -26,6 +26,13 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
 
 @implementation OAScriptToolbarHelper
 
+static BOOL OAScriptToolbarItemsDisabled = NO;
+
++ (void)setDisabled:(BOOL)disabled;
+{
+    OAScriptToolbarItemsDisabled = disabled;
+}
+
 - (id)init;
 {
     if (!(self = [super init]))
@@ -103,6 +110,9 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
 
 - (NSToolbarItem *)finishSetupForToolbarItem:(NSToolbarItem *)toolbarItem toolbar:(NSToolbar *)toolbar willBeInsertedIntoToolbar:(BOOL)willInsert;
 {
+    if (OAScriptToolbarItemsDisabled)
+        return nil;
+
     // <bug:///89032> (Update OAScriptToolbarHelper to use non-deprecated API)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -201,6 +211,11 @@ typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *e
             [self _unsandboxedExecuteOSAScriptForToolbarItem:toolbarItem inWindowController:windowController completionHandler:completionHandler];
         }
     }
+}
+
+- (BOOL)validateToolbarItem:(NSToolbarItem *)toolbarItem;
+{
+    return !OAScriptToolbarItemsDisabled;
 }
 
 #pragma mark -

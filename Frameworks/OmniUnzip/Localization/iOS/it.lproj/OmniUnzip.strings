@@ -1,17 +1,17 @@
 /* error reason */
-"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Un elemento del documento compresso possiede un nome che non può essere convertito in un percorso del documento system.";
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Una voce del documento compresso possiede un nome che non può essere convertito in un percorso del documento di sistema.";
 
 /* error description */
-"Duplicate zip member name \"%@\"." = "Nome utente compresso \"%@\" duplicato.";
+"Duplicate zip member name \"%@\"." = "Nome utente compresso “%@” duplicato.";
 
 /* error reason */
-"The unzip library failed to open %@." = "Impossibile per la libreria decompressa aprire %@.";
+"The unzip library failed to open %@." = "La libreria decompressa non è riuscita ad aprire %@.";
 
 /* error reason */
 "The zip library function %s returned %d" = "La funzione %1$s della libreria compressa ha restituito %2$d";
 
 /* error reason */
-"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "La funzione %1$s della libreria compressa ha restituito %2$d mentre tentava di leggere i dati per la voce \"%3$@\" in \"%4$@\".";
+"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "La funzione %1$s della libreria compressa ha restituito %2$d mentre tentava di leggere i dati per la voce “%3$@” in “%4$@”.";
 
 /* error reason */
 "Unable to close zip data." = "Impossibile chiudere i dati compressi.";
@@ -23,11 +23,10 @@
 "Unable to create zip file." = "Impossibile creare il documento compresso.";
 
 /* error description */
-"Unable to open zip archive." = "Impossibile aprire l'archivio compresso.";
+"Unable to open zip archive." = "Impossibile aprire archivio XML.";
 
 /* error description
    error reason */
-
 "Unable to read zip data." = "Impossibile leggere i dati compressi.";
 
 /* error description */
@@ -35,3 +34,4 @@
 
 /* error description */
 "Unable to write zip file." = "Impossibile scrivere nel documento compresso.";
+

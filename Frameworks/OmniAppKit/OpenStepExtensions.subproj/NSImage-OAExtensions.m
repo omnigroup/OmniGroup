@@ -176,6 +176,14 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 {
     NSImage *defaultImage = [self imageNamed:imageStem withTint:NSDefaultControlTint inBundle:aBundle allowingNil:allowNil];
     NSImage *graphiteImage = [self imageNamed:imageStem withTint:NSGraphiteControlTint inBundle:aBundle allowingNil:allowNil];
+    
+    if (graphiteImage == defaultImage)
+        return defaultImage;
+    
+    OBASSERT(!graphiteImage.isTemplate, "Template tinted images aren't supported");
+    if (defaultImage.isTemplate)
+        return defaultImage;
+    
     NSImage *tintedImage = [self tintedImageWithSize:defaultImage.size flipped:NO drawingHandler:^BOOL(NSRect dstRect) {
         NSRect srcRect = { .origin = NSZeroPoint, .size = defaultImage.size };
         NSImage *sourceImage;
@@ -192,7 +200,6 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
     }];
 
     return tintedImage;
-    // return [self imageNamed:imageStem withTint:[NSColor currentControlTint] inBundle:aBundle allowingNil:allowNil];
 }
 
 + (NSImage *)tintedImageNamed:(NSString *)imageStem inBundle:(NSBundle *)aBundle;

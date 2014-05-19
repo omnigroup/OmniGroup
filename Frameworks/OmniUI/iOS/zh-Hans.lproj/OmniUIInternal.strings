@@ -15,3 +15,4 @@
 
 /* crash report alert message */
 "The last time you used %@, it unexpectedly quit. Submitting a report will help us fix the problem in future releases." = "您上次使用 %@ 时意外退出。提交报告将有助于我们在未来的版本中解决此问题。";
+

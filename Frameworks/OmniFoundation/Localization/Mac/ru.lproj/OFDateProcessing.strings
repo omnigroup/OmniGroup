@@ -1,0 +1,125 @@
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"-" = "-";
+
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"+" = "+";
+
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"~" = "~";
+
+/* one-letter abbreviation for day or days, used for scanning user input. Do NOT add whitespace */
+"d" = "д";
+
+/* day, singular, used for scanning user input. Do NOT add whitespace */
+"day" = "день";
+
+/* days, plural, used for scanning user input. Do NOT add whitespace */
+"days" = "дней";
+
+/* one-letter abbreviation for hour or hours, used for scanning user input. Do NOT add whitespace */
+"h" = "ч";
+
+/* hour, singular, used for scanning user input. Do NOT add whitespace */
+"hour" = "час";
+
+/* hours, plural, used for scanning user input. Do NOT add whitespace */
+"hours" = "часов";
+
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"last" = "последний";
+
+/* last month, used for scanning user input. Do NOT add whitespace */
+"last month" = "последний месяц";
+
+/* time, used for scanning user input. Do NOT add whitespace */
+"last week" = "последняя неделя";
+
+/* last year, used for scanning user input. Do NOT add whitespace */
+"last year" = "последний год";
+
+/* one-letter abbreviation for month or months, used for scanning user input. Do NOT add whitespace */
+"m" = "м";
+
+/* month, singular, used for scanning user input. Do NOT add whitespace */
+"month" = "месяц";
+
+/* months, plural, used for scanning user input. Do NOT add whitespace */
+"months" = "месяцев";
+
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input. Do NOT add whitespace */
+"next" = "следующий";
+
+/* next month, used for scanning user input. Do NOT add whitespace */
+"next month" = "следующий месяц";
+
+/* time, used for scanning user input. Do NOT add whitespace */
+"next week" = "следующая неделя";
+
+/* next year, used for scanning user input. Do NOT add whitespace */
+"next year" = "следующий год";
+
+/* noon, used for scanning user input. Do NOT add whitespace */
+"noon" = "полдень";
+
+/* now, used for scanning user input. Do NOT add whitespace */
+"now" = "сейчас";
+
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input. Do NOT add whitespace */
+"this" = "этот";
+
+/* this month, used for scanning user input. Do NOT add whitespace */
+"this month" = "этот месяц";
+
+/* time, used for scanning user input. Do NOT add whitespace */
+"this week" = "эта неделя";
+
+/* this year, used for scanning user input. Do NOT add whitespace */
+"this year" = "этот год";
+
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"tod" = "сег.";
+
+/* today, used for scanning user input. Do NOT add whitespace */
+"today" = "сегодня";
+
+/* Today */
+"Today" = "Сегодня";
+
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"tom" = "завтр.";
+
+/* tomorrow */
+"tomorrow" = "завтра";
+
+/* Tomorrow */
+"Tomorrow" = "Завтра";
+
+/* tonight, used for scanning user input. Do NOT add whitespace */
+"tonight" = "вечером";
+
+/* one-letter abbreviation for week or weeks, used for scanning user input. Do NOT add whitespace */
+"w" = "н";
+
+/* week, singular, used for scanning user input. Do NOT add whitespace */
+"week" = "неделя";
+
+/* weeks, plural, used for scanning user input. Do NOT add whitespace */
+"weeks" = "недели";
+
+/* one-letter abbreviation for year or years, used for scanning user input. Do NOT add whitespace */
+"y" = "г";
+
+/* year, singular, used for scanning user input. Do NOT add whitespace */
+"year" = "год";
+
+/* years, plural, used for scanning user input. Do NOT add whitespace */
+"years" = "лет";
+
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"yes" = "да";
+
+/* yesterday, used for scanning user input. Do NOT add whitespace */
+"yesterday" = "вчера";
+
+/* Yesterday */
+"Yesterday" = "Вчера";

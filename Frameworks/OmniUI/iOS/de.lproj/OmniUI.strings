@@ -65,7 +65,7 @@
 "Error Loading Store" = "Fehler beim Laden des Stores";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "Funktion nicht aktiviert für diese Demoversion";
+"Feature not enabled for this demo" = "Funktion ist für diese Demo nicht aktiviert";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Anpassen";
@@ -98,7 +98,10 @@
 "Note" = "Notiz";
 
 /* button title
-   OK button label */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
 
 
 

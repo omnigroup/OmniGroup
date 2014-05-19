@@ -8,7 +8,7 @@
 "The unzip library failed to open %@." = "La biblioteca de descompresión no ha podido abrir %@.";
 
 /* error reason */
-"The zip library function %s returned %d" = "La función %1$s de la biblioteca de compresión ha devuelto %2$d";
+"The zip library function %s returned %d" = "La función de la biblioteca de compresión %1$s ha producido %2$d";
 
 /* error reason */
 "The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "La función de la biblioteca de compresión %1$s ha producido %2$d al intentar leer los datos de la entrada “%3$@” en “%4$@”.";
@@ -27,7 +27,6 @@
 
 /* error description
    error reason */
-
 "Unable to read zip data." = "No se han podido leer los datos comprimidos.";
 
 /* error description */
@@ -35,3 +34,4 @@
 
 /* error description */
 "Unable to write zip file." = "No se ha podido escribir el archivo comprimido.";
+

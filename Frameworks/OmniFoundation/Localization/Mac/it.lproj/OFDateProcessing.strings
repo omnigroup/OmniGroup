@@ -1,0 +1,125 @@
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"-" = "-";
+
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"+" = "+";
+
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"~" = "~";
+
+/* one-letter abbreviation for day or days, used for scanning user input. Do NOT add whitespace */
+"d" = "g";
+
+/* day, singular, used for scanning user input. Do NOT add whitespace */
+"day" = "giorno";
+
+/* days, plural, used for scanning user input. Do NOT add whitespace */
+"days" = "giorni";
+
+/* one-letter abbreviation for hour or hours, used for scanning user input. Do NOT add whitespace */
+"h" = "o";
+
+/* hour, singular, used for scanning user input. Do NOT add whitespace */
+"hour" = "ora";
+
+/* hours, plural, used for scanning user input. Do NOT add whitespace */
+"hours" = "ore";
+
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"last" = "lo scorso";
+
+/* last month, used for scanning user input. Do NOT add whitespace */
+"last month" = "mese scorso";
+
+/* time, used for scanning user input. Do NOT add whitespace */
+"last week" = "settimana scorsa";
+
+/* last year, used for scanning user input. Do NOT add whitespace */
+"last year" = "anno scorso";
+
+/* one-letter abbreviation for month or months, used for scanning user input. Do NOT add whitespace */
+"m" = "me";
+
+/* month, singular, used for scanning user input. Do NOT add whitespace */
+"month" = "mese";
+
+/* months, plural, used for scanning user input. Do NOT add whitespace */
+"months" = "mesi";
+
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input. Do NOT add whitespace */
+"next" = "successivo";
+
+/* next month, used for scanning user input. Do NOT add whitespace */
+"next month" = "mese prossimo";
+
+/* time, used for scanning user input. Do NOT add whitespace */
+"next week" = "settimana prossima";
+
+/* next year, used for scanning user input. Do NOT add whitespace */
+"next year" = "anno prossimo";
+
+/* noon, used for scanning user input. Do NOT add whitespace */
+"noon" = "mezzogiorno";
+
+/* now, used for scanning user input. Do NOT add whitespace */
+"now" = "adesso";
+
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input. Do NOT add whitespace */
+"this" = "questo";
+
+/* this month, used for scanning user input. Do NOT add whitespace */
+"this month" = "questo mese";
+
+/* time, used for scanning user input. Do NOT add whitespace */
+"this week" = "questa settimana";
+
+/* this year, used for scanning user input. Do NOT add whitespace */
+"this year" = "quest'anno";
+
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"tod" = "oggi";
+
+/* today, used for scanning user input. Do NOT add whitespace */
+"today" = "oggi";
+
+/* Today */
+"Today" = "Oggi";
+
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"tom" = "dom.";
+
+/* tomorrow */
+"tomorrow" = "domani";
+
+/* Tomorrow */
+"Tomorrow" = "Domani";
+
+/* tonight, used for scanning user input. Do NOT add whitespace */
+"tonight" = "stasera";
+
+/* one-letter abbreviation for week or weeks, used for scanning user input. Do NOT add whitespace */
+"w" = "se";
+
+/* week, singular, used for scanning user input. Do NOT add whitespace */
+"week" = "settimana";
+
+/* weeks, plural, used for scanning user input. Do NOT add whitespace */
+"weeks" = "settimane";
+
+/* one-letter abbreviation for year or years, used for scanning user input. Do NOT add whitespace */
+"y" = "a";
+
+/* year, singular, used for scanning user input. Do NOT add whitespace */
+"year" = "anno";
+
+/* years, plural, used for scanning user input. Do NOT add whitespace */
+"years" = "anni";
+
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"yes" = "sì";
+
+/* yesterday, used for scanning user input. Do NOT add whitespace */
+"yesterday" = "ieri";
+
+/* Yesterday */
+"Yesterday" = "Ieri";

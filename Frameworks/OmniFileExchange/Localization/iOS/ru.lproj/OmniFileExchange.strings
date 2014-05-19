@@ -53,7 +53,7 @@
 "Easily sync Omni documents. Signup is free!" = "Cинхронизация документов Omni. Бесплатная регистрация!";
 
 /* Server account export title format */
-"Export to \"%@\"" = "Экспортировать в «%@»";
+"Export to \"%@\"" = "Экспортировать в %@";
 
 /* iTunes export title */
 "Export to iTunes" = "Экспортировать в iTunes";
@@ -72,7 +72,6 @@
 
 /* Server account type
    Set up server account title */
-
 "Omni Sync Server" = "Сервер Omni Sync";
 
 /* account validation error suggestion */
@@ -103,7 +102,7 @@
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "Для облачной учетной записи требуется формат OmniPresence %1$@, а на этом устройстве используется формат %2$@. Обновите эту копию OmniPresence.";
 
 /* Error description */
-"The document \"%@\" is not fully downloaded." = "Документ «%@» загружен неполностью.";
+"The document \"%@\" is not fully downloaded." = "Документ %@ загружен неполностью.";
 
 /* error description */
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "Предложенная папка локальных документов уже содержит файлы. Укажите пустую или несуществующую папку.";
@@ -146,3 +145,4 @@
 
 /* Set up server account title */
 "WebDAV Server" = "Сервер WebDAV";
+

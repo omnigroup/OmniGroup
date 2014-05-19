@@ -44,7 +44,7 @@
 "Font smaller" = "Уменьшить шрифт";
 
 /* popover inspector label title for mulitple selection */
-"Multiple Selection" = "Множественный выбор";
+"Multiple Selection" = "Выбрано несколько";
 
 /* Descriptive text on the no color pane of the color picker */
 "No color selected" = "Цвет не выбран";
@@ -66,3 +66,4 @@
 
 /* Inspector title */
 "Text Style" = "Стиль текста";
+

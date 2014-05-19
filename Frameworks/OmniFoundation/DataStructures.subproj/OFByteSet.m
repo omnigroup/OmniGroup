@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -83,20 +83,20 @@ RCS_ID("$Id$")
 
 - (NSData *)data;
 {
-    unsigned int byteIndex, byteCount;
+    unsigned short byteIndex, byteCount;
     NSMutableData *data;
     OFByte *bytePtr;
 
     byteCount = 0;
     for (byteIndex = 0; byteIndex < 256; byteIndex++) {
-	if (isByteInByteSet(byteIndex, self))
+	if (isByteInByteSet((OFByte)byteIndex, self))
 	    byteCount++;
     }
     data = [NSMutableData dataWithLength:byteCount];
     bytePtr = (OFByte *)[data mutableBytes];
     for (byteIndex = 0; byteIndex < 256; byteIndex++) {
-	if (isByteInByteSet(byteIndex, self))
-	    *bytePtr++ = byteIndex;
+	if (isByteInByteSet((OFByte)byteIndex, self))
+	    *bytePtr++ = (OFByte)byteIndex;
     }
     return data;
 }
@@ -116,7 +116,7 @@ RCS_ID("$Id$")
 
     bytes = [NSMutableArray arrayWithCapacity:256];
     for (byteIndex = 0; byteIndex < 256; byteIndex++) {
-	if (isByteInByteSet(byteIndex, self))
+	if (isByteInByteSet((OFByte)byteIndex, self))
 	    [bytes addObject:[NSString stringWithFormat:@"%c", byteIndex]];
     }
     [debugDictionary setObject:bytes forKey:@"bytes"];
@@ -140,7 +140,7 @@ static OFByteSet *whitespaceByteSet = nil;
     whitespaceByteSet = [[OFByteSet alloc] init];
     for (byteIndex = 0; byteIndex < 256; byteIndex++)
 	if (isspace(byteIndex))
-	    [whitespaceByteSet addByte:byteIndex];
+	    [whitespaceByteSet addByte:(OFByte)byteIndex];
 
     return whitespaceByteSet;
 }

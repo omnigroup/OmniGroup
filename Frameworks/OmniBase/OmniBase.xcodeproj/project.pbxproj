@@ -568,6 +568,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0510;
+				LastTestingUpgradeCheck = 0510;
 			};
 			buildConfigurationList = 4AA3CEDC08A01555004389CD /* Build configuration list for PBXProject "OmniBase" */;
 			compatibilityVersion = "Xcode 3.2";

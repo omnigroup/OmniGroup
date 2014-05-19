@@ -3,6 +3,7 @@
 # $Id$
 
 setopt ERR_EXIT
+set -u
 
 # Check the version of OmniGroup
 cd $(dirname $0) # This is OmniGroup/Scripts
@@ -10,7 +11,7 @@ cd .. # This is OmniGroup
 
 PN="$0:t"
 Usage () {
-    echo >&2 "Usage: $PN [options]"
+    echo >&2 "Usage: $PN [options] build_directory"
     echo >&2 "  Options:"
     echo >&2 "    --help                - show the usage"
     echo >&2 "    --build-versions-txt  - build Versions.txt"
@@ -23,7 +24,9 @@ if [ -d .git ]; then
     exit;
 fi
 
+FORCE_REBUILD=
 GENERATE_VERSIONS_TXT=NO
+
 while [ $# -gt 0 ]
 do
     case "$1" in
@@ -40,25 +43,34 @@ do
         --force)
             FORCE_REBUILD=YES
             ;;
-        *)
+        --*)
             Usage
+            ;;
+        *)
+            break
             ;;
     esac
     shift
 done
+
+# This will typically be CONFIGURATION_BUILD_DIR from Xcode. Version.txt will be placed in this directory and SVNVersion.h will be placed in an 'include' subdirectory
+if [ $# -ne 1 ]; then
+    Usage
+fi
+BUILD_DIR="$1"
 
 BUILD_DATE=`TZ=UTC date +"%Y-%m-%dT%H:%M:%S.000Z"`
 REBUILD=YES
 
 SVNURL=`svn info --xml . | xpath '/info/entry/url/text()' 2>& /dev/null`
 if [ "$SVNURL" != "" ]; then
-    if [ -n "$OMNI_VERSIONS" -a -f "$OMNI_VERSIONS" ]; then
+    if [ -n "${OMNI_VERSIONS-}" -a -f "${OMNI_VERSIONS-}" ]; then
         SVNREVISION=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
     else
         SVNREVISION=`svn info --xml . | xpath 'string(/info/entry/@revision)' 2>& /dev/null`
         CACHED_REVISION=""
-        if [ -f "$PROJECT_DERIVED_FILE_DIR/SVNVersion.h" ]; then
-            CACHED_REVISION=`awk -v IFS=' ' '/^#define SVNREVISION / {print $3}' "$PROJECT_DERIVED_FILE_DIR/SVNVersion.h"`
+        if [ -f "$BUILD_DIR/include/SVNVersion.h" ]; then
+            CACHED_REVISION=`awk -v IFS=' ' '/^#define SVNREVISION / {print $3}' "$BUILD_DIR/include/SVNVersion.h"`
         fi
         if [ "$CACHED_REVISION" = "$SVNREVISION" ]; then
             REBUILD=$FORCE_REBUILD
@@ -69,7 +81,7 @@ else
     SVNREVISION=0
 fi
 
-mkdir -p "$PROJECT_DERIVED_FILE_DIR"
+mkdir -p "$BUILD_DIR/include"
 
 if [ "$REBUILD" = "YES" ]; then
     (
@@ -82,13 +94,13 @@ if [ "$REBUILD" = "YES" ]; then
         echo "#define SVNREVISION $SVNREVISION"
         echo "#define SVNURL $SVNURL"
         echo "#define BUILD_DATE @\"$BUILD_DATE\""
-    ) > "$PROJECT_DERIVED_FILE_DIR/SVNVersion.h"
+    ) > "$BUILD_DIR/include/SVNVersion.h"
 fi
 
 if [ "$GENERATE_VERSIONS_TXT" = "YES" ]; then
-    mkdir -p "$BUILT_PRODUCTS_DIR"
-    if [ -n "$OMNI_VERSIONS" -a -f "$OMNI_VERSIONS" ]; then
-        cp -p "$OMNI_VERSIONS" "$BUILT_PRODUCTS_DIR/Versions.txt"
+    mkdir -p "$BUILD_DIR"
+    if [ -n "${OMNI_VERSIONS-}" -a -f "${OMNI_VERSIONS-}" ]; then
+        cp -p "$OMNI_VERSIONS" "$BUILD_DIR/Versions.txt"
     else
         (
             echo "Build details:"
@@ -98,6 +110,6 @@ if [ "$GENERATE_VERSIONS_TXT" = "YES" ]; then
             echo "Builder: $USER"
             echo "Host:" `hostname`
             echo "Revision: $SVNREVISION"
-        ) > "$BUILT_PRODUCTS_DIR/Versions.txt"
+        ) > "$BUILD_DIR/Versions.txt"
     fi
 fi

@@ -26,7 +26,7 @@
 "1 Item Selected" = "1 elemento selezionato";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Esiste già un documento denominato \"%@\". Sostituirlo? L'operazione non potrà essere annullata.";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Esiste già un documento denominato “%@”. Sostituirlo? L'operazione non potrà essere annullata.";
 
 /* Error reason for a document operation failing due to a missing file. */
 "A file is missing or has been deleted." = "Un documento manca o è stato eliminato.";
@@ -52,8 +52,6 @@
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
-
-
 "Cancel" = "Annulla";
 
 /* item not fully downloaded error title */
@@ -63,7 +61,7 @@
 "Cannot Export Item" = "Impossibile esportare l'elemento";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "Scegli un formato per inviare via e-mail \"%@\":";
+"Choose a format for emailing \"%@\":" = "Scegli un formato per inviare via e-mail “%@”:";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Scegli un modello";
@@ -72,11 +70,10 @@
 "Choose Format" = "Scegli formato";
 
 /* Cloud setup modal sheet title */
-
 "Cloud Setup" = "Impostazione cloud";
 
 /* App menu item title */
-"Cloud Setup..." = "Impostazione cloud...";
+"Cloud Setup..." = "Impostazione cloud…";
 
 /* Account setup toolbar button title to save account settings */
 "Connect" = "Connetti";
@@ -136,12 +133,10 @@
    export options title
    Export toolbar item accessibility label.
    Menu option in the document picker view */
-
-
 "Export" = "Esporta";
 
 /* export action description */
-"Export \"%@\" to %@ as:" = "Esporta \"%1$@\" in %2$@ come:";
+"Export \"%@\" to %@ as:" = "Esporta “%1$@” in %2$@ come:";
 
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Esporta in WebDAV";
@@ -153,7 +148,6 @@
 "Finished" = "Fine";
 
 /* Import section title */
-
 "Import" = "Importa";
 
 /* Import document title */
@@ -182,7 +176,6 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
-
 "Move" = "Sposta";
 
 /* move to trash button title */
@@ -190,12 +183,11 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
-
 "Move to Trash" = "Sposta nel Cestino";
 
 /* Action sheet button title
    Menu popover title */
-"Move to..." = "Sposta in...";
+"Move to..." = "Sposta in…";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
 "Moved out of folder %@." = "Spostato dalla cartella %@.";
@@ -226,9 +218,7 @@
 
 /* button title
    Dismiss failed purchase alert
-   Dismiss failed restore alert
-   When displaying a sync error, this is the option to ignore the error. */
-
+   Dismiss failed restore alert */
 "OK" = "OK";
 
 /* for WebDAV OmniPresence edit field */
@@ -277,7 +267,7 @@
 "Restore Sample Documents" = "Ripristina doc. di esempio";
 
 /* Share menu title */
-"Restore to..." = "Ripristina in...";
+"Restore to..." = "Ripristina in…";
 
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "Ritenta sincronizzazione";
@@ -289,7 +279,7 @@
 "Select a Document" = "Seleziona un documento";
 
 /* send to app description */
-"Send \"%@\" to app as:" = "Invia \"%@\" all'app come:";
+"Send \"%@\" to app as:" = "Invia “%@” all'app come:";
 
 /* Omni Sync Server send settings button title */
 "Send Settings via Email" = "Registra impostazioni tramite e-mail";
@@ -302,14 +292,13 @@
 
 /* export options title
    Menu option in the document picker view */
-
 "Send via Mail" = "Invia con Mail";
 
 /* email action description */
 "Server address: %@" = "Indirizzo server: %@";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
-"Setting up \"%@\"" = "Imposto \"%@\"";
+"Setting up \"%@\"" = "Imposto “%@”";
 
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "Registra nuovo account";
@@ -330,13 +319,13 @@
 "Template:" = "Modello:";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account \"%1$@\" sono presenti %2$ld documenti modificati che non sono stati ancora sincronizzati nel cloud. Ignorare tali modifiche?";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account “%1$@” sono presenti %2$ld documenti modificati che non sono stati ancora sincronizzati nel cloud. Ignorare tali modifiche?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account \"%1$@\" è presente un documento modificato che non è stato ancora sincronizzato nel cloud. Ignorare tali modifiche?";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account “%1$@” è presente un documento modificato che non è stato ancora sincronizzato nel cloud. Ignorare tali modifiche?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "L'account \"%@\" potrebbe aver modificato documenti non ancora sincronizzati nel cloud. Ignorare eventuali modifiche locali?";
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "L'account “%@” potrebbe aver modificato documenti non ancora sincronizzati nel cloud. Ignorare eventuali modifiche in locale?";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "Impossibile completare l'operazione.";
@@ -361,3 +350,4 @@
 
 /* Account validation status string. */
 "Validating account..." = "Convalido account…";
+

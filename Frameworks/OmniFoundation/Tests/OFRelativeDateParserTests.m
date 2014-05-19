@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -186,7 +186,7 @@ static BOOL _testRandomDate(OFRandomState *state, NSString *shortFormat, NSStrin
     if ([testResult isEqual:testDate] && [result isEqual:testDate]) 
 	return YES;
     else {
-	NSLog( @"RandomTestDate: %@, dateFormat: %@, timeFormat: %@", testDate, dateFormat, timeFormat);
+	NSLog( @"RandomTestDate: %@, string \"%@\", shortFormat:%@ mediumFormat:%@ longFormat:%@ timeFormat:%@", testDate, testDateString, shortFormat, mediumFormat, longFormat, timeFormat);
 	if (![result isEqual:testDate])
 	    NSLog( @"string back failure: %@, Result:%@ expected:%@", stringBack, result, testDate );
 	
@@ -389,7 +389,7 @@ do { \
     expectedDate = _dateFromYear(2011, 7, 5, 0, 0, 0, calendar);
     parseDate( @"martes", expectedDate, baseDate, nil, nil ); 
     
-    // We expect to be able to use either miercoles for mi�rcoles for wednesday and have it work
+    // We expect to be able to use either miercoles for miércoles for wednesday and have it work
     
     baseDate = _dateFromYear(2011, 7, 5, 0, 0, 0, calendar);
     expectedDate = _dateFromYear(2011, 7, 6, 0, 0, 0, calendar);
@@ -730,6 +730,22 @@ do { \
     }
 }
 
+// Values produced by -testRandomDatesAndRoundTrips
+- (void)testRandomDatesAndRoundTrips0;
+{
+    NSString *testDateString = @"26-Sep-94 0928";
+    NSString *dateFormat = @"d-MMM-yy";
+    NSString *timeFormat = @"kkmm";
+    
+    [calendar setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+    
+    NSDate *baseDate = _dateFromYear(2007, 1, 1, 0, 0, 0, calendar);
+    NSDate *date = nil;
+    [[OFRelativeDateParser sharedParser] getDateValue:&date forString:testDateString fromStartingDate:baseDate calendar:calendar withShortDateFormat:dateFormat withMediumDateFormat:dateFormat withLongDateFormat:dateFormat withTimeFormat:timeFormat error:nil];
+    
+    STAssertEqualObjects(date, _dateFromYear(1994, 9, 26, 9, 28, 0, calendar), nil);
+}
+
 - (void)testLocaleWeekdays;
 {
     NSLocale *currentLocale = [NSLocale currentLocale];
@@ -965,5 +981,52 @@ do { \
     }
 }
 
+- (void)testKoreanDateTime;
+{
+    NSLocale *locale = [NSLocale localeWithLocaleIdentifier:@"ko_KR"];
+    
+    calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    [calendar setLocale:locale];
+
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateStyle:NSDateFormatterMediumStyle];
+    [dateFormatter setTimeStyle:NSDateFormatterMediumStyle];
+    [dateFormatter setLocale:locale];
+    [dateFormatter setCalendar:calendar];
+
+    /*
+     In ko_KR, the AM/PM designation comes before the time:
+     
+     NSLog(@"%@", [dateFormatter stringFromDate:_dateFromYear(2014, 1, 2, 3, 4, 5, calendar)]);
+     NSLog(@"%@", [dateFormatter stringFromDate:_dateFromYear(2014, 1, 2, 15, 4, 5, calendar)]);
+
+     2014-04-21 09:37:55.359 otest[90668:303] 2014. 1. 2. 오전 3:04:05
+     2014-04-21 09:37:55.360 otest[90668:303] 2014. 1. 2. 오후 3:04:05
+
+     */
+    NSString *amDateString = @"2014. 4. 10. 오전 5:28";
+    NSString *pmDateString = @"2014. 4. 10. 오후 5:28";
+    
+    for (NSString *dateString in @[pmDateString, amDateString]) {
+        NSInteger expectedHour = (dateString == amDateString) ? 5 : 17;
+        
+        OFRelativeDateParser *parser = [[OFRelativeDateParser alloc] initWithLocale:locale];
+        __autoreleasing NSDate *date = nil;
+        __autoreleasing NSError *error = nil;
+        if (![parser getDateValue:&date forString:dateString fromStartingDate:nil useEndOfDuration:NO defaultTimeDateComponents:nil calendar:calendar error:&error]) {
+            STFail(@"Failed to parse date");
+            return;
+        }
+        
+        STAssertNotNil(date, @"Success should fill out a date");
+        
+        NSDateComponents *components = [calendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitHour|NSCalendarUnitMinute fromDate:date];
+        STAssertEquals(components.year, 2014L, nil);
+        STAssertEquals(components.month, 4L, nil);
+        STAssertEquals(components.day, 10L, nil);
+        STAssertEquals(components.hour, expectedHour, nil);
+        STAssertEquals(components.minute, 28L, nil);
+    }
+}
 
 @end

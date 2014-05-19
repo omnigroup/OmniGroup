@@ -39,7 +39,7 @@
 "Certificate Trust" = "Доверительные сертификаты";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Значение параметра «%1$@» изменено с «%2$@» на «%3$@»";
+"Changed the '%@' preference from '%@' to '%@'" = "Значение параметра «%1$@»изменено с «%2$@» на «%3$@»";
 
 /* Certificate trust alert button title */
 "Continue" = "Продолжить";
@@ -98,7 +98,10 @@
 "Note" = "Примечание";
 
 /* button title
-   OK button label */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
 
 
 

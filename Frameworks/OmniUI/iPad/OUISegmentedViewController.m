@@ -9,10 +9,12 @@
 
 RCS_ID("$Id$")
 
-@interface OUISegmentedViewController () <UIToolbarDelegate>
+@interface OUISegmentedViewController () <UIToolbarDelegate, UINavigationControllerDelegate>
 
 @property (nonatomic, strong) UIToolbar *toolbar;
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
+
+@property (nonatomic, weak) id<UINavigationControllerDelegate> originalNavDelegate;
 
 @end
 
@@ -78,7 +80,13 @@ RCS_ID("$Id$")
     // Remove currently selected view controller.
     if (_selectedViewController) {
         [_selectedViewController willMoveToParentViewController:nil];
+        
+        if ([_selectedViewController isKindOfClass:[UINavigationController class]]) {
+            UINavigationController *selectedNavigationController = (UINavigationController *)_selectedViewController;
+            selectedNavigationController.delegate = self.originalNavDelegate;
+        }
         [_selectedViewController.view removeFromSuperview];
+        
         [_selectedViewController removeFromParentViewController];
         _selectedViewController = nil;
     }
@@ -105,6 +113,10 @@ RCS_ID("$Id$")
                                                                           options:0
                                                                           metrics:nil
                                                                             views:views]];
+        UINavigationController *selectedNavigationController = (UINavigationController *)_selectedViewController;
+        self.originalNavDelegate = selectedNavigationController.delegate;
+        selectedNavigationController.delegate = self;
+        
     }
     else {
         [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[childView]|"
@@ -116,8 +128,9 @@ RCS_ID("$Id$")
     [_selectedViewController didMoveToParentViewController:self];
     
     // Ensure that the segmented control is showing the correctly selected segment.
-    NSUInteger selectedVCIndex = [self.viewControllers indexOfObject:_selectedViewController];
-    self.segmentedControl.selectedSegmentIndex = selectedVCIndex;
+    // Make sure to use the _selectedIndex ivar directly here because the setter will end up calling into this method and we don't want to create an infinite loop.
+    _selectedIndex = [self.viewControllers indexOfObject:_selectedViewController];
+    self.segmentedControl.selectedSegmentIndex = _selectedIndex;
     [self.view bringSubviewToFront:self.toolbar];
 }
 
@@ -177,5 +190,86 @@ RCS_ID("$Id$")
     return UIBarPositionAny;
 }
 
+#pragma mark - UINavigationControllerDelegate
+
+- (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
+{
+    if ([self.originalNavDelegate respondsToSelector:@selector(navigationController:willShowViewController:animated:)]) {
+        [self.originalNavDelegate navigationController:navigationController willShowViewController:viewController animated:animated];
+    }
+    
+    [viewController.navigationController setNavigationBarHidden:viewController.wantsHiddenNavigationBar animated:YES];
+}
+
+- (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
+{
+    if ([self.originalNavDelegate respondsToSelector:@selector(navigationController:didShowViewController:animated:)]) {
+        [self.originalNavDelegate navigationController:navigationController didShowViewController:viewController animated:animated];
+    }
+}
+
+- (NSUInteger)navigationControllerSupportedInterfaceOrientations:(UINavigationController *)navigationController;
+{
+    if ([self.originalNavDelegate respondsToSelector:@selector(navigationControllerSupportedInterfaceOrientations:)]) {
+        return [self.originalNavDelegate navigationControllerSupportedInterfaceOrientations:navigationController];
+    }
+    
+    return UIInterfaceOrientationMaskAll;
+}
+
+- (UIInterfaceOrientation)navigationControllerPreferredInterfaceOrientationForPresentation:(UINavigationController *)navigationController;
+{
+    if ([self.originalNavDelegate respondsToSelector:@selector(navigationControllerPreferredInterfaceOrientationForPresentation:)]) {
+        return [self.originalNavDelegate navigationControllerPreferredInterfaceOrientationForPresentation:navigationController];
+    }
+    
+    return UIInterfaceOrientationPortrait;
+}
+
+- (id <UIViewControllerInteractiveTransitioning>)navigationController:(UINavigationController *)navigationController
+                          interactionControllerForAnimationController:(id <UIViewControllerAnimatedTransitioning>) animationController;
+{
+    if ([self.originalNavDelegate respondsToSelector:@selector(navigationController:interactionControllerForAnimationController:)]) {
+        return [self.originalNavDelegate navigationController:navigationController interactionControllerForAnimationController:animationController];
+    }
+    
+    return nil;
+}
+
+- (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+                                   animationControllerForOperation:(UINavigationControllerOperation)operation
+                                                fromViewController:(UIViewController *)fromVC
+                                                  toViewController:(UIViewController *)toVC;
+{
+    if ([self.originalNavDelegate respondsToSelector:@selector(navigationController:animationControllerForOperation:fromViewController:toViewController:)]) {
+        return [self.originalNavDelegate navigationController:navigationController animationControllerForOperation:operation fromViewController:fromVC toViewController:toVC];
+    }
+    
+    return nil;
+}
+
+@end
+
+
+@implementation UIViewController (OUISegmentedViewControllerExtras)
+- (BOOL)wantsHiddenNavigationBar;
+{
+    return NO;
+}
+
+- (OUISegmentedViewController *)segmentedViewController;
+{
+    UIViewController *viewControllerToCheck = self;
+    
+    while (viewControllerToCheck) {
+        if ([viewControllerToCheck isKindOfClass:[OUISegmentedViewController class]]) {
+            return (OUISegmentedViewController *)viewControllerToCheck;
+        }
+        
+        viewControllerToCheck = viewControllerToCheck.parentViewController;
+    }
+    
+    return nil;
+}
 
 @end

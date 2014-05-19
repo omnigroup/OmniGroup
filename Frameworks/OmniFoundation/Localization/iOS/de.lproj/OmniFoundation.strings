@@ -50,10 +50,10 @@
 "Another application has overridden the lock at \"%@\"." = "Ein anderes Programm hat die Sperre in „%@“ außer Kraft gesetzt.";
 
 /* invalid bundle reason */
-"Bundle is obsolete" = "Bundle ist überholt";
+"Bundle is obsolete" = "Paket ist überholt";
 
 /* invalid bundle reason */
-"Bundle requires additional software" = "Bundle benötigt zusätzliche Software";
+"Bundle requires additional software" = "Paket benötigt zusätzliche Software";
 
 /* compression error reason */
 "bzip2 library returned error code %d when finishing compression. %s." = "Die bzip2-Bibliothek gab beim Abschließen der Komprimierung den Fehlercode %1$d zurück. %2$s.";
@@ -64,24 +64,22 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "Die bzip2-Bibliothek gab beim Schreiben der Daten den Fehlercode %1$d zurück. %2$s.";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Cancel" = "Abbrechen";
 
 /* error recovery option */
 "Cancel <error recovery>" = "Abbrechen";
 
 /* error description */
-"Cannot create socket." = "Socket kann nicht erzeugt werden.";
+"Cannot create socket." = "Socket kann nicht erstellt werden.";
 
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
-
-
 "Could not create directory" = "Verzeichnis konnte nicht erstellt werden";
 
 /* time span formatter span */
-"d" = "T";
+"d" = "T.";
 
 /* time span formatter span */
 "day" = "Tag";
@@ -90,7 +88,7 @@
 "days" = "Tage";
 
 /* invalid bundle reason */
-"Duplicate bundle name" = "Bundle-Name doppelt";
+"Duplicate bundle name" = "Name des Pakets doppelt";
 
 /* exception reason */
 "Element '%@' not allowed at path: %@" = "Element „%1$@“ nicht zulässig in Pfad: %2$@";
@@ -105,7 +103,7 @@
 "Failed to write lock file.  %@" = "Sperrdatei konnte nicht geschrieben werden. %@";
 
 /* time span formatter span */
-"h" = "S";
+"h" = "S.";
 
 /* time span formatter span */
 "hour" = "Stunde";
@@ -117,10 +115,10 @@
 "Invalid time span format" = "Ungültiges Format für Zeitraum";
 
 /* local bundle path readable string */
-"local configuration file" = "lokale Konfigurationsdatei";
+"local configuration file" = "Lokale Konfigurationsdatei";
 
 /* time span formatter span */
-"m" = "M";
+"m" = "M.";
 
 /* time span formatter span */
 "minute" = "Minute";
@@ -141,13 +139,13 @@
 "No root element was found" = "Kein Stammelement gefunden";
 
 /* invalid bundle reason */
-"Not a valid bundle" = "Kein gültiges Bundle";
+"Not a valid bundle" = "Kein gültiges Paket";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Override Lock" = "Sperre außer Kraft setzen";
 
 /* time span formatter span */
-"s" = "S";
+"s" = "s";
 
 /* time span formatter span */
 "second" = "Sekunde";
@@ -198,7 +196,7 @@
 "unrecognized compression format." = "Das Komprimierungsformat wurde nicht erkannt.";
 
 /* time span formatter span */
-"w" = "W";
+"w" = "W.";
 
 /* error description */
 "Warning encountered while loading XML." = "Beim Laden von XML wurde eine Warnmeldung ausgegeben.";
@@ -210,7 +208,7 @@
 "weeks" = "Wochen";
 
 /* time span formatter span */
-"y" = "J";
+"y" = "J.";
 
 /* time span formatter span */
 "year" = "Jahr";
@@ -223,3 +221,4 @@
 
 /* zlib error reason */
 "zlib returned error code %d. %s." = "Zlib gab den Fehlercode %1$d. %2$s zurück.";
+

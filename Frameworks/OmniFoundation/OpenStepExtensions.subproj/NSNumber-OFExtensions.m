@@ -1,4 +1,4 @@
-// Copyright 1997-2007, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2007, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,7 +59,7 @@ static NSCharacterSet *dotCharacterSet = nil;
         return nil;
     
     return performOperationWithWidth(op,
-                                     MAX(myTypeInfo.width, otherTypeInfo.width),
+                                     (myTypeInfo.width > otherTypeInfo.width) ? myTypeInfo.width : otherTypeInfo.width,
                                      myTypeInfo.siGned || otherTypeInfo.siGned,
                                      myTypeInfo.integral && otherTypeInfo.integral,
                                      v1, v2);
@@ -131,8 +131,9 @@ static struct numericTypeAttributes numericTypeAttributes(NSNumber *n)
 {
     if (CFGetTypeID((CFTypeRef)n) == CFNumberGetTypeID()) {
         CFTypeRef cfn = (CFTypeRef)n;
+        OBASSERT(CFNumberGetByteSize((CFTypeRef)n) < USHRT_MAX);
         return (struct numericTypeAttributes){
-            .width = CFNumberGetByteSize((CFTypeRef)n),
+            .width = (unsigned short)CFNumberGetByteSize((CFTypeRef)n),
             .siGned = ( CFNumberGetType(cfn) != kCFNumberCFIndexType ),  // CFNumber only has one signed type; see Radar #3513632
             .integral = !CFNumberIsFloatType(cfn)
         };

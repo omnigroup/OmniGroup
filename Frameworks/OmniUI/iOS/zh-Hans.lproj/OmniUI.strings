@@ -39,7 +39,7 @@
 "Certificate Trust" = "信任证书";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "已将“%1$@”预置从“%2$@”更改为“%3$@”";
+"Changed the '%@' preference from '%@' to '%@'" = "将“%1$@”预置从“%2$@”更改为“%3$@”";
 
 /* Certificate trust alert button title */
 "Continue" = "继续";
@@ -65,7 +65,7 @@
 "Error Loading Store" = "载入 Store 时出错";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "未针对此演示启用功能";
+"Feature not enabled for this demo" = "对于此演示，功能未启用";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "适合";
@@ -95,10 +95,13 @@
 "None" = "无";
 
 /* Full screen note editor title */
-"Note" = "注意";
+"Note" = "备注";
 
 /* button title
-   OK button label */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
 
 
 

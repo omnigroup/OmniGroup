@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -598,13 +598,16 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
     completionHandler = [completionHandler copy];
 
-    BOOL ensureUniqueName = !OFISEQUAL(self.fileType, self.savingFileType);
+    BOOL isChangingFileType = !OFISEQUAL(self.fileType, self.savingFileType);
+    BOOL ensureUniqueName = ((saveOperation != UIDocumentSaveForOverwriting) && isChangingFileType);
     ODSFileItem *fileItem = nil;
     if (ensureUniqueName) {
-        ODSFileItem *fileItem = self.fileItem;
+        fileItem = self.fileItem;
         OBASSERT(fileItem, "If we are converting file types, we assume the original file existed (this is not a new unsaved document)");
         url = [_documentScope urlForNewDocumentInFolder:fileItem.parentFolder baseName:fileItem.name fileType:self.savingFileType];
     }
+    
+    BOOL shouldRemoveCachedResourceValue = ((saveOperation == UIDocumentSaveForOverwriting) && isChangingFileType);
 
     OBASSERT_NULL(_currentSaveURL);
     _currentSaveOperation = saveOperation;
@@ -616,6 +619,13 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
             OBASSERT_NOTNULL(_currentSaveURL);
             _currentSaveURL = nil;
+
+            if (shouldRemoveCachedResourceValue) {
+                OBASSERT(url);
+                
+                // NSURL caches resource values that it has retrieved and OFUTIForFileURLPreferringNative() uses the resource values to determine the UTI. If we're going to change the file from flat to package (most likely case this is happening) then we need to clear the cache for the 'is directory' flag so that OFUTIForFileURLPreferringNative() returns the correct UTI next time we try to open the document. By the way, the NSURL documentation states that it's resource value cache is cleared at the turn of each runloop, but clearly it's not. Will try to repro and file a radar.
+                [url removeCachedResourceValueForKey:NSURLIsDirectoryKey];
+            }
 
             if (updateCompletionHandler)
                 updateCompletionHandler(success, url, nil);

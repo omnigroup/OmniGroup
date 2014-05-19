@@ -20,10 +20,10 @@
 "All versions" = "Tutte le versioni";
 
 /* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Consentire a %@ di segnalare periodicamente informazioni sul modello hardware e sulla versione di iOS?\nIn questo modo potremo conoscere le configurazioni più importanti da supportare. Puoi anche modificare la risposta in seguito nelle preferenze.";
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Consentire a %@ di segnalare periodicamente informazioni sul modello hardware e sulla versione di iOS?\nIn questo modo potremo conoscere le configurazioni più importanti da supportare. Puoi anche modificare la risposta in seguito nelle preferenze mediante MUMBLE MUMBLE MUMBLE.";
 
 /* Software update report entry name */
-"Application identifier" = "ID applicazione";
+"Application identifier" = "Identificatore applicazione";
 
 /* Software update report entry name */
 "Application version" = "Versione applicazione";
@@ -41,7 +41,7 @@
 "Device" = "Dispositivo";
 
 /* software update settings title */
-"Device Information" = "Info dispositivo";
+"Device Information" = "Informazioni dispositivo…";
 
 /* OmniSoftwareUpdate privacy notice button title */
 "Don't Report" = "Non segnalare";
@@ -59,10 +59,10 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "Aiuta The Omni Group a decidere quali dispositivi e versioni di iOS supportare";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Scegliendi di condividere queste informazioni, ci terrai informati su dispositivi e versioni di iOS da rendere compatibili con il software.\nTali informazioni sono mantenute in forma anonima.";
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Se scegli di condividere queste informazioni, ci aiuterai a sapere quali dispositivi e versioni di iOS debbano essere supportati dal nostro software.\nTali informazioni saranno in forma del tutto anonima.";
 
 /* Software update report entry name */
-"iOS version" = "Versione di iOS";
+"iOS version" = "Versione iOS";
 
 /* Software update report entry name */
 "Language" = "Lingua";
@@ -71,7 +71,7 @@
 "Memory" = "Memoria";
 
 /* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Aggiornamento Software Omni";
+"Omni Software Update" = "Aggiornamento Omni Software";
 
 /* Software update report entry string for a single crash */
 "One crash" = "Un blocco";
@@ -86,7 +86,7 @@
 "One minute" = "Un minuto";
 
 /* error reason */
-"Please try again later or contact us to let us know this is broken." = "Riprova più tardi o contattaci per comunicare l'errore.";
+"Please try again later or contact us to let us know this is broken." = "Riprova più tardi o contattaci per comunicare l’errore.";
 
 /* Software update report entry name */
 "Report identifier" = "Identificatore resoconto";
@@ -101,7 +101,7 @@
 "Send anonymous device information?" = "Inviare informazioni anonime sul dispositivo?";
 
 /* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "Invia segnalazioni";
+"Send Reports" = "Invia resoconti";
 
 /* software update settings menu title */
 "Settings" = "Impostazioni";
@@ -122,7 +122,7 @@
 "There was a problem checking the signature." = "Errore durante la verifica della firma.";
 
 /* Software update report entry name for information about the runs of the current version of the app */
-"This version" = "Versione corrente";
+"This version" = "Questa versione";
 
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "Lo strumento non ha restituito dati";

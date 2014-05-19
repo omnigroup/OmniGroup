@@ -22,6 +22,7 @@ RCS_ID("$Id$")
 @implementation OUIAppearance
 {
     NSDictionary *_plist;
+    NSMutableDictionary *_cachedValues;
 }
 
 #pragma mark - Lifecycle
@@ -30,10 +31,11 @@ RCS_ID("$Id$")
 {
     if (!(self = [super init]))
         return nil;
-    
-    NSURL *plistURL = [bundle URLForResource:[plistName stringByAppendingString:@"Appearance"] withExtension:@"plist"];
+
+    NSString *plistExtension = @"plist";
+    NSURL *plistURL = [bundle URLForResource:[plistName stringByAppendingString:@"Appearance"] withExtension:plistExtension];
     if (!plistURL)
-        plistURL = [bundle URLForResource:plistName withExtension:@"plist"];
+        plistURL = [bundle URLForResource:plistName withExtension:plistExtension];
     
     if (plistURL) {
         OB_AUTORELEASING NSError *error;
@@ -42,10 +44,32 @@ RCS_ID("$Id$")
         if (!_plist)
             NSLog(@"%@ failed to load appearance at URL %@: %@", NSStringFromClass([self class]), plistURL, error);
     }
-    
-    if (!_plist)
+
+    if (_plist == nil)
         _plist = [NSDictionary new];
-    
+
+    // Look for user overrides
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+    if (paths.count != 0) {
+        NSString *supportPath = paths[0];
+        NSString *appPath = [supportPath stringByAppendingPathComponent:[[NSBundle mainBundle] bundleIdentifier]];
+        NSString *userPlistPath = [[appPath stringByAppendingPathComponent:plistName] stringByAppendingPathExtension:plistExtension];
+        if ([[NSFileManager defaultManager] fileExistsAtPath:userPlistPath]) {
+            NSData *userData = [NSData dataWithContentsOfFile:userPlistPath];
+            if (userData != nil) {
+                OB_AUTORELEASING NSError *error;
+                NSDictionary *userPlist = [NSPropertyListSerialization propertyListWithData:userData options:0 format:NULL error:&error];
+                if (userPlist != nil) {
+                    NSMutableDictionary *mutablePlist = [_plist deepMutableCopy];
+                    [mutablePlist setValuesForKeysWithDictionary:userPlist];
+                    _plist = [mutablePlist copy];
+                }
+            }
+        }
+    }
+
+    _cachedValues = [[NSMutableDictionary alloc] init];
+
     return self;
 }
 
@@ -112,7 +136,12 @@ static inline OUIAppearance *AppearanceForClass(Class cls)
 
 - (OUI_SYSTEM_COLOR_CLASS *)colorForKeyPath:(NSString *)keyPath;
 {
-    return [OUI_SYSTEM_COLOR_CLASS colorFromPropertyListRepresentation:[self _objectOfClass:[NSDictionary class] forPlistKeyPath:keyPath]];
+    OUI_SYSTEM_COLOR_CLASS *cachedValue = [_cachedValues objectForKey:keyPath];
+    if (cachedValue != nil)
+        return cachedValue;
+    OUI_SYSTEM_COLOR_CLASS *computedValue = [OUI_SYSTEM_COLOR_CLASS colorFromPropertyListRepresentation:[self _objectOfClass:[NSDictionary class] forPlistKeyPath:keyPath]];
+    [_cachedValues setObject:computedValue forKey:keyPath];
+    return computedValue;
 }
 
 - (CGFloat)CGFloatForKeyPath:(NSString *)keyPath;
@@ -234,13 +263,13 @@ static void MakeImpForProperty(NSString *backingPropName, const char *type, SEL 
         if (!cls) {
             @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Unknown class '%@' for key '%@'", [NSString stringWithUTF8String:className], backingPropName] userInfo:nil];
         } else if (cls == [OUI_SYSTEM_COLOR_CLASS class]) {
-            *outImp = imp_implementationWithBlock(^(id self, id self2, va_list method_args, ...) {
+            *outImp = imp_implementationWithBlock(^(id self) {
                 OUI_SYSTEM_COLOR_CLASS *color = [self colorForKeyPath:backingPropName];
                 DEBUG_DYNAMIC_GETTER(@"colorForKeyPath:%@ --> %@", backingPropName, color);
                 return color;
             });
         } else {
-            *outImp = imp_implementationWithBlock(^(id self, id self2, va_list method_args, ...) {
+            *outImp = imp_implementationWithBlock(^(id self) {
                 id object = [self _objectOfClass:cls forPlistKeyPath:backingPropName];
                 DEBUG_DYNAMIC_GETTER(@"_objectOfClass:%@ forPlistKeyPath:%@ --> %@", NSStringFromClass(cls), backingPropName, object);
                 return object;
@@ -250,21 +279,21 @@ static void MakeImpForProperty(NSString *backingPropName, const char *type, SEL 
         free(className);
     } else if (strcmp(type, @encode(CGFLOAT_TYPE)) == 0) {
         returnType = @encode(CGFLOAT_TYPE);
-        *outImp = imp_implementationWithBlock(^(id self, id self2, va_list method_args, ...) {
+        *outImp = imp_implementationWithBlock(^(id self) {
             CGFloat val = [self CGFloatForKeyPath:backingPropName];
             DEBUG_DYNAMIC_GETTER(@"CGFloatForKeyPath:%@ --> %f", backingPropName, val);
             return val;
         });
     } else if (strcmp(type, @encode(BOOL)) == 0) {
         returnType = "c";
-        *outImp = imp_implementationWithBlock(^(id self, id self2, va_list method_args, ...) {
+        *outImp = imp_implementationWithBlock(^(id self) {
             BOOL val = [self boolForKeyPath:backingPropName];
             DEBUG_DYNAMIC_GETTER(@"boolForKeyPath:%@ --> %@", backingPropName, val ? @"YES" : @"NO");
             return val;
         });
     } else if (strcmp(type, @encode(OUI_SYSTEM_EDGE_INSETS_STRUCT)) == 0) {
         returnType = @encode(OUI_SYSTEM_EDGE_INSETS_STRUCT);
-        *outImp = imp_implementationWithBlock(^(id self, id self2, va_list method_args, ...) {
+        *outImp = imp_implementationWithBlock(^(id self) {
             OUI_SYSTEM_EDGE_INSETS_STRUCT insets = [self edgeInsetsForKeyPath:backingPropName];
             
             DEBUG_DYNAMIC_GETTER(@"edgeInsetsForKeyPath:%@ --> %@", backingPropName, [NSValue valueWithBytes:&insets objCType:returnType]);
@@ -273,7 +302,7 @@ static void MakeImpForProperty(NSString *backingPropName, const char *type, SEL 
         });
     } else if (strcmp(type, @encode(OUI_SYSTEM_SIZE_STRUCT)) == 0) {
         returnType = @encode(OUI_SYSTEM_SIZE_STRUCT);
-        *outImp = imp_implementationWithBlock(^(id self, id self2, va_list method_args, ...) {
+        *outImp = imp_implementationWithBlock(^(id self) {
             OUI_SYSTEM_SIZE_STRUCT size = [self sizeForKeyPath:backingPropName];
             
             DEBUG_DYNAMIC_GETTER(@"sizeForKeyPath:%@ --> %@", backingPropName, [NSValue valueWithBytes:&size objCType:returnType]);

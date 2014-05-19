@@ -86,7 +86,6 @@ static NSString * const OSUBundleTrackInfoKey = @"OSUSoftwareUpdateTrack";
 static NSString * const OSUBundleLicenseTypeKey = @"OSUSoftwareUpdateLicenseType";
 
 // Preferences keys
-static NSString * const OSUNextCheckKey = @"OSUNextScheduledCheck";
 static NSString * const OSUCurrentVersionsURLKey = @"OSUCurrentVersionsURL";
 static NSString * const OSUNewestVersionNumberLaunchedKey = @"OSUNewestVersionNumberLaunched";
 

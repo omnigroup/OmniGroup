@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -91,8 +91,8 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(NSMaxRange(characterRange) <= USHRT_MAX); // Since OFCharacterSetAddCharacter takes a unichar.
     
-    unsigned int character, endCharacter = (unichar)NSMaxRange(characterRange);
-    for (character = (unsigned int)characterRange.location; character < endCharacter; character++) {
+    unsigned int endCharacter = (unichar)NSMaxRange(characterRange);
+    for (unichar character = (unichar)characterRange.location; character < endCharacter; character++) {
         OFCharacterSetAddCharacter(self, character);
     }
 }
@@ -101,8 +101,8 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(NSMaxRange(characterRange) <= USHRT_MAX); // Since OFCharacterSetAddCharacter takes a unichar.
 
-    unsigned int character, endCharacter = (unsigned int)NSMaxRange(characterRange);
-    for (character = (unsigned int)characterRange.location; character < endCharacter; character++) {
+    unsigned int endCharacter = (unsigned int)NSMaxRange(characterRange);
+    for (unichar character = (unichar)characterRange.location; character < endCharacter; character++) {
         OFCharacterSetRemoveCharacter(self, character);
     }
 }

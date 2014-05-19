@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,6 +28,7 @@ RCS_ID("$Id$");
     NSNumberFormatter *_wholeNumberFormatter;
     NSNumberFormatter *_fractionalNumberFormatter;
     UIView *_fontSizeControl;
+    BOOL _touchIsDown;
 }
 
 // TODO: should these be ivars?
@@ -52,28 +53,29 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
     return result;
 }
 
-static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL relative)
+- (void)_setFontSize:(CGFloat)fontSize;
 {
-    OUIInspector *inspector = self.inspector;
-    [inspector willBeginChangingInspectedObjects];
-    {
-        for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
-            OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self];
-            if (fontDescriptor) {
-                CGFloat newSize = relative? ( [fontDescriptor size] + fontSize ) : fontSize;
-                newSize = _normalizeFontSize(newSize);
-                fontDescriptor = [fontDescriptor newFontDescriptorWithSize:newSize];
-            } else {
-                UIFont *font = [UIFont systemFontOfSize:[UIFont labelFontSize]];
-                CGFloat newSize = relative? ( font.pointSize + fontSize ) : fontSize;
-                newSize = _normalizeFontSize(newSize);
-                fontDescriptor = [[OAFontDescriptor alloc] initWithFamily:font.familyName size:newSize];
-            }
-            [object setFontDescriptor:fontDescriptor fromInspectorSlice:self];
-        }
+    if (!_touchIsDown) {
+        [self.inspector willBeginChangingInspectedObjects];
+        _touchIsDown = YES;
     }
-    [inspector didEndChangingInspectedObjects];
     
+    for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
+        OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self];
+        if (fontDescriptor) {
+            CGFloat newSize = [fontDescriptor size] + fontSize;
+            newSize = _normalizeFontSize(newSize);
+            fontDescriptor = [fontDescriptor newFontDescriptorWithSize:newSize];
+        } else {
+            UIFont *font = [UIFont systemFontOfSize:[UIFont labelFontSize]];
+            CGFloat newSize = font.pointSize + fontSize;
+            newSize = _normalizeFontSize(newSize);
+            fontDescriptor = [[OAFontDescriptor alloc] initWithFamily:font.familyName size:newSize];
+        }
+        [object setFontDescriptor:fontDescriptor fromInspectorSlice:self];
+    }
+    
+    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonObjectsEdited];
     UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, self->_fontSizeControl.accessibilityValue);
 }
 
@@ -102,14 +104,20 @@ static void _setFontSize(OUIFontInspectorSlice *self, CGFloat fontSize, BOOL rel
     _fontFacesPane.parentSlice = nil;
 }
 
+- (IBAction)stepperTouchesEnded:(id)sender;
+{
+    [self.inspector didEndChangingInspectedObjects];
+    _touchIsDown = NO;
+}
+
 - (IBAction)increaseFontSize:(id)sender;
 {
-    _setFontSize(self, 1, YES /* relative */);
+    [self _setFontSize:1];
 }
 
 - (IBAction)decreaseFontSize:(id)sender;
 {
-    _setFontSize(self, -1, YES /* relative */);
+    [self _setFontSize:-1];
 }
 
 - (void)showFacesForFamilyBaseFont:(UIFont *)font;
@@ -290,9 +298,10 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
     
     _fontSizeDecreaseStepperButton.image = [UIImage imageNamed:@"OUIStepperMinus"];
     _fontSizeDecreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font smaller", @"OUIInspectors", OMNI_BUNDLE, @"Decrement font size button accessibility label");
-
+    [_fontSizeDecreaseStepperButton addTarget:self action:@selector(stepperTouchesEnded:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside| UIControlEventTouchCancel];
     _fontSizeIncreaseStepperButton.image = [UIImage imageNamed:@"OUIStepperPlus"];
     _fontSizeIncreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font bigger", @"OUIInspectors", OMNI_BUNDLE, @"Increment font size button accessibility label");
+    [_fontSizeIncreaseStepperButton addTarget:self action:@selector(stepperTouchesEnded:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside| UIControlEventTouchCancel];
 
     // Put the font size control beside the two buttons.
     CGRect decreaseStepperFrame = _fontSizeDecreaseStepperButton.frame;

@@ -51,7 +51,7 @@ OBDEPRECATED_METHOD(-fileManager:willProcessPath:);
 
 static NSString *scratchDirectoryPath;
 static NSLock *scratchDirectoryLock;
-static int permissionsMask = 0022;
+static mode_t permissionsMask = 0022;
 
 + (void)didLoad;
 {
@@ -374,6 +374,7 @@ static int permissionsMask = 0022;
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     FSRef ref;
     OSErr err;
+    OSStatus serr;
     char *buffer;
     UInt32 bufferSize;
     Boolean isFolder, wasAliased;
@@ -381,8 +382,8 @@ static int permissionsMask = 0022;
     if ([NSString isEmptyString:path])
         return nil;
     
-    err = FSPathMakeRef((const unsigned char *)[path fileSystemRepresentation], &ref, NULL);
-    if (err != noErr)
+    serr = FSPathMakeRef((const unsigned char *)[path fileSystemRepresentation], &ref, NULL);
+    if (serr != noErr)
         return nil;
 
     err = FSResolveAliasFile(&ref, TRUE, &isFolder, &wasAliased);
@@ -393,8 +394,8 @@ static int permissionsMask = 0022;
         return path;
 
     buffer = malloc(bufferSize = (PATH_MAX * 4));
-    err = FSRefMakePath(&ref, (unsigned char *)buffer, bufferSize);
-    if (err == noErr) {
+    serr = FSRefMakePath(&ref, (unsigned char *)buffer, bufferSize);
+    if (serr == noErr) {
         path = [NSString stringWithUTF8String:buffer];
     } else {
         path = nil;
@@ -411,7 +412,6 @@ static int permissionsMask = 0022;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     FSRef ref, originalRefOfPath;
-    OSErr err;
     char *buffer;
     UInt32 bufferSize;
     Boolean isFolder, wasAliased;
@@ -428,7 +428,7 @@ static int permissionsMask = 0022;
     /* First convert the path into an FSRef. If necessary, strip components from the end of the pathname until we reach a resolvable path. */
     for(;;) {
         bzero(&ref, sizeof(ref));
-        err = FSPathMakeRef((const unsigned char *)[path fileSystemRepresentation], &ref, &isFolder);
+        OSStatus err = FSPathMakeRef((const unsigned char *)[path fileSystemRepresentation], &ref, &isFolder);
         if (err == noErr)
             break;  // We've resolved the first portion of the path to an FSRef.
         else if (err == fnfErr || err == nsvErr || err == dirNFErr) {  // Not found --- try walking up the tree.
@@ -452,7 +452,7 @@ static int permissionsMask = 0022;
         /* Resolve any aliases. */
         /* TODO: Verify that we don't need to repeatedly call FSResolveAliasFile(). We're passing TRUE for resolveAliasChains, which suggests that the call will continue resolving aliases until it reaches a non-alias, but that parameter's meaning is not actually documented in the Apple File Manager API docs. However, I can't seem to get the finder to *create* an alias to an alias in the first place, so this probably isn't much of a problem.
         (Why not simply call FSResolveAliasFile() repeatedly since I don't know if it's necessary? Because it can be a fairly time-consuming call if the volume is e.g. a remote WebDAVFS volume.) */
-        err = FSResolveAliasFile(&ref, TRUE, &isFolder, &wasAliased);
+        OSErr err = FSResolveAliasFile(&ref, TRUE, &isFolder, &wasAliased);
         /* if it's a regular file and not an alias, FSResolveAliasFile() will return noErr and set wasAliased to false */
         if (err != noErr)
             return nil;
@@ -499,7 +499,7 @@ static int permissionsMask = 0022;
         /* Convert our FSRef back into a path. */
         /* PATH_MAX*4 is a generous guess as to the largest path we can expect. CoreFoundation appears to just use PATH_MAX, so I'm pretty confident this is big enough. */
         buffer = malloc(bufferSize = (PATH_MAX * 4));
-        err = FSRefMakePath(&ref, (unsigned char *)buffer, bufferSize);
+        OSStatus err = FSRefMakePath(&ref, (unsigned char *)buffer, bufferSize);
         if (err == noErr) {
             path = [NSString stringWithUTF8String:buffer];
         } else {

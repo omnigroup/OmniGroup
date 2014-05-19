@@ -47,12 +47,8 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
 #pragma mark -
 #pragma mark API
 
-- (void)_updateFieldsAndWindowSize;
++ (NSString *)fullVersionString;
 {
-    NSString *appName = [[OAController sharedController] appName];
-    [applicationNameTextField setStringValue:appName];
-    [applicationNameTextField sizeToFit];
-    
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString *cfBundleVers = [infoDictionary objectForKey:@"CFBundleVersion"];
     // The current Omni convention is to append the SVN revision number to the version number at build time, so that we don't have to explicitly increment things for nightlies and so on. This is ugly, though, so let's not display it like that.
@@ -64,7 +60,16 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
         }
     }
     
-    [fullReleaseNameButton setTitle:[NSString stringWithFormat:@"%@ (v%@)", [infoDictionary objectForKey:@"CFBundleShortVersionString"], cfBundleVers]];
+    return [NSString stringWithFormat:@"%@ (v%@)", [infoDictionary objectForKey:@"CFBundleShortVersionString"], cfBundleVers];
+}
+
+- (void)_updateFieldsAndWindowSize;
+{
+    NSString *appName = [[OAController sharedController] appName];
+    [applicationNameTextField setStringValue:appName];
+    [applicationNameTextField sizeToFit];
+    
+    [fullReleaseNameButton setTitle:[[self class] fullVersionString]];
     [fullReleaseNameButton sizeToFit];
     
     [creditsTextView setDelegate:self];
@@ -72,6 +77,7 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
     [creditsTextView setSelectable:YES];
     [[creditsTextView enclosingScrollView] setDrawsBackground:NO];
     
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString *copyright = [infoDictionary objectForKey:@"NSHumanReadableCopyright"];
     copyright = copyright ? copyright : @"NSHumanReadableCopyright not set!";
     [copyrightTextField setStringValue:copyright];

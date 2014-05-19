@@ -648,7 +648,7 @@
 		4AA5357F08B27DDC00F0872D /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AA5358008B27DDC00F0872D /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AA5358108B27DDC00F0872D /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
-		4AA5364308B27DE600F0872D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4AA5364308B27DE600F0872D /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
 		4AA5364408B27DE600F0872D /* OWF.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OWF.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA5366608B27DE600F0872D /* OWFWebPounder */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OWFWebPounder; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA5368208B27DE600F0872D /* Info-OWFUnitTests.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info-OWFUnitTests.plist"; path = "../Info-OWFUnitTests.plist"; sourceTree = "<group>"; };

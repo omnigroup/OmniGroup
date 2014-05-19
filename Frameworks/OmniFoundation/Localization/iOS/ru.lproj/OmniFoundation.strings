@@ -38,7 +38,7 @@
 "about %d minutes" = "около %d минут";
 
 /* approximate time interval: seconds since start or until finish */
-"about %d seconds" = "около %d секунды";
+"about %d seconds" = "около %d секунд";
 
 /* approximate time interval: one minute */
 "about a minute" = "около минуты";
@@ -53,7 +53,7 @@
 "Bundle is obsolete" = "Пакет устарел";
 
 /* invalid bundle reason */
-"Bundle requires additional software" = "Для пакета требуется дополнительное ПО";
+"Bundle requires additional software" = "Пакет требует дополнительного ПО";
 
 /* compression error reason */
 "bzip2 library returned error code %d when finishing compression. %s." = "Библиотека bzip2 при завершении сжатия вернула ошибку с кодом %1$d. %2$s.";
@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "Библиотека bzip2 при записи данных вернула ошибку с кодом %1$d. %2$s.";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Cancel" = "Отмена";
 
 /* error recovery option */
@@ -76,12 +76,10 @@
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
-
-
-"Could not create directory" = "Не удалось создать папку";
+"Could not create directory" = "Не удалось создать каталог";
 
 /* time span formatter span */
-"d" = "д";
+"d" = "дн.";
 
 /* time span formatter span */
 "day" = "день";
@@ -120,13 +118,13 @@
 "local configuration file" = "файл локальной конфигурации";
 
 /* time span formatter span */
-"m" = "м";
+"m" = "мин.";
 
 /* time span formatter span */
 "minute" = "минута";
 
 /* time span formatter span */
-"minutes" = "минут";
+"minutes" = "мин.";
 
 /* time span formatter span */
 "mo" = "мес.";
@@ -135,7 +133,7 @@
 "month" = "месяц";
 
 /* time span formatter span */
-"months" = "месяцев";
+"months" = "мес.";
 
 /* error reason */
 "No root element was found" = "Корневой элемент не найден";
@@ -143,7 +141,7 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Недопустимый пакет";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Override Lock" = "Перезаписать блокировку";
 
 /* time span formatter span */
@@ -153,7 +151,7 @@
 "second" = "секунда";
 
 /* time span formatter span */
-"seconds" = "секунды";
+"seconds" = "секунд";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Возможно, сертификат сервера «%@» недействителен. Этот сайт может являться ненадежным. Подключиться в любом случае?";
@@ -171,10 +169,10 @@
 "The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Сертификат сервера «%@» подписан ненадежным корневым сервером. Этот сайт может являться ненадежным. Подключиться в любом случае?";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ с компьютера %2$@ %3$@ в %4$@.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ на компьютере «%2$@» %3$@ в %4$@.";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера %2$@ %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Эта блокировка выполнена %1$@ с компьютера “%2$@” %3$@ в %4$@.\n\nМожно перезаписать эту блокировку, но это приведет к потере данных в другой программе, если она еще запущена.";
 
 /* compression error description */
 "Unable to compress data." = "Не удается сжать данные.";
@@ -198,7 +196,7 @@
 "unrecognized compression format." = "неизвестный формат сжатия.";
 
 /* time span formatter span */
-"w" = "н";
+"w" = "нед.";
 
 /* error description */
 "Warning encountered while loading XML." = "При загрузке XML было создано предупреждение.";
@@ -207,10 +205,10 @@
 "week" = "неделя";
 
 /* time span formatter span */
-"weeks" = "недели";
+"weeks" = "недель";
 
 /* time span formatter span */
-"y" = "г";
+"y" = "г.";
 
 /* time span formatter span */
 "year" = "год";
@@ -219,7 +217,8 @@
 "years" = "лет";
 
 /* zlib error reason */
-"zlib returned error code %d." = "Функция zlib вернула код ошибки zlib %d.";
+"zlib returned error code %d." = "возвращенный код ошибки zlib %d.";
 
 /* zlib error reason */
-"zlib returned error code %d. %s." = "Функция zlib вернула код ошибки %1$d. %2$s.";
+"zlib returned error code %d. %s." = "возвращенный код ошибки zlib %1$d. %2$s.";
+

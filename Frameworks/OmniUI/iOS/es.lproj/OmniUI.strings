@@ -39,7 +39,7 @@
 "Certificate Trust" = "Certificado de confianza";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Preferencia “%1$@” modificada de “%2$@” a “%3$@”";
+"Changed the '%@' preference from '%@' to '%@'" = "Preferencia '%1$@' modificada de '%2$@' a '%3$@'";
 
 /* Certificate trust alert button title */
 "Continue" = "Continuar";
@@ -53,7 +53,7 @@
 /* Done
    toolbar item title */
 
-"Done" = "Hecho";
+"Done" = "Salir";
 
 /* toolbar item title */
 "Edit" = "Editar";
@@ -86,7 +86,7 @@
 "Left text align" = "Alinear texto a la izquierda";
 
 /* Web view error opening URL title. */
-"Link could not be opened. Please check Safari restrictions in Settings." = "No pudo abrirse el enlace. Compruebe las restricciones de Safari en Ajustes.";
+"Link could not be opened. Please check Safari restrictions in Settings." = "No puedo abrirse el enlace. Compruebe las restricciones de Safari en Ajustes.";
 
 /* Buy button title while app store is loading */
 "Loading" = "Cargando";
@@ -98,7 +98,10 @@
 "Note" = "Nota";
 
 /* button title
-   OK button label */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
 
 
 

@@ -52,8 +52,6 @@
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
-
-
 "Cancel" = "Abbrechen";
 
 /* item not fully downloaded error title */
@@ -72,11 +70,10 @@
 "Choose Format" = "Format wählen";
 
 /* Cloud setup modal sheet title */
-
 "Cloud Setup" = "Cloud-Einrichtung";
 
 /* App menu item title */
-"Cloud Setup..." = "Verbinden";
+"Cloud Setup..." = "Cloud-Einrichtung …";
 
 /* Account setup toolbar button title to save account settings */
 "Connect" = "Verbinden";
@@ -136,8 +133,6 @@
    export options title
    Export toolbar item accessibility label.
    Menu option in the document picker view */
-
-
 "Export" = "Exportieren";
 
 /* export action description */
@@ -153,7 +148,6 @@
 "Finished" = "Abgeschlossen";
 
 /* Import section title */
-
 "Import" = "Importieren";
 
 /* Import document title */
@@ -182,7 +176,6 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
-
 "Move" = "Bewegen";
 
 /* move to trash button title */
@@ -190,12 +183,11 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
-
 "Move to Trash" = "In den Papierkorb legen";
 
 /* Action sheet button title
    Menu popover title */
-"Move to..." = "Verschieben nach ...";
+"Move to..." = "Verschieben nach …";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
 "Moved out of folder %@." = "Aus Ordner %@ bewegt.";
@@ -226,9 +218,7 @@
 
 /* button title
    Dismiss failed purchase alert
-   Dismiss failed restore alert
-   When displaying a sync error, this is the option to ignore the error. */
-
+   Dismiss failed restore alert */
 "OK" = "OK";
 
 /* for WebDAV OmniPresence edit field */
@@ -302,7 +292,6 @@
 
 /* export options title
    Menu option in the document picker view */
-
 "Send via Mail" = "Per Mail senden";
 
 /* email action description */
@@ -360,4 +349,5 @@
 "Use Cellular Data" = "Mobilfunkdaten verwenden";
 
 /* Account validation status string. */
-"Validating account..." = "Account überprüfen ...";
+"Validating account..." = "Account überprüfen …";
+

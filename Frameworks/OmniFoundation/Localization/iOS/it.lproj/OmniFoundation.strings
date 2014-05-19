@@ -5,7 +5,7 @@
 "%0.1f GHz" = "%0.1f GHz";
 
 /* abbreviated string for bytes format */
-"%0.1f kB" = "%0.1f KB";
+"%0.1f kB" = "%0.1f kB";
 
 /* abbreviated string for kilohertz format */
 "%0.1f KHz" = "%0.1f KHz";
@@ -44,16 +44,16 @@
 "about a minute" = "circa un minuto";
 
 /* approximate time interval: one hour */
-"about an hour" = "circa un'ora";
+"about an hour" = "circa un’ora";
 
 /* error reason */
-"Another application has overridden the lock at \"%@\"." = "Il blocco di \"%@\" è stato sostituito da un'altra applicazione.";
+"Another application has overridden the lock at \"%@\"." = "Il blocco di “%@” è stato sostituito da un'altra applicazione.";
 
 /* invalid bundle reason */
-"Bundle is obsolete" = "Il bundle è obsoleto";
+"Bundle is obsolete" = "Il pacchetto è obsoleto";
 
 /* invalid bundle reason */
-"Bundle requires additional software" = "Il bundle richiede ulteriori applicazioni";
+"Bundle requires additional software" = "Il pacchetto richiede software aggiuntivo";
 
 /* compression error reason */
 "bzip2 library returned error code %d when finishing compression. %s." = "La libreria bzip2 ha restituito il codice errore %1$d al termine della compressione. %2$s.";
@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "La libreria bzip2 ha restituito il codice errore %1$d durante la scrittura dei dati. %2$s.";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Cancel" = "Annulla";
 
 /* error recovery option */
@@ -76,8 +76,6 @@
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
-
-
 "Could not create directory" = "Impossibile creare la directory";
 
 /* time span formatter span */
@@ -90,13 +88,13 @@
 "days" = "giorni";
 
 /* invalid bundle reason */
-"Duplicate bundle name" = "Duplica nome bundle";
+"Duplicate bundle name" = "Duplica nome pacchetto";
 
 /* exception reason */
-"Element '%@' not allowed at path: %@" = "Elemento \"%1$@\" non consentito sul percorso: %2$@";
+"Element '%@' not allowed at path: %@" = "Elemento “%1$@” non consentito sul percorso: %2$@";
 
 /* error reason */
-"Failed to create directory for lock file at \"%@\"." = "Creazione della directory per il documento di blocco in \"%@\" non riuscita.";
+"Failed to create directory for lock file at \"%@\"." = "Creazione della directory per il documento di blocco in “%@” non riuscita.";
 
 /* error reason */
 "Failed to serialize lock information.  %@" = "Serializzazione delle informazioni di blocco non riuscita.  %@";
@@ -114,10 +112,10 @@
 "hours" = "ore";
 
 /* formatter input error */
-"Invalid time span format" = "Formato intervallo di tempo non valido";
+"Invalid time span format" = "Formato di intervallo di tempo non valido";
 
 /* local bundle path readable string */
-"local configuration file" = "documento di configurazione locale";
+"local configuration file" = "documento configurazione locale";
 
 /* time span formatter span */
 "m" = "m";
@@ -129,7 +127,7 @@
 "minutes" = "minuti";
 
 /* time span formatter span */
-"mo" = "me";
+"mo" = "mm";
 
 /* time span formatter span */
 "month" = "mese";
@@ -141,9 +139,9 @@
 "No root element was found" = "Non è stato trovato alcun elemento root";
 
 /* invalid bundle reason */
-"Not a valid bundle" = "Bundle non valido";
+"Not a valid bundle" = "Non è un pacchetto valido";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Override Lock" = "Sostituisci blocco";
 
 /* time span formatter span */
@@ -156,25 +154,25 @@
 "seconds" = "secondi";
 
 /* server certificate rejected */
-"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per \"%@\" non sembra essere valido. Il sito potrebbe non essere attendibile. Connettere comunque?";
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per “%@” non sembra essere valido. Il sito potrebbe non essere attendibile. Connettere comunque?";
 
 /* server certificate out of date */
-"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "Il certificato del server per \"%@\" ha una data non valida. Potrebbe essere scaduto, o non ancora attivo. Connettere comunque?";
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "Il certificato del server per “%@” ha una data non valida. Potrebbe essere scaduto, o non ancora attivo. Connettere comunque?";
 
 /* server certificate has unknown root */
-"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per \"%@\" non è registrato da alcun server root. Il sito potrebbe non essere attendibile. Connettere comunque?";
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per “%@” non è registrato da alcun server root. Il sito potrebbe non essere attendibile. Connettere comunque?";
 
 /* server certificate not yet valid */
-"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per \"%@\" non è ancora valido. Il sito potrebbe non essere attendibile. Connettere comunque?";
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per “%@” non è ancora valido. Il sito potrebbe non essere attendibile. Connettere comunque?";
 
 /* server certificate untrusted */
-"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per \"%@\" è registrato da un server root non attendibile. Il sito potrebbe non essere attendibile. Connettere comunque?";
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per “%@” è registrato da un server root non attendibile. Il sito potrebbe non essere attendibile. Connettere comunque?";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Questo blocco è stato utilizzato da %1$@ utilizzando il computer \"%2$@\" su %3$@ alle %4$@.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Questo blocco è stato utilizzato da %1$@ utilizzando il computer “%2$@” su %3$@ alle %4$@.";
 
 /* error reason */
-"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Questo blocco è stato utilizzato da %1$@ mediante il computer \"%2$@\" su %3$@ in %4$@.\n\nPuoi sostituire il blocco, ma ciò potrebbe causare la perdita dei dati dell'altra applicazione, se ancora in esecuzione.";
+"This lock was taken by %@ using the computer \"%@\" on %@ at %@.\n\nYou may override this lock, but doing so may cause the other application to lose data if it is still running." = "Questo blocco è stato utilizzato da %1$@ mediante il computer “%2$@” su %3$@ in %4$@.\n\nPuoi sostituire il blocco, ma ciò potrebbe causare la perdita dei dati dell'altra applicazione, se ancora in esecuzione.";
 
 /* compression error description */
 "Unable to compress data." = "Impossibile comprimere i dati.";
@@ -198,10 +196,10 @@
 "unrecognized compression format." = "formato di compressione non riconosciuto.";
 
 /* time span formatter span */
-"w" = "se";
+"w" = "s";
 
 /* error description */
-"Warning encountered while loading XML." = "Rilevato un avviso durante il caricamento XML.";
+"Warning encountered while loading XML." = "Rilevato un avviso durante il caricamento di XML.";
 
 /* time span formatter span */
 "week" = "settimana";
@@ -223,3 +221,4 @@
 
 /* zlib error reason */
 "zlib returned error code %d. %s." = "zlib ha restituito il codice errore %1$d. %2$s.";
+

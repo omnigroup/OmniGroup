@@ -117,6 +117,7 @@ error_out:
         Boolean wasChanged;
         FSRef target;
         OSErr result;
+        OSStatus sresult;
         
         result = FSResolveAliasWithMountFlags(NULL, aliasHandle, &target, &wasChanged, mountFlags);
         if (result == noErr) {
@@ -137,14 +138,14 @@ error_out:
         if (allowUnresolvedPath) {
             // Alias points to something that is gone
             CFStringRef aliasPath = NULL;
-            result = FSCopyAliasInfo(aliasHandle, 
-                                     NULL, // targetName
-                                     NULL, // volumeName
-                                     &aliasPath,
-                                     NULL, // whichInfo
-                                     NULL);  // info;
-            if (result != noErr) {
-                NSLog(@"FSCopyAliasInfo -> %d", result);
+            sresult = FSCopyAliasInfo(aliasHandle,
+                                      NULL, // targetName
+                                      NULL, // volumeName
+                                      &aliasPath,
+                                      NULL, // whichInfo
+                                      NULL);  // info;
+            if (sresult != noErr) {
+                NSLog(@"FSCopyAliasInfo -> %d", sresult);
             }
             path = CFBridgingRelease(aliasPath);
             break;

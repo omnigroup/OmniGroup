@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,6 +35,8 @@ static NSInteger OSURuntimeDebug = NSIntegerMax;
         NSLog(@"OSU: " format, ## __VA_ARGS__); \
 } while (0)
 
+NSString * const OSUNextCheckKey = @"OSUNextScheduledCheck";
+
 static void OSURuntimeDebugInitialize(void) __attribute__((constructor));
 static void OSURuntimeDebugInitialize(void)
 {
@@ -55,7 +57,7 @@ void OSURunTimeApplicationActivated(NSString *appIdentifier, NSString *bundleVer
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
     // Can't really OBASSERT on this since it'll fire over and over when in the debugger. So, we just log and only when not building for DEBUG to avoid accumulating log spam.
-#if !defined(DEBUG) || defined(DEBUG_kc)
+#if !defined(DEBUG) || defined(DEBUG_kc) || defined(DEBUG_bungi)
     if ([defaults objectForKey:OSULastRunStartIntervalKey] != nil) {
         NSLog(@"%@ default is non-nil; unless you forcibly killed the app and restarted it it should be nil at launch time.", OSULastRunStartIntervalKey);
         
@@ -154,9 +156,14 @@ void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleV
     OBPRECONDITION(appIdentifier);
     OBPRECONDITION(bundleVersion);
     
+    OSU_RUNTIME_DEBUG(1, @"Deactivating %@%@", appIdentifier, crashed ? @" for crash" : @" normally");
+
     OBPRECONDITION(crashed || OSURunTimeHasRunningSession);
-    if (!crashed && !OSURunTimeHasRunningSession)
+    if (!crashed && !OSURunTimeHasRunningSession) {
+        OSU_RUNTIME_DEBUG(1, @"   ... no deactivation needed");
         return;
+    }
+    
     OSURunTimeHasRunningSession = NO;
 
     NSNumber *startTimeNumber = [(NSNumber *)CFPreferencesCopyAppValue((CFStringRef)OSULastRunStartIntervalKey, (CFStringRef)appIdentifier) autorelease];
@@ -179,13 +186,18 @@ void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleV
     NSDictionary *current = _OSURunTimeUpdateStatisticsScope([statistics objectForKey:OSURunTimeStatisticsCurrentVersionsScopeKey], bundleVersion, startTimeNumber, now, crashed, firstCallForThisRun);
     
     statistics = [[NSDictionary alloc] initWithObjectsAndKeys:all, OSURunTimeStatisticsAllVersionsScopeKey, current, OSURunTimeStatisticsCurrentVersionsScopeKey, nil];
-    OSU_RUNTIME_DEBUG(1, @"Deactivating %@ with %@", appIdentifier, statistics);
+    OSU_RUNTIME_DEBUG(1, @"   ... setting statistics to %@", statistics);
 
     CFPreferencesSetAppValue((CFStringRef)OSURunTimeStatisticsKey, (CFDictionaryRef)statistics, (CFStringRef)appIdentifier);
     [statistics release];
     
     CFPreferencesSetAppValue((CFStringRef)OSULastRunStartIntervalKey, NULL, (CFStringRef)appIdentifier);
 
+    // This might be a known crash. Signal that the next time the app runs, it should do a software update check.
+    NSDate *nextCheckDate = [NSDate date];
+    CFPreferencesSetAppValue((CFStringRef)OSUNextCheckKey, nextCheckDate, (CFStringRef)appIdentifier);
+    OSU_RUNTIME_DEBUG(1, @"   ... setting next software update check to %@", nextCheckDate);
+    
     CFPreferencesAppSynchronize((CFStringRef)appIdentifier);
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     [[NSProcessInfo processInfo] enableSuddenTermination];

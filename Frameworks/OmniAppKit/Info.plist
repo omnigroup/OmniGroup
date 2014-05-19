@@ -31,7 +31,7 @@
 			<key>defaultsDictionary</key>
 			<dict>
 				<key>FirstDayOfTheWeek</key>
-				<integer>0</integer>
+				<integer>-1</integer>
 				<key>OADisplayMouseTips</key>
 				<true/>
 				<key>OADisplayNoteMouseTips</key>

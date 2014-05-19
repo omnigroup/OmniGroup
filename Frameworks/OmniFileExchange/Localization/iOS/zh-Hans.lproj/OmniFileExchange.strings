@@ -53,7 +53,7 @@
 "Easily sync Omni documents. Signup is free!" = "轻松同步 Omni 文稿。 注册免费！";
 
 /* Server account export title format */
-"Export to \"%@\"" = "\"输出至“%@”";
+"Export to \"%@\"" = "输出至“%@”";
 
 /* iTunes export title */
 "Export to iTunes" = "输出至 iTunes";
@@ -72,7 +72,6 @@
 
 /* Server account type
    Set up server account title */
-
 "Omni Sync Server" = "Omni Sync Server";
 
 /* account validation error suggestion */
@@ -146,3 +145,4 @@
 
 /* Set up server account title */
 "WebDAV Server" = "WebDAV 服务器";
+

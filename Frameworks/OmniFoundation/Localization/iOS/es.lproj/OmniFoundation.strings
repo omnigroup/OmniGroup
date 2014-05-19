@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "La biblioteca bzip2 devolvió el código de error %1$d al escribir los datos. %2$s.";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Cancel" = "Cancelar";
 
 /* error recovery option */
@@ -76,8 +76,6 @@
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
-
-
 "Could not create directory" = "No se ha podido crear el directorio";
 
 /* time span formatter span */
@@ -93,7 +91,7 @@
 "Duplicate bundle name" = "Nombre de paquete duplicado";
 
 /* exception reason */
-"Element '%@' not allowed at path: %@" = "Elemento '%1$@' no admitido en la ruta: %2$@";
+"Element '%@' not allowed at path: %@" = "El elemento '%1$@' no se admite en la ruta: %2$@";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "No se ha podido crear el directorio del archivo de bloqueo en “%@”.";
@@ -143,7 +141,7 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Este paquete no es válido";
 
-/* OFLockFile recovery option */
+/* OFMLockfile recovery option */
 "Override Lock" = "Anular bloqueo";
 
 /* time span formatter span */
@@ -223,3 +221,4 @@
 
 /* zlib error reason */
 "zlib returned error code %d. %s." = "zlib devolvió el código de error %1$d. %2$s.";
+

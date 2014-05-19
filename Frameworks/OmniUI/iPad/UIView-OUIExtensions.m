@@ -214,6 +214,18 @@ static void OUIViewPerformPosing(void)
 
 #endif
 
++ (UIView *)topLevelViewFromNibNamed:(NSString *)nibName;
+{
+    UINib *nib = [UINib nibWithNibName:nibName bundle:nil];
+    NSArray *topLevelObjects = [nib instantiateWithOwner:nil options:nil];
+    OBASSERT([topLevelObjects count] == 1);
+    
+    UIView *topLevelView = (UIView *)[topLevelObjects firstObject];
+    OBASSERT([topLevelView isKindOfClass:[UIView class]]);
+    
+    return topLevelView;
+}
+
 - (UIImage *)snapshotImageWithRect:(CGRect)rect;
 {
     OBPRECONDITION(rect.size.width >= 1);

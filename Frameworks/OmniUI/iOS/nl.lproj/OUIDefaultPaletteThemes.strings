@@ -5,7 +5,7 @@
 "anseladams" = "Adams";
 
 /* Localized name for color palette in color inspector. */
-"basic" = "Basis";
+"basic" = "Basisfiguren";
 
 /* Localized name for color palette in color inspector. */
 "claudemonet" = "Monet";
@@ -41,7 +41,7 @@
 "petermax" = "Max";
 
 /* Localized name for color palette in color inspector. */
-"pietmondrian" = "Mondriaan";
+"pietmondrian" = "Mondrian";
 
 /* Localized name for color palette in color inspector. */
 "raffaellosanzio" = "Raphael";
@@ -50,7 +50,8 @@
 "rage" = "RAGE!";
 
 /* Localized name for color palette in color inspector. */
-"solarized" = "Gesolariseerd";
+"solarized" = "Solarized";
 
 /* Localized name for color palette in color inspector. */
 "sunshine" = "Kleine miss zonnestraal";
+

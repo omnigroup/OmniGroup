@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -417,6 +417,15 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
         if ([self _dataSourceHandlesPaste])
             [self _pasteFromPasteboard:[NSPasteboard generalPasteboard]];
     }
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)item;
+{
+    if (item.action == @selector(duplicate:) && [self.delegate respondsToSelector:@selector(duplicate:)] && [self.delegate respondsToSelector:@selector(validateMenuItem:)]) {
+        return [(id)self.delegate validateMenuItem:item];
+    }
+
+    return [super validateMenuItem:item];
 }
 
 - (IBAction)duplicate:(id)sender; // duplicate == copy + paste (but it doesn't use the general pasteboard)

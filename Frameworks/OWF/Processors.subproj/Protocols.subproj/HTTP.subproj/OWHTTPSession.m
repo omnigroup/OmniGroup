@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -92,6 +92,7 @@ NSString *OWBrowserIdentity = @"OWBrowserIdentity";
 static BOOL OWHTTPDebug = NO;
 static BOOL OWHTTPCredentialsDebug = NO;
 static OFPreference *OWHTTPTrustServerContentType;
+static OFPreference *OWHTTPSessionLanguageLimitPreference;
 static NSArray *OWHTTPWorkarounds;
 static NSString *preferredDateFormat;
 static NSString *acceptLanguageValue = nil;
@@ -279,11 +280,10 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
 
 + (void)readDefaults;
 {
-    NSUserDefaults *defaults;
-
-    defaults = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     OWHTTPDebug = [defaults boolForKey:@"OWHTTPDebug"];
     OWHTTPTrustServerContentType = [[OFPreference preferenceForKey:OWHTTPTrustServerContentTypePreferenceKey] retain];
+    OWHTTPSessionLanguageLimitPreference = [[OFPreference preferenceForKey:@"OWHTTPSessionLanguageLimit"] retain];
     [OWHeaderDictionary setDebug:OWHTTPDebug];
     [self _readLanguageDefaults];
 }
@@ -1002,12 +1002,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 
 + (void)_readLanguageDefaults;
 {
-    NSUserDefaults *defaults;
-    NSArray *systemLanguages;
-    NSUInteger systemLanguageIndex, systemLanguageCount;
-    NSString *acceptLanguageHeaderOverride;
-
-    defaults = [NSUserDefaults standardUserDefaults];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
     if (languageArray != nil)
         [languageArray release];
@@ -1016,33 +1011,25 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     if (acceptLanguageString != nil)
         [acceptLanguageString release];
     
-    systemLanguages = [defaults stringArrayForKey:@"OWHTTPSessionLanguages"];
+    NSArray *systemLanguages = [defaults stringArrayForKey:@"OWHTTPSessionLanguages"];
     if (systemLanguages == nil) {
         // If the user didn't provide a specific web language ordering, look up their their language preferences.  Mac OS X stores the user's language preferences in AppleLanguages, using the ISO abbreviations --- very convenient, but see below.
         systemLanguages = [defaults stringArrayForKey:@"AppleLanguages"];
-        if (systemLanguages == nil) {
-            // Fall back on NSLanguages (perhaps we should remove this code at some point)
-            systemLanguages = [defaults stringArrayForKey:@"NSLanguages"];
-        }
     }
 
-    systemLanguageCount = systemLanguages != nil ? [systemLanguages count] : 0;
+    NSUInteger languageLimit = [OWHTTPSessionLanguageLimitPreference intValue];
+    NSUInteger systemLanguageCount = systemLanguages != nil ? MIN([systemLanguages count], languageLimit) : 0;
     languageArray = [[NSMutableArray alloc] initWithCapacity:systemLanguageCount];
 
     // Apple bug fix for 4K78: the system preference is normally in ISO format. However, if it isn't set, then the *default* value is in the old (pre-OSX) format, which we then have to convert to the IANA abbreviations. Bah! (This conversion is also necessary if we got language prefs from NSLanguages.)
-    for (systemLanguageIndex = 0; systemLanguageIndex < systemLanguageCount; systemLanguageIndex++) {
-        NSString *systemLanguage;
-        NSString *languageAbbreviation;
-        NSMutableString *mutableLanguageAbbreviation;
-        NSString *immutableLanguageAbbreviation;
-
-        systemLanguage = [systemLanguages objectAtIndex:systemLanguageIndex];
-        languageAbbreviation = OFISOLanguageCodeForEnglishName(systemLanguage);
+    for (NSUInteger systemLanguageIndex = 0; systemLanguageIndex < systemLanguageCount; systemLanguageIndex++) {
+        NSString *systemLanguage = [systemLanguages objectAtIndex:systemLanguageIndex];
+        NSString *languageAbbreviation = OFISOLanguageCodeForEnglishName(systemLanguage);
 
         // Note:  the system preference separates subtypes from languages with underscores (e.g. en_US for us-english). RFC2068 [3.10] specifies that subtypes are separated with hyphens (e.g. en-us).
-        mutableLanguageAbbreviation = [[languageAbbreviation lowercaseString] mutableCopy];
+        NSMutableString *mutableLanguageAbbreviation = [[languageAbbreviation lowercaseString] mutableCopy];
         [mutableLanguageAbbreviation replaceAllOccurrencesOfString:@"_" withString:@"-"];
-        immutableLanguageAbbreviation = [mutableLanguageAbbreviation copy];
+        NSString *immutableLanguageAbbreviation = [mutableLanguageAbbreviation copy];
         [mutableLanguageAbbreviation release];
         mutableLanguageAbbreviation = nil;
 
@@ -1051,7 +1038,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
     }
 
     OBASSERT(systemLanguageCount == [languageArray count]);
-    acceptLanguageHeaderOverride = [defaults stringForKey:@"OWHTTPSessionAcceptLanguageOverride"];
+    NSString *acceptLanguageHeaderOverride = [defaults stringForKey:@"OWHTTPSessionAcceptLanguageOverride"];
     if (acceptLanguageHeaderOverride != nil) {
         if ([NSString isEmptyString:acceptLanguageHeaderOverride]) {
             acceptLanguageValue = nil;
@@ -1061,9 +1048,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
             acceptLanguageString = [[self stringForHeader:@"Accept-Language" value:acceptLanguageValue] retain];
         }
     } else if (systemLanguageCount > 0) {
-        NSMutableArray *acceptLanguages;
         NSString *qualityFormatString;
-        double acceptLanguageCount;
 
         if (systemLanguageCount < 10) {
             qualityFormatString = @"%@;q=%0.1f";
@@ -1073,21 +1058,19 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
             OBASSERT(systemLanguageCount < 1000); // If not, too bad!  According to RFC2616, a qvalue can only have three digits after the decimal point
             qualityFormatString = @"%@;q=%0.3f";
         }
-        acceptLanguageCount = systemLanguageCount + 1.0; // system languages + "*"
-        acceptLanguages = [[NSMutableArray alloc] initWithCapacity:systemLanguageCount];
-        for (systemLanguageIndex = 0; systemLanguageIndex < systemLanguageCount; systemLanguageIndex++) {
-            NSString *language;
 
-            language = [languageArray objectAtIndex:systemLanguageIndex];
+        double acceptLanguageCount = systemLanguageCount + 1.0; // system languages + "*"
+        NSMutableArray *acceptLanguages = [[NSMutableArray alloc] initWithCapacity:systemLanguageCount];
+        for (NSUInteger systemLanguageIndex = 0; systemLanguageIndex < systemLanguageCount; systemLanguageIndex++) {
+            NSString *language = [languageArray objectAtIndex:systemLanguageIndex];
             if (systemLanguageIndex == 0) {
                 [acceptLanguages addObject:language]; // q=1.0 is redundant
             } else {
-                double quality;
-
-                quality = (acceptLanguageCount - systemLanguageIndex) / acceptLanguageCount;
+                double quality = (acceptLanguageCount - systemLanguageIndex) / acceptLanguageCount;
                 [acceptLanguages addObject:[NSString stringWithFormat:qualityFormatString, language, quality]];
             }
         }
+
         if ([defaults boolForKey:@"OWHTTPSessionAcceptLanguageIncludeFallback"])
             [acceptLanguages addObject:[NSString stringWithFormat:qualityFormatString, @"*", 1.0 / acceptLanguageCount]]; // End with "*;q=0.01"
         acceptLanguageValue = [[acceptLanguages componentsJoinedByString:@", "] retain];

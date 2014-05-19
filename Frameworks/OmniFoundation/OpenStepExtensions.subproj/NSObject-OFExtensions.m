@@ -232,7 +232,7 @@ typedef double (*dblImp_t)(id self, SEL _cmd, id arg);
                                                      0/* mask -- not applicable */,
                                                      dispatch_get_main_queue());
     
-    dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, delay * 1e9);
+    dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * 1e9) /* dispatch_time() takes nanoseconds */);
     dispatch_source_set_timer(timer, startTime, 0/*interval*/, 0/*leeway*/);
     
     dispatch_source_set_event_handler(timer, ^{

@@ -1,4 +1,4 @@
-// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -653,6 +653,50 @@ static inline NSAffineTransformStruct computeTransformFromExamples(NSPoint origi
     return animations;
 }
 
+#pragma mark - Constraints
+
+#define EQUAL_CONSTRAINT(attr) [NSLayoutConstraint constraintWithItem:self attribute:attr relatedBy:NSLayoutRelationEqual toItem:view attribute:attr multiplier:1 constant:0]
+
+- (void)addConstraintsToHaveSameFrameAsView:(NSView *)view;
+{
+    [self addConstraint:EQUAL_CONSTRAINT(NSLayoutAttributeLeft)];
+    [self addConstraint:EQUAL_CONSTRAINT(NSLayoutAttributeRight)];
+    [self addConstraint:EQUAL_CONSTRAINT(NSLayoutAttributeTop)];
+    [self addConstraint:EQUAL_CONSTRAINT(NSLayoutAttributeBottom)];
+}
+
+- (void)addConstraintsToHaveSameHorizontalExtentAsView:(NSView *)view;
+{
+    [self addConstraint:EQUAL_CONSTRAINT(NSLayoutAttributeLeft)];
+    [self addConstraint:EQUAL_CONSTRAINT(NSLayoutAttributeRight)];
+}
+
+- (void)addConstraintsToHaveSameVerticalExtentAsView:(NSView *)view;
+{
+    [self addConstraint:EQUAL_CONSTRAINT(NSLayoutAttributeTop)];
+    [self addConstraint:EQUAL_CONSTRAINT(NSLayoutAttributeBottom)];
+}
+
+- (void)appendConstraintsToArray:(NSMutableArray *)constraints toHaveSameFrameAsView:(NSView *)view;
+{
+    [constraints addObject:EQUAL_CONSTRAINT(NSLayoutAttributeLeft)];
+    [constraints addObject:EQUAL_CONSTRAINT(NSLayoutAttributeRight)];
+    [constraints addObject:EQUAL_CONSTRAINT(NSLayoutAttributeTop)];
+    [constraints addObject:EQUAL_CONSTRAINT(NSLayoutAttributeBottom)];
+}
+
+- (void)appendConstraintsToArray:(NSMutableArray *)constraints toHaveSameHorizontalExtentAsView:(NSView *)view;
+{
+    [constraints addObject:EQUAL_CONSTRAINT(NSLayoutAttributeLeft)];
+    [constraints addObject:EQUAL_CONSTRAINT(NSLayoutAttributeRight)];
+}
+
+- (void)appendConstraintsToArray:(NSMutableArray *)constraints toHaveSameVerticalExtentAsView:(NSView *)view;
+{
+    [constraints addObject:EQUAL_CONSTRAINT(NSLayoutAttributeTop)];
+    [constraints addObject:EQUAL_CONSTRAINT(NSLayoutAttributeBottom)];
+}
+
 // Debugging
 
 unsigned int NSViewMaxDebugDepth = 10;
@@ -753,3 +797,33 @@ unsigned int NSViewMaxDebugDepth = 10;
 }
 
 @end
+
+#if OF_TRANSIENT_OBJECTS_TRACKER_ENABLED
+@implementation NSView (OATrackTransientViews)
+
++ (void)trackTransientViewAllocationsIn:(void (^)(void))block;
+{
+    OFTransientObjectsTracker *tracker = [OFTransientObjectsTracker transientObjectsTrackerForClass:[NSView class] addInitializers:^(OFTransientObjectsTracker *tracker) {
+        SEL initWithFrame = @selector(initWithFrame:);
+        [tracker addInitializerWithSelector:initWithFrame action:^id(NSView *view, CGRect frame){
+            id (*original)(NSView *view, SEL sel, CGRect frame) = (typeof(original))[tracker originalImplementationForSelector:initWithFrame];
+            id result = original(view, initWithFrame, frame);
+            [tracker registerInstance:result];
+            return result;
+        }];
+        
+        SEL initWithCoder = @selector(initWithCoder:);
+        [tracker addInitializerWithSelector:initWithCoder action:^id(NSView *view, NSCoder *coder){
+            id (*original)(NSView *view, SEL sel, NSCoder *coder) = (typeof(original))[tracker originalImplementationForSelector:initWithCoder];
+            id result = original(view, initWithCoder, coder);
+            [tracker registerInstance:result];
+            return result;
+        }];
+    }];
+    
+    [tracker trackAllocationsIn:block];
+}
+
+@end
+#endif
+

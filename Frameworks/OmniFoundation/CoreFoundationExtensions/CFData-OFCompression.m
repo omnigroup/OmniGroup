@@ -1,4 +1,4 @@
-// Copyright 1997-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -331,7 +331,7 @@ static Boolean readNullTerminatedString(FILE *fp,
             return FALSE;
         }
         
-        chBuf[0] = ch;
+        chBuf[0] = (UInt8)ch;
         CFDataAppendBytes(buffer, chBuf, 1);
     } while (ch != 0);
     

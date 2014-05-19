@@ -731,8 +731,11 @@ RCS_ID("$Id$")
 
     [contentView setNeedsDisplay:YES];
     [_weak_inspectorController updateTitle];
-    if (_weak_inspectorController.interfaceType == OIInspectorInterfaceTypeFloating)
+    if (_weak_inspectorController.interfaceType == OIInspectorInterfaceTypeFloating) {
+        [_weak_inspectorController containerView];
+        [_weak_inspectorController loadInterface];
         [_weak_inspectorController prepareWindowForDisplay];
+    }
     [_weak_inspectorController updateExpandedness:NO];
     [self _updateTrackingRects];
     

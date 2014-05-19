@@ -53,7 +53,7 @@
 "Easily sync Omni documents. Signup is free!" = "Sincr. i documenti Omni. La registrazione è gratuita.";
 
 /* Server account export title format */
-"Export to \"%@\"" = "Esporta in \"%@\"";
+"Export to \"%@\"" = "Esporta in “%@”";
 
 /* iTunes export title */
 "Export to iTunes" = "Esporta in iTunes";
@@ -72,7 +72,6 @@
 
 /* Server account type
    Set up server account title */
-
 "Omni Sync Server" = "Omni Sync Server";
 
 /* account validation error suggestion */
@@ -103,13 +102,13 @@
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "Necessario il formato %1$@ di OmniPresence per l'account cloud, mentre il dispositivo in uso utilizza il formato %2$@. Effettua l'upgrade di questa copia di OmniPresence.";
 
 /* Error description */
-"The document \"%@\" is not fully downloaded." = "Il documento \"%@\" non è stato scaricato completamente.";
+"The document \"%@\" is not fully downloaded." = "Il documento “%@” non è stato scaricato completamente.";
 
 /* error description */
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "La cartella proposta per i documenti locali contiene già documenti. Specifica una cartella vuota o una non ancora esistente.";
 
 /* error description */
-"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "La cartella proposta per i documenti locali sembra trovarsi all'interno di una cartella di Dropbox. Utilizzare due sistemi di sincronizzazione file per la stessa cartella può comportare la perdita di dati.";
+"The proposed local documents folder appears to be inside a Dropbox folder. Using two file synchronization systems on the same folder can result in data loss." = "La cartella proposta per i documenti locali sembra trovarsi all'interno di una cartella di Dropbox. Utilizzare due sistemi di sincronizzazione documenti per la stessa cartella può comportare la perdita di dati.";
 
 /* error description */
 "The proposed local documents folder is not on a local volume. Please pick a location that is local to your computer." = "La cartella proposta per i documenti locali non si trova su un volume locale. Seleziona una posizione locale sul tuo computer.";
@@ -146,3 +145,4 @@
 
 /* Set up server account title */
 "WebDAV Server" = "Server WebDAV";
+

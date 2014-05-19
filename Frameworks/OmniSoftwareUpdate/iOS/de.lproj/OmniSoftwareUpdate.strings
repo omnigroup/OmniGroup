@@ -20,7 +20,7 @@
 "All versions" = "Alle Versionen";
 
 /* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Darf %@ regelmäßig Informationen über Ihr Hardwaremodell und die iOS-Version melden?\nAuf diese Weise können wir erfahren, welches die wichtigsten zu unterstützenden Konfigurationen sind. Sie können Ihre Antwort später in den Einstellungen ändern.";
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Darf %@ regelmäßig Informationen über Ihr Hardwaremodell und Ihre iOS-Version übermitteln?\nAuf diese Weise erfahren wir, welche Konfigurationen wir am ehesten unterstützen müssen. Sie können Ihre Antwort später in den Einstellungen durch MURMEL MURMEL MURMEL ändern.";
 
 /* Software update report entry name */
 "Application identifier" = "Programmidentifizierung";
@@ -44,7 +44,7 @@
 "Device Information" = "Geräteinformationen";
 
 /* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "Nicht melden";
+"Don't Report" = "Nicht berichten";
 
 /* error description */
 "Error fetching software update information." = "Fehler beim Abfragen der Softwareaktualisierungsinformationen.";
@@ -56,10 +56,10 @@
 "Exception raised: %@" = "Ausnahme aufgetreten: %@";
 
 /* software update settings cell detail text */
-"Help The Omni Group decide which devices and iOS versions to support" = "Unterstützen Sie The Omni Group bei der Entscheidung, welche Geräte und iOS-Versionen unterstützt werden sollen.";
+"Help The Omni Group decide which devices and iOS versions to support" = "Entscheiden Sie mit, welche Geräte u. iOS-Versionen The Omni Group unterstützen soll.";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Mit diesen Informationen können wir besser beurteilen, welche Geräte und iOS-Versionen von unserer Software unterstützt werden sollten.\nDiese Informationen werden vollkommen anonym aufbewahrt.";
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Wenn Sie uns diese Informationen mitteilen, halten Sie uns auf dem Laufenden darüber, welche Geräte und iOS-Versionen unsere Software unterstützen sollte.\nDiese Informationen werden vollkommen anonym aufbewahrt.";
 
 /* Software update report entry name */
 "iOS version" = "iOS-Version";
@@ -68,10 +68,10 @@
 "Language" = "Sprache";
 
 /* Software update report entry name */
-"Memory" = "Arbeitsspeicher";
+"Memory" = "Speicher";
 
 /* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Omni-Softwareaktualisierung";
+"Omni Software Update" = "Omni-Softwareupdate";
 
 /* Software update report entry string for a single crash */
 "One crash" = "Ein Absturz";

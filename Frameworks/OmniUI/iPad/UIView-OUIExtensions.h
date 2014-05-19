@@ -23,6 +23,13 @@ typedef OUIViewVisitorResult(^OUIViewVisitorBlock)(UIView *view);
 
 @interface UIView (OUIExtensions)
 
+/*!
+ @discussion Instantiates the nib with the given name from the main bundle. Then asserts that there is only 1 top-level item and that it is a UIView (or subclass) and returns is.
+ @param nibName Name of the nib, in the main bundle.
+ @return The single top-level UIView inside the nib.
+ */
++ (UIView *)topLevelViewFromNibNamed:(NSString *)nibName;
+
 - (UIImage *)snapshotImageWithRect:(CGRect)rect;
 - (UIImage *)snapshotImageWithSize:(CGSize)imageSize;
 - (UIImage *)snapshotImageWithScale:(CGFloat)scale;

@@ -43,6 +43,7 @@ typedef void (^OATrackingLoopUp)(OATrackingLoop *loop);
 @property(nonatomic,readonly) NSSize draggedOffsetInView;
 - (NSSize)draggedOffsetInView:(NSView *)view;
 
+@property(nonatomic,readonly) NSEvent *currentEvent;
 @property(nonatomic,readonly) NSUInteger modifierFlags;
 
 @property(nonatomic,copy) OATrackingLoopHysteresisExit hysteresisExit;

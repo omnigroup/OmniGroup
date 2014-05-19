@@ -17,3 +17,10 @@
 @property(nonatomic) NSUInteger selectedIndex;
 
 @end
+
+@interface UIViewController (OUISegmentedViewControllerExtras)
+
+@property (nonatomic, readonly) OUISegmentedViewController *segmentedViewController;
+@property (nonatomic, readonly) BOOL wantsHiddenNavigationBar;
+
+@end

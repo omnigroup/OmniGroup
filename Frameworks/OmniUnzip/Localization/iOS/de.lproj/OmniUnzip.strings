@@ -11,7 +11,7 @@
 "The zip library function %s returned %d" = "Die Zip-Bibliothek-Funktion %1$s hat %2$d zurückgegeben.";
 
 /* error reason */
-"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "Die Zip-Bibliothek-Funktion %1$s hat beim Versuch, die Daten für den Eintrag „%3$@“ in „%4$@“ zu lesen, %2$d zurückgegeben.";
+"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "Die Zip-Bibliothek-Funktion %1$s hat beim Versuch, die Daten für den Eintrag „%3$@“ in „%4$@“ zu lesen %2$d zurückgegeben.";
 
 /* error reason */
 "Unable to close zip data." = "Zip-Daten können nicht geschlossen werden.";
@@ -27,7 +27,6 @@
 
 /* error description
    error reason */
-
 "Unable to read zip data." = "Zip-Daten konnten nicht gelesen werden.";
 
 /* error description */
@@ -35,3 +34,4 @@
 
 /* error description */
 "Unable to write zip file." = "Zip-Datei konnte nicht geschrieben werden.";
+

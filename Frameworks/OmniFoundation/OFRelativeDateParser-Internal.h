@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,3 +26,12 @@ typedef struct {
 @interface OFRelativeDateParser (OFInternalAPI)
 - (DatePosition)_dateElementOrderFromFormat:(NSString *)dateFormat;
 @end
+
+
+NSString * _OFRelativeDateParserLocalizedStringFromTableInBundle(NSString *key, NSString *table, NSBundle *bundle, NSString *comment);
+
+// Terrible hack so that we can load localized strings from OFDateProcessing.strings even if the main application is not currently localized
+#undef NSLocalizedStringFromTableInBundle
+#define NSLocalizedStringFromTableInBundle(key, tbl, bundle, comment) \
+    _OFRelativeDateParserLocalizedStringFromTableInBundle((key), (tbl), (bundle), (comment))
+

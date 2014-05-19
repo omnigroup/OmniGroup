@@ -52,8 +52,6 @@
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
-
-
 "Cancel" = "Отмена";
 
 /* item not fully downloaded error title */
@@ -72,11 +70,10 @@
 "Choose Format" = "Выберите формат";
 
 /* Cloud setup modal sheet title */
-
 "Cloud Setup" = "Настройка облака";
 
 /* App menu item title */
-"Cloud Setup..." = "Настройка облака...";
+"Cloud Setup..." = "Настройка облака…";
 
 /* Account setup toolbar button title to save account settings */
 "Connect" = "Подключить";
@@ -136,8 +133,6 @@
    export options title
    Export toolbar item accessibility label.
    Menu option in the document picker view */
-
-
 "Export" = "Экспорт";
 
 /* export action description */
@@ -153,11 +148,10 @@
 "Finished" = "Завершено";
 
 /* Import section title */
-
 "Import" = "Импорт";
 
 /* Import document title */
-"Import Document…" = "Импорт документа...";
+"Import Document…" = "Импорт документа…";
 
 /* for WebDAV Import/Export account type */
 "Import/Export" = "Импорт/экспорт";
@@ -182,7 +176,6 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
-
 "Move" = "Переместить";
 
 /* move to trash button title */
@@ -190,7 +183,6 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
-
 "Move to Trash" = "В Корзину";
 
 /* Action sheet button title
@@ -226,9 +218,7 @@
 
 /* button title
    Dismiss failed purchase alert
-   Dismiss failed restore alert
-   When displaying a sync error, this is the option to ignore the error. */
-
+   Dismiss failed restore alert */
 "OK" = "ОК";
 
 /* for WebDAV OmniPresence edit field */
@@ -302,7 +292,6 @@
 
 /* export options title
    Menu option in the document picker view */
-
 "Send via Mail" = "Отправить по эл. почте";
 
 /* email action description */
@@ -361,3 +350,4 @@
 
 /* Account validation status string. */
 "Validating account..." = "Проверка учетной записи…";
+

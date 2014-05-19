@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -129,6 +129,26 @@ RCS_ID("$Id$")
 
 // API
 
++ (NSString *)resetPreferencesMainPromptString;
+{
+    return NSLocalizedStringFromTableInBundle(@"Reset %@ preferences to their original values?", @"OmniAppKit", [OAPreferenceClient bundle], "message text for reset-to-defaults alert");
+}
+
++ (NSString *)resetPreferencesSecondaryPromptString;
+{
+    return NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings in this pane to the state they were in when %@ was first installed.", @"OmniAppKit", [OAPreferenceClient bundle], "informative text for reset-to-defaults alert");
+}
+
++ (NSString *)resetButtonTitle;
+{
+    return NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", [OAPreferenceClient bundle], "alert panel button");
+}
+
++ (NSString *)cancelButtonTitle;
+{
+    return NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", [OAPreferenceClient bundle], "alert panel button");
+}
+
 @synthesize controlBox = _controlBox;
 @synthesize initialFirstResponder = _initialFirstResponder;
 @synthesize lastKeyView = _lastKeyView;
@@ -138,14 +158,10 @@ RCS_ID("$Id$")
 /*" Restores all defaults for this preference client to their original installation values. "*/
 - (IBAction)restoreDefaults:(id)sender;
 {
-    NSString *mainPrompt, *secondaryPrompt, *defaultButton, *otherButton;
-    NSBundle *bundle;
-    
-    bundle = [OAPreferenceClient bundle];
-    mainPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Reset %@ preferences to their original values?", @"OmniAppKit", bundle, "message text for reset-to-defaults alert"), _title];
-    secondaryPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings in this pane to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
-    defaultButton = NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button");
-    otherButton = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, "alert panel button");
+    NSString *mainPrompt = [NSString stringWithFormat:[[self class] resetPreferencesMainPromptString], _title];
+    NSString *secondaryPrompt = [NSString stringWithFormat:[[self class] resetPreferencesSecondaryPromptString], [[NSProcessInfo processInfo] processName]];
+    NSString *defaultButton = [[self class] resetButtonTitle];
+    NSString *otherButton = [[self class] cancelButtonTitle];
     NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, [_controlBox window], self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), NULL, @"%@", secondaryPrompt);
 }
 

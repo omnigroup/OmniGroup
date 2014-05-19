@@ -39,7 +39,7 @@
 "Certificate Trust" = "Certificaatvertrouwenslijst";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "De voorkeur “%1$@” is gewijzigd van “%2$@” naar “%3$@”";
+"Changed the '%@' preference from '%@' to '%@'" = "De voorkeur '%1$@' is gewijzigd van '%2$@' naar '%3$@'";
 
 /* Certificate trust alert button title */
 "Continue" = "Ga door";
@@ -98,7 +98,10 @@
 "Note" = "Notitie";
 
 /* button title
-   OK button label */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
 
 
 

@@ -414,7 +414,7 @@ NSString *OFLocalHostName(void)
 #endif    
 }
 
-static inline char _toHex(unsigned int i)
+static inline char _toHex(unsigned char i)
 {
     if (i <= 9)
         return '0' + i;

@@ -154,7 +154,6 @@ static NSString *inspectorDefaultsVersion = nil;
 #ifdef DEBUG_tom0
 #error The main window may know nothing about inspectors. For example, if the main window is a software update window, it should not be consulted. <bug:///99522> (Silent crash in software update)
 #endif
-    OBFinishPortingLater("This doesn't seem like the right concept. The main window may know nothing about inspectors. For example, if the main window is a software update window, it should not be consulted.");
     return [[NSApp delegate] inspectorRegistryForWindow:[NSApp mainWindow]];
 }
 

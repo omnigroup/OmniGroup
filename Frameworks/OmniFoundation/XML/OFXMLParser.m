@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2007-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -556,7 +556,7 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
             _versionString = [[NSString alloc] initWithUTF8String:(const char *)state.ctxt->version];
         else
             _versionString = @"1.0";
-        _standalone = state.ctxt->standalone;
+        _standalone = state.ctxt->standalone? YES : NO;
         
         OBASSERT(state.elementDepth == 0); // should have finished the root element.
         OBASSERT(state.rootElementFinished);

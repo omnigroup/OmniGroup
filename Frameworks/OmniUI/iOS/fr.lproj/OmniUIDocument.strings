@@ -52,8 +52,6 @@
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
-
-
 "Cancel" = "Annuler";
 
 /* item not fully downloaded error title */
@@ -72,11 +70,10 @@
 "Choose Format" = "Choisir un format";
 
 /* Cloud setup modal sheet title */
-
 "Cloud Setup" = "Configuration du cloud";
 
 /* App menu item title */
-"Cloud Setup..." = "Configuration du cloud...";
+"Cloud Setup..." = "Configuration du cloud…";
 
 /* Account setup toolbar button title to save account settings */
 "Connect" = "Se connecter";
@@ -136,8 +133,6 @@
    export options title
    Export toolbar item accessibility label.
    Menu option in the document picker view */
-
-
 "Export" = "Exporter";
 
 /* export action description */
@@ -153,11 +148,10 @@
 "Finished" = "Terminé";
 
 /* Import section title */
-
 "Import" = "Importer";
 
 /* Import document title */
-"Import Document…" = "Importer un document...";
+"Import Document…" = "Importer un document…";
 
 /* for WebDAV Import/Export account type */
 "Import/Export" = "Importer/Exporter";
@@ -182,7 +176,6 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
-
 "Move" = "Déplacer";
 
 /* move to trash button title */
@@ -190,12 +183,11 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
-
 "Move to Trash" = "Placer dans la corbeille";
 
 /* Action sheet button title
    Menu popover title */
-"Move to..." = "Placer dans...";
+"Move to..." = "Placer dans…";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
 "Moved out of folder %@." = "Placé hors du dossier %@.";
@@ -226,9 +218,7 @@
 
 /* button title
    Dismiss failed purchase alert
-   Dismiss failed restore alert
-   When displaying a sync error, this is the option to ignore the error. */
-
+   Dismiss failed restore alert */
 "OK" = "OK";
 
 /* for WebDAV OmniPresence edit field */
@@ -277,7 +267,7 @@
 "Restore Sample Documents" = "Restaurer doc. d'exemple";
 
 /* Share menu title */
-"Restore to..." = "Restaurer dans...";
+"Restore to..." = "Restaurer dans…";
 
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "Réessayer la synchronisation";
@@ -302,7 +292,6 @@
 
 /* export options title
    Menu option in the document picker view */
-
 "Send via Mail" = "Envoyer par e-mail";
 
 /* email action description */
@@ -360,4 +349,5 @@
 "Use Cellular Data" = "Utiliser les données cellulaires";
 
 /* Account validation status string. */
-"Validating account..." = "Validation du compte...";
+"Validating account..." = "Validation du compte…";
+

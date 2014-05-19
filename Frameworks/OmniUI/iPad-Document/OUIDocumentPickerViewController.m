@@ -1731,6 +1731,19 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     OUIDocumentPickerFilter *filter = [[self availableFilters] objectAtIndex:newSelectedIndex];
     
     UIView *snapshot = [_mainScrollView snapshotViewAfterScreenUpdates:NO];
+    
+    CGPoint convertedTopControlsOrigin = [self.view convertPoint:_topControls.bounds.origin fromView:_topControls];
+    CGRect topControlsRect = (CGRect){
+        .origin.x = 0,
+        .origin.y = convertedTopControlsOrigin.y,
+        .size.width = self.view.bounds.size.width,
+        .size.height = _topControls.bounds.size.height
+    };
+    UIView *topControlsSnapshot = [self.view resizableSnapshotViewFromRect:topControlsRect afterScreenUpdates:YES withCapInsets:UIEdgeInsetsZero];
+    CGRect newTopControlsSnapshotFrame = topControlsSnapshot.frame;
+    newTopControlsSnapshotFrame.origin.y = convertedTopControlsOrigin.y;
+    topControlsSnapshot.frame = newTopControlsSnapshotFrame;
+    
     CGRect frame = _mainScrollView.frame;
     BOOL movingLeft = newSelectedIndex < oldSelectedIndex;
     CGFloat movement = movingLeft ? CGRectGetWidth(frame) : -CGRectGetWidth(frame);
@@ -1738,6 +1751,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     [UIView performWithoutAnimation:^{
         snapshot.frame = frame;
         [self.view insertSubview:snapshot aboveSubview:_mainScrollView];
+        [self.view insertSubview:topControlsSnapshot aboveSubview:snapshot];
         
         CGRect offscreenRect = frame;
         offscreenRect.origin.x -= movement;
@@ -1754,6 +1768,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         snapshot.frame = offscreenRect;
     } completion:^(BOOL finished) {
         [snapshot removeFromSuperview];
+        [topControlsSnapshot removeFromSuperview];
     }];
 }
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,8 +76,25 @@
 // A convenience method for animating layout
 - (NSMutableArray *)animationsToStackSubviews:(NSArray *)newContent finalFrameSize:(NSSize *)outNewFrameSize;
 
+// Constraints
+
+- (void)addConstraintsToHaveSameFrameAsView:(NSView *)view;
+- (void)addConstraintsToHaveSameHorizontalExtentAsView:(NSView *)view;
+- (void)addConstraintsToHaveSameVerticalExtentAsView:(NSView *)view;
+
+- (void)appendConstraintsToArray:(NSMutableArray *)constraints toHaveSameFrameAsView:(NSView *)view;
+- (void)appendConstraintsToArray:(NSMutableArray *)constraints toHaveSameHorizontalExtentAsView:(NSView *)view;
+- (void)appendConstraintsToArray:(NSMutableArray *)constraints toHaveSameVerticalExtentAsView:(NSView *)view;
+
 // Debugging
 - (void)logViewHierarchy;
 - (void)logConstraintsInvolvingView;
 
 @end
+
+#import <OmniFoundation/OFTransientObjectsTracker.h>
+#if OF_TRANSIENT_OBJECTS_TRACKER_ENABLED
+@interface NSView (OATrackTransientViews)
++ (void)trackTransientViewAllocationsIn:(void (^)(void))block;
+@end
+#endif

@@ -105,7 +105,7 @@ RCS_ID("$Id$")
 } while(0)
 
 #define READ_2UINT(u) do { \
-  unsigned d10, d1; \
+  uint_fast8_t d10, d1; \
   GET_DIGIT(d10, 0); \
   GET_DIGIT(d1, 1); \
   u = 10*d10 + d1; \
@@ -113,7 +113,7 @@ RCS_ID("$Id$")
 } while(0)
 
 #define READ_4UINT(u) do { \
-    unsigned d1000, d100, d10, d1; \
+    uint_fast16_t d1000, d100, d10, d1; \
     GET_DIGIT(d1000, 0); \
     GET_DIGIT(d100, 1); \
     GET_DIGIT(d10, 2); \
@@ -244,13 +244,13 @@ static NSDate *_initDateFromXMLString(NSDate *self, const char *buf, size_t leng
     return result;
 }
 
-static unsigned int _digitAt(const char *buf, unsigned int offset)
+static uint_fast8_t _digitAt(const char *buf, unsigned int offset)
 {
     char c = buf[offset];
     OBASSERT(c >= '0' && c <= '9');
     return c - '0';
 }
-static unsigned int _parse2Digits(const char *buf, unsigned int offset)
+static uint_fast8_t _parse2Digits(const char *buf, unsigned int offset)
 {
     return 10*_digitAt(buf, offset) + _digitAt(buf, offset+1);
 }

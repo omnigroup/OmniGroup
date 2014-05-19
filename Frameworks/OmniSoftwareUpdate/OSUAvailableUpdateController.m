@@ -475,7 +475,11 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
 - (void)webView:(WebView *)sender didFailLoadWithError:(NSError *)error forFrame:(WebFrame *)frame;
 {
     [self setValue:[NSNumber numberWithBool:NO] forKey:OSUAvailableUpdateControllerLoadingReleaseNotesBinding];
-    [sender presentError:error];
+
+    if ([error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorCancelled])
+        return;
+
+    NSLog(@"Load failed for software update release notes: %@", [error toPropertyList]);
 }
 
 #pragma mark OSUTextField / NSTextView delegates

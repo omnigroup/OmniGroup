@@ -1,0 +1,345 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		3440203D19072DAD0002120F /* SVNVersion-iOS-Only */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 3440203E19072DAD0002120F /* Build configuration list for PBXAggregateTarget "SVNVersion-iOS-Only" */;
+			buildPhases = (
+				3440204519072DC80002120F /* Build SVNVersion.h */,
+			);
+			dependencies = (
+			);
+			name = "SVNVersion-iOS-Only";
+			productName = "SVNVersion-iOS-Only";
+		};
+		3440204119072DB60002120F /* SVNVersion-Mac-Only */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 3440204219072DB60002120F /* Build configuration list for PBXAggregateTarget "SVNVersion-Mac-Only" */;
+			buildPhases = (
+				3440204619072E1E0002120F /* Build SVNVersion.h */,
+			);
+			dependencies = (
+			);
+			name = "SVNVersion-Mac-Only";
+			productName = "SVNVersion-Mac-Only";
+		};
+		34DBCD14190709F400968086 /* SVNVersion */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 34DBCD15190709F400968086 /* Build configuration list for PBXAggregateTarget "SVNVersion" */;
+			buildPhases = (
+			);
+			dependencies = (
+				3440204819072E300002120F /* PBXTargetDependency */,
+				3440204A19072E300002120F /* PBXTargetDependency */,
+			);
+			name = SVNVersion;
+			productName = SVNVersion;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		3440204719072E300002120F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34DBCD0E190709E100968086 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3440203D19072DAD0002120F;
+			remoteInfo = "SVNVersion-iOS-Only";
+		};
+		3440204919072E300002120F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34DBCD0E190709E100968086 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3440204119072DB60002120F;
+			remoteInfo = "SVNVersion-Mac-Only";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		3440201119072D900002120F /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
+		3440201219072D900002120F /* Omni-Application-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
+		3440201319072D900002120F /* Omni-Application-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
+		3440201419072D900002120F /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
+		3440201519072D900002120F /* Omni-Application-Common-Store.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-Store.xcconfig"; sourceTree = "<group>"; };
+		3440201619072D900002120F /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		3440201719072D900002120F /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3440201819072D900002120F /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		3440201919072D900002120F /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		3440201A19072D900002120F /* Omni-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		3440201B19072D900002120F /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3440201C19072D900002120F /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		3440201D19072D900002120F /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		3440201E19072D900002120F /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		3440201F19072D900002120F /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3440202019072D900002120F /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		3440202119072D900002120F /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		3440202219072D900002120F /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
+		3440202319072D900002120F /* Omni-Global-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
+		3440202419072D900002120F /* Omni-Global-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
+		3440202519072D900002120F /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
+		3440202619072D900002120F /* Omni-Global-Common-Store.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-Store.xcconfig"; sourceTree = "<group>"; };
+		3440202719072D900002120F /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
+		3440202819072D900002120F /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3440202919072D900002120F /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
+		3440202A19072D900002120F /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
+		3440202B19072D900002120F /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
+		3440202C19072D900002120F /* Omni-Library-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3440202D19072D900002120F /* Omni-Library-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Library-Debug.xcconfig"; sourceTree = "<group>"; };
+		3440202E19072D900002120F /* Omni-Library-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		3440202F19072D900002120F /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
+		3440203019072D900002120F /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3440203119072D900002120F /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
+		3440203219072D900002120F /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
+		3440203319072D900002120F /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
+		3440203419072D900002120F /* Target-Touch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Touch-Common.xcconfig"; sourceTree = "<group>"; };
+		3440203519072D900002120F /* Touch-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		3440203619072D900002120F /* Touch-Application-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3440203719072D900002120F /* Touch-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		3440203819072D900002120F /* Touch-Application-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		3440203919072D900002120F /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
+		3440203A19072D900002120F /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
+		3440203B19072D900002120F /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
+		3440203C19072D900002120F /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		3440201019072D900002120F /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				3440201119072D900002120F /* Omni-Application-Common-AppStore.xcconfig */,
+				3440201219072D900002120F /* Omni-Application-Common-MacAppStore.xcconfig */,
+				3440201319072D900002120F /* Omni-Application-Common-MacAppStorePro.xcconfig */,
+				3440201419072D900002120F /* Omni-Application-Common-OmniStore.xcconfig */,
+				3440201519072D900002120F /* Omni-Application-Common-Store.xcconfig */,
+				3440201619072D900002120F /* Omni-Application-Common.xcconfig */,
+				3440201719072D900002120F /* Omni-Application-Coverage.xcconfig */,
+				3440201819072D900002120F /* Omni-Application-Debug.xcconfig */,
+				3440201919072D900002120F /* Omni-Application-Release.xcconfig */,
+				3440201A19072D900002120F /* Omni-Bundle-Common.xcconfig */,
+				3440201B19072D900002120F /* Omni-Bundle-Coverage.xcconfig */,
+				3440201C19072D900002120F /* Omni-Bundle-Debug.xcconfig */,
+				3440201D19072D900002120F /* Omni-Bundle-Release.xcconfig */,
+				3440201E19072D900002120F /* Omni-Framework-Common.xcconfig */,
+				3440201F19072D900002120F /* Omni-Framework-Coverage.xcconfig */,
+				3440202019072D900002120F /* Omni-Framework-Debug.xcconfig */,
+				3440202119072D900002120F /* Omni-Framework-Release.xcconfig */,
+				3440202219072D900002120F /* Omni-Global-Common-AppStore.xcconfig */,
+				3440202319072D900002120F /* Omni-Global-Common-MacAppStore.xcconfig */,
+				3440202419072D900002120F /* Omni-Global-Common-MacAppStorePro.xcconfig */,
+				3440202519072D900002120F /* Omni-Global-Common-OmniStore.xcconfig */,
+				3440202619072D900002120F /* Omni-Global-Common-Store.xcconfig */,
+				3440202719072D900002120F /* Omni-Global-Common.xcconfig */,
+				3440202819072D900002120F /* Omni-Global-Coverage.xcconfig */,
+				3440202919072D900002120F /* Omni-Global-Debug.xcconfig */,
+				3440202A19072D900002120F /* Omni-Global-Release.xcconfig */,
+				3440202B19072D900002120F /* Omni-Library-Common.xcconfig */,
+				3440202C19072D900002120F /* Omni-Library-Coverage.xcconfig */,
+				3440202D19072D900002120F /* Omni-Library-Debug.xcconfig */,
+				3440202E19072D900002120F /* Omni-Library-Release.xcconfig */,
+				3440202F19072D900002120F /* Omni-Tool-Common.xcconfig */,
+				3440203019072D900002120F /* Omni-Tool-Coverage.xcconfig */,
+				3440203119072D900002120F /* Omni-Tool-Debug.xcconfig */,
+				3440203219072D900002120F /* Omni-Tool-Release.xcconfig */,
+				3440203319072D900002120F /* Target-Mac-Common.xcconfig */,
+				3440203419072D900002120F /* Target-Touch-Common.xcconfig */,
+				3440203519072D900002120F /* Touch-Application-Common.xcconfig */,
+				3440203619072D900002120F /* Touch-Application-Coverage.xcconfig */,
+				3440203719072D900002120F /* Touch-Application-Debug.xcconfig */,
+				3440203819072D900002120F /* Touch-Application-Release.xcconfig */,
+				3440203919072D900002120F /* Touch-Library-Common.xcconfig */,
+				3440203A19072D900002120F /* Touch-Library-Coverage.xcconfig */,
+				3440203B19072D900002120F /* Touch-Library-Debug.xcconfig */,
+				3440203C19072D900002120F /* Touch-Library-Release.xcconfig */,
+			);
+			name = Configurations;
+			path = ../../Configurations;
+			sourceTree = "<group>";
+		};
+		34DBCD0D190709E100968086 = {
+			isa = PBXGroup;
+			children = (
+				3440201019072D900002120F /* Configurations */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		34DBCD0E190709E100968086 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+			};
+			buildConfigurationList = 34DBCD11190709E100968086 /* Build configuration list for PBXProject "SVNVersion" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 34DBCD0D190709E100968086;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				34DBCD14190709F400968086 /* SVNVersion */,
+				3440203D19072DAD0002120F /* SVNVersion-iOS-Only */,
+				3440204119072DB60002120F /* SVNVersion-Mac-Only */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3440204519072DC80002120F /* Build SVNVersion.h */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build SVNVersion.h";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# $CONFIGURATION_BUILD_DIR expands differently for Mac and iOS, so we build both ways so that the app depending on us can pick one or both.\n../../Scripts/BuildSVNVersionHeader --build-versions-txt \"$CONFIGURATION_BUILD_DIR\"\n";
+		};
+		3440204619072E1E0002120F /* Build SVNVersion.h */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build SVNVersion.h";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# $CONFIGURATION_BUILD_DIR expands differently for Mac and iOS, so we build both ways so that the app depending on us can pick one or both.\n../../Scripts/BuildSVNVersionHeader --build-versions-txt \"$CONFIGURATION_BUILD_DIR\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3440204819072E300002120F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3440203D19072DAD0002120F /* SVNVersion-iOS-Only */;
+			targetProxy = 3440204719072E300002120F /* PBXContainerItemProxy */;
+		};
+		3440204A19072E300002120F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3440204119072DB60002120F /* SVNVersion-Mac-Only */;
+			targetProxy = 3440204919072E300002120F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		3440203F19072DAD0002120F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3440203419072D900002120F /* Target-Touch-Common.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		3440204019072DAD0002120F /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3440203419072D900002120F /* Target-Touch-Common.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		3440204319072DB60002120F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3440203319072D900002120F /* Target-Mac-Common.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		3440204419072DB60002120F /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3440203319072D900002120F /* Target-Mac-Common.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		34DBCD12190709E100968086 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3440202919072D900002120F /* Omni-Global-Debug.xcconfig */;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		34DBCD13190709E100968086 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3440202719072D900002120F /* Omni-Global-Common.xcconfig */;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		34DBCD16190709F400968086 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3440202919072D900002120F /* Omni-Global-Debug.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		34DBCD17190709F400968086 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3440202719072D900002120F /* Omni-Global-Common.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3440203E19072DAD0002120F /* Build configuration list for PBXAggregateTarget "SVNVersion-iOS-Only" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3440203F19072DAD0002120F /* Debug */,
+				3440204019072DAD0002120F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		3440204219072DB60002120F /* Build configuration list for PBXAggregateTarget "SVNVersion-Mac-Only" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3440204319072DB60002120F /* Debug */,
+				3440204419072DB60002120F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		34DBCD11190709E100968086 /* Build configuration list for PBXProject "SVNVersion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34DBCD12190709E100968086 /* Debug */,
+				34DBCD13190709E100968086 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		34DBCD15190709F400968086 /* Build configuration list for PBXAggregateTarget "SVNVersion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34DBCD16190709F400968086 /* Debug */,
+				34DBCD17190709F400968086 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 34DBCD0E190709E100968086 /* Project object */;
+}

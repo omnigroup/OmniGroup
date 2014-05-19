@@ -269,10 +269,13 @@ static id _commonInit(OUIInspectorOptionWheel *self)
 {
     if (!_selectedItem)
         return;
-    
+
+    // make sure our items have frames before we try'n layout based upon them.
+    [self layoutIfNeeded];
+
     CGRect snapFrame = _selectedItem.frame;
     CGFloat offsetX = CGRectGetMinX(snapFrame) - _scrollView.contentInset.left;
-    
+
     [_scrollView setContentOffset:CGPointMake(offsetX, 0) animated:animated];
 }
 

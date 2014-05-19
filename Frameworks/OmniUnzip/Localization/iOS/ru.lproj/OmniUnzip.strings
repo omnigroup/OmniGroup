@@ -1,5 +1,5 @@
 /* error reason */
-"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Имя элемента в zip-файле не удалось преобразовать в путь файловой системы.";
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Имя элемента в файле zip нельзя преобразовать в путь файловой системы.";
 
 /* error description */
 "Duplicate zip member name \"%@\"." = "Дублирующееся имя члена zip «%@».";
@@ -27,7 +27,6 @@
 
 /* error description
    error reason */
-
 "Unable to read zip data." = "Не удается прочитать данные zip.";
 
 /* error description */
@@ -35,3 +34,4 @@
 
 /* error description */
 "Unable to write zip file." = "Не удается записать файл zip.";
+

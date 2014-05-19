@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,7 +95,7 @@ static NSException *OWDataStreamCursor_SeekException;
 
     NSUInteger oldValidLength = bufferedDataValidLength;
     do {
-        [self fillBuffer:nil length:[bufferedData length] filledToIndex:&bufferedDataValidLength];
+        [self fillBuffer:NULL length:[bufferedData length] filledToIndex:&bufferedDataValidLength];
     } while (canFillMoreBuffer && bufferedDataValidLength == oldValidLength);
 
     return (bufferedDataValidLength != oldValidLength);
@@ -239,9 +239,6 @@ static NSException *OWDataStreamCursor_SeekException;
 
 - (NSData *)readAllData
 {
-    NSData *result;
-    NSUInteger oldBytesInBuffer;
-
     if (dataOffset < bufferedDataStart)
         [OWDataStreamCursor_SeekException raise];
     if (abortException)
@@ -257,12 +254,12 @@ static NSException *OWDataStreamCursor_SeekException;
 
 
     OBASSERT(dataOffset >= bufferedDataStart); // Otherwise, we raise the seek exception above
-    oldBytesInBuffer = dataOffset - bufferedDataStart;
+    NSUInteger oldBytesInBuffer = dataOffset - bufferedDataStart;
 
     if (bufferedDataValidLength == oldBytesInBuffer)
         return nil; // We have no more data
 
-    result = [bufferedData subdataWithRange:NSMakeRange(oldBytesInBuffer, bufferedDataValidLength - oldBytesInBuffer)];
+    NSData *result = [bufferedData subdataWithRange:NSMakeRange(oldBytesInBuffer, bufferedDataValidLength - oldBytesInBuffer)];
     [bufferedData release];
     bufferedData = [[NSMutableData alloc] initWithCapacity:0];
     bufferedDataStart += bufferedDataValidLength;

@@ -130,8 +130,8 @@ static struct OFCharacterScanResult OFScanUTF8CharactersIntoBuffer(struct OFStri
                 if ((in_bytes[1] & 0xC0) != 0x80) {
                     aCharacter = UNKNOWN_CHAR;
                 } else {
-                    aCharacter = ((((unsigned int)aByte) & 0x1F) << 6) |
-                        (((unsigned int)in_bytes[1]) & 0x3F);
+                    aCharacter = (unichar)((((unichar)(aByte & 0x1F)) << 6) |
+                                            ((unichar)(in_bytes[1] & 0x3F)));
                 }
                 in_bytes += 2;
             } else if ((aByte & 0xF0) == 0xE0) {
@@ -150,9 +150,9 @@ static struct OFCharacterScanResult OFScanUTF8CharactersIntoBuffer(struct OFStri
                 if ((byte2 & 0xC0) != 0x80 || (byte3 & 0xC0) != 0x80) {
                     aCharacter = UNKNOWN_CHAR;
                 } else {
-                    aCharacter = ((((unsigned int)aByte) & 0x0F) << 12) |
-                        ((byte2 & 0x3F) << 6) |
-                        (byte3 & 0x3F);
+                    aCharacter = (unichar)((((unichar)(aByte & 0x0F)) << 12) |
+                                           (((unichar)(byte2 & 0x3F)) << 6) |
+                                                      (byte3 & 0x3F));
                 }
                 in_bytes += 3;
             } else if ((aByte & 0xF8) == 0xF0) {
@@ -367,7 +367,7 @@ CFDataRef OFCreateDataFromStringWithDeferredEncoding(CFStringRef str, CFRange ra
             slowCursor = fastCursor; // slowCursor += charCount; 
             while (charCount) {
                 OBASSERT( *unicharPtr >= OFDeferredASCIISupersetBase && *unicharPtr < (OFDeferredASCIISupersetBase+256) );
-                *charPtr = ( *unicharPtr - OFDeferredASCIISupersetBase );
+                *charPtr = (uint8_t)( *unicharPtr - OFDeferredASCIISupersetBase );
                 charPtr ++;
                 unicharPtr ++;
                 charCount --;

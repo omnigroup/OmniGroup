@@ -23,7 +23,7 @@
 "Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "¿Desea que %@ envíe informes periódicos sobre su modelo de hardware y versión de iOS?\nEsto nos permitirá saber qué configuraciones necesitan más soporte. Puede cambiar su respuesta más adelante en las preferencias MUMBLE MUMBLE MUMBLE.";
 
 /* Software update report entry name */
-"Application identifier" = "Identificador de aplicación";
+"Application identifier" = "Identificador de la aplicación";
 
 /* Software update report entry name */
 "Application version" = "Versión de la aplicación";
@@ -44,7 +44,7 @@
 "Device Information" = "Información del dispositivo";
 
 /* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "No informar";
+"Don't Report" = "No comunicar";
 
 /* error description */
 "Error fetching software update information." = "Error al buscar información sobre la actualización de software.";
@@ -56,10 +56,10 @@
 "Exception raised: %@" = "Excepción: %@";
 
 /* software update settings cell detail text */
-"Help The Omni Group decide which devices and iOS versions to support" = "Ayude a The Omni Group a decidir qué dispositivos y versiones de iOS deben ser compatibles con sus productos";
+"Help The Omni Group decide which devices and iOS versions to support" = "Ayude a The Omni Group a decidir la compatibilidad de dispositivos y versiones de iOS";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Si comparte la información, nos ayuda a obtener datos importantes sobre la compatibilidad de dispositivos y versiones de iOS con el software.\nLa información es totalmente anónima.";
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Si comparte esta información, nos ayuda a obtener datos importantes sobre la compatibilidad de dispositivos y versiones de iOS con nuestro software.\nEsta información es totalmente anónima.";
 
 /* Software update report entry name */
 "iOS version" = "Versión de iOS";
@@ -89,10 +89,10 @@
 "Please try again later or contact us to let us know this is broken." = "Inténtelo de nuevo más tarde o póngase en contacto con nosotros para informarnos del error.";
 
 /* Software update report entry name */
-"Report identifier" = "Identificador de informe";
+"Report identifier" = "Identificador del informe";
 
 /* Software update report entry name */
-"Report version" = "Versión de informe";
+"Report version" = "Versión del informe";
 
 /* software update settings cell title */
 "Send anonymous device information" = "Enviar información anónima del dispositivo";

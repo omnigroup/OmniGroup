@@ -1,0 +1,125 @@
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"-" = "-";
+
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"+" = "+";
+
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"~" = "~";
+
+/* one-letter abbreviation for day or days, used for scanning user input. Do NOT add whitespace */
+"d" = "d";
+
+/* day, singular, used for scanning user input. Do NOT add whitespace */
+"day" = "dag";
+
+/* days, plural, used for scanning user input. Do NOT add whitespace */
+"days" = "dagen";
+
+/* one-letter abbreviation for hour or hours, used for scanning user input. Do NOT add whitespace */
+"h" = "u";
+
+/* hour, singular, used for scanning user input. Do NOT add whitespace */
+"hour" = "uur";
+
+/* hours, plural, used for scanning user input. Do NOT add whitespace */
+"hours" = "uren";
+
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"last" = "vorig(e)";
+
+/* last month, used for scanning user input. Do NOT add whitespace */
+"last month" = "vorige maand";
+
+/* time, used for scanning user input. Do NOT add whitespace */
+"last week" = "vorige week";
+
+/* last year, used for scanning user input. Do NOT add whitespace */
+"last year" = "vorig jaar";
+
+/* one-letter abbreviation for month or months, used for scanning user input. Do NOT add whitespace */
+"m" = "m";
+
+/* month, singular, used for scanning user input. Do NOT add whitespace */
+"month" = "maand";
+
+/* months, plural, used for scanning user input. Do NOT add whitespace */
+"months" = "maanden";
+
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input. Do NOT add whitespace */
+"next" = "volgend(e)";
+
+/* next month, used for scanning user input. Do NOT add whitespace */
+"next month" = "volgende maand";
+
+/* time, used for scanning user input. Do NOT add whitespace */
+"next week" = "volgende week";
+
+/* next year, used for scanning user input. Do NOT add whitespace */
+"next year" = "volgend jaar";
+
+/* noon, used for scanning user input. Do NOT add whitespace */
+"noon" = "middag";
+
+/* now, used for scanning user input. Do NOT add whitespace */
+"now" = "nu";
+
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input. Do NOT add whitespace */
+"this" = "deze/dit";
+
+/* this month, used for scanning user input. Do NOT add whitespace */
+"this month" = "deze maand";
+
+/* time, used for scanning user input. Do NOT add whitespace */
+"this week" = "deze week";
+
+/* this year, used for scanning user input. Do NOT add whitespace */
+"this year" = "dit jaar";
+
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"tod" = "vand";
+
+/* today, used for scanning user input. Do NOT add whitespace */
+"today" = "vandaag";
+
+/* Today */
+"Today" = "Vandaag";
+
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"tom" = "mor";
+
+/* tomorrow */
+"tomorrow" = "morgen";
+
+/* Tomorrow */
+"Tomorrow" = "Morgen";
+
+/* tonight, used for scanning user input. Do NOT add whitespace */
+"tonight" = "vanavond";
+
+/* one-letter abbreviation for week or weeks, used for scanning user input. Do NOT add whitespace */
+"w" = "w";
+
+/* week, singular, used for scanning user input. Do NOT add whitespace */
+"week" = "week";
+
+/* weeks, plural, used for scanning user input. Do NOT add whitespace */
+"weeks" = "weken";
+
+/* one-letter abbreviation for year or years, used for scanning user input. Do NOT add whitespace */
+"y" = "j";
+
+/* year, singular, used for scanning user input. Do NOT add whitespace */
+"year" = "jaar";
+
+/* years, plural, used for scanning user input. Do NOT add whitespace */
+"years" = "jaren";
+
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"yes" = "ja";
+
+/* yesterday, used for scanning user input. Do NOT add whitespace */
+"yesterday" = "gisteren";
+
+/* Yesterday */
+"Yesterday" = "Gisteren";

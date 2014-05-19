@@ -72,7 +72,6 @@
 
 /* Server account type
    Set up server account title */
-
 "Omni Sync Server" = "Omni Sync Server";
 
 /* account validation error suggestion */
@@ -139,10 +138,11 @@
 "Use your own WebDAV space." = "Utilice su propio espacio WebDAV.";
 
 /* Account validation step description */
-"Validating Account..." = "Validando cuenta...";
+"Validating Account..." = "Validando cuenta…";
 
 /* Server account type */
 "WebDAV" = "WebDAV";
 
 /* Set up server account title */
 "WebDAV Server" = "Servidor WebDAV";
+

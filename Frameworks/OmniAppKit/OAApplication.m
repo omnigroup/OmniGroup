@@ -712,22 +712,32 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     NSDictionary *infoDict = [mainBundle infoDictionary];
     NSString *helpFolder = [infoDict objectForKey:@"OAHelpFolder"];
     if (helpFolder != nil) { // Display our help internally
-        NSURL *indexPageURL = [[NSBundle mainBundle] URLForResource:@"index" withExtension:@"html" subdirectory:helpFolder];
-        NSURL *targetURL = [NSURL URLWithString:helpURLString relativeToURL:indexPageURL];
-        if (OFISEQUAL([targetURL scheme], @"anchor")) {
-            NSURL *anchorsPlistURL = [[NSBundle mainBundle] URLForResource:@"anchors" withExtension:@"plist" subdirectory:helpFolder];
-            NSDictionary *anchorsDictionary = [NSDictionary dictionaryWithContentsOfURL:anchorsPlistURL];
-            NSString *anchorURLString = [anchorsDictionary objectForKey:helpURLString];
-            if (anchorURLString == nil) {
-                NSLog(@"Warning: undefined anchor %@", helpURLString);
-                NSBeep();
-                return;
-            }
-            targetURL = [NSURL URLWithString:anchorURLString relativeToURL:indexPageURL];
+        NSURL *targetURL = [self builtInHelpURLForHelpURLString:helpURLString];
+        if (targetURL == nil) {
+            NSLog(@"Warning: couldn't determine help page resource for help URL `%@`", helpURLString);
+            NSBeep();
+            return;
+        }
+
+        NSString *title = [[mainBundle localizedInfoDictionary] stringForKey:@"OAHelpBookName"];
+        if ([NSString isEmptyString:title]) {
+            title = [[mainBundle infoDictionary] stringForKey:@"OAHelpBookName"];
+        }
+        
+        if ([NSString isEmptyString:title]) {
+            title = NSLocalizedStringFromTableInBundle(@"Help", @"OmniAppKit", [OAApplication bundle], "Help window default title");
         }
 
         OAWebPageViewer *viewer = [OAWebPageViewer sharedViewerNamed:@"Help"];
-        [[viewer window] setTitle:NSLocalizedStringFromTableInBundle(@"Help", @"OmniAppKit", [OAApplication bundle], "Help window default title")];
+        viewer.usesWebPageTitleForWindowTitle = NO;
+        
+        NSWindow *window = [viewer window];
+        [window setTitle:title];
+        [window setContentMinSize:(NSSize) {.height = 200, .width = 800}];
+        [window setContentMaxSize:(NSSize) {.height = CGFLOAT_MAX, .width = 800}];
+        [window setContentSize:(NSSize) {.height = 650, .width = 800}];
+        [window center];
+        
         NSURLRequest *request = [NSURLRequest requestWithURL:targetURL];
         [viewer loadRequest:request];
         return;
@@ -781,6 +791,33 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     // No help?
     NSLog(@"Warning: could not find built-in help for %@", helpURLString);
     NSBeep();
+}
+
+- (NSURL *)builtInHelpURLForHelpURLString:(NSString *)helpURLString;
+{
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSDictionary *infoDict = [mainBundle infoDictionary];
+    NSString *helpFolder = [infoDict objectForKey:@"OAHelpFolder"];
+
+    if (helpFolder != nil) {
+        NSURL *indexPageURL = [[NSBundle mainBundle] URLForResource:@"index" withExtension:@"html" subdirectory:helpFolder];
+        NSURL *targetURL = [NSURL URLWithString:helpURLString relativeToURL:indexPageURL];
+
+        if (OFISEQUAL([targetURL scheme], @"anchor")) {
+            NSURL *anchorsPlistURL = [[NSBundle mainBundle] URLForResource:@"anchors" withExtension:@"plist" subdirectory:helpFolder];
+            NSDictionary *anchorsDictionary = [NSDictionary dictionaryWithContentsOfURL:anchorsPlistURL];
+            NSString *anchorURLString = [anchorsDictionary objectForKey:helpURLString];
+            if (anchorURLString == nil) {
+                return nil;
+            }
+
+            targetURL = [NSURL URLWithString:anchorURLString relativeToURL:indexPageURL];
+        }
+        
+        return targetURL;
+    }
+    
+    return nil;
 }
 
 - (IBAction)showHelp:(id)sender;

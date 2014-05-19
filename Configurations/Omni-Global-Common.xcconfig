@@ -127,8 +127,8 @@ DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 // DEBUG_INFORMATION_FORMAT = stabs
 GCC_DEBUGGING_SYMBOLS = full
 
-// When preprocessing the Info.plist file, look for include files (such as SVNVersion.h) in PROJECT_DERIVED_FILE_DIR
-INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -C -I"$PROJECT_DERIVED_FILE_DIR"
+// When preprocessing Info.plist files, look for include files (such as SVNVersion.h) in $CONFIGURATION_BUILD_DIR/include. OmniGroup/Tools/SVNVersion builds SVNVersion.h for both iOS and Mac build directories so that we reference the 'right' one here.
+INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -C -I"$(CONFIGURATION_BUILD_DIR)/include"
 INFOPLIST_PREPROCESS = YES
 
 // Make sure we look for the built SVNVersions.h in the right spot

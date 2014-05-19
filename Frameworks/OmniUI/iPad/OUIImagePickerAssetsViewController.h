@@ -18,7 +18,7 @@
 + (instancetype)imagePickerAssetViewController;
 
 @property (nonatomic, weak) id<OUIImagePickerAssetsViewControllerDelegate> delegate;
-@property (nonatomic, strong) ALAssetsGroup *assetsGroup;
+@property (nonatomic, strong) NSURL *assetsGroupURL;
 
 @end
 

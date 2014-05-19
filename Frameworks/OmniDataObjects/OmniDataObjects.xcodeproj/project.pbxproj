@@ -6,20 +6,6 @@
 	objectVersion = 46;
 	objects = {
 
-/* Begin PBXAggregateTarget section */
-		3484096B0D89F9CD00E74C9D /* Build SVNVersion.h */ = {
-			isa = PBXAggregateTarget;
-			buildConfigurationList = 3484096E0D89F9EB00E74C9D /* Build configuration list for PBXAggregateTarget "Build SVNVersion.h" */;
-			buildPhases = (
-				3484096A0D89F9CD00E74C9D /* ShellScript */,
-			);
-			dependencies = (
-			);
-			name = "Build SVNVersion.h";
-			productName = "Build SVNVersion.h";
-		};
-/* End PBXAggregateTarget section */
-
 /* Begin PBXBuildFile section */
 		3400B7E30D8C7CED00390D08 /* ODOEditingContext-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400B7D70D8C7BD800390D08 /* ODOEditingContext-Internal.m */; };
 		3400BAA20D8E23CE00390D08 /* ODOSQLStatement.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400BAA00D8E23CE00390D08 /* ODOSQLStatement.h */; };
@@ -172,26 +158,12 @@
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = OmniDataObjects;
 		};
-		348409920D89FA3800E74C9D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 3484096B0D89F9CD00E74C9D;
-			remoteInfo = "Build SVNVersion.h";
-		};
 		34A779F40D89D54B0037DE8C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 8DC2EF4F0486A6940098B216;
 			remoteInfo = OmniDataObjects;
-		};
-		34D94F2411A1B3AC00A9ACC1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 3484096B0D89F9CD00E74C9D;
-			remoteInfo = "Build SVNVersion.h";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -831,7 +803,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				34D94F2511A1B3AC00A9ACC1 /* PBXTargetDependency */,
 			);
 			name = OmniDataObjectsTouch;
 			productName = OmniDataObjectsTouch;
@@ -851,7 +822,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				348409930D89FA3800E74C9D /* PBXTargetDependency */,
 			);
 			name = OmniDataObjects;
 			productInstallPath = "$(HOME)/Library/Frameworks";
@@ -884,7 +854,6 @@
 			targets = (
 				8DC2EF4F0486A6940098B216 /* OmniDataObjects */,
 				34A779EF0D89D5450037DE8C /* xcd2odo */,
-				3484096B0D89F9CD00E74C9D /* Build SVNVersion.h */,
 				340D5DB40DAACED300BF27F8 /* ODOTests */,
 				340D21960E5DF69D0049EBA0 /* ODOPerf */,
 				34D94D4011A1AD3800A9ACC1 /* OmniDataObjectsTouch */,
@@ -940,20 +909,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"$PROJECT_DIR\"/../../Scripts/OmniRunUnitTests\n";
-		};
-		3484096A0D89F9CD00E74C9D /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/SVNVersion.h",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "../../Scripts/BuildSVNVersionInclude\n";
 		};
 		348EE2C10EAE3BC100C6998E /* Generate Accessors */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1116,20 +1071,10 @@
 			target = 8DC2EF4F0486A6940098B216 /* OmniDataObjects */;
 			targetProxy = 340D5E0F0DAAD1BA00BF27F8 /* PBXContainerItemProxy */;
 		};
-		348409930D89FA3800E74C9D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 3484096B0D89F9CD00E74C9D /* Build SVNVersion.h */;
-			targetProxy = 348409920D89FA3800E74C9D /* PBXContainerItemProxy */;
-		};
 		34A779F50D89D54B0037DE8C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8DC2EF4F0486A6940098B216 /* OmniDataObjects */;
 			targetProxy = 34A779F40D89D54B0037DE8C /* PBXContainerItemProxy */;
-		};
-		34D94F2511A1B3AC00A9ACC1 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 3484096B0D89F9CD00E74C9D /* Build SVNVersion.h */;
-			targetProxy = 34D94F2411A1B3AC00A9ACC1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1239,26 +1184,6 @@
 			};
 			name = Release;
 		};
-		3484096C0D89F9CD00E74C9D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				PRODUCT_NAME = "Build SVNVersion.h";
-			};
-			name = Debug;
-		};
-		3484096D0D89F9CD00E74C9D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				PRODUCT_NAME = "Build SVNVersion.h";
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
 		34A779F20D89D5450037DE8C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34A5E1350D89940F0006DF9F /* Omni-Tool-Debug.xcconfig */;
@@ -1327,16 +1252,6 @@
 					AppKit,
 				);
 				PRODUCT_NAME = xcd2odo;
-			};
-			name = Coverage;
-		};
-		34AE99A80FC6090700538090 /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				PRODUCT_NAME = "Build SVNVersion.h";
 			};
 			name = Coverage;
 		};
@@ -1432,16 +1347,6 @@
 				340D5DB70DAACED300BF27F8 /* Debug */,
 				34AE99A90FC6090700538090 /* Coverage */,
 				340D5DB80DAACED300BF27F8 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		3484096E0D89F9EB00E74C9D /* Build configuration list for PBXAggregateTarget "Build SVNVersion.h" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				3484096C0D89F9CD00E74C9D /* Debug */,
-				34AE99A80FC6090700538090 /* Coverage */,
-				3484096D0D89F9CD00E74C9D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

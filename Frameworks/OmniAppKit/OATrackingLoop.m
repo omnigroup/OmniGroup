@@ -186,23 +186,24 @@ static BOOL OATrackingLoopDebug = YES;
     
     while (!_stopped) {
         // If you want to do a tracking loop w/o consuming the mouseUp, you can call -stop in one of the other callbacks and then start a *new* tracking loop.  At least, that's the theory.
-        NSEvent *nextEvent = [window nextEventMatchingMask:NSAnyEventMask untilDate:_limitDate inMode:_runLoopMode dequeue:YES];
-        DEBUG_LOOP(@"event: %@", nextEvent);
+        [_currentEvent autorelease];
+        _currentEvent = [[window nextEventMatchingMask:NSAnyEventMask untilDate:_limitDate inMode:_runLoopMode dequeue:YES] retain];
+        DEBUG_LOOP(@"event: %@", _currentEvent);
         
         NSUInteger oldFlags = _modifierFlags;
-        _modifierFlags = [nextEvent modifierFlags];
+        _modifierFlags = [_currentEvent modifierFlags];
         
-        NSEventType eventType = [nextEvent type];
+        NSEventType eventType = [_currentEvent type];
         // It looks as though we can't get an actual notification that Mission Control, Expose, or Dashboard is coming up. If invoke them with a key and mouse up while they're in front, we actually seem to get the mouse up when we come back. Mouse buttons invoking them appear to be a problem.  NSSystemDefined events of subtype 7 seem to be "mouse button state change events". data1 is the mouse/mice that changed state, and data2 is the current state of all mouse buttons. CGEventTaps cause us to get what appears to be "mouse button 1 changed state and mouse button 1 is down, which we already know, because we're here.  Exit for any other mouse button changing state.
         if (eventType == _upEventType ||
-            ((eventType == NSSystemDefined && [nextEvent subtype] == 7) && ([nextEvent data1] != 1 || [nextEvent data2] != 1))) {
+            ((eventType == NSSystemDefined && [_currentEvent subtype] == 7) && ([_currentEvent data1] != 1 || [_currentEvent data2] != 1))) {
             DEBUG_LOOP(@"  up!");
             if (_up)
                 _up(self);
             [self stop];
         } else if (eventType == _draggedEventType) {
             DEBUG_LOOP(@"  dragged!");
-            self.currentMouseDraggedPointInWindow = [nextEvent locationInWindow];
+            self.currentMouseDraggedPointInWindow = [_currentEvent locationInWindow];
             self.currentMouseDraggedPointInView = [_view convertPoint:self.currentMouseDraggedPointInWindow fromView:nil];
             
             // If there is a hysteresis rect, check if we have gone outside it.
@@ -254,7 +255,7 @@ static BOOL OATrackingLoopDebug = YES;
                 
                 if (shouldScroll) {
                     [lastMouseEvent release];
-                    lastMouseEvent = [nextEvent retain];
+                    lastMouseEvent = [_currentEvent retain];
                 }
             }
         } else if (eventType == NSFlagsChanged) {
@@ -283,6 +284,9 @@ static BOOL OATrackingLoopDebug = YES;
     
     [timer invalidate];
     
+    [_currentEvent release];
+    _currentEvent = nil;
+    
     [lastMouseEvent release];
     if (hasStartedPeriodicEvents)
         [NSEvent stopPeriodicEvents];
@@ -304,6 +308,9 @@ static BOOL OATrackingLoopDebug = YES;
     self.modifierFlagsChanged = NULL;
     self.dragged = NULL;
     self.up = NULL;
+    
+    [_currentEvent release];
+    _currentEvent = nil;
     
     _invalid = YES;
 }

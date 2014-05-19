@@ -39,7 +39,7 @@
 "Certificate Trust" = "Certificati attendibili";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Preferenza \"%1$@\" modificata da \"%2$@\" in \"%3$@\"";
+"Changed the '%@' preference from '%@' to '%@'" = "Preferenza “%1$@” modificata da “%2$@” a “%3$@”";
 
 /* Certificate trust alert button title */
 "Continue" = "Continua";
@@ -65,7 +65,7 @@
 "Error Loading Store" = "Errore di caricamento Store";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "Funzione non abilitata per questa demo";
+"Feature not enabled for this demo" = "Funzione non abilitata in questa demo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Adatta";
@@ -98,7 +98,10 @@
 "Note" = "Nota";
 
 /* button title
-   OK button label */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
 
 
 
@@ -165,7 +168,7 @@
 "username" = "nome utente";
 
 /* alert message */
-"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Hai toccato un link che modificherà le preferenze seguenti:\n\n\"%@\"\n\nAccettare queste modifiche?";
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Hai toccato un link che modificherà le preferenze seguenti:\n\n“%@”\n\nAccettare queste modifiche?";
 
 /* debug setting alert message */
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Hai toccato un link che eseguirà il seguente comando di debug:\n\n“%@”\n\nSe non è stato il gruppo di supporto di Omni a consigliarti questa operazione, non proseguire.\nEseguire il comando?";

@@ -14,6 +14,8 @@
 
 #import <OmniUI/OUIImagePickerGroupCell.h>
 #import <OmniUI/OUIImagePickerAssetsViewController.h>
+#import <OmniUI/OUISegmentedViewController.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 RCS_ID("$Id$")
 
@@ -85,31 +87,24 @@ static NSString *OUIImagePickerEmptyViewName = @"OUIImagePickerEmptyView";
 {
     [super viewDidLoad];
 
+    self.library = [[ALAssetsLibrary alloc] init];
+    self.groups = [[NSMutableArray alloc] init];
+    
+    [self _registerForNotifications];
+    
     [self _updateGroupsAndSwitchViews];
 }
 
-- (void)viewWillAppear:(BOOL)animated;
+- (void)dealloc;
 {
-    [super viewWillAppear:animated];
+    [self _unregisterForNotifications];
 }
 
 #pragma mark - Private API
-- (UIView *)_topLevelViewFromNibNamed:(NSString *)nibName;
-{
-    UINib *nib = [UINib nibWithNibName:nibName bundle:nil];
-    NSArray *topLevelObjects = [nib instantiateWithOwner:nil options:nil];
-    OBASSERT([topLevelObjects count] == 1);
-    
-    UIView *topLevelView = (UIView *)[topLevelObjects firstObject];
-    OBASSERT([topLevelView isKindOfClass:[UIView class]]);
-    
-    return topLevelView;
-}
-
 - (UIView *)accessDeniedView;
 {
     if (!_accessDeniedView) {
-        _accessDeniedView = [self _topLevelViewFromNibNamed:OUIImagePickerAccessDeniedViewName];
+        _accessDeniedView = [UIView topLevelViewFromNibNamed:OUIImagePickerAccessDeniedViewName];
     }
     
     return _accessDeniedView;
@@ -118,20 +113,48 @@ static NSString *OUIImagePickerEmptyViewName = @"OUIImagePickerEmptyView";
 - (UIView *)emptyView;
 {
     if (!_emptyView) {
-        _emptyView = [self _topLevelViewFromNibNamed:OUIImagePickerEmptyViewName];
+        _emptyView = [UIView topLevelViewFromNibNamed:OUIImagePickerEmptyViewName];
     }
     
     return _emptyView;
 }
 
 #pragma mark - Private Helpers
+- (void)_registerForNotifications;
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_assetsLibraryDidChange:) name:ALAssetsLibraryChangedNotification object:self.library];
+}
+
+- (void)_unregisterForNotifications;
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)_assetsLibraryDidChange:(NSNotification *)notification;
+{
+    // Accroding to the documentation:
+    //   If the user information dictionary is nil, reload all assets and asset groups.
+    //   If the user information dictionary an empty dictionary, there is no need to reload assets and asset groups.
+    //   If the user information dictionary is not empty, reload the effected assets and asset groups. For the keys used, see “Notification Keys.”
+    // We're currently being lazy about non-nil/empty userInfo. We could optimize by selectively reloading. We can switch to that if we find this is too slow.
+    NSDictionary *userInfo = [notification userInfo];
+    BOOL shouldReload = ((userInfo == nil) || ([userInfo allKeys] > 0));
+    if (shouldReload) {
+        [self _updateGroupsAndSwitchViews];
+    }
+}
+
 - (void)_updateGroupsAndSwitchViews;
 {
-    self.library = [[ALAssetsLibrary alloc] init];
-    self.groups = [[NSMutableArray alloc] init];
+    [_groups removeAllObjects];
     
     // Grab the 'all group' type from the assets library does not create an explicit 'Photo Library' group with all of the photos. (Nor does oring it in with the 'all group'.) Because of this, we need to explicitly pull the 'Library' type separately.
     NSArray *groupTypesToFetch = @[@(ALAssetsGroupAll), @(ALAssetsGroupLibrary)];
+    
+    UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    spinner.color = [UIColor grayColor];
+    self.tableView.backgroundView = spinner;
+    [spinner startAnimating];
     
     [self _fetchAssetGroupsWithTypes:groupTypesToFetch completion:^{
             if ([_groups count] > 0) {
@@ -187,6 +210,12 @@ static NSString *OUIImagePickerEmptyViewName = @"OUIImagePickerEmptyView";
                                     [NSSortDescriptor sortDescriptorWithKey:@"oui_sortingOrder" ascending:YES],
                                     [NSSortDescriptor sortDescriptorWithKey:@"oui_sortingName" ascending:YES selector:@selector(localizedStandardCompare:)]
                                     ]];
+}
+
+#pragma mark - UIViewController (OUISegmentedViewControllerExtras)
+- (BOOL)wantsHiddenNavigationBar;
+{
+    return YES;
 }
 
 #pragma mark - UITableViewDelegate

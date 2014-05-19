@@ -1,4 +1,4 @@
-// Copyright 2005-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,8 +43,11 @@ struct OFRationalNumberStruct OFRationalFromDouble(double d)
     struct OFRationalNumberStruct r;
     
     r.lop = 0;
+    
+    /* Left-justify the number in an ofr_unsigned_wide, keeping track of the exponent */
     mbits = MIN(DBL_MANT_DIG, CHAR_BIT*(int)sizeof(m));
-    m = ldexp(frexp(fabs(d), &exponent), mbits);
+    m = (ofr_unsigned_wide)ldexp(frexp(fabs(d), &exponent), mbits);
+    /* And convert that into a normalized OFRational */
     OFRationalFromPartsExp(&r, m, 1, exponent - mbits, d<0);
 
     /*  Properly set the loss of precision bit when converting from a double. Right now it gets set in some cases even if converting the rational back to a double would produce the same number, because we had to round in order to fit the denominator: OFRationalFromDouble( 0.01 ) gets the lop bit set, even though it comes out as 1/100. But OFRationalFromDouble(nextafter(0.01, 1)) *should* get the lop bit set, because it also comes out as 1/100. */
