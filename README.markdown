@@ -26,16 +26,9 @@ Configuring the Source
 We place our project-wide configuration options in xcconfig files, under `OmniGroup/Configurations`. The naming scheme of the files is fairly straightforward, hopefully. Each project has `Omni-Global-{Debug,Release,...}.xcconfig` as the basis for the corresponding configuration. Each Mac target has `Omni-{Bundle,Application,Tool,...}-{Debug,Release,...}.xcconfig` and each iOS target has `Touch-{Application,Library}-{Debug,Release,...}.xcconfig`. Each of these end point configurations when `#include`s 'superclass' configurations (with "Common" in the name).
 
  
-Building from the command line
-------------------------------
+Building
+--------
 
-To build Debug versions of all the Omni frameworks:
-
-    cd OmniGroup
-    ./Scripts/Build Frameworks
-
-To build Release versions of all the Omni frameworks, instead do:
-
-    ./Scripts/Build Frameworks install
+The Workspaces directory contains a couple sample workspace that can be built from Xcode.
 
 Enjoy!
