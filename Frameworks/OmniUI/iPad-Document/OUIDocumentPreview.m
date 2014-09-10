@@ -576,9 +576,6 @@ static NSString *relevantPathForURL(NSURL *fileURL)
     NSString *dateString = [date xmlString];
     fileName = [fileName stringByAppendingFormat:@"-%@-%@", dateString, AreaNames[area]];
     
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
-        fileName = [fileName stringByAppendingString:@"-phone"];
-    
     fileName = [fileName stringByAppendingPathExtension:@"jpg"];
     
     return fileName;

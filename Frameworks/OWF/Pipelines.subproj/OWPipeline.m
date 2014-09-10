@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2006, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1366,7 +1366,7 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION
 
     [OWPipeline lock];
     NS_DURING {
-        newPipeline = [[[self class] allocWithZone:[self zone]] initWithCacheGroup:caches content:followedContent arcs:followedArcs target:aTarget];
+        newPipeline = [[[self class] alloc] initWithCacheGroup:caches content:followedContent arcs:followedArcs target:aTarget];
         [contextLock lock];
         [newPipeline->context addEntriesFromDictionary:context];
         [contextLock unlock];

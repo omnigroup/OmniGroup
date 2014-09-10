@@ -16,5 +16,7 @@
 	<false/>
 	<key>OUIDocumentPickerUseTestCode</key>
 	<false/>
+        <key>OUIDocumentPickerHasCellularInterface</key>
+        <string>auto</string>
 </dict>
 </plist>

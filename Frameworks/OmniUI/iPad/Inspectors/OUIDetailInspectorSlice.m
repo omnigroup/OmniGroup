@@ -19,12 +19,44 @@ RCS_ID("$Id$");
 
 @interface OUIDetailInspectorSliceTableViewCell : UITableViewCell
 @property(nonatomic,assign) BOOL enabled;
+@property(nonatomic,strong) UIImage *valueImage;
+@property(nonatomic,strong) UIImageView *valueImageView;
+
 @end
 
 @implementation OUIDetailInspectorSliceTableViewCell
+
+- (void)setValueImage:(UIImage *)valueImage;
+{
+    _valueImage = valueImage;
+    [self setNeedsLayout];
+}
+
+- (void)layoutSubviews;
+{
+    [super layoutSubviews];
+    
+    if (_valueImage) {
+        if (!self.valueImageView) {
+            self.valueImageView = [[UIImageView alloc] initWithImage:_valueImage];
+            [self.contentView addSubview:self.valueImageView];
+        } else {
+            [self.valueImageView setImage:_valueImage];
+        }
+        [self.valueImageView sizeToFit];
+        CGRect frame = self.valueImageView.frame;
+        frame.origin.x = CGRectGetMaxX(self.detailTextLabel.frame) - frame.size.width;
+        frame.origin.y = CGRectGetMidY(self.contentView.frame) - frame.size.height/2.0;
+        self.valueImageView.frame = frame;
+        self.valueImageView.hidden = NO;
+    } else {
+        self.valueImageView.hidden = YES;
+    }
+}
+
 @end
 
-@interface OUIDetailInspectorSlice() <UITableViewDataSource, UITableViewDelegate>
+@interface OUIDetailInspectorSlice()
 @property(nonatomic,strong) UITableView *tableView;
 @end
 
@@ -159,6 +191,7 @@ RCS_ID("$Id$");
     item.title = self.title;
     item.enabled = YES;
     item.boldValue = NO;
+    item.drawImageAsTemplate = YES;
     
     [self updateItem:item atIndex:itemIndex];
     
@@ -174,16 +207,26 @@ RCS_ID("$Id$");
     cell.textLabel.text = title;
     cell.textLabel.textColor = placeholder ? [OUIInspector disabledLabelTextColor] : nil;
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];
-    
+
     NSString *value = item.value;
+    UIImage *valueImage = item.valueImage;
+    
     placeholder = NO;
-    if ([NSString isEmptyString:value]) {
+    if (valueImage) {
+        value = @"";
+        cell.valueImage = valueImage;
+    } else if ([NSString isEmptyString:value]) {
         placeholder = YES;
         value = [self placeholderValueForItemAtIndex:itemIndex];
     }
 
-    if (item.image != nil)
-        cell.imageView.image = [item.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    if (item.image != nil) {
+        if (item.drawImageAsTemplate) {
+            cell.imageView.image = [item.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        } else {
+            cell.imageView.image = item.image;
+        }
+    }
     
     // No entry in UIInterface for this.
     static UIColor *defaultDetailTextColor = nil;

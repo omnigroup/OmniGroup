@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,12 +39,12 @@ NSString *OFXMLIDFromString(NSString *str)
     
     return [@"_" stringByAppendingString:[[str dataUsingEncoding:NSUTF8StringEncoding] unadornedLowercaseHexString]];
 }
-@interface OFXMLIdentifierRegistry (PrivateAPI)
-- (void)_setup:(OFXMLIdentifierRegistry *)registry;
-- (void)_clear;
-@end
 
 @implementation OFXMLIdentifierRegistry
+{
+    CFMutableDictionaryRef _idToObject;
+    CFMutableDictionaryRef _objectToID;
+}
 
 - (id)initWithRegistry:(OFXMLIdentifierRegistry *)registry;
 {
@@ -76,9 +76,9 @@ NSString *OFXMLIDFromString(NSString *str)
     NSMutableDictionary *dict = [super debugDictionary];
     
     if (_idToObject)
-        [dict setObject:((NSMutableDictionary *)_idToObject) forKey:@"_idToObject"];
+        [dict setObject:((__bridge NSMutableDictionary *)_idToObject) forKey:@"_idToObject"];
     if (_objectToID)
-        [dict setObject:((NSMutableDictionary *)_objectToID) forKey:@"_objectToID"];
+        [dict setObject:((__bridge NSMutableDictionary *)_objectToID) forKey:@"_objectToID"];
     
     return dict;
 }
@@ -118,8 +118,8 @@ NSString *OFXMLIDFromString(NSString *str)
         object = [self objectForIdentifier:identifier];
         if (object) {
             // Was previously registered -- remove the mappings.
-            CFDictionaryRemoveValue(_idToObject, identifier);
-            CFDictionaryRemoveValue(_objectToID, object);
+            CFDictionaryRemoveValue(_idToObject, (__bridge CFStringRef)identifier);
+            CFDictionaryRemoveValue(_objectToID, (__bridge CFTypeRef)object);
             DEBUG_IDREG(@"In registry %p, de-registering object <%@-%p> with identifier %@", self, [(NSObject *)object class], object, identifier);
             [object removedFromIdentifierRegistry:self];
         }
@@ -130,13 +130,13 @@ NSString *OFXMLIDFromString(NSString *str)
             identifier = OFXMLIDFromString(identifier);
 
         [identifier retain]; // Loop should end with a retained string
-        while (!identifier || CFDictionaryGetValue(_idToObject, identifier)) {
+        while (!identifier || CFDictionaryGetValue(_idToObject, (__bridge CFStringRef)identifier)) {
             [identifier release];
             identifier = OFXMLCreateID();
         }
 
-        CFDictionarySetValue(_objectToID, object, identifier);
-        CFDictionarySetValue(_idToObject, identifier, object);
+        CFDictionarySetValue(_objectToID, (__bridge CFTypeRef)object, (__bridge CFStringRef)identifier);
+        CFDictionarySetValue(_idToObject, (__bridge CFStringRef)identifier, (__bridge CFTypeRef)object);
         [object addedToIdentifierRegistry:self withIdentifier:identifier];
         OBINVARIANT_EXPENSIVE([self checkInvariants]);
 
@@ -150,16 +150,16 @@ NSString *OFXMLIDFromString(NSString *str)
 - (id <OFXMLIdentifierRegistryObject>)objectForIdentifier:(NSString *)identifier;
 {
     OBINVARIANT_EXPENSIVE([self checkInvariants]);
-    return (id)CFDictionaryGetValue(_idToObject, identifier);
+    return (id)CFDictionaryGetValue(_idToObject, (__bridge CFStringRef)identifier);
 }
 
 - (NSString *)identifierForObject:(id <OFXMLIdentifierRegistryObject>)object;
 {
     OBINVARIANT_EXPENSIVE([self checkInvariants]);
-    return (NSString *)CFDictionaryGetValue(_objectToID, object);
+    return (__bridge NSString *)CFDictionaryGetValue(_objectToID, (__bridge CFTypeRef)object);
 }
 
-- (void)applyFunction:(CFDictionaryApplierFunction)function context:(void *)context;
+- (void)applyBlock:(void (^)(NSString *identifier, id <OFXMLIdentifierRegistryObject> object))block;
 {
     OBINVARIANT([self checkInvariants]);
     
@@ -167,7 +167,9 @@ NSString *OFXMLIDFromString(NSString *str)
     NSDictionary *mapping = [self copyIdentifierToObjectMapping];
     
     @try {
-	CFDictionaryApplyFunction((CFDictionaryRef)mapping, function, context);
+        [mapping enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, id object, BOOL *stop) {
+            block(identifier, object);
+        }];
     } @finally {
 	[mapping release];
     }
@@ -189,32 +191,27 @@ NSString *OFXMLIDFromString(NSString *str)
 
 - (NSMutableDictionary *)copyIdentifierToObjectMapping;
 {
-    return [[NSMutableDictionary alloc] initWithDictionary:(NSDictionary *)_idToObject];
+    return [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary *)_idToObject];
 }
 
 #ifdef OMNI_ASSERTIONS_ON
 
-static void _checkEntry(const void *key, const void *value, void *context)
-{
-    NSString *identifier = (NSString *)key;
-    id object = (id)value;
-    CFDictionaryRef objectToID = (CFDictionaryRef)context;
-    
-    OBINVARIANT([identifier isKindOfClass:[NSString class]]);
-    OBINVARIANT(OFXMLIsValidID(identifier));
-    OBINVARIANT([object class]); // just make sure it isn't zombied
-
-    if (CFDictionaryGetValue(objectToID, object) != identifier) {
-        NSLog(@"_objectToID[%@] -> '%@'", identifier, OBShortObjectDescription(object));
-        NSLog(@"_idToObject['%@'] -> %@", OBShortObjectDescription(object), CFDictionaryGetValue((CFDictionaryRef)context, object));
-        OBINVARIANT(CFDictionaryGetValue(objectToID, object) == identifier);
-    }
-}
-
 - (BOOL)checkInvariants;
 {
     OBINVARIANT(CFDictionaryGetCount(_idToObject) == CFDictionaryGetCount(_objectToID));
-    CFDictionaryApplyFunction(_idToObject, _checkEntry, _objectToID);
+    
+    [(__bridge NSDictionary *)_idToObject enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, id object, BOOL *stop) {
+        OBINVARIANT([identifier isKindOfClass:[NSString class]]);
+        OBINVARIANT(OFXMLIsValidID(identifier));
+        OBINVARIANT([object class]); // just make sure it isn't zombied
+        
+        if (CFDictionaryGetValue(_objectToID, (__bridge CFTypeRef)object) != (__bridge CFStringRef)identifier) {
+            NSLog(@"_objectToID[%@] -> '%@'", identifier, OBShortObjectDescription(object));
+            NSLog(@"_idToObject['%@'] -> %@", OBShortObjectDescription(object), CFDictionaryGetValue(_objectToID, (__bridge CFTypeRef)object));
+            OBINVARIANT(CFDictionaryGetValue(_objectToID, (__bridge CFTypeRef)object) == (__bridge CFStringRef)identifier);
+        }
+    }];
+    
     return YES;
 }
 
@@ -223,7 +220,7 @@ static void _checkEntry(const void *key, const void *value, void *context)
     OBINVARIANT([self checkInvariants]);
     OBINVARIANT([otherRegistry checkInvariants]);
     __block BOOL mismatchFound = NO;
-    [(NSDictionary *)_idToObject enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+    [(__bridge NSDictionary *)_idToObject enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         NSString *identifier = key;
         id otherRegistryObject = [otherRegistry objectForIdentifier:identifier];
         if (otherRegistryObject != obj) {
@@ -235,10 +232,7 @@ static void _checkEntry(const void *key, const void *value, void *context)
 }
 #endif
 
-@end
-
-
-@implementation OFXMLIdentifierRegistry (PrivateAPI)
+#pragma mark - Private
 
 - (void)_setup:(OFXMLIdentifierRegistry *)registry;
 {
@@ -259,14 +253,12 @@ static void _checkEntry(const void *key, const void *value, void *context)
 
 }
 
-static void _objectRemoved(const void *key, const void *value, void *context)
-{
-    [(id <OFXMLIdentifierRegistryObject>)value removedFromIdentifierRegistry:(OFXMLIdentifierRegistry *)context];
-}
-
 - (void)_clear;
 {
-    [self applyFunction:_objectRemoved context:self];
+    [self applyBlock:^(NSString *identifier, id <OFXMLIdentifierRegistryObject> object) {
+        [object removedFromIdentifierRegistry:self];
+    }];
+
     if (_idToObject) {
         CFRelease(_idToObject);
         _idToObject = NULL;

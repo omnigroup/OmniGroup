@@ -16,12 +16,19 @@ RCS_ID("$Id$");
 static UIFont *_DefaultTabTitleFont;
 static UIFont *_DefaultSelectedTabTitleFont;
 
+static UIFont *_DefaultVerticalTabTitleFont;
+static UIFont *_DefaultVerticalSelectedTabTitleFont;
+
 @interface OUITabBar () {
   @private
+    BOOL _usesVerticalLayout;
     UIFont *_tabTitleFont;
     UIFont *_selectedTabTitleFont;
+    NSUInteger _selectedTabIndex;
+    UIView *_footerView;
 }
 
+@property (nonatomic, strong) NSMutableArray *tabImages;
 @property (nonatomic, copy) NSArray *tabButtons;
 
 @end
@@ -41,6 +48,12 @@ static UIFont *_DefaultSelectedTabTitleFont;
     
     font = [UIFont mediumSystemFontOfSize:14.0];
     [self setDefaultSelectedTabTitleFont:font];
+
+    font = [UIFont mediumSystemFontOfSize:17.0];
+    [self setDefaultVerticalTabTitleFont:font];
+    
+    font = [UIFont mediumSystemFontOfSize:17.0];
+    [self setDefaultSelectedVerticalTabTitleFont:font];
 }
 
 + (UIFont *)defaultTabTitleFont;
@@ -61,6 +74,26 @@ static UIFont *_DefaultSelectedTabTitleFont;
 + (void)setDefaultSelectedTabTitleFont:(UIFont *)font;
 {
     _DefaultSelectedTabTitleFont = [font copy];
+}
+
++ (UIFont *)defaultVerticalTabTitleFont;
+{
+    return _DefaultVerticalTabTitleFont;
+}
+
++ (void)setDefaultVerticalTabTitleFont:(UIFont *)font;
+{
+    _DefaultVerticalTabTitleFont = [font copy];
+}
+
++ (UIFont *)defaultSelectedVerticalTabTitleFont;
+{
+    return _DefaultVerticalSelectedTabTitleFont;
+}
+
++ (void)setDefaultSelectedVerticalTabTitleFont:(UIFont *)font;
+{
+    _DefaultVerticalSelectedTabTitleFont = [font copy];
 }
 
 - (id)initWithFrame:(CGRect)frame;
@@ -95,25 +128,25 @@ static UIFont *_DefaultSelectedTabTitleFont;
     
     self.tabTitleFont = [[self class] defaultTabTitleFont];
     self.selectedTabTitleFont = [[self class] defaultSelectedTabTitleFont];
+    
+    self.verticalTabTitleFont = [[self class] defaultVerticalTabTitleFont];
+    self.selectedVerticalTabTitleFont = [[self class] defaultSelectedVerticalTabTitleFont];
 }
 
-- (NSUInteger)tabCount;
+- (BOOL)usesVerticalLayout;
 {
-    return self.tabTitles.count;
+    return _usesVerticalLayout;
 }
 
-- (void)setSelectedTabIndex:(NSUInteger)selectedTabIndex;
+- (void)setUsesVerticalLayout:(BOOL)usesVerticalLayout;
 {
-    _selectedTabIndex = selectedTabIndex;
+    if (_usesVerticalLayout != usesVerticalLayout) {
+        _usesVerticalLayout = usesVerticalLayout;
 
-    [self setNeedsLayout];
-    [self setNeedsDisplay];
-}
-
-- (void)setTabTitles:(NSArray *)tabTitles;
-{
-    _tabTitles = [tabTitles copy];
-    [self invalidateTabButtons];
+        [self invalidateTabButtons];
+        [self setNeedsLayout];
+        [self setNeedsDisplay];
+    }
 }
 
 - (UIFont *)tabTitleFont;
@@ -138,9 +171,68 @@ static UIFont *_DefaultSelectedTabTitleFont;
     [self setNeedsLayout];
 }
 
+- (NSUInteger)tabCount;
+{
+    return self.tabTitles.count;
+}
+
+- (NSUInteger)selectedTabIndex;
+{
+    return _selectedTabIndex;
+}
+
+- (void)setSelectedTabIndex:(NSUInteger)selectedTabIndex;
+{
+    _selectedTabIndex = selectedTabIndex;
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay];
+}
+
+- (void)setTabTitles:(NSArray *)tabTitles;
+{
+    _tabTitles = [tabTitles copy];
+    [self invalidateTabButtons];
+}
+
+- (void)setImage:(UIImage *)image forTabWithTitle:(NSString *)tabTitle;
+{
+    if (self.tabTitles == nil) {
+        return;
+    }
+    OBASSERT(self.tabImages != nil);
+    
+    NSUInteger index = [self.tabTitles indexOfObject:tabTitle];
+    if (index == NSNotFound) {
+        return;
+    }
+    
+    self.tabImages[index] = image ?: [NSNull null];
+    if (self.tabButtons != nil) {
+        OBASSERT(index < [self.tabButtons count]);
+        [self.tabButtons[index] setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+                                forState:UIControlStateNormal];
+        [self.tabButtons[index] setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
+                                forState:UIControlStateSelected];
+    }
+}
+
+- (UIView *)footerView;
+{
+    return _footerView;
+}
+
+- (void)setFooterView:(UIView *)footerView;
+{
+    _footerView = footerView;
+    [self setNeedsLayout];
+}
+
 - (void)layoutSubviews;
 {
     [super layoutSubviews];
+    
+    [self.footerView removeFromSuperview];
     
     if (self.tabButtons == nil) {
         NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
@@ -150,11 +242,20 @@ static UIFont *_DefaultSelectedTabTitleFont;
         NSUInteger tabCount = self.tabCount;
         NSMutableArray *buttonsArray = [NSMutableArray array];
         
+        OBASSERT([self.tabImages count] == [self.tabTitles count]);
         [self.tabTitles enumerateObjectsUsingBlock:^(NSString *title, NSUInteger index, BOOL *stop) {
-            UIButton *button = [OUITabBarButton tabBarButton];
+            UIButton *button = (_usesVerticalLayout ? [OUITabBarButton verticalTabBarButton] : [OUITabBarButton tabBarButton]);
             
             [button setTitle:title forState:UIControlStateNormal];
             [button addTarget:self action:@selector(selectTab:) forControlEvents:UIControlEventTouchUpInside];
+            
+            UIImage *image = self.tabImages[index];
+            if (![image isNull]) {
+                [button setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+                        forState:UIControlStateNormal];
+                [button setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
+                        forState:UIControlStateSelected];
+            }
             
             // UISegmentedControl subelements are read out as "1 of 3" using VoiceOver.
             // This is the closet approximation we can get with our custom control
@@ -171,23 +272,49 @@ static UIFont *_DefaultSelectedTabTitleFont;
         self.tabButtons = buttonsArray;
     }
     
-    NSUInteger tabCount = self.tabCount;
-    CGRect remainingFrame = self.bounds;
-    CGFloat widths[tabCount];
-    
-    [self computeTabWidths:widths];
-    
-    for (NSUInteger index = 0; index < tabCount; index ++) {
-        UIButton *button = self.tabButtons[index];
-        CGRect buttonFrame = CGRectZero;
-        CGRectDivide(remainingFrame, &buttonFrame, &remainingFrame, widths[index], CGRectMinXEdge);
+    if (self.usesVerticalLayout) {
+        const CGFloat buttonHeight = 64;
+        NSUInteger tabCount = self.tabCount;
+        CGRect remainingFrame = self.bounds;
+
+        for (NSUInteger index = 0; index < tabCount; index ++) {
+            UIButton *button = self.tabButtons[index];
+            CGRect buttonFrame = CGRectZero;
+            CGRectDivide(remainingFrame, &buttonFrame, &remainingFrame, buttonHeight, CGRectMinYEdge);
+            
+            button.frame = buttonFrame;
+            button.selected = (index == _selectedTabIndex);
+            
+            UIFont *font = button.selected ? self.selectedVerticalTabTitleFont : self.verticalTabTitleFont;
+            OBASSERT(font != nil);
+            button.titleLabel.font = font;
+        }
         
-        button.frame = buttonFrame;
-        button.selected = (index == _selectedTabIndex);
+        if (_footerView != nil) {
+            _footerView.translatesAutoresizingMaskIntoConstraints = NO;
+            _footerView.autoresizingMask = (UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth);
+            _footerView.frame = remainingFrame;
+            [self addSubview:_footerView];
+        }
+    } else {
+        NSUInteger tabCount = self.tabCount;
+        CGRect remainingFrame = self.bounds;
+        CGFloat widths[tabCount];
         
-        UIFont *font = button.selected ? self.selectedTabTitleFont : self.tabTitleFont;
-        OBASSERT(font != nil);
-        button.titleLabel.font = font;
+        [self computeTabWidths:widths];
+        
+        for (NSUInteger index = 0; index < tabCount; index ++) {
+            UIButton *button = self.tabButtons[index];
+            CGRect buttonFrame = CGRectZero;
+            CGRectDivide(remainingFrame, &buttonFrame, &remainingFrame, widths[index], CGRectMinXEdge);
+            
+            button.frame = buttonFrame;
+            button.selected = (index == _selectedTabIndex);
+            
+            UIFont *font = button.selected ? self.selectedTabTitleFont : self.tabTitleFont;
+            OBASSERT(font != nil);
+            button.titleLabel.font = font;
+        }
     }
 }
 
@@ -195,32 +322,101 @@ static UIFont *_DefaultSelectedTabTitleFont;
 {
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGRect bounds = self.bounds;
-    CGFloat widths[_tabTitles.count];
-    
-    memset(widths, 0, sizeof(widths));
-    [self computeTabWidths:widths];
-    
-    CGFloat halfPixel = 0.5f / self.contentScaleFactor;
-    CGFloat x = CGRectGetMinX(bounds) + halfPixel;
-    
-    for (NSUInteger index = 0; index < _tabTitles.count; index++) {
-        x += widths[index];
-        CGContextMoveToPoint(context, x, CGRectGetMinY(bounds));
-        CGContextAddLineToPoint(context, x, CGRectGetMaxY(bounds) - halfPixel*2);
+
+    if (self.usesVerticalLayout) {
+        NSUInteger buttonCount = _tabButtons.count;
+        CGFloat halfPixel = 0.5 / self.contentScaleFactor;
         
-        if (_selectedTabIndex > 0 && (_selectedTabIndex - 1) == index) {
-            CGContextMoveToPoint(context, CGRectGetMinX(bounds), CGRectGetMaxY(bounds) - halfPixel);
-            CGContextAddLineToPoint(context, x + halfPixel, CGRectGetMaxY(bounds) - halfPixel);
-        } else if (_selectedTabIndex < (_tabTitles.count - 1) && (_selectedTabIndex == index)) {
-            CGContextMoveToPoint(context, x - halfPixel, CGRectGetMaxY(bounds) - halfPixel);
-            CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), CGRectGetMaxY(bounds) - halfPixel);
+        // Right hand edge
+        CGContextSaveGState(context);
+        {
+            [_tabButtons enumerateObjectsUsingBlock:^(OUITabBarButton *button, NSUInteger index, BOOL *stop) {
+                CGRect buttonFrame = button.frame;
+                CGFloat x = CGRectGetMaxX(bounds);
+
+                if (_selectedTabIndex != index) {
+                    CGContextMoveToPoint(context, x, CGRectGetMinY(buttonFrame));
+                    CGContextAddLineToPoint(context, x, CGRectGetMaxY(buttonFrame));
+                }
+                
+                if (index == buttonCount - 1) {
+                    CGContextMoveToPoint(context, x, CGRectGetMaxY(buttonFrame));
+                    CGContextAddLineToPoint(context, x, CGRectGetMaxY(bounds));
+                }
+            }];
+
+            CGContextSetLineWidth(context, 20);
+            CGContextReplacePathWithStrokedPath(context);
+            CGContextClip(context);
+            
+            CGPoint startPoint = {
+                .x = CGRectGetMaxX(bounds) - 10,
+                .y = CGRectGetMinY(bounds)
+            };
+            
+            CGPoint endPoint = {
+                .x = CGRectGetMaxX(bounds),
+                .y = CGRectGetMinY(bounds)
+            };
+
+            CGContextDrawLinearGradient(context, [self verticalTabEdgeGradient], startPoint, endPoint, 0);
+
+            [[self separatorColor] set];
+            CGContextMoveToPoint(context, CGRectGetMaxX(bounds) - halfPixel, CGRectGetMinY(bounds));
+            CGContextAddLineToPoint(context, CGRectGetMaxX(bounds) - halfPixel, CGRectGetMaxY(bounds));
+            CGContextSetLineWidth(context, 1.0 / self.contentScaleFactor);
+            CGContextStrokePath(context);
         }
+        CGContextRestoreGState(context);
+        
+        // Button separators
+        CGContextSaveGState(context);
+        {
+            [[self separatorColor] set];
+            [_tabButtons enumerateObjectsUsingBlock:^(OUITabBarButton *button, NSUInteger index, BOOL *stop) {
+                CGRect buttonFrame = button.frame;
+                
+                CGContextMoveToPoint(context, CGRectGetMinX(bounds), CGRectGetMaxY(buttonFrame) - halfPixel);
+                CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), CGRectGetMaxY(buttonFrame) - halfPixel);
+                
+                
+                CGContextSetLineWidth(context, index == buttonCount - 1 ? 4 : 1 / self.contentScaleFactor);
+                CGContextStrokePath(context);
+            }];
+        }
+        CGContextRestoreGState(context);
+    } else {
+        CGFloat widths[_tabTitles.count];
+        
+        memset(widths, 0, sizeof(widths));
+        [self computeTabWidths:widths];
+        
+        CGContextSaveGState(context);
+        {
+            CGFloat halfPixel = 0.5 / self.contentScaleFactor;
+            CGFloat x = CGRectGetMinX(bounds) + halfPixel;
+            
+            for (NSUInteger index = 0; index < _tabTitles.count; index++) {
+                x += widths[index];
+                CGContextMoveToPoint(context, x, CGRectGetMinY(bounds));
+                CGContextAddLineToPoint(context, x, CGRectGetMaxY(bounds) - halfPixel*2);
+                
+                if (_selectedTabIndex > 0 && (_selectedTabIndex - 1) == index) {
+                    CGContextMoveToPoint(context, CGRectGetMinX(bounds), CGRectGetMaxY(bounds) - halfPixel);
+                    CGContextAddLineToPoint(context, x + halfPixel, CGRectGetMaxY(bounds) - halfPixel);
+                } else if (_selectedTabIndex < (_tabTitles.count - 1) && (_selectedTabIndex == index)) {
+                    CGContextMoveToPoint(context, x - halfPixel, CGRectGetMaxY(bounds) - halfPixel);
+                    CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), CGRectGetMaxY(bounds) - halfPixel);
+                }
+            }
+            
+            CGContextSetLineWidth(context, 1.0 / self.contentScaleFactor);
+            CGContextReplacePathWithStrokedPath(context);
+            CGContextClip(context);
+            CGContextDrawLinearGradient(context, [self gradientForSeparatorBetweenHorizontalTabs], CGPointMake(CGRectGetMidX(bounds), CGRectGetMaxY(bounds)), CGPointMake(CGRectGetMidX(bounds), CGRectGetMinY(bounds)), kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
+        }
+        CGContextRestoreGState(context);
     }
-    
-    CGContextSetLineWidth(context, 1.0f / self.contentScaleFactor);
-    CGContextReplacePathWithStrokedPath(context);
-    CGContextClip(context);
-    CGContextDrawLinearGradient(context, [self separatorGradient], CGPointMake(CGRectGetMidX(bounds), CGRectGetMaxY(bounds)), CGPointMake(CGRectGetMidX(bounds), CGRectGetMinY(bounds)), kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 }
 
 #pragma mark Accessibility
@@ -248,6 +444,10 @@ static UIFont *_DefaultSelectedTabTitleFont;
         [button removeFromSuperview];
     }
     
+    self.tabImages = [[self.tabTitles arrayByPerformingBlock:^id(id anObject) {
+        return [NSNull null];
+    }] mutableCopy];
+    
     self.tabButtons = nil;
     self.selectedTabIndex = NSNotFound;
     
@@ -272,20 +472,42 @@ static UIFont *_DefaultSelectedTabTitleFont;
     }
 }
 
-- (CGGradientRef)separatorGradient;
+- (UIColor *)separatorColor;
+{
+    return [UIColor colorWithWhite:0.90 alpha:1.00];
+}
+
+- (CGGradientRef)gradientForSeparatorBetweenHorizontalTabs;
 {
     static CGGradientRef separatorGradient = NULL;
     if (separatorGradient != NULL)
         return separatorGradient;
     
-    CGFloat components[] = {0.80f, 1.0f, 0.96f, 1.0f};
-    CGFloat locations[] = {0.0f, 1.0f};
+    CGFloat components[] = {0.80, 1.0, 0.96, 1.0};
+    CGFloat locations[] = {0.0, 1.0};
     CGColorSpaceRef space = CGColorSpaceCreateDeviceGray();
-
+    
     separatorGradient = CGGradientCreateWithColorComponents(space, components, locations, sizeof(locations) / sizeof(CGFloat));
-
+    
     CGColorSpaceRelease(space);
+    
+    return separatorGradient;
+}
 
+- (CGGradientRef)verticalTabEdgeGradient;
+{
+    static CGGradientRef separatorGradient = NULL;
+    if (separatorGradient != NULL)
+        return separatorGradient;
+    
+    CGFloat components[] = {0.96, 0.0, 0.96, 1.0};
+    CGFloat locations[] = {0.0, 1.0};
+    CGColorSpaceRef space = CGColorSpaceCreateDeviceGray();
+    
+    separatorGradient = CGGradientCreateWithColorComponents(space, components, locations, sizeof(locations) / sizeof(CGFloat));
+    
+    CGColorSpaceRelease(space);
+    
     return separatorGradient;
 }
 

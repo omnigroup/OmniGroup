@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -100,7 +100,8 @@ static unsigned ScopeContext;
     [_actionOperationQueue setMaxConcurrentOperationCount:1];
 #ifdef OMNI_ASSERTIONS_ON
 #define BadDelegate(sel) OBASSERT_NOT_IMPLEMENTED(_weak_delegate, sel)
-    BadDelegate(createNewDocumentAtURL:completionHandler:); // Use the createNewDocumentAtURL:templateURL:completionHandler: instead
+    BadDelegate(createNewDocumentAtURL:completionHandler:); // Use the createdNewDocument:templateURL:completionHandler: instead
+    BadDelegate(createNewDocumentAtURL:completionHandler:); // Use the createdNewDocument:templateURL:completionHandler: instead
 #endif
 
     return self;
@@ -392,7 +393,7 @@ static unsigned ScopeContext;
     return [self documentTypeForNewFilesOfType:ODSDocumentTypeNormal];
 }
 
-- (void)createNewDocumentInScope:(ODSScope *)scope folder:(ODSFolderItem *)folder documentType:(ODSDocumentType)type templateURL:(NSURL *)templateURL completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
+- (void)duplicateDocumentFromTemplateInScope:(ODSScope *)scope folder:(ODSFolderItem *)folder documentType:(ODSDocumentType)type templateFileItem:(ODSFileItem *)templateFileItem completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
 {
     NSString *documentType = [self documentTypeForNewFilesOfType:type];
 
@@ -411,7 +412,6 @@ static unsigned ScopeContext;
             baseName = @"My Document";
         }
 
-        OBFinishPortingLater("Allow creating documents in folders");
         NSURL *newDocumentURL = [scope urlForNewDocumentInFolder:folder baseName:baseName fileType:documentType];
 
         // Might be creating a document in a folder that has only undownloaded documents, in which case we won't have created it yet.
@@ -424,23 +424,32 @@ static unsigned ScopeContext;
                 return;
             }
         }
-        
-        
-        [delegate createNewDocumentAtURL:newDocumentURL templateURL:templateURL completionHandler:^(NSError *errorOrNil){
-            if (actionHandler) {
-                if (errorOrNil)
-                    actionHandler(nil, errorOrNil);
-                else
-                    actionHandler(newDocumentURL, nil);
+
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            if (templateFileItem != nil) {
+                // Copy our template document to our new document URL
+                NSError *copyError = nil;
+                if (![[NSFileManager defaultManager] copyItemAtURL:templateFileItem.fileURL toURL:newDocumentURL error:&copyError]) {
+                    actionHandler(nil, copyError);
+                    return;
+                }
+            } else {
+                // We are going to create a document without an actual file on disk since there is no template to copy over. createdNewDocument:templateURL:completionHandler: should do the right thing for creating an empty new document.
             }
+
+            BOOL isDirectory = [[newDocumentURL absoluteString] hasSuffix:@"/"];
+            ODSFileItem *newDocument = [[ODSFileItem alloc] initWithScope:scope fileURL:newDocumentURL isDirectory:isDirectory fileModificationDate:[NSDate date] userModificationDate:[NSDate date]];
+            [delegate createdNewDocument:newDocument templateURL:templateFileItem.fileURL completionHandler:^(NSError *errorOrNil){
+                if (actionHandler) {
+                    if (errorOrNil)
+                        actionHandler(nil, errorOrNil);
+                    else
+                        actionHandler(newDocumentURL, nil);
+                }
+            }];
         }];
     };
     [scope performDocumentCreationAction:action handler:handler];
-}
-
-- (void)createNewDocumentInScope:(ODSScope *)scope folder:(ODSFolderItem *)folder templateURL:(NSURL *)templateURL completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
-{
-    [self createNewDocumentInScope:scope folder:folder documentType:ODSDocumentTypeNormal templateURL:templateURL completionHandler:handler];
 }
 
 #pragma mark - NSObject (NSKeyValueObserving)

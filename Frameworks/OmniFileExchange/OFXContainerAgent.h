@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,10 +68,13 @@ typedef NS_ENUM(NSUInteger, OFXFileItemTransferKind) {
 - (OFXFileSnapshotTransfer *)prepareDownloadTransferForFileItem:(OFXFileItem *)fileItem error:(NSError **)outError;
 - (OFXFileSnapshotTransfer *)prepareDeleteTransferForFileItem:(OFXFileItem *)fileItem error:(NSError **)outError;
 
+- (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary *)recentErrorsByLocalRelativePath;
+- (void)clearRecentErrorsOnAllFileItems;
+
 // Describes the current state of files on the *server* for this container. When this is updated, the container calls -containerPublishedFileVersionsChanged: on its account agent (on the account agent's queue).
 @property(nonatomic,readonly) NSArray *publishedFileVersions;
 
-- (OFXFileItem *)publishedFileItemWithURL:(NSURL *)fileURL;
+- (OFXFileItem *)fileItemWithURL:(NSURL *)fileURL;
 - (void)addFileItems:(NSMutableArray *)fileItems inDirectoryWithRelativePath:(NSString *)localDirectoryRelativePath;
 
 //
@@ -88,7 +91,6 @@ typedef NS_ENUM(NSUInteger, OFXFileItemTransferKind) {
 - (void)downloadFileAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 - (void)deleteItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 - (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
-- (void)newlyUnshadowedFileItemRequestsContents:(OFXFileItem *)fileItem;
 
 @property(nonatomic,copy) NSString *debugName;
 

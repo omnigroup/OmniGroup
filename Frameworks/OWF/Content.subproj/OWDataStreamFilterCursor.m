@@ -56,7 +56,7 @@ static NSException *OWDataStreamCursor_SeekException;
     OBPRECONDITION(!haveStartedFilter);
 
     haveStartedFilter = YES;
-    bufferedData = [[NSMutableData allocWithZone:[self zone]] init];
+    bufferedData = [[NSMutableData alloc] init];
     bufferedDataStart = 0;
     bufferedDataValidLength = 0;
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 #import <OmniUI/UIScrollView-OUIExtensions.h>
 
 #import <OmniFoundation/OFExtent.h>
+#import <OmniFoundation/OFBacktrace.h>
 #import <OmniUI/OUIDragGestureRecognizer.h>
 
 #import "OUIParameters.h"
@@ -26,6 +27,8 @@ RCS_ID("$Id$");
 
 static void (*_original_setContentOffsetAnimated)(UIScrollView *self, SEL _cmd, CGPoint contentOffset, BOOL animated) = NULL;
 static void (*_original_setContentOffset)(UIScrollView *self, SEL _cmd, CGPoint contentOffset) = NULL;
+static void (*_original_setContentSize)(UIScrollView *self, SEL _cmd, CGSize contentSize) = NULL;
+static void (*_original_setContentInset)(UIScrollView *self, SEL _cmd, UIEdgeInsets egeInset) = NULL;
 
 static BOOL checkValue(CGFloat v)
 {
@@ -48,6 +51,24 @@ static void _replacement_setContentOffset(UIScrollView *self, SEL _cmd, CGPoint 
     _original_setContentOffset(self, _cmd, contentOffset);
 }
 
+static void  _replacement_setContentSize(UIScrollView *self, SEL _cmd, CGSize contentSize)
+{
+    OBASSERT(checkValue(contentSize.width));
+    OBASSERT(checkValue(contentSize.height));
+    
+    _original_setContentSize(self, _cmd, contentSize);
+}
+
+static void  _replacement_setContentInset(UIScrollView *self, SEL _cmd, UIEdgeInsets edgeInsets)
+{
+    OBASSERT(checkValue(edgeInsets.left));
+    OBASSERT(checkValue(edgeInsets.right));
+    OBASSERT(checkValue(edgeInsets.bottom));
+    OBASSERT(checkValue(edgeInsets.top));
+    
+    _original_setContentInset(self, _cmd, edgeInsets);
+}
+
 static void OUIScrollViewPerformPosing(void) __attribute__((constructor));
 static void OUIScrollViewPerformPosing(void)
 {
@@ -55,6 +76,8 @@ static void OUIScrollViewPerformPosing(void)
 
     _original_setContentOffsetAnimated = (typeof(_original_setContentOffsetAnimated))OBReplaceMethodImplementation(viewClass, @selector(setContentOffset:animated:), (IMP)_replacement_setContentOffsetAnimated);
     _original_setContentOffset = (typeof(_original_setContentOffset))OBReplaceMethodImplementation(viewClass, @selector(setContentOffset:), (IMP)_replacement_setContentOffset);
+    _original_setContentSize = (typeof(_original_setContentSize))OBReplaceMethodImplementation(viewClass, @selector(setContentSize:), (IMP)_replacement_setContentSize);
+    _original_setContentInset = (typeof(_original_setContentInset))OBReplaceMethodImplementation(viewClass, @selector(setContentInset:), (IMP)_replacement_setContentInset);
 }
 
 #endif

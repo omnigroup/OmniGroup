@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2005, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,11 +15,9 @@ static void Test(void);
 
 int main(int argc, const char *argv[])
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
-    Test();
-
-    [pool release];
+    @autoreleasepool {
+        Test();
+    }
     return 0;
 }
 

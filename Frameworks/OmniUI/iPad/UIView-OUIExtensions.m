@@ -15,13 +15,30 @@ RCS_ID("$Id$");
 
 @implementation UIView (OUIExtensions)
 
-#if 1 && defined(OMNI_ASSERTIONS_ON)
+#if defined(OMNI_ASSERTIONS_ON)
+    #define OUI_VIEW_CHECK_COORDINATES 0 // Too many false positives to have this on all the time
+    #define OUI_VIEW_CHECK_THREADING 1
+#else
+    #define OUI_VIEW_CHECK_COORDINATES 0
+    #define OUI_VIEW_CHECK_THREADING 0
+#endif
 
+#if OUI_VIEW_CHECK_COORDINATES
 static CGRect (*_original_convertRectFromView)(UIView *self, SEL _cmd, CGRect rect, UIView *view) = NULL;
 static CGRect (*_original_convertRectToView)(UIView *self, SEL _cmd, CGRect rect, UIView *view) = NULL;
 static CGPoint (*_original_convertPointFromView)(UIView *self, SEL _cmd, CGPoint point, UIView *view) = NULL;
 static CGPoint (*_original_convertPointToView)(UIView *self, SEL _cmd, CGPoint point, UIView *view) = NULL;
+#endif
 
+#if OUI_VIEW_CHECK_THREADING
+static void (*_original_setNeedsLayout)(UIView *self, SEL _cmd) = NULL;
+static void (*_original_setNeedsDisplay)(UIView *self, SEL _cmd) = NULL;
+static void (*_original_setNeedsDisplayInRect)(UIView *self, SEL _cmd, CGRect) = NULL;
+static void (*_original_setNeedsUpdateConstraints)(UIView *self, SEL _cmd) = NULL;
+static void (*_original_invalidateIntrinsicContentSize)(UIView *self, SEL _cmd) = NULL;
+#endif
+
+#if OUI_VIEW_CHECK_COORDINATES
 // -window on UIWindow returns nil instead of self. Also, though the documentation doesn't allow it, we currently want to allow the case that two views just have a common ancestor and aren't in a window at all (yet).
 static UIView *_rootView(UIView *view)
 {
@@ -163,6 +180,9 @@ static void (*_original_setFrame)(UIView *self, SEL _cmd, CGRect rect) = NULL;
 static void (*_original_setBounds)(UIView *self, SEL _cmd, CGRect rect) = NULL;
 static void (*_original_setCenter)(UIView *self, SEL _cmd, CGPoint point) = NULL;
 
+#endif // OUI_VIEW_CHECK_COORDINATES
+
+#ifdef OMNI_ASSERTIONS_ON
 static BOOL checkValue(CGFloat v)
 {
     OBASSERT(!isnan(v));
@@ -170,7 +190,6 @@ static BOOL checkValue(CGFloat v)
     return YES;
 }
 
-#ifdef OMNI_ASSERTIONS_ON
 BOOL OUICheckValidFrame(CGRect rect)
 {
     OBASSERT(checkValue(rect.origin.x));
@@ -181,25 +200,78 @@ BOOL OUICheckValidFrame(CGRect rect)
 }
 #endif
 
+#if OUI_VIEW_CHECK_COORDINATES
+static BOOL OUIShouldIgnoreProblemsInView(UIView *self)
+{
+    // Popping up a UIMenuController temporarily makes x=+Inf frames
+    if ([self containingViewMatching:^(UIView *view){
+        return [NSStringFromClass([view class]) isEqual:@"UICalloutBar"];
+    }])
+        return YES;
+    
+    return NO;
+}
+
 static void _replacement_setFrame(UIView *self, SEL _cmd, CGRect rect)
 {
-    OBASSERT(OUICheckValidFrame(rect));
+    if (OUIShouldIgnoreProblemsInView(self) == NO) {
+        OBASSERT(OUICheckValidFrame(rect));
+    }
     _original_setFrame(self, _cmd, rect);
 }
 static void _replacement_setBounds(UIView *self, SEL _cmd, CGRect rect)
 {
-    OBASSERT(OUICheckValidFrame(rect));
+    if (OUIShouldIgnoreProblemsInView(self) == NO) {
+        OBASSERT(OUICheckValidFrame(rect));
+    }
     _original_setBounds(self, _cmd, rect);
 }
 static void _replacement_setCenter(UIView *self, SEL _cmd, CGPoint point)
 {
-    OBASSERT(checkValue(point.x));
-    OBASSERT(checkValue(point.y));
+    if (OUIShouldIgnoreProblemsInView(self) == NO) {
+        OBASSERT(checkValue(point.x));
+        OBASSERT(checkValue(point.y));
+    }
     _original_setCenter(self, _cmd, point);
 }
+#endif
 
-static void OUIViewPerformPosing(void) __attribute__((constructor));
-static void OUIViewPerformPosing(void)
+
+#if OUI_VIEW_CHECK_THREADING
+static void _replacement_setNeedsLayout(UIView *self, SEL _cmd)
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    _original_setNeedsLayout(self, _cmd);
+}
+
+static void _replacement_setNeedsDisplay(UIView *self, SEL _cmd)
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    _original_setNeedsDisplay(self, _cmd);
+}
+
+static void _replacement_setNeedsDisplayInRect(UIView *self, SEL _cmd, CGRect rect)
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    _original_setNeedsDisplayInRect(self, _cmd, rect);
+}
+
+static void _replacement_setNeedsUpdateConstraints(UIView *self, SEL _cmd)
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    _original_setNeedsUpdateConstraints(self, _cmd);
+}
+
+static void _replacement_invalidateIntrinsicContentSize(UIView *self, SEL _cmd)
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    _original_invalidateIntrinsicContentSize(self, _cmd);
+}
+#endif
+
+#if OUI_VIEW_CHECK_COORDINATES
+static void OUIViewPerformPosingForCoordinates(void) __attribute__((constructor));
+static void OUIViewPerformPosingForCoordinates(void)
 {
     Class viewClass = NSClassFromString(@"UIView");
     _original_convertRectFromView = (typeof(_original_convertRectFromView))OBReplaceMethodImplementation(viewClass, @selector(convertRect:fromView:), (IMP)_replacement_convertRectFromView);
@@ -211,7 +283,20 @@ static void OUIViewPerformPosing(void)
     _original_setBounds = (typeof(_original_setBounds))OBReplaceMethodImplementation(viewClass, @selector(setBounds:), (IMP)_replacement_setBounds);
     _original_setCenter = (typeof(_original_setCenter))OBReplaceMethodImplementation(viewClass, @selector(setCenter:), (IMP)_replacement_setCenter);
 }
+#endif
 
+#if OUI_VIEW_CHECK_THREADING
+static void OUIViewPerformPosingForThreading(void) __attribute__((constructor));
+static void OUIViewPerformPosingForThreading(void)
+{
+    Class viewClass = NSClassFromString(@"UIView");
+    
+    _original_setNeedsLayout = (typeof(_original_setNeedsLayout))OBReplaceMethodImplementation(viewClass, @selector(setNeedsLayout), (IMP)_replacement_setNeedsLayout);
+    _original_setNeedsDisplay = (typeof(_original_setNeedsDisplay))OBReplaceMethodImplementation(viewClass, @selector(setNeedsDisplay), (IMP)_replacement_setNeedsDisplay);
+    _original_setNeedsDisplayInRect = (typeof(_original_setNeedsDisplayInRect))OBReplaceMethodImplementation(viewClass, @selector(setNeedsDisplayInRect:), (IMP)_replacement_setNeedsDisplayInRect);
+    _original_setNeedsUpdateConstraints = (typeof(_original_setNeedsUpdateConstraints))OBReplaceMethodImplementation(viewClass, @selector(setNeedsUpdateConstraints), (IMP)_replacement_setNeedsUpdateConstraints);
+    _original_invalidateIntrinsicContentSize = (typeof(_original_invalidateIntrinsicContentSize))OBReplaceMethodImplementation(viewClass, @selector(invalidateIntrinsicContentSize), (IMP)_replacement_invalidateIntrinsicContentSize);
+}
 #endif
 
 + (UIView *)topLevelViewFromNibNamed:(NSString *)nibName;

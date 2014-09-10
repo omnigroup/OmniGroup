@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,8 +15,6 @@ RCS_ID("$Id$")
 
 @implementation OFCharacterScanner (OFTrie)
 
-#define CLASS_OF(anObject) (*(Class *)(anObject))
-
 - (OFTrieBucket *)readLongestTrieElement:(OFTrie *)trie;
 {
     return [self readLongestTrieElement:trie delimiterOFCharacterSet:nil];
@@ -24,26 +22,23 @@ RCS_ID("$Id$")
 
 - (OFTrieBucket *)readLongestTrieElement:(OFTrie *)trie delimiterOFCharacterSet:(OFCharacterSet *)delimiterOFCharacterSet;
 {
-    OFTrieNode *node;
-    Class trieNodeClass;
-    OFTrieBucket *lastFoundBucket = nil;
-    unichar currentCharacter;
-    NSUInteger endOfTheLastBucketScanLocation = 0;
-    
-    node = [trie headNode];
-    if (node->childCount == 0)
+    OFTrieNode *node = [trie headNode];
+    if (trieChildCount(node) == 0)
 	return nil;
-    trieNodeClass = CLASS_OF(node);
+    Class trieNodeClass = [node class];
     
     [self setRewindMark]; // Note that since we set this at the beginning of where we are scanning, we can just use setScanLocation: inside this loop, because we are guaranteed to have all data AFTER this point until we discard the rewind mark.
     
+    OFTrieBucket *lastFoundBucket = nil;
+    NSUInteger endOfTheLastBucketScanLocation = 0;
+    unichar currentCharacter;
     while ((currentCharacter = scannerPeekCharacter(self)) != OFCharacterScannerEndOfDataCharacter) {
         
         node = trieFindChild(node, currentCharacter);
         if (node == nil)
             break;
         
-        if (CLASS_OF(node) != trieNodeClass) {
+        if ([node class] != trieNodeClass) {
             OFTrieBucket *bucket;
             unichar *lowerCheck, *upperCheck;
             
@@ -72,8 +67,8 @@ RCS_ID("$Id$")
                 [self discardRewindMark];
                 return bucket;
             }
-        } else if (!*node->characters) {
-            lastFoundBucket = *node->children;
+        } else if (!*trieCharacters(node)) {
+            lastFoundBucket = OB_CHECKED_CAST(OFTrieBucket, trieChildAtIndex(node, 0));
             endOfTheLastBucketScanLocation = scannerScanLocation(self) + 1;
         }
         
@@ -103,23 +98,18 @@ RCS_ID("$Id$")
 
 - (OFTrieBucket *)readShortestTrieElement:(OFTrie *)trie;
 {
-    OFTrieNode *node;
-    Class trieNodeClass;
-    OFTrieBucket *bucket;
-    unichar *lowerCheck, *upperCheck;
-    unichar currentCharacter;
-    
-    node = [trie headNode];
-    if (node->childCount == 0)
+    OFTrieNode *node = [trie headNode];
+    if (trieChildCount(node) == 0)
 	return nil;
     
-    trieNodeClass = CLASS_OF(node);
+    Class trieNodeClass = [node class];
+    unichar currentCharacter;
     while ((currentCharacter = scannerPeekCharacter(self)) != OFCharacterScannerEndOfDataCharacter) {
 	if ((node = trieFindChild(node, currentCharacter))) {
-	    if (CLASS_OF(node) != trieNodeClass) {
-		bucket = (OFTrieBucket *)node;
-		lowerCheck = bucket->lowerCharacters;
-		upperCheck = bucket->upperCharacters;
+	    if ([node class] != trieNodeClass) {
+		OFTrieBucket *bucket = (OFTrieBucket *)node;
+		unichar *lowerCheck = bucket->lowerCharacters;
+		unichar *upperCheck = bucket->upperCharacters;
 		
 		while (*lowerCheck && ((currentCharacter = scannerPeekCharacter(self)) != OFCharacterScannerEndOfDataCharacter)) {
 		    if (currentCharacter != *lowerCheck && currentCharacter != *upperCheck)
@@ -132,8 +122,8 @@ RCS_ID("$Id$")
 		} else {
 		    return bucket;
 		}
-	    } else if (!*node->characters) {
-		return *node->children;
+	    } else if (!*trieCharacters(node)) {
+		return trieChildAtIndex(node, 0);
 	    }
 	} else {
 	    break;

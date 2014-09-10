@@ -33,6 +33,8 @@
 - (void)sendFeedbackEmailTo:(NSString *)feedbackAddress subject:(NSString *)subjectLine body:(NSString *)body;
 - (void)sendFeedbackEmailWithBody:(NSString *)body;
 
+- (BOOL)openURL:(NSURL *)url; // Passes this off to -[NSWorkspace openURL:] if the local app doesn't intercept the URL
+
 // OAController has concrete implementations of the following NSApplicationDelegate methods. They're responsible for driving the OFController behavior at appropriate times during the app's lifecycle. If you override these methods, be sure to call super's implementation.
 - (void)applicationWillFinishLaunching:(NSNotification *)notification;
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;

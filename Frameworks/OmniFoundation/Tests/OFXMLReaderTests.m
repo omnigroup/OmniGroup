@@ -1,11 +1,10 @@
-// Copyright 2009-2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/OFXMLReader.h>
@@ -29,18 +28,18 @@ RCS_ID("$Id$")
     OBShouldNotError(reader != nil);
     
     OFXMLQName *name = nil;
-    shouldBeEqual([reader elementQName].name, @"root");
+    XCTAssertEqualObjects([reader elementQName].name, @"root");
     
     OBShouldNotError([reader openElement:&error]);
     
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"empty1");
+    XCTAssertEqualObjects(name.name, @"empty1");
     
     OBShouldNotError([reader skipCurrentElement:&error]);
-    shouldBeEqual([reader elementQName].name, @"empty2");
+    XCTAssertEqualObjects([reader elementQName].name, @"empty2");
     
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"empty2");
+    XCTAssertEqualObjects(name.name, @"empty2");
 }
 
 - (void)testCloseElementSkippingEmptyElement;
@@ -52,22 +51,22 @@ RCS_ID("$Id$")
     OBShouldNotError(reader != nil);
     
     OFXMLQName *name = nil;
-    shouldBeEqual([reader elementQName].name, @"root");
+    XCTAssertEqualObjects([reader elementQName].name, @"root");
     
     OBShouldNotError([reader openElement:&error]);
     
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"interior");
+    XCTAssertEqualObjects(name.name, @"interior");
     
     OBShouldNotError([reader openElement:&error]);
 
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"empty1");
+    XCTAssertEqualObjects(name.name, @"empty1");
     
     OBShouldNotError([reader closeElement:&error]);
     
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"follow");
+    XCTAssertEqualObjects(name.name, @"follow");
 }
 
 - (void)testCloseElementSkippingMultipleEmptyElement;
@@ -79,19 +78,19 @@ RCS_ID("$Id$")
     OBShouldNotError(reader != nil);
     
     OFXMLQName *name = nil;
-    shouldBeEqual([reader elementQName].name, @"root");
+    XCTAssertEqualObjects([reader elementQName].name, @"root");
     
     OBShouldNotError([reader openElement:&error]);
     
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"interior");
+    XCTAssertEqualObjects(name.name, @"interior");
     
     OBShouldNotError([reader openElement:&error]);
     
     OBShouldNotError([reader closeElement:&error]);
     
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"follow");
+    XCTAssertEqualObjects(name.name, @"follow");
 }
 
 - (void)testOpenEmptyElement;
@@ -103,18 +102,18 @@ RCS_ID("$Id$")
     OBShouldNotError(reader != nil);
     
     OFXMLQName *name = nil;
-    shouldBeEqual([reader elementQName].name, @"root");
+    XCTAssertEqualObjects([reader elementQName].name, @"root");
     
     OBShouldNotError([reader openElement:&error]);
     
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"empty1");
+    XCTAssertEqualObjects(name.name, @"empty1");
     
     OBShouldNotError([reader openElement:&error]);
     OBShouldNotError([reader closeElement:&error]);
 
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"empty2");
+    XCTAssertEqualObjects(name.name, @"empty2");
 }
 
 - (void)testCopyString;
@@ -131,8 +130,8 @@ RCS_ID("$Id$")
     BOOL endedElement = NO;
     OBShouldNotError([reader copyString:&str endingElement:&endedElement error:&error]);
     
-    shouldBeEqual(str, @"some text");
-    should(endedElement);
+    XCTAssertEqualObjects(str, @"some text");
+    XCTAssertTrue(endedElement);
     
 }
 
@@ -150,8 +149,8 @@ RCS_ID("$Id$")
     BOOL endedElement = NO;
     OBShouldNotError([reader copyString:&str endingElement:&endedElement error:&error]);
     
-    shouldBeEqual(str, @"sometext");
-    should(endedElement);
+    XCTAssertEqualObjects(str, @"sometext");
+    XCTAssertTrue(endedElement);
     
 }
 
@@ -169,8 +168,8 @@ RCS_ID("$Id$")
     BOOL endedElement = NO;
     OBShouldNotError([reader copyString:&str endingElement:&endedElement error:&error]);
     
-    shouldBeEqual(str, @"a");
-    shouldnt(endedElement);
+    XCTAssertEqualObjects(str, @"a");
+    XCTAssertFalse(endedElement);
     
 }
 
@@ -185,7 +184,7 @@ RCS_ID("$Id$")
     NSString *str = nil;
     OBShouldNotError([reader copyStringContentsToEndOfElement:&str error:&error]);
     
-    shouldBeEqual(str, @"abc");
+    XCTAssertEqualObjects(str, @"abc");
 
 }
 
@@ -207,7 +206,7 @@ RCS_ID("$Id$")
     NSString *str = nil;
     OBShouldNotError([reader copyStringContentsToEndOfElement:&str error:&error]);
     
-    shouldBeEqual(str, @"b"); // only string contents after <empty/>
+    XCTAssertEqualObjects(str, @"b"); // only string contents after <empty/>
     
 }
 
@@ -225,12 +224,12 @@ static void _testReadBoolContents(OFXMLReaderTests *self, SEL _cmd, NSString *in
     
     OBShouldNotError([reader readBoolContentsOfElement:&value defaultValue:defaultValue error:&error]);
     
-    STAssertEquals(value, expectedValue, nil);
+    XCTAssertEqual(value, expectedValue);
     
     // Should have skipped the bool element.
     OFXMLQName *name = nil;
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"foo");
+    XCTAssertEqualObjects(name.name, @"foo");
 }
 
 - (void)testReadBoolContents;
@@ -299,12 +298,12 @@ static void _testReadLongContents(OFXMLReaderTests *self, SEL _cmd, NSString *in
     
     OBShouldNotError([reader readLongContentsOfElement:&value defaultValue:defaultValue error:&error]);
     
-    STAssertEquals(value, expectedValue, nil);
+    XCTAssertEqual(value, expectedValue);
     
     // Should have skipped the long element.
     OFXMLQName *name = nil;
     OBShouldNotError([reader findNextElement:&name error:&error]);
-    shouldBeEqual(name.name, @"foo");
+    XCTAssertEqualObjects(name.name, @"foo");
 }
 
 - (void)testReadLongContents;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,20 +18,25 @@ RCS_ID("$Id$")
 
 // Init and dealloc
 
+- (id)init;
+{
+    return [self initCaseSensitive:YES];
+}
+
 - initCaseSensitive:(BOOL)shouldBeCaseSensitive;
 {
     if (!(self = [super init]))
         return nil;
 
-    head = [[OFTrieNode alloc] init];
-    caseSensitive = shouldBeCaseSensitive;
+    _headNode = [[OFTrieNode alloc] init];
+    _caseSensitive = shouldBeCaseSensitive;
 
     return self;
 }
 
 - (void)dealloc;
 {
-    [head release];
+    [_headNode release];
     [super dealloc];
 }
 
@@ -42,16 +47,11 @@ RCS_ID("$Id$")
     return [[[OFTrieEnumerator alloc] initWithTrie:self] autorelease];
 }
 
-- (BOOL)isCaseSensitive;
-{
-    return caseSensitive;
-}
-
 #define SAFE_ALLOCA_SIZE (8 * 8192)
 
 - (void)addBucket:(OFTrieBucket *)bucket forString:(NSString *)aString;
 {
-    OFTrieNode *to, *attachTo = head;
+    OFTrieNode *to, *attachTo = _headNode;
     unichar *buffer, *upperBuffer, *ptr;
 
     NSUInteger length = [aString length];
@@ -62,7 +62,7 @@ RCS_ID("$Id$")
     } else {
         buffer = (unichar *)alloca(bufferSize);
     }
-    if (!caseSensitive) {
+    if (!_caseSensitive) {
         if (useMalloc) {
             upperBuffer = (unichar *)malloc(bufferSize);
         } else {
@@ -74,7 +74,7 @@ RCS_ID("$Id$")
 
     ptr = buffer;
 
-    if (!caseSensitive) {
+    if (!_caseSensitive) {
 #warning -addBucket:forString: assumes that -uppercaseString and -lowercaseString return strings of identical length as the original string
         // This isn't actually true for unicode.
         // Also, they assume that string equality is equivalent to having the same unichars in the same sequence, which isn't generally true for unicode.
@@ -86,8 +86,8 @@ RCS_ID("$Id$")
     }
     [aString getCharacters:buffer];
     buffer[length] = '\0';
-    Class trieNodeClass = [head class];
-    if (head->childCount != 0) {
+    Class trieNodeClass = [_headNode class];
+    if (trieChildCount(_headNode) != 0) {
 	while ((to = trieFindChild(attachTo, *ptr))) {
             if ([to class] != trieNodeClass) {
 		OFTrieBucket *existingBucket;
@@ -107,7 +107,7 @@ RCS_ID("$Id$")
 
                     new = [[OFTrieNode alloc] init];
 		    [end addChild:new withCharacter:*ptr];
-                    if (!caseSensitive)
+                    if (!_caseSensitive)
                         [end addChild:new withCharacter:upperBuffer[ptr - buffer]];
 		    [new release];
 		    end = new;
@@ -123,7 +123,7 @@ RCS_ID("$Id$")
                         NSUInteger existingLength;
 
 			[end addChild:existingBucket withCharacter:*existingPtr];
-                        if (!caseSensitive)
+                        if (!_caseSensitive)
                             [end addChild:existingBucket withCharacter:existingBucket->upperCharacters[offset]];
 		
                         existingLength = 0;
@@ -148,18 +148,20 @@ RCS_ID("$Id$")
 	}
     }
     [attachTo addChild:bucket withCharacter:*ptr];
-    if (caseSensitive) {
-        ptr++;
+    if (_caseSensitive) {
+        if (*ptr)
+            ptr++;
 	[bucket setRemainingLower:ptr upper:ptr length:length - (ptr - buffer)];
     } else {
         [attachTo addChild:bucket withCharacter:upperBuffer[ptr - buffer]];
-        ptr++;
+        if (*ptr)
+            ptr++;
 	[bucket setRemainingLower:ptr upper:upperBuffer + (ptr - buffer) length:length - (ptr - buffer)];
     }
 
     if (useMalloc) {
 	free(buffer);
-        if (!caseSensitive)
+        if (!_caseSensitive)
             free(upperBuffer);
     }
 }
@@ -169,9 +171,8 @@ RCS_ID("$Id$")
     unichar *buffer, *ptr;
     OFTrieNode *currentNode;
     Class trieNodeClass;
-    ;
 
-    if (head->childCount == 0)
+    if (trieChildCount(_headNode) == 0)
 	return nil;
 
     NSUInteger length = [aString length];
@@ -183,8 +184,8 @@ RCS_ID("$Id$")
     [aString getCharacters:buffer];
     buffer[length] = 0;
     ptr = buffer;
-    currentNode = head;
-    trieNodeClass = [head class];
+    currentNode = _headNode;
+    trieNodeClass = [_headNode class];
     while ((currentNode = trieFindChild(currentNode, *ptr++))) {
 	if ([currentNode class] != trieNodeClass) {
 	    OFTrieBucket *test;
@@ -215,19 +216,12 @@ freeBufferAndReturnNil:
     return nil;
 }
 
-- (OFTrieNode *)headNode;
-{
-    return head;
-}
-
-// Debugging
+#pragma mark - Debugging
 
 - (NSMutableDictionary *)debugDictionary;
 {
-    NSMutableDictionary *debugDictionary;
-
-    debugDictionary = [super debugDictionary];
-    [debugDictionary setObject:head forKey:@"head"];
+    NSMutableDictionary *debugDictionary = [super debugDictionary];
+    [debugDictionary setObject:_headNode forKey:@"_headNode"];
     return debugDictionary;
 }
 

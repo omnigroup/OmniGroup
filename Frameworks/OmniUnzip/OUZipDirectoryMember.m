@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,8 +46,8 @@ static NSString * const OUZipRootDirectoryName = @".";  // We'll want to strip t
     _childrenByName = [[NSMutableDictionary alloc] init];
     _shouldArchive = shouldArchive;
 
-    if (children != nil)
-        [self performSelector:@selector(addChild:) withEachObjectInArray:children];
+    for (OUZipDirectoryMember *child in children)
+        [self addChild:child];
     
     return self;
 }

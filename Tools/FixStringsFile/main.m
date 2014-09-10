@@ -113,7 +113,17 @@ static NSString *_transformedTranslation(NSString *translation)
 - (NSComparisonResult)compareBySource:(Entry *)entry;
 {
     // We keep any multi-pair cross product locations together. Sort between entries by comparing the minimal source.
-    return [self.minimalSource localizedStandardCompare:entry.minimalSource];
+    NSString *minimalSource = self.minimalSource;
+    NSString *otherMinimalSource = entry.minimalSource;
+    
+    if (minimalSource == otherMinimalSource)
+        return NSOrderedSame;
+    if (minimalSource == nil)
+        return NSOrderedAscending;
+    if (otherMinimalSource == nil)
+        return NSOrderedDescending;
+        
+    return [minimalSource localizedStandardCompare:otherMinimalSource];
 }
 
 - (NSString *)minimalSource;

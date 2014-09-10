@@ -31,6 +31,7 @@
 #import <OmniFoundation/OFUTI.h>
 #import <OmniUI/OUIActivityIndicator.h>
 #import <OmniUI/OUIAlert.h>
+#import <OmniUI/OUIAppController+SpecialURLHandling.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUICertificateTrustAlert.h>
 #import <OmniUI/OUIInspector.h>
@@ -51,18 +52,18 @@
 #import <OmniUIDocument/OUIToolbarTitleButton.h>
 //#import <CrashReporter/CrashReporter.h>
 
-#import "OUICloudSetupViewController.h"
+#import "OUIImportExportAccountListViewController.h"
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentAppController-Internal.h"
+#import "OUIDocumentPicker-Internal.h"
 #import "OUIDocumentInbox.h"
 #import "OUIDocumentParameters.h"
 #import "OUIDocumentPickerViewController-Internal.h"
 #import "OUIDocumentPickerItemView-Internal.h"
 #import "OUIRestoreSampleDocumentListController.h"
-#import "OUISyncMenuController.h"
 #import "OUIServerAccountSetupViewController.h"
 #import "OUIDocumentOpenAnimator.h"
-#import "OUIImportWebDAVNavigationController.h"
+#import "OUIWebDAVSyncListController.h"
 #import "OUILaunchViewController.h"
 
 RCS_ID("$Id$");
@@ -124,6 +125,7 @@ static unsigned SyncAgentRunningAccountsContext;
     BOOL _previewGeneratorForegrounded;
     
     UIView *_snapshotForDocumentRebuilding;
+    NSURL *_specialURLToHandle;
 }
 
 + (void)initialize;
@@ -157,7 +159,9 @@ static unsigned SyncAgentRunningAccountsContext;
 // Called at app startup if the main xib didn't have a window outlet hooked up.
 - (UIWindow *)makeMainWindow;
 {
-    return [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    window.backgroundColor = [UIColor whiteColor];
+    return window;
 }
 
 @synthesize closeDocumentBarButtonItem = _closeDocumentBarButtonItem;
@@ -200,7 +204,7 @@ static unsigned SyncAgentRunningAccountsContext;
 - (void)closeDocument:(id)sender;
 {
     [self closeDocumentWithCompletionHandler:^{
-        [_documentPicker.navigationController dismissViewControllerAnimated:YES completion:nil];
+        [_documentPicker dismissViewControllerAnimated:YES completion:nil];
     }];
  
 }
@@ -331,7 +335,7 @@ static unsigned SyncAgentRunningAccountsContext;
     }];
 }
 
-- (void)openDocument:(ODSFileItem *)fileItem fileItemToRevealFrom:(ODSFileItem *)fileItemToRevealFrom showActivityIndicator:(BOOL)showActivityIndicator;
+- (void)openDocument:(ODSFileItem *)fileItem fileItemToRevealFrom:(ODSFileItem *)fileItemToRevealFrom;
 {
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(fileItem);
@@ -361,18 +365,16 @@ static unsigned SyncAgentRunningAccountsContext;
         }
 
         ODSFileItem *targetItem = [originalScope fileItemWithURL:targetURL];
-        [self openDocument:targetItem showActivityIndicator:showActivityIndicator];
+        [self openDocument:targetItem];
         return;
     }
-
+    
     OUIActivityIndicator *activityIndicator = nil;
-    if (showActivityIndicator) {
-        OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:fileItemToRevealFrom];
-        if (fileItemView)
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:self.window.tintColor];
-        else if (self.window.rootViewController == _documentPicker.navigationController)
-            activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_documentPicker.navigationController.topViewController.view withColor:self.window.tintColor];
-    }
+    OUIDocumentPickerFileItemView *fileItemView = [_documentPicker.selectedScopeViewController.mainScrollView fileItemViewForFileItem:fileItemToRevealFrom];
+    if (fileItemView)
+        activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:fileItemView withColor:self.window.tintColor];
+    else if (self.window.rootViewController == _documentPicker)
+        activityIndicator = [OUIActivityIndicator showActivityIndicatorInView:_documentPicker.view withColor:self.window.tintColor];
 
     void (^doOpen)(void) = ^{
         Class cls = [self documentClassForURL:fileItem.fileURL];
@@ -420,7 +422,7 @@ static unsigned SyncAgentRunningAccountsContext;
 
         [_document closeWithCompletionHandler:^(BOOL success) {
             [self _setDocument:nil];
-            [self.documentPicker.navigationController dismissViewControllerAnimated:NO completion:^{
+            [self.documentPicker dismissViewControllerAnimated:NO completion:^{
                 doOpen();
                 [lock unlock];
             }];
@@ -431,9 +433,9 @@ static unsigned SyncAgentRunningAccountsContext;
     }
 }
 
-- (void)openDocument:(ODSFileItem *)fileItem showActivityIndicator:(BOOL)showActivityIndicator;
+- (void)openDocument:(ODSFileItem *)fileItem;
 {
-    [self openDocument:fileItem fileItemToRevealFrom:fileItem showActivityIndicator:showActivityIndicator];
+    [self openDocument:fileItem fileItemToRevealFrom:fileItem];
 }
 
 #pragma mark -
@@ -460,12 +462,6 @@ static unsigned SyncAgentRunningAccountsContext;
 - (void)copySampleDocumentsToUserDocumentsWithCompletionHandler:(void (^)(NSDictionary *nameToURL))completionHandler;
 {
     OBPRECONDITION(_localScope);
-    
-#if 1 && defined(DEBUG_bungi)
-    if (completionHandler)
-        completionHandler(nil);
-    return;
-#endif
     
     [self copySampleDocumentsFromDirectoryURL:[self sampleDocumentsDirectoryURL] toScope:_localScope stringTableName:[self stringTableNameForSampleDocuments] completionHandler:completionHandler];
 }
@@ -577,13 +573,13 @@ static unsigned SyncAgentRunningAccountsContext;
     }];
 
     // If we don't hear anything back from the sync for a significant time, report that there is no data (though we let the sync keep running until it times out or we get put back to sleep/killed).
-    [self afterDelay:OUIBackgroundFetchTimeout performBlock:^{
+    OFAfterDelayPerformBlock(OUIBackgroundFetchTimeout, ^{
         if (handler) {
             DEBUG_FETCH(1, @"Timed out");
             handler(UIBackgroundFetchResultNoData);
             handler = nil;
         }
-     }];
+     });
     
     [_syncAgent sync:^{
         // This is ugly for our purposes here, but the -sync: completion handler can return before any transfers have started. Making the completion handler be after all this work is even uglier. In particular, automatic download of small docuemnts is controlled by OFXDocumentStoreScope. Wait for a bit longer for stuff to filter through the systems.
@@ -593,7 +589,7 @@ static unsigned SyncAgentRunningAccountsContext;
             return; // Status already reported
         
         DEBUG_FETCH(1, @"Sync request completed -- waiting for a bit to determine status");
-        [self afterDelay:5.0 performBlock:^{
+        OFAfterDelayPerformBlock(5.0, ^{
             // If we have two accounts and one is offline, we'll let the 'new data' win on the other account (if there is new data).
             if (handler) {
                 BOOL foundError = NO;
@@ -613,7 +609,7 @@ static unsigned SyncAgentRunningAccountsContext;
                 }
                 handler = nil;
             }
-        }];
+        });
     }];
 }
 
@@ -646,15 +642,29 @@ static unsigned SyncAgentRunningAccountsContext;
             {
                 
                 // Import Options
-                if ([[OFXServerAccountRegistry defaultAccountRegistry].validImportExportAccounts count] > 0) {
-                    __weak OUIDocumentAppController *weakSelf = self;
-                    UIImage *image = [[UIImage imageNamed:@"OUIMenuItemImport.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-                    OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:image action:^{
-                        OUIImportWebDAVNavigationController *importNavigationController = [[OUIImportWebDAVNavigationController alloc] init];
-                        [weakSelf.window.rootViewController presentViewController:importNavigationController animated:YES completion:nil];
-                    }];
-                    [options addObject:importOption];
-                }
+                UIImage *image = [[UIImage imageNamed:@"OUIMenuItemImport.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+                OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:image action:^{
+                    OUIImportExportAccountListViewController *accountList = [[OUIImportExportAccountListViewController alloc] initForExporting:NO];
+                    accountList.title = NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"import sheet title");
+                    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:accountList];
+                    accountList.finished = ^(OFXServerAccount *account) {
+                        if (!account) {
+                            [navigationController dismissViewControllerAnimated:YES completion:nil];
+                        } else {
+                            NSError *error;
+                            OUIWebDAVSyncListController *webDavList = [[OUIWebDAVSyncListController alloc] initWithServerAccount:account exporting:NO error:&error];
+                            if (!webDavList)
+                                OUI_PRESENT_ERROR(error);
+                            else {
+                                [navigationController pushViewController:webDavList animated:YES];
+                            }
+                        }
+                    };
+                    
+                    navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
+                    [self.window.rootViewController presentViewController:navigationController animated:YES completion:nil];
+                }];
+                [options addObject:importOption];
             }
                 break;
             default:
@@ -662,25 +672,6 @@ static unsigned SyncAgentRunningAccountsContext;
                 break;
         }
     }
-    
-    if (position == OUIAppMenuOptionPositionAtEnd) {
-        // Cloud Setup
-        __weak OUIDocumentAppController *weakSelf = self;
-        OUIMenuOption *cloudSetupOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Cloud Setup", @"OmniUIDocument", OMNI_BUNDLE, @"App menu item title") image:[[UIImage imageNamed:@"OUIMenuItemCloudSetUp"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] action:^{
-            
-            // Don't allow cloud setup in retail demo builds.
-            if ([self isRunningRetailDemo]) {
-                [self showFeatureDisabledForRetailDemoAlert];
-            }
-            else {
-                if (![weakSelf.documentPicker.delegate respondsToSelector:@selector(documentPickerPresentCloudSetup:)] || ![weakSelf.documentPicker.delegate documentPickerPresentCloudSetup:weakSelf.documentPicker]) {
-                    [weakSelf.window.rootViewController presentViewController:[[OUICloudSetupViewController alloc] init] animated:YES completion:NULL];
-                }
-            }
-        }];
-        [options addObject:cloudSetupOption];
-    }
-
     
     return options;
 }
@@ -782,7 +773,7 @@ static unsigned SyncAgentRunningAccountsContext;
     navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
     navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     
-    [_documentPicker.navigationController presentViewController:navigationController animated:YES completion:nil];
+    [_documentPicker presentViewController:navigationController animated:YES completion:nil];
     
 }
 
@@ -841,7 +832,7 @@ static unsigned SyncAgentRunningAccountsContext;
         UINavigationController *webNavigationController = [[UINavigationController alloc] initWithRootViewController:webController];
         webNavigationController.navigationBar.barStyle = UIBarStyleBlack;
 
-        webNavigationController.modalPresentationStyle = UIModalPresentationCurrentContext;
+        webNavigationController.modalPresentationStyle = UIModalPresentationOverCurrentContext;
         [viewController presentViewController:webNavigationController animated:YES completion:retryBlock];
         self.webViewController = webController;
         return;
@@ -879,7 +870,7 @@ static unsigned SyncAgentRunningAccountsContext;
     if (cancelAction == NULL)
         cancelAction = ^{};
 
-    if (!account.isCloudSyncEnabled) {
+    if (account.usageMode != OFXServerAccountUsageModeCloudSync) {
         discardAction(); // This account doesn't sync, so there's nothing to warn about
         return;
     }
@@ -905,25 +896,26 @@ static unsigned SyncAgentRunningAccountsContext;
     }];
 }
 
-- (void)createNewDocumentAtURL:(NSURL *)url templateURL:(NSURL *)templateURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)createdNewDocument:(ODSFileItem *)fileItem templateURL:(NSURL *)templateURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 {
     OBPRECONDITION(_document == nil);
 
     completionHandler = [completionHandler copy];
 
-    Class cls = [self documentClassForURL:url];
+    Class cls = [self documentClassForURL:fileItem.fileURL];
     OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
 
     __autoreleasing NSError *error = nil;
-    OUIDocument *document = [[cls alloc] initEmptyDocumentToBeSavedToURL:url templateURL:templateURL error:&error];
+    OUIDocument *document = [[cls alloc] initWithExistingFileItemFromTemplate:fileItem error:&error];
     if (document == nil) {
         if (completionHandler)
             completionHandler(error);
         return;
     }
+    __block ODSFileItem *localFileItem = fileItem;
 
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [document saveToURL:url forSaveOperation:UIDocumentSaveForCreating completionHandler:^(BOOL saveSuccess){
+        [document saveToURL:localFileItem.fileURL forSaveOperation:UIDocumentSaveForOverwriting completionHandler:^(BOOL saveSuccess){
             // The save completion handler isn't called on the main thread; jump over *there* to start the close (subclasses want that).
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
                 [document closeWithCompletionHandler:^(BOOL closeSuccess){
@@ -950,6 +942,11 @@ static unsigned SyncAgentRunningAccountsContext;
 }
 
 #pragma mark - Subclass responsibility
+
+- (UIImage *)documentPickerBackgroundImage;
+{
+    return nil;
+}
 
 - (Class)documentClassForURL:(NSURL *)url;
 {
@@ -1017,7 +1014,7 @@ static unsigned SyncAgentRunningAccountsContext;
 
     if (launchFileItem != nil) {
         DEBUG_LAUNCH(1, @"Opening document %@", [launchFileItem shortDescription]);
-        [self openDocument:launchFileItem showActivityIndicator:YES];
+        [self openDocument:launchFileItem];
         startedOpeningDocument = YES;
     } else {
         // Restore our selected or open document if we didn't get a command from on high.
@@ -1039,7 +1036,7 @@ static unsigned SyncAgentRunningAccountsContext;
                 NSString *action = [launchAction objectAtIndex:0];
                 if ([action isEqualToString:OpenAction]) {
                     DEBUG_LAUNCH(1, @"Opening file item %@", [launchFileItem shortDescription]);
-                    [self openDocument:launchFileItem showActivityIndicator:YES];
+                    [self openDocument:launchFileItem fileItemToRevealFrom:launchFileItem];
                     startedOpeningDocument = YES;
                 } else
                     fileItemToSelect = launchFileItem;
@@ -1234,9 +1231,7 @@ static unsigned SyncAgentRunningAccountsContext;
         _documentPicker.delegate = self;
         
         OUILaunchViewController *launchViewController = [[OUILaunchViewController alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge color:_window.tintColor];
-        
-        UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:launchViewController];
-        _window.rootViewController = navController;
+        _window.rootViewController = launchViewController;
         [_window makeKeyAndVisible];
         
         
@@ -1392,13 +1387,11 @@ static unsigned SyncAgentRunningAccountsContext;
         return;
     }
 
-    OFXServerAccount *account = [[OFXServerAccount alloc] initWithType:accountType remoteBaseURL:remoteBaseURL localDocumentsURL:documentsURL error:&error];
+    OFXServerAccount *account = [[OFXServerAccount alloc] initWithType:accountType usageMode:OFXServerAccountUsageModeImportExport remoteBaseURL:remoteBaseURL localDocumentsURL:documentsURL error:&error];
     if (!account) {
         [error log:@"Error creating account while importing %@ legacy account:", accountType.displayName];
         return;
     }
-    
-    account.isCloudSyncEnabled = NO;
 
     id <OFXServerAccountValidator> accountValidator = [account.type validatorWithAccount:account username:username password:password];
     accountValidator.finished = ^(NSError *errorOrNil) {
@@ -1443,7 +1436,7 @@ static unsigned SyncAgentRunningAccountsContext;
         return NO;
     }
 
-    OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initWithAccount:nil ofType:accountType];
+    OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initForCreatingAccountOfType:accountType withUsageMode:OFXServerAccountUsageModeCloudSync];
     setup.location = [config objectForKey:@"location" defaultObject:setup.location];
     setup.accountName = [config objectForKey:@"accountName" defaultObject:setup.accountName];
     setup.password = [config objectForKey:@"password" defaultObject:setup.password];
@@ -1454,23 +1447,29 @@ static unsigned SyncAgentRunningAccountsContext;
         vc = self.document.viewControllerToPresent;
     }
     else {
-        vc = _documentPicker.navigationController;
+        vc = _documentPicker;
     }
 
     setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError *errorOrNil) {
         OBPRECONDITION([NSThread isMainThread]);
         
         OFXServerAccount *account = errorOrNil ? nil : vc.account;
-        OBASSERT(account == nil || account.isCloudSyncEnabled ? [[[OFXServerAccountRegistry defaultAccountRegistry] validCloudSyncAccounts] containsObject:account] : [[[OFXServerAccountRegistry defaultAccountRegistry] validImportExportAccounts] containsObject:account]);
+        OBASSERT_IF(account != nil & account.usageMode == OFXServerAccountUsageModeCloudSync, [[[OFXServerAccountRegistry defaultAccountRegistry] validCloudSyncAccounts] containsObject:account]);
+        OBASSERT_IF(account != nil && account.usageMode == OFXServerAccountUsageModeImportExport, [[[OFXServerAccountRegistry defaultAccountRegistry] validImportExportAccounts] containsObject:account]);
         [[OUIDocumentAppController controller] _didAddSyncAccount:account];
         [vc dismissViewControllerAnimated:YES completion:nil];
     };
 
     // Doing this during launch?
-    if (_window.rootViewController != _documentPicker.navigationController) {
+    if (_window.rootViewController != _documentPicker) {
         [_documentPicker showDocuments];
-        _window.rootViewController = _documentPicker.navigationController;
+        _window.rootViewController = _documentPicker;
         [_window makeKeyAndVisible];
+        
+        if (_specialURLToHandle) {
+            [self handleSpecialURL:_specialURLToHandle];
+            _specialURLToHandle = nil;
+        }
     }
 
     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:setup];
@@ -1493,7 +1492,12 @@ static unsigned SyncAgentRunningAccountsContext;
         DEBUG_LAUNCH(1, @"Did openURL:%@ sourceApplication:%@ annotation:%@", url, sourceApplication, annotation);
         
         if ([self isSpecialURL:url]) {
-            [self handleSpecialURL:url];
+            if (self.window.rootViewController == _documentPicker) {
+                [self handleSpecialURL:url];
+            }
+            else {
+                _specialURLToHandle = [url copy];
+            }
             return;
         }
         
@@ -1530,7 +1534,7 @@ static unsigned SyncAgentRunningAccountsContext;
                             OBFinishPortingLater("TODO: Reveal scope in document picker");
 //                            _documentPicker.selectedScopeViewController.selectedScope = _localScope;
                             
-                            [self openDocument:newFileItem showActivityIndicator:YES];
+                            [self openDocument:newFileItem];
                         });
                     }];
                 } else {
@@ -1538,7 +1542,7 @@ static unsigned SyncAgentRunningAccountsContext;
                     ODSFileItem *fileItem = [_documentStore fileItemWithURL:url];
                     OBASSERT(fileItem);
                     if (fileItem)
-                        [self openDocument:fileItem showActivityIndicator:YES];
+                        [self openDocument:fileItem];
                 }
             };
             [_documentStore addAfterInitialDocumentScanAction:scanAction];
@@ -1754,7 +1758,7 @@ static unsigned SyncAgentRunningAccountsContext;
     if (![_previewGenerator shouldOpenDocumentWithFileItem:fileItem])
         return;
     
-    [self openDocument:fileItem showActivityIndicator:YES];
+    [self openDocument:fileItem];
 }
 
 - (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(ODSFileItem *)fileItem fileItemToRevealFrom:(ODSFileItem *)fileItemToRevealFrom;
@@ -1770,7 +1774,7 @@ static unsigned SyncAgentRunningAccountsContext;
         return;
 #endif
 
-    [self openDocument:fileItem fileItemToRevealFrom:fileItemToRevealFrom showActivityIndicator:YES];
+    [self openDocument:fileItem fileItemToRevealFrom:fileItemToRevealFrom];
 }
 
 - (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(ODSFileItem *)fileItem;
@@ -1799,12 +1803,7 @@ static unsigned SyncAgentRunningAccountsContext;
 
 - (ODSFileItem *)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator preferredFileItemForNextPreviewUpdate:(NSSet *)fileItems;
 {
-    UIViewController *top = _documentPicker.navigationController.topViewController;
-    
-    if ([top respondsToSelector:@selector(_preferredVisibleItemFromSet:)])
-        return [(OUIDocumentPickerViewController *)top _preferredVisibleItemFromSet:fileItems];
-    else
-        return nil;
+    return [_documentPicker preferredVisibleItemForNextPreviewUpdate:fileItems];
 }
 
 - (BOOL)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator shouldGeneratePreviewForURL:(NSURL *)fileURL;
@@ -1968,8 +1967,14 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     DEBUG_LAUNCH(1, @"Showing picker, showing item %@", [fileItem shortDescription]);
     
     [_documentPicker showDocuments];
-    _window.rootViewController = _documentPicker.navigationController;
+    _window.rootViewController = _documentPicker;
     [_window makeKeyAndVisible];
+    
+    if (_specialURLToHandle) {
+        [self handleSpecialURL:_specialURLToHandle];
+        _specialURLToHandle = nil;
+    }
+    
     [OUIDocumentPreview populateCacheForFileItems:_documentStore.mergedFileItems completionHandler:^{
     }];
 }
@@ -1980,7 +1985,9 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     [self _setDocument:document];
     _isOpeningURL = NO;
     
-    UIViewController *presentFromViewController = _documentPicker.navigationController.topViewController;
+    UIViewController *presentFromViewController = _documentPicker.selectedScopeViewController;
+    if (!presentFromViewController)
+        presentFromViewController = _documentPicker;
     UIViewController <OUIDocumentViewController> *documentViewController = _document.documentViewController;
     UIViewController *toPresent = _document.viewControllerToPresent;
     UIView *view = [documentViewController view]; // make sure the view is loaded in case -pickerAnimationViewForTarget: doesn't and return a subview thereof.
@@ -2029,14 +2036,20 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     
     BOOL animateDocument = YES;
     
-    if (_window.rootViewController != _documentPicker.navigationController) {
+    if (_window.rootViewController != _documentPicker) {
         [_documentPicker showDocuments];
-        _window.rootViewController = _documentPicker.navigationController;
+        _window.rootViewController = _documentPicker;
         [_window makeKeyAndVisible];
+        
+        if (_specialURLToHandle) {
+            [self handleSpecialURL:_specialURLToHandle];
+            _specialURLToHandle = nil;
+        }
+        
         animateDocument = NO;
     }
     
-    [_documentPicker.navigationController.topViewController presentViewController:toPresent animated:animateDocument completion:^{
+    [presentFromViewController presentViewController:toPresent animated:animateDocument completion:^{
         if ([documentViewController respondsToSelector:@selector(documentFinishedOpening)])
             [documentViewController documentFinishedOpening];
         if (completionHandler)
@@ -2065,7 +2078,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    if (account != nil && account.isCloudSyncEnabled) {
+    if (account != nil && account.usageMode == OFXServerAccountUsageModeCloudSync) {
         // Wait for the agent to start up. Ugly, but less so than adding an ivar and having -_updateDocumentStoreScopes clear/unlock interaction...
         // This might be marginally less terrible if we had a 'block interaction until foo' object we could create and run.
         

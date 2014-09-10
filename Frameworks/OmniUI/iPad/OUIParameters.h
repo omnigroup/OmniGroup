@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,9 +30,9 @@
 #define kOUIInspectorTextWellButtonHighlightedGradientTopColor ((OSHSV){209.0/360.0, 0.91, 0.96, 1.0})      // matches UITableViewCellSelectionStyleBlue
 #define kOUIInspectorTextWellButtonHighlightedGradientBottomColor ((OSHSV){218.0/360.0, 0.93, 0.90, 1.0})   // matches UITableViewCellSelectionStyleBlue
 
-#define kOUIInspectorTextWellTextColor ((OSHSV){221.0/360.0, 0.30, 0.42, 1.0})
+#define kOUIInspectorTextWellTextColor ((OQWhiteAlpha){0.0, 1.0})
 #define kOUIInspectorTextWellHighlightedTextColor ((OSHSV){213.0/360.0, 0.50, 0.30, 1.0})
-#define kOUIInspectorTextWellHighlightedButtonTextColor ((OQWhiteAlpha){1.0, 1.0})
+#define kOUIInspectorTextWellHighlightedButtonTextColor ((OQWhiteAlpha){0.0, 0.4})
 #define kOUIInspectorLabelDisabledTextColorAlphaScale (0.5)
 
 // OUIInspectorBackgroundView
@@ -43,9 +43,6 @@
 #define kOUIInspectorOptionWheelEdgeGradientGray (0.53)
 #define kOUIInspectorOptionWheelMiddleGradientGray (1.0)
 #define kOUIInspectorOptionWheelGradientPower (2.5)
-
-// OUIEmptyOverlayView
-#define kOUIEmptyOverlayViewMessagePreferredMaxLayoutWidth (300.0f)
 
 // OUIMenuController
 #define kOUIMenuControllerBackgroundOpacity (0.98) // We can lower this quite a bit except on Retina iPad 3. The popover doesn't blur its background on this hardware.

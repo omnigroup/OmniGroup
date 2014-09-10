@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,11 +38,11 @@ RCS_ID("$Id$");
         CFMutableArrayRef frozenChildren = CFArrayCreateMutable(kCFAllocatorDefault, childCount, &OFNSObjectArrayCallbacks);
         for (id child in children) {
             id copy = [child copyFrozenElement];
-            CFArrayAppendValue(frozenChildren, copy);
+            CFArrayAppendValue(frozenChildren, (__bridge const void *)(copy));
             [copy release];
         }
 
-        _children = [[NSArray alloc] initWithArray:(NSArray *)frozenChildren];
+        _children = [[NSArray alloc] initWithArray:(__bridge NSArray *)frozenChildren];
         CFRelease(frozenChildren);
     }
 
@@ -53,7 +53,7 @@ RCS_ID("$Id$");
 	size_t bufferSize = 2*attributeCount*sizeof(id);
 	BOOL useMalloc = bufferSize >= SAFE_ALLOCA_SIZE;	
 	
-	id *buffer = useMalloc ? (id *)malloc(bufferSize) : (id *)alloca(bufferSize);
+	__unsafe_unretained id *buffer = (__unsafe_unretained id *)(useMalloc ? malloc(bufferSize) : alloca(bufferSize));
 	unsigned int bufferIndex = 0;
 
         for (attributeIndex = 0; attributeIndex < attributeCount; attributeIndex++) {
@@ -100,7 +100,7 @@ RCS_ID("$Id$");
         whitespaceBehavior = parentBehavior;
 
     OFXMLBufferAppendUTF8CString(xml, "<");
-    OFXMLBufferAppendString(xml, (CFStringRef)_name);
+    OFXMLBufferAppendString(xml, (__bridge CFStringRef)_name);
 
     if (_attributeNamesAndValues) {
         // Quote the attribute values
@@ -111,11 +111,11 @@ RCS_ID("$Id$");
             NSString *value = [_attributeNamesAndValues objectAtIndex:2*attributeIndex+1];
             
             OFXMLBufferAppendUTF8CString(xml, " ");
-            OFXMLBufferAppendString(xml, (CFStringRef)name);
+            OFXMLBufferAppendString(xml, (__bridge CFStringRef)name);
 
             OFXMLBufferAppendUTF8CString(xml, "=\"");
             NSString *quotedString = OFXMLCreateStringWithEntityReferencesInCFEncoding(value, OFXMLBasicEntityMask, nil, encoding);
-            OFXMLBufferAppendString(xml, (CFStringRef)quotedString);
+            OFXMLBufferAppendString(xml, (__bridge CFStringRef)quotedString);
             [quotedString release];
             OFXMLBufferAppendUTF8CString(xml, "\"");
         }
@@ -154,7 +154,7 @@ RCS_ID("$Id$");
 
     if (hasWrittenChild) {
         OFXMLBufferAppendUTF8CString(xml, "</");
-        OFXMLBufferAppendString(xml, (CFStringRef)_name);
+        OFXMLBufferAppendString(xml, (__bridge CFStringRef)_name);
         OFXMLBufferAppendUTF8CString(xml, ">");
     } else
         OFXMLBufferAppendUTF8CString(xml, "/>");

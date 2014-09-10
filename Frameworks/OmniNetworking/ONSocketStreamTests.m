@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/types.h>
@@ -18,7 +18,7 @@
 
 RCS_ID("$Id$");
 
-@interface ONSocketStreamTests : SenTestCase
+@interface ONSocketStreamTests : XCTestCase
 {
     pthread_t writer;
     NSData *writerBuf;
@@ -124,7 +124,7 @@ static void *feedData(void *arg)
         result = [readStream readLineAndAdvance:YES];
         
         if (shouldPeek)
-            shouldBeEqual1(result, peekedResult, @"Peeked line should be the same as subsequently read line");
+            XCTAssertEqual(result, peekedResult, @"Peeked line should be the same as subsequently read line");
         
         if (result == nil)
             break;
@@ -140,10 +140,10 @@ static void *feedData(void *arg)
 
 - (void)testDataInAllPermutations:(NSData *)buf expectResults:(NSArray *)expectedResults;
 {
-    should([[self parseData:buf forceBoundaries:NO  peekFirst:NO ] isEqual:expectedResults]);
-    should([[self parseData:buf forceBoundaries:NO  peekFirst:YES] isEqual:expectedResults]);
-    should([[self parseData:buf forceBoundaries:YES peekFirst:NO ] isEqual:expectedResults]);
-    should([[self parseData:buf forceBoundaries:YES peekFirst:YES] isEqual:expectedResults]);
+    XCTAssertTrue([[self parseData:buf forceBoundaries:NO  peekFirst:NO ] isEqual:expectedResults]);
+    XCTAssertTrue([[self parseData:buf forceBoundaries:NO  peekFirst:YES] isEqual:expectedResults]);
+    XCTAssertTrue([[self parseData:buf forceBoundaries:YES peekFirst:NO ] isEqual:expectedResults]);
+    XCTAssertTrue([[self parseData:buf forceBoundaries:YES peekFirst:YES] isEqual:expectedResults]);
 }
 
 - (void)testSimpleCase

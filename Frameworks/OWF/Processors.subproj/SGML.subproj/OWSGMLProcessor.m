@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -99,12 +99,12 @@ static BOOL debugSGMLProcessing = NO;
 
     Class myClass = [self class];
     dtd = [myClass dtd];
-    appliedMethods = [[OWSGMLAppliedMethods allocWithZone:[self zone]] initFromSGMLMethods:[myClass sgmlMethods] dtd:dtd forTargetClass:myClass];
+    appliedMethods = [[OWSGMLAppliedMethods alloc] initFromSGMLMethods:[myClass sgmlMethods] dtd:dtd forTargetClass:myClass];
 
     tagCount = [dtd tagCount];
     if (tagCount > 0) {
-        openTags = NSZoneCalloc([self zone], tagCount,sizeof(unsigned int));
-        implicitlyClosedTags = NSZoneCalloc([self zone], tagCount,sizeof(unsigned int));
+        openTags = calloc(tagCount,sizeof(unsigned int));
+        implicitlyClosedTags = calloc(tagCount,sizeof(unsigned int));
     }
     return self;
 }
@@ -114,9 +114,9 @@ static BOOL debugSGMLProcessing = NO;
     [appliedMethods release];
     [baseAddress release];
     if (openTags)
-        NSZoneFree(NSZoneFromPointer(openTags), openTags);
+        free(openTags);
     if (implicitlyClosedTags)
-        NSZoneFree(NSZoneFromPointer(implicitlyClosedTags), implicitlyClosedTags);
+        free(implicitlyClosedTags);
     [undoers release];
     [super dealloc];
 }

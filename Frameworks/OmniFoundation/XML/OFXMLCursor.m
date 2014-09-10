@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,10 +18,10 @@ RCS_ID("$Id$");
 
 struct _OFXMLCursorState {
     // Not retained -- the document should be retaining it (and it is invalid to modify the document while we are alive).
-    OFXMLElement *element;
+    __unsafe_unretained OFXMLElement *element;
 
-    // Cached from the element
-    NSArray      *children;
+    // Cached from the element, also not retained since the element does
+    __unsafe_unretained NSArray      *children;
     NSUInteger    childCount;
     
     // The next child to return
@@ -63,7 +63,7 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     _document = [document retain];
     _startingElement = [element retain];
     
-    _state = OBAllocateCollectable(sizeof(*_state), NSScannedOption);
+    _state = malloc(sizeof(*_state));
     _stateCount = 1;
     _stateSize = 1;
 
@@ -184,7 +184,7 @@ static inline void _OFXMLCursorStateInit(struct _OFXMLCursorState *state, OFXMLE
     _stateCount++;
     if (_stateCount > _stateSize) {
         _stateSize = 2 * _stateCount;
-        _state = OBReallocateCollectable(_state, sizeof(*_state) * _stateSize, NSScannedOption);
+        _state = realloc(_state, sizeof(*_state) * _stateSize);
     }
 
     _OFXMLCursorStateInit(&_state[_stateCount - 1], currentChild);

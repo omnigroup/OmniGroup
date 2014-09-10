@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,33 +72,34 @@ RCS_ID("$Id$")
 
 int main(int argc, char *argv[])
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    OFController *controller = [OFCrashOnExceptionController sharedController];
     int status = 0;
     
-    [controller didInitialize];
-    [controller startedRunning];
-
-    do {
-        NSString *action = [[NSUserDefaults standardUserDefaults] stringForKey:@"Action"];
-        if ([NSString isEmptyString:action]) {
-            NSLog(@"No action specified.");
-            status = 1;
-            break;
-        }
+    @autoreleasepool {
+        OFController *controller = [OFCrashOnExceptionController sharedController];
         
-        SEL sel = NSSelectorFromString(action);
-        if (![controller respondsToSelector:sel]) {
-            NSLog(@"Action '%@' doesn't appear to be implemented.", action);
-            status = 1;
-            break;
-        }
-
-        [controller performSelector:sel];
+        [controller didInitialize];
+        [controller startedRunning];
         
-    } while (NO);
-    
-    [controller requestTermination];
-    [pool drain];
+        do {
+            NSString *action = [[NSUserDefaults standardUserDefaults] stringForKey:@"Action"];
+            if ([NSString isEmptyString:action]) {
+                NSLog(@"No action specified.");
+                status = 1;
+                break;
+            }
+            
+            SEL sel = NSSelectorFromString(action);
+            if (![controller respondsToSelector:sel]) {
+                NSLog(@"Action '%@' doesn't appear to be implemented.", action);
+                status = 1;
+                break;
+            }
+            
+            [controller performSelector:sel];
+            
+        } while (NO);
+        
+        [controller requestTermination];
+    }
     return status;
 }

@@ -15,6 +15,9 @@
 @property(nonatomic,readonly) NSString *scriptIdentifier;
 @property(nonatomic,readonly) NSString *scriptIdentifierIfSet;
 
++ (BOOL)isFileURLInApplicationWrapper:(NSURL *)fileURL;
+- (BOOL)isInsideApplicationWrapper;
+
 // Block-based version of -canCloseDocumentWithDelegate:shouldCloseSelector:contextInfo:.
 - (void)canCloseDocument:(void (^)(BOOL shouldClose))completion;
 

@@ -151,9 +151,14 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     SecTransformRef vrfy;
     CFTypeRef result;
     
-    vrfy = SecVerifyTransformCreate(key, (CFDataRef)digest, &cfError);
-    if (!vrfy)
-        goto errorOut;
+    vrfy = SecVerifyTransformCreate(key, (__bridge CFDataRef)digest, &cfError);
+    if (!vrfy) {
+        if (outError)
+            *outError = CFBridgingRelease(cfError);
+        else
+            CFRelease(cfError);
+        return NO;
+    }
     
 #ifdef DEBUG_OFSecSignTransform
     NSLog(@"Created %@ from %@", vrfy, OFSecItemDescription(key));
@@ -162,7 +167,11 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     result = setAttrsAndExecute(vrfy, writebuffer, digestType, digestLength, &cfError);
     if (!result) {
         CFRelease(vrfy);
-        goto errorOut;
+        if (outError)
+            *outError = CFBridgingRelease(cfError);
+        else
+            CFRelease(cfError);
+        return NO;
     }
     
     BOOL verifyOK;
@@ -184,15 +193,6 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     CFRelease(result);
     
     return verifyOK;
-    
-    if (0) {
-    errorOut:
-        if (outError)
-            *outError = CFBridgingRelease(cfError);
-        else
-            CFRelease(cfError);
-        return NO;
-    }
 }
 
 - (NSData *)generateFinal:(NSError **)outError;
@@ -203,8 +203,13 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     CFErrorRef cfError = NULL;
     CFTypeRef result;
     SecTransformRef gen = SecSignTransformCreate(key, &cfError);
-    if (!gen)
-        goto errorOut;
+    if (!gen) {
+        if (outError)
+            *outError = CFBridgingRelease(cfError);
+        else
+            CFRelease(cfError);
+        return nil;
+    }
     
 #ifdef DEBUG_OFSecSignTransform
     NSLog(@"Created %@ from %@", gen, OFSecItemDescription(key));
@@ -213,7 +218,12 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
     result = setAttrsAndExecute(gen, writebuffer, digestType, digestLength, &cfError);
     if (!result) {
         CFRelease(gen);
-        goto errorOut;
+        
+        if (outError)
+            *outError = CFBridgingRelease(cfError);
+        else
+            CFRelease(cfError);
+        return nil;
     }
     
     OBASSERT(CFGetTypeID(result) == CFDataGetTypeID());
@@ -231,15 +241,6 @@ static CFTypeRef setAttrsAndExecute(SecTransformRef transform, NSData *inputData
         return packed; // May be nil, if OFDigestConvertDLSigToPacked() failed
     } else {
         return [nsResult autorelease];
-    }
-    
-    if (0) {
-    errorOut:
-        if (outError)
-            *outError = CFBridgingRelease(cfError);
-        else
-            CFRelease(cfError);
-        return nil;
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OUILaunchViewController.h"
+
+#import <OmniUIDocument/OUIDocumentAppController.h>
 
 RCS_ID("$Id$")
 
@@ -32,16 +34,14 @@ RCS_ID("$Id$")
     return self;
 }
 
-- (void)viewDidLoad
+- (void)loadView;
 {
-    [super viewDidLoad];
-
-    self.view.backgroundColor = [UIColor whiteColor];
-    [self.view addSubview:_activityIndicatorView];
+    UIImageView *imageView = [[UIImageView alloc] initWithImage:[[OUIDocumentAppController controller] documentPickerBackgroundImage]];
+    imageView.contentMode = UIViewContentModeScaleAspectFill;
+    [imageView addSubview:_activityIndicatorView];
     [_activityIndicatorView startAnimating];
     
-    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"OUIDocumentPickerBackgroundTile.png"]];
-    
+    self.view = imageView;
     [self.view setNeedsUpdateConstraints];
 }
 
@@ -55,12 +55,6 @@ RCS_ID("$Id$")
     }
 
     [super updateViewConstraints];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end

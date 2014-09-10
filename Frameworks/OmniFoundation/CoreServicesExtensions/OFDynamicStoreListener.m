@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,22 +13,7 @@ RCS_ID("$Id$");
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 
-@interface OFDynamicStoreListener ()
-
 static void _SCDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRef changedKeys, void *info);
-- (void)_didChangeValuesForKeys:(NSArray *)keys;
-
-- (NSMutableDictionary *)_observerInfoByKey;
-
-- (BOOL)_isObservingDynamicStoreKey:(NSString *)key;
-- (void)_startObservingDynamicStoreKey:(NSString *)key;
-- (void)_stopObservingDynamicStoreKey:(NSString *)key;
-
-- (BOOL)_isObservingDynamicStoreKeyPattern:(NSString *)keyPattern;
-- (void)_startObservingDynamicStoreKeyPattern:(NSString *)keyPattern;
-- (void)_stopObservingDynamicStoreKeyPattern:(NSString *)keyPattern;
-
-@end
 
 @implementation OFDynamicStoreListener
 
@@ -119,13 +104,12 @@ static void _SCDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRef changedK
 {
     OBPRECONDITION(keyPattern);
 
-    CFArrayRef keyList = SCDynamicStoreCopyKeyList(_dynamicStore, (CFStringRef)keyPattern);
+    NSArray *keyList = CFBridgingRelease(SCDynamicStoreCopyKeyList(_dynamicStore, (__bridge CFStringRef)keyPattern));
 
     if (keyList) {
-        for (NSString *key in (NSArray *)keyList) {
+        for (NSString *key in keyList) {
             [self addObserver:observer selector:selector forKey:key];
         }
-        CFRelease(keyList);
     }
 
     [self _startObservingDynamicStoreKeyPattern:keyPattern];
@@ -174,12 +158,11 @@ static void _SCDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRef changedK
 {
     OBPRECONDITION(keyPattern);
 
-    CFArrayRef keyList = SCDynamicStoreCopyKeyList(_dynamicStore, (CFStringRef)keyPattern);
+    NSArray *keyList = CFBridgingRelease(SCDynamicStoreCopyKeyList(_dynamicStore, (__bridge CFStringRef)keyPattern));
     if (keyList) {
-        for (NSString *key in (NSArray *)keyList) {
+        for (NSString *key in keyList) {
             [self removeObserver:observer selector:selector forKey:key];
         }
-        CFRelease(keyList);
     }
 
     [self _stopObservingDynamicStoreKey:keyPattern];
@@ -195,8 +178,8 @@ static void _SCDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRef changedK
 
 static void _SCDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRef changedKeys, void *info)
 {
-    OFDynamicStoreListener *listener = (OFDynamicStoreListener *)info;
-    [listener _didChangeValuesForKeys:(NSArray *)changedKeys];
+    OFDynamicStoreListener *self = (__bridge OFDynamicStoreListener *)info;
+    [self _didChangeValuesForKeys:(__bridge NSArray *)changedKeys];
 }
 
 - (void)_didChangeValuesForKeys:(NSArray *)changedKeys;

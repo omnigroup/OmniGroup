@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,11 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountLocalDirectoryValidationReason) {
     OFXServerAccountValidateLocalDirectoryForSyncing, // Starting a sync agent on a previously created account
 };
 
+typedef NS_ENUM(NSUInteger, OFXServerAccountUsageMode) {
+    OFXServerAccountUsageModeCloudSync,
+    OFXServerAccountUsageModeImportExport
+};
+
 @interface OFXServerAccount : NSObject
 
 + (BOOL)validateLocalDocumentsURL:(NSURL *)documentsURL reason:(OFXServerAccountLocalDirectoryValidationReason)reason error:(NSError **)outError;
@@ -40,7 +45,7 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountLocalDirectoryValidationReason) {
 #endif
 
 // New account with unique identifier -- not yet in any registry (so it can be configured and the configuration cancelled if needed).
-- initWithType:(OFXServerAccountType *)type remoteBaseURL:(NSURL *)remoteBaseURL localDocumentsURL:(NSURL *)localDocumentsURL error:(NSError **)outError;
+- initWithType:(OFXServerAccountType *)type usageMode:(OFXServerAccountUsageMode)usageMode remoteBaseURL:(NSURL *)remoteBaseURL localDocumentsURL:(NSURL *)localDocumentsURL error:(NSError **)outError;
 
 // State that cannot change while we are using an account -- have to remove the account and add a new one.
 @property(nonatomic,readonly) NSString *uuid;
@@ -59,8 +64,7 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountLocalDirectoryValidationReason) {
 @property(nonatomic,copy) NSString *nickname;
 #endif
 
-@property(nonatomic,readwrite) BOOL isCloudSyncEnabled;
-@property(nonatomic,readwrite) BOOL isImportExportEnabled;
+@property(nonatomic,readonly) OFXServerAccountUsageMode usageMode;
 
 // The credential service identifier and credentals get set by validating the account via OFXServerAccountType
 // NSURLProtectionSpace cannot be archived in 10.8 (though it conforms the resulting archive data can't be unarchived) so OFXServerAccount just records a service identifier. In 10.7 NSURLProtectionSpace didn't even claim to conform to NSCoding.

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010, 2013 Omni Development, Inc.All rights reserved.
+// Copyright 2003-2005, 2007-2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -50,15 +50,15 @@
 - (BOOL)skipCurrentElement:(NSError **)outError;
 
 // Skips the current and any immediately following readable string nodes (text, CDATA, or whitespace), returning them as a single plain text string by reference if outString is non-NULL. If outElementEnded is non-NULL, additionally returns by reference whether the text reading placed the reader at the end of an element.
-- (BOOL)copyString:(NSString **)outString endingElement:(BOOL *)outElementEnded error:(NSError **)outError;
+- (BOOL)copyString:(__strong NSString **)outString endingElement:(BOOL *)outElementEnded error:(NSError **)outError;
 
 // Skips past the string to the the end of the element, returning it by reference if outString is non-NULL
-- (BOOL)copyStringContentsToEndOfElement:(NSString **)outString error:(NSError **)outError;
+- (BOOL)copyStringContentsToEndOfElement:(__strong NSString **)outString error:(NSError **)outError;
 
 // Attributes.
-- (BOOL)copyValueOfAttribute:(NSString **)outString named:(OFXMLQName *)name error:(NSError **)outError;
-- (BOOL)copyAttributes:(NSDictionary **)outAttributes error:(NSError **)outError;
-- (BOOL)copyNamespaceDeclarations:(NSDictionary **)outPrefixToNamespaceURLString error:(NSError **)outError;
+- (BOOL)copyValueOfAttribute:(__strong NSString **)outString named:(OFXMLQName *)name error:(NSError **)outError;
+- (BOOL)copyAttributes:(__strong NSDictionary **)outAttributes error:(NSError **)outError;
+- (BOOL)copyNamespaceDeclarations:(__strong NSDictionary **)outPrefixToNamespaceURLString error:(NSError **)outError;
 
 // Expects to be called with the reader pointing at an element. Reads the entire element into a new data and returns it, or returns and empty data if not pointing an an element.
 - (NSData *)copyUTF8ElementData:(NSError **)outError;
@@ -71,6 +71,6 @@
 - (BOOL)readLongContentsOfElement:(out long *)outValue defaultValue:(long)defaultValue error:(NSError **)outError;
 - (BOOL)readDoubleContentsOfElement:(out double *)outValue defaultValue:(double)defaultValue error:(NSError **)outError;
 
-- (BOOL)copyDateContentsOfElement:(out NSDate **)outDate error:(NSError **)outError;
+- (BOOL)copyDateContentsOfElement:(out __strong NSDate **)outDate error:(NSError **)outError;
 
 @end

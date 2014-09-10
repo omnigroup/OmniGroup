@@ -1,11 +1,10 @@
-// Copyright 2003-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/OFXMLCursor.h>
@@ -57,13 +56,13 @@ RCS_ID("$Id$");
 - (void) testBasicCursor;
 {
     OFXMLCursor *cursor = [doc cursor];
-    should(cursor != nil);
-    should([cursor currentElement] == [doc rootElement]);
-    should([cursor currentChild] == nil);
-    shouldBeEqual([cursor name], @"root");
-    shouldBeEqual([cursor attributeNamed: @"id"], @"0");
+    XCTAssertTrue(cursor != nil);
+    XCTAssertTrue([cursor currentElement] == [doc rootElement]);
+    XCTAssertTrue([cursor currentChild] == nil);
+    XCTAssertEqualObjects([cursor name], @"root");
+    XCTAssertEqualObjects([cursor attributeNamed: @"id"], @"0");
     
-    shouldBeEqual([cursor currentPath], @"/root/");  // trailing slash since we haven't started enumerating children
+    XCTAssertEqualObjects([cursor currentPath], @"/root/");  // trailing slash since we haven't started enumerating children
 }
 
 - (void) testEnumerateChildren;
@@ -76,20 +75,20 @@ RCS_ID("$Id$");
     childCount = [[[doc rootElement] children] count];
     for (childIndex = 0; childIndex < childCount; childIndex++) {
         child = [cursor nextChild];
-        should(child != nil);
-        shouldBeEqual(child, [[[doc rootElement] children] objectAtIndex: childIndex]);
+        XCTAssertTrue(child != nil);
+        XCTAssertEqual(child, [[[doc rootElement] children] objectAtIndex: childIndex]);
     }
 
     // After all the valid children, should return nil
     child = [cursor nextChild];
-    shouldBeEqual(child, nil);
+    XCTAssertNil(child);
 
     // Should keep returning nil
     child = [cursor nextChild];
-    shouldBeEqual(child, nil);
+    XCTAssertNil(child);
 
     child = [cursor nextChild];
-    shouldBeEqual(child, nil);
+    XCTAssertNil(child);
 }
 
 - (void) testOpenCloseElement;
@@ -102,33 +101,33 @@ RCS_ID("$Id$");
 
     [cursor openElement]; // child 1
     {
-        shouldBeEqual([cursor currentElement], child1);
-        shouldBeEqual([cursor currentChild], nil);
-        shouldBeEqual([cursor name], @"child");
-        shouldBeEqual([cursor attributeNamed: @"id"], @"1");
+        XCTAssertEqual([cursor currentElement], child1);
+        XCTAssertNil([cursor currentChild]);
+        XCTAssertEqualObjects([cursor name], @"child");
+        XCTAssertEqualObjects([cursor attributeNamed: @"id"], @"1");
         
         // child 1 has no children
-        shouldBeEqual([cursor nextChild], nil);
+        XCTAssertNil([cursor nextChild]);
     }
     [cursor closeElement];
 
     // Should be back to the first child now
-    shouldBeEqual([cursor currentChild], child1);
-    shouldBeEqual([cursor name], @"root");
-    shouldBeEqual([cursor attributeNamed: @"id"], @"0");
+    XCTAssertEqual([cursor currentChild], child1);
+    XCTAssertEqualObjects([cursor name], @"root");
+    XCTAssertEqualObjects([cursor attributeNamed: @"id"], @"0");
 
     // Next child
     id child2 = [cursor nextChild];
     [cursor openElement];
     {
-        shouldBeEqual([cursor currentElement], child2);
-        shouldBeEqual([cursor currentChild], nil);
-        shouldBeEqual([cursor name], @"child");
-        shouldBeEqual([cursor attributeNamed: @"id"], @"2");
+        XCTAssertEqual([cursor currentElement], child2);
+        XCTAssertNil([cursor currentChild]);
+        XCTAssertEqualObjects([cursor name], @"child");
+        XCTAssertEqualObjects([cursor attributeNamed: @"id"], @"2");
 
         // child 2 has one child that is text
-        shouldBeEqual([cursor nextChild], @"text");
-        shouldBeEqual([cursor nextChild], nil);
+        XCTAssertEqualObjects([cursor nextChild], @"text");
+        XCTAssertNil([cursor nextChild]);
     }
     [cursor closeElement];
 
@@ -136,21 +135,21 @@ RCS_ID("$Id$");
     id child3 = [cursor nextChild];
     [cursor openElement];
     {
-        shouldBeEqual([cursor currentElement], child3);
-        shouldBeEqual([cursor currentChild], nil);
-        shouldBeEqual([cursor name], @"child");
-        shouldBeEqual([cursor attributeNamed: @"id"], @"3");
+        XCTAssertEqual([cursor currentElement], child3);
+        XCTAssertNil([cursor currentChild]);
+        XCTAssertEqualObjects([cursor name], @"child");
+        XCTAssertEqualObjects([cursor attributeNamed: @"id"], @"3");
 
         // child 3 has one child that is an element
         id grandchild = [cursor nextChild];
-        shouldBeEqual([grandchild name], @"grandchild");
+        XCTAssertEqualObjects([grandchild name], @"grandchild");
         [cursor openElement];
         {
-            shouldBeEqual([cursor currentElement], grandchild);
+            XCTAssertEqual([cursor currentElement], grandchild);
 
             // no children of the grandchild
-            shouldBeEqual([cursor currentChild], nil);
-            shouldBeEqual([cursor nextChild], nil);
+            XCTAssertNil([cursor currentChild]);
+            XCTAssertNil([cursor nextChild]);
         }
         [cursor closeElement];
     }

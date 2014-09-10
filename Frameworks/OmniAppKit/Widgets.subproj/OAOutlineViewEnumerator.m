@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2008, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,7 +27,7 @@ struct OAOutlineViewEnumeratorState {
 {
     if (_stateCount >= _stateCapacity) { 
         _stateCapacity *= 2; 
-        _state = NSZoneRealloc(NULL, _state, sizeof(*_state) * _stateCapacity);
+        _state = realloc(_state, sizeof(*_state) * _stateCapacity);
     }
     
     memmove(&_state[1], &_state[0], _stateCount * sizeof(*_state));
@@ -40,8 +40,8 @@ struct OAOutlineViewEnumeratorState {
 - (void) _appendEmptyItem;
 {
     if (_stateCount >= _stateCapacity) { 
-        _stateCapacity *= 2; 
-        _state = NSZoneRealloc(NULL, _state, sizeof(*_state) * _stateCapacity);
+        _stateCapacity = (_stateCount + 1) * 2;
+        _state = realloc(_state, sizeof(*_state) * _stateCapacity);
     }
     _stateCount++;
 }
@@ -80,7 +80,7 @@ struct OAOutlineViewEnumeratorState {
 
     _stateCount = 0;
     _stateCapacity = 32;
-    _state = NSZoneMalloc(NULL, sizeof(*_state) * _stateCapacity);
+    _state = malloc(sizeof(*_state) * _stateCapacity);
     
     // Now, figure out the path to the specified item, which MUST be visible
     row = [_outlineView rowForItem: visibleItem];
@@ -134,7 +134,7 @@ struct OAOutlineViewEnumeratorState {
 
 - (void) dealloc;
 {
-    NSZoneFree(NULL, _state);
+    free(_state);
     [_outlineView release];
     [_dataSource release];
     [super dealloc];

@@ -195,7 +195,12 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0600;
+				TargetAttributes = {
+					8DD76F740486A8DE00D96B5E = {
+						DevelopmentTeam = 34YW5XSRB7;
+					};
+				};
 			};
 			buildConfigurationList = 34DB3AAD08C7AADC00BC2748 /* Build configuration list for PBXProject "FixStringsFile" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -251,6 +256,7 @@
 			baseConfigurationReference = 34C4D6B208C7AB280072D2D6 /* Omni-Tool-Debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "";
 				PRODUCT_NAME = FixStringsFile;
 			};
 			name = Debug;
@@ -260,6 +266,7 @@
 			baseConfigurationReference = 34C4D6B308C7AB280072D2D6 /* Omni-Tool-Release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "";
 				PRODUCT_NAME = FixStringsFile;
 			};
 			name = Release;
@@ -269,6 +276,7 @@
 			baseConfigurationReference = 34C4D6B108C7AB280072D2D6 /* Omni-Tool-Coverage.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "";
 				PRODUCT_NAME = FixStringsFile;
 			};
 			name = Coverage;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,11 @@
 RCS_ID("$Id$")
 
 @implementation OFTrieEnumerator
+{
+    NSMutableArray *trieNodes;
+    NSMutableArray *positions;
+    BOOL isCaseSensitive;
+}
 
 static NSCharacterSet *uppercaseLetters;
 
@@ -46,15 +51,10 @@ static NSCharacterSet *uppercaseLetters;
 
 - (id)nextObject;
 {
-    OFTrieNode *node;
-    unsigned int position;
-
-    node = [trieNodes lastObject];
-    position = [[positions lastObject] intValue];
+    OFTrieNode *node = [trieNodes lastObject];
+    NSUInteger position = [[positions lastObject] unsignedIntegerValue];
     while (1) {
-        OFTrieNode *child;
-
-        if (position >= node->childCount) {
+        if (position >= trieChildCount(node)) {
             [trieNodes removeLastObject];
             [positions removeLastObject];
             if (![trieNodes count])
@@ -62,22 +62,22 @@ static NSCharacterSet *uppercaseLetters;
             node = [trieNodes lastObject];
             position = [[positions lastObject] intValue] + 1;
             continue;
-        } else if (!isCaseSensitive && [uppercaseLetters characterIsMember:node->characters[position]]) {
+        } else if (!isCaseSensitive && [uppercaseLetters characterIsMember:trieCharacters(node)[position]]) {
             position++;
             continue;
         }
-        child = node->children[position];
+        OFTrieNode *child = trieChildAtIndex(node, position);
         if ([child isKindOfClass:[OFTrieNode class]]) {
             [trieNodes addObject:child];
             [positions removeLastObject];
-            [positions addObject:[NSNumber numberWithInt:position]];
-            [positions addObject:[NSNumber numberWithInt:0]];
+            [positions addObject:@(position)];
+            [positions addObject:@(0)];
             node = child;
             position = 0;
             continue;
         } else {
             [positions removeLastObject];
-            [positions addObject:[NSNumber numberWithInt:++position]];
+            [positions addObject:@(++position)];
             return child;
         }
     }

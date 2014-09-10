@@ -13,7 +13,7 @@
 
 RCS_ID("$Id$");
 
-static OSErr (*original_dispatchRawAppleEvent)(Class self, SEL _cmd, const AppleEvent *event, AppleEvent reply, SRefCon handlerRefCon);
+static OSErr (*original_dispatchRawAppleEvent)(NSAppleEventManager* self, SEL _cmd, const AppleEvent *event, AppleEvent *reply, SRefCon handlerRefCon);
 
 @implementation NSAppleEventManager (OAExtensions)
 
@@ -98,7 +98,7 @@ static BOOL _shouldForceLazyInitializationOfSharedScriptSuiteRegistry(const Appl
     return NO;
 }
 
-static OSErr _replacement_dispatchRawAppleEvent(Class self, SEL _cmd, const AppleEvent *event, AppleEvent reply, SRefCon handlerRefCon)
+static OSErr _replacement_dispatchRawAppleEvent(NSAppleEventManager* self, SEL _cmd, const AppleEvent *event, AppleEvent *reply, SRefCon handlerRefCon)
 {
     static BOOL hasForcedLazyInitializationOfSharedScriptSuiteRegistry = NO;
     

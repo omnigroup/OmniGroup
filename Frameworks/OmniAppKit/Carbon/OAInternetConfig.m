@@ -59,15 +59,20 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
 
 - (NSString *)helperApplicationForScheme:(NSString *)scheme;
 {
-    CFURLRef schemeURL = (CFURLRef)[NSURL URLWithString:[scheme stringByAppendingString:@":"]];
-    CFURLRef helperApplicationURL;
-    OSStatus status = LSGetApplicationForURL(schemeURL, kLSRolesAll, NULL, &helperApplicationURL);
-    if (status == noErr) {
-        NSString *helperApplicationPath, *helperApplicationName;
-
+    OBPRECONDITION(![NSString isEmptyString:scheme]);
+    if (![scheme hasSuffix:@":"]) {
+        scheme = [scheme stringByAppendingString:@":"];
+    }
+    
+    CFURLRef schemeURL = (CFURLRef)[NSURL URLWithString:scheme];
+    CFURLRef helperApplicationURL = LSCopyDefaultApplicationURLForURL(schemeURL, kLSRolesAll, NULL);
+    if (helperApplicationURL != NULL) {
         // Check to make sure the registered helper application isn't us
-        helperApplicationPath = [(NSURL *)helperApplicationURL path];
-        helperApplicationName = [[helperApplicationPath lastPathComponent] stringByDeletingPathExtension];
+        NSString *helperApplicationPath = [(NSURL *)helperApplicationURL path];
+        NSString *helperApplicationName = [[NSFileManager defaultManager] displayNameAtPath:helperApplicationPath];
+
+        CFRelease(helperApplicationURL);
+
         return helperApplicationName;
     }
 

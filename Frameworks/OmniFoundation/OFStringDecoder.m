@@ -9,8 +9,6 @@
 #import <OmniFoundation/CFString-OFExtensions.h>
 #import <CoreFoundation/CFCharacterSet.h>
 
-#include <pthread.h>
-
 RCS_ID("$Id$")
 
 /* From the Unicode standard:
@@ -488,18 +486,12 @@ extern BOOL OFStringContainsDeferredEncodingCharacters(NSString *str)
     return NO;
 }
 
-static CFCharacterSetRef deferredCharactersSet_ = NULL;
-static pthread_once_t once = PTHREAD_ONCE_INIT;
-
-static void createDeferredCharactersSet(void)
-{
-    OBPRECONDITION(deferredCharactersSet_ == NULL);
-    deferredCharactersSet_ = CFCharacterSetCreateWithCharactersInRange(kCFAllocatorDefault, CFRangeMake(OFDeferredASCIISupersetBase, 256));
-}
-
 CFCharacterSetRef OB_HIDDEN OFDeferredDecodingCharacterSet(void)
 {
-    pthread_once(&once, createDeferredCharactersSet);
-    OBPOSTCONDITION(deferredCharactersSet_ != NULL);
-    return deferredCharactersSet_;
+    static CFCharacterSetRef deferredCharactersSet = NULL;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        deferredCharactersSet = CFCharacterSetCreateWithCharactersInRange(kCFAllocatorDefault, CFRangeMake(OFDeferredASCIISupersetBase, 256));
+    });
+    return deferredCharactersSet;
 }

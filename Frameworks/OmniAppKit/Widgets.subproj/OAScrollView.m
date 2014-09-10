@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -92,15 +92,22 @@ static NSFont *smallSystemFont;
     NSSize contentSize;
     CGFloat scrollerWidthDifference;
 
-    contentSize = [[self class] contentSizeForFrameSize:frameSize hasHorizontalScroller:hasHorizontalScroller hasVerticalScroller:hasVerticalScroller borderType:[self borderType]];
+    Class horizontalScrollerClass = hasHorizontalScroller ? [NSScroller class] : Nil;
+    Class verticleScrollerClass = hasVerticalScroller ? [NSScroller class] : Nil;
+    
+    contentSize = [[self class] contentSizeForFrameSize:frameSize horizontalScrollerClass:horizontalScrollerClass verticalScrollerClass:verticleScrollerClass borderType:[self borderType] controlSize:NSRegularControlSize scrollerStyle:[NSScroller preferredScrollerStyle]];
 
     if (hasVerticalScroller) {
-        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:NSRegularControlSize] - [NSScroller scrollerWidthForControlSize:[[self verticalScroller] controlSize]];
+        NSScroller *verticalScroller = self.verticalScroller;
+        NSScrollerStyle scrollerStyle = [[verticalScroller class] preferredScrollerStyle];
+        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:NSRegularControlSize scrollerStyle:scrollerStyle] - [NSScroller scrollerWidthForControlSize:[verticalScroller controlSize] scrollerStyle:scrollerStyle];
         contentSize.width += scrollerWidthDifference;
     }
 
     if (hasHorizontalScroller) {
-        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:NSRegularControlSize] - [NSScroller scrollerWidthForControlSize:[[self horizontalScroller] controlSize]];
+        NSScroller *horizontalScroller = self.horizontalScroller;
+        NSScrollerStyle scrollerStyle = [[horizontalScroller class] preferredScrollerStyle];
+        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:NSRegularControlSize scrollerStyle:scrollerStyle] - [NSScroller scrollerWidthForControlSize:[horizontalScroller controlSize] scrollerStyle:scrollerStyle];
         contentSize.height += scrollerWidthDifference;
     }
 
@@ -172,6 +179,7 @@ static NSFont *smallSystemFont;
         [pageNumberTextField setBordered:YES];
 	[pageNumberTextField setTarget:self];
 	[pageNumberTextField setAction:@selector(gotoPage:)];
+        OBASSERT( ! [nonretained_delegate isKindOfClass:[NSViewController class]], "Delegate of class %@ is a subclass on NSViewController. As such it will be inserted into the responder chain twice, likely creating an infinite regress as it becomes its own next responder.", [nonretained_delegate class]);
 	[pageNumberTextField setNextResponder:nonretained_delegate];
         [pageNumberTextField setRefusesFirstResponder:YES];
 	[horizontalWidgetsBox addSubview:pageNumberTextField];
@@ -354,54 +362,6 @@ static NSFont *smallSystemFont;
     return verticalWidget;
 }
 
-
-- (NSSize)idealSizeForAvailableSize:(NSSize)availableSize;
-{
-    NSClipView *clipView;
-    NSView *docView;
-    NSSize docViewSize;
-    NSSize scrollViewSize;
-    BOOL hasHorizontalScroller, hasVerticalScroller;
-
-    clipView = [self contentView];
-    docView = [clipView documentView];
-    if (docView == nil)
-        docViewSize = NSZeroSize;
-    else if ([docView respondsToSelector:@selector(idealSizeForAvailableSize:)])
-        docViewSize = [(id)docView idealSizeForAvailableSize:[self contentSizeForFrameSize:availableSize hasHorizontalScroller:(scrollBehavior == YES_SCROLL) hasVerticalScroller:(scrollBehavior == YES_SCROLL)]];
-    else
-        docViewSize = [docView frame].size;
-
-    switch (scrollBehavior) {
-        case YES_SCROLL:
-            hasHorizontalScroller = YES;
-            hasVerticalScroller = YES;
-            break;
-        case NO_SCROLL:
-            hasHorizontalScroller = NO;
-            hasVerticalScroller = NO;
-            break;
-        case VERTICAL_SCROLL:
-            scrollViewSize = [[self class] frameSizeForContentSize:docViewSize hasHorizontalScroller:NO hasVerticalScroller:NO borderType:[self borderType]];
-            hasVerticalScroller = scrollViewSize.height > availableSize.height;
-            hasHorizontalScroller = NO;
-            break;
-        default:
-        case AUTO_SCROLL:
-            scrollViewSize = [[self class] frameSizeForContentSize:docViewSize hasHorizontalScroller:NO hasVerticalScroller:NO borderType:[self borderType]];
-            hasVerticalScroller = scrollViewSize.height > availableSize.height;
-            scrollViewSize = [[self class] frameSizeForContentSize:docViewSize hasHorizontalScroller:NO hasVerticalScroller:hasVerticalScroller borderType:[self borderType]];
-            hasHorizontalScroller = scrollViewSize.width > availableSize.width;
-            break;
-        case MANUAL_SCROLL:
-            hasHorizontalScroller = [self hasHorizontalScroller];
-            hasVerticalScroller = [self hasVerticalScroller];
-            break;
-    }
-    scrollViewSize = [[self class] frameSizeForContentSize:docViewSize hasHorizontalScroller:hasHorizontalScroller hasVerticalScroller:hasVerticalScroller borderType:[self borderType]];
-    return scrollViewSize;
-}
-
 - (void)setControlSize:(NSControlSize)newControlSize;
 {
     NSControlSize oldControlSize;
@@ -413,16 +373,21 @@ static NSFont *smallSystemFont;
     documentHeight = NSHeight([[self documentView] frame]);
         
     if ([self hasVerticalScroller]) {
-        oldControlSize = [[self verticalScroller] controlSize];
-        [[self verticalScroller] setControlSize:newControlSize];
-        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:oldControlSize] - [NSScroller scrollerWidthForControlSize:newControlSize];
+        NSScroller *verticalScroller = [self verticalScroller];
+        NSScrollerStyle scrollerStyle = [[verticalScroller class] preferredScrollerStyle];
+        
+        oldControlSize = [verticalScroller controlSize];
+        [verticalScroller setControlSize:newControlSize];
+        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:oldControlSize scrollerStyle:scrollerStyle] - [NSScroller scrollerWidthForControlSize:newControlSize scrollerStyle:scrollerStyle];
         contentWidth += scrollerWidthDifference;
         documentWidth += scrollerWidthDifference;
     }
     if ([self hasHorizontalScroller]) {
-        oldControlSize = [[self horizontalScroller] controlSize];
-        [[self horizontalScroller] setControlSize:newControlSize];
-        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:oldControlSize] - [NSScroller scrollerWidthForControlSize:newControlSize];
+        NSScroller *horizontalScroller = [self horizontalScroller];
+        NSScrollerStyle scrollerStyle = [[horizontalScroller class] preferredScrollerStyle];
+        oldControlSize = [horizontalScroller controlSize];
+        [horizontalScroller setControlSize:newControlSize];
+        scrollerWidthDifference = [NSScroller scrollerWidthForControlSize:oldControlSize scrollerStyle:scrollerStyle] - [NSScroller scrollerWidthForControlSize:newControlSize scrollerStyle:scrollerStyle];
         contentHeight += scrollerWidthDifference;
         documentHeight += scrollerWidthDifference;
     }

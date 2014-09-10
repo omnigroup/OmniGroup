@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,10 +8,6 @@
 // $Id$
 
 #import <Foundation/NSAppleEventDescriptor.h>
-
-@interface NSAppleEventDescriptor (OFExtensions)
-+ (NSAppleEventDescriptor *)descriptorWithFileURL:(NSURL *)furl;
-@end
 
 @interface NSDictionary (OFExtensions_NSAppleEventDescriptor)
 + (NSDictionary *)dictionaryWithUserRecord:(NSAppleEventDescriptor *)descriptor;

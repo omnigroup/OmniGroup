@@ -37,9 +37,13 @@ static NSNotificationCenter *preferenceNotificationCenter = nil;
 NSString * const OFPreferenceObjectValueBinding = @"objectValue";
 NSString * const OFPreferenceDidChangeNotification = @"OFPreferenceDidChangeNotification";
 
-@interface OFPreference (Private)
-- (id) _initWithKey: (NSString * ) key;
-- (void)_refresh;
+@interface OFPreference ()
+{
+@protected
+    // OFEnumeratedPreference references these
+    NSString *_key;
+    id _value;
+}
 @end
 
 @interface OFEnumeratedPreference : OFPreference
@@ -47,13 +51,21 @@ NSString * const OFPreferenceDidChangeNotification = @"OFPreferenceDidChangeNoti
     OFEnumNameTable *names;
 }
 
-- (id) _initWithKey: (NSString * ) key enumeration: (OFEnumNameTable *)enumeration;
+- (id)_initWithKey:(NSString * )key enumeration:(OFEnumNameTable *)enumeration;
 
 @end
 
 @implementation OFPreference
+{
+    unsigned _generation;
+    id _defaultValue;
+    
+    id _controller;
+    NSString *_controllerKey;
+    BOOL _updatingController;
+}
 
-static id _retainedObjectValue(OFPreference *self, id *_value, NSString *key)
+static id _retainedObjectValue(OFPreference *self, id const *_value, NSString *key)
 {
     id result = nil;
 
@@ -77,7 +89,7 @@ static id _retainedObjectValue(OFPreference *self, id *_value, NSString *key)
     return result;
 }
 
-static inline id _objectValue(OFPreference *self, id *_value, NSString *key, NSString *className)
+static inline id _objectValue(OFPreference *self, id const *_value, NSString *key, NSString *className)
 {
     id result = [_retainedObjectValue(self, _value, key) autorelease];
 
@@ -116,7 +128,7 @@ static void _setValueUnderlyingValue(OFPreference *self, id controller, NSString
     }
 }
 
-static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
+static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, id value)
 {
     @synchronized(self) {
         // If this preference is created & used by a OAPreferenceClient, or other NSController, use KVC on the controller to set the preference so that other observers of the controller will get notified via KVO.
@@ -253,14 +265,13 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
         // Some one doing 'make new' in a script; don't crash but log an error
         [command setScriptErrorNumber:NSReceiversCantHandleCommandScriptError];
         [command setScriptErrorString:@"Preferences cannot be defined by scripts."];
-    } else
-#endif
-    {
-        OBRejectUnusedImplementation(self, _cmd);
+        
+        [self release];
+        return nil;
     }
-    
-    [self release];
-    return nil;
+#endif
+
+    OBRejectUnusedImplementation(self, _cmd);
 }
 
 - (void)dealloc;
@@ -697,10 +708,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 
 #endif
 
-@end
-
-
-@implementation OFPreference (Private)
+#pragma mark - Private
 
 - (id) _initWithKey: (NSString * ) key;
 {
@@ -750,9 +758,10 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 
 @implementation OFEnumeratedPreference
 
-- (id) _initWithKey: (NSString * ) key enumeration: (OFEnumNameTable *)enumeration;
+- (id)_initWithKey:(NSString * )key enumeration:(OFEnumNameTable *)enumeration;
 {
-    self = [super _initWithKey:key];
+    if (!(self = [super _initWithKey:key]))
+        return nil;
     names = [enumeration retain];
     return self;
 }
@@ -764,7 +773,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return names;
 }
 
-- (id) defaultObjectValue
+- (id)defaultObjectValue
 {
     id defaultValue = [super defaultObjectValue];
     if (defaultValue == nil)
@@ -796,8 +805,8 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
         result = [(NSNumber *)value integerValue];
         [value release];
     } else if ([value isKindOfClass:[NSString class]]) {
-        [value autorelease];
-        result = [names enumForName:value]; // May raise
+        result = [names enumForName:value];
+        [value release];
     } else {
         OBASSERT_NOT_REACHED("Enumerated preference not a string or a number");
         [value release];
@@ -825,6 +834,7 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
 @end
 
 @implementation OFPreferenceWrapper : NSObject
+
 + (OFPreferenceWrapper *) sharedPreferenceWrapper;
 {
     static OFPreferenceWrapper *sharedPreferenceWrapper = nil;
@@ -834,32 +844,18 @@ static void _setValue(OFPreference *self, id *_value, NSString *key, id value)
     return sharedPreferenceWrapper;
 }
 
-- (OFPreference *) preferenceForKey: (NSString *) key;
+- (OFPreference *)preferenceForKey:(NSString *)key;
 {
     return [OFPreference preferenceForKey:key];
 }
 
-- (id) retain;
-{
-    return self;
-}
-
-- (oneway void)release;
-{
-}
-
-- (id) autorelease;
-{
-    return self;
-}
-
 - (void) dealloc;
 {
-    OBASSERT_NOT_REACHED("OFPreference instance is never deallocated");
-	
-	// Squelch the warning that 10.4 emits.
-	return;
-	[super dealloc];
+    OBRejectUnusedImplementation(self, _cmd); // OFPreferenceWrapper instance should never be deallocated
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
+    [super dealloc]; // We know this won't be reached, but w/o this we get a warning about a missing call to super -dealloc
+#pragma clang diagnostic pop
 }
 
 - (id)objectForKey:(NSString *)defaultName;

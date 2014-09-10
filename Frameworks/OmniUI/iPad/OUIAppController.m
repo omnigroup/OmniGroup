@@ -18,14 +18,17 @@
 #import <OmniFoundation/OFBundleRegistry.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFVersionNumber.h>
+#import <OmniUI/OUIAboutThisAppViewController.h>
+#import <OmniUI/OUIAppController+SpecialURLHandling.h>
 #import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUI/OUIChangePreferenceURLCommand.h>
+#import <OmniUI/OUIDebugURLCommand.h>
+#import <OmniUI/OUIPurchaseURLCommand.h>
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUIMenuOption.h>
-#import <OmniUI/OUISpecialURLActionSheet.h>
 #import <OmniUI/OUIWebViewController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
-#import <SenTestingKit/SenTestSuite.h>
 
 #import <sys/sysctl.h>
 
@@ -33,7 +36,7 @@
 
 RCS_ID("$Id$");
 
-@interface OUIAppController () <OUIMenuControllerDelegate, OUIWebViewControllerDelegate>
+@interface OUIAppController () <OUIWebViewControllerDelegate>
 @end
 
 @implementation OUIAppController
@@ -150,6 +153,22 @@ static void __iOS7B5CleanConsoleOutput(void)
     id controller = [[UIApplication sharedApplication] delegate];
     OBASSERT([controller isKindOfClass:self]);
     return controller;
+}
+
+- (id)init;
+{
+    if (!(self = [super init])) {
+        return nil;
+    }
+    
+    [[self class] registerCommandClass:[OUIChangePreferenceURLCommand class] forSpecialURLPath:@"/change-preference"];
+    [[self class] registerCommandClass:[OUIDebugURLCommand class] forSpecialURLPath:@"/debug"];
+    [[self class] registerCommandClass:[OUIPurchaseURLCommand class] forSpecialURLPath:@"/purchase"];
+    
+    // Setup vendorID at app launch to fix <bug:///107092>. See bug notes for more details.
+    [self vendorID];
+    
+    return self;
 }
 
 + (NSString *)applicationName;
@@ -484,57 +503,6 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     return didDismiss;
 }
 
-#pragma mark -
-#pragma mark Special URL handling
-
-- (UIViewController *)_activeController;
-{
-    UIViewController *activeController = self.window.rootViewController;
-    while (activeController.presentedViewController != nil)
-        activeController = activeController.presentedViewController;
-    return activeController;
-}
-
-- (BOOL)isSpecialURL:(NSURL *)url;
-{
-    NSString *scheme = [url scheme];
-    return [OUIAppController canHandleURLScheme:scheme];
-}
-
-- (BOOL)handleSpecialURL:(NSURL *)url;
-{
-    OBPRECONDITION([self isSpecialURL:url]);
-
-    UIViewController *activeController = [self _activeController];
-    UIView *activeView = activeController.view;
-    if (activeView == nil)
-        return NO; 
-
-    NSString *path = [url path];
-    UIActionSheet *actionSheet = nil;
-    
-    if ([path isEqualToString:@"/change-preference"]) {
-        NSString *titleFormat = NSLocalizedStringFromTableInBundle(@"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?", @"OmniUI", OMNI_BUNDLE, @"alert message");
-        actionSheet = [[OUISpecialURLActionSheet alloc] initWithURL:url titleFormat:titleFormat handler:OUIChangePreferenceURLHandler];
-    } else if ([path isEqualToString:@"/debug"]) {
-        NSString *titleFormat = NSLocalizedStringFromTableInBundle(@"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?", @"OmniUI", OMNI_BUNDLE, @"debug setting alert message");
-        actionSheet = [[OUISpecialURLActionSheet alloc] initWithURL:url titleFormat:titleFormat handler:[self debugURLHandler]];
-    }
-    
-    if (actionSheet) {
-        [actionSheet showInView:activeView]; // returns immediately
-        return YES;
-    }
-
-    return NO;
-}
-
-- (OUISpecialURLHandler)debugURLHandler;
-{
-    // subclass should override to provide handler for app-specific debug URLs of format [appName]:///debug?command, e.g. omnioutliner:///debug?reset-keychain
-    return [^(NSURL *url){ return NO; } copy];
-}
-
 - (void)actionSheetDidDismiss:(NSNotification *)notification;
 {
     OUIActionSheet *actionSheet = (OUIActionSheet *)notification.object;
@@ -636,6 +604,21 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     return [NSString stringWithFormat:format, [[self class] applicationName]];
 }
 
+- (NSString *)aboutScreenTitle;
+{
+    return [self aboutMenuTitle];
+}
+
+- (NSURL *)aboutScreenURL;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+}
+
+- (NSDictionary *)aboutScreenBindingsDictionary;
+{
+    return nil;
+}
+
 - (UIBarButtonItem *)newAppMenuBarButtonItem;
 {
     NSString *imageName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIAppMenuImage"];
@@ -655,12 +638,16 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 - (void)_showAppMenu:(id)sender;
 {
     if (!_appMenuController)
-        _appMenuController = [[OUIMenuController alloc] initWithDelegate:self];
+        _appMenuController = [[OUIMenuController alloc] init];
     
+    _appMenuController.topOptions = [self _appMenuTopOptions];
     _appMenuController.tintColor = self.window.tintColor;
     
     OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
-    [_appMenuController showMenuFromSender:sender];
+    _appMenuController.popoverPresentationController.barButtonItem = sender;
+    [self.window.rootViewController presentViewController:_appMenuController animated:YES completion:^{
+        _appMenuController.popoverPresentationController.passthroughViews = nil;
+    }];
 }
 
 - (void)_sendFeedback:(id)sender;
@@ -685,6 +672,28 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     [self.window.rootViewController presentViewController:webNavigationController animated:YES completion:nil];
 }
 
+- (void)showAboutScreenInNavigationController:(UINavigationController *)navigationController;
+{
+    OUIAboutThisAppViewController *aboutController = [[OUIAboutThisAppViewController alloc] init];
+    [aboutController loadAboutPanelWithTitle:[self aboutScreenTitle] URL:[self aboutScreenURL] javascriptBindingsDictionary:[self aboutScreenBindingsDictionary]];
+
+    if (navigationController) {
+        [navigationController pushViewController:aboutController animated:YES];
+    } else {
+        navigationController = [[UINavigationController alloc] initWithRootViewController:aboutController];
+        navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
+        navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+
+        UIViewController *viewController = self.window.rootViewController;
+        [viewController presentViewController:navigationController animated:YES completion:nil];
+    }
+}
+
+- (void)_showAboutScreen:(id)sender;
+{
+    [self showAboutScreenInNavigationController:nil];
+}
+
 - (void)_showReleaseNotes:(id)sender;
 {
     [self _showWebViewWithURL:[[NSBundle mainBundle] URLForResource:@"MessageOfTheDay" withExtension:@"html"] title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"release notes html screen title")];
@@ -704,32 +713,25 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     [self _showWebViewWithURL:helpIndexURL title:webViewTitle];
 }
 
-- (void)_runTests:(id)sender;
-{
-    Class cls = NSClassFromString(@"SenTestSuite");
-    OBASSERT(cls);
-    
-    SenTestSuite *suite = [cls defaultTestSuite];
-    [suite run];
-}
-
 #pragma mark - OUIMenuControllerDelegate
 
 static UIImage *menuImage(NSString *name)
 {
     return [[UIImage imageNamed:name] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
-- (NSArray *)menuControllerOptions:(OUIMenuController *)menu;
+
+- (NSArray *)_appMenuTopOptions;
 {
-    if (menu != _appMenuController) {
-        OBASSERT_NOT_REACHED("Unknown menu %@!", menu);
-        return nil;
-    }
-    
     NSMutableArray *options = [NSMutableArray array];
     OUIMenuOption *option;
     NSArray *additionalOptions;
     
+    NSString *aboutMenuTitle = [self aboutMenuTitle];
+    if (![NSString isEmptyString:aboutMenuTitle]) {
+        option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showAboutScreen:) title:aboutMenuTitle image:menuImage(@"OUIMenuItemAbout.png")];
+        [options addObject:option];
+    }
+
     option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showOnlineHelp:)
                                                        title:[[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"] table:@"InfoPlist"]
                                                        image:menuImage(@"OUIMenuItemHelp.png")];
@@ -753,13 +755,16 @@ static UIImage *menuImage(NSString *name)
     if (additionalOptions)
         [options addObjectsFromArray:additionalOptions];
     
-    for (NSString *inAppPurchaseIdentifier in [self inAppPurchaseIdentifiers]) {
-        NSString *inAppPurchaseTitle = [self purchaseMenuItemTitleForInAppStoreProductIdentifier:inAppPurchaseIdentifier];
-        if (!inAppPurchaseIdentifier)
+    for (NSString *productIdentifier in [self inAppPurchaseIdentifiers]) {
+        if ([self isPurchaseUnlocked:productIdentifier])
+            continue;
+
+        NSString *purchaseTitle = [self purchaseMenuItemTitleForInAppStoreProductIdentifier:productIdentifier];
+        if ([NSString isEmptyString:purchaseTitle])
             continue;
         
-        option = [[OUIMenuOption alloc] initWithTitle:inAppPurchaseTitle image:menuImage(@"OUIMenuItemPurchases.png") action:^{
-            [[OUIAppController controller] showInAppPurchases:inAppPurchaseIdentifier navigationController:nil];
+        option = [[OUIMenuOption alloc] initWithTitle:purchaseTitle image:menuImage(@"OUIMenuItemPurchases.png") action:^{
+            [[OUIAppController controller] showInAppPurchases:productIdentifier viewController:self.window.rootViewController];
         }];
         [options addObject:option];
     }
@@ -768,19 +773,12 @@ static UIImage *menuImage(NSString *name)
     if (additionalOptions)
         [options addObjectsFromArray:additionalOptions];
     
-#if defined(DEBUG)
-    BOOL includedTestsMenu = YES;
-#else
-    BOOL includedTestsMenu = [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIIncludeTestsMenu"];
-#endif
-    if (includedTestsMenu && NSClassFromString(@"SenTestSuite")) {
-        option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_runTests:)
-                                                           title:NSLocalizedStringFromTableInBundle(@"Run Tests", @"OmniUI", OMNI_BUNDLE, @"App menu item title")
-                                                           image:menuImage(@"OUIMenuItemRunTests.png")];
-        [options addObject:option];
-    }
-    
     return options;
+}
+
+- (UIViewController *)viewControllerForPresentingMenuController:(OUIMenuController *)menuController;
+{
+    return self.window.rootViewController;
 }
 
 #pragma mark - OUIWebViewControllerDelegate

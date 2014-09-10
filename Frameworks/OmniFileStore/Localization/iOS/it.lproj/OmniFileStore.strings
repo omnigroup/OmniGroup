@@ -21,7 +21,7 @@
 "No document exists at \"%@\"." = "Non esiste nessun documento in “%@”.";
 
 /* error reason */
-"No such file \"%@\"." = "Nessun documento \"%@\".";
+"No such file \"%@\"." = "Nessun documento “%@”.";
 
 /* error reason */
 "Please make sure that the destination folder exists." = "Assicurati che la cartella di destinazione esista.";
@@ -34,3 +34,4 @@
 
 /* error description */
 "Unable to read document." = "Impossibile leggere il documento.";
+

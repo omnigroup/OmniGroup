@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -142,30 +142,8 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIKeyboardNotifier *s
     CGRect screenBounds = [UIScreen mainScreen].bounds;
     DEBUG_KEYBOARD("screenBounds: %@", NSStringFromCGRect(screenBounds));
     
-    BOOL isDocked;
-    CGFloat keyboardHeight;
-    switch ([UIApplication sharedApplication].statusBarOrientation) {
-        case UIInterfaceOrientationPortrait:
-            keyboardHeight = keyboardEndFrame.size.height;
-            isDocked = (screenBounds.size.height - keyboardEndFrame.size.height) == keyboardEndFrame.origin.y;
-            break;
-        case UIInterfaceOrientationPortraitUpsideDown:
-            keyboardHeight = keyboardEndFrame.size.height;
-            isDocked = screenBounds.origin.y == keyboardEndFrame.origin.y;
-            break;
-            
-        case UIInterfaceOrientationLandscapeRight:
-            keyboardHeight = keyboardEndFrame.size.width;
-            isDocked = screenBounds.origin.x == keyboardEndFrame.origin.x;
-            break;
-        case UIInterfaceOrientationLandscapeLeft:
-            keyboardHeight = keyboardEndFrame.size.width;
-            isDocked = (screenBounds.size.width - keyboardEndFrame.size.width) == keyboardEndFrame.origin.x;
-            break;
-        default:
-            OBASSERT_NOT_REACHED("Unknown interface orientation");
-            break;
-    }
+    CGFloat keyboardHeight = keyboardEndFrame.size.height;
+    BOOL isDocked = (screenBounds.size.height - keyboardEndFrame.size.height) == keyboardEndFrame.origin.y;
     
     DEBUG_KEYBOARD("keyboardHeight: %f", keyboardHeight);
     DEBUG_KEYBOARD("isDocked: %@", isDocked ? @"YES" : @"NO");

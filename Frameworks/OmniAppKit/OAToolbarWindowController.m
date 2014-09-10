@@ -86,23 +86,6 @@ static NSMutableDictionary *helpersByExtension = nil;
 
 // NSWindowController subclass
 
-+ (BOOL)shouldUpdateConstraintsBeforeInstallingToolbar;
-{
-    return YES;
-}
-
-- (void)loadWindow;
-{
-    [super loadWindow];
-    
-    // DTS workaround for <bug:///83131> (r.12466034: Scroll view gets spurious NSZeroSize, causing constraint violations on 10.7)
-    // Adding a toolbar to a window will cause the window to resize itself, which will send -resizeSubviewsWithOldSize: down the view hierarchy. This method will obey constraints if they are enabled for the window, but it won't actually cause an -updateConstraints pass. This can result in bad NSAutoresizingMaskLayoutConstraints being installed and causing exceptions.
-    // We want to do this AS SOON AS POSSIBLE, because subclasses might do other work in -loadWindow, or before calling super in their overrides of -windowDidLoad.
-    
-    if ([[self class] shouldUpdateConstraintsBeforeInstallingToolbar])
-        [[self window] updateConstraintsIfNeeded];
-}
-
 - (void)windowDidLoad; // Setup the toolbar and handle its delegate messages
 {
     [super windowDidLoad]; // DOX: These are called immediately before and after the controller loads its nib file.  You can subclass these but should not call them directly.  Always call super from your override.

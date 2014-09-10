@@ -32,13 +32,3 @@ NSMutableDictionary *OFCreateCaseInsensitiveKeyMutableDictionary(void)
                                                                       &OFCaseInsensitiveStringKeyDictionaryCallbacks,
                                                                       &OFNSObjectDictionaryValueCallbacks);
 }
-
-void OFPerformSelectorOnKeyApplierFunction(const void *key, const void *value, void *context)
-{
-    [(OB_BRIDGE id)key performSelector:(SEL)context];
-}
-
-void OFPerformSelectorOnValueApplierFunction(const void *key, const void *value, void *context)
-{
-    [(OB_BRIDGE id)value performSelector:(SEL)context];
-}

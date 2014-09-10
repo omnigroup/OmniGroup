@@ -7,10 +7,11 @@
 
 #import <OmniUI/OUIUndoBarButtonItem.h>
 
+#import <OmniUI/NSUndoManager-OUIExtensions.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIUndoButton.h>
-#import <OmniUI/OUIUndoButtonController.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OUIMenuController.h>
 #import "OUIParameters.h"
 
 RCS_ID("$Id$");
@@ -24,9 +25,13 @@ NSString * const OUIUndoPopoverWillShowNotification = @"OUIUndoPopoverWillShowNo
 @interface UIBarButtonItem (NSCoding) <NSCoding>
 @end
 
+@interface OUIUndoBarButtonItem ()
+@end
+
 @implementation OUIUndoBarButtonItem
 {
     OUIUndoButton *_undoButton;
+    OUIMenuController *_menuController;
 
     NSMutableArray *_undoManagers;
     
@@ -34,7 +39,6 @@ NSString * const OUIUndoPopoverWillShowNotification = @"OUIUndoPopoverWillShowNo
     UILongPressGestureRecognizer *_longPressRecognizer;
 
     __weak id <OUIUndoBarButtonItemTarget>  _weak_undoBarButtonItemTarget;
-    OUIUndoButtonController *_buttonController;
 
     BOOL _canUndo, _canRedo;
 }
@@ -67,9 +71,8 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 {
     self->_undoManagers = [[NSMutableArray alloc] init];
     
-    UIColor *tintColor = [OUIAppController controller].window.tintColor;
-    self.tintColor = tintColor;
     self->_undoButton = [OUIUndoButton buttonWithType:UIButtonTypeSystem];
+    self->_undoButton.contentMode = UIViewContentModeCenter;
 
     [self->_undoButton sizeToFit];
     self.customView = self->_undoButton;
@@ -159,6 +162,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     [center addObserver:self selector:@selector(_updateStateFromUndoMananger:) name:NSUndoManagerDidUndoChangeNotification object:undoManager];
     [center addObserver:self selector:@selector(_updateStateFromUndoMananger:) name:NSUndoManagerDidRedoChangeNotification object:undoManager];
     [center addObserver:self selector:@selector(_updateStateFromUndoMananger:) name:NSUndoManagerWillCloseUndoGroupNotification object:undoManager];
+    [center addObserver:self selector:@selector(_updateStateFromUndoMananger:) name:OUIUndoManagerDidRemoveAllActionsNotification object:undoManager];
 }
 
 - (void)_stopObservingUndoManager:(NSUndoManager *)undoManager;
@@ -169,6 +173,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     [center removeObserver:self name:NSUndoManagerDidUndoChangeNotification object:undoManager];
     [center removeObserver:self name:NSUndoManagerDidRedoChangeNotification object:undoManager];
     [center removeObserver:self name:NSUndoManagerWillCloseUndoGroupNotification object:undoManager];
+    [center removeObserver:self name:OUIUndoManagerDidRemoveAllActionsNotification object:undoManager];
 }
 
 - (void)_updateStateFromUndoMananger:(NSNotification *)note;
@@ -211,16 +216,55 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 
 - (void)_showUndoMenu;
 {
-    if (!_buttonController) {
-        _buttonController = [[OUIUndoButtonController alloc] init];
-        _buttonController.undoBarButtonItemTarget = _weak_undoBarButtonItemTarget;
-        _buttonController.tintColor = self.tintColor;
-    }
     
-    if (!_buttonController.isMenuVisible) {
-        [[OUIAppController controller] dismissPopoverAnimated:NO];
-        [_buttonController showUndoMenuFromItem:self];
+    if (!_menuController) {
+        _menuController = [[OUIMenuController alloc] init];
+        _menuController.sizesToOptionWidth = YES;
+        _menuController.textAlignment = NSTextAlignmentCenter;
+        _menuController.showsDividersBetweenOptions = NO;
+
+        // We will provide exactly the same number/title options but possibly w/o an action.
+        _menuController.optionInvocationAction = OUIMenuControllerOptionInvocationActionReload;
     }
+
+    // retint each time, because Focus uses multiple tints
+    _menuController.tintColor = [OUIAppController controller].window.tintColor;
+    
+    id <OUIUndoBarButtonItemTarget> target = _weak_undoBarButtonItemTarget;
+    
+    // Build Options
+    OUIMenuOption *undoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title")
+                                              action:^{
+                                                  if (target) {
+                                                      [target undo:nil];
+                                                  }
+                                              } validator:^BOOL{
+                                                  return [target canPerformAction:@selector(undo:) withSender:nil];
+                                              }];
+    
+    
+    OUIMenuOption *redoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title")
+                                              action:^{
+                                                  if (target) {
+                                                      [target redo:nil];
+                                                  }
+                                              } validator:^BOOL{
+                                                  return [target canPerformAction:@selector(redo:) withSender:nil];
+                                              }];
+    
+    _menuController.topOptions = @[undoOption, redoOption];
+
+    
+    // Setup Popover Presentation Controller - This must be done each time becase when the popover is dismissed the current popoverPresentationController is released and a new one is created next time.
+    _menuController.popoverPresentationController.barButtonItem = self;
+    
+    // Present
+    [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoPopoverWillShowNotification object:self];
+    UIViewController *viewControllerToPresentMenu = [self.delegate viewControllerToPresentMenuForUndoBarButtonItem:self];
+    [viewControllerToPresentMenu presentViewController:_menuController animated:YES completion:^{
+        // The menu controller "helpfully" adds passthrough views for us at presentation time – clear them out afterwards
+        _menuController.popoverPresentationController.passthroughViews = @[];
+    }];
 }
 
 - (void)_touchDown:(id)sender;
@@ -228,8 +272,9 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     if (!self.enabled)
         return;
     
-    if ([_buttonController dismissUndoMenu])
+    if ([self dismissUndoMenu] == YES) {
         return;
+    }
     
     // If we can only redo, then run our menu on touch-down. Otherwise do nothing and let the guesture recognizers to whatever they detect.
     if (!_canUndo && _canRedo)
@@ -247,13 +292,22 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 
 - (void)_undoButtonPressAndHold:(id)sender;
 {
-    [self _showUndoMenu];
+    OBASSERT([sender isKindOfClass:[UILongPressGestureRecognizer class]]);
+    UILongPressGestureRecognizer *longPressGestureRecognizer = (UILongPressGestureRecognizer *)sender;
+    
+    if (longPressGestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        [self _showUndoMenu];
+    }
 }
 
 - (BOOL)dismissUndoMenu;
 {
-    if (_buttonController)
-        return [_buttonController dismissUndoMenu];
+    if (_menuController.presentingViewController) {
+        [_menuController.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+        return YES;
+    }
+    
     return NO;
 }
+
 @end

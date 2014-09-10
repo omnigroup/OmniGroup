@@ -146,7 +146,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     
     resourceBundle = sourceBundle;
     if (!resourceBundle)
-        resourceBundle = [self bundle]; // need something non-nil, but this likely won't work very well.
+        resourceBundle = [[self class] bundle]; // need something non-nil, but this likely won't work very well.
     
     _allowImagesFromApplication = [dict boolForKey:@"allowImagesFromApplication" defaultValue:NO];
     

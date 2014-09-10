@@ -183,9 +183,9 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 	return;
     }
 
-    _RunItemCompletionHandler completionHandler = ^(OAToolbarItem *toolbarItem, NSError *error) {
+    _RunItemCompletionHandler completionHandler = ^(OAToolbarItem *toolbarItem_, NSError *error) {
 	if ([windowController respondsToSelector:@selector(scriptToolbarItemFinishedExecuting:)]) {
-	    [windowController scriptToolbarItemFinishedExecuting:sender];
+	    [windowController scriptToolbarItemFinishedExecuting:toolbarItem_];
         }
     };
     
@@ -460,8 +460,11 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     NSString *informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Automator reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "Automator Workflow error message"), errorText];
     NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     
-    NSAlert *alert = [NSAlert alertWithMessageText:messageText defaultButton:OKButtonTitle alternateButton:nil otherButton:nil informativeTextWithFormat:@"%@", informativeText];
-    [alert beginSheetModalForWindow:[windowController window] modalDelegate:nil didEndSelector:NULL contextInfo:NULL];
+    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    alert.messageText = messageText;
+    alert.informativeText = informativeText;
+    [alert addButtonWithTitle:OKButtonTitle];
+    [alert beginSheetModalForWindow:[windowController window] completionHandler:nil];
 }
 
 - (void)_handleAutomatorWorkflowExecutionErrorForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController errorText:(NSString *)errorText;
@@ -474,8 +477,17 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     NSString *editButtonTitle = NSLocalizedStringFromTableInBundle(@"Edit Workflow", @"OmniAppKit", [OAScriptToolbarHelper bundle], "Automatork workflow error panel button");
     
-    NSAlert *alert = [NSAlert alertWithMessageText:messageText defaultButton:OKButtonTitle alternateButton:nil otherButton:editButtonTitle informativeTextWithFormat:@"%@", informativeText];
-    [alert beginSheetModalForWindow:[windowController window] modalDelegate:self didEndSelector:@selector(_errorSheetDidEnd:returnCode:contextInfo:) contextInfo:[path retain]];
+    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    alert.messageText = messageText;
+    alert.informativeText = informativeText;
+    [alert addButtonWithTitle:OKButtonTitle];
+    [alert addButtonWithTitle:editButtonTitle];
+
+    [alert beginSheetModalForWindow:[windowController window] completionHandler:^(NSModalResponse returnCode) {
+        if (returnCode == NSAlertSecondButtonReturn) {
+            [[NSWorkspace sharedWorkspace] openFile:path];
+        }
+    }];
 }
 
 - (void)_handleOSAScriptLoadErrorForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController errorText:(NSString *)errorText;
@@ -487,8 +499,11 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     NSString *informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error message"), errorText];
     NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     
-    NSAlert *alert = [NSAlert alertWithMessageText:messageText defaultButton:OKButtonTitle alternateButton:nil otherButton:nil informativeTextWithFormat:@"%@", informativeText];
-    [alert beginSheetModalForWindow:[windowController window] modalDelegate:nil didEndSelector:NULL contextInfo:NULL];
+    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    alert.messageText = messageText;
+    alert.informativeText = informativeText;
+    [alert addButtonWithTitle:OKButtonTitle];
+    [alert beginSheetModalForWindow:[windowController window] completionHandler:nil];
 }
 
 - (void)_handleOSAScriptExecutionErrorForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController errorText:(NSString *)errorText;
@@ -501,17 +516,17 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     NSString *editButtonTitle = NSLocalizedStringFromTableInBundle(@"Edit Script", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     
-    NSAlert *alert = [NSAlert alertWithMessageText:messageText defaultButton:OKButtonTitle alternateButton:nil otherButton:editButtonTitle informativeTextWithFormat:@"%@", informativeText];
-    [alert beginSheetModalForWindow:[windowController window] modalDelegate:self didEndSelector:@selector(_errorSheetDidEnd:returnCode:contextInfo:) contextInfo:[path retain]];
-}
+    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    alert.messageText = messageText;
+    alert.informativeText = informativeText;
+    [alert addButtonWithTitle:OKButtonTitle];
+    [alert addButtonWithTitle:editButtonTitle];
 
-- (void)_errorSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;
-{
-    NSString *scriptPath = [(id)contextInfo autorelease];
-    
-    if (returnCode == NSAlertOtherReturn) {
-        [[NSWorkspace sharedWorkspace] openFile:scriptPath];
-    }
+    [alert beginSheetModalForWindow:[windowController window] completionHandler:^(NSModalResponse returnCode) {
+        if (returnCode == NSAlertSecondButtonReturn) {
+            [[NSWorkspace sharedWorkspace] openFile:path];
+        }
+    }];
 }
 
 @end

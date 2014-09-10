@@ -161,17 +161,12 @@ static OFDedicatedThreadScheduler *dedicatedThreadSchedulerIfCreated(Class self,
 
 - (void)mainThreadInvokeScheduledEvents;
 {
-    NSException *savedException = nil;
-
     [mainThreadSynchronizationLock lockWhenCondition:MAIN_THREAD_BUSY];
-    NS_DURING {
+    @try {
         [self invokeScheduledEvents];
-    } NS_HANDLER {
-        savedException = localException;
-    } NS_ENDHANDLER;
-    [mainThreadSynchronizationLock unlockWithCondition:MAIN_THREAD_IDLE];
-    if (savedException != nil)
-        [savedException raise];
+    } @finally {
+        [mainThreadSynchronizationLock unlockWithCondition:MAIN_THREAD_IDLE];
+    }
 }
 
 #define MINIMUM_SLEEP_INTERVAL (1.0 / 120.0)
@@ -180,7 +175,8 @@ static OFDedicatedThreadScheduler *dedicatedThreadSchedulerIfCreated(Class self,
 {
     BOOL continueRunning = YES;
 
-    [[self retain] autorelease];
+    OBRetainAutorelease(self);
+
     while (continueRunning) {
         @autoreleasepool {
             // Reset the scheduleConditionLock to the 'stable' state if it isn't already

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,21 +8,53 @@
 #import <OmniUI/OUIAppearance.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import <OmniUI/OUIAppearanceColors.h>
 #import <OmniUI/UIColor-OUIExtensions.h>
 #endif
 
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 #import <OmniFoundation/OFBinding.h> // for OFKeysForKeyPath()
+#import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniQuartz/OQColor.h>
 #import <objc/runtime.h>
 
+NSString * const OUIAppearanceAliasesKey = @"OUIAppearanceAliases";
+
+NSString * const OUIAppearancePlistExtension = @"plist";
+
+NSString * const OUIAppearanceValuesWillChangeNotification = @"com.omnigroup.OmniUI.OUIAppearance.ValuesWillChange";
+NSString * const OUIAppearanceValuesDidChangeNotification = @"com.omnigroup.OmniUI.OUIAppearance.ValuesDidChange";
+
+#define OUI_PERFORM_FILE_PRESENTATION (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
+
 RCS_ID("$Id$")
+
+static NSMapTable *ClassToAppearanceMap = nil;
+
+@interface OUIAppearance ()
+#if OUI_PERFORM_FILE_PRESENTATION
+<NSFilePresenter>
+#endif
+
+@property (nonatomic, copy) NSString *plistName;
+@property (nonatomic, strong) NSBundle *plistBundle;
+
+#if OUI_PERFORM_FILE_PRESENTATION
+@property (nonatomic, strong) NSOperationQueue *userPlistPresentationQueue;
+#endif
+
+@end
 
 @implementation OUIAppearance
 {
     NSDictionary *_plist;
-    NSMutableDictionary *_cachedValues;
+    
+    struct {
+#if OUI_PERFORM_FILE_PRESENTATION
+        unsigned int isPresentingUserPlist:1;
+#endif
+    } _flags;
 }
 
 #pragma mark - Lifecycle
@@ -32,34 +64,167 @@ RCS_ID("$Id$")
     if (!(self = [super init]))
         return nil;
 
-    NSString *plistExtension = @"plist";
-    NSURL *plistURL = [bundle URLForResource:[plistName stringByAppendingString:@"Appearance"] withExtension:plistExtension];
+    _plistName = [plistName copy];
+    _plistBundle = bundle;
+    
+    [self recachePlistFromFile];
+
+    return self;
+}
+
+- (void)dealloc;
+{
+    [self endPresentingUserPlistIfNecessary];
+}
+
++ (instancetype)appearance;
+{
+    return [self appearanceForClass:self];
+}
+
+static NSString *_OUIAppearanceUserOverrideFolder = nil;
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+
+void OUIAppearanceSetUserOverrideFolder(NSString *userOverrideFolder)
+{
+    if (OFNOTEQUAL(_OUIAppearanceUserOverrideFolder, userOverrideFolder)) {
+        _OUIAppearanceUserOverrideFolder = [userOverrideFolder copy];
+        
+        for (Class cls in ClassToAppearanceMap) {
+            OUIAppearance *appearance = [ClassToAppearanceMap objectForKey:cls];
+            [appearance invalidateCachedValues];
+        }
+    }
+}
+
+#endif
+
+#pragma mark - File presentation
+
+#if OUI_PERFORM_FILE_PRESENTATION
+- (NSURL *)presentedItemURL;
+{
+    return [self userPlistURL];
+}
+
+- (NSURL *)primaryPresentedItemURL;
+{
+    // Our machinery will try to auto synthesize this property.
+    return nil;
+}
+
+- (NSOperationQueue *)presentedItemOperationQueue;
+{
+    OBPRECONDITION(self.userPlistPresentationQueue != nil, @"Should have set up an operation queue before beginning file presentation");
+    return self.userPlistPresentationQueue;
+}
+
+- (void)presentedItemDidChange;
+{
+    [self invalidateCachedValues];
+}
+
+- (void)presentedItemDidMoveToURL:(NSURL *)newURL;
+{
+    // We deliberately continue presenting the same file URL here so that if the file comes back, we will continue receiving notifications
+    [self invalidateCachedValues];
+}
+
+- (void)accommodatePresentedItemDeletionWithCompletionHandler:(void (^)(NSError *))completionHandler;
+{
+    // We deliberately continue presenting the same file URL here so that if the file comes back, we will continue receiving notifications
+    [self invalidateCachedValues];
+    
+    completionHandler(nil);
+}
+#endif
+
+#pragma mark Helpers
+
+- (void)invalidateCachedValues;
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:OUIAppearanceValuesWillChangeNotification object:self];
+
+    [self recachePlistFromFile];
+    _cacheInvalidationCount ++;
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:OUIAppearanceValuesDidChangeNotification object:self];
+}
+
+- (void)beginPresentingUserPlistIfNecessary;
+{
+#if OUI_PERFORM_FILE_PRESENTATION
+    if (self.userPlistPresentationQueue == nil) {
+    }
+    
+    if (_flags.isPresentingUserPlist) {
+        OBASSERT(_userPlistPresentationQueue);
+        return;
+    }
+    
+    _flags.isPresentingUserPlist = YES;
+
+    self.userPlistPresentationQueue = [[NSOperationQueue alloc] init];
+    self.userPlistPresentationQueue.maxConcurrentOperationCount = 1;
+    
+    [NSFileCoordinator addFilePresenter:self];
+#endif
+}
+
+- (void)endPresentingUserPlistIfNecessary;
+{
+#if OUI_PERFORM_FILE_PRESENTATION
+    if (!_flags.isPresentingUserPlist) {
+        return;
+    }
+    
+    [NSFileCoordinator removeFilePresenter:self];
+    
+    _flags.isPresentingUserPlist = NO;
+#endif
+}
+
+- (void)recachePlistFromFile;
+{
+    NSURL *plistURL = [_plistBundle URLForResource:[_plistName stringByAppendingString:@"Appearance"] withExtension:OUIAppearancePlistExtension];
     if (!plistURL)
-        plistURL = [bundle URLForResource:plistName withExtension:plistExtension];
+        plistURL = [_plistBundle URLForResource:_plistName withExtension:OUIAppearancePlistExtension];
     
     if (plistURL) {
         OB_AUTORELEASING NSError *error;
         _plist = [NSPropertyListSerialization propertyListWithData:[NSData dataWithContentsOfURL:plistURL] options:0 format:NULL error:&error];
-    
+        
         if (!_plist)
             NSLog(@"%@ failed to load appearance at URL %@: %@", NSStringFromClass([self class]), plistURL, error);
     }
-
+    
     if (_plist == nil)
         _plist = [NSDictionary new];
-
+    
     // Look for user overrides
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
-    if (paths.count != 0) {
-        NSString *supportPath = paths[0];
-        NSString *appPath = [supportPath stringByAppendingPathComponent:[[NSBundle mainBundle] bundleIdentifier]];
-        NSString *userPlistPath = [[appPath stringByAppendingPathComponent:plistName] stringByAppendingPathExtension:plistExtension];
+    NSString *userPlistPath = [[self userPlistURL] path];
+    if (userPlistPath != nil) {
         if ([[NSFileManager defaultManager] fileExistsAtPath:userPlistPath]) {
+
+#if OUI_PERFORM_FILE_PRESENTATION
+            __block NSData *userData = nil;
+            OB_AUTORELEASING NSError *coordinatedReadError = nil;
+            
+            [[[NSFileCoordinator alloc] initWithFilePresenter:self] coordinateReadingItemAtURL:[self userPlistURL]
+                                                                                       options:0
+                                                                                         error:&coordinatedReadError
+                                                                                    byAccessor:^(NSURL *newURL) {
+                                                                                        userData = [NSData dataWithContentsOfFile:userPlistPath];
+                                                                                    }];
+#else
             NSData *userData = [NSData dataWithContentsOfFile:userPlistPath];
+#endif
+            
             if (userData != nil) {
-                OB_AUTORELEASING NSError *error;
-                NSDictionary *userPlist = [NSPropertyListSerialization propertyListWithData:userData options:0 format:NULL error:&error];
-                if (userPlist != nil) {
+                OB_AUTORELEASING NSError *plistParsingError = nil;
+                NSDictionary *userPlist = [NSPropertyListSerialization propertyListWithData:userData options:0 format:NULL error:&plistParsingError];
+                if (userPlist != nil && [userPlist isKindOfClass:[NSDictionary class]]) {
                     NSMutableDictionary *mutablePlist = [_plist deepMutableCopy];
                     [mutablePlist setValuesForKeysWithDictionary:userPlist];
                     _plist = [mutablePlist copy];
@@ -67,34 +232,19 @@ RCS_ID("$Id$")
             }
         }
     }
-
-    _cachedValues = [[NSMutableDictionary alloc] init];
-
-    return self;
+    
+    _cacheInvalidationCount ++;
 }
 
-+ (instancetype)appearance;
+/// Returns the URL for the user override appearance plist.
+- (NSURL *)userPlistURL;
 {
-    return AppearanceForClass(self);
-}
+    if (_OUIAppearanceUserOverrideFolder == nil)
+        return nil;
 
-static inline OUIAppearance *AppearanceForClass(Class cls)
-{
-    static NSMapTable *ClassToAppearanceMap;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        ClassToAppearanceMap = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsObjectPersonality];
-    });
+    NSString *userPlistPath = [[_OUIAppearanceUserOverrideFolder stringByAppendingPathComponent:_plistName] stringByAppendingPathExtension:OUIAppearancePlistExtension];
     
-    OUIAppearance *appearance = [ClassToAppearanceMap objectForKey:cls];
-    if (!appearance) {
-        appearance = [[cls alloc] _initWithPlistName:NSStringFromClass(cls) inBundle:[NSBundle bundleForClass:cls]];
-        OBASSERT_NOTNULL(appearance);
-        
-        [ClassToAppearanceMap setObject:appearance forKey:cls];
-    }
-    
-    return appearance;
+    return [NSURL fileURLWithPath:userPlistPath];
 }
 
 #pragma mark - Static accessors
@@ -113,20 +263,45 @@ static inline OUIAppearance *AppearanceForClass(Class cls)
     NSUInteger keyCount = keys.count;
     for (NSUInteger idx = 0; idx < keyCount; idx++) {
         NSString *key = keys[idx];
+        id parentObj = obj;
         obj = [obj objectForKey:key];
         Class expectedClass = (idx == keyCount - 1) ? cls : [NSDictionary class];
         
         if (!obj) {
+            // First try to find an alias for the given key
+            NSDictionary *aliases = [parentObj objectForKey:OUIAppearanceAliasesKey];
+            if (aliases != nil) {
+                NSString *alias = [aliases objectForKey:key];
+                if (alias != nil) {
+                    // Found an alias; restart the search at the top level for the resultant target key path
+                    NSString *dereferencedKeyPath = nil;
+                    if (idx == keyCount - 1) {
+                        dereferencedKeyPath = alias;
+                    } else {
+                        NSArray *remainingKeys = [keys subarrayWithRange:NSMakeRange(idx + 1, keyCount - (idx + 1))];
+                        dereferencedKeyPath = [alias stringByAppendingFormat:@".%@", [remainingKeys componentsJoinedByString:@"."]];
+                    }
+                    
+                    return [self _objectOfClass:cls forPlistKeyPath:dereferencedKeyPath];
+                }
+            }
+            
+            // If no alias exists, either fall back to the superclass or throw, depending on what class this is
             if ([self class] == [OUIAppearance class])
                 @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"No object found for key path component '%@'", key] userInfo:nil];
             else
-                return [AppearanceForClass([self superclass]) _objectOfClass:cls forPlistKeyPath:keyPath];
+                return [[[self class] appearanceForClass:[self superclass]] _objectOfClass:cls forPlistKeyPath:keyPath];
         } else if (![obj isKindOfClass:expectedClass]) {
             @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Object for key path component '%@' in appearance '%@' is not an instance of expected class '%@'", key, NSStringFromClass([self class]), NSStringFromClass(expectedClass)] userInfo:@{key:obj}];
         }
     };
     
     return obj;
+}
+
+- (NSString *)stringForKeyPath:(NSString * )keyPath;
+{
+    return [self _objectOfClass:[NSString class] forPlistKeyPath:keyPath];
 }
 
 - (NSDictionary *)dictionaryForKeyPath:(NSString *)keyPath;
@@ -136,12 +311,17 @@ static inline OUIAppearance *AppearanceForClass(Class cls)
 
 - (OUI_SYSTEM_COLOR_CLASS *)colorForKeyPath:(NSString *)keyPath;
 {
-    OUI_SYSTEM_COLOR_CLASS *cachedValue = [_cachedValues objectForKey:keyPath];
-    if (cachedValue != nil)
-        return cachedValue;
-    OUI_SYSTEM_COLOR_CLASS *computedValue = [OUI_SYSTEM_COLOR_CLASS colorFromPropertyListRepresentation:[self _objectOfClass:[NSDictionary class] forPlistKeyPath:keyPath]];
-    [_cachedValues setObject:computedValue forKey:keyPath];
-    return computedValue;
+    return [OUI_SYSTEM_COLOR_CLASS colorFromPropertyListRepresentation:[self _objectOfClass:[NSDictionary class] forPlistKeyPath:keyPath]];
+}
+
+- (OQColor *)OQColorForKeyPath:(NSString *)keyPath;
+{
+    return [OQColor colorWithPlatformColor:[self colorForKeyPath:keyPath]];
+}
+
+- (NSInteger)integerForKeyPath:(NSString *)keyPath;
+{
+    return [(NSNumber *)[self _objectOfClass:[NSNumber class] forPlistKeyPath:keyPath] integerValue];
 }
 
 - (CGFloat)CGFloatForKeyPath:(NSString *)keyPath;
@@ -173,7 +353,7 @@ static inline OUIAppearance *AppearanceForClass(Class cls)
     return result;
 }
 
-- (OUI_SYSTEM_SIZE_STRUCT)sizeForKeyPath:(NSString *)keyPath;
+- (CGSize)sizeForKeyPath:(NSString *)keyPath;
 {
     NSDictionary *sizeDescription = [self _objectOfClass:[NSDictionary class] forPlistKeyPath:keyPath];
     
@@ -183,7 +363,7 @@ static inline OUIAppearance *AppearanceForClass(Class cls)
         zero = [NSNumber numberWithCGFloat:0];
     });
     
-    OUI_SYSTEM_SIZE_STRUCT result;
+    CGSize result;
     result.width = [[sizeDescription objectForKey:@"width" defaultObject:zero] cgFloatValue];
     result.height = [[sizeDescription objectForKey:@"height" defaultObject:zero] cgFloatValue];
     
@@ -192,10 +372,10 @@ static inline OUIAppearance *AppearanceForClass(Class cls)
 
 #pragma mark - Dynamic accessors
 
-- (objc_property_t)_propertyForSelector:(SEL)invocationSel;
+static objc_property_t _propertyForSelectorInClass(SEL invocationSel, Class cls)
 {
     unsigned int propertyCount;
-    objc_property_t *allProperties = class_copyPropertyList([self class], &propertyCount);
+    objc_property_t *allProperties = class_copyPropertyList(cls, &propertyCount);
     objc_property_t backingProp = NULL;
     
     for (unsigned int i = 0; i < propertyCount; i++) {
@@ -220,7 +400,19 @@ static inline OUIAppearance *AppearanceForClass(Class cls)
     return backingProp;
 }
 
-- (void)_synthesizeGetter:(SEL)invocationSel forProperty:(objc_property_t)backingProp;
++ (objc_property_t)_propertyForSelector:(SEL)invocationSel;
+{
+    objc_property_t backingProp = NULL;
+    Class cls = self;
+    do {
+        backingProp = _propertyForSelectorInClass(invocationSel, cls);
+        cls = class_getSuperclass(cls);
+    } while (backingProp == NULL && (cls != Nil));
+    
+    return backingProp;
+}
+
++ (void)_synthesizeGetter:(SEL)invocationSel forProperty:(objc_property_t)backingProp;
 {
     const char *backingPropName = property_getName(backingProp);
     
@@ -234,17 +426,23 @@ static inline OUIAppearance *AppearanceForClass(Class cls)
     IMP getterImp;
     char *getterTypes;
     
-    MakeImpForProperty([NSString stringWithUTF8String:backingPropName], backingPropType, invocationSel, &getterImp, &getterTypes);
+    MakeImpForProperty(self, [NSString stringWithUTF8String:backingPropName], backingPropType, invocationSel, &getterImp, &getterTypes);
     free(backingPropType);
     
-    class_addMethod([self class], invocationSel, getterImp, getterTypes);
+    class_addMethod(self, invocationSel, getterImp, getterTypes);
     
     free(getterTypes);
 }
 
 /*! outImpTypes must be free()d. */
-static void MakeImpForProperty(NSString *backingPropName, const char *type, SEL invocationSel, IMP *outImp, char **outImpTypes)
+static void MakeImpForProperty(Class implementationCls, NSString *backingPropName, const char *type, SEL invocationSel, IMP *outImp, char **outImpTypes)
 {
+    
+    // This function provides a variety of very similar dynamic getter implementations for the different return types that OUIAppearance supports (color, edge inset, size, float, bool, etc.). Each implementation has built-in caching for the fetched object, so that the caller can avoid doing its own (potentially incorrect) caching work.
+    // For performance reasons, we avoid NSCache and NSMutableDictionary. The former has unreasonably high time overhead, and the latter was still suffering degraded speeds (compared to a call-site dispatch_once() cache).
+    // Instead, this function uses __block variables to provide storage for cached values, which are then captured by the block provided to imp_implementationWithBlock(). That function, in turn, is documented to Block_copy() the provided block, extending the lifetime of those __block variables past the end of a call to this function.
+    // For a more thorough discussion of __block variables, see "The __block Storage Type" at https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/Blocks/Articles/bxVariables.html#//apple_ref/doc/uid/TP40007502-CH6-SW6. (Note that Apple's discussion of "lexical scope" can be confusing – the __block variables here are preserved past the end of a single call to this function by the implementation block, but subsequent calls to this function will allocate new storage for the new implementation block being created.)
+    
 #if 0 && defined(DEBUG)
 #define DEBUG_DYNAMIC_GETTER(...) NSLog(@"%@", [[NSString stringWithFormat:@"DYNAMIC OUIAPPEARANCE GETTER: -%@ ", [self class]] stringByAppendingFormat:__VA_ARGS__]);
 #else
@@ -258,56 +456,156 @@ static void MakeImpForProperty(NSString *backingPropName, const char *type, SEL 
         // Properties with object values have an encoding of `@"ClassName"` (which is an undocumented extension to the @encode() spec).
         char *className = strdup(type + 2);
         className[strlen(className) - 1] = '\0';
-        Class cls = objc_getClass(className);
+        Class valueClass = objc_getClass(className);
         
-        if (!cls) {
+        if (!valueClass) {
             @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Unknown class '%@' for key '%@'", [NSString stringWithUTF8String:className], backingPropName] userInfo:nil];
-        } else if (cls == [OUI_SYSTEM_COLOR_CLASS class]) {
+        } else if (valueClass == [OUI_SYSTEM_COLOR_CLASS class]) {
+            __block OUI_SYSTEM_COLOR_CLASS *cachedColor = nil;
+            __block NSUInteger localInvalidationCount = 0;
+            
             *outImp = imp_implementationWithBlock(^(id self) {
-                OUI_SYSTEM_COLOR_CLASS *color = [self colorForKeyPath:backingPropName];
-                DEBUG_DYNAMIC_GETTER(@"colorForKeyPath:%@ --> %@", backingPropName, color);
-                return color;
+                NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    OUI_SYSTEM_COLOR_CLASS *color = [self colorForKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"colorForKeyPath:%@ --> %@", backingPropName, color);
+                    cachedColor = color;
+                    localInvalidationCount = globalInvalidationCount;
+                }
+                
+                return cachedColor;
+            });
+        } else if (valueClass == [OQColor class]){
+            __block OQColor *cachedColor = nil;
+            __block NSUInteger localInvalidationCount = 0;
+            
+            *outImp = imp_implementationWithBlock(^(id self) {
+                NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    OQColor *color = [self OQColorForKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"OQColorForKeyPath:%@ --> %@", backingPropName, color);
+                    cachedColor = color;
+                    localInvalidationCount = globalInvalidationCount;
+                }
+                
+                return cachedColor;
             });
         } else {
+            __block id cachedObject = nil;
+            __block NSUInteger localInvalidationCount = 0;
+            
             *outImp = imp_implementationWithBlock(^(id self) {
-                id object = [self _objectOfClass:cls forPlistKeyPath:backingPropName];
-                DEBUG_DYNAMIC_GETTER(@"_objectOfClass:%@ forPlistKeyPath:%@ --> %@", NSStringFromClass(cls), backingPropName, object);
-                return object;
+                NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    id object = [self _objectOfClass:valueClass forPlistKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"_objectOfClass:%@ forPlistKeyPath:%@ --> %@", NSStringFromClass(cls), backingPropName, object);
+                    cachedObject = object;
+                    localInvalidationCount = globalInvalidationCount;
+                }
+                
+                return cachedObject;
             });
         }
         
         free(className);
     } else if (strcmp(type, @encode(CGFLOAT_TYPE)) == 0) {
         returnType = @encode(CGFLOAT_TYPE);
+        
+        __block CGFloat cachedFloat = 0;
+        __block NSUInteger localInvalidationCount = 0;
+        
         *outImp = imp_implementationWithBlock(^(id self) {
-            CGFloat val = [self CGFloatForKeyPath:backingPropName];
-            DEBUG_DYNAMIC_GETTER(@"CGFloatForKeyPath:%@ --> %f", backingPropName, val);
-            return val;
+            NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+            if (localInvalidationCount < globalInvalidationCount) {
+                CGFloat val = [self CGFloatForKeyPath:backingPropName];
+                DEBUG_DYNAMIC_GETTER(@"CGFloatForKeyPath:%@ --> %f", backingPropName, val);
+                cachedFloat = val;
+                localInvalidationCount = globalInvalidationCount;
+            }
+            
+            return cachedFloat;
         });
     } else if (strcmp(type, @encode(BOOL)) == 0) {
         returnType = "c";
+
+        __block BOOL cachedBool = NO;
+        __block NSUInteger localInvalidationCount = 0;
+
         *outImp = imp_implementationWithBlock(^(id self) {
-            BOOL val = [self boolForKeyPath:backingPropName];
-            DEBUG_DYNAMIC_GETTER(@"boolForKeyPath:%@ --> %@", backingPropName, val ? @"YES" : @"NO");
-            return val;
+            NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+            if (localInvalidationCount < globalInvalidationCount) {
+                BOOL val = [self boolForKeyPath:backingPropName];
+                DEBUG_DYNAMIC_GETTER(@"boolForKeyPath:%@ --> %@", backingPropName, val ? @"YES" : @"NO");
+                cachedBool = val;
+                localInvalidationCount = globalInvalidationCount;
+            }
+            
+            return cachedBool;
         });
     } else if (strcmp(type, @encode(OUI_SYSTEM_EDGE_INSETS_STRUCT)) == 0) {
         returnType = @encode(OUI_SYSTEM_EDGE_INSETS_STRUCT);
+        
+        __block OUI_SYSTEM_EDGE_INSETS_STRUCT cachedInsets = {0};
+        __block NSUInteger localInvalidationCount = 0;
+        
         *outImp = imp_implementationWithBlock(^(id self) {
-            OUI_SYSTEM_EDGE_INSETS_STRUCT insets = [self edgeInsetsForKeyPath:backingPropName];
+            NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+            if (localInvalidationCount < globalInvalidationCount) {
+                OUI_SYSTEM_EDGE_INSETS_STRUCT insets = [self edgeInsetsForKeyPath:backingPropName];
+                DEBUG_DYNAMIC_GETTER(@"edgeInsetsForKeyPath:%@ --> %@", backingPropName, [NSValue valueWithBytes:&insets objCType:returnType]);
+                cachedInsets = insets;
+                localInvalidationCount = globalInvalidationCount;
+            }
             
-            DEBUG_DYNAMIC_GETTER(@"edgeInsetsForKeyPath:%@ --> %@", backingPropName, [NSValue valueWithBytes:&insets objCType:returnType]);
-            
-            return insets;
+            return cachedInsets;
         });
-    } else if (strcmp(type, @encode(OUI_SYSTEM_SIZE_STRUCT)) == 0) {
-        returnType = @encode(OUI_SYSTEM_SIZE_STRUCT);
+    } else if (strcmp(type, @encode(CGSize)) == 0) {
+        returnType = @encode(CGSize);
+        
+        __block CGSize cachedSize = {0};
+        __block NSUInteger localInvalidationCount = 0;
+        
         *outImp = imp_implementationWithBlock(^(id self) {
-            OUI_SYSTEM_SIZE_STRUCT size = [self sizeForKeyPath:backingPropName];
+            NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+            if (localInvalidationCount < globalInvalidationCount) {
+                CGSize size = [self sizeForKeyPath:backingPropName];
+                DEBUG_DYNAMIC_GETTER(@"sizeForKeyPath:%@ --> %@", backingPropName, [NSValue valueWithBytes:&size objCType:returnType]);
+                cachedSize = size;
+                localInvalidationCount = globalInvalidationCount;
+            }
             
-            DEBUG_DYNAMIC_GETTER(@"sizeForKeyPath:%@ --> %@", backingPropName, [NSValue valueWithBytes:&size objCType:returnType]);
+            return cachedSize;
+        });
+    } else if (strcmp(type, @encode(long)) == 0) {
+        returnType = @encode(long);
+
+        // Check if there is a class method that defines an enum name table.
+        NSString *enumNameTableProperty = [[NSString alloc] initWithFormat:@"%@EnumNameTable", backingPropName];
+        OFEnumNameTable *nameTable = nil;
+        if ([implementationCls respondsToSelector:NSSelectorFromString(enumNameTableProperty)]) {
+            nameTable = [implementationCls valueForKey:enumNameTableProperty];
+        }
+
+        __block long cachedValue = {0};
+        __block NSUInteger localInvalidationCount = 0;
+        
+        *outImp = imp_implementationWithBlock(^(id self) {
+            NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+            if (localInvalidationCount < globalInvalidationCount) {
+                long value;
+                if (nameTable) {
+                    NSString *name = [self stringForKeyPath:backingPropName];
+                    value = [nameTable enumForName:name];
+                    DEBUG_DYNAMIC_GETTER(@"stringForKeyPath:%@ --> %@", backingPropName, name);
+                } else {
+                    value = [self integerForKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"integerForKeyPath:%@ --> %ld", backingPropName, value);
+                }
+                cachedValue = value;
+                localInvalidationCount = globalInvalidationCount;
+            }
             
-            return size;
+            return cachedValue;
         });
     } else {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Unsupported type encoding '%@' for plist key '%@'", [NSString stringWithUTF8String:type], backingPropName] userInfo:nil];
@@ -317,24 +615,18 @@ static void MakeImpForProperty(NSString *backingPropName, const char *type, SEL 
     char *buf = malloc(returnTypeLength + 3);
     strncpy(buf, returnType, returnTypeLength);
     strncpy(buf + returnTypeLength, "@:", 2);
+    buf[returnTypeLength + 2] = '\0';
     *outImpTypes = buf;
 }
 
-- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector;
++ (BOOL)resolveInstanceMethod:(SEL)name
 {
-    NSMethodSignature *signature = [super methodSignatureForSelector:aSelector];
-    if (signature)
-        return signature;
-    
-    objc_property_t backingProperty = [self _propertyForSelector:aSelector];
+    objc_property_t backingProperty = [self _propertyForSelector:name];
     if (backingProperty) {
-        [self _synthesizeGetter:aSelector forProperty:backingProperty];
-        signature = [super methodSignatureForSelector:aSelector];
-        
-        OBASSERT_NOTNULL(signature, "But we just synthesized it!");
-        return signature;
+        [self _synthesizeGetter:name forProperty:backingProperty];
+        return YES;
     } else {
-        return nil;
+        return [super resolveInstanceMethod:name];
     }
 }
 
@@ -348,24 +640,47 @@ static void MakeImpForProperty(NSString *backingPropName, const char *type, SEL 
 
 @end
 
+#pragma mark - Subclass Conveniences
+@implementation OUIAppearance (Subclasses)
++ (OUIAppearance *)appearanceForClass:(Class)cls;
+{
+    OBASSERT([cls isSubclassOfClass:[OUIAppearance class]]);
+    
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ClassToAppearanceMap = [NSMapTable mapTableWithKeyOptions:NSPointerFunctionsObjectPointerPersonality valueOptions:NSPointerFunctionsObjectPersonality];
+    });
+    
+    OUIAppearance *appearance = [ClassToAppearanceMap objectForKey:cls];
+    if (!appearance) {
+        appearance = [[cls alloc] _initWithPlistName:NSStringFromClass(cls) inBundle:[NSBundle bundleForClass:cls]];
+        OBASSERT_NOTNULL(appearance);
+        
+        [appearance beginPresentingUserPlistIfNecessary];
+        
+        [ClassToAppearanceMap setObject:appearance forKey:cls];
+    }
+    
+    return appearance;
+}
+@end
+
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 
 #pragma mark - Mac Convenience Accessors
 
-static NSGradient *SelectionGradient;
 static NSColor *SelectionBorderColor;
 static id SystemColorsObserver;
-NSString *const OUIAppearanceColorsDidChangeNotification = @"com.omnigroup.OmniUI.OUIAppearance.ColorsDidChange";
 
-static void EnsureSystemColorsObserver(void)
+static void EnsureSystemColorsObserver(OUIAppearance *self)
 {
     if (!SystemColorsObserver) {
         SystemColorsObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSSystemColorsDidChangeNotification object:nil queue:nil usingBlock:^(NSNotification *unused){
-            SelectionGradient = nil;
-            
+            [[NSNotificationCenter defaultCenter] postNotificationName:OUIAppearanceValuesWillChangeNotification object:self];
+
             SelectionBorderColor = nil;
             
-            [[NSNotificationCenter defaultCenter] postNotificationName:OUIAppearanceColorsDidChangeNotification object:NSApp];
+            [[NSNotificationCenter defaultCenter] postNotificationName:OUIAppearanceValuesDidChangeNotification object:self];
         }];
     }
 }
@@ -396,7 +711,7 @@ static void EnsureSystemColorsObserver(void)
 
 + (NSColor *)OUISelectionBorderColor;
 {
-    EnsureSystemColorsObserver();
+    EnsureSystemColorsObserver(nil);
     
     if (!SelectionBorderColor) {
         SelectionBorderColor = [[NSColor alternateSelectedControlColor] colorWithAlphaComponent:([[OUIAppearance appearance] CGFloatForKeyPath:@"OUISelectionBorderColorAlphaPercentage"] / 100.0)];
@@ -422,6 +737,10 @@ static void EnsureSystemColorsObserver(void)
 
 #pragma mark - iOS Convenience Accessors
 
+@implementation OUIAppearance (OmniUIAppearance)
+@dynamic emptyOverlayViewLabelMaxWidthRatio;
+@end
+
 @implementation UIColor (OUIAppearance)
 
 #if OB_ARC
@@ -440,79 +759,94 @@ static void EnsureSystemColorsObserver(void)
     return color; \
 } while(0);
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniRedColor
 + (UIColor *)omniRedColor;
 {
-    CACHED_COLOR(@"OmniRed");
+    return [OUIAppearanceDefaultColors appearance].omniRedColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniOrangeColor
 + (UIColor *)omniOrangeColor;
 {
-    CACHED_COLOR(@"OmniOrange");
+    return [OUIAppearanceDefaultColors appearance].omniOrangeColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniYellowColor
 + (UIColor *)omniYellowColor;
 {
-    CACHED_COLOR(@"OmniYellow");
+    return [OUIAppearanceDefaultColors appearance].omniYellowColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniGreenColor
 + (UIColor *)omniGreenColor;
 {
-    CACHED_COLOR(@"OmniGreen");
+    return [OUIAppearanceDefaultColors appearance].omniGreenColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniTealColor
 + (UIColor *)omniTealColor;
 {
-    CACHED_COLOR(@"OmniTeal");
+    return [OUIAppearanceDefaultColors appearance].omniTealColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniBlueColor
 + (UIColor *)omniBlueColor;
 {
-    CACHED_COLOR(@"OmniBlue");
+    return [OUIAppearanceDefaultColors appearance].omniBlueColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniPurpleColor
 + (UIColor *)omniPurpleColor;
 {
-    CACHED_COLOR(@"OmniPurple");
+    return [OUIAppearanceDefaultColors appearance].omniPurpleColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniGraphiteColor
 + (UIColor *)omniGraphiteColor;
 {
-    CACHED_COLOR(@"OmniGraphite");
+    return [OUIAppearanceDefaultColors appearance].omniGraphiteColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniCremaColor
 + (UIColor *)omniCremaColor;
 {
-    CACHED_COLOR(@"OmniCrema");
+    return [OUIAppearanceDefaultColors appearance].omniCremaColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniAlternateRedColor
 + (UIColor *)omniAlternateRedColor;
 {
-    CACHED_COLOR(@"OmniAlternateRed");
+    return [OUIAppearanceDefaultColors appearance].omniAlternateRedColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniAlternateYellowColor
 + (UIColor *)omniAlternateYellowColor;
 {
-    CACHED_COLOR(@"OmniAlternateYellow");
+    return [OUIAppearanceDefaultColors appearance].omniAlternateYellowColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniNeutralDeemphasizedColor
 + (UIColor *)omniNeutralDeemphasizedColor;
 {
-    CACHED_COLOR(@"OmniNeutralDeemphasized");
+    return [OUIAppearanceDefaultColors appearance].omniNeutralDeemphasizedColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniNeutralPlaceholderColor
 + (UIColor *)omniNeutralPlaceholderColor;
 {
-    CACHED_COLOR(@"OmniNeutralPlaceholder");
+    return [OUIAppearanceDefaultColors appearance].omniNeutralPlaceholderColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniNeutralLightweightColor
 + (UIColor *)omniNeutralLightweightColor;
 {
-    CACHED_COLOR(@"OmniNeutralLightweight");
+    return [OUIAppearanceDefaultColors appearance].omniNeutralLightweightColor;
 }
 
+/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniDeleteColor
 + (UIColor *)omniDeleteColor;
 {
-    CACHED_COLOR(@"OmniDelete");
+    return [OUIAppearanceDefaultColors appearance].omniDeleteColor;
 }
 
 - (BOOL)isLightColor;

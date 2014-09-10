@@ -58,6 +58,8 @@
 
 - (BOOL)defaultGroupVisibility;
 
+- (void)clear;
+
 - (void)hideGroup;
 - (void)showGroup;
 - (void)orderFrontGroup;
@@ -89,6 +91,8 @@
 
 - (BOOL)screenChangesEnabled;
 - (void)setScreenChangesEnabled:(BOOL)yn;
+- (void)screensDidChange:(NSNotification *)notification;
+
 - (void)setFloating:(BOOL)yn;
 
 @end

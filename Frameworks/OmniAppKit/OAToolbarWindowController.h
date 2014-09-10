@@ -33,10 +33,6 @@
 + (Class)toolbarClass;
 + (Class)toolbarItemClass;
 
-// DTS workaround for <bug:///83131> (r.12466034: Scroll view gets spurious NSZeroSize, causing constraint violations on 10.7)
-// Return YES from this method (the default) if the window controller should call -updateConstraintsIfNeeded on the window before installing the toolbar to avoid constraint violations.
-+ (BOOL)shouldUpdateConstraintsBeforeInstallingToolbar;
-
 - (OAToolbar *)toolbar;
 - (void)createToolbar;
 - (BOOL)isCreatingToolbar;

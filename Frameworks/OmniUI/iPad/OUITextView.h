@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ extern const CGFloat OUIScrollContext;
 - (NSArray *)textViewReadablePasteboardTypes:(OUITextView *)textView;
 - (NSAttributedString *)textView:(OUITextView *)textView readTextFromItemSet:(NSIndexSet *)itemSet inPasteboard:(UIPasteboard *)pasteboard;
 
-- (BOOL)textViewShouldPreserveStylesWhenPasting:(OUITextView *)textView;
+- (BOOL)textViewShouldPreserveStylesWhenPasting:(OUITextView *)textView defaultValue:(BOOL)defaultValue sender:(id)sender;
 
 // Implementors should add 'uti=data' pairs for their custom types, but only if their custom type is richer than one of the default types. OUITextView will fill out at least one of RTFD and RTF as well as a plain text value (unless the delegate already has filled them out). The representations dictionary here is for a single pasteboard item that represents all the rich text. In addition, OUITextView will add extra items for each attachment (so if you have some text with images, apps that only understand images will just get the images). This means that readers of the pasteboard need to agree that if they get an item with a "rich text with attachments" type on the pasteboard, they should ignore any extra items for the attachments.
 - (void)textView:(OUITextView *)textView addPasteboardRepresentations:(NSMutableDictionary *)representations range:(NSRange)range attributedString:(NSAttributedString *)attributedString;

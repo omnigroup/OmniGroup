@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,39 +18,48 @@ RCS_ID("$Id$");
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions
 {
     OUIAppController *appDelegate = [OUIAppController controller];
-    NSArray *inAppPurchaseIdentifiers = [appDelegate inAppPurchaseIdentifiers];
+    NSArray *productIdentifiers = [appDelegate inAppPurchaseIdentifiers];
+    NSMutableDictionary *productIdentifierForSKU = [NSMutableDictionary dictionary];
+    for (NSString *productIdentifier in productIdentifiers) {
+        NSArray *pricingOptionSKUs = [[OUIAppController controller] pricingOptionSKUsForProductIdentifier:productIdentifier];
+        for (NSString *pricingOptionSKU in pricingOptionSKUs) {
+            productIdentifierForSKU[pricingOptionSKU] = productIdentifier;
+        }
+    }
+
     NSMutableArray *failedTransactions = [NSMutableArray array];
     
     for (SKPaymentTransaction *transaction in transactions) {
         switch (transaction.transactionState) {
             case SKPaymentTransactionStatePurchased:
-            {
-                NSString *productIdentifier = transaction.payment.productIdentifier;
-                if ([inAppPurchaseIdentifiers containsObject:productIdentifier]) {
-                    if ([appDelegate addImportUnlockedFlagToKeychain:productIdentifier]) {
-                        [self.delegate storeObserver:self paymentQueue:queue successfullyPurchasedProduct:productIdentifier];
-                        [appDelegate didUnlockInAppPurchase:productIdentifier];
-                        [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
-                    }
-                }
-                break;
-            }
             case SKPaymentTransactionStateRestored:
             {
-                NSString *productIdentifier = transaction.payment.productIdentifier;
-                if ([appDelegate addImportUnlockedFlagToKeychain:productIdentifier]) {
-                    [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
-                    [self.delegate storeObserver:self paymentQueue:queue successfullyRestoredProduct:productIdentifier];
-                    [appDelegate didUnlockInAppPurchase:productIdentifier];
-                }
-                
+                NSString *purchasedSKU = transaction.payment.productIdentifier;
+                NSString *productIdentifier = productIdentifierForSKU[purchasedSKU];
+
+                if (![productIdentifiers containsObject:productIdentifier])
+                    continue;
+
+                if (![appDelegate addPurchasedProductToKeychain:productIdentifier])
+                    continue;
+
+                if (transaction.transactionState == SKPaymentTransactionStatePurchased)
+                    [self.delegate storeObserver:self paymentQueue:queue successfullyPurchasedSKU:purchasedSKU];
+                else
+                    [self.delegate storeObserver:self paymentQueue:queue successfullyRestoredSKU:purchasedSKU];
+
+                [appDelegate didUnlockInAppPurchase:productIdentifier];
+                [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
+
                 break;
             }
+
             case SKPaymentTransactionStateFailed:
             {
                 [failedTransactions addObject:transaction];
                 [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
             }
+
             default:
                 break;
         }
@@ -58,6 +67,11 @@ RCS_ID("$Id$");
     
     if (failedTransactions.count)
         [self.delegate storeObserver:self paymentQueue:queue transactionsFailed:failedTransactions];
+}
+
+- (void)paymentQueueRestoreCompletedTransactionsFinished:(SKPaymentQueue *)queue;
+{
+    [self.delegate storeObserver:self paymentQueueRestoreCompletedTransactionsFinished:queue];
 }
 
 - (void)paymentQueue:(SKPaymentQueue *)queue restoreCompletedTransactionsFailedWithError:(NSError *)error

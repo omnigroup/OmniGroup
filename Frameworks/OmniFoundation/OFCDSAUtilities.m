@@ -25,7 +25,7 @@ RCS_ID("$Id$");
 
 static const struct {
     int moduleBase;
-    NSString *moduleName;
+    __unsafe_unretained NSString *moduleName;
 } cssmModuleBases[] = {
     { CSSM_CSSM_BASE_ERROR, @"CSSM" },
     { CSSM_CSP_BASE_ERROR, @"CSP" },
@@ -384,9 +384,8 @@ static inline BOOL isMACAlg(CSSM_ALGORITHMS algid)
         if (keyBlob)
             [dict setObject:keyBlob forKey:@"blob"];
         if (keyReference) {
-            CFStringRef descr = CFCopyDescription(keyReference);
-            [dict setObject:(NSString *)descr forKey:@"keyReference"];
-            CFRelease(descr);
+            NSString *descr = CFBridgingRelease(CFCopyDescription(keyReference));
+            [dict setObject:descr forKey:@"keyReference"];
         }
     }
     if (csp)

@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,14 +27,11 @@ static void _OFXSerializeContentDisplayNameAction(void (^action)(void))
 }
 
 // Should be called w/in a file coordinator if needed. These identifiers are just for logging purposes.
-NSString *OFXContentIdentifierForURL(NSURL *fileURL)
+NSString *OFXContentIdentifierForURL(NSURL *fileURL, NSError **outError)
 {
     NSMutableDictionary *contents = [NSMutableDictionary new];
-    __autoreleasing NSError *error;
-    if (!OFXFileItemRecordContents(OFXInfoContentsType, contents, fileURL, &error)) {
-        [error log:@"Error collecting contents for %@", fileURL];
+    if (!OFXFileItemRecordContents(OFXInfoContentsType, contents, fileURL, outError))
         return nil;
-    }
     
     return OFXContentIdentifierForContents(contents);
 }
@@ -63,7 +60,7 @@ void OFXRegisterDisplayNameForContentAtURL(NSURL *fileURL, NSString *displayName
         if (!ContentDisplayNameByHash)
             ContentDisplayNameByHash = [NSMutableDictionary new];
         
-        NSString *hash = OFXContentIdentifierForURL(fileURL);
+        NSString *hash = OFXContentIdentifierForURL(fileURL, NULL);
         OBASSERT(ContentDisplayNameByHash[hash] == nil);
         NSLog(@"Registering %@ -> %@", hash, displayName);
         ContentDisplayNameByHash[hash] = displayName;
@@ -81,7 +78,7 @@ NSString *OFXLookupDisplayNameForContentIdentifier(NSString *contentIdentifier)
 
 void _OFXNoteContentChanged(id self, const char *file, unsigned line, NSURL *fileURL)
 {
-    DEBUG_CONTENT(1, @"%@ now has content \"%@\" at %@:%d", fileURL, OFXLookupDisplayNameForContentIdentifier(OFXContentIdentifierForURL(fileURL)), [[NSString stringWithUTF8String:file] lastPathComponent], line);
+    DEBUG_CONTENT(1, @"%@ now has content \"%@\" at %@:%d", fileURL, OFXLookupDisplayNameForContentIdentifier(OFXContentIdentifierForURL(fileURL, NULL)), [[NSString stringWithUTF8String:file] lastPathComponent], line);
 }
 void _OFXNoteContentDeleted(id self, const char *file, unsigned line, NSURL *fileURL)
 {
@@ -89,6 +86,6 @@ void _OFXNoteContentDeleted(id self, const char *file, unsigned line, NSURL *fil
 }
 void _OFXNoteContentMoved(id self, const char *file, unsigned line, NSURL *sourceURL, NSURL *destURL)
 {
-    DEBUG_CONTENT(1, @"%@ moved to %@ with content \"%@\" at %@:%d", sourceURL, destURL, OFXLookupDisplayNameForContentIdentifier(OFXContentIdentifierForURL(destURL)), [[NSString stringWithUTF8String:file] lastPathComponent], line);
+    DEBUG_CONTENT(1, @"%@ moved to %@ with content \"%@\" at %@:%d", sourceURL, destURL, OFXLookupDisplayNameForContentIdentifier(OFXContentIdentifierForURL(destURL, NULL)), [[NSString stringWithUTF8String:file] lastPathComponent], line);
 }
 

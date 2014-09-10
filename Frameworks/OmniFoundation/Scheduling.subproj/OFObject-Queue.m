@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,7 +78,7 @@ RCS_ID("$Id$")
 + (void)mainThreadPerformSelectorOnce:(SEL)aSelector;
 {
     if ([NSThread isMainThread])
-	[self performSelector:aSelector];
+        OBSendVoidMessage(self, aSelector);
     else
 	[self queueSelectorOnce:aSelector];
 }
@@ -86,7 +86,7 @@ RCS_ID("$Id$")
 - (void)mainThreadPerformSelector:(SEL)aSelector;
 {
     if ([NSThread isMainThread])
-	[self performSelector:aSelector];
+	OBSendVoidMessage(self, aSelector);
     else
 	[self queueSelector:aSelector];
 }
@@ -94,7 +94,7 @@ RCS_ID("$Id$")
 - (void)mainThreadPerformSelectorOnce:(SEL)aSelector;
 {
     if ([NSThread isMainThread])
-	[self performSelector:aSelector];
+	OBSendVoidMessage(self, aSelector);
     else
 	[self queueSelectorOnce:aSelector];
 }
@@ -102,7 +102,7 @@ RCS_ID("$Id$")
 - (void)mainThreadPerformSelector:(SEL)aSelector withObject:(id)anObject;
 {
     if ([NSThread isMainThread])
-	[self performSelector:aSelector withObject:anObject];
+        OBSendVoidMessageWithObject(self, aSelector, anObject);
     else
 	[self queueSelector:aSelector withObject:anObject];
 }
@@ -110,7 +110,7 @@ RCS_ID("$Id$")
 - (void)mainThreadPerformSelectorOnce:(SEL)aSelector withObject:(id)anObject;
 {
     if ([NSThread isMainThread])
-	[self performSelector:aSelector withObject:anObject];
+	OBSendVoidMessageWithObject(self, aSelector, anObject);
     else
 	[self queueSelectorOnce:aSelector withObject:anObject];
 }
@@ -118,7 +118,7 @@ RCS_ID("$Id$")
 - (void)mainThreadPerformSelector:(SEL)aSelector withObject:(id)object1 withObject:(id)object2;
 {
     if ([NSThread isMainThread])
-	[self performSelector:aSelector withObject:object1 withObject:object2];
+	OBSendVoidMessageWithObjectObject(self, aSelector, object1, object2);
     else
 	[self queueSelector:aSelector withObject:object1 withObject:object2];
 }
@@ -126,7 +126,7 @@ RCS_ID("$Id$")
 - (void)mainThreadPerformSelector:(SEL)aSelector withObject:(id)object1 withObject:(id)object2 withObject:(id)object3;
 {
     if ([NSThread isMainThread])
-	[self invokeSelector:aSelector withObject:object1 withObject:object2 withObject:object3];
+        OBSendVoidMessageWithObjectObjectObject(self, aSelector, object1, object2, object3);
     else
 	[self queueSelector:aSelector withObject:object1 withObject:object2 withObject:object3];
 }

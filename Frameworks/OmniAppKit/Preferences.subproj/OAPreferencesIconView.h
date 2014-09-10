@@ -1,4 +1,4 @@
-// Copyright 2000-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2006, 2008, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,7 +44,4 @@
 - (void)_drawIconAtIndex:(NSUInteger)index drawRect:(NSRect)drawRect;
 - (void)_drawBackgroundForRect:(NSRect)rect;
 - (void)_sizeToFit;
-- (BOOL)_dragIconIndex:(NSUInteger)index event:(NSEvent *)event;
-- (BOOL)_dragIconImage:(NSImage *)iconImage andName:(NSString *)name event:(NSEvent *)event;
-- (BOOL)_dragIconImage:(NSImage *)iconImage andName:(NSString *)name andIdentifier:(NSString *)identifier event:(NSEvent *)event;
 @end

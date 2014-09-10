@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2005, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,7 +41,7 @@ RCS_ID("$Id$")
     if (embeddedICCProfile != nil)
     	[resultImageRep setProperty:NSImageColorSyncProfileData withValue:embeddedICCProfile];
     
-    newImage = [[[NSImage allocWithZone:[omniImage zone]] init] autorelease];
+    newImage = [[[NSImage alloc] init] autorelease];
 
     [newImage setDataRetained:YES];
     [newImage setCachedSeparately:YES];

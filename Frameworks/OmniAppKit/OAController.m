@@ -96,7 +96,11 @@ RCS_ID("$Id$")
 {
     // Application developers should enter the feedback address in their main bundle's info dictionary.
     if (!feedbackAddress) {
-        NSRunAlertPanel(@"Unable to send feedback email.", @"No support email address configured in this application.", @"Cancel", nil, nil);
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        alert.messageText = @"Unable to send feedback email.";
+        alert.informativeText = @"No support email address configured in this application.";
+        [alert addButtonWithTitle:@"Cancel"];
+        [alert runModal];
     } else {
         OAInternetConfig *internetConfig = [[[OAInternetConfig alloc] init] autorelease];
         
@@ -111,6 +115,11 @@ RCS_ID("$Id$")
     NSString *feedbackAddress, *subjectLine;
     [self getFeedbackAddress:&feedbackAddress andSubject:&subjectLine];
     [self sendFeedbackEmailTo:feedbackAddress subject:subjectLine body:body];
+}
+
+- (BOOL)openURL:(NSURL *)url;
+{
+    return [[NSWorkspace sharedWorkspace] openURL:url];
 }
 
 #pragma mark -

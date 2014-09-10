@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,10 @@
 #import "OFXFileState.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
 #import "OFXContentIdentifier.h"
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#import <UIKit/UIDevice.h>
+#endif
 
 RCS_ID("$Id$")
 
@@ -164,6 +168,8 @@ static BOOL _OFXValidateVersionDictionary(NSDictionary *versionDictionary, NSErr
     OFXFileState *localState = [OFXFileState stateFromArchiveString:versionDictionary[kOFXVersion_LocalState]];
     OFXFileState *remoteState = [OFXFileState stateFromArchiveString:versionDictionary[kOFXVersion_RemoteState]];
     
+    OBASSERT(remoteState.autoMoved == NO, "The server only has user intended moves");
+
     // If one side is missing, the other side can't be missing.
     if (localState.missing && remoteState.missing) {
         OFXError(outError, OFXSnapshotInfoCorrupt, ([NSString stringWithFormat:@"Version property list has invalid edits; both sides are missing: %@", versionDictionary]), nil);
@@ -178,8 +184,8 @@ static BOOL _OFXValidateVersionDictionary(NSDictionary *versionDictionary, NSErr
         OFXError(outError, OFXSnapshotInfoCorrupt, ([NSString stringWithFormat:@"New local document should have version number 0, but has %@", versionDictionary]), nil);
         return NO;
     }
-        
-    if (localState.moved) {
+    
+    if (localState.userMoved || localState.autoMoved) {
         if (!OFXRequireKey(versionDictionary, kOFXVersion_RelativePath, [NSString class], outError)) {
             OFXError(outError, OFXSnapshotInfoCorrupt, ([NSString stringWithFormat:@"Version property list is marked as moved, but no relative path specified %@", versionDictionary]), nil);
             return NO;
@@ -190,7 +196,7 @@ static BOOL _OFXValidateVersionDictionary(NSDictionary *versionDictionary, NSErr
             return NO;
         }
     }
-
+    
     BOOL shouldHaveContents = YES;
     
     if (localState.missing || localState.deleted) {
@@ -255,7 +261,7 @@ static NSDictionary *_recordVersionContents(NSURL *localDocumentURL, NSFileCoord
     OFInitializeDebugLogLevel(OFXSnapshotDebug);
 }
 
-- initWithExistingLocalSnapshotURL:(NSURL *)localSnapshotURL error:(NSError **)outError;
+- (instancetype)initWithExistingLocalSnapshotURL:(NSURL *)localSnapshotURL error:(NSError **)outError;
 {
     OBPRECONDITION(localSnapshotURL);
     OBPRECONDITION([localSnapshotURL checkResourceIsReachableAndReturnError:NULL]);
@@ -290,7 +296,7 @@ static NSDictionary *_recordVersionContents(NSURL *localDocumentURL, NSFileCoord
     OFXFileState *localState = self.localState;
 
     // Local the updated relative path if we've been locally moved but haven't pushed the move yet.
-    if (localState.moved) {
+    if (localState.userMoved || localState.autoMoved) {
         _localRelativePath = [_versionDictionary[kOFXVersion_RelativePath] copy];
         if (!_localRelativePath) {
             NSString *reason = [NSString stringWithFormat:@"Snapshot at %@ is marked as moved, but no relative path specified in Version.plist", localSnapshotURL];
@@ -344,20 +350,41 @@ static NSDictionary *_recordVersionContents(NSURL *localDocumentURL, NSFileCoord
     return self;
 }
 
-- initWithTargetLocalSnapshotURL:(NSURL *)localTargetURL forNewLocalDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath error:(NSError **)outError;
+static NSString *ClientComputerName(void)
 {
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    NSString *fullHostname = OFHostName();
+    NSRange dotRange = [fullHostname rangeOfString:@"."];
+    if (dotRange.length == 0)
+        return fullHostname;
+    else
+        return [fullHostname substringToIndex:dotRange.location];
+#else
+    return [[UIDevice currentDevice] name];
+#endif
+}
+
+
+- (instancetype)initWithTargetLocalSnapshotURL:(NSURL *)localTargetURL forNewLocalDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath intendedLocalRelativePath:(NSString *)intendedLocalRelativePath coordinator:(NSFileCoordinator *)coordinator error:(NSError **)outError;
+{
+    OBPRECONDITION(localTargetURL);
+    OBPRECONDITION(localRelativePath);
+    OBPRECONDITION(localDocumentURL);
+    OBPRECONDITION(!intendedLocalRelativePath || coordinator, "If an original item is specified, we must also get a file coordinator that is already reading it"); // We get passed down a file coordinator that was involved in reading the (now moved) localDocumentURL or the original item and reuse it here to avoid deadlock.
+
     if (!(self = [self _initTemporarySnapshotWithTargetLocalSnapshotURL:localTargetURL localRelativePath:localRelativePath error:outError]))
         return nil;
     
     // Record the info about the snapshot we just made and the fact that it isn't uploaded yet.
     NSMutableDictionary *versionDictionary = [NSMutableDictionary new];
     versionDictionary[kOFXVersion_ArchiveVersionKey] = @(kOFXVersion_ArchiveVersion);
-    versionDictionary[kOFXVersion_LocalState] = [OFXFileState normal].archiveString;
     versionDictionary[kOFXVersion_RemoteState] = [OFXFileState missing].archiveString;
     versionDictionary[kOFXVersion_NumberKey] = @(0);
     
     // We need to record the contents so we can at least know the total size of the document and whether it is a directory. We don't provoke saves since the containing account will rescan and grab an updated version if there is a later autosave.
-    NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+    if (!coordinator)
+        coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+    
     NSDictionary *versionContents = _recordVersionContents(localDocumentURL, coordinator, NO/*with changes*/, outError);
     if (!versionContents)
         return nil;
@@ -367,9 +394,9 @@ static NSDictionary *_recordVersionContents(NSURL *localDocumentURL, NSFileCoord
     // Build the Info.plist
     NSMutableDictionary *infoDictionary = [NSMutableDictionary dictionary];
     infoDictionary[kOFXInfo_ArchiveVersionKey] = @(kOFXInfo_ArchiveVersion);
-    infoDictionary[kOFXInfo_PathKey] = _localRelativePath;
     
     // Get the date from the file so that if we created the document a long time ago and are just now turning on syncing it will have an accurate date.
+    OBFinishPortingLater("Should get this from the versionContents dictionary we just read using file coordination instead of looking it up again, or at least look it up in the same call with file coordination");
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[localDocumentURL path] error:outError];
     if (!attributes)
         return nil;
@@ -379,14 +406,27 @@ static NSDictionary *_recordVersionContents(NSURL *localDocumentURL, NSFileCoord
         creationDate = [NSDate date];
     }
     
+    if (intendedLocalRelativePath) {
+        // We are for a conflict version and the document doesn't live where the user wanted it.
+        versionDictionary[kOFXVersion_LocalState] = [[OFXFileState normal] withAutoMoved].archiveString;
+        versionDictionary[kOFXVersion_RelativePath] = localRelativePath;
+        infoDictionary[kOFXInfo_PathKey] = intendedLocalRelativePath;
+    } else {
+        versionDictionary[kOFXVersion_LocalState] = [OFXFileState normal].archiveString;
+        infoDictionary[kOFXInfo_PathKey] = localRelativePath;
+    }
+
     NSString *currentDateString = [creationDate xmlString];
     infoDictionary[kOFXInfo_CreationDateKey] = currentDateString;
     infoDictionary[kOFXInfo_ModificationDateKey] = currentDateString;
     
+    infoDictionary[kOFXInfo_LastEditedByKey] = NSUserName();
+    infoDictionary[kOFXInfo_LastEditedHostKey] = ClientComputerName();
+    
     if (![self _updateVersionDictionary:versionDictionary error:outError])
-        return NO;
+        return nil;
     if (![self _updateInfoDictionary:infoDictionary error:outError])
-        return NO;
+        return nil;
     
     OBPOSTCONDITION(self.remoteState.missing);
     OBPOSTCONDITION(self.remoteState.missing);
@@ -430,6 +470,18 @@ static void OFXIterateContentFiles(NSDictionary *contents, void (^action)(NSDict
     return _localRelativePath;
 }
 
+- (NSString *)intendedLocalRelativePath;
+{
+    if (self.localState.autoMoved) {
+        NSString *path = _infoDictionary[kOFXInfo_PathKey];
+        OBASSERT(![NSString isEmptyString:path]);
+        OBASSERT_NOTNULL(_localRelativePath);
+        OBASSERT(![path isEqualToString:_localRelativePath]);
+        return path;
+    } else
+        return self.localRelativePath;
+}
+
 - (OFXFileState *)localState;
 {
     OFXFileState *state = [OFXFileState stateFromArchiveString:_versionDictionary[kOFXVersion_LocalState]];
@@ -440,7 +492,8 @@ static void OFXIterateContentFiles(NSDictionary *contents, void (^action)(NSDict
 - (OFXFileState *)remoteState;
 {
     OFXFileState *state = [OFXFileState stateFromArchiveString:_versionDictionary[kOFXVersion_RemoteState]];
-    OBPOSTCONDITION(state);
+    OBASSERT(state);
+    OBASSERT(state.autoMoved == NO, "The server only has user intended moves");
     return state;
 }
 
@@ -529,6 +582,26 @@ static void OFXIterateContentFiles(NSDictionary *contents, void (^action)(NSDict
     NSDate *date = [[NSDate alloc] initWithXMLString:dateString];
     OBASSERT(date);
     return date;
+}
+
+- (NSString *)lastEditedUser;
+{
+    OBPRECONDITION([self _checkInvariants]);
+    
+    NSString *userName = _infoDictionary[kOFXInfo_LastEditedByKey];
+    if ([NSString isEmptyString:userName])
+        userName = NSUserName();
+    return userName;
+}
+
+- (NSString *)lastEditedHost;
+{
+    OBPRECONDITION([self _checkInvariants]);
+
+    NSString *hostName = _infoDictionary[kOFXInfo_LastEditedHostKey];
+    if ([NSString isEmptyString:hostName])
+        hostName = ClientComputerName();
+    return hostName;
 }
 
 - (NSUInteger)version;
@@ -650,7 +723,7 @@ static BOOL RunningOnAccountQueue(void)
     OBINVARIANT([self _checkInvariants]);
     
     OFXFileState *state = [OFXFileState stateFromArchiveString:_versionDictionary[editsKey]];
-    OBASSERT(state.normal || state.moved, "Don't mark deleted/edited documents as edited");
+    OBASSERT(state.normal || state.userMoved || state.autoMoved, "Don't mark deleted/edited documents as edited");
     
     state = [state withEdited];
     
@@ -705,29 +778,80 @@ static BOOL RunningOnAccountQueue(void)
     return success;
 }
 
-- (BOOL)markAsLocallyMovedToRelativePath:(NSString *)relativePath error:(NSError **)outError;
+- (BOOL)_markAsLocallyAutomaticallyMovedToRelativePath:(NSString *)relativePath error:(NSError **)outError;
 {
     OBPRECONDITION(![NSString isEmptyString:relativePath]);
     OBINVARIANT([self _checkInvariants]);
     
+    OFXFileState *localState = self.localState;
+    
+    // If we are already automatically moved, and the new location is our intended location, then we are undoing a previous automatic move
+    if (localState.autoMoved) {
+        NSString *intendedLocalRelativePath = self.intendedLocalRelativePath;
+        if ([relativePath isEqual:intendedLocalRelativePath]) {
+            localState = [localState withAutoMovedCleared];
+            
+            _localRelativePath = [relativePath copy];
+            
+            NSMutableDictionary *versionDictionary = [NSMutableDictionary dictionaryWithDictionary:_versionDictionary];
+            versionDictionary[kOFXVersion_LocalState] = localState.archiveString;
+            [versionDictionary removeObjectForKey:kOFXVersion_RelativePath];
+            
+            BOOL success = [self _updateVersionDictionary:versionDictionary error:outError];
+            
+            OBINVARIANT([self _checkInvariants]);
+            return success;
+        }
+    }
+    
+    // In both the remotely missing and not-missing cases, we just do a local note for automatic moves.
+    localState = [localState withAutoMoved];
+    if (localState.autoMoved == NO) {
+        OBASSERT_NOT_REACHED("Move refused!");
+        return YES; // As noted in the calling code, this isn't fatal but can cause file duplication in edge cases.
+    }
+    
+    _localRelativePath = [relativePath copy];
+    
+    NSMutableDictionary *versionDictionary = [NSMutableDictionary dictionaryWithDictionary:_versionDictionary];
+    versionDictionary[kOFXVersion_LocalState] = localState.archiveString;
+    versionDictionary[kOFXVersion_RelativePath] = relativePath;
+    
+    BOOL success = [self _updateVersionDictionary:versionDictionary error:outError];
+    
+    OBINVARIANT([self _checkInvariants]);
+    return success;
+}
+
+- (BOOL)markAsLocallyMovedToRelativePath:(NSString *)relativePath isAutomaticMove:(BOOL)isAutomaticMove error:(NSError **)outError;
+{
+    OBPRECONDITION(![NSString isEmptyString:relativePath]);
+    OBINVARIANT([self _checkInvariants]);
+    
+    if (isAutomaticMove)
+        return [self _markAsLocallyAutomaticallyMovedToRelativePath:relativePath error:outError];
+
     BOOL success;
     OFXFileState *localState = self.localState;
     OFXFileState *remoteState = self.remoteState;
     
     if (remoteState.missing) {
-        // If we are a new file, just use the new path. We might be in the middle of uploading, but our file item's commit hook will notice that the snapshot it started uploading and the snapshot it has at the end have different paths and will mark the committed snapshot as being in the move state. If we die before the upload finishes, there is issue. We *might* die in the brief window between publishing the new file on the server and updating our local snapshot, but we could anyway (and we'll just get duplicated data in that case).
+        // If we are a new file, just record the new path. We might be in the middle of uploading, but our file item's commit hook will notice that the snapshot it started uploading and the snapshot it has at the end have different paths and will mark the committed snapshot as being in the move state. If we die before the upload finishes, there is issue. We *might* die in the brief window between publishing the new file on the server and updating our local snapshot, but we could anyway (and we'll just get duplicated data in that case).
         
         _localRelativePath = relativePath;
         
         NSMutableDictionary *infoDictionary = [NSMutableDictionary dictionaryWithDictionary:_infoDictionary];
         infoDictionary[kOFXInfo_PathKey] = relativePath;
-        
         success = [self _updateInfoDictionary:infoDictionary error:outError];
     } else {
-        // We are uploading -- we need to remember that a moved happened
-        localState = [localState withMoved];
-
-        if (localState.moved == NO) {
+        // We might be finalizing an automove name via -_finalizeConflictNamesForFilesIntendingToBeAtRelativePaths:. In this case, we turn automove into a real move and keep the same destination path for the upload transfer
+        if (localState.autoMoved && !isAutomaticMove) {
+            localState = [localState withAutoMovedCleared];
+        }
+        
+        // We might be uploading -- we need to remember that a moved happened
+        localState = [localState withUserMoved];
+        if (localState.userMoved == NO) {
             OBASSERT_NOT_REACHED("Move refused!");
             return YES; // As noted in the calling code, this isn't fatal but can cause file duplication in edge cases.
         }
@@ -824,25 +948,31 @@ static BOOL RunningOnAccountQueue(void)
 #ifdef OMNI_ASSERTIONS_ON
     {
         OFXFileState *remoteState = self.remoteState;
-        
         OBASSERT(localState.missing ^ (versionDictionary[kOFXVersion_ContentsKey] != nil));
-        OBASSERT(remoteState.missing || localState.edited || localState.moved || (localState.missing && localState.moved));
-        OBASSERT(remoteState.missing || remoteState.normal || remoteState.edited /* might be about to discover a conflict...*/ || (localState.missing && localState.moved)/*might be moving a non-downloaded file*/);
+        OBASSERT(remoteState.missing || localState.edited || localState.userMoved || (localState.missing && localState.userMoved));
+        OBASSERT(remoteState.missing || remoteState.normal || remoteState.edited /* might be about to discover a conflict...*/ || (localState.missing && localState.userMoved)/*might be moving a non-downloaded file*/);
     }
 #endif
     
     NSMutableDictionary *updatedVersionDictionary = [NSMutableDictionary dictionaryWithDictionary:versionDictionary];
     
     if (localState.missing) {
-        OBASSERT(localState.moved, @"Should only upload a locally missing file if we are renaming it");
-        updatedVersionDictionary[kOFXVersion_LocalState] = [OFXFileState missing].archiveString;
-        updatedVersionDictionary[kOFXVersion_RemoteState] = [OFXFileState normal].archiveString;
+        OBASSERT(localState.userMoved, @"Should only upload a locally missing file if we are renaming it");
+        localState = [OFXFileState missing];
     } else {
-        updatedVersionDictionary[kOFXVersion_LocalState] = [OFXFileState normal].archiveString;
-        updatedVersionDictionary[kOFXVersion_RemoteState] = [OFXFileState normal].archiveString;
+        if (localState.autoMoved)
+            localState = [[OFXFileState normal] withAutoMoved]; // Keep the automatic move note if present
+        else
+            localState = [OFXFileState normal];
     }
     
-    [updatedVersionDictionary removeObjectForKey:kOFXVersion_RelativePath]; // No longer moved, if we were before
+    updatedVersionDictionary[kOFXVersion_LocalState] = localState.archiveString;
+    updatedVersionDictionary[kOFXVersion_RemoteState] = [OFXFileState normal].archiveString;
+
+    if (!localState.autoMoved) {
+        // We've told the server we want to be at the new location, so we are no longer moved. If this an automatic local move, we haven't told the server and we want to remember our local location.
+        [updatedVersionDictionary removeObjectForKey:kOFXVersion_RelativePath];
+    }
     
     // Write the results to our local snapshot as a new/updated Version.plist. If we die between here and writing this file, the next sync would produce either a duplicate upload (if this was a new file) or a self-conflict (both preferable to losing data of course).
     if (![self _updateVersionDictionary:updatedVersionDictionary error:outError]) {

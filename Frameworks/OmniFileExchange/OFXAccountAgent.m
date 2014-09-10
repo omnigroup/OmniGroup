@@ -10,17 +10,11 @@
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFeatures.h>
 #import <OmniDAV/ODAVFileInfo.h>
-#import <OmniFileExchange/OFXFeatures.h>
-#import <OmniFileExchange/OFXFileMetadata.h>
 #import <OmniFileExchange/OFXRegistrationTable.h>
 #import <OmniFileExchange/OFXServerAccount.h>
-#import <OmniFileExchange/OFXErrors.h>
-#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
-#import <OmniFoundation/OFNetStateRegistration.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFUTI.h>
 #import <OmniFoundation/OFCredentials.h>
-#import <dirent.h>
 
 #import "OFXAccountInfo.h"
 #import "OFXAgent-Internal.h"
@@ -31,10 +25,10 @@
 #import "OFXFileItem-Internal.h"
 #import "OFXFileItemTransfers.h"
 #import "OFXFileSnapshotTransfer.h"
-#import "OFXServerAccount-Internal.h"
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <dirent.h>
 #else
 #import <CoreServices/CoreServices.h>
 #import <OmniFoundation/NSFileManager-OFExtensions.h>
@@ -51,6 +45,8 @@ typedef NS_ENUM(NSUInteger, OFXAccountAgentState) {
 NSString * const OFXAccountAgentDidStopForReplacementNotification = @"OFXAccountAgentDidStopForReplacementNotification";
 
 static NSString * const RemoteTemporaryDirectoryName = @"tmp";
+
+static OFPreference *OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping;
 
 #import <OmniFoundation/OFLockFile.h>
 #if (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE) && OF_LOCK_FILE_AVAILABLE
@@ -91,6 +87,8 @@ static NSString * const RemoteTemporaryDirectoryName = @"tmp";
     NSSet *_serverContainerIdentifiers;
 
     NSOperationQueue *_operationQueue; // Serial queue for work related to this account, bookkeeping of file items, scans, and transfer status updates.
+    
+    NSTimer *_metadataUpdateTimer; // Registered on the main queue, but triggers a call over the account's operation queue.
     
     NSMutableSet *_runningTransfers; // OFXFileSnapshotTransfers that are running.
     
@@ -147,10 +145,17 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     return lowercasePathExtensions;
 }
 
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping = [OFPreference preferenceForKey:@"OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping"];
+}
+
 - initWithAccount:(OFXServerAccount *)account agentMemberIdentifier:(NSString *)agentMemberIdentifier registrationTable:(OFXRegistrationTable *)registrationTable remoteDirectoryName:(NSString *)remoteDirectoryName localAccountDirectory:(NSURL *)localAccountDirectory localPackagePathExtensions:(id <NSFastEnumeration>)localPackagePathExtensions syncPathExtensions:(id <NSFastEnumeration>)syncPathExtensions;
 {
     OBPRECONDITION(account);
-    OBPRECONDITION(account.isCloudSyncEnabled);
+    OBPRECONDITION(account.usageMode == OFXServerAccountUsageModeCloudSync);
     OBPRECONDITION(!account.hasBeenPreparedForRemoval);
     OBPRECONDITION(![NSString isEmptyString:account.credentialServiceIdentifier]);
     OBPRECONDITION(![NSString isEmptyString:agentMemberIdentifier]);
@@ -488,6 +493,9 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     [_stateRegistration invalidate];
     _stateRegistration = nil;
     
+    [_metadataUpdateTimer invalidate];
+    _metadataUpdateTimer = nil;
+    
     completionHandler = [completionHandler copy];
     
     [_operationQueue addOperationWithBlock:^{
@@ -584,8 +592,10 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
                     // Will happen when we get started.
                     OBASSERT(self.backgroundState == OFXAccountAgentStateCreated);
                 }
-            } else
+            } else {
                 [self _cancelTransfers]; // Stop any transfers that were running
+                [self _clearRecentErrorsOnAllFileItems];
+            }
         }];
     }
 }
@@ -956,12 +966,12 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
                 NSString *kindName;
                 if (kind == OFXFileItemUploadTransferKind) {
                     // We have to handle doing an upload of missing+moved, which would otherwise not be valid for upload. The upload transfer handles this case.
-                    OBASSERT(fileItem.isValidToUpload || (fileItem.localState.missing && fileItem.localState.moved && !fileItem.remoteState.missing && !fileItem.remoteState.deleted));
-                    OBASSERT(fileItem.remoteState.missing || fileItem.localState.edited || fileItem.localState.moved);
+                    OBASSERT(fileItem.isValidToUpload || (fileItem.localState.missing && fileItem.localState.userMoved && !fileItem.remoteState.missing && !fileItem.remoteState.deleted));
+                    OBASSERT(fileItem.remoteState.missing || fileItem.localState.edited || fileItem.localState.userMoved);
                     transfers = _uploadFileItemTransfers;
                     kindName = @"upload";
                 } else if (kind == OFXFileItemDownloadTransferKind) {
-                    OBASSERT(fileItem.localState.missing || fileItem.remoteState.edited || fileItem.remoteState.moved);
+                    OBASSERT(fileItem.localState.missing || fileItem.remoteState.edited || fileItem.remoteState.userMoved);
                     transfers = _downloadFileItemTransfers;
                     kindName = @"download";
                 } else if (kind == OFXFileItemDeleteTransferKind) {
@@ -1037,7 +1047,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
         // We might still not have a state registration since we might not have finished fetching our Info.plist.
         if (_stateRegistration) {
             DEBUG_SYNC(2, @"Publishing edit state \"%@\"", editState);
-            _stateRegistration.state = [editState dataUsingEncoding:NSUTF8StringEncoding];
+            _stateRegistration.localState = [editState dataUsingEncoding:NSUTF8StringEncoding];
         }
     }];
 }
@@ -1219,23 +1229,6 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     return blockOperation;
 }
 
-- (void)addContainerForIdentifierIfMissing:(NSString *)containerIdentifier;
-{
-    OBPRECONDITION(![NSString isEmptyString:containerIdentifier]);
-    OBPRECONDITION([containerIdentifier isEqualToString:[containerIdentifier lowercaseString]]);
-    
-    containerIdentifier = [containerIdentifier lowercaseString];
-    
-    [_operationQueue addOperationWithBlock:^{
-        if (self.backgroundState != OFXAccountAgentStateStarted) {
-            OBASSERT_NOT_REACHED("Should be running");
-            return;
-        }
-        
-        [self _containerAgentWithIdentifier:containerIdentifier];
-    }];
-}
-
 - (BOOL)runningOnAccountAgentQueue;
 {
     NSOperationQueue *currentQueue = [NSOperationQueue currentQueue];
@@ -1305,8 +1298,11 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     OBPRECONDITION(![oldURL isFileReferenceURL]);
     OBPRECONDITION([newURL isFileURL]);
     OBPRECONDITION([NSOperationQueue currentQueue] == _presentedItemOperationQueue);
-    OBPRECONDITION(_hasRegisteredAsFilePresenter); // Make sure we don't de-register when we might have queued up file presenter messages
     OBPRECONDITION(_edits.relinquishToWriter == NO); // Sadly, we don't get a writer block for sub-items. Make sure we notice if this changes.
+
+    // De-registering file presenters has no synchronization... and sub-item notifications can be queued up.
+    if (_hasRegisteredAsFilePresenter == NO)
+        return;
 
     DEBUG_FILE_COORDINATION(1, @"presentedSubitemAtURL:%@ didMoveToURL:%@", oldURL, newURL);
     
@@ -1360,17 +1356,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 
 - (OFXConnection *)_makeConnection;
 {
-#if ODAV_NSURLSESSION
-    OBFinishPortingLater("Look at the callers -- once we move to using NSURLSession, we'll be not reusing https connections across uploads/downloads");
-    
-    NSURLSessionConfiguration *configuration = [[NSURLSessionConfiguration defaultSessionConfiguration] copy];
-    configuration.allowsCellularAccess = [OFXAgent isCellularSyncEnabled];
-    
-    configuration.HTTPShouldUsePipelining = YES;
-#else
-    ODAVConnectionConfiguration *configuration = [ODAVConnectionConfiguration new];
-    configuration.allowsCellularAccess = [OFXAgent isCellularSyncEnabled];
-#endif
+    ODAVConnectionConfiguration *configuration = [OFXAgent makeConnectionConfiguration];
     
     OFXConnection *connection = [[OFXConnection alloc] initWithSessionConfiguration:configuration baseURL:self.remoteBaseDirectory];
 
@@ -1398,18 +1384,30 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     return connection;
 }
 
-- (void)_fileItemDidGenerateConflict:(OFXFileItem *)fileItem;
-{
-    // We need to do a scan to find the new conflict version and generate a file item for it.
-    [self _queueContentsChanged];
-}
-
 - (void)_fileItemDidDetectUnknownRemoteEdit:(OFXFileItem *)fileItem;
 {
     // We need to do a scan to find the new conflict version and generate a file item for it.
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         if (self.started) // Maybe stopped in the mean time...
             [self sync:nil];
+    }];
+}
+
+- (void)_containerAgentNeedsMetadataUpdate:(OFXContainerAgent *)container;
+{
+    OBPRECONDITION([self runningOnAccountAgentQueue]);
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        if (_foregroundState != OFXAccountAgentStateStarted) {
+            // Stopped in the mean time...
+            OBASSERT(_metadataUpdateTimer == nil);
+            return;
+        }
+        
+        if (!_metadataUpdateTimer) {
+            _metadataUpdateTimer = [NSTimer scheduledTimerWithTimeInterval:0.25 target:self selector:@selector(_performContainerMetadataUpdates:) userInfo:nil repeats:NO];
+            [_metadataUpdateTimer setTolerance:0.1];
+        }
     }];
 }
 
@@ -1494,8 +1492,13 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
             OFXContainerScan *scan = containerIdentifierToScan[identifier];
             __autoreleasing NSError *error;
             if (![container finishedScan:scan error:&error]) {
-                // Could be more than one error, but we'll just record the last and log all of them.
-                [_account reportError:error format:@"Error finishing scan for container %@", [container shortDescription]];
+                if ([error hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDirectoryModifiedWhileScanning]) {
+                    // Try again -- we'll have avoided doing some operations (like deletions) since we don't know for sure where things have gone due to the mutation-while-scan.
+                    [self _queueContentsChanged];
+                } else {
+                    // Could be more than one error, but we'll just record the last and log all of them.
+                    [_account reportError:error format:@"Error finishing scan for container %@", [container shortDescription]];
+                }
             }
         }];
         
@@ -1507,151 +1510,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _operationQueue);
     
-    /*
-     Cases to consider:
-     
-     1) simple rename of a document
-     2) rename of a whole folder of documents, which might have different path extensions (and so span multiple containers)
-     3) rename of a document to get a new path extension, thus removing it from the old container and adding to a new container
-     4) rename of a folder to start looking like a document
-     5) rename of a document to start looking like a folder
-     6) rename of a document to a type that we don't sync
-     7) combinations of these (rename of a document to look like a folder with multiple child files of differing document types).
-     8) need to ensure that path extension changes (moving between containers) fall back to getting two copies of the file instead of zero if the app is killed part way through.
-     
-     We can possibly handle only the most basic cases (rename of a file and rename of a directory of files) here and do a full rescan for anything else (which may issue deletes and adds of files).
-     
-     */
-    
-    // NSFileCoordination likes to give us non-standard URLs. Standardizing doesn't work if the URL doesn't exist. We could do file coordination here (we are off the file presenter queue), but we'd still be racing with following moves and deletes.
-    // In the case that the URL doesn't exist and standardization might have helped, we may see a delete and re-add of a file (this can happen if a file is moved twice in very quick succession so that we don't process the first notification by the time the second move has happened).
-    // OBASSERT([newURL checkResourceIsReachableAndReturnError:NULL]);
-    newURL = [newURL URLByStandardizingPath];
-
-    NSString *oldContainerIdentifier = [OFXContainerAgent containerAgentIdentifierForFileURL:oldURL];
-    NSString *newContainerIdentifier = [OFXContainerAgent containerAgentIdentifierForFileURL:newURL];
-    OFXContainerAgent *oldContainer = [_containerIdentifierToContainerAgent objectForKey:oldContainerIdentifier]; // Don't force creation of a container -- this might be a directory, not a file!
-
-    // Totally moved out of the account. Might be a move in Finder to a .Trash, move out of the synchronized directory to ~/Documents, a move on the iPad to ~/Documents, etc. As far as we are concerned this is a delete.
-    BOOL containsNewLocalDocumentURL = [self containsLocalDocumentFileURL:newURL];
-    if (!containsNewLocalDocumentURL) {
-        OFXFileItem *fileItem = [oldContainer publishedFileItemWithURL:oldURL];
-        if (fileItem) {
-            __autoreleasing NSError *error;
-            if (![oldContainer fileItemDeleted:fileItem error:&error])
-                [_account reportError:error format:@"Error noting local deletion due to file moving out of account %@ -> %@", oldURL, newURL];
-        } else {
-            // This can happen if you delete a whole directory on the Mac. The directory gets moved to the trash, not the individual files.
-            [self _queueContentsChanged];
-        }
-        return;
-    }
-    
-    // Handle simple document renames
-    BOOL sameContainer;
-    {
-        sameContainer = OFISEQUAL(oldContainerIdentifier, newContainerIdentifier);
-        if (sameContainer) {
-            OBASSERT(containsNewLocalDocumentURL); // can't get here otherwise.
-            OFXFileItem *fileItem = [oldContainer publishedFileItemWithURL:oldURL];
-            if (fileItem && containsNewLocalDocumentURL) {
-                [oldContainer fileItemMoved:fileItem fromURL:oldURL toURL:newURL byUser:YES];
-                return;
-            }
-        } else {
-            // Changing path extensions? Do a full rescan... this may be a document becoming a folder, a folder becoming a document, or a document transitioning to be of a new type (and thus being deleted from the old container and added to the new one).
-            [self _queueContentsChanged];
-            return;
-        }
-    }
-    
-    // Handle simple folder renames
-    {
-        // Check if any known file items are inside the original URL.
-        NSMutableArray *renamedItems = [NSMutableArray new];
-        NSString *oldDirectoryRelativePath = [self _localRelativePathForDirectoryURL:oldURL];
-        
-        [_containerIdentifierToContainerAgent enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, OFXContainerAgent *container, BOOL *stop) {
-            [container addFileItems:renamedItems inDirectoryWithRelativePath:oldDirectoryRelativePath];
-        }];
-        
-        // If so, then it looks like a directory rename!
-        if ([renamedItems count] > 0) {
-            NSString *newDirectoryRelativePath = [self _localRelativePathForDirectoryURL:newURL];
-            
-            for (OFXFileItem *fileItem in renamedItems) {
-                NSURL *fileItemURL = fileItem.localDocumentURL;
-                NSString *containerIdentifier = [OFXContainerAgent containerAgentIdentifierForFileURL:fileItemURL];
-                OFXContainerAgent *container = _containerIdentifierToContainerAgent[containerIdentifier];
-                if (!container) {
-                    OBASSERT_NOT_REACHED("Should have found the container");
-                    continue;
-                }
-                
-                NSString *oldFileRelativePath = [self _localRelativePathForFileURL:fileItemURL];
-                NSString *newFileRelativePath = [newDirectoryRelativePath stringByAppendingString:[oldFileRelativePath stringByRemovingPrefix:oldDirectoryRelativePath]];
-                
-                BOOL fileIsDirectory = [[fileItem.localDocumentURL absoluteString] hasSuffix:@"/"];
-                NSURL *newFileURL = [_account.localDocumentsURL URLByAppendingPathComponent:newFileRelativePath isDirectory:fileIsDirectory];
-                
-                [container fileItemMoved:fileItem fromURL:fileItem.localDocumentURL toURL:newFileURL byUser:YES];
-            }
-            return;
-        }
-    }
-    
-    // Empty folders
-    {
-        __autoreleasing NSError *error;
-        NSArray *childrenURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:newURL includingPropertiesForKeys:nil options:0 error:&error];
-        if (childrenURLs) {
-            BOOL containsSomething = NO;
-            for (NSURL *childURL in childrenURLs) {
-                if (!OFShouldIgnoreURLDuringScan(childURL)) {
-                    containsSomething = YES;
-                    break;
-                }
-            }
-            if (!containsSomething)
-                return;
-        }
-    }
-    
-    // Already intuited moves. At the end of a scan, containers will intuit moves that NSFileCoordination did *not* tell us about (like case-only renames or uncoordinated file names). But, in the case of quickly moving files, we might intuit something that we *do* eventually get notified of. See _handlePossibleMovesOfFileURLs:remainingLocalRelativePathToPublishedFileItem:. Sigh.
-    {
-        if (sameContainer) {
-            // Use file coordination so that if there are quick renames going on, we get in-flight info.
-            NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-            __autoreleasing NSError *error;
-            __block BOOL matched = NO;
-            BOOL success = [coordinator readItemAtURL:newURL withChanges:NO error:&error byAccessor:^BOOL(NSURL *newURL2, NSError **outError) {
-                // Here we look up the file item under 'newURL' (the destination state of our move operation) but look up the inode under 'newURL2' (remapped by NSFileCoordinator).
-                // We want the current filesystem state for looking up the filesystem state, but the NSFilePresenter-pumped state for our document database. If these two differ, then we should either get a followup NSFilePresenter message, or we should intuit a move later (and should get a generic 'something changed' file presenter message to kick that off).
-                // Many feet of duct tape and bailing wire could be saved if NSFileCoordination worked as advertised.
-                OFXFileItem *fileItem = [oldContainer publishedFileItemWithURL:newURL];
-                if (fileItem) {
-                    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[newURL2 path] error:outError];
-                    NSNumber *inode = attributes[NSFileSystemFileNumber];
-                    if (!inode)
-                        return NO;
-                    else if ([inode isEqual:fileItem.inode]) {
-                        // Already handled!
-                        matched = YES;
-                    }
-                }
-                return YES;
-            }];
-            if (!success)
-                [error log:@"Error getting inode for possibly moved URL %@", newURL];
-            else if (matched) {
-                return;
-            }
-        }
-    }
-    
-    // This can happen if you rename an open document <bug:///87895> (Renaming an open synced document should not crash)
-    // In this case, we are doing a rename in OFXContainerAgent via a file coordinator that has this OFXAccountAgent listed as the file presenter. This should mean that we do *not* get notified here since we'll update our own state (as we are initiating the operation).
-    // Just fall back to doing a full scan.
+    // We don't try to rely on NSFileCoordinator move notifications being reliable/timely. We don't block the file presenter queue when we get these, so by the time we get here the file might have been moved again/deleted. Instead we could make notes about recent moves and when intuiting moves based on inode results in left-overs, we could use those hints to match up move+edited files (since the inode won't match for NSDocument-based saves).
     [self _queueContentsChanged];
 }
 
@@ -1838,6 +1697,70 @@ static NSString * const OFXContainerPathExtension = @"container";
     [_downloadFileItemTransfers reset];
     [_deleteFileItemTransfers reset];
     [_runningTransfers removeAllObjects];
+}
+
+- (void)_clearRecentErrorsOnAllFileItems;
+{
+    OBPRECONDITION(self.runningOnAccountAgentQueue);
+    OBPRECONDITION(self.backgroundState == OFXAccountAgentStateStarted);
+    
+    [_containerIdentifierToContainerAgent enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, OFXContainerAgent *container, BOOL *stop) {
+        [container clearRecentErrorsOnAllFileItems];
+    }];
+}
+
+- (void)_performContainerMetadataUpdates:(NSTimer *)timer;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    if (_foregroundState != OFXAccountAgentStateStarted) {
+        OBASSERT(_metadataUpdateTimer == nil);
+        return;
+    }
+    
+    [_operationQueue addOperationWithBlock:^{
+        if (_backgroundState != OFXAccountAgentStateStarted)
+            return;
+        
+        NSMutableDictionary *recentTransferErrorsByLocalRelativePath = [[NSMutableDictionary alloc] init];
+        [_containerIdentifierToContainerAgent enumerateKeysAndObjectsUsingBlock:^(NSString *identifier, OFXContainerAgent *container, BOOL *stop) {
+            [container _publishMetadataUpdates];
+            [container addRecentTransferErrorsByLocalRelativePath:recentTransferErrorsByLocalRelativePath];
+        }];
+        
+        if ([recentTransferErrorsByLocalRelativePath count] > 0) {
+            __block NSUInteger errorCount = 0;
+            
+            [recentTransferErrorsByLocalRelativePath enumerateKeysAndObjectsUsingBlock:^(NSString *localRelativePath, NSArray *errors, BOOL *stop) {
+                errorCount += [errors count];
+            }];
+            
+            DEBUG_SYNC(1, @"  Account %@ has %ld recent transfer errors", _account, errorCount);
+            
+            if (errorCount > [OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping unsignedIntegerValue]) {
+                __autoreleasing NSError *error;
+                
+                NSString *description = NSLocalizedStringFromTableInBundle(@"Too many file transfers encountered errors recently.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description when syncing will be disabled due to too many recent errors");
+                
+                NSMutableDictionary *errorInfoByPath = [[NSMutableDictionary alloc] init];
+                [recentTransferErrorsByLocalRelativePath enumerateKeysAndObjectsUsingBlock:^(NSString *localRelativePath, NSArray *errors, BOOL *stop) {
+                    errorInfoByPath[localRelativePath] = errors = [errors arrayByPerformingBlock:^(OFXRecentError *recentError){
+                        return @{@"date": recentError.date, @"error": [recentError.error toPropertyList]};
+                    }];
+                }];
+
+                OFXErrorWithInfo(&error, OFXTooManyRecentFileTransferErrors, description, nil, @"errors", errorInfoByPath, nil);
+                
+                // -reportError: would already dispatch to the main queue, but make sure we disable further syncing before the error gets logged so that a followup sync won't clear the error (unlikely unless sync attempts are queued up closely, but...)
+                NSError *strongError = error;
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    self.syncingEnabled = NO;
+                    [_account reportError:strongError];
+                }];
+            }
+        }
+    }];
+    _metadataUpdateTimer = nil;
 }
 
 @end

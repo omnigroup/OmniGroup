@@ -1,6 +1,7 @@
 #!/bin/zsh -u
 
 
+export OBJC_DISABLE_GC=YES
 export OFXTestsRunning=1
 export OBASSERT_NO_BANNER=1
 export OB_SUPPRESS_SUPPRESSED_CONFLICT_COUNT=1
@@ -11,13 +12,16 @@ export ODAVAccountUsername=test
 export ODAVAccountPassword=password
 #export OBASSERT_TIME_TO_WAIT=60
 # 15 works on my rMBP, but my Mac Pro with spinning disks is slower
-export OFXTestWaitTime=600
+export OFXTestWaitTime=60
+
+# Hack to avoid cases where Bonjour (or we) lose a state update
+export OFXAgentSyncInterval=20
 
 #export OFNetStateRegistrationDebug=1
 #export OFNetStateNotifierDebug=1
-export ODAVConnectionDebug=10
-export ODAVConnectionTaskDebug=1
-export ODAVConnectionSessionDebug=1
+#export ODAVConnectionDebug=10
+#export ODAVConnectionTaskDebug=1
+#export ODAVConnectionSessionDebug=1
 #export OFXSyncDebug=1
 #export OFXAccountInfoDebug=1
 #export OFXMetadataDebug=1
@@ -26,11 +30,7 @@ export ODAVConnectionSessionDebug=1
 #export OFXContentDebug=1
 #export OFXSnapshotDebug=1
 
-OTEST=`xcrun -find otest`
-
-# xcrun requires gc currently
-export OBJC_DISABLE_GC=YES
-
+XCTEST=`xcrun -find xctest`
 
 # TODO: Collect each run's log, run time, and status. Report number of runs so far.
 LOG_DIR=/tmp/pound-logs
@@ -41,6 +41,9 @@ ROOT=$(echo ~/Library/Developer/Xcode/DerivedData/OmniPresence-*/Build/Products/
 export DYLD_FALLBACK_FRAMEWORK_PATH=$ROOT
 #export DYLD_PRINT_RPATHS=1
 
+TEST_BUNDLE=$ROOT/OFXUnitTests.xctest
+echo TEST_BUNDLE is $TEST_BUNDLE
+
 # OFXDeleteTestCase/testParentDirectory
 # OFXDeleteTestCase/testDeleteWhileUploadingEditOfExitingDocument
 
@@ -49,10 +52,8 @@ counter=0
 while true; do
     sleep 1
     LOG_FILE="$LOG_DIR/$counter.log"
-    $OTEST -SenTest OFXDeleteTestCase/testRaceBetweenDownloadAndLocalDeletion $ROOT/OFXUnitTests.octest |& tee "$LOG_FILE" | egrep "(^Executed)|(failed)"
+    $XCTEST -XCTest OFXRenameTestCase/testRenameOfFileAndCreationOfNewFileAsSamePathWhileNotRunning "$TEST_BUNDLE" |& tee "$LOG_FILE" | egrep "(^Executed)|(failed)|(OBFinishPorting at )"
     ((counter=$counter+1))
-    
-    exit
 done
 
 # TODO: Allow tests to include their pid in the local and remote paths. Could then run multiple instances of the test in parallel (which would pound the web server too...)

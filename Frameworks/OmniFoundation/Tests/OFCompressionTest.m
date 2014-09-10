@@ -1,11 +1,10 @@
-// Copyright 2004-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/NSData-OFExtensions.h>
@@ -36,7 +35,7 @@ static NSData *utf8(NSString *str)
 
 @implementation OFCompressionTest
 
-+ (id) defaultTestSuite
++ (XCTestSuite *)defaultTestSuite;
 {
     // This abstract class doesn't have a test suite.
     if (self == [OFCompressionTest class])
@@ -121,8 +120,8 @@ static NSData *utf8(NSString *str)
     NSData *decompressedData = [bz2Data decompressedData:&error];
     OBShouldNotError(decompressedData != nil);
     
-    shouldBeEqual(data, decompressedData);
-    should([bz2Data mightBeCompressed]);
+    XCTAssertEqualObjects(data, decompressedData);
+    XCTAssertTrue([bz2Data mightBeCompressed]);
 }
 
 @end
@@ -144,12 +143,12 @@ static NSData *utf8(NSString *str)
             NSData *gzipDecompressed = [gzData filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObjects:@"--decompress", @"--to-stdout", nil] error:&error];
             OBShouldNotError(gzipDecompressed != nil);
 
-            shouldBeEqual(data, gzipDecompressed);
+            XCTAssertEqualObjects(data, gzipDecompressed);
 
             NSData *decompressed = [gzData decompressedData:&error];
             OBShouldNotError(decompressed != nil);
 
-            shouldBeEqual(data, decompressed);
+            XCTAssertEqualObjects(data, decompressed);
         }
 
     }

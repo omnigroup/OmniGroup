@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group.  All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,7 @@ RCS_ID("$Id$");
         CFMutableStringRef string = CFStringCreateMutableCopy(kCFAllocatorDefault, 0, (CFStringRef)value);
         CFStringUppercase(string, locale);
         
-        value = [NSString stringWithString:(NSString *)string];
+        value = [NSString stringWithString:(__bridge NSString *)string];
         
         CFRelease(locale);
         CFRelease(string);
@@ -72,7 +72,7 @@ RCS_ID("$Id$");
         CFMutableStringRef string = CFStringCreateMutableCopy(kCFAllocatorDefault, 0, (CFStringRef)value);
         CFStringLowercase(string, locale);
         
-        value = [NSString stringWithString:(NSString *)string];
+        value = [NSString stringWithString:(__bridge NSString *)string];
         
         CFRelease(locale);
         CFRelease(string);

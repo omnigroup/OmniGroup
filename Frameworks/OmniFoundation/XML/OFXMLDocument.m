@@ -201,76 +201,83 @@ RCS_ID("$Id$");
     //OBPRECONDITION(asFragment || (_dtdSystemID && _dtdPublicID)); // Otherwise CFXMLParser will generate an error on load (which we'll ignore, but still...)
     OBPRECONDITION([_elementStack count] == 1); // should just have the root element -- i.e., all nested push/pops have finished
     
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
     OFXMLBuffer xml = OFXMLBufferCreate();
     
-    if (!asFragment) {
-        
-        // The initial <?xml...?> PI isn't in the _processingInstructions; it's stored as other ivars
-        OFXMLBufferAppendUTF8CString(xml, "<?xml version=\"");
-        OFXMLBufferAppendString(xml, (CFStringRef)_versionString);
-        OFXMLBufferAppendUTF8CString(xml, "\" encoding=\"");
-        
-        // Convert the encoding name to lowercase for compatibility with an older version of OFXMLDocument (regression tests...)
-        CFStringRef encodingName = (CFStringRef)[(NSString *)CFStringConvertEncodingToIANACharSetName(_stringEncoding) lowercaseString];
-        if (!encodingName) {
-            OBASSERT_NOT_REACHED("No encoding name found");
-            encodingName = CFSTR("utf-8");            
-        }
-        OFXMLBufferAppendString(xml, encodingName);
-
-        OFXMLBufferAppendUTF8CString(xml, "\" standalone=\"");
-        if (_standalone)
-            OFXMLBufferAppendUTF8CString(xml, "yes");
-        else
-            OFXMLBufferAppendUTF8CString(xml, "no");
-        OFXMLBufferAppendUTF8CString(xml, "\"?>\n");
-        
-        // Add processing instructions.
-        {
-            NSCharacterSet *nonWhitespaceCharacterSet = [[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet];
-            for (NSArray *processingInstruction in _processingInstructions) {
-                NSString *name = [processingInstruction objectAtIndex:0];
-                NSString *value = [processingInstruction objectAtIndex:1];
-                
-                OFXMLBufferAppendUTF8CString(xml, "<?");
-                OFXMLBufferAppendString(xml, (CFStringRef)name);
-                
-                if ([value rangeOfCharacterFromSet:nonWhitespaceCharacterSet].length > 0) {
-                    OFXMLBufferAppendUTF8CString(xml, " ");
-                    OFXMLBufferAppendString(xml, (CFStringRef)[processingInstruction objectAtIndex:1]);
+    @autoreleasepool {
+        if (!asFragment) {
+            
+            // The initial <?xml...?> PI isn't in the _processingInstructions; it's stored as other ivars
+            OFXMLBufferAppendUTF8CString(xml, "<?xml version=\"");
+            OFXMLBufferAppendString(xml, (__bridge CFStringRef)_versionString);
+            OFXMLBufferAppendUTF8CString(xml, "\" encoding=\"");
+            
+            // Convert the encoding name to lowercase for compatibility with an older version of OFXMLDocument (regression tests...)
+            CFStringRef encodingName = (CFStringRef)[(NSString *)CFStringConvertEncodingToIANACharSetName(_stringEncoding) lowercaseString];
+            if (!encodingName) {
+                OBASSERT_NOT_REACHED("No encoding name found");
+                encodingName = CFSTR("utf-8");
+            }
+            OFXMLBufferAppendString(xml, encodingName);
+            
+            OFXMLBufferAppendUTF8CString(xml, "\" standalone=\"");
+            if (_standalone)
+                OFXMLBufferAppendUTF8CString(xml, "yes");
+            else
+                OFXMLBufferAppendUTF8CString(xml, "no");
+            OFXMLBufferAppendUTF8CString(xml, "\"?>\n");
+            
+            // Add processing instructions.
+            {
+                NSCharacterSet *nonWhitespaceCharacterSet = [[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet];
+                for (NSArray *processingInstruction in _processingInstructions) {
+                    NSString *name = [processingInstruction objectAtIndex:0];
+                    NSString *value = [processingInstruction objectAtIndex:1];
+                    
+                    OFXMLBufferAppendUTF8CString(xml, "<?");
+                    OFXMLBufferAppendString(xml, (__bridge CFStringRef)name);
+                    
+                    if ([value rangeOfCharacterFromSet:nonWhitespaceCharacterSet].length > 0) {
+                        OFXMLBufferAppendUTF8CString(xml, " ");
+                        OFXMLBufferAppendString(xml, (CFStringRef)[processingInstruction objectAtIndex:1]);
+                    }
+                    OFXMLBufferAppendUTF8CString(xml, "?>\n");
                 }
-                OFXMLBufferAppendUTF8CString(xml, "?>\n");
+            }
+            
+            if (_dtdPublicID || _dtdSystemID) {
+                OFXMLBufferAppendUTF8CString(xml, "<!DOCTYPE ");
+                OFXMLBufferAppendString(xml, (CFStringRef)[_rootElement name]);
+                if (_dtdPublicID) { // Both required in this case; TODO: Raise if _dtdSystemID isn't set in this case
+                    OFXMLBufferAppendUTF8CString(xml, " PUBLIC \"");
+                    OFXMLBufferAppendString(xml, (__bridge CFStringRef)_dtdPublicID);
+                    OFXMLBufferAppendUTF8CString(xml, "\" \"");
+                    OFXMLBufferAppendString(xml, CFURLGetString(_dtdSystemID));
+                    OFXMLBufferAppendUTF8CString(xml, "\">\n");
+                } else {
+                    OFXMLBufferAppendUTF8CString(xml, " SYSTEM \"");
+                    OFXMLBufferAppendString(xml, CFURLGetString(_dtdSystemID));
+                    OFXMLBufferAppendUTF8CString(xml, "\">\n");
+                }
             }
         }
-
-	if (_dtdPublicID || _dtdSystemID) {
-	    OFXMLBufferAppendUTF8CString(xml, "<!DOCTYPE ");
-	    OFXMLBufferAppendString(xml, (CFStringRef)[_rootElement name]);
-	    if (_dtdPublicID) { // Both required in this case; TODO: Raise if _dtdSystemID isn't set in this case
-		OFXMLBufferAppendUTF8CString(xml, " PUBLIC \"");
-		OFXMLBufferAppendString(xml, (CFStringRef)_dtdPublicID);
-		OFXMLBufferAppendUTF8CString(xml, "\" \"");
-		OFXMLBufferAppendString(xml, CFURLGetString(_dtdSystemID));
-		OFXMLBufferAppendUTF8CString(xml, "\">\n");
-	    } else {
-		OFXMLBufferAppendUTF8CString(xml, " SYSTEM \"");
-		OFXMLBufferAppendString(xml, CFURLGetString(_dtdSystemID));
-		OFXMLBufferAppendUTF8CString(xml, "\">\n");
-	    }
-	}
     }
     
     // Add elements
     for (id element in elements) {
         // TJW: Should try to unify this with the copy of this logic for children in OFXMLElement
-        if (![element appendXML:xml withParentWhiteSpaceBehavior:defaultWhiteSpaceBehavior document:self level:level error:outError]) {
+
+        NSError *strongError = nil; // strong reference outside the pool
+        BOOL success;
+        @autoreleasepool {
+            __autoreleasing NSError *error = nil;
+            success = [element appendXML:xml withParentWhiteSpaceBehavior:defaultWhiteSpaceBehavior document:self level:level error:&error];
+            if (!success) {
+                strongError = [error retain];
+            }
+        }
+        if (!success) {
             if (outError)
-                [*outError retain]; // in the pool
-            [pool drain];
-            if (outError)
-                [*outError autorelease];
+                *outError = [strongError autorelease];
             return nil;
         }
     }
@@ -281,7 +288,6 @@ RCS_ID("$Id$");
     CFDataRef data = OFXMLBufferCopyData(xml, _stringEncoding);
     OFXMLBufferDestroy(xml);
     
-    [pool drain];
     return CFBridgingRelease(data);
 }
 

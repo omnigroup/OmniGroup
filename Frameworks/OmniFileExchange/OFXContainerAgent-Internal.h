@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,8 +15,11 @@
 
 - (NSString *)_localRelativePathForFileURL:(NSURL *)fileURL;
 - (NSURL *)_URLForLocalRelativePath:(NSString *)relativePath isDirectory:(BOOL)isDirectory;
-- (void)_fileItemDidGenerateConflict:(OFXFileItem *)fileItem;
+- (void)_fileItem:(OFXFileItem *)fileItem didGenerateConflictAtURL:(NSURL *)conflictURL coordinator:(NSFileCoordinator *)coordinator;
 - (void)_fileItemDidDetectUnknownRemoteEdit:(OFXFileItem *)fileItem;
 - (BOOL)_relocateFileAtURL:(NSURL *)fileURL toMakeWayForFileItem:(OFXFileItem *)fileItem coordinator:(NSFileCoordinator *)coordinator error:(NSError **)outError;
+
+- (void)_fileItemNeedsMetadataUpdated:(OFXFileItem *)fileItem;
+- (void)_publishMetadataUpdates;
 
 @end

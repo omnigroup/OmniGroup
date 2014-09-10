@@ -158,7 +158,13 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
             if (_placeholderTopMargin != OUINoteTextViewPlacholderTopMarginAutomatic) {
                 textRect.origin.y = _placeholderTopMargin;
             } else {
-                if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+                // If we are regular, but have a reasonably short height, also take the compact code path
+                BOOL isVerticallyCompact = (self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact);
+                if (!isVerticallyCompact && CGRectGetHeight(self.bounds) <= 568) {
+                    isVerticallyCompact = YES;
+                }
+                
+                if (isVerticallyCompact) {
                     textRect.origin.y = CGRectGetHeight(textRect) / 3.0 - CGRectGetHeight(boundingRect) / 2.0;
                 } else {
                     textRect.origin.y = CGRectGetHeight(textRect) / 2.0 - CGRectGetHeight(boundingRect) / 2.0;

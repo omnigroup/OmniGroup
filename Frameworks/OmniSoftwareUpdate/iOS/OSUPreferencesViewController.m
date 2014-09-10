@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -129,9 +129,14 @@ enum {
     OSUPreferencesTableViewLabel *_infoHeaderView;
 }
 
++ (NSString *)localizedSectionTitle;
+{
+    return NSLocalizedStringFromTableInBundle(@"Device Information", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update settings section title");
+}
+
 + (NSString *)localizedDisplayName;
 {
-    return NSLocalizedStringFromTableInBundle(@"Send anonymous device information", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update settings cell title");
+    return NSLocalizedStringFromTableInBundle(@"Send Anonymous Data", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update settings cell title");
 }
 
 + (NSString *)localizedDetailDescription;
@@ -155,6 +160,11 @@ enum {
         UIWindow *window = [[OUIAppController controller] window];
         [window.rootViewController presentViewController:navController animated:YES completion:nil];
     }];
+}
+
++ (BOOL)sendAnonymousDeviceInformationEnabled;
+{
+    return [[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue] && [[OSUPreferences includeHardwareDetails] boolValue];
 }
 
 - init;
@@ -207,8 +217,8 @@ enum {
         };
 
         addEntry(NSLocalizedStringFromTableInBundle(@"Report version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update report entry name"), [[OSUChecker OSUVersionNumber] originalVersionString]);
-        addEntry(NSLocalizedStringFromTableInBundle(@"Application identifier", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update report entry name"), [checker applicationIdentifier]);
-        addEntry(NSLocalizedStringFromTableInBundle(@"Application version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update report entry name"), [checker applicationEngineeringVersion]);
+        addEntry(NSLocalizedStringFromTableInBundle(@"App ID", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update report entry name"), [checker applicationIdentifier]);
+        addEntry(NSLocalizedStringFromTableInBundle(@"App version", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update report entry name"), [checker applicationEngineeringVersion]);
     }
     
     // Entries from the report itself
@@ -271,7 +281,7 @@ enum {
             return [NSString abbreviatedStringForBytes:[bytes unsignedLongLongValue]];
         });
         
-        addEntry(OSUReportInfoUUIDKey, NSLocalizedStringFromTableInBundle(@"Report identifier", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update report entry name"), nil);
+        addEntry(OSUReportInfoUUIDKey, NSLocalizedStringFromTableInBundle(@"Report ID", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Software update report entry name"), nil);
 
         void (^addRun)(NSString *name, NSString *numberOfRunsKey, NSString *minutesRunKey, NSString *crashCountKey) = ^(NSString *name, NSString *numberOfRunsKey, NSString *minutesRunKey, NSString *crashCountKey){
             NSString *numberOfRuns = report[numberOfRunsKey];
@@ -404,11 +414,11 @@ enum {
                 [accessorySwitch sizeToFit];
                 cell.accessoryView = accessorySwitch;
 
-                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Send anonymous device information?", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Settings option title");
+                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Send Anonymous Data", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Settings option title");
                 cell.detailTextLabel.textColor = [OUIInspector disabledLabelTextColor];
             }
             
-            BOOL enabled = [[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue] && [[OSUPreferences includeHardwareDetails] boolValue];
+            BOOL enabled = [[self class] sendAnonymousDeviceInformationEnabled];
             ((UISwitch *)cell.accessoryView).on = enabled;
 
             return cell;

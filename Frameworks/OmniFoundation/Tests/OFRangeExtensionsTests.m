@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,12 @@
 
 #import <OmniFoundation/NSRange-OFExtensions.h>
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
-@interface OFRangeExtensionsTests : SenTestCase
+@interface OFRangeExtensionsTests : XCTestCase
 @end
 
 @implementation OFRangeExtensionsTests
@@ -20,7 +20,7 @@ RCS_ID("$Id$");
 #define CHECK(range, remove, expected) do { \
     NSRange result = OFRangeByRemovingRange(range, remove); \
     if (!NSEqualRanges(result, expected)) \
-        STAssertEqualObjects(NSStringFromRange(result), NSStringFromRange(expected), nil); \
+        XCTAssertEqualObjects(NSStringFromRange(result), NSStringFromRange(expected)); \
 } while(0)
 
 - (void)testEntirelyBefore;

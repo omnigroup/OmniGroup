@@ -9,6 +9,8 @@
 
 #import "OFBijection-Internal.h"
 
+#import <Foundation/NSMapTable.h>
+
 RCS_ID("$Id$");
 
 @implementation OFMutableBijection

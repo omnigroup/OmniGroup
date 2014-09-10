@@ -1,4 +1,4 @@
-// Copyright 2007-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -258,7 +258,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
                     NSString *otherButton = [OSUSendFeedbackErrorRecovery defaultLocalizedRecoveryOption];
                     CFOptionFlags responseFlags = 0;
                     
-                    NSLog(@"Error communication with OSUInstaller XPC service: %@", error);
+                    NSLog(@"Error communicating with the OSUInstaller XPC service: %@", error);
                     _reportError(error, title, defaultButton, nil, otherButton, &responseFlags);
                     
                     if (responseFlags == kCFUserNotificationOtherResponse) {
@@ -768,7 +768,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         NSString *title = [NSString stringWithFormat:format, [[[NSBundle mainBundle] infoDictionary] objectForKey:(id)kCFBundleNameKey]];
         NSString *defaultButton = NSLocalizedStringFromTableInBundle(@"OK", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"button title");
 
-        NSLog(@"Error communication with OSUInstaller XPC service: %@", error);
+        NSLog(@"Error communicating with the OSUInstaller XPC service: %@", error);
         _reportError(error, title, defaultButton, nil, nil, NULL);
         _terminate(1);
     }];

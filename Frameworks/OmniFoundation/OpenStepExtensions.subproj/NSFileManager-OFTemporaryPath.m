@@ -214,18 +214,15 @@ static NSLock *tempFilenameLock = nil;
     unsigned int tempFilenameNumber = 1;
     
     [tempFilenameLock lock];
-    NS_DURING {
+    @try {
         do {
             [tempFilename release];
             tempFilename = [inputString mutableCopy];
             [tempFilename replaceCharactersInRange:replaceRange withString:[NSString stringWithFormat:@"%d", tempFilenameNumber++]];
         } while ([self fileExistsAtPath:tempFilename]);
-    } NS_HANDLER {
+    } @finally {
         [tempFilenameLock unlock];
-        [tempFilename release];
-        [localException raise];
-    } NS_ENDHANDLER;
-    [tempFilenameLock unlock];
+    }
     
     result = [[tempFilename copy] autorelease]; // Make a nice immutable string
     [tempFilename release];

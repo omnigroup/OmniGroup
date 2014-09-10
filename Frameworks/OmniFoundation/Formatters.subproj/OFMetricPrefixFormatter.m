@@ -1,4 +1,4 @@
-// Copyright 2009, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2009, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ RCS_ID("$Id$")
 
 struct scale {
     double multiplier;
-    NSString *prefix;
+    __unsafe_unretained NSString *prefix; // These are all compile-time constant strings
 };
 
 static const struct scale decimalMultiples[] = {

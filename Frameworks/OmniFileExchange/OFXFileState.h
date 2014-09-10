@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,10 +27,17 @@
 @property(nonatomic,readonly) BOOL missing; // This source has never heard of this document. This should be matched with a "normal" on the other source.
 @property(nonatomic,readonly) BOOL edited;  // This source has a newer version of the document than what is represented by the snapshot.
 @property(nonatomic,readonly) BOOL deleted; // This source has deleted the document and wishes the snapshot would go away and leave it alone.
-@property(nonatomic,readonly) BOOL moved;   // This source has moved the document to a new relative path than what the snapshot indicates it prefers.
+
+
+@property(nonatomic,readonly) BOOL userMoved;   // This source has moved the document to a new relative path than what the snapshot indicates it prefers.
+@property(nonatomic,readonly) BOOL autoMoved;   // This source has moved the document to a new relative path than what the snapshot indicates it prefers.
+
+@property(nonatomic,readonly) BOOL onlyAutoMoved; // Normal except for also being -autoMoved (as opposed to auto-moved and edited)
 
 - (instancetype)withEdited; // Transition to the normal state to edited, or moved to moved and edited. Shouldn't be called unless the receiver is normal|moved
-- (instancetype)withMoved; // As above, but adding in moved.
+- (instancetype)withUserMoved; // As above, but adding in moved.
+- (instancetype)withAutoMoved; // As above, but adding in moved.
+- (instancetype)withAutoMovedCleared; // For when we have resolved an automatic move and no longer need it
 
 // Archiving
 + (instancetype)stateFromArchiveString:(NSString *)string;

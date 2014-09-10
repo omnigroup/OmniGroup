@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -333,22 +333,8 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     }
 }
 
-- (NSArray *)appropriateSlicesForInspectedObjects;
+- (NSArray *)appropriateSlices:(NSArray *)availableSlices forInspectedObjects:(NSArray *)inspectedObjects;
 {
-    // Only fill the _availableSlices once. This allows the delegate/subclass to return an autoreleased array that isn't stored in a static (meaning that they can go away on a low memory warning). If we fill this multiple times, then we'll get confused and replace the slices constantly (since we do pointer equality in -setSlices:.
-    if (!_availableSlices) {
-        _availableSlices = [[self.inspector makeAvailableSlicesForStackedSlicesPane:self] copy];
-    }
-    
-    // TODO: Add support for this style of use in the superclass? There already is in the delegate-based path.
-    if (!_availableSlices) {
-        _availableSlices = [[self makeAvailableSlices] copy];
-        OBASSERT([_availableSlices count] > 0); // Didn't get slices from the delegate or a subclass!
-    }
-
-    // can be empty if the inspector is being closed
-    NSArray *inspectedObjects = self.inspectedObjects;
-    
     NSMutableArray *appropriateSlices = [NSMutableArray array];
     OUIInspectorSlice *previousSlice = nil;
     for (OUIInspectorSlice *slice in _availableSlices) {
@@ -358,7 +344,7 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
                 continue;
             }
         }
-
+        
         if (![slice isAppropriateForInspectorPane:self]) {
             continue;
         }
@@ -378,8 +364,27 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     if ([appropriateSlices.lastObject isKindOfClass:[OUIEmptyPaddingInspectorSlice class]]) {
         [appropriateSlices removeLastObject];
     }
-
+    
     return appropriateSlices;
+}
+
+- (NSArray *)appropriateSlicesForInspectedObjects;
+{
+    // Only fill the _availableSlices once. This allows the delegate/subclass to return an autoreleased array that isn't stored in a static (meaning that they can go away on a low memory warning). If we fill this multiple times, then we'll get confused and replace the slices constantly (since we do pointer equality in -setSlices:.
+    if (!_availableSlices) {
+        _availableSlices = [[self.inspector makeAvailableSlicesForStackedSlicesPane:self] copy];
+    }
+    
+    // TODO: Add support for this style of use in the superclass? There already is in the delegate-based path.
+    if (!_availableSlices) {
+        _availableSlices = [[self makeAvailableSlices] copy];
+        OBASSERT([_availableSlices count] > 0); // Didn't get slices from the delegate or a subclass!
+    }
+    
+    // can be empty if the inspector is being closed
+    NSArray *inspectedObjects = self.inspectedObjects;
+    
+    return [self appropriateSlices:_availableSlices forInspectedObjects:inspectedObjects];
 }
 
 static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesInspectorPaneContentView *view, OUIInspectorSlice *slice)

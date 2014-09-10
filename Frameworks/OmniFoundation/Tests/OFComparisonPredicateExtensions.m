@@ -1,11 +1,10 @@
-// Copyright 2000-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/NSComparisonPredicate-OFExtensions.h>
@@ -42,10 +41,10 @@ RCS_ID("$Id$");
     NSDictionary *dictionary = [[NSDictionary alloc] init];
     
     NSPredicate *isKindOfDictionaryPredicate = [NSComparisonPredicate isKindOfClassPredicate:[NSDictionary class]];
-    should([isKindOfDictionaryPredicate evaluateWithObject:dictionary]);
+    XCTAssertTrue([isKindOfDictionaryPredicate evaluateWithObject:dictionary]);
     
     NSPredicate *isKindOfArrayPredicate = [NSComparisonPredicate isKindOfClassPredicate:[NSArray class]];
-    should(![isKindOfArrayPredicate evaluateWithObject:dictionary]);
+    XCTAssertTrue(![isKindOfArrayPredicate evaluateWithObject:dictionary]);
     
 }
 
@@ -54,10 +53,10 @@ RCS_ID("$Id$");
     OFComparisonPredicateExtensionsTarget *target = [[OFComparisonPredicateExtensionsTarget alloc] init];
     
     NSPredicate *conformsToCodingPredicate = [NSComparisonPredicate conformsToProtocolPredicate:@protocol(A)];
-    should([conformsToCodingPredicate evaluateWithObject:target]);
+    XCTAssertTrue([conformsToCodingPredicate evaluateWithObject:target]);
     
     NSPredicate *conformsToLockingPredicate = [NSComparisonPredicate conformsToProtocolPredicate:@protocol(B)];
-    should(![conformsToLockingPredicate evaluateWithObject:target]);
+    XCTAssertTrue(![conformsToLockingPredicate evaluateWithObject:target]);
     
 }
 

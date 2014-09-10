@@ -92,5 +92,5 @@ extern NSString * const OIInspectorControllerDidChangeExpandednessNotification;
 
 @end
 
-NSComparisonResult sortByDefaultDisplayOrderInGroup(OIInspectorController *a, OIInspectorController *b, void *context) OB_HIDDEN;
+NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, OIInspectorController *b) OB_HIDDEN;
 

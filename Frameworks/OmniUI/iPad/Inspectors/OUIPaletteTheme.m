@@ -1,4 +1,4 @@
-// Copyright 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,10 +28,9 @@ RCS_ID("$Id$");
         return nil;
     }
     
-    __strong NSString *errorDescription = nil; // API says we own the result, so make sure this doesn't get turned into __autoreleasing...
-    NSArray *dictionaries = [NSPropertyListSerialization propertyListFromData:data mutabilityOption:NSPropertyListImmutable format:NULL errorDescription:&errorDescription];
+    NSArray *dictionaries = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:&error];
     if (!dictionaries) {
-        NSLog(@"Unable to parse theme file %@: %@", path, errorDescription);
+        NSLog(@"Unable to parse theme file %@: %@", path, [error toPropertyList]);
         return nil;
     }
     

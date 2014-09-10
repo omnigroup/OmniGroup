@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -50,8 +50,8 @@ RCS_ID("$Id$")
     NSArray *results;
     OBShouldNotError((results = [_editingContext executeFetchRequest:fetch error:&error]) != nil);
 
-    should([results count] == 1);
-    should([results lastObject] == master1);
+    XCTAssertTrue([results count] == 1);
+    XCTAssertTrue([results lastObject] == master1);
 }
 
 // This can easily happen if UI code can select both a parent and child and delete them w/o knowing that the deletion of the parent will get the child too.  Nice if the UI handles it, but shouldn't crash or do something crazy otherwise.
@@ -63,12 +63,12 @@ RCS_ID("$Id$")
     NSError *error = nil;
     OBShouldNotError([self save:&error]);
     
-    should([master.details count] == 1);
-    should([master.details member:detail] == detail);
+    XCTAssertTrue([master.details count] == 1);
+    XCTAssertTrue([master.details member:detail] == detail);
     
     // Delete the master and then the child (which should have been cascaded)
     OBShouldNotError([_editingContext deleteObject:master error:&error]);
-    should([detail isDeleted]);
+    XCTAssertTrue([detail isDeleted]);
     OBShouldNotError([_editingContext deleteObject:detail error:&error]);
 }
 
@@ -81,38 +81,38 @@ RCS_ID("$Id$")
     NSError *error = nil;
     OBShouldNotError([self save:&error]);
     
-    should([master.details count] == 1);
-    should([master.details member:detail] == detail);
+    XCTAssertTrue([master.details count] == 1);
+    XCTAssertTrue([master.details member:detail] == detail);
     
     // Delete the detail and then the master
     OBShouldNotError([_editingContext deleteObject:detail error:&error]);
-    should(![master isDeleted]);
+    XCTAssertTrue(![master isDeleted]);
     OBShouldNotError([_editingContext deleteObject:master error:&error]);
 }
 
 - (void)testUndeletableUnset;
 {
     MASTER(master1);
-    STAssertFalse([master1 isUndeletable], @"should not get set");
+    XCTAssertFalse([master1 isUndeletable], @"should not get set");
 
     ODOTestCaseMaster *master2 = [[ODOTestCaseMaster alloc] initWithEditingContext:_editingContext entity:[ODOTestCaseModel() entityNamed:ODOTestCaseMasterEntityName] primaryKey:@"master2"];
     [_editingContext insertObject:master2];
     [master2 release];
-    STAssertFalse([master2 isUndeletable], @"should not get set");
+    XCTAssertFalse([master2 isUndeletable], @"should not get set");
 }
 
 - (void)testUndeletableSet;
 {
     MASTER(master_undeletable);
-    STAssertTrue([master_undeletable isUndeletable], @"should get set");
+    XCTAssertTrue([master_undeletable isUndeletable], @"should get set");
 }
 
 - (void)testUndoOfUndeletableInsert;
 {
     MASTER(master_undeletable);
 
-    STAssertNotNil([_editingContext undoManager], @"should be an undo manager");
-    STAssertFalse([[_editingContext undoManager] canUndo], @"but it should have nothing undoable");
+    XCTAssertNotNil([_editingContext undoManager], @"should be an undo manager");
+    XCTAssertFalse([[_editingContext undoManager] canUndo], @"but it should have nothing undoable");
 }
 
 - (void)testAttemptedDeletionOfUndeletable;
@@ -120,8 +120,8 @@ RCS_ID("$Id$")
     MASTER(master_undeletable);
     
     NSError *error = nil;
-    STAssertFalse([_editingContext deleteObject:master_undeletable error:&error], @"should not delete");
-    STAssertTrue([error causedByUserCancelling], @"should get rejected");
+    XCTAssertFalse([_editingContext deleteObject:master_undeletable error:&error], @"should not delete");
+    XCTAssertTrue([error causedByUserCancelling], @"should get rejected");
 }
 
 - (void)testCascadeToUndeletable;
@@ -132,9 +132,9 @@ RCS_ID("$Id$")
     NSError *error = nil;
     OBShouldNotError([_editingContext deleteObject:master error:&error]);
 
-    STAssertTrue([master isDeleted], @"direct deletion should work");
-    STAssertFalse([detail_undeletable isDeleted], @"cascade should not happen");
-    STAssertNil(detail_undeletable.master, @"instead we should nullify");
+    XCTAssertTrue([master isDeleted], @"direct deletion should work");
+    XCTAssertFalse([detail_undeletable isDeleted], @"cascade should not happen");
+    XCTAssertNil(detail_undeletable.master, @"instead we should nullify");
 }
 
 - (void)testFaultIsUndeletable;
@@ -153,8 +153,8 @@ RCS_ID("$Id$")
     OBShouldNotError(detail);
     
     master_undeletable = detail.master;
-    STAssertTrue([master_undeletable isFault], nil);
-    STAssertTrue([master_undeletable isUndeletable], nil);
+    XCTAssertTrue([master_undeletable isFault]);
+    XCTAssertTrue([master_undeletable isUndeletable]);
 }
 
 // Deletes an object along an observed keypath, but not the source itself
@@ -207,37 +207,37 @@ RCS_ID("$Id$")
     RIGHT_REQ(right);
 
     left.rightHand = right;
-    STAssertEquals(right.leftHand, left, @"should update inverse");
+    XCTAssertEqual(right.leftHand, left, @"should update inverse");
     
     [self closeUndoGroup];
     
     OBShouldNotError([_editingContext deleteObject:left error:&error]);
-    STAssertTrue([left isDeleted], @"should cascade to right");
-    STAssertTrue([right isDeleted], @"should cascade to right");
-    STAssertNil(left.rightHand, @"shoudl be nullified");
-    STAssertNil(right.leftHand, @"shoudl be nullified");
+    XCTAssertTrue([left isDeleted], @"should cascade to right");
+    XCTAssertTrue([right isDeleted], @"should cascade to right");
+    XCTAssertNil(left.rightHand, @"shoudl be nullified");
+    XCTAssertNil(right.leftHand, @"shoudl be nullified");
     
     OBShouldNotError([self save:&error]);
     [_undoManager undo];
 
     // The old objects should be dead and gone, but there should be new incarnations
-    STAssertTrue([left isInvalid], @"should be dead");
-    STAssertTrue([right isInvalid], @"should be dead");
+    XCTAssertTrue([left isInvalid], @"should be dead");
+    XCTAssertTrue([right isInvalid], @"should be dead");
     CURRENT(left);
     CURRENT(right);
-    STAssertFalse([left isDeleted], @"should be added back");
-    STAssertFalse([right isDeleted], @"should be added back");
+    XCTAssertFalse([left isDeleted], @"should be added back");
+    XCTAssertFalse([right isDeleted], @"should be added back");
 
-    STAssertEquals(left.rightHand, right, @"should restore forward");
-    STAssertEquals(right.leftHand, left, @"should restore inverse");
+    XCTAssertEqual(left.rightHand, right, @"should restore forward");
+    XCTAssertEqual(right.leftHand, left, @"should restore inverse");
     
     OBShouldNotError([self save:&error]); // Turns the undone deletes (inserts) into real objects so that the redo doesn't just disappear them.
     [_undoManager redo];
     
-    STAssertTrue([left isDeleted], @"should re-delete");
-    STAssertTrue([right isDeleted], @"should re-delete");
-    STAssertNil(left.rightHand, @"should be re-nullified");
-    STAssertNil(right.leftHand, @"should be re-nullified");
+    XCTAssertTrue([left isDeleted], @"should re-delete");
+    XCTAssertTrue([right isDeleted], @"should re-delete");
+    XCTAssertNil(left.rightHand, @"should be re-nullified");
+    XCTAssertNil(right.leftHand, @"should be re-nullified");
 }
 
 // TODO: Test multi-stage KVO across a one-to-one with undo/redo of insertion/deletion.

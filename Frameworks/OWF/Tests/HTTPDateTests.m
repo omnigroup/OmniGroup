@@ -1,4 +1,4 @@
-// Copyright 2004-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,13 +7,13 @@
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/rcsid.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 #import "NSDate-OWExtensions.h"
 
 RCS_ID("$Id$");
 
-@interface HTTPDateTests : SenTestCase
+@interface HTTPDateTests : XCTestCase
 @end
 
 @implementation HTTPDateTests
@@ -34,7 +34,7 @@ RCS_ID("$Id$");
     NSString *nonstandardFormat4 = @"%a, %d %b %Y %H:%M:%S%Z";
     NSString *nonstandardFormat5 = @"%a, %d-%m-%Y %H:%M:%S %Z";
 
-#define testFormat(testDate, format) shouldBeEqual([NSDate dateWithHTTPDateString:[testDate descriptionWithCalendarFormat:format]], testDate);
+#define testFormat(testDate, format) XCTAssertEqualObjects([NSDate dateWithHTTPDateString:[testDate descriptionWithCalendarFormat:format]], testDate);
 
     // Let's try parsing the current time using lots of formats
     NSCalendarDate *currentDate = [NSDate dateWithString:[[NSCalendarDate calendarDate] descriptionWithCalendarFormat:rfc1123Format]];
@@ -48,7 +48,7 @@ RCS_ID("$Id$");
     testFormat(currentDate, nonstandardFormat5);
 
     // And, of course, lots people seem to use "0", "-1", or "now" in their expires headers rather than using a date, so...
-#define testTimeIntervalString(intervalString, interval) should(fabs([[NSDate dateWithHTTPDateString:intervalString] timeIntervalSinceNow] - interval) < 0.01)
+#define testTimeIntervalString(intervalString, interval) XCTAssertTrue(fabs([[NSDate dateWithHTTPDateString:intervalString] timeIntervalSinceNow] - interval) < 0.01)
     testTimeIntervalString(@"0", 0.0);
     testTimeIntervalString(@"-1", -1.0);
     testTimeIntervalString(@"now", 0.0);
@@ -56,7 +56,7 @@ RCS_ID("$Id$");
     testTimeIntervalString(@"NOW", 0.0);
     
     // OK, let's try the exact numeric month string which we were handed by www.volkskrant.nl (bug #13990).  You can't get this exact string from descriptionWithCalendarFormat, because Jan 1, 1970 was actually a Thursday.
-    shouldBeEqual([NSDate dateWithHTTPDateString:@"Mon, 01-01-1970 00:00:01 GMT"], [NSCalendarDate dateWithYear:1970 month:00 day:01 hour:00 minute:00 second:01 timeZone:gmt]);
+    XCTAssertEqualObjects([NSDate dateWithHTTPDateString:@"Mon, 01-01-1970 00:00:01 GMT"], [NSCalendarDate dateWithYear:1970 month:00 day:01 hour:00 minute:00 second:01 timeZone:gmt]);
 }
 
 @end

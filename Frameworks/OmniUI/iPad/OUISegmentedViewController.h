@@ -16,6 +16,11 @@
 @property(nonatomic, assign) UIViewController *selectedViewController;
 @property(nonatomic) NSUInteger selectedIndex;
 
+/*!
+ @discussion This is used to set the rightBarButtonItem in the navigationItem. Please do not use the navigation item directly. OUISegmentedViewController owns the titleView and the leftBarButtonItem and will clobber anything you set them to. This is why we provide the rightBarButtonItem property for you to use.
+ */
+@property (nonatomic, strong) UIBarButtonItem *rightBarButtonItem;
+
 @end
 
 @interface UIViewController (OUISegmentedViewControllerExtras)

@@ -21,7 +21,7 @@
 "No document exists at \"%@\"." = "In “%@” staan geen documenten.";
 
 /* error reason */
-"No such file \"%@\"." = "Geen dergelijk bestand \"%@\".";
+"No such file \"%@\"." = "Geen dergelijk bestand “%@”.";
 
 /* error reason */
 "Please make sure that the destination folder exists." = "Controleer of de doelmap bestaat.";
@@ -34,3 +34,4 @@
 
 /* error description */
 "Unable to read document." = "Document kan niet worden gelezen.";
+

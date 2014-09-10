@@ -26,8 +26,6 @@ The implementation does not currently assume anything about the range of the enu
 - init;
 {
     OBRequestConcreteImplementation([self class], _cmd);
-    [self release];
-    return nil;
 }
 
 - initWithDefaultEnumValue:(NSInteger)defaultEnumValue;

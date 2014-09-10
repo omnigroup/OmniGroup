@@ -1,4 +1,4 @@
-// Copyright 2012-2013 The Omni Group. All rights reserved.
+// Copyright 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,10 +24,10 @@ RCS_ID("$Id$");
     OFOffsetMutableArray *target;
     
     target = [[OFOffsetMutableArray alloc] init];
-    STAssertEqualObjects(target, @[], @"New empty offset array should be equivalent to a regular empty array");
+    XCTAssertEqualObjects(target, @[], @"New empty offset array should be equivalent to a regular empty array");
     
     target = [[OFOffsetMutableArray alloc] initWithArray:@[]];
-    STAssertEqualObjects(target, @[], @"New empty offset array (from empty array) should be equivalent to a regular empty array");
+    XCTAssertEqualObjects(target, @[], @"New empty offset array (from empty array) should be equivalent to a regular empty array");
 }
 
 - (void)testZeroOffset;
@@ -36,13 +36,13 @@ RCS_ID("$Id$");
     NSArray *template = @[ @1, @2, @3 ];
     
     target = [[OFOffsetMutableArray alloc] initWithArray:template];
-    STAssertEqualObjects(target, template, @"New offset array from non-empty array should be equivalent to that array");
-    STAssertEqualObjects(target.unadjustedArray, template, @"For zero offset, the unadjusted array should be equivalent to the original array");
+    XCTAssertEqualObjects(target, template, @"New offset array from non-empty array should be equivalent to that array");
+    XCTAssertEqualObjects(target.unadjustedArray, template, @"For zero offset, the unadjusted array should be equivalent to the original array");
     
     target = [[OFOffsetMutableArray alloc] init];
     [target addObjectsFromArray:template];
-    STAssertEqualObjects(target, template, @"New offset array with items added from array should be equivalent to that array");
-    STAssertEqualObjects(target.unadjustedArray, template, @"For zero offset, the unadjusted array (after adding items) should be equivalent to the original array");
+    XCTAssertEqualObjects(target, template, @"New offset array with items added from array should be equivalent to that array");
+    XCTAssertEqualObjects(target.unadjustedArray, template, @"For zero offset, the unadjusted array (after adding items) should be equivalent to the original array");
 }
 
 - (void)testNonzeroOffset;
@@ -53,8 +53,8 @@ RCS_ID("$Id$");
     target = [[OFOffsetMutableArray alloc] initWithArray:template];
     for (NSUInteger offset = 0; offset < template.count; offset++) {
         target.offset = offset;
-        STAssertEqualObjects(target, [template subarrayWithRange:NSMakeRange(offset, template.count - offset)], @"Offset arrays should be equivalent to their underlying arrays shifted to the left");
-        STAssertEqualObjects(target.unadjustedArray, template, @"Regardless of offset, the unadjusted array should be equivalent to the original array");
+        XCTAssertEqualObjects(target, [template subarrayWithRange:NSMakeRange(offset, template.count - offset)], @"Offset arrays should be equivalent to their underlying arrays shifted to the left");
+        XCTAssertEqualObjects(target.unadjustedArray, template, @"Regardless of offset, the unadjusted array should be equivalent to the original array");
     }
 }
 
@@ -64,13 +64,13 @@ RCS_ID("$Id$");
     target.offset = 1;
     
     [target addObject:@"foo"];
-    STAssertEquals(target.count, (NSUInteger)0, @"Items shifted out of an offset array shouldn't contribute to the count");
+    XCTAssertEqual(target.count, (NSUInteger)0, @"Items shifted out of an offset array shouldn't contribute to the count");
     
     [target addObjectsFromArray:@[ @"bar", @"baz" ]];
-    STAssertEquals(target.count, (NSUInteger)2, @"Items added after reaching an offset array's offset should appear in the count");
+    XCTAssertEqual(target.count, (NSUInteger)2, @"Items added after reaching an offset array's offset should appear in the count");
     
     target.offset = 3;
-    STAssertEqualObjects(target, @[], @"Items shifted out of an offset array by adjusting the offset should effectively 'disappear'");
+    XCTAssertEqualObjects(target, @[], @"Items shifted out of an offset array by adjusting the offset should effectively 'disappear'");
 }
 
 - (void)testRelativeMutatorMethods;
@@ -79,19 +79,19 @@ RCS_ID("$Id$");
     OFOffsetMutableArray *target = [[OFOffsetMutableArray alloc] initWithArray:template];
     target.offset = template.count;
     
-    STAssertEqualObjects(target, @[], @"Offset array shifted by its unadjusted array's count should appear empty");
+    XCTAssertEqualObjects(target, @[], @"Offset array shifted by its unadjusted array's count should appear empty");
     
     for (NSUInteger i = 0; i < template.count; i++)
         [target removeLastObject];
     
-    STAssertEqualObjects(target, @[], @"Offset array shifted by more than its unadjusted array's count should appear empty");
-    STAssertEqualObjects(target.unadjustedArray, @[], @"Relative mutator methods (like -removeLastObject) should still operate on the unadjusted array, even if the offset array appears empty before the mutation");
+    XCTAssertEqualObjects(target, @[], @"Offset array shifted by more than its unadjusted array's count should appear empty");
+    XCTAssertEqualObjects(target.unadjustedArray, @[], @"Relative mutator methods (like -removeLastObject) should still operate on the unadjusted array, even if the offset array appears empty before the mutation");
     
     for (id anObj in template)
         [target addObject:anObj];
     
-    STAssertEqualObjects(target, @[], @"Offset array shifted by its unadjusted array's count should appear empty");
-    STAssertEqualObjects(target.unadjustedArray, template, @"Relative mutator methods (like -addObject:) should still operate on the unadjusted array, even if the offset array appears empty before the mutation");
+    XCTAssertEqualObjects(target, @[], @"Offset array shifted by its unadjusted array's count should appear empty");
+    XCTAssertEqualObjects(target.unadjustedArray, template, @"Relative mutator methods (like -addObject:) should still operate on the unadjusted array, even if the offset array appears empty before the mutation");
 }
 
 - (void)testAbsoluteMutatorMethods;
@@ -103,8 +103,8 @@ RCS_ID("$Id$");
         [target insertObject:anObj atIndex:0];
         target.offset += 1;
         
-        STAssertEqualObjects(target, @[], @"Inserting an object, then shifting, should leave the offset array empty");
-        STAssertEqualObjects(target.unadjustedArray, [template subarrayWithRange:NSMakeRange(0, [template indexOfObject:anObj] + 1)], @"Inserting an object successfully should always modify the unadjusted array");
+        XCTAssertEqualObjects(target, @[], @"Inserting an object, then shifting, should leave the offset array empty");
+        XCTAssertEqualObjects(target.unadjustedArray, [template subarrayWithRange:NSMakeRange(0, [template indexOfObject:anObj] + 1)], @"Inserting an object successfully should always modify the unadjusted array");
     }
     
     for (NSUInteger offset = 1; offset <= template.count; offset++) {
@@ -112,7 +112,7 @@ RCS_ID("$Id$");
         target.offset = offset;
         
         [target insertObject:@6 atIndex:template.count - offset];
-        STAssertEqualObjects(target.unadjustedArray, [template arrayByAddingObject:@6], @"Object insertion indexes should shift with the offset of the array");
+        XCTAssertEqualObjects(target.unadjustedArray, [template arrayByAddingObject:@6], @"Object insertion indexes should shift with the offset of the array");
     }
 }
 
@@ -122,17 +122,17 @@ RCS_ID("$Id$");
     OFOffsetMutableArray *target = [[OFOffsetMutableArray alloc] initWithArray:template];
     
     for (id anObj in template)
-        STAssertEquals([target indexOfObject:anObj], [template indexOfObject:anObj], @"Unshifted arrays should match object indexes with their underlying arrays");
-    STAssertEquals([target indexOfObject:@6], (NSUInteger)NSNotFound, @"Unshifted arrays should still return NSNotFound for elements they don't contain");
+        XCTAssertEqual([target indexOfObject:anObj], [template indexOfObject:anObj], @"Unshifted arrays should match object indexes with their underlying arrays");
+    XCTAssertEqual([target indexOfObject:@6], (NSUInteger)NSNotFound, @"Unshifted arrays should still return NSNotFound for elements they don't contain");
     
     for (NSUInteger offset = 1; offset <= template.count; offset++) { // <= is deliberate here; what happens when the offset is greater than the number of items in the array?
         target.offset = offset;
         
         for (id anObj in [template subarrayWithRange:NSMakeRange(offset, template.count - offset)])
-            STAssertEquals([target indexOfObject:anObj], [template indexOfObject:anObj] - offset, @"Shifted arrays should find objects at indexes shifted by their offset, where they exist");
+            XCTAssertEqual([target indexOfObject:anObj], [template indexOfObject:anObj] - offset, @"Shifted arrays should find objects at indexes shifted by their offset, where they exist");
         
         for (id anObj in [template subarrayWithRange:NSMakeRange(0, offset)])
-            STAssertEquals([target indexOfObject:anObj], (NSUInteger)NSNotFound, @"Shifted arrays should return NSNotFound for indexes of objects shifted off the end of the array");
+            XCTAssertEqual([target indexOfObject:anObj], (NSUInteger)NSNotFound, @"Shifted arrays should return NSNotFound for indexes of objects shifted off the end of the array");
     }
 }
 
@@ -145,10 +145,10 @@ RCS_ID("$Id$");
         target.offset = offset;
         
         for (NSUInteger idx = 0; idx < template.count - offset; idx++)
-            STAssertEquals([target objectAtIndex:idx], [template objectAtIndex:idx + offset], @"Shifted arrays should return objects at indexes shifted by their offset");
+            XCTAssertEqual([target objectAtIndex:idx], [template objectAtIndex:idx + offset], @"Shifted arrays should return objects at indexes shifted by their offset");
         
         for (NSUInteger idx = template.count - offset; idx < template.count; idx++)
-            STAssertThrowsSpecificNamed([target objectAtIndex:idx], NSException, @"NSRangeException", @"Shifted arrays should throw NSRangeExceptions when asked for objects beyond their (shifted) count.");
+            XCTAssertThrowsSpecificNamed([target objectAtIndex:idx], NSException, @"NSRangeException", @"Shifted arrays should throw NSRangeExceptions when asked for objects beyond their (shifted) count.");
     }
 }
 

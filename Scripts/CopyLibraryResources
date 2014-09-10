@@ -18,14 +18,21 @@ require 'fileutils'
 require 'optparse'
 
 ExcludePatterns = []
+SkipFixStringsFiles = []
 
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename($0)} [options]"
+
   opts.on('--exclude pattern', 'Exclude files matching pattern when copying library resources') do |pattern|
     re = Regexp.new(pattern)
     ExcludePatterns << re
     ExcludePatterns.uniq!
   end
+
+  opts.on("--skip-fix-strings-files file,file,...", Array, 'Exclude named .strings files from FixStringsFile script phase') do |list|
+    SkipFixStringsFiles.concat(list)
+  end
+
   opts.on('-h', '--help', 'Display this screen') do
     puts opts
     exit 1
@@ -154,10 +161,16 @@ StaticLibraryResourceDirectories.each {|dirname|
         # Xcode runs the version in /Developer instead of the version in the SDK (it is a shim to pick up the right version based on xcode-select)
         `set -x; "#{ENV['DEVELOPER_USR_DIR']}/bin/ibtool" --errors --warnings --notices --compile "#{dest_file}" "#{source}"`
       when /\.strings$/
-        output_encoding=ENV["STRINGS_FILE_OUTPUT_ENCODING"].downcase
-        ENV["ICONV"] = "/usr/bin/iconv"
-        `set -x; "#{$FixStringsFile}" --outputencoding #{output_encoding} "#{source}" --outdir "#{File.dirname(dest_file)}"`
-        fail unless $?.exitstatus == 0
+        filename = File.basename(source)
+        if SkipFixStringsFiles.include? filename
+          puts "Skipping FixStringsFile phase for #{source}"
+          FileUtils.cp_r(source, dest_file)
+        else
+          output_encoding=ENV["STRINGS_FILE_OUTPUT_ENCODING"].downcase
+          ENV["ICONV"] = "/usr/bin/iconv"
+          `set -x; "#{$FixStringsFile}" --outputencoding #{output_encoding} "#{source}" --outdir "#{File.dirname(dest_file)}"`
+          fail unless $?.exitstatus == 0
+        end
       when /\.plist$/, /\.defaults$/
         `set -x; /usr/bin/plutil -convert binary1 "#{source}" -o "#{dest_file}"`
         fail unless $?.exitstatus == 0

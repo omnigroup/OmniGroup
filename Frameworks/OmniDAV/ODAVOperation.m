@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,6 +61,26 @@ static BOOL _isRead(ODAVOperation *self)
              [method isEqualToString:@"UNLOCK"]); // The delegate doesn't need to read any data from these operations
     
     return NO;
+}
+
+static OFCharacterSet *QuotedStringDelimiterSet = nil;
+static OFCharacterSet *TokenDelimiterSet = nil;
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    QuotedStringDelimiterSet = [[OFCharacterSet alloc] initWithString:@"\"\\"];
+
+    // This definition of a Content-Type header token's delimiters is from the MIME standard, RFC 1521: http://www.oac.uci.edu/indiv/ehood/MIME/1521/04_Content-Type.html
+    OFCharacterSet *newSet = [[OFCharacterSet alloc] initWithString:@"()<>@,;:\\\"/[]?="];
+    [newSet addCharacter:' '];
+    [newSet addCharactersFromCharacterSet:[NSCharacterSet controlCharacterSet]];
+    
+    // This is not part of the MIME standard, but we don't really need to treat "/" in any special way for this implementation
+    [newSet removeCharacter:'/'];
+    
+    TokenDelimiterSet = newSet;
 }
 
 - initWithRequest:(NSURLRequest *)request
@@ -148,83 +168,59 @@ static BOOL _isRead(ODAVOperation *self)
     return davError;
 }
 
-static OFCharacterSet *_tokenDelimiterOFCharacterSet(void)
-{
-    static OFCharacterSet *TokenDelimiterSet = nil;
-    if (TokenDelimiterSet == nil) {
-        // This definition of a Content-Type header token's delimiters is from the MIME standard, RFC 1521: http://www.oac.uci.edu/indiv/ehood/MIME/1521/04_Content-Type.html
-        OFCharacterSet *newSet = [[OFCharacterSet alloc] initWithString:@"()<>@,;:\\\"/[]?="]; 
-        [newSet addCharacter:' '];
-        [newSet addCharactersFromCharacterSet:[NSCharacterSet controlCharacterSet]];
-
-        // This is not part of the MIME standard, but we don't really need to treat "/" in any special way for this implementation
-        [newSet removeCharacter:'/'];
-
-        TokenDelimiterSet = newSet;
-    }
-    OBPOSTCONDITION(TokenDelimiterSet != nil);
-    return TokenDelimiterSet;
-}
-
-static OFCharacterSet *_quotedStringDelimiterOFCharacterSet(void)
-{
-    static OFCharacterSet *QuotedStringDelimiterSet = nil;
-    if (QuotedStringDelimiterSet == nil)
-        QuotedStringDelimiterSet = [[OFCharacterSet alloc] initWithString:@"\"\\"];
-    OBPOSTCONDITION(QuotedStringDelimiterSet != nil);
-    return QuotedStringDelimiterSet;
-}
-
 + (NSString *)_parseContentTypeHeaderValue:(NSString *)aString intoDictionary:(OFMultiValueDictionary *)parameters valueChars:(NSCharacterSet *)validValues;
 {
-    OFCharacterSet *whitespaceSet = [OFCharacterSet whitespaceOFCharacterSet];
-    OFCharacterSet *tokenDelimiterSet = _tokenDelimiterOFCharacterSet();
-    OFCharacterSet *quotedStringDelimiterSet = _quotedStringDelimiterOFCharacterSet();
-
-    OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:aString];
-    scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
-    NSString *bareHeader = [scanner readFullTokenWithDelimiterOFCharacterSet:tokenDelimiterSet forceLowercase:YES]; // Base mime types are case-insensitive
-    scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
-    while (scannerPeekCharacter(scanner) == ';') {
-        scannerSkipPeekedCharacter(scanner); // Skip ';'
+    __block NSString *bareHeader = nil;
+    @autoreleasepool {
+        OFCharacterSet *whitespaceSet = [OFCharacterSet whitespaceOFCharacterSet];
+        
+        OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:aString];
         scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
-        NSString *attribute = [scanner readFullTokenWithDelimiterOFCharacterSet:tokenDelimiterSet forceLowercase:YES]; // Attribute names are case-insensitive
-        if ([NSString isEmptyString:attribute])
-            break; // Missing parameter name
+        
+        bareHeader = [scanner readFullTokenWithDelimiterOFCharacterSet:TokenDelimiterSet forceLowercase:YES]; // Base mime types are case-insensitive
+        
         scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
-        if (scannerPeekCharacter(scanner) != '=')
-            break; // Missing '='
-        scannerSkipPeekedCharacter(scanner); // Skip '='
-        scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
-        if (scannerPeekCharacter(scanner) == '"') { // Value is a quoted-string
-            scannerSkipPeekedCharacter(scanner); // Skip '"'
-            NSMutableString *value = [NSMutableString string];
-            while (scannerHasData(scanner)) {
-                NSString *partialValue = [scanner readFullTokenWithDelimiterOFCharacterSet:quotedStringDelimiterSet forceLowercase:NO];
-                [value appendString:partialValue];
-                unichar delimiterCharacter = scannerPeekCharacter(scanner);
-                if (delimiterCharacter == '\\') {
-                    scannerSkipPeekedCharacter(scanner); // Skip '\'
-                    unichar quotedCharacter = scannerPeekCharacter(scanner);
-                    if (quotedCharacter != OFCharacterScannerEndOfDataCharacter) {
-                        // There isn't a particularly efficient way to do this using the ObjC interface, so...
-                        CFStringAppendCharacters((CFMutableStringRef)value, &quotedCharacter, 1);
+        while (scannerPeekCharacter(scanner) == ';') {
+            scannerSkipPeekedCharacter(scanner); // Skip ';'
+            scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
+            NSString *attribute = [scanner readFullTokenWithDelimiterOFCharacterSet:TokenDelimiterSet forceLowercase:YES]; // Attribute names are case-insensitive
+            if ([NSString isEmptyString:attribute])
+                break; // Missing parameter name
+            scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
+            if (scannerPeekCharacter(scanner) != '=')
+                break; // Missing '='
+            scannerSkipPeekedCharacter(scanner); // Skip '='
+            scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
+            if (scannerPeekCharacter(scanner) == '"') { // Value is a quoted-string
+                scannerSkipPeekedCharacter(scanner); // Skip '"'
+                NSMutableString *value = [NSMutableString string];
+                while (scannerHasData(scanner)) {
+                    NSString *partialValue = [scanner readFullTokenWithDelimiterOFCharacterSet:QuotedStringDelimiterSet forceLowercase:NO];
+                    [value appendString:partialValue];
+                    unichar delimiterCharacter = scannerPeekCharacter(scanner);
+                    if (delimiterCharacter == '\\') {
+                        scannerSkipPeekedCharacter(scanner); // Skip '\'
+                        unichar quotedCharacter = scannerPeekCharacter(scanner);
+                        if (quotedCharacter != OFCharacterScannerEndOfDataCharacter) {
+                            // There isn't a particularly efficient way to do this using the ObjC interface, so...
+                            CFStringAppendCharacters((CFMutableStringRef)value, &quotedCharacter, 1);
+                        }
+                    } else if (delimiterCharacter == '"') {
+                        scannerSkipPeekedCharacter(scanner); // Skip final '"'
+                        break; // We're done scanning this quoted-string value
+                    } else {
+                        OBASSERT(delimiterCharacter == OFCharacterScannerEndOfDataCharacter); // We only have two characters in our delimiter set, and we've already tested for both above
+                        break; // Malformed input (we never saw our final quote), but we can go ahead and use what we've got so far
                     }
-                } else if (delimiterCharacter == '"') {
-                    scannerSkipPeekedCharacter(scanner); // Skip final '"'
-                    break; // We're done scanning this quoted-string value
-                } else {
-                    OBASSERT(delimiterCharacter == OFCharacterScannerEndOfDataCharacter); // We only have two characters in our delimiter set, and we've already tested for both above
-                    break; // Malformed input (we never saw our final quote), but we can go ahead and use what we've got so far
                 }
+                [parameters addObject:value forKey:attribute];
+            } else {
+                // Value is a simple token, not a quoted-string
+                NSString *value = [scanner readFullTokenWithDelimiterOFCharacterSet:TokenDelimiterSet forceLowercase:NO];
+                [parameters addObject:value forKey:attribute];
             }
-            [parameters addObject:value forKey:attribute];
-        } else {
-            // Value is a simple token, not a quoted-string
-            NSString *value = [scanner readFullTokenWithDelimiterOFCharacterSet:tokenDelimiterSet forceLowercase:NO];
-            [parameters addObject:value forKey:attribute];
+            scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
         }
-        scannerScanUpToCharacterNotInOFCharacterSet(scanner, whitespaceSet); // Ignore whitespace
     }
     return bareHeader;
 }

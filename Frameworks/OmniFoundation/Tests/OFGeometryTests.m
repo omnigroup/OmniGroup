@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -106,9 +106,9 @@ static double _vectorDot(NSPoint v1, NSPoint v2)
                   d1, d2, d3, maxDiff, overallMaxDiff, dot);
         }
         
-        STAssertEqualsWithAccuracy(d1, d2, slop, nil);
-        STAssertEqualsWithAccuracy(d1, d3, slop, nil);
-        STAssertEqualsWithAccuracy(d2, d3, slop, nil);
+        XCTAssertEqualWithAccuracy(d1, d2, slop);
+        XCTAssertEqualWithAccuracy(d1, d3, slop);
+        XCTAssertEqualWithAccuracy(d2, d3, slop);
         
     } while (tries--);
     

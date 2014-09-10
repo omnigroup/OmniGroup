@@ -20,7 +20,7 @@
 
 RCS_ID("$Id$")
 
-@interface OFXDAVServerAccountValidator () //<OFSFileManagerDelegate>
+@interface OFXDAVServerAccountValidator ()
 @end
 
 @implementation OFXDAVServerAccountValidator
@@ -58,21 +58,10 @@ RCS_ID("$Id$")
     
     _state = NSLocalizedStringFromTableInBundle(@"Validating Account...", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description");
     
-#if ODAV_NSURLSESSION
-    NSURLSessionConfiguration *configuration = [[NSURLSessionConfiguration defaultSessionConfiguration] copy];
-    
-    // This is off by default. Turn it on?
-    //configuration.HTTPShouldUsePipelining = YES;
-    
-    // We could test +[OFXAgent isCellularSyncEnabled] here, but the user doesn't even see the "Use Cellular Data" switch until they've validated an account.
+    // We could leave this as is (set from +[OFXAgent isCellularSyncEnabled]) here, but the user doesn't even see the "Use Cellular Data" switch until they've validated an account.
+    ODAVConnectionConfiguration *configuration = [OFXAgent makeConnectionConfiguration];
     configuration.allowsCellularAccess = YES;
-#else
-    ODAVConnectionConfiguration *configuration = [ODAVConnectionConfiguration new];
-    
-    // We could test +[OFXAgent isCellularSyncEnabled] here, but the user doesn't even see the "Use Cellular Data" switch until they've validated an account.
-    configuration.allowsCellularAccess = YES;
-#endif
-    
+
     _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration];
     
     __weak OFXDAVServerAccountValidator *weakSelf = self;
@@ -213,7 +202,7 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
             
             // Dispatch to the main queue so that any possible credential adding is done.
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                if (!_account.isCloudSyncEnabled || _shouldSkipConformanceTests) {
+                if (_account.usageMode != OFXServerAccountUsageModeCloudSync || _shouldSkipConformanceTests) {
                     finishWithError(nil);
                 }
                 [self _checkRemoteAccountDirectory];

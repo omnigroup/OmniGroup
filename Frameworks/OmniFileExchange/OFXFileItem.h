@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,8 +12,14 @@
 #import "OFXFileState.h"
 
 @class ODAVFileInfo;
-@class OFXConnection, OFXContainerAgent, OFXFileSnapshotTransfer, OFXFileState, OFXRegistrationTable;
+@class OFXConnection, OFXContainerAgent, OFXFileSnapshotTransfer, OFXFileState, OFXRecentError, OFXRegistrationTable;
 @protocol NSFilePresenter;
+
+typedef NS_ENUM(NSUInteger, OFXFileItemMoveSource) {
+    OFXFileItemMoveSourceLocalUser, // This move represents a user intended move that should be recorded as the name of record and pushed to the server
+    OFXFileItemMoveSourceRemoteUser, // This move represents a user intended move that has been downloaded from the server, should be recorded as the name of record, and should ideally become the name of the file locally (conflicts allowing).
+    OFXFileItemMoveSourceAutomatic, // The framework has picked a local path for the file that doesn't represent user intent. This could happen due to multiple files requesting the same local relative path (possibly transiently as state is downloaded for renames across two files).
+};
 
 /*
  Represents a single file that the sync system knows about. This will register as a file presenter for the local document.
@@ -22,22 +28,23 @@
 @interface OFXFileItem : NSObject <NSCopying>
 
 - (id)initWithNewLocalDocumentURL:(NSURL *)localDocumentURL container:(OFXContainerAgent *)container error:(NSError **)outError;
+- (id)initWithNewLocalDocumentURL:(NSURL *)localDocumentURL asConflictGeneratedFromFileItem:(OFXFileItem *)originalItem coordinator:(NSFileCoordinator *)coordinator container:(OFXContainerAgent *)container error:(NSError **)outError;
 - (id)initWithNewRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL container:(OFXContainerAgent *)container filePresenter:(id <NSFilePresenter>)filePresenter connection:(OFXConnection *)connection error:(NSError **)outError;
 - (id)initWithExistingLocalSnapshotURL:(NSURL *)localSnapshotURL container:(OFXContainerAgent *)container filePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
-
-- (void)invalidate;
 
 @property(nonatomic,readonly,weak) OFXContainerAgent *container;
 
 @property(nonatomic,readonly) NSString *identifier;
 @property(nonatomic,readonly) NSUInteger version;
 
-// If set to YES, another file item has the same localDocumentURL as this item. In this case, we cannot publish contents from the file and the file item will stop publishing metadata.
-@property(nonatomic,getter=isShadowedByOtherFileItem) BOOL shadowedByOtherFileItem;
-
 @property(nonatomic,readonly) NSURL *localDocumentURL;
 @property(nonatomic,readonly) NSString *localRelativePath; // Not valid if the item is deleted.
+@property(nonatomic,readonly) NSString *intendedLocalRelativePath; // If the item has been automatically moved by the system, this is where the user wanted the item to be originally.
 @property(nonatomic,readonly) NSString *requestedLocalRelativePath; // Valid even if the item is deleted
+
+@property(nonatomic,readonly) OFXRecentError *mostRecentTransferError;
+- (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary *)recentErrorsByLocalRelativePath;
+- (void)clearRecentTransferErrors;
 
 @property(nonatomic,readonly) NSDate *userCreationDate;
 @property(nonatomic,readonly) NSNumber *inode;
@@ -60,7 +67,7 @@
 - (BOOL)markAsLocallyDeleted:(NSError **)outError;
 - (BOOL)markAsRemotelyDeleted:(NSError **)outError;
 
-- (void)didMoveToURL:(NSURL *)localDocumentURL;
+- (void)markAsMovedToURL:(NSURL *)localDocumentURL source:(OFXFileItemMoveSource)source;
 
 - (NSNumber *)hasSameContentsAsLocalDocumentAtURL:(NSURL *)localDocumentURL error:(NSError **)outError;
 

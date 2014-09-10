@@ -1,4 +1,4 @@
-// Copyright 2003-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -306,8 +306,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     OBPRECONDITION(![NSString isEmptyString:name]);
     OBPRECONDITION(size > 0.0f);
     
-    OAFontDescriptorPlatformFont font = [OAPlatformFontClass fontWithName:name size:size];
-    return [self initWithFont:font];
+    return [self initWithFontAttributes:@{(id)kCTFontNameAttribute : name, (id)kCTFontSizeAttribute : @(size)}];
 }
 
 - initWithFont:(OAFontDescriptorPlatformFont)font;
@@ -511,7 +510,10 @@ static CTFontSymbolicTraits _symbolicTraits(OAFontDescriptor *self)
     // NSFontTraitMask is NSUInteger; avoid a warning and assert that we aren't dropping anything by the cast.
     NSFontTraitMask result = [[NSFontManager sharedFontManager] traitsOfFont:font];
     OBASSERT(sizeof(CTFontSymbolicTraits) == sizeof(uint32_t));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
     OBASSERT(sizeof(result) == sizeof(uint32_t) || result <= UINT32_MAX);
+#pragma clang diagnostic pop
     return (CTFontSymbolicTraits)result;
 #endif
 }
@@ -620,7 +622,38 @@ static BOOL _isReasonableFontMatch(CTFontDescriptorRef matchingDescriptor, OAFon
         DEBUG_FONT_LOOKUP(@"Font boldness mismatch. %@", wantBold ? @"Wanted bold." : @"Wanted not bold.");
         seemsOK = NO;
     }
-    
+
+    // Check italicness
+    traits = CTFontDescriptorCopyAttribute(matchingDescriptor, kCTFontTraitsAttribute);
+    symbolicTraitsNumber = [(NSDictionary *)traits objectForKey:(id)kCTFontSymbolicTrait];
+    BOOL wantItalic = ([symbolicTraitsNumber unsignedIntValue] & kCTFontTraitItalic) != 0;
+    if (! wantItalic) {
+        NSString *requestedFontName = (NSString *)CTFontDescriptorCopyAttribute(matchingDescriptor, kCTFontNameAttribute);
+        wantItalic |= [requestedFontName containsString:@"italic" options:NSCaseInsensitiveSearch];
+        [requestedFontName release];
+    }
+    if (traits)
+        CFRelease(traits);
+
+    BOOL newFontIsItalic = NO;
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    newFontIsItalic = (CTFontGetSymbolicTraits(UIFontToCTFont(font)) & kCTFontTraitItalic) != 0;
+    if (! newFontIsItalic) {
+        CFStringRef fontName = CTFontCopyFullName(UIFontToCTFont(font));
+        newFontIsItalic = [(NSString *)fontName containsString:@"italic" options:NSCaseInsensitiveSearch];
+        CFRelease(fontName);
+    }
+#else
+    fontTraitMask = [[NSFontManager sharedFontManager] traitsOfFont:font];
+    newFontIsItalic = (fontTraitMask & NSItalicFontMask) != 0;
+    newFontIsItalic |= [[font fontName] containsString:@"italic" options:NSCaseInsensitiveSearch];
+#endif
+
+    if (wantItalic != newFontIsItalic) {
+        DEBUG_FONT_LOOKUP(@"Font italicness mismatch. %@", wantItalic ? @"Wanted italic." : @"Wanted not italic.");
+        seemsOK = NO;
+    }
+
     return seemsOK;
 }
 

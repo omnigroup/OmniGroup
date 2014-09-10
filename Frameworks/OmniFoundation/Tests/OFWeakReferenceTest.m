@@ -1,4 +1,4 @@
-// Copyright 2012-2013 The Omni Group. All rights reserved.
+// Copyright 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,7 @@ RCS_ID("$Id$");
     OFWeakReference *ref = [[OFWeakReference alloc] initWithObject:obj];
     obj = nil;
     
-    STAssertNil(ref.object, @"Should be nullified");
+    XCTAssertNil(ref.object, @"Should be nullified");
 }
 
 @end

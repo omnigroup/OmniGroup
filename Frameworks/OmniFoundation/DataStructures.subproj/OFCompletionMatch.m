@@ -1,4 +1,4 @@
-// Copyright 2007-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -178,8 +178,6 @@ static void filterIntoResults(
 - (id)init;
 {
     OBRejectUnusedImplementation(self, _cmd);
-    [self release];
-    return nil;
 }
 
 - (void)dealloc;

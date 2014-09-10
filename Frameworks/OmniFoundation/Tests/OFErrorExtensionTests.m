@@ -1,11 +1,10 @@
-// Copyright 2005-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/OFErrors.h>
@@ -30,10 +29,10 @@ enum {
     __autoreleasing NSError *error = nil;
     
     OFError(&error, FooError, @"some reason", nil);
-    should(error != nil);
-    shouldBeEqual([error domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain");
-    should([error code] == FooError);
-    shouldBeEqual([error localizedDescription], @"some reason");
+    XCTAssertTrue(error != nil);
+    XCTAssertEqualObjects([error domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain");
+    XCTAssertTrue([error code] == FooError);
+    XCTAssertEqualObjects([error localizedDescription], @"some reason");
 }
 
 - (void)testUnderlyingError;
@@ -43,18 +42,18 @@ enum {
     OFErrorWithInfo(&error, FooError, nil, nil, nil);
     OFErrorWithInfo(&error, BarError, nil, nil, nil);
     
-    should(error != nil);
-    shouldBeEqual([error domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain");
-    should([error code] == BarError);
+    XCTAssertTrue(error != nil);
+    XCTAssertEqualObjects([error domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain");
+    XCTAssertTrue([error code] == BarError);
 
-    should([error userInfo] != nil);
-    should([[error userInfo] count] == 2);
-    should([[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] != nil);
+    XCTAssertTrue([error userInfo] != nil);
+    XCTAssertTrue([[error userInfo] count] == 2);
+    XCTAssertTrue([[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] != nil);
     
     NSError *underlyingError = [[error userInfo] valueForKey:NSUnderlyingErrorKey];
-    should(underlyingError != nil);
-    shouldBeEqual([underlyingError domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain");
-    should([underlyingError code] == FooError);
+    XCTAssertTrue(underlyingError != nil);
+    XCTAssertEqualObjects([underlyingError domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain");
+    XCTAssertTrue([underlyingError code] == FooError);
 }
 
 // First key is special in how it is handled
@@ -62,19 +61,19 @@ enum {
 {
     __autoreleasing NSError *error = nil;
     OFErrorWithInfo(&error, FooError, nil/*description*/, nil/*suggestion*/, @"MyKey", @"MyValue", nil);
-    should([[error userInfo] count] == 2);
-    should([[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] != nil);
-    should([[[error userInfo] valueForKey:@"MyKey"] isEqual:@"MyValue"]);
+    XCTAssertTrue([[error userInfo] count] == 2);
+    XCTAssertTrue([[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] != nil);
+    XCTAssertTrue([[[error userInfo] valueForKey:@"MyKey"] isEqual:@"MyValue"]);
 }
 
 - (void)testMultipleKeyValue;
 {
     __autoreleasing NSError *error = nil;
     OFErrorWithInfo(&error, FooError, nil/*description*/, nil/*suggestion*/, @"MyKey1", @"MyValue1", @"MyKey2", @"MyValue2", nil);
-    should([[error userInfo] count] == 3);
-    should([[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] != nil);
-    should([[[error userInfo] valueForKey:@"MyKey1"] isEqual:@"MyValue1"]);
-    should([[[error userInfo] valueForKey:@"MyKey2"] isEqual:@"MyValue2"]);
+    XCTAssertTrue([[error userInfo] count] == 3);
+    XCTAssertTrue([[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] != nil);
+    XCTAssertTrue([[[error userInfo] valueForKey:@"MyKey1"] isEqual:@"MyValue1"]);
+    XCTAssertTrue([[[error userInfo] valueForKey:@"MyKey2"] isEqual:@"MyValue2"]);
 }
 
 - (void)testFileAndLineNumber;
@@ -83,21 +82,21 @@ enum {
     OFErrorWithInfo(&error, FooError, nil, nil, nil);
     NSString *expectedFileAndLineNumber = [NSString stringWithFormat:@"%s:%d", __FILE__, __LINE__-1];
     
-    should([[[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] isEqual:expectedFileAndLineNumber]);
+    XCTAssertTrue([[[error userInfo] valueForKey:OBFileNameAndNumberErrorKey] isEqual:expectedFileAndLineNumber]);
 }
 
 - (void)testCausedByUserCancelling_Not;
 {
     __autoreleasing NSError *error = nil;
     OFErrorWithInfo(&error, FooError, nil, nil, nil);
-    shouldnt([error causedByUserCancelling]);
+    XCTAssertFalse([error causedByUserCancelling]);
 }
 
 - (void)testCausedByUserCancelling_Direct;
 {
     __autoreleasing NSError *error = nil;
     OBUserCancelledError(&error);
-    should([error causedByUserCancelling]);
+    XCTAssertTrue([error causedByUserCancelling]);
 }
 
 - (void)testCausedByUserCancelling_Indirect;
@@ -105,7 +104,7 @@ enum {
     __autoreleasing NSError *error = nil;
     OBUserCancelledError(&error);
     OFErrorWithInfo(&error, BarError, nil, nil, nil);
-    should([error causedByUserCancelling]);
+    XCTAssertTrue([error causedByUserCancelling]);
 }
 
 @end

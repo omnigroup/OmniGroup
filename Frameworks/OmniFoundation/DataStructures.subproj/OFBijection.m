@@ -205,7 +205,7 @@ RCS_ID("$Id$");
 
 #pragma mark - NSFastEnumeration protocol
 
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id [])buffer count:(NSUInteger)len;
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id __unsafe_unretained [])buffer count:(NSUInteger)len;
 {
     return [self.keysToObjects countByEnumeratingWithState:state objects:buffer count:len];
 }

@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2005, 2007, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,12 @@
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import "ONHost.h"
 
 RCS_ID("$Id$");
 
-@interface IDNEncodingTests : SenTestCase
+@interface IDNEncodingTests : XCTestCase
 {
     CFStringEncoding oldNSCFStringEncodingForLogging;
     NSStringEncoding oldNSCStringEncoding, oldNSDefaultStringEncoding;
@@ -117,20 +117,20 @@ extern NSStringEncoding _NSCStringEncoding, _NSDefaultStringEncoding;
         NSString *puny_out = [ONHost IDNEncodedHostname:intl];
         NSString *intl_out = [ONHost IDNDecodedHostname:puny];
         
-        shouldBeEqual([puny lowercaseString], [puny_out lowercaseString]);
-        shouldBeEqual(intl, intl_out);
+        XCTAssertEqualObjects([puny lowercaseString], [puny_out lowercaseString]);
+        XCTAssertEqualObjects(intl, intl_out);
         // NSLog(@"%@ <-- %@", puny, intl);
     }
     
     
     NSString *czech = [[NSString alloc] initWithCharacters:rfc3492_7_D length:(sizeof(rfc3492_7_D)/sizeof(unichar))];
-    shouldBeEqual(czech, [ONHost IDNDecodedHostname:@"xn--Proprostnemluvesky-UYB24DMA41A"]);
+    XCTAssertEqualObjects(czech, [ONHost IDNDecodedHostname:@"xn--Proprostnemluvesky-UYB24DMA41A"]);
     // Make the string uppercase, except for the characters which would be IDN-encoded
     NSMutableString *caseSmashed = [[czech uppercaseString] mutableCopy];
     [caseSmashed replaceCharactersInRange:(NSRange){3,1} withString:[czech substringWithRange:(NSRange){3,1}]];
     [caseSmashed replaceCharactersInRange:(NSRange){9,1} withString:[czech substringWithRange:(NSRange){9,1}]];
     [caseSmashed replaceCharactersInRange:(NSRange){16,2} withString:[czech substringWithRange:(NSRange){16,2}]];
-    shouldBeEqual(caseSmashed, [ONHost IDNDecodedHostname:@"XN--PROPROSTNEMLUVESKY-UYB24DMA41A"]);
+    XCTAssertEqualObjects(caseSmashed, [ONHost IDNDecodedHostname:@"XN--PROPROSTNEMLUVESKY-UYB24DMA41A"]);
     [czech release];
     [caseSmashed release];
 
@@ -149,8 +149,8 @@ extern NSStringEncoding _NSCStringEncoding, _NSDefaultStringEncoding;
         NSString *puny_out = [ONHost IDNEncodedHostname:intl];
         NSString *intl_out = [ONHost IDNDecodedHostname:puny];
         
-        shouldBeEqual(puny, puny_out);
-        shouldBeEqual(intl, intl_out);
+        XCTAssertEqualObjects(puny, puny_out);
+        XCTAssertEqualObjects(intl, intl_out);
     }
 }
 
@@ -164,21 +164,21 @@ extern NSStringEncoding _NSCStringEncoding, _NSDefaultStringEncoding;
     NSString *uncombined = [[[NSString alloc] initWithCharacters:combiningAccent length:6] autorelease];
     NSString *combined = [[[NSString alloc] initWithCharacters:combinedAccent length:4] autorelease];
     
-    should([uncombined compare:combined] == NSOrderedSame);
-    shouldnt([uncombined compare:combined options:NSLiteralSearch] == NSOrderedSame);
+    XCTAssertTrue([uncombined compare:combined] == NSOrderedSame);
+    XCTAssertFalse([uncombined compare:combined options:NSLiteralSearch] == NSOrderedSame);
     
     NSString *encoded = [ONHost IDNEncodedHostname:uncombined];
-    shouldBeEqual(encoded, [ONHost IDNEncodedHostname:combined]);
-    shouldBeEqual(encoded, expectedEncoding);
-    shouldnt([encoded isEqual:denormalizedEncoding]);
+    XCTAssertEqualObjects(encoded, [ONHost IDNEncodedHostname:combined]);
+    XCTAssertEqualObjects(encoded, expectedEncoding);
+    XCTAssertFalse([encoded isEqual:denormalizedEncoding]);
     
     NSString *decoded = [ONHost IDNDecodedHostname:encoded];
-    shouldBeEqual(decoded, combined);
-    should([decoded compare:uncombined options:0] == NSOrderedSame);
-    shouldnt([decoded compare:uncombined options:NSLiteralSearch] == NSOrderedSame);
+    XCTAssertEqualObjects(decoded, combined);
+    XCTAssertTrue([decoded compare:uncombined options:0] == NSOrderedSame);
+    XCTAssertFalse([decoded compare:uncombined options:NSLiteralSearch] == NSOrderedSame);
     
     // verify that we don't accept incorrectly normalized labels
-    shouldBeEqual(denormalizedEncoding, [ONHost IDNDecodedHostname:denormalizedEncoding]);
+    XCTAssertEqualObjects(denormalizedEncoding, [ONHost IDNDecodedHostname:denormalizedEncoding]);
 }
 
 @end

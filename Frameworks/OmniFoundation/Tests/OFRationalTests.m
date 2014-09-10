@@ -1,11 +1,10 @@
-// Copyright 2005-2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2005-2008, 2010, 2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/OFRationalNumber.h>
@@ -45,7 +44,7 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
 
 #define RAT(num, denom) ((struct OFRationalNumberStruct){ .numerator = labsl(num), .denominator = denom, .negative = lsign(num), .lop = 0 })
 
-#define shouldBeEqualRat(expr_, num, den, xlop) do{ struct OFRationalNumberStruct expr = (expr_); should1(eqrat(expr, num, den, xlop), ([NSString stringWithFormat:@"%s == %@, should be %d/%u", #expr_, parts(expr), num, den])); }while(0)
+#define shouldBeEqualRat(expr_, num, den, xlop) do{ struct OFRationalNumberStruct expr = (expr_); XCTAssertTrue(eqrat(expr, num, den, xlop), @"%s == %@, should be %d/%u", #expr_, parts(expr), num, den); }while(0)
 
 @implementation OFRationalTests
 
@@ -65,10 +64,10 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
     shouldBeEqualRat(OFRationalFromDouble(0.265625), 17, 64, 0);
     shouldBeEqualRat(OFRationalFromDouble(65536), 65536, 1, 0);
     
-    should(OFRationalToDouble(RAT(1,16)) == 0.0625);
-    should(OFRationalToDouble(RAT(-17,64)) == -0.265625);
-    should(OFRationalToDouble(RAT(32767,65536)) == 0.4999847412109375);
-    should(OFRationalToDouble(RAT(0,1)) == 0);
+    XCTAssertTrue(OFRationalToDouble(RAT(1,16)) == 0.0625);
+    XCTAssertTrue(OFRationalToDouble(RAT(-17,64)) == -0.265625);
+    XCTAssertTrue(OFRationalToDouble(RAT(32767,65536)) == 0.4999847412109375);
+    XCTAssertTrue(OFRationalToDouble(RAT(0,1)) == 0);
 }
 
 - (void)testConvertMinSig
@@ -79,7 +78,7 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
     for(int i = 0; i < 1000; i ++) {
         struct OFRationalNumberStruct rat = OFRationalFromDouble(f);
         // NSLog(@" %3d  %.16Lf -> %@", i, (long double)f, OFRationalToStringForStorage(rat));
-        should(OFRationalToDouble(rat) == f);
+        XCTAssertTrue(OFRationalToDouble(rat) == f);
         f = nextafterf(f, 1000);
     }
     
@@ -88,7 +87,7 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
     for(int i = 0; i < 1000; i ++) {
         struct OFRationalNumberStruct rat = OFRationalFromDouble(f);
         // NSLog(@" %3d  %.16Lf -> %@", i, (long double)f, OFRationalToStringForStorage(rat));
-        should(OFRationalToDouble(rat) == f);
+        XCTAssertTrue(OFRationalToDouble(rat) == f);
         f = nextafterf(f, 1000);
     }
 }
@@ -97,19 +96,19 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
 {
     struct OFRationalNumberStruct r;
     
-    should(OFRationalFromStringForStorage(@"~22/7", &r));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"~22/7", &r));
     shouldBeEqualRat(r, 22, 7, 1);
     
-    should(OFRationalFromStringForStorage(@"-1/10", &r));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"-1/10", &r));
     shouldBeEqualRat(r, -1, 10, 0);
     
-    should(OFRationalFromStringForStorage(@"6/16", &r));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"6/16", &r));
     shouldBeEqualRat(r, 3, 8, 0);
     
-    should(OFRationalFromStringForStorage(@"~0", &r));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"~0", &r));
     shouldBeEqualRat(r, 0, 0, 1);    
 
-    should(OFRationalFromStringForStorage(@"-999", &r));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"-999", &r));
     shouldBeEqualRat(r, -999, 1, 0);    
 }
 
@@ -117,9 +116,9 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
 {
     struct OFRationalNumberStruct r, s, n, ni, ns;
     
-    should(OFRationalFromStringForStorage(@"22/7", &r));
-    should(OFRationalFromStringForStorage(@"113/355", &s));
-    should(OFRationalFromStringForStorage(@"-2485/2486", &n));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"22/7", &r));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"113/355", &s));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"-2485/2486", &n));
     
     shouldBeEqualRat(OFRationalMultiply(r, s), 2486, 2485, 0);
     shouldBeEqualRat(OFRationalMultiply(r, n), -355, 113, 0);
@@ -136,9 +135,9 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
 {
     struct OFRationalNumberStruct r, s, n, rs, x;
     
-    should(OFRationalFromStringForStorage(@"22/7", &r));
-    should(OFRationalFromStringForStorage(@"-113/355", &s));
-    should(OFRationalFromStringForStorage(@"1/2485", &n));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"22/7", &r));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"-113/355", &s));
+    XCTAssertTrue(OFRationalFromStringForStorage(@"1/2485", &n));
     
     rs = OFRationalMultiply(r, s);
     x = rs;
@@ -168,7 +167,7 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
 #ifdef SLOPPY_LOP_BIT_TEST
 #define SHOULD_NO_LOP(r) (r.lop = 0)
 #else
-#define SHOULD_NO_LOP(r) should(r.lop == 0)
+#define SHOULD_NO_LOP(r) XCTAssertTrue(r.lop == 0)
 #endif
     
     for(i = 1; i <= 100; i++) {
@@ -179,7 +178,7 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
         shouldBeEqualRat(r, 1, i, 0);
         
         r = OFRationalFromDouble( ( 1.0 / (double)i ) );
-        shouldnt(r.lop);
+        XCTAssertFalse(r.lop);
         OFRationalRound(&r, 1000);
         shouldBeEqualRat(r, 1, i, 0);
         
@@ -204,25 +203,25 @@ static BOOL eqrat(struct OFRationalNumberStruct expr, long num, unsigned long de
 - (void)testCompare;
 {
     // zero over anything is zero
-    should(OFRationalCompare(OFRationalFromRatio(0,1), OFRationalFromRatio(0,2)) == NSOrderedSame);
-    should(OFRationalCompare(OFRationalFromRatio(0,2), OFRationalFromRatio(0,1)) == NSOrderedSame);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(0,1), OFRationalFromRatio(0,2)) == NSOrderedSame);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(0,2), OFRationalFromRatio(0,1)) == NSOrderedSame);
     
     // fractions should reduce
-    should(OFRationalCompare(OFRationalFromRatio(1,2), OFRationalFromRatio(2,4)) == NSOrderedSame);
-    should(OFRationalCompare(OFRationalFromRatio(2,4), OFRationalFromRatio(1,2)) == NSOrderedSame);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(1,2), OFRationalFromRatio(2,4)) == NSOrderedSame);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(2,4), OFRationalFromRatio(1,2)) == NSOrderedSame);
     
     // 1/2 < 2/3
-    should(OFRationalCompare(OFRationalFromRatio(1,2), OFRationalFromRatio(2,3)) == NSOrderedAscending);
-    should(OFRationalCompare(OFRationalFromRatio(2,3), OFRationalFromRatio(1,2)) == NSOrderedDescending);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(1,2), OFRationalFromRatio(2,3)) == NSOrderedAscending);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(2,3), OFRationalFromRatio(1,2)) == NSOrderedDescending);
     
     // 5/17 > 13/59
-    should(OFRationalCompare(OFRationalFromRatio(13,59), OFRationalFromRatio(5,17)) == NSOrderedAscending);
-    should(OFRationalCompare(OFRationalFromRatio(5,17), OFRationalFromRatio(13,59)) == NSOrderedDescending);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(13,59), OFRationalFromRatio(5,17)) == NSOrderedAscending);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(5,17), OFRationalFromRatio(13,59)) == NSOrderedDescending);
     
     // negatives are less than zeroes are less than positives
-    should(OFRationalCompare(OFRationalFromRatio(-1,2), OFRationalFromRatio(1,2)) == NSOrderedAscending);
-    should(OFRationalCompare(OFRationalFromRatio(1,2), OFRationalFromRatio(0,-2)) == NSOrderedDescending);
-    should(OFRationalCompare(OFRationalFromRatio(0,-2), OFRationalFromRatio(-1,2)) == NSOrderedDescending);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(-1,2), OFRationalFromRatio(1,2)) == NSOrderedAscending);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(1,2), OFRationalFromRatio(0,-2)) == NSOrderedDescending);
+    XCTAssertTrue(OFRationalCompare(OFRationalFromRatio(0,-2), OFRationalFromRatio(-1,2)) == NSOrderedDescending);
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,10 +7,8 @@
 //
 // $Id$
 
-#import <UIKit/UIViewControllerTransitioning.h>
+#import <OmniUI/OUITransition.h>
 
-@interface OUICrossfadeViewControllerTransition : NSObject <UIViewControllerAnimatedTransitioning>
-
-@property (nonatomic, assign) NSTimeInterval duration;
+@interface OUICrossfadeViewControllerTransition : OUITransition
 
 @end

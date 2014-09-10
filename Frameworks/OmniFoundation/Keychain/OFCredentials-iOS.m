@@ -87,9 +87,10 @@ NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifi
     
     DEBUG_CREDENTIALS(@"  using query %@", query);
 
-    NSArray *items = nil;
-    OSStatus err = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&items);
+    CFTypeRef cfItems = NULL;
+    OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)query, &cfItems);
     if (err == errSecSuccess) {
+        NSArray *items = CFBridgingRelease(cfItems);
         for (NSDictionary *item in items) {
             NSString *service = [item objectForKey:(id)kSecAttrService];
             NSString *expectedService = serviceIdentifier;
@@ -116,11 +117,8 @@ NSURLCredential *OFReadCredentialsForServiceIdentifier(NSString *serviceIdentifi
             
             NSURLCredential *result = _OFCredentialFromUserAndPassword(user, password);
             DEBUG_CREDENTIALS(@"trying %@",  result);
-            CFRelease(items);
             return result;
         }
-        if (items)
-            CFRelease(items);
         if (outError)
             *outError = [NSError errorWithDomain:OFCredentialsErrorDomain code:OFCredentialsErrorNotFound userInfo:nil];
         return nil;
@@ -169,9 +167,10 @@ NSURLCredential *OFReadCredentialsForLegacyHostPattern(NSString *hostPattern, NS
     
     DEBUG_CREDENTIALS(@"  using query %@", query);
 
-    NSArray *items = nil;
-    OSStatus err = SecItemCopyMatching((CFDictionaryRef)query, (CFTypeRef *)&items);
+    CFTypeRef cfItems = NULL;
+    OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)query, &cfItems);
     if (err == errSecSuccess) {
+        NSArray *items = CFBridgingRelease(cfItems);
         for (NSDictionary *item in items) {
             NSString *service = [item objectForKey:(id)kSecAttrService];
             // We used to store credentials using [NSString stringWithFormat:@"%@/%@", [protectionSpace host], [protectionSpace realm]].  When converting legacy accounts we no longer have those details, so we're looking for anything matching our legacy host pattern.
@@ -198,15 +197,12 @@ NSURLCredential *OFReadCredentialsForLegacyHostPattern(NSString *hostPattern, NS
             
             NSURLCredential *result = _OFCredentialFromUserAndPassword(user, password);
             DEBUG_CREDENTIALS(@"trying %@",  result);
-            CFRelease(items);
             return result;
         }
         
     } else if (err != errSecItemNotFound) {
         OFSecError("SecItemCopyMatching", err, NULL);
     }
-    if (items)
-        CFRelease(items);
     
     return nil;
 }
@@ -229,7 +225,7 @@ BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
     // TODO: Possibly apply kSecAttrAccessibleAfterFirstUnlock, or let the caller specify whether it should be applied. Need this if we are going to be able to access the item for background operations in iOS.
     
     DEBUG_CREDENTIALS(@"adding item: %@", entry);
-    OSStatus err = SecItemAdd((CFDictionaryRef)entry, NULL);
+    OSStatus err = SecItemAdd((__bridge CFDictionaryRef)entry, NULL);
     if (err == errSecSuccess)
         return YES;
     
@@ -245,7 +241,7 @@ BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
     
     NSDictionary *attributes = @{(id)kSecAttrAccount:entry[(id)kSecAttrAccount], (id)kSecValueData:entry[(id)kSecValueData]};
     
-    err = SecItemUpdate((CFDictionaryRef)query, (CFDictionaryRef)attributes);
+    err = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)attributes);
     if (err == errSecSuccess)
         return YES;
     
@@ -258,7 +254,7 @@ void OFDeleteAllCredentials(void)
     DEBUG_CREDENTIALS(@"delete all credentials");
 
     NSMutableDictionary *query = BasicQuery();
-    OSStatus err = SecItemDelete((CFDictionaryRef)query);
+    OSStatus err = SecItemDelete((__bridge CFDictionaryRef)query);
     if (err != errSecSuccess && err != errSecItemNotFound)
         OFSecError("SecItemDelete", err, NULL);
 }
@@ -291,7 +287,7 @@ BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSErro
 #endif
     
     BOOL success = YES;
-    OSStatus err = SecItemDelete((CFDictionaryRef)query);
+    OSStatus err = SecItemDelete((__bridge CFDictionaryRef)query);
     if (err != errSecSuccess && err != errSecItemNotFound) {
         OFSecError("SecItemDelete", err, outError);
         success = NO;
@@ -407,7 +403,7 @@ BOOL OFHasTrustForChallenge(NSURLAuthenticationChallenge *challenge)
         return NO;
     }
     
-    if (!SecTrustSetExceptions(trust, (CFDataRef)exceptionData)) {
+    if (!SecTrustSetExceptions(trust, (__bridge CFDataRef)exceptionData)) {
         OBASSERT_NOT_REACHED("SecTrustSetExceptions failed."); // Maybe if the data is corrupted somehow?
         return NO;
     }

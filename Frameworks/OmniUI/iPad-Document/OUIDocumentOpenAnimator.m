@@ -12,6 +12,8 @@
 #import <OmniUIDocument/OUIDocumentPickerFileItemView.h>
 #import <OmniDocumentStore/ODSFileItem.h>
 
+#import "OmniUIDocumentAppearance.h"
+
 RCS_ID("$Id$")
 
 @implementation OUIDocumentOpenAnimator
@@ -27,10 +29,7 @@ RCS_ID("$Id$")
 
 - (id <UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source;
 {
-    if (presenting != _documentPicker.navigationController)
-        return nil;
-    else
-        return self;
+    return self;
 }
 
 - (id <UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed;
@@ -41,9 +40,9 @@ RCS_ID("$Id$")
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext;
 {
     if ([transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey] == _documentPicker.navigationController)
-        return 0.3; // open
+        return [[OmniUIDocumentAppearance appearance] documentOpeningAnimationDuration]; // open
     else
-        return 0.5; // close
+        return [[OmniUIDocumentAppearance appearance] documentClosingAnimationDuration]; // close
 }
 
 - (void)_doDissolve:(id <UIViewControllerContextTransitioning>)transitionContext;
@@ -85,10 +84,10 @@ RCS_ID("$Id$")
 
     OUIDocumentPickerFileItemView *preview = [pickerController.mainScrollView fileItemViewForFileItem:_fileItem];
     if (!preview)
-        return [self _doDissolve:transitionContext];
+        [self _doDissolve:transitionContext];
 
-    UIView *destinationView = [[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey] view];
-    UIView *sourceView = [[transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey] view];
+    UIView *destinationView = [transitionContext viewForKey:UITransitionContextToViewKey];
+    UIView *sourceView = [transitionContext viewForKey:UITransitionContextFromViewKey];
     CGRect fromFrame = sourceView.frame;
     
     CGRect previewFrame = [preview convertRect:preview.bounds toView:sourceView];
@@ -145,7 +144,15 @@ RCS_ID("$Id$")
 
     UIView *containerView = [transitionContext containerView];
     
-    UINavigationController *destination = (UINavigationController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    UIViewController *destination = (UINavigationController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    UINavigationController *destinationNavController;
+    if ([destination isKindOfClass:[OUIDocumentPicker class]])
+        destinationNavController = (UINavigationController *)(((OUIDocumentPicker *)destination).wrappedViewController);
+    else {
+        OBASSERT([destination isKindOfClass:[OUIDocumentPickerViewController class]]);
+        destinationNavController = destination.navigationController;
+    }
+    
     UIView *destinationView = [destination view];
     [containerView addSubview:destinationView];
     UIView *sourceView = [[transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey] view];
@@ -177,7 +184,7 @@ RCS_ID("$Id$")
     
     UIView *previewSnapshot = [preview snapshotViewAfterScreenUpdates:YES];
     
-    CGRect navRect = destination.navigationBar.frame;
+    CGRect navRect = destinationNavController.navigationBar.frame;
     navRect.size.height = CGRectGetMaxY(navRect) + 1.0; // extend to cover status bar and 1px separator
     navRect.origin.y = 0;
     
@@ -233,10 +240,15 @@ RCS_ID("$Id$")
 
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext;
 {
-    if ([transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey] == _documentPicker.navigationController)
-        return [self animateOpenTransition:transitionContext];
+    UIViewController *source = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIViewController *destination = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    
+    if (source == _documentPicker || [source isKindOfClass:[OUIDocumentPickerViewController class]])
+        [self animateOpenTransition:transitionContext];
+    else if (destination == _documentPicker || [source isKindOfClass:[OUIDocumentPickerViewController class]])
+        [self animateCloseTransition:transitionContext];
     else
-        return [self animateCloseTransition:transitionContext];
+        [self _doDissolve:transitionContext];
 }
 
 @end

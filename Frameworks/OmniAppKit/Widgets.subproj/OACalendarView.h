@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2007, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,8 +32,6 @@ typedef enum _OACalendarViewSelectionType {
 
 @property(nonatomic,retain) NSCalendar *calendar;
 @property(nonatomic,assign) id<OACalendarViewDelegate> delegate;
-@property(nonatomic,assign) IBOutlet id target;
-@property(nonatomic,assign) SEL action;
 
 - (NSDate *)visibleMonth;
 - (void)setVisibleMonth:(NSDate *)aDate;

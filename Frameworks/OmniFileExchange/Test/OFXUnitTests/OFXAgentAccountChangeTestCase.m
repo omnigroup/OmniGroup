@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,9 +19,9 @@ RCS_ID("$Id$")
 
 @implementation OFXAgentAccountChangeTestCase
 
-- (NSUInteger)automaticallyStartAgents;
+- (NSSet *)automaticallyStartedAgentNames;
 {
-    return 0;
+    return nil;
 }
 
 - (BOOL)automaticallyAddAccount;
@@ -37,13 +37,13 @@ RCS_ID("$Id$")
     
     [self waitSomeTimeUpToSeconds:0.2];
 
-    STAssertEquals([agent.accountRegistry.allAccounts count], 0ULL, nil);
+    XCTAssertEqual([agent.accountRegistry.allAccounts count], 0ULL);
 
     OFXServerAccount *account = [self addAccountToRegistry:(OFXTestServerAccountRegistry *)agent.accountRegistry isFirst:YES];
     [self waitForAsyncOperations];
     
     NSURL *url = account.localDocumentsURL;
-    STAssertTrue([url checkResourceIsReachableAndReturnError:NULL], nil);
+    XCTAssertTrue([url checkResourceIsReachableAndReturnError:NULL]);
 }
 
 - (void)testStartWithAccount;
@@ -54,10 +54,10 @@ RCS_ID("$Id$")
     [agent applicationLaunched];
     [self waitForAsyncOperations];
     
-    STAssertTrue([account.localDocumentsURL checkResourceIsReachableAndReturnError:NULL], nil);
+    XCTAssertTrue([account.localDocumentsURL checkResourceIsReachableAndReturnError:NULL]);
     
     NSURL *localStoreURL = [agent.accountRegistry localStoreURLForAccount:account];
-    STAssertTrue([localStoreURL checkResourceIsReachableAndReturnError:NULL], nil);
+    XCTAssertTrue([localStoreURL checkResourceIsReachableAndReturnError:NULL]);
 }
 
 - (void)testRemoveAccount;
@@ -71,7 +71,7 @@ RCS_ID("$Id$")
 
     NSURL *localAccountStoreURL = [agent.accountRegistry localStoreURLForAccount:account];
     __autoreleasing NSError *error;
-    STAssertTrue([localAccountStoreURL checkResourceIsReachableAndReturnError:&error], @"Our local management files for the account should exist by this time");
+    XCTAssertTrue([localAccountStoreURL checkResourceIsReachableAndReturnError:&error], @"Our local management files for the account should exist by this time");
 
     // Then remove it.
     [account prepareForRemoval];
@@ -81,12 +81,12 @@ RCS_ID("$Id$")
         __autoreleasing NSError *checkError;
         if ([localAccountStoreURL checkResourceIsReachableAndReturnError:&checkError])
             return NO;
-        STAssertTrue([checkError causedByMissingFile], @"should only get a missing file error");
+        XCTAssertTrue([checkError causedByMissingFile], @"should only get a missing file error");
         return YES;
     }];
     
     // We don't want to bulk delete files if you unlink an account. Rather, the user should clean those up when they are done with them. If they turn syncing *back* on, though, we might hit conflicts (since we don't know if the server or client version is current unless the files are identical).
-    STAssertTrue([account.localDocumentsURL checkResourceIsReachableAndReturnError:&error], @"Document directory should still exist");
+    XCTAssertTrue([account.localDocumentsURL checkResourceIsReachableAndReturnError:&error], @"Document directory should still exist");
 }
 
 - (void)testRemoveDocumentsDirectoryWhileNotRunning;
@@ -113,7 +113,7 @@ RCS_ID("$Id$")
         [agent applicationLaunched];
         [self waitForAsyncOperations];
         
-        STAssertTrue([account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDocumentsDirectoryMissing], nil);
+        XCTAssertTrue([account.lastError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDocumentsDirectoryMissing]);
     }];
 }
 
@@ -125,7 +125,7 @@ RCS_ID("$Id$")
     
     [self waitSomeTimeUpToSeconds:0.2];
     
-    STAssertEquals([agent.accountRegistry.allAccounts count], 0ULL, nil);
+    XCTAssertEqual([agent.accountRegistry.allAccounts count], 0ULL);
     
     OFXTestServerAccountRegistry *registry = (OFXTestServerAccountRegistry *)agent.accountRegistry;
     
@@ -149,7 +149,7 @@ RCS_ID("$Id$")
     
     [self waitSomeTimeUpToSeconds:0.2];
     
-    STAssertEquals([agent.accountRegistry.allAccounts count], 0ULL, nil);
+    XCTAssertEqual([agent.accountRegistry.allAccounts count], 0ULL);
     
     OFXTestServerAccountRegistry *registry = (OFXTestServerAccountRegistry *)agent.accountRegistry;
     
@@ -160,8 +160,8 @@ RCS_ID("$Id$")
     
     error = nil;
     OFXServerAccount *account = [self addAccountToRegistry:registry withLocalDocumentsURL:localDocumentsURL isFirst:YES error:&error];
-    STAssertNil(account, @"Adding account should have failed due to non-empty documents directory");
-    STAssertTrue([error hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDirectoryNotUsable], nil);
+    XCTAssertNil(account, @"Adding account should have failed due to non-empty documents directory");
+    XCTAssertTrue([error hasUnderlyingErrorDomain:OFXErrorDomain code:OFXLocalAccountDirectoryNotUsable]);
 }
 
 - (void)testRemovingAccountWhileDownloadingDocuments;
@@ -240,7 +240,7 @@ RCS_ID("$Id$")
             return YES;
         }];
         if (!success) {
-            STAssertTrue(success, @"Removal should not fail");
+            XCTAssertTrue(success, @"Removal should not fail");
             [error log:@"Error writing local documents directory"];
         }
         
@@ -255,7 +255,7 @@ RCS_ID("$Id$")
                        return nil;
                    }];
 #endif
-        STAssertTrue(success, @"Removal should not fail");
+        XCTAssertTrue(success, @"Removal should not fail");
     
         if (!success)
             [error log:@"Error moving local documents directory"];

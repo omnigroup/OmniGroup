@@ -37,22 +37,19 @@ RCS_ID("$Id$");
 
 @synthesize results = _results;
 
-static NSComparisonResult _comparePointers(id obj1, id obj2, void *context)
-{
-    if (obj1 > obj2)
-	return NSOrderedDescending;
-    else if (obj1 < obj2)
-	return NSOrderedAscending;
-    return NSOrderedSame;
-}
-
 - (void)addObjectIfMatchesPredicate:(id)object;
 {
     if (_predicate && !_predicate(object))
         return;
     if (!_results)
         _results = [[NSMutableArray alloc] init];
-    [_results insertObject:object inArraySortedUsingFunction:_comparePointers context:NULL];
+    [_results insertObject:object inArraySortedUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        if (obj1 > obj2)
+            return NSOrderedDescending;
+        else if (obj1 < obj2)
+            return NSOrderedAscending;
+        return NSOrderedSame;
+    }];
 }
 
 @end

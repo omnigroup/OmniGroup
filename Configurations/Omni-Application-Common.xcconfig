@@ -11,6 +11,7 @@ GCC_SYMBOLS_PRIVATE_EXTERN = NO
 OTHER_CFLAGS = $(value) -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\"
 
 LD_RUNPATH_SEARCH_PATHS = $(value) @executable_path/../Frameworks
+OTHER_LDFLAGS = $(value) -ObjC
 
 // Build setting overrides for the current store target
 #include "Omni-Application-Common-Store.xcconfig"

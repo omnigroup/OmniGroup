@@ -55,22 +55,10 @@ static inline int unicharDigitValue(unichar c)
 {
     if (freeInputBuffer) {
         OBASSERT(inputBuffer != NULL);
-        NSZoneFree(NULL, inputBuffer);
+        free(inputBuffer);
     }
     OFCaseConversionBufferDestroy(&caseBuffer);
     [super dealloc];
-}
-
-- (void)finalize
-{
-    // TODO: Can we get rid of this finalize method?
-    // The case conversion buffer holds a CF-retained string, but it could be rewritten not to, and then we could get rid of this method.
-    if (freeInputBuffer) {
-        OBASSERT(inputBuffer != NULL);
-        NSZoneFree(NULL, inputBuffer);
-    }
-    OFCaseConversionBufferDestroy(&caseBuffer);
-    [super finalize];
 }
 
 // Declared methods
@@ -89,7 +77,7 @@ static inline int unicharDigitValue(unichar c)
 
     length = [inputString length];
     if (length)
-        newBuffer = NSZoneMalloc(NULL, sizeof(unichar) * length);
+        newBuffer = malloc(sizeof(unichar) * length);
     [inputString getCharacters:newBuffer];
     return [self fetchMoreDataFromCharacters:newBuffer length:length offset:inputStringPosition + (scanEnd - inputBuffer) freeWhenDone:YES];
 }
@@ -105,7 +93,7 @@ static inline int unicharDigitValue(unichar c)
 
     if (freeInputBuffer) {
         OBASSERT(inputBuffer != NULL);
-        NSZoneFree(NULL, inputBuffer);
+        free(inputBuffer);
     }
     freeInputBuffer = doFreeWhenDone;
 
@@ -307,8 +295,8 @@ static inline int unicharDigitValue(unichar c)
     stringFound = NO;
     useMalloc = length * sizeof(unichar) >= SAFE_ALLOCA_SIZE;
     if (useMalloc) {
-        lowerBuffer = (unichar *)NSZoneMalloc(NULL, length * sizeof(unichar));
-        upperBuffer = (unichar *)NSZoneMalloc(NULL, length * sizeof(unichar));
+        lowerBuffer = (unichar *)malloc(length * sizeof(unichar));
+        upperBuffer = (unichar *)malloc(length * sizeof(unichar));
     } else {
         lowerBuffer = (unichar *)alloca(length * sizeof(unichar));
         upperBuffer = (unichar *)alloca(length * sizeof(unichar));
@@ -347,8 +335,8 @@ static inline int unicharDigitValue(unichar c)
     }
     [delimiterOFCharacterSet release];
     if (useMalloc) {
-        NSZoneFree(NULL, lowerBuffer);
-        NSZoneFree(NULL, upperBuffer);
+        free(lowerBuffer);
+        free(upperBuffer);
     }
 
     return stringFound;
@@ -750,7 +738,7 @@ readFullTokenWithDelimiterCharacter(OFCharacterScanner *self, unichar delimiterC
     NSUInteger length = [string length];
     useMalloc = length * sizeof(unichar) >= SAFE_ALLOCA_SIZE;
     if (useMalloc) {
-	buffer = (unichar *)NSZoneMalloc(NULL, length * sizeof(unichar));
+	buffer = (unichar *)malloc(length * sizeof(unichar));
     } else {
         buffer = (unichar *)alloca(length * sizeof(unichar));
     }
@@ -765,7 +753,7 @@ readFullTokenWithDelimiterCharacter(OFCharacterScanner *self, unichar delimiterC
 	}
     }
     if (useMalloc) {
-        NSZoneFree(NULL, buffer);
+        free(buffer);
     }
 
     if (!stringFound || doPeek)
@@ -789,8 +777,8 @@ readFullTokenWithDelimiterCharacter(OFCharacterScanner *self, unichar delimiterC
 
     useMalloc = length * sizeof(unichar) >= SAFE_ALLOCA_SIZE;
     if (useMalloc) {
-        lowerBuffer = (unichar *)NSZoneMalloc(NULL, length * sizeof(unichar));
-        upperBuffer = (unichar *)NSZoneMalloc(NULL, length * sizeof(unichar));
+        lowerBuffer = (unichar *)malloc(length * sizeof(unichar));
+        upperBuffer = (unichar *)malloc(length * sizeof(unichar));
     } else {
         lowerBuffer = (unichar *)alloca(length * sizeof(unichar));
         upperBuffer = (unichar *)alloca(length * sizeof(unichar));
@@ -823,8 +811,8 @@ readFullTokenWithDelimiterCharacter(OFCharacterScanner *self, unichar delimiterC
         [self discardRewindMark];
 
     if (useMalloc) {
-        NSZoneFree(NULL, lowerBuffer);
-        NSZoneFree(NULL, upperBuffer);
+        free(lowerBuffer);
+        free(upperBuffer);
     }
 
     return stringFound;

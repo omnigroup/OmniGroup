@@ -20,7 +20,7 @@
 "Please make sure that the destination folder exists." = "移動先フォルダが存在することを確認してください。";
 
 /* error reason */
-"The %@ server returned \"%@\" (%d) in response to a request to \"%@ %@\"." = "“%4$@ %5$@” へのリクエストに対するレスポンスとして、%1$@ サーバーが “%2$@” (%3$d) を返しました。";
+"The %@ server returned \"%@\" (%ld) in response to a request to \"%@ %@\"." = "“%4$@ %5$@” へのリクエストに対するレスポンスとして、%1$@ サーバが “%2$@” (%3$ld) を返しました。";
 
 /* error description */
 "Unable to delete file." = "ファイルを削除できません。";
@@ -29,7 +29,8 @@
 "Unable to perform WebDAV operation." = "WebDAV の操作を実行できません。";
 
 /* error description */
-"Unable to read document." = "書類を読み込みできませんでした。";
+"Unable to read document." = "書類を読み込めません。";
 
 /* Error description */
 "WebDAV server failed conformance test." = "WebDAV サーバーは適合テストに失敗しました。";
+

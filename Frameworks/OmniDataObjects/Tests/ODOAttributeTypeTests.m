@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,14 +44,14 @@ RCS_ID("$Id$")
     allAttributeTypes = (ODOTestCaseAllAttributeTypes *)[_editingContext fetchObjectWithObjectID:objectID error:&error];
     OBShouldNotError(allAttributeTypes != nil);
     
-    shouldBeEqual([NSNumber numberWithShort:SHRT_MAX], allAttributeTypes.int16);
-    shouldBeEqual([NSNumber numberWithInt:INT_MAX], allAttributeTypes.int32);
-    shouldBeEqual([NSNumber numberWithLongLong:LLONG_MAX], allAttributeTypes.int64);
-    shouldBeEqual([NSNumber numberWithFloat:FLT_MAX], allAttributeTypes.float32);
-    shouldBeEqual([NSNumber numberWithDouble:DBL_MAX], allAttributeTypes.float64);
-    shouldBeEqual(@"xyzzy", allAttributeTypes.string);
-    shouldBeEqual([NSNumber numberWithBool:YES], allAttributeTypes.boolean);
-    shouldBeEqual([NSDate dateWithTimeIntervalSinceReferenceDate:123.0], allAttributeTypes.date);
+    XCTAssertEqualObjects([NSNumber numberWithShort:SHRT_MAX], allAttributeTypes.int16);
+    XCTAssertEqualObjects([NSNumber numberWithInt:INT_MAX], allAttributeTypes.int32);
+    XCTAssertEqualObjects([NSNumber numberWithLongLong:LLONG_MAX], allAttributeTypes.int64);
+    XCTAssertEqualObjects([NSNumber numberWithFloat:FLT_MAX], allAttributeTypes.float32);
+    XCTAssertEqualObjects([NSNumber numberWithDouble:DBL_MAX], allAttributeTypes.float64);
+    XCTAssertEqualObjects(@"xyzzy", allAttributeTypes.string);
+    XCTAssertEqualObjects([NSNumber numberWithBool:YES], allAttributeTypes.boolean);
+    XCTAssertEqualObjects([NSDate dateWithTimeIntervalSinceReferenceDate:123.0], allAttributeTypes.date);
 }
 
 @end

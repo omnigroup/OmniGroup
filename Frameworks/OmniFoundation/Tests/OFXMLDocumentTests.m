@@ -1,11 +1,10 @@
-// Copyright 2003-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/OFStringDecoder.h>
@@ -38,10 +37,9 @@ static OFXMLWhitespaceBehavior *IgnoreAllWhitespace(void)
 
 #define SAVE_AND_COMPARE(expectedString) \
 do { \
-    NSError *error = nil; \
     NSString *pattern = [NSString stringWithFormat:@"%@-%@.xml", NSStringFromClass([self class]), NSStringFromSelector(_cmd)]; \
     NSString *fileName = [[NSFileManager defaultManager] scratchFilenameNamed:pattern error:&error]; \
-    should(fileName != nil); \
+    XCTAssertNotNil(fileName); \
     if (!fileName) { \
         NSLog(@"Unable to create scratch file '%@' - %@", pattern, error); \
         break; \
@@ -50,13 +48,13 @@ do { \
     OBShouldNotError(writeToFileSucceeded); \
     \
     NSData *data = [[NSData alloc] initWithContentsOfFile:fileName]; \
-    should(data != nil); \
+    XCTAssertNotNil(data); \
     \
     OBShouldNotError([[NSFileManager defaultManager] removeItemAtPath:fileName error:&error]); \
     \
     NSString *string = CFBridgingRelease(CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)data, [doc stringEncoding])); \
     \
-    STAssertEqualObjects(string, expectedString, @"SAVE_AND_COMPARE"); \
+    XCTAssertEqualObjects(string, expectedString, @"SAVE_AND_COMPARE"); \
 } while (0)
 
 @interface OFXMLDocumentTests : OFTestCase
@@ -163,18 +161,18 @@ do { \
 
 - (void) testReadingFile;
 {
-    NSString *inputFile = [[self bundle] pathForResource:@"0000-CreateDocument" ofType:@"xmloutline"];
-    should(inputFile != nil);
+    NSString *inputFile = [[[self class] bundle] pathForResource:@"0000-CreateDocument" ofType:@"xmloutline"];
+    XCTAssertTrue(inputFile != nil);
 
     // Just preserve whitespace exactly was we find it.
     NSError *error = nil;
     OFXMLDocument *doc = [[OFXMLDocument alloc] initWithContentsOfFile:inputFile whitespaceBehavior:nil error:&error];
-    should(doc != nil);
+    XCTAssertTrue(doc != nil);
 
     NSData *expectedData = [[NSData alloc] initWithContentsOfFile:inputFile];
     CFStringRef expectedString = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)expectedData, [doc stringEncoding]);
     
-    should(expectedString != nil);
+    XCTAssertTrue(expectedString != nil);
     if (expectedString)
         CFRelease(expectedString);
 }
@@ -235,7 +233,7 @@ do { \
         @"<s attr=\"a&amp;b\">a&amp;b</s>"
         @"<s attr=\"a &amp; b\">a &amp; b</s>"
         @"</root-element>";
-    shouldBeEqual(resultString, expectedOutput);
+    XCTAssertEqualObjects(resultString, expectedOutput);
 }
 
 - (void) testEntityWriting_UTF8;
@@ -302,7 +300,7 @@ do { \
     [expectedData replaceBytesInRange:[expectedData rangeOfData:patternData] withBytes:supplementalCharacter1UTF8 length:SUPP1_UTF8_LEN];
     [expectedData replaceBytesInRange:[expectedData rangeOfData:patternData] withBytes:supplementalCharacter2UTF8 length:SUPP2_UTF8_LEN];
     [expectedData replaceBytesInRange:[expectedData rangeOfData:patternData] withBytes:supplementalCharacter2UTF8 length:SUPP2_UTF8_LEN];
-    shouldBeEqual(xmlData, expectedData);
+    XCTAssertEqualObjects(xmlData, expectedData);
     
     
     // Test that the result, converted to a string, is the same as we think it should be
@@ -311,7 +309,7 @@ do { \
     expectedResultString = [NSString stringWithFormat:expectedOutputFormat,
         supplementalChararacter1, supplementalChararacter1,
         supplementalChararacter2, supplementalChararacter2];
-    shouldBeEqual(resultString, expectedResultString);
+    XCTAssertEqualObjects(resultString, expectedResultString);
 }
 
 // We expect sequential string children under an element to get merged.
@@ -324,11 +322,11 @@ do { \
     OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:xmlData whitespaceBehavior:nil error:&error];
     
     OFXMLElement *rootElement = [doc rootElement];
-    STAssertEqualObjects([rootElement name], @"root", @"root name");
+    XCTAssertEqualObjects([rootElement name], @"root", @"root name");
     
     // There will have been a 'characters', 'entity mapped to charaters' and then 'characters' callback.  These should all get merged.
-    should([[rootElement children] count] == 1);
-    STAssertEqualObjects([[rootElement children] lastObject], @"a & b", @"string concat");
+    XCTAssertTrue([[rootElement children] count] == 1);
+    XCTAssertEqualObjects([[rootElement children] lastObject], @"a & b", @"string concat");
 }
 
 - (void) testEntityReading;
@@ -365,7 +363,7 @@ do { \
     NSString *composedSequence = [NSString stringWithCharacter:0x10000];
     //NSLog(@"composedSequence = %@", composedSequence);
     
-#define CHECK(i, s) STAssertEqualObjects([[elements objectAtIndex:i] childAtIndex:0], s, @"child node"); STAssertEqualObjects([[elements objectAtIndex:i] attributeNamed:@"attr"], s, @"attribute value")
+#define CHECK(i, s) XCTAssertEqualObjects([[elements objectAtIndex:i] childAtIndex:0], s, @"child node"); XCTAssertEqualObjects([[elements objectAtIndex:i] attributeNamed:@"attr"], s, @"attribute value")
     CHECK( 0, @"&");
     CHECK( 1, @"&amp;");
     CHECK( 2, @"<");
@@ -408,13 +406,13 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
     NSString *inputFile;
     OFXMLDocument *doc;
 
-    inputFile = [[self bundle] pathForResource:@"0000-CreateDocument" ofType:@"xmloutline"];
-    should(inputFile != nil);
+    inputFile = [[[self class] bundle] pathForResource:@"0000-CreateDocument" ofType:@"xmloutline"];
+    XCTAssertTrue(inputFile != nil);
     
     // Use the same whitespace handling rules as OO3 itself.  This should still produce identical output, but the intermediate document object should have whitespace stripped where it would be ignored anyway.
     NSError *error = nil;
     doc = [[OFXMLDocument alloc] initWithContentsOfFile:inputFile whitespaceBehavior:_OOXMLWhitespaceBehavior() error:&error];
-    should(doc != nil);
+    XCTAssertTrue(doc != nil);
     
     NSData *inputData = [[NSData alloc] initWithContentsOfFile:inputFile];
     NSString *inputString = CFBridgingRelease(CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, (CFDataRef)inputData, [doc stringEncoding]));
@@ -440,7 +438,7 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
     OBShouldNotError(outputData != nil);
     
     NSString *outputString = [NSString stringWithData:outputData encoding:NSUTF8StringEncoding];
-    shouldBeEqual(inputString, outputString);
+    XCTAssertEqualObjects(inputString, outputString);
 }
 
 // CDATA blocks should be converted to strings and merged with any surrounding strings.
@@ -457,15 +455,15 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
     OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:inputData whitespaceBehavior:IgnoreAllWhitespace() error:&error];
     OFXMLElement *rootElement = [doc rootElement];
     
-    should([[rootElement children] count] == 1);
-    shouldBeEqual([[rootElement children] lastObject], @"foo<wonga>blegga");
+    XCTAssertTrue([[rootElement children] count] == 1);
+    XCTAssertEqualObjects([[rootElement children] lastObject], @"foo<wonga>blegga");
 }
 
 - (void)testNilInputData;
 {
     NSError *error = nil;
     OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:nil whitespaceBehavior:IgnoreAllWhitespace() error:&error];
-    should(doc == nil);
+    XCTAssertTrue(doc == nil);
 }
 
 // On iOS 6.0, the xml parser fails inside parsing the DOCTYPE declaration, and calls our error handler with a NULL userData, whereupon we crash dereferencing that pointer
@@ -483,7 +481,7 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
     NSData *inputData = [inputString dataUsingEncoding:NSUTF8StringEncoding];
     //NSError *error = nil;
     OFXMLDocument *doc = [[OFXMLDocument alloc] initWithData:inputData whitespaceBehavior:[[OFXMLWhitespaceBehavior alloc] init] error:NULL];
-    should(doc == nil);
+    XCTAssertTrue(doc == nil);
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,10 +54,10 @@ RCS_ID("$Id$")
     
     NSArray *results = [self _fetchWithType:NSBeginsWithPredicateOperatorType string:@"sp"];
     
-    should([results count] == 1);
+    XCTAssertTrue([results count] == 1);
     
     ODOObject *foundObject = [results lastObject];
-    shouldBeEqual([[foundObject objectID] primaryKey], @"spoon");
+    XCTAssertEqualObjects([[foundObject objectID] primaryKey], @"spoon");
 }
 
 - (void)testBeginsWithFetch;
@@ -71,7 +71,7 @@ RCS_ID("$Id$")
     NSArray *results = [self _fetchWithType:NSBeginsWithPredicateOperatorType string:@"sp"];
     
     ODOObject *foundObject = [results lastObject];
-    shouldBeEqual([[foundObject objectID] primaryKey], @"spoon");
+    XCTAssertEqualObjects([[foundObject objectID] primaryKey], @"spoon");
 }
 
 @end

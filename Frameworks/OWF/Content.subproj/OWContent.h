@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,8 +42,6 @@
     OWParameterizedContentType *cachedContentType;
     NSArray *cachedContentEncodings;
 }
-
-+ (NSZone *)contentZone;
 
 // API --- convenient methods for creating an OWContent
 + (id)contentWithAddress:(OWAddress *)anAddress;  // calls -markEndOfHeaders

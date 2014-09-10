@@ -10,9 +10,11 @@
 #import <AppKit/NSApplication.h>
 
 @interface NSApplication (OAExtensions)
+
 - (BOOL)useColor;
 - (NSEvent *) peekEvent;
 
+- (void)wakeEventLoop;
 - (void)flushTopLevelAutoreleasePool;
 
 @end

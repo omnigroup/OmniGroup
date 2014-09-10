@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@ RCS_ID("$Id$")
 
 @implementation OFScratchFile
 {
-    NSString *filename;
+    NSURL *_fileURL;
     NSData *contentData;
     NSString *contentString;
     NSMutableArray *retainedObjects;
@@ -24,7 +24,7 @@ RCS_ID("$Id$")
     NSString *fileName = [[NSFileManager defaultManager] scratchFilenameNamed:aName error:outError];
     if (!fileName)
         return nil;
-    return [[[self alloc] initWithFilename:fileName] autorelease];
+    return [[[self alloc] initWithFileURL:[NSURL fileURLWithPath:fileName isDirectory:NO]] autorelease];
 }
 
 + (OFScratchFile *)scratchDirectoryNamed:(NSString *)aName error:(NSError **)outError;
@@ -38,15 +38,16 @@ RCS_ID("$Id$")
     if (![fileManager createDirectoryAtPath:scratchFilename withIntermediateDirectories:YES attributes:nil error:outError])
         return nil;
     
-    return [[[self alloc] initWithFilename:scratchFilename] autorelease];
+    return [[[self alloc] initWithFileURL:[NSURL fileURLWithPath:scratchFilename isDirectory:YES]] autorelease];
 }
 
-- initWithFilename:(NSString *)aFilename;
+- initWithFileURL:(NSURL *)fileURL;
 {
     if (!(self = [super init]))
         return nil;
 
-    filename = [aFilename retain];
+    _fileURL = [fileURL retain];
+    
     retainedObjects = [[NSMutableArray alloc] init];
 
     return self;
@@ -54,24 +55,23 @@ RCS_ID("$Id$")
 
 - (void)dealloc;
 {
-    [[NSFileManager defaultManager] removeItemAtPath:filename error:NULL];
-    [filename release];
+    if (_fileURL)
+        [[NSFileManager defaultManager] removeItemAtURL:_fileURL error:NULL];
+    
+    [_fileURL release];
     [contentData release];
     [contentString release];
     [retainedObjects release];
     [super dealloc];
 }
 
-- (NSString *)filename;
-{
-    return filename;
-}
-
 - (NSData *)contentData;
 {
     if (contentData)
 	return contentData;
-    contentData = [[NSData alloc] initWithContentsOfMappedFile:filename];
+    
+    contentData = [[NSData alloc] initWithContentsOfURL:_fileURL options:NSDataReadingMappedIfSafe error:NULL];
+
     return contentData;
 }
 
@@ -87,8 +87,8 @@ RCS_ID("$Id$")
 {
     NSMutableDictionary *dict = [super debugDictionary];
 
-    if (filename)
-        dict[@"filename"] = filename;
+    if (_fileURL)
+        dict[@"_fileURL"] = _fileURL;
 
     return dict;
 }

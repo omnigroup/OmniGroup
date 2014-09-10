@@ -1,4 +1,4 @@
-// Copyright 2008, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,12 @@
 
 #import <OmniFoundation/NSIndexSet-OFExtensions.h>
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
-@interface OFIndexSetTests : SenTestCase
+@interface OFIndexSetTests : XCTestCase
 {
 }
 
@@ -23,16 +23,16 @@ RCS_ID("$Id$");
 - (void)testEmptySets
 {
     NSString *r = [[NSIndexSet indexSet] rangeString];
-    STAssertEqualObjects(r, @"", nil);
+    XCTAssertEqualObjects(r, @"");
     
     NSIndexSet *empty = [[NSIndexSet alloc] initWithRangeString:@""];
-    STAssertEquals([empty count], (NSUInteger)0, nil);
-    STAssertEquals([empty firstIndex], (NSUInteger)NSNotFound, nil);
+    XCTAssertEqual([empty count], (NSUInteger)0);
+    XCTAssertEqual([empty firstIndex], (NSUInteger)NSNotFound);
 
     empty = [[NSMutableIndexSet alloc] initWithRangeString:@""];
-    STAssertEquals([empty count], (NSUInteger)0, nil);
-    STAssertEquals([empty firstIndex], (NSUInteger)NSNotFound, nil);
-    STAssertTrue([empty isKindOfClass:[NSMutableIndexSet class]], nil);
+    XCTAssertEqual([empty count], (NSUInteger)0);
+    XCTAssertEqual([empty firstIndex], (NSUInteger)NSNotFound);
+    XCTAssertTrue([empty isKindOfClass:[NSMutableIndexSet class]]);
 }
 
 - (void)testIsolatedIndices
@@ -43,17 +43,17 @@ RCS_ID("$Id$");
         NSIndexSet *orig = [[NSIndexSet alloc] initWithIndex:ix];
         NSString *r = [orig rangeString];
         
-        STAssertEqualObjects(r, ([NSString stringWithFormat:@"%lu", ix]), nil);
+        XCTAssertEqualObjects(r, ([NSString stringWithFormat:@"%lu", ix]));
         
         NSIndexSet *roundtrip1 = [[NSIndexSet alloc] initWithRangeString:r];
-        STAssertEquals([roundtrip1 count], (NSUInteger)1, nil);
-        STAssertEqualObjects(roundtrip1, orig, nil);
-        STAssertEquals([roundtrip1 lastIndex], ix, nil);
+        XCTAssertEqual([roundtrip1 count], (NSUInteger)1);
+        XCTAssertEqualObjects(roundtrip1, orig);
+        XCTAssertEqual([roundtrip1 lastIndex], ix);
         
         NSMutableIndexSet *roundtrip2 = [[NSMutableIndexSet alloc] initWithRangeString:r];
-        STAssertEquals([roundtrip2 count], (NSUInteger)1, nil);
-        STAssertEqualObjects(roundtrip2, orig, nil);
-        STAssertTrue([roundtrip2 isKindOfClass:[NSMutableIndexSet class]], nil);
+        XCTAssertEqual([roundtrip2 count], (NSUInteger)1);
+        XCTAssertEqualObjects(roundtrip2, orig);
+        XCTAssertTrue([roundtrip2 isKindOfClass:[NSMutableIndexSet class]]);
         
     }
 }
@@ -67,8 +67,8 @@ RCS_ID("$Id$");
             NSIndexSet *st = [[NSIndexSet alloc] initWithIndexesInRange:aRange];
             NSString *rs = [NSString stringWithFormat:@"%lu-%lu", aRange.location, aRange.location + aRange.length - 1];
             
-            STAssertEqualObjects([st rangeString], rs, nil);
-            STAssertEqualObjects([NSIndexSet indexSetWithRangeString:rs], st, nil);
+            XCTAssertEqualObjects([st rangeString], rs);
+            XCTAssertEqualObjects([NSIndexSet indexSetWithRangeString:rs], st);
             
         }
     }
@@ -95,20 +95,20 @@ RCS_ID("$Id$");
                 [st addIndexesInRange:(NSRange){ starts[startIx], len }];
                 [st addIndexesInRange:(NSRange){ starts[startIx] + len + gaps[gapIx], len }];
                 
-                STAssertEqualObjects([st rangeString], buf, nil);
+                XCTAssertEqualObjects([st rangeString], buf);
                 
                 NSIndexSet *ris = [NSIndexSet indexSetWithRangeString:buf];
-                STAssertEqualObjects(ris, st, nil);
-                STAssertEquals([ris count], (NSUInteger)(2 * len), nil);
+                XCTAssertEqualObjects(ris, st);
+                XCTAssertEqual([ris count], (NSUInteger)(2 * len));
                 
                 [buf appendFormat:@",%lu", starts[startIx] + len + gaps[gapIx] + len + 1];
                 [st addIndex:starts[startIx] + len + gaps[gapIx] + len + 1];
                 
-                STAssertEqualObjects([st rangeString], buf, nil);
+                XCTAssertEqualObjects([st rangeString], buf);
                 
                 ris = [NSIndexSet indexSetWithRangeString:buf];
-                STAssertEqualObjects(ris, st, nil);
-                STAssertEquals([ris count], (NSUInteger)(2 * len + 1), nil);
+                XCTAssertEqualObjects(ris, st);
+                XCTAssertEqual([ris count], (NSUInteger)(2 * len + 1));
             }
         }
     }

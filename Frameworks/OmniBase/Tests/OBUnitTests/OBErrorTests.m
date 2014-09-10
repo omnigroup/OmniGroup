@@ -1,4 +1,4 @@
-// Copyright 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,7 @@ static void _testRoundTrip(OBErrorTests *self, NSError *error1)
     NSError *error2 = [[NSError alloc] initWithPropertyList:plist1];
     NSDictionary *plist2 = [error2 toPropertyList];
     
-    STAssertEqualObjects(plist1, plist2, @"second convertion should be the same as the first");
+    XCTAssertEqualObjects(plist1, plist2, @"second convertion should be the same as the first");
 }
 
 - (void)testToPropertyList;
@@ -42,14 +42,14 @@ static void _testRoundTrip(OBErrorTests *self, NSError *error1)
     OBErrorWithErrno(&error, ENOENT, "open", @"foozle", @"Unable to open");
     NSDictionary *plist = [error toPropertyList];
     
-    STAssertEqualObjects([plist objectForKey:@"domain"], NSPOSIXErrorDomain, @"domain should match");
-    STAssertEqualObjects([plist objectForKey:@"code"], [NSNumber numberWithInt:2], @"code should match");
+    XCTAssertEqualObjects([plist objectForKey:@"domain"], NSPOSIXErrorDomain, @"domain should match");
+    XCTAssertEqualObjects([plist objectForKey:@"code"], [NSNumber numberWithInt:2], @"code should match");
     
     NSDictionary *userInfo = [plist objectForKey:@"userInfo"];
-    STAssertNotNil(userInfo, @"should have user info");
+    XCTAssertNotNil(userInfo, @"should have user info");
     
-    STAssertEqualObjects([userInfo objectForKey:NSLocalizedDescriptionKey], @"Unable to open", @"Description should match");
-    STAssertEqualObjects([userInfo objectForKey:NSLocalizedFailureReasonErrorKey], @"open: foozle: No such file or directory", @"Failure reason should match");
+    XCTAssertEqualObjects([userInfo objectForKey:NSLocalizedDescriptionKey], @"Unable to open", @"Description should match");
+    XCTAssertEqualObjects([userInfo objectForKey:NSLocalizedFailureReasonErrorKey], @"open: foozle: No such file or directory", @"Failure reason should match");
     
     _testRoundTrip(self, error);
 }
@@ -63,11 +63,11 @@ static void _testRoundTrip(OBErrorTests *self, NSError *error1)
     
     userInfo = [plist objectForKey:@"userInfo"];
     NSArray *array = [userInfo objectForKey:@"set"];
-    STAssertTrue([array isKindOfClass:[NSArray class]], @"Sets get transformed to arrays since NSSet isn't a plist type");
-    STAssertTrue([array count] == 3, @"right number of objects");
-    STAssertTrue([array indexOfObject:@"a"] != NSNotFound, @"contains right objects");
-    STAssertTrue([array indexOfObject:@"b"] != NSNotFound, @"contains right objects");
-    STAssertTrue([array indexOfObject:@"c"] != NSNotFound, @"contains right objects");
+    XCTAssertTrue([array isKindOfClass:[NSArray class]], @"Sets get transformed to arrays since NSSet isn't a plist type");
+    XCTAssertTrue([array count] == 3, @"right number of objects");
+    XCTAssertTrue([array indexOfObject:@"a"] != NSNotFound, @"contains right objects");
+    XCTAssertTrue([array indexOfObject:@"b"] != NSNotFound, @"contains right objects");
+    XCTAssertTrue([array indexOfObject:@"c"] != NSNotFound, @"contains right objects");
 
     _testRoundTrip(self, error);
 }
@@ -81,11 +81,11 @@ static void _testRoundTrip(OBErrorTests *self, NSError *error1)
     NSDictionary *plist = [error toPropertyList];
     
     NSDictionary *underlyingPlist = [[plist objectForKey:@"userInfo"] objectForKey:NSUnderlyingErrorKey];
-    STAssertNotNil(underlyingPlist, @"should have converted underlying error to a property list");
-    STAssertEqualObjects([underlyingPlist objectForKey:@"domain"], @"InnerDomain", @"domain should match");
-    STAssertEqualObjects([underlyingPlist objectForKey:@"code"], [NSNumber numberWithInt:1], @"code should match");
-    STAssertTrue([underlyingPlist objectForKey:@"userInfo"] != innerUserInfo, @"shouldn't have just reused the object");
-    STAssertEqualObjects([underlyingPlist objectForKey:@"userInfo"], innerUserInfo, @"userInfo should match");
+    XCTAssertNotNil(underlyingPlist, @"should have converted underlying error to a property list");
+    XCTAssertEqualObjects([underlyingPlist objectForKey:@"domain"], @"InnerDomain", @"domain should match");
+    XCTAssertEqualObjects([underlyingPlist objectForKey:@"code"], [NSNumber numberWithInt:1], @"code should match");
+    XCTAssertTrue([underlyingPlist objectForKey:@"userInfo"] != innerUserInfo, @"shouldn't have just reused the object");
+    XCTAssertEqualObjects([underlyingPlist objectForKey:@"userInfo"], innerUserInfo, @"userInfo should match");
 
     _testRoundTrip(self, error);
 }
@@ -98,13 +98,13 @@ static void _testRoundTrip(OBErrorTests *self, NSError *error1)
     NSDictionary *plist = [error toPropertyList];
 
     userInfo = [plist objectForKey:@"userInfo"];
-    STAssertNotNil(userInfo, @"should convert the userInfo");
-    STAssertTrue([userInfo count] == 1, @"the recovery attempter be converted");
-    STAssertTrue([[userInfo objectForKey:NSRecoveryAttempterErrorKey] isKindOfClass:[NSString class]], @"should be converted to a string");
+    XCTAssertNotNil(userInfo, @"should convert the userInfo");
+    XCTAssertTrue([userInfo count] == 1, @"the recovery attempter be converted");
+    XCTAssertTrue([[userInfo objectForKey:NSRecoveryAttempterErrorKey] isKindOfClass:[NSString class]], @"should be converted to a string");
     
     // We can't round trip this error since we can't decode the recovery attempter and should drop it on decode.
     NSError *error2 = [[NSError alloc] initWithPropertyList:plist];
-    STAssertNil([[error2 userInfo] objectForKey:NSRecoveryAttempterErrorKey], @"error recovery should be dropped when making a new error");
+    XCTAssertNil([[error2 userInfo] objectForKey:NSRecoveryAttempterErrorKey], @"error recovery should be dropped when making a new error");
 }
 
 @end

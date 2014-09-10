@@ -10,6 +10,7 @@
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
+#import <OmniFoundation/OFSecurityUtilities.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
@@ -61,14 +62,13 @@ NSData *OFASN1IntegerFromBignum(NSData *base256Number)
     } else {
         buf = OFASN1CreateForTag(BER_TAG_INTEGER, bytecount);
     }
-    [buf autorelease];
     
     if (firstDigit == 0)
         [buf appendData:base256Number];
     else
         [buf appendData:[base256Number subdataWithRange:(NSRange){ firstDigit, bytecount }]];
     
-    return buf;
+    return [buf autorelease];
 }
 
 /*" Formats the tag byte and length field of an ASN.1 item. "*/
@@ -318,479 +318,6 @@ NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len)
 
 #pragma mark SecItem debugging
 
-/* The main reason for OFSecItemDescription() to exist is so that I can tell what the 10.7 crypto APIs are returning to me. Unfortunately, one of the more inscrutably buggy APIs is SecItemCopyMatching(), which is the only way to inspect a key ref in the new world. So using that call to debug itself is kind of counterproductive. */
-#define AVOID_SecItemCopyMatching
-
-static void describeSecKeyItem(SecKeychainItemRef item, SecItemClass itemClass, NSMutableString *buf);
-static BOOL describeSecItem(SecKeychainItemRef item, NSMutableString *buf);
-#if !defined(AVOID_SecItemCopyMatching) && defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
-static BOOL describeSecItemLion(CFTypeRef item, CFTypeID what, NSMutableString *buf);
-#endif       
-
-
-NSString *OFSecItemDescription(CFTypeRef item)
-{
-    if (item == NULL)
-        return @"(null)";
-    
-    CFTypeID what = CFGetTypeID(item);
-    CFStringRef classname = CFCopyTypeIDDescription(what);
-    NSMutableString *buf = [NSMutableString stringWithFormat:@"<%@ %p:", (id)classname, item];
-    CFRelease(classname);
-    
-    if (
-#if !defined(AVOID_SecItemCopyMatching) && defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
-        describeSecItemLion(item, what, buf) ||
-#endif
-        describeSecItem((SecKeychainItemRef)item, buf)) {
-        
-        [buf appendString:@">"];
-        return buf;
-    }
-    
-    return [(id)item description]; // Fall back on crappy CoreFoundation description
-}
-
-
-static BOOL describeSecItem(SecKeychainItemRef item, NSMutableString *buf)
-{
-    OSStatus oserr;
-    SecItemClass returnedClass;
-    
-    /* First, discover the item's class. CFGetTypeID() doesn't distinguish between (eg) public, private, and symmetric keys. */
-    
-    returnedClass = 0;
-    oserr = SecKeychainItemCopyAttributesAndData(item, NULL, &returnedClass, NULL, NULL, NULL);
-    if (oserr != noErr) {
-        // NSLog(@"SecKeychainItemCopyAttributesAndData(%@) -> %@", (id)item, OFOSStatusDescription(oserr));
-        return NO;
-    }
-    
-    if (returnedClass == kSecInternetPasswordItemClass || returnedClass == CSSM_DL_DB_RECORD_INTERNET_PASSWORD ||
-#if defined(MAC_OS_X_VERSION_MIN_REQUIRED) && (MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9)
-        /* Appleshare passwords are stored as kSecInternetPasswordItemClass in newer OS releases */
-        returnedClass == kSecAppleSharePasswordItemClass || returnedClass == CSSM_DL_DB_RECORD_APPLESHARE_PASSWORD ||
-#endif
-        returnedClass == kSecGenericPasswordItemClass || returnedClass == CSSM_DL_DB_RECORD_GENERIC_PASSWORD) {
-        [buf appendString:@" Password"];
-    } else if (returnedClass == kSecCertificateItemClass || returnedClass == CSSM_DL_DB_RECORD_CERT) {
-        [buf appendString:@" Certificate"];
-    } else if (returnedClass == kSecPublicKeyItemClass) {
-        [buf appendString:@" Public"];
-        describeSecKeyItem(item, returnedClass, buf);
-    } else if (returnedClass == kSecPrivateKeyItemClass) {
-        [buf appendString:@" Private"];
-        describeSecKeyItem(item, returnedClass, buf);
-    } else if (returnedClass == kSecSymmetricKeyItemClass) {
-        [buf appendString:@" Symmetric"];
-        describeSecKeyItem(item, returnedClass, buf);
-    } else {
-        // Unknown class. Not sure we can do any better than -description here.
-        return NO;
-    }
-    
-    return YES;
-}
-
-static const struct { CSSM_ALGORITHMS algid; const char *name; } algnames[] = {
-    { CSSM_ALGID_DH, "DH" },  // Diffie-Hellman
-    { CSSM_ALGID_PH, "PH" },  // Pohlig-Hellman
-    { CSSM_ALGID_DES, "DES" },
-    { CSSM_ALGID_RSA, "RSA" },
-    { CSSM_ALGID_DSA, "DSA" },
-    { CSSM_ALGID_MQV, "MQV" },
-    { CSSM_ALGID_ElGamal, "ElGamal" },
-    
-    { CSSM_ALGID_ECDSA, "ECDSA" },
-    { CSSM_ALGID_ECDH, "ECDH" },
-    { CSSM_ALGID_ECMQV, "ECMQV" },
-    { CSSM_ALGID_ECC, "ECC" },
-    { 0, NULL }
-};
-
-static BOOL uint32attr(const SecKeychainAttributeList *attrs, SecKeychainAttrType tag, UInt32 *val)
-{
-    UInt32 ix;
-    
-    if (!attrs)
-        return NO;
-    
-    for(ix = 0; ix < attrs->count; ix ++) {
-        const SecKeychainAttribute *attr = &( attrs->attr[ix] );
-        if(attr->tag == tag) {
-            if (attr->data != NULL && attr->length == 4) {
-                memcpy(val, attr->data, 4);
-                return YES;
-            }
-        }
-    }
-    
-    return NO;
-}
-
-static void boolattr(const SecKeychainAttributeList *attrs, SecKeychainAttrType tag, int ch, NSMutableString *buf)
-{
-    UInt32 v;
-    if (uint32attr(attrs, tag, &v)) {
-        if (!v) {
-            ch = tolower(ch);
-        }
-        unichar utf16[1] = { (unichar)ch };
-        CFStringAppendCharacters((CFMutableStringRef)buf, utf16, 1);
-    }
-}
-
-static void describeSecKeyItem(SecKeychainItemRef item, SecItemClass itemClass, NSMutableString *buf)
-{
-    OSStatus oserr;
-    SecKeychainAttributeList *returnedAttributes;
-    static const UInt32 keyAttributeCount = 2;
-    static const UInt32 keyAttributeTags[2]     = { kSecKeyKeyType, kSecKeyKeySizeInBits };
-    static const UInt32 keyAttributeFormats[2]  = { CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32 };
-    
-    static const UInt32 moreKeyAttributeCount = 8;
-    static const UInt32 moreKeyAttributeTags[8]     = { kSecKeyPermanent, kSecKeyEncrypt, kSecKeyDecrypt, kSecKeyDerive, kSecKeySign, kSecKeyVerify, kSecKeyWrap, kSecKeyUnwrap };
-    static const UInt32 moreKeyAttributeFormats[8]  = { CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32 };
-    
-    SecKeychainAttributeInfo queryAttributes = { keyAttributeCount, (UInt32 *)keyAttributeTags, (UInt32 *)keyAttributeFormats };
-    
-    returnedAttributes = NULL;
-    oserr = SecKeychainItemCopyAttributesAndData(item, &queryAttributes, NULL, &returnedAttributes, NULL, NULL);
-    if (oserr == noErr) {
-        UInt32 v;
-        BOOL alg = NO;
-        if (uint32attr(returnedAttributes, kSecKeyKeyType, &v)) {
-            for(int i = 0; algnames[i].name; i++) {
-                if(algnames[i].algid == v) {
-                    [buf appendFormat:@" %s", algnames[i].name];
-                    alg = YES;
-                    break;
-                }
-            }
-            if (!alg) {
-                [buf appendFormat:@" alg#%u", (unsigned int)v];
-                alg = YES;
-            }
-        }
-        
-        if (uint32attr(returnedAttributes, kSecKeyKeySizeInBits, &v)) {
-            if (alg)
-                [buf appendFormat:@"-%u", (unsigned int)v];
-            else
-                [buf appendFormat:@"%u-bit", (unsigned int)v];
-        }
-        
-        SecKeychainItemFreeAttributesAndData(returnedAttributes, NULL);
-    }
-    
-    queryAttributes = (SecKeychainAttributeInfo){ moreKeyAttributeCount, (UInt32 *)moreKeyAttributeTags, (UInt32 *)moreKeyAttributeFormats };
-    returnedAttributes = NULL;
-    oserr = SecKeychainItemCopyAttributesAndData(item, &queryAttributes, NULL, &returnedAttributes, NULL, NULL);
-    if (oserr == noErr) {
-        [buf appendString:@" ["];
-        boolattr(returnedAttributes, kSecKeyEncrypt,  'E', buf);
-        boolattr(returnedAttributes, kSecKeyDecrypt,  'D', buf);
-        boolattr(returnedAttributes, kSecKeyDerive,   'R', buf);
-        boolattr(returnedAttributes, kSecKeySign,     'S', buf);
-        boolattr(returnedAttributes, kSecKeyVerify,   'V', buf);
-        boolattr(returnedAttributes, kSecKeyWrap,     'W', buf);
-        boolattr(returnedAttributes, kSecKeyUnwrap,   'U', buf);
-        [buf appendString:@"]"];
-        
-        UInt32 v;
-        if (uint32attr(returnedAttributes, kSecKeyPermanent, &v)) {
-            if (v)
-                [buf appendString:@" perm"];
-            else
-                [buf appendString:@" temp"];
-        }
-        
-        SecKeychainItemFreeAttributesAndData(returnedAttributes, NULL);
-    }
-}
-
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7 && ( !defined(AVOID_SecItemCopyMatching) || defined(OMNI_ASSERTIONS_ON) )
-
-static CFTypeRef secClassFromCFTypeID(CFTypeID what)
-{
-    if (what == SecKeyGetTypeID())
-        return kSecClassKey;
-    else if (what == SecCertificateGetTypeID())
-        return kSecClassCertificate;
-    else if (what == SecIdentityGetTypeID())
-        return kSecClassIdentity;
-    else
-        return NULL; // Will probably cause SecItemCopyMatching() to fail, but might as well try
-}
-
-static BOOL already_whined = NO;
-static void whine_once(unsigned int lineno)
-{
-    if (!already_whined) {
-        already_whined = YES;
-        
-        NSLog(@"[%u] Working around RADAR 10155924", lineno);
-    }
-}
-#define WHINE whine_once(__LINE__)
-
-/* Sanity-checks the result of SecItemCopyMatching() */
-static CFDictionaryRef secItemCopiedSingleSanityCheck(SecKeyRef queryKey, CFTypeRef result)
-{
-    if (!result)
-        return NULL;
-    
-    if (CFGetTypeID(result) != CFArrayGetTypeID())
-        return NULL;
-    
-    // This function is mostly here to guard against RADAR 10155924, in which SecItemCopyMatching() returns keys other than the one it was asked about (often several at a time), or occasionally claims the key you just handed it doesn't exist.
-    CFIndex count = CFArrayGetCount((CFArrayRef)result);
-    if (count != 1) {
-        // SecItemCopyMatching() usually doesn't actually work correctly.
-        WHINE;
-        return NULL;
-    }
-    
-    CFDictionaryRef info = CFArrayGetValueAtIndex((CFArrayRef)result, 0);
-    if (CFGetTypeID(info) != CFDictionaryGetTypeID()) {
-        // I haven't seen this happen, but I don't really trust SecItemCopyMatching
-        WHINE;
-        return NULL;
-    }
-    
-    CFTypeRef returnedRef;
-    if (!CFDictionaryGetValueIfPresent(info, kSecValueRef, &returnedRef) || returnedRef != queryKey) {
-        WHINE;
-        return NULL;
-    }
-    
-    CFTypeRef returnedClass;
-    if (!CFDictionaryGetValueIfPresent(info, kSecClass, &returnedClass)) {
-        WHINE;
-        return NULL;
-    }
-    
-    CFTypeRef expectedClass = secClassFromCFTypeID(CFGetTypeID(queryKey));
-    if (returnedClass == NULL || (expectedClass != NULL && returnedClass != expectedClass)) {
-        WHINE;
-        return NULL;
-    }
-    
-    // Can't prove that it's bad, might as well use it *sigh*
-    return info;
-}
-#endif
-
-#if !defined(AVOID_SecItemCopyMatching) && defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
-
-static void addflag(CFDictionaryRef d, CFTypeRef k, CFMutableStringRef buf, int asciiChar)
-{
-    CFTypeRef v = NULL;
-    if (CFDictionaryGetValueIfPresent(d, k, &v)) {
-        if (!CFBooleanGetValue(v))
-            asciiChar = tolower(asciiChar);
-        UniChar chbuf[1];
-        chbuf[0] = asciiChar;
-        CFStringAppendCharacters(buf, chbuf, 1);
-    }
-}
-
-static BOOL describeSecItemLion(CFTypeRef item, CFTypeID what, NSMutableString *buf)
-{
-    /* We need to look up the class of the item and tell SecItemCopyMatching() that that's the class we're interested in. You'd think it would be able to do that itself... */
-    
-    CFTypeRef secClass = secClassFromCFType(what);
-    
-    /* We use kSecUseItemList because it works, although the documentation suggests we should use kSecMatchItemList (kSecUseItemList is in "Other Constants", which isn't listed as one of the sets of constants SecItemCopyMatching() looks at). */
-    NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-                           [NSArray arrayWithObject:(id)item], (id)kSecUseItemList,
-                           //[NSArray arrayWithObject:(id)item], (id)kSecMatchItemList,
-                           (id)kCFBooleanTrue, (id)kSecReturnAttributes,
-                           (id)kCFBooleanTrue, (id)kSecReturnRef,
-                           (id)kSecMatchLimitAll, (id)kSecMatchLimit,
-                           (id)secClass, (id)kSecClass,  // Note secClass is last since it may be nil
-                           nil];
-    CFTypeRef result = NULL;
-    OSStatus err = SecItemCopyMatching((CFDictionaryRef)query, &result);
-    if (err != noErr || !result) {
-        NSLog(@"SecItemCopyMatching(%@) -> %@", query, OFOSStatusDescription(err));
-    }
-    
-    // NSLog(@"kSecReturnAttributes(%@) -> %@", query, [(id)result description]);
-    
-    CFDictionaryRef attrDict = secItemCopySingleSanityCheck(item, result);
-    if (!attrDict) {
-        CFRelease(result);
-        return NO;
-    }
-    
-    /* There are two different class keys for keys: kSecClass->key, and kSecAttrKeyClass->whatkindofkey */
-    secClass = CFDictionaryGetValue(attrDict, kSecClass);
-    if (CFEqual(secClass, kSecClassKey)) {
-        CFTypeRef secKeyClass = CFDictionaryGetValue(attrDict, kSecAttrKeyClass);
-        if (CFEqual(secKeyClass, kSecAttrKeyClassPublic)) {
-            [buf appendString:@" Public"];
-        } else if (CFEqual(secKeyClass, kSecAttrKeyClassPrivate)) {
-            [buf appendString:@" Private"];
-        } else if (CFEqual(secKeyClass, kSecAttrKeyClassSymmetric)) {
-            [buf appendString:@" Symmetric"];
-        } else {
-            [buf appendFormat:@" kcls=%@", (id)secKeyClass];
-        }
-    }
-    
-    CFTypeRef secAlgorithm = NULL;
-    if (CFDictionaryGetValueIfPresent(attrDict, kSecAttrKeyType, &secAlgorithm)) {
-        NSString *algname;
-        if (CFEqual(secAlgorithm, kSecAttrKeyTypeRSA)) { algname = @"RSA"; }
-        else if (CFEqual(secAlgorithm, kSecAttrKeyTypeDSA)) { algname = @"DSA"; }
-        else if (CFEqual(secAlgorithm, kSecAttrKeyTypeAES)) { algname = @"AES"; }
-        else if (CFEqual(secAlgorithm, kSecAttrKeyType3DES)) { algname = @"3DES"; } 
-        else if (CFEqual(secAlgorithm, kSecAttrKeyTypeCAST)) { algname = @"CAST"; } 
-        else if (CFEqual(secAlgorithm, kSecAttrKeyTypeECDSA)) { algname = @"ECDSA"; } 
-        else { algname = [NSString stringWithFormat:@"alg#%@", secAlgorithm]; }
-        
-        CFTypeRef bitSize = NULL;
-        if (CFDictionaryGetValueIfPresent(attrDict, kSecAttrEffectiveKeySize, &bitSize) ||
-            CFDictionaryGetValueIfPresent(attrDict, kSecAttrKeySizeInBits, &bitSize)) {
-            [buf appendFormat:@" %@-%@", algname, bitSize];
-        } else {
-            [buf appendFormat:@" %@", algname];
-        }
-    }
-    
-    CFMutableStringRef fbuf = CFStringCreateMutable(kCFAllocatorDefault, 8);
-    addflag(attrDict, kSecAttrCanEncrypt,  fbuf, 'E');
-    addflag(attrDict, kSecAttrCanDecrypt,  fbuf, 'D');
-    addflag(attrDict, kSecAttrCanDerive,   fbuf, 'R');
-    addflag(attrDict, kSecAttrCanSign,     fbuf, 'S');
-    addflag(attrDict, kSecAttrCanVerify,   fbuf, 'V');
-    addflag(attrDict, kSecAttrCanWrap,     fbuf, 'W');
-    addflag(attrDict, kSecAttrCanUnwrap,   fbuf, 'U');
-    if (CFStringGetLength(fbuf) > 0) {
-        [buf appendFormat:@" [%@]", fbuf];
-    }
-    CFRelease(fbuf);
-    
-    CFTypeRef isPermanent = NULL;
-    if (CFDictionaryGetValueIfPresent(attrDict, kSecAttrIsPermanent, &isPermanent)) {
-        if (CFBooleanGetValue(isPermanent))
-            [buf appendString:@" perm"];
-        else
-            [buf appendString:@" temp"];
-    }
-    
-    CFRelease(result);
-    
-    return YES;
-}
-
-#endif /* 10.7 and above */
-
-static int OFSecKeyGetGroupSize_cssmdb(SecKeyRef k);
-static int OFSecKeyGetGroupSize_csp(SecKeyRef k);
-
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7 && ( !defined(AVOID_SecItemCopyMatching) || defined(OMNI_ASSERTIONS_ON) )
-
-static int OFSecKeyGetGroupSize_copymatching(SecKeyRef k)
-{
-    OSStatus oserr;
-    
-    CFTypeRef secClass = secClassFromCFTypeID(CFGetTypeID(k));
-    
-    /* We use kSecUseItemList+kSecMatchItemList because it sometimes works, although the documentation suggests we should use kSecMatchItemList (kSecUseItemList is in "Other Constants", which isn't listed as one of the sets of constants SecItemCopyMatching() looks at). This set of parameters is chosen because it tickles SecItemCopyMatching()'s bugs in a detectable way--- it tends to return information about the wrong key, and we'd rather fail here than return garbage. */
-    NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-                           [NSArray arrayWithObject:(id)k], (id)kSecUseItemList,
-                           [NSArray arrayWithObject:(id)k], (id)kSecMatchItemList,
-                           (id)kCFBooleanTrue, (id)kSecReturnAttributes,
-                           (id)kCFBooleanTrue, (id)kSecReturnRef,
-                           (id)kSecMatchLimitAll, (id)kSecMatchLimit,
-                           (id)secClass, (id)kSecClass,  // Note secClass is last since it may be nil
-                           nil];
-    CFTypeRef result = NULL;
-    oserr = SecItemCopyMatching((CFDictionaryRef)query, &result);
-    if (oserr != noErr || !result) {
-        if (oserr == errSecItemNotFound) {
-            WHINE;
-        } else {
-#ifdef DEBUG
-            NSLog(@"SecItemCopyMatching(%@) -> %@", query, OFOSStatusDescription(oserr));
-#endif
-        }
-        return -1;
-    }
-
-    CFDictionaryRef info;
-    int bits = -1;
-    CFNumberRef bitSize = NULL;
-    if (!(info = secItemCopiedSingleSanityCheck(k, result))) {
-        bits = -1;
-    } else if (!CFDictionaryGetValueIfPresent(info, kSecAttrKeySizeInBits, (const void **)&bitSize)) {
-        WHINE;
-        bits = -1;
-    } else if (!bitSize || !(CFGetTypeID(bitSize) == CFNumberGetTypeID())) {
-        /* Remember, SecItemCopyMatching() is extremely buggy, don't trust it */
-        WHINE;
-        bits = -1;
-    } else if (!CFNumberGetValue(bitSize, kCFNumberIntType, &bits)) {
-        bits = -1;
-    } else if (bits < 160) {
-        // The smallest key size we expect to see is ECDSA over p256
-        WHINE;
-        bits = -1;
-    }
-    
-    CFRelease(result);
-    
-    return bits;
-}
-#endif
-
-int OFSecKeyGetGroupSize(SecKeyRef k)
-{
-    /* In order to correctly format DSA and ECDSA signatures, we need to know the key's "size" --- the number of bits it takes to represent a member of the generated group (aka the number of bits in the largest exponent the algorithm will use). On 10.6, 10.7, and some 10.8 betas, this information is returned by SecKeyGetBlockSize(). In 10.8, though, that function's behavior changed to return some other number (unclear what, although the documentation now indicates that it wasn't ever supposed to return the value it was returning in 10.6 and 10.7). Here we use SecKeyGetCSSMKey() or SecKeychainItemCopyAttributesAndData(); if SecItemCopyMatching() starts to work in some future OS release we could switch to that instead.
-     
-     RADAR references:
-         SecItemCopyMatching - 10155924
-         SecKeyGetBlockSize  - 11765613
-         No better API       - 11840882
-     */
-    
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7 && ( !defined(AVOID_SecItemCopyMatching) || defined(OMNI_ASSERTIONS_ON) )
-    int lion_result = OFSecKeyGetGroupSize_copymatching(k);
-#if !defined(OMNI_ASSERTIONS_ON)
-    if (lion_result > 0)
-        return lion_result;
-#endif
-#endif
-
-    int csp_result = OFSecKeyGetGroupSize_csp(k);
-#if !defined(OMNI_ASSERTIONS_ON)
-    if (csp_result > 0)
-        return csp_result;
-#endif
-    
-    int cssmdb_result = OFSecKeyGetGroupSize_cssmdb(k);
-#if !defined(OMNI_ASSERTIONS_ON)
-    if (cssmdb_result > 0)
-        return cssmdb_result;
-#endif
-    
-    
-#ifdef OMNI_ASSERTIONS_ON
-    if (csp_result > 0  && cssmdb_result > 0)   { OBASSERT(csp_result  == cssmdb_result); }
-#if defined(MAC_OS_X_VERSION_10_7) && (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7)
-    if (lion_result > 0 && csp_result > 0)      { OBASSERT(lion_result == csp_result);    }
-    if (lion_result > 0 && cssmdb_result > 0)   { OBASSERT(lion_result == cssmdb_result); }
-    
-    
-    if (lion_result > 0) return lion_result;
-#endif
-#endif
-    if (csp_result > 0) return csp_result;
-    return cssmdb_result;
-}
-
 
 #pragma mark X.509 Certificate Utilities
 
@@ -967,44 +494,27 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
     // Re-use any CertificateRefs from auxiliaryCertificates --- don't create new ones.
     for(CFIndex inputCertIndex = 0; inputCertIndex < CFArrayGetCount(auxiliaryCertificates); inputCertIndex ++) {
         SecCertificateRef aCert = (SecCertificateRef)CFArrayGetValueAtIndex(auxiliaryCertificates, inputCertIndex);
-#if !defined(MAC_OS_X_VERSION_10_6) || MAC_OS_X_VERSION_10_6 > MAC_OS_X_VERSION_MIN_REQUIRED
-        CSSM_DATA bufReference = { 0, 0 };
-        if (SecCertificateGetData(aCert, &bufReference) == noErr) {
-            NSData *knownBlob = [[NSData alloc] initWithBytesNoCopy:bufReference.Data length:bufReference.Length freeWhenDone:NO];
-#else
-            NSData *knownBlob = (OB_BRIDGE NSData *)SecCertificateCopyData(aCert);
-        if (knownBlob != NULL) {
-#endif
+        NSData *knownBlob = CFBridgingRelease(SecCertificateCopyData(aCert));
+        if (knownBlob != nil) {
             [certBlobs removeObject:knownBlob];
             if (fallbackBlob && [fallbackBlob isEqualToData:knownBlob])
-                [testCertificates addObject:(id)aCert];
-            [knownBlob release];
+                [testCertificates addObject:(__bridge id)aCert];
         }
     }
     
     // Create SecCertificateRefs from any remaining (non-duplicate) data blobs.
     OFForEachObject([certBlobs objectEnumerator], NSData *, aBlob) {
-#if !defined(MAC_OS_X_VERSION_10_6) || MAC_OS_X_VERSION_10_6 > MAC_OS_X_VERSION_MIN_REQUIRED
-        CSSM_DATA blob = { .Data = (void *)[aBlob bytes], .Length = [aBlob length] };
-        SecCertificateRef certReference = NULL;
-        OSStatus err = SecCertificateCreateFromData(&blob, CSSM_CERT_X_509v3, CSSM_CERT_ENCODING_BER, &certReference);
-        if (err != noErr) {
-            osError(errorInfo, err, @"SecCertificateCreateFromData");
-            continue;
-        }
-#else
-        SecCertificateRef certReference = SecCertificateCreateWithData(kCFAllocatorDefault, (CFDataRef)aBlob);
+        SecCertificateRef certReference = SecCertificateCreateWithData(kCFAllocatorDefault, (__bridge CFDataRef)aBlob);
         if (!certReference) {
             // RADAR 10057193: There's no way to know why SecCertificateCreateWithData() failed.
             // (However, see RADAR 7514859: SecCertificateCreateFromData will accept inputs that it's documented to return NULL for, and return an unusable SecCertificateRef; I guess we're no worse off with no error-reporting API than with an error-reporting API that doesn't work.)
             osError(errorInfo, paramErr, @"SecCertificateCreateWithData");
             continue;
         }
-#endif
         
         CFArrayAppendValue(auxiliaryCertificates, certReference);
         if (fallbackBlob && [fallbackBlob isEqualToData:aBlob])
-            [testCertificates addObject:(id)certReference];
+            [testCertificates addObject:(__bridge id)certReference];
         CFRelease(certReference);
     }
     
@@ -1019,7 +529,7 @@ NSArray *OFXMLSigFindX509Certificates(xmlNode *keyInfoNode, CFMutableArrayRef au
             SecCertificateRef aCert = (SecCertificateRef)CFArrayGetValueAtIndex(auxiliaryCertificates, certIndex);
             if (certificateMatchesSKI(aCert, subjectKeyIdentifier)) {
                 /* The SubjectKeyIdentifier extension matches; this cert contains a key we could use to validate */
-                [testCertificates addObject:(id)aCert];
+                [testCertificates addObject:(__bridge id)aCert];
             }
         }
     }
@@ -1038,42 +548,25 @@ NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputForma
     SecExternalFormat inputFormat;
     SecExternalItemType itemType;
     
-    /* Oh Apple, why do you hate us so? */
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
     SecItemImportExportKeyParameters keyParams = (SecItemImportExportKeyParameters){
-#else
-    SecKeyImportExportParameters keyParams = (SecKeyImportExportParameters){
-#endif
         .version = SEC_KEY_IMPORT_EXPORT_PARAMS_VERSION,  /* Yes, both versions have the same version number */
         .flags = 0,
         .passphrase = NULL,
         .alertTitle = NULL,  /* undocumentedly does nothing: see RADAR #7530393 */
         .alertPrompt = NULL,
         .accessRef = NULL,
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
         .keyUsage = (CFArrayRef)[NSArray arrayWithObject:(id)kSecAttrCanVerify],
         /* The docs say to use CSSM_KEYATTR_EXTRACTABLE here, but that's clearly wrong--- apparently nobody updated the docs after updating the API to purge all references to CSSM. kSecKeyExtractable exists, but it's the wrong type and is deprecated. Anyway, certificates are generally extractable, so I guess we can rely on the default behavior being what we want here, but it would be nice if Lion's crypto were a little less half-baked.
          Update: According to the libsecurity sources, the only thing accepted in keyAttributes is kSecAttrIsPermanent. SecItemImport() just converts the strings to CSSM_FOO flags and calls SecKeychainItemImport(). (RADAR 10428209, 10274369)
          */
         .keyAttributes = NULL
-#else
-        .keyUsage = CSSM_KEYUSE_VERIFY,
-        .keyAttributes = CSSM_KEYATTR_EXTRACTABLE | CSSM_KEYATTR_RETURN_DATA
-#endif
     };
     CFArrayRef outItems;
     
     inputFormat = inputFormat_;
     itemType = kSecItemTypeCertificate;
     
-    OSStatus err = 
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
-                   SecItemImport(
-#else
-                   SecKeychainItemImport(
-#endif    
-                                         (CFDataRef)pemFile, (CFStringRef)path,
-                                         &inputFormat, &itemType, 0, &keyParams, NULL, &outItems);
+    OSStatus err = SecItemImport((__bridge CFDataRef)pemFile, (__bridge CFStringRef)path, &inputFormat, &itemType, 0, &keyParams, NULL, &outItems);
     
     [pemFile release];
     
@@ -1088,58 +581,4 @@ NSArray *OFReadCertificatesFromFile(NSString *path, SecExternalFormat inputForma
     return CFBridgingRelease(outItems);
 }
                                  
-                                 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#else
-// Annoyingly, Apple's GCC doesn't understand "GCC diagnostic push". This code is at the end of the file to minimize the amount of other code unintentionally covered by the pragma here.
-//#pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-Wdeprecated-declarations"
-#endif
-    
-    
-static int OFSecKeyGetGroupSize_cssmdb(SecKeyRef k)
-{
-    /* SecKeychainItemCopyAttributesAndData() is not marked as deprecated on 10.7, but that's presumably an oversight on Apple's part, since it uses the CSSM_DB constants. Anyway, it only works for keys that are in a keychain, not for unattached keys. */
-    OSStatus oserr;
-    SecKeychainAttributeList *returnedAttributes;
-    static const UInt32 keyAttributeCount = 2;
-    static const UInt32 keyAttributeTags[2]     = { kSecKeyKeyType, kSecKeyKeySizeInBits };
-    static const UInt32 keyAttributeFormats[2]  = { CSSM_DB_ATTRIBUTE_FORMAT_UINT32, CSSM_DB_ATTRIBUTE_FORMAT_UINT32 };
-    
-    SecKeychainAttributeInfo queryAttributes = { keyAttributeCount, (UInt32 *)keyAttributeTags, (UInt32 *)keyAttributeFormats };
-    
-    returnedAttributes = NULL;
-    oserr = SecKeychainItemCopyAttributesAndData((SecKeychainItemRef)k, &queryAttributes, NULL, &returnedAttributes, NULL, NULL);
-    if (oserr == noErr) {
-        UInt32 v;
-        int result;
-        if (uint32attr(returnedAttributes, kSecKeyKeySizeInBits, &v))
-            result = v;
-        else
-            result = -1;
-        SecKeychainItemFreeAttributesAndData(returnedAttributes, NULL);
-        return result;
-    }
-    
-    return -1;
-}
-
-static int OFSecKeyGetGroupSize_csp(SecKeyRef k)
-{
-    /* This is the simplest, most reliable, most straightforward, best-documented way to get the information we need; needless to day, it's deprecated. See RADAR 11840882 for a request for a working replacement. */
-    OSStatus oserr;
-    const CSSM_KEY *keyinfo = NULL;
-    oserr = SecKeyGetCSSMKey(k, &keyinfo);
-    
-    if (oserr == noErr &&
-        keyinfo != NULL &&
-        keyinfo->KeyHeader.HeaderVersion == CSSM_KEYHEADER_VERSION &&
-        keyinfo->KeyHeader.LogicalKeySizeInBits > 0) {
-        return keyinfo->KeyHeader.LogicalKeySizeInBits;
-    }
-    
-    return -1;
-}
 

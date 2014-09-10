@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -105,28 +105,21 @@ static BOOL OFBundledClassDebug = NO;
 
 + (OFBundledClass *)bundledClassNamed:(NSString *)aClassName;
 {
-    NSException *raisedException = nil;
-    OFBundledClass *bundledClass;
-
-    if (!aClassName || ![aClassName length])
-	return nil;
+    if ([NSString isEmptyString:aClassName])
+        return nil;
 
     [bundleLock lock];
-    NS_DURING {
-        bundledClass = [bundledClassRegistry objectForKey:aClassName];
+    @try {
+        OFBundledClass *bundledClass = [bundledClassRegistry objectForKey:aClassName];
         if (!bundledClass) {
             bundledClass = [[self alloc] initWithClassName:aClassName];
             if (bundledClass)
                 [bundledClassRegistry setObject:bundledClass forKey:aClassName];
         }
-    } NS_HANDLER {
-        raisedException = localException;
-        bundledClass = nil;
-    } NS_ENDHANDLER;
-    [bundleLock unlock];
-    if (raisedException)
-        [raisedException raise];
-    return bundledClass;
+        return bundledClass;
+    } @finally {
+        [bundleLock unlock];
+    }
 }
 
 + (OFBundledClass *)createBundledClassWithName:(NSString *)aClassName bundle:(NSBundle *)aBundle description:(NSDictionary *)aDescription;
@@ -246,7 +239,7 @@ static BOOL OFBundledClassDebug = NO;
     if (OFBundledClassDebug)
         NSLog(@"-[OFBundledClass loadBundledClass], className=%@, bundle=%@", className, bundle);
 
-    NS_DURING {
+    @try {
         [self loadDependencyClasses];
 
         if (bundle) {
@@ -278,10 +271,9 @@ static BOOL OFBundledClassDebug = NO;
         if (!bundleClass)
             NSLog(@"OFBundledClass unable to find class named '%@'", className);
         loaded = YES;
-
-    } NS_HANDLER {
-        NSLog(@"Error loading %@: %@", bundle, [localException reason]);
-    } NS_ENDHANDLER;
+    } @catch (NSException *exc) {
+        NSLog(@"Error loading %@: %@", bundle, [exc reason]);
+    }
 
     [bundleLock unlock];
     [NSThread unlockMainThread];

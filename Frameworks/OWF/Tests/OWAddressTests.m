@@ -1,4 +1,4 @@
-// Copyright 2003-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,16 +11,16 @@
 #import <Foundation/Foundation.h>
 #import <OmniBase/rcsid.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 RCS_ID("$Id$");
 
-@interface OWAddressTests : SenTestCase
+@interface OWAddressTests : XCTestCase
 {
 }
 @end
 
-@interface OWURLTests : SenTestCase
+@interface OWURLTests : XCTestCase
 {
 }
 @end
@@ -31,7 +31,7 @@ RCS_ID("$Id$");
 
 - (void)testDirtyStringParsing
 {
-#define DirtyString(in, out) shouldBeEqual([[OWAddress addressForDirtyString:in] addressString], out)
+#define DirtyString(in, out) XCTAssertEqualObjects([[OWAddress addressForDirtyString:in] addressString], out)
 
     DirtyString(@"omnigroup", @"<URL:http://www.omnigroup.com/>");
     DirtyString(@"omnigroup/products", @"<URL:http://www.omnigroup.com/products>");
@@ -50,7 +50,7 @@ RCS_ID("$Id$");
 
 static inline void testURL(OWURLTests *self, NSString *inputString, NSString *expectedResult)
 {
-    shouldBeEqual([[OWURL urlFromDirtyString:inputString] compositeString], expectedResult);
+    XCTAssertEqualObjects([[OWURL urlFromDirtyString:inputString] compositeString], expectedResult);
 }
 
 static inline void testSimpleURL(OWURLTests *self, NSString *inputString)

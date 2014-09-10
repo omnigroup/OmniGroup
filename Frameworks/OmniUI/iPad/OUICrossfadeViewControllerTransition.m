@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,25 +23,19 @@ RCS_ID("$Id$");
 
 #pragma mark - UIViewControllerAnimatedTransitioning
 
-- (NSTimeInterval)transitionDuration:(id<UIViewControllerContextTransitioning>)transitionContext;
-{
-    return self.duration;
-}
-
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext;
 {
-    UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    UIViewController *toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    [super animateTransition:transitionContext];
     
-    UIView *fromView = [fromViewController view];
-    UIView *toView = [toViewController view];
+    UIView *fromView = [self.fromViewController view];
+    UIView *toView = [self.toViewController view];
     
     OBASSERT([fromView isDescendantOfView:[transitionContext containerView]]);
     OBASSERT(![toView isDescendantOfView:[transitionContext containerView]]);
 
-    toView.frame = [transitionContext finalFrameForViewController:toViewController];
+    toView.frame = [transitionContext finalFrameForViewController:self.toViewController];
     
-    [UIView transitionFromView:fromView toView:toView duration:[self transitionDuration:transitionContext] options:UIViewAnimationOptionTransitionCrossDissolve completion:^(BOOL finished) {
+    [UIView transitionFromView:fromView toView:toView duration:self.duration options:UIViewAnimationOptionTransitionCrossDissolve completion:^(BOOL finished) {
         [transitionContext completeTransition:finished];
     }];
 }

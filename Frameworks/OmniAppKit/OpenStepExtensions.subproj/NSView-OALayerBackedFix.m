@@ -1,4 +1,4 @@
-// Copyright 2000-2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,8 @@ static NSString *const AddedSubviewsKey = @"com.omnigroup.OmniAppKit.OALayerBack
     if (_NSTileContainerLayerClass) {
         original_addSubview_positioned_relativeTo = (typeof(original_addSubview_positioned_relativeTo))OBReplaceMethodImplementationWithSelector(self, @selector(addSubview:positioned:relativeTo:), @selector(OALayerBackedFix_addSubview:positioned:relativeTo:));
     } else {
-        if (![OFVersionNumber isOperatingSystemMavericksOrLater]) {
+        BOOL isOperatingSystemMavericksOrLater = YES; // [OFVersionNumber isOperatingSystemMavericksOrLater]
+        if (!isOperatingSystemMavericksOrLater) {
             OBASSERT_NOT_REACHED("Cannot find class _NSTileContainerLayer; unable to warn about <bug:///86517> (13415520: -[NSView addSubview:positioned:relativeTo:] inserts sublayers in wrong position)");
         }
     }

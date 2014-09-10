@@ -1,4 +1,4 @@
-// Copyright 2007-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -436,7 +436,6 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         NSImage *icon = [[NSWorkspace sharedWorkspace] iconForFile:installationDirectory];
         if (icon && [icon isValid]) {
             icon = [icon copy];
-            [icon setScalesWhenResized:YES];
             [icon setSize:(NSSize){fontSize, fontSize}];
             [infix replaceCharactersInRange:(NSRange){0, 0} withString:[NSString stringWithCharacter:0x00A0]]; // non-breaking space
             [infix replaceCharactersInRange:(NSRange){0, 0} withAttributedString:[NSAttributedString attributedStringWithImage:icon]];

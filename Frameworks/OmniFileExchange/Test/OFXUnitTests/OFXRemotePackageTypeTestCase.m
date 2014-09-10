@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,9 +15,9 @@ RCS_ID("$Id$")
 
 @implementation OFXRemotePackageTypeTestCase
 
-- (NSArray *)extraPackagePathExtensionsForAgent:(NSUInteger)flag;
+- (NSArray *)extraPackagePathExtensionsForAgentName:(NSString *)agentName;
 {
-    if (flag == AgentA)
+    if ([agentName isEqual:OFXTestFirstAgentName])
         return @[@"package-on-client-a"];
     return nil;
 }

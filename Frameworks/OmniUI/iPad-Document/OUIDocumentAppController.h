@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,6 @@
 - (NSArray *)editableFileTypes;
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 
-- (void)createNewDocumentAtURL:(NSURL *)url templateURL:(NSURL *)templateURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 - (IBAction)makeNewDocument:(id)sender;
 - (IBAction)closeDocument:(id)sender;
 - (void)closeDocumentWithCompletionHandler:(void(^)(void))completionHandler;
@@ -43,7 +42,7 @@
 - (void)documentWillRebuildViewController:(OUIDocument *)document;
 - (void)documentDidRebuildViewController:(OUIDocument *)document;
 
-- (void)openDocument:(ODSFileItem *)fileItem showActivityIndicator:(BOOL)showActivityIndicator;
+- (void)openDocument:(ODSFileItem *)fileItem;
 
 @property(nonatomic,readonly) OUIDocument *document;
 
@@ -83,6 +82,7 @@
 - (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(ODSFileItem *)fileItem;
 
 // Subclass responsibility
+- (UIImage *)documentPickerBackgroundImage;
 - (Class)documentClassForURL:(NSURL *)url;
 - (UIView *)pickerAnimationViewForTarget:(OUIDocument *)document;
 - (NSArray *)toolbarItemsForDocument:(OUIDocument *)document;

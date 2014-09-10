@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <OmniUIDocument/OUIDocumentPickerScrollView.h>
 #import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniDocumentStore/ODSFolderItem.h>
+#import <OmniUI/UIView-OUIExtensions.h>
 
 RCS_ID("$Id$")
 
@@ -45,11 +46,14 @@ RCS_ID("$Id$")
     
     UIView *destinationView = [destinationController view];
     UIView *sourceView = [sourceController view];
+    UIView *sourceViewSnapshot = [sourceView snapshotViewAfterScreenUpdates:NO];
     CGRect fromFrame = sourceView.frame;
     
     CGRect previewFrame = [fromPreview convertRect:fromPreview.bounds toView:sourceView];
     
-    UIView *shield = [sourceController.backgroundView snapshotViewAfterScreenUpdates:YES];
+    UIView *background = sourceController.backgroundView;
+    UIImage *backgroundImage = [background snapshotImageWithRect:background.bounds];
+    UIImageView *shield = [[UIImageView alloc] initWithImage:backgroundImage];
     shield.alpha = 0.0f;
     
     UIView *border = [fromPreview snapshotViewAfterScreenUpdates:NO];
@@ -58,9 +62,13 @@ RCS_ID("$Id$")
     
     [UIView performWithoutAnimation:^{
         destinationView.frame = fromFrame;
-        [transitionContext.containerView insertSubview:destinationView belowSubview:sourceView];
-        [transitionContext.containerView insertSubview:shield aboveSubview:sourceView];
+        sourceViewSnapshot.frame = fromFrame;
+        shield.frame = fromFrame;
         
+        [transitionContext.containerView insertSubview:sourceViewSnapshot aboveSubview:sourceView];
+        [transitionContext.containerView insertSubview:destinationView belowSubview:sourceViewSnapshot];
+        [transitionContext.containerView insertSubview:shield aboveSubview:destinationView];
+
         CGRect startFrame = [sourceView convertRect:previewFrame toView:transitionContext.containerView];
         border.frame = startFrame;
         [transitionContext.containerView insertSubview:border aboveSubview:shield];
@@ -89,6 +97,11 @@ RCS_ID("$Id$")
             [snapshots addObject:snapshot];
             locationIndex = (locationIndex+1) % 9;
         }
+        
+        [sourceView removeFromSuperview];
+        sourceViewSnapshot.alpha = 1;
+        destinationView.alpha = 0;
+        shield.alpha = 0;
     }];
     
     id finished = ^(BOOL finished) {
@@ -96,6 +109,8 @@ RCS_ID("$Id$")
         [border removeFromSuperview];
         [snapshots makeObjectsPerformSelector:@selector(removeFromSuperview)];
         [transitionContext completeTransition:finished];
+        
+        [destinationView setAlpha:1];
     };
     
     NSUInteger itemsLeft = snapshotItems.count;
@@ -103,6 +118,9 @@ RCS_ID("$Id$")
     [UIView animateWithDuration:duration/4.0 delay:0 options:0 animations:^{
         shield.alpha = 1.0;
         border.alpha = 0.0;
+        
+        sourceViewSnapshot.alpha = 0.0;
+        
         for (UIView *snapshot in snapshots)
             snapshot.alpha = 1.0;
     } completion:(!itemsLeft ? finished : nil)];
@@ -132,8 +150,10 @@ RCS_ID("$Id$")
     UIView *sourceView = [sourceController view];
     CGRect fromFrame = sourceView.frame;
     
-    OUIDocumentPickerScrollView *fromScrollview = [sourceController mainScrollView];
-    UIView *shield = [sourceController.backgroundView snapshotViewAfterScreenUpdates:NO];
+    UIView *background = sourceController.backgroundView;
+    UIImage *backgroundImage = [background snapshotImageWithRect:background.bounds];
+    UIImageView *shield = [[UIImageView alloc] initWithImage:backgroundImage];
+    shield.backgroundColor = sourceController.view.backgroundColor; // Need the background color from the scroll view because the background image has transparency in it.
     
     NSMutableArray *snapshots = [NSMutableArray array];
     
@@ -142,6 +162,7 @@ RCS_ID("$Id$")
         [transitionContext.containerView insertSubview:destinationView aboveSubview:sourceView];
         [transitionContext.containerView insertSubview:shield aboveSubview:destinationView];
         
+        OUIDocumentPickerScrollView *fromScrollview = [sourceController mainScrollView];
         [fromScrollview layoutIfNeeded];
         [destinationController.mainScrollView layoutIfNeeded];
         

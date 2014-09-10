@@ -1,4 +1,4 @@
-// Copyright 2008-2013 The Omni Group. All rights reserved.
+// Copyright 2008-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,8 +38,8 @@
     
     error = nil;
     NSString *lock2 = [self.connection synchronousLockURL:file error:&error];
-    STAssertNil(lock2, nil);
-    STAssertTrue([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_LOCKED], nil);
+    XCTAssertNil(lock2);
+    XCTAssertTrue([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_LOCKED]);
 }
 
 - (void)testLockUnlockAndRelock;
@@ -57,7 +57,7 @@
     NSString *lock2 = [self.connection synchronousLockURL:file error:&error];
     OBShouldNotError(lock2);
     
-    STAssertFalse([lock1 isEqualToString:lock2], @"Lock tokens should be globally unique");
+    XCTAssertFalse([lock1 isEqualToString:lock2], @"Lock tokens should be globally unique");
 }
 
 - (void)testUnlockWithoutLock;
@@ -68,10 +68,10 @@
     OBShouldNotError([self.connection synchronousPutData:[NSData data] toURL:file error:&error]);
     
     error = nil;
-    STAssertFalse([self.connection synchronousUnlockURL:file token:@"xxx" error:&error], @"Shouldn't be able to remove unknown lock");
+    XCTAssertFalse([self.connection synchronousUnlockURL:file token:@"xxx" error:&error], @"Shouldn't be able to remove unknown lock");
     
     // We'd kind of expect to get back ODAV_HTTP_CONFLICT, but Apache 2.4.3 returns ODAV_HTTP_BAD_REQUEST. This should only be returned when the "Lock-Token" header was missing from the UNLOCK request.
-    STAssertTrue([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_BAD_REQUEST], nil);
+    XCTAssertTrue([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_BAD_REQUEST]);
 }
 
 - (void)testLockAndThenDoubleUnlock;
@@ -87,10 +87,10 @@
     OBShouldNotError([self.connection synchronousUnlockURL:file token:lock error:&error]);
     
     error = nil;
-    STAssertFalse([self.connection synchronousUnlockURL:file token:lock error:&error], @"Second lock should fail");
+    XCTAssertFalse([self.connection synchronousUnlockURL:file token:lock error:&error], @"Second lock should fail");
     
     // We'd kind of expect to get back ODAV_HTTP_CONFLICT, but Apache 2.4.3 returns ODAV_HTTP_BAD_REQUEST. This should only be returned when the "Lock-Token" header was missing from the UNLOCK request.
-    STAssertTrue([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_BAD_REQUEST], nil);
+    XCTAssertTrue([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_BAD_REQUEST]);
 }
 
 - (void)testReplaceLockedCollection;
@@ -141,8 +141,8 @@
     OBShouldNotError(lock);
     
     error = nil;
-    STAssertNil([self.connection synchronousMoveURL:dir1 toURL:dir2 withSourceLock:nil overwrite:NO error:&error], nil);
-    STAssertTrue([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_LOCKED], nil);
+    XCTAssertNil([self.connection synchronousMoveURL:dir1 toURL:dir2 withSourceLock:nil overwrite:NO error:&error]);
+    XCTAssertTrue([error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_LOCKED]);
 }
 
 @end

@@ -79,7 +79,7 @@ static NSArray *TimeSpanUnits = nil;
     
     localizedPluralString = NSLocalizedStringFromTableInBundle(@"months", @"OmniFoundation", bundle, @"time span formatter span");
     localizedSingularString = NSLocalizedStringFromTableInBundle(@"month", @"OmniFoundation", bundle, @"time span formatter span");
-    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"mo", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"mo", @"OmniFoundation", bundle, @"time span formatter span (month)");
 
     [timeSpanUnits addObject:(unit = [OFTimeSpanUnit new])];
     unit.localizedPluralString = [localizedPluralString copy];
@@ -143,7 +143,7 @@ static NSArray *TimeSpanUnits = nil;
     
     localizedPluralString = NSLocalizedStringFromTableInBundle(@"minutes", @"OmniFoundation", bundle, @"time span formatter span");
     localizedSingularString = NSLocalizedStringFromTableInBundle(@"minute", @"OmniFoundation", bundle, @"time span formatter span");
-    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"m", @"OmniFoundation", bundle, @"time span formatter span");
+    localizedAbbreviatedString = NSLocalizedStringFromTableInBundle(@"m", @"OmniFoundation", bundle, @"time span formatter span (minute)");
 
     [timeSpanUnits addObject:(unit = [OFTimeSpanUnit new])];
     unit.localizedPluralString = [localizedPluralString copy];
@@ -623,7 +623,7 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
             OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
             BOOL willDisplaySmallerUnits = (_flags.displayUnits & ~((1 << (unitIndex+1))-1));
             
-            DLOG(@"  unitIndex:%d willDisplaySmallerUnits:%d value:%f", unitIndex, willDisplaySmallerUnits, secondsLeft);
+            DLOG(@"  unitIndex:%d willDisplaySmallerUnits:0x%x value:%f", unitIndex, willDisplaySmallerUnits, secondsLeft);
 	    if (!willDisplaySmallerUnits) {
                 if (_flags.usesArchiveUnitStrings)
 		    smallestUnitString = unit.abbreviatedString;
@@ -662,7 +662,6 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
                 else if (isNegative)
                     [result appendString:@"-"];
 
-                OFTimeSpanUnit *unit = TimeSpanUnits[unitIndex];
                 if (_flags.usesArchiveUnitStrings)
                     [result appendFormat:@"%@%@", numberString, unit.abbreviatedString];
                 else if (shouldUseVerboseFormat) {
@@ -735,7 +734,7 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
     [scanner setCaseSensitive:NO];
     [scanner setCharactersToBeSkipped:[NSCharacterSet characterSetWithCharactersInString:@""]];
     if ([scanner scanCharactersFromSet:roundedCharacterSet intoString:NULL]) {
-        DLOG(@"-[%@ %s]: found rounding characters in '%@'", OBShortObjectDescription(self), _cmd, string);
+        DLOG(@"-[%@ %@]: found rounding characters in '%@'", OBShortObjectDescription(self), NSStringFromSelector(_cmd), string);
     }
     while (1) {
         // Eat whitespace

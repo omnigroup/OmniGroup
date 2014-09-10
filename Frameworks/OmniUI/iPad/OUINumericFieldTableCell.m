@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,13 +24,17 @@ NSString *const OUINumericFieldTableCellValueKey = @"value";
 @end
 
 @implementation OUINumericFieldTableCell
+{
+    BOOL _isEditing;
+    BOOL _supportsDynamicType;
+}
 
 + (instancetype)numericFieldTableCell;
 {
     NSArray *topLevelObjects = [[UINib nibWithNibName:NSStringFromClass([OUINumericFieldTableCell class]) bundle:nil] instantiateWithOwner:nil options:nil];
     OBASSERT(topLevelObjects != nil);
     OBASSERT(topLevelObjects.count == 1);
-    OBASSERT([[topLevelObjects class] isKindOfClass:[OUINumericFieldTableCell class]]);
+    OBASSERT([topLevelObjects.lastObject isKindOfClass:[OUINumericFieldTableCell class]]);
     return topLevelObjects.lastObject;
 }
 
@@ -67,6 +71,24 @@ static id _commonInit(OUINumericFieldTableCell *self)
     return _commonInit(self);
 }
 
+- (void)awakeFromNib;
+{
+    [super awakeFromNib];
+    
+    // setting the accessibilty label so that Wee-Stepper-Plus and Wee-Stepper-Minus aren't used for the button's accessibiltyLabels.
+    self.incrementButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Increment", @"OmniUI", OMNI_BUNDLE, @"increment button accessibility label");
+    self.decrementButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Decrement", @"OmniUI", OMNI_BUNDLE, @"increment button accessibility label");
+    
+    [self _updateFonts];
+}
+
+- (void)prepareForReuse;
+{
+    [super prepareForReuse];
+    
+    [self _updateFonts];
+}
+
 #pragma mark UITextFieldDelegate
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField;
@@ -80,6 +102,7 @@ static id _commonInit(OUINumericFieldTableCell *self)
         self.decrementButton.alpha = 0.0;
         [self setNeedsLayout];
     }];
+    _isEditing = YES;
     return YES;
 }
 
@@ -93,6 +116,7 @@ static id _commonInit(OUINumericFieldTableCell *self)
         self.decrementButton.alpha = 1.0;
         [self setNeedsLayout];
     }];
+    _isEditing = NO;
     [self _updateDisplay]; // ensures that units are added back to the string in case the value was unchanged
 }
 
@@ -107,7 +131,27 @@ static id _commonInit(OUINumericFieldTableCell *self)
     return nonDigitRange.location == NSNotFound; // only OK if there are no non-digits
 }
 
+- (BOOL)textFieldShouldReturn:(UITextField *)textField;
+{
+    OBPRECONDITION(textField == self.valueTextField);
+    [textField endEditing:YES];
+    return NO;
+}
+
 #pragma mark - Public API
+
+- (BOOL)supportsDynamicType;
+{
+    return _supportsDynamicType;
+}
+
+- (void)setSupportsDynamicType:(BOOL)flag;
+{
+    if (_supportsDynamicType != flag) {
+        _supportsDynamicType = flag;
+        [self _updateFonts];
+    }
+}
 
 - (void)setLabelText:(NSString *)labelText;
 {
@@ -212,10 +256,23 @@ static id _commonInit(OUINumericFieldTableCell *self)
 - (void)_updateDisplay;
 {
     self.label.text = self.labelText;
-    self.valueTextField.text = [NSString stringWithFormat:@"%ld %@", self.value, [self _unitsSuffix]];
+    if (!_isEditing) {
+        // We don't want to append the units to the string if we're editing.
+        self.valueTextField.text = [NSString stringWithFormat:@"%ld %@", self.value, [self _unitsSuffix]];
+    }
+    self.editingUnitsLabel.text = [self _unitsSuffix];
 
     self.incrementButton.enabled = (self.value < self.maximumValue);
     self.decrementButton.enabled = (self.value > self.minimumValue);
+}
+
+- (void)_updateFonts;
+{
+    UIFont *font = _supportsDynamicType ? [UIFont preferredFontForTextStyle:UIFontTextStyleBody] : [UIFont systemFontOfSize:17.0];
+    
+    self.label.font = font;
+    self.valueTextField.font = font;
+    self.editingUnitsLabel.font = font;
 }
 
 #pragma mark - UIView subclass

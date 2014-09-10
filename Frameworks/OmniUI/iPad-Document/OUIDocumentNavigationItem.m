@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -216,7 +216,7 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     _hasAttemptedRename = YES;
     NSURL *currentURL = [fileItem.fileURL copy];
     
-    NSString *uti = OFUTIForFileExtensionPreferringNative([currentURL pathExtension], NO);
+    NSString *uti = OFUTIForFileExtensionPreferringNative([currentURL pathExtension], nil);
     OBASSERT(uti);
     
     // We don't want a "directory changed" notification for the local documents directory.

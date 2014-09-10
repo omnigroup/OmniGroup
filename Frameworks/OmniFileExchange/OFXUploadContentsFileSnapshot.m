@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,13 +22,13 @@ RCS_ID("$Id$")
     NSURL *_documentVersionContentsURL;
 }
 
-- initWithTargetLocalSnapshotURL:(NSURL *)localTargetURL forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath previousSnapshot:(OFXFileSnapshot *)previousSnapshot error:(NSError **)outError;
+- (instancetype)initWithTargetLocalSnapshotURL:(NSURL *)localTargetURL forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath previousSnapshot:(OFXFileSnapshot *)previousSnapshot error:(NSError **)outError;
 {
     OBPRECONDITION(localDocumentURL);
     OBPRECONDITION([[[localDocumentURL absoluteURL] path] hasSuffix:([NSString stringWithFormat:@"/%@", localRelativePath])]);
     OBPRECONDITION(previousSnapshot);
-    OBPRECONDITION(previousSnapshot.remoteState.missing || previousSnapshot.localState.edited || previousSnapshot.localState.moved);
-    OBPRECONDITION(!previousSnapshot.localState.missing || (!previousSnapshot.localState.edited && previousSnapshot.localState.moved), @"Should only upload a missing snapshot if the thing we are doing is a rename");
+    OBPRECONDITION(previousSnapshot.remoteState.missing || previousSnapshot.localState.edited || previousSnapshot.localState.userMoved);
+    OBPRECONDITION(!previousSnapshot.localState.missing || (!previousSnapshot.localState.edited && previousSnapshot.localState.userMoved), @"Should only upload a missing snapshot if the thing we are doing is a rename");
 
     if (!(self = [self _initTemporarySnapshotWithTargetLocalSnapshotURL:localTargetURL localRelativePath:localRelativePath error:outError]))
         return nil;
@@ -127,8 +127,11 @@ RCS_ID("$Id$")
     OFXFileState *localState = previousSnapshot.localState;
     OFXFileState *remoteState = previousSnapshot.remoteState;
     
-    if (localState.moved)
+    if (localState.userMoved || localState.autoMoved) {
+        // We might be a new conflict version at "foo (conflict from bar).ext" and really want to be at "foo.ext".
         versionDictionary[kOFXVersion_RelativePath] = previousSnapshot.localRelativePath;
+    }
+    
     versionDictionary[kOFXVersion_LocalState] = localState.archiveString;
     versionDictionary[kOFXVersion_RemoteState] = remoteState.archiveString;
     versionDictionary[kOFXVersion_ContentsKey] = versionContents;
@@ -141,7 +144,11 @@ RCS_ID("$Id$")
     // Build the Info.plist
     NSMutableDictionary *infoDictionary = [NSMutableDictionary dictionary];
     infoDictionary[kOFXInfo_ArchiveVersionKey] = @(kOFXInfo_ArchiveVersion);
-    infoDictionary[kOFXInfo_PathKey] = localRelativePath;
+    
+    if (localState.autoMoved)
+        infoDictionary[kOFXInfo_PathKey] = previousSnapshot.intendedLocalRelativePath;
+    else
+        infoDictionary[kOFXInfo_PathKey] = localRelativePath;
     
     OBASSERT(modificationDate);
     if (!modificationDate)
@@ -175,9 +182,9 @@ RCS_ID("$Id$")
     }
     
     if (![self _updateVersionDictionary:versionDictionary error:outError])
-        return NO;
+        return nil;
     if (![self _updateInfoDictionary:infoDictionary error:outError])
-        return NO;
+        return nil;
     
     OBPOSTCONDITION([self _checkInvariants]);
     return self;

@@ -1,11 +1,10 @@
-// Copyright 2002-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2008, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/NSDate-OFExtensions.h>
@@ -23,47 +22,43 @@ RCS_ID("$Id$")
 - (void)testUTCTimeZone;
 {
     NSTimeZone *tz = [NSDate UTCTimeZone];
-    should(tz != nil);
-    should([tz secondsFromGMT] == 0);
+    XCTAssertTrue(tz != nil);
+    XCTAssertTrue([tz secondsFromGMT] == 0);
     
-    if ([OFVersionNumber isOperatingSystemMountainLionOrLater]) {
-        // This seems buggy, but this is what we currently get. Radar 11739087: NSTimeZone returning GMT instead of UTC. We could presumably make our own shared instance with -initWithName:data:, but that would only fix confusion with the name. If the data ever divereged w.r.t. leap seconds or ...
-        shouldBeEqual([tz name], @"GMT");
-    } else {
-        shouldBeEqual([tz name], @"UTC");
-    }
+    // This seems buggy, but this is what we currently get. Radar 11739087: NSTimeZone returning GMT instead of UTC. We could presumably make our own shared instance with -initWithName:data:, but that would only fix confusion with the name. If the data ever divereged w.r.t. leap seconds or ...
+    XCTAssertEqualObjects([tz name], @"GMT");
 }
 
 - (void)testGregorianUTCCalendar;
 {
     NSCalendar *cal = [NSDate gregorianUTCCalendar];
-    should(cal != nil);
-    shouldBeEqual([cal calendarIdentifier], NSGregorianCalendar);
-    shouldBeEqual([cal timeZone], [NSDate UTCTimeZone]);
+    XCTAssertTrue(cal != nil);
+    XCTAssertEqualObjects([cal calendarIdentifier], NSCalendarIdentifierGregorian);
+    XCTAssertEqualObjects([cal timeZone], [NSDate UTCTimeZone]);
 }
 
 - (void)testXMLDateParsing;
 {
     NSDate *date = [[NSDate alloc] initWithXMLString:@"2004-06-07T14:15:34.987Z"];
     
-    NSDateComponents *components = [[NSDate gregorianUTCCalendar] components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSSecondCalendarUnit fromDate:date];
+    NSDateComponents *components = [[NSDate gregorianUTCCalendar] components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:date];
     
-    should([components year] == 2004);
-    should([components month] == 6);
-    should([components day] == 7);
-    should([components hour] == 14);
-    should([components minute] == 15);
-    should([components second] == 34); // Not float (Radar 4867971).  Choice of floating portion ensures we are checking that they truncate.
+    XCTAssertTrue([components year] == 2004);
+    XCTAssertTrue([components month] == 6);
+    XCTAssertTrue([components day] == 7);
+    XCTAssertTrue([components hour] == 14);
+    XCTAssertTrue([components minute] == 15);
+    XCTAssertTrue([components second] == 34); // Not float (Radar 4867971).  Choice of floating portion ensures we are checking that they truncate.
     
     NSTimeInterval interval = [date timeIntervalSinceReferenceDate];
     NSTimeInterval milliseconds = interval - floor(interval);
-    should(fabs(milliseconds - 0.987) < 0.0001);
+    XCTAssertTrue(fabs(milliseconds - 0.987) < 0.0001);
 }
 
 #define ROUND_TRIP(inputString) do { \
     NSDate *date = [[NSDate alloc] initWithXMLString:inputString]; \
     NSString *outputString = [date xmlString]; \
-    shouldBeEqual(inputString, outputString); \
+    XCTAssertEqualObjects(inputString, outputString); \
 } while(0)
 
 - (void)testXMLDateParsingRoundTrip;
@@ -77,9 +72,9 @@ RCS_ID("$Id$")
 
 - (void)testDescriptionWithHTTPFormat;
 {
-    shouldBeEqual([[NSDate dateWithTimeIntervalSinceReferenceDate:0.0] descriptionWithHTTPFormat],
+    XCTAssertEqualObjects([[NSDate dateWithTimeIntervalSinceReferenceDate:0.0] descriptionWithHTTPFormat],
                   @"Mon, 01 Jan 2001 00:00:00 GMT");
-    shouldBeEqual([[NSDate dateWithTimeIntervalSinceReferenceDate:242635426.0] descriptionWithHTTPFormat],
+    XCTAssertEqualObjects([[NSDate dateWithTimeIntervalSinceReferenceDate:242635426.0] descriptionWithHTTPFormat],
                   @"Tue, 09 Sep 2008 06:43:46 GMT");
 }
 
@@ -89,32 +84,30 @@ RCS_ID("$Id$")
     // Make sure this does something reasonable instead of rounding the milliseconds portion to "1000Z"    
     NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:239687680.999502]; // 2008-08-05 20:54:41 -0700
     NSString *xmlString = [date xmlString];
-    shouldBeEqual(xmlString, @"2008-08-06T03:54:41.000Z");
+    XCTAssertEqualObjects(xmlString, @"2008-08-06T03:54:41.000Z");
 
 #if 0
     while (YES) {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-        
-        NSDate *date = [NSDate date];
-        NSString *xmlString = [date xmlString];
-        
-        if ([xmlString hasSuffix:@"1000Z"]) {
-            NSLog(@"offset = %f, date = %@, xmlString = %@", [date timeIntervalSinceReferenceDate], date, xmlString);
-            break;
+        @autoreleasepool {
+            NSDate *date = [NSDate date];
+            NSString *xmlString = [date xmlString];
+            
+            if ([xmlString hasSuffix:@"1000Z"]) {
+                NSLog(@"offset = %f, date = %@, xmlString = %@", [date timeIntervalSinceReferenceDate], date, xmlString);
+                break;
+            }
         }
-        
-        [pool drain];
     }
 #endif
 }
 
 // -autorelease to make clang happy.
-#define REJECT(str) should([[NSDate alloc] initWithXMLString:str] == nil)
+#define REJECT(str) XCTAssertTrue([[NSDate alloc] initWithXMLString:str] == nil)
 
 static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NSTimeInterval expectedFraction)
 {
     NSDate *date = [[NSDate alloc] initWithXMLString:str];
-    should(date != nil);
+    XCTAssertTrue(date != nil);
     if (date == nil)
         return;
     
@@ -123,7 +116,7 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
     NSTimeInterval actualFraction = interval - floor(interval);
 
     NSTimeInterval error = fabs(expectedFraction - actualFraction);
-    should(error < 0.00000001);
+    XCTAssertTrue(error < 0.00000001);
 }
 
 - (void)testFractionalSecond;
@@ -169,7 +162,7 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
 #define EQUAL_DATES(str1, str2) do { \
     NSDate *date1 = [[NSDate alloc] initWithXMLString:str1]; \
     NSDate *date2 = [[NSDate alloc] initWithXMLString:str1]; \
-    shouldBeEqual(date1, date2); \
+    XCTAssertEqualObjects(date1, date2); \
 } while(0)
 
 - (void)testNonUTCTimeZone;
@@ -194,13 +187,13 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
                 NSDate *originalDate = [NSDate date];
                 NSString *xmlString = [originalDate xmlString];
                 NSDate *decodedDate = [[NSDate alloc] initWithXMLString:xmlString];
-                STAssertNotNil(decodedDate, nil);
+                XCTAssertNotNil(decodedDate);
                 
                 if (fabs([originalDate timeIntervalSinceReferenceDate] - [decodedDate timeIntervalSinceReferenceDate]) > 0.001) {
                     NSLog(@"originalDate %@ / %f, xmlString %@, decodedDate %@  / %f", originalDate, [originalDate timeIntervalSinceReferenceDate], xmlString, decodedDate, [decodedDate timeIntervalSinceReferenceDate]);
-                    STFail(@"Did not round-trip date");
+                    XCTFail(@"Did not round-trip date");
                 }
-                //STAssertEqualsWithAccuracy([originalDate timeIntervalSinceReferenceDate], [decodedDate timeIntervalSinceReferenceDate], 0.001, nil);
+                //XCTAssertEqualWithAccuracy([originalDate timeIntervalSinceReferenceDate], [decodedDate timeIntervalSinceReferenceDate], 0.001, nil);
             }
         }];
     }
@@ -214,49 +207,72 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
     NSDate *date = [NSDate dateWithTimeIntervalSinceReferenceDate:390177789];
     NSLog(@"date = %@", date);
     NSString *dateString = [date icsDateString];
-    STAssertEqualObjects(dateString, @"20130513T224309Z", nil);
+    XCTAssertEqualObjects(dateString, @"20130513T224309Z");
     
     NSDate *decodedDate = [[NSDate alloc] initWithICSDateString:dateString];
     
-    NSDateComponents *components = [[NSDate gregorianUTCCalendar] components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSSecondCalendarUnit fromDate:decodedDate];
-    STAssertEquals(components.year, 2013L, nil);
-    STAssertEquals(components.month, 5L, nil);
-    STAssertEquals(components.day, 13L, nil);
-    STAssertEquals(components.hour, 22L, nil);
-    STAssertEquals(components.minute, 43L, nil);
-    STAssertEquals(components.second, 9L, nil);
+    NSDateComponents *components = [[NSDate gregorianUTCCalendar] components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:decodedDate];
+    XCTAssertEqual(components.year, 2013L);
+    XCTAssertEqual(components.month, 5L);
+    XCTAssertEqual(components.day, 13L);
+    XCTAssertEqual(components.hour, 22L);
+    XCTAssertEqual(components.minute, 43L);
+    XCTAssertEqual(components.second, 9L);
 }
 
 // ISO 8601 Calendar date strings (YYYY-MM-DD)
 - (void)testCalendarDateString;
 {
     NSString *dateString = [[NSDate dateWithTimeIntervalSinceReferenceDate:390177780] xmlDateString];
-    STAssertEqualObjects(dateString, @"2013-05-13", nil);
+    XCTAssertEqualObjects(dateString, @"2013-05-13");
     
     NSDate *decodedDate = [[NSDate alloc] initWithXMLDateString:dateString];
-    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSSecondCalendarUnit fromDate:decodedDate];
-    STAssertEquals(components.year, 2013L, nil);
-    STAssertEquals(components.month, 5L, nil);
-    STAssertEquals(components.day, 13L, nil);
-    STAssertEquals(components.hour, 0L, nil);
-    STAssertEquals(components.minute, 0L, nil);
-    STAssertEquals(components.second, 0L, nil);
+    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:decodedDate];
+    XCTAssertEqual(components.year, 2013L);
+    XCTAssertEqual(components.month, 5L);
+    XCTAssertEqual(components.day, 13L);
+    XCTAssertEqual(components.hour, 0L);
+    XCTAssertEqual(components.minute, 0L);
+    XCTAssertEqual(components.second, 0L);
 }
 
 // ICS drops the dashes, YYYYMMDD
 - (void)testICSDateString;
 {
     NSString *dateString = [[NSDate dateWithTimeIntervalSinceReferenceDate:390177780] icsDateOnlyString];
-    STAssertEqualObjects(dateString, @"20130513", nil);
+    XCTAssertEqualObjects(dateString, @"20130513");
     
     NSDate *decodedDate = [[NSDate alloc] initWithICSDateOnlyString:dateString];
-    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSSecondCalendarUnit fromDate:decodedDate];
-    STAssertEquals(components.year, 2013L, nil);
-    STAssertEquals(components.month, 5L, nil);
-    STAssertEquals(components.day, 13L, nil);
-    STAssertEquals(components.hour, 0L, nil);
-    STAssertEquals(components.minute, 0L, nil);
-    STAssertEquals(components.second, 0L, nil);
+    NSDateComponents *components = [[NSCalendar currentCalendar] components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitSecond fromDate:decodedDate];
+    XCTAssertEqual(components.year, 2013L);
+    XCTAssertEqual(components.month, 5L);
+    XCTAssertEqual(components.day, 13L);
+    XCTAssertEqual(components.hour, 0L);
+    XCTAssertEqual(components.minute, 0L);
+    XCTAssertEqual(components.second, 0L);
+}
+
+- (void)testDateComponentsTimeZone;
+{
+    NSCalendar *calendar = [NSDate gregorianUTCCalendar];
+    NSDateComponents *components = [[NSDateComponents alloc] init];
+    components.year = 2014;
+    components.month = 8;
+    components.day = 15;
+    components.hour = 0;
+    components.minute = 0;
+    components.second = 0;
+    components.nanosecond = 0;
+
+    components.calendar = calendar;
+    components.timeZone = calendar.timeZone;
+    
+    NSTimeInterval UTCInterval = [[calendar dateFromComponents:components] timeIntervalSinceReferenceDate];
+    
+    components.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:3600];
+    NSTimeInterval OffsetInterval = [[calendar dateFromComponents:components] timeIntervalSinceReferenceDate];
+    
+    XCTAssertEqualWithAccuracy(UTCInterval - OffsetInterval, 3600, 0.01);
 }
 
 @end

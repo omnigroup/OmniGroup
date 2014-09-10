@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,6 @@
 #import <UIKit/UIResponder.h>
 
 #import <MessageUI/MFMailComposeViewController.h>
-#import <OmniUI/OUISpecialURLActionSheet.h>
 #import <OmniUI/OUIFeatures.h>
 #import <OmniUI/OUIActionSheet.h>
 
@@ -35,6 +34,7 @@
 @property(nonatomic,assign) BOOL shouldPostponeLaunchActions;
 - (void)addLaunchAction:(void (^)(void))launchAction;
 
+- (void)showAboutScreenInNavigationController:(UINavigationController *)navigationController;
 - (void)showOnlineHelp:(id)sender;
 
 // Popover Helpers
@@ -53,12 +53,6 @@
 
 // Return YES if something was dismissed
 - (BOOL)dismissActionSheetAndPopover:(BOOL)animated;
-
-// Special URL handling
-- (BOOL)isSpecialURL:(NSURL *)url;
-- (BOOL)handleSpecialURL:(NSURL *)url;
-- (OUISpecialURLHandler)debugURLHandler;
-    // subclass should override to provide handler for app-specific debug URLs
 
 // UIApplicationDelegate methods that we implement
 - (void)applicationWillTerminate:(UIApplication *)application;
@@ -85,7 +79,12 @@ typedef NS_ENUM(NSInteger, OUIAppMenuOptionPosition) {
     OUIAppMenuOptionPositionAtEnd
 };
 
-- (NSString *)aboutMenuTitle; // override to provide the application title
+// override to customize the about screen
+- (NSString *)aboutMenuTitle;
+- (NSString *)aboutScreenTitle;
+- (NSURL *)aboutScreenURL;
+- (NSDictionary *)aboutScreenBindingsDictionary;
+
 - (NSString *)feedbackMenuTitle;
 - (UIBarButtonItem *)newAppMenuBarButtonItem; // insert this into your view controllers; see -additionalAppMenuOptionsAtPosition: for customization
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions

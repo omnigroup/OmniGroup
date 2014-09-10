@@ -40,18 +40,16 @@ static BOOL CrashOnAssertionOrUnhandledException = NO; // Cached so we can get t
 #ifdef OMNI_ASSERTIONS_ON
 static void _OFControllerCheckTerminated(void)
 {
-    NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
-    
-    // Make sure that applications that use OFController actually call its -willTerminate.
-    NSDictionary *environment = [[NSProcessInfo processInfo] environment];
-    if ([[[environment objectForKey:@"XCInjectBundle"] pathExtension] isEqualToString:@"octest"] &&
-        [[environment objectForKey:@"XCInjectBundleInto"] hasPrefix:[[NSBundle mainBundle] bundlePath]]) {
-        // We need to skip this check for otest host apps since +[SenTestProbe runTests:] just calls exit() rather than -terminate:.        
-    } else {
-        OBASSERT(!sharedController || sharedController->_status == OFControllerTerminatingStatus || sharedController->_status == OFControllerNotInitializedStatus);
+    @autoreleasepool {
+        // Make sure that applications that use OFController actually call its -willTerminate.
+        NSDictionary *environment = [[NSProcessInfo processInfo] environment];
+        if ([[[environment objectForKey:@"XCInjectBundle"] pathExtension] isEqualToString:@"xctest"] &&
+            [[environment objectForKey:@"XCInjectBundleInto"] hasPrefix:[[NSBundle mainBundle] bundlePath]]) {
+            // We need to skip this check for xctest host apps since +[XCTestProbe runTests:] just calls exit() rather than -terminate:.
+        } else {
+            OBASSERT(!sharedController || sharedController->_status == OFControllerTerminatingStatus || sharedController->_status == OFControllerNotInitializedStatus);
+        }
     }
-    
-    [p drain];
 }
 #endif
 
@@ -61,12 +59,12 @@ static void _OFControllerCheckTerminated(void)
     static NSBundle *controllingBundle = nil;
     
     if (!controllingBundle) {
-        if (NSClassFromString(@"SenTestCase")) {
-            // There should be exactly one bundle with an extension of either 'otest' (the old extension) or 'octest' (what Xcode 3 uses).
+        if (NSClassFromString(@"XCTestCase")) {
+            // There should be exactly one test bundle with an extension of either 'xctest'.
             NSBundle *candidateBundle = nil;
             for (NSBundle *bundle in [NSBundle allBundles]) {
                 NSString *extension = [[bundle bundlePath] pathExtension];
-                if ([extension isEqualToString:@"otest"] || [extension isEqualToString:@"octest"]) {
+                if ([extension isEqualToString:@"xctest"]) {
                     if (candidateBundle) {
                         NSLog(@"found extra possible unit test bundle %@", bundle);
                     } else
@@ -267,7 +265,7 @@ static void _OFControllerCheckTerminated(void)
         return;
     
     if (state <= _status) {
-        [receiver performSelector:message];
+        OBSendVoidMessage(receiver, message);
     } else {
         OFInvocation *queueEntry = [[OFInvocation alloc] initForObject:receiver selector:message];
         [self queueInvocation:queueEntry whenStatus:state];
@@ -479,7 +477,7 @@ static void OFCrashImmediately(void)
 {
     if ([exception.name isEqual:@"SenTestFailureException"])
         return NO;
-    
+
     return YES;
 }
 
@@ -662,7 +660,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
         if ([anObserver respondsToSelector:aSelector]) {
             // NSLog(@"Calling %s[%@ %s]", OBPointerIsClass(anObserver) ? "+" : "-", OBShortObjectDescription(anObserver), aSelector);
             @try {
-                [anObserver performSelector:aSelector withObject:self];
+                OBSendVoidMessageWithObject(anObserver, aSelector, self);
             } @catch (NSException *exc) {
                 NSLog(@"Ignoring exception raised during %s[%@ %@]: %@", OBPointerIsClass(anObserver) ? "+" : "-", OBShortObjectDescription(anObserver), NSStringFromSelector(aSelector), [exc reason]);
             };
@@ -677,7 +675,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     for (id anObserver in [self _observersSnapshot]) {
         if ([anObserver respondsToSelector:aSelector]) {
             @try {
-                [anObserver performSelector:aSelector withObject:self withObject:object];
+                OBSendVoidMessageWithObjectObject(anObserver, aSelector, self, object);
             } @catch (NSException *exc) {
                 NSLog(@"Ignoring exception raised during %s[%@ %@]: %@", OBPointerIsClass(anObserver) ? "+" : "-", OBShortObjectDescription(anObserver), NSStringFromSelector(aSelector), [exc reason]);
             };

@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,11 +19,6 @@ RCS_ID("$Id$");
 
 //static NSString * const DefaultDateBinding = @"defaultDateBinding";
 
-@interface OADatePickerTextField (Private)
-- (id)_initDatePickerTextFieldPost;
-- (void)_toggleDatePicker;
-@end
-
 @implementation OADatePickerTextField
 
 #pragma mark -
@@ -34,18 +29,43 @@ RCS_ID("$Id$");
     return [OADatePickerTextFieldCell class];
 }
 
+static id _commonInit(OADatePickerTextField *self)
+{
+    if (!self->calendarButton) {
+        self->calendarButton = [OAPopupDatePicker newCalendarButton];
+        [OAPopupDatePicker showCalendarButton:self->calendarButton forFrame:[OAPopupDatePicker calendarRectForFrame:[self bounds]] inView:self withTarget:self action:@selector(_toggleDatePicker)];
+        [self setAutoresizesSubviews:YES];
+    }
+    
+    // <bug:///104044> (Unassigned: 10.10: OADatePickerTextField pokes the isa of its cell, but shouldn't need to)
+#if 0
+    // Sadly can't set this in IB 2.x; only 3.x; smack it for now.
+    Class cls = [OADatePickerTextFieldCell class];
+
+    OBASSERT(class_getInstanceSize(cls) == class_getInstanceSize(class_getSuperclass(cls))); // Must not add ivars
+    NSCell *cell = [self cell];
+    if (![cell isKindOfClass:cls]) {  // if we're already a datepicker we don't need to do this
+        OBASSERT([cell class] == [NSTextFieldCell class]);
+        *(Class *)cell = cls;
+    }
+#endif
+    OBPOSTCONDITION([[self cell] isKindOfClass:[OADatePickerTextFieldCell class]]);
+    
+    return self;
+}
+
 - (id)initWithFrame:(NSRect)frameRect;
 {
     if (!(self = [super initWithFrame:frameRect]))
         return nil;
-    return [self _initDatePickerTextFieldPost];
+    return _commonInit(self);
 }
 
 - (id)initWithCoder:(NSCoder *)aDecoder;
 {
     if (!(self = [super initWithCoder:aDecoder]))
         return nil;
-    return [self _initDatePickerTextFieldPost];
+    return _commonInit(self);
 }
 
 - (void)dealloc;
@@ -73,7 +93,7 @@ RCS_ID("$Id$");
     NSCalendar *currentCalendar = [NSCalendar currentCalendar];
     NSCalendarDate *midnightToday = [NSCalendarDate calendarDate];
     midnightToday = [midnightToday dateByAddingYears:0 months:0 days:0 hours:(-[midnightToday hourOfDay]) minutes:-[midnightToday minuteOfHour] seconds:0];
-    NSDateComponents *defaultDateComponents = [currentCalendar components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit fromDate:midnightToday];
+    NSDateComponents *defaultDateComponents = [currentCalendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:midnightToday];
     [defaultDateComponents setHour:[dueTimeDateComponents hour]];
     [defaultDateComponents setMinute:[dueTimeDateComponents minute]];
     defaultDate = [currentCalendar dateFromComponents:defaultDateComponents];
@@ -187,30 +207,7 @@ RCS_ID("$Id$");
 	[self addCursorRect:[calendarButton frame] cursor:[NSCursor arrowCursor]];
 }
 
-@end
-
-@implementation OADatePickerTextField (Private)
-
-- (id)_initDatePickerTextFieldPost;
-{
-    if (!calendarButton) {
-	calendarButton = [OAPopupDatePicker newCalendarButton];
-	[OAPopupDatePicker showCalendarButton:calendarButton forFrame:[OAPopupDatePicker calendarRectForFrame:[self bounds]] inView:self withTarget:self action:@selector(_toggleDatePicker)];
-	[self setAutoresizesSubviews:YES];
-    }
-    // Sadly can't set this in IB 2.x; only 3.x; smack it for now.
-    Class cls = [OADatePickerTextFieldCell class];
-    
-    OBASSERT(class_getInstanceSize(cls) == class_getInstanceSize(class_getSuperclass(cls))); // Must not add ivars
-    NSCell *cell = [self cell];
-    if (![cell isKindOfClass:cls]) {  // if we're already a datepicker we don't need ot do this
-	OBASSERT([cell class] == [NSTextFieldCell class]);
-	*(Class *)cell = cls;
-    }
-    OBPOSTCONDITION([cell isKindOfClass:[OADatePickerTextFieldCell class]]);
-    
-    return self;
-}
+#pragma mark - Private
 
 - (void)_toggleDatePicker;
 {

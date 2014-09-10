@@ -36,7 +36,6 @@
 		349369AA16B0438200244879 /* ODAVConformanceTest.h in Headers */ = {isa = PBXBuildFile; fileRef = 349369A916B0438200244879 /* ODAVConformanceTest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		349369AB16B0438200244879 /* ODAVConformanceTest.h in Headers */ = {isa = PBXBuildFile; fileRef = 349369A916B0438200244879 /* ODAVConformanceTest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34973C9F125BCF340057E909 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34973C9E125BCF340057E909 /* Security.framework */; };
-		349F979015DEA87B00D7677C /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 349F96E415DEA7BD00D7677C /* SenTestingKit.framework */; };
 		349F979715DEA87B00D7677C /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 349F979515DEA87B00D7677C /* InfoPlist.strings */; };
 		349F97A115DEADAE00D7677C /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3421AEC10F71F9D80096AADB /* OmniBase.framework */; };
 		349F97A215DEADB300D7677C /* OmniDAV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DC2EF5B0486A6940098B216 /* OmniDAV.framework */; };
@@ -67,6 +66,7 @@
 		34D06C77125D208A00CA3963 /* ODAVFileInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0620F71FFFF005CFD59 /* ODAVFileInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34D06C78125D208B00CA3963 /* ODAVFileInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B0630F71FFFF005CFD59 /* ODAVFileInfo.m */; };
 		34E0FC80179F288D00AC716F /* OmniCommandLine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 349464B0179F283000865885 /* OmniCommandLine.framework */; };
+		34ED2DA31946D0ED005643C9 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED2DA21946D0ED005643C9 /* XCTest.framework */; };
 		34F0E3FE1330143E00AB6AEF /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F0E3FD1330143D00AB6AEF /* ApplicationServices.framework */; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
@@ -189,8 +189,7 @@
 		349464AB179F283000865885 /* OmniCommandLine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniCommandLine.xcodeproj; path = ../OmniCommandLine/OmniCommandLine.xcodeproj; sourceTree = "<group>"; };
 		34973BB8125BB4FD0057E909 /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
 		34973C9E125BCF340057E909 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		349F96E415DEA7BD00D7677C /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
-		349F978F15DEA87B00D7677C /* ODAVUnitTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ODAVUnitTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		349F978F15DEA87B00D7677C /* ODAVUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ODAVUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		349F979415DEA87B00D7677C /* ODAVUnitTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ODAVUnitTests-Info.plist"; sourceTree = "<group>"; };
 		349F979615DEA87B00D7677C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		349F979B15DEA87B00D7677C /* ODAVUnitTests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ODAVUnitTests-Prefix.pch"; sourceTree = "<group>"; };
@@ -215,6 +214,7 @@
 		34D06C64125D203B00CA3963 /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34D06C65125D203B00CA3963 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D06C66125D203B00CA3963 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		34ED2DA21946D0ED005643C9 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		34F0E3FD1330143D00AB6AEF /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* OmniDAV.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniDAV.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -233,10 +233,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34ED2DA31946D0ED005643C9 /* XCTest.framework in Frameworks */,
 				349F97A215DEADB300D7677C /* OmniDAV.framework in Frameworks */,
 				349F97A315DEADB900D7677C /* OmniFoundation.framework in Frameworks */,
 				349F97A115DEADAE00D7677C /* OmniBase.framework in Frameworks */,
-				349F979015DEA87B00D7677C /* SenTestingKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,7 +280,7 @@
 				8DC2EF5B0486A6940098B216 /* OmniDAV.framework */,
 				34C017A410995278001C110D /* odav */,
 				34D06C54125D202500CA3963 /* libOmniDAV.a */,
-				349F978F15DEA87B00D7677C /* ODAVUnitTests.octest */,
+				349F978F15DEA87B00D7677C /* ODAVUnitTests.xctest */,
 				340490AC15E53DDC0044F67F /* libODAVUnitTestsTouch.a */,
 			);
 			name = Products;
@@ -311,7 +311,7 @@
 				34973C9E125BCF340057E909 /* Security.framework */,
 				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
 				34F0E3FD1330143D00AB6AEF /* ApplicationServices.framework */,
-				349F96E415DEA7BD00D7677C /* SenTestingKit.framework */,
+				34ED2DA21946D0ED005643C9 /* XCTest.framework */,
 			);
 			name = "Frameworks and Libraries";
 			sourceTree = "<group>";
@@ -533,8 +533,8 @@
 			);
 			name = ODAVUnitTests;
 			productName = ODAVUnitTests;
-			productReference = 349F978F15DEA87B00D7677C /* ODAVUnitTests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productReference = 349F978F15DEA87B00D7677C /* ODAVUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		34C017A310995278001C110D /* odav */ = {
 			isa = PBXNativeTarget;
@@ -599,7 +599,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0600;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniDAV" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -852,8 +852,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_DIR)/Library/Frameworks",
 					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Test/ODAVUnitTests/ODAVUnitTests-Prefix.pch";
@@ -875,8 +875,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_DIR)/Library/Frameworks",
 					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Test/ODAVUnitTests/ODAVUnitTests-Prefix.pch";
@@ -894,8 +894,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_DIR)/Library/Frameworks",
 					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Test/ODAVUnitTests/ODAVUnitTests-Prefix.pch";
@@ -936,12 +936,15 @@
 			baseConfigurationReference = 3421AE880F71F89C0096AADB /* Omni-Bundle-Debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
-				FRAMEWORK_SEARCH_PATHS = "\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
 				GCC_PREFIX_HEADER = "Test/ODAVUnitTests/ODAVUnitTests-Prefix.pch";
 				INFOPLIST_FILE = "Test/ODAVUnitTests/ODAVUnitTests-Info.plist";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.ODAVUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = octest;
+				WRAPPER_EXTENSION = xctest;
 			};
 			name = Debug;
 		};
@@ -950,12 +953,15 @@
 			baseConfigurationReference = 3421AE890F71F89C0096AADB /* Omni-Bundle-Release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
-				FRAMEWORK_SEARCH_PATHS = "\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
 				GCC_PREFIX_HEADER = "Test/ODAVUnitTests/ODAVUnitTests-Prefix.pch";
 				INFOPLIST_FILE = "Test/ODAVUnitTests/ODAVUnitTests-Info.plist";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.ODAVUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = octest;
+				WRAPPER_EXTENSION = xctest;
 			};
 			name = Release;
 		};
@@ -964,12 +970,15 @@
 			baseConfigurationReference = 3421AE870F71F89C0096AADB /* Omni-Bundle-Coverage.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
-				FRAMEWORK_SEARCH_PATHS = "\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
 				GCC_PREFIX_HEADER = "Test/ODAVUnitTests/ODAVUnitTests-Prefix.pch";
 				INFOPLIST_FILE = "Test/ODAVUnitTests/ODAVUnitTests-Info.plist";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.ODAVUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				WRAPPER_EXTENSION = octest;
+				WRAPPER_EXTENSION = xctest;
 			};
 			name = Coverage;
 		};

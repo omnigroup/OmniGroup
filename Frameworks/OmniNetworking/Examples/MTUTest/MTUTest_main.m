@@ -1,4 +1,4 @@
-// Copyright 1997-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2006, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -82,7 +82,7 @@ static void runServer(ONPortAddress *portAddress, unsigned int maxMTU)
     [socket setLocalPortNumber];
 
     // Allocate the biggest packet we'll need.  We'll just send subchunks of it.
-    packet = NSZoneMalloc(NULL, maxMTU);
+    packet = malloc(maxMTU);
 
     while (YES) {
         for (mtuIndex = 1; mtuIndex < maxMTU; mtuIndex++) {
@@ -105,7 +105,7 @@ static void runClient(ONPortAddress *portAddress, unsigned int maxMTU)
     [socket joinReceiveGroup: [ONHostAddress hostAddressWithInternetAddress: [portAddress hostAddress]]];
 
     // Allocate the biggest packet we'll need.  We'll just send subchunks of it.
-    packet = NSZoneMalloc(NULL, maxMTU);
+    packet = malloc(maxMTU);
 
 
     while ([socket waitForInputWithTimeout: 40000.0]) {

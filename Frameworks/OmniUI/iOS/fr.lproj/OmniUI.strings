@@ -111,6 +111,9 @@
 /* placeholder text */
 "password" = "mot de passe";
 
+/* Photos view controller title. */
+"Photos" = "Photos";
+
 /* alert title */
 "Preference changed" = "Préférence modifiée";
 

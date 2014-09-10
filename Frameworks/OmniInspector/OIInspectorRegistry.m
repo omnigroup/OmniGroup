@@ -154,7 +154,7 @@ static NSString *inspectorDefaultsVersion = nil;
 #ifdef DEBUG_tom0
 #error The main window may know nothing about inspectors. For example, if the main window is a software update window, it should not be consulted. <bug:///99522> (Silent crash in software update)
 #endif
-    return [[NSApp delegate] inspectorRegistryForWindow:[NSApp mainWindow]];
+    return [(NSObject *)[NSApp delegate] inspectorRegistryForWindow:[NSApp mainWindow]];
 }
 
 static NSMutableArray *hiddenGroups = nil;
@@ -201,7 +201,8 @@ static NSMutableArray *hiddenPanels = nil;
 {
     BOOL shownAny = NO;
     
-    for (OIInspectorGroup *group in [self groups])
+    // enumerating a copy because group was getting modified during this enumeration
+    for (OIInspectorGroup *group in [[self groups] copy])
         if (![group isVisible]) {
             shownAny = YES;
             [group showGroup];
@@ -235,19 +236,19 @@ static NSMutableArray *hiddenPanels = nil;
 
 + (void)updateInspectorForWindow:(NSWindow *)window;
 {
-    OIInspectorRegistry *inspectorRegistry = [[NSApp delegate] inspectorRegistryForWindow:window];
+    OIInspectorRegistry *inspectorRegistry = [(NSObject *)[NSApp delegate] inspectorRegistryForWindow:window];
     [inspectorRegistry updateInspectorForWindow:[NSApp mainWindow]];
 }
 
 + (void)updateInspectionSetImmediatelyAndUnconditionallyForWindow:(NSWindow *)window;
 {
-    OIInspectorRegistry *inspectorRegistry = [[NSApp delegate] inspectorRegistryForWindow:window];
+    OIInspectorRegistry *inspectorRegistry = [(NSObject *)[NSApp delegate] inspectorRegistryForWindow:window];
     [inspectorRegistry updateInspectionSetImmediatelyAndUnconditionallyForWindow:window];
 }
 
 + (void)clearInspectionSetForWindow:(NSWindow *)window;
 {
-    OIInspectorRegistry *inspectorRegistry = [[NSApp delegate] inspectorRegistryForWindow:window];
+    OIInspectorRegistry *inspectorRegistry = [(NSObject *)[NSApp delegate] inspectorRegistryForWindow:window];
     [inspectorRegistry clearInspectionSet];
 }
 
@@ -497,7 +498,9 @@ static NSMutableArray *hiddenPanels = nil;
     
     for (OIInspectorGroup *group in self.existingGroups) {
         [group saveInspectorOrder];
-        [identifiers addObject:[group identifier]];
+        NSString *identifier = [group identifier];
+        if (identifier)
+            [identifiers addObject:identifier];
     }
     
     [[[OIInspectorRegistry inspectorRegistryForMainWindow] workspaceDefaults] setObject:identifiers forKey:@"_groups"];
@@ -546,6 +549,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
         // restore existing groups from defaults
         for (NSString *identifier in groups) {
             OIInspectorGroup *group = [[OIInspectorGroup alloc] init];
+            group.inspectorRegistry = self;
             [self.existingGroups addObject:group];
             [group restoreFromIdentifier:identifier withInspectors:inspectorById];
         }
@@ -554,7 +558,9 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
         NSMutableDictionary *inspectorGroupsByNumber = [NSMutableDictionary dictionary];
         NSMutableArray *inspectorListSorted = [NSMutableArray arrayWithArray:[inspectorById allValues]];
         
-        [inspectorListSorted sortUsingFunction:sortByDefaultDisplayOrderInGroup context:nil];
+        [inspectorListSorted sortUsingComparator:^NSComparisonResult(OIInspectorController *obj1, OIInspectorController *obj2) {
+            return OISortByDefaultDisplayOrderInGroup(obj1, obj2);
+        }];
         
         for (OIInspectorController *controller in inspectorListSorted) {
             // Make sure we have our window set up for the size computations below.
@@ -564,6 +570,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
             OIInspectorGroup *group = [inspectorGroupsByNumber objectForKey:groupKey];
             if (group == nil) {
                 group = [[OIInspectorGroup alloc] init];
+                group.inspectorRegistry = self;
                 [self.existingGroups addObject:group];
                 [inspectorGroupsByNumber setObject:group forKey:groupKey];
             }
@@ -894,14 +901,11 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     }
     [deleteAlert setInformativeText:NSLocalizedStringFromTableInBundle(@"Deleted workspaces cannot be restored.", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace warning - details")];
     
-    [deleteAlert beginSheetModalForWindow:[_editWorkspaceTable window] modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:nil];
-}
-
-- (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
-{
-    if (returnCode == NSAlertFirstButtonReturn) {
-        [self deleteWithoutConfirmation:nil];
-    }
+    [deleteAlert beginSheetModalForWindow:[_editWorkspaceTable window] completionHandler:^(NSModalResponse returnCode) {
+        if (returnCode == NSAlertFirstButtonReturn) {
+            [self deleteWithoutConfirmation:nil];
+        }
+    }];
 }
 
 - (IBAction)cancelWorkspacePanel:(id)sender;
@@ -1210,7 +1214,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
         return lastWindowAskedToInspect;
     }
     
-    return [[NSApp delegate] windowForInspectorRegistry:self];
+    return [(NSObject *)[NSApp delegate] windowForInspectorRegistry:self];
 }
 
 - (void)_getInspectedObjects;
@@ -1447,7 +1451,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (OIInspectorRegistry *)inspectorRegistryForWindow:(NSWindow *)window;
 {
     static dispatch_once_t onceToken;
-    if (self != [NSApp delegate]) {
+    if (self != (NSObject *)[NSApp delegate]) {
         dispatch_once(&onceToken, ^{
             NSLog(@"WARNING: You attempted to call %@ on an object that is not the application delegate or does not properly subclass the required inspector registry method. You should ensure you override %@ on your application delegate (without calling super) and call it only on that delegate. Only warning once.", NSStringFromSelector(_cmd), NSStringFromSelector(_cmd));
         });
@@ -1459,7 +1463,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (NSWindow *)windowForInspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
 {
     static dispatch_once_t onceToken;
-    if (self != [NSApp delegate]) {
+    if (self != (NSObject *)[NSApp delegate]) {
         dispatch_once(&onceToken, ^{
             NSLog(@"WARNING: You attempted to call %@ on an object that is not the application delegate or does not properly subclass the required inspector registry method. You should ensure you override %@ on your application delegate (without calling super) and call it only on that delegate. Only warning once.", NSStringFromSelector(_cmd), NSStringFromSelector(_cmd));
         });

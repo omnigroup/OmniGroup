@@ -1,4 +1,4 @@
-// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
+#import <OmniFoundation/OFSecurityUtilities.h>
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
 #import <Security/Security.h>
 #import "OFSecSignTransform.h"
@@ -190,7 +191,6 @@ static BOOL translateLibXMLError(NSError **outError, BOOL asValidation, NSString
         userDesc = [[NSString alloc] initWithFormat:fmt arguments:varg];
         va_end(varg);
     }
-    [userDesc autorelease];
     
     xmlErrorPtr libxmlErr = xmlGetLastError();
     if (libxmlErr != NULL)
@@ -199,10 +199,15 @@ static BOOL translateLibXMLError(NSError **outError, BOOL asValidation, NSString
         libDesc = @"";
     xmlResetLastError();
 
+    BOOL result;
     if (asValidation)
-        return signatureValidationFailure(outError, @"%@%@", userDesc, libDesc);
+        result = signatureValidationFailure(outError, @"%@%@", userDesc, libDesc);
     else
-        return signatureStructuralFailure(outError, @"%@%@", userDesc, libDesc);
+        result = signatureStructuralFailure(outError, @"%@%@", userDesc, libDesc);
+    
+    [userDesc release];
+
+    return result;
 }
 
 static BOOL noKeyError(NSError **err, enum OFXMLSignatureOperation op)
@@ -401,21 +406,23 @@ static int libxmlToNSData_write(void *context, const char *buffer, int len)
 {
     if (len < 0)
         return -1;
-    [(NSMutableData *)context appendBytes:buffer length:len];
+    [(__bridge NSMutableData *)context appendBytes:buffer length:len];
     return len;
 }
 
 static int libxmlToNSData_close(void *context)
 {
-    [(NSMutableData *)context autorelease];
+    OBAutorelease((__bridge NSMutableData *)context);
     return 0;
 }
 
 static xmlOutputBuffer *OFLibXMLOutputBufferToData(NSMutableData *destination)
 {
-    xmlOutputBuffer *buf = xmlOutputBufferCreateIO(libxmlToNSData_write, libxmlToNSData_close, [destination retain], NULL);
+    OBStrongRetain(destination);
+    
+    xmlOutputBuffer *buf = xmlOutputBufferCreateIO(libxmlToNSData_write, libxmlToNSData_close, (__bridge void *)destination, NULL);
     if (!buf) {
-        [destination release];
+        OBStrongRelease(destination);
         return nil;
     } else {
         return buf;
@@ -676,17 +683,6 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
     owningDocument = NULL;
     
     [super dealloc];
-}
-
-- (void)finalize
-{
-    if (referenceNodes)
-        free(referenceNodes);
-
-    /* TODO: See if we can make libxml use auto_zone on a per-document . If so, we might be able to get rid of this finalize. */
-    xmlFreeDoc(signedInformation);
-    
-    [super finalize];
 }
 
 /*" Verifies the signature on the Signature element. If verification fails, returns NO and sets *err. If it succeeds, the -countOfReferenceNodes and -verifyReferenceAtIndex:toBuffer:error: methods can be used to retrieve and verify the individual signed referents. "*/
@@ -965,8 +961,9 @@ struct algorithmParameter {
     
     if (keyRef && (sigorder < 0)) {
         // We have a SecKeyRef, and we know we need to know its group order, but we don't.
-        int blocksize = OFSecKeyGetGroupSize(keyRef);
-        if (blocksize > 0 && blocksize <= 16*1024 /* sanity check to avoid crashing securityd - see RADAR 11043986 */ ) {
+        unsigned blocksize = 0;
+        if (OFSecKeyGetAlgorithm(keyRef, NULL, &blocksize, NULL, NULL) != ka_Failure &&
+            blocksize > 0 && blocksize <= 16*1024 /* sanity check to avoid crashing securityd - see RADAR 11043986 */ ) {
             sigorder = (int)blocksize;
         }
     }
@@ -1045,9 +1042,8 @@ static NSData *padInteger(NSData *i, unsigned toLength, NSError **outError)
         return nil;
     NSUInteger iLength = [i length];
     if (iLength < toLength) {
-        unsigned char *buf = malloc(toLength);
-        memset(buf, 0, toLength);
-        [i getBytes:(buf + toLength - iLength)];
+        unsigned char *buf = calloc(toLength, 1);
+        [i getBytes:(buf + toLength - iLength) length:iLength];
         return [NSData dataWithBytesNoCopy:buf length:toLength freeWhenDone:YES];
     } else if (iLength == toLength) {
         return i;
@@ -1237,9 +1233,9 @@ static xmlOutputBuffer *xmlTransformRejectForeignDoc(struct OFXMLSignatureVerify
 /* This is the final "transform" in the sequence; it passes the data to the OFCSSMVerifyContext as well as to the caller. */
 /* Verify-and-tee output buffer */
 struct verifyAndTeeContext {
-    id <OFBufferEater> digester;
+    __unsafe_unretained id <OFBufferEater> digester; // Really not retained since it is passed in by our caller
     xmlOutputBuffer *tee;
-    NSError *firstError;
+    __unsafe_unretained NSError *firstError; // Not retained, but we retain/autorelease what we put into this field.
 };
 static int xmlioVerifyAndTeeWrite(void *context_, const char *buffer, int len)
 {
@@ -1258,9 +1254,13 @@ static int xmlioVerifyAndTeeWrite(void *context_, const char *buffer, int len)
     }
     
     {
-        BOOL ok = [context->digester processBuffer:(const unsigned char *)buffer length:len error:&(context->firstError)];
-        if (!ok)
+        __autoreleasing NSError *error = nil;
+        BOOL ok = [context->digester processBuffer:(const unsigned char *)buffer length:len error:&error];
+        if (!ok) {
+            OBRetainAutorelease(error);
+            context->firstError = error;
             return -1;
+        }
     }
     
     return len;
@@ -1700,10 +1700,9 @@ static void xmlTransformXPathFilter1Cleanup(void *ctxt)
         signatureStructuralFailure(outError, @"Found %d <DigestMethod> nodes", count);
         return NO;
     }
-    id <OFDigestionContext, NSObject> digester = [self newDigestContextForMethod:digestMethodNode error:outError];
+    id <OFDigestionContext, NSObject> digester = [[self newDigestContextForMethod:digestMethodNode error:outError] autorelease];
     if (!digester)
         return NO;
-    [digester autorelease];
     
     if (![digester generateInit:outError]) {
         return NO;
@@ -2139,13 +2138,13 @@ BOOL OFXMLSigGetKeyAttributes(NSMutableDictionary *keyusage, xmlNode *signatureM
     
     if (!cursor->isHMAC) { // Asymmetric key
         [keyusage setObject:(id)kSecClassKey forKey:(id)kSecClass];
-        [keyusage setObject:(id)*(cursor->secKeytype) forKey:(id)kSecAttrKeyType];
+        [keyusage setObject:(__bridge id)*(cursor->secKeytype) forKey:(id)kSecAttrKeyType];
         /* Why does it matter what the digest type and length is? Because a key usable with (eg) SHA256 might or might not be usable with SHA256 */
-        [keyusage setObject:(id)*(cursor->secDigestType) forKey:(id)kSecDigestTypeAttribute];
+        [keyusage setObject:(__bridge id)*(cursor->secDigestType) forKey:(id)kSecDigestTypeAttribute];
         if (cursor->secDigestLength != 0) {
             int digestLengthInt = cursor->secDigestLength;
             CFNumberRef digestLength = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &digestLengthInt);
-            [keyusage setObject:(id)digestLength forKey:(id)kSecDigestLengthAttribute];
+            [keyusage setObject:(__bridge id)digestLength forKey:(id)kSecDigestLengthAttribute];
             CFRelease(digestLength);
         }
         if (op == OFXMLSignature_Sign) {
@@ -2160,7 +2159,7 @@ BOOL OFXMLSigGetKeyAttributes(NSMutableDictionary *keyusage, xmlNode *signatureM
         
         return YES;
     } else {
-        [keyusage setObject:(id)*(cursor->secDigestType) forKey:(id)kSecDigestTypeAttribute];
+        [keyusage setObject:(__bridge id)*(cursor->secDigestType) forKey:(id)kSecDigestTypeAttribute];
 #if 0
         // The truncation length could be a part of the key's attributes, but there's no key to store it under, so I guess it isn't.
         unsigned int count = 0;
@@ -2184,15 +2183,12 @@ BOOL OFXMLSigGetKeyAttributes(NSMutableDictionary *keyusage, xmlNode *signatureM
         }
 #endif
         if (cursor->secDigestLength != 0) {
-            int digestLengthInt = cursor->secDigestLength;
-            CFNumberRef digestLength = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &digestLengthInt);
-            [keyusage setObject:(id)digestLength forKey:(id)kSecDigestLengthAttribute];
-            CFRelease(digestLength);
+            [keyusage setObject:@(cursor->secDigestLength) forKey:(id)kSecDigestLengthAttribute];
         }
         if (op == OFXMLSignature_Sign)
-            [keyusage setObject:(id)kCFBooleanTrue forKey:(id)kSecAttrCanSign];
+            [keyusage setObject:@YES forKey:(id)kSecAttrCanSign];
         else if (op == OFXMLSignature_Verify)
-            [keyusage setObject:(id)kCFBooleanTrue forKey:(id)kSecAttrCanVerify];
+            [keyusage setObject:@YES forKey:(id)kSecAttrCanVerify];
         [keyusage setObject:(id)kSecAttrKeyClassSymmetric forKey:(id)kSecAttrKeyClass];
         return YES;
     }

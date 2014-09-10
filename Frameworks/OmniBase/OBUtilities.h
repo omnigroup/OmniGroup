@@ -64,33 +64,18 @@ static inline void OBRetainAutorelease(id object)
     OBAutorelease(object);
 }
 
-/*
- A best guess at what macros might indicate availability and usefulness of the GC APIs.
- 
- The -fobjc-gc flag controls __OBJC_GC__ .
- The <objc/objc-auto.h> header defines OBJC_NO_GC, but only based on target macros, not on the compiler options.
- 
- There doesn't seem to be a way to distinguish between -fobjc-gc and -fobjc-gc-only, but maybe that's just as well because even in the GC case we need to *pretend* to be able to use the malloc pointer until we're done with any interior pointers. 
-*/
+// NSAllocateObject and object_getIndexedIvars are not availabe in ARC. Uses of these should be rare...
+extern id OBAllocateObjectWithIndexedIvars(Class cls, size_t indexedIvarsSize) NS_RETURNS_RETAINED;
+extern void *OBObjectGetIndexedIvars(id object);
 
-#if !defined(__OBJC_GC__) || defined(OBJC_NO_GC) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE)
-    #define OBAllocateCollectable(size,flags) malloc(size)
-    #define OBReallocateCollectable(ptr,size,flags) realloc((ptr),(size))
+// ARC doesn't allow object_getInstanceVariable().
+extern void OBObjectGetUnsafeObjectIvar(id object, const char *ivarName, __unsafe_unretained id *outValue);
     
-    #define OBAllocateScanned(size) malloc(size)
-    #define OBFreeScanned(ptr) free(ptr)
-#else
-    #include <objc/objc-auto.h> /* For objc_collectingEnabled() */
-    
-    #define OBAllocateCollectable NSAllocateCollectable
-    #define OBReallocateCollectable NSReallocateCollectable
+// ARC doesn't allow casting between 'void **' and '__unsafe_unretained id *' for some reason.
+extern __unsafe_unretained id *OBCastMemoryBufferToUnsafeObjectArray(void *buffer);
 
-    #define OBAllocateScanned(size) NSAllocateCollectable((size), NSScannedOption)
-    #define OBFreeScanned(ptr) do{ if(!objc_collectingEnabled()) free(ptr); }while(0)
-#endif
-
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    // There is only one bundle on iPhone/iPad.
+// iOS 8 adds frameworks/bundles.
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE && !defined(OMNI_BUNDLE_IDENTIFIER)
     #define OMNI_BUNDLE [NSBundle mainBundle]
 #else
     // This uses the OMNI_BUNDLE_IDENTIFIER compiler define set by the OmniGroup/Configurations/*Global*.xcconfig to look up the bundle for the calling code.
@@ -131,7 +116,7 @@ extern void _OBFinishPortingLater(const char *header, const char *function, cons
         _OBFinishPortingLater__(__FILE__, __LINE__, __PRETTY_FUNCTION__, (msg)); \
     } \
 } while(0)
-    
+
 extern BOOL OBIsBeingDebugged(void);
 extern void _OBStopInDebugger(const char *file, unsigned int line, const char *function, const char *message);
 #define OBStopInDebugger(message) _OBStopInDebugger(__FILE__, __LINE__, __PRETTY_FUNCTION__, (message))

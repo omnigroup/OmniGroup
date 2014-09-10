@@ -33,7 +33,7 @@ static void _scaleAttributes(NSMutableDictionary *scaledAttributes, NSDictionary
 
     UIFont *font = originalAttributes[NSFontAttributeName];
     OAFontDescriptor *fontDescriptor = originalAttributes[OAFontDescriptorAttributeName];
-    CGFloat pointSize = fontDescriptor ? fontDescriptor.size : 12;
+    CGFloat pointSize = fontDescriptor ? fontDescriptor.size : (font ? font.pointSize : 12);
     
     /*
      This odd ordering is due to Radar 15323244: Crash due to missing font in iOS 7.0.3 (Helvetica Neue italic)

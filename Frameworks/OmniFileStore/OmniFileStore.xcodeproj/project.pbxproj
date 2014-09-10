@@ -20,7 +20,6 @@
 		3421AEC30F71F9D80096AADB /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3421AEC10F71F9D80096AADB /* OmniBase.framework */; };
 		3421AEC40F71F9D80096AADB /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3421AEC20F71F9D80096AADB /* OmniFoundation.framework */; };
 		3421AFF70F71F9E40096AADB /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
-		3436626216697A6800EEB146 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
 		3444B06A0F71FFFF005CFD59 /* OFSDAVFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B05C0F71FFFF005CFD59 /* OFSDAVFileManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3444B06B0F71FFFF005CFD59 /* OFSDAVFileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 3444B05D0F71FFFF005CFD59 /* OFSDAVFileManager.m */; };
 		3444B06E0F71FFFF005CFD59 /* OFSFileFileManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3444B0600F71FFFF005CFD59 /* OFSFileFileManager.h */; };
@@ -50,15 +49,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		340490AA15E53DDC0044F67F /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "include/${PRODUCT_NAME}";
-			dstSubfolderSpec = 16;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		34F5C34E14771244001B69E1 /* Copy Resources */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -91,7 +81,6 @@
 		15F7CBF4185F991900EFB846 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ru.lproj; path = Localization/iOS/ru.lproj; sourceTree = "<group>"; };
 		15F7CBF5185F991900EFB846 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "zh-Hans.lproj"; path = "Localization/iOS/zh-Hans.lproj"; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* OmniFileStore_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniFileStore_Prefix.h; sourceTree = "<group>"; };
-		340490AC15E53DDC0044F67F /* libOFSUnitTestsTouch.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOFSUnitTestsTouch.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		34201EE11464897900A45403 /* OFSFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSFeatures.h; sourceTree = "<group>"; };
 		3421AE820F71F89C0096AADB /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
 		3421AE830F71F89C0096AADB /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
@@ -132,7 +121,6 @@
 		3469F2F610FD8F2400FF0307 /* OFSFileManagerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSFileManagerDelegate.h; sourceTree = "<group>"; };
 		34973BB8125BB4FD0057E909 /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
 		34973C9E125BCF340057E909 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		349F96E415DEA7BD00D7677C /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		34B5E44E12773A810007C4E3 /* OFSFileOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSFileOperation.h; sourceTree = "<group>"; };
 		34B5E44F12773A810007C4E3 /* OFSFileOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSFileOperation.m; sourceTree = "<group>"; };
 		34D06C54125D202500CA3963 /* libOmniFileStore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniFileStore.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -151,14 +139,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		340490A915E53DDC0044F67F /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				3436626216697A6800EEB146 /* Foundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		34D06C52125D202500CA3963 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -187,7 +167,6 @@
 			children = (
 				8DC2EF5B0486A6940098B216 /* OmniFileStore.framework */,
 				34D06C54125D202500CA3963 /* libOmniFileStore.a */,
-				340490AC15E53DDC0044F67F /* libOFSUnitTestsTouch.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -216,7 +195,6 @@
 				34973C9E125BCF340057E909 /* Security.framework */,
 				0867D69BFE84028FC02AAC07 /* Foundation.framework */,
 				34F0E3FD1330143D00AB6AEF /* ApplicationServices.framework */,
-				349F96E415DEA7BD00D7677C /* SenTestingKit.framework */,
 			);
 			name = "Frameworks and Libraries";
 			sourceTree = "<group>";
@@ -348,23 +326,6 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		340490AB15E53DDC0044F67F /* OFSUnitTestsTouch */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 340490B515E53DDC0044F67F /* Build configuration list for PBXNativeTarget "OFSUnitTestsTouch" */;
-			buildPhases = (
-				340490A815E53DDC0044F67F /* Sources */,
-				340490A915E53DDC0044F67F /* Frameworks */,
-				340490AA15E53DDC0044F67F /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = OFSUnitTestsTouch;
-			productName = OFSUnitTestsTouch;
-			productReference = 340490AC15E53DDC0044F67F /* libOFSUnitTestsTouch.a */;
-			productType = "com.apple.product-type.library.static";
-		};
 		34D06C53125D202500CA3963 /* OmniFileStoreTouch */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 34D06C67125D203B00CA3963 /* Build configuration list for PBXNativeTarget "OmniFileStoreTouch" */;
@@ -410,7 +371,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0600;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniFileStore" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -426,7 +387,6 @@
 			targets = (
 				8DC2EF4F0486A6940098B216 /* OmniFileStore */,
 				34D06C53125D202500CA3963 /* OmniFileStoreTouch */,
-				340490AB15E53DDC0044F67F /* OFSUnitTestsTouch */,
 			);
 		};
 /* End PBXProject section */
@@ -474,13 +434,6 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		340490A815E53DDC0044F67F /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		34D06C51125D202500CA3963 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -567,67 +520,6 @@
 			};
 			name = Release;
 		};
-		340490B615E53DDC0044F67F /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34D06C65125D203B00CA3963 /* Touch-Library-Debug.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_DIR)/Library/Frameworks",
-					"$(value)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Test/OFSUnitTests/OFSUnitTests-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		340490B715E53DDC0044F67F /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34D06C66125D203B00CA3963 /* Touch-Library-Release.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_DIR)/Library/Frameworks",
-					"$(value)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Test/OFSUnitTests/OFSUnitTests-Prefix.pch";
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
-		340490B815E53DDC0044F67F /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34D06C64125D203B00CA3963 /* Touch-Library-Coverage.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_DIR)/Library/Frameworks",
-					"$(value)",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Test/OFSUnitTests/OFSUnitTests-Prefix.pch";
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Coverage;
-		};
 		3421AEBC0F71F8F50096AADB /* Coverage */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3421AE920F71F89C0096AADB /* Omni-Global-Coverage.xcconfig */;
@@ -698,16 +590,6 @@
 				1DEB91B208733DA50010E9CD /* Debug */,
 				1DEB91B308733DA50010E9CD /* Release */,
 				3421AEBC0F71F8F50096AADB /* Coverage */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		340490B515E53DDC0044F67F /* Build configuration list for PBXNativeTarget "OFSUnitTestsTouch" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				340490B615E53DDC0044F67F /* Debug */,
-				340490B715E53DDC0044F67F /* Release */,
-				340490B815E53DDC0044F67F /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

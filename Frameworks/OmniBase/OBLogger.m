@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group.  All rights reserved.
+// Copyright 2013-2014 The Omni Group.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,7 @@ inline void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ..
     va_end(args);
 }
 
-void _OBLoggerInitializeLogLevel(OBLogger **outLogger, NSString *name, BOOL useFile)
+void _OBLoggerInitializeLogLevel(OBLogger * __strong *outLogger, NSString *name, BOOL useFile)
 {
     OBLogger *logger = [[OBLogger alloc] initWithName:name shouldLogToFile:useFile];
     if (logger != nil)

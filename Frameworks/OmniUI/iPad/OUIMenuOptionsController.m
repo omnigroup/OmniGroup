@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,45 @@ RCS_ID("$Id$");
 #import <UIKit/UITableView.h>
 
 #import "OUIParameters.h"
+#import <OmniUI/OUIAppearanceColors.h>
+
+@interface OUIMenuOptionTableViewCell : UITableViewCell
+@property (nonatomic) BOOL showsFullwidthSeparator;
+@end
+
+@implementation OUIMenuOptionTableViewCell
+{
+    UIView *_fullwidthSeparator;
+}
+
+- (void)setShowsFullwidthSeparator:(BOOL)flag;
+{
+    _showsFullwidthSeparator = flag;
+    [self setNeedsLayout];
+}
+
+- (void)layoutSubviews;
+{
+    [super layoutSubviews];
+    
+    if (_showsFullwidthSeparator) {
+        CGRect ourBounds = self.bounds;
+        CGRect separatorFrame = (CGRect){.origin.x = CGRectGetMinX(ourBounds), .origin.y = CGRectGetMaxY(ourBounds), .size.width = CGRectGetWidth(ourBounds), .size.height = 0.5f};
+        if (_fullwidthSeparator) {
+            _fullwidthSeparator.frame = separatorFrame;
+        } else {
+            _fullwidthSeparator = [[UIView alloc] initWithFrame:separatorFrame];
+            _fullwidthSeparator.backgroundColor = [[OUIAppearanceDefaultColors appearance] omniNeutralPlaceholderColor];
+            _fullwidthSeparator.translatesAutoresizingMaskIntoConstraints = YES;
+            _fullwidthSeparator.autoresizingMask = UIViewAutoresizingNone;
+        }
+        [self addSubview:_fullwidthSeparator];
+    } else {
+        [_fullwidthSeparator removeFromSuperview];
+    }
+}
+
+@end
 
 @interface OUIMenuOptionsController () <UITableViewDelegate, UITableViewDataSource>
 @end
@@ -66,18 +105,13 @@ RCS_ID("$Id$");
     UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, kOUIMenuControllerTableWidth, 0) style:UITableViewStylePlain];
     tableView.delegate = self;
     tableView.dataSource = self;
+    tableView.rowHeight = 44.0f;
 
-    if (_padTopAndBottom) {
-        CGFloat padding = 15;
-        tableView.contentInset = UIEdgeInsetsMake(padding, 0, padding, 0);
-    }
-    
     [tableView reloadData];
     OUITableViewAdjustHeightToFitContents(tableView); // -sizeToFit doesn't work after # options changes, sadly
 
-    if (_showsDividersBetweenOptions == NO) {
-        tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    }
+    // We draw our own separators using OUIMenuOptionTableViewCell.showsFullwidthSeparator
+    tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
     // Limit the height of the menu to something reasonable (might have many folders in the 'move' menu, for example).
     if (tableView.frame.size.height > 400) {
@@ -87,30 +121,8 @@ RCS_ID("$Id$");
     }
         
     tableView.backgroundView = nil;
-    tableView.backgroundColor = nil;
     tableView.opaque = NO;
     
-    CGSize preferredContentSize = tableView.frame.size;
-    if (_sizesToOptionWidth) {
-        [tableView layoutIfNeeded];
-        
-        CGFloat width = 0;
-        CGFloat padding = 0;
-        for (UITableViewCell *cell in tableView.visibleCells) { // should be all the cells since we adjusted height already
-            // Figure out how much space is around each label
-            CGRect contentViewRect = [cell.contentView convertRect:cell.contentView.bounds toView:tableView];
-            CGRect labelRect = [cell.textLabel convertRect:cell.textLabel.bounds toView:tableView];
-            padding = contentViewRect.size.width - labelRect.size.width;
-            
-            width = MAX(width, [cell.textLabel sizeThatFits:cell.textLabel.bounds.size].width);
-        }
-        
-        // The padding calculated is the minimum value needed to avoid ellipsis in the label. Double it to get something more like UIActionSheet.
-        preferredContentSize.width = ceil(width + 2*padding);
-    }
-    
-    self.preferredContentSize = preferredContentSize;
-
     // Doesn't do anything currently since our cells have UILabels which ignore the tint color (we set their text color).
     tableView.tintColor = _tintColor;
     
@@ -126,9 +138,43 @@ RCS_ID("$Id$");
     // If we or our popover limited our height, make sure all the options are visible (most common on submenus).
     CGRect bounds = tableView.bounds;
     tableView.scrollEnabled = (tableView.contentSize.height > bounds.size.height);
+}
+
+- (void)_updatePreferredContentSizeFromOptions;
+{
+    UITableView *tableView = (UITableView *)self.view;
+    [tableView layoutIfNeeded];
     
-    // Default to "no" separator in case we get stuck in a popover that is taller than we need.
-    tableView.separatorInset = UIEdgeInsetsMake(0, CGRectGetWidth(bounds)/*left*/, 0, 0);
+    CGFloat preferredWidth;
+    if (!_sizesToOptionWidth) {
+        preferredWidth = kOUIMenuControllerTableWidth;
+    } else {
+        CGFloat width = 0;
+        CGFloat padding = 0;
+        for (UITableViewCell *cell in tableView.visibleCells) { // should be all the cells since we adjusted height already
+            // Figure out how much space is around each label
+            CGRect contentViewRect = [cell.contentView convertRect:cell.contentView.bounds toView:tableView];
+            CGRect labelRect = [cell.textLabel convertRect:cell.textLabel.bounds toView:tableView];
+            padding = contentViewRect.size.width - labelRect.size.width;
+            
+            width = MAX(width, [cell.textLabel sizeThatFits:cell.textLabel.bounds.size].width);
+        }
+        
+        // The padding calculated is the minimum value needed to avoid ellipsis in the label. Double it to get something more like UIActionSheet.
+        preferredWidth = ceil(width + 2*padding);
+    }
+    
+    self.preferredContentSize = (CGSize){.width = preferredWidth, .height = ((UITableView *)self.view).contentSize.height};
+}
+
+- (void)viewWillAppear:(BOOL)animated;
+{
+    [super viewWillAppear:animated];
+    
+    [UIView performWithoutAnimation:^{
+        [self _updatePreferredContentSizeFromOptions];
+        [self.view layoutIfNeeded];
+    }];
 }
 
 - (void)viewDidAppear:(BOOL)animated;
@@ -163,9 +209,9 @@ RCS_ID("$Id$");
     }
     OUIMenuOption *option = [_options objectAtIndex:indexPath.row];
     
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"option"];
+    OUIMenuOptionTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"option"];
     if (!cell) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"option"];
+        cell = [[OUIMenuOptionTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"option"];
         cell.backgroundColor = nil;
         cell.opaque = NO;
         
@@ -187,42 +233,22 @@ RCS_ID("$Id$");
         label.textColor = [UIColor omniDeleteColor];
         cell.imageView.tintColor = [UIColor omniDeleteColor];
     }
-    else if (option.action || [option.options count] > 0) {
+    else if (option.isEnabled || [option.options count] > 0) {
         label.textColor = _tintColor;
         cell.imageView.tintColor = _tintColor;
+        cell.selectionStyle = UITableViewCellSelectionStyleDefault;
     } else {
         // Placeholder; one such case is in the 'move to folder' where some folders aren't valid destinations but are listed to show hierarchy
         label.textColor = [OUIInspector disabledLabelTextColor];
         cell.imageView.tintColor = [OUIInspector disabledLabelTextColor];
-    }
-    
-    NSUInteger imageIndentLevels = 0;
-    if (image) {
-        // The indentation the title is the MAX of the image width and indentationLevel*indentationWidth, which is silly. To account for this, we assume all the options have images (or not) of the same width.
-        imageIndentLevels = ceil(image.size.width / kOUIMenuOptionIndentationWidth);
+        cell.selectionStyle = UITableViewCellEditingStyleNone;
     }
     
     cell.indentationWidth = kOUIMenuOptionIndentationWidth;
-    cell.indentationLevel = imageIndentLevels + option.indentationLevel;
-    
-    // We pull the left edge of the last separator all the way to the left edge so it doesn't look goofy vs the bottom of the popover. But, this means we have to do an anti-adjustment on the indentation of the last cell.
-    UIEdgeInsets separatorInset = cell.separatorInset;
-    static CGFloat defaultSeparatorInsetLeft = 0;
-    if (defaultSeparatorInsetLeft == 0) {
-        defaultSeparatorInsetLeft = separatorInset.left;
-    }
-    
-    // We pull the left edge of the last separator all the way to the left edge so it doesn't look goofy vs the bottom of the popover. But, this means we have to do an anti-adjustment on the indentation of the last cell.
-    // But, we only do this if the last cell really is at the bottom of the view
-    if ((NSUInteger)indexPath.row == [_options count] - 1 && tableView.bounds.size.height == tableView.contentSize.height) {
-        CGFloat indentation = defaultSeparatorInsetLeft + cell.indentationLevel * cell.indentationWidth;
-        cell.indentationLevel = 1;
-        cell.indentationWidth = indentation;
-        separatorInset.left = 0;
-    } else {
-        separatorInset.left = defaultSeparatorInsetLeft;
-    }
-    cell.separatorInset = separatorInset;
+    cell.indentationLevel = option.indentationLevel;
+
+    if (_showsDividersBetweenOptions && (NSUInteger)indexPath.row < (_options.count - 1))
+        cell.showsFullwidthSeparator = YES;
     
     if (option.options) {
         if (!cell.accessoryView) {
@@ -268,8 +294,7 @@ RCS_ID("$Id$");
     
     OUIMenuOptionAction action = option.action;
     if (action) {
-        action();
-        [_weak_controller didInvokeOption:option];
+        [_weak_controller dismissAndInvokeOption:option];
     } else
         [self _showSubmenuForParentOption:option];
 }
@@ -284,7 +309,6 @@ RCS_ID("$Id$");
     childController.sizesToOptionWidth = _sizesToOptionWidth;
     childController.textAlignment = _textAlignment;
     childController.showsDividersBetweenOptions = _showsDividersBetweenOptions;
-    childController.padTopAndBottom = _padTopAndBottom;
 
     childController.navigationItem.backBarButtonItem.title = self.title;
     

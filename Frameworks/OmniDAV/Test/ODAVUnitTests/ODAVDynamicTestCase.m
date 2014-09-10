@@ -1,4 +1,4 @@
-// Copyright 2008-2013 The Omni Group. All rights reserved.
+// Copyright 2008-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,7 @@ static void _addTestMethods(Class cls)
         IMP imp = imp_implementationWithBlock(^(ODAVDynamicTestCase *self){
             __autoreleasing NSError *error;
             if (!methodImp(self.conformanceTest, methodSelector, &error)) {
-                STFail(@"Test returned error: %@", [error toPropertyList]);
+                XCTFail(@"Test returned error: %@", [error toPropertyList]);
             }
         });
         
@@ -51,7 +51,7 @@ static void _addTestMethods(Class cls)
     _addTestMethods(self);
 }
 
-+ (id)defaultTestSuite;
++ (XCTestSuite *)defaultTestSuite;
 {
     return [super defaultTestSuite];
 }
@@ -71,7 +71,7 @@ static void _addTestMethods(Class cls)
 
 - (void)_testMethodSentinel;
 {
-    STFail(@"shouldn't be called");
+    XCTFail(@"shouldn't be called");
 }
 - (BOOL)_testWithErrorTypeEncodingSentinel:(NSError **)outError;
 {

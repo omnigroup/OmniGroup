@@ -421,8 +421,8 @@ static NSSize calendarImageSize;
     
     NSRect popupWindowFrame = [popupWindow frame];
     NSRect targetWindowRect = [emergeFromView convertRect:viewRect toView:nil];
-    NSPoint viewRectCenter = [emergeFromWindow convertBaseToScreen:NSMakePoint(NSMidX(targetWindowRect), NSMidY(targetWindowRect))];
-    NSPoint windowOrigin = [emergeFromWindow convertBaseToScreen:NSMakePoint(NSMidX(targetWindowRect), NSMinY(targetWindowRect))];
+    NSPoint viewRectCenter = [emergeFromWindow convertRectToScreen:NSMakeRect(NSMidX(targetWindowRect), NSMidY(targetWindowRect), 0.0f, 0.0f)].origin;
+    NSPoint windowOrigin = [emergeFromWindow convertRectToScreen:NSMakeRect(NSMidX(targetWindowRect), NSMinY(targetWindowRect), 0.0f, 0.0f)].origin;
     windowOrigin.x -= (CGFloat)floor(NSWidth(popupWindowFrame) / 2.0f);
     windowOrigin.y -= 2.0f;
     
@@ -529,10 +529,15 @@ static NSSize calendarImageSize;
     NSWindow *parentWindow = [self parentWindow];
     [parentWindow removeChildWindow:self];
     [self close];
+    
+    // It looks like this code would never fire since it should have been using NSKeyDown instead of NSKeyDownMask
+    // <bug:///104045> (Unassigned: 10.10: OAPopupDatePickerWindow -resignKeyWindow has bad test of event type)
+#if 0
     if ([[NSApp currentEvent] type] == NSKeyDownMask) {
         // <bug://bugs/57041> (Enter/Return should commit edits on the split task window)
         [parentWindow makeKeyAndOrderFront:nil];
     }
+#endif
 }
 
 @end

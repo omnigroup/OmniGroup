@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,6 +26,7 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 
 @interface OUIInspectorSlice ()
 @property(nonatomic,retain) UIView *sliceBackgroundView;
+@property (readwrite, weak, nonatomic) OUIStackedSlicesInspectorPane *lastValidContainingPane;
 @end
 
 
@@ -132,7 +133,11 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 
 - (OUIStackedSlicesInspectorPane *)containingPane;
 {
-    return (OUIStackedSlicesInspectorPane *) self.parentViewController;
+    if (self.parentViewController) {
+        OBASSERT([self.parentViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]);
+        self.lastValidContainingPane = (OUIStackedSlicesInspectorPane *)self.parentViewController;
+    }
+    return self.lastValidContainingPane;
 }
 
 - (OUIInspector *)inspector;
@@ -561,6 +566,8 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 
 - (void)didReceiveMemoryWarning;
 {
+    [super didReceiveMemoryWarning];
+    
     // We do nothing here. We let our stacked slices inspector handle it so it can perform an orderly teardown.
     if (self.containingPane)
         return;

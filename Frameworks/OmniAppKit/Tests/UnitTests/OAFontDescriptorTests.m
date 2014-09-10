@@ -27,8 +27,8 @@ RCS_ID("$Id$");
     OAFontDescriptor *_helvetica12;
 }
 
-#define CheckFontName(attrDict, expected) STAssertEqualObjects((NSString *)(attrDict[(id)kCTFontNameAttribute]), expected, @"Expected %@", expected)
-#define CheckFontSize(attrDict, expected) STAssertEqualObjects((NSNumber *)(attributesFromFoundFont[(id)kCTFontSizeAttribute]), [NSNumber numberWithInt:expected], @"Expected %ld", expected)
+#define CheckFontName(attrDict, expected) XCTAssertEqualObjects((NSString *)(attrDict[(id)kCTFontNameAttribute]), expected, @"Expected %@", expected)
+#define CheckFontSize(attrDict, expected) XCTAssertEqualObjects((NSNumber *)(attributesFromFoundFont[(id)kCTFontSizeAttribute]), [NSNumber numberWithInt:expected], @"Expected %ld", expected)
 
 static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontDescriptor)
 {
@@ -50,7 +50,7 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 #endif
 }
 
-+ (SenTest *)testForRoundTripOfFontName:(NSString *)fontName;
++ (XCTest *)testForRoundTripOfFontName:(NSString *)fontName;
 {
     NSInvocation *testInvocation = [NSInvocation invocationWithMethodSignature:[self instanceMethodSignatureForSelector:@selector(testRoundTripForFontNamed:)]];
     testInvocation.selector = @selector(testRoundTripForFontNamed:);
@@ -60,9 +60,9 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
     return [self testCaseWithInvocation:testInvocation];
 }
 
-+ (id)defaultTestSuite;
++ (XCTestSuite *)defaultTestSuite;
 {
-    SenTestSuite *suite = [super defaultTestSuite];
+    XCTestSuite *suite = [super defaultTestSuite];
 
     NSArray *fontNamesToTest = [self _fontNamesToTest];
     for (NSString *fontName in fontNamesToTest) {
@@ -85,20 +85,20 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 
 - (void)_assertIsHelvetica12Attributes:(NSDictionary *)attributesFromFoundFont;
 {
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"Helvetica");
-    CheckFontSize(attributesFromFoundFont, 12);
+    CheckFontSize(attributesFromFoundFont, 12UL);
 }
 
 - (void)_assertIsHelvetica12BoldAttributes:(NSDictionary *)attributesFromFoundFont;
 {
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     // boldness is absorbed into the font name, eek
     {
         CheckFontName(attributesFromFoundFont, @"Helvetica-Bold");
-        STAssertNil(attributesFromFoundFont[(id)kCTFontTraitsAttribute][(id)kCTFontSymbolicTrait], @"Expect no symbolic trait to be set");
+        XCTAssertNil(attributesFromFoundFont[(id)kCTFontTraitsAttribute][(id)kCTFontSymbolicTrait], @"Expect no symbolic trait to be set");
     }
-    CheckFontSize(attributesFromFoundFont, 12);
+    CheckFontSize(attributesFromFoundFont, 12UL);
 }
 
 - (void)testGenericHelvetica;
@@ -117,19 +117,19 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 {
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor([[[OAFontDescriptor alloc] initWithFamily:@"Helvetica" size:12.9] autorelease]);
     
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"Helvetica");
     CGFloat expected = 12.9;
-    STAssertEqualsWithAccuracy([(NSNumber *)(attributesFromFoundFont[(id)kCTFontSizeAttribute]) cgFloatValue], (CGFloat)expected, 0.05, @"Expected %lf", expected);
+    XCTAssertEqualWithAccuracy([(NSNumber *)(attributesFromFoundFont[(id)kCTFontSizeAttribute]) cgFloatValue], (CGFloat)expected, 0.05, @"Expected %lf", expected);
 }
 
 - (void)testHelvetica13;
 {
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor([[[OAFontDescriptor alloc] initWithFamily:@"Helvetica" size:13] autorelease]);
     
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"Helvetica");
-    CheckFontSize(attributesFromFoundFont, 13);
+    CheckFontSize(attributesFromFoundFont, 13UL);
 }
 
 - (void)testHelveticaBold;
@@ -144,14 +144,14 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
     OAFontDescriptor *descriptor = [[[[[OAFontDescriptor alloc] initWithFamily:@"Helvetica" size:12.9] autorelease] newFontDescriptorWithBold:YES] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
     
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     // boldness is absorbed into the font name, eek
     {
         CheckFontName(attributesFromFoundFont, @"Helvetica-Bold");
-        STAssertNil(attributesFromFoundFont[(id)kCTFontTraitsAttribute][(id)kCTFontSymbolicTrait], @"Expect no symbolic trait to be set");
+        XCTAssertNil(attributesFromFoundFont[(id)kCTFontTraitsAttribute][(id)kCTFontSymbolicTrait], @"Expect no symbolic trait to be set");
     }
     CGFloat expected = 12.9;
-    STAssertEqualsWithAccuracy([(NSNumber *)(attributesFromFoundFont[(id)kCTFontSizeAttribute]) cgFloatValue], (CGFloat)expected, 0.05, @"Expected %lf", expected);
+    XCTAssertEqualWithAccuracy([(NSNumber *)(attributesFromFoundFont[(id)kCTFontSizeAttribute]) cgFloatValue], (CGFloat)expected, 0.05, @"Expected %lf", expected);
 }
 
 - (void)testHelveticaUnbold;
@@ -198,9 +198,9 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     [self _assertIsHelvetica12Attributes:attributesFromFoundFont];
 #else
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"Helvetica-Bold"); // No semi-bold installed on the Mac by default
-    CheckFontSize(attributesFromFoundFont, 12);
+    CheckFontSize(attributesFromFoundFont, 12UL);
 #endif
 }
 
@@ -208,74 +208,74 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 {
     OAFontDescriptor *descriptor = [[_helvetica12 newFontDescriptorWithItalic:YES] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     // italics is absorbed into the font name, eek
     {
         CheckFontName(attributesFromFoundFont, @"Helvetica-Oblique");
-        STAssertNil(attributesFromFoundFont[(id)kCTFontTraitsAttribute][(id)kCTFontSymbolicTrait], @"Expect no symbolic trait to be set");
+        XCTAssertNil(attributesFromFoundFont[(id)kCTFontTraitsAttribute][(id)kCTFontSymbolicTrait], @"Expect no symbolic trait to be set");
     }
-    CheckFontSize(attributesFromFoundFont, 12);
+    CheckFontSize(attributesFromFoundFont, 12UL);
 }
 
 - (void)testHoeflerText;
 {
     OAFontDescriptor *descriptor = [[_helvetica12 newFontDescriptorWithFamily:@"Hoefler Text"] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"HoeflerText-Regular");
-    CheckFontSize(attributesFromFoundFont, 12);
+    CheckFontSize(attributesFromFoundFont, 12UL);
 }
 
 - (void)testSizeChange;
 {
     OAFontDescriptor *descriptor = [[_helvetica12 newFontDescriptorWithSize:16] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"Helvetica");
-    CheckFontSize(attributesFromFoundFont, 16);
+    CheckFontSize(attributesFromFoundFont, 16UL);
 }
 
 - (void)testBigInitializer;
 {
     OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Helvetica" size:24 weight:9 italic:YES condensed:NO fixedPitch:NO] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     // bold italic is absorbed into the font name, eek
     {
         CheckFontName(attributesFromFoundFont, @"Helvetica-BoldOblique");
-        STAssertNil(attributesFromFoundFont[(id)kCTFontTraitsAttribute][(id)kCTFontSymbolicTrait], @"Expect no symbolic trait to be set");
+        XCTAssertNil(attributesFromFoundFont[(id)kCTFontTraitsAttribute][(id)kCTFontSymbolicTrait], @"Expect no symbolic trait to be set");
     }
-    CheckFontSize(attributesFromFoundFont, 24);
+    CheckFontSize(attributesFromFoundFont, 24UL);
 }
 
 - (void)testZapfino36;
 {
     OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Zapfino" size:36] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"Zapfino");
-    CheckFontSize(attributesFromFoundFont, 36);
+    CheckFontSize(attributesFromFoundFont, 36UL);
 }
 
 - (void)testZapfinoAlmost36;
 {
     OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Zapfino" size:35.8] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"Zapfino");
     CGFloat expected = 35.8;
-    STAssertEqualsWithAccuracy([(NSNumber *)(attributesFromFoundFont[(id)kCTFontSizeAttribute]) cgFloatValue], (CGFloat)expected, 0.05, @"Expected %lf", expected);
+    XCTAssertEqualWithAccuracy([(NSNumber *)(attributesFromFoundFont[(id)kCTFontSizeAttribute]) cgFloatValue], (CGFloat)expected, 0.05, @"Expected %lf", expected);
 }
 
 - (void)testCromulentFont;
 {
     OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"ThisFontIsPerfectlyCromulent" size:10] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     NSString *expectedFontNameForPlatform = nil;
     expectedFontNameForPlatform = @"Helvetica";
     CheckFontName(attributesFromFoundFont, expectedFontNameForPlatform); // Expect to fail family look up and fall back to default
-    CheckFontSize(attributesFromFoundFont, 10);
+    CheckFontSize(attributesFromFoundFont, 10UL);
 }
 
 - (void)testFixedPitchHoeflerText;
@@ -283,9 +283,9 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
     // There is no fixed-pitch Hoefler Text, but let's check our fall-back path
     OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Hoefler Text" size:12.0f weight:5 italic:NO condensed:NO fixedPitch:YES] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"HoeflerText-Regular");
-    CheckFontSize(attributesFromFoundFont, 12);
+    CheckFontSize(attributesFromFoundFont, 12UL);
 }
 
 - (void)testBoldFixedPitchHoeflerText;
@@ -293,9 +293,9 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
     // There is no fixed-pitch Hoefler Text, but let's check our fall-back path
     OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Hoefler Text" size:12.0f weight:9 italic:NO condensed:NO fixedPitch:YES] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
-    STAssertNotNil(attributesFromFoundFont, nil);
+    XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"HoeflerText-Black");
-    CheckFontSize(attributesFromFoundFont, 12);
+    CheckFontSize(attributesFromFoundFont, 12UL);
 }
 
 - (void)testRoundTripForFontNamed:(NSString *)fontName;
@@ -303,23 +303,23 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     UIFont *font = [UIFont fontWithName:fontName size:12];
     NSString *nameFromFont = font.fontName;
-    STAssertEqualObjects(fontName, nameFromFont, @"Asked for font named “%@”, but got font named “%@”.", fontName, nameFromFont);
+    XCTAssertEqualObjects(fontName, nameFromFont, @"Asked for font named “%@”, but got font named “%@”.", fontName, nameFromFont);
     
     OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFont:font] autorelease];
     
     UIFont *roundTrippedFont = descriptor.font;
     NSString *nameFromRoundTrippedFont = roundTrippedFont.fontName;
-    STAssertEqualObjects(nameFromFont, nameFromRoundTrippedFont, @"Started with font named “%@”. After round-tripping got “%@”.", nameFromFont, nameFromRoundTrippedFont);
+    XCTAssertEqualObjects(nameFromFont, nameFromRoundTrippedFont, @"Started with font named “%@”. After round-tripping got “%@”.", nameFromFont, nameFromRoundTrippedFont);
 #else
     NSFont *font = [NSFont fontWithName:fontName size:12.0f];
     NSString *nameFromFontRef = font.fontName;
-    STAssertEqualObjects(fontName, nameFromFontRef, @"Asked for font named “%@”, but got font named “%@”.", fontName, nameFromFontRef);
+    XCTAssertEqualObjects(fontName, nameFromFontRef, @"Asked for font named “%@”, but got font named “%@”.", fontName, nameFromFontRef);
 
     OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFont:font] autorelease];
     
     NSFont *roundTrippedFont = descriptor.font;
     NSString *nameFromRoundTrippedFontRef = roundTrippedFont.fontName;
-    STAssertEqualObjects(nameFromFontRef, nameFromRoundTrippedFontRef, @"Started with font named “%@”. After round-tripping got “%@”.", nameFromFontRef, nameFromRoundTrippedFontRef);
+    XCTAssertEqualObjects(nameFromFontRef, nameFromRoundTrippedFontRef, @"Started with font named “%@”. After round-tripping got “%@”.", nameFromFontRef, nameFromRoundTrippedFontRef);
 #endif
 }
 

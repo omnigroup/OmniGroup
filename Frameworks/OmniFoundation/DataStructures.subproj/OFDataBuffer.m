@@ -108,7 +108,7 @@ void OFDataBufferAppendXMLQuotedString(OFDataBuffer *dataBuffer, CFStringRef str
         // majority of strings we see are ASCII or MacRoman
         UniChar *buffer, *src;
         
-        buffer = NSZoneMalloc(NULL, sizeof(*buffer) * characterCount);
+        buffer = malloc(sizeof(*buffer) * characterCount);
         src = buffer;
         ptr = dest;
         CFStringGetCharacters(string, CFRangeMake(0, characterCount), buffer);
@@ -177,7 +177,7 @@ void OFDataBufferAppendXMLQuotedString(OFDataBuffer *dataBuffer, CFStringRef str
             }
         }
         
-        NSZoneFree(NULL, buffer);
+        free(buffer);
     }
     
     OFDataBufferDidAppend(dataBuffer, ptr - dest);

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="3.0" toolsVersion="6206.8" systemVersion="13E28" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7026.1"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="OUIDocumentPickerAdaptableContainerViewController">
+            <connections>
+                <outlet property="backgroundView" destination="pTB-we-FLO" id="JKC-OG-Cr4"/>
+                <outlet property="containerView" destination="fLC-wy-5IO" id="DUB-cL-POP"/>
+                <outlet property="outerContainerView" destination="sDt-h6-q3A" id="IDh-Lf-DFV"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="pTB-we-FLO">
+                    <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                </imageView>
+                <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sDt-h6-q3A" userLabel="Outer container view">
+                    <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                    <subviews>
+                        <view opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fLC-wy-5IO" userLabel="Container for embedded view">
+                            <rect key="frame" x="92" y="50" width="417" height="500"/>
+                            <constraints>
+                                <constraint firstAttribute="width" secondItem="fLC-wy-5IO" secondAttribute="height" multiplier="5:6" id="edA-gI-if6"/>
+                            </constraints>
+                        </view>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="fLC-wy-5IO" secondAttribute="bottom" constant="20" id="Eaf-g5-V90"/>
+                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="fLC-wy-5IO" secondAttribute="trailing" constant="20" id="N9r-a0-Sm4"/>
+                        <constraint firstAttribute="bottom" secondItem="fLC-wy-5IO" secondAttribute="bottom" priority="998" id="Nap-bL-zyI"/>
+                        <constraint firstItem="fLC-wy-5IO" firstAttribute="top" relation="greaterThanOrEqual" secondItem="sDt-h6-q3A" secondAttribute="top" constant="20" id="Nq2-uw-RKW"/>
+                        <constraint firstItem="fLC-wy-5IO" firstAttribute="leading" secondItem="sDt-h6-q3A" secondAttribute="leading" priority="998" id="RdK-9i-ozt"/>
+                        <constraint firstAttribute="trailing" secondItem="fLC-wy-5IO" secondAttribute="trailing" priority="998" id="SbS-RN-p51"/>
+                        <constraint firstAttribute="centerX" secondItem="fLC-wy-5IO" secondAttribute="centerX" id="WW0-fI-xpx"/>
+                        <constraint firstItem="fLC-wy-5IO" firstAttribute="height" relation="lessThanOrEqual" secondItem="sDt-h6-q3A" secondAttribute="width" multiplier="5:6" priority="999" id="Xy9-wy-Ae5"/>
+                        <constraint firstItem="fLC-wy-5IO" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="sDt-h6-q3A" secondAttribute="leading" constant="20" id="Z4i-Vg-soA"/>
+                        <constraint firstItem="fLC-wy-5IO" firstAttribute="height" relation="lessThanOrEqual" secondItem="sDt-h6-q3A" secondAttribute="height" multiplier="5:6" priority="999" id="c0Y-Zi-oac"/>
+                        <constraint firstItem="fLC-wy-5IO" firstAttribute="top" secondItem="sDt-h6-q3A" secondAttribute="top" priority="998" id="hzU-aW-A7V"/>
+                        <constraint firstAttribute="centerY" secondItem="fLC-wy-5IO" secondAttribute="centerY" id="yoK-BN-vWa"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <constraints>
+                <constraint firstItem="pTB-we-FLO" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="G2D-yR-y3o"/>
+                <constraint firstAttribute="bottom" secondItem="pTB-we-FLO" secondAttribute="bottom" id="Hac-Qv-qZf"/>
+                <constraint firstAttribute="trailing" secondItem="pTB-we-FLO" secondAttribute="trailing" id="PQw-pb-nSS"/>
+                <constraint firstAttribute="trailing" secondItem="sDt-h6-q3A" secondAttribute="trailing" id="URu-Qd-wq4"/>
+                <constraint firstItem="sDt-h6-q3A" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="VYt-yY-Lsv"/>
+                <constraint firstAttribute="bottom" secondItem="sDt-h6-q3A" secondAttribute="bottom" id="lnU-32-Ail"/>
+                <constraint firstItem="sDt-h6-q3A" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" placeholder="YES" id="ltC-3w-rp1"/>
+                <constraint firstItem="pTB-we-FLO" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="pfK-Jj-9DJ"/>
+            </constraints>
+            <point key="canvasLocation" x="123" y="147"/>
+        </view>
+    </objects>
+</document>

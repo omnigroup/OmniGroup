@@ -194,6 +194,18 @@ static void initializeDepressionImages(void)
                                        operation:NSCompositePlusDarker
                                         fraction:fraction];
         }
+    } else if (highlightStyle == OITabMatrixYosemiteHighlightStyle) {
+        NSUInteger cellIndex;
+        [[NSColor colorWithCalibratedWhite:0 alpha:0.07f] set];
+        for(cellIndex=0; cellIndex<cellCount; cellIndex++) {
+            if ([[tabCells objectAtIndex:cellIndex] drawState]) {
+                NSRect rect = [self cellFrameAtRow:0 column:cellIndex];
+                rect.size.height -= 2;
+                rect = NSInsetRect(rect, 1, 0);
+                NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRectangle:rect byRoundingCorners:OFRectCornerMinXMaxY|OFRectCornerMaxXMaxY withRadius:4];
+                [path fill];
+            }
+        }
     } else {
         // Used to be done by OITabCell; now we draw all the backgrounds first before drawing any cells, and all the foregrounds after drawing all cells
         NSUInteger cellIndex;

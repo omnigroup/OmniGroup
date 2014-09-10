@@ -45,24 +45,24 @@ $Project = Xcode::Project.new(ARGV[2])
 
 $MatchingFiles = []
 def do_target(target)
-  fail "Not a native target" unless target['isa'] == 'PBXNativeTarget'
+  fail "Not a native target" unless Xcode::PBXNativeTarget === target
 
   cwd = Pathname.new(".").realpath
   
-  $Project.each_file_in_target(target) {|buildFileID, buildFile, fileRefID, fileRef|
-      name = File.basename(fileRef['path'])
+  $Project.each_file_in_target(target) {|buildFile, fileRef|
+      name = File.basename(fileRef.path)
       ext = File.extname(name) # "foo.h" -> ".h"
       next unless $Extensions.index(ext)
 
-      next unless $RequiredAttributes.all? {|attr| build_file_has_attribute?(buildFile, attr) }
+      next unless $RequiredAttributes.all? {|attr| buildFile.has_attribute?(attr) }
 
-      fullpath = $Project.resolvepath(fileRefID)
+      fullpath = $Project.resolvepath(fileRef.identifier)
       $MatchingFiles << Pathname.new(fullpath).relative_path_from(cwd).cleanpath().to_s + "\n"
   }
 end
 
-$Project.each_target {|target|
-    if target['name'] == $TargetName
+$Project.targets.each {|target|
+    if target.name == $TargetName
       do_target(target)
     end
 }

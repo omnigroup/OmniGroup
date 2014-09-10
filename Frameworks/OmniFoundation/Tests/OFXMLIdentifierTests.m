@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,7 +29,7 @@ RCS_ID("$Id$");
         [zeros setLength:currentLength];
         NSString *encoded = OFXMLCreateIDFromData(zeros);
         
-        STAssertNil([seen member:encoded], @"Should produce different output for every length");
+        XCTAssertNil([seen member:encoded], @"Should produce different output for every length");
         [seen addObject:encoded];
         
         currentLength++;
@@ -46,7 +46,7 @@ RCS_ID("$Id$");
             NSData *data = [NSData dataWithBytes:&value length:2];
             NSString *encoded = OFXMLCreateIDFromData(data);
             
-            STAssertNil([seen member:encoded], @"Should produce different output for every length");
+            XCTAssertNil([seen member:encoded], @"Should produce different output for every length");
             [seen addObject:encoded];
         }
         
@@ -59,7 +59,7 @@ RCS_ID("$Id$");
 - (void)testKnownInputs;
 {
     NSArray *inputURLs = [[OFController controllingBundle] URLsForResourcesWithExtension:nil subdirectory:@"OFXMLIdentifierTests"];
-    STAssertTrue([inputURLs count] > 0, @"Input files missing?");
+    XCTAssertTrue([inputURLs count] > 0, @"Input files missing?");
     
     for (NSURL *inputURL in inputURLs) {
         NSError *error;
@@ -70,7 +70,7 @@ RCS_ID("$Id$");
         NSData *signature = [data sha1Signature];
                              
         NSString *encoded = OFXMLCreateIDFromData(signature);
-        STAssertEqualObjects(encoded, [inputURL lastPathComponent], @"Should match expected signature");
+        XCTAssertEqualObjects(encoded, [inputURL lastPathComponent], @"Should match expected signature");
     }
 }
 

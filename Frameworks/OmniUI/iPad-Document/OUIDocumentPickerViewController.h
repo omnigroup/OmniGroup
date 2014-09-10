@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,7 @@
 - (ODSFilter *)newDocumentStoreFilter;
 
 @property (nonatomic, readonly) OUIDocumentPicker *documentPicker;
-@property (nonatomic, retain) UIView *backgroundView;
+@property (nonatomic, retain) IBOutlet UIImageView *backgroundView;
 @property(nonatomic,retain) IBOutlet OUIDocumentPickerScrollView *mainScrollView;
 
 @property(nonatomic,readonly) ODSStore *documentStore;
@@ -43,7 +43,7 @@
 
 @property(nonatomic,retain) IBOutlet UIToolbar *toolbar;
 
-- (OUIEmptyOverlayView *)emptyOverlayView;
+- (OUIEmptyOverlayView *)newEmptyOverlayView;
 
 - (void)rescanDocuments;
 - (void)rescanDocumentsScrollingToURL:(NSURL *)targetURL;
@@ -70,17 +70,16 @@
 - (NSString *)exportLabelForUTI:(NSString *)fileUTI;
 
 - (NSArray *)availableInAppPurchaseExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType;
-- (UIImage *)exportIconForAppStoreIdentifier:(NSString *)appStoreIdentifier;
-- (NSString *)exportLabelForAppStoreIdentifier:(NSString *)appStoreIdentifier;
-- (NSString *)exportDescriptionForAppStoreIdentifier:(NSString *)appStoreIdentifier;
+- (NSString *)purchaseDescriptionForExportType:(NSString *)fileUTI;
+- (void)purchaseExportType:(NSString *)fileUTI navigationController:(UINavigationController *)navigationController;
 
 - (void)scrollToTopAnimated:(BOOL)animated;
 - (void)scrollItemToVisible:(ODSItem *)item animated:(BOOL)animated;
 - (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated completion:(void (^)(void))completion;
 
 - (IBAction)newDocument:(id)sender;
-- (void)newDocumentWithTemplateURL:(NSURL *)templateURL documentType:(ODSDocumentType)type;
-- (void)newDocumentWithTemplateURL:(NSURL *)templateURL;
+- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type;
+- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem;
 - (IBAction)duplicateDocument:(id)sender;
 - (IBAction)deleteDocument:(id)sender;
 - (IBAction)export:(id)sender;

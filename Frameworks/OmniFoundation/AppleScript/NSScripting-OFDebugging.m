@@ -14,6 +14,7 @@ RCS_ID("$Id$");
 #if 1 && defined(DEBUG)
 
 #import <Foundation/NSScriptClassDescription.h>
+#import <Foundation/NSScriptCommandDescription.h>
 #import <Foundation/NSScriptObjectSpecifiers.h>
 
 @interface NSClassDescription (OFDebugging)

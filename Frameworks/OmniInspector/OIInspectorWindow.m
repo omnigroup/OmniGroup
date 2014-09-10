@@ -28,7 +28,6 @@ RCS_ID("$Id$");
         return nil;
     [self setAutorecalculatesKeyViewLoop:YES];
     [self setHasShadow:YES];
-    [self useOptimizedDrawing:YES];
     [self setLevel:NSFloatingWindowLevel];
     return self;
 }

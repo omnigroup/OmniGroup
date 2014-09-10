@@ -1,4 +1,4 @@
-// Copyright 2007-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,10 +64,22 @@ static inline void OBCallVoidIMPWithObjectObject(IMP imp, id self, SEL _cmd, id 
     f(self, _cmd, object1, object2);
 }
 
+static inline void OBCallVoidIMPWithObjectObjectObject(IMP imp, id self, SEL _cmd, id object1, id object2, id object3)
+{
+    void (*f)(id, SEL, id, id, id) = (typeof(f))imp;
+    f(self, _cmd, object1, object2, object3);
+}
+
 static inline id OBCallObjectReturnIMP(IMP imp, id self, SEL _cmd)
 {
     id (*f)(id, SEL) = (typeof(f))imp;
     return f(self, _cmd);
+}
+
+static inline id OBCallObjectReturnIMPWithObject(IMP imp, id self, SEL _cmd, id object)
+{
+    id (*f)(id, SEL, id) = (typeof(f))imp;
+    return f(self, _cmd, object);
 }
 
 static inline void OBSendVoidMessage(id self, SEL _cmd)
@@ -85,9 +97,19 @@ static inline void OBSendVoidMessageWithObjectObject(id self, SEL _cmd, id objec
     OBCallVoidIMPWithObjectObject(objc_msgSend, self, _cmd, object1, object2);
 }
 
+static inline void OBSendVoidMessageWithObjectObjectObject(id self, SEL _cmd, id object1, id object2, id object3)
+{
+    OBCallVoidIMPWithObjectObjectObject(objc_msgSend, self, _cmd, object1, object2, object3);
+}
+
 static inline id OBSendObjectReturnMessage(id self, SEL _cmd)
 {
     return OBCallObjectReturnIMP(objc_msgSend, self, _cmd);
+}
+
+static inline id OBSendObjectReturnMessageWithObject(id self, SEL _cmd, id object)
+{
+    return OBCallObjectReturnIMPWithObject(objc_msgSend, self, _cmd, object);
 }
 
 // In a few cases we retain and release things in ways that clang-sa isn't happy about (e.g., callbacks and state machines). These macros let us hide the retain/release from the static analyzer.

@@ -27,6 +27,9 @@
 
 - (void)addConstructionWarning;
 
+- (NSPoint)convertPointToScreen:(NSPoint)windowPoint;
+- (NSPoint)convertPointFromScreen:(NSPoint)screenPoint;
+
 - (CGPoint)convertBaseToCGScreen:(NSPoint)windowPoint;
 
 - (IBAction)visualizeConstraintsForPickedView:(id)sender;

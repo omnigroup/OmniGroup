@@ -17,16 +17,6 @@
 extern NSString * const OFPreferenceObjectValueBinding;
 
 @interface OFPreference : NSObject
-{
-    NSString         *_key;
-    unsigned          _generation;
-    id                _value;
-    id                _defaultValue;
-
-    id _controller;
-    NSString *_controllerKey;
-    BOOL _updatingController;
-}
 
 // API
 

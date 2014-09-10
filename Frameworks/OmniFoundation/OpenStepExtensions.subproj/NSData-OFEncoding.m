@@ -63,7 +63,7 @@ static inline uint8_t _fromhex(unichar hexDigit)
     if (v == 0xff) { \
         if (outError) \
 	    OFError(outError, OFInvalidHexDigit, ([NSString stringWithFormat:@"The character '%C' (0x%x) is not a valid hexadecimal digit.", c, c]), nil); \
-        [self release]; \
+        OB_RELEASE(self); \
         goto cleanup; \
     } \
 } while(0)
@@ -109,7 +109,7 @@ cleanup:
     inputBytes = [self bytes];
     inputBytesLength = [self length];
     outputBufferLength = prefixLength + inputBytesLength * 2;
-    outputBuffer = NSZoneMalloc(NULL, outputBufferLength * sizeof(unichar));
+    outputBuffer = malloc(outputBufferLength * sizeof(unichar));
     outputBufferEnd = outputBuffer + outputBufferLength;
     
     inputBytesPtr = inputBytes;
@@ -125,9 +125,9 @@ cleanup:
         *outputBufferPtr++ = _tohex[inputByte & 0x0f];
     }
     
-    hexString = [[NSString allocWithZone:[self zone]] initWithCharacters:outputBuffer length:outputBufferLength];
+    hexString = [[NSString alloc] initWithCharacters:outputBuffer length:outputBufferLength];
     
-    NSZoneFree(NULL, outputBuffer);
+    free(outputBuffer);
     
     return [hexString autorelease];
 }
@@ -290,7 +290,7 @@ static inline void encode85(OFDataBuffer *dataBuffer, unsigned long tuple, int c
     CFDataRef data = NULL;
     OFDataBufferRelease(&dataBuffer, kCFAllocatorMalloc, &data);
 
-    NSString *string = [NSString stringWithData:(NSData *)data encoding:NSASCIIStringEncoding];
+    NSString *string = [NSString stringWithData:(__bridge NSData *)data encoding:NSASCIIStringEncoding];
     CFRelease(data);
     
     return string;
@@ -444,7 +444,7 @@ static inline void output64chunk(int c1, int c2, int c3, int pads, OFDataBuffer 
     CFDataRef data = NULL;
     OFDataBufferRelease(&dataBuffer, kCFAllocatorMalloc, &data);
     
-    NSString *string = [NSString stringWithData:(NSData *)data encoding:NSASCIIStringEncoding];
+    NSString *string = [NSString stringWithData:(__bridge NSData *)data encoding:NSASCIIStringEncoding];
     CFRelease(data);
     
     return string;
@@ -629,7 +629,7 @@ static inline void encode26(OFDataBuffer *dataBuffer, unsigned long tuple, int c
     CFDataRef data = NULL;
     OFDataBufferRelease(&dataBuffer, kCFAllocatorMalloc, &data);
     
-    NSString *string = [NSString stringWithData:(NSData *)data encoding:NSASCIIStringEncoding];
+    NSString *string = [NSString stringWithData:(__bridge NSData *)data encoding:NSASCIIStringEncoding];
     CFRelease(data);
     
     return string;

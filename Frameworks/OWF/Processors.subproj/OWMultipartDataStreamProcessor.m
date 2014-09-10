@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,7 +32,7 @@ static NSString *PartFormatString = nil;
 - (void)dealloc;
 {
     if (delimiter != NULL)
-        NSZoneFree(NSZoneFromPointer(delimiter), delimiter);
+        free(delimiter);
     [super dealloc];
 }
 
@@ -56,7 +56,7 @@ static NSString *PartFormatString = nil;
     
     NSString *delimiterString = [@"\n" stringByAppendingString:line];
     delimiterLength = [delimiterString maximumLengthOfBytesUsingEncoding:NSMacOSRomanStringEncoding];
-    delimiter = NSZoneMalloc([self zone], delimiterLength + 1);
+    delimiter = malloc(delimiterLength + 1);
     if (![delimiterString getCString:(char *)delimiter maxLength:delimiterLength + 1 encoding:NSMacOSRomanStringEncoding])
         [NSException raise:NSInternalInconsistencyException format:@"Failed to decode delimiter of multipart stream"];
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group.  All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -360,7 +360,7 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
     return YES;
 }
 
-- (BOOL)uninstallPrivilegedHelperToolWithAuthorizationData:(NSData *)authorizationData installedToolVersion:(NSInteger)installedToolVersion error:(NSError **)error;
+- (BOOL)uninstallPrivilegedHelperToolWithAuthorizationData:(NSData *)authorizationData installedToolVersion:(NSInteger)installedToolVersion error:(NSError **)outError;
 {
     BOOL privilegedHelperInstalled = NO;
     CFDictionaryRef jobDictionary = SMJobCopyDictionary(kSMDomainSystemLaunchd, (CFStringRef)OSUInstallerPrivilegedHelperJobLabel);
@@ -378,7 +378,7 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
     // -uninstallPrivilegedHelperToolWithAuthorizationData:error: will refuse to install the tool if there is work in progress, but the logic was broken for versions of the tool prior to 4, so just remove the job in that case.
     
     if (installedToolVersion < 4) {
-        AuthorizationRef authorizationRef = [self createAuthorizationRefFromExternalAuthorizationData:authorizationData error:error];
+        AuthorizationRef authorizationRef = [self createAuthorizationRefFromExternalAuthorizationData:authorizationData error:outError];
         if (authorizationRef == NULL) {
             return NO;
         }
@@ -389,8 +389,8 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
             AuthorizationFree(authorizationRef, kAuthorizationFlagDefaults);
             authorizationRef = NULL;
             
-            if (error != NULL) {
-                *error = [[(id)jobRemoveError copy] autorelease];
+            if (outError != NULL) {
+                *outError = [[(id)jobRemoveError copy] autorelease];
             }
             
             return NO;
@@ -429,18 +429,18 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:limitDate];
     }
 
-    if (error != NULL) {
-        *error = remoteError;
+    if (outError != NULL) {
+        *outError = remoteError;
     }
     
     if (uninstallSuccess) {
-        AuthorizationRef authorizationRef = [self createAuthorizationRefFromExternalAuthorizationData:authorizationData error:error];
+        AuthorizationRef authorizationRef = [self createAuthorizationRefFromExternalAuthorizationData:authorizationData error:outError];
         if (authorizationRef != NULL) {
             // Remove the job - SMJobRemove will validate the rights in the authorization ref
             CFErrorRef jobRemoveError = NULL;
             if (!SMJobRemove(kSMDomainSystemLaunchd, (CFStringRef)OSUInstallerPrivilegedHelperJobLabel, authorizationRef, YES, &jobRemoveError)){
-                if (error != NULL) {
-                    *error = [(id)jobRemoveError copy];
+                if (outError != NULL) {
+                    *outError = [(id)jobRemoveError copy];
                 }
             }
             

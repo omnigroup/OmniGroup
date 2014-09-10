@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,13 +72,9 @@ UIColor *OUIShadowColor(OUIShadowType type)
 
 void OUIGraphicsBeginImageContext(CGSize size)
 {
-    if (UIGraphicsBeginImageContextWithOptions != NULL) {
-        // NO = we want a transparent context
-        // 0 = scale factor is set to the scale factor of the device's main screen
-        UIGraphicsBeginImageContextWithOptions(size, NO, 0);
-    } else {
-        UIGraphicsBeginImageContext(size);
-    }
+    // NO = we want a transparent context
+    // 0 = scale factor is set to the scale factor of the device's main screen
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
 }
 
 void OUIGraphicsEndImageContext(void) 

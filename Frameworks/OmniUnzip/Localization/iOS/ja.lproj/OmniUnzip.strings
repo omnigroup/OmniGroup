@@ -1,4 +1,4 @@
-﻿/* error reason */
+/* error reason */
 "An entry in the zip file had a name that couldn't be converted to a filesystem path." = "zip ファイルに内包されたエントリにファイルシステムのパスに変換できない名前があります。";
 
 /* error description */
@@ -27,7 +27,6 @@
 
 /* error description
    error reason */
-
 "Unable to read zip data." = "zip データを読み込めません。";
 
 /* error description */
@@ -35,3 +34,4 @@
 
 /* error description */
 "Unable to write zip file." = "zip ファイルを書き込めません。";
+

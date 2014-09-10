@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,13 +17,14 @@
 
 @interface OFXFileSnapshot : NSObject
 
-- initWithExistingLocalSnapshotURL:(NSURL *)localSnapshotURL error:(NSError **)outError;
-- initWithTargetLocalSnapshotURL:(NSURL *)localTargetURL forNewLocalDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath error:(NSError **)outError;
+- (instancetype)initWithExistingLocalSnapshotURL:(NSURL *)localSnapshotURL error:(NSError **)outError;
+- (instancetype)initWithTargetLocalSnapshotURL:(NSURL *)localTargetURL forNewLocalDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath intendedLocalRelativePath:(NSString *)intendedLocalRelativePath coordinator:(NSFileCoordinator *)coordinator error:(NSError **)outError;
 
 @property(nonatomic,readonly) NSURL *localSnapshotURL;
 @property(nonatomic,readonly) NSDictionary *infoDictionary;
 @property(nonatomic,readonly) NSDictionary *versionDictionary;
 @property(nonatomic,readonly) NSString *localRelativePath;
+@property(nonatomic,readonly) NSString *intendedLocalRelativePath;
 @property(nonatomic,readonly) OFXFileState *localState;
 @property(nonatomic,readonly) OFXFileState *remoteState;
 
@@ -32,6 +33,9 @@
 @property(nonatomic,readonly) unsigned long long totalSize;
 @property(nonatomic,readonly) NSDate *userCreationDate;
 @property(nonatomic,readonly) NSDate *userModificationDate;
+
+@property(nonatomic,readonly) NSString *lastEditedUser;
+@property(nonatomic,readonly) NSString *lastEditedHost;
 
 @property(nonatomic,readonly) NSUInteger version;
 @property(nonatomic,readonly) NSNumber *inode;
@@ -42,7 +46,7 @@
 - (BOOL)markAsRemotelyEdited:(NSError **)outError;
 - (BOOL)markAsLocallyDeleted:(NSError **)outError;
 - (BOOL)markAsRemotelyDeleted:(NSError **)outError;
-- (BOOL)markAsLocallyMovedToRelativePath:(NSString *)relativePath error:(NSError **)outError;
+- (BOOL)markAsLocallyMovedToRelativePath:(NSString *)relativePath isAutomaticMove:(BOOL)isAutomaticMove error:(NSError **)outError;
 - (BOOL)didGiveUpLocalContents:(NSError **)outError;
 
 - (BOOL)didPublishContentsToLocalDocumentURL:(NSURL *)localDocumentURL error:(NSError **)outError;

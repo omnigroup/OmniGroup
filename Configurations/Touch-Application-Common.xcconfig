@@ -10,7 +10,7 @@ GCC_SYMBOLS_PRIVATE_EXTERN = NO
 
 OTHER_CFLAGS = $(value) -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\"
 
-// Otherwise, category symbols aren't pulled in from "framework" static libraries.
+LD_RUNPATH_SEARCH_PATHS = $(value) @executable_path/Frameworks
 OTHER_LDFLAGS = $(value) -ObjC
 
 // Include all public headers vended by static library targets.

@@ -1,4 +1,4 @@
-// Copyright 2003-2006, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2006, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #include <unistd.h>
 #include <sys/socket.h>
 
@@ -20,7 +20,7 @@ const char *s2 = "This is also some test data. It's a bit longer.";
 #define S3_LEN (1040)
 const char *s4 = "Would you like another packet? It is WAFFER THIN!";
 
-@interface ONUDPTrafficTests : SenTestCase
+@interface ONUDPTrafficTests : XCTestCase
 {
     int addressFamily;
     
@@ -80,36 +80,36 @@ const char *s4 = "Would you like another packet? It is WAFFER THIN!";
     ONPortAddress *addrD, *addrDLoop;
     NSData *rd;
     
-    shouldnt([dewie isConnected]);
+    XCTAssertFalse([dewie isConnected]);
     [dewie setLocalPortNumber];
 
     addrD = [[ONPortAddress alloc] initWithHostAddress:[self loopback] portNumber:[dewie localAddressPort]];
-    should(addrD != nil);
+    XCTAssertTrue(addrD != nil);
     [addrD autorelease];
 
-    shouldnt([dewie isConnected]);
-    should([dewie remoteAddress] == nil);
+    XCTAssertFalse([dewie isConnected]);
+    XCTAssertTrue([dewie remoteAddress] == nil);
 
     size_t len = [dewie writeBytes:strlen(s4) fromBuffer:s4 toPortAddress:addrD];
-    should(len == strlen(s4));
+    XCTAssertTrue(len == strlen(s4));
 
-    shouldnt([dewie isConnected]);
-    should([dewie remoteAddress] == nil);
+    XCTAssertFalse([dewie isConnected]);
+    XCTAssertTrue([dewie remoteAddress] == nil);
 
     rd = [dewie readData];
-    shouldnt([dewie isConnected]);
-    should([dewie remoteAddress] != nil);
+    XCTAssertFalse([dewie isConnected]);
+    XCTAssertTrue([dewie remoteAddress] != nil);
     addrDLoop = [dewie remoteAddress];
 
     if (rd == nil) {
-        should(rd != nil);
+        XCTAssertTrue(rd != nil);
     } else {
-        should([rd length] == len);
-        should(memcmp([rd bytes], s4, len) == 0);
+        XCTAssertTrue([rd length] == len);
+        XCTAssertTrue(memcmp([rd bytes], s4, len) == 0);
     }
 
     // NSLog(@"Sent to: %@ Received from: %@", addrD, addrDLoop);
-    should([addrDLoop isEqual:addrD]);
+    XCTAssertTrue([addrDLoop isEqual:addrD]);
 }
 
 - (void)testConnectedUDP
@@ -118,54 +118,54 @@ const char *s4 = "Would you like another packet? It is WAFFER THIN!";
     size_t len, res;
     NSData *rd;
 
-    should(huey != nil);
-    should(louie != nil);
+    XCTAssertTrue(huey != nil);
+    XCTAssertTrue(louie != nil);
 
     [huey setLocalPortNumber];
     [louie setLocalPortNumber];
     addrH = [huey localAddress];
     addrL = [louie localAddress];
 
-    shouldnt(addrH == nil);
-    shouldnt(addrL == nil);
-    shouldnt([addrH isEqual:addrL]);
-    shouldnt([huey localAddressPort] == [louie localAddressPort]);
+    XCTAssertFalse(addrH == nil);
+    XCTAssertFalse(addrL == nil);
+    XCTAssertFalse([addrH isEqual:addrL]);
+    XCTAssertFalse([huey localAddressPort] == [louie localAddressPort]);
 
-    shouldnt([huey isConnected]);
+    XCTAssertFalse([huey isConnected]);
     [huey connectToAddress:[self loopback] port:[louie localAddressPort]];
-    should([huey isConnected]);
-    shouldnt([louie isConnected]);
+    XCTAssertTrue([huey isConnected]);
+    XCTAssertFalse([louie isConnected]);
     [louie connectToAddress:[self loopback] port:[huey localAddressPort]];
-    should([louie isConnected]);
-    should([huey isConnected]);
+    XCTAssertTrue([louie isConnected]);
+    XCTAssertTrue([huey isConnected]);
     /* The host parts won't typically be the same because they'll be bound to the wildcard address locally and the loopback address remotely. So just check the port numbers. */
-    should([huey localAddressPort] == [louie remoteAddressPort]);
-    should([louie localAddressPort] == [huey remoteAddressPort]);
+    XCTAssertTrue([huey localAddressPort] == [louie remoteAddressPort]);
+    XCTAssertTrue([louie localAddressPort] == [huey remoteAddressPort]);
     // NSLog(@"Huey: local=%@ remote=%@", [huey localAddress], [huey remoteAddress]);
     // NSLog(@"Louie: local=%@ remote=%@", [louie localAddress], [louie remoteAddress]);
 
     len = strlen(s1);
     res = [huey writeBytes:len fromBuffer:s1];
-    should(res == len);
+    XCTAssertTrue(res == len);
 
     len = strlen(s2);
     res = [louie writeBytes:len fromBuffer:s2];
-    should(res == len);
+    XCTAssertTrue(res == len);
 
     rd = [huey readData];
     if (rd == nil) {
-        should(rd != nil);
+        XCTAssertTrue(rd != nil);
     } else {
-        should([rd length] == strlen(s2));
-        should(memcmp([rd bytes], s2, strlen(s2)) == 0);
+        XCTAssertTrue([rd length] == strlen(s2));
+        XCTAssertTrue(memcmp([rd bytes], s2, strlen(s2)) == 0);
     }
 
     rd = [louie readData];
     if (rd == nil) {
-        should(rd != nil);
+        XCTAssertTrue(rd != nil);
     } else {
-        should([rd length] == strlen(s1));
-        should(memcmp([rd bytes], s1, strlen(s1)) == 0);
+        XCTAssertTrue([rd length] == strlen(s1));
+        XCTAssertTrue(memcmp([rd bytes], s1, strlen(s1)) == 0);
     }
 }
 
@@ -174,20 +174,20 @@ const char *s4 = "Would you like another packet? It is WAFFER THIN!";
     addressFamily = af;
 }
 
-+ (id) defaultTestSuite
++ (XCTestSuite *)defaultTestSuite;
 {
-    SenTestSuite *all = [SenTestSuite /* emptyTestSuiteForTestCaseClass:self */ testSuiteWithName:[self description]];
+    XCTestSuite *all = [XCTestSuite /* emptyTestSuiteForTestCaseClass:self */ testSuiteWithName:[self description]];
     struct { int af; char *n; } variations[3] = { { AF_UNSPEC, "AF_UNSPEC" }, { AF_INET, "AF_INET" }, { AF_INET6, "AF_INET6" } };
     int i;
     
     for(i = 0; i < 3; i++) {
-        SenTestSuite *some;
+        XCTestSuite *some;
         NSArray *invocations;
         unsigned int invocationIndex;
         int af = variations[i].af;
         
         invocations = [self testInvocations];
-        some = [SenTestSuite testSuiteWithName:[NSString stringWithFormat:@"%@ (%s)", [all name], variations[i].n]];
+        some = [XCTestSuite testSuiteWithName:[NSString stringWithFormat:@"%@ (%s)", [all name], variations[i].n]];
         for(invocationIndex = 0; invocationIndex < [invocations count]; invocationIndex ++) {
             ONUDPTrafficTests *test = [self testCaseWithInvocation:[invocations objectAtIndex:invocationIndex]];
             if (af != AF_UNSPEC)

@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,6 @@
 // OFSetTests.m - OmniFoundation unit tests
 //
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/NSArray-OFExtensions.h>
@@ -32,19 +31,19 @@ RCS_ID("$Id$");
     NSArray *a;
     
     a = [NSArray arrayWithObjects:@"one", @"THREE", @"FOUR", @"five", @"two", @"three", @"four", @"Two", @"Three", @"Four", @"five", nil];
-    shouldBeEqual([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", @"two", @"three", @"four", @"five", nil]));
+    XCTAssertEqualObjects([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", @"two", @"three", @"four", @"five", nil]));
     
     a = [NSArray arrayWithObjects:@"one", @"One", @"onE", @"oNe", @"OnE", nil];
-    shouldBeEqual([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", nil]));
+    XCTAssertEqualObjects([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", nil]));
     
     a = [NSArray arrayWithObjects:@"One", @"onE", @"oNe", @"OnE", @"", nil];
-    shouldBeEqual([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", @"", nil]));
+    XCTAssertEqualObjects([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", @"", nil]));
 
     a = [NSArray arrayWithObjects:@"one", nil];
-    shouldBeEqual([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", nil]));
+    XCTAssertEqualObjects([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", nil]));
     
     a = [NSArray array];
-    shouldBeEqual([a setByPerformingSelector:@selector(lowercaseString)], [NSSet set]);
+    XCTAssertEqualObjects([a setByPerformingSelector:@selector(lowercaseString)], [NSSet set]);
 }
 
 - (void)testSetFromSet
@@ -52,19 +51,19 @@ RCS_ID("$Id$");
     NSSet *a;
     
     a = [NSSet setWithObjects:@"one", @"THREE", @"FOUR", @"five", @"two", @"three", @"four", @"Two", @"Three", @"Four", @"five", nil];
-    shouldBeEqual([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", @"two", @"three", @"four", @"five", nil]));
+    XCTAssertEqualObjects([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", @"two", @"three", @"four", @"five", nil]));
     
     a = [NSSet setWithObjects:@"one", @"One", @"onE", @"oNe", @"OnE", nil];
-    shouldBeEqual([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", nil]));
+    XCTAssertEqualObjects([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", nil]));
     
     a = [NSSet setWithObjects:@"one", @"One", @"", @"oNe", @"OnE", nil];
-    shouldBeEqual([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", @"", nil]));
+    XCTAssertEqualObjects([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", @"", nil]));
     
     a = [NSSet setWithObjects:@"one", nil];
-    shouldBeEqual([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", nil]));
+    XCTAssertEqualObjects([a setByPerformingSelector:@selector(lowercaseString)], ([NSSet setWithObjects:@"one", nil]));
     
     a = [NSSet set];
-    shouldBeEqual([a setByPerformingSelector:@selector(lowercaseString)], [NSSet set]);
+    XCTAssertEqualObjects([a setByPerformingSelector:@selector(lowercaseString)], [NSSet set]);
 }
 
 - (void)testInsertionSort
@@ -72,23 +71,23 @@ RCS_ID("$Id$");
     NSSet *a;
     
     a = [NSSet setWithObjects:@"one", @"THREE", @"FOUR", @"five", @"two", @"three", @"four", @"Two", @"Three", @"Four", @"five", nil];
-    shouldBeEqual([a sortedArrayUsingSelector:@selector(compare:)], ([NSArray arrayWithObjects:@"FOUR", @"Four", @"THREE", @"Three", @"Two", @"five",@"four",  @"one", @"three", @"two", nil]));
+    XCTAssertEqualObjects([a sortedArrayUsingSelector:@selector(compare:)], ([NSArray arrayWithObjects:@"FOUR", @"Four", @"THREE", @"Three", @"Two", @"five",@"four",  @"one", @"three", @"two", nil]));
     
     a = [NSSet setWithObjects:@"one", @"THREE", @"five", @"two", @"Two!", @"Thr33", @"Four", @"F!VE", @"ThR44", nil];
-    shouldBeEqual([a sortedArrayUsingSelector:@selector(compare:)], ([NSArray arrayWithObjects:@"F!VE", @"Four", @"THREE", @"ThR44", @"Thr33", @"Two!", @"five", @"one", @"two", nil]));
-    shouldBeEqual([a sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)], ([NSArray arrayWithObjects:@"F!VE", @"five", @"Four", @"one", @"Thr33", @"ThR44", @"THREE", @"two", @"Two!", nil]));
+    XCTAssertEqualObjects([a sortedArrayUsingSelector:@selector(compare:)], ([NSArray arrayWithObjects:@"F!VE", @"Four", @"THREE", @"ThR44", @"Thr33", @"Two!", @"five", @"one", @"two", nil]));
+    XCTAssertEqualObjects([a sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)], ([NSArray arrayWithObjects:@"F!VE", @"five", @"Four", @"one", @"Thr33", @"ThR44", @"THREE", @"two", @"Two!", nil]));
     
     a = [NSSet setWithObjects:@"one", @"One", @"", @"oNe", @"OnE", nil];
-    shouldBeEqual([a sortedArrayUsingSelector:@selector(compare:)], ([NSArray arrayWithObjects:@"", @"OnE", @"One", @"oNe", @"one", nil]));
+    XCTAssertEqualObjects([a sortedArrayUsingSelector:@selector(compare:)], ([NSArray arrayWithObjects:@"", @"OnE", @"One", @"oNe", @"one", nil]));
     
     a = [NSSet setWithObjects:@"one", @"", nil];
-    shouldBeEqual([a sortedArrayUsingSelector:@selector(compare:)], ([NSArray arrayWithObjects:@"", @"one", nil]));
+    XCTAssertEqualObjects([a sortedArrayUsingSelector:@selector(compare:)], ([NSArray arrayWithObjects:@"", @"one", nil]));
     
     a = [NSSet setWithObjects:@"one", nil];
-    shouldBeEqual([a sortedArrayUsingSelector:@selector(compare:)], ([NSArray arrayWithObjects:@"one", nil]));
+    XCTAssertEqualObjects([a sortedArrayUsingSelector:@selector(compare:)], ([NSArray arrayWithObjects:@"one", nil]));
     
     a = [NSSet set];
-    shouldBeEqual([a sortedArrayUsingSelector:@selector(compare:)], [NSArray array]);
+    XCTAssertEqualObjects([a sortedArrayUsingSelector:@selector(compare:)], [NSArray array]);
 }
 
 - (void)testInsertionSortRandom
@@ -122,8 +121,8 @@ RCS_ID("$Id$");
             }
         }
         
-        STAssertEqualObjects([fillMe sortedArrayUsingSelector:@selector(compare:)], numbers,
-                             [NSString stringWithFormat:@"Trial %d: setsize=%u (%u probes), setbase=%u", trial, setsize, c, setbase]);
+        XCTAssertEqualObjects([fillMe sortedArrayUsingSelector:@selector(compare:)], numbers,
+                              @"Trial %d: setsize=%u (%u probes), setbase=%u", trial, setsize, c, setbase);
         
     }
 }

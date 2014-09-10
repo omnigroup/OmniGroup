@@ -12,3 +12,6 @@ COPY_PHASE_STRIP = NO
 STRIP_INSTALLED_PRODUCT = YES
 
 VALIDATE_PRODUCT = YES
+
+// If we leave this as YES, we get a symlink in Release-iphoneos and we can't run/install that under Xcode 6
+DEPLOYMENT_LOCATION = NO

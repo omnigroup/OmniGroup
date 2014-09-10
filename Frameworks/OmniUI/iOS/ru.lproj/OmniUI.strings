@@ -111,6 +111,9 @@
 /* placeholder text */
 "password" = "пароль";
 
+/* Photos view controller title. */
+"Photos" = "Фото";
+
 /* alert title */
 "Preference changed" = "Параметр изменен";
 

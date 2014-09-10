@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -259,7 +259,7 @@ static NSString * const ValidImportExportAccounts = @"validImportExportAccounts"
     if (![manager createDirectoryAtURL:temporaryURL withIntermediateDirectories:NO attributes:nil error:outError])
         return NO;
     
-    if (account.isCloudSyncEnabled) {
+    if (account.usageMode == OFXServerAccountUsageModeCloudSync) {
         // Make the local documents directory for this URL. We need to do this before calling -propertyList so that (on OS X), we can record an app-scoped bookmark.
         // NOTE: We don't delete the document directory here since it was possibly created by the user (and if validation fails, this will let them pick it again). AND, most importantly, it might fail to be valid below due to containing actual files!
         if (![self _createLocalDocumentsFolderForAccount:account error:outError]) {
@@ -373,7 +373,7 @@ static unsigned AccountContext;
     
     // On the Mac, we'll leave the synchronized files around since they are in a user-visible location and the user may have just decided to stop using our service. On iOS, there is no other way to get to the files, so we need to clean up after ourselves.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    if (account.isCloudSyncEnabled) {
+    if (account.usageMode == OFXServerAccountUsageModeCloudSync) {
         removeError = nil;
 
         // Go through this helper method to make sure we delete the right ancestory URL (since there is an extra 'Documents' component). This does some other checks to make sure we are deleting the right thing.
@@ -406,10 +406,14 @@ static unsigned AccountContext;
     NSMutableArray *validImportExportAccounts = [NSMutableArray new];
     for (OFXServerAccount *account in _allAccounts) {
         if ([self _isAccountValid:account]) {
-            if (account.isCloudSyncEnabled)
-                [validCloudSyncAccounts addObject:account];
-            if (account.isImportExportEnabled)
-                [validImportExportAccounts addObject:account];
+            switch (account.usageMode) {
+                case OFXServerAccountUsageModeCloudSync:
+                    [validCloudSyncAccounts addObject:account];
+                    break;
+                case OFXServerAccountUsageModeImportExport:
+                    [validImportExportAccounts addObject:account];
+                    break;
+            }
         }
     }
     

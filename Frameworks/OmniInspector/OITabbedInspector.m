@@ -405,7 +405,9 @@ RCS_ID("$Id$")
         [tabControllers addObject:tabController];
     }
     
-    [tabControllers sortUsingFunction:sortByDefaultDisplayOrderInGroup context:NULL];
+    [tabControllers sortUsingComparator:^NSComparisonResult(OIInspectorController *obj1, OIInspectorController *obj2) {
+        return OISortByDefaultDisplayOrderInGroup(obj1, obj2);
+    }];
     
     _tabControllers = [[NSArray alloc] initWithArray:tabControllers];
     
@@ -436,7 +438,9 @@ RCS_ID("$Id$")
         return;
     
     NSMutableArray *newTabControllers = [[NSMutableArray alloc] initWithArray:_tabControllers];
-    [newTabControllers insertObject:tabController inArraySortedUsingFunction:sortByDefaultDisplayOrderInGroup context:NULL];
+    [newTabControllers insertObject:tabController inArraySortedUsingComparator:^NSComparisonResult(OIInspectorController *obj1, OIInspectorController *obj2) {
+        return OISortByDefaultDisplayOrderInGroup(obj1, obj2);
+    }];
     
     _tabControllers = [[NSArray alloc] initWithArray:newTabControllers];
     
@@ -559,7 +563,7 @@ RCS_ID("$Id$")
     OIInspectionSet *inspectionSet = [_weak_inspectorController.inspectorRegistry inspectionSet];
     NSArray *sortedObjects = [inspectionSet objectsSortedByInsertionOrder:objects];
     
-    if (0) {
+    if (/* DISABLES CODE */ (0)) {
         NSUInteger objectIndex, objectCount = [sortedObjects count];
         for (objectIndex = 0; objectIndex < objectCount; objectIndex++) {
             id object = [sortedObjects objectAtIndex:objectIndex];
@@ -748,15 +752,14 @@ RCS_ID("$Id$")
 - (void)_updateButtonsToMatchSelection;
 {
     [buttonMatrix deselectAllCells];
-
+    
     NSArray *matrixCells = [buttonMatrix cells];
     NSUInteger tabIndex, tabCount = [_tabControllers count];
     for (tabIndex = 0; tabIndex < tabCount; tabIndex++) {
         OIInspectorTabController *tabController = [_tabControllers objectAtIndex:tabIndex];
-	if ([tabController isVisible])
-	    [buttonMatrix setSelectionFrom:tabIndex to:tabIndex anchor:tabIndex highlight:YES];
-	if ([tabController isPinned])
-            [[matrixCells objectAtIndex:tabIndex] setIsPinned:YES];
+        if ([tabController isVisible])
+            [buttonMatrix setSelectionFrom:tabIndex to:tabIndex anchor:tabIndex highlight:YES];
+        [[matrixCells objectAtIndex:tabIndex] setIsPinned:[tabController isPinned]];
     }
     [buttonMatrix setNeedsDisplay:YES];
 }

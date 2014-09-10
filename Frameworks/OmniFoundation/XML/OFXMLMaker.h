@@ -1,4 +1,4 @@
-// Copyright 2004-2005,2009-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005,2009-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <Foundation/NSObject.h>
 
+@class NSArray, NSData, NSDictionary, NSMutableArray, NSMutableSet, NSMutableDictionary;
 @class OFXMLMakerElement, OFXMLSink;
 
 @interface OFXMLMaker : NSObject

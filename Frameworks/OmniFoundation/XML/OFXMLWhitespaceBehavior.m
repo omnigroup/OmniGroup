@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,16 +68,16 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(OFXMLWhitespaceBehaviorTypeAuto == 0);
     
-    if (behavior == OFXMLWhitespaceBehaviorTypeAuto)
-        CFDictionaryRemoveValue(_nameToBehavior, elementName);
-    else {
-        OFCFDictionarySetUIntegerValue(_nameToBehavior, elementName, behavior);
+    if (behavior == OFXMLWhitespaceBehaviorTypeAuto) {
+        CFDictionaryRemoveValue(_nameToBehavior, (__bridge CFStringRef)elementName);
+    } else {
+        OFCFDictionarySetUIntegerValue(_nameToBehavior, (__bridge CFStringRef)elementName, behavior);
     }
 }
 
 - (OFXMLWhitespaceBehaviorType)behaviorForElementName:(NSString *)elementName;
 {
-    return (OFXMLWhitespaceBehaviorType)OFCFDictionaryGetUIntegerValueWithDefault(_nameToBehavior, elementName, _defaultBehavior);
+    return (OFXMLWhitespaceBehaviorType)OFCFDictionaryGetUIntegerValueWithDefault(_nameToBehavior, (__bridge CFStringRef)elementName, _defaultBehavior);
 }
 
 @end

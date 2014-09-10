@@ -14,7 +14,8 @@ OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64 -DOBJC_OLD_DISPATCH_PROTOTYPES=0 -
 SHARED_PRECOMPS_DIR = $(CONFIGURATION_BUILD_DIR)/SharedPrecompiledHeaders
 
 GCC_PREFIX_HEADER = $(PROJECT_NAME)_Prefix.h
-GCC_PRECOMPILE_PREFIX_HEADER = YES
+// Xcode 6 beta 5 goes crazy lots when this is used.
+//GCC_PRECOMPILE_PREFIX_HEADER = YES
 
 YACC = $(DT_TOOLCHAIN_DIR)/usr/bin/bison
 YACCFLAGS = -y
@@ -30,6 +31,9 @@ GCC_ENABLE_OBJC_EXCEPTIONS = YES
 //
 // Warnings
 //
+
+// Apple LLVM c - Preprocessing
+ENABLE_STRICT_OBJC_MSGSEND = YES
 
 // Apple LLVM compiler 4.2 - Warning Policies
 //GCC_WARN_INHIBIT_ALL_WARNINGS
@@ -67,6 +71,7 @@ GCC_WARN_SIGN_COMPARE = YES
 GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES
 GCC_WARN_UNINITIALIZED_AUTOS = YES
 GCC_WARN_UNKNOWN_PRAGMAS = YES
+CLANG_WARN_UNREACHABLE_CODE = YES
 GCC_WARN_UNUSED_FUNCTION = YES
 GCC_WARN_UNUSED_LABEL = YES
 //GCC_WARN_UNUSED_PARAMETER
@@ -89,7 +94,7 @@ CLANG_WARN__DUPLICATE_METHOD_MATCH = YES
 CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES
 //CLANG_WARN_OBJC_RECEIVER_WEAK
 // GCC_WARN_STRICT_SELECTOR_MATCH = YES // Lots of false positives. NSNotificationCenter vs NSDistributedNotificationCenter due to redeclaration of -addObserver:name:selector:object. NSDictionary vs NSUserDefaults to to redeclaration of -objectForKey:
-//GCC_WARN_UNDECLARED_SELECTOR = YES // This finds real bugs -- slowly updating our code to build with it.
+GCC_WARN_UNDECLARED_SELECTOR = YES
 //CLANG_WARN__ARC_BRIDGE_CAST_NONARC
 
 // Don't show up in the Xcode settings UI. Removed?
@@ -127,7 +132,7 @@ DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 // DEBUG_INFORMATION_FORMAT = stabs
 GCC_DEBUGGING_SYMBOLS = full
 
-// When preprocessing Info.plist files, look for include files (such as SVNVersion.h) in $CONFIGURATION_BUILD_DIR/include. OmniGroup/Tools/SVNVersion builds SVNVersion.h for both iOS and Mac build directories so that we reference the 'right' one here.
+// When preprocessing Info.plist files, look for include files (such as SVNVersion.h) in $CONFIGURATION_BUILD_DIR/include. OmniGroup/Tools/SVNVersion builds SVNVersion.h for both iOS and Mac build directories so that we reference the 'rigth' on here.
 INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -C -I"$(CONFIGURATION_BUILD_DIR)/include"
 INFOPLIST_PREPROCESS = YES
 

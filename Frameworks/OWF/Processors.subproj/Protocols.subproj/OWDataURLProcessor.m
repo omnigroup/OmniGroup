@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2005, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,10 +40,10 @@ static NSData *decodeURLEscapedBytes(NSString *input)
 {
     NSUInteger charCount = [input length];
     
-    unichar *characters = (unichar *)NSZoneMalloc(NULL, charCount * sizeof(*characters));
+    unichar *characters = (unichar *)malloc(charCount * sizeof(*characters));
     [input getCharacters:characters];
     
-    unsigned char *bytes = NSZoneMalloc(NULL, charCount);
+    unsigned char *bytes = malloc(charCount);
     NSUInteger byteCount = 0;
     NSUInteger charIndex = 0;
     while(charIndex < charCount) {
@@ -61,9 +61,9 @@ static NSData *decodeURLEscapedBytes(NSString *input)
         bytes[byteCount++] = byte;
     }
     
-    NSZoneFree(NULL, characters);
+    free(characters);
     NSData *result = [NSData dataWithBytes:bytes length:byteCount];
-    NSZoneFree(NULL, bytes);
+    free(bytes);
     
     return result;
 }

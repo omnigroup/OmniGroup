@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 #import <OWF/OWDataStreamCursor.h>
 
 #import <Foundation/Foundation.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <OmniBase/rcsid.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
 
@@ -17,7 +17,7 @@ RCS_ID("$Id$");
 
 static NSData *someData;
 
-@interface DataStreamTests : SenTestCase
+@interface DataStreamTests : XCTestCase
 {
     NSData *inputData;
     OWDataStream *dataStream;
@@ -210,8 +210,8 @@ static NSData *someData;
 
 - (void)testSmallReaders
 {
-    should(dataStream == nil);
-    should(runningProcs != nil);
+    XCTAssertTrue(dataStream == nil);
+    XCTAssertTrue(runningProcs != nil);
 
     inputData = [[@"This is a test" dataUsingEncoding:NSASCIIStringEncoding] retain];
 
@@ -248,8 +248,8 @@ static NSData *someData;
 {
     unsigned writePos;
     
-    should(dataStream == nil);
-    should(runningProcs != nil);
+    XCTAssertTrue(dataStream == nil);
+    XCTAssertTrue(runningProcs != nil);
 
     dataStream = [[OWDataStream alloc] init];
     inputData = [someData retain];

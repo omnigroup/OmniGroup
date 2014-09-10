@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,8 @@
 // Must be subclassed, in addition to -isAppropriateForInspectedObject:.
 - (OQColor *)colorForObject:(id)object;
 - (void)setColor:(OQColor *)color forObject:(id)object;
+
+- (void)handleColorChange:(OQColor *)color; // Hook so that Graffle can handle mass changes a little differently
 
 @end
 

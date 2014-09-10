@@ -142,7 +142,7 @@ static NSString *hexPairInserter(NSString *string, NSRange *defRange, void *cont
     
     decodedString = OFMostlyApplyDeferredEncoding(decodedString, thisUrlEncoding);
     
-    return [decodedString stringByPerformingReplacement:hexPairInserter onCharacters:(NSCharacterSet *)OFDeferredDecodingCharacterSet() context:NULL options:0 range:(NSRange){0, [decodedString length]}];
+    return [decodedString stringByPerformingReplacement:hexPairInserter onCharacters:(__bridge NSCharacterSet *)OFDeferredDecodingCharacterSet() context:NULL options:0 range:(NSRange){0, [decodedString length]}];
 }
 
 + (NSString *)decodeURLString:(NSString *)encodedString;
@@ -286,7 +286,7 @@ static const OFQuotedPrintableMapping urlCodingVariants[8] = {
     NSUInteger sourceLength = [sourceData length];
     
     NSUInteger destinationBufferSize = sourceLength + (sourceLength >> 2) + 12;
-    unichar *destinationBuffer = NSZoneMalloc(NULL, (destinationBufferSize) * sizeof(unichar));
+    unichar *destinationBuffer = malloc((destinationBufferSize) * sizeof(unichar));
     NSUInteger destinationIndex = 0;
     
     NSUInteger sourceIndex;
@@ -297,7 +297,7 @@ static const OFQuotedPrintableMapping urlCodingVariants[8] = {
 	
 	if (destinationIndex >= destinationBufferSize - 3) {
 	    destinationBufferSize += destinationBufferSize >> 2;
-	    destinationBuffer = NSZoneRealloc(NULL, destinationBuffer, (destinationBufferSize) * sizeof(unichar));
+	    destinationBuffer = realloc(destinationBuffer, (destinationBufferSize) * sizeof(unichar));
 	}
 	
         if (OFCharacterSetHasMember(AcceptableCharacterSet(), ch)) {

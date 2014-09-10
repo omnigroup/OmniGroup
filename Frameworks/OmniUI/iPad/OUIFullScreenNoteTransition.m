@@ -46,7 +46,7 @@ RCS_ID("$Id$")
         toView.frame = [transitionContext finalFrameForViewController:toController];
     } completion:^(BOOL finished) {
         if (finished) {
-            if (YES || self.fromTextView) {
+            if (/* DISABLES CODE */ (YES) || self.fromTextView) {
                 toController.textView.editable = YES; //[self.fromTextView isEditable];
             }
             

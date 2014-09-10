@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,34 +18,26 @@
 RCS_ID("$Id$");
 
 @interface OUIInAppStoreViewController ()
-
+@property (nonatomic, strong) SKProductsRequest *request;
+@property (nonatomic, strong) OUIInAppStoreObserver *storeObserver;
+@property (nonatomic, strong) NSString *productIdentifier;
+@property (nonatomic, readonly) SKPaymentQueue *paymentQueue;
+@property (nonatomic) BOOL hasPurchased;
 @end
 
 @implementation OUIInAppStoreViewController
 {
-    BOOL _addedTopMarginConstraint;
+    NSMutableDictionary *_productForSKU;
 }
-
-@synthesize request;
-@synthesize purchaseProduct;
-@synthesize buyButton;
-@synthesize restoreButton;
-@synthesize storeObserver;
-@synthesize leftMarginConstraint;
-@synthesize featureDescriptionTextView;
-@synthesize featureTitleLabel;
-@synthesize featureSubtitleLabel;
-@synthesize featureImageWell;
-@synthesize spinner;
-@synthesize productIdentifier;
 
 - (id)initWithProductIdentifier:(NSString *)aProductID;
 {
     if (!(self = [super init]))
         return nil;
-        
+
+    _productForSKU = [[NSMutableDictionary alloc] init];
     [self setProductIdentifier:aProductID];
-    
+
     return self;
 }
 
@@ -55,39 +47,46 @@ RCS_ID("$Id$");
     if (!self)
         return nil;
     
-    storeObserver = [[OUIInAppStoreObserver alloc] init];
-    storeObserver.delegate = self;
-    [[SKPaymentQueue defaultQueue] addTransactionObserver:storeObserver];
-    
-    UIBarButtonItem *cancel = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(done:)];
-    self.navigationItem.leftBarButtonItem = cancel;
-    
-    restoreButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Restore", @"OmniUI", OMNI_BUNDLE, @"Restore purchases button title") style:UIBarButtonItemStylePlain target:self action:@selector(restore:)];
-    [restoreButton setEnabled:NO];
-    self.navigationItem.rightBarButtonItem = restoreButton;
+    UIBarButtonItem *done = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(done:)];
+    self.navigationItem.rightBarButtonItem = done;
 
     return self;
+}
+
+- (SKPaymentQueue *)paymentQueue;
+{
+    SKPaymentQueue *paymentQueue = [SKPaymentQueue defaultQueue];
+    if (_storeObserver == nil) {
+        _storeObserver = [[OUIInAppStoreObserver alloc] init];
+        _storeObserver.delegate = self;
+        [paymentQueue addTransactionObserver:_storeObserver];
+    }
+    return paymentQueue;
 }
 
 - (void)viewDidLoad;
 {
     [super viewDidLoad];
     
-    [buyButton setTitle:NSLocalizedStringFromTableInBundle(@"Loading", @"OmniUI", OMNI_BUNDLE, @"Buy button title while app store is loading") forState:UIControlStateNormal];
-    [buyButton addTarget:self action:@selector(purchase:) forControlEvents:UIControlEventTouchUpInside];
-    [buyButton setEnabled:NO];
+    [NSLayoutConstraint constraintWithItem:_featureWebView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.topLayoutGuide attribute:NSLayoutAttributeBottom multiplier:1 constant:0].active = YES;
+    _featureWebView.scrollView.alwaysBounceVertical = NO;
     
-    [self updateUIForProductIdentifier:productIdentifier];
-    if ([[OUIAppController controller] importIsUnlocked:productIdentifier])
-        [self showPurchasedText:productIdentifier];
+    [_buyButton setTitle:NSLocalizedStringFromTableInBundle(@"Loading", @"OmniUI", OMNI_BUNDLE, @"Buy button title while app store is loading") forState:UIControlStateNormal];
+    [_buyButton addTarget:self action:@selector(purchase:) forControlEvents:UIControlEventTouchUpInside];
+    [_buyButton setEnabled:NO];
+    _buyButton.tintColor = [self.view.tintColor colorWithAlphaComponent:0.5];
+
+    [self updateUIForProductIdentifier:_productIdentifier];
+    if ([[OUIAppController controller] isPurchaseUnlocked:_productIdentifier])
+        [self showPurchasedText:_productIdentifier];
 }
 
 - (void)viewDidAppear:(BOOL)animated;
 {
     [super viewDidAppear:animated];
     
-    if ([[OUIAppController controller] importIsUnlocked:productIdentifier]) {
-        [self showPurchasedText:productIdentifier];
+    if ([[OUIAppController controller] isPurchaseUnlocked:_productIdentifier]) {
+        [self showPurchasedText:_productIdentifier];
     } else if ([SKPaymentQueue canMakePayments]) {
         [self requestProductData];
     } else {
@@ -95,82 +94,106 @@ RCS_ID("$Id$");
         NSString *purchasingDisabledDetails = NSLocalizedStringFromTableInBundle(@"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app.", @"OmniUI", OMNI_BUNDLE, @"Purchasing is disabled details");
         NSString *dismissAlertString = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Dismiss failed purchase alert");
         
-        [buyButton setTitle:NSLocalizedStringFromTableInBundle(@"Disabled", @"OmniUI", OMNI_BUNDLE, @"Button is disabled due to purchase restrictions") forState:UIControlStateDisabled];
+        [_buyButton setTitle:NSLocalizedStringFromTableInBundle(@"Disabled", @"OmniUI", OMNI_BUNDLE, @"Button is disabled due to purchase restrictions") forState:UIControlStateDisabled];
         
         UIAlertView *cannotPurchaseAlert = [[UIAlertView alloc] initWithTitle:purchasingDisabledTitle message:purchasingDisabledDetails delegate:nil cancelButtonTitle:dismissAlertString otherButtonTitles:nil];
         [cannotPurchaseAlert show];
     }
 }
 
-- (void)updateViewConstraints;
-{
-    [super updateViewConstraints];
-    
-    if (!_addedTopMarginConstraint) {
-        [self.view addConstraint:[NSLayoutConstraint constraintWithItem:featureImageWell attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.topLayoutGuide attribute:NSLayoutAttributeBottom multiplier:1 constant:self.leftMarginConstraint.constant]];
-    }
-}
-
 - (void)dealloc;
 {
-    storeObserver.delegate = nil;
-    [self.request cancel];
-    [[SKPaymentQueue defaultQueue] removeTransactionObserver:storeObserver];
+    if (_storeObserver != nil) {
+        _storeObserver.delegate = nil;
+        [self.paymentQueue removeTransactionObserver:_storeObserver];
+    }
+
+    [_request cancel];
 }
 
 - (void)showPurchasedText:(NSString *)aProductID;
 {
-    [spinner stopAnimating];
-    [request cancel];
-    request = nil;
+    [_spinner stopAnimating];
+    [_request cancel];
+    _request = nil;
 
-    [buyButton setTitle:NSLocalizedStringFromTableInBundle(@"Purchased. Thank you!", @"OmniUI", OMNI_BUNDLE, @"Buy button thank you message") forState:UIControlStateNormal];
-    [buyButton setEnabled:NO];
-    
-    [self.navigationItem setRightBarButtonItem:nil];
-    
-    UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(done:)];
-    [self.navigationItem setLeftBarButtonItem:doneButton];
+    if (aProductID == nil)
+        return;
+
+    self.hasPurchased = YES;
+
+    [_buyButton setTitle:NSLocalizedStringFromTableInBundle(@"Purchased. Thank you!", @"OmniUI", OMNI_BUNDLE, @"Buy button thank you message") forState:UIControlStateNormal];
+    [_buyButton setEnabled:NO];
+    _buyButton.tintColor = [self.view.tintColor colorWithAlphaComponent:0.5];
     
     NSString *purchase = NSLocalizedStringFromTableInBundle(@"%@ Purchased", @"OmniUI", OMNI_BUNDLE, @"title for successful in app purchase");
     self.navigationItem.title = [NSString stringWithFormat:purchase, [[OUIAppController controller] sheetTitleForInAppStoreProductIdentifier:aProductID]];
+    
+    [_featureWebView loadRequest:[NSURLRequest requestWithURL:[[OUIAppController controller] purchasedDescriptionURLForProductIdentifier:aProductID]]];
 }
 
 - (void)requestProductData;
 {
-    [spinner startAnimating];
+    [_spinner startAnimating];
 
-#ifdef DEBUG_ryan0
-    [self afterDelay:1 performBlock:^{
-        if ([[OUIAppController controller] importIsUnlocked:@"com.omnigroup.InAppPurchase.Visio"]) {
-            [self showPurchasedText:@"com.omnigroup.InAppPurchase.Visio"];
+    OBASSERT(_request);
+    [_request start];
+}
+
+- (NSString *)_selectedSKU;
+{
+    NSInteger selectedSegmentIndex = _pricingOptionsSegmentedControl.selectedSegmentIndex;
+    if (selectedSegmentIndex == -1)
+        return nil;
+
+    NSArray *pricingOptionSKUs = [[OUIAppController controller] pricingOptionSKUsForProductIdentifier:_productIdentifier];
+    return pricingOptionSKUs[_pricingOptionsSegmentedControl.selectedSegmentIndex];
+}
+
+- (SKProduct *)_selectedPurchaseProduct;
+{
+    NSString *selectedSKU = [self _selectedSKU];
+    return _productForSKU[selectedSKU];
+}
+
+- (NSString *)_localizedPriceStringForProduct:(SKProduct *)product;
+{
+    NSNumberFormatter *priceFormatter = [[NSNumberFormatter alloc] init];
+    [priceFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
+    [priceFormatter setLocale:product.priceLocale];
+    NSString *localizedPrice = [priceFormatter stringForObjectValue:product.price];
+    return localizedPrice;
+}
+
+- (void)_refreshPricingOptions;
+{
+    NSArray *pricingOptionSKUs = [[OUIAppController controller] pricingOptionSKUsForProductIdentifier:_productIdentifier];
+    NSString *priceOptionFormat = NSLocalizedStringFromTableInBundle(@"%@ %@", @"OmniUI", OMNI_BUNDLE, @"In App Store pricing option format");
+
+    NSUInteger skuIndex = 0;
+    for (NSString *SKU in pricingOptionSKUs) {
+        SKProduct *purchaseProduct = _productForSKU[SKU];
+        if (purchaseProduct != nil) {
+            NSString *localizedPrice = [self _localizedPriceStringForProduct:purchaseProduct];
+            [_pricingOptionsSegmentedControl setTitle:[NSString stringWithFormat:priceOptionFormat, localizedPrice, purchaseProduct.localizedTitle] forSegmentAtIndex:skuIndex];
+            [_pricingOptionsSegmentedControl setEnabled:YES forSegmentAtIndex:skuIndex];
         } else {
-            NSString *localizedPriceString = NSLocalizedStringFromTableInBundle(@"Buy $%@", @"OmniUI", OMNI_BUNDLE, @"'Buy' and a currency symbol for purchase button");
-            
-            NSString *buyWithPriceString = [NSString stringWithFormat:localizedPriceString, @"1,000,000"];
-            [buyButton setTitle:buyWithPriceString forState:UIControlStateNormal];
-            [buyButton setEnabled:YES];
-            [restoreButton setEnabled:YES];
+            [_pricingOptionsSegmentedControl setTitle:@"" forSegmentAtIndex:skuIndex];
+            [_pricingOptionsSegmentedControl setEnabled:NO forSegmentAtIndex:skuIndex];
         }
-        
-        [spinner stopAnimating];
-    }];
-    return;
-#endif
+        skuIndex++;
+    }
 
-    OBASSERT(request);
-    [request start];
+    [self updateSelectedPricingOption:nil];
 }
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response;
 {
-    for (NSString *invalid in response.invalidProductIdentifiers) {
-        if ([productIdentifier isEqualToString:invalid]) {
-            [self disableStoreInteraction];
+    NSArray *pricingOptionSKUs = [[OUIAppController controller] pricingOptionSKUsForProductIdentifier:_productIdentifier];
+    for (NSString *invalidIdentifier in response.invalidProductIdentifiers) {
+        if ([pricingOptionSKUs containsObject:invalidIdentifier]) {
+            [self disableStoreInteractionWithBusyIndicator:NO];
             [self _showError];
-            
-            [spinner stopAnimating];
-            
             return;
         } else {
             OBASSERT_NOT_REACHED("received strange response from app store");
@@ -178,55 +201,73 @@ RCS_ID("$Id$");
     }
     
     for (SKProduct *product in response.products) {
-        if ([productIdentifier isEqualToString:product.productIdentifier]) {
-            purchaseProduct = product;
-            
-            NSNumberFormatter *priceFormatter = [[NSNumberFormatter alloc] init];
-            [priceFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
-            [priceFormatter setLocale:product.priceLocale];
-            NSString *localizedPrice = [priceFormatter stringForObjectValue:purchaseProduct.price];
-            
-            NSString *localizedPriceString = NSLocalizedStringFromTableInBundle(@"Buy %@", @"OmniUI", OMNI_BUNDLE, @"'Buy' button title format. The currency symbol will be provided at run time.");
-            
-            NSString *buyWithPriceString = [NSString stringWithFormat:localizedPriceString, localizedPrice];
-            [buyButton setTitle:buyWithPriceString forState:UIControlStateNormal];
-            [buyButton setEnabled:YES];
-            [restoreButton setEnabled:YES];
-            
-            [spinner stopAnimating];
-            
-            return;
-        } else {
-            OBASSERT_NOT_REACHED("received strange response from app store");
-        }
+        _productForSKU[product.productIdentifier] = product;
     }
+
+    [_spinner stopAnimating];
+    _restoreButton.enabled = YES;
+
+    [self _refreshPricingOptions];
 }
 
 - (void)request:(SKRequest *)aRequest didFailWithError:(NSError *)error;
 {
-    OBASSERT(request == aRequest);
-    [self disableStoreInteraction];
+    OBASSERT(_request == aRequest);
+
+    NSLog(@"%@: StoreKit request failed: %@", OBShortObjectDescription(self), [error toPropertyList]);
+
+    [self disableStoreInteractionWithBusyIndicator:NO];
     [self _showError];
+}
+
+- (IBAction)updateSelectedPricingOption:(id)sender;
+{
+    SKProduct *purchaseProduct = [self _selectedPurchaseProduct];
+    NSString *buyButtonTitle;
+    BOOL buyButtonEnabled;
+
+    if (purchaseProduct != nil) {
+        _pricingOptionDescriptionLabel.text = [[OUIAppController controller] descriptionForPricingOptionSKU:[self _selectedSKU]];
+
+        NSString *localizedPrice = [self _localizedPriceStringForProduct:purchaseProduct];
+        NSString *localizedPriceFormat = NSLocalizedStringFromTableInBundle(@"Buy %@", @"OmniUI", OMNI_BUNDLE, @"'Buy' button title format. The currency symbol will be provided at run time.");
+        buyButtonTitle = [NSString stringWithFormat:localizedPriceFormat, localizedPrice];
+        buyButtonEnabled = _restoreButton.enabled;
+    } else {
+        _pricingOptionDescriptionLabel.text = @"";
+
+        buyButtonTitle = NSLocalizedStringFromTableInBundle(@"Buy", @"OmniUI", OMNI_BUNDLE, @"Disabled 'Buy' button title string");
+        buyButtonEnabled = NO;
+    }
+
+    [UIView performWithoutAnimation:^{ // Disable animation so the button doesn't draw its old title at its new size (sometimes with ellipses!)
+        [_buyButton setTitle:buyButtonTitle forState:UIControlStateNormal];
+        [_buyButton layoutIfNeeded];
+    }];
+
+    _buyButton.enabled = buyButtonEnabled;
+    _buyButton.tintColor = buyButtonEnabled ? self.view.tintColor : [self.view.tintColor colorWithAlphaComponent:0.5];
 }
 
 - (IBAction)purchase:(id)sender;
 {
-#ifdef DEBUG_ryan0
-    [spinner startAnimating];
-    
-    [self afterDelay:.5 performBlock:^{
-        [[OUIAppController controller] unlockImport:@"com.omnigroup.InAppPurchase.Visio"];
-    }];
-    
-    return;
-#endif
-    
-    if (purchaseProduct) {
-        [spinner startAnimating];
+    // NSString *verifyTitle = NSLocalizedStringFromTableInBundle(@"Verify", @"OmniUI", OMNI_BUNDLE, @"in app purchase verify button title");
+    NSString *selectedSKU = [self _selectedSKU];
 
+    [[OUIAppController controller] validateEligibilityForPricingOptionSKU:selectedSKU completion:^(BOOL isValidated) {
+        if (isValidated) {
+            [self _validatedPurchase];
+        }
+    }];
+}
+
+- (void)_validatedPurchase;
+{
+    SKProduct *purchaseProduct = [self _selectedPurchaseProduct];
+    if (purchaseProduct) {
         SKPayment *payment = [SKPayment paymentWithProduct:purchaseProduct];
-        [[SKPaymentQueue defaultQueue] addPayment:payment];
-        [self disableStoreInteraction];
+        [self.paymentQueue addPayment:payment];
+        [self disableStoreInteractionWithBusyIndicator:NO];
     } else {
         [self _showError];
     }
@@ -234,45 +275,55 @@ RCS_ID("$Id$");
 
 - (IBAction)restore:(id)sender;
 {
-    [[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
-    [self disableStoreInteraction];
+    [self disableStoreInteractionWithBusyIndicator:YES];
+    [self.paymentQueue restoreCompletedTransactions];
 }
 
 - (IBAction)done:(id)sender;
 {
-    if ([[[self navigationController] viewControllers] count] && [[[self navigationController] viewControllers] objectAtIndex:0] == self)
-        [self dismissViewControllerAnimated:YES completion:nil];
-    else
-        [[self navigationController] popViewControllerAnimated:YES];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (IBAction)resetPurchasedFlag:(id)sender;
 {
     OUIAppController *appDelegate = [OUIAppController controller];
-    [appDelegate deleteImportPurchasedFlag:nil];
+    [appDelegate removePurchasedProductFromKeychain:_productIdentifier];
 }
 
-- (void)disableStoreInteraction;
+- (void)disableStoreInteractionWithBusyIndicator:(BOOL)isBusy;
 {
-    [buyButton setEnabled:NO];
-    [restoreButton setEnabled:NO];
+    _pricingOptionsSegmentedControl.enabled = NO;
+    _restoreButton.enabled = NO;
+    _buyButton.enabled = NO;
+    UIColor *disabledTintColor = [self.view.tintColor colorWithAlphaComponent:0.5];
+    _restoreButton.tintColor = disabledTintColor;
+    _buyButton.tintColor = disabledTintColor;
+
+    if (isBusy)
+        [_spinner startAnimating];
+    else
+        [_spinner stopAnimating];
 }
 
 - (void)enableStoreInteraction;
 {
-    [buyButton setEnabled:YES];
-    [restoreButton setEnabled:YES];
+    _pricingOptionsSegmentedControl.enabled = YES;
+    _restoreButton.enabled = YES;
+    _buyButton.enabled = YES;
+    UIColor *enabledTintColor = self.view.tintColor;
+    _restoreButton.tintColor = enabledTintColor;
+    _buyButton.tintColor = enabledTintColor;
+
+    [_spinner stopAnimating];
 }
 
 - (void)updateUIForProductIdentifier:(NSString *)aProductID;
 {
     NSString *purchase = NSLocalizedStringFromTableInBundle(@"Purchase %@", @"OmniUI", OMNI_BUNDLE, @"title for successful in app purchase");
     self.navigationItem.title = [NSString stringWithFormat:purchase, [[OUIAppController controller] sheetTitleForInAppStoreProductIdentifier:aProductID]];
-    
-    featureTitleLabel.text = [[OUIAppController controller] titleForInAppStoreProductIdentifier:aProductID];
-    featureSubtitleLabel.text = [[OUIAppController controller] subtitleForInAppStoreProductIdentifier:aProductID];
-    featureDescriptionTextView.text = [[OUIAppController controller] descriptionForInAppStoreProductIdentifier:aProductID];
-    featureImageWell.image = [[OUIAppController controller] imageForInAppStoreProductIdentifier:aProductID];
+    [_featureWebView loadRequest:[NSURLRequest requestWithURL:[[OUIAppController controller] descriptionURLForProductIdentifier:_productIdentifier]]];
+
+    [self _refreshPricingOptions];
 }
 
 - (void)_showError;
@@ -281,7 +332,7 @@ RCS_ID("$Id$");
     NSString *storeErrorAlertDescription = NSLocalizedStringFromTableInBundle(@"There was an error loading information from the App Store", @"OmniUI", OMNI_BUNDLE, @"Alert description for error loading product information");
     NSString *dismissAlertString = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Dismiss failed purchase alert");
     
-    [buyButton setTitle:NSLocalizedStringFromTableInBundle(@"Error", @"OmniUI", OMNI_BUNDLE, @"In app Buy button error title") forState:UIControlStateDisabled];
+    [_buyButton setTitle:NSLocalizedStringFromTableInBundle(@"Error", @"OmniUI", OMNI_BUNDLE, @"In app Buy button error title") forState:UIControlStateDisabled];
 
     UIAlertView *cannotPurchaseAlert = [[UIAlertView alloc] initWithTitle:storeErrorAlertTitle message:storeErrorAlertDescription delegate:nil cancelButtonTitle:dismissAlertString otherButtonTitles:nil];
     [cannotPurchaseAlert show];
@@ -289,13 +340,14 @@ RCS_ID("$Id$");
 
 - (void)setProductIdentifier:(NSString *)aProductID;
 {
-    productIdentifier = aProductID;
+    _productIdentifier = aProductID;
     
-    OBASSERT([[[OUIAppController controller] inAppPurchaseIdentifiers] containsObject:productIdentifier]);
-    request = [[SKProductsRequest alloc] initWithProductIdentifiers:[NSSet setWithObject:productIdentifier]];
-    request.delegate = self;
+    OBASSERT([[[OUIAppController controller] inAppPurchaseIdentifiers] containsObject:_productIdentifier]);
+    NSArray *pricingOptionSKUs = [[OUIAppController controller] pricingOptionSKUsForProductIdentifier:_productIdentifier];
+    _request = [[SKProductsRequest alloc] initWithProductIdentifiers:[NSSet setWithArray:pricingOptionSKUs]];
+    _request.delegate = self;
     
-    [self updateUIForProductIdentifier:productIdentifier];
+    [self updateUIForProductIdentifier:_productIdentifier];
 }
 
 // OUIInAppStoreObserver delegate
@@ -310,17 +362,26 @@ RCS_ID("$Id$");
     UIAlertView *transactionFailedAlert = [[UIAlertView alloc] initWithTitle:purchaseFailedString message:message delegate:nil cancelButtonTitle:dismissAlertString otherButtonTitles:nil, nil];
     [transactionFailedAlert show];
     
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    [self enableStoreInteraction];
+}
+
+- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueueRestoreCompletedTransactionsFinished:(SKPaymentQueue *)queue;
+{
+    if (!self.hasPurchased) {
+        NSString *noPurchasesFoundTitle = NSLocalizedStringFromTableInBundle(@"Restore Complete", @"OmniUI", OMNI_BUNDLE, @"No purchases found title");
+        NSString *noPurchasesFoundMessageFormat = NSLocalizedStringFromTableInBundle(@"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases.", @"OmniUI", OMNI_BUNDLE, @"No purchases found message format");
+        NSString *noPurchasesFoundMessage = [NSString stringWithFormat:noPurchasesFoundMessageFormat, [[OUIAppController controller] sheetTitleForInAppStoreProductIdentifier:_productIdentifier]];
+        NSString *dismissAlertString = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Dismiss alert");
+
+        UIAlertView *transactionFailedAlert = [[UIAlertView alloc] initWithTitle:noPurchasesFoundTitle message:noPurchasesFoundMessage delegate:nil cancelButtonTitle:dismissAlertString otherButtonTitles:nil, nil];
+        [transactionFailedAlert show];
+        
+        [self enableStoreInteraction];
+    }
 }
 
 - (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue restoreCompletedTransactionsFailedWithError:(NSError *)error;
 {
-    if ([error.domain isEqualToString:SKErrorDomain] && error.code == SKErrorPaymentCancelled) {
-        [self enableStoreInteraction];
-        
-        return;
-    }
-    
     NSLog(@"%@", error);
     NSString *restoreFailedString = NSLocalizedStringFromTableInBundle(@"Restore Failed", @"OmniUI", OMNI_BUNDLE, @"Restore failed alert title");
     NSString *dismissAlertString = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Dismiss failed restore alert");
@@ -328,17 +389,25 @@ RCS_ID("$Id$");
     UIAlertView *transactionFailedAlert = [[UIAlertView alloc] initWithTitle:restoreFailedString message:[error localizedDescription] delegate:nil cancelButtonTitle:dismissAlertString otherButtonTitles:nil, nil];
     [transactionFailedAlert show];
     
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    [self enableStoreInteraction];
 }
 
-- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue successfullyPurchasedProduct:(NSString *)purchasedProductIdentifier;
+- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue successfullyPurchasedSKU:(NSString *)pricingSKU;
 {
-    [self showPurchasedText:purchasedProductIdentifier];
+    if (_productForSKU[pricingSKU] == nil)
+        return; // We don't know this SKU
+
+    // They've purchased one of the SKUs for our products. (Note that SKProduct.productIdentifier is the identifier for a single SKU, while our productIdentifier represents multiple SKUs that have the same effect.)
+    [self showPurchasedText:_productIdentifier];
 }
 
-- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue successfullyRestoredProduct:(NSString *)purchasedProductIdentifier;
+- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue successfullyRestoredSKU:(NSString *)pricingSKU;
 {
-    [self showPurchasedText:purchasedProductIdentifier];
+    if (_productForSKU[pricingSKU] == nil)
+        return; // We don't know this SKU
+
+    // They've purchased one of the SKUs for our products. (Note that SKProduct.productIdentifier is the identifier for a single SKU, while our productIdentifier represents multiple SKUs that have the same effect.)
+    [self showPurchasedText:_productIdentifier];
 }
 
 @end

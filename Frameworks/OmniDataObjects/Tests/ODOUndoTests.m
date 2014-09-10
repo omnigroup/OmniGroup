@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,9 +28,9 @@ RCS_ID("$Id$")
     
     // Should undo the insertion of the detail and relationship between it and the master
     [_undoManager undo];
-    should([_undoManager groupingLevel] == 0);
+    XCTAssertTrue([_undoManager groupingLevel] == 0);
 
-    should([master.details count] == 0);
+    XCTAssertTrue([master.details count] == 0);
 }
 
 // These ends up checking that the snapshots recorded in the undo manager don't end up resurrecting deleted objects when we undo a delete by doing an 'insert with snapshot'
@@ -48,18 +48,18 @@ RCS_ID("$Id$")
     
     // Now, delete the master, which should cascade to the detail
     OBShouldNotError([_editingContext deleteObject:master error:&error]);
-    should([detail isDeleted]);
+    XCTAssertTrue([detail isDeleted]);
     
     // Close the group and finalize the deletion by saving, making the objects invalidated
     OBShouldNotError([self save:&error]);
     
     // Undo the delete; there should now be two objects registered with the right object IDs.
     [_undoManager undo];
-    should([_undoManager groupingLevel] == 0);
+    XCTAssertTrue([_undoManager groupingLevel] == 0);
     
-    should([[_editingContext registeredObjectByID] count] == 2);
-    should([_editingContext objectRegisteredForID:masterID] != nil);
-    should([_editingContext objectRegisteredForID:detailID] != nil);
+    XCTAssertTrue([[_editingContext registeredObjectByID] count] == 2);
+    XCTAssertTrue([_editingContext objectRegisteredForID:masterID] != nil);
+    XCTAssertTrue([_editingContext objectRegisteredForID:detailID] != nil);
 }
 
 - (void)testClearingEmptyToManyAfterRedo_unconnected;
@@ -75,12 +75,12 @@ RCS_ID("$Id$")
     // Re-find master after it got deleted and reinserted
     master = (ODOTestCaseMaster *)[_editingContext objectRegisteredForID:masterID];
     [masterID release];
-    should(master != nil);
+    XCTAssertTrue(master != nil);
     
     // Crashed prior to the fix
-    should([master isInserted]);
-    should(master.details != nil);
-    should([master.details count] == 0);
+    XCTAssertTrue([master isInserted]);
+    XCTAssertTrue(master.details != nil);
+    XCTAssertTrue([master.details count] == 0);
 }
 
 @end

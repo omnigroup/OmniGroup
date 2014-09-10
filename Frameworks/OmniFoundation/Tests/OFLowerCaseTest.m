@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,12 @@
 
 #import <OmniFoundation/CFDictionary-OFExtensions.h>
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$")
 
-@interface OFLowerCaseTests : SenTestCase
+@interface OFLowerCaseTests : XCTestCase
 {
 }
 
@@ -27,9 +27,9 @@ RCS_ID("$Id$")
     dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFCaseInsensitiveStringKeyDictionaryCallbacks, &kCFTypeDictionaryValueCallBacks);
     
     CFDictionaryAddValue(dict, @"foo key", @"foo value");
-    STAssertEqualObjects((id)CFDictionaryGetValue(dict, @"FOO KEY"), @"foo value", nil);
-    STAssertNil((id)CFDictionaryGetValue(dict, @"FOOKEY"), nil);
-    STAssertEqualObjects((id)CFDictionaryGetValue(dict, @"fOo KeY"), @"foo value", nil);
+    XCTAssertEqualObjects((id)CFDictionaryGetValue(dict, @"FOO KEY"), @"foo value");
+    XCTAssertNil((id)CFDictionaryGetValue(dict, @"FOOKEY"));
+    XCTAssertEqualObjects((id)CFDictionaryGetValue(dict, @"fOo KeY"), @"foo value");
 
     CFRelease(dict);
 }

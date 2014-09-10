@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2007-2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,7 +64,7 @@ OFXMLInternedStringTable OFXMLInternedStringTableCreate(NSSet *startingStrings)
     for (NSString *string in startingStrings) {
         const char *key = strdup([string UTF8String]);
         OBASSERT(CFDictionaryGetValue(TABLE, key) == NULL);
-        CFDictionarySetValue(TABLE, key, string);
+        CFDictionarySetValue(TABLE, key, (CFStringRef)string);
     }
     
     return table;
@@ -87,7 +87,7 @@ NSString *OFXMLInternedStringTableGetInternedString(OFXMLInternedStringTable tab
     
     const char *key = strdup(str); // caller owns the input.
     interned = [[NSString alloc] initWithUTF8String:key]; // the extra ref here is the 'create' returned to the caller
-    CFDictionarySetValue(TABLE, key, interned); // dictionary retains the intered string for the life of 'state' too.
+    CFDictionarySetValue(TABLE, key, (CFStringRef)interned); // dictionary retains the intered string for the life of 'state' too.
     
     //NSLog(@"XML: Interned string '%@'", interned);
     
@@ -152,7 +152,7 @@ OFXMLInternedNameTable OFXMLInternedNameTableCreate(OFXMLInternedNameTable start
     OFXMLInternedNameTable table = (struct _OFXMLInternedNameTable *)CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &keyCallbacks, &OFNSObjectDictionaryValueCallbacks);
     
     // We should point at *exactly* these name instances so that users can use == comparison.
-    for (OFXMLQName *qname in [(NSDictionary *)startingQNameTable allValues]) {
+    for (OFXMLQName *qname in [(__bridge NSDictionary *)startingQNameTable allValues]) {
         QNameKey *key = malloc(sizeof(*key));
         
         // TODO: We are potentially making lots of copies of the same namespace string, one per attribute/element in that namespace.
@@ -160,7 +160,7 @@ OFXMLInternedNameTable OFXMLInternedNameTableCreate(OFXMLInternedNameTable start
         key->name = _personalizeString([qname.name UTF8String]);
         
         OBASSERT(CFDictionaryGetValue(TABLE, key) == NULL);
-        CFDictionarySetValue(TABLE, key, qname);
+        CFDictionarySetValue(TABLE, key, (__bridge CFTypeRef)qname);
     }
     
     return table;
@@ -201,7 +201,7 @@ OFXMLQName *OFXMLInternedNameTableGetInternedName(OFXMLInternedNameTable table, 
     [namespaceString release];
     [nameString release];
     
-    CFDictionarySetValue(TABLE, key, interned);
+    CFDictionarySetValue(TABLE, key, (__bridge CFTypeRef)interned);
     [interned release];
     
     //NSLog(@"XML: Interned qname '%@'", [interned shortDescription]);

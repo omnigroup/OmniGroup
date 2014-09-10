@@ -18,7 +18,9 @@
 
 RCS_ID("$Id$");
 
-typedef struct _OFMLParserState {
+@interface OFXMLParserState : NSObject
+{
+@public
     xmlParserCtxtPtr ctxt;
     OFXMLParser *parser;
     NSObject <OFXMLParserTarget> *target;
@@ -39,11 +41,11 @@ typedef struct _OFMLParserState {
     
     NSUInteger elementDepth;
     BOOL rootElementFinished;
-
+    
     NSCharacterSet *nonWhitespaceCharacterSet;
     OFXMLWhitespaceBehavior *whitespaceBehavior;
     NSMutableArray *whitespaceBehaviorStack;
-
+    
     NSError *error;
     NSMutableArray *loadWarnings;
     
@@ -55,7 +57,11 @@ typedef struct _OFMLParserState {
     off_t unparsedBlockStart; // < 0 if we aren't in an unparsed block.
     unsigned int unparsedBlockElementNesting;
     NSString *unparsedElementID; // The value of the xml:id attribute, if any
-} OFMLParserState;
+}
+@end
+
+@implementation OFXMLParserState
+@end
 
 // CFXML only has one callback for this; not sure why there are two.
 static void _internalSubsetSAXFunc(void *ctx, const xmlChar *name, const xmlChar *ExternalID, const xmlChar *SystemID)
@@ -67,16 +73,16 @@ static void _externalSubsetSAXFunc(void *ctx, const xmlChar *name, const xmlChar
 {
     //NSLog(@"_externalSubsetSAXFunc name:'%s' ExternalID:'%s' SystemID:'%s'", name, ExternalID, SystemID);
     
-    OFMLParserState *state = ctx;
+    OFXMLParserState *state = (__bridge OFXMLParserState *)ctx;
     OFXMLParser *parser = state->parser;
     
     // We pick up the root element name when it is opened (curently assume that it matches the name in the DOCTYPE).
     
     if (state->targetImp.setSystemID) {
-        CFURLRef systemID = NULL;
+        NSURL *systemID = NULL;
         if (SystemID) {
             CFStringRef systemIDString = CFStringCreateWithCString(kCFAllocatorDefault, (const char *)SystemID, kCFStringEncodingUTF8);
-            systemID = CFURLCreateWithString(kCFAllocatorDefault, systemIDString, NULL);
+            systemID = CFBridgingRelease(CFURLCreateWithString(kCFAllocatorDefault, systemIDString, NULL));
             CFRelease(systemIDString);
             
             if (!systemID)
@@ -84,19 +90,15 @@ static void _externalSubsetSAXFunc(void *ctx, const xmlChar *name, const xmlChar
         }
         NSString *publicID = nil;
         if (ExternalID)
-            publicID = (NSString *)CFStringCreateWithCString(kCFAllocatorDefault, (const char *)ExternalID, kCFStringEncodingUTF8);
+            publicID = CFBridgingRelease(CFStringCreateWithCString(kCFAllocatorDefault, (const char *)ExternalID, kCFStringEncodingUTF8));
         
-        state->targetImp.setSystemID(state->target, @selector(parser:setSystemID:publicID:), parser, (NSURL *)systemID, publicID);
-        if (systemID)
-            CFRelease(systemID);
-        if (publicID)
-            CFRelease(publicID);
+        state->targetImp.setSystemID(state->target, @selector(parser:setSystemID:publicID:), parser, systemID, publicID);
     }
 }
 
 static void _startElementNsSAX2Func(void *ctx, const xmlChar *localname, const xmlChar *prefix, const xmlChar *URI, int nb_namespaces, const xmlChar **namespaces, int nb_attributes, int nb_defaulted, const xmlChar **attributes)
 {
-    OFMLParserState *state = ctx;
+    OFXMLParserState *state = (__bridge OFXMLParserState *)ctx;
     OFXMLParser *parser = state->parser;
     
     OBINVARIANT([state->whitespaceBehaviorStack count] == state->elementDepth + 1); // always have the default behavior on the stack!
@@ -264,7 +266,7 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
 {
     //NSLog(@"end element localname:'%s' prefix:'%s' URI:'%s'", localname, prefix, URI);
     
-    OFMLParserState *state = ctx;
+    OFXMLParserState *state = (__bridge OFXMLParserState *)ctx;
     OFXMLParser *parser = state->parser;
     
     // See if we've finished an unparsed block
@@ -333,7 +335,7 @@ static void _endElementNsSAX2Func(void *ctx, const xmlChar *localname, const xml
 
 static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
 {
-    OFMLParserState *state = ctx;
+    OFXMLParserState *state = (__bridge OFXMLParserState *)ctx;
     OFXMLParser *parser = state->parser;
     
     // Unparsed element support; if we are in the middle of an unparsed element, ignore characters
@@ -368,7 +370,7 @@ static void _charactersSAXFunc(void *ctx, const xmlChar *ch, int len)
 
 static void _processingInstructionSAXFunc(void *ctx, const xmlChar *target, const xmlChar *data)
 {
-    OFMLParserState *state = ctx;
+    OFXMLParserState *state = (__bridge OFXMLParserState *)ctx;
     OFXMLParser *parser = state->parser;
     
     if (state->targetImp.addProcessingInstruction) {
@@ -384,7 +386,7 @@ static void _processingInstructionSAXFunc(void *ctx, const xmlChar *target, cons
 
 static void _xmlStructuredErrorFunc(void *userData, xmlErrorPtr error)
 {
-    OFMLParserState *state = userData;
+    OFXMLParserState *state = (__bridge OFXMLParserState *)userData;
     
     NSError *errorObject = OFXMLCreateError(error);
     if (errorObject == nil)
@@ -404,7 +406,7 @@ static void _xmlStructuredErrorFunc(void *userData, xmlErrorPtr error)
 }
 
 
-static void _OFMLParserStateCleanUp(OFMLParserState *state)
+static void _OFXMLParserStateCleanUp(OFXMLParserState *state)
 {
     OBPRECONDITION(state->ctxt == NULL); // we don't clean this up
     OBPRECONDITION(state->error == nil); // the caller should have taken ownership and cleaned this up
@@ -415,13 +417,11 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     
     if (state->ownsNameTable && state->nameTable)
         OFXMLInternedNameTableFree(state->nameTable);
-    
-    memset(state, 0, sizeof(*state));
 }
 
 @implementation OFXMLParser
 {
-    struct _OFMLParserState *_state; // Only set while parsing.
+    OFXMLParserState *_state; // Only set while parsing.
 }
 
 - (id)initWithData:(NSData *)xmlData whitespaceBehavior:(OFXMLWhitespaceBehavior *)whitespaceBehavior defaultWhitespaceBehavior:(OFXMLWhitespaceBehaviorType)defaultWhitespaceBehavior target:(NSObject <OFXMLParserTarget> *)target error:(NSError **)outError;
@@ -435,17 +435,15 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     
     LIBXML_TEST_VERSION
     
-    OFMLParserState state;
-    _state = &state;
+    _state = [[OFXMLParserState alloc] init];
     
-    memset(&state, 0, sizeof(state));
-    state.parser = self;
-    state.whitespaceBehaviorStack = [[NSMutableArray alloc] init];
-    state.nonWhitespaceCharacterSet = [[[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet] copy];
-    state.loadWarnings = [[NSMutableArray alloc] init];
-    state.whitespaceBehavior = whitespaceBehavior;
+    _state->parser = self;
+    _state->whitespaceBehaviorStack = [[NSMutableArray alloc] init];
+    _state->nonWhitespaceCharacterSet = [[[NSCharacterSet whitespaceAndNewlineCharacterSet] invertedSet] copy];
+    _state->loadWarnings = [[NSMutableArray alloc] init];
+    _state->whitespaceBehavior = whitespaceBehavior;
     
-    state.target = target;
+    _state->target = target;
     
     // Assert on deprecated target methods.
     OBASSERT_NOT_IMPLEMENTED(target, parser:shouldLeaveElementAsUnparsedBlock:); // Takes a OFXMLQName and attribute names/values now.
@@ -456,7 +454,7 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     // -methodForSelector returns _objc_msgForward
 #define GET_IMP(slot, sel) do { \
     if ([target respondsToSelector:sel]) \
-        state.targetImp.slot = (typeof(state.targetImp.slot))[target methodForSelector:sel]; \
+        _state->targetImp.slot = (typeof(_state->targetImp.slot))[target methodForSelector:sel]; \
 } while (0)
     GET_IMP(setSystemID, @selector(parser:setSystemID:publicID:));
     GET_IMP(addProcessingInstruction, @selector(parser:addProcessingInstructionNamed:value:));
@@ -469,18 +467,18 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
 #undef GET_IMP
 
     if ([target respondsToSelector:@selector(internedNameTableForParser:)]) {
-        state.nameTable = [target internedNameTableForParser:self];
-        state.ownsNameTable = NO;
+        _state->nameTable = [target internedNameTableForParser:self];
+        _state->ownsNameTable = NO;
     }
-    if (!state.nameTable) {
-        state.nameTable = OFXMLInternedNameTableCreate(NULL);
-        state.ownsNameTable = YES;
+    if (!_state->nameTable) {
+        _state->nameTable = OFXMLInternedNameTableCreate(NULL);
+        _state->ownsNameTable = YES;
     }
     
-    state.unparsedBlockStart = -1;
+    _state->unparsedBlockStart = -1;
     
     // Set up default whitespace behavior
-    [state.whitespaceBehaviorStack addObject:@(defaultWhitespaceBehavior)];
+    [_state->whitespaceBehaviorStack addObject:@(defaultWhitespaceBehavior)];
     
     
     // TODO: Add support for passing along the source URL
@@ -503,7 +501,7 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     NSUInteger xmlLength = [xmlData length];
     OBASSERT(xmlLength < INT_MAX); // Need a different API for super-long XML.
     
-    state.ctxt = xmlCreatePushParserCtxt(&sax, &state/*user data*/, [xmlData bytes], (int)xmlLength, NULL);
+    _state->ctxt = xmlCreatePushParserCtxt(&sax, (__bridge void *)_state/*user data*/, [xmlData bytes], (int)xmlLength, NULL);
     
     // Set the options on our XML parser instance.
     // We set XML_PARSE_HUGE to bypass any hardcoded internal parser limits, such as 10000000 byte input length limit.
@@ -518,57 +516,58 @@ static void _OFMLParserStateCleanUp(OFMLParserState *state)
     options |= XML_PARSE_NOCDATA;   // Merge CDATA as text nodes
     options |= XML_PARSE_HUGE;      // Relax any hardcoded limit from the parser
     
-    options = xmlCtxtUseOptions(state.ctxt, options);
+    options = xmlCtxtUseOptions(_state->ctxt, options);
     if (options != 0)
         NSLog(@"Unsupported xml parser options: 0x%08x", options);
 
     // Encoding isn't set until after the terminate.
-    int rc = xmlParseChunk(state.ctxt, NULL, 0, TRUE/*terminate*/);
+    int rc = xmlParseChunk(_state->ctxt, NULL, 0, TRUE/*terminate*/);
     
-    OBASSERT((rc == 0) == (state.error == nil));
+    OBASSERT((rc == 0) == (_state->error == nil));
     
     BOOL result = YES;
-    if (rc != 0 || state.error) {
+    if (rc != 0 || _state->error) {
         if (outError)
-            *outError = state.error;
-        [state.error autorelease];
-        state.error = nil; // we've dealt with cleaning up the error portion of the state
+            *outError = [[_state->error retain] autorelease];
+        [_state->error release];
+        _state->error = nil; // we've dealt with cleaning up the error portion of the state
         result = NO;
     } else {
         CFStringEncoding encoding = kCFStringEncodingUTF8;
-        if (state.ctxt->encoding) {
-            CFStringRef encodingName = CFStringCreateWithCString(kCFAllocatorDefault, (const char *)state.ctxt->encoding, kCFStringEncodingUTF8);
+        if (_state->ctxt->encoding) {
+            CFStringRef encodingName = CFStringCreateWithCString(kCFAllocatorDefault, (const char *)_state->ctxt->encoding, kCFStringEncodingUTF8);
             CFStringEncoding parsedEncoding = CFStringConvertIANACharSetNameToEncoding(encodingName);
             CFRelease(encodingName);
             if (parsedEncoding == kCFStringEncodingInvalidId) {
 #ifdef DEBUG
-                NSLog(@"No string encoding found for '%s'.", state.ctxt->encoding);
+                NSLog(@"No string encoding found for '%s'.", _state->ctxt->encoding);
 #endif
             } else
                 encoding = parsedEncoding;
         }
         _encoding = encoding;
-        if (state.loadWarnings)
-            _loadWarnings = [[NSArray alloc] initWithArray:state.loadWarnings];
+        if (_state->loadWarnings)
+            _loadWarnings = [[NSArray alloc] initWithArray:_state->loadWarnings];
         
         // CFXML reports the <?xml...?> as a PI, but libxml2 doesn't.  It has the information we need in the context structure.  But, if there were other PIs, they'll be first in the list now.  So, we store this information out of the PIs now.
-        if (state.ctxt->version && *state.ctxt->version)
-            _versionString = [[NSString alloc] initWithUTF8String:(const char *)state.ctxt->version];
+        if (_state->ctxt->version && *_state->ctxt->version)
+            _versionString = [[NSString alloc] initWithUTF8String:(const char *)_state->ctxt->version];
         else
             _versionString = @"1.0";
-        _standalone = state.ctxt->standalone? YES : NO;
+        _standalone = _state->ctxt->standalone? YES : NO;
         
-        OBASSERT(state.elementDepth == 0); // should have finished the root element.
-        OBASSERT(state.rootElementFinished);
-        OBASSERT([state.whitespaceBehaviorStack count] == 1); // The default one should be one the stack.
+        OBASSERT(_state->elementDepth == 0); // should have finished the root element.
+        OBASSERT(_state->rootElementFinished);
+        OBASSERT([_state->whitespaceBehaviorStack count] == 1); // The default one should be one the stack.
         OBASSERT(![NSString isEmptyString:_versionString]);
     }
     
-    xmlFreeParserCtxt(state.ctxt);
-    state.ctxt = NULL;
+    xmlFreeParserCtxt(_state->ctxt);
+    _state->ctxt = NULL;
     
-    _OFMLParserStateCleanUp(&state);
-    _state = NULL;
+    _OFXMLParserStateCleanUp(_state);
+    [_state release];
+    _state = nil;
     
     if (!result) {
         [self release];

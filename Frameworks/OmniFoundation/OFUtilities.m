@@ -7,17 +7,12 @@
 
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
-#import <OmniFoundation/NSString-OFSimpleMatching.h>
 
-#import <CoreFoundation/CoreFoundation.h>
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <CoreServices/CoreServices.h> // for Debugging.h
-#import <Foundation/NSData.h>
-#import <objc/runtime.h>
-#import <objc/message.h>
-#import <pthread.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#else
+#import <UIKit/UIKit.h>
+#endif
 
 #import <OmniBase/OmniBase.h>
 
@@ -37,98 +32,6 @@ void OFLog(NSString *messageFormat, ...)
 
     fputs([message UTF8String], stdout);
 }
-
-NSString *OFGetInput(NSStringEncoding encoding, NSString *promptFormat, ...)
-{
-    va_list argList;
-    NSString *prompt;
-    NSString *input;
-    char buf[OF_GET_INPUT_CHUNK_LENGTH];
-
-    va_start(argList, promptFormat);
-    prompt = [[[NSString alloc] initWithFormat:promptFormat arguments:argList] autorelease];
-    va_end(argList);
-
-    printf("%s", [prompt UTF8String]);
-    input = [NSString string];
-    while (!ferror(stdin)) {
-        memset(buf, 0, sizeof(buf));
-        if (fgets(buf, sizeof(buf), stdin) == NULL) {
-            // EOF
-            break;
-        }
-        
-        input = [input stringByAppendingString:[NSString stringWithCString:buf encoding:encoding]];
-        if ([input hasSuffix:@"\n"])
-            break;
-    }
-
-    if ([input length])
-        return [input substringToIndex:[input length] - 1];
-
-    return nil;
-}
-
-#if 0 // Should probably use KVC
-void OFSetIvar(NSObject *object, NSString *ivarName, NSObject *ivarValue)
-{
-    Ivar ivar;
-    id *ivarSlot;
-
-    // TODO:At some point, this function should take a void * and should look at the type of the ivar and deal with scalar values correctly.
-
-    ivar = class_getInstanceVariable(*(Class *) object, [ivarName cString]);
-    OBASSERT(ivar);
-
-    ivarSlot = (id *)((char *)object + ivar->ivar_offset);
-
-    if (*ivarSlot != ivarValue) {
-	[*ivarSlot release];
-	*ivarSlot = [ivarValue retain];
-    }
-}
-
-NSObject *OFGetIvar(NSObject *object, NSString *ivarName)
-{
-    Ivar ivar;
-    id *ivarSlot;
-
-    ivar = class_getInstanceVariable(*(Class *) object, [ivarName cString]);
-    OBASSERT(ivar);
-
-    ivarSlot = (id *)((char *)object + ivar->ivar_offset);
-
-    return *ivarSlot;
-}
-#endif
-
-BOOL OFInstanceIsKindOfClass(id instance, Class aClass)
-{
-    Class sourceClass = object_getClass(instance);
-
-    while (sourceClass) {
-        if (sourceClass == aClass)
-            return YES;
-        sourceClass = class_getSuperclass(sourceClass);
-    }
-    return NO;
-}
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-NSString *OFDescriptionForObject(id object, NSDictionary *locale, unsigned indentLevel)
-{
-    if ([object isKindOfClass:[NSString class]])
-        return object;
-    else if ([object respondsToSelector:@selector(descriptionWithLocale:indent:)])
-        return [(id)object descriptionWithLocale:locale indent:indentLevel + 1];
-    else  if ([object respondsToSelector:@selector(descriptionWithLocale:)])
-        return [(id)object descriptionWithLocale:locale];
-    else
-        return [NSString stringWithFormat: @"%@%@",
-            [NSString spacesOfLength:(indentLevel + 1) * 4],
-            [object description]];
-}
-#endif
 
 /*"
 Ensures that the given selName maps to a registered selector.  If it doesn't, a copy of the string is made and it is registered with the runtime.  The registered selector is returned, in any case.
@@ -154,6 +57,16 @@ SEL OFRegisterSelectorIfAbsent(const char *selName)
     }
 
     return sel;
+}
+
+void OFWithLock(NSLock *lock, void (^block)(void))
+{
+    [lock lock];
+    @try {
+        block();
+    } @finally {
+        [lock unlock];
+    }
 }
 
 // Lots of SystemConfiguration is deprecated on the iPhone; need to write another path if we want this.
@@ -226,6 +139,7 @@ NSString *OFLocalizedNameForISOLanguageCode(NSString *languageCode)
     return [OMNI_BUNDLE localizedStringForKey:languageCode value:@"" table:@"Language"];
 }
 
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 NSString *OFOSStatusDescription(OSStatus err)
@@ -243,6 +157,7 @@ NSString *OFOSStatusDescription(OSStatus err)
     return [NSString stringWithFormat:@"%"PRI_OSStatus"", err];
 }
 #pragma clang diagnostic pop
+#endif
 
 // Adapted from OmniNetworking. May be replaced by something cleaner in the future.
 
@@ -410,7 +325,7 @@ NSString *OFLocalHostName(void)
     CFStringRef localHostName = SCDynamicStoreCopyLocalHostName(NULL);
     return CFBridgingRelease(localHostName);
 #else
-    return 
+    return [[UIDevice currentDevice] name];
 #endif    
 }
 
@@ -459,7 +374,7 @@ static BOOL ofGet4CCFromNSData(NSData *d, uint32_t *v)
     } buf;
     
     if ([d length] == 4) {
-        [d getBytes:buf.c];
+        [d getBytes:buf.c length:sizeof(buf)];
         *v = CFSwapInt32BigToHost(buf.i);
         return YES;
     } else {
@@ -519,60 +434,3 @@ id OFCreatePlistFor4CC(uint32_t v)
         return (OB_BRIDGE NSString *)CFStringCreateWithBytes(kCFAllocatorDefault, buf.c, 4, kCFStringEncodingMacRoman, FALSE);
     }
 }
-
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-#import <ApplicationServices/ApplicationServices.h> // CGFloat
-#endif
-
-static const struct {
-    const char *typespec;
-    CFNumberType cfNumberType;
-} cfNumberTypes[] = {
-    // This works because @encode returns an encoding indicating the concrete implementation of a type, so that for example @encode(pid_t) and @encode(int) both return "i" (since pid_t is currently typedef'd to int32_t, and the compiler int is 32 bits).
-    // Note that on versions later than 10.1, there's no precise way to represent an unsigned int in an NSNumber/CFNumber (despite the existence of +numberWithUnsignedInt:): RADAR #3513632. (In 10.5, +numberWithUnsignedInt: produces a kCFNumberSInt64Type, which at least is better than the old behavior of interpreting the arg as signed... In general, CFNumber is much less flexible than the NSNumber it replaced.)
-
-    // Also note that the types here are somewhat redundant (SInt32 is the same as an int right now); using @encode ensures that the table is accurate, but there will be two or three entries for any given ObjC type.
-        
-#define T(t) { @encode(t), kCFNumber ## t ## Type }
-    T(SInt8), T(SInt16), T(SInt32), T(SInt64), T(Float32), T(Float64),
-    T(NSInteger), T(CGFloat),
-    // Yep, there's no kCFNumberNSUIntegerType. WTF, Apple?!?
-#undef T
-    
-#define T(n, v) { @encode(n), kCFNumber ## v ## Type }
-    T(char, Char),
-    T(short, Short),
-    T(int, Int),
-    T(long, Long),
-    T(float, Float),
-    T(double, Double),
-#undef T
-    
-    { NULL, 0 }
-};
-
-CFNumberType OFCFNumberTypeForObjCType(const char *objCType)
-{
-    int i;
-    for(i = 0; cfNumberTypes[i].typespec != NULL; i ++) {
-        if (!strcmp(objCType, cfNumberTypes[i].typespec))
-            return cfNumberTypes[i].cfNumberType;
-    }
-    
-    OBASSERT_NOT_REACHED("ObjC type with no corresponding CFNumber type");
-    return 0;
-}
-
-const char *OFObjCTypeForCFNumberType(CFNumberType cfType)
-{
-    int i;
-    for(i = 0; cfNumberTypes[i].typespec != NULL; i ++) {
-        if (cfNumberTypes[i].cfNumberType == cfType)
-            return cfNumberTypes[i].typespec;
-    }
-    
-    // This should never happen, unless Apple adds more types to CoreFoundation and we don't add them to the array.
-    OBASSERT_NOT_REACHED("CFNumber type with no corresponding ObjC type");
-    return NULL;
-}
-

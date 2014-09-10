@@ -1,4 +1,4 @@
-// Copyright 1997-2005 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,21 +7,21 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
 
 @class OFTrieBucket, OFTrieNode;
 
-@interface OFTrie : OFObject
-{
-    OFTrieNode *head;
-    BOOL caseSensitive;
-}
+@interface OFTrie : NSObject
 
 - initCaseSensitive:(BOOL)shouldBeCaseSensitive;
+
 - (NSEnumerator *)objectEnumerator;
-- (BOOL)isCaseSensitive;
+
+@property(nonatomic,readonly,getter = isCaseSensitive) BOOL caseSensitive;
+
 - (void)addBucket:(OFTrieBucket *)bucket forString:(NSString *)aString;
 - (OFTrieBucket *)bucketForString:(NSString *)aString;
-- (OFTrieNode *)headNode;
+
+@property(nonatomic,readonly) OFTrieNode *headNode;
 
 @end

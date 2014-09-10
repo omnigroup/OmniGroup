@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,10 +20,6 @@
 #define kOUIDocumentPickerItemViewNameToDatePadding (0.0)
 #define kOUIDocumentPickerItemViewLabelShadowColor ((OQWhiteAlpha){0.0, 0.66})
 #define kOUIDocumentPickerItemViewProgressTintColor ((OQLinearRGBA){0.5, 0.5, 0.85, 1.0})
-
-#define kOUIDocumentPickerBackgroundGray (0.97)
-#define kOUIDocumentPickerHomeScreenCellBackgroundOpacity (0.95)
-#define kOUIDocumentPickerHomeScreenCellBorderWidth (1.0f)
 
 #define kOUIDocumentPickerFolderItemMiniPreviewSize ((CGSize){.width = 60.0f, .height = 60.0f})
 #define kOUIDocumentPickerFolderItemMiniPreviewInsets ((UIEdgeInsets){10.0f, 10.0f, 10.0f, 10.0f})

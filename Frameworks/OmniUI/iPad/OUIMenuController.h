@@ -1,4 +1,4 @@
-// Copyright 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,7 @@
 // $Id$
 
 #import <UIKit/UIViewController.h>
+#import <OmniUI/OUIWrappingViewController.h>
 #import <OmniUI/OUIMenuOption.h>
 
 @class OUIMenuController, OUIMenuOption;
@@ -17,36 +18,19 @@ typedef NS_ENUM(NSUInteger, OUIMenuControllerOptionInvocationAction) {
     OUIMenuControllerOptionInvocationActionReload,
 };
 
-@protocol OUIMenuControllerDelegate <NSObject>
-- (NSArray *)menuControllerOptions:(OUIMenuController *)menu;
-@end
+@interface OUIMenuController : OUIWrappingViewController
 
-@interface OUIMenuController : NSObject
-
-+ (void)showPromptFromSender:(id)sender title:(NSString *)title destructive:(BOOL)destructive action:(OUIMenuOptionAction)action;
-+ (void)showPromptFromSender:(id)sender title:(NSString *)title tintColor:(UIColor *)tintColor action:(OUIMenuOptionAction)action;
-
-- initWithDelegate:(id <OUIMenuControllerDelegate>)delegate;
-- initWithOptions:(NSArray *)options;
-
+@property(nonatomic,copy) NSArray *topOptions;
 @property(nonatomic,copy) void (^didFinish)(void);
 
-@property(nonatomic,retain) UIColor *tintColor;
-@property(nonatomic,copy) NSString *title;
+@property(nonatomic,copy) UIColor *tintColor;
 @property(nonatomic,assign) BOOL sizesToOptionWidth;
 @property(nonatomic,assign) NSTextAlignment textAlignment;
 @property(nonatomic,assign) BOOL showsDividersBetweenOptions; // Defaults to YES.
-@property(nonatomic,assign) BOOL padTopAndBottom; // Adds some padding before the first option and after the last option to make the spacing look the same as the spacing between options.
 
 @property(nonatomic,assign) OUIMenuControllerOptionInvocationAction optionInvocationAction; // OUIMenuControllerOptionInvocationActionDismiss by default
 
-// Valid sender classes are UIBarButtonItem and UIView.
-- (void)showMenuFromSender:(id)sender;
-- (void)dismissMenuAnimated:(BOOL)animated;
-
-@property(nonatomic,readonly) BOOL visible;
-
 // Called by OUIMenuOptionsController
-- (void)didInvokeOption:(OUIMenuOption *)option;
+- (void)dismissAndInvokeOption:(OUIMenuOption *)option;
 
 @end

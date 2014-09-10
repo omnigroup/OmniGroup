@@ -1,4 +1,4 @@
-// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -68,7 +68,21 @@ RCS_ID("$Id$")
     return [self componentsJoinedByString:@", "];
 }
 
-- (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
+typedef NSComparisonResult (*comparisonMethodIMPType)(id rcvr, SEL _cmd, id other);
+
+- (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingSelector:(SEL)selector;
+{
+    OBPRECONDITION([anObject respondsToSelector:selector]);
+    
+    comparisonMethodIMPType implementation = (comparisonMethodIMPType)[anObject methodForSelector:selector];
+    
+    return [self indexWhereObjectWouldBelong:anObject inArraySortedUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        OBASSERT(obj1 == anObject, "This is the implementation we cached");
+        return implementation(obj1, selector, obj2);
+    }];
+}
+
+- (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingComparator:(NSComparator)comparator;
 {
     NSUInteger low = 0;
     NSUInteger range = 1;
@@ -76,80 +90,40 @@ RCS_ID("$Id$")
     
     while (count >= range) /* range is the lowest power of 2 > count */
         range <<= 1;
-
+    
     while (range) {
         NSUInteger test = low + (range >>= 1);
         if (test >= count)
             continue;
 	id compareWith = (id)CFArrayGetValueAtIndex((CFArrayRef)self, test);
-	if (compareWith == anObject) 
+	if (compareWith == anObject)
             return test;
-	NSComparisonResult result = (NSComparisonResult)comparator(anObject, compareWith, context);
+	NSComparisonResult result = (NSComparisonResult)comparator(anObject, compareWith);
 	if (result > 0) /* NSOrderedDescending */
             low = test+1;
-	else if (result == NSOrderedSame) 
+	else if (result == NSOrderedSame)
             return test;
     }
     return low;
 }
 
-typedef NSComparisonResult (*comparisonMethodIMPType)(id rcvr, SEL _cmd, id other);
-struct selectorAndIMP {
-    SEL selector;
-    comparisonMethodIMPType implementation;
-};
-
-static NSComparisonResult compareWithSelectorAndIMP(id obj1, id obj2, void *context)
-{
-    return (((struct selectorAndIMP *)context) -> implementation)(obj1, (((struct selectorAndIMP *)context) -> selector), obj2);
-}
-
-- (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingSelector:(SEL)selector;
-{
-    struct selectorAndIMP selAndImp;
-    
-    OBASSERT([anObject respondsToSelector:selector]);
-    
-    selAndImp.selector = selector;
-    selAndImp.implementation = (comparisonMethodIMPType)[anObject methodForSelector:selector];
-    
-    return [self indexWhereObjectWouldBelong:anObject inArraySortedUsingFunction:compareWithSelectorAndIMP context:&selAndImp];
-}
-
-static NSComparisonResult compareWithComparator(id obj1, id obj2, void *context)
-{
-    NSComparator comparator = (NSComparator)context;
-    return comparator(obj1, obj2);
-}
-
-- (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingComparator:(NSComparator)comparator;
-{
-    OBASSERT(comparator != NULL);
-    return [self indexWhereObjectWouldBelong:anObject inArraySortedUsingFunction:compareWithComparator context:comparator];
-}
-
-static NSComparisonResult compareWithSortDescriptors(id obj1, id obj2, void *context)
-{
-    NSArray *sortDescriptors = (NSArray *)context;
-
-    for (NSSortDescriptor *sortDescriptor in sortDescriptors) {
-	NSComparisonResult result = [sortDescriptor compareObject:obj1 toObject:obj2];
-	if (result != NSOrderedSame)
-	    return result;
-    }
-    
-    return NSOrderedSame;
-}
-
 - (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingSortDescriptors:(NSArray *)sortDescriptors;
 {
     // optimization: check for count == 1 here and have a different callback for a single descriptor vs. multiple.
-    return [self indexWhereObjectWouldBelong:anObject inArraySortedUsingFunction:compareWithSortDescriptors context:sortDescriptors];
+    return [self indexWhereObjectWouldBelong:anObject inArraySortedUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        for (NSSortDescriptor *sortDescriptor in sortDescriptors) {
+            NSComparisonResult result = [sortDescriptor compareObject:obj1 toObject:obj2];
+            if (result != NSOrderedSame)
+                return result;
+        }
+        
+        return NSOrderedSame;
+    }];
 }
 
-- (NSUInteger)indexOfObject:(id)anObject identical:(BOOL)requireIdentity inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
+- (NSUInteger)indexOfObject:(id)anObject identical:(BOOL)requireIdentity inArraySortedUsingComparator:(NSComparator)comparator;
 {
-    NSUInteger objectIndex = [self indexWhereObjectWouldBelong:anObject inArraySortedUsingFunction:comparator context:context];
+    NSUInteger objectIndex = [self indexWhereObjectWouldBelong:anObject inArraySortedUsingComparator:comparator];
     NSUInteger count = [self count];
     id compareWith;
     
@@ -162,7 +136,7 @@ static NSComparisonResult compareWithSortDescriptors(id obj1, id obj2, void *con
             compareWith = (id)CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex);
             if (compareWith == anObject) 
                 return objectIndex;
-            if (comparator(anObject, compareWith, context) != NSOrderedSame)
+            if (comparator(anObject, compareWith) != NSOrderedSame)
                 break;
         } while (objectIndex--);
         
@@ -171,12 +145,12 @@ static NSComparisonResult compareWithSortDescriptors(id obj1, id obj2, void *con
             compareWith = (id)CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex);
             if (compareWith == anObject)
                 return objectIndex;
-            if (comparator(anObject, compareWith, context) != NSOrderedSame)
+            if (comparator(anObject, compareWith) != NSOrderedSame)
                 break;
         }
     } else {
         compareWith = (id)CFArrayGetValueAtIndex((CFArrayRef)self, objectIndex);
-        if ((NSComparisonResult)comparator(anObject, compareWith, context) == NSOrderedSame)
+        if (comparator(anObject, compareWith) == NSOrderedSame)
             return objectIndex;
     }
     return NSNotFound;
@@ -189,22 +163,22 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 
 - (NSUInteger)indexOfObject:(id)anObject inArraySortedUsingSelector:(SEL)selector;
 {
-    struct selectorAndIMP selAndImp;
+    comparisonMethodIMPType implementation = (comparisonMethodIMPType)[anObject methodForSelector:selector];
     
-    selAndImp.selector = selector;
-    selAndImp.implementation = (comparisonMethodIMPType)[anObject methodForSelector:selector];
-    
-    return [self indexOfObject:anObject identical:NO inArraySortedUsingFunction:compareWithSelectorAndIMP context:&selAndImp];
+    return [self indexOfObject:anObject identical:NO inArraySortedUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        OBASSERT(obj1 == anObject, "This is the implementation we cached");
+        return implementation(obj1, selector, obj2);
+    }];
 }
 
 - (NSUInteger)indexOfObjectIdenticalTo:(id)anObject inArraySortedUsingSelector:(SEL)selector;
 {
-    struct selectorAndIMP selAndImp;
+    comparisonMethodIMPType implementation = (comparisonMethodIMPType)[anObject methodForSelector:selector];
     
-    selAndImp.selector = selector;
-    selAndImp.implementation = (comparisonMethodIMPType)[anObject methodForSelector:selector];
-    
-    return [self indexOfObject:anObject identical:YES inArraySortedUsingFunction:compareWithSelectorAndIMP context:&selAndImp];
+    return [self indexOfObject:anObject identical:YES inArraySortedUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        OBASSERT(obj1 == anObject, "This is the implementation we cached");
+        return implementation(obj1, selector, obj2);
+    }];
 }
 
 - (BOOL)isSortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
@@ -289,7 +263,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
 
     for (id object in self) {
         id key;
-        if ((key = [object performSelector:aSelector withObject:argument]))
+        if ((key = OBSendObjectReturnMessageWithObject(object, aSelector, argument)))
             [dict setObject:object forKey:key];
     }
 
@@ -304,8 +278,10 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     
     for (id object in self) {
         id key;
-        if ((key = blk(object)) != nil)
+        if ((key = blk(object)) != nil) {
+            OBASSERT(dict[key] == nil, "We may want a non-unique index variant later, but this is probably an error");
             [dict setObject:object forKey:key];
+        }
     }
     
     NSDictionary *result = [NSDictionary dictionaryWithDictionary:dict];
@@ -324,7 +300,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:[self count]];
     
     for (id singleObject in self) {
-        id selectorResult = [singleObject performSelector:aSelector withObject:anObject];
+        id selectorResult = OBSendObjectReturnMessageWithObject(singleObject, aSelector, anObject);
         if (selectorResult)
             [result addObject:selectorResult];
     }
@@ -337,7 +313,7 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     id singleResult = nil;
     NSMutableSet *result = nil;
     for (id singleObject in self) {
-        id selectorResult = [singleObject performSelector:aSelector /* withObject:anObject */ ];
+        id selectorResult = OBSendObjectReturnMessage(singleObject, aSelector);
         
         if (selectorResult) {
             if (singleResult == selectorResult) {
@@ -486,6 +462,14 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
         } while (objectIndex > range.location);
     }
     return nil;
+}
+
+- (BOOL)all:(OFPredicateBlock)predicate;
+{
+    for (id object in self)
+        if (!predicate(object))
+            return NO;
+    return YES;
 }
 
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector;

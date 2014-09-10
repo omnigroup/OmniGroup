@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -44,5 +44,3 @@
 - (void)queueSelector:(SEL)aSelector forObject:(id <NSObject>)anObject withInt:(int)anInt withInt:(int)anotherInt;
 
 @end
-
-extern void OFMainThreadPerformBlock(void (^block)(void));

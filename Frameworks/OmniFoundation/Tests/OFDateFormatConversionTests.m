@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,7 @@ RCS_ID("$Id$")
 
 @interface OFDateFormatConversionTests : OFTestCase
 {
-    NSCalendarDate *_date;
+    NSDate *_date;
     NSDateFormatter *_dateFormatter;
 }
 @end
@@ -31,13 +31,9 @@ RCS_ID("$Id$")
     // Do all the tests in UTC to make sure the hours don't get shifted into our local timezone, making this potentially pointless.
     // Make the day and month single digits so that we can get both "0N" and "N" out of their formats. This leaves 0-7 for possible day-of-week values. Phew.
     
-    NSDate *date = [[NSDate alloc] initWithXMLString:@"2010-09-08T13:14:15.16Z"];
-    OBASSERT(date);
+    _date = [[NSDate alloc] initWithXMLString:@"2010-09-08T13:14:15.16Z"];
+    OBASSERT(_date);
     
-    _date = [[NSCalendarDate alloc] initWithTimeIntervalSinceReferenceDate:[date timeIntervalSinceReferenceDate]];
-    [_date setTimeZone:[NSDate UTCTimeZone]];
-    
-
     _dateFormatter = [[NSDateFormatter alloc] init];
     [_dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"]];
     
@@ -56,8 +52,13 @@ RCS_ID("$Id$")
 static void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateFormat, BOOL expectCorrectReconveredOldFormat, NSString *expectedReconvertedOldDateFormat, BOOL shouldBeEqual, NSString *expectedNewResult)
 {
     @autoreleasepool {
-
-        NSString *oldResult = [self->_date descriptionWithCalendarFormat:oldDateFormat];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Might be able to get NSDateFormatter to properly format stuff with the 10.0 style format strings, but I didn't have any luck. Isolating our use of NSCalendarDate to this little snippet.
+        NSCalendarDate *calendarDate = [[NSCalendarDate alloc] initWithTimeIntervalSinceReferenceDate:[self->_date timeIntervalSinceReferenceDate]];
+        [calendarDate setTimeZone:[NSDate UTCTimeZone]];
+        NSString *oldResult = [calendarDate descriptionWithCalendarFormat:oldDateFormat];
+#pragma clang diagnostic pop
         
         NSString *newDateFormat = OFDateFormatStringForOldFormatString(oldDateFormat);
         NSString *reConvertedOldDateFormat = OFOldDateFormatStringForFormatString(newDateFormat);
@@ -67,20 +68,20 @@ static void _testFormat(OFDateFormatConversionTests *self, NSString *oldDateForm
             // Some strftime formats map to a single ICU format ("%1d" and "%e", in particular) and we have to pick one thing to reverse them to.
             if (!expectedReconvertedOldDateFormat)
                 expectedReconvertedOldDateFormat = oldDateFormat;
-            STAssertEqualObjects(expectedReconvertedOldDateFormat, reConvertedOldDateFormat, nil);
+            XCTAssertEqualObjects(expectedReconvertedOldDateFormat, reConvertedOldDateFormat);
         }
         
         [self->_dateFormatter setDateFormat:newDateFormat];
         
         NSString *newResult = [self->_dateFormatter stringFromDate:self->_date];
         
-        NSLog(@"[%@] -> [%@]: [%@] -> [%@]", oldDateFormat, newDateFormat, oldResult, newResult);
+        //NSLog(@"[%@] -> [%@]: [%@] -> [%@]", oldDateFormat, newDateFormat, oldResult, newResult);
         
         if (shouldBeEqual)
-            STAssertEqualObjects(oldResult, newResult, nil);
+            XCTAssertEqualObjects(oldResult, newResult);
 
         if (expectedNewResult)
-            STAssertEqualObjects(newResult, expectedNewResult, nil);
+            XCTAssertEqualObjects(newResult, expectedNewResult);
         
     }
 }

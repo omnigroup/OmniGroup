@@ -97,6 +97,12 @@ static int32_t OUIDocumentInstanceCount = 0;
     return [self initWithFileItem:fileItem url:fileItem.fileURL error:outError];
 }
 
+- (id)initWithExistingFileItemFromTemplate:(ODSFileItem *)fileItem error:(NSError *__autoreleasing *)outError;
+{
+    // subclasses may want to set some attributes on our new document that was created by copying the template and renaming it. This is the spot to do so!
+    return [self initWithExistingFileItem:fileItem error:outError];
+}
+
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url templateURL:(NSURL *)templateURL error:(NSError **)outError;
 {
     OBPRECONDITION(url);
@@ -469,12 +475,14 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         // Instead, we should commit any partial edits, but leave the editor up.
         
         [self _willSave];
-        
-        // When saving, we don't end editing since the user might just be switching to another app quickly and coming right back (maybe to paste something at us). But here we are closing and should commit our edits and shut down the field editor. The edits should have been committed when we were backgrounded, but it is nicer to clean up any editor here before views get removed from the view hierarchy.
-        UIWindow *window = [[OUIDocumentAppController controller] window];
-        [window endEditing:YES];
-        [window layoutIfNeeded];
-        
+
+        if (!self.forPreviewGeneration) {
+            // When saving, we don't end editing since the user might just be switching to another app quickly and coming right back (maybe to paste something at us). But here we are closing and should commit our edits and shut down the field editor. The edits should have been committed when we were backgrounded, but it is nicer to clean up any editor here before views get removed from the view hierarchy.
+            UIView *viewControllerToPresentView = self.viewControllerToPresent.view;
+            [viewControllerToPresentView endEditing:YES];
+            [viewControllerToPresentView layoutIfNeeded];
+        }
+
         // Make sure -setNeedsDisplay calls (provoked by -_willSave) have a chance to get flushed before we invalidate the document contents
         OUIDisplayNeededViews();
     });
@@ -918,9 +926,13 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         DEBUG_DOCUMENT(@"Deletion accomodation completion handler started, errorOrNil: %@", errorOrNil);
         OBASSERT(![NSThread isMainThread]);
 
+        OUIDocumentAppController *appController = [OUIDocumentAppController controller];
+        
         void (^closeFinished)(void) = ^{
             if (completionHandler)
                 completionHandler(errorOrNil);
+            
+            [(UIViewController *)appController.documentPicker dismissViewControllerAnimated:YES completion:nil];
             
             OBASSERT(_accommodatingDeletion == YES);
             _accommodatingDeletion = NO;
@@ -941,7 +953,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         // By this point, our document has been moved to a ".ubd" Dead Zone, but the document is still open and pointing at that dead file.
         main_async(^{
             // The document will be deleted as soon as we return and call the completion handler (so we can zoom out to its file item).
-            [[OUIDocumentAppController controller] closeDocumentWithCompletionHandler:closeFinished];
+            [appController closeDocumentWithCompletionHandler:closeFinished];
         });
     }];
 }

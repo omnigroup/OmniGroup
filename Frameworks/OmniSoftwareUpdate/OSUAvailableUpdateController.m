@@ -517,8 +517,10 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     NSSize contentSize;
     contentSize.width = 100;
     contentSize.height = ceil(minHeightOfItemTableView(itemTableView));
-    
-    NSSize frame = [NSScrollView frameSizeForContentSize:contentSize hasHorizontalScroller:[scrollView hasHorizontalScroller] hasVerticalScroller:[scrollView hasVerticalScroller] borderType:[scrollView borderType]];
+    NSScroller *horizontalScroller = [scrollView horizontalScroller];
+    NSScroller *verticalScroller = [scrollView verticalScroller];
+    NSControlSize controlSize = verticalScroller != nil ? verticalScroller.controlSize : (horizontalScroller != nil ? horizontalScroller.controlSize : NSRegularControlSize);
+    NSSize frame = [NSScrollView frameSizeForContentSize:contentSize horizontalScrollerClass:[horizontalScroller class] verticalScrollerClass:[verticalScroller class] borderType:[scrollView borderType] controlSize:controlSize scrollerStyle:scrollView.scrollerStyle];
     return frame.height;
 }
 

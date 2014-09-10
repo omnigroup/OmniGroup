@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,14 +18,12 @@ RCS_ID("$Id$")
 
 @implementation OFXTestClientVersion
 
-- (OFXAccountClientParameters *)accountClientParametersForAgent:(NSUInteger)flag name:(NSString *)agentName;
+- (OFXAccountClientParameters *)accountClientParametersForAgentName:(NSString *)agentName;
 {
-    OFXAccountClientParameters *parameters = [super accountClientParametersForAgent:flag name:agentName];
+    OFXAccountClientParameters *parameters = [super accountClientParametersForAgentName:agentName];
     
-    if (flag == AgentA) {
+    if ([agentName isEqual:OFXTestFirstAgentName]) {
         parameters.currentFrameworkVersion = [[OFVersionNumber alloc] initWithVersionString:@"9999"];
-    } else {
-        OBASSERT(flag == AgentB);
     }
 
     return parameters;
@@ -51,7 +49,7 @@ RCS_ID("$Id$")
         
         OFXServerAccount *accountB = [agentB.accountRegistry.validCloudSyncAccounts lastObject];
         NSError *accountError = accountB.lastError;
-        STAssertTrue([accountError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXAccountRepositoryTooNew], nil);
+        XCTAssertTrue([accountError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXAccountRepositoryTooNew]);
     }];
 }
 

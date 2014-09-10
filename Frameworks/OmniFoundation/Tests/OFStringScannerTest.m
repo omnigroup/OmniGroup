@@ -1,11 +1,10 @@
-// Copyright 2000-2008, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2008, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/OFStringScanner.h>
@@ -38,11 +37,11 @@ RCS_ID("$Id$")
 	
     scan = [[OFStringScanner alloc] initWithString:text];
     if (findIt) {
-        should([scan scanUpToStringCaseInsensitive:pat]);
+        XCTAssertTrue([scan scanUpToStringCaseInsensitive:pat]);
     } else {
-        shouldnt([scan scanUpToStringCaseInsensitive:pat]);
+        XCTAssertFalse([scan scanUpToStringCaseInsensitive:pat]);
     }
-    shouldBeEqual([scan readLine], follows);
+    XCTAssertEqualObjects([scan readLine], follows);
 }
 
 - (void)testCharScanning
@@ -65,45 +64,45 @@ RCS_ID("$Id$")
     
     s = [NSScanner scannerWithString:@"abcdef"];
     into = NULL;
-    should([s scanStringOfLength:3 intoString:&into]);
-    shouldBeEqual(into, @"abc");
+    XCTAssertTrue([s scanStringOfLength:3 intoString:&into]);
+    XCTAssertEqualObjects(into, @"abc");
     
-    should([s scanStringOfLength:3 intoString:&into]);
-    shouldBeEqual(into, @"def");
+    XCTAssertTrue([s scanStringOfLength:3 intoString:&into]);
+    XCTAssertEqualObjects(into, @"def");
     
-    should([s isAtEnd]);
-    shouldnt([s scanStringOfLength:3 intoString:&into]);
-    should([s isAtEnd]);
+    XCTAssertTrue([s isAtEnd]);
+    XCTAssertFalse([s scanStringOfLength:3 intoString:&into]);
+    XCTAssertTrue([s isAtEnd]);
 
     s = [NSScanner scannerWithString:@"ghijkl"];
     into = NULL;
-    should([s scanStringOfLength:0 intoString:&into]);
-    shouldBeEqual(into, @"");
+    XCTAssertTrue([s scanStringOfLength:0 intoString:&into]);
+    XCTAssertEqualObjects(into, @"");
     
-    shouldnt([s scanStringOfLength:10 intoString:&into]);
-    shouldBeEqual(into, @"");
+    XCTAssertFalse([s scanStringOfLength:10 intoString:&into]);
+    XCTAssertEqualObjects(into, @"");
     
-    should([s scanStringOfLength:5 intoString:&into]);
-    shouldBeEqual(into, @"ghijk");
+    XCTAssertTrue([s scanStringOfLength:5 intoString:&into]);
+    XCTAssertEqualObjects(into, @"ghijk");
 
-    shouldnt([s scanStringOfLength:2 intoString:&into]);
-    shouldBeEqual(into, @"ghijk");
-    shouldnt([s isAtEnd]);
+    XCTAssertFalse([s scanStringOfLength:2 intoString:&into]);
+    XCTAssertEqualObjects(into, @"ghijk");
+    XCTAssertFalse([s isAtEnd]);
     
-    should([s scanStringOfLength:1 intoString:&into]);
-    shouldBeEqual(into, @"l");
+    XCTAssertTrue([s scanStringOfLength:1 intoString:&into]);
+    XCTAssertEqualObjects(into, @"l");
 
-    should([s isAtEnd]);
+    XCTAssertTrue([s isAtEnd]);
     
-    should([s scanStringOfLength:0 intoString:&into]);
-    shouldBeEqual(into, @"");
+    XCTAssertTrue([s scanStringOfLength:0 intoString:&into]);
+    XCTAssertEqualObjects(into, @"");
 
-    should([s isAtEnd]);
+    XCTAssertTrue([s isAtEnd]);
 
     into = @"zzz";
-    shouldnt([s scanStringOfLength:1 intoString:&into]);
-    shouldBeEqual(into, @"zzz");
-    should([s isAtEnd]);
+    XCTAssertFalse([s scanStringOfLength:1 intoString:&into]);
+    XCTAssertEqualObjects(into, @"zzz");
+    XCTAssertTrue([s isAtEnd]);
 }
 
 @end // OFStringScannerTest

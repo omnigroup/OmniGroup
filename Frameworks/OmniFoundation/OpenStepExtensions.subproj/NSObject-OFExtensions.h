@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,16 +17,16 @@
 + (Class)classImplementingSelector:(SEL)aSelector;
 
 + (NSBundle *)bundle;
-- (NSBundle *)bundle;
-
-- (void)performSelector:(SEL)sel withEachObjectInArray:(NSArray *)array;
-- (void)performSelector:(SEL)sel withEachObjectInSet:(NSSet *)set;
-- (NSArray *)arrayByPerformingSelector:(SEL)sel withEachObjectInArray:(NSArray *)array;
 
 - (BOOL)satisfiesCondition:(SEL)sel withObject:(id)object;
 
 - (NSMutableDictionary *)dictionaryWithNonNilValuesForKeys:(NSArray *)keys;
 
-- (void)afterDelay:(NSTimeInterval)delay performBlock:(void (^)(void))block;
-
 @end
+
+extern void OFAfterDelayPerformBlock(NSTimeInterval delay, void (^block)(void));
+
+// Makes a one-shot NSOperationQueue to run the specified block. Use this instead of performSelectorInBackground:withObject:.
+extern void OFPerformInBackground(void (^block)(void));
+
+extern void OFMainThreadPerformBlock(void (^block)(void));

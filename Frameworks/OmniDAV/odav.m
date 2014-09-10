@@ -279,7 +279,8 @@ int main(int argc, char *argv[])
         __weak OCLCommand *cmd = strongCommand;
 
         ODAVConnection *connection = [[ODAVConnection alloc] init];
-
+        __block NSUInteger commandsRunning = 0;
+        
         connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
             OBFinishPortingLater("Adding trust for certificate blindly");
             OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
@@ -291,6 +292,7 @@ int main(int argc, char *argv[])
         
         [cmd add:@"ls url" with:^{
             NSURL *url = cmd[@"url"];
+            commandsRunning++;
             [connection fileInfosAtURL:url ETag:nil depth:ODAVDepthChildren completionHandler:^(ODAVMultipleFileInfoResult *properties, NSError *errorOrNil) {
                 if (errorOrNil) {
                     [errorOrNil log:@"Error getting file list for %@", url];
@@ -299,6 +301,8 @@ int main(int argc, char *argv[])
                     for (ODAVFileInfo *fileInfo in properties.fileInfos)
                         _log(@"%@ %lld %@ (date:%@ ETag:%@)\n", fileInfo.isDirectory ? @"dir" : @"file", fileInfo.size, fileInfo.name, [fileInfo.lastModifiedDate xmlString], fileInfo.ETag);
                 }
+                OBASSERT([NSThread isMainThread]);
+                commandsRunning--;
             }];
         }];
         
@@ -313,12 +317,15 @@ int main(int argc, char *argv[])
                 return;
             }
             
+            commandsRunning++;
             [connection putData:sourceData toURL:destURL completionHandler:^(NSURL *resultURL, NSError *errorOrNil){
                 if (errorOrNil) {
                     [errorOrNil log:@"Error writing to %@", destURL];
                 } else {
                     _log(@"File uploaded to %@", resultURL);
                 }
+                OBASSERT([NSThread isMainThread]);
+                commandsRunning--;
             }];
         }];
 
@@ -326,6 +333,7 @@ int main(int argc, char *argv[])
             NSURL *sourceURL = cmd[@"url"];
             NSURL *destURL = cmd[@"file"];
             
+            commandsRunning++;
             [connection getContentsOfURL:sourceURL ETag:nil completionHandler:^(ODAVOperation *op){
                 if (op.error) {
                     [op.error log:@"Error getting contents of %@", sourceURL];
@@ -334,6 +342,8 @@ int main(int argc, char *argv[])
                     if (![op.resultData writeToURL:destURL options:NSDataWritingAtomic error:&error])
                         [error log:@"Error writing to %@", destURL];
                 }
+                OBASSERT([NSThread isMainThread]);
+                commandsRunning--;
             }];
         }];
         
@@ -342,8 +352,11 @@ int main(int argc, char *argv[])
             [argumentStrings addObject:[NSString stringWithUTF8String:argv[argi]]];
         [strongCommand runWithArguments:argumentStrings];
         
-        OBFinishPortingLater("Wait for the connection to be idle");
-        [[NSRunLoop currentRunLoop] run];
+        while (commandsRunning > 0) {
+            @autoreleasepool {
+                [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+            }
+        }
     }
     
     return 0;

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -334,6 +334,12 @@ NSAttributedString *OUICreateTransformedAttributedString(NSAttributedString *sou
 
     return immutableResult;
 #endif
+}
+
+- (void)fitToText;
+{
+    _usedSize = CGSizeMake([_layoutManager widthOfLongestLine], [_layoutManager totalHeightUsed]);
+    [_textContainer setSize:_usedSize];
 }
 
 @end

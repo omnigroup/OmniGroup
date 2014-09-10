@@ -576,7 +576,7 @@ static mode_t permissionsMask = 0022;
         return NO;
     }
 
-    OSStatus err = LSSetItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, quarantineDictionary);
+    OSStatus err = LSSetItemAttribute(&carbonRef, kLSRolesAll, kLSItemQuarantineProperties, (__bridge CFDictionaryRef)quarantineDictionary);
     if (err != noErr)
         goto errorReturn;
     
@@ -641,9 +641,8 @@ errorReturn:
     // If we can't tell, then we will assume we're sandboxed
     const BOOL uncertainResult = YES;
     SecStaticCodeRef applicationCode = NULL;
-    OSStatus status = noErr;
     
-    status = SecStaticCodeCreateWithPath((CFURLRef)applicationURL, kSecCSDefaultFlags, &applicationCode);
+    OSStatus status = SecStaticCodeCreateWithPath((__bridge CFURLRef)applicationURL, kSecCSDefaultFlags, &applicationCode);
     if (status != noErr) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
@@ -720,7 +719,7 @@ errorReturn:
     OSStatus status = noErr;
     SecStaticCodeRef codeRef = NULL;
     
-    status = SecStaticCodeCreateWithPath((CFURLRef)url, kSecCSDefaultFlags, &codeRef);
+    status = SecStaticCodeCreateWithPath((__bridge CFURLRef)url, kSecCSDefaultFlags, &codeRef);
     if (status != noErr) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
@@ -746,7 +745,7 @@ errorReturn:
         return nil;
     }
     
-    NSDictionary *codeSigningDictionary = [NSDictionary dictionaryWithDictionary:(NSDictionary *)information];
+    NSDictionary *codeSigningDictionary = [NSDictionary dictionaryWithDictionary:(__bridge NSDictionary *)information];
     
     CFRelease(codeRef);
     CFRelease(information);

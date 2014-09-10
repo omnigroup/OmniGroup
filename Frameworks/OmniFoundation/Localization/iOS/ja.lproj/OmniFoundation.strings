@@ -1,4 +1,4 @@
-﻿/* abbreviated string for bytes format */
+/* abbreviated string for bytes format */
 "%0.1f GB" = "%0.1f GB";
 
 /* abbreviated string for gigahertz format */
@@ -76,8 +76,6 @@
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
-
-
 "Could not create directory" = "ディレクトリを作成できません";
 
 /* time span formatter span */
@@ -223,3 +221,4 @@
 
 /* zlib error reason */
 "zlib returned error code %d. %s." = "zlib がエラーコード %1$d.を返しました。%2$s。";
+

@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,7 @@
 
 @interface OFXUploadContentsFileSnapshot : OFXFileSnapshot
 
-- initWithTargetLocalSnapshotURL:(NSURL *)localTargetURL forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath previousSnapshot:(OFXFileSnapshot *)previousSnapshot error:(NSError **)outError;
+- (instancetype)initWithTargetLocalSnapshotURL:(NSURL *)localTargetURL forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath previousSnapshot:(OFXFileSnapshot *)previousSnapshot error:(NSError **)outError;
 
 // Helpers for transfers
 - (BOOL)iterateFiles:(NSError **)outError withApplier:(BOOL (^)(NSURL *fileURL, NSString *hash, NSError **outError))applier;

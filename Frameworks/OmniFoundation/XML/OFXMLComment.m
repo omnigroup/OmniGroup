@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,7 +54,7 @@ RCS_ID("$Id$")
     // Don't need to quote anything but "--" (done in initializer) and characters not representable in the target encoding.  Of course, if we do turn a character into an entity, it wouldn't get turned back when reading into a comment.
     NSString *encoded = OFXMLCreateStringInCFEncoding(_quotedString, [doc stringEncoding]);
     if (encoded) {
-        OFXMLBufferAppendString(xml, (CFStringRef)encoded);
+        OFXMLBufferAppendString(xml, (__bridge CFStringRef)encoded);
         [encoded release];
     }
     

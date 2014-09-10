@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,10 +9,6 @@
 
 #import "ODAVTestCase.h"
 
-enum {
-    AgentA = (1<<0),
-    AgentB = (1<<1),
-};
 
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 
@@ -20,6 +16,8 @@ enum {
 @property(nonatomic,copy) NSString *suffix;
 @end
 
+extern NSString * const OFXTestFirstAgentName;
+extern BOOL OFXIsConflict(OFXFileMetadata *metadata);
 
 @class OFXAgent, OFXServerAccount, OFXFileMetadata;
 
@@ -35,15 +33,17 @@ enum {
 
 // Info used to set up the agent.
 @property(nonatomic,readonly) NSArray *syncPathExtensions;
-- (NSArray *)extraPackagePathExtensionsForAgent:(NSUInteger)flag;
+- (NSArray *)extraPackagePathExtensionsForAgentName:(NSString *)agentName;
 
-@property(nonatomic,readonly) NSUInteger automaticallyStartAgents; // setup/teardown will start/stop the agents (specified by AgentA, AgentB mask)
+@property(nonatomic,readonly) NSSet *automaticallyStartedAgentNames; // setup/teardown will start/stop these agents
 @property(nonatomic,readonly) BOOL automaticallyAddAccount; // Returns YES by default; if YES, agents returned by this class will already have an account.
 @property(nonatomic,readonly) BOOL automaticallyDownloadFileContents; // By default, returns YES if syncPathExtensions is "everything"
-- (OFXAccountClientParameters *)accountClientParametersForAgent:(NSUInteger)flag name:(NSString *)agentName;
+- (OFXAccountClientParameters *)accountClientParametersForAgentName:(NSString *)agentName;
 
+- (OFXAgent *)agentWithName:(NSString *)name;
 @property(nonatomic,readonly) OFXAgent *agentA;
 @property(nonatomic,readonly) OFXAgent *agentB;
+@property(nonatomic,readonly) OFXAgent *agentC;
 
 - (void)stopAgents; // Helper that sends -applicationWillTerminateWithCompletionHandler: and waits for it to finish.
 
@@ -60,9 +60,19 @@ enum {
 - (OFXFileMetadata *)waitForFileMetadata:(OFXAgent *)agent where:(BOOL (^)(OFXFileMetadata *metadata))qualifier;
 - (void)waitForSync:(OFXAgent *)agent;
 - (void)waitForChangeToMetadata:(OFXFileMetadata *)originalMetadata inAgent:(OFXAgent *)agent;
-- (void)waitForAgentsToAgree;
 
-- (void)requireAgentsToHaveSameFiles;
+// Only checks the file identifiers and edit identifiers match
+- (void)waitForAgentsEditsToAgree;
+- (void)waitForAgentsEditsToAgree:(NSArray *)agents;
+- (void)waitForAgentsEditsToAgree:(NSArray *)agents withFileCount:(NSUInteger)fileCount;
+
+// Requires identical contents for identical file names
+- (void)requireAgentsToHaveSameFilesByName;
+- (void)requireAgentsToHaveSameFilesByName:(NSArray *)agents;
+
+- (void)requireAgentsToHaveSameFilesByIdentifier:(NSArray *)agents;
+
+- (BOOL)agentsToHaveSameIntendedFiles; // Requires identical contents for intended file names
 
 - (NSURL *)fixtureNamed:(NSString *)fixtureName;
 
@@ -74,7 +84,7 @@ enum {
 - (NSString *)copyLargeRandomTextFileToPath:(NSString *)destinationPath ofAccount:(OFXServerAccount *)account;
 
 // Returns metadata item for agentA
-- (OFXFileMetadata *)copyFixtureNamed:(NSString *)fixtureName waitForDownload:(BOOL)waitForDownload;
+- (OFXFileMetadata *)copyFixtureNamed:(NSString *)fixtureName toPath:(NSString *)toPath waitingForAgentsToDownload:(NSArray *)otherAgents;
 - (OFXFileMetadata *)copyFixtureNamed:(NSString *)fixtureName; // Copies to A and waits for B to download. Returns the edit identifier
 
 - (void)writeRandomFlatFile:(NSString *)name withSize:(NSUInteger)fileSize;
@@ -108,5 +118,6 @@ enum {
 
 // These might move to NSFileCoordinator(OFExtensions) if they turn out to be useful/clear enough.
 @interface NSFileCoordinator (OFXTestCaseExtensions)
+- (NSData *)readDataFromURL:(NSURL *)fileURL options:(NSDataReadingOptions)options error:(NSError **)outError;
 - (BOOL)writeData:(NSData *)data toURL:(NSURL *)fileURL options:(NSDataWritingOptions)options error:(NSError **)outError;
 @end

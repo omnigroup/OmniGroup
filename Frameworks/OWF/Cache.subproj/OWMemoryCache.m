@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -135,16 +135,13 @@ RCS_ID("$Id$");
 
 // Init and dealloc
 - init;
-{
-    NSZone *myZone;
-    
+{    
     if (!(self = [super init]))
         return nil;
 
-    myZone = [self zone];
     lock = [[NSLock alloc] init];
     arcsBySubject = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks);
-    knownOtherContent = [[NSMutableSet allocWithZone:myZone] init];
+    knownOtherContent = [[NSMutableSet alloc] init];
     [OWContentCacheGroup addObserver:self];
 
     return self;
@@ -752,7 +749,7 @@ RCS_ID("$Id$");
     retainedArcsBySubject = arcsBySubject;
     retainedKnownOtherContent = knownOtherContent;
     arcsBySubject = (NSMutableDictionary *)CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &OFNSObjectDictionaryValueCallbacks);
-    knownOtherContent = [[NSMutableSet allocWithZone:[self zone]] init];
+    knownOtherContent = [[NSMutableSet alloc] init];
     [lock unlock];
 
     // OK, now release those former instance variables

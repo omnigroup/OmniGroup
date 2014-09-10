@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,7 @@
 extern void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ...);
 
 /// Helper for initializing log level globals. Invokes -[OBLogger initWithName:shouldLogToFile] and sets outLogger to point to the result.
-extern void _OBLoggerInitializeLogLevel(OBLogger **outLogger, NSString *name, BOOL useFile);
+extern void _OBLoggerInitializeLogLevel(OBLogger * __strong *outLogger, NSString *name, BOOL useFile);
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #define OBLoggerInitializeLogLevel(name) _OBLoggerInitializeLogLevel(&name, @#name, YES)
 #else

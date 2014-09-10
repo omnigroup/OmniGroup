@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
+#import <OmniUI/OUIAbstractTableViewInspectorSlice.h>
 #import <OmniUI/OUIFontInspectorSlice.h>
 #import <OmniUI/OUIFontUtilities.h>
 #import <OmniUI/OUIInspector.h>
@@ -209,14 +210,17 @@ static NSDictionary *_itemAtIndexPath(OUIFontInspectorPane *self, NSIndexPath *i
     return [_sections count];
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section;
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section;
 {
-    // We show it in the nav header in this case.
-    if ([_sections count] == 1)
-        return nil;
-    
     NSString *title = [_sectionAtIndex(self, section) objectForKey:ItemDisplayName];
-    return title ? title : @"???";
+    UIView *headerView = [OUIAbstractTableViewInspectorSlice sectionHeaderViewWithLabelText:(title ? title : @"???") forTableView:tableView];
+    headerView.backgroundColor = [UIColor groupTableViewBackgroundColor];
+    return headerView;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section;
+{
+    return 44;
 }
 
 - (NSInteger)tableView:(UITableView *)table numberOfRowsInSection:(NSInteger)section;

@@ -1,4 +1,4 @@
-﻿/* setting failure alert message */
+/* setting failure alert message */
 "“%@”\nwas not successful" = "“%@”\nは成功しませんでした";
 
 /* OUITabBar N of M accessibility value */
@@ -12,9 +12,6 @@
 
 /* alert button title */
 "Accept" = "承認する";
-
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ にハードウェアモデルと iOS のバージョンを定期的にレポートさせますか？\nレポートいただくと、サポートを行うにあたっての一番大切な組み合わせを知ることができます。この回答は環境設定で後から変更できます。";
 
 /* Web view nagivation button for going back in history. */
 "Back" = "戻る";
@@ -31,8 +28,6 @@
 /* button title
    cancel button title
    toolbar item title */
-
-
 "Cancel" = "キャンセル";
 
 /* Center Text Align button accessibility label. */
@@ -53,11 +48,7 @@
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "無効";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "レポートしない";
-
 /* toolbar item title */
-
 "Done" = "完了";
 
 /* toolbar item title */
@@ -91,7 +82,7 @@
 "Left text align" = "テキストの左揃え";
 
 /* Web view error opening URL title. */
-"Link could not be opend. Please check Safari restrictions in Settings." = "リンクを開くことができません。Safari の設定をチェックしてください。";
+"Link could not be opened. Please check Safari restrictions in Settings." = "リンクを開くことができません。Safari の設定で制限をチェックしてください。";
 
 /* Buy button title while app store is loading */
 "Loading" = "読み込み中";
@@ -99,18 +90,17 @@
 /* empty value cell placeholder */
 "None" = "なし";
 
+/* Full screen note editor title */
+"Note" = "メモ";
+
 /* button title */
-
-
-
-
 "OK" = "OK";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Omni ソフトウェア アップデート";
 
 /* placeholder text */
 "password" = "パスワード";
+
+/* Photos view controller title. */
+"Photos" = "写真";
 
 /* alert title */
 "Preference changed" = "環境設定の変更";
@@ -132,7 +122,6 @@
 
 /* App menu item title
    release notes html screen title */
-
 "Release Notes" = "リリースノート";
 
 /* Restore purchases button title */
@@ -149,9 +138,6 @@
 
 /* Search field placeholder text */
 "Search" = "検索";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "レポートを送信";
 
 /* Strike Through button accessibility label */
 "Strike Through" = "打ち消し線";
@@ -172,10 +158,11 @@
 "username" = "ユーザ名";
 
 /* alert message */
-"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "以下の環境設定を変更するリンクをタップしました:\n\n\"%@\"\n\n変更を承認しますか？";
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "以下の環境設定を変更するリンクをタップしました:\n\n“%@”\n\n変更を承認しますか？";
 
 /* debug setting alert message */
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "次のデバッグ用コマンドを実行するリンクをタップしました:\n\n“%@”\n\nOmni のサポートスタッフからの指示でない場合には実行しないでください。\nこのコマンドを実行しますか？";
 
 /* zoom label */
 "Zoom" = "拡大/縮小";
+

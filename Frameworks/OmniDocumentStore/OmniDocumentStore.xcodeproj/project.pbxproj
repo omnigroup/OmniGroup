@@ -367,7 +367,7 @@
 		3489691D179D99DD007978EC /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0600;
 				ORGANIZATIONNAME = "The Omni Group";
 			};
 			buildConfigurationList = 34896920179D99DD007978EC /* Build configuration list for PBXProject "OmniDocumentStore" */;

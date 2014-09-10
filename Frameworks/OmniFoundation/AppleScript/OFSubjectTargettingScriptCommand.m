@@ -127,7 +127,7 @@ RCS_ID("$Id$");
                 [self targetSubject];
                 
                 // Calling super won't actually invoke the selection for some reason, even though we've changed the receivers specifier to the subject.
-                return [subject performSelector:sel withObject:self];
+                return OBSendObjectReturnMessageWithObject(subject, sel, self);
             }
         }
     }

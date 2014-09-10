@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,8 +43,14 @@ RCS_ID("$Id$");
 {
     if (_contents != nil)
         return _contents;
-    else
-        return [NSData dataWithContentsOfMappedFile:_filePath];
+    else {
+        __autoreleasing NSError *error = nil;
+        NSData *data = [NSData dataWithContentsOfURL:[NSURL fileURLWithPath:_filePath] options:NSDataReadingMappedIfSafe error:&error];
+        if (!data) {
+            [error log:@"Unable to read contents of \"%@\"", _filePath];
+        }
+        return data;
+    }
 }
 
 #pragma mark -

@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,12 +46,12 @@ RCS_ID("$Id$")
         return YES;
     }];
 
-    STAssertEquals(1ULL, [metadataItems count], nil);
+    XCTAssertEqual(1ULL, [metadataItems count]);
     
     OFXFileMetadata *metadata = [metadataItems anyObject];
-    STAssertEqualObjects([metadata.fileURL lastPathComponent], @"test.package", nil);
-    STAssertEquals(34ULL, metadata.fileSize, nil);
-    STAssertEqualObjects(metadata.creationDate, metadata.modificationDate, nil);
+    XCTAssertEqualObjects([metadata.fileURL lastPathComponent], @"test.package");
+    XCTAssertEqual(34ULL, metadata.fileSize);
+    XCTAssertEqualObjects(metadata.creationDate, metadata.modificationDate);
     // ... more assertions
 }
 
@@ -72,7 +72,7 @@ RCS_ID("$Id$")
     [self copyFixtureNamed:@"test2.package" toPath:@"test.package" ofAccount:account];
     
     [self waitForFileMetadataItems:agent where:^BOOL(NSSet *metadataItems) {
-        STAssertEquals([metadataItems count], 1ULL, @"the old metadata should replace the new one");
+        XCTAssertEqual([metadataItems count], 1ULL, @"the old metadata should replace the new one");
 
         OFXFileMetadata *metadata = [metadataItems anyObject];
         return [[metadata.fileURL lastPathComponent] isEqualToString:@"test.package"] && (metadata.fileSize == 45ULL);
@@ -90,7 +90,7 @@ RCS_ID("$Id$")
         
         OFXServerAccount *account = [self.agentB.accountRegistry.validCloudSyncAccounts lastObject];
 
-        STAssertEquals([[self.agentB metadataItemsForAccount:account] count], 1ULL, nil);
+        XCTAssertEqual([[self.agentB metadataItemsForAccount:account] count], 1ULL);
     }
     
     // Download the item
@@ -98,18 +98,18 @@ RCS_ID("$Id$")
         OFXServerAccount *account = [self.agentB.accountRegistry.validCloudSyncAccounts lastObject];
 
         OFXFileMetadata *placeholderMetadata = [[self.agentB metadataItemsForAccount:account] anyObject];
-        STAssertFalse(placeholderMetadata.downloaded, nil);
+        XCTAssertFalse(placeholderMetadata.downloaded);
 
         [self.agentB requestDownloadOfItemAtURL:placeholderMetadata.fileURL completionHandler:^(NSError *errorOrNil) {
-            STAssertNil(errorOrNil, nil);
+            XCTAssertNil(errorOrNil);
         }];
 
         OFXFileMetadata *downloadedMetadata = [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata){
             return metadata.downloaded;
         }];
-        STAssertTrue(downloadedMetadata.downloaded, nil);
-        STAssertEqualObjects(placeholderMetadata.creationDate, downloadedMetadata.creationDate, nil);
-        STAssertEqualObjects(downloadedMetadata.creationDate, downloadedMetadata.modificationDate, nil);
+        XCTAssertTrue(downloadedMetadata.downloaded);
+        XCTAssertEqualObjects(placeholderMetadata.creationDate, downloadedMetadata.creationDate);
+        XCTAssertEqualObjects(downloadedMetadata.creationDate, downloadedMetadata.modificationDate);
 
         // Make sure we got the right contents
         OFDiffFiles(self, [[self fixtureNamed:@"test.package"] path], [downloadedMetadata.fileURL path], nil);
@@ -122,8 +122,8 @@ RCS_ID("$Id$")
  
     // Wait until we see the first version
     OFXFileMetadata *bFirstSeenMetadata = [self waitForFileMetadata:self.agentB where:nil];
-    STAssertTrue(bFirstSeenMetadata.downloaded == NO, nil);
-    STAssertEqualObjects(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.modificationDate, nil);
+    XCTAssertTrue(bFirstSeenMetadata.downloaded == NO);
+    XCTAssertEqualObjects(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.modificationDate);
     
     [self waitForSeconds:1]; // make sure the modification will differ ... the filesystem only stores second resolution
     
@@ -134,24 +134,24 @@ RCS_ID("$Id$")
     OFXFileMetadata *uploadedEditMetadata = [self waitForFileMetadata:self.agentA where:^BOOL(OFXFileMetadata *metadata) {
         return metadata.uploaded && OFNOTEQUAL(bFirstSeenMetadata.editIdentifier, metadata.editIdentifier);
     }];
-    STAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, uploadedEditMetadata.creationDate), nil);
-    STAssertTrue(OFNOTEQUAL(bFirstSeenMetadata.modificationDate, uploadedEditMetadata.modificationDate), nil);
+    XCTAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, uploadedEditMetadata.creationDate));
+    XCTAssertTrue(OFNOTEQUAL(bFirstSeenMetadata.modificationDate, uploadedEditMetadata.modificationDate));
     
     // Wait until we see an updated copy
     OFXFileMetadata *bSecondSeenMetadata = [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata) {
         return OFISEQUAL(secondMetadata.editIdentifier, metadata.editIdentifier);
     }];
-    STAssertTrue(bFirstSeenMetadata.downloaded == NO, nil);
-    STAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, bSecondSeenMetadata.creationDate), nil);
-    STAssertTrue(OFNOTEQUAL(bFirstSeenMetadata.modificationDate, bSecondSeenMetadata.modificationDate), nil);
-    STAssertTrue(OFISEQUAL(uploadedEditMetadata.modificationDate, bSecondSeenMetadata.modificationDate), nil);
+    XCTAssertTrue(bFirstSeenMetadata.downloaded == NO);
+    XCTAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, bSecondSeenMetadata.creationDate));
+    XCTAssertTrue(OFNOTEQUAL(bFirstSeenMetadata.modificationDate, bSecondSeenMetadata.modificationDate));
+    XCTAssertTrue(OFISEQUAL(uploadedEditMetadata.modificationDate, bSecondSeenMetadata.modificationDate));
 
     // Download the updated copy
     OFXFileMetadata *contentDownloadedMetadata = [self downloadWithMetadata:bFirstSeenMetadata agent:self.agentB];
     
-    STAssertEqualObjects(contentDownloadedMetadata.editIdentifier, bSecondSeenMetadata.editIdentifier, nil);
-    STAssertEqualObjects(contentDownloadedMetadata.creationDate, bSecondSeenMetadata.creationDate, nil);
-    STAssertEqualObjects(contentDownloadedMetadata.modificationDate, bSecondSeenMetadata.modificationDate, nil);
+    XCTAssertEqualObjects(contentDownloadedMetadata.editIdentifier, bSecondSeenMetadata.editIdentifier);
+    XCTAssertEqualObjects(contentDownloadedMetadata.creationDate, bSecondSeenMetadata.creationDate);
+    XCTAssertEqualObjects(contentDownloadedMetadata.modificationDate, bSecondSeenMetadata.modificationDate);
 
     // Make sure we got the right contents
     OFDiffFiles(self, [[self fixtureNamed:@"test2.package"] path], [contentDownloadedMetadata.fileURL path], nil);
@@ -163,13 +163,13 @@ RCS_ID("$Id$")
     
     // Wait until we see the first version
     OFXFileMetadata *bFirstSeenMetadata = [self waitForFileMetadata:self.agentB where:nil];
-    STAssertTrue(bFirstSeenMetadata.downloaded == NO, nil);
-    STAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.creationDate), nil);
-    STAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.modificationDate), nil);
+    XCTAssertTrue(bFirstSeenMetadata.downloaded == NO);
+    XCTAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.creationDate));
+    XCTAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.modificationDate));
     
     // Download the first version
     OFXFileMetadata *contentDownloadedMetadata = [self downloadWithMetadata:bFirstSeenMetadata agent:self.agentB];
-    STAssertEqualObjects(contentDownloadedMetadata.creationDate, contentDownloadedMetadata.modificationDate, nil);
+    XCTAssertEqualObjects(contentDownloadedMetadata.creationDate, contentDownloadedMetadata.modificationDate);
     
     // Update it. We should not have to explicitly tell the agent to upload -- this should happen eagerly when connected to the network (based on autosave or explicit save).
     [self uploadFixture:@"test2.package" as:@"test.package" replacingMetadata:firstMetadata];
@@ -178,17 +178,17 @@ RCS_ID("$Id$")
     OFXFileMetadata *uploadedEditMetadata = [self waitForFileMetadata:self.agentA where:^BOOL(OFXFileMetadata *metadata) {
         return metadata.uploaded && OFNOTEQUAL(bFirstSeenMetadata.editIdentifier, metadata.editIdentifier);
     }];
-    STAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, uploadedEditMetadata.creationDate), nil);
-    STAssertTrue(OFNOTEQUAL(bFirstSeenMetadata.modificationDate, uploadedEditMetadata.modificationDate), nil);
+    XCTAssertTrue(OFISEQUAL(bFirstSeenMetadata.creationDate, uploadedEditMetadata.creationDate));
+    XCTAssertTrue(OFNOTEQUAL(bFirstSeenMetadata.modificationDate, uploadedEditMetadata.modificationDate));
     
     // Wait until we see an updated copy; since we downloaded the first copy, the sync system should automatically download the edit
     OFXFileMetadata *secondContentDownloadedMetadata = [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata) {
         return metadata.downloaded && OFNOTEQUAL(bFirstSeenMetadata.editIdentifier, metadata.editIdentifier);
     }];
-    STAssertTrue(secondContentDownloadedMetadata.downloaded, nil);
-    STAssertEqualObjects(uploadedEditMetadata.creationDate, secondContentDownloadedMetadata.creationDate, nil);
-    STAssertEqualObjects(uploadedEditMetadata.modificationDate, secondContentDownloadedMetadata.modificationDate, nil);
-    STAssertEqualObjects(uploadedEditMetadata.editIdentifier, secondContentDownloadedMetadata.editIdentifier, nil);
+    XCTAssertTrue(secondContentDownloadedMetadata.downloaded);
+    XCTAssertEqualObjects(uploadedEditMetadata.creationDate, secondContentDownloadedMetadata.creationDate);
+    XCTAssertEqualObjects(uploadedEditMetadata.modificationDate, secondContentDownloadedMetadata.modificationDate);
+    XCTAssertEqualObjects(uploadedEditMetadata.editIdentifier, secondContentDownloadedMetadata.editIdentifier);
     
     // Make sure we got the right contents
     OFDiffFiles(self, [[self fixtureNamed:@"test2.package"] path], [contentDownloadedMetadata.fileURL path], nil);
@@ -206,8 +206,8 @@ RCS_ID("$Id$")
     // Update the file a couple times to step the version counter past what agentB knows about.
     for (NSUInteger uploadIndex = 0; uploadIndex < 3; uploadIndex++) {
         OFXFileMetadata *uploadedMetadataA = [self makeRandomPackageNamed:@"test.package" memberCount:2 memberSize:64];
-        STAssertEqualObjects(uploadedMetadataA.fileIdentifier, currentMetadataA.fileIdentifier, nil);
-        STAssertFalse([uploadedMetadataA.editIdentifier isEqual:currentMetadataA.editIdentifier], nil);
+        XCTAssertEqualObjects(uploadedMetadataA.fileIdentifier, currentMetadataA.fileIdentifier);
+        XCTAssertFalse([uploadedMetadataA.editIdentifier isEqual:currentMetadataA.editIdentifier]);
         currentMetadataA = uploadedMetadataA;
     }
     
@@ -233,8 +233,8 @@ RCS_ID("$Id$")
     // Make a bunch of quick updates
     for (NSUInteger uploadIndex = 0; uploadIndex < 50; uploadIndex++) {
         OFXFileMetadata *uploadedMetadataA = [self makeRandomPackageNamed:@"test.package" memberCount:2 memberSize:64];
-        STAssertEqualObjects(uploadedMetadataA.fileIdentifier, currentMetadataA.fileIdentifier, nil);
-        STAssertFalse([uploadedMetadataA.editIdentifier isEqual:currentMetadataA.editIdentifier], nil);
+        XCTAssertEqualObjects(uploadedMetadataA.fileIdentifier, currentMetadataA.fileIdentifier);
+        XCTAssertFalse([uploadedMetadataA.editIdentifier isEqual:currentMetadataA.editIdentifier]);
         currentMetadataA = uploadedMetadataA;
     }
     
@@ -254,18 +254,18 @@ RCS_ID("$Id$")
     // Wait until we see the first version
     [self.agentB sync:nil];
     OFXFileMetadata *bFirstSeenMetadata = [self waitForFileMetadata:self.agentB where:nil];
-    STAssertTrue(bFirstSeenMetadata.downloaded == NO, nil);
-    STAssertEqualObjects(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.creationDate, nil);
-    STAssertEqualObjects(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.modificationDate, nil);
+    XCTAssertTrue(bFirstSeenMetadata.downloaded == NO);
+    XCTAssertEqualObjects(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.creationDate);
+    XCTAssertEqualObjects(bFirstSeenMetadata.creationDate, bFirstSeenMetadata.modificationDate);
     
     // Update it. We should not have to explicitly tell the agent to upload -- this should happen eagerly when connected to the network (based on autosave or explicit save).
     OFXFileMetadata *uploadedEditMetadata = [self uploadFixture:@"test2.package" as:@"test.package" replacingMetadata:firstMetadata];
-    STAssertEqualObjects(bFirstSeenMetadata.creationDate, uploadedEditMetadata.creationDate, nil);
-    STAssertTrue(OFNOTEQUAL(bFirstSeenMetadata.modificationDate, uploadedEditMetadata.modificationDate), nil);
+    XCTAssertEqualObjects(bFirstSeenMetadata.creationDate, uploadedEditMetadata.creationDate);
+    XCTAssertTrue(OFNOTEQUAL(bFirstSeenMetadata.modificationDate, uploadedEditMetadata.modificationDate));
     
     // Attempt downloading with agentB *maybe* having old metadata. There is a race here with the net state notification. Our request might come back immediately (since we've already downloaded the old file contents).
     OFXFileMetadata *contentDownloadedMetadata = [self downloadWithMetadata:bFirstSeenMetadata agent:self.agentB];
-    STAssertTrue(contentDownloadedMetadata.downloaded, nil);
+    XCTAssertTrue(contentDownloadedMetadata.downloaded);
     
     OFXFileMetadata *expectedDownloadMetadata;
     NSString *expectedDocumentContents;
@@ -278,9 +278,9 @@ RCS_ID("$Id$")
         expectedDocumentContents = @"test2.package";
     }
     
-    STAssertEqualObjects(expectedDownloadMetadata.creationDate, contentDownloadedMetadata.creationDate, nil);
-    STAssertEqualObjects(expectedDownloadMetadata.modificationDate, contentDownloadedMetadata.modificationDate, nil);
-    STAssertEqualObjects(expectedDownloadMetadata.editIdentifier, contentDownloadedMetadata.editIdentifier, nil);
+    XCTAssertEqualObjects(expectedDownloadMetadata.creationDate, contentDownloadedMetadata.creationDate);
+    XCTAssertEqualObjects(expectedDownloadMetadata.modificationDate, contentDownloadedMetadata.modificationDate);
+    XCTAssertEqualObjects(expectedDownloadMetadata.editIdentifier, contentDownloadedMetadata.editIdentifier);
     
     // TODO: There is *still* a race here since we will start downloading the update if we didn't see it at first.
     // Make sure we got the right contents
@@ -300,28 +300,28 @@ RCS_ID("$Id$")
         NSMutableArray *percentages = [NSMutableArray array];
         [self waitForFileMetadata:agent where:^BOOL(OFXFileMetadata *metadata) {
             float percentUploaded = metadata.percentUploaded;
-            STAssertTrue(percentUploaded >= 0, @"Percent should be non-negative");
-            STAssertTrue(percentUploaded <= 1, @"Percent should not go over 100%");
+            XCTAssertTrue(percentUploaded >= 0, @"Percent should be non-negative");
+            XCTAssertTrue(percentUploaded <= 1, @"Percent should not go over 100%%");
             
             float previousPercentUploaded = -1;
             if ([percentages count] > 0)
                 previousPercentUploaded = [[percentages lastObject] floatValue];
             
             if (previousPercentUploaded != percentUploaded) {
-                STAssertTrue(previousPercentUploaded <= percentUploaded, @"Percent should never decrease");
+                XCTAssertTrue(previousPercentUploaded <= percentUploaded, @"Percent should never decrease");
                 if (percentUploaded != 0 && percentUploaded != 1)
                     [percentages addObject:@(percentUploaded)]; // Record partial percentages
             }
             
             if (metadata.uploaded) {
-                STAssertEquals(percentUploaded, 1.0f, @"Fully uploaded files should end at 100%");
+                XCTAssertEqual(percentUploaded, 1.0f, @"Fully uploaded files should end at 100%%");
                 return YES;
             }
             return NO;
         }];
         
         //NSLog(@"percentages = %@", percentages);
-        STAssertTrue([percentages count] > 0, @"Should see some partial percentages");
+        XCTAssertTrue([percentages count] > 0, @"Should see some partial percentages");
     }
     
     // Then, download the file and make sure we see some partial percentages.
@@ -330,39 +330,39 @@ RCS_ID("$Id$")
         [agent sync:nil];
         OFXFileMetadata *metadata = [self waitForFileMetadata:self.agentB where:nil];
         
-        STAssertFalse(metadata.downloaded, nil);
-        STAssertFalse(metadata.downloading, nil);
+        XCTAssertFalse(metadata.downloaded);
+        XCTAssertFalse(metadata.downloading);
         
         [self.agentB requestDownloadOfItemAtURL:metadata.fileURL completionHandler:^(NSError *errorOrNil) {
-            STAssertNil(errorOrNil, nil);
+            XCTAssertNil(errorOrNil);
         }];
         
         NSMutableArray *percentages = [NSMutableArray array];
         [self waitForFileMetadata:agent where:^BOOL(OFXFileMetadata *metadata) {
             float percentDownloaded = metadata.percentDownloaded;
-            STAssertTrue(percentDownloaded >= 0, @"Percent should be non-negative");
-            STAssertTrue(percentDownloaded <= 1, @"Percent should not go over 100%");
+            XCTAssertTrue(percentDownloaded >= 0, @"Percent should be non-negative");
+            XCTAssertTrue(percentDownloaded <= 1, @"Percent should not go over 100%%");
             
             float previousPercentDownloaded = -1;
             if ([percentages count] > 0)
                 previousPercentDownloaded = [[percentages lastObject] floatValue];
             
             if (previousPercentDownloaded != percentDownloaded) {
-                STAssertTrue(previousPercentDownloaded <= percentDownloaded, @"Percent should never decrease");
+                XCTAssertTrue(previousPercentDownloaded <= percentDownloaded, @"Percent should never decrease");
                 if (percentDownloaded != 0 && percentDownloaded != 1)
                     [percentages addObject:@(percentDownloaded)]; // Record partial percentages
             }
             
             if (metadata.downloaded) {
-                STAssertFalse(metadata.downloading, @"Should stop being downloaded once fully downloaded");
-                STAssertEquals(percentDownloaded, 1.0f, @"Fully downloaded files should end at 100%");
+                XCTAssertFalse(metadata.downloading, @"Should stop being downloaded once fully downloaded");
+                XCTAssertEqual(percentDownloaded, 1.0f, @"Fully downloaded files should end at 100%%");
                 return YES;
             } else if (percentDownloaded > 0) // might not have started yet
-                STAssertTrue(metadata.downloading, @"Should stay downloading until fully downloaded");
+                XCTAssertTrue(metadata.downloading, @"Should stay downloading until fully downloaded");
             return NO;
         }];
         //NSLog(@"percentages = %@", percentages);
-        STAssertTrue([percentages count] > 0, @"Should see some partial percentages");
+        XCTAssertTrue([percentages count] > 0, @"Should see some partial percentages");
     }
 }
 
@@ -389,7 +389,7 @@ RCS_ID("$Id$")
             return [metadata.editIdentifier isEqual:smallFileA.editIdentifier] && metadata.downloaded;
         }];
         
-        STAssertTrue(ITEM_MATCHES_FIXTURE(smallFileB, @"test.package"), nil);
+        XCTAssertTrue(ITEM_MATCHES_FIXTURE(smallFileB, @"test.package"));
     }];
 }
 
@@ -421,37 +421,50 @@ RCS_ID("$Id$")
     self.agentB.automaticallyDownloadFileContents = YES; // So the first version downloads
 
     // Start out with the same package everywhere
-    [self copyFixtureNamed:@"test.package"];
+    OFXFileMetadata *originalMetadata = [self copyFixtureNamed:@"test.package"];
     
     // Make a large replacement; this should start downloading on B since it downloaded the first version. Wait for it to get to a certain percentage though.
     OFXFileMetadata *randomMetadata = [self makeRandomPackageNamed:@"test.package" memberCount:32 memberSize:4*1024*1024]; // Too low and we can randomly finish the download before B can clobber the file.
-
+    XCTAssertEqualObjects(originalMetadata.fileIdentifier, randomMetadata.fileIdentifier);
+    
     [self downloadFileWithIdentifier:randomMetadata.fileIdentifier untilPercentage:0.1 agent:self.agentB];
     
     // Replace the file on B.
     OFXServerAccount *accountB = [self.agentB.accountRegistry.validCloudSyncAccounts lastObject];
     [self copyFixtureNamed:@"test2.package" toPath:@"test.package" ofAccount:accountB];
     
+    OFXFileMetadata *(^updatedFile)(NSSet *metadataItems, NSString *fileIdentifier, BOOL shouldMatch) = ^OFXFileMetadata *(NSSet *metadataItems, NSString *fileIdentifier, BOOL shouldMatch){
+        OFXFileMetadata *updatedMetadata = [metadataItems any:^BOOL(OFXFileMetadata *metadata) {
+            // Both files should be conflicts
+            NSString *filename = [[metadata.fileURL lastPathComponent] stringByDeletingPathExtension];
+            if (![filename containsString:@"Conflict" options:NSCaseInsensitiveSearch])
+                return NO;
+            
+            return !(shouldMatch ^ [metadata.fileIdentifier isEqual:fileIdentifier]);
+        }];
+        
+        // Both should be downloaded
+        if (!updatedMetadata.downloaded)
+            return nil;
+        return updatedMetadata;
+    };
+    
     // Should end up with two files due to the conflict
     BOOL (^predicate)(NSSet *metadataItems) = ^(NSSet *metadataItems){
+        // We should have two conflict files, one for each edit (the random blob from agentA and test2.package from agentB).
         if ([metadataItems count] != 2)
             return NO;
         
-        // Since the random package made it to the server first, it should be the conflict winner.
-        OFXFileMetadata *nonConflict = [metadataItems any:^BOOL(OFXFileMetadata *metadata) {
-            return [[metadata.fileURL lastPathComponent] isEqual:@"test.package"];
-        }];
-        if (!nonConflict)
+        OFXFileMetadata *updateFromAgentA = updatedFile(metadataItems, originalMetadata.fileIdentifier, YES); // This should be the original -> random edited file
+        if (!updateFromAgentA)
             return NO;
-        if (!nonConflict.downloaded || OFNOTEQUAL(nonConflict.editIdentifier, randomMetadata.editIdentifier))
+
+        OFXFileMetadata *updateFromAgentB = updatedFile(metadataItems, originalMetadata.fileIdentifier, NO); // This should be the conflict with the random edit.
+        if (!updateFromAgentB)
             return NO;
         
-        // There should also be a conflict with the appropriate contents
-        OFXFileMetadata *conflict = [metadataItems any:^BOOL(OFXFileMetadata *metadata) {
-            return [[[metadata.fileURL lastPathComponent] stringByDeletingPathExtension] containsString:@"Conflict" options:NSCaseInsensitiveSearch];
-        }];
-        if (!conflict.downloaded || !ITEM_MATCHES_FIXTURE(conflict, @"test2.package"))
-            return NO;
+        XCTAssertEqualObjects(updateFromAgentA.editIdentifier, randomMetadata.editIdentifier);
+        XCTAssertTrue(ITEM_MATCHES_FIXTURE(updateFromAgentB, @"test2.package"));
         
         return YES;
     };
@@ -491,10 +504,11 @@ RCS_ID("$Id$")
     [self waitForChangeToMetadata:originalMetadata inAgent:agentB];
     
     // Wait for the agents to settle down to a common state.
-    [self waitForAgentsToAgree];
+    [self waitForAgentsEditsToAgree];
+    [self requireAgentsToHaveSameFilesByName];
     
     NSSet *metadataItems = [self metadataItemsForAgent:agentA];
-    STAssertTrue([metadataItems count] == 2, nil);
+    XCTAssertTrue([metadataItems count] == 2);
     {
         NSSet *metadataItems = [self metadataItemsForAgent:agentA];
         
@@ -505,8 +519,8 @@ RCS_ID("$Id$")
             return [[metadata.fileURL lastPathComponent] isEqual:@"test-B.package"];
         }];
         
-        STAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataA, @"test.package"), nil);
-        STAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataB, @"test2.package"), nil);
+        XCTAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataA, @"test.package"));
+        XCTAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataB, @"test2.package"));
     }
 }
 

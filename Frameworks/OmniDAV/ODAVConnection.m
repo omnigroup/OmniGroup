@@ -53,7 +53,97 @@ static NSInteger ODAVConnectionSessionDebug = NSIntegerMax;
 @end
 @implementation ODAVSingleFileInfoResult
 @end
+
+
 @implementation ODAVConnectionConfiguration
+
+#if TARGET_IPHONE_SIMULATOR
+    #define DEFAULT_HARDWARE_MODEL @"iPhone Simulator"
+#elif TARGET_OS_IPHONE
+    #define DEFAULT_HARDWARE_MODEL @"iPhone"
+#else
+    #define DEFAULT_HARDWARE_MODEL @"Mac"
+#endif
+
+static NSString *ODAVHardwareModel(void)
+{
+    int name[] = {CTL_HW, HW_MODEL};
+    const int nameCount = sizeof(name) / sizeof(*name);
+    size_t bufSize = 0;
+    
+    // Passing a null pointer just says we want to get the size out
+    if (sysctl(name, nameCount, NULL, &bufSize, NULL, 0) < 0) {
+        perror("sysctl");
+        return DEFAULT_HARDWARE_MODEL;
+    }
+    
+    char *value = calloc(1, bufSize + 1);
+    
+    if (sysctl(name, nameCount, value, &bufSize, NULL, 0) < 0) {
+        // Not expecting any errors now!
+        free(value);
+        perror("sysctl");
+        return DEFAULT_HARDWARE_MODEL;
+    }
+    
+    return CFBridgingRelease(CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, value, kCFStringEncodingUTF8, kCFAllocatorMalloc));
+}
+
+static NSString *ClientComputerName(void)
+{
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    return OFHostName();
+#else
+    return [[UIDevice currentDevice] name];
+#endif
+}
+
+static NSString *StandardUserAgentString;
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    StandardUserAgentString = [self userAgentStringByAddingComponents:nil];
+}
+
++ (NSString *)userAgentStringByAddingComponents:(NSArray *)components;
+{
+    NSString *osVersionString = [[OFVersionNumber userVisibleOperatingSystemVersionNumber] originalVersionString];
+    NSDictionary *bundleInfo = [[NSBundle mainBundle] infoDictionary];
+    
+    NSString *appName = [bundleInfo objectForKey:(NSString *)kCFBundleNameKey];
+    if ([NSString isEmptyString:appName])
+        appName = [[NSProcessInfo processInfo] processName]; // command line tool?
+    
+    NSString *appInfo = appName;
+    NSString *appVersionString = [bundleInfo objectForKey:(NSString *)kCFBundleVersionKey];
+    if (![NSString isEmptyString:appVersionString])
+        appInfo = [appInfo stringByAppendingFormat:@"/%@", appVersionString];
+    
+    NSString *hardwareModel = [NSString encodeURLString:ODAVHardwareModel() asQuery:NO leaveSlashes:YES leaveColons:YES];
+    NSString *clientName = [NSString encodeURLString:ClientComputerName() asQuery:NO leaveSlashes:YES leaveColons:YES];
+    
+    NSString *extraComponents;
+    if ([components count] > 0) {
+        extraComponents = [NSString stringWithFormat:@" %@ ", [components componentsJoinedByString:@" "]];
+    } else {
+        extraComponents = @" ";
+    }
+    
+    return [[NSString alloc] initWithFormat:@"%@%@Darwin/%@(%@) (%@)", appInfo, extraComponents, osVersionString, hardwareModel, clientName];
+}
+
+- init;
+{
+    if (!(self = [super init]))
+        return nil;
+    
+    _userAgent = [StandardUserAgentString copy];
+    
+    return self;
+}
+
 @end
 
 @interface ODAVConnection ()
@@ -80,47 +170,6 @@ static NSInteger ODAVConnectionSessionDebug = NSIntegerMax;
 #endif
 }
 
-#if TARGET_IPHONE_SIMULATOR
-    #define DEFAULT_HARDWARE_MODEL @"iPhone Simulator"
-#elif TARGET_OS_IPHONE
-    #define DEFAULT_HARDWARE_MODEL @"iPhone"
-#else
-    #define DEFAULT_HARDWARE_MODEL @"Mac"
-#endif
-
-static NSString *ODAVHardwareModel(void)
-{
-    int name[] = {CTL_HW, HW_MODEL};
-    const int nameCount = sizeof(name) / sizeof(*name);
-    size_t bufSize = 0;
-    
-    // Passing a null pointer just says we want to get the size out
-    if (sysctl(name, nameCount, NULL, &bufSize, NULL, 0) < 0) {
-	perror("sysctl");
-	return DEFAULT_HARDWARE_MODEL;
-    }
-    
-    char *value = calloc(1, bufSize + 1);
-    
-    if (sysctl(name, nameCount, value, &bufSize, NULL, 0) < 0) {
-	// Not expecting any errors now!
-	free(value);
-	perror("sysctl");
-	return DEFAULT_HARDWARE_MODEL;
-    }
-    
-    return CFBridgingRelease(CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, value, kCFStringEncodingUTF8, kCFAllocatorMalloc));
-}
-
-static NSString *ClientComputerName(void)
-{
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    return OFHostName();
-#else
-    return [[UIDevice currentDevice] name];
-#endif
-}
-
 + (void)initialize;
 {
     OBINITIALIZE;
@@ -137,23 +186,6 @@ static NSString *ClientComputerName(void)
         OBASSERT([entitlements[@"com.apple.security.network.client"] boolValue]);
     }
 #endif
-    
-    NSString *osVersionString = [[OFVersionNumber userVisibleOperatingSystemVersionNumber] originalVersionString];
-    NSDictionary *bundleInfo = [[NSBundle mainBundle] infoDictionary];
-    
-    NSString *appName = [bundleInfo objectForKey:(NSString *)kCFBundleNameKey];
-    if ([NSString isEmptyString:appName])
-        appName = [[NSProcessInfo processInfo] processName]; // command line tool?
-    
-    NSString *appInfo = appName;
-    NSString *appVersionString = [bundleInfo objectForKey:(NSString *)kCFBundleVersionKey];
-    if (![NSString isEmptyString:appVersionString])
-        appInfo = [appInfo stringByAppendingFormat:@"/%@", appVersionString];
-    
-    NSString *hardwareModel = [NSString encodeURLString:ODAVHardwareModel() asQuery:NO leaveSlashes:YES leaveColons:YES];
-    NSString *clientName = [NSString encodeURLString:ClientComputerName() asQuery:NO leaveSlashes:YES leaveColons:YES];
-    
-    StandardUserAgentString = [[NSString alloc] initWithFormat:@"%@ Darwin/%@ (%@) (%@)", appInfo, osVersionString, hardwareModel, clientName];
 }
 
 - init;
@@ -174,6 +206,7 @@ static NSString *ClientComputerName(void)
         return nil;
 
 #if ODAV_NSURLSESSION
+#error If we go back to this, we will still want our configuration class, but have it be a wrapper around the NSURL version (so we can keep the user agent property).
     // configuration.identifier -- set this for background operations
     
     // The request we are given will already have values -- would these override, or are these just for the convenience methods that make requests?
@@ -1476,14 +1509,14 @@ didReceiveResponse:(NSURLResponse *)response
 
 #pragma mark - Private
 
-static NSString *StandardUserAgentString;
-
 - (NSMutableURLRequest *)_requestForURL:(NSURL *)url;
 {
     static const NSURLRequestCachePolicy DefaultCachePolicy = NSURLRequestUseProtocolCachePolicy;
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:DefaultCachePolicy timeoutInterval:[self _timeoutForURL:url]];
     
-    NSString *userAgent = [NSString isEmptyString:_userAgent] ? StandardUserAgentString : _userAgent;
+    NSString *userAgent = [NSString isEmptyString:_userAgent] ? [_configuration userAgent] : _userAgent;
+    OBASSERT(![NSString isEmptyString:userAgent]);
+    
     [request setValue:userAgent forHTTPHeaderField:@"User-Agent"];
     
 #if ODAV_NSURLSESSION

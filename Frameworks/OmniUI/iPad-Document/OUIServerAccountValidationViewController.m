@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -134,8 +134,12 @@ RCS_ID("$Id$")
     
     _successLabel.text = NSLocalizedStringFromTableInBundle(@"Connected", @"OmniUIDocument", OMNI_BUNDLE, @"Success label when connecting to an OmniPresence or WebDAV server account");
     _successImageView.image = [UIImage imageNamed:@"OUIServerAccountValidationSuccess.png"];
-    
-    _serverInfoLabel.text = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Setting up \"%@\"", @"OmniUIDocument", OMNI_BUNDLE, @"Label format when setting up an OmniPresence or WebDAV server account"), _account.displayName];
+
+    UINavigationItem *navigationItem = self.navigationItem;
+
+    [navigationItem setHidesBackButton:YES];
+    navigationItem.title = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Setting up \"%@\"", @"OmniUIDocument", OMNI_BUNDLE, @"Label format when setting up an OmniPresence or WebDAV server account"), _account.displayName];
+    _serverInfoLabel.text = @" "; // leave empty for now since we have moved the info to the navigationItem's title while we hide the backButton
     _stateLabel.text = @" "; // Lame; reserve the space to autolayout won't squish us.
     
     // We use white in the xib, but I suppose we could set it to clear. Setting 'Default' makes the background black in Xcode's editor.
@@ -145,7 +149,7 @@ RCS_ID("$Id$")
 - (void)viewDidAppear:(BOOL)animated;
 {
     [super viewDidAppear:animated];
-    
+
     if (!_accountValidator)
         [self startValidation];
 }
@@ -175,7 +179,7 @@ RCS_ID("$Id$")
             _successView.alpha = 1;
             _successView.transform = CGAffineTransformIdentity;
         } completion:^(BOOL finished) {
-            [self afterDelay:0.8750 performBlock:^{
+            OFAfterDelayPerformBlock(0.8750, ^{
                 // Determine if this is a new account or if we are changing the configuration on an existing one. We have to be careful of the case where our first attempt fails (invalid credentials, server down). In this case, _account will be non-nil on entry to this method.
                 OFXServerAccountRegistry *registry = [OFXServerAccountRegistry defaultAccountRegistry];
                 if ([[registry allAccounts] containsObject:account] == NO) {
@@ -188,7 +192,7 @@ RCS_ID("$Id$")
                 
                 [self finishWithError:error];
                 [lock unlock];
-            }];
+            });
         }];
     }];
 }

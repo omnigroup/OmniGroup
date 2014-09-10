@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2008, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,16 +25,16 @@ static CFMutableSetRef OFUndoManagerStates = NULL;
 static Ivar targetIvar;
 
 typedef struct {
-    NSUndoManager *undoManager; // non-retained
+    __unsafe_unretained NSUndoManager *undoManager; // non-retained
     unsigned int indentLevel;
-    NSMutableArray *buffer;
+    __unsafe_unretained NSMutableArray *buffer; // actually retained, but we manage it ourselves since this is a struct
 } OFUndoManagerLoggingState;
 
 
 static void _OFUndoManagerLoggingStateDestroy(CFAllocatorRef allocator, const void *value)
 {
     OFUndoManagerLoggingState *state = (OFUndoManagerLoggingState *)value;
-    [state->buffer release];
+    OBStrongRelease(state->buffer);
     free(state);
 }
 
@@ -110,11 +110,16 @@ static void (*logging_original_dealloc)(id self, SEL _cmd) = NULL;
 - (void)registerUndoWithValue:(id)oldValue forKey:(NSString *)aKey of:(NSObject *)kvcCompliantTarget;
 {
     // We can't use -prepareWithInvocationTarget: in the normal way here because it'll attempt to set a value on the NSUndoManager instead of creating an invocation.
+    
+    // clang complains if we pass strong pointers to -setArgument:atIndex: in ARC mode
+    __unsafe_unretained id valueArgument = oldValue;
+    __unsafe_unretained NSString *keyArgument = aKey;
+    
     NSInvocation *resetInvocation = [NSInvocation invocationWithMethodSignature:[kvcCompliantTarget methodSignatureForSelector:@selector(setValue:forKey:)]];
+    [resetInvocation retainArguments]; // Do this before setting the argument so it gets captured in ARC mode
     [resetInvocation setSelector:@selector(setValue:forKey:)];
-    [resetInvocation setArgument:&oldValue atIndex:2];
-    [resetInvocation setArgument:&aKey atIndex:3];
-    [resetInvocation retainArguments];
+    [resetInvocation setArgument:(void *)&valueArgument atIndex:2];
+    [resetInvocation setArgument:(void *)&keyArgument atIndex:3];
     [[self prepareWithInvocationTarget:kvcCompliantTarget] forwardInvocation:resetInvocation];
 }
 
@@ -167,7 +172,13 @@ static void (*logging_original_dealloc)(id self, SEL _cmd) = NULL;
             REPL(logging_original_endUndoGrouping, endUndoGrouping);
             REPL(logging_original_disableUndoRegistration, disableUndoRegistration);
             REPL(logging_original_enableUndoRegistration, enableUndoRegistration);
-            REPL(logging_original_dealloc, dealloc);
+            
+            // ARC doesn't allow @selector(dealloc)... really our extra buffer of info could be done as an associated object attached to the NSUndoManager and then we wouldn't need this.
+            // REPL(logging_original_dealloc, dealloc);
+            SEL deallocSelector = sel_getUid("dealloc");
+            logging_original_dealloc = (typeof(logging_original_dealloc))OBReplaceMethodImplementationWithSelector(self, deallocSelector, @selector(logging_replacement_dealloc));
+
+            
             methodsInstalled = YES;
         }
     }
@@ -198,40 +209,42 @@ static OFUndoManagerLoggingState *_log(NSUndoManager *self, BOOL indent, NSStrin
 {
     OBPRECONDITION(OFUndoManagerLoggingOptions != OFUndoManagerNoLogging);
     
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
-    OFUndoManagerLoggingState *state = _OFUndoManagerLoggingStateGet(self);
-    
-    va_list args;
-    va_start(args, format);
-    NSString *string = [[NSString alloc] initWithFormat:format arguments:args];
-    va_end(args);
-
-    if (OFUndoManagerLoggingOptions & OFUndoManagerLogToConsole) {
-        if (indent) {
-            unsigned int i;
-            for (i = 0; i < state->indentLevel; i++)
-                fputs("  ", stderr);
+    @autoreleasepool {
+        OFUndoManagerLoggingState *state = _OFUndoManagerLoggingStateGet(self);
+        
+        va_list args;
+        va_start(args, format);
+        NSString *string = [[NSString alloc] initWithFormat:format arguments:args];
+        va_end(args);
+        
+        if (OFUndoManagerLoggingOptions & OFUndoManagerLogToConsole) {
+            if (indent) {
+                unsigned int i;
+                for (i = 0; i < state->indentLevel; i++)
+                    fputs("  ", stderr);
+            }
+            fprintf(stderr, "%s", [string UTF8String]);
         }
-        fprintf(stderr, "%s", [string UTF8String]);
-    }
-    
-    if (OFUndoManagerLoggingOptions & OFUndoManagerLogToBuffer) {
-        if (state->buffer == nil)
-            state->buffer = [[NSMutableArray alloc] init];
-        if (indent) {
-            
-            unsigned int i;
-            for (i = 0; i < state->indentLevel; i++)
-                [state->buffer addObject:@"  "];
+        
+        if (OFUndoManagerLoggingOptions & OFUndoManagerLogToBuffer) {
+            if (state->buffer == nil) {
+                NSMutableArray *buffer = [[NSMutableArray alloc] init];
+                OBStrongRetain(buffer);
+                state->buffer = buffer;
+                [buffer release];
+            }
+            if (indent) {
+                unsigned int i;
+                for (i = 0; i < state->indentLevel; i++)
+                    [state->buffer addObject:@"  "];
+            }
+            [state->buffer addObject:string];
         }
-        [state->buffer addObject:string];
+        
+        [string release];
+    
+        return state;
     }
-    
-    [string release];
-    [pool drain];
-    
-    return state;
 }
 
 void _OFUndoManagerPushCallSite(NSUndoManager *undoManager, id self, SEL _cmd)
@@ -290,14 +303,14 @@ static CFMutableDictionaryRef ProxyForwardInvocationClassToOriginalImp = nil;
 static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvocation *anInvocation)
 {
     // We depend on the proxy being an NSUndoManager proxy, which is a private class with a '_manager' ivar.
-    NSUndoManager *self = nil;
-    object_getInstanceVariable(proxy, "_manager", (void **)&self); // might fail
+    __unsafe_unretained NSUndoManager *self = nil;
+    OBObjectGetUnsafeObjectIvar(proxy, "_manager", &self);
 
     // The target of the invocation is the proxy.  NSUndoManager stores the target for the undo an an ivar and doesn't set it on the NSInvocation, when we invoke the original.
     id target = self ? [object_getIvar(self, targetIvar) retain] : nil;
 
     // Do this before logging so that the 'BEGIN' log happens first (probably in auto-group creation mode)
-    IMP original = (IMP)CFDictionaryGetValue(ProxyForwardInvocationClassToOriginalImp, object_getClass(proxy));
+    IMP original = (IMP)CFDictionaryGetValue(ProxyForwardInvocationClassToOriginalImp, (__bridge const void *)object_getClass(proxy));
     OBCallVoidIMPWithObject(original, proxy, _cmd, anInvocation);
 
     // bail if we failed to lookup the undo manager.
@@ -325,7 +338,7 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
                 [anInvocation getArgument:&arg atIndex:argIndex];
                 _log(self, NO, @"ptr %p", arg);
             } else if (strcmp(type, @encode(id)) == 0) {
-                id arg = nil;
+                __unsafe_unretained id arg = nil;
                 [anInvocation getArgument:&arg atIndex:argIndex];
                 _log(self, NO, @"%@", arg? [arg shortDescription] : @"nil");
             } else if (strcmp(type, @encode(Class)) == 0) {
@@ -414,7 +427,7 @@ static void logging_replacement_proxyFowardInvocation(id proxy, SEL _cmd, NSInvo
         Method proxyMethod = class_getInstanceMethod(proxyClass, @selector(forwardInvocation:));
         proxyImp = class_replaceMethod(proxyClass, @selector(forwardInvocation:), (IMP)logging_replacement_proxyFowardInvocation, method_getTypeEncoding(proxyMethod));
         if (proxyImp != (IMP)logging_replacement_proxyFowardInvocation)
-            CFDictionarySetValue(ProxyForwardInvocationClassToOriginalImp, proxyClass, proxyImp);
+            CFDictionarySetValue(ProxyForwardInvocationClassToOriginalImp, (__bridge const void *)proxyClass, proxyImp);
     }
     
     return proxy;

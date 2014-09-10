@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,9 +52,6 @@ typedef enum { YES_SCROLL, NO_SCROLL, VERTICAL_SCROLL, AUTO_SCROLL, MANUAL_SCROL
 
 - (void)setSmoothScrollEnabled:(BOOL)smoothScrollEnabled;
 - (BOOL)smoothScrollEnabled;
-
-- (NSSize)idealSizeForAvailableSize:(NSSize)availableSize;
-    // Returns the largest size which would actually be useful in displaying the content view, given a particular availableSize (which determines whether scrollers would be necessary, but doesn't actually limit the return value).
 
 - (void)setVerticalWidget:(NSView *)newVerticalWidget;
 - (NSView *)verticalWidget;

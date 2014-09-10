@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,15 +45,6 @@ typedef struct _OFBTreeCursor {
 
 #ifdef DEBUG
 NSString *OFBTreeDescribeCursor(const OFBTree *tree, const OFBTreeCursor *cursor);
-#endif
-
-#if defined(__OBJC_GC__) && __OBJC_GC__
-// Scribble on the released elements so that the GC doesn't think any pointers are still live
-// It's unclear how important or useful this actually is for GC performance, but it is helpful for debugging.
-static const uint32_t badfood = 0xBAADF00D;
-#define SCRIBBLE(addr, len) memset_pattern4(addr, &badfood, len)
-#else
-#define SCRIBBLE(addr, len) /* not needed */
 #endif
 
 void OFBTreeInit(OFBTree *tree,
@@ -141,7 +132,6 @@ extern void OFBTreeDeleteAll(OFBTree *tree)
         tree->root.leaf = tree->nodeAllocator(tree);
         tree->root.leaf->elementCount = 0;
     } else {
-        SCRIBBLE(tree->root.leaf->contents, tree->root.leaf->elementCount * LEAF_STRIDE(tree));
         tree->root.leaf->elementCount = 0;
     }
     tree->height = 1;
@@ -521,7 +511,6 @@ static void _OFBTreeRotate(OFBTree *btree, OFBTreeCursor *cursor)
         apexNode->elementCount --;
         void *newApexNodeEnd = ELEMENT_AT_INDEX(apexNode, apexStride, apexNode->elementCount);
         memmove(apex, apex + apexStride, newApexNodeEnd - apex);
-        SCRIBBLE(newApexNodeEnd, apexStride);
         // Deallocate the now-empty and unreferenced old right node.
         btree->nodeDeallocator(btree, right.node);
 
@@ -560,7 +549,6 @@ static void _OFBTreeRotate(OFBTree *btree, OFBTreeCursor *cursor)
             memmove(rightContents - lagniappe,
                     rightContents - lagniappe + (shifting * childStride),
                     lagniappe + newRightCount * childStride);
-            SCRIBBLE(rightContents + (newRightCount * childStride), shifting * childStride);
         } else if (rightCount < newRightCount) {
             // NSLog(@"rotating right: %d -> %d,%d", (int)totalElements, (int)newLeftCount, (int)newRightCount);
             // The right node is smaller. Shift some elements over there.
@@ -593,7 +581,6 @@ static void _OFBTreeRotate(OFBTree *btree, OFBTreeCursor *cursor)
             // Copy the remaining data from the left node to the space we made in the right node
             memcpy(insertHere, copyFromHere + childStride - lagniappe,
                    lagniappe + ( shifting - 1 ) * childStride);
-            SCRIBBLE(copyFromHere, shifting * childStride);
             // And shrink the left node
         } else {
             OBASSERT_NOT_REACHED("null rotation?");
@@ -752,7 +739,6 @@ BOOL OFBTreeDelete(OFBTree *btree, void *value)
     // The cursor is always pointing to a leaf node at this point
     OBASSERT(_isAtLeafNode(btree, &cursor));
     reduced->elementCount --;
-    SCRIBBLE((void *)reduced->contents + (leafStride * reduced->elementCount), leafStride);
     
     _OFBTreeDidShrink(btree, &cursor);
     return YES;

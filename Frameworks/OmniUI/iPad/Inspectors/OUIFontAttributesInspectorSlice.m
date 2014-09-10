@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,14 +51,37 @@ RCS_ID("$Id$");
 - (void)updateFontAttributeButtonsWithFontDescriptors:(NSArray *)fontDescriptors;
 {
     BOOL bold = NO, italic = NO;
+    BOOL boldPossible =  NO, italicPossible = NO;
     for (OAFontDescriptor *fontDescriptor in fontDescriptors) {
         bold |= [fontDescriptor bold];
         italic |= [fontDescriptor italic];
+
+        if (bold) {
+            boldPossible = YES;
+        } else if (boldPossible == NO) {
+            OAFontDescriptor *tempDescriptor = [fontDescriptor newFontDescriptorWithBold:YES];
+            if ([[tempDescriptor font] isEqual:[fontDescriptor font]] == NO)
+                boldPossible = YES;
+        }
+
+        if (italic) {
+            italicPossible = YES;
+        } else if (italicPossible == NO) {
+            OAFontDescriptor *tempDescriptor = [fontDescriptor newFontDescriptorWithItalic:YES];
+            if ([[tempDescriptor font] isEqual:[fontDescriptor font]] == NO)
+                italicPossible = YES;
+        }
+
     }
-    
-    [_boldFontAttributeButton setSelected:bold];
-    [_italicFontAttributeButton setSelected:italic];
-    
+
+    // if we're about to diable the button, lets unselect it first.
+    [_boldFontAttributeButton setSelected:boldPossible ? bold : NO];
+    [_italicFontAttributeButton setSelected:italicPossible ? italic : NO];
+
+    [_boldFontAttributeButton setEnabled:boldPossible];
+    [_italicFontAttributeButton setEnabled:italicPossible];
+
+
     BOOL underline = NO, strikethrough = NO;
     for (id <OUIFontInspection> object in self.appropriateObjectsForInspection) {
         if ([object underlineStyleForInspectorSlice:self] != NSUnderlineStyleNone)

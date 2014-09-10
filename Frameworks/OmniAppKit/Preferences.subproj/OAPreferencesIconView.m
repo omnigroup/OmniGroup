@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2005, 2008, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -81,53 +81,42 @@ static const CGFloat iconBaseline = 36;
 
 - (void)mouseDown:(NSEvent *)event;
 {
-    NSPoint eventLocation;
-    NSRect slopRect;
-    const CGFloat dragSlop = 4.0f;
-    NSRect buttonRect;
+    // TODO: Should redo this as a collection view ...
+    
     BOOL mouseInBounds = NO;
     
-    eventLocation = [self convertPoint:[event locationInWindow] fromView:nil];
-    slopRect = NSInsetRect(NSMakeRect(eventLocation.x, eventLocation.y, 1.0f, 1.0f), -dragSlop, -dragSlop);
+    NSPoint eventLocation = [self convertPoint:[event locationInWindow] fromView:nil];
 
-    NSInteger index = (NSInteger)(floor(eventLocation.x / buttonSize.width) + floor(eventLocation.y / buttonSize.height) * [self _iconsWide]);
-    buttonRect = [self _boundsForIndex:index];
+    NSInteger buttonIndex = (NSInteger)(floor(eventLocation.x / buttonSize.width) + floor(eventLocation.y / buttonSize.height) * [self _iconsWide]);
+    NSRect buttonRect = [self _boundsForIndex:buttonIndex];
     if (NSWidth(buttonRect) == 0)
         return;
         
-    pressedIconIndex = index;
+    pressedIconIndex = buttonIndex;
     [self setNeedsDisplay:YES];
 
     while (1) {
-        NSEvent *nextEvent;
-        NSPoint nextEventLocation;
-        NSUInteger newPressedIconIndex;
 
-        nextEvent = [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
+        NSEvent *nextEvent = [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
 
-        nextEventLocation = [self convertPoint:[nextEvent locationInWindow] fromView:nil];
+        NSPoint nextEventLocation = [self convertPoint:[nextEvent locationInWindow] fromView:nil];
         mouseInBounds = NSMouseInRect(nextEventLocation, buttonRect, [self isFlipped]);
-        newPressedIconIndex = mouseInBounds ? index : IconNotFound;
-        if (newPressedIconIndex != pressedIconIndex) {
-            pressedIconIndex = newPressedIconIndex;
+
+        NSUInteger updatedButtonIndex = mouseInBounds ? buttonIndex : IconNotFound;
+        if (pressedIconIndex != updatedButtonIndex) {
+            pressedIconIndex = updatedButtonIndex;
             [self setNeedsDisplay:YES];
         }
-
+        
         if ([nextEvent type] == NSLeftMouseUp)
             break;
-        else if (!NSMouseInRect(nextEventLocation, slopRect, NO)) {
-            if ([self _dragIconIndex:index event:nextEvent]) {
-                mouseInBounds = NO;
-                break;
-            }
-        }
     }
     
     pressedIconIndex = IconNotFound;
     [self setNeedsDisplay:YES];
     
     if (mouseInBounds)
-        [preferenceController iconView:self buttonHitAtIndex:index];
+        [preferenceController iconView:self buttonHitAtIndex:buttonIndex];
 }
 
 
@@ -152,26 +141,9 @@ static const CGFloat iconBaseline = 36;
 
 - (BOOL)mouseDownCanMoveWindow;
 {
-    // Mouse drags should drag our icons, not the window (even though we're not opaque).
+    // TODO: Left over from when we dragged icons -- remove and let drags move the window?
     return NO;
 }
-
-// NSDraggingSource
-
-- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)flag;
-{
-    return NSDragOperationMove;
-}
-
-- (void)draggedImage:(NSImage *)image endedAt:(NSPoint)screenPoint operation:(NSDragOperation)operation;
-{
-}
-
-- (BOOL)ignoreModifierKeysWhileDragging;
-{
-    return YES;
-}
-
 
 @end
 
@@ -301,45 +273,5 @@ static const CGFloat iconBaseline = 36;
         
     [self setFrameSize:NSMakeSize(NSWidth(self.bounds), NSMaxY([self _boundsForIndex:[self _numberOfIcons]-1]))];
 }
-
-- (BOOL)_dragIconIndex:(NSUInteger)index event:(NSEvent *)event;
-{
-    NSImage *iconImage;
-    NSString *name;
-    NSString *identifier;
-    
-    if (![self _iconImage:&iconImage andName:&name andIdentifier:&identifier forIndex:index])
-        return YES; // Yes, I handled your stinky bad call.
-    
-    return [self _dragIconImage:iconImage andName:name andIdentifier:identifier event:event];
-}
-
-- (BOOL)_dragIconImage:(NSImage *)iconImage andName:(NSString *)name event:(NSEvent *)event;
-{
-    return [self _dragIconImage:iconImage andName:name andIdentifier:name event:event];
-}
-
-- (BOOL)_dragIconImage:(NSImage *)iconImage andName:(NSString *)name andIdentifier:(NSString *)identifier event:(NSEvent *)event;
-{
-    NSImage *dragImage = [[[NSImage alloc] initWithSize:buttonSize] autorelease];
-    [dragImage lockFocus]; {
-        [iconImage drawInRect:NSMakeRect(buttonSize.width / 2.0f - iconSize.width / 2.0f, iconBaseline, iconSize.width, iconSize.height) fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
-        
-        [preferenceTitleCell setStringValue:name];
-        [preferenceTitleCell drawWithFrame:NSMakeRect(0, 0, buttonSize.width, titleCellHeight) inView:self];
-    } [dragImage unlockFocus];
-       
-    NSPasteboard *pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-    [pasteboard declareTypes:[NSArray arrayWithObject:@"NSToolbarIndividualItemDragType"] owner:nil];
-    [pasteboard setString:identifier forType:@"NSToolbarItemIdentifierPboardType"];
-    [pasteboard setString:identifier forType:@"NSToolbarItemIdentiferPboardType"]; // Apple misspelled this type in 10.1
-    
-    NSPoint dragPoint = [self convertPoint:[event locationInWindow] fromView:nil];
-    NSPoint startPoint = NSMakePoint(dragPoint.x - buttonSize.width / 2.0f, dragPoint.y + buttonSize.height / 2.0f);
-    [self dragImage:dragImage at:startPoint offset:NSZeroSize event:event pasteboard:pasteboard source:self slideBack:NO];
-    
-    return YES;
-}
-
 
 @end

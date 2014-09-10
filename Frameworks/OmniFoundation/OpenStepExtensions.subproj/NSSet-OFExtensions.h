@@ -39,6 +39,8 @@
 
 - (NSSet *)select:(OFPredicateBlock)predicate;
 
+- (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
+
 @end
 
 #define OFSetByGettingProperty(set, cls, prop) [(set) setByPerformingBlock:^id(cls *item){ return item.prop; }]

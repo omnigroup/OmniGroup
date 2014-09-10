@@ -222,7 +222,7 @@ static NSString *BundleIdentifierForPID(pid_t pid)
         
         id <OFLockUnavailableHandler> lockUnavailableHandler = [self _currentLockUnavailableHandler];
         if (lockUnavailableHandler != nil) {
-            NSError *localError = nil;
+            __autoreleasing NSError *localError = nil;
             if (outError == NULL) {
                 outError = &localError;
             }
@@ -255,11 +255,14 @@ static NSString *BundleIdentifierForPID(pid_t pid)
     }
     
     // Serialize to an NSData since NSData has NSError API.
-    NSString *errorString = nil;
-    NSData *lockData = [NSPropertyListSerialization dataFromPropertyList:localLock format:NSPropertyListXMLFormat_v1_0 errorDescription:&errorString];
+    __autoreleasing NSError *error = nil;
+    NSData *lockData = [NSPropertyListSerialization dataWithPropertyList:localLock format:NSPropertyListXMLFormat_v1_0 options:0 error:&error];
     if (!lockData) {
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to serialize lock information.  %@", @"OmniFoundation", OMNI_BUNDLE, @"error reason"), errorString];
-        OFError(outError, OFCannotCreateLock, NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), reason);
+        if (outError) {
+            *outError = error; // make this the underlying error
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to serialize lock information.", @"OmniFoundation", OMNI_BUNDLE, @"error reason")];
+            OFError(outError, OFCannotCreateLock, NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniFoundation", OMNI_BUNDLE, @"error description"), reason);
+        }
         return NO;
     }
 
@@ -376,7 +379,7 @@ static NSString *BundleIdentifierForPID(pid_t pid)
 
 - (NSError *)_errorForLockOperationWithOptions:(OFLockFileLockOperationOptions)options lockUnavailableHandler:(id <OFLockUnavailableHandler>)lockUnavailableHandler existingLock:(NSDictionary *)existingLock proposedLock:(NSDictionary *)proposedLock;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     
     if (((options & OFLockFileLockOperationAllowRecoveryOption) != 0) || lockUnavailableHandler != nil) {
         

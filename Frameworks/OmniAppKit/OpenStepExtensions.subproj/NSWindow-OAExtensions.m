@@ -9,7 +9,7 @@
 #import <OmniAppKit/NSView-OAExtensions.h>
 #import <OmniAppKit/OAViewPicker.h>
 
-#import "OAConstructionTimeView.h"
+#import "OAConstructionTitlebarAccessoryViewController.h"
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -213,16 +213,23 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 
 - (void)addConstructionWarning;
 {
-    // This is hacky, but you should only be calling this in alpha/beta builds of an app anyway.
-    NSView *borderView = [self valueForKey:@"borderView"];
-    
-    NSRect borderBounds = [borderView bounds];
-    const CGFloat constructionHeight = 21.0f;
-    NSRect contructionFrame = NSMakeRect(NSMinX(borderBounds), NSMaxY(borderBounds) - constructionHeight, NSWidth(borderBounds), constructionHeight);
-    OAConstructionTimeView *contructionView = [[OAConstructionTimeView alloc] initWithFrame:contructionFrame];
-    [contructionView setAutoresizingMask:NSViewWidthSizable|NSViewMinYMargin];
-    [borderView addSubview:contructionView positioned:NSWindowBelow relativeTo:nil];
-    [contructionView release];
+    OAConstructionTitlebarAccessoryViewController *accessory = [[OAConstructionTitlebarAccessoryViewController alloc] init];
+    [self addTitlebarAccessoryViewController:accessory];
+    [accessory release];
+}
+
+- (NSPoint)convertPointToScreen:(NSPoint)windowPoint;
+{
+    NSRect windowRect = (NSRect){.origin = windowPoint, .size = NSZeroSize};
+    NSRect screenRect = [self convertRectToScreen:windowRect];
+    return screenRect.origin;
+}
+
+- (NSPoint)convertPointFromScreen:(NSPoint)screenPoint;
+{
+    NSRect screenRect = (NSRect){.origin = screenPoint, .size = NSZeroSize};
+    NSRect windowRect = [self convertRectFromScreen:screenRect];
+    return windowRect.origin;
 }
 
 /*" Convert a point from a window's base coordinate system to the CoreGraphics global ("screen") coordinate system. "*/
@@ -236,7 +243,7 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 
     // We assume here that both Quartz and CG have the same idea about the height (Y-extent) of the main screen; we should check whether this holds in 10.5 with resolution-independent UI.
     
-    NSPoint cocoaScreenCoordinates = [self convertBaseToScreen:windowPoint];
+    NSPoint cocoaScreenCoordinates = [self convertPointToScreen:windowPoint];
     CGRect mainScreenSize = CGDisplayBounds(CGMainDisplayID());
     
     // It's the main screen, so we expect its origin to be at the global origin. If that's not true, our conversion will presumably fail...

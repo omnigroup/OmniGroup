@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,6 @@
 
 #define OUI_SYSTEM_COLOR_CLASS UIColor
 #define OUI_SYSTEM_EDGE_INSETS_STRUCT UIEdgeInsets
-#define OUI_SYSTEM_SIZE_STRUCT CGSize
 
 #else
 
@@ -26,11 +25,27 @@
 
 #define OUI_SYSTEM_COLOR_CLASS NSColor
 #define OUI_SYSTEM_EDGE_INSETS_STRUCT NSEdgeInsets
-#define OUI_SYSTEM_SIZE_STRUCT NSSize
 
-extern NSString *const OUIAppearanceColorsDidChangeNotification; // listen to this rather than NSSystemColorsDidChangeNotification so that OUIAppearance can be sure to update its cached gradients and colors first
+void OUIAppearanceSetUserOverrideFolder(NSString *userOverrideFolder);
 
 #endif
+
+/// Subclasses can post this notification (with self as the object) when something happens that is about to cause the appearance instances values to change.
+extern NSString *const OUIAppearanceValuesWillChangeNotification;
+
+// Subclasses can post this notification (with self as the object) when something happens that causes its values to change.
+// N.B., on the Mac, listen to this rather than NSSystemColorsDidChangeNotification so that OUIAppearance can be sure to update its cached gradients and colors first.
+extern NSString *const OUIAppearanceValuesDidChangeNotification;
+
+// We expect that NSGeometry types and CGGeometry types are the same (so that we can use, for example, CGSize everywhere instead of a hypothetical OUI_SYSTEM_SIZE_STRUCT). There are no NSGeometry types on iOS, so only check on the Mac.
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+    #if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES) || !NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
+        #error NSGeometry and CGGeometry types must be identical!
+    #endif
+#endif
+
+/// Key for the aliases section within an OUIAppearance plist. Has value @"OUIAppearanceAliases".
+extern NSString * const OUIAppearanceAliasesKey;
 
 /*! Reads values from a plist in a bundle and converts those values into usable constants for implementing user interfaces. +appearance searches in the bundle of the receiver for a plist with a name derived from that of the receiver. (See +appearance for details.)
  *
@@ -46,21 +61,34 @@ extern NSString *const OUIAppearanceColorsDidChangeNotification; // listen to th
  */
 + (instancetype)appearance;
 
+- (NSString *)stringForKeyPath:(NSString * )keyPath;
 - (NSDictionary *)dictionaryForKeyPath:(NSString *)keyPath;
 
 - (OUI_SYSTEM_COLOR_CLASS *)colorForKeyPath:(NSString *)keyPath;
     // value must be a dictionary suitable for +[NSColor(OAExtensions colorFromPropertyListRepresentation:]
 
 - (CGFloat)CGFloatForKeyPath:(NSString *)keyPath;
+- (NSInteger)integerForKeyPath:(NSString *)keyPath;
 
 - (BOOL)boolForKeyPath:(NSString *)keyPath;
 
 - (OUI_SYSTEM_EDGE_INSETS_STRUCT)edgeInsetsForKeyPath:(NSString *)keyPath;
     // value must be a dictionary of the form {left: <number>, right: <number>, top: <number>, bottom: <number>} (missing keys are assumed to be 0)
 
-- (OUI_SYSTEM_SIZE_STRUCT)sizeForKeyPath:(NSString *)keyPath;
+- (CGSize)sizeForKeyPath:(NSString *)keyPath;
     // value must be a dictionary of the form {width: <number>, height: <number>} (missing keys are assumed to be 0)
 
+/// Cause this appearance instance to invalidate all its internal caching and reread values from the on-disk plist definitions.
+- (void)invalidateCachedValues;
+/// Incremented each time the cache is invalidated, whether externally or because of a dynamic plist change.
+@property (nonatomic, readonly) NSUInteger cacheInvalidationCount;
+
+@end
+
+/// API for use by subclasses
+@interface OUIAppearance (Subclasses)
+/// Returns the singleton instance of the given appearance subclass.
++ (OUIAppearance *)appearanceForClass:(Class)cls;
 @end
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -76,6 +104,10 @@ extern NSString *const OUIAppearanceColorsDidChangeNotification; // listen to th
 @end
 
 #else
+
+@interface OUIAppearance (OmniUIAppearance)
+@property (readonly) CGFloat emptyOverlayViewLabelMaxWidthRatio;
+@end
 
 @interface UIColor (OUIAppearance)
 

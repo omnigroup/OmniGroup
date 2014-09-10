@@ -1,11 +1,10 @@
-// Copyright 2004-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/NSArray-OFExtensions.h>
@@ -38,50 +37,50 @@ RCS_ID("$Id$");
     input = [[NSMutableArray alloc] initWithObjects:@"waw", @"het", @"gimel", nil];
     
     [input sortBasedOnOrderInArray:reference identical:NO unknownAtFront:NO];
-    shouldBeEqual(input, ([NSArray arrayWithObjects:@"gimel", @"waw", @"het", nil]));
+    XCTAssertEqualObjects(input, ([NSArray arrayWithObjects:@"gimel", @"waw", @"het", nil]));
     [input sortUsingSelector:@selector(compare:)];
-    shouldBeEqual(input, ([NSArray arrayWithObjects:@"gimel", @"het", @"waw", nil]));
+    XCTAssertEqualObjects(input, ([NSArray arrayWithObjects:@"gimel", @"het", @"waw", nil]));
     [input addObject:@"nostril"];
     [input sortBasedOnOrderInArray:reference identical:NO unknownAtFront:NO];
-    shouldBeEqual(input, ([NSArray arrayWithObjects:@"gimel", @"waw", @"het", @"nostril", nil]));
+    XCTAssertEqualObjects(input, ([NSArray arrayWithObjects:@"gimel", @"waw", @"het", @"nostril", nil]));
     [input sortBasedOnOrderInArray:reference identical:NO unknownAtFront:YES];
-    shouldBeEqual(input, ([NSArray arrayWithObjects:@"nostril", @"gimel", @"waw", @"het", nil]));
+    XCTAssertEqualObjects(input, ([NSArray arrayWithObjects:@"nostril", @"gimel", @"waw", @"het", nil]));
     [input sortBasedOnOrderInArray:[reference reversedArray] identical:NO unknownAtFront:YES];
-    shouldBeEqual(input, ([NSArray arrayWithObjects:@"nostril", @"het", @"waw", @"gimel", nil]));
+    XCTAssertEqualObjects(input, ([NSArray arrayWithObjects:@"nostril", @"het", @"waw", @"gimel", nil]));
     
     [input removeAllObjects];
     [input sortBasedOnOrderInArray:reference identical:NO unknownAtFront:YES];
-    shouldBeEqual(input, empty);
+    XCTAssertEqualObjects(input, empty);
     [input sortBasedOnOrderInArray:reference identical:YES unknownAtFront:YES];
-    shouldBeEqual(input, empty);
+    XCTAssertEqualObjects(input, empty);
     [input sortBasedOnOrderInArray:reference identical:YES unknownAtFront:NO];
-    shouldBeEqual(input, empty);
+    XCTAssertEqualObjects(input, empty);
     [input sortBasedOnOrderInArray:reference identical:NO unknownAtFront:NO];
-    shouldBeEqual(input, empty);
+    XCTAssertEqualObjects(input, empty);
     
     [input sortBasedOnOrderInArray:empty identical:NO unknownAtFront:NO];
-    shouldBeEqual(input, empty);
+    XCTAssertEqualObjects(input, empty);
 
     [input addObject:[NSMutableString stringWithString:@"zayin"]];
     [input sortBasedOnOrderInArray:empty identical:NO unknownAtFront:NO];
-    shouldBeEqual(input, [NSArray arrayWithObject:@"zayin"]);
+    XCTAssertEqualObjects(input, [NSArray arrayWithObject:@"zayin"]);
     [input sortBasedOnOrderInArray:empty identical:YES unknownAtFront:YES];
-    shouldBeEqual(input, [NSArray arrayWithObject:@"zayin"]);
+    XCTAssertEqualObjects(input, [NSArray arrayWithObject:@"zayin"]);
     
     [input addObject:[reference objectAtIndex:0]];  //aleph
     [input addObject:[reference objectAtIndex:6]];  //het
     [input sortBasedOnOrderInArray:reference identical:NO unknownAtFront:YES];
-    shouldBeEqual(input, ([NSArray arrayWithObjects:@"aleph", @"zayin", @"het",nil]));
+    XCTAssertEqualObjects(input, ([NSArray arrayWithObjects:@"aleph", @"zayin", @"het",nil]));
     [input sortBasedOnOrderInArray:reference identical:YES unknownAtFront:YES];
-    shouldBeEqual(input, ([NSArray arrayWithObjects:@"zayin", @"aleph",@"het",nil]));
+    XCTAssertEqualObjects(input, ([NSArray arrayWithObjects:@"zayin", @"aleph",@"het",nil]));
     [input sortBasedOnOrderInArray:reference identical:YES unknownAtFront:NO];
-    shouldBeEqual(input, ([NSArray arrayWithObjects:@"aleph",@"het",@"zayin",nil]));
+    XCTAssertEqualObjects(input, ([NSArray arrayWithObjects:@"aleph",@"het",@"zayin",nil]));
     
     [input removeAllObjects];
     [input addObjectsFromArray:reference];
     [input reverse];
     [input sortBasedOnOrderInArray:reference identical:NO unknownAtFront:YES];
-    shouldBeEqual(input, reference);
+    XCTAssertEqualObjects(input, reference);
     
 }
 
@@ -106,11 +105,11 @@ RCS_ID("$Id$");
     y = [[NSObject alloc] init];
     
     x = [NSArray array];
-    should([x anyObject] == nil);
+    XCTAssertTrue([x anyObject] == nil);
     x = [NSArray arrayWithObject:y];
-    should([x anyObject] == y);
+    XCTAssertTrue([x anyObject] == y);
     x = [NSArray arrayWithObject:@"y"];
-    should([x anyObject] != y);
+    XCTAssertTrue([x anyObject] != y);
 }
 
 - (void)testReplaceByApplying
@@ -125,19 +124,19 @@ RCS_ID("$Id$");
     subj = [NSMutableArray array];
     [subj addObjectsFromArray:counting];
     [subj replaceObjectsInRange:(NSRange){1,3} byApplyingSelector:@selector(uppercaseString)];
-    shouldBeEqual(subj, middle);
+    XCTAssertEqualObjects(subj, middle);
 
     [subj removeAllObjects];
     [subj addObjectsFromArray:Counting];
     [subj replaceObjectsInRange:(NSRange){0,5} byApplyingSelector:@selector(lowercaseString)];
-    shouldBeEqual(subj, counting);
+    XCTAssertEqualObjects(subj, counting);
     [subj replaceObjectsInRange:(NSRange){1,4} byApplyingSelector:@selector(uppercaseString)];
     [subj replaceObjectsInRange:(NSRange){4,1} byApplyingSelector:@selector(lowercaseString)];
-    shouldBeEqual(subj, middle);
+    XCTAssertEqualObjects(subj, middle);
     [subj replaceObjectsInRange:(NSRange){0,4} byApplyingSelector:@selector(lowercaseString)];
-    shouldBeEqual(subj, counting);
+    XCTAssertEqualObjects(subj, counting);
     [subj replaceObjectsInRange:(NSRange){0,5} byApplyingSelector:@selector(uppercaseFirst)];
-    shouldBeEqual(subj, Counting);
+    XCTAssertEqualObjects(subj, Counting);
 }
 
 - (void)testReverse:(NSArray *)counting giving:(NSArray *)gnitnuoc
@@ -146,15 +145,15 @@ RCS_ID("$Id$");
 
     subj = [NSMutableArray array];
     [subj addObjectsFromArray:counting];
-    shouldBeEqual(subj, [gnitnuoc reversedArray]);
+    XCTAssertEqualObjects(subj, [gnitnuoc reversedArray]);
     [subj reverse];
-    shouldBeEqual(subj, gnitnuoc);
-    shouldBeEqual(subj, [counting reversedArray]);
-    shouldBeEqual([subj reversedArray], counting);
+    XCTAssertEqualObjects(subj, gnitnuoc);
+    XCTAssertEqualObjects(subj, [counting reversedArray]);
+    XCTAssertEqualObjects([subj reversedArray], counting);
     [subj reverse];
-    shouldBeEqual(subj, counting);
-    shouldBeEqual([subj reversedArray], [counting reversedArray]);
-    shouldBeEqual([subj reversedArray], gnitnuoc);
+    XCTAssertEqualObjects(subj, counting);
+    XCTAssertEqualObjects([subj reversedArray], [counting reversedArray]);
+    XCTAssertEqualObjects([subj reversedArray], gnitnuoc);
 }
 
 - (void)testReversal
@@ -191,37 +190,37 @@ RCS_ID("$Id$");
     a = [NSArray arrayWithObjects:@"one", @"THREE", @"FOUR", @"five", @"two", @"three", @"four", @"Two", @"Three", @"Four", @"five", nil];
     
     grouped = [a groupByKeyBlock:^(NSString *string){ return [string lowercaseString]; }];
-    shouldBeEqual(([NSSet setWithArray:[grouped allKeys]]), 
+    XCTAssertEqualObjects(([NSSet setWithArray:[grouped allKeys]]),
                   ([NSSet setWithObjects:@"one", @"two", @"three", @"four", @"five", nil]));
-    shouldBeEqual(([grouped arrayForKey:@"one"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"one"]),
                   ([NSArray arrayWithObject:@"one"]));
-    shouldBeEqual(([grouped arrayForKey:@"two"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"two"]),
                   ([NSArray arrayWithObjects:@"two", @"Two", nil]));
-    shouldBeEqual(([grouped arrayForKey:@"three"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"three"]),
                   ([NSArray arrayWithObjects:@"THREE", @"three", @"Three", nil]));
-    shouldBeEqual(([grouped arrayForKey:@"four"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"four"]),
                   ([NSArray arrayWithObjects:@"FOUR", @"four", @"Four", nil]));
-    shouldBeEqual(([grouped arrayForKey:@"five"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"five"]),
                   ([NSArray arrayWithObjects:@"five", @"five", nil]));
 
     grouped = [a groupByKeyBlock:^(NSString *string){ return [string stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"Ttoe"]]; }];
-    shouldBeEqual(([NSSet setWithArray:[grouped allKeys]]), 
+    XCTAssertEqualObjects(([NSSet setWithArray:[grouped allKeys]]),
                   ([NSSet setWithObjects:@"n", @"HREE", @"FOUR", @"fiv", @"four", @"w", @"hr", @"Four", nil]));
-    shouldBeEqual(([grouped arrayForKey:@"n"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"n"]),
                   ([NSArray arrayWithObject:@"one"]));
-    shouldBeEqual(([grouped arrayForKey:@"HREE"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"HREE"]),
                   ([NSArray arrayWithObject:@"THREE"]));
-    shouldBeEqual(([grouped arrayForKey:@"FOUR"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"FOUR"]),
                   ([NSArray arrayWithObject:@"FOUR"]));
-    shouldBeEqual(([grouped arrayForKey:@"fiv"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"fiv"]),
                   ([NSArray arrayWithObjects:@"five", @"five", nil]));
-    shouldBeEqual(([grouped arrayForKey:@"four"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"four"]),
                   ([NSArray arrayWithObject:@"four"]));
-    shouldBeEqual(([grouped arrayForKey:@"w"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"w"]),
                   ([NSArray arrayWithObjects:@"two", @"Two", nil]));
-    shouldBeEqual(([grouped arrayForKey:@"hr"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"hr"]),
                   ([NSArray arrayWithObjects:@"three", @"Three", nil]));
-    shouldBeEqual(([grouped arrayForKey:@"Four"]), 
+    XCTAssertEqualObjects(([grouped arrayForKey:@"Four"]),
                   ([NSArray arrayWithObject:@"Four"]));
 }
 
@@ -230,19 +229,19 @@ RCS_ID("$Id$");
     NSArray *a;
     a = [NSArray arrayWithObjects:@"one", @"THREE", @"FOUR", @"five", @"two", @"three", @"four", @"Two", @"Three", @"Four", @"five", nil];
     
-    should((  [a containsObjectsInOrder:[NSArray arrayWithObjects:@"one", @"five", nil]]));
-    should((  [a containsObjectsInOrder:[NSArray arrayWithObjects:@"Four", @"five", nil]]));
-    shouldnt(([a containsObjectsInOrder:[NSArray arrayWithObjects:@"Four", @"Four", nil]]));
-    should((  [a containsObjectsInOrder:[NSArray arrayWithObject:@"two"]]));
-    should((  [a containsObjectsInOrder:[NSArray array]]));
-    should((  [[NSArray array] containsObjectsInOrder:[NSArray array]]));
-    shouldnt(([[NSArray array] containsObjectsInOrder:[NSArray arrayWithObject:@"two"]]));
-    shouldnt(([a containsObjectsInOrder:[a arrayByAddingObject:@"six"]]));
-    should((  [[a arrayByAddingObject:@"six"] containsObjectsInOrder:a]));
-    should((  [a containsObjectsInOrder:a]));
-    should((  [a containsObjectsInOrder:[NSArray arrayWithObjects:@"five", nil]]));
-    should((  [a containsObjectsInOrder:[NSArray arrayWithObjects:@"five", @"five", nil]]));
-    shouldnt(([a containsObjectsInOrder:[NSArray arrayWithObjects:@"five", @"five", @"five", nil]]));
+    XCTAssertTrue((  [a containsObjectsInOrder:[NSArray arrayWithObjects:@"one", @"five", nil]]));
+    XCTAssertTrue((  [a containsObjectsInOrder:[NSArray arrayWithObjects:@"Four", @"five", nil]]));
+    XCTAssertFalse(([a containsObjectsInOrder:[NSArray arrayWithObjects:@"Four", @"Four", nil]]));
+    XCTAssertTrue((  [a containsObjectsInOrder:[NSArray arrayWithObject:@"two"]]));
+    XCTAssertTrue((  [a containsObjectsInOrder:[NSArray array]]));
+    XCTAssertTrue((  [[NSArray array] containsObjectsInOrder:[NSArray array]]));
+    XCTAssertFalse(([[NSArray array] containsObjectsInOrder:[NSArray arrayWithObject:@"two"]]));
+    XCTAssertFalse(([a containsObjectsInOrder:[a arrayByAddingObject:@"six"]]));
+    XCTAssertTrue((  [[a arrayByAddingObject:@"six"] containsObjectsInOrder:a]));
+    XCTAssertTrue((  [a containsObjectsInOrder:a]));
+    XCTAssertTrue((  [a containsObjectsInOrder:[NSArray arrayWithObjects:@"five", nil]]));
+    XCTAssertTrue((  [a containsObjectsInOrder:[NSArray arrayWithObjects:@"five", @"five", nil]]));
+    XCTAssertFalse(([a containsObjectsInOrder:[NSArray arrayWithObjects:@"five", @"five", @"five", nil]]));
 }
 
 - (void)testSortedUsingSelector
@@ -272,57 +271,57 @@ RCS_ID("$Id$");
         }
         objs[ix] = n? n : [NSNumber numberWithInt:nums[ix]];
         [a insertObject:objs[ix] inArraySortedUsingSelector:@selector(compare:)];
-        should1([a isSortedUsingSelector:@selector(compare:)], ([NSString stringWithFormat:@"Array: %@", a]));
+        XCTAssertTrue([a isSortedUsingSelector:@selector(compare:)], @"Array: %@", a);
         
         // For NSStrings, we use mutable strings, which guarantees that the instances are distinct.
         dobjs[ix] = [NSMutableString stringWithFormat:@"%+015d", nums[ix]];
         [b insertObject:dobjs[ix] inArraySortedUsingSelector:@selector(compare:)];
-        should1([b isSortedUsingSelector:@selector(compare:)], ([NSString stringWithFormat:@"Array: %@", b]));
+        XCTAssertTrue([b isSortedUsingSelector:@selector(compare:)], @"Array: %@", b);
     }
-    should([a count] == NNUM);
-    should([[a objectAtIndex:0] intValue] == INT_MIN+1002);
-    should([[a objectAtIndex:3] intValue] == 0);
-    should([[a objectAtIndex:4] intValue] == 0);
-    should([[a objectAtIndex:NNUM-1] intValue] == INT_MAX-1002);
+    XCTAssertTrue([a count] == NNUM);
+    XCTAssertTrue([[a objectAtIndex:0] intValue] == INT_MIN+1002);
+    XCTAssertTrue([[a objectAtIndex:3] intValue] == 0);
+    XCTAssertTrue([[a objectAtIndex:4] intValue] == 0);
+    XCTAssertTrue([[a objectAtIndex:NNUM-1] intValue] == INT_MAX-1002);
 
     // The ordering of the 'b' array is different: negative numbers sort after positive numbers, and they sort from -1 ... -10000 (etc)
-    should([b count] == NNUM);
-    should1([[b objectAtIndex:NNUM-1] intValue] == INT_MIN+1002, [b objectAtIndex:0]);
-    should1([[b objectAtIndex:0] intValue] == 0, [b objectAtIndex:3]);
-    should1([[b objectAtIndex:1] intValue] == 0, [b objectAtIndex:4]);
-    should1([[b objectAtIndex:8] intValue] == INT_MAX-1002, [b objectAtIndex:NNUM-1]);    
+    XCTAssertTrue([b count] == NNUM);
+    XCTAssertTrue([[b objectAtIndex:NNUM-1] intValue] == INT_MIN+1002, @"%@", [b objectAtIndex:0]);
+    XCTAssertTrue([[b objectAtIndex:0] intValue] == 0, @"%@", [b objectAtIndex:3]);
+    XCTAssertTrue([[b objectAtIndex:1] intValue] == 0, @"%@", [b objectAtIndex:4]);
+    XCTAssertTrue([[b objectAtIndex:8] intValue] == INT_MAX-1002, @"%@", [b objectAtIndex:NNUM-1]);
     
     for(ix = 0; ix < NNUM; ix++) {
         NSUInteger aix, bix, cix;
         
         aix = [a indexOfObject:[NSNumber numberWithInt:nums[ix]] inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix], [a description], aix]));
-        should([[a objectAtIndex:aix] intValue] == nums[ix]);
+        XCTAssertTrue(aix != NSNotFound, @"Index of %d in %@ returns %lu", nums[ix], [a description], aix);
+        XCTAssertTrue([[a objectAtIndex:aix] intValue] == nums[ix]);
         aix = [a indexOfObjectIdenticalTo:objs[ix] inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", objs[ix], [a description], aix]));
-        should([a objectAtIndex:aix] == objs[ix]);
+        XCTAssertTrue(aix != NSNotFound, @"Index of %@ in %@ returns %lu", objs[ix], [a description], aix);
+        XCTAssertTrue([a objectAtIndex:aix] == objs[ix]);
         bix = [a indexOfObject:[NSNumber numberWithInt:nums[ix] + 1000] inArraySortedUsingSelector:@selector(compare:)];
-        should1(bix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix] + 1000, [a description], bix]));
+        XCTAssertTrue(bix == NSNotFound, @"Index of %d in %@ returns %lu", nums[ix] + 1000, [a description], bix);
         cix = [a indexOfObject:[NSNumber numberWithInt:nums[ix] - 1000] inArraySortedUsingSelector:@selector(compare:)];
-        should1(cix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix] - 1000, [a description], cix]));
+        XCTAssertTrue(cix == NSNotFound, @"Index of %d in %@ returns %lu", nums[ix] - 1000, [a description], cix);
     }
     for(ix = 0; ix < NNUM; ix++) {
         NSUInteger aix, bix, cix;
         NSString *obj = [NSString stringWithFormat:@"%+015d", nums[ix]];
         
         aix = [b indexOfObject:obj inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix], [b description], aix]));
-        should([[b objectAtIndex:aix] intValue] == nums[ix]);
+        XCTAssertTrue(aix != NSNotFound, @"Index of %d in %@ returns %lu", nums[ix], [b description], aix);
+        XCTAssertTrue([[b objectAtIndex:aix] intValue] == nums[ix]);
         aix = [b indexOfObjectIdenticalTo:obj inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix == NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix]));
-        shouldBeEqual(obj, dobjs[ix]);
+        XCTAssertTrue(aix == NSNotFound, @"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix);
+        XCTAssertEqualObjects(obj, dobjs[ix]);
         aix = [b indexOfObjectIdenticalTo:dobjs[ix] inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix]));
-        should([b objectAtIndex:aix] == dobjs[ix]);
+        XCTAssertTrue(aix != NSNotFound, @"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix);
+        XCTAssertTrue([b objectAtIndex:aix] == dobjs[ix]);
         bix = [b indexOfObject:[NSString stringWithFormat:@"%+015d", nums[ix] + 1000] inArraySortedUsingSelector:@selector(compare:)];
-        should1(bix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix] + 1000, [b description], bix]));
+        XCTAssertTrue(bix == NSNotFound, @"Index of %d in %@ returns %lu", nums[ix] + 1000, [b description], bix);
         cix = [b indexOfObject:[NSString stringWithFormat:@"%+015d", nums[ix] - 1000] inArraySortedUsingSelector:@selector(compare:)];
-        should1(cix == NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix] - 1000, [b description], cix]));
+        XCTAssertTrue(cix == NSNotFound, @"Index of %d in %@ returns %lu", nums[ix] - 1000, [b description], cix);
     }
     
     // Modify objects in-place: append some stuff, and prepend some stuff. The stuff we append/prepend is constant except for case.
@@ -338,30 +337,30 @@ RCS_ID("$Id$");
             [obj replaceCharactersInRange:(NSRange){bit, 0} withString:ch];
         }
     }
-    should([b isSortedUsingSelector:@selector(caseInsensitiveCompare:)]);
-    shouldnt([b isSortedUsingSelector:@selector(compare:)]);
+    XCTAssertTrue([b isSortedUsingSelector:@selector(caseInsensitiveCompare:)]);
+    XCTAssertFalse([b isSortedUsingSelector:@selector(compare:)]);
     
     // repeat the test with the case-insensitive-sorted values
     for(ix = 0; ix < NNUM; ix++) {
         NSUInteger aix;
         NSString *obj = [NSString stringWithFormat:@"ABCDE%+015d789", nums[ix]];
         
-        should([obj caseInsensitiveCompare:dobjs[ix]] == NSOrderedSame);
-        shouldnt([obj compare:dobjs[ix]] == NSOrderedSame);
+        XCTAssertTrue([obj caseInsensitiveCompare:dobjs[ix]] == NSOrderedSame);
+        XCTAssertFalse([obj compare:dobjs[ix]] == NSOrderedSame);
 
         aix = [b indexOfObject:obj inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %d in %@ returns %lu", nums[ix], [b description], aix]));
-        should(([[[b objectAtIndex:aix] substringWithRange:(NSRange){5,15}] intValue]) == nums[ix]);
+        XCTAssertTrue(aix != NSNotFound, @"Index of %d in %@ returns %lu", nums[ix], [b description], aix);
+        XCTAssertTrue(([[[b objectAtIndex:aix] substringWithRange:(NSRange){5,15}] intValue]) == nums[ix]);
         
         aix = [b indexOfObjectIdenticalTo:obj inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)];
-        should1(aix == NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix]));
+        XCTAssertTrue(aix == NSNotFound, @"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix);
         
         aix = [b indexOfObject:obj inArraySortedUsingSelector:@selector(compare:)];
-        should1(aix == NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix]));
+        XCTAssertTrue(aix == NSNotFound, @"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix);
         
         aix = [b indexOfObjectIdenticalTo:dobjs[ix] inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)];
-        should1(aix != NSNotFound, ([NSString stringWithFormat:@"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix]));
-        should([b objectAtIndex:aix] == dobjs[ix]);
+        XCTAssertTrue(aix != NSNotFound, @"Index of %@ in %@ returns %lu", dobjs[ix], [b description], aix);
+        XCTAssertTrue([b objectAtIndex:aix] == dobjs[ix]);
     }
     
    // NSLog(@"a = %@", [a description]);
@@ -375,24 +374,24 @@ RCS_ID("$Id$");
         c0 = [a count];
         [a removeObjectIdenticalTo:objs[ix] fromArraySortedUsingSelector:@selector(compare:)];
         c1 = [a count];
-        should(c0 == c1 + 1);
+        XCTAssertTrue(c0 == c1 + 1);
         // Check that duplicate values either are, or are not, still in the array (as appropriate)
         if (num_is_last[ix]) {
-            should([a indexOfObjectIdenticalTo:objs[ix]] == NSNotFound);
+            XCTAssertTrue([a indexOfObjectIdenticalTo:objs[ix]] == NSNotFound);
         } else {
-            should([a indexOfObjectIdenticalTo:objs[ix]] != NSNotFound);
+            XCTAssertTrue([a indexOfObjectIdenticalTo:objs[ix]] != NSNotFound);
         }
 
         c0 = [b count];
         [b removeObjectIdenticalTo:dobjs[ix] fromArraySortedUsingSelector:@selector(caseInsensitiveCompare:)];
         c1 = [b count];
-        should(c0 == c1 + 1);
-        should([b indexOfObjectIdenticalTo:dobjs[ix]] == NSNotFound);
+        XCTAssertTrue(c0 == c1 + 1);
+        XCTAssertTrue([b indexOfObjectIdenticalTo:dobjs[ix]] == NSNotFound);
         if (num_is_last[ix]) {
-            should([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)] == NSNotFound);
+            XCTAssertTrue([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)] == NSNotFound);
         } else {
-            should([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(compare:)] == NSNotFound);
-            should([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)] != NSNotFound);
+            XCTAssertTrue([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(compare:)] == NSNotFound);
+            XCTAssertTrue([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)] != NSNotFound);
         }
     }
     
@@ -405,29 +404,29 @@ RCS_ID("$Id$");
         c0 = [a count];
         [a removeObjectIdenticalTo:objs[ix] fromArraySortedUsingSelector:@selector(compare:)];
         c1 = [a count];
-        should(c0 == c1 + 1);
+        XCTAssertTrue(c0 == c1 + 1);
         // Check that duplicate values either are, or are not, still in the array (as appropriate)
         if (num_is_first[ix]) {
-            should([a indexOfObjectIdenticalTo:objs[ix]] == NSNotFound);
+            XCTAssertTrue([a indexOfObjectIdenticalTo:objs[ix]] == NSNotFound);
         } else {
-            should([a indexOfObjectIdenticalTo:objs[ix]] != NSNotFound);
+            XCTAssertTrue([a indexOfObjectIdenticalTo:objs[ix]] != NSNotFound);
         }
         
         c0 = [b count];
         [b removeObjectIdenticalTo:dobjs[ix] fromArraySortedUsingSelector:@selector(caseInsensitiveCompare:)];
         c1 = [b count];
-        should(c0 == c1 + 1);
-        should([b indexOfObjectIdenticalTo:dobjs[ix]] == NSNotFound);
+        XCTAssertTrue(c0 == c1 + 1);
+        XCTAssertTrue([b indexOfObjectIdenticalTo:dobjs[ix]] == NSNotFound);
         if (num_is_first[ix]) {
-            should([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)] == NSNotFound);
+            XCTAssertTrue([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)] == NSNotFound);
         } else {
-            should([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(compare:)] == NSNotFound);
-            should([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)] != NSNotFound);
+            XCTAssertTrue([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(compare:)] == NSNotFound);
+            XCTAssertTrue([b indexOfObject:dobjs[ix] inArraySortedUsingSelector:@selector(caseInsensitiveCompare:)] != NSNotFound);
         }
     }
     
-    should([a count] == 0);
-    should([b count] == 0);
+    XCTAssertTrue([a count] == 0);
+    XCTAssertTrue([b count] == 0);
 }
 
 @end
@@ -477,38 +476,38 @@ static OFPredicateBlock ifEquals(id value) {
 {
     id notFound = nil;
     
-    STAssertEqualObjects([[NSArray array] first:truePredicate], notFound, nil);
+    XCTAssertEqualObjects([[NSArray array] first:truePredicate], notFound);
     
-    STAssertEqualObjects([a first:ifEquals(kA)], kA, nil);
-    STAssertEqualObjects([a first:ifEquals(kB)], notFound, nil);
+    XCTAssertEqualObjects([a first:ifEquals(kA)], kA);
+    XCTAssertEqualObjects([a first:ifEquals(kB)], notFound);
 
-    STAssertEqualObjects([ab first:ifEquals(kA)], kA, nil);
-    STAssertEqualObjects([ab first:ifEquals(kB)], kB, nil);
-    STAssertEqualObjects([ab first:ifEquals(kC)], notFound, nil);
+    XCTAssertEqualObjects([ab first:ifEquals(kA)], kA);
+    XCTAssertEqualObjects([ab first:ifEquals(kB)], kB);
+    XCTAssertEqualObjects([ab first:ifEquals(kC)], notFound);
     
-    STAssertEqualObjects([abc first:ifEquals(kA)], kA, nil);
-    STAssertEqualObjects([abc first:ifEquals(kB)], kB, nil);
-    STAssertEqualObjects([abc first:ifEquals(kC)], kC, nil);
-    STAssertEqualObjects([abc first:ifEquals(kX)], notFound, nil);
+    XCTAssertEqualObjects([abc first:ifEquals(kA)], kA);
+    XCTAssertEqualObjects([abc first:ifEquals(kB)], kB);
+    XCTAssertEqualObjects([abc first:ifEquals(kC)], kC);
+    XCTAssertEqualObjects([abc first:ifEquals(kX)], notFound);
 }
 
 - (void)testSimpleLast;
 {
     id notFound = nil;
     
-    STAssertEqualObjects([[NSArray array] first:truePredicate], notFound, nil);
+    XCTAssertEqualObjects([[NSArray array] first:truePredicate], notFound);
     
-    STAssertEqualObjects([a last:ifEquals(kA)], kA, nil);
-    STAssertEqualObjects([a last:ifEquals(kB)], notFound, nil);
+    XCTAssertEqualObjects([a last:ifEquals(kA)], kA);
+    XCTAssertEqualObjects([a last:ifEquals(kB)], notFound);
     
-    STAssertEqualObjects([ab last:ifEquals(kA)], kA, nil);
-    STAssertEqualObjects([ab last:ifEquals(kB)], kB, nil);
-    STAssertEqualObjects([ab last:ifEquals(kC)], notFound, nil);
+    XCTAssertEqualObjects([ab last:ifEquals(kA)], kA);
+    XCTAssertEqualObjects([ab last:ifEquals(kB)], kB);
+    XCTAssertEqualObjects([ab last:ifEquals(kC)], notFound);
     
-    STAssertEqualObjects([abc last:ifEquals(kA)], kA, nil);
-    STAssertEqualObjects([abc last:ifEquals(kB)], kB, nil);
-    STAssertEqualObjects([abc last:ifEquals(kC)], kC, nil);
-    STAssertEqualObjects([abc last:ifEquals(kX)], notFound, nil);
+    XCTAssertEqualObjects([abc last:ifEquals(kA)], kA);
+    XCTAssertEqualObjects([abc last:ifEquals(kB)], kB);
+    XCTAssertEqualObjects([abc last:ifEquals(kC)], kC);
+    XCTAssertEqualObjects([abc last:ifEquals(kX)], notFound);
 }
 
 @end

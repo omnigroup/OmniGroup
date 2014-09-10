@@ -1106,7 +1106,7 @@ static inline unichar hex(int i)
     NSString *encodedWord;
     if (b64Size < qpSize) {
         // Base64 is smallest. Use it.
-        encodedWord = [NSString stringWithFormat:@"=?%@?B?%@?=", charsetName, [(NSData *)convertedBytes base64String]];
+        encodedWord = [NSString stringWithFormat:@"=?%@?B?%@?=", charsetName, [(OB_BRIDGE NSData *)convertedBytes base64String]];
     } else {
         NSMutableString *encodedContent;
         // Quoted-Printable is smallest (or, at least, not larger than Base64).

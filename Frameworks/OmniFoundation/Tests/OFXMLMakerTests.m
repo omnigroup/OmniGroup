@@ -1,4 +1,4 @@
-// Copyright 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,18 +6,19 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniFoundation/OFXMLMaker.h>
-#import <OmniFoundation/OFXMLCFXMLTreeSink.h>
 #import <OmniFoundation/OFXMLTextWriterSink.h>
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 #import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/OFScratchFile.h>
 
 #include <libxml/xmlwriter.h>
+
+#import "OFTestCase.h"
 
 RCS_ID("$Id$");
 
@@ -30,7 +31,7 @@ static NSString *xmlnsDublinCore = @"http://purl.org/dc/elements/1.1/";
 static NSString *xmlnsOO3 = @"http://www.omnigroup.com/namespace/OmniOutliner/v3";
 static NSString *xmlnsSillyExample = @"tel:+1-206-523-4152";
 
-@interface OFXMLMakerTests : SenTestCase
+@interface OFXMLMakerTests : XCTestCase
 {
     OFXMLSink *sink;
 }
@@ -44,7 +45,7 @@ static NSString *xmlnsSillyExample = @"tel:+1-206-523-4152";
 @implementation OFXMLMakerTests
 
 // Customized test suite
-+ (id) defaultTestSuite
++ (XCTestSuite *)defaultTestSuite;
 {
     if (self == [OFXMLMakerTests class])
         return nil;  // We're an abstract class
@@ -53,9 +54,7 @@ static NSString *xmlnsSillyExample = @"tel:+1-206-523-4152";
 
 - (void)dealloc
 {
-    [sink release];
     sink = nil;
-    [super dealloc];
 }
 
 - (void)setUp;
@@ -94,7 +93,7 @@ static NSString *xmlnsSillyExample = @"tel:+1-206-523-4152";
     
     [elt close];
     
-    [self closeSinkAndCompare:[[self bundle] pathForResource:@"0003-attrs" ofType:@"xml"]];
+    [self closeSinkAndCompare:[[[self class] bundle] pathForResource:@"0003-attrs" ofType:@"xml"]];
 }
 
 - (void)testOtherEncoding
@@ -109,7 +108,7 @@ static NSString *xmlnsSillyExample = @"tel:+1-206-523-4152";
     [elt addString:@"This\u266B"];
     [elt close];
     
-    [self closeSinkAndCompare:[[self bundle] pathForResource:@"0004-utf16" ofType:@"xml"]];
+    [self closeSinkAndCompare:[[[self class] bundle] pathForResource:@"0004-utf16" ofType:@"xml"]];
 }
 
 - (void)testSampleDoc
@@ -221,13 +220,13 @@ static NSString *xmlnsSillyExample = @"tel:+1-206-523-4152";
     
     [outline close];
     
-    [self closeSinkAndCompare:[[self bundle] pathForResource:@"0000-CreateDocument" ofType:@"xmloutline"]];
+    [self closeSinkAndCompare:[[[self class] bundle] pathForResource:@"0000-CreateDocument" ofType:@"xmloutline"]];
 }
 
 struct {
-    NSString *illumId;
+    __unsafe_unretained NSString *illumId;
     int cx, cy;
-    NSString *url;
+    __unsafe_unretained NSString *url;
 } shapes[3] = {
 { @"illum1", 115, 46, @"http://www.omnigroup.com/" },
 { @"illum2", 212, 46, @"http://www.omnigroup.com/applications" },
@@ -239,6 +238,7 @@ struct {
     int shape;
     
     [self getSink];
+    [sink setEncodingName:@"utf-8"];
 
     [sink addXMLDeclaration];
     [sink addDoctype:@"svg" identifiers:@"-//W3C//DTD SVG 1.1//EN" :@"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"];
@@ -294,105 +294,7 @@ struct {
     
     [svg close];
     
-    [self closeSinkAndCompare:[[self bundle] pathForResource:@"0001-Namespaces" ofType:@"svg"]];
-}
-
-@end
-
-#pragma mark CFXMLTree tests
-
-@interface OFXMLMakerTests_CFXMLTree : OFXMLMakerTests
-{
-}
-@end
-
-@implementation OFXMLMakerTests_CFXMLTree
-
-- (void)getSink
-{
-    OBPRECONDITION(sink == nil);
-    
-    sink = [[OFXMLCFXMLTreeSink alloc] init];
-    // [sink setIsStandalone:NO];
-    
-    OBPOSTCONDITION(sink != nil);
-}
-
-- (void)closeSinkAndCompare:(NSString *)referenceDoc
-{
-    OBPRECONDITION(sink != nil);
-    OBPRECONDITION(referenceDoc != nil);
-    
-    [sink close];
-    
-    OFScratchFile *unformatted = [OFScratchFile scratchFileNamed:@"cfxml-out-raw" error:NULL];
-    [[(OFXMLCFXMLTreeSink *)sink xmlData] writeToFile:[unformatted filename] options:0 error:NULL];
-    
-    OFScratchFile *formatted = [OFScratchFile scratchFileNamed:@"cfxml-out-pretty" error:NULL];
-    system([[NSString stringWithFormat:@"XMLLINT_INDENT='  ' xmllint --format '%@' > '%@'", [unformatted filename], [formatted filename]] cStringUsingEncoding:NSUTF8StringEncoding]);
-    
-    NSData *wantData = [NSData dataWithContentsOfFile:referenceDoc];
-    
-    /* We're not worrying about byte-per-byte equality */
-    NSString *wroteString = [NSString stringWithData:[formatted contentData] encoding:NSUTF8StringEncoding];
-    NSString *wantString = [NSString stringWithData:wantData encoding:NSUTF8StringEncoding];
-    
-    STAssertEqualObjects(wroteString, wantString, [NSString stringWithFormat:@"Comparing output to %@", referenceDoc]);
-    system([[NSString stringWithFormat:@"opendiff '%@' '%@'", [formatted filename], referenceDoc] cStringUsingEncoding:NSUTF8StringEncoding]);
-}
-
-/* The text writer sink can't do this */
-- (void)testOutOfOrder
-{
-    [self getSink];
-    
-    [sink setEncodingName:@"utf-8"];
-    [sink addXMLDeclaration];
-    
-    OFXMLMakerElement *root = [sink openElement:@"names"];
-    [root prefixForNamespace:xmlnsXLink hint:@"r"];
-    [root prefixForNamespace:xmlnsSillyExample hint:@"blah"];
-    OFXMLMakerElement *n;
-
-    n = [root openElement:@"name"];
-    [n addAttribute:@"lang" xmlns:xmlnsXML value:@"en"];
-    [n addAttribute:@"id" value:@"quux"];
-    [n addString:@"William Smith"];
-    [n close];
-    
-    // Find the <name> node we just added
-    CFXMLTreeRef someNode = CFTreeGetFirstChild([(OFXMLCFXMLTreeSink *)sink topNode]);
-    for(;;) {
-        CFXMLNodeRef info = CFXMLTreeGetNode(someNode);
-        CFXMLNodeTypeCode nodetype = CFXMLNodeGetTypeCode(info);
-        if (nodetype == kCFXMLNodeTypeElement && CFEqual(CFXMLNodeGetString(info), CFSTR("name"))) {
-            break;
-        } else if (nodetype == kCFXMLNodeTypeElement && CFEqual(CFXMLNodeGetString(info), CFSTR("names"))) {
-            someNode = CFTreeGetFirstChild(someNode);
-        } else {
-            someNode = CFTreeGetNextSibling(someNode);
-        }
-    }
-    
-    /* create another writer for that node */
-    OFXMLCFXMLTreeSink *sink2 = [[OFXMLCFXMLTreeSink alloc] initWithCFXMLTree:someNode];
-    [sink2 learnAncestralNamespaces];
-
-    /* add some more names and crossreferences */
-    [[[[[root openElement:@"name"] addAttribute:@"lang" xmlns:xmlnsXML value:@"fr"] addAttribute:@"id" value:@"foo"] addString:@"Guillaume Lef\u00E9vre"] close];
-    [[[sink2 openElement:@"seeAlso" xmlns:xmlnsSillyExample] addAttribute:@"href" xmlns:xmlnsXLink value:@"#foo"] close];
-    
-    [[[[[root openElement:@"name"] addAttribute:@"lang" xmlns:xmlnsXML value:@"is"] addAttribute:@"id" value:@"bar"] addString:@"Emil Thorsson"] close];
-    [[[sink2 openElement:@"hasNothingToDoWith" xmlns:xmlnsSillyExample] addAttribute:@"href" xmlns:xmlnsXLink value:@"#bar"] close];
-
-    n = [[[root openElement:@"name"] addAttribute:@"lang" xmlns:xmlnsXML value:@"it"] addAttribute:@"id" value:@"baz"];
-    [[[n openElement:@"seeAlso" xmlns:xmlnsSillyExample] addAttribute:@"href" xmlns:xmlnsXLink value:@"#quux"] close];
-    [[n addString:@"Guglielmo Ferrara"] close];
-    
-    [sink2 close];
-    [root close];
-    
-    [self closeSinkAndCompare:[[self bundle] pathForResource:@"0002-abcs" ofType:@"xml"]];
+    [self closeSinkAndCompare:[[[self class] bundle] pathForResource:@"0001-Namespaces" ofType:@"svg"]];
 }
 
 @end
@@ -413,7 +315,7 @@ struct {
     OBPRECONDITION(outputFile == nil);
     
     outputFile = [OFScratchFile scratchFileNamed:@"libxml2-out-raw" error:NULL];
-    NSURL *outputURL = [NSURL fileURLWithPath:[outputFile filename] isDirectory:NO];
+    NSURL *outputURL = outputFile.fileURL;
     CFDataRef urlBytes = CFURLCreateData(kCFAllocatorDefault, (CFURLRef)outputURL, kCFStringEncodingUTF8, true);
     CFMutableDataRef terminatedURLBytes = CFDataCreateMutableCopy(kCFAllocatorDefault, 0, urlBytes);
     CFDataAppendBytes(terminatedURLBytes, (const UInt8 *)"", 1);
@@ -427,6 +329,8 @@ struct {
     CFRelease(urlBytes);
     sink = [[OFXMLTextWriterSink alloc] initWithTextWriter:w freeWhenDone:YES];
     
+    CFRelease(terminatedURLBytes);
+    
     OBPOSTCONDITION(sink != nil);
 }
 
@@ -436,8 +340,8 @@ struct {
     OBPRECONDITION(referenceDoc != nil);
     
     [sink close];
-        
-    system([[NSString stringWithFormat:@"opendiff '%@' '%@'", [outputFile filename], referenceDoc] cStringUsingEncoding:NSUTF8StringEncoding]);
+    
+    OFDiffFiles(self, referenceDoc, [outputFile.fileURL path], nil/*filter*/);
 }
 
 @end

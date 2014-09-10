@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2005, 2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,6 +40,10 @@ static NSParagraphStyle *mousetipParagrphStyle;
 
 // API
 
+- (BOOL)isFlipped;
+{
+    return YES;
+}
 - (void)setStyle:(OAMouseTipStyle)aStyle;
 {
     if (style == aStyle)
@@ -147,7 +151,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
     
     // [titleView setMinSize:(NSSize){ 2 * TEXT_X_INSET, 2 * TEXT_Y_INSET }];
     
-    [self addSubview:titleView];
+    //    [self addSubview:titleView];
     
     [self setAutoresizesSubviews:YES];
     
@@ -219,6 +223,8 @@ static NSParagraphStyle *mousetipParagrphStyle;
             NSRectFill(rect);
         }
     }
+    [titleView setFrame:[self bounds]];
+    [titleView drawRect:rect];
 }
 
 - (NSDictionary *)textAttributes;
@@ -237,15 +243,63 @@ static NSParagraphStyle *mousetipParagrphStyle;
 
 - (NSSize)sizeOfText
 {
-    NSLayoutManager *layoutMgr = [titleView layoutManager];
+    NSLayoutManager *layoutManager = [titleView layoutManager];
     NSTextContainer *textContainer = [titleView textContainer];
+    NSAttributedString *contents = [titleView textStorage];
     
-    // Annoying: -usedRectForTextContainer: doesn't trigger layout. So we call -glyphRangeForTextContainer: to make sure the layout manager has filled this text container with glyphs.
-    [layoutMgr glyphRangeForTextContainer:textContainer];
+    NSRange glyphRange = [layoutManager glyphRangeForTextContainer:textContainer];
     
-    NSRect usedRect = [layoutMgr usedRectForTextContainer:textContainer];
-    usedRect = NSInsetRect(usedRect, -TEXT_X_INSET, -TEXT_Y_INSET);
-    return [self convertSize:usedRect.size fromView:titleView];
+    NSSize containerSize = [textContainer containerSize];
+    NSSize requiredSize;
+    
+    CGFloat maxLineWidth = 0;
+    NSRange lineRange = NSMakeRange(0,0);
+    
+    CGFloat centerX = containerSize.width/2;
+    CGFloat totalHeight = 0;
+    NSRect lineFrag;
+    
+    while(1) {
+        lineFrag = [layoutManager lineFragmentUsedRectForGlyphAtIndex:lineRange.location effectiveRange:&lineRange];
+        totalHeight += lineFrag.size.height;
+        
+        NSInteger charIndex = [layoutManager characterIndexForGlyphAtIndex:lineRange.location];
+        
+        NSRange foo;
+        NSDictionary *dictionary = [contents attributesAtIndex:charIndex effectiveRange:&foo];
+        NSMutableParagraphStyle *paragraphStyle = [dictionary objectForKey:@"NSParagraphStyle"];
+        
+        if (paragraphStyle && [paragraphStyle alignment] == NSCenterTextAlignment) {
+            maxLineWidth = MAX(maxLineWidth, lineFrag.size.width);
+        } else {
+            if (lineFrag.size.width > maxLineWidth)
+                maxLineWidth = lineFrag.size.width;
+            
+            if (fabs(NSMidX(lineFrag) - centerX) < 1) {
+                // Any text that is not left aligned gives us trouble
+                // such as setting the left text start on the ruler.
+                // Need to use the maxX of the line frag unless we are centered or right aligned.
+            }  else if (ceil(NSMaxX(lineFrag)) < containerSize.width && lineFrag.origin.x != 0.0)
+                maxLineWidth = MAX(maxLineWidth, NSMaxX(lineFrag));
+        }
+        
+        if (NSMaxRange(lineRange) >= glyphRange.length) {
+            break;
+        }
+        lineRange.location += lineRange.length;
+    }
+    
+    requiredSize = [layoutManager usedRectForTextContainer:textContainer].size;
+    requiredSize.width = ceil(maxLineWidth);    // Need to make this integral to avoid being too small for text tables? See bug #42268
+    
+    [textContainer setContainerSize:requiredSize];  // so that non-left aligned text will still show up (as right-aligned text always uses whatever space is available to it)
+    
+    requiredSize.width += 2*TEXT_X_INSET;
+    requiredSize.height += 2*TEXT_Y_INSET;
+    
+    requiredSize = [self convertSize:requiredSize fromView:titleView];
+    
+    return requiredSize;
 }
 
 @end

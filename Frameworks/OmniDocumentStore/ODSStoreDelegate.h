@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,14 +17,15 @@
 - (NSString *)documentStoreBaseNameForNewFiles:(ODSStore *)store;
 - (NSString *)documentStoreBaseNameForNewTemplateFiles:(ODSStore *)store;
 
-- (void)createNewDocumentAtURL:(NSURL *)url templateURL:(NSURL *)templateURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)createdNewDocument:(ODSFileItem *)fileItem templateURL:(NSURL *)templateURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 
 // probably no one needs to override hte base OUIAppController version of the implementation of this method
 - (BOOL)documentStore:(ODSStore *)store canViewFileTypeWithIdentifier:(NSString *)uti;
 
 @optional
 
-- (void)createNewDocumentAtURL:(NSURL *)url completionHandler:(void (^)(NSError *errorOrNil))completionHandler; // Deprecated - use the createNewDocumentAtURL:templateURL:completionHandler: version instead
+- (void)createNewDocumentAtURL:(NSURL *)url templateURL:(NSURL *)templateURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;  // Deprecated - use the createdNewDocument:templateURL:completionHandler: version instead
+- (void)createNewDocumentAtURL:(NSURL *)url completionHandler:(void (^)(NSError *errorOrNil))completionHandler; // Deprecated - use the createdNewDocument:templateURL:completionHandler: version instead
 
 - (NSString *)documentStoreDocumentTypeForNewFiles:(ODSStore *)store;
 - (NSString *)documentStoreDocumentTypeForNewTemplateFiles:(ODSStore *)store;

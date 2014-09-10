@@ -408,7 +408,7 @@
 			children = (
 				34D94E3C11A1AE8C00A9ACC1 /* OmniFoundation.framework */,
 				34D94E3E11A1AE8C00A9ACC1 /* libOmniFoundation.a */,
-				34D94E4011A1AE8C00A9ACC1 /* OFUnitTests.octest */,
+				34D94E4011A1AE8C00A9ACC1 /* OFUnitTests.xctest */,
 				34D94E4211A1AE8C00A9ACC1 /* OFSimpleLockTest */,
 				34D94E4411A1AE8C00A9ACC1 /* OFDedicatedThreadSchedulerTest */,
 				34D94E4611A1AE8C00A9ACC1 /* OFClobberDetectionTest */,
@@ -424,7 +424,7 @@
 			children = (
 				34D94E5711A1AE9B00A9ACC1 /* OmniDataObjects.framework */,
 				34D94E5911A1AE9B00A9ACC1 /* xcd2odo */,
-				34D94E5B11A1AE9B00A9ACC1 /* ODOTests.octest */,
+				34D94E5B11A1AE9B00A9ACC1 /* ODOTests.xctest */,
 				34D94E5D11A1AE9B00A9ACC1 /* ODOPerf */,
 				34D94E5F11A1AE9B00A9ACC1 /* libOmniDataObjects.a */,
 			);
@@ -529,10 +529,10 @@
 			remoteRef = 34D94E3D11A1AE8C00A9ACC1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34D94E4011A1AE8C00A9ACC1 /* OFUnitTests.octest */ = {
+		34D94E4011A1AE8C00A9ACC1 /* OFUnitTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
-			path = OFUnitTests.octest;
+			path = OFUnitTests.xctest;
 			remoteRef = 34D94E3F11A1AE8C00A9ACC1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -592,10 +592,10 @@
 			remoteRef = 34D94E5811A1AE9B00A9ACC1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34D94E5B11A1AE9B00A9ACC1 /* ODOTests.octest */ = {
+		34D94E5B11A1AE9B00A9ACC1 /* ODOTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
-			path = ODOTests.octest;
+			path = ODOTests.xctest;
 			remoteRef = 34D94E5A11A1AE9B00A9ACC1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};

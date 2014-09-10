@@ -1,4 +1,4 @@
-// Copyright 2011-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -106,8 +106,8 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
                     [classDict setObject:mappedIdentifiers forKey:value];
                     [mappedIdentifiers release];
                 } else {
-                    BOOL conformsToPublicData = UTTypeConformsTo((CFStringRef)identifier, kUTTypeData);
-                    BOOL conformsToPublicDirectory = UTTypeConformsTo((CFStringRef)identifier, kUTTypeDirectory);
+                    BOOL conformsToPublicData = UTTypeConformsTo((__bridge CFStringRef)identifier, kUTTypeData);
+                    BOOL conformsToPublicDirectory = UTTypeConformsTo((__bridge CFStringRef)identifier, kUTTypeDirectory);
                     
                     if (!conformsToPublicData && !conformsToPublicDirectory) {
                         OFUTI_DIAG(@"Type declaration for type \"%@\" does not conform to either \"%@\" or \"%@\"; it should conform to exactly one", identifier, (NSString *)kUTTypeData, (NSString *)kUTTypeDirectory);
@@ -117,8 +117,8 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
                     
                     // Enumerate the existing types declared for this tag and warn if they share the same conformance to the flat-file (public.data) or directory (public.directory) physical type trees.
                     for (NSString *existingIdentifier in mappedIdentifiers) {
-                        if ((conformsToPublicData && UTTypeConformsTo((CFStringRef)existingIdentifier, kUTTypeData))
-                            || (conformsToPublicDirectory && UTTypeConformsTo((CFStringRef)existingIdentifier, kUTTypeDirectory))) {
+                        if ((conformsToPublicData && UTTypeConformsTo((__bridge CFStringRef)existingIdentifier, kUTTypeData))
+                            || (conformsToPublicDirectory && UTTypeConformsTo((__bridge CFStringRef)existingIdentifier, kUTTypeDirectory))) {
                             OFUTI_DIAG(@"Conflict detected registering type \"%@\": type \"%@\" has already claimed tag \"%@\" for class \"%@\". Which one is used is undefined.", identifier, existingIdentifier, value, tagClass);
                             break;
                         }
@@ -212,7 +212,7 @@ NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tagValue, 
 {
     __block NSString *resolvedType = nil;
     
-    OFUTIEnumerateKnownTypesForTagPreferringNative((NSString *)tagClass, tagValue, (NSString *)conformingToUTIOrNull, ^(NSString *typeIdentifier, BOOL *stop){
+    OFUTIEnumerateKnownTypesForTagPreferringNative((__bridge NSString *)tagClass, tagValue, (__bridge NSString *)conformingToUTIOrNull, ^(NSString *typeIdentifier, BOOL *stop){
         resolvedType = typeIdentifier;
         *stop = YES;
     });
@@ -230,7 +230,7 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
     
     OB_FOR_ALL(dict, MainBundleExportedTypeDeclarationsByTag, MainBundleImportedTypeDeclarationsByTag) {
         EnumerateIdentifiersForTagInDictionary(dict, tagClass, tagValue, ^(NSString *typeIdentifier, BOOL *stop) {
-            if (!conformingToUTIOrNil || UTTypeConformsTo((CFStringRef)typeIdentifier, (CFStringRef)conformingToUTIOrNil)) {
+            if (!conformingToUTIOrNil || UTTypeConformsTo((__bridge CFStringRef)typeIdentifier, (__bridge CFStringRef)conformingToUTIOrNil)) {
                 enumerator(typeIdentifier, &stopEnumerating);
                 if (stopEnumerating)
                     *stop = YES;
@@ -242,22 +242,21 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
     }
     
     // No luck looking in our own Info.plist. Look through all the definitions Launch Services knows about, but prefer any declarations by CoreServices. We allow the caller to pass a conformingToUTI hint in order to limit the size of and time spent copying this array.
-    CFArrayRef allTypes = UTTypeCreateAllIdentifiersForTag((CFStringRef)tagClass, (CFStringRef)tagValue, (CFStringRef)conformingToUTIOrNil);
+    NSArray *allTypes = CFBridgingRelease(UTTypeCreateAllIdentifiersForTag((__bridge CFStringRef)tagClass, (__bridge CFStringRef)tagValue, (__bridge CFStringRef)conformingToUTIOrNil));
     if (!allTypes)
         return;
     
+    // These arrays might hold the last remaining retain on the type identifiers we passed to the enumerator block. Rather than retain/autoreleasing all the types we pass to the enumerator (which could be numerous), we'll just hold onto these arrays.
     NSMutableArray *systemTypes = [[NSMutableArray alloc] init];
     NSMutableArray *thirdPartyTypes = [[NSMutableArray alloc] init];
     
-    for (NSString *type in (NSArray *)allTypes) {
+    for (NSString *type in allTypes) {
         BOOL isSystemBundle = NO;
         
-        CFURLRef bundleURL = UTTypeCopyDeclaringBundleURL((CFStringRef)type);
+        NSURL *bundleURL = CFBridgingRelease(UTTypeCopyDeclaringBundleURL((__bridge CFStringRef)type));
         if (bundleURL) {
-            NSString *declaringBundleIdentifier = [[NSBundle bundleWithURL:(NSURL *)bundleURL] bundleIdentifier];
+            NSString *declaringBundleIdentifier = [[NSBundle bundleWithURL:bundleURL] bundleIdentifier];
             isSystemBundle = [declaringBundleIdentifier isEqualToString:SYSTEM_TYPE_BUNDLE_IDENTIFIER];
-            
-            CFRelease(bundleURL);
         }
                 
         if (isSystemBundle)
@@ -265,8 +264,6 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
         else
             [thirdPartyTypes addObject:type];
     }
-    
-    CFRelease(allTypes);
     
     OB_FOR_ALL(array, systemTypes, thirdPartyTypes) {
         [array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop){
@@ -279,9 +276,8 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
             break;
     }
     
-    // These arrays might hold the last remaining retain on the type identifiers we passed to the enumerator block. Rather than retain/autoreleasing all the types we pass to the enumerator (which could be numerous), we'll just autorelease these arrays.
-    [systemTypes autorelease];
-    [thirdPartyTypes autorelease];
+    [systemTypes release];
+    [thirdPartyTypes release];
 }
 
 // This hides a bunch of __bridge usages and shortens up code checking for multiple types. We could explicitly list the first type to start and use it as the va_start() argument, but then we'd need to check it specifically.

@@ -27,8 +27,7 @@ static NSString * const LastKnownDislpayNameKey = @"lastKnownDisplayName";
 #else
 static NSString * const NicknameKey = @"nickname";
 #endif
-static NSString * const IsCloudSyncEnabledKey = @"isCloudSyncEnabled";
-static NSString * const IsImportExportEnabledKey = @"isImportExportEnabled";
+static NSString * const UsageModeKey = @"usageMode";
 static NSString * const CredentialServiceIdentifierKey = @"credentialServiceIdentifier";
 static NSString * const HasBeenPreparedForRemovalKey = @"hasBeenPreparedForRemoval";
 
@@ -58,7 +57,7 @@ static BOOL IsRunningUnitTests(void)
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSString *pathExtension = [[[OFController controllingBundle] bundlePath] pathExtension];
-        runningUnitTests = [pathExtension isEqual:@"octest"] || [pathExtension isEqual:@"otest"];
+        runningUnitTests = [pathExtension isEqual:@"xctest"];
     });
     return runningUnitTests;
 }
@@ -399,7 +398,7 @@ static NSURL *URLWithBookmarkData(NSData *data, NSError **outError)
     return nil;
 }
 
-- initWithType:(OFXServerAccountType *)type remoteBaseURL:(NSURL *)remoteBaseURL localDocumentsURL:(NSURL *)localDocumentsURL error:(NSError **)outError;
+- initWithType:(OFXServerAccountType *)type usageMode:(OFXServerAccountUsageMode)usageMode remoteBaseURL:(NSURL *)remoteBaseURL localDocumentsURL:(NSURL *)localDocumentsURL error:(NSError **)outError;
 {
     OBPRECONDITION(type);
     OBPRECONDITION(remoteBaseURL);
@@ -443,10 +442,9 @@ static NSURL *URLWithBookmarkData(NSData *data, NSError **outError)
     _nickname = nil;
 #endif
     
-    _isCloudSyncEnabled = YES;
-    _isImportExportEnabled = YES;
+    _usageMode = usageMode;
     
-    OBPOSTCONDITION([[self.localDocumentsURL absoluteString] hasSuffix:@"/"]);
+    OBASSERT_IF(_usageMode == OFXServerAccountUsageModeCloudSync, [[self.localDocumentsURL absoluteString] hasSuffix:@"/"]);
     return self;
 }
 
@@ -603,7 +601,7 @@ static NSURL *URLWithBookmarkData(NSData *data, NSError **outError)
 
 - (NSURL *)localDocumentsURL;
 {
-    assert(_isCloudSyncEnabled); // We shouldn't be calling this for non-syncing accounts
+    assert(_usageMode == OFXServerAccountUsageModeCloudSync); // We shouldn't be calling this for non-syncing accounts
 #if OFX_MAC_STYLE_ACCOUNT
     NSURL *localDocumentsURL;
     @synchronized(self) {
@@ -736,9 +734,16 @@ static NSURL *URLWithBookmarkData(NSData *data, NSError **outError)
     OBPRECONDITION([_type.identifier isEqualToString:propertyList[@"type"]]);
     
     // CANNOT USE SETTERS HERE. The setters flag the account as needing to be written.
-        
-    _isCloudSyncEnabled = [propertyList boolForKey:@"cloudSyncEnabled" defaultValue:YES];
-    _isImportExportEnabled = [propertyList boolForKey:@"importExportEnabled" defaultValue:YES];
+    
+    // <bug:///107243> (Feature: Completely separate OmniPresence accounts from WebDAV import/export accounts)
+    // Convert legacy dual-mode accounts into cloud sync only accounts.
+    BOOL isCloudAccount = [propertyList boolForKey:@"cloudSyncEnabled" defaultValue:YES];
+    if (isCloudAccount)
+        _usageMode = OFXServerAccountUsageModeCloudSync;
+    else {
+        OBASSERT([propertyList boolForKey:@"importExportEnabled" defaultValue:YES], "Deserialized an account that is neither for cloud sync nor for import/export");
+        _usageMode = OFXServerAccountUsageModeImportExport;
+    }
 
 #if OFX_MAC_STYLE_ACCOUNT
     OBASSERT(_lastKnownDisplayName == nil, @"should not have resolved the local documents URL yet");
@@ -762,7 +767,7 @@ static NSURL *URLWithBookmarkData(NSData *data, NSError **outError)
 #else
             NicknameKey, // On iOS, the nickname can be changed by the user
 #endif
-            IsCloudSyncEnabledKey, IsImportExportEnabledKey, CredentialServiceIdentifierKey, HasBeenPreparedForRemovalKey, nil];
+            UsageModeKey, CredentialServiceIdentifierKey, HasBeenPreparedForRemovalKey, nil];
 }
 
 - (NSDictionary *)propertyList;
@@ -791,11 +796,13 @@ static NSURL *URLWithBookmarkData(NSData *data, NSError **outError)
         [plist setObject:_nickname forKey:@"displayName"];
 #endif
 
-    if (!_isCloudSyncEnabled)
-        plist[@"cloudSyncEnabled"] = @NO;
-    
-    if (!_isImportExportEnabled)
-        plist[@"importExportEnabled"] = @NO;
+    switch (_usageMode) {
+        case OFXServerAccountUsageModeCloudSync:
+            plist[@"importExportEnabled"] = @NO;
+            break;
+        case OFXServerAccountUsageModeImportExport:
+            plist[@"cloudSyncEnabled"] = @NO;
+    }
     
     if (_credentialServiceIdentifier)
         [plist setObject:_credentialServiceIdentifier forKey:@"serviceIdentifier"];

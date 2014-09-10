@@ -1,4 +1,4 @@
-// Copyright 1997-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,9 +17,14 @@ RCS_ID("$Id$")
 
 - (FILE *)openReadOnlyStandardIOFile:(NSError **)outError;
 {
-    FILE *result = OFDataCreateReadOnlyStandardIOFile((CFDataRef)self, (CFErrorRef *)outError);
-    if (!result && outError)
-        [(id)*outError autorelease];
+    CFErrorRef error = NULL;
+    FILE *result = OFDataCreateReadOnlyStandardIOFile((__bridge CFDataRef)self, &error);
+    if (!result) {
+        if (outError)
+            *outError = CFBridgingRelease(error);
+        else if (error)
+            CFRelease(error);
+    }
     return result;
 }
 
@@ -29,9 +34,14 @@ RCS_ID("$Id$")
 
 - (FILE *)openReadWriteStandardIOFile:(NSError **)outError;
 {
-    FILE *result = OFDataCreateReadWriteStandardIOFile((CFMutableDataRef)self, (CFErrorRef *)outError);
-    if (!result && outError)
-        [(id)*outError autorelease];
+    CFErrorRef error = NULL;
+    FILE *result = OFDataCreateReadWriteStandardIOFile((__bridge CFMutableDataRef)self, &error);
+    if (!result) {
+        if (outError)
+            *outError = CFBridgingRelease(error);
+        else if (error)
+            CFRelease(error);
+    }
     return result;
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,6 +60,8 @@ static NSInteger OFXRegistrationTableDebug = INT_MAX; // Make sure to log if we 
 
 - (id)objectForKeyedSubscript:(NSString *)key;
 {
+    OBPRECONDITION(key);
+
     __block id value;
     dispatch_barrier_sync(_queue, ^{
         value = _internalTable[key];
@@ -67,22 +69,53 @@ static NSInteger OFXRegistrationTableDebug = INT_MAX; // Make sure to log if we 
     return value;
 }
 
+static void _unlockedRemove(OFXRegistrationTable *self, NSString *key)
+{
+    DEBUG_TABLE(1, @"remove %@", key);
+    [self->_internalTable removeObjectForKey:key];
+}
+static void _unlockedRegister(OFXRegistrationTable *self, NSString *key, id object)
+{
+    DEBUG_TABLE(1, @"register %@ -> %@", key, [object shortDescription]);
+    self->_internalTable[key] = object;
+}
+
 - (void)setObject:(id)obj forKeyedSubscript:(NSString *)key;
 {
+    OBPRECONDITION(key);
+    OBPRECONDITION(obj);
+    
     key = [key copy]; // Unlikely that the key is mutable, but just in case...
     dispatch_async(_queue, ^{
-        DEBUG_TABLE(1, @"register %@ -> %@", key, [obj shortDescription]);
-        _internalTable[key] = obj;
+        _unlockedRegister(self, key, obj);
         [self _queueUpdate];
     });
 }
 
 - (void)removeObjectForKey:(NSString *)key;
 {
+    OBPRECONDITION(key);
+
     key = [key copy]; // Unlikely that the key is mutable, but just in case...
     dispatch_async(_queue, ^{
-        DEBUG_TABLE(1, @"remove %@", key);
-        [_internalTable removeObjectForKey:key];
+        _unlockedRemove(self, key);
+        [self _queueUpdate];
+    });
+}
+
+- (void)removeObjectsWithKeys:(NSArray *)removeKeys setObjectsWithDictionary:(NSDictionary *)setObjects;
+{
+    // Make sure the sets are immutable and that the block will live
+    removeKeys = [removeKeys copy];
+    setObjects = [setObjects copy];
+    
+    dispatch_async(_queue, ^{
+        for (NSString *key in removeKeys) {
+            _unlockedRemove(self, key);
+        }
+        [setObjects enumerateKeysAndObjectsUsingBlock:^(NSString *key, id object, BOOL *stop) {
+            _unlockedRegister(self, key, object);
+        }];
         [self _queueUpdate];
     });
 }

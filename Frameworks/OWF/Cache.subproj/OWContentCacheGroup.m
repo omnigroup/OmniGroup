@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,15 +64,15 @@ static OFSimpleLockType observersLock;
         OWMemoryCache *memoryCache;
         OWFilteredAddressCache *filterCache;
 
-        defaultCacheGroup = [[OWContentCacheGroup allocWithZone:[OWContent contentZone]] init];
+        defaultCacheGroup = [[OWContentCacheGroup alloc] init];
 
 #warning this sucks. kill me.
 
-        procCache = [[OWProcessorCache allocWithZone:[OWContent contentZone]] init];
+        procCache = [[OWProcessorCache alloc] init];
         [defaultCacheGroup addCache:procCache atStart:YES];
         [procCache release];
 
-        memoryCache = [[OWMemoryCache allocWithZone:[OWContent contentZone]] init];
+        memoryCache = [[OWMemoryCache alloc] init];
         [memoryCache setFlush:YES];
         [defaultCacheGroup addCache:memoryCache atStart:NO];
         [defaultCacheGroup setResultCache:memoryCache];
@@ -132,7 +132,7 @@ static OFSimpleLockType observersLock;
     if (!(self = [super init]))
         return nil;
 
-    caches = [[NSMutableArray allocWithZone:[self zone]] init];
+    caches = [[NSMutableArray alloc] init];
 
     return self;
 }

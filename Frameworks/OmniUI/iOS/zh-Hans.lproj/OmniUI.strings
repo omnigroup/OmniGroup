@@ -111,6 +111,9 @@
 /* placeholder text */
 "password" = "密码";
 
+/* Photos view controller title. */
+"Photos" = "照片";
+
 /* alert title */
 "Preference changed" = "预置已更改";
 

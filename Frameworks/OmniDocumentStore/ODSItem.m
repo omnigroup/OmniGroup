@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,7 +46,7 @@ static NSCalendar *CurrentCalendar = nil;
 
 static NSDate *_day(NSDate *date)
 {
-    NSDateComponents *components = [CurrentCalendar components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit fromDate:date];
+    NSDateComponents *components = [CurrentCalendar components:NSCalendarUnitYear|NSCalendarUnitMonth |NSCalendarUnitDay fromDate:date];
     return [CurrentCalendar dateFromComponents:components];
 }
 

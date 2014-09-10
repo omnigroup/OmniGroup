@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -650,8 +650,8 @@ static BOOL checkCurveCurve_(BOOL looseAspects, const NSPoint *left, const NSPoi
         return NO;
     }
 }
-#define checkCurveCurve(...) STAssertTrue(checkCurveCurve_(NO, __VA_ARGS__), nil)
-#define checkCurveCurveLoose(...) STAssertTrue(checkCurveCurve_(YES, __VA_ARGS__), nil)
+#define checkCurveCurve(...) XCTAssertTrue(checkCurveCurve_(NO, __VA_ARGS__))
+#define checkCurveCurveLoose(...) XCTAssertTrue(checkCurveCurve_(YES, __VA_ARGS__))
 
 #if defined(DEBUG_wiml) // Disabled until Wim gets a chance to at this it
 static BOOL checkOneCurveSelf(const NSPoint *p, NSPoint i, double t1, double t2,  enum OAIntersectionAspect expectedAspect)
@@ -737,7 +737,7 @@ static BOOL checkCurveSelf_backwards(const NSPoint *p, NSPoint i, double t1, dou
 }
 
 /* Check a given curve forwards and backwards */
-#define checkCurveSelf(...) STAssertTrue(checkOneCurveSelf(__VA_ARGS__), nil); STAssertTrue(checkCurveSelf_backwards(__VA_ARGS__), nil); 
+#define checkCurveSelf(...) XCTAssertTrue(checkOneCurveSelf(__VA_ARGS__), nil); XCTAssertTrue(checkCurveSelf_backwards(__VA_ARGS__), nil); 
 #endif
 
 - (void)testCurveCurveIntersections1
@@ -868,7 +868,7 @@ static void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line,
     BOOL modified;
 
     /*
-     tightBoundsOfCurveTo() is returning YES in some cases where it should(?) return NO: it computes the answer in double-precision, and sets the modified flag because it extends outside the given rectangle, but when the result is cast to CGFloat to be returned it's equal to the original again.
+     tightBoundsOfCurveTo() is returning YES in some cases where it XCTAssertTrue(?) return NO: it computes the answer in double-precision, and sets the modified flag because it extends outside the given rectangle, but when the result is cast to CGFloat to be returned it's equal to the original again.
      
      This shouldn't be a problem in the specific uses we have for tightBoundsOfCurveTo(), where the return value just enables some optimizations, so I've disabled that test here: we no longer fail if tightBounds... spuriously returns YES when we expect NO.
      
@@ -886,18 +886,16 @@ static void doCubicBoundsTest(OAGeometryTests *self, CFStringRef file, int line,
 #endif
     
 #define checkDidModify(after) if (!modified) \
-    [self failWithException:[NSException failureInCondition: @"modified" \
-                                                     isTrue: modified \
-                                                     inFile: (NSString *)file \
-                                                     atLine: line \
-                                            withDescription: [NSString stringWithFormat:@"Specific check failed at line %d: rect is %@", __LINE__, NSStringFromRect(after)]]]
+    [self recordFailureWithDescription:[NSString stringWithFormat:@"Specific check failed at line %d: rect is %@", __LINE__, NSStringFromRect(after)] \
+                                                     inFile:(NSString *)file \
+                                                     atLine:line \
+                                                   expected:NO]
     
 #define checkCloseRect(got, want, exact) if (!rectsAreApproximatelyEqual(got, want, exact? 0 : BOUNDS_EPSILON, __LINE__)) \
-    [self failWithException:[NSException failureInCondition: [NSString stringWithFormat:@"%s == %s (%s)", #got, #want, exact?"exact":"within epsilon"] \
-                                                     isTrue: 0 \
-                                                     inFile: (NSString *)file \
-                                                     atLine: line \
-                                            withDescription: [NSString stringWithFormat:@"%s=%@ %s=%@ (specific check at line %d)", #got, NSStringFromRect(got), #want, NSStringFromRect(want), __LINE__]]]
+    [self recordFailureWithDescription: [NSString stringWithFormat:@"%s=%@ %s=%@ (specific check at line %d)", #got, NSStringFromRect(got), #want, NSStringFromRect(want), __LINE__] \
+                                                     inFile:(NSString *)file \
+                                                     atLine:line \
+                                                   expected:NO]
     
     buf = NSZeroRect;
     modified = tightBoundsOfCurveTo(&buf, s, c1, c2, e, halfwidth);

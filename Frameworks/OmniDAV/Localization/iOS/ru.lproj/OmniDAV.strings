@@ -33,3 +33,4 @@
 
 /* Error description */
 "WebDAV server failed conformance test." = "Сервер WebDAV не прошел проверку на соответствие требованиям.";
+

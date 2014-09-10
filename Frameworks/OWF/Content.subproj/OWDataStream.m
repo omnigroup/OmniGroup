@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -111,18 +111,17 @@ static inline BOOL copyBuffersOut(OWDataStreamBufferDescriptor *dsBuffer, NSUInt
 static void allocateAnotherBuffer(OWDataStream *self, size_t bytesToAllocate)
 {
     OWDataStreamBufferDescriptor *newBuffer;
-    NSZone *myZone = [self zone];
 
     // Create a new buffer descriptor & allocate its data. If the buffer to be allocated is less than BUFFER_OOL_THRESHOLD, we allocate it inline using malloc; if it is larger, we use a large out-of-line buffer to avoid page thrashing while traversing the descriptor list.
 
     if (bytesToAllocate < BUFFER_OOL_THRESHOLD) {
-        newBuffer = NSZoneMalloc(myZone, sizeof(*newBuffer) + bytesToAllocate);
+        newBuffer = malloc(sizeof(*newBuffer) + bytesToAllocate);
         newBuffer->buffer = (void *)( newBuffer + 1 );
     } else {
         bytesToAllocate = ROUNDED_ALLOCATION_SIZE(bytesToAllocate);
         if (bytesToAllocate > BUFFER_MAXIMUM_SEGMENT_SIZE)
             bytesToAllocate = BUFFER_MAXIMUM_SEGMENT_SIZE;
-        newBuffer = NSZoneMalloc(myZone, sizeof(*newBuffer));
+        newBuffer = malloc(sizeof(*newBuffer));
         OBASSERT(bytesToAllocate >= BUFFER_OOL_THRESHOLD);
         newBuffer->buffer = NSAllocateMemoryPages(bytesToAllocate);
     }
@@ -144,13 +143,13 @@ static void allocateAnotherBuffer(OWDataStream *self, size_t bytesToAllocate)
     OBPOSTCONDITION(self->_last->bufferUsed < self->_last->bufferSize);
 }
 
-static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBuffer)
+static void deallocateBuffer(OWDataStreamBufferDescriptor *oldBuffer)
 {
     if (oldBuffer->bufferSize < BUFFER_OOL_THRESHOLD)
-        NSZoneFree(myZone, oldBuffer);
+        free(oldBuffer);
     else {
         NSDeallocateMemoryPages(oldBuffer->buffer, oldBuffer->bufferSize);
-        NSZoneFree(myZone, oldBuffer);
+        free(oldBuffer);
     }
 }
 
@@ -198,15 +197,13 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 - (void)dealloc;
 {
     OWDataStreamBufferDescriptor *cursor, *nextCursor;
-    NSZone *myZone;
     
     OBASSERT(saveFileHandle == nil);
     
-    myZone = [self zone];
     for (cursor = _first; cursor != NULL; cursor = nextCursor) {
         nextCursor = cursor->next;
         OBASSERT(nextCursor != nil || cursor == _last);
-        deallocateBuffer(myZone, cursor);
+        deallocateBuffer(cursor);
     }
     _first = _last = NULL;
 
@@ -923,7 +920,7 @@ static void deallocateBuffer(NSZone *myZone, OWDataStreamBufferDescriptor *oldBu
 
             this = _first;
             nextFirst = this->next;
-            deallocateBuffer([self zone], this);
+            deallocateBuffer(this);
             _first = nextFirst;
         }
     } else {

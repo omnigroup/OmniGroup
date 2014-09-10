@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,12 +38,12 @@ RCS_ID("$Id$")
     [self waitForFileMetadata:agentA where:^BOOL(OFXFileMetadata *metadata) {
         return metadata.uploaded && [[metadata.fileURL lastPathComponent] isEqual:@"test-rename.package"];
     }];
-    STAssertTrue([[agentA metadataItemsForAccount:accountA] count] == 1, @"Shouldn't get a new item, but rename the existing one");
+    XCTAssertTrue([[agentA metadataItemsForAccount:accountA] count] == 1, @"Shouldn't get a new item, but rename the existing one");
     
     OFXFileMetadata *metadataB = [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
         return metadata.uploaded && [[metadata.fileURL lastPathComponent] isEqual:@"test-rename.package"];
     }];
-    STAssertTrue([[agentB metadataItemsForAccount:accountB] count] == 1, @"Shouldn't get a new item, but rename the existing one");
+    XCTAssertTrue([[agentB metadataItemsForAccount:accountB] count] == 1, @"Shouldn't get a new item, but rename the existing one");
     
     // Make sure the move happened on the remote side too
     OFDiffFiles(self, [[self fixtureNamed:@"test.package"] path], [metadataB.fileURL path], nil);
@@ -67,7 +67,7 @@ RCS_ID("$Id$")
         return metadata.uploaded && [[metadata.fileURL absoluteString] hasSuffix:@"/folder-rename/test2.package/"];
     }];
     
-    STAssertTrue([[agent metadataItemsForAccount:account] count] == 2, @"Both items should be renamed instead of duplicated");
+    XCTAssertTrue([[agent metadataItemsForAccount:account] count] == 2, @"Both items should be renamed instead of duplicated");
 }
 
 - (void)testSwitchPackagePathExtension;
@@ -86,7 +86,7 @@ RCS_ID("$Id$")
     [self waitForFileMetadata:self.agentB where:^(OFXFileMetadata *metadata){
         return [[metadata.fileURL lastPathComponent] isEqualToString:@"test.snackage"];
     }];
-    STAssertEquals([[self metadataItemsForAgent:self.agentB] count], 1ULL, @"should replace the old file");
+    XCTAssertEqual([[self metadataItemsForAgent:self.agentB] count], 1ULL, @"should replace the old file");
 }
 
 - (void)testSwitchToPackagePathExtension;
@@ -142,7 +142,7 @@ RCS_ID("$Id$")
 {
     self.agentB.automaticallyDownloadFileContents = NO;
     
-    OFXFileMetadata *originalMetadata = [self copyFixtureNamed:@"test.package" waitForDownload:NO];
+    OFXFileMetadata *originalMetadata = [self copyFixtureNamed:@"test.package" toPath:@"test.package" waitingForAgentsToDownload:nil];
     
     OFXServerAccount *accountA = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
     OFXServerAccount *accountB = [self.agentB.accountRegistry.validCloudSyncAccounts lastObject];
@@ -162,9 +162,9 @@ RCS_ID("$Id$")
         }
         return NO;
     }];
-    STAssertTrue(OFNOTEQUAL(originalMetadata.editIdentifier, renamedFileMetadataA.editIdentifier), @"Should have changed");
-    STAssertTrue(renamedFileMetadataA.downloaded, @"Should still be downloaded");
-    STAssertFalse(renamedFileMetadataA.downloading, @"Shouldn't need downloading after rename");
+    XCTAssertTrue(OFNOTEQUAL(originalMetadata.editIdentifier, renamedFileMetadataA.editIdentifier), @"Should have changed");
+    XCTAssertTrue(renamedFileMetadataA.downloaded, @"Should still be downloaded");
+    XCTAssertFalse(renamedFileMetadataA.downloading, @"Shouldn't need downloading after rename");
 
     __block OFXFileMetadata *renamedFileMetadataB;
     [self waitForFileMetadataItems:self.agentB where:^BOOL(NSSet *metadataItems) {
@@ -177,12 +177,12 @@ RCS_ID("$Id$")
         }
         return NO;
     }];
-    STAssertFalse(renamedFileMetadataB.downloaded, @"Rename shouldn't have provoked download");
-    STAssertFalse(renamedFileMetadataB.downloading, @"Rename shouldn't have provoked download");
+    XCTAssertFalse(renamedFileMetadataB.downloaded, @"Rename shouldn't have provoked download");
+    XCTAssertFalse(renamedFileMetadataB.downloading, @"Rename shouldn't have provoked download");
 
     // Then go ahead and download
     [self.agentB requestDownloadOfItemAtURL:[accountB.localDocumentsURL URLByAppendingPathComponent:@"test-rename.package" isDirectory:YES] completionHandler:^(NSError *errorOrNil) {
-        STAssertNil(errorOrNil, @"Download should start");
+        XCTAssertNil(errorOrNil, @"Download should start");
     }];
     
     [self waitForFileMetadata:self.agentA where:^BOOL(OFXFileMetadata *metadata) {
@@ -200,7 +200,7 @@ RCS_ID("$Id$")
 - (void)testIncomingRenameOfUndownloadedFile;
 {
     self.agentB.automaticallyDownloadFileContents = NO;
-    [self copyFixtureNamed:@"test.package" waitForDownload:NO];
+    [self copyFixtureNamed:@"test.package" toPath:@"test.package" waitingForAgentsToDownload:nil];
     
     OFXServerAccount *accountA = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
     [self movePath:@"test.package" toPath:@"test-renamed.package" ofAccount:accountA];
@@ -226,7 +226,7 @@ RCS_ID("$Id$")
         return [[metadata.fileURL lastPathComponent] isEqual:@"Test.package"];
     }];
 
-    STAssertFalse(OFXTraceHasSignal(@"OFXFileSnapshotDeleteTransfer.remote_delete_attempted"), @"No delete should have happend (which will if we interpet the move as a creation/deletion pair instead of a move");
+    XCTAssertFalse(OFXTraceHasSignal(@"OFXFileSnapshotDeleteTransfer.remote_delete_attempted"), @"No delete should have happend (which will if we interpet the move as a creation/deletion pair instead of a move");
 }
 
 static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
@@ -250,7 +250,7 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
         return hasFileWithSuffix(@"Dir/test.package/");
     }];
     
-    STAssertFalse(OFXTraceHasSignal(@"OFXFileSnapshotDeleteTransfer.remote_delete_attempted"), @"No delete should have happend (which will if we interpet the move as a creation/deletion pair instead of a move");
+    XCTAssertFalse(OFXTraceHasSignal(@"OFXFileSnapshotDeleteTransfer.remote_delete_attempted"), @"No delete should have happend (which will if we interpet the move as a creation/deletion pair instead of a move");
 }
 
 - (void)testUncoordinatedRenameOfDirectoryOfDocuments;
@@ -268,7 +268,7 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
     // Can't use NSFileManager since it returns EEXIST in this case. rename(2) works.
     int rc = rename([[NSFileManager defaultManager] fileSystemRepresentationWithPath:[dir1URL path]],
                     [[NSFileManager defaultManager] fileSystemRepresentationWithPath:[dir2URL path]]);
-    STAssertEquals(rc, 0, @"rename failed");
+    XCTAssertEqual(rc, 0, @"rename failed");
     
     // First off, our local agent should notice the move
     [self waitForFileMetadataItems:self.agentA where:^BOOL(NSSet *metadataItems) {
@@ -286,9 +286,86 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
         return hasFileWithSuffix(@"dir2/A.package/") && hasFileWithSuffix(@"dir2/B.package/") && hasFileWithSuffix(@"dir2/C.package/");
     }];
     
-    STAssertFalse(OFXTraceHasSignal(@"OFXFileSnapshotDeleteTransfer.remote_delete_attempted"), @"No delete should have happend (which will if we interpet the move as a creation/deletion pair instead of a move");
+    XCTAssertFalse(OFXTraceHasSignal(@"OFXFileSnapshotDeleteTransfer.remote_delete_attempted"), @"No delete should have happend (which will if we interpet the move as a creation/deletion pair instead of a move");
 }
 
+// Make sure we do inode-based matching.
+- (void)testRenameWhileNotRunning;
+{
+    [self uploadFixture:@"test.package"];
+    [self stopAgents];
+    
+    OFXAgent *agentA = self.agentA;
+    [self movePath:@"test.package" toPath:@"moved.package" ofAccount:[self singleAccountInAgent:agentA]];
+    
+    // Start up again and wait for the move to propagate to B.
+    [agentA applicationLaunched];
+    
+    [self waitForFileMetadataItems:self.agentB where:^BOOL(NSSet *metadataItems) {
+        if ([metadataItems count] > 2) {
+            XCTFail(@"Too many files");
+            return YES;
+        }
+        OFXFileMetadata *metadata = [metadataItems anyObject];
+        if (!metadata)
+            return NO;
+        return [[metadata.fileURL lastPathComponent] isEqual:@"moved.package"] && metadata.downloaded;
+    }];
+    
+    // No deletions should have happened
+    XCTAssertFalse(OFXTraceHasSignal(@"OFXFileSnapshotDeleteTransfer.remote_delete_attempted"), @"No deletions should have happened");
+}
+
+// A slightly harder case of detecting moves
+- (void)testRenameOfFileAndCreationOfNewFileAsSamePathWhileNotRunning;
+{
+    OFXAgent *agentB = self.agentB; // Get this up front since our agent creation helper resets the signal traces
+    
+    [self uploadFixture:@"test.package"];
+    
+    [self stopAgents];
+    
+    // Move the original and put a copy back in the original spot
+    OFXAgent *agentA = self.agentA;
+    OFXServerAccount *accountA = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
+    [self movePath:@"test.package" toPath:@"moved.package" ofAccount:[self singleAccountInAgent:agentA]];
+    [self copyFixtureNamed:@"test2.package" toPath:@"test.package" ofAccount:accountA];
+    
+    // Turn stuff back on and wait for changes to percolate.
+    [agentA applicationLaunched];
+    [agentB applicationLaunched];
+    
+    NSSet *resultMetadataItems = [self waitForFileMetadataItems:agentB where:^BOOL(NSSet *metadataItems) {
+        if ([metadataItems count] > 2) {
+            XCTFail(@"Too many files");
+            return YES;
+        }
+        if ([metadataItems count] != 2)
+            return NO;
+        return [metadataItems all:^BOOL(OFXFileMetadata *metadata) {
+            // We can temporarily have two files that want 'test.package', but this conflict should resolve when the move is observed
+            return metadata.downloaded && !OFXIsConflict(metadata);
+        }];
+    }];
+
+    // We should have the right ending state.
+    OFXFileMetadata *metadata1 = [resultMetadataItems any:^BOOL(OFXFileMetadata *metadata) {
+        return [[metadata.fileURL lastPathComponent] isEqualToString:@"moved.package"];
+    }];
+    OFXFileMetadata *metadata2 = [resultMetadataItems any:^BOOL(OFXFileMetadata *metadata) {
+        return [[metadata.fileURL lastPathComponent] isEqualToString:@"test.package"];
+    }];
+    
+    XCTAssertTrue(ITEM_MATCHES_FIXTURE(metadata1, @"test.package"));
+    XCTAssertTrue(ITEM_MATCHES_FIXTURE(metadata2, @"test2.package"));
+
+    // We don't currently use 'rename uploads' for files that have been downloaded (missing optimization). So, we have the original upload, the upload of the rename, and the upload of the new file.
+    XCTAssertEqual(3UL, OFXTraceSignalCount(@"OFXFileSnapshotUploadTransfer.finished"), @"We created two files and had one re-upload due to a rename");
+    XCTAssertEqual(0UL, OFXTraceSignalCount(@"OFXFileSnapshotUploadRenameTransfer.remote_metadata_rename"), @"A non-uploading rename should have been used");
+    XCTAssertEqual(0UL, OFXTraceSignalCount(@"OFXFileSnapshotDeleteTransfer.remote_delete_attempted"), @"No deletions should have been attempted");
+}
+
+// TJW:  Why is this commented out?
 #if 0
 - (void)testRenameOfFileAndCreationOfNewFileAsSamePath;
 {
@@ -333,8 +410,8 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
         return [[metadata.fileURL lastPathComponent] isEqualToString:@"test.package"];
     }];
     
-    STAssertTrue(ITEM_MATCHES_FIXTURE(metadata1, @"test.package"), nil);
-    STAssertTrue(ITEM_MATCHES_FIXTURE(metadata2, @"test2.package"), nil);
+    XCTAssertTrue(ITEM_MATCHES_FIXTURE(metadata1, @"test.package"));
+    XCTAssertTrue(ITEM_MATCHES_FIXTURE(metadata2, @"test2.package"));
 }
 #endif
 
@@ -388,7 +465,7 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
             return NO;
         
         NSString *stringB = [[NSString alloc] initWithContentsOfURL:fileURL encoding:NSUTF8StringEncoding error:NULL];
-        STAssertEqualObjects(randomText, stringB, nil);
+        XCTAssertEqualObjects(randomText, stringB);
         return YES;
     }];
 }
@@ -414,18 +491,14 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
     // Rename the file locally.
     [self movePath:@"test.txt" toPath:@"test-renamed.txt" ofAccount:accountA];
     
-    // Wait for agent B to see everything in the end state
-    [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata) {
-        [self downloadWithMetadata:metadata agent:self.agentB];
-        return YES;
-    }];
+    // Wait for agent B to see everything in the end state. B will have seen and downloaded the small version of the file first, which will make it download the large one too, so we shouldn't have to tell it to download.
     [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata) {
         NSURL *fileURL = metadata.fileURL;
         if (!metadata.downloaded || ![[fileURL lastPathComponent] isEqual:@"test-renamed.txt"])
             return NO;
         
         NSString *stringB = [[NSString alloc] initWithContentsOfURL:fileURL encoding:NSUTF8StringEncoding error:NULL];
-        STAssertEqualObjects(randomText, stringB, nil);
+        XCTAssertEqualObjects(randomText, stringB);
         return YES;
     }];
 }
@@ -465,7 +538,7 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
             return NO;
         
         NSString *stringB = [[NSString alloc] initWithContentsOfURL:fileURL encoding:NSUTF8StringEncoding error:NULL];
-        STAssertEqualObjects(randomText, stringB, nil);
+        XCTAssertEqualObjects(randomText, stringB);
         return YES;
     }];
 }
@@ -491,7 +564,7 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
     // Should settle to the last name, with the same file identifier
     [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata) {
         // We would like to end up with the same file identifier, but NSFilePresenter notifications are async, so this is hard. The file might have been moved again before we process the first move, and so it will look like it is missing if we happen to do a full scan (which we do since we get generic 'changed' notifications from NSFilePresenter too. So, we should end up with the same contents and file names, but quick moves like this might end up resulting in a deletion and re-add of a file.
-        //STAssertEqualObjects(originalMetadata.fileIdentifier, metadata.fileIdentifier, nil);
+        //XCTAssertEqualObjects(originalMetadata.fileIdentifier, metadata.fileIdentifier);
         return [[metadata.fileURL lastPathComponent] isEqual:[destinationURL lastPathComponent]];
     }];
 }
@@ -589,11 +662,11 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
         const char *originalName = [[originalMetadata.fileURL path] UTF8String];
         
         if (chdir([[[originalMetadata.fileURL URLByDeletingLastPathComponent] path] UTF8String]) < 0) {
-            STFail(@"chdir should work");
+            XCTFail(@"chdir should work");
         }
         NSLog(@"***** Renaming in %@ *****", originalMetadata.fileURL.path);
         if (rename(originalName, destinationName) < 0) {
-            STFail(@"Rename should work");
+            XCTFail(@"Rename should work");
         }
     }
     
@@ -605,12 +678,12 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
     OFXFileMetadata *updatedMetadata = [self waitForFileMetadata:agentA where:^BOOL(OFXFileMetadata *metadata) {
         return metadata.uploaded && [metadata.fileIdentifier isEqual:originalMetadata.fileIdentifier] && ![metadata.editIdentifier isEqual:originalMetadata.editIdentifier];
     }];
-    STAssertTrue([[agentA metadataItemsForAccount:accountA] count] == 1, @"Shouldn't get a new item, but rename the existing one");
+    XCTAssertTrue([[agentA metadataItemsForAccount:accountA] count] == 1, @"Shouldn't get a new item, but rename the existing one");
     
     OFXFileMetadata *metadataB = [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
         return metadata.downloaded && [metadata.fileIdentifier isEqual:originalMetadata.fileIdentifier] && ![metadata.editIdentifier isEqual:updatedMetadata.editIdentifier];
     }];
-    STAssertTrue([[agentB metadataItemsForAccount:accountB] count] == 1, @"Shouldn't get a new item, but rename the existing one");
+    XCTAssertTrue([[agentB metadataItemsForAccount:accountB] count] == 1, @"Shouldn't get a new item, but rename the existing one");
     
     // Make sure the move happened on the remote side too
     OFDiffFiles(self, [[self fixtureNamed:@"test.package"] path], [metadataB.fileURL path], nil);

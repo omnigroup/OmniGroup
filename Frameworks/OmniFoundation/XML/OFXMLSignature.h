@@ -1,4 +1,4 @@
-// Copyright 2009-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -153,8 +153,6 @@ BOOL OFXMLSigGetKeyAttributes(NSMutableDictionary *keyusage, xmlNode *signatureM
 #if OF_ENABLE_CDSA
 CSSM_ALGORITHMS OFXMLCSSMKeyTypeForAlgorithm(xmlNode *signatureMethod);
 #endif
-
-int OFSecKeyGetGroupSize(SecKeyRef k); /* Size in bits, or -1 if unable to determine */
 
 /* More more */
 

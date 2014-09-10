@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,8 @@
 #import <OmniUI/OUIEditableLabeledValueCell.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUI/OUIAppearance.h>
+#import <OmniUI/OUIKeyboardNotifier.h>
+#import <OmniUI/OUIAppearanceColors.h>
 
 #import "OUIServerAccountValidationViewController.h"
 
@@ -47,15 +49,9 @@ typedef enum {
     ServerAccountAddressSection,
     ServerAccountCredentialsSection,
     ServerAccountDescriptionSection,
-    ServerAccountCloudSyncEnabledSection,
+    ServerAccountDeletionSection,
     ServerAccountSectionCount,
 } ServerAccountSections;
-typedef enum {
-    ServerAccountTypeOmniPresence,
-    ServerAccountTypeImportExport,
-    ServerAccountTypeBoth,
-    ServerAccountTypeOptionsCount
-} ServerAccountTypeOptions;
 typedef enum {
     ServerAccountCredentialsUsernameRow,
     ServerAccountCredentialsPasswordRow,
@@ -66,10 +62,6 @@ typedef enum {
 #define TEXT_AT(section,row) [self _textAtSection:section andRow:row]
 
 @interface OUIServerAccountSetupViewController () <OUIEditableLabeledValueCellDelegate, UITableViewDataSource, UITableViewDelegate, MFMailComposeViewControllerDelegate>
-
-@property (nonatomic,assign) BOOL isCloudSyncEnabled;
-@property (nonatomic,assign) BOOL isImportExportEnabled;
-
 @end
 
 
@@ -79,6 +71,8 @@ typedef enum {
     OFXServerAccountType *_accountType;
     UIButton *_accountInfoButton;
     NSMutableDictionary *_cachedTextValues;
+    OFXServerAccountUsageMode _usageModeToCreate;
+    BOOL _showDeletionSection;
 }
 
 - init;
@@ -87,33 +81,54 @@ typedef enum {
     return nil;
 }
 
-- (id)initWithAccount:(OFXServerAccount *)account ofType:(OFXServerAccountType *)accountType;
+static void _commonInit(OUIServerAccountSetupViewController *self)
 {
-    OBPRECONDITION(accountType);
-    OBPRECONDITION(!account || account.type == accountType);
+    self->_cachedTextValues = [[NSMutableDictionary alloc] init];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardHeightWillChange:) name:OUIKeyboardNotifierKeyboardWillChangeFrameNotification object:nil];
+}
+
+- (id)initForCreatingAccountOfType:(OFXServerAccountType *)accountType withUsageMode:(OFXServerAccountUsageMode)usageModeToCreate;
+{
+    if (!(self = [super initWithNibName:nil bundle:nil]))
+        return nil;
+    
+    _commonInit(self);
+    
+    _accountType = accountType;
+    _usageModeToCreate = usageModeToCreate;
+    _showDeletionSection = NO;
+    
+    return self;
+}
+
+- (id)initWithAccount:(OFXServerAccount *)account
+{
+    OBPRECONDITION(account);
 
     if (!(self = [self initWithNibName:nil bundle:nil]))
         return nil;
     
-    _cachedTextValues = [[NSMutableDictionary alloc] init];
+    _commonInit(self);
     
     _account = account;
-    _accountType = accountType;
-
+    _accountType = account.type;
+    _usageModeToCreate = account.usageMode; // in case we need to destroy and recreate the account due to any edits
+    _showDeletionSection = YES;
+    
     NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(_account.credentialServiceIdentifier, NULL);
 
     self.location = [_account.remoteBaseURL absoluteString];
     self.accountName = credential.user;
     self.password = credential.password;
     self.nickname = _account.nickname;
-    self.isCloudSyncEnabled = _account.isCloudSyncEnabled;
-    self.isImportExportEnabled = _account.isImportExportEnabled;
-        
-    if ((self.isCloudSyncEnabled == NO) && (self.isImportExportEnabled == NO)) {
-        self.isCloudSyncEnabled = YES; // Default to OmniPresence account for new accounts.
-    }
 
     return self;
+}
+
+- (void)dealloc;
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIKeyboardNotifierKeyboardWillChangeFrameNotification object:nil];
 }
 
 - (NSString *)_textAtSection:(NSUInteger)section andRow:(NSUInteger)row;
@@ -143,13 +158,8 @@ typedef enum {
 
     if (_account != nil) {
         // Some combinations of options require a new account
-        BOOL needNewAccount = (self.isCloudSyncEnabled != _account.isCloudSyncEnabled);
-
         NSURL *newRemoteBaseURL = OFURLWithTrailingSlash([_accountType baseURLForServerURL:serverURL username:username]);
-        if (OFNOTEQUAL(newRemoteBaseURL, _account.remoteBaseURL))
-            needNewAccount = YES;
-
-        if (needNewAccount) {
+        if (OFNOTEQUAL(newRemoteBaseURL, _account.remoteBaseURL)) {
             // We need to create a new account to enable cloud sync
             OFXServerAccount *oldAccount = _account;
             _account = nil;
@@ -157,14 +167,17 @@ typedef enum {
             self.finished = ^(id viewController, NSError *errorOrNil) {
                 if (errorOrNil != nil) {
                     // Pass along the error to our finished call
-                    oldFinished(viewController, errorOrNil);
+                    if (oldFinished)
+                        oldFinished(viewController, errorOrNil);
                 } else {
                     // Success! Remove the old account.
                     [[OUIDocumentAppController controller] warnAboutDiscardingUnsyncedEditsInAccount:oldAccount withCancelAction:^{
-                        oldFinished(viewController, nil);
+                        if (oldFinished)
+                            oldFinished(viewController, nil);
                     } discardAction:^{
                         [oldAccount prepareForRemoval];
-                        oldFinished(viewController, nil); // Go ahead and discard unsynced edits
+                        if (oldFinished)
+                            oldFinished(viewController, nil); // Go ahead and discard unsynced edits
                     }];
                 }
             };
@@ -184,14 +197,13 @@ typedef enum {
             return;
         }
         
-        _account = [[OFXServerAccount alloc] initWithType:_accountType remoteBaseURL:remoteBaseURL localDocumentsURL:documentsURL error:&error]; // New account instead of editing one.
+        _account = [[OFXServerAccount alloc] initWithType:_accountType usageMode:_usageModeToCreate remoteBaseURL:remoteBaseURL localDocumentsURL:documentsURL error:&error]; // New account instead of editing one.
         if (!_account) {
             [self finishWithError:error];
             OUI_PRESENT_ALERT(error);
             return;
         }
         
-        _account.isCloudSyncEnabled = self.isCloudSyncEnabled;
         needValidation = YES;
     } else {
         NSURLCredential *credential = nil;
@@ -209,18 +221,15 @@ typedef enum {
             needValidation = NO;
         }
     }
-
-    _account.isImportExportEnabled = self.isImportExportEnabled;
     
     // Let us rename existing accounts even if their credentials aren't currently valid
     _account.nickname = nickname;
     if (!needValidation) {
-        [self finishWithError:nil];
+        [self _validateSignInButton];
         return;
     }
 
     // Validate the new account settings
-    OBASSERT(_account.isCloudSyncEnabled == self.isCloudSyncEnabled); // If this changed, we created a new _account with it set properly
 
     OUIServerAccountValidationViewController *validationViewController = [[OUIServerAccountValidationViewController alloc] initWithAccount:_account username:username password:password];
 
@@ -232,8 +241,10 @@ typedef enum {
             if (![errorOrNil causedByUserCancelling]) {
                 [[OUIDocumentAppController controller] presentSyncError:errorOrNil inViewController:self.navigationController retryBlock:NULL];
             }
-        } else
+        } else {
             [self finishWithError:errorOrNil];
+            [self.navigationController popToRootViewControllerAnimated:YES];
+        }
     };
     [self.navigationController pushViewController:validationViewController animated:YES];
 }
@@ -246,9 +257,8 @@ typedef enum {
     _tableView.dataSource = self;
     _tableView.delegate = self;
     
-    _tableView.scrollEnabled = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone;
-//    _tableView.backgroundColor = [UIColor clearColor];
-//    _tableView.backgroundView = nil;
+    _tableView.scrollEnabled = YES;
+    _tableView.alwaysBounceVertical = NO;
 
     self.view = _tableView;
 }
@@ -263,7 +273,7 @@ typedef enum {
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(_cancel:)];
     }
     
-    NSString *syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Connect", @"OmniUIDocument", OMNI_BUNDLE, @"Account setup toolbar button title to save account settings");
+    NSString *syncButtonTitle = NSLocalizedStringFromTableInBundle(@"Save", @"OmniUIDocument", OMNI_BUNDLE, @"Account setup toolbar button title to save account settings");
     UIBarButtonItem *syncBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:syncButtonTitle style:UIBarButtonItemStyleDone target:self action:@selector(saveSettingsAndSync:)];
     self.navigationItem.rightBarButtonItem = syncBarButtonItem;
     
@@ -293,6 +303,8 @@ typedef enum {
 
 - (void)viewDidAppear:(BOOL)animated;
 {
+    [super viewDidAppear:animated];
+    
     if (_accountType.requiresServerURL && [NSString isEmptyString:self.location])
         [CELL_AT(ServerAccountAddressSection, 0).editableValueCell.valueField becomeFirstResponder];
     else if (_accountType.requiresUsername && [NSString isEmptyString:self.accountName])
@@ -310,7 +322,10 @@ typedef enum {
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView;
 {
-    return ServerAccountSectionCount;
+    if (_showDeletionSection)
+        return ServerAccountSectionCount;
+    else
+        return ServerAccountSectionCount - 1;
 }
 
 
@@ -325,8 +340,9 @@ typedef enum {
             OBASSERT(_accountType.requiresUsername);
             OBASSERT(_accountType.requiresPassword);
             return 2;
-        case ServerAccountCloudSyncEnabledSection:
-            return ServerAccountTypeOptionsCount;
+        case ServerAccountDeletionSection:
+            OBASSERT(_showDeletionSection);
+            return 1;
         default:
             OBASSERT_NOT_REACHED("Unknown section");
             return 0;
@@ -353,37 +369,20 @@ typedef enum {
 // Customize the appearance of table view cells.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    if (indexPath.section == ServerAccountCloudSyncEnabledSection) {
-        static NSString * const accountTypeIdentifier = @"OUIServerAccountTypeIdentifier";
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:accountTypeIdentifier];
-        if (!cell) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:accountTypeIdentifier];
-            cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-            cell.textLabel.font = [OUIEditableLabeledValueCell labelFont];
-        }
-
-        switch (indexPath.row) {
-            case ServerAccountTypeOmniPresence:
-                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"OmniPresence", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV OmniPresence edit field");
-                cell.accessoryType = (self.isCloudSyncEnabled == YES && self.isImportExportEnabled == NO) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone ;
-                break;
-            case ServerAccountTypeImportExport:
-                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Import/Export", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV Import/Export account type");
-                cell.accessoryType = (self.isCloudSyncEnabled == NO && self.isImportExportEnabled == YES) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone ;
-                break;
-            case ServerAccountTypeBoth:
-                cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Both", @"OmniUIDocument", OMNI_BUNDLE, @"for WebDAV Both (Import and Export) account type");
-                cell.accessoryType = (self.isCloudSyncEnabled == YES && self.isImportExportEnabled == YES) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone ;
-                break;
-            default:
-                OBASSERT_NOT_REACHED("Unknown account type.");
-                break;
-        }
+    static NSString * const CellIdentifier = @"Cell";
+    
+    if (indexPath.section == ServerAccountDeletionSection) {
+        OBASSERT(_showDeletionSection);
         
+        static NSString *const DeletionCellIdentifier = @"DeletionCell";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:DeletionCellIdentifier];
+        if (!cell)
+            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:DeletionCellIdentifier];
+        cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Delete Account", @"OmniUIDocument", OMNI_BUNDLE, @"Server Account Setup button label");
+        cell.textLabel.textColor = [OUIAppearanceDefaultColors appearance].omniDeleteColor;
+        cell.textLabel.textAlignment = NSTextAlignmentCenter;
         return cell;
     }
-
-    static NSString * const CellIdentifier = @"Cell";
     
     OUIEditableLabeledTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
@@ -555,13 +554,16 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
 
 - (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section;
 {
-    if (section == ServerAccountCloudSyncEnabledSection) {
-        CGFloat height = OUIServerAccountSendSettingsFooterHeight;
-        CGFloat messageHeight = 40.0;
+    if (section == ServerAccountSectionCount - 1) {
         
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) { // add space to scroll up with keyboard showing
+        if (!_account || _account.usageMode != OFXServerAccountUsageModeCloudSync)
+            return nil;
+        
+        CGFloat height = OUIServerAccountSendSettingsFooterHeight;
+        
+        OBFinishPortingLater("<bug:///105469> (Unassigned: Make Cloud Setup accommodate the keyboard correctly [adaptability])");
+        if (self.traitCollection.userInterfaceIdiom == UIUserInterfaceIdiomPhone) { // add space to scroll up with keyboard showing
             height += 220;
-            messageHeight = 60.0;
         }
         
         UIView *footerView = [[UIView alloc] initWithFrame:(CGRect){
@@ -571,18 +573,6 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
             .size.height = height
         }];
         
-        
-        
-        UILabel *messageLabel = [self _sectionLabelWithFrame:(CGRect) {
-            .origin.x = 0,
-            .origin.y = 10,
-            .size.width = (tableView.frame.size.width),
-            .size.height = messageHeight
-        }];
-        
-        messageLabel.text = NSLocalizedStringFromTableInBundle(@"OmniPresence automatically keeps your documents up to date on all of your iPads and Macs.", @"OmniUIDocument", OMNI_BUNDLE, @"omni sync server nickname help");
-        
-        [footerView addSubview:messageLabel];
         
         // Send Settings Button
         if ([MFMailComposeViewController canSendMail]) {
@@ -615,52 +605,50 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section
 {
-    if (section == ServerAccountCloudSyncEnabledSection) {
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) // add space to scroll up with keyboard showing
+    if (section == ServerAccountSectionCount - 1) {
+        if (!_account || _account.usageMode != OFXServerAccountUsageModeCloudSync)
+            return 0;
+        
+        OBFinishPortingLater("<bug:///105469> (Unassigned: Make Cloud Setup accommodate the keyboard correctly [adaptability])");
+        if (self.traitCollection.userInterfaceIdiom == UIUserInterfaceIdiomPhone) // add space to scroll up with keyboard showing
             return OUIServerAccountSendSettingsFooterHeight + 220;
         return OUIServerAccountSendSettingsFooterHeight;
     }
     return tableView.sectionFooterHeight;
 }
 
-#pragma mark - UITableViewDelelgate
+- (BOOL)tableView:(UITableView *)tableView shouldHighlightRowAtIndexPath:(NSIndexPath *)indexPath;
+{
+    return indexPath.section == ServerAccountDeletionSection;
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    if (indexPath.section != ServerAccountCloudSyncEnabledSection) {
-        return;
-    }
+    OBPRECONDITION(indexPath.section == ServerAccountDeletionSection);
+    OBPRECONDITION(indexPath.row == 0);
     
-    switch (indexPath.row) {
-        case ServerAccountTypeOmniPresence:
-            self.isCloudSyncEnabled = YES;
-            self.isImportExportEnabled = NO;
-            break;
-        case ServerAccountTypeImportExport:
-            self.isCloudSyncEnabled = NO;
-            self.isImportExportEnabled = YES;
-            break;
-        case ServerAccountTypeBoth:
-            self.isCloudSyncEnabled = YES;
-            self.isImportExportEnabled = YES;
-            break;
-        default:
-            OBASSERT_NOT_REACHED("Unknown type");
-            break;
-    }
-
-    for (NSInteger rowIndex = 0; rowIndex < ServerAccountTypeOptionsCount; rowIndex++) {
-        NSIndexPath *loopIndexPath = [NSIndexPath indexPathForRow:rowIndex inSection:ServerAccountCloudSyncEnabledSection];
-        UITableViewCell *cell = [tableView cellForRowAtIndexPath:loopIndexPath];
-        
-        if (rowIndex == indexPath.row) {
-            cell.accessoryType = UITableViewCellAccessoryCheckmark;
-        }
-        else {
-          cell.accessoryType = UITableViewCellAccessoryNone;
-        }
-    }
+    UIAlertController *deleteConfirmation = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
     
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    NSString *deleteTitle = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Delete \"%@\"", @"OmniUIDocument", OMNI_BUNDLE, @"Server account setup confirmation action label format"), [self _accountName]];
+    [deleteConfirmation addAction:[UIAlertAction actionWithTitle:deleteTitle style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+        [[OUIDocumentAppController controller] warnAboutDiscardingUnsyncedEditsInAccount:_account withCancelAction:NULL discardAction:^{
+            [_account prepareForRemoval];
+            if (self.finished)
+                self.finished(self, nil);
+        }];
+    }]];
+    
+    [deleteConfirmation addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUIDocument", OMNI_BUNDLE, @"Server account setup confirmation cancellation label") style:UIAlertActionStyleCancel handler:^(UIAlertAction *unused){
+        [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    }]];
+    
+    UIPopoverPresentationController *presentationController = deleteConfirmation.popoverPresentationController;
+    presentationController.sourceView = _tableView;
+    presentationController.sourceRect = [_tableView rectForRowAtIndexPath:indexPath];
+    presentationController.permittedArrowDirections = UIPopoverArrowDirectionUp|UIPopoverArrowDirectionDown;
+    
+    [self presentViewController:deleteConfirmation animated:YES completion:nil];
 }
 
 #pragma mark -
@@ -699,16 +687,29 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
     UIBarButtonItem *signInButton = self.navigationItem.rightBarButtonItem;
 
     BOOL requirementsMet = YES;
-    
-    if (_accountType.requiresServerURL)
-        requirementsMet &= ([OFXServerAccount signinURLFromWebDAVString:TEXT_AT(ServerAccountAddressSection, 0)] != nil);
-    
-    BOOL hasUsername = ![NSString isEmptyString:TEXT_AT(ServerAccountCredentialsSection, ServerAccountCredentialsUsernameRow)];
+
+    NSString *accountName = TEXT_AT(ServerAccountCredentialsSection, ServerAccountCredentialsUsernameRow);
+    BOOL hasUsername = ![NSString isEmptyString:accountName];
     if (_accountType.requiresUsername)
         requirementsMet &= hasUsername;
-    
-    if (_accountType.requiresPassword)
-        requirementsMet &= ![NSString isEmptyString:TEXT_AT(ServerAccountCredentialsSection, ServerAccountCredentialsPasswordRow)];
+
+    BOOL locationsEqual = YES;
+    if (_accountType.requiresServerURL) {
+        NSURL *location = [OFXServerAccount signinURLFromWebDAVString:TEXT_AT(ServerAccountAddressSection, 0)];
+        NSURL *baseURL = OFURLWithTrailingSlash([_accountType baseURLForServerURL:location username:accountName]);
+        locationsEqual = [[baseURL absoluteString] isEqualToString:self.location];
+        requirementsMet &= (location != nil);
+    }
+
+    NSString *password = TEXT_AT(ServerAccountCredentialsSection, ServerAccountCredentialsPasswordRow);
+    if (_accountType.requiresPassword) {
+        requirementsMet &= ![NSString isEmptyString:password];
+    }
+
+    NSString *nickname = TEXT_AT(ServerAccountDescriptionSection, 0);
+    if (requirementsMet && [accountName isEqualToString:self.accountName] && [password isEqualToString:self.password] && locationsEqual && [nickname isEqualToString:_account.nickname]) {
+            requirementsMet = NO;
+    }
 
     signInButton.enabled = requirementsMet;
     CELL_AT(ServerAccountDescriptionSection, 0).editableValueCell.valueField.placeholder = [self _suggestedNickname];
@@ -778,6 +779,18 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (void)_keyboardHeightWillChange:(NSNotification *)keyboardNotification;
+{
+    OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
+    UIEdgeInsets insets = _tableView.contentInset;
+    insets.bottom = notifier.lastKnownKeyboardHeight;
+    
+    [UIView animateWithDuration:notifier.lastAnimationDuration delay:0 options:0 animations:^{
+        [UIView setAnimationCurve:notifier.lastAnimationCurve];
+        
+        _tableView.contentInset = insets;
+    } completion:nil];
+}
 
 @end
 

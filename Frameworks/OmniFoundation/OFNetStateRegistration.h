@@ -1,4 +1,4 @@
-// Copyright 2008-2013 The Omni Group. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,8 +29,8 @@
 @property(nonatomic,readonly) NSString *groupIdentifier;
 @property(nonatomic,readonly) NSString *memberIdentifier;
 
-// Some state describing the local state. If this is too long, its SHA-1 will be used instead.
-@property(nonatomic,copy) NSData *state;
+// Some opaque data describing the current local state. If this is too long, its SHA-1 will be used instead.
+@property(nonatomic,copy) NSData *localState;
 
 @end
 

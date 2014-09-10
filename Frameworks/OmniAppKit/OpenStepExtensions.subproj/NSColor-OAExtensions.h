@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2005, 2007-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,6 @@
 + (NSString *)xmlElementName;
 - (void) appendXML:(OFXMLDocument *)doc;
 + (NSColor *)colorFromXML:(OFXMLCursor *)cursor;
-+ (NSColor *)colorFromXMLTreeRef:(CFXMLTreeRef)treeRef OB_DEPRECATED_ATTRIBUTE;
 
 @end
 

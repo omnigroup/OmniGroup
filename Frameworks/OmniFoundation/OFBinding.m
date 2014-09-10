@@ -64,12 +64,6 @@ static unsigned int _OFBindingObservationContext;
     return [self initWithSourceObject:sourcePoint.object sourceKeyPath:sourcePoint.keyPath destinationObject:destinationPoint.object destinationKeyPath:destinationPoint.keyPath];
 }
 
-- (void)finalize;
-{
-    [self invalidate];
-    [super finalize];
-}
-
 - (void)dealloc;
 {
     [self invalidate];
@@ -294,7 +288,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
 #endif
         
         // The destination may cause us to get freed when we notify it.  Our caller doesn't like it when we are dead when we return.
-        [[self retain] autorelease];
+        OBRetainAutorelease(self);
         
         NSNumber *kind = [change objectForKey:NSKeyValueChangeKindKey];
         switch ((NSKeyValueChange)[kind intValue]) {
@@ -336,7 +330,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
 #endif
         
         // The destination may cause us to get freed when we notify it.  Our caller doesn't like it when we are dead when we return.
-        [[self retain] autorelease];
+        OBRetainAutorelease(self);
         
         NSNumber *kind = [change objectForKey:NSKeyValueChangeKindKey];
         switch ((NSKeyValueChange)[kind intValue]) {
@@ -398,7 +392,7 @@ static void _handleSetValue(id sourceObject, NSString *sourceKeyPath, id destina
 #endif
         
         // The destination may cause us to get freed when we notify it.  Our caller doesn't like it when we are dead when we return.
-        [[self retain] autorelease];
+        OBRetainAutorelease(self);
         
         NSNumber *kind = [change objectForKey:NSKeyValueChangeKindKey];
         switch ((NSKeyValueChange)[kind intValue]) {
@@ -496,7 +490,7 @@ NSArray *OFPrefixedKeyPaths(NSString *prefixKey, NSArray *keyPaths)
 
 // Directly modifies the set, publishing KVO changes
 // Computes the delta operations necessary to transition to the new set.  NSController has a bug where whole-property replacement doesn't send the right KVO, so this can be a workaround for that problem, as well as possibly being more efficient.
-void OFSetMutableSet(id self, NSString *key, NSMutableSet **ivar, NSSet *set)
+void OFSetMutableSet(id self, NSString *key, OB_STRONG NSMutableSet **ivar, NSSet *set)
 {
     OBPRECONDITION(self);
     OBPRECONDITION(key);
@@ -510,9 +504,13 @@ void OFSetMutableSet(id self, NSString *key, NSMutableSet **ivar, NSSet *set)
     // If the two sets are disjoint, it'll be just as fast and maybe faster to do a single set.
     // A NSKeyValueSetSetMutation change would send a NSKeyValueChangeReplacement change, with the old and new values but without any way of knowing it was a complete replacement (we don't want to read the destination in OFSetBinding).  So, we take a pointer to a set and do NSKeyValueChangeSetting.
     if (![*ivar intersectsSet:set]) {
-        [self willChangeValueForKey:key]; 
+        [self willChangeValueForKey:key];
+#if OB_ARC
+        *ivar = [[NSMutableSet alloc] initWithSet:set];
+#else
         [*ivar release];
         *ivar = [[NSMutableSet alloc] initWithSet:set];
+#endif
         [self didChangeValueForKey:key];
         return;
     }

@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,12 +22,15 @@
 #import "OFXTestSaveFilePresenter.h"
 #import "OFXTrace.h"
 
+#import "OFNetStateMock.h"
+
 RCS_ID("$Id$")
 
 @implementation OFXTestServerAccountRegistry
 @end
 
 @interface OFXTestCase ()
+@property(nonatomic,readonly) OFXAgent *existingAgentA;
 @property(nonatomic,readonly) NSString *remoteDirectoryName;
 @property(nonatomic,readonly) NSURL *remoteBaseURL;
 @end
@@ -36,11 +39,37 @@ RCS_ID("$Id$")
 {
     OFRandomState *_randomState;
     NSMutableArray *_helpers;
+    NSMutableDictionary *_agentByName;
+}
+
++ (id)defaultTestSuite;
+{
+    XCTestSuite *suite = [super defaultTestSuite];
+    
+    const char *repeat = getenv("OFXRepeatTest");
+    if (repeat) {
+        // See if we have a test with this name; if so, repeat it a bunch of times.
+        NSString *repeatString = [[NSString alloc] initWithBytes:repeat length:strlen(repeat) encoding:NSUTF8StringEncoding];
+        
+        XCTest *test = [suite.tests first:^BOOL(XCTest *candidate) {
+            return [candidate.name isEqual:repeatString];
+        }];
+        
+        if (test) {
+            for (NSUInteger repeatIndex = 0; repeatIndex < 500; repeatIndex++)
+                [suite addTest:test];
+        }
+    }
+    
+    return suite;
 }
 
 + (void)initialize;
 {
     OBINITIALIZE;
+    
+    OBFinishPortingLater("Make this configurable so that these tests can be run against the real class too");
+    [OFNetStateNotifierMock install];
     
     OFXTraceEnabled = YES;
 
@@ -50,6 +79,11 @@ RCS_ID("$Id$")
     }
 }
 
+- (NSString *)baseTemporaryDirectory;
+{
+    return [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFXTests"];
+}
+
 - (OFXTestServerAccountRegistry *)makeAccountRegistry:(NSString *)suffix;
 {
     NSString *name = [NSString stringWithFormat:@"Accounts-%@", self.name];
@@ -57,13 +91,13 @@ RCS_ID("$Id$")
     if (![NSString isEmptyString:suffix])
         name = [name stringByAppendingFormat:@"-%@", suffix];
     
-    NSString *accountsDirectoryPath = [NSTemporaryDirectory() stringByAppendingPathComponent:name];
+    NSString *accountsDirectoryPath = [[self baseTemporaryDirectory] stringByAppendingPathComponent:name];
     NSURL *accountsDirectoryURL = [NSURL fileURLWithPath:accountsDirectoryPath];
     
     // Clean up cruft from previous runs
     __autoreleasing NSError *error;
     if (![[NSFileManager defaultManager] removeItemAtURL:accountsDirectoryURL error:&error]) {
-        STAssertTrue([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT], nil);
+        XCTAssertTrue([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]);
     }
     
     OFXTestServerAccountRegistry *registry;
@@ -71,8 +105,8 @@ RCS_ID("$Id$")
     
     registry.suffix = suffix;
     
-    STAssertNotNil(registry, nil);
-    STAssertEquals([registry.allAccounts count], (NSUInteger)0, nil);
+    XCTAssertNotNil(registry);
+    XCTAssertEqual([registry.allAccounts count], (NSUInteger)0);
     
     return registry;
 }
@@ -87,14 +121,14 @@ RCS_ID("$Id$")
         if (![NSString isEmptyString:suffix])
             name = [name stringByAppendingFormat:@"-%@", suffix];
         
-        NSString *localDocumentsPath = [NSTemporaryDirectory() stringByAppendingPathComponent:name];
+        NSString *localDocumentsPath = [[self baseTemporaryDirectory] stringByAppendingPathComponent:name];
         
         localDocumentsURL = [NSURL fileURLWithPath:localDocumentsPath isDirectory:YES];
         
         // Clean up cruft from previous runs
         __autoreleasing NSError *error;
         if (![[NSFileManager defaultManager] removeItemAtURL:localDocumentsURL error:&error]) {
-            STAssertTrue([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT], nil);
+            XCTAssertTrue([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]);
         }
     }
     return localDocumentsURL;
@@ -110,7 +144,7 @@ RCS_ID("$Id$")
     NSURL *localDocumentsURL = [self localDocumentsURLForAddingAccountToRegistry:registry];
 
     __autoreleasing NSError *error;
-    if (![[NSFileManager defaultManager] createDirectoryAtURL:localDocumentsURL withIntermediateDirectories:NO attributes:nil error:&error]) {
+    if (![[NSFileManager defaultManager] createDirectoryAtURL:localDocumentsURL withIntermediateDirectories:YES attributes:nil error:&error]) {
         [error log:@"Error creating account local documents directory at %@", localDocumentsURL];
         return nil;
     }
@@ -127,7 +161,7 @@ RCS_ID("$Id$")
     
     NSURL *remoteBaseURL = self.accountRemoteBaseURL;
     
-    OFXServerAccount *account = [[OFXServerAccount alloc] initWithType:accountType remoteBaseURL:remoteBaseURL localDocumentsURL:localDocumentsURL error:outError];
+    OFXServerAccount *account = [[OFXServerAccount alloc] initWithType:accountType usageMode:OFXServerAccountUsageModeCloudSync remoteBaseURL:remoteBaseURL localDocumentsURL:localDocumentsURL error:outError];
     if (!account)
         return nil;
     
@@ -136,7 +170,7 @@ RCS_ID("$Id$")
     __block NSError *error; // Strong variable to hold the error so that our autorelease pool below doesn't eat it
     
     if (isFirst) {
-        OBASSERT([_agentA.accountRegistry.allAccounts count] == 0); // Could be totally nil or just have zero accounts if we are running at test with -automaticallyAddAccount returning NO.
+        OBASSERT([self.existingAgentA.accountRegistry.allAccounts count] == 0); // Could be totally nil or just have zero accounts if we are running at test with -automaticallyAddAccount returning NO.
 
         NSURLCredential *credential = [self accountCredentialWithPersistence:NSURLCredentialPersistenceNone];
         
@@ -166,12 +200,12 @@ RCS_ID("$Id$")
             }
         }
     } else {
-        OBASSERT(_agentA != nil);
+        OBASSERT(self.existingAgentA != nil);
             
-        OFXServerAccount *accountA = [_agentA.accountRegistry.validCloudSyncAccounts lastObject];
+        OFXServerAccount *accountA = [self.existingAgentA.accountRegistry.validCloudSyncAccounts lastObject];
         
         NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(accountA.credentialServiceIdentifier, NULL);
-        STAssertNotNil(credential, nil);
+        XCTAssertNotNil(credential);
         OBASSERT(credential);
             
         [account _storeCredential:credential forServiceIdentifier:accountA.credentialServiceIdentifier];
@@ -197,10 +231,12 @@ RCS_ID("$Id$")
 /*
  Each agent for a given test has a full local sync stack but shares a remote sync location. Agents from different tests are isolated from one another.
  */
-static OFXAgent *_makeAgent(OFXTestCase *self, NSUInteger flag, NSString *agentName)
+NSString * const OFXTestFirstAgentName = @"A";
+
+static OFXAgent *_makeAgent(OFXTestCase *self, NSString *agentName)
 {
     OFXTestServerAccountRegistry *registry = [self makeAccountRegistry:agentName];
-    BOOL isFirst = (flag == AgentA);
+    BOOL isFirst = [agentName isEqual:OFXTestFirstAgentName];
     
     if (self.automaticallyAddAccount) {
         OFXServerAccount *account = [self addAccountToRegistry:registry isFirst:isFirst];
@@ -208,16 +244,16 @@ static OFXAgent *_makeAgent(OFXTestCase *self, NSUInteger flag, NSString *agentN
         OBASSERT(account);
     }
     
-    NSArray *extraPackagePathExtensions = [self extraPackagePathExtensionsForAgent:flag];
+    NSArray *extraPackagePathExtensions = [self extraPackagePathExtensionsForAgentName:agentName];
     
     // Make an agent, but don't start it by default. Use our 'accountRegistry' property so that test cases can specify a transient account registry.
     OFXAgent *agent = [[OFXAgent alloc] initWithAccountRegistry:registry remoteDirectoryName:self.remoteDirectoryName syncPathExtensions:self.syncPathExtensions extraPackagePathExtensions:extraPackagePathExtensions];
     
     agent.debugName = agentName;
     agent.automaticallyDownloadFileContents = self.automaticallyDownloadFileContents;
-    agent.clientParameters = [self accountClientParametersForAgent:flag name:agentName];
+    agent.clientParameters = [self accountClientParametersForAgentName:agentName];
     
-    if (flag & self.automaticallyStartAgents) {
+    if ([self.automaticallyStartedAgentNames member:agentName]) {
         [agent applicationLaunched];
         
         // Let the startup async operations finish, since they'll signal traces, and then reset the trace
@@ -237,21 +273,38 @@ static OFXAgent *_makeAgent(OFXTestCase *self, NSUInteger flag, NSString *agentN
     return agent;
 }
 
-@synthesize agentA = _agentA;
-- (OFXAgent *)agentA;
+- (OFXAgent *)existingAgentA;
 {
-    if (!_agentA)
-        _agentA = _makeAgent(self, AgentA, @"A");
-    return _agentA;
+    return _agentByName[OFXTestFirstAgentName];
 }
 
-@synthesize agentB = _agentB;
+- (OFXAgent *)agentWithName:(NSString *)name;
+{
+    if (![name isEqual:OFXTestFirstAgentName]) {
+        [self agentA]; // Have to make this one first... make sure it is done.
+    }
+    
+    OFXAgent *agent = _agentByName[name];
+    if (!agent) {
+        agent = _makeAgent(self, name);
+        _agentByName[name] = agent;
+    }
+    return agent;
+}
+
+- (OFXAgent *)agentA;
+{
+    return [self agentWithName:OFXTestFirstAgentName];
+}
+
 - (OFXAgent *)agentB;
 {
-    [self agentA]; // Have to make this one first... make sure it is done.
-    if (!_agentB)
-        _agentB = _makeAgent(self, AgentB, @"B");
-    return _agentB;
+    return [self agentWithName:@"B"];
+}
+
+- (OFXAgent *)agentC;
+{
+    return [self agentWithName:@"C"];
 }
 
 static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, NSURL *remoteBaseURL, BOOL allowRetry)
@@ -276,22 +329,27 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
     return NO;
 }
 
+- (void) recordFailureWithDescription:(NSString *) description inFile:(NSString *) filename atLine:(NSUInteger) lineNumber expected:(BOOL) expected;
+{
+    [super recordFailureWithDescription:description inFile:filename atLine:lineNumber expected:expected];
+    [NSException raise:NSGenericException reason:@"Halting test due to error"];
+}
+
 - (void)setUp
 {
     [super setUp];
         
     OFXTraceReset();
     
+    OBASSERT([_agentByName count] == 0, "Make sure subclass -tearDown calls super");
+    _agentByName = [[NSMutableDictionary alloc] init];
+    
     // TODO: Support for logging the seed and reading it from the environment
     _randomState = OFRandomStateCreate();
     
     OBASSERT(_helpers == nil);
     _helpers = [NSMutableArray new];
-                       
-    // Make sure subclass -tearDown calls super
-    OBASSERT(_agentA == nil);
-    OBASSERT(_agentB == nil);
-        
+    
     _remoteDirectoryName = [NSString stringWithFormat:@"TestSyncRoot-%@", self.name];
 
     // Clear our remote sync directory
@@ -309,8 +367,8 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
         if ([challenge previousFailureCount] <= 2) {
             // Use the account credential if we have an account added. We might be clearing out the remote directory before an account has been added to this test's account registry, though
             NSURLCredential *credential;
-            if (_agentA) {
-                OFXServerAccount *account = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
+            if (self.existingAgentA) {
+                OFXServerAccount *account = [self.existingAgentA.accountRegistry.validCloudSyncAccounts lastObject];
                 
                 credential = OFReadCredentialsForServiceIdentifier(account.credentialServiceIdentifier, NULL);
             } else
@@ -335,8 +393,7 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
     _remoteBaseURL = createdURL;
     
     // Make sure our "cleanup" didn't accidentally start up the agents.
-    OBASSERT(_agentA == nil);
-    OBASSERT(_agentB == nil);
+    OBASSERT([_agentByName count] == 0);
 }
 
 - (void)tearDown
@@ -347,8 +404,8 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
         [helper tearDown];
     _helpers = nil;
     
-    _agentA = nil;
-    _agentB = nil;
+    _agentByName = nil;
+
     _remoteDirectoryName = nil;
     _remoteBaseURL = nil;
     
@@ -358,9 +415,9 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
 }
 
 // Subclasses dealing with start/stop may want to control this more finely.
-- (NSUInteger)automaticallyStartAgents;
+- (NSSet *)automaticallyStartedAgentNames;
 {
-    return AgentA|AgentB;
+    return [NSSet setWithObjects:OFXTestFirstAgentName, @"B", nil];
 }
 
 - (BOOL)automaticallyAddAccount;
@@ -374,7 +431,7 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
     return OFISEQUAL(self.syncPathExtensions, [OFXAgent wildcardSyncPathExtensions]);
 }
 
-- (OFXAccountClientParameters *)accountClientParametersForAgent:(NSUInteger)flag name:(NSString *)agentName;
+- (OFXAccountClientParameters *)accountClientParametersForAgentName:(NSString *)agentName;
 {
     OFXAccountClientParameters *parameters = [OFXAgent defaultClientParameters];
     NSString *preferenceKey = [parameters.defaultClientIdentifierPreferenceKey stringByAppendingString:agentName];
@@ -396,7 +453,7 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
     return [OFXAgent wildcardSyncPathExtensions];
 }
 
-- (NSArray *)extraPackagePathExtensionsForAgent:(NSUInteger)flag;
+- (NSArray *)extraPackagePathExtensionsForAgentName:(NSString *)agentName;
 {
     return nil;
 }
@@ -408,25 +465,22 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
 
 - (void)stopAgents;
 {
-    __block BOOL runningA = _agentA.started;
-    __block BOOL runningB = _agentB.started;
-    
-    if (runningA) {
-        [_agentA applicationWillTerminateWithCompletionHandler:^{
-            runningA = NO;
-        }];
-    }
-    if (runningB) {
-        [_agentB applicationWillTerminateWithCompletionHandler:^{
-            runningB = NO;
-        }];
-    }
-    
-    while (runningA || runningB) {
-        @autoreleasepool {
-            [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+    OBASSERT([NSThread isMainThread], "Make sure we don't need locking for this counter");
+    __block NSUInteger startedAgentCount = 0;
+
+    [_agentByName enumerateKeysAndObjectsUsingBlock:^(NSString *name, OFXAgent *agent, BOOL *stop) {
+        if (agent.started) {
+            startedAgentCount++;
+            [agent applicationWillTerminateWithCompletionHandler:^{
+                OBASSERT([NSThread isMainThread], "Make sure we don't need locking for this counter");
+                startedAgentCount--;
+            }];
         }
-    }
+    }];
+    
+    [self waitUntil:^BOOL{
+        return (startedAgentCount == 0);
+    }];
 }
 
 - (OFXServerAccount *)singleAccountInAgent:(OFXAgent *)agent;
@@ -472,23 +526,22 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
 
 - (void)waitForAsyncOperations;
 {
-    __block BOOL waitingA = _agentA.started;
-    __block BOOL waitingB = _agentB.started;
-
-    // This flushes through the per-account agents and our completion block is run back on the calling queue (so anything they put on our queue has been flushed out by the time 'done' is set.
-
-    if (waitingA) {
-        [_agentA afterAsynchronousOperationsFinish:^{
-            waitingA = NO;
-        }];
-    }
-    if (waitingB) {
-        [_agentB afterAsynchronousOperationsFinish:^{
-            waitingB = NO;
-        }];
-    }
+    OBASSERT([NSThread isMainThread], "Make sure we don't need locking for this counter");
+    __block NSUInteger startedAgents = 0;
     
-    while (waitingA || waitingB) {
+    [_agentByName enumerateKeysAndObjectsUsingBlock:^(NSString *name, OFXAgent *agent, BOOL *stop) {
+        if (agent.started) {
+            startedAgents++;
+        
+            // This flushes through the per-account agents and our completion block is run back on the calling queue (so anything they put on our queue has been flushed out by the time 'done' is set.
+            [agent afterAsynchronousOperationsFinish:^{
+                OBASSERT([NSThread isMainThread], "Make sure we don't need locking for this counter");
+                startedAgents--;
+            }];
+        }
+    }];
+    
+    while (startedAgents > 0) {
         [self waitForSeconds:0.05];
     }
 }
@@ -510,9 +563,44 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
         if (finished())
             return;
         if ([NSDate timeIntervalSinceReferenceDate] - start > waitSeconds)
-            [NSException raise:NSGenericException format:@"Test timed out"];
+            [self timedOut];
         [self waitForSeconds:0.05];
     }
+}
+
+static void _logAgentState(OFXAgent *agent)
+{
+    if (!agent)
+        return;
+    
+    for (OFXServerAccount *account in agent.accountRegistry.validCloudSyncAccounts) {
+        NSLog(@"Agent state for %@ / %@", [agent shortDescription], [account shortDescription]);
+    
+        NSMutableArray *metadata = [NSMutableArray array];
+        [metadata addObjectsFromSet:[agent metadataItemsForAccount:account]];
+        [metadata sortUsingComparator:^NSComparisonResult(OFXFileMetadata *item1, OFXFileMetadata *item2) {
+            NSComparisonResult rc = [[item1.intendedFileURL path] compare:[item2.intendedFileURL path]];
+            if (rc == NSOrderedSame) {
+                rc = [item1.creationDate compare:item2.creationDate];
+            }
+            return rc;
+        }];
+        
+        for (OFXFileMetadata *metadataItem in metadata) {
+            NSLog(@"  %@", [metadataItem debugDictionary]);
+        }
+    }
+}
+
+- (void)timedOut;
+{
+    NSLog(@"Test %@ timed out", self);
+    
+    [_agentByName enumerateKeysAndObjectsUsingBlock:^(NSString *name, OFXAgent *agent, BOOL *stop) {
+        _logAgentState(agent);
+    }];
+    
+    [NSException raise:NSGenericException format:@"Test timed out"];
 }
 
 - (NSSet *)waitForFileMetadataItems:(OFXAgent *)agent where:(BOOL (^)(NSSet *metadataItems))qualifier;
@@ -565,43 +653,172 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
 }
 
 // Currently assumes we are downloading all files
-- (void)waitForAgentsToAgree;
+- (void)waitForAgentsEditsToAgree;
 {
-    [self waitUntil:^BOOL{
-        NSMutableDictionary *fileToEdit = [NSMutableDictionary new];
-        
-        for (OFXFileMetadata *metadata in [self metadataItemsForAgent:self.agentA]) {
-            if (!metadata.uploaded || metadata.uploading || !metadata.downloaded || metadata.downloading)
-                return NO;
-
-            STAssertNil(fileToEdit[metadata.fileIdentifier], @"Should be no duplicate file identifiers");
-            fileToEdit[metadata.fileIdentifier] = metadata.editIdentifier;
-        }
-        
-        for (OFXFileMetadata *metadata in [self metadataItemsForAgent:self.agentB]) {
-            if (!metadata.uploaded || metadata.uploading || !metadata.downloaded || metadata.downloading)
-                return NO;
-
-            if (![fileToEdit[metadata.fileIdentifier] isEqual:metadata.editIdentifier])
-                return NO;
-            [fileToEdit removeObjectForKey:metadata.fileIdentifier];
-        }
-        
-        return [fileToEdit count] == 0;
-    }];
-    
-    [self requireAgentsToHaveSameFiles];
+    [self waitForAgentsEditsToAgree:@[self.agentA, self.agentB]];
 }
 
-- (void)requireAgentsToHaveSameFiles;
+- (void)waitForAgentsEditsToAgree:(NSArray *)agents;
 {
-    OFXAgent *agentA = self.agentA;
-    OFXAgent *agentB = self.agentB;
-    
-    NSURL *localDocumentsA = [self singleAccountInAgent:agentA].localDocumentsURL;
-    NSURL *localDocumentsB = [self singleAccountInAgent:agentB].localDocumentsURL;
+    [self waitForAgentsEditsToAgree:agents withFileCount:NSNotFound];
+}
 
-    OFDiffFiles(self, [localDocumentsA path], [localDocumentsB path], nil/*filter*/);
+- (void)waitForAgentsEditsToAgree:(NSArray *)agents withFileCount:(NSUInteger)fileCount;
+{
+    if ([agents count] < 2) {
+        OBASSERT_NOT_REACHED("Not terribly useful");
+        return;
+    }
+    
+    OFXAgent *firstAgent = agents[0];
+    NSArray *otherAgents = [agents subarrayWithRange:NSMakeRange(1, [agents count] - 1)];
+    
+    [self waitUntil:^BOOL{
+        NSDictionary *firstAgentFileIdentiferToEditIdentifer = [NSMutableDictionary new];
+        {
+            NSMutableDictionary *fileToEdit = [NSMutableDictionary dictionary];
+            
+            NSSet *metadataItems = [self metadataItemsForAgent:firstAgent];
+            if (fileCount != NSNotFound && fileCount != [metadataItems count])
+                return NO;
+            
+            for (OFXFileMetadata *metadata in metadataItems) {
+                if (!metadata.uploaded || metadata.uploading || !metadata.downloaded || metadata.downloading)
+                    return NO;
+                
+                XCTAssertNil(fileToEdit[metadata.fileIdentifier], @"Should be no duplicate file identifiers");
+                fileToEdit[metadata.fileIdentifier] = metadata.editIdentifier;
+            }
+            
+            firstAgentFileIdentiferToEditIdentifer = [fileToEdit copy];
+        }
+        
+        for (OFXAgent *agent in otherAgents) {
+            NSMutableDictionary *fileToEdit = [firstAgentFileIdentiferToEditIdentifer mutableCopy];
+
+            NSSet *metadataItems = [self metadataItemsForAgent:agent];
+            if ([metadataItems count] != [firstAgentFileIdentiferToEditIdentifer count])
+                return NO;
+
+            for (OFXFileMetadata *metadata in metadataItems) {
+                if (!metadata.uploaded || metadata.uploading || !metadata.downloaded || metadata.downloading)
+                    return NO;
+                
+                if (![fileToEdit[metadata.fileIdentifier] isEqual:metadata.editIdentifier])
+                    return NO;
+                [fileToEdit removeObjectForKey:metadata.fileIdentifier];
+            }
+            
+            return [fileToEdit count] == 0;
+        }
+        
+        return YES;
+    }];
+}
+
+- (void)requireAgentsToHaveSameFilesByName;
+{
+    [self requireAgentsToHaveSameFilesByName:@[self.agentA, self.agentB]];
+}
+
+// This requires exact name as well as contents
+- (void)requireAgentsToHaveSameFilesByName:(NSArray *)agents;
+{
+    if ([agents count] < 2) {
+        OBASSERT_NOT_REACHED("Not terribly useful");
+        return;
+    }
+    
+    OFXAgent *firstAgent = agents[0];
+    NSArray *otherAgents = [agents subarrayWithRange:NSMakeRange(1, [agents count] - 1)];
+
+    NSURL *localDocumentsForFirstAgent = [self singleAccountInAgent:firstAgent].localDocumentsURL;
+
+    for (OFXAgent *agent in otherAgents) {
+        NSURL *localDocumentsForOtherAgent = [self singleAccountInAgent:agent].localDocumentsURL;
+        OFDiffFiles(self, [localDocumentsForFirstAgent path], [localDocumentsForOtherAgent path], nil/*filter*/);
+    }
+}
+
+// Useful for conflict checking cases where the conflict renaming might have assigned different names on different agents, but the identifier->contents should be the same across all.
+- (void)requireAgentsToHaveSameFilesByIdentifier:(NSArray *)agents;
+{
+    if ([agents count] < 2) {
+        OBASSERT_NOT_REACHED("Not terribly useful");
+        return;
+    }
+    
+    OFXAgent *firstAgent = agents[0];
+    NSDictionary *firstAgentFileIdentifierToMetadata = [[self metadataItemsForAgent:firstAgent] indexByBlock:^id(OFXFileMetadata *metadata) {
+        return metadata.fileIdentifier;
+    }];
+    
+    NSArray *otherAgents = [agents subarrayWithRange:NSMakeRange(1, [agents count] - 1)];
+    for (OFXAgent *otherAgent in otherAgents) {
+        NSSet *metadataItems = [self metadataItemsForAgent:otherAgent];
+        XCTAssertEqual([firstAgentFileIdentifierToMetadata count], [metadataItems count], @"should have the same number of files");
+        
+        for (OFXFileMetadata *metadata in metadataItems) {
+            OFXFileMetadata *firstMetadata = firstAgentFileIdentifierToMetadata[metadata.fileIdentifier];
+            XCTAssertEqualObjects(metadata.editIdentifier, firstMetadata.editIdentifier, @"should be on the same version");
+            OFDiffFiles(self, [metadata.fileURL path], [firstMetadata.fileURL path], nil/*filter*/);
+        }
+    }
+}
+
+- (NSDictionary *)_relativeIntendedPathToContentIdentifiersForAgent:(OFXAgent *)agent;
+{
+    NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] init];
+    
+    OFXServerAccount *account = [self singleAccountInAgent:agent];
+    NSURL *localDocumentsURL = account.localDocumentsURL;
+    
+    NSMutableDictionary *indentedPathToContentIdentifiers = [NSMutableDictionary dictionary];
+    
+    __autoreleasing NSError *error = nil;
+    BOOL success = [coordinator readItemAtURL:localDocumentsURL withChanges:YES error:&error byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
+        OBASSERT(OFURLEqualsURL(localDocumentsURL, newURL));
+        NSSet *metadatItems = [agent metadataItemsForAccount:account];
+        for (OFXFileMetadata *metadata in metadatItems) {
+            __autoreleasing NSError *contentError = nil;
+            NSString *identifier = OFXContentIdentifierForURL(metadata.fileURL, &contentError);
+            if (!identifier) {
+                if ([contentError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT])
+                    // Moved?
+                    continue;
+                else {
+                    [contentError log:@"Cannot determine content for %@", metadata.fileURL];
+                    if (outError)
+                        *outError = contentError;
+                    return NO;
+                }
+            }
+            
+            NSURL *intendedURL = metadata.intendedFileURL;
+            
+            NSString *relativePath = OFFileURLRelativePath(localDocumentsURL, intendedURL);
+            NSMutableSet *identifiers = indentedPathToContentIdentifiers[relativePath];
+            if (!identifiers) {
+                identifiers = [NSMutableSet set];
+                indentedPathToContentIdentifiers[relativePath] = identifiers;
+            }
+
+            [identifiers addObject:identifier];
+        }
+        return YES;
+    }];
+    
+    XCTAssertTrue(success);
+    
+    return indentedPathToContentIdentifiers;
+}
+
+- (BOOL)agentsToHaveSameIntendedFiles;
+{
+    NSDictionary *identifiersA = [self _relativeIntendedPathToContentIdentifiersForAgent:self.agentA];
+    NSDictionary *identifiersB = [self _relativeIntendedPathToContentIdentifiersForAgent:self.agentB];
+    
+    return [identifiersA isEqualTo:identifiersB];
 }
 
 - (NSURL *)fixtureNamed:(NSString *)fixtureName;
@@ -693,7 +910,7 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
     NSURL *randomTextURL = [account.localDocumentsURL URLByAppendingPathComponent:destinationPath];
     OBShouldNotError(randomTextURL = [[NSFileManager defaultManager] temporaryURLForWritingToURL:randomTextURL allowOriginalDirectory:NO error:&error]);
     
-    NSString *randomText = [OFRandomCreateDataOfLength(textLength) unadornedLowercaseHexString];
+    NSString *randomText = [[OFRandomCreateDataOfLength(textLength) unadornedLowercaseHexString] stringByAppendingString:@"\n"];
     OBShouldNotError([[randomText dataUsingEncoding:NSUTF8StringEncoding] writeToURL:randomTextURL options:0 error:&error]);
     
     [self copyFileURL:randomTextURL toPath:destinationPath ofAccount:account];
@@ -708,30 +925,45 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
     return [self copyRandomTextFileOfLength:16*1024*1024 toPath:destinationPath ofAccount:account];
 }
 
-- (OFXFileMetadata *)copyFixtureNamed:(NSString *)fixtureName waitForDownload:(BOOL)waitForDownload;
+- (OFXFileMetadata *)copyFixtureNamed:(NSString *)fixtureName toPath:(NSString *)toPath waitingForAgentsToDownload:(NSArray *)otherAgents;
 {
     // Make a document and download to two agents
     OFXAgent *agent = self.agentA;
+    OBASSERT_IF(otherAgents, [otherAgents indexOfObject:agent] == NSNotFound, "The other agents should not include agent A");
+    
     OFXServerAccount *account = [agent.accountRegistry.validCloudSyncAccounts lastObject];
     OBASSERT(account);
     
-    [self copyFixtureNamed:fixtureName ofAccount:account];
+    [self copyFixtureNamed:fixtureName toPath:toPath ofAccount:account];
     
+    // Wait for the file to get uploaded
     __block OFXFileMetadata *resultMetadata;
-    [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata){
-        if ([[metadata.fileURL lastPathComponent] isEqual:fixtureName] && (!waitForDownload || metadata.isDownloaded)) {
+    [self waitForFileMetadata:agent where:^BOOL(OFXFileMetadata *metadata){
+        if ([[metadata.fileURL lastPathComponent] isEqual:toPath] && metadata.uploaded) {
             resultMetadata = metadata;
             return YES;
         }
         return NO;
     }];
     
+    // Wait for all the other agents to download it.
+    for (OFXAgent *otherAgent in otherAgents) {
+        [self waitForFileMetadata:otherAgent where:^BOOL(OFXFileMetadata *metadata){
+            if (![metadata.fileIdentifier isEqual:resultMetadata.fileIdentifier])
+                return NO;
+            if (metadata.downloaded)
+                return YES;
+            [otherAgent requestDownloadOfItemAtURL:metadata.fileURL completionHandler:nil];
+            return NO;
+        }];
+    }
+    
     return resultMetadata;
 }
 
 - (OFXFileMetadata *)copyFixtureNamed:(NSString *)fixtureName;
 {
-    return [self copyFixtureNamed:fixtureName waitForDownload:YES];
+    return [self copyFixtureNamed:fixtureName toPath:fixtureName waitingForAgentsToDownload:@[self.agentB]];
 }
 
 - (void)writeRandomFlatFile:(NSString *)name withSize:(NSUInteger)fileSize;
@@ -846,12 +1078,12 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
 
 - (OFXFileMetadata *)downloadWithMetadata:(OFXFileMetadata *)metadata agent:(OFXAgent *)agent;
 {
-    STAssertFalse(metadata.downloaded, nil); // Otherwise our wait below might spuriously succeed
+    XCTAssertFalse(metadata.downloaded); // Otherwise our wait below might spuriously succeed
     
     // Request the download and make sure the request has been processed
     __block BOOL downloadRequested = NO;
     [agent requestDownloadOfItemAtURL:metadata.fileURL completionHandler:^(NSError *errorOrNil) {
-        STAssertNil(errorOrNil, nil);
+        XCTAssertNil(errorOrNil);
         downloadRequested = YES;
     }];
     
@@ -865,7 +1097,7 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
     __block BOOL downloadFinished = NO;
     [self waitUntil:^BOOL{
         [agent countPendingTransfersForAccount:account completionHandler:^(NSError *errorOrNil, NSUInteger count) {
-            STAssertNil(errorOrNil, nil);
+            XCTAssertNil(errorOrNil);
             downloadFinished = (count == 0);
         }];
         return downloadFinished;
@@ -918,7 +1150,7 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
     BOOL success = [coordinator removeItemAtURL:fileURL error:&error byAccessor:
      ^BOOL(NSURL *newURL, NSError **outError) {
          if (![[NSFileManager defaultManager] removeItemAtURL:newURL error:outError]) {
-             STFail(@"Removal should not fail");
+             XCTFail(@"Removal should not fail");
              return NO;
          }
          OFXNoteContentDeleted(self, newURL);
@@ -968,6 +1200,17 @@ static void _recursivelyClearDates(NSFileWrapper *wrapper)
 @end
 
 @implementation NSFileCoordinator (OFXTestCaseExtensions)
+
+- (NSData *)readDataFromURL:(NSURL *)fileURL options:(NSDataReadingOptions)options error:(NSError **)outError;
+{
+    OBPRECONDITION(fileURL);
+    
+    __block NSData *result = nil;
+    [self coordinateWritingItemAtURL:fileURL options:NSFileCoordinatorWritingForMerging error:outError byAccessor:^(NSURL *newURL) {
+        result = [NSData dataWithContentsOfURL:fileURL options:options error:outError];
+    }];
+    return result;
+}
 
 - (BOOL)writeData:(NSData *)data toURL:(NSURL *)fileURL options:(NSDataWritingOptions)options error:(NSError **)outError;
 {

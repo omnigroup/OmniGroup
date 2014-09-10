@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,17 @@ RCS_ID("$Id$");
 {
     UITableView *_tableView;
     NSArray *_accountTypes;
+    OFXServerAccountUsageMode _usageModeToCreate;
+}
+
+- (instancetype)initWithUsageMode:(OFXServerAccountUsageMode)usageModeToCreate;
+{
+    if (!(self = [super initWithNibName:nil bundle:nil]))
+        return nil;
+    
+    _usageModeToCreate = usageModeToCreate;
+    
+    return self;
 }
 
 - (void)dealloc;
@@ -40,7 +51,8 @@ RCS_ID("$Id$");
     _tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
     _tableView.delegate = self;
     _tableView.dataSource = self;
-    _tableView.scrollEnabled = NO; // Hopefully will never have that many account types...
+    _tableView.alwaysBounceVertical = NO;
+    _tableView.rowHeight = 64;
 //    _tableView.backgroundColor = [UIColor clearColor];
 //    _tableView.backgroundView = nil;
 
@@ -61,7 +73,7 @@ RCS_ID("$Id$");
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(_cancel:)];
     }
     
-    self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Add Cloud Account", @"OmniUIDocument", OMNI_BUNDLE, @"Cloud setup modal sheet title");
+    self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Choose Account Type", @"OmniUIDocument", OMNI_BUNDLE, @"Cloud setup modal sheet title");
     
     [super viewWillAppear:animated];
 }
@@ -87,19 +99,12 @@ RCS_ID("$Id$");
         cell.textLabel.text = accountType.addAccountTitle;
         cell.detailTextLabel.text = accountType.addAccountDescription;
         cell.detailTextLabel.textColor = [UIColor omniNeutralDeemphasizedColor];
-        if (UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPhone) // no button on phone, not enough vertical room for it and the text
-            cell.imageView.image = [UIImage imageNamed:@"OUIGreenPlusButton.png"];
     }
     
     return cell;
 }
 
 #pragma mark - UITableViewDelegate
-
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
-{
-    return tableView.rowHeight + 20;
-}
 
 - (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
@@ -116,14 +121,13 @@ RCS_ID("$Id$");
     OFXServerAccountType *accountType = [_accountTypes objectAtIndex:accountTypeIndex];
 
     // Add new account
-    OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initWithAccount:nil ofType:accountType];
+    OUIServerAccountSetupViewController *setup = [[OUIServerAccountSetupViewController alloc] initForCreatingAccountOfType:accountType withUsageMode:_usageModeToCreate];
     setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError *errorOrNil){
-#ifdef OMNI_ASSERTIONS_ON
         OFXServerAccount *account = errorOrNil ? nil : vc.account;
         OBASSERT(account == nil || [[[OFXServerAccountRegistry defaultAccountRegistry] validCloudSyncAccounts] containsObject:account]);
-#endif
         
-        [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+        if (_finished)
+            _finished(account);
     };
     
     [self.navigationController pushViewController:setup animated:YES];
@@ -133,7 +137,8 @@ RCS_ID("$Id$");
 
 - (void)_cancel:(id)sender;
 {
-    [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    if (_finished)
+        _finished(nil);
 }
 
 - (void)_reloadAccountTypes;

@@ -36,7 +36,7 @@ static NSDictionary *codes;
 static NSDictionary *englishCodes;
 static NSDictionary *modifiers;
 
-static const unsigned unitFlags = NSSecondCalendarUnit | NSMinuteCalendarUnit | NSHourCalendarUnit | NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit | NSEraCalendarUnit;
+static const unsigned unitFlags = NSCalendarUnitSecond | NSCalendarUnitMinute | NSCalendarUnitHour | NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear | NSCalendarUnitEra;
 
 static OFRelativeDateParser *sharedParser;
 
@@ -84,7 +84,7 @@ static NSRegularExpression *_createRegex(NSString *pattern)
 static NSCalendar *_defaultCalendar(void)
 {
     // Not caching in case the time zone changes.
-    NSCalendar *calendar = [[[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar] autorelease];
+    NSCalendar *calendar = [[[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian] autorelease];
     [calendar setTimeZone:[NSTimeZone localTimeZone]];
     return calendar;
 }
@@ -362,7 +362,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     
     // return nil instead of the current date on empty string
     if ([NSString isEmptyString:string]) {
-	date = nil;
+	*date = nil;
 	return YES;
     }
     
@@ -530,7 +530,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
 	OFRegularExpressionMatch *hourCode = [hourCodeRegex of_firstMatchInString:string];
 	if (!hourCode && *date && !timeSpecific) {
 	    //DEBUG_DATE(@"no date information, and no hour codes, set to midnight");
-	    NSDateComponents *defaultTime = [calendar components:NSDayCalendarUnit|NSMonthCalendarUnit|NSYearCalendarUnit|NSEraCalendarUnit fromDate:*date];
+	    NSDateComponents *defaultTime = [calendar components:NSCalendarUnitDay|NSCalendarUnitMonth|NSCalendarUnitYear|NSCalendarUnitEra fromDate:*date];
 	    [defaultTime setHour:[defaultTimeDateComponents hour]];
 	    [defaultTime setMinute:[defaultTimeDateComponents minute]];
 	    [defaultTime setSecond:[defaultTimeDateComponents second]];
@@ -564,7 +564,7 @@ defaultTimeDateComponents:(NSDateComponents *)defaultTimeDateComponents
     [formatter setLocale:_locale];
     [formatter setDateFormat:dateFormat];
     
-    if ([components hour] != NSUndefinedDateComponent) 
+    if ([components hour] != NSDateComponentUndefined) 
 	[formatter setDateFormat:[[dateFormat stringByAppendingString:@" "] stringByAppendingString:timeFormat]];
     NSString *result = [formatter stringFromDate:date];
     [formatter release];
@@ -1525,7 +1525,7 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
     OBPRECONDITION(calendar);
     
     requestedWeekday+=1; // add one to the index since weekdays are 1 based, but we detect them zero-based
-    NSDateComponents *weekdayComp = [calendar components:NSWeekdayCalendarUnit fromDate:date];
+    NSDateComponents *weekdayComp = [calendar components:NSCalendarUnitWeekday fromDate:date];
     NSDateComponents *components = [[NSDateComponents alloc] init];
     NSUInteger currentWeekday = [weekdayComp weekday];
     
@@ -1577,35 +1577,35 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
     codeInt*=multiplier;
     switch (dpCode) {
 	case DPHour:
-	    if ([components hour] == NSUndefinedDateComponent)
+	    if ([components hour] == NSDateComponentUndefined)
 		[components setHour:codeInt];
 	    else
 		[components setHour:[components hour] + codeInt];
 	    DEBUG_DATE( @"Added %d hours to the components, now at: %ld hours", codeInt, [components hour] );
 	    break;
 	    case DPDay:
-	    if ([components day] == NSUndefinedDateComponent)
+	    if ([components day] == NSDateComponentUndefined)
 		[components setDay:codeInt];
 	    else 
 		[components setDay:[components day] + codeInt];
 	    DEBUG_DATE( @"Added %d days to the components, now at: %ld days", codeInt, [components day] );
 	    break;
 	    case DPWeek:
-	    if ([components day] == NSUndefinedDateComponent)
+	    if ([components day] == NSDateComponentUndefined)
 		[components setDay:codeInt*7];
 	    else
 		[components setDay:[components day] + codeInt*7];
 	    DEBUG_DATE( @"Added %d weeks(ie. days) to the components, now at: %ld days", codeInt, [components day] );
 	    break;
 	    case DPMonth:
-	    if ([components month] == NSUndefinedDateComponent)
+	    if ([components month] == NSDateComponentUndefined)
 		[components setMonth:codeInt];
 	    else 
 		[components setMonth:[components month] + codeInt];
 	    DEBUG_DATE( @"Added %d months to the components, now at: %ld months", codeInt, [components month] );
 	    break;
 	    case DPYear:
-	    if ([components year] == NSUndefinedDateComponent)
+	    if ([components year] == NSDateComponentUndefined)
 		[components setYear:codeInt];
 	    else 
 		[components setYear:[components year] + codeInt];

@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,31 +10,6 @@
 #import <OmniBase/rcsid.h>
 
 RCS_ID("$Id$")
-
-@implementation NSAppleEventDescriptor (OFExtensions)
-
-/*" This actually takes any kind of URL, but the AEDesc type is 'furl' which suggests it should only be used for urls that point to files (presumably on the local filesystem?) "*/
-+ (NSAppleEventDescriptor *)descriptorWithFileURL:(NSURL *)furl;
-{
-    if (!furl)
-        return nil;
-    
-    /* See http://developer.apple.com/technotes/tn/tn2022.html */
-    /* As of 10.5, at least, Finder seems to be accepting these */
-    
-    CFDataRef urlBytes = CFURLCreateData(kCFAllocatorDefault, (CFURLRef)furl, kCFStringEncodingUTF8, true);
-    if (urlBytes == NULL) {
-        [NSException raise:NSInternalInconsistencyException format:@"Unable to extract bytes of URL (%@)", furl];
-    }
-    
-    NSAppleEventDescriptor *result = [self descriptorWithDescriptorType:typeFileURL data:(NSData *)urlBytes];
-    
-    CFRelease(urlBytes);
-    
-    return result;
-}
-
-@end
 
 @implementation NSDictionary (OFExtensions_NSAppleEventDescriptor)
 

@@ -126,7 +126,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
             // NOTE: Adding the native type first with a null (instead of a its non-null actual type) is important for doing exports of documents exactly as they are instead of going through the exporter. Ideally both cases would be the same, but in OO/iPad the OO3 "export" path (as opposed to normal "save") has the ability to strip hidden columns, sort sorts, calculate summary values and so on for the benefit of the XSL-based exporters. If we want "export" to the OO file format to not perform these transformations, we'll need to add flags on the OOXSLPlugin to say whether the target wants them pre-applied or not.
             NSURL *documentURL = fileItem.fileURL;
             OBFinishPortingLater("<bug:///75843> (Add a UTI property to ODSFileItem)");
-            NSString *fileUTI = OFUTIForFileExtensionPreferringNative([documentURL pathExtension], NO); // NSString *fileUTI = [ODAVFileInfo UTIForURL:documentURL];
+            NSString *fileUTI = OFUTIForFileExtensionPreferringNative([documentURL pathExtension], nil); // NSString *fileUTI = [ODAVFileInfo UTIForURL:documentURL];
             iconImage = [picker exportIconForUTI:fileUTI];
             
             label = [picker exportLabelForUTI:fileUTI];
@@ -150,28 +150,13 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
     if ([inAppPurchaseExportTypes count] > 0) {
         OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
-        NSString *storeIdentifier = [inAppPurchaseExportTypes objectAtIndex:0];
+        NSString *exportType = [inAppPurchaseExportTypes objectAtIndex:0];
 
-        if ([[OUIAppController controller] importIsUnlocked:storeIdentifier]) {
-            UIImage *iconImage = [picker exportIconForAppStoreIdentifier:storeIdentifier];
-            NSString *label = [picker exportLabelForAppStoreIdentifier:storeIdentifier];
+        NSString *label = [picker purchaseDescriptionForExportType:exportType];
+        _inAppPurchaseLabel.text = label;
 
-            OUIExportOption *option = [[OUIExportOption alloc] init];
-            option.image = iconImage;
-            option.label = label;
-            option.exportType = storeIdentifier;
-            
-            [_exportOptions addObject:option];
-            
-            [_inAppPurchaseButton setHidden:YES];
-            [_inAppPurchaseLabel setHidden:YES];
-        } else {
-            NSString *label = [picker exportDescriptionForAppStoreIdentifier:storeIdentifier];
-            _inAppPurchaseLabel.text = label;
-            
-            [_inAppPurchaseButton setHidden:NO];
-            [_inAppPurchaseLabel setHidden:NO];
-        }
+        [_inAppPurchaseButton setHidden:NO];
+        [_inAppPurchaseLabel setHidden:NO];
     } else {
         [_inAppPurchaseButton setHidden:YES];
         [_inAppPurchaseLabel setHidden:YES];
@@ -217,29 +202,6 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     _exportDescriptionLabel.text = actionDescription;
     
     _rectForExportOptionButtonChosen = CGRectZero;
-    
-    if (_needsToCheckInAppPurchaseAvailability && ![_inAppPurchaseButton isHidden]) {
-        NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
-        if ([inAppPurchaseExportTypes count] > 0) {
-            OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
-            NSString *storeIdentifier = [inAppPurchaseExportTypes objectAtIndex:0];
-            
-            if ([[OUIAppController controller] importIsUnlocked:storeIdentifier]) {
-                UIImage *iconImage = [picker exportIconForAppStoreIdentifier:storeIdentifier];
-                NSString *label = [picker exportLabelForAppStoreIdentifier:storeIdentifier];
-                
-                OUIExportOption *option = [[OUIExportOption alloc] init];
-                option.image = iconImage;
-                option.label = label;
-                option.exportType = storeIdentifier;
-                
-                [_exportOptions addObject:option];
-                
-                [_inAppPurchaseButton setHidden:YES];
-                [_inAppPurchaseLabel setHidden:YES];
-            }
-        }
-    }
 }
 
 - (BOOL)shouldAutorotate;
@@ -529,21 +491,21 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     }
 }
 
-- (void)_performActionForInAppPurchaseExportOption:(OUIExportOption *)option;
+- (void)_performActionForInAppPurchaseExportOption:(id)sender;
 {
-    NSString *productIdentifier = option.exportType;
-    if ([[OUIAppController controller] importIsUnlocked:productIdentifier]) {
-        OBASSERT([[OUIAppController controller] documentUTIForInAppStoreProductIdentifier:productIdentifier] != nil);
-        NSString *fileType = [[OUIAppController controller] documentUTIForInAppStoreProductIdentifier:productIdentifier];
-        if (_exportType == OUIExportOptionsEmail) {
-            [self _foreground_disableInterfaceForExportConversion];
-            [self _foreground_emailExportOfType:fileType];
-        } else {
-            [self _beginBackgroundExportDocumentOfType:fileType];
-        }
+    _needsToCheckInAppPurchaseAvailability = YES;
+    OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+    if ([sender isKindOfClass:[OUIExportOption class]]) {
+        OUIExportOption *option = (OUIExportOption *)sender;
+        [picker purchaseExportType:option.exportType navigationController:self.navigationController];
+    } else if (sender == _inAppPurchaseButton) {
+        ODSFileItem *fileItem = picker.singleSelectedFileItem;
+        NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
+        OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
+        NSString *exportType = [inAppPurchaseExportTypes objectAtIndex:0];
+        [picker purchaseExportType:exportType navigationController:self.navigationController];
     } else {
-        _needsToCheckInAppPurchaseAvailability = YES;
-        [[OUIAppController controller] showInAppPurchases:productIdentifier navigationController:[self navigationController]];
+        OBASSERT_NOT_REACHED("unknown sender");
     }
 }
 

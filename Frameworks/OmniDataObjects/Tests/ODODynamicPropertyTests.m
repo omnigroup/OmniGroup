@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -50,13 +50,13 @@ static void *KVOContext;
     [_editingContext insertObject:dyn];
     [dyn release];
 
-    should(dyn->willAccess == NO);
-    should(dyn->didAccess == NO);
+    XCTAssertTrue(dyn->willAccess == NO);
+    XCTAssertTrue(dyn->didAccess == NO);
     
-    should(dyn.name == nil); // access it
+    XCTAssertTrue(dyn.name == nil); // access it
     
-    should(dyn->willAccess == YES);
-    should(dyn->didAccess == YES);    
+    XCTAssertTrue(dyn->willAccess == YES);
+    XCTAssertTrue(dyn->didAccess == YES);    
 #endif
 }
 
@@ -68,13 +68,13 @@ static void *KVOContext;
 
     [dyn addObserver:self forKeyPath:@"name" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld|NSKeyValueObservingOptionPrior context:&KVOContext];
     [dyn setValue:@"foo" forKey:@"name"];
-    should(receivedWill);
-    should(receivedDid);
+    XCTAssertTrue(receivedWill);
+    XCTAssertTrue(receivedDid);
 
     receivedWill = receivedDid = NO;
     dyn.name = @"bar";
-    should(receivedWill);
-    should(receivedDid);
+    XCTAssertTrue(receivedWill);
+    XCTAssertTrue(receivedDid);
     
     [dyn removeObserver:self forKeyPath:@"name"];
 }

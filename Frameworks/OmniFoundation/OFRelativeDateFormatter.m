@@ -97,7 +97,7 @@ dateString = [super stringForObjectValue:obj]; \
 	return [super stringForObjectValue:obj];
     
     NSCalendar *cal = [NSCalendar currentCalendar];
-    NSDateComponents *value = [cal components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit|NSHourCalendarUnit|NSMinuteCalendarUnit|NSWeekdayCalendarUnit fromDate:obj];
+    NSDateComponents *value = [cal components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitHour|NSCalendarUnitMinute|NSCalendarUnitWeekday fromDate:obj];
     NSDateFormatterStyle timeStyle = [self timeStyle];
     NSString *dateString = @"";
 
@@ -111,7 +111,7 @@ dateString = [super stringForObjectValue:obj]; \
     }
     
     // construct relative day names
-    NSDateComponents *today = [cal components:NSYearCalendarUnit|NSMonthCalendarUnit|NSDayCalendarUnit fromDate:[NSDate date]];
+    NSDateComponents *today = [cal components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:[NSDate date]];
     
     // if today, and no time set, just say "Today", if there is a time, return the time
     if ([self dateStyle] == NSDateFormatterNoStyle)

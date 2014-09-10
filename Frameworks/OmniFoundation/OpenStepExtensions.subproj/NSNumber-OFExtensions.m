@@ -27,6 +27,9 @@ static NSNumber *performOperationWithWidth(char op, unsigned short requiredWidth
 
 static NSCharacterSet *dotCharacterSet = nil;
 
+// Convenience initializers warn incorrectly with -Wobjc-designated-initializers when returning a new object <http://llvm.org/bugs/show_bug.cgi?id=20390>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-designated-initializers"
 - initWithString:(NSString *)aString;
 {
     /*
@@ -47,6 +50,7 @@ static NSCharacterSet *dotCharacterSet = nil;
 	return [[NSNumber alloc] initWithFloat:[aString floatValue]];
     }
 }
+#pragma clang diagnostic pop
 
 + (NSNumber *)numberByPerformingOperation:(OFArithmeticOperation)op withNumber:(NSNumber *)v1 andNumber:(NSNumber *)v2
 {
@@ -78,6 +82,7 @@ static NSCharacterSet *dotCharacterSet = nil;
 
 
 @implementation OFNaN
+
 + (OFNaN *)sharedNaN;
 {
     static OFNaN *sharedNaN = nil;
@@ -102,20 +107,9 @@ static NSCharacterSet *dotCharacterSet = nil;
 {
     return NAN;
 }
-- (id)retain;
-{
-    return self;
-}
-- (id)autorelease;
-{
-    return self;
-}
-- (oneway void)release;
-{
-}
 - (id)copyWithZone:(NSZone *)zone;
 {
-    return self;
+    return [self retain];
 }
 - (NSString *)description;
 {
@@ -130,7 +124,7 @@ static NSCharacterSet *dotCharacterSet = nil;
 static struct numericTypeAttributes numericTypeAttributes(NSNumber *n)
 {
     if (CFGetTypeID((CFTypeRef)n) == CFNumberGetTypeID()) {
-        CFTypeRef cfn = (CFTypeRef)n;
+        CFTypeRef cfn = (__bridge CFTypeRef)n;
         OBASSERT(CFNumberGetByteSize((CFTypeRef)n) < USHRT_MAX);
         return (struct numericTypeAttributes){
             .width = (unsigned short)CFNumberGetByteSize((CFTypeRef)n),

@@ -122,6 +122,9 @@ static NSArray *overrideWindows = nil;
     return [super windows];
 }
 
+// These are deprecated, but still called by the system frameworks, for example -[NSDocument runModalSavePanelForSaveOperation:delegate:didSaveSelector:contextInfo:]
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (void)beginSheet:(NSWindow *)sheet modalForWindow:(NSWindow *)docWindow modalDelegate:(id)modalDelegate didEndSelector:(SEL)didEndSelector contextInfo:(void *)contextInfo;
 {
     if ([NSAllMapTableValues(windowsForSheets) indexOfObjectIdenticalTo:docWindow] != NSNotFound) {
@@ -136,6 +139,8 @@ static NSArray *overrideWindows = nil;
 
 - (void)endSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode;
 {
+    OBASSERT_NOT_REACHED("Look for alternate API to call");
+
     // Find the document window associated with the sheet we just ended
     NSWindow *docWindow = [[(NSWindow *)NSMapGet(windowsForSheets, sheet) retain] autorelease];
     NSMapRemove(windowsForSheets, sheet);
@@ -161,6 +166,7 @@ static NSArray *overrideWindows = nil;
     [queuedSheet beginSheet];
     [queuedSheet release];
 }
+#pragma clang diagnostic pop
 
 #ifdef CustomScrollWheelHandling
 
@@ -466,15 +472,6 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 - (id)targetForAction:(SEL)theAction to:(id)theTarget from:(id)sender;
 {
-    if (theAction == @selector(validModesForFontPanel:) && ![OFVersionNumber isOperatingSystemMavericksOrLater] && [[NSProcessInfo processInfo] isSandboxed]) {
-        // Workaround for <bug:///90003> (Slow performance if font panel is up while exporting on 10.8)
-        NSWindow *mainWindow = [self mainWindow];
-        NSWindow *keyWindow = [self keyWindow];
-        if ([keyWindow isSheet] && [mainWindow attachedSheet] == keyWindow && [[[keyWindow contentView] subviews] count] == 0) {
-            return nil;
-        }
-    }
-
     if (!theAction || !OATargetSelection)
         return [super targetForAction:theAction to:theTarget from:sender];
     
@@ -721,7 +718,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
         NSString *title = [[mainBundle localizedInfoDictionary] stringForKey:@"OAHelpBookName"];
         if ([NSString isEmptyString:title]) {
-            title = [[mainBundle infoDictionary] stringForKey:@"OAHelpBookName"];
+            title = [infoDict stringForKey:@"OAHelpBookName"];
         }
         
         if ([NSString isEmptyString:title]) {
@@ -730,12 +727,18 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
         OAWebPageViewer *viewer = [OAWebPageViewer sharedViewerNamed:@"Help"];
         viewer.usesWebPageTitleForWindowTitle = NO;
-        
+
+        CGFloat startingWidth = [infoDict floatForKey:@"OAHelpWidth" defaultValue:800.0f];
+        CGFloat startingHeight = [infoDict floatForKey:@"OAHelpHeight" defaultValue:650.0f];
+        CGFloat minHeight = [infoDict floatForKey:@"OAHelpMinHeight" defaultValue:200.0f];
+        CGFloat minWidth = [infoDict floatForKey:@"OAHelpMinWidth" defaultValue:startingWidth];
+        CGFloat maxWidth = [infoDict floatForKey:@"OAHelpMaxWidth" defaultValue:startingWidth];
+
         NSWindow *window = [viewer window];
         [window setTitle:title];
-        [window setContentMinSize:(NSSize) {.height = 200, .width = 800}];
-        [window setContentMaxSize:(NSSize) {.height = CGFLOAT_MAX, .width = 800}];
-        [window setContentSize:(NSSize) {.height = 650, .width = 800}];
+        [window setContentMinSize:(NSSize) {.height = minHeight, .width = minWidth}];
+        [window setContentMaxSize:(NSSize) {.height = CGFLOAT_MAX, .width = maxWidth}];
+        [window setContentSize:(NSSize) {.height = startingHeight, .width = startingWidth}];
         [window center];
         
         NSURLRequest *request = [NSURLRequest requestWithURL:targetURL];

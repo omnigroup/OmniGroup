@@ -1,4 +1,4 @@
-// Copyright 2008-2013 The Omni Group. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,7 @@ OB_REQUIRE_ARC
 RCS_ID("$Id$")
 
 @interface OFNetStateRegistrationEntry : NSObject
-@property(nonatomic,readonly) NSTimeInterval discovertyTimeInterval;
+@property(nonatomic,readonly) NSTimeInterval discoveryTimeInterval;
 @property(nonatomic,copy) NSString *name;
 @property(nonatomic,assign) BOOL resolveStarted; // At least on 10.9b5, we can get multiple calls to -netServiceDidResolveAddress:.
 @property(nonatomic,assign) BOOL resolveReceived;
@@ -39,16 +39,16 @@ RCS_ID("$Id$")
     if (!(self = [super init]))
         return nil;
     
-    _discovertyTimeInterval = [NSDate timeIntervalSinceReferenceDate];
+    _discoveryTimeInterval = [NSDate timeIntervalSinceReferenceDate];
     
     return self;
 }
 
 - (NSComparisonResult)comparyByDiscoveryTimeInterval:(OFNetStateRegistrationEntry *)otherEntry;
 {
-    if (_discovertyTimeInterval < otherEntry->_discovertyTimeInterval)
+    if (_discoveryTimeInterval < otherEntry->_discoveryTimeInterval)
         return NSOrderedAscending;
-    if (_discovertyTimeInterval > otherEntry->_discovertyTimeInterval)
+    if (_discoveryTimeInterval > otherEntry->_discoveryTimeInterval)
         return NSOrderedDescending;
     
     OBASSERT_NOT_REACHED("Really discovered two instances this close in time?");
@@ -146,6 +146,8 @@ static NSInteger OFNetStateNotifierDebug;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
+    DEBUG_NOTIFIER(1, "Invalidating");
+    
     [_updateStateTimer invalidate];
     _updateStateTimer = nil;
     
@@ -235,7 +237,12 @@ static NSInteger OFNetStateNotifierDebug;
 - (void)netServiceBrowser:(NSNetServiceBrowser *)aNetServiceBrowser didRemoveService:(NSNetService *)service moreComing:(BOOL)moreComing;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION([_serviceToEntry objectForKey:service]);
+    
+    // This can happen if we are quickly invalidating an old OFNetStateNotifier/OFNetStateRegistration setup and making a new one. NSNetServiceBrowser doesn't keep track of whether it has sent us particular NSNetService instances and will happily send us notifications for services that are disappearing.
+    if ([_serviceToEntry objectForKey:service] == nil) {
+        OBASSERT(service.delegate == nil);
+        return;
+    }
     
     DEBUG_NOTIFIER(1, @"removed service %@, more coming %d", service, moreComing);
     
@@ -250,7 +257,7 @@ static NSInteger OFNetStateNotifierDebug;
     [_serviceToEntry removeObjectForKey:service];
 
     if (!moreComing) {
-        DEBUG_NOTIFIER(2, @"_serviceToEntry = %@", _serviceToEntry);
+        DEBUG_NOTIFIER(3, @"_serviceToEntry = %@", _serviceToEntry);
     }
     
     // Observers don't care if old states go offline, only if new ones appear. If this service comes back online, we might treat it as new (we used to store old states -- might need to re-add that).
@@ -263,16 +270,23 @@ static NSInteger OFNetStateNotifierDebug;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    DEBUG_NOTIFIER(2, @"resolved service %@: hostname=%@", service, [service hostName]);
+    DEBUG_NOTIFIER(2, @"resolved service %@: hostname=%@, TXT=%@", service, [service hostName], [service TXTRecordData]);
     DEBUG_NOTIFIER(3, @"addresses=%@", [[service addresses] description]);
     
     OFNetStateRegistrationEntry *entry = [_serviceToEntry objectForKey:service];
     OBASSERT(entry);
     OBASSERT(entry.resolveStarted);
 
+    // In iOS 8 b5 and 10.10 b5, we often receive spurious <00> TXT updates (which get interpreted as zero entry dictionaries). We'll ignore these (we often get good updates and bad ones, sometimes just bad ones until we try to re-resolve).
+    NSData *txtData = [service TXTRecordData];
+    if ([txtData length] <= 1) {
+        DEBUG_NOTIFIER(1, @"  ... bad TXT record; ignoring");
+        return;
+    }
+    
     // We assume that NSNetServices participating in this protocol will never change their peer group (the service should go away and a different one should come back).
     __autoreleasing NSString *errorString;
-    NSDictionary *txtRecord = OFNetStateTXTRecordDictionaryFromData([service TXTRecordData], YES, &errorString);
+    NSDictionary *txtRecord = OFNetStateTXTRecordDictionaryFromData(txtData, YES, &errorString);
     if (!txtRecord) {
         NSLog(@"Unable to unarchive TXT record: %@", errorString);
         service.delegate = nil;
@@ -287,6 +301,8 @@ static NSInteger OFNetStateNotifierDebug;
     NSString *groupIdentifier = txtRecord[OFNetStateRegistrationGroupIdentifierKey];
     if ([NSString isEmptyString:groupIdentifier]) {
         DEBUG_NOTIFIER(1, @"service has no peer group %@", service);
+        DEBUG_NOTIFIER(2, @"   ... in TXT %@", [service TXTRecordData]);
+        DEBUG_NOTIFIER(2, @"   ... in TXT %@", txtRecord);
         return;
     }
     
@@ -329,6 +345,16 @@ static NSInteger OFNetStateNotifierDebug;
     // Called when our -resolveWithTimeout: call finishes. We shuld have received -netServiceDidResolveAddress: or -netService:didNotResolve: already
     DEBUG_NOTIFIER(2, @"service did stop %@, entry %@", service, entry);
     
+    // In iOS 8 b5 and 10.10b5, we often get spurious TXT data updates of <00>. We ignore these and try re-resolving.
+    if (entry.txtRecord == nil) {
+        entry.resolveStopped = NO;
+        entry.resolveReceived = NO;
+        
+        DEBUG_NOTIFIER(1, @"  ... no good TXT records received -- retrying resolve");
+        [service resolveWithTimeout:RESOLVE_TIMEOUT];
+        return;
+    }
+    
     // We ignore entries that are still resolving, so we need to update again now that this one has finished.
     [self _queueUpdateState];
 }
@@ -349,8 +375,15 @@ static NSInteger OFNetStateNotifierDebug;
     OBASSERT(entry.resolveStarted);
     // OBASSERT(entry.resolveStopped); We get the first TXT record update from our resolve before -netServiceDidStop:.
 
-    DEBUG_NOTIFIER(1, @"service did update TXT record %@", service);
+    DEBUG_NOTIFIER(1, @"service did update TXT record %@ to %@", service, data);
     
+    // In iOS 8 b5 and 10.10 b5, we often receive spurious <00> TXT updates (which get interpreted as zero entry dictionaries). We'll ignore these (we often get good updates and bad ones, sometimes just bad ones until we try to re-resolve).
+    NSData *txtData = [service TXTRecordData];
+    if ([txtData length] <= 1) {
+        DEBUG_NOTIFIER(1, @"  ... bad TXT record; ignoring");
+        return;
+    }
+
     __autoreleasing NSString *errorString;
     NSDictionary *txtRecord = OFNetStateTXTRecordDictionaryFromData(data, YES, &errorString);
     if (!txtRecord) {
@@ -443,11 +476,13 @@ static const NSTimeInterval kUpdateStateCoalesceInterval = 0.25;
         NSMutableArray *entries = [NSMutableArray array];
         for (NSNetService *service in _serviceToEntry) {
             OFNetStateRegistrationEntry *entry = [_serviceToEntry objectForKey:service];
+            if (entry.monitoring == NO && OFNetStateNotifierDebug < 3)
+                continue; // Don't spew log information for everything in the world unless the debug level is really elevated
             [entries addObject:entry];
         }
         [entries sortUsingSelector:@selector(comparyByDiscoveryTimeInterval:)];
         
-        DEBUG_NOTIFIER(0, @"Updating state based on monitored groups %@ and entries:\n%@", [[_monitoredGroupIdentifiers allObjects] sortedArrayUsingSelector:@selector(compare:)], [entries arrayByPerformingSelector:@selector(shortDescription)]);
+        DEBUG_NOTIFIER(2, @"Updating state based on monitored groups %@ and entries:\n%@", [[[_monitoredGroupIdentifiers allObjects] sortedArrayUsingSelector:@selector(compare:)] componentsJoinedByString:@", "], [entries arrayByPerformingSelector:@selector(shortDescription)]);
     }
     
     /*
@@ -465,45 +500,48 @@ static const NSTimeInterval kUpdateStateCoalesceInterval = 0.25;
     
     for (NSNetService *service in _serviceToEntry) {
         OFNetStateRegistrationEntry *entry = [_serviceToEntry objectForKey:service];
-        DEBUG_NOTIFIER(2, @"  looking for updates for entry %@", [entry shortDescription]);
+        
+        NSInteger debugLevel = entry.monitoring ? 2 : 3;
+
+        DEBUG_NOTIFIER(debugLevel, @"  looking for updates for entry %@", [entry shortDescription]);
 
         if (!entry.resolveStopped) {
-            DEBUG_NOTIFIER(2, @"  still resolving");
+            DEBUG_NOTIFIER(debugLevel, @"  still resolving");
             continue;
         }
         
         NSDictionary *txtRecord = entry.txtRecord;
         if (!txtRecord) {
             // Failed to resolve or we aren't even interested in it.
-            DEBUG_NOTIFIER(2, @"  no TXT record -- failed to resolve or we haven't asked it to");
+            DEBUG_NOTIFIER(debugLevel, @"  no TXT record -- failed to resolve or we haven't asked it to");
             continue;
         }
         
         // Ignore registrations that are from the same member (possibly more than one in the same process, so this is not a host check).
         NSString *memberIdentifier = txtRecord[OFNetStateRegistrationMemberIdentifierKey];
         if ([NSString isEmptyString:memberIdentifier] || [_memberIdentifier isEqual:memberIdentifier]) {
-            DEBUG_NOTIFIER(2, @"  no member identifier (or it is us)");
+            DEBUG_NOTIFIER(debugLevel, @"  no member identifier (or it is us)");
             continue;
         }
         
         // Ignore invalid TXT records, or those from groups we don't care about.
         NSString *groupIdentifier = txtRecord[OFNetStateRegistrationGroupIdentifierKey];
         if ([NSString isEmptyString:groupIdentifier] || [_monitoredGroupIdentifiers member:groupIdentifier] == nil) {
-            DEBUG_NOTIFIER(2, @"  no group identifier, or it is not a monitored group");
+            DEBUG_NOTIFIER(debugLevel, @"  no group identifier, or it is not a monitored group");
             continue;
         }
         
         // Ignore registrations that haven't published a state yet. An empty string is considered a valid state, unlike the member/group strings (might be a list of document identifiers, so the empty string would be "no documents").
         NSString *state = txtRecord[OFNetStateRegistrationStateKey];
         if (!state) {
-            DEBUG_NOTIFIER(2, @"  no state");
+            DEBUG_NOTIFIER(debugLevel, @"  no state");
             continue;
         }
         
         NSString *version = txtRecord[OFNetStateRegistrationVersionKey];
         if (!version) {
             OBASSERT_NOT_REACHED("Bad client? Should include a version if there is a state");
-            DEBUG_NOTIFIER(2, @"  no version");
+            DEBUG_NOTIFIER(debugLevel, @"  no version");
             continue;
         }
         
@@ -513,7 +551,7 @@ static const NSTimeInterval kUpdateStateCoalesceInterval = 0.25;
             entry.reportedVersion = version;
             changed = YES;
         } else {
-            DEBUG_NOTIFIER(2, @"  reported version hasn't changed");
+            DEBUG_NOTIFIER(debugLevel, @"  reported version hasn't changed");
         }
     }
     

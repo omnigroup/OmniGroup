@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,6 +72,17 @@ RCS_ID("$Id$");
 
 @synthesize selectionValue = _selectionValue;
 
+- (void)handleColorChange:(OQColor *)color;
+{
+    NSArray *appropriateObjects = self.appropriateObjectsForInspection;
+    [self.inspector beginChangeGroup];
+    {
+        for (id object in appropriateObjects)
+            [self setColor:color forObject:object];
+    }
+    [self.inspector endChangeGroup];
+}
+
 - (void)changeColor:(id)sender;
 {
     OBPRECONDITION([sender conformsToProtocol:@protocol(OUIColorValue)]);
@@ -84,7 +95,6 @@ RCS_ID("$Id$");
     BOOL isContinuousChange = colorValue.isContinuousColorChange;
     
     OUIInspector *inspector = self.inspector;
-    NSArray *appropriateObjects = self.appropriateObjectsForInspection;
     
     if (isContinuousChange && !_inContinuousChange) {
         //NSLog(@"will begin");
@@ -92,12 +102,7 @@ RCS_ID("$Id$");
         [inspector willBeginChangingInspectedObjects];
     }
     
-    [inspector beginChangeGroup];
-    {
-        for (id object in appropriateObjects)
-            [self setColor:color forObject:object];
-    }
-    [inspector endChangeGroup];
+    [self handleColorChange:color];
     
     // Pre-populate our selected color before querying back from the objects. This will allow us to keep the original colorspace if the colors are equivalent enough.
     // Do this before calling -updateInterfaceFromInspectedObjects: or -didEndChangingInspectedObjects (which will also update the interface) since that'll read the current selectionValue.

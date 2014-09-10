@@ -45,10 +45,10 @@ RCS_ID("$Id$")
 @end
 
 static const NSUInteger OFXFileItemUnknownVersion = NSUIntegerMax;
+static OFPreference *OFXFileItemRecentErrorExpirationTimeInterval;
 
 @implementation OFXFileItem
 {
-    OFXRegistrationTable *_metadataRegistrationTable;
     OFXFileSnapshot *_snapshot;
     OFXFileSnapshotTransfer *_currentTransfer;
 
@@ -57,6 +57,9 @@ static const NSUInteger OFXFileItemUnknownVersion = NSUIntegerMax;
     
     // During a remote scan, our container will tell us our latest version number. Set to OFXFileItemUnknownVersion if we don't know of any newer version than _snapshot.version
     NSUInteger _newestRemoteVersion;
+    
+    // Used to record recurring errors (which we might not otherwise log) so that we can throttle/pause operations if there are too many.
+    NSMutableArray *_recentErrors;
 }
 
 static NSURL *_makeLocalSnapshotURL(OFXContainerAgent *containerAgent, NSString *identifier)
@@ -112,7 +115,7 @@ NSString *OFXFileItemIdentifierFromRemoteSnapshotURL(NSURL *remoteSnapshotURL, N
     NSString *versionString = components[1];
     if ([versionString rangeOfCharacterFromSet:NonDigitSet].length > 0) {
         OFXError(outError, OFXSnapshotCorrupt, ([NSString stringWithFormat:@"Document URL has a last path component of \"%@\" which does not have a valid version number.", remoteSnapshotURL.lastPathComponent]), nil);
-        return NO;
+        return nil;
     }
     
     if (outVersion)
@@ -130,7 +133,7 @@ NSArray *OFXFetchDocumentFileInfos(OFXConnection *connection, NSURL *containerUR
         if (outError)
             *outError = error;
         OBChainError(outError);
-        return NO;
+        return nil;
     }
     
     // Don't require full parsing of the id~version.
@@ -228,7 +231,14 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     return [containerAgent.remoteContainerDirectory URLByAppendingPathComponent:directoryName isDirectory:YES];
 }
 
-- _initWithIdentifier:(NSString *)identifier snapshot:(OFXFileSnapshot *)snapshot localDocumentURL:(NSURL *)localDocumentURL  container:(OFXContainerAgent *)container error:(NSError **)outError;
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    OFXFileItemRecentErrorExpirationTimeInterval = [OFPreference preferenceForKey:@"OFXFileItemRecentErrorExpirationTimeInterval"];
+}
+
+- _initWithIdentifier:(NSString *)identifier snapshot:(OFXFileSnapshot *)snapshot localDocumentURL:(NSURL *)localDocumentURL intendedLocalRelativePath:(NSString *)intendedLocalRelativePath container:(OFXContainerAgent *)container error:(NSError **)outError;
 {
     OBPRECONDITION(![NSString isEmptyString:identifier]);
     OBPRECONDITION([identifier containsString:OFXRemoteFileIdentifierToVersionSeparator] == NO, @"Should split out the file identifier");
@@ -238,7 +248,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     OBPRECONDITION(localDocumentURL);
     OBPRECONDITION([[snapshot.localSnapshotURL lastPathComponent] isEqual:identifier]);
     OBPRECONDITION(container);
-        
+
     // Locally deleted files should be missing ... but we can't assert this since the document might have been removed while we weren't running
     // OBPRECONDITION(snapshot.localState.deleted ^ [localDocumentURL checkResourceIsReachableAndReturnError:NULL]);
     OBASSERT_IF([localDocumentURL checkResourceIsReachableAndReturnError:NULL], OFURLIsStandardized(localDocumentURL), @"If the URL exists, it should be standardized (otherwise it has been deleted and we are or are about to be marked as deleted");
@@ -248,20 +258,20 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
         
     _weak_container = container;
     
-    _metadataRegistrationTable = container.metadataRegistrationTable;
-    OBASSERT(_metadataRegistrationTable);
-
     _identifier = [identifier copy];
     _snapshot = snapshot;
     _newestMissingVersion = OFXFileItemUnknownVersion;
     _newestRemoteVersion = OFXFileItemUnknownVersion;
     
-    _localRelativePath = [[container _localRelativePathForFileURL:localDocumentURL] copy];
+    NSString *localRelativePath = [container _localRelativePathForFileURL:localDocumentURL];
+    OBASSERT(![localRelativePath isEqualToString:intendedLocalRelativePath], @"Should be nil or a different path");
+    OBASSERT(!intendedLocalRelativePath || [[localRelativePath pathExtension] isEqualToString:[intendedLocalRelativePath pathExtension]]);
+
+    _localRelativePath = [localRelativePath copy];
     OBASSERT([_localRelativePath isEqual:snapshot.localRelativePath]);
     
     // The current URL of the document we represent. This might not yet exist if the download got killed off before we could make the stub.
-    _localDocumentURL = [localDocumentURL copy];
-    OBASSERT([_localDocumentURL isEqual:[container _URLForLocalRelativePath:snapshot.localRelativePath isDirectory:snapshot.directory]]);
+    _localDocumentURL = [container _URLForLocalRelativePath:_localRelativePath isDirectory:snapshot.directory];
 
     // Start out with the right content greediness.
     _contentsRequested = container.automaticallyDownloadFileContents;
@@ -274,12 +284,19 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
 // Used when the container agent has detected a new local file. The returned instance will have a local snapshot, but nothing will exist on the server.
 - (id)initWithNewLocalDocumentURL:(NSURL *)localDocumentURL container:(OFXContainerAgent *)container error:(NSError **)outError;
 {
+    return [self initWithNewLocalDocumentURL:localDocumentURL asConflictGeneratedFromFileItem:nil coordinator:nil container:container error:outError];
+}
+
+- (id)initWithNewLocalDocumentURL:(NSURL *)localDocumentURL asConflictGeneratedFromFileItem:(OFXFileItem *)originalItem coordinator:(NSFileCoordinator *)coordinator container:(OFXContainerAgent *)container error:(NSError **)outError;
+{
+    OBPRECONDITION(!originalItem || coordinator, "If an original item is specified, we must also get a file coordinator that is already reading it"); // We get passed down a file coordinator that was involved in reading the (now moved) localDocumentURL or the original item and reuse it here to avoid deadlock.
+    
     NSString *identifier = OFXMLCreateID();
     NSURL *localSnapshotURL = _makeLocalSnapshotURL(container, identifier);
     NSString *localRelativePath = [container _localRelativePathForFileURL:localDocumentURL];
-
+    
     // Immediately create our snapshot so that we can check if further edits should provoke another upload.
-    OFXFileSnapshot *snapshot = [[OFXFileSnapshot alloc] initWithTargetLocalSnapshotURL:localSnapshotURL forNewLocalDocumentAtURL:localDocumentURL localRelativePath:localRelativePath error:outError];
+    OFXFileSnapshot *snapshot = [[OFXFileSnapshot alloc] initWithTargetLocalSnapshotURL:localSnapshotURL forNewLocalDocumentAtURL:localDocumentURL localRelativePath:localRelativePath intendedLocalRelativePath:originalItem.intendedLocalRelativePath coordinator:coordinator error:outError];
     if (!snapshot)
         return nil;
     OBASSERT(snapshot.remoteState.missing);
@@ -290,13 +307,10 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
         return nil;
     
     [snapshot didMoveToTargetLocalSnapshotURL:localSnapshotURL];
-
-    if (!(self = [self _initWithIdentifier:identifier snapshot:snapshot localDocumentURL:localDocumentURL container:container error:outError]))
+    
+    if (!(self = [self _initWithIdentifier:identifier snapshot:snapshot localDocumentURL:localDocumentURL intendedLocalRelativePath:originalItem.intendedLocalRelativePath container:container error:outError]))
         return nil;
     
-    // Publish the starting version of our metadata
-    _metadataRegistrationTable[_identifier] = [self _makeMetadata];
-
     OBPOSTCONDITION([self _checkInvariants]);
     return self;
 }
@@ -347,11 +361,8 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     NSURL *localDocumentURL = [container _URLForLocalRelativePath:snapshot.localRelativePath isDirectory:snapshot.directory];
     OBASSERT([container.identifier isEqualToString:[OFXContainerAgent containerAgentIdentifierForFileURL:localDocumentURL]]);
     
-    if (!(self = [self _initWithIdentifier:fileIdentifier snapshot:snapshot localDocumentURL:localDocumentURL container:container error:outError]))
+    if (!(self = [self _initWithIdentifier:fileIdentifier snapshot:snapshot localDocumentURL:localDocumentURL intendedLocalRelativePath: nil container:container error:outError]))
         return nil;
-    
-    // Publish the starting version of our metadata; further changes will be kicked off by file presenter notifications
-    _metadataRegistrationTable[_identifier] = [self _makeMetadata];
     
     OBPOSTCONDITION([self _checkInvariants]);
     return self;
@@ -373,30 +384,11 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     NSURL *localDocumentURL = [container _URLForLocalRelativePath:snapshot.localRelativePath isDirectory:snapshot.directory];
     OBASSERT([container.identifier isEqualToString:[OFXContainerAgent containerAgentIdentifierForFileURL:localDocumentURL]]);
 
-    if (!(self = [self _initWithIdentifier:[localSnapshotURL lastPathComponent] snapshot:snapshot localDocumentURL:localDocumentURL container:container error:outError]))
+    if (!(self = [self _initWithIdentifier:[localSnapshotURL lastPathComponent] snapshot:snapshot localDocumentURL:localDocumentURL intendedLocalRelativePath: nil container:container error:outError]))
         return nil;
         
-    if (snapshot.localState.deleted == NO) {
-        // Publish the starting version of our metadata; further changes will be kicked off by file presenter notifications
-        _metadataRegistrationTable[_identifier] = [self _makeMetadata];
-    }
-    
     OBPOSTCONDITION([self _checkInvariants]);
     return self;
-}
-
-- (void)dealloc;
-{
-    OBPRECONDITION(_metadataRegistrationTable == nil); // -invalidate should have been called so we'll remove our item
-    OBPRECONDITION(_weak_container == nil);
-}
-
-- (void)invalidate;
-{
-    [_metadataRegistrationTable removeObjectForKey:_identifier];
-    _metadataRegistrationTable = nil;
-    
-    _weak_container = nil;
 }
 
 @synthesize container = _weak_container;
@@ -406,25 +398,6 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     OBPRECONDITION(_snapshot);
     
     return _snapshot.version;
-}
-
-- (void)setShadowedByOtherFileItem:(BOOL)shadowedByOtherFileItem;
-{
-    if (_shadowedByOtherFileItem == shadowedByOtherFileItem)
-        return;
-    
-    _shadowedByOtherFileItem = shadowedByOtherFileItem;
-    
-    // Shadowed items don't own their local document URL, so we better have already been set to not have any contents (moving any local edits aside as a conflict version).
-    OBASSERT_IF(_shadowedByOtherFileItem, self.localState.missing || self.localState.deleted);
-    
-    [self _updatedMetadata];
-    
-    if (!_shadowedByOtherFileItem && _contentsRequested && self.localState.missing) {
-        // We may have rejected download requests before, but now it would be OK.
-        OFXContainerAgent *container = _weak_container;
-        [container newlyUnshadowedFileItemRequestsContents:self];
-    }
 }
 
 @synthesize localDocumentURL = _localDocumentURL;
@@ -444,10 +417,46 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     return _localRelativePath;
 }
 
+- (NSString *)intendedLocalRelativePath;
+{
+    return _snapshot.intendedLocalRelativePath;
+}
+
 - (NSString *)requestedLocalRelativePath;
 {
     OBPRECONDITION(_localRelativePath);
     return _localRelativePath;
+}
+
+- (OFXRecentError *)mostRecentTransferError;
+{
+    return [_recentErrors lastObject];
+}
+
+- (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary *)recentErrorsByLocalRelativePath;
+{
+    if ([_recentErrors count] == 0)
+        return;
+        
+    // Remove any stale errors
+    NSDate *keepErrorsAfterDate = [NSDate dateWithTimeIntervalSinceNow:-[OFXFileItemRecentErrorExpirationTimeInterval doubleValue]];
+    OFXRecentError *recentError;
+    while ((recentError = [_recentErrors firstObject])) {
+        if ([recentError.date isAfterDate:keepErrorsAfterDate])
+            break;
+        [_recentErrors removeObjectAtIndex:0];
+    }
+    
+    if ([_recentErrors count] == 0) {
+        _recentErrors = nil;
+    } else {
+        [recentErrorsByLocalRelativePath setObject:[_recentErrors copy] forKey:_localRelativePath];
+    }
+}
+
+- (void)clearRecentTransferErrors;
+{
+    _recentErrors = nil;
 }
 
 - (NSDate *)userCreationDate;
@@ -574,12 +583,12 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     return [_snapshot markAsRemotelyDeleted:outError];
 }
 
-// We expect that our container will ask us to upload a snapshot after this.
-- (void)didMoveToURL:(NSURL *)localDocumentURL;
+// If this a user-indented move, we expect that our container will ask us to upload a snapshot after this.
+- (void)markAsMovedToURL:(NSURL *)localDocumentURL source:(OFXFileItemMoveSource)source;
 {
     OBPRECONDITION([localDocumentURL isFileURL]);
     OBPRECONDITION(![localDocumentURL isFileReferenceURL]);
-    OBPRECONDITION(OFNOTEQUAL(_localDocumentURL, localDocumentURL));
+    OBPRECONDITION(OFNOTEQUAL(_localDocumentURL, localDocumentURL) || (source == OFXFileItemMoveSourceLocalUser && self.localState.autoMoved)); // Might be finalizing a conflict name via -_finalizeConflictNamesForFilesIntendingToBeAtRelativePaths:
     OBPRECONDITION(self.localState.missing || OFURLIsStandardizedOrMissing(localDocumentURL)); // Allow for missing URLs since it might get moved again quickly or deleted
     
     OFXContainerAgent *container = _weak_container;
@@ -592,9 +601,9 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     _localDocumentURL = [localDocumentURL copy];
     DEBUG_SYNC(2, @"File item moved, -didMoveToURL: %@ / %@", _localRelativePath, _localDocumentURL);
 
-    // Record the updated relative path in the snapshot's Version.plist so that if the move doesn't happen before we shutdown we can remember it for the next time we have a chance to sync.
+    // Record the updated relative path in the snapshot's Version.plist so that, if we exit, we can still associate this file item's snapshot with the proper filesystem object the next time we run.
     __autoreleasing NSError *error;
-    if (![_snapshot markAsLocallyMovedToRelativePath:_localRelativePath error:&error]) {
+    if (![_snapshot markAsLocallyMovedToRelativePath:_localRelativePath isAutomaticMove:(source == OFXFileItemMoveSourceAutomatic) error:&error]) {
         // This isn't fatal but could cause data duplication. If we don't push this move to the server before we a quit/restart cycle, our startup scan on the next launch will see a file in a new location (treating it as an add) and see a missing file in the old location (treating it as a delete). If other clients had edits to the file that was deleted, the conflict resolution should resurrect those files.
         NSLog(@"Error marking snapshot for item %@ as being a moved to %@: %@", [self shortDescription], _localRelativePath, [error toPropertyList]);
     }
@@ -631,14 +640,14 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
 #ifdef OMNI_ASSERTIONS_ON
     OFXFileState *remoteState = _snapshot.remoteState;
 #endif
-    OBASSERT(remoteState.missing || localState.edited || localState.moved, @"Why are we uploading, otherwise?");
+    OBASSERT(remoteState.missing || localState.edited || localState.userMoved, @"Why are we uploading, otherwise?");
 
     NSURL *currentRemoteSnapshotURL = _makeRemoteSnapshotURL(containerAgent, self, _snapshot);
     
     DEBUG_CONTENT(1, @"Starting upload with content \"%@\"", OFXLookupDisplayNameForContentIdentifier(_snapshot.currentContentIdentifier));
     
     OFXFileSnapshotUploadTransfer *transfer;
-    if (localState.missing && localState.moved)
+    if (localState.missing && localState.userMoved)
         // Doing a rename of a file that hasn't been downloaded. In this case, we don't have a local copy of the document to use as the basis for an upload (and there is no chance of its contents having been changed).
         transfer = [[OFXFileSnapshotUploadRenameTransfer alloc] initWithConnection:connection currentSnapshot:_snapshot remoteTemporaryDirectory:containerAgent.remoteTemporaryDirectory currentRemoteSnapshotURL:currentRemoteSnapshotURL error:outError];
     else
@@ -657,6 +666,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     transfer.commit = ^BOOL(NSError **outError){
 #ifdef OMNI_ASSERTIONS_ON
         BOOL movedWhileUploading = NO;
+        BOOL moveWhileUploadingIsAutomatic = NO;
 #endif
         
         // Commit the upload remotely and locally.
@@ -690,6 +700,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
             // Move the new remote snapshot version into place. If this fails due to something being there already, there is a conflict.
             __autoreleasing NSError *moveError;
             targetRemoteSnapshotURL = OFXMoveURLToMissingURLCreatingContainerIfNeeded(connection, temporaryRemoteSnapshotURL, targetRemoteSnapshotURL, &moveError);
+
             if (!targetRemoteSnapshotURL) {
                 if ([moveError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_PRECONDITION_FAILED]) {
                     // Another client has already made this version. Conflict (but we'll let the download path deal with it). We could make the conflict document here via _generateConflictDocumentFromLocalContentsAndRevertToLocallyMissingWithCoordinator: if it turns out to be convenient.
@@ -711,14 +722,14 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
             if (currentRemoteSnapshotURL) {
                 /*
                  
-                 Delete the old version on the server. Don't need to first move it into the tmp directory since even if the delete is only partially successful, the newer version will shadow the old one. We do need to signal conflict if this delete fails, though, since it means that another client has moved the version forward on us (or deleted the file).
+                 Delete the old version on the server. Don't need to first move it into the tmp directory since even if the delete is only partially successful, the newer version will supercede the old one. We do need to signal conflict if this delete fails, though, since it means that another client has moved the version forward on us (or deleted the file).
                 
                  Consider:
                  - client A and B both have version 0
                  - A quickly updates the file to version 1 and then 2, deleting versions 0 and 1.
-                 - B updates the file and attempts to write version 1 (succeeds, but it is shadowed now) and removes version 0 (and gets a 404).
+                 - B updates the file and attempts to write version 1 (succeeds, but it is superceded now) and removes version 0 (and gets a 404).
                  
-                 When deleting shadowed old versions, this also means we need to oldest first, not just in any random order as long as they are shadowed, otherwise, we could have:
+                 When deleting superceded old versions, this also means we need to oldest first, not just in any random order as long as they are superceded, otherwise, we could have:
                  
                  - A and B at zero
                  - A quickly goes to 3 and for whatever reason, we delete old versions in the order 2, 1, 0
@@ -739,7 +750,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
                 });
                 if (deleteError) {
                     if ([deleteError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
-                        // If we expected vN to be there and some other client has moved us on to vN+1, we just wrote a shadowed version. Need to generate a conflict. This stale version will get cleaned up on a future scan.
+                        // If we expected vN to be there and some other client has moved us on to vN+1, we just wrote a superceded version. Need to generate a conflict. This stale version will get cleaned up on a future scan.
                         [containerAgent _fileItemDidDetectUnknownRemoteEdit:self];
                     } else {
                         [deleteError log:@"Error removing original remote snapshot at %@ while uploading new version. Conflict?", currentRemoteSnapshotURL];
@@ -755,12 +766,14 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
             }
             
             // The uploading snapshot is based on our _snapshot when we started the upload. We might have been moved since then! Make sure we don't clobber this in the new snapshot -- we want to start a new upload if this happens. We already do (later on in the commit) check if the file has changed from this state for an edit upload.
-            if (OFNOTEQUAL(_snapshot.localRelativePath, uploadingSnapshot.localRelativePath)) {
+            // We check !autoMoved here so that we don't mess up on -[OFXRenameTestCase testRenameOfNewLocalFileWhileUploading]. In this case, when the move happens, our current snapshot still has remoteState of missing. In this case, we don't mark the local snapshot as having been moved since there is nothing on the server to update. But once we get here, we know that there is. Instead of checking !autoMoved, we could maybe check userMoved as wel as checking if the snapshot was previously missing on the server.
+            if (OFNOTEQUAL(_snapshot.localRelativePath, uploadingSnapshot.localRelativePath) && (_snapshot.localState.autoMoved == NO) /* Not checking userMoved -- see above */) {
 #ifdef OMNI_ASSERTIONS_ON
                 movedWhileUploading = YES;
+                moveWhileUploadingIsAutomatic = NO;
 #endif
                 __autoreleasing NSError *markError;
-                if (![uploadingSnapshot markAsLocallyMovedToRelativePath:_snapshot.localRelativePath error:&markError]) {
+                if (![uploadingSnapshot markAsLocallyMovedToRelativePath:_snapshot.localRelativePath isAutomaticMove:NO error:&markError]) {
                     [markError log:@"Error marking uploading snapshot as moved to %@", _snapshot.localRelativePath];
                     cleanup();
                     if (outError)
@@ -796,11 +809,14 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
             // Rename of non-downloaded file
             OBASSERT(uploadedSnapshot.localState.missing);
         } else if (movedWhileUploading) {
-            OBASSERT(uploadedSnapshot.localState.moved);
+            if (moveWhileUploadingIsAutomatic)
+                OBASSERT(uploadedSnapshot.localState.autoMoved);
+            else
+                OBASSERT(uploadedSnapshot.localState.userMoved);
             OBASSERT(uploadedSnapshot.remoteState.normal);
         } else {
-            // Regular ol' upload.
-            OBASSERT(uploadedSnapshot.localState.normal);
+            // Regular ol' upload, or upload of a new conflict version
+            OBASSERT(uploadedSnapshot.localState.normal || uploadedSnapshot.localState.onlyAutoMoved);
             OBASSERT(uploadedSnapshot.remoteState.normal);
         }
 #endif
@@ -817,9 +833,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
         OBINVARIANT([self _checkInvariants]);
         
         OBASSERT(self.isUploading);
-        [self _transferFinished:transfer];
-
-        // TODO: may want to keep _lastError and also put it into updated metadata
+        [self _transferFinished:transfer withError:errorOrNil];
         
         // If the transfer was cancelled due to sync being paused, or the commit failed for some reason, we still need to say we aren't uploading.
         if (errorOrNil) {
@@ -852,7 +866,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     OBPRECONDITION(_snapshot); // should at least have a placeholder
     OBPRECONDITION(_currentTransfer == nil, "Shouldn't start a download while still doing another transfer");
     OBINVARIANT([self _checkInvariants]);
-    OBPRECONDITION(_snapshot.localState.missing || _snapshot.remoteState.edited || _snapshot.remoteState.moved);
+    OBPRECONDITION(_snapshot.localState.missing || _snapshot.remoteState.edited || _snapshot.remoteState.userMoved);
     OBPRECONDITION(filePresenter);
     
     DEBUG_TRANSFER(1, @"Starting download with _contentsRequested %d, localState %@", _contentsRequested, _snapshot.localState);
@@ -878,9 +892,9 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     OBASSERT([_snapshot.localSnapshotURL isEqual:targetLocalSnapshotURL]);
     OBASSERT(_snapshot.version < _newestRemoteVersion || (_snapshot.localState.missing && _contentsRequested && _snapshot.version == _newestRemoteVersion), "Should be downloading a new snapshot, or the contents for our current version (only if we don't have those contents already");
     
-    // Pick a contents download location (meaning we will grab the contents instead of just metadata) if someone asked us to or our previous snapshot had contents. If this document is shadowed by another, don't download contents since we'll just throw them away in the commit.
+    // Pick a contents download location (meaning we will grab the contents instead of just metadata) if someone asked us to or our previous snapshot had contents.
     NSURL *localTemporaryDocumentContentsURL;
-    if ((_contentsRequested || (_snapshot.localState.missing == NO)) && !_shadowedByOtherFileItem) {
+    if ((_contentsRequested || (_snapshot.localState.missing == NO))) {
         __autoreleasing NSError *error;
         localTemporaryDocumentContentsURL = [[NSFileManager defaultManager] temporaryURLForWritingToURL:_localDocumentURL allowOriginalDirectory:NO error:&error];
         if (!localTemporaryDocumentContentsURL) {
@@ -941,16 +955,17 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
         //NSMutableArray *readingURLs = [NSMutableArray arrayWithObjects:_localDocumentURL, nil];
         NSMutableArray *writingURLs = [NSMutableArray arrayWithObjects:_localDocumentURL, nil];
 
-        // If we have a local rename (possibly as part of name conflict resolution), don't accidentally revert it. This will override the server rename if there is an incoming rename as well.
 #ifdef OMNI_ASSERTIONS_ON
         BOOL hadLocalMove = NO;
 #endif
-        if (_snapshot.localState.moved) {
+        // If we have a local rename initiated by the user, don't accidentally revert it. We'll push it to the server soon, presumably.
+        // If we have a local automove and the incoming snapshot isn't a move, keep that too (just a content edit of some conflict version). But if the relative path is changing, the user may have resolved a conflict between files on another client and we are downloading that resolution.
+        if (_snapshot.localState.userMoved || (_snapshot.localState.autoMoved && [downloadedSnapshot.localRelativePath isEqualToString:_snapshot.intendedLocalRelativePath])) {
 #ifdef OMNI_ASSERTIONS_ON
             hadLocalMove = YES;
 #endif
             __autoreleasing NSError *renameError;
-            if (![downloadedSnapshot markAsLocallyMovedToRelativePath:_snapshot.localRelativePath error:&renameError]) {
+            if (![downloadedSnapshot markAsLocallyMovedToRelativePath:_snapshot.localRelativePath isAutomaticMove:_snapshot.localState.autoMoved error:&renameError]) {
                 cleanup();
                 if (outError)
                     *outError = renameError;
@@ -986,7 +1001,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
             return NO;
         }
 
-        OBASSERT(!hadLocalMove || _snapshot.localState.moved, @"If we had a local move, make sure to preserve that to be uploaded");
+        OBASSERT(!hadLocalMove || _snapshot.localState.userMoved || _snapshot.localState.autoMoved, @"If we had a local move, make sure to preserve that to be uploaded");
         
         return YES;
     };
@@ -995,7 +1010,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
         OBINVARIANT([self _checkInvariants]);
         
         OBASSERT(self.isDownloading == YES);
-        [self _transferFinished:transfer];
+        [self _transferFinished:transfer withError:errorOrNil];
         OBASSERT(self.isDownloading == NO);
 
         // TODO: may want to keep _lastError and also put it into updated metadata
@@ -1026,7 +1041,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     // We pass NSFileCoordinatorWritingForMerging in the 'prepare' in our caller, which should force other presenters to relinquish and save, but experimentally it does not. We have to do an explicit read withChanges:YES here to provoke -[OFXTestSaveFilePresenter savePresentedItemChangesWithCompletionHandler:] in -[OFXConflictTestCase testIncomingCreationVsLocalAutosaveCreation].
     return [coordinator readItemAtURL:_localDocumentURL withChanges:YES error:outError byAccessor:^BOOL(NSURL *newReadingURL, NSError *__autoreleasing *outError) {
         if (self.localState.missing) {
-            // If this is the first download of a new file, and something is sleeping in our bed, then we may have created a local document while the download was going on or while we were offline. We cannot publish the content from this download, but we can (and must) accept the metadata so that we know where the file wants to live and so that our container will stop trying to generate downloads for us. We'll return a special error in this case that lets the container know to skip the publishing.
+            // If this is the first download of a new file, and something is sleeping in our bed, then we may have created a local document while the download was going on or while we were offline. Or perhaps two files on the server have specified they want the same location and the user san't resolved the conflict yet. We cannot publish the content from this download to the original URL, but we can publish it to a automatically chosen conflict URL.
             __autoreleasing NSError *existsError;
             if ([[NSFileManager defaultManager] attributesOfItemAtPath:[newReadingURL path] error:&existsError]) {
                 OFXContainerAgent *container = _weak_container;
@@ -1037,7 +1052,6 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
                     [conflictError log:@"Error moving %@ out of the way for incoming document %@", _localDocumentURL, [self shortDescription]];
                     if (outError)
                         *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
-                    OFXError(outError, OFXFileShadowed, @"Cannot complete download of shadowed file", nil); // wrap this in an error with a little more info, but keep the user-cancelled in there to let callers know this is OK.
                     return NO;
                 }
             } else {
@@ -1061,7 +1075,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
                 return NO;
         } else {
             // Could have a local move, which we preserve in our caller.
-            OBASSERT(self.localState.normal || self.localState.moved);
+            OBASSERT(self.localState.normal || self.localState.userMoved || self.localState.autoMoved);
             
             // We *do* want to force autosave on other presenters here since we are trying to do conflict detection.
             __autoreleasing NSError *sameError;
@@ -1097,7 +1111,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
 
 - (BOOL)_performDownloadCommitToURL:(NSURL *)updatedLocalDocumentURL localTemporaryDocumentContentsURL:(NSURL *)localTemporaryDocumentContentsURL targetLocalSnapshotURL:(NSURL *)targetLocalSnapshotURL container:(OFXContainerAgent *)container downloadedSnapshot:(OFXFileSnapshot *)downloadedSnapshot coordinator:(NSFileCoordinator *)coordinator downloadContents:(BOOL)downloadContents isMove:(BOOL)moved error:(NSError **)outError;
 {
-    OBASSERT(_snapshot.localState.missing || _snapshot.remoteState.edited || _snapshot.remoteState.moved);
+    OBASSERT(_snapshot.localState.missing || _snapshot.remoteState.edited || _snapshot.remoteState.userMoved);
 
     BOOL contentSame = [downloadedSnapshot hasSameContentsAsSnapshot:_snapshot];
     DEBUG_CONTENT(1, @"Commit, has same %d", contentSame);
@@ -1108,31 +1122,10 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     
     __autoreleasing NSError *validateDownloadError;
     if (![self _validateDownloadCommitToURL:updatedLocalDocumentURL contentSame:contentSame coordinator:coordinator error:&validateDownloadError]) {
-        if ([validateDownloadError hasUnderlyingErrorDomain:OFXErrorDomain code:OFXFileShadowed]) {
-            // This might not be set yet if the local file was created since the last scan.
-            //OBASSERT(self.shadowedByOtherFileItem);
-            
-            DEBUG_CONFLICT(1, @"Accepting only metadata for shadowed download at %@", updatedLocalDocumentURL);
-            
-            // Accept the metadata, but we can't publish the content since something is already on disk at this URL.
-            OBASSERT(self.localState.missing, @"We only generate this erorr for the local missing case; make sure to consider other impliciations if this can occur with local published content that becomes shadowed (oxymoronic currently).");
-            downloadContents = NO;
-            
-            // Mark the downloaded snapshot as not having any contents so that we *stay* in the missing state when we adopt it.
-            __autoreleasing NSError *error;
-            if (![downloadedSnapshot didGiveUpLocalContents:&error]) {
-                OBChainError(&error);
-                [error log:@"Unable to mark downloaded shadowed snapshot has having no content."];
-                if (outError)
-                    *outError = error;
-                return NO;
-            }
-        } else {
-            if (outError)
-                *outError = validateDownloadError;
-            OBChainError(outError);
-            return NO;
-        }
+        if (outError)
+            *outError = validateDownloadError;
+        OBChainError(outError);
+        return NO;
     }
 
     // Check if the incoming snapshot has a rename and perform it (if we have a local document downloaded).
@@ -1295,7 +1288,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     
     [transfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
         OBASSERT(self.isDeleting);
-        [self _transferFinished:transfer];
+        [self _transferFinished:transfer withError:errorOrNil];
         
         if (errorOrNil) {
             OBINVARIANT([self _checkInvariants]);
@@ -1409,20 +1402,6 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXFileI
     return YES;
 }
 
-static NSString *ClientComputerName(void)
-{
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-    NSString *fullHostname = OFHostName();
-    NSRange dotRange = [fullHostname rangeOfString:@"."];
-    if (dotRange.length == 0)
-        return fullHostname;
-    else
-        return [fullHostname substringToIndex:dotRange.location];
-#else
-    return [[UIDevice currentDevice] name];
-#endif
-}
-
 - (NSURL *)fileURLForConflictVersion;
 {
     OFCreateRegularExpression(ConflictRegularExpression, NSLocalizedStringFromTableInBundle(@"^(.*) \\(conflict( [0-9+])? from .*\\)$", @"OmniFileExchange", OMNI_BUNDLE, @"Conflict file regular expression"));
@@ -1431,12 +1410,23 @@ static NSString *ClientComputerName(void)
     NSString *lastComponent = [_localDocumentURL lastPathComponent];
     NSString *baseName = [lastComponent stringByDeletingPathExtension];
     NSString *pathExtension = [lastComponent pathExtension];
+
+    // Since we make conflict names locally and independently on each host now, don't use our local computer name, but instead the computer that last edited the file.
+    NSString *userName = _snapshot.lastEditedUser;
+    NSString *hostName = _snapshot.lastEditedHost;
     
-    // We include the host name, so conflicts in our conflict names shouldn't happen except when two hosts have the same name.
-    NSString *hostname = ClientComputerName();
+    NSString *editName;
+    if (userName && hostName)
+        editName = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ on %@", @"OmniFileExchange", OMNI_BUNDLE, @"Conflict last edit file format"), userName, hostName];
+    else if (userName)
+        editName = userName;
+    else
+        editName = hostName;
+    OBASSERT(![NSString isEmptyString:editName]);
+    
     NSString *debugName = self.debugName; // Avoid spurious extra conflicts due to having the same host name in unit tests
     if (![NSString isEmptyString:debugName])
-        hostname = [hostname stringByAppendingFormat:@"-%@", debugName];
+        editName = [editName stringByAppendingFormat:@"-%@", debugName];
 
     NSUInteger conflictIndex;
 
@@ -1458,11 +1448,11 @@ static NSString *ClientComputerName(void)
         conflictIndex++;
         NSString *conflictBaseName;
         if (conflictIndex == 1)
-            conflictBaseName = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ (conflict from %@)", @"OmniFileExchange", OMNI_BUNDLE, @"Conflict file format"), baseName, hostname];
+            conflictBaseName = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ (conflict from %@)", @"OmniFileExchange", OMNI_BUNDLE, @"Conflict file format"), baseName, editName];
         else
-            conflictBaseName = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ (conflict %lu from %@)", @"OmniFileExchange", OMNI_BUNDLE, @"Conflict file format"), baseName, conflictIndex, hostname];
+            conflictBaseName = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ (conflict %lu from %@)", @"OmniFileExchange", OMNI_BUNDLE, @"Conflict file format"), baseName, conflictIndex, editName];
         candidateURL = [folderURL URLByAppendingPathComponent:[conflictBaseName stringByAppendingPathExtension:pathExtension]];
-    } while ([[self container] publishedFileItemWithURL:candidateURL]);
+    } while ([[self container] fileItemWithURL:candidateURL]);
 
     // The original URL might not exist, so we can't get this via attribute lookups.
     BOOL isDirectory = [[_localDocumentURL absoluteString] hasSuffix:@"/"];
@@ -1522,26 +1512,10 @@ static NSString *ClientComputerName(void)
     return _makeRemoteSnapshotDirectoryName(self, _snapshot);
 }
 
-#pragma mark - Debugging
-
-- (NSString *)shortDescription;
-{
-    return [NSString stringWithFormat:@"<%@:%p %@ %@ %@ %@/%@>", NSStringFromClass([self class]), self, self.debugName, _identifier, _localRelativePath, self.localState, self.remoteState];
-}
-
-- (NSString *)debugName;
-{
-    OFXContainerAgent *container = _weak_container;
-    OBASSERT(container);
-    return container.debugName;
-}
-
-#pragma mark - Private
-
 - (OFXFileMetadata *)_makeMetadata;
 {
     OBINVARIANT([self _checkInvariants]);
-
+    
     // TODO: We could maybe cache this until we get poked file NSFilePresenter or find new info on the server, or whatnot.
     OFXFileMetadata *metadata = [[OFXFileMetadata alloc] init];
     OFXFileSnapshot *snapshot = _snapshot;
@@ -1554,18 +1528,35 @@ static NSString *ClientComputerName(void)
     DEBUG_METADATA(1, @"Making metadata for %@ with snapshot %@", _localDocumentURL, [_snapshot debugDescription]);
     
     metadata.fileIdentifier = _identifier;
-    metadata.fileURL = (localState.deleted ? nil : _localDocumentURL); // TODO: Needs synchronize with NSFilePresenter messages
+    
+    if (localState.deleted == NO) {
+        metadata.fileURL = _localDocumentURL; // TODO: Needs synchronize with NSFilePresenter messages
+        
+        if (self.localState.autoMoved) {
+            // Our _localRelativePath is the automatically chosen location.
+            NSURL *intendedFileURL = _localDocumentURL;
+            
+            for (NSString *component in [_localRelativePath pathComponents]) {
+                (void)component;
+                intendedFileURL = [intendedFileURL URLByDeletingLastPathComponent];
+            }
+            intendedFileURL = [intendedFileURL URLByAppendingPathComponent:_snapshot.intendedLocalRelativePath isDirectory:_snapshot.isDirectory];
+            metadata.intendedFileURL = intendedFileURL;
+        } else
+            metadata.intendedFileURL = _localDocumentURL;
+    }
     metadata.directory = _snapshot.directory;
+    
     
     DEBUG_METADATA(1, @"  Local state %@", localState);
     DEBUG_METADATA(1, @"  Remote state %@", remoteState);
-
+    
     metadata.totalSize = _snapshot.totalSize;
     
-    if (remoteState.missing || localState.edited || (localState.moved && !localState.missing)) {
+    if (remoteState.missing || localState.edited || (localState.userMoved && !localState.missing)) { // auto-moves don't need to be uploaded
         metadata.uploaded = NO;
         metadata.percentUploaded = 0;
-    } else if (localState.normal || localState.missing) {
+    } else if (localState.normal || localState.missing || localState.autoMoved) {
         metadata.uploaded = YES;
         metadata.percentUploaded = 1;
     } else if (localState.deleted) {
@@ -1577,7 +1568,8 @@ static NSString *ClientComputerName(void)
         OBASSERT_NOT_REACHED("Unexpected local state hit");
     }
     
-    if (localState.missing || remoteState.edited || remoteState.moved) {
+    OBASSERT(remoteState.autoMoved == NO, "The server only has user intended moves");
+    if (localState.missing || remoteState.edited || remoteState.userMoved) {
         metadata.downloaded = NO;
         metadata.percentDownloaded = 0;
     } else if (remoteState.normal || remoteState.missing) {
@@ -1592,7 +1584,7 @@ static NSString *ClientComputerName(void)
         // We might actuall hit this now temporary when we have a conflict
         OBASSERT_NOT_REACHED("Unexpected remote state hit");
     }
-
+    
     // Override some stuff based on whether we have a transfer going. In particular, don't say we are up/downloaded while we still have a transfer
     if (self.isUploadingContents) {
         metadata.uploaded = NO;
@@ -1601,7 +1593,7 @@ static NSString *ClientComputerName(void)
         DEBUG_METADATA(1, @"  is uploading content (%f%%)", metadata.percentUploaded * 100);
     } else if (self.isUploading) {
         OBASSERT(self.isUploadingRename, @"Should be a rename");
-
+        
         DEBUG_METADATA(1, @"  is uploading metadata");
         metadata.uploaded = YES;
         metadata.uploading = YES;
@@ -1630,23 +1622,44 @@ static NSString *ClientComputerName(void)
     metadata.fileSize = snapshot.totalSize;
     metadata.creationDate = snapshot.userCreationDate;
     metadata.modificationDate = snapshot.userModificationDate;
-
+    
     // TODO: Make editIdentifier just be an id instead of NSString? Or maybe NSUInteger.
     metadata.editIdentifier = [NSString stringWithFormat:@"%lu", snapshot.version];
     
     return metadata;
 }
 
+- (NSURL *)_intendedLocalDocumentURL;
+{
+    OFXContainerAgent *container = _weak_container;
+    OBASSERT(container);
+    return [container _URLForLocalRelativePath:self.intendedLocalRelativePath isDirectory:_snapshot.directory];
+}
+
+#pragma mark - Debugging
+
+- (NSString *)shortDescription;
+{
+    return [NSString stringWithFormat:@"<%@:%p %@ %@ %@ %@/%@>", NSStringFromClass([self class]), self, self.debugName, _identifier, _localRelativePath, self.localState, self.remoteState];
+}
+
+- (NSString *)debugName;
+{
+    OFXContainerAgent *container = _weak_container;
+    OBASSERT(container);
+    return container.debugName;
+}
+
+#pragma mark - Private
+
 - (void)_updatedMetadata;
 {
-    // We check -hasBeenLocallyDeleted here for convenience in the local-delete vs. local-download race case. We could also predicate our calls in the download transferProgress() block, but this seems like a nice global solution that might catch other cases.
-    if (_shadowedByOtherFileItem)
-        [_metadataRegistrationTable removeObjectForKey:_identifier];
-    else if (self.localState.deleted && (self.remoteState.missing || self.remoteState.deleted)) {
-        // This was never uploaded, or has been deleted remotely too, so the "delete" transfer isn't going to actually do any network work (which is why we delay clearing the metadata -- so we can show the number of delete operations that need to be performed). Also, if we generate metadata here, we'll hit assertions.
-        [_metadataRegistrationTable removeObjectForKey:_identifier];
-    } else
-        _metadataRegistrationTable[_identifier] = [self _makeMetadata];
+    OFXContainerAgent *container = _weak_container;
+    if (!container) {
+        // This can happen when a transfer is scheduled to start and then we stop the agent.
+        return;
+    }
+    [container _fileItemNeedsMetadataUpdated:self];
 }
 
 - (void)_transferStarted:(OFXFileSnapshotTransfer *)transfer;
@@ -1658,7 +1671,7 @@ static NSString *ClientComputerName(void)
     [self _updatedMetadata];
 }
 
-- (void)_transferFinished:(OFXFileSnapshotTransfer *)transfer;
+- (void)_transferFinished:(OFXFileSnapshotTransfer *)transfer withError:(NSError *)errorOrNil;
 {
     // The caller does a read of a __weak local to pass as our argument
     if (!transfer) {
@@ -1667,6 +1680,14 @@ static NSString *ClientComputerName(void)
     }
     if (_currentTransfer == transfer) {
         _currentTransfer = nil;
+        
+        // Not currently clearing errors on success, though that might be reasonable (unclear if we could have upload specific errors that would get spuriously cleared by a successful download).
+        if (errorOrNil) {
+            if (!_recentErrors)
+                _recentErrors = [[NSMutableArray alloc] init];
+            [_recentErrors addObject:[OFXRecentError recentError:errorOrNil withDate:[NSDate date]]];
+        }
+        
         [self _updatedMetadata];
     } else {
         OBASSERT_NOT_REACHED("Started another transfer before a previous transfer finished?");
@@ -1682,7 +1703,6 @@ static NSString *ClientComputerName(void)
     OBPRECONDITION(snapshot);
     OBPRECONDITION(snapshot.localState.deleted == NO);
     OBPRECONDITION(coordinator);
-    OBPRECONDITION(_shadowedByOtherFileItem == NO); // Don't overwrite the published contents of the winner in a name conflict!
     
     DEBUG_TRANSFER(1, @"Publishing contents from %@ to %@", [snapshot shortDescription], localDocumentURL);
     
@@ -1691,13 +1711,6 @@ static NSString *ClientComputerName(void)
     dispatch_once(&onceToken, ^{
         isRunningUnitTests = (getenv("OFXTestsRunning") != NULL);
     });
-    
-    if (_shadowedByOtherFileItem) {
-        // Maybe started a download before we knew we were shadowed.
-        // TODO: We'll be resolving this pretty quickly. It would be nice to keep the contents we *would* have published somewhere indexed by editIdentifier and grab them back rather than re-downloading. But, hopefully this should be rare enough to not be worth the extra complexity.
-        OFXError(outError, OFXFileShadowed, @"Cannot publish document contents", ([NSString stringWithFormat:@"The file URL %@ has multiple documents that would like to use it, and this file item lost.", localDocumentURL]));
-        return NO;;
-    }
     
     // We should be able to pass withChanges=NO here since our 'prepare' already did NSFileCoordinatorWritingForMerging and we don't want to force save again. But, experimentally this doesn't work. We have to pass withChanges:YES to provoke -[OFXTestSaveFilePresenter savePresentedItemChangesWithCompletionHandler:] in -[OFXConflictTestCase testIncomingCreationVsLocalAutosaveCreation].
     return [coordinator writeItemAtURL:localDocumentURL withChanges:YES error:outError byAccessor:^BOOL(NSURL *newWriteURL, NSError **outError) {
@@ -1781,17 +1794,18 @@ static NSString *ClientComputerName(void)
 {
     OBPRECONDITION(coordinator);
     OBPRECONDITION(self.localState.missing == NO);
-    
+        
     /*
      The server has newer contents for the document with our identifier, but we have local edits to push.
      
-     Our strategy is that the server copy wins. We also want the user to have some indication that their edits ended up in a conflict version, so we need to:
+     Our strategy is that the server copy wins the edit of the exiting file identifier (since its contents are on the server already). We also want the user to have some indication that their edits ended up in a conflict version, so we need to:
      
-     * Move our local path to a new local path that doesn't exist, using file coordination so that open NSDocument/UIDocument observers know that they should be editing the new conflict copy.
+     * Make a new file with the user's existing edits, with a new file identifier, the same desired URL, but an automatically chosen conflict name. Do this by moving our local path to the new conflict name, using file coordination so that open NSDocument/UIDocument observers know that they should be editing the new conflict copy.
      * Take care that our container agent doesn't queue up a move command to send to the server!
      * Change our identifier(!)
      * Inform our container agent that our identifier has changed
-     * Revert the local-edit state in our current snapshot before abandoning it and re-publish the pristine contents
+     * Become locally missing
+     * Return success (and then later we should notice that the document index has multiple claims on a file and so the newly published file should also get renamed to have a conflict marker).
      */
     
     OFXContainerAgent *container = _weak_container;
@@ -1839,9 +1853,9 @@ static NSString *ClientComputerName(void)
 
         // Now that we've moved our published file aside, any other observers will pick it up as a new document and a new file item will be created (with a new identifier and no remote contents). One problem, though, is that we told NSFileCoordinator to not send changes to our container for this move (since we don't want to push a move to the server). So, we need to tell the container that something has happened so it will scan.
         // NOTE: This means that ODSFileItem CANNOT keep a pointer to an OFXFileItem (since the the URL of the file item isn't changing here).
-        [container _fileItemDidGenerateConflict:self];
+        [container _fileItem:self didGenerateConflictAtURL:conflictURL coordinator:coordinator];
         
-        // Mark our snapshot as being locally missing and re-publish a stub file.
+        // Mark our snapshot as being locally missing
         error = nil;
         if (![_snapshot didGiveUpLocalContents:&error]) {
             conflictError = error;
@@ -1853,8 +1867,9 @@ static NSString *ClientComputerName(void)
         OBASSERT(_snapshot.localState.missing);
         OBASSERT(self.isValidToUpload == NO);
         
-        // Re-publish our old contents (doing this outside the original coordinator
+        OBFinishPortingLater("Return a new conflict URL here to publish to instead of doing it later?");
         OBFinishPortingLater("Deal with local moves -- might need to get the old URL from the snapshot");
+        
         success = YES;
     }];
     

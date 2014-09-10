@@ -11,7 +11,7 @@
 #import <OmniUI/OUIScrollNotifier.h>
 #import <OmniUI/OUIScalingScrollView.h>
 
-#define OUI_SNAP_TO_ZOOM_PERCENT (0.1)
+#define OUI_SNAP_TO_ZOOM_PERCENT (0.05)
 
 @class OUIScalingScrollView;
 

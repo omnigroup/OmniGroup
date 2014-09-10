@@ -1,4 +1,4 @@
-// Copyright 2002-2006, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2006, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniAppKit/NSWindow-OAExtensions.h>
 
 RCS_ID("$Id$")
 
@@ -35,7 +36,7 @@ RCS_ID("$Id$")
     NSRect windowFrame = [window frame];
     CGFloat startingWindowTop = NSMaxY(windowFrame);
     CGFloat startingWindowHeight = NSHeight(windowFrame);
-    CGFloat startingMouseY = [window convertBaseToScreen:[event locationInWindow]].y;
+    CGFloat startingMouseY = [window convertPointToScreen:[event locationInWindow]].y;
     CGFloat verticalSpaceTakenNotBySuperview = startingWindowHeight - NSHeight([[self superview] frame]);
     
     while (1) {
@@ -44,7 +45,7 @@ RCS_ID("$Id$")
             break;
            
         [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
-        CGFloat change = startingMouseY - [window convertBaseToScreen:[event locationInWindow]].y;
+        CGFloat change = startingMouseY - [window convertPointToScreen:[event locationInWindow]].y;
         windowFrame.size.height = MAX(minimumSuperviewHeight + verticalSpaceTakenNotBySuperview, startingWindowHeight + change);
         windowFrame.origin.y = startingWindowTop - windowFrame.size.height;
         [window setFrame:windowFrame display:YES animate:NO];

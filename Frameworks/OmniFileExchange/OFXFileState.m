@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,12 @@ typedef NS_ENUM(NSUInteger, OFXPrimaryFileState) {
     OFXPrimaryFileStateDeleted,
 };
 #define OFXPrimaryFileStateMask (0xff)
-#define OFXFileStateMoved (1 << 8)
+
+#define OFXMoveStateMask (0xff00)
+#define OFXMoveStateShift (8)
+
+#define OFXFileStateUserMoved (1 << OFXMoveStateShift)
+#define OFXFileStateAutoMoved (2 << OFXMoveStateShift)
 
 @interface OFXFileState ()
 #ifdef OMNI_ASSERTIONS_ON
@@ -76,39 +81,81 @@ GETTER(missing, OFXPrimaryFileStateMissing);
 GETTER(edited, OFXPrimaryFileStateEdited);
 GETTER(deleted, OFXPrimaryFileStateDeleted);
 
-- (BOOL)moved;
+- (BOOL)userMoved;
 {
     OBINVARIANT([self _checkInvariants]);
-    return (_state & OFXFileStateMoved) != 0;
+    return (_state & OFXMoveStateMask) == OFXFileStateUserMoved;
+}
+
+- (BOOL)autoMoved;
+{
+    OBINVARIANT([self _checkInvariants]);
+    return (_state & OFXMoveStateMask) == OFXFileStateAutoMoved;
+}
+
+- (BOOL)onlyAutoMoved;
+{
+    OBINVARIANT([self _checkInvariants]);
+    return _state == (OFXPrimaryFileStateNormal|OFXFileStateAutoMoved);
 }
 
 - (instancetype)withEdited;
 {
     if (_state == OFXPrimaryFileStateNormal)
         return [[self class] edited];
-    if (_state == OFXFileStateMoved)
-        return _stateWith(OFXFileStateMoved|OFXPrimaryFileStateEdited);
+    if (_state == OFXFileStateUserMoved || _state == OFXFileStateAutoMoved)
+        return _stateWith(_state|OFXPrimaryFileStateEdited);
     
     OBASSERT_NOT_REACHED("Called -withEdited on something that isn't moved or normal");
     return self;
 }
 
-- (instancetype)withMoved;
+- (instancetype)withUserMoved;
 {
-    // Allow for repeated moves
-    NSUInteger moved = (_state & ~OFXPrimaryFileStateMask);
-    if (moved)
-        return self;
+    // Allow for repeated moves (and promote automatic moves to user intended moves)
+    NSUInteger moved = (_state & OFXMoveStateMask);
+    if (moved) {
+        OFXPrimaryFileState primaryState = _state & OFXPrimaryFileStateMask;
+        return _stateWith(OFXFileStateUserMoved|primaryState);
+    }
     
     if (_state == OFXPrimaryFileStateNormal)
-        return _stateWith(OFXFileStateMoved|OFXPrimaryFileStateNormal);
+        return _stateWith(OFXFileStateUserMoved|OFXPrimaryFileStateNormal);
     if (_state == OFXPrimaryFileStateEdited)
-        return _stateWith(OFXFileStateMoved|OFXPrimaryFileStateEdited);
+        return _stateWith(OFXFileStateUserMoved|OFXPrimaryFileStateEdited);
     if (_state == OFXPrimaryFileStateMissing)
-        return _stateWith(OFXFileStateMoved|OFXPrimaryFileStateMissing);
+        return _stateWith(OFXFileStateUserMoved|OFXPrimaryFileStateMissing);
     
-    OBASSERT_NOT_REACHED("Called -withMoved on something that isn't edited or normal");
+    OBASSERT_NOT_REACHED("Called -withUserMoved on something that isn't edited or normal");
     return self;
+}
+
+- (instancetype)withAutoMoved;
+{
+    NSUInteger moved = (_state & OFXMoveStateMask);
+    if (moved) {
+        OBASSERT(moved == OFXFileStateAutoMoved, "Repeated automove is OK, but if the file was in the user-moved state, the caller needs to fix that");
+        OFXPrimaryFileState primaryState = _state & OFXPrimaryFileStateMask;
+        return _stateWith(OFXFileStateAutoMoved|primaryState);
+    }
+    
+    if (_state == OFXPrimaryFileStateNormal)
+        return _stateWith(OFXFileStateAutoMoved|OFXPrimaryFileStateNormal);
+    if (_state == OFXPrimaryFileStateEdited)
+        return _stateWith(OFXFileStateAutoMoved|OFXPrimaryFileStateEdited);
+    if (_state == OFXPrimaryFileStateMissing)
+        return _stateWith(OFXFileStateAutoMoved|OFXPrimaryFileStateMissing);
+    
+    OBASSERT_NOT_REACHED("Called -withAutoMoved on something that isn't edited or normal");
+    return self;
+}
+
+- (instancetype)withAutoMovedCleared;
+{
+    OBPRECONDITION((_state & OFXMoveStateMask) == OFXFileStateAutoMoved, "Caller should check that the state included auto-move already");
+    
+    OFXPrimaryFileState primaryState = _state & OFXPrimaryFileStateMask;
+    return _stateWith(primaryState);
 }
 
 static OFEnumNameTable *StateNameTable(void)
@@ -121,9 +168,12 @@ static OFEnumNameTable *StateNameTable(void)
         [nameTable setName:@"missing" forEnumValue:OFXPrimaryFileStateMissing];
         [nameTable setName:@"edit" forEnumValue:OFXPrimaryFileStateEdited];
         [nameTable setName:@"delete" forEnumValue:OFXPrimaryFileStateDeleted];
-        [nameTable setName:@"move" forEnumValue:OFXFileStateMoved];
-        [nameTable setName:@"edit+move" forEnumValue:OFXPrimaryFileStateEdited|OFXFileStateMoved];
-        [nameTable setName:@"missing+move" forEnumValue:OFXPrimaryFileStateMissing|OFXFileStateMoved];
+        [nameTable setName:@"move" forEnumValue:OFXFileStateUserMoved];
+        [nameTable setName:@"automove" forEnumValue:OFXFileStateAutoMoved];
+        [nameTable setName:@"edit+move" forEnumValue:OFXPrimaryFileStateEdited|OFXFileStateUserMoved];
+        [nameTable setName:@"edit+automove" forEnumValue:OFXPrimaryFileStateEdited|OFXFileStateAutoMoved];
+        [nameTable setName:@"missing+move" forEnumValue:OFXPrimaryFileStateMissing|OFXFileStateUserMoved];
+        [nameTable setName:@"missing+automove" forEnumValue:OFXPrimaryFileStateMissing|OFXFileStateAutoMoved];
     });
     
     return nameTable;
@@ -171,7 +221,7 @@ static OFEnumNameTable *StateNameTable(void)
     OBINVARIANT(primaryState <= OFXPrimaryFileStateDeleted, "Range of primary state enum");
 
     NSUInteger moved = (_state & ~OFXPrimaryFileStateMask);
-    OBINVARIANT(moved == 0 || moved == OFXFileStateMoved);
+    OBINVARIANT(moved == 0 || moved == OFXFileStateUserMoved || moved == OFXFileStateAutoMoved);
     
     OBINVARIANT(!moved || primaryState == OFXPrimaryFileStateNormal || primaryState == OFXPrimaryFileStateEdited || primaryState == OFXPrimaryFileStateMissing, "Moved can only be combined with normal/edited/missing");
     

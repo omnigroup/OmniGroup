@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2007, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,21 +61,6 @@ enum {
 };
 
 @implementation OWContent
-
-static NSZone *OWContentZone = NULL;
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-
-    // TODO: Figure out if it's advantageous to do any zonification.
-    OWContentZone = NSDefaultMallocZone();
-}
-
-+ (NSZone *)contentZone
-{
-    return OWContentZone;
-}
 
 // API --- convenient methods for creating an OWContent
 + (id)contentWithAddress:(OWAddress *)anAddress;

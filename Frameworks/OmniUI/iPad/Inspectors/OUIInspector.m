@@ -220,19 +220,8 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
     // In the embedding case, the 'from whatever' arguments are irrelevant. We assumed the embedding navigation controller is going to be made visibiel somehow.
     if ([self isEmbededInOtherNavigationController] == NO) {
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-            _navigationController.topViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(dismiss)];
-            OBFinishPorting;
-            // The following code is bing disabled. We are removing calls to -[OUIAppController topViewController]. In a ViewController Containment world, topViewController could be ambiguous. We need to find a better way to handle this.
-#if 0
-            // When we have time to worry about iPhone, we should replace this:
-            [[[OUIAppController controller] topViewController] presentViewController:_navigationController animated:YES completion:NULL];
-            // with something like this:
-            UIViewController *viewControllerToPresentFrom = [self.delegate inspectorViewControllerToPresentFrom:self];
-            [viewControllerToPresentFrom presentViewController:_navigationController animated:YES completion:NULL];
-#endif
-
-        } else {
+        OBFinishPortingLater("<bug:///105456> (Unassigned: Update inspectors for iPhone [adaptability])");
+        {
             if (![[OUIAppController controller] presentPopover:_popoverController fromBarButtonItem:item permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES])
                 return NO;
         }
@@ -269,9 +258,8 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 - (void)dismissAnimated:(BOOL)animated;
 {
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-        [_navigationController dismissViewControllerAnimated:animated completion:NULL];
-    } else {
+    OBFinishPortingLater("<bug:///105456> (Unassigned: Update inspectors for iPhone [adaptability])");
+    {
         if (!_popoverController)
             return;
         
@@ -526,6 +514,7 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
     
     OUIWithAnimationsDisabled(!visible, ^{
         _mainPane.inspectedObjects = objects;
+        self.topVisiblePane.inspectedObjects = objects;  // what about any other panes in the controller stack?
         
         [self _configureTitleForPane:_mainPane];
         
@@ -544,7 +533,8 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
             // The popover controller will read the nav controller's contentSizeForViewInPopover as soon as it is created (and it will read the top view controller's)
             _configureContentSize(self, _mainPane, _height, NO);
             
-            if (_popoverController == nil && UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPhone) {
+            OBFinishPortingLater("<bug:///105456> (Unassigned: Update inspectors for iPhone [adaptability])");
+            if (_popoverController == nil) {
                 _popoverController = [[OUIInspectorPopoverController alloc] initWithContentViewController:_navigationController];
                 _popoverController.delegate = self;
                 _popoverController.backgroundColor = [[self class] backgroundColor];

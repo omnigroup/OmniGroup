@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,8 @@
 // The server version of the file; nil if the file isn't fully uploaded. Guaranteed to change between versions, even if the creationDate/modificationDate don't
 @property(nonatomic,readonly,copy) NSString *editIdentifier;
 
-@property(nonatomic,readonly,copy) NSURL *fileURL;
+@property(nonatomic,readonly,copy) NSURL *fileURL; // The location that the file is at or will appear at if downloaded under the current conditions
+@property(nonatomic,readonly,copy) NSURL *intendedFileURL; // The location that the user wanted the file at. This might differ from the current fileURL if there are two files assigned to the same path (on different devices, presumably).
 @property(nonatomic,readonly) unsigned long long fileSize;
 
 @property(nonatomic,readonly,getter=isDirectory) BOOL directory;

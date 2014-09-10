@@ -1,4 +1,4 @@
-// Copyright 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,9 +34,9 @@ static NSString *_spacesOfLength(NSUInteger length)
 #define SET_ATTRS(position, length) [ts setAttributes:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedInteger:attrIndex++], @"i", nil] range:NSMakeRange((position),(length))]
 #define BEGIN_EDITS [ts beginEditing]
 #define END_EDITS [ts endEditing]
-#define CHECK_MASK(m) STAssertEquals([ts editedMask], (NSUInteger)(m), nil);
-#define CHECK_RANGE(pos,len) STAssertEquals([ts editedRange], NSMakeRange((pos), (len)), nil);
-#define CHECK_DELTA(delta) STAssertEquals([ts changeInLength], (NSInteger)(delta), nil)
+#define CHECK_MASK(m) XCTAssertEqual([ts editedMask], (NSUInteger)(m))
+#define CHECK_RANGE(pos,len) XCTAssertTrue(NSEqualRanges([ts editedRange], NSMakeRange((pos), (len))))
+#define CHECK_DELTA(delta) XCTAssertEqual([ts changeInLength], (NSInteger)(delta))
 
 - (void)test0;
 {

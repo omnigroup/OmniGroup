@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,8 +29,10 @@
 - (NSString *)stringByReplacingKeysInDictionary:(NSDictionary *)keywordDictionary startingDelimiter:(NSString *)startingDelimiterString endingDelimiter:(NSString *)endingDelimiterString;
 // Calls -stringByReplacingKeysInDictionary:startingDelimiter:endingDelimiter:removeUndefinedKeys: with removeUndefinedKeys NO.
 
-typedef NSString *(*OFVariableReplacementFunction)(NSString *, void *);
-- (NSString *)stringByReplacingKeys:(OFVariableReplacementFunction)replacer startingDelimiter:(NSString *)startingDelimiterString endingDelimiter:(NSString *)endingDelimiterString context:(void *)context;
+typedef NSString *(^OFVariableReplacementBlock)(NSString *key);
+
+- (NSString *)stringByReplacingKeysWithStartingDelimiter:(NSString *)startingDelimiterString endingDelimiter:(NSString *)endingDelimiterString usingBlock:(OFVariableReplacementBlock)replacer;
+
 // The most generic form of variable replacement, letting you use your own replacer instead of providing a keyword dictionary
 
 // Generalized replacement function, and a convenience cover.

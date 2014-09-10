@@ -37,6 +37,11 @@
 		340DD56209AD38E900E8A437 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		340DF1371846BB6800B9F375 /* NSScriptCommand-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DF1351846BB6800B9F375 /* NSScriptCommand-OAExtensions.h */; };
 		340DF1381846BB6800B9F375 /* NSScriptCommand-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DF1361846BB6800B9F375 /* NSScriptCommand-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34199180195001CA00BA8113 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3419917F195001CA00BA8113 /* CoreText.framework */; };
+		34199182195001E100BA8113 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34199181195001E100BA8113 /* CoreGraphics.framework */; };
+		341991851950020200BA8113 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51FBBFE8AB2E911C9CC38 /* OmniBase.framework */; };
+		341991871950021800BA8113 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 341991861950021800BA8113 /* UIKit.framework */; };
+		341991881950022B00BA8113 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010AE8EBFF38DCF8C697A13D /* OmniFoundation.framework */; };
 		341AB85911935816005E6F74 /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		341AB85A11935816005E6F74 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3425E49009C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -50,8 +55,8 @@
 		3431F1310B1B7847002B728E /* OADatePickerTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3431F12F0B1B7847002B728E /* OADatePickerTextFieldCell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		3434792F11923BAE007D0CE5 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; };
 		3434793011923BAF007D0CE5 /* NSFileWrapper-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34471AC109D31320004C9DBA /* OAConstructionTimeView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34471ABF09D31320004C9DBA /* OAConstructionTimeView.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34471AC209D31320004C9DBA /* OAConstructionTimeView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34471AC009D31320004C9DBA /* OAConstructionTimeView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		34471AC109D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34471ABF09D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h */; };
+		34471AC209D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34471AC009D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		344B6E4912A4D3DC00D876CD /* OATextAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 344B6E4712A4D3DC00D876CD /* OATextAttachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		344B6E4A12A4D3DC00D876CD /* OATextAttachment.m in Sources */ = {isa = PBXBuildFile; fileRef = 344B6E4812A4D3DC00D876CD /* OATextAttachment.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		344B6E6212A4D53000D876CD /* OATextAttachment.m in Sources */ = {isa = PBXBuildFile; fileRef = 344B6E4812A4D3DC00D876CD /* OATextAttachment.m */; };
@@ -74,13 +79,94 @@
 		3477D8D50974EF3200DC4FC3 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51FBBFE8AB2E911C9CC38 /* OmniBase.framework */; };
 		34812ACD17726A3700C40D0A /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34812ACE17726A3C00C40D0A /* NSLayoutManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */; };
+		3484DD8B194FFC3500D83731 /* NSAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F36FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD8C194FFC3A00D83731 /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; };
+		3484DD8D194FFC4400D83731 /* NSLayoutManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD8E194FFC4800D83731 /* NSLayoutManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3425E48F09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m */; };
+		3484DD8F194FFC5500D83731 /* OAFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34275D1C13981621003F28F5 /* OAFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD90194FFC6000D83731 /* OAFindPattern.h in Headers */ = {isa = PBXBuildFile; fileRef = 137CBE6F011899AF7F000001 /* OAFindPattern.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD91194FFC6400D83731 /* OAFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE70011899AF7F000001 /* OAFindPattern.m */; };
+		3484DD92194FFC6D00D83731 /* OAParagraphStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = 3473992111947194002DF726 /* OAParagraphStyle.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD93194FFC7700D83731 /* OATextAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 34ED275B11DBBD2E006C33FF /* OATextAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD94194FFC7C00D83731 /* OATextAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 34ED275C11DBBD2E006C33FF /* OATextAttributes.m */; };
+		3484DD95194FFC7F00D83731 /* OATextAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 344B6E4712A4D3DC00D876CD /* OATextAttachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD96194FFC8400D83731 /* OATextAttachment.m in Sources */ = {isa = PBXBuildFile; fileRef = 344B6E4812A4D3DC00D876CD /* OATextAttachment.m */; };
+		3484DD97194FFC8700D83731 /* OATextAttachmentCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 3451254912D421E6009A1AF0 /* OATextAttachmentCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD98194FFC8A00D83731 /* OATextAttachmentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451254A12D421E6009A1AF0 /* OATextAttachmentCell.m */; };
+		3484DD99194FFC9700D83731 /* OATextStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 3401161411E516C10016ADB3 /* OATextStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD9A194FFCB100D83731 /* NSFileWrapper-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 340DD55F09AD38E900E8A437 /* NSFileWrapper-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD9B194FFCB500D83731 /* NSFileWrapper-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 340DD56009AD38E900E8A437 /* NSFileWrapper-OAExtensions.m */; };
+		3484DD9C194FFCC800D83731 /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3484DD9D194FFCCD00D83731 /* OAFontDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 341AB85811935816005E6F74 /* OAFontDescriptor.m */; };
+		3484DD9F194FFE0000D83731 /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
+		3484DDA0194FFE0400D83731 /* OBTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A09E0DE235EA00FB73CC /* OBTestCase.m */; };
+		3484DDA1194FFE0D00D83731 /* OFTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 3475A0A20DE235FE00FB73CC /* OFTestCase.m */; };
+		3484DDA2194FFE1500D83731 /* OATestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 34508D6F050FAA750097A113 /* OATestCase.m */; };
+		3484DDA5194FFE2600D83731 /* OATextStorageEditTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3401161F11E516EC0016ADB3 /* OATextStorageEditTests.m */; };
+		3484DDA6194FFE2A00D83731 /* OATextStorageMergedEditTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 3401162011E516EC0016ADB3 /* OATextStorageMergedEditTests.m */; };
+		3484DDA7194FFE2F00D83731 /* Catalog-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C34C0E3596E600773D47 /* Catalog-number-full.plist */; };
+		3484DDA8194FFE3200D83731 /* Catalog-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C34D0E3596E600773D47 /* Catalog-number-partial.plist */; };
+		3484DDA9194FFE3400D83731 /* Catalog-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C34E0E3596E600773D47 /* Catalog-string-full.plist */; };
+		3484DDAA194FFE3700D83731 /* Catalog-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C34F0E3596E600773D47 /* Catalog-string-partial.plist */; };
+		3484DDAB194FFE3B00D83731 /* Catalog.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3500E3596E600773D47 /* Catalog.xml */; };
+		3484DDAC194FFE5600D83731 /* CMYK-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3510E3596E600773D47 /* CMYK-number-full.plist */; };
+		3484DDAD194FFE5600D83731 /* CMYK-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3520E3596E600773D47 /* CMYK-number-partial.plist */; };
+		3484DDAE194FFE5600D83731 /* CMYK-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3530E3596E600773D47 /* CMYK-string-full.plist */; };
+		3484DDAF194FFE5600D83731 /* CMYK-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3540E3596E600773D47 /* CMYK-string-partial.plist */; };
+		3484DDB0194FFE5600D83731 /* CMYK.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3550E3596E600773D47 /* CMYK.xml */; };
+		3484DDB1194FFE5600D83731 /* CMYKA-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3560E3596E600773D47 /* CMYKA-number-full.plist */; };
+		3484DDB2194FFE5600D83731 /* CMYKA-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3570E3596E600773D47 /* CMYKA-number-partial.plist */; };
+		3484DDB3194FFE5600D83731 /* CMYKA-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3580E3596E600773D47 /* CMYKA-string-full.plist */; };
+		3484DDB4194FFE5600D83731 /* CMYKA-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3590E3596E600773D47 /* CMYKA-string-partial.plist */; };
+		3484DDB5194FFE5600D83731 /* CMYKA.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C35A0E3596E600773D47 /* CMYKA.xml */; };
+		3484DDB6194FFE5600D83731 /* HSV-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C35B0E3596E600773D47 /* HSV-number-full.plist */; };
+		3484DDB7194FFE5600D83731 /* HSV-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C35C0E3596E600773D47 /* HSV-number-partial.plist */; };
+		3484DDB8194FFE5600D83731 /* HSV-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C35D0E3596E600773D47 /* HSV-string-full.plist */; };
+		3484DDB9194FFE5600D83731 /* HSV-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C35E0E3596E600773D47 /* HSV-string-partial.plist */; };
+		3484DDBA194FFE5600D83731 /* HSV.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C35F0E3596E600773D47 /* HSV.xml */; };
+		3484DDBB194FFE5600D83731 /* HSVA-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3600E3596E600773D47 /* HSVA-number-full.plist */; };
+		3484DDBC194FFE5600D83731 /* HSVA-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3610E3596E600773D47 /* HSVA-number-partial.plist */; };
+		3484DDBD194FFE5600D83731 /* HSVA-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3620E3596E600773D47 /* HSVA-string-full.plist */; };
+		3484DDBE194FFE5600D83731 /* HSVA-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3630E3596E600773D47 /* HSVA-string-partial.plist */; };
+		3484DDBF194FFE5600D83731 /* HSVA.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3640E3596E600773D47 /* HSVA.xml */; };
+		3484DDC0194FFE5600D83731 /* Pattern-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3650E3596E600773D47 /* Pattern-number-full.plist */; };
+		3484DDC1194FFE5600D83731 /* Pattern-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3660E3596E600773D47 /* Pattern-number-partial.plist */; };
+		3484DDC2194FFE5600D83731 /* Pattern-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3670E3596E600773D47 /* Pattern-string-full.plist */; };
+		3484DDC3194FFE5600D83731 /* Pattern-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3680E3596E600773D47 /* Pattern-string-partial.plist */; };
+		3484DDC4194FFE5600D83731 /* pattern.tiff in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3690E3596E600773D47 /* pattern.tiff */; };
+		3484DDC5194FFE5600D83731 /* Pattern.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C36A0E3596E600773D47 /* Pattern.xml */; };
+		3484DDC6194FFE5600D83731 /* RGB-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C36B0E3596E600773D47 /* RGB-number-full.plist */; };
+		3484DDC7194FFE5600D83731 /* RGB-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C36C0E3596E600773D47 /* RGB-number-partial.plist */; };
+		3484DDC8194FFE5600D83731 /* RGB-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C36D0E3596E600773D47 /* RGB-string-full.plist */; };
+		3484DDC9194FFE5600D83731 /* RGB-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C36E0E3596E600773D47 /* RGB-string-partial.plist */; };
+		3484DDCA194FFE5600D83731 /* RGB.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C36F0E3596E600773D47 /* RGB.xml */; };
+		3484DDCB194FFE5600D83731 /* RGBA-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3700E3596E600773D47 /* RGBA-number-full.plist */; };
+		3484DDCC194FFE5600D83731 /* RGBA-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3710E3596E600773D47 /* RGBA-number-partial.plist */; };
+		3484DDCD194FFE5600D83731 /* RGBA-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3720E3596E600773D47 /* RGBA-string-full.plist */; };
+		3484DDCE194FFE5600D83731 /* RGBA-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3730E3596E600773D47 /* RGBA-string-partial.plist */; };
+		3484DDCF194FFE5600D83731 /* RGBA.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3740E3596E600773D47 /* RGBA.xml */; };
+		3484DDD0194FFE5600D83731 /* White-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3750E3596E600773D47 /* White-number-full.plist */; };
+		3484DDD1194FFE5600D83731 /* White-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3760E3596E600773D47 /* White-number-partial.plist */; };
+		3484DDD2194FFE5600D83731 /* White-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3770E3596E600773D47 /* White-string-full.plist */; };
+		3484DDD3194FFE5600D83731 /* White-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3780E3596E600773D47 /* White-string-partial.plist */; };
+		3484DDD4194FFE5600D83731 /* White.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C3790E3596E600773D47 /* White.xml */; };
+		3484DDD5194FFE5600D83731 /* WhiteAlpha-number-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37A0E3596E600773D47 /* WhiteAlpha-number-full.plist */; };
+		3484DDD6194FFE5600D83731 /* WhiteAlpha-number-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37B0E3596E600773D47 /* WhiteAlpha-number-partial.plist */; };
+		3484DDD7194FFE5600D83731 /* WhiteAlpha-string-full.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37C0E3596E600773D47 /* WhiteAlpha-string-full.plist */; };
+		3484DDD8194FFE5600D83731 /* WhiteAlpha-string-partial.plist in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37D0E3596E600773D47 /* WhiteAlpha-string-partial.plist */; };
+		3484DDD9194FFE5600D83731 /* WhiteAlpha.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37E0E3596E600773D47 /* WhiteAlpha.xml */; };
+		3484DDDE194FFEA700D83731 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51FBBFE8AB2E911C9CC38 /* OmniBase.framework */; };
+		3484DDDF194FFEAD00D83731 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010AE8EBFF38DCF8C697A13D /* OmniFoundation.framework */; };
 		349F65E20EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 349F65E00EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		349F65E30EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 349F65E10EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34A201230FF0454400B699DB /* NSAlert-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2011E0FF0453800B699DB /* NSAlert-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A201240FF0454500B699DB /* NSAlert-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2011F0FF0453800B699DB /* NSAlert-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34AF4BE20C99963F003DEC1B /* OAColorArchivingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AF4BE10C99963F003DEC1B /* OAColorArchivingTests.m */; };
+		34C12B07194FF90F005CB70B /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34C12AFC194FF90F005CB70B /* OmniAppKit.framework */; };
 		34C21B3013BCF386008D756C /* OAFindPattern.h in Headers */ = {isa = PBXBuildFile; fileRef = 137CBE6F011899AF7F000001 /* OAFindPattern.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34C21B3213BCF38C008D756C /* OAFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE70011899AF7F000001 /* OAFindPattern.m */; };
+		34C3835F1950091B0037D71D /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 341991861950021800BA8113 /* UIKit.framework */; };
+		34C38360195009420037D71D /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3419917F195001CA00BA8113 /* CoreText.framework */; };
 		34D04A39110E0270007399B9 /* OAUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D04A38110E0270007399B9 /* OAUtilities.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34DDE3A7135F65C70099DCCE /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; };
 		34DDE3A8135F65D50099DCCE /* NSAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F36FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -104,6 +190,7 @@
 		420572200CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4205721E0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4268E9300DBD5319002F30B1 /* OAColorProfile-Deprecated.m in Sources */ = {isa = PBXBuildFile; fileRef = 4268E92E0DBD5319002F30B1 /* OAColorProfile-Deprecated.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations -fno-objc-arc"; }; };
 		4268E9CC0DBE6B03002F30B1 /* OAColorProfile-Deprecated.h in Headers */ = {isa = PBXBuildFile; fileRef = 4268E9990DBE52D2002F30B1 /* OAColorProfile-Deprecated.h */; };
+		42B9CE4D197871B700FDB1E6 /* OADocumentSubclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 42B9CE4C197871B700FDB1E6 /* OADocumentSubclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		496D40E014D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOff.png in Resources */ = {isa = PBXBuildFile; fileRef = 496D40DE14D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOff.png */; };
 		496D40E114D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 496D40DF14D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOn.png */; };
 		49B035B0161D02CE0097E384 /* OAGearTemplate.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */; };
@@ -131,7 +218,6 @@
 		4AA1E69108AA764600E2FF6B /* OAApplication.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51EFFFE8AB2E911C9CC38 /* OAApplication.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69208AA764600E2FF6B /* OAColorPalette.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F00FE8AB2E911C9CC38 /* OAColorPalette.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69308AA764600E2FF6B /* OAController.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A9FDD370655955D0097A149 /* OAController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E69408AA764600E2FF6B /* OADragController.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F01FE8AB2E911C9CC38 /* OADragController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69508AA764600E2FF6B /* OAFindController.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F02FE8AB2E911C9CC38 /* OAFindController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69608AA764600E2FF6B /* OAFindControllerTargetProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F03FE8AB2E911C9CC38 /* OAFindControllerTargetProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69708AA764600E2FF6B /* OAFindPattern.h in Headers */ = {isa = PBXBuildFile; fileRef = 137CBE6F011899AF7F000001 /* OAFindPattern.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -149,7 +235,6 @@
 		4AA1E6A408AA764600E2FF6B /* NSApplication-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F35FE8AB2E911C9CC38 /* NSApplication-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6A508AA764600E2FF6B /* NSAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F36FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
 		4AA1E6A608AA764600E2FF6B /* NSBezierPath-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3F411EA1036D27330297A14E /* NSBezierPath-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6A708AA764600E2FF6B /* NSBrowser-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F37FE8AB2E911C9CC38 /* NSBrowser-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6A808AA764600E2FF6B /* NSBundle-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F38FE8AB2E911C9CC38 /* NSBundle-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
 		4AA1E6A908AA764600E2FF6B /* NSCell-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F39FE8AB2E911C9CC38 /* NSCell-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6AA08AA764600E2FF6B /* NSColor-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 0145F2A9FFAFE867C697A15C /* NSColor-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -199,7 +284,6 @@
 		4AA1E6DA08AA764600E2FF6B /* OADefaultSettingIndicatorButton.h in Headers */ = {isa = PBXBuildFile; fileRef = B584AFE6058A7A2F0097A10E /* OADefaultSettingIndicatorButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6DD08AA764600E2FF6B /* OADocumentPositioningView.h in Headers */ = {isa = PBXBuildFile; fileRef = 5BEAF23E01FF6D7D0297A15C /* OADocumentPositioningView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6DE08AA764600E2FF6B /* OADottedLine.h in Headers */ = {isa = PBXBuildFile; fileRef = 662681AD00DFECA50097A13D /* OADottedLine.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6E108AA764600E2FF6B /* OAFileWell.h in Headers */ = {isa = PBXBuildFile; fileRef = 00F1451300106CD07F000001 /* OAFileWell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6E208AA764600E2FF6B /* OAFontView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F8AFE8AB2E911C9CC38 /* OAFontView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6E308AA764600E2FF6B /* OAGradientTableView.h in Headers */ = {isa = PBXBuildFile; fileRef = E274EDCB056D99550097A12E /* OAGradientTableView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6E408AA764600E2FF6B /* OAGridView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00EB4311FEF05391C697A12D /* OAGridView.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -297,7 +381,6 @@
 		4AA1E77B08AA764600E2FF6B /* OAApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF5FE8AB2E911C9CC38 /* OAApplication.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E77C08AA764600E2FF6B /* OAColorPalette.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E77D08AA764600E2FF6B /* OAController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A9FDD380655955D0097A149 /* OAController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		4AA1E77E08AA764600E2FF6B /* OADragController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF7FE8AB2E911C9CC38 /* OADragController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E77F08AA764600E2FF6B /* OAFindController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF8FE8AB2E911C9CC38 /* OAFindController.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E78008AA764600E2FF6B /* OAFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE70011899AF7F000001 /* OAFindPattern.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E78108AA764600E2FF6B /* OAFontCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EF9FE8AB2E911C9CC38 /* OAFontCache.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -311,7 +394,6 @@
 		4AA1E78A08AA764600E2FF6B /* NSApplication-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F1FFE8AB2E911C9CC38 /* NSApplication-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E78B08AA764600E2FF6B /* NSAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E78C08AA764600E2FF6B /* NSBezierPath-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3F411EA2036D27330297A14E /* NSBezierPath-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		4AA1E78D08AA764600E2FF6B /* NSBrowser-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F21FE8AB2E911C9CC38 /* NSBrowser-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E78E08AA764600E2FF6B /* NSBundle-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F22FE8AB2E911C9CC38 /* NSBundle-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E78F08AA764600E2FF6B /* NSCell-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F23FE8AB2E911C9CC38 /* NSCell-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E79008AA764600E2FF6B /* NSColor-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0145F2A8FFAFE867C697A15C /* NSColor-OAExtensions.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -359,7 +441,6 @@
 		4AA1E7BE08AA764600E2FF6B /* OADefaultSettingIndicatorButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B584AFE7058A7A2F0097A10E /* OADefaultSettingIndicatorButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7C108AA764600E2FF6B /* OADocumentPositioningView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BEAF23F01FF6D7D0297A15C /* OADocumentPositioningView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7C208AA764600E2FF6B /* OADottedLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 662681AE00DFECA50097A13D /* OADottedLine.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		4AA1E7C508AA764600E2FF6B /* OAFileWell.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F1451400106CD07F000001 /* OAFileWell.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7C608AA764600E2FF6B /* OAFontView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7AFE8AB2E911C9CC38 /* OAFontView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7C708AA764600E2FF6B /* OAGradientTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = E274EDCC056D99550097A12E /* OAGradientTableView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7C808AA764600E2FF6B /* OAGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00EB4312FEF05391C697A12D /* OAGridView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -405,7 +486,6 @@
 		4AA1E80508AA764600E2FF6B /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010AE8EBFF38DCF8C697A13D /* OmniFoundation.framework */; };
 		4AA1E80608AA764600E2FF6B /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51FBBFE8AB2E911C9CC38 /* OmniBase.framework */; };
 		4AA1E80708AA764600E2FF6B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6389AAFAFFFFF26AC697A14E /* Cocoa.framework */; };
-		4AA1E80808AA764600E2FF6B /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34508D64050FA8C30097A113 /* SenTestingKit.framework */; };
 		4AA1E81508AA764700E2FF6B /* OAMakeImageSizeIntegral.m in Sources */ = {isa = PBXBuildFile; fileRef = 34DBC8C205979AE60097A113 /* OAMakeImageSizeIntegral.m */; };
 		4AA1E81708AA764700E2FF6B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6389AAFAFFFFF26AC697A14E /* Cocoa.framework */; };
 		4AA1E82F08AA764700E2FF6B /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */; };
@@ -416,8 +496,6 @@
 		4D92F572174C10BA00E251EF /* OAResizingTitleBarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D92F570174C10BA00E251EF /* OAResizingTitleBarButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4DFEA4981728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
 		4DFEA4991728518800149B1F /* OAFontDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DFEA4971728518800149B1F /* OAFontDescriptorTests.m */; };
-		4DFEA49A17285B8C00149B1F /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4DFEA49B17285B8D00149B1F /* OAFontDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 341AB85711935816005E6F74 /* OAFontDescriptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50A5C89608C5505500B1C5E4 /* NSEvent-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 50A5C89408C5505500B1C5E4 /* NSEvent-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		50A5C89708C5505500B1C5E4 /* NSEvent-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 50A5C89508C5505500B1C5E4 /* NSEvent-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		5F25681B1606CBE5008265EA /* Automator.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F25681A1606CBE5008265EA /* Automator.framework */; };
@@ -513,6 +591,41 @@
 			remoteGlobalIDString = 3434791411923B54007D0CE5;
 			remoteInfo = OmniAppKitTouch;
 		};
+		3439A353195241A0000E430A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51EF1FE8AB2E911C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34C12AFB194FF90F005CB70B;
+			remoteInfo = "OmniAppKit-iOS";
+		};
+		3439A355195241A0000E430A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51EF1FE8AB2E911C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34C12AFB194FF90F005CB70B;
+			remoteInfo = "OmniAppKit-iOS";
+		};
+		34C12B08194FF90F005CB70B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51EF1FE8AB2E911C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34C12AFB194FF90F005CB70B;
+			remoteInfo = "OmniAppKit-iOS";
+		};
+		34C12B17194FF910005CB70B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51EF1FE8AB2E911C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34C12AFB194FF90F005CB70B;
+			remoteInfo = "OmniAppKit-iOS";
+		};
+		34C12B19194FF910005CB70B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00E51EF1FE8AB2E911C9CC38 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 34C12AFB194FF90F005CB70B;
+			remoteInfo = "OmniAppKit-iOS";
+		};
 		4AA1E82D08AA764700E2FF6B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 00E51EF1FE8AB2E911C9CC38 /* Project object */;
@@ -533,14 +646,12 @@
 		00E51EF4FE8AB2E911C9CC38 /* OAAppKitQueueProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAppKitQueueProcessor.m; sourceTree = "<group>"; };
 		00E51EF5FE8AB2E911C9CC38 /* OAApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAApplication.m; sourceTree = SOURCE_ROOT; };
 		00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorPalette.m; sourceTree = SOURCE_ROOT; };
-		00E51EF7FE8AB2E911C9CC38 /* OADragController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADragController.m; sourceTree = SOURCE_ROOT; };
 		00E51EF8FE8AB2E911C9CC38 /* OAFindController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFindController.m; sourceTree = "<group>"; };
 		00E51EF9FE8AB2E911C9CC38 /* OAFontCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFontCache.m; sourceTree = SOURCE_ROOT; };
 		00E51EFAFE8AB2E911C9CC38 /* OAPasteboardHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPasteboardHelper.m; sourceTree = SOURCE_ROOT; };
 		00E51EFEFE8AB2E911C9CC38 /* OAAppKitQueueProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAppKitQueueProcessor.h; sourceTree = "<group>"; };
 		00E51EFFFE8AB2E911C9CC38 /* OAApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAApplication.h; sourceTree = SOURCE_ROOT; };
 		00E51F00FE8AB2E911C9CC38 /* OAColorPalette.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAColorPalette.h; sourceTree = SOURCE_ROOT; };
-		00E51F01FE8AB2E911C9CC38 /* OADragController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADragController.h; sourceTree = SOURCE_ROOT; };
 		00E51F02FE8AB2E911C9CC38 /* OAFindController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFindController.h; sourceTree = "<group>"; };
 		00E51F03FE8AB2E911C9CC38 /* OAFindControllerTargetProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFindControllerTargetProtocol.h; sourceTree = "<group>"; };
 		00E51F04FE8AB2E911C9CC38 /* OAFontCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFontCache.h; sourceTree = SOURCE_ROOT; };
@@ -549,7 +660,6 @@
 		00E51F0DFE8AB2E911C9CC38 /* namedColors.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = namedColors.plist; sourceTree = SOURCE_ROOT; };
 		00E51F1FFE8AB2E911C9CC38 /* NSApplication-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSApplication-OAExtensions.m"; sourceTree = "<group>"; };
 		00E51F20FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAttributedString-OAExtensions.m"; sourceTree = "<group>"; };
-		00E51F21FE8AB2E911C9CC38 /* NSBrowser-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBrowser-OAExtensions.m"; sourceTree = "<group>"; };
 		00E51F22FE8AB2E911C9CC38 /* NSBundle-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBundle-OAExtensions.m"; sourceTree = "<group>"; };
 		00E51F23FE8AB2E911C9CC38 /* NSCell-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSCell-OAExtensions.m"; sourceTree = "<group>"; };
 		00E51F24FE8AB2E911C9CC38 /* NSControl-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSControl-OAExtensions.m"; sourceTree = "<group>"; };
@@ -569,7 +679,6 @@
 		00E51F33FE8AB2E911C9CC38 /* NSWindow-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSWindow-OAExtensions.m"; sourceTree = "<group>"; };
 		00E51F35FE8AB2E911C9CC38 /* NSApplication-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSApplication-OAExtensions.h"; sourceTree = "<group>"; };
 		00E51F36FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAttributedString-OAExtensions.h"; sourceTree = "<group>"; };
-		00E51F37FE8AB2E911C9CC38 /* NSBrowser-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBrowser-OAExtensions.h"; sourceTree = "<group>"; };
 		00E51F38FE8AB2E911C9CC38 /* NSBundle-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBundle-OAExtensions.h"; sourceTree = "<group>"; };
 		00E51F39FE8AB2E911C9CC38 /* NSCell-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSCell-OAExtensions.h"; sourceTree = "<group>"; };
 		00E51F3AFE8AB2E911C9CC38 /* NSControl-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSControl-OAExtensions.h"; sourceTree = "<group>"; };
@@ -619,14 +728,12 @@
 		00E51F9AFE8AB2E911C9CC38 /* OAAquaButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAquaButton.h; sourceTree = "<group>"; };
 		00E51FB7FE8AB2E911C9CC38 /* OmniSourceLicense.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OmniSourceLicense.html; sourceTree = "<group>"; };
 		00E51FBBFE8AB2E911C9CC38 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		00E51FBDFE8AB2E911C9CC38 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
-		00E51FBEFE8AB2E911C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		00E51FBDFE8AB2E911C9CC38 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		00E51FBEFE8AB2E911C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		00EB4311FEF05391C697A12D /* OAGridView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAGridView.h; sourceTree = "<group>"; };
 		00EB4312FEF05391C697A12D /* OAGridView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGridView.m; sourceTree = "<group>"; };
 		00EC5D5DFF141372C697A12F /* OAStackView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAStackView.h; sourceTree = "<group>"; };
 		00EC5D5EFF141372C697A12F /* OAStackView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAStackView.m; sourceTree = "<group>"; };
-		00F1451300106CD07F000001 /* OAFileWell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFileWell.h; sourceTree = "<group>"; };
-		00F1451400106CD07F000001 /* OAFileWell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFileWell.m; sourceTree = "<group>"; };
 		010A51C0005212DBC697A13D /* OATextWithIconCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATextWithIconCell.h; sourceTree = "<group>"; };
 		010A51C1005212DBC697A13D /* OATextWithIconCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATextWithIconCell.m; sourceTree = "<group>"; };
 		010AE8EBFF38DCF8C697A13D /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -657,7 +764,7 @@
 		1D0E8F7703FBA2F90097A138 /* OACautionIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OACautionIcon.png; sourceTree = "<group>"; };
 		1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAResizingByteFormatter.h; sourceTree = "<group>"; };
 		1FF7E54BFF2C3BABC697A14E /* OAResizingByteFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAResizingByteFormatter.m; sourceTree = "<group>"; };
-		25B27335FFDDE12711CB17EA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		25B27335FFDDE12711CB17EA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		271A9D9E1533DA2800A78CCB /* OAAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAAnimation.h; sourceTree = "<group>"; };
 		271A9D9F1533DA2800A78CCB /* OAAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAAnimation.m; sourceTree = "<group>"; };
 		272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = OAInfoTemplate.pdf; sourceTree = "<group>"; };
@@ -690,6 +797,9 @@
 		3412B1D3089EE7E10046872B /* OAAutosizingHorizontalRule.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OAAutosizingHorizontalRule.m; sourceTree = "<group>"; };
 		341513E8FFA7B9E0C697A14A /* NSFontManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFontManager-OAExtensions.h"; sourceTree = "<group>"; };
 		341513E9FFA7B9E0C697A14A /* NSFontManager-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFontManager-OAExtensions.m"; sourceTree = "<group>"; };
+		3419917F195001CA00BA8113 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
+		34199181195001E100BA8113 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		341991861950021800BA8113 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		341AB85711935816005E6F74 /* OAFontDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAFontDescriptor.h; sourceTree = "<group>"; };
 		341AB85811935816005E6F74 /* OAFontDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAFontDescriptor.m; sourceTree = "<group>"; };
 		3425E48E09C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSLayoutManager-OAExtensions.h"; path = "OpenStepExtensions.subproj/NSLayoutManager-OAExtensions.h"; sourceTree = "<group>"; };
@@ -715,8 +825,8 @@
 		3434792511923B69007D0CE5 /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		3434792611923B69007D0CE5 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		3434792711923B69007D0CE5 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
-		34471ABF09D31320004C9DBA /* OAConstructionTimeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAConstructionTimeView.h; sourceTree = "<group>"; };
-		34471AC009D31320004C9DBA /* OAConstructionTimeView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAConstructionTimeView.m; sourceTree = "<group>"; };
+		34471ABF09D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAConstructionTitlebarAccessoryViewController.h; sourceTree = "<group>"; };
+		34471AC009D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAConstructionTitlebarAccessoryViewController.m; sourceTree = "<group>"; };
 		34476AE306DF790B0097A113 /* OAToolbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAToolbar.h; sourceTree = "<group>"; };
 		34476AE406DF790B0097A113 /* OAToolbar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbar.m; sourceTree = "<group>"; };
 		344A49C6055FD29B0097A113 /* OAMiniAdd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAMiniAdd.png; sourceTree = "<group>"; };
@@ -729,7 +839,6 @@
 		345057E206F207DD0097A113 /* OAContextPopUpButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAContextPopUpButton.m; sourceTree = "<group>"; };
 		345057E506F209090097A113 /* OAContextControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAContextControl.h; sourceTree = "<group>"; };
 		345057E606F209090097A113 /* OAContextControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAContextControl.m; sourceTree = "<group>"; };
-		34508D64050FA8C30097A113 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		34508D6E050FAA750097A113 /* OATestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATestCase.h; sourceTree = "<group>"; };
 		34508D6F050FAA750097A113 /* OATestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATestCase.m; sourceTree = "<group>"; };
 		3451254912D421E6009A1AF0 /* OATextAttachmentCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OATextAttachmentCell.h; sourceTree = "<group>"; };
@@ -739,7 +848,7 @@
 		346A548A0551B08600C03EF8 /* OAUnitTests_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAUnitTests_Prefix.h; sourceTree = "<group>"; };
 		346A98A015903B0F00CA3359 /* NSAnimationContext-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAnimationContext-OAExtensions.h"; sourceTree = "<group>"; };
 		346A98A115903B0F00CA3359 /* NSAnimationContext-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAnimationContext-OAExtensions.m"; sourceTree = "<group>"; };
-		346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExceptionHandling.framework; path = /System/Library/Frameworks/ExceptionHandling.framework; sourceTree = "<absolute>"; };
+		346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExceptionHandling.framework; path = System/Library/Frameworks/ExceptionHandling.framework; sourceTree = SDKROOT; };
 		3473992111947194002DF726 /* OAParagraphStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAParagraphStyle.h; sourceTree = "<group>"; };
 		3475A09D0DE235EA00FB73CC /* OBTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OBTestCase.h; path = ../../../OmniBase/OBTestCase.h; sourceTree = "<group>"; };
 		3475A09E0DE235EA00FB73CC /* OBTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OBTestCase.m; path = ../../../OmniBase/OBTestCase.m; sourceTree = "<group>"; };
@@ -759,6 +868,26 @@
 		34B14EED0572E2820097A113 /* OADataSourceTableColumn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADataSourceTableColumn.m; sourceTree = "<group>"; };
 		34B14EF40573A3FF0097A113 /* OAColorWell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAColorWell.h; sourceTree = "<group>"; };
 		34B14EF50573A3FF0097A113 /* OAColorWell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorWell.m; sourceTree = "<group>"; };
+		34C12AFC194FF90F005CB70B /* OmniAppKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		34C12B06194FF90F005CB70B /* OAUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		34C12B1B194FF926005CB70B /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
+		34C12B1C194FF926005CB70B /* Omni-Application-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
+		34C12B1D194FF926005CB70B /* Omni-Application-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
+		34C12B1E194FF926005CB70B /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
+		34C12B1F194FF926005CB70B /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
+		34C12B20194FF926005CB70B /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
+		34C12B21194FF926005CB70B /* Omni-Global-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
+		34C12B22194FF926005CB70B /* Omni-Global-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
+		34C12B23194FF926005CB70B /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
+		34C12B24194FF926005CB70B /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
+		34C12B25194FF926005CB70B /* Touch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		34C12B26194FF926005CB70B /* Touch-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34C12B27194FF926005CB70B /* Touch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		34C12B28194FF926005CB70B /* Touch-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		34C12B29194FF926005CB70B /* Touch-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		34C12B2A194FF926005CB70B /* Touch-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
+		34C12B2B194FF926005CB70B /* Touch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		34C12B2C194FF926005CB70B /* Touch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		34D04A38110E0270007399B9 /* OAUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAUtilities.m; sourceTree = "<group>"; };
 		34DAF8660556CA0D0097A113 /* OAVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAVersion.h; sourceTree = "<group>"; };
 		34DBC8C205979AE60097A113 /* OAMakeImageSizeIntegral.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAMakeImageSizeIntegral.m; sourceTree = "<group>"; };
@@ -783,6 +912,7 @@
 		4205721E0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableAttributedString-OAExtensions.m"; sourceTree = "<group>"; };
 		4268E92E0DBD5319002F30B1 /* OAColorProfile-Deprecated.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OAColorProfile-Deprecated.m"; sourceTree = "<group>"; };
 		4268E9990DBE52D2002F30B1 /* OAColorProfile-Deprecated.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAColorProfile-Deprecated.h"; sourceTree = "<group>"; };
+		42B9CE4C197871B700FDB1E6 /* OADocumentSubclass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADocumentSubclass.h; sourceTree = "<group>"; };
 		496D40DE14D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorCircleXOff.png; sourceTree = "<group>"; };
 		496D40DF14D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorCircleXOn.png; sourceTree = "<group>"; };
 		49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = OAGearTemplate.tiff; sourceTree = "<group>"; };
@@ -798,7 +928,7 @@
 		4A5F17B0172772F5001A60E5 /* OAWebPageViewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAWebPageViewer.h; sourceTree = "<group>"; };
 		4A5F17B1172772F5001A60E5 /* OAWebPageViewer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAWebPageViewer.m; sourceTree = "<group>"; };
 		4A5F17B2172772F5001A60E5 /* OAWebPageViewer.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OAWebPageViewer.xib; sourceTree = "<group>"; };
-		4A5F17B61727772C001A60E5 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
+		4A5F17B61727772C001A60E5 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		4A785F570B040C3A00B513F3 /* OAPopupDatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPopupDatePicker.h; sourceTree = "<group>"; };
 		4A785F580B040C3A00B513F3 /* OAPopupDatePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPopupDatePicker.m; sourceTree = "<group>"; };
 		4A785F5F0B040CAE00B513F3 /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/OAPopupDatePicker.nib; sourceTree = "<group>"; };
@@ -810,7 +940,7 @@
 		4A9FDD370655955D0097A149 /* OAController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAController.h; sourceTree = "<group>"; };
 		4A9FDD380655955D0097A149 /* OAController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAController.m; sourceTree = "<group>"; };
 		4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAUnitTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AA1E81108AA764700E2FF6B /* OAUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OAUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OAMakeImageSizeIntegral; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA1EBCD08AA772700E2FF6B /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AA1EBCE08AA772700E2FF6B /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -827,7 +957,7 @@
 		4AB8F09B08AD0A0600DBB061 /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AB8F09C08AD0A0600DBB061 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AB8F09D08AD0A0600DBB061 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
-		4AE460D811D20CA800215084 /* OSAKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OSAKit.framework; path = /System/Library/Frameworks/OSAKit.framework; sourceTree = "<absolute>"; };
+		4AE460D811D20CA800215084 /* OSAKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OSAKit.framework; path = System/Library/Frameworks/OSAKit.framework; sourceTree = SDKROOT; };
 		4D7B031916A9DA7F006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorCircleXOff@2x.png"; sourceTree = "<group>"; };
 		4D7B031A16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorCircleXOn@2x.png"; sourceTree = "<group>"; };
 		4D92F56F174C10BA00E251EF /* OAResizingTitleBarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAResizingTitleBarButton.h; sourceTree = "<group>"; };
@@ -848,7 +978,7 @@
 		6389AAF5FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OAChasingArrowsProgressIndicator.m; path = Widgets.subproj/OAChasingArrowsProgressIndicator.m; sourceTree = "<group>"; };
 		6389AAF8FFFFE828C697A14E /* OAChasingArrows.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OAChasingArrows.png; path = Widgets.subproj/OAChasingArrows.png; sourceTree = "<group>"; };
 		6389AAFAFFFFF26AC697A14E /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
-		6389AAFCFFFFF4BBC697A14E /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
+		6389AAFCFFFFF4BBC697A14E /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 		6620D673013359840097A13E /* OAPreferencesWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPreferencesWindow.h; sourceTree = "<group>"; };
 		6620D674013359840097A13E /* OAPreferencesWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPreferencesWindow.m; sourceTree = "<group>"; };
 		6620D67A01335CA00097A13E /* OAPreferencesToolbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPreferencesToolbar.h; sourceTree = "<group>"; };
@@ -903,7 +1033,7 @@
 		A27039C20B9E006600C1D4A7 /* OATextFieldBinder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OATextFieldBinder.m; sourceTree = "<group>"; };
 		A27FE45E0CAB033300EE72BA /* OASlowLoadingImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASlowLoadingImage.h; sourceTree = "<group>"; };
 		A27FE45F0CAB033300EE72BA /* OASlowLoadingImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASlowLoadingImage.m; sourceTree = "<group>"; };
-		A2BB56370C9753BD00274A08 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = /System/Library/Frameworks/QuartzCore.framework; sourceTree = "<absolute>"; };
+		A2BB56370C9753BD00274A08 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		A2C0C34C0E3596E600773D47 /* Catalog-number-full.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Catalog-number-full.plist"; sourceTree = "<group>"; };
 		A2C0C34D0E3596E600773D47 /* Catalog-number-partial.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Catalog-number-partial.plist"; sourceTree = "<group>"; };
 		A2C0C34E0E3596E600773D47 /* Catalog-string-full.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Catalog-string-full.plist"; sourceTree = "<group>"; };
@@ -1056,6 +1186,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		34C12AF8194FF90F005CB70B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				341991871950021800BA8113 /* UIKit.framework in Frameworks */,
+				341991851950020200BA8113 /* OmniBase.framework in Frameworks */,
+				34199182195001E100BA8113 /* CoreGraphics.framework in Frameworks */,
+				341991881950022B00BA8113 /* OmniFoundation.framework in Frameworks */,
+				34199180195001CA00BA8113 /* CoreText.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34C12B03194FF90F005CB70B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34C3835F1950091B0037D71D /* UIKit.framework in Frameworks */,
+				3484DDDE194FFEA700D83731 /* OmniBase.framework in Frameworks */,
+				34C38360195009420037D71D /* CoreText.framework in Frameworks */,
+				3484DDDF194FFEAD00D83731 /* OmniFoundation.framework in Frameworks */,
+				34C12B07194FF90F005CB70B /* OmniAppKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AA1E7ED08AA764600E2FF6B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1081,7 +1235,6 @@
 				4AA1E80508AA764600E2FF6B /* OmniFoundation.framework in Frameworks */,
 				4AA1E80608AA764600E2FF6B /* OmniBase.framework in Frameworks */,
 				4AA1E80708AA764600E2FF6B /* Cocoa.framework in Frameworks */,
-				4AA1E80808AA764600E2FF6B /* SenTestingKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1114,10 +1267,12 @@
 			isa = PBXGroup;
 			children = (
 				4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */,
-				4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */,
+				4AA1E81108AA764700E2FF6B /* OAUnitTests.xctest */,
 				4AA1E81E08AA764700E2FF6B /* OAMakeImageSizeIntegral */,
 				3434791511923B54007D0CE5 /* libOmniAppKit.a */,
 				3401163511E5181A0016ADB3 /* libOmniAppKitTouchTests.a */,
+				34C12AFC194FF90F005CB70B /* OmniAppKit.framework */,
+				34C12B06194FF90F005CB70B /* OAUnitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1192,19 +1347,8 @@
 		00E51FBAFE8AB2E911C9CC38 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				6389AAFAFFFFF26AC697A14E /* Cocoa.framework */,
-				6389AAFCFFFFF4BBC697A14E /* ApplicationServices.framework */,
-				A2BB56370C9753BD00274A08 /* QuartzCore.framework */,
-				00E51FBBFE8AB2E911C9CC38 /* OmniBase.framework */,
-				010AE8EBFF38DCF8C697A13D /* OmniFoundation.framework */,
-				25B27335FFDDE12711CB17EA /* Carbon.framework */,
-				00E51FBDFE8AB2E911C9CC38 /* AppKit.framework */,
-				4AE460D811D20CA800215084 /* OSAKit.framework */,
-				00E51FBEFE8AB2E911C9CC38 /* Foundation.framework */,
-				346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */,
-				34508D64050FA8C30097A113 /* SenTestingKit.framework */,
-				4A5F17B61727772C001A60E5 /* WebKit.framework */,
-				5F25681A1606CBE5008265EA /* Automator.framework */,
+				3484DDE0194FFEC200D83731 /* Apple */,
+				3484DDE1194FFEDC00D83731 /* Omni */,
 			);
 			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
@@ -1261,8 +1405,6 @@
 				6389AAF4FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.h */,
 				6389AAF5FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.m */,
 				6389AAF8FFFFE828C697A14E /* OAChasingArrows.png */,
-				00E51F01FE8AB2E911C9CC38 /* OADragController.h */,
-				00E51EF7FE8AB2E911C9CC38 /* OADragController.m */,
 				6C1571A304C5A5D800E7FE1C /* OAMultiColumnListView.h */,
 				6C1571A404C5A5D800E7FE1C /* OAMultiColumnListView.m */,
 				00E51F05FE8AB2E911C9CC38 /* OAPasteboardHelper.h */,
@@ -1286,6 +1428,7 @@
 			isa = PBXGroup;
 			children = (
 				2730CF39144E205B007C3A99 /* OADocument.h */,
+				42B9CE4C197871B700FDB1E6 /* OADocumentSubclass.h */,
 				2730CF3A144E205B007C3A99 /* OADocument.m */,
 			);
 			name = Documents;
@@ -1346,6 +1489,35 @@
 				346A98A115903B0F00CA3359 /* NSAnimationContext-OAExtensions.m */,
 			);
 			name = NSAnimationContext;
+			sourceTree = "<group>";
+		};
+		3484DDE0194FFEC200D83731 /* Apple */ = {
+			isa = PBXGroup;
+			children = (
+				6389AAFAFFFFF26AC697A14E /* Cocoa.framework */,
+				6389AAFCFFFFF4BBC697A14E /* ApplicationServices.framework */,
+				A2BB56370C9753BD00274A08 /* QuartzCore.framework */,
+				25B27335FFDDE12711CB17EA /* Carbon.framework */,
+				00E51FBDFE8AB2E911C9CC38 /* AppKit.framework */,
+				4AE460D811D20CA800215084 /* OSAKit.framework */,
+				00E51FBEFE8AB2E911C9CC38 /* Foundation.framework */,
+				346DB94A0D74BDAD00CA37DE /* ExceptionHandling.framework */,
+				4A5F17B61727772C001A60E5 /* WebKit.framework */,
+				5F25681A1606CBE5008265EA /* Automator.framework */,
+				3419917F195001CA00BA8113 /* CoreText.framework */,
+				34199181195001E100BA8113 /* CoreGraphics.framework */,
+				341991861950021800BA8113 /* UIKit.framework */,
+			);
+			name = Apple;
+			sourceTree = "<group>";
+		};
+		3484DDE1194FFEDC00D83731 /* Omni */ = {
+			isa = PBXGroup;
+			children = (
+				00E51FBBFE8AB2E911C9CC38 /* OmniBase.framework */,
+				010AE8EBFF38DCF8C697A13D /* OmniFoundation.framework */,
+			);
+			name = Omni;
 			sourceTree = "<group>";
 		};
 		349F65E40EBBA2B300AB6E36 /* NSResponder */ = {
@@ -1450,8 +1622,8 @@
 				94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */,
 				00E51F00FE8AB2E911C9CC38 /* OAColorPalette.h */,
 				00E51EF6FE8AB2E911C9CC38 /* OAColorPalette.m */,
-				34471ABF09D31320004C9DBA /* OAConstructionTimeView.h */,
-				34471AC009D31320004C9DBA /* OAConstructionTimeView.m */,
+				34471ABF09D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h */,
+				34471AC009D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m */,
 				B5C3F579050FE63D0097A10E /* OAContextButton.h */,
 				B5C3F57A050FE63D0097A10E /* OAContextButton.m */,
 				345057E506F209090097A113 /* OAContextControl.h */,
@@ -1460,8 +1632,6 @@
 				345057E206F207DD0097A113 /* OAContextPopUpButton.m */,
 				662681AD00DFECA50097A13D /* OADottedLine.h */,
 				662681AE00DFECA50097A13D /* OADottedLine.m */,
-				00F1451300106CD07F000001 /* OAFileWell.h */,
-				00F1451400106CD07F000001 /* OAFileWell.m */,
 				34E46E9B0CDEB7330066E943 /* OAFlippedView.h */,
 				34E46E9C0CDEB7330066E943 /* OAFlippedView.m */,
 				00E51F04FE8AB2E911C9CC38 /* OAFontCache.h */,
@@ -1729,22 +1899,12 @@
 			children = (
 				00E51F3AFE8AB2E911C9CC38 /* NSControl-OAExtensions.h */,
 				00E51F24FE8AB2E911C9CC38 /* NSControl-OAExtensions.m */,
-				3FDA4148020972FB0297A14E /* NSBrowser */,
 				3FDA414B020973C90297A14E /* NSButton */,
 				3FDA414D020973C90297A14E /* NSOutlineView */,
 				3FDA4158020975210297A14E /* NSTableView */,
 				3FDA4159020975210297A14E /* NSTextField */,
 			);
 			name = NSControl;
-			sourceTree = "<group>";
-		};
-		3FDA4148020972FB0297A14E /* NSBrowser */ = {
-			isa = PBXGroup;
-			children = (
-				00E51F37FE8AB2E911C9CC38 /* NSBrowser-OAExtensions.h */,
-				00E51F21FE8AB2E911C9CC38 /* NSBrowser-OAExtensions.m */,
-			);
-			name = NSBrowser;
 			sourceTree = "<group>";
 		};
 		3FDA4149020973770297A14E /* Foundation */ = {
@@ -2009,6 +2169,11 @@
 		4AA1EBCC08AA772700E2FF6B /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
+				34C12B1B194FF926005CB70B /* Omni-Application-Common-AppStore.xcconfig */,
+				34C12B1C194FF926005CB70B /* Omni-Application-Common-MacAppStore.xcconfig */,
+				34C12B1D194FF926005CB70B /* Omni-Application-Common-MacAppStorePro.xcconfig */,
+				34C12B1E194FF926005CB70B /* Omni-Application-Common-OmniStore.xcconfig */,
+				34C12B1F194FF926005CB70B /* Omni-Application-Common-AppStore.xcconfig */,
 				A207C22F0AA3BC7F00C3A5EF /* Omni-Application-Common.xcconfig */,
 				4AA1EBCD08AA772700E2FF6B /* Omni-Application-Coverage.xcconfig */,
 				4AA1EBCE08AA772700E2FF6B /* Omni-Application-Debug.xcconfig */,
@@ -2021,6 +2186,11 @@
 				4AA1EBD008AA772700E2FF6B /* Omni-Framework-Coverage.xcconfig */,
 				4AA1EBD108AA772700E2FF6B /* Omni-Framework-Debug.xcconfig */,
 				4AA1EBD208AA772700E2FF6B /* Omni-Framework-Release.xcconfig */,
+				34C12B20194FF926005CB70B /* Omni-Global-Common-AppStore.xcconfig */,
+				34C12B21194FF926005CB70B /* Omni-Global-Common-MacAppStore.xcconfig */,
+				34C12B22194FF926005CB70B /* Omni-Global-Common-MacAppStorePro.xcconfig */,
+				34C12B23194FF926005CB70B /* Omni-Global-Common-OmniStore.xcconfig */,
+				34C12B24194FF926005CB70B /* Omni-Global-Common-AppStore.xcconfig */,
 				A207C2340AA3BC7F00C3A5EF /* Omni-Global-Common.xcconfig */,
 				4AB8F09B08AD0A0600DBB061 /* Omni-Global-Coverage.xcconfig */,
 				4AB8F09C08AD0A0600DBB061 /* Omni-Global-Debug.xcconfig */,
@@ -2039,6 +2209,14 @@
 				3434792111923B69007D0CE5 /* Touch-Application-Coverage.xcconfig */,
 				3434792211923B69007D0CE5 /* Touch-Application-Debug.xcconfig */,
 				3434792311923B69007D0CE5 /* Touch-Application-Release.xcconfig */,
+				34C12B25194FF926005CB70B /* Touch-Bundle-Common.xcconfig */,
+				34C12B26194FF926005CB70B /* Touch-Bundle-Coverage.xcconfig */,
+				34C12B27194FF926005CB70B /* Touch-Bundle-Debug.xcconfig */,
+				34C12B28194FF926005CB70B /* Touch-Bundle-Release.xcconfig */,
+				34C12B29194FF926005CB70B /* Touch-Framework-Common.xcconfig */,
+				34C12B2A194FF926005CB70B /* Touch-Framework-Coverage.xcconfig */,
+				34C12B2B194FF926005CB70B /* Touch-Framework-Debug.xcconfig */,
+				34C12B2C194FF926005CB70B /* Touch-Framework-Release.xcconfig */,
 				3434792411923B69007D0CE5 /* Touch-Library-Common.xcconfig */,
 				3434792511923B69007D0CE5 /* Touch-Library-Coverage.xcconfig */,
 				3434792611923B69007D0CE5 /* Touch-Library-Debug.xcconfig */,
@@ -2329,7 +2507,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				3401164411E518720016ADB3 /* OATestCase.h in Headers */,
-				4DFEA49B17285B8D00149B1F /* OAFontDescriptor.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2351,6 +2528,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		34C12AF9194FF90F005CB70B /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3484DD8B194FFC3500D83731 /* NSAttributedString-OAExtensions.h in Headers */,
+				3484DD8F194FFC5500D83731 /* OAFeatures.h in Headers */,
+				3484DD90194FFC6000D83731 /* OAFindPattern.h in Headers */,
+				3484DD9A194FFCB100D83731 /* NSFileWrapper-OAExtensions.h in Headers */,
+				3484DD97194FFC8700D83731 /* OATextAttachmentCell.h in Headers */,
+				3484DD9C194FFCC800D83731 /* OAFontDescriptor.h in Headers */,
+				3484DD93194FFC7700D83731 /* OATextAttributes.h in Headers */,
+				3484DD8D194FFC4400D83731 /* NSLayoutManager-OAExtensions.h in Headers */,
+				3484DD95194FFC7F00D83731 /* OATextAttachment.h in Headers */,
+				3484DD92194FFC6D00D83731 /* OAParagraphStyle.h in Headers */,
+				3484DD99194FFC9700D83731 /* OATextStorage.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AA1E67B08AA764600E2FF6B /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -2366,7 +2561,6 @@
 				4AA1E69108AA764600E2FF6B /* OAApplication.h in Headers */,
 				4AA1E69208AA764600E2FF6B /* OAColorPalette.h in Headers */,
 				4AA1E69308AA764600E2FF6B /* OAController.h in Headers */,
-				4AA1E69408AA764600E2FF6B /* OADragController.h in Headers */,
 				4AA1E69508AA764600E2FF6B /* OAFindController.h in Headers */,
 				4AA1E69608AA764600E2FF6B /* OAFindControllerTargetProtocol.h in Headers */,
 				4AA1E69708AA764600E2FF6B /* OAFindPattern.h in Headers */,
@@ -2384,7 +2578,6 @@
 				4AA1E6A408AA764600E2FF6B /* NSApplication-OAExtensions.h in Headers */,
 				4AA1E6A508AA764600E2FF6B /* NSAttributedString-OAExtensions.h in Headers */,
 				4AA1E6A608AA764600E2FF6B /* NSBezierPath-OAExtensions.h in Headers */,
-				4AA1E6A708AA764600E2FF6B /* NSBrowser-OAExtensions.h in Headers */,
 				4AA1E6A808AA764600E2FF6B /* NSBundle-OAExtensions.h in Headers */,
 				4AA1E6A908AA764600E2FF6B /* NSCell-OAExtensions.h in Headers */,
 				4AA1E6AA08AA764600E2FF6B /* NSColor-OAExtensions.h in Headers */,
@@ -2435,7 +2628,6 @@
 				4AA1E6DA08AA764600E2FF6B /* OADefaultSettingIndicatorButton.h in Headers */,
 				4AA1E6DD08AA764600E2FF6B /* OADocumentPositioningView.h in Headers */,
 				4AA1E6DE08AA764600E2FF6B /* OADottedLine.h in Headers */,
-				4AA1E6E108AA764600E2FF6B /* OAFileWell.h in Headers */,
 				4AA1E6E208AA764600E2FF6B /* OAFontView.h in Headers */,
 				4AA1E6E308AA764600E2FF6B /* OAGradientTableView.h in Headers */,
 				4AA1E6E408AA764600E2FF6B /* OAGridView.h in Headers */,
@@ -2471,12 +2663,13 @@
 				4AA1E70408AA764600E2FF6B /* OAVectorView.h in Headers */,
 				4AA1E70508AA764600E2FF6B /* OAWindowCascade.h in Headers */,
 				4AA1E70608AA764600E2FF6B /* OAZoomableViewProtocol.h in Headers */,
+				42B9CE4D197871B700FDB1E6 /* OADocumentSubclass.h in Headers */,
 				4AA1E70808AA764600E2FF6B /* OAAutosizingHorizontalRule.h in Headers */,
 				50A5C89608C5505500B1C5E4 /* NSEvent-OAExtensions.h in Headers */,
 				34F0990109322B800001D0D5 /* OAAboutPanelController.h in Headers */,
 				340DD56109AD38E900E8A437 /* NSFileWrapper-OAExtensions.h in Headers */,
 				3425E49009C5F2A3003140C9 /* NSLayoutManager-OAExtensions.h in Headers */,
-				34471AC109D31320004C9DBA /* OAConstructionTimeView.h in Headers */,
+				34471AC109D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.h in Headers */,
 				342B41170A4C6B62002BFC4B /* NSWindowController-OAExtensions.h in Headers */,
 				A216D1350AB61E9C00CEC8C0 /* NSBezierPath-OAInternal.h in Headers */,
 				A25653B80ADDBFB400A2A25B /* OAControlTextColorTransformer.h in Headers */,
@@ -2526,7 +2719,6 @@
 				3475A09F0DE235EA00FB73CC /* OBTestCase.h in Headers */,
 				3475A0A30DE235FE00FB73CC /* OFTestCase.h in Headers */,
 				3E80E9F71614EFC20078A123 /* OAGradientBoxSeparator.h in Headers */,
-				4DFEA49A17285B8C00149B1F /* OAFontDescriptor.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2575,9 +2767,48 @@
 			productReference = 3434791511923B54007D0CE5 /* libOmniAppKit.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		4AA1E67A08AA764600E2FF6B /* OmniAppKit (Framework) */ = {
+		34C12AFB194FF90F005CB70B /* OmniAppKit-iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4AA1E7F308AA764600E2FF6B /* Build configuration list for PBXNativeTarget "OmniAppKit (Framework)" */;
+			buildConfigurationList = 34C12B15194FF90F005CB70B /* Build configuration list for PBXNativeTarget "OmniAppKit-iOS" */;
+			buildPhases = (
+				34C12AF9194FF90F005CB70B /* Headers */,
+				34C12AF7194FF90F005CB70B /* Sources */,
+				34C12AF8194FF90F005CB70B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "OmniAppKit-iOS";
+			productName = "OmniAppKit-iOS";
+			productReference = 34C12AFC194FF90F005CB70B /* OmniAppKit.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		34C12B05194FF90F005CB70B /* OAUnitTests-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 34C12B16194FF90F005CB70B /* Build configuration list for PBXNativeTarget "OAUnitTests-iOS" */;
+			buildPhases = (
+				34C12B04194FF90F005CB70B /* Resources */,
+				34C12B02194FF90F005CB70B /* Sources */,
+				34C12B03194FF90F005CB70B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				34C12B09194FF90F005CB70B /* PBXTargetDependency */,
+				34C12B18194FF910005CB70B /* PBXTargetDependency */,
+				34C12B1A194FF910005CB70B /* PBXTargetDependency */,
+				3439A354195241A0000E430A /* PBXTargetDependency */,
+				3439A356195241A0000E430A /* PBXTargetDependency */,
+			);
+			name = "OAUnitTests-iOS";
+			productName = "OmniAppKit-iOSTests";
+			productReference = 34C12B06194FF90F005CB70B /* OAUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		4AA1E67A08AA764600E2FF6B /* OmniAppKit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4AA1E7F308AA764600E2FF6B /* Build configuration list for PBXNativeTarget "OmniAppKit" */;
 			buildPhases = (
 				4AA1E67B08AA764600E2FF6B /* Headers */,
 				4AA1E70908AA764600E2FF6B /* Resources */,
@@ -2589,7 +2820,7 @@
 			);
 			dependencies = (
 			);
-			name = "OmniAppKit (Framework)";
+			name = OmniAppKit;
 			productInstallPath = "$(OMNI_INSTALLED_PRODUCTS)";
 			productName = OmniAppKit;
 			productReference = 4AA1E7F908AA764600E2FF6B /* OmniAppKit.framework */;
@@ -2603,7 +2834,6 @@
 				4AA1E80008AA764600E2FF6B /* Resources */,
 				4AA1E80108AA764600E2FF6B /* Sources */,
 				4AA1E80308AA764600E2FF6B /* Frameworks */,
-				4AA1E80A08AA764600E2FF6B /* Rez */,
 				A2CAD7AA09D8B5BD0002F6C6 /* ShellScript */,
 			);
 			buildRules = (
@@ -2614,8 +2844,8 @@
 			name = OAUnitTests;
 			productInstallPath = "$(USER_LIBRARY_DIR)/Bundles";
 			productName = OAUnitTests;
-			productReference = 4AA1E81108AA764700E2FF6B /* OAUnitTests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productReference = 4AA1E81108AA764700E2FF6B /* OAUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		4AA1E81208AA764700E2FF6B /* OAMakeImageSizeIntegral */ = {
 			isa = PBXNativeTarget;
@@ -2643,7 +2873,19 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0600;
+				TargetAttributes = {
+					34C12AFB194FF90F005CB70B = {
+						CreatedOnToolsVersion = 6.0;
+					};
+					34C12B05194FF90F005CB70B = {
+						CreatedOnToolsVersion = 6.0;
+						TestTargetID = 34C12AFB194FF90F005CB70B;
+					};
+					4AA1E7FA08AA764600E2FF6B = {
+						TestTargetID = 4AA1E67A08AA764600E2FF6B;
+					};
+				};
 			};
 			buildConfigurationList = 4A4E085608AA75E90098FF0F /* Build configuration list for PBXProject "OmniAppKit" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2657,16 +2899,76 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4AA1E67A08AA764600E2FF6B /* OmniAppKit (Framework) */,
+				4AA1E67A08AA764600E2FF6B /* OmniAppKit */,
 				4AA1E7FA08AA764600E2FF6B /* OAUnitTests */,
 				4AA1E81208AA764700E2FF6B /* OAMakeImageSizeIntegral */,
 				3434791411923B54007D0CE5 /* OmniAppKitTouch */,
 				3401163411E5181A0016ADB3 /* OmniAppKitTouchTests */,
+				34C12AFB194FF90F005CB70B /* OmniAppKit-iOS */,
+				34C12B05194FF90F005CB70B /* OAUnitTests-iOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		34C12B04194FF90F005CB70B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3484DDC6194FFE5600D83731 /* RGB-number-full.plist in Resources */,
+				3484DDC1194FFE5600D83731 /* Pattern-number-partial.plist in Resources */,
+				3484DDD7194FFE5600D83731 /* WhiteAlpha-string-full.plist in Resources */,
+				3484DDD9194FFE5600D83731 /* WhiteAlpha.xml in Resources */,
+				3484DDD5194FFE5600D83731 /* WhiteAlpha-number-full.plist in Resources */,
+				3484DDB1194FFE5600D83731 /* CMYKA-number-full.plist in Resources */,
+				3484DDB7194FFE5600D83731 /* HSV-number-partial.plist in Resources */,
+				3484DDAE194FFE5600D83731 /* CMYK-string-full.plist in Resources */,
+				3484DDAF194FFE5600D83731 /* CMYK-string-partial.plist in Resources */,
+				3484DDAC194FFE5600D83731 /* CMYK-number-full.plist in Resources */,
+				3484DDA9194FFE3400D83731 /* Catalog-string-full.plist in Resources */,
+				3484DDCB194FFE5600D83731 /* RGBA-number-full.plist in Resources */,
+				3484DDD4194FFE5600D83731 /* White.xml in Resources */,
+				3484DDD3194FFE5600D83731 /* White-string-partial.plist in Resources */,
+				3484DDB8194FFE5600D83731 /* HSV-string-full.plist in Resources */,
+				3484DDD2194FFE5600D83731 /* White-string-full.plist in Resources */,
+				3484DDCD194FFE5600D83731 /* RGBA-string-full.plist in Resources */,
+				3484DDCA194FFE5600D83731 /* RGB.xml in Resources */,
+				3484DDA7194FFE2F00D83731 /* Catalog-number-full.plist in Resources */,
+				3484DDC8194FFE5600D83731 /* RGB-string-full.plist in Resources */,
+				3484DDBB194FFE5600D83731 /* HSVA-number-full.plist in Resources */,
+				3484DDB6194FFE5600D83731 /* HSV-number-full.plist in Resources */,
+				3484DDCC194FFE5600D83731 /* RGBA-number-partial.plist in Resources */,
+				3484DDBD194FFE5600D83731 /* HSVA-string-full.plist in Resources */,
+				3484DDA8194FFE3200D83731 /* Catalog-number-partial.plist in Resources */,
+				3484DDBF194FFE5600D83731 /* HSVA.xml in Resources */,
+				3484DDAB194FFE3B00D83731 /* Catalog.xml in Resources */,
+				3484DDBA194FFE5600D83731 /* HSV.xml in Resources */,
+				3484DDB5194FFE5600D83731 /* CMYKA.xml in Resources */,
+				3484DDC2194FFE5600D83731 /* Pattern-string-full.plist in Resources */,
+				3484DDB0194FFE5600D83731 /* CMYK.xml in Resources */,
+				3484DDBC194FFE5600D83731 /* HSVA-number-partial.plist in Resources */,
+				3484DDB4194FFE5600D83731 /* CMYKA-string-partial.plist in Resources */,
+				3484DDC4194FFE5600D83731 /* pattern.tiff in Resources */,
+				3484DDD6194FFE5600D83731 /* WhiteAlpha-number-partial.plist in Resources */,
+				3484DDC3194FFE5600D83731 /* Pattern-string-partial.plist in Resources */,
+				3484DDCF194FFE5600D83731 /* RGBA.xml in Resources */,
+				3484DDD0194FFE5600D83731 /* White-number-full.plist in Resources */,
+				3484DDC0194FFE5600D83731 /* Pattern-number-full.plist in Resources */,
+				3484DDB2194FFE5600D83731 /* CMYKA-number-partial.plist in Resources */,
+				3484DDC7194FFE5600D83731 /* RGB-number-partial.plist in Resources */,
+				3484DDD8194FFE5600D83731 /* WhiteAlpha-string-partial.plist in Resources */,
+				3484DDBE194FFE5600D83731 /* HSVA-string-partial.plist in Resources */,
+				3484DDC9194FFE5600D83731 /* RGB-string-partial.plist in Resources */,
+				3484DDAD194FFE5600D83731 /* CMYK-number-partial.plist in Resources */,
+				3484DDC5194FFE5600D83731 /* Pattern.xml in Resources */,
+				3484DDB3194FFE5600D83731 /* CMYKA-string-full.plist in Resources */,
+				3484DDCE194FFE5600D83731 /* RGBA-string-partial.plist in Resources */,
+				3484DDAA194FFE3700D83731 /* Catalog-string-partial.plist in Resources */,
+				3484DDD1194FFE5600D83731 /* White-number-partial.plist in Resources */,
+				3484DDB9194FFE5600D83731 /* HSV-string-partial.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AA1E70908AA764600E2FF6B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2812,13 +3114,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXRezBuildPhase section */
-		4AA1E80A08AA764600E2FF6B /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		4AA1E81808AA764700E2FF6B /* Rez */ = {
 			isa = PBXRezBuildPhase;
 			buildActionMask = 2147483647;
@@ -2885,6 +3180,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		34C12AF7194FF90F005CB70B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3484DD91194FFC6400D83731 /* OAFindPattern.m in Sources */,
+				3484DD94194FFC7C00D83731 /* OATextAttributes.m in Sources */,
+				3484DD8E194FFC4800D83731 /* NSLayoutManager-OAExtensions.m in Sources */,
+				3484DD9D194FFCCD00D83731 /* OAFontDescriptor.m in Sources */,
+				3484DD9B194FFCB500D83731 /* NSFileWrapper-OAExtensions.m in Sources */,
+				3484DD96194FFC8400D83731 /* OATextAttachment.m in Sources */,
+				3484DD8C194FFC3A00D83731 /* NSAttributedString-OAExtensions.m in Sources */,
+				3484DD98194FFC8A00D83731 /* OATextAttachmentCell.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		34C12B02194FF90F005CB70B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3484DDA6194FFE2A00D83731 /* OATextStorageMergedEditTests.m in Sources */,
+				3484DDA1194FFE0D00D83731 /* OFTestCase.m in Sources */,
+				3484DDA0194FFE0400D83731 /* OBTestCase.m in Sources */,
+				3484DD9F194FFE0000D83731 /* OAFontDescriptorTests.m in Sources */,
+				3484DDA5194FFE2600D83731 /* OATextStorageEditTests.m in Sources */,
+				3484DDA2194FFE1500D83731 /* OATestCase.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4AA1E76808AA764600E2FF6B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2899,7 +3222,6 @@
 				4AA1E77B08AA764600E2FF6B /* OAApplication.m in Sources */,
 				4AA1E77C08AA764600E2FF6B /* OAColorPalette.m in Sources */,
 				4AA1E77D08AA764600E2FF6B /* OAController.m in Sources */,
-				4AA1E77E08AA764600E2FF6B /* OADragController.m in Sources */,
 				4AA1E77F08AA764600E2FF6B /* OAFindController.m in Sources */,
 				4AA1E78008AA764600E2FF6B /* OAFindPattern.m in Sources */,
 				4AA1E78108AA764600E2FF6B /* OAFontCache.m in Sources */,
@@ -2913,7 +3235,6 @@
 				4AA1E78A08AA764600E2FF6B /* NSApplication-OAExtensions.m in Sources */,
 				4AA1E78B08AA764600E2FF6B /* NSAttributedString-OAExtensions.m in Sources */,
 				4AA1E78C08AA764600E2FF6B /* NSBezierPath-OAExtensions.m in Sources */,
-				4AA1E78D08AA764600E2FF6B /* NSBrowser-OAExtensions.m in Sources */,
 				4AA1E78E08AA764600E2FF6B /* NSBundle-OAExtensions.m in Sources */,
 				4AA1E78F08AA764600E2FF6B /* NSCell-OAExtensions.m in Sources */,
 				4AA1E79008AA764600E2FF6B /* NSColor-OAExtensions.m in Sources */,
@@ -2961,7 +3282,6 @@
 				4AA1E7BE08AA764600E2FF6B /* OADefaultSettingIndicatorButton.m in Sources */,
 				4AA1E7C108AA764600E2FF6B /* OADocumentPositioningView.m in Sources */,
 				4AA1E7C208AA764600E2FF6B /* OADottedLine.m in Sources */,
-				4AA1E7C508AA764600E2FF6B /* OAFileWell.m in Sources */,
 				4AA1E7C608AA764600E2FF6B /* OAFontView.m in Sources */,
 				4AA1E7C708AA764600E2FF6B /* OAGradientTableView.m in Sources */,
 				4AA1E7C808AA764600E2FF6B /* OAGridView.m in Sources */,
@@ -3001,7 +3321,7 @@
 				34F0990209322B800001D0D5 /* OAAboutPanelController.m in Sources */,
 				340DD56209AD38E900E8A437 /* NSFileWrapper-OAExtensions.m in Sources */,
 				3425E49109C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m in Sources */,
-				34471AC209D31320004C9DBA /* OAConstructionTimeView.m in Sources */,
+				34471AC209D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m in Sources */,
 				342B41180A4C6B62002BFC4B /* NSWindowController-OAExtensions.m in Sources */,
 				A25653B90ADDBFB400A2A25B /* OAControlTextColorTransformer.m in Sources */,
 				4A785F5A0B040C3A00B513F3 /* OAPopupDatePicker.m in Sources */,
@@ -3073,9 +3393,34 @@
 			target = 3434791411923B54007D0CE5 /* OmniAppKitTouch */;
 			targetProxy = 3401163911E5181F0016ADB3 /* PBXContainerItemProxy */;
 		};
+		3439A354195241A0000E430A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34C12AFB194FF90F005CB70B /* OmniAppKit-iOS */;
+			targetProxy = 3439A353195241A0000E430A /* PBXContainerItemProxy */;
+		};
+		3439A356195241A0000E430A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34C12AFB194FF90F005CB70B /* OmniAppKit-iOS */;
+			targetProxy = 3439A355195241A0000E430A /* PBXContainerItemProxy */;
+		};
+		34C12B09194FF90F005CB70B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34C12AFB194FF90F005CB70B /* OmniAppKit-iOS */;
+			targetProxy = 34C12B08194FF90F005CB70B /* PBXContainerItemProxy */;
+		};
+		34C12B18194FF910005CB70B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34C12AFB194FF90F005CB70B /* OmniAppKit-iOS */;
+			targetProxy = 34C12B17194FF910005CB70B /* PBXContainerItemProxy */;
+		};
+		34C12B1A194FF910005CB70B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 34C12AFB194FF90F005CB70B /* OmniAppKit-iOS */;
+			targetProxy = 34C12B19194FF910005CB70B /* PBXContainerItemProxy */;
+		};
 		4AA1E82E08AA764700E2FF6B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 4AA1E67A08AA764600E2FF6B /* OmniAppKit (Framework) */;
+			target = 4AA1E67A08AA764600E2FF6B /* OmniAppKit */;
 			targetProxy = 4AA1E82D08AA764700E2FF6B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -3129,8 +3474,8 @@
 			baseConfigurationReference = 3434792611923B69007D0CE5 /* Touch-Library-Debug.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_DIR)/Library/Frameworks",
 					"$(value)",
+					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
 				);
 				PRODUCT_NAME = OmniAppKitTouchTests;
 			};
@@ -3141,8 +3486,8 @@
 			baseConfigurationReference = 3434792711923B69007D0CE5 /* Touch-Library-Release.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_DIR)/Library/Frameworks",
 					"$(value)",
+					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
 				);
 				PRODUCT_NAME = OmniAppKitTouchTests;
 			};
@@ -3153,8 +3498,8 @@
 			baseConfigurationReference = 3434792511923B69007D0CE5 /* Touch-Library-Coverage.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_DIR)/Library/Frameworks",
 					"$(value)",
+					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
 				);
 				PRODUCT_NAME = OmniAppKitTouchTests;
 			};
@@ -3181,6 +3526,81 @@
 			baseConfigurationReference = 3434792511923B69007D0CE5 /* Touch-Library-Coverage.xcconfig */;
 			buildSettings = {
 				PRODUCT_NAME = OmniAppKit;
+			};
+			name = Coverage;
+		};
+		34C12B0F194FF90F005CB70B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34C12B2B194FF926005CB70B /* Touch-Framework-Debug.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
+				PRODUCT_NAME = OmniAppKit;
+			};
+			name = Debug;
+		};
+		34C12B10194FF90F005CB70B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34C12B2C194FF926005CB70B /* Touch-Framework-Release.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
+				PRODUCT_NAME = OmniAppKit;
+			};
+			name = Release;
+		};
+		34C12B11194FF90F005CB70B /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34C12B2A194FF926005CB70B /* Touch-Framework-Coverage.xcconfig */;
+			buildSettings = {
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
+				PRODUCT_NAME = OmniAppKit;
+			};
+			name = Coverage;
+		};
+		34C12B12194FF90F005CB70B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34C12B27194FF926005CB70B /* Touch-Bundle-Debug.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
+				);
+				GCC_PREFIX_HEADER = Tests/UnitTests/OAUnitTests_Prefix.h;
+				INFOPLIST_FILE = "Info-OAUnitTests.plist";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniAppKit.OAUnitTests;
+				PRODUCT_NAME = OAUnitTests;
+			};
+			name = Debug;
+		};
+		34C12B13194FF90F005CB70B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34C12B28194FF926005CB70B /* Touch-Bundle-Release.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
+				);
+				GCC_PREFIX_HEADER = Tests/UnitTests/OAUnitTests_Prefix.h;
+				INFOPLIST_FILE = "Info-OAUnitTests.plist";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniAppKit.OAUnitTests;
+				PRODUCT_NAME = OAUnitTests;
+			};
+			name = Release;
+		};
+		34C12B14194FF90F005CB70B /* Coverage */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34C12B26194FF926005CB70B /* Touch-Bundle-Coverage.xcconfig */;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(value)",
+					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
+				);
+				GCC_PREFIX_HEADER = Tests/UnitTests/OAUnitTests_Prefix.h;
+				INFOPLIST_FILE = "Info-OAUnitTests.plist";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniAppKit.OAUnitTests;
+				PRODUCT_NAME = OAUnitTests;
 			};
 			name = Coverage;
 		};
@@ -3269,7 +3689,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(DEVELOPER_FRAMEWORKS_DIR)";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniAppKit.OAUnitTests;
 				PRODUCT_NAME = OAUnitTests;
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
 		};
@@ -3286,7 +3705,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(DEVELOPER_FRAMEWORKS_DIR)";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniAppKit.OAUnitTests;
 				PRODUCT_NAME = OAUnitTests;
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};
@@ -3303,7 +3721,6 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(DEVELOPER_FRAMEWORKS_DIR)";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniAppKit.OAUnitTests;
 				PRODUCT_NAME = OAUnitTests;
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Coverage;
 		};
@@ -3354,6 +3771,26 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		34C12B15194FF90F005CB70B /* Build configuration list for PBXNativeTarget "OmniAppKit-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34C12B0F194FF90F005CB70B /* Debug */,
+				34C12B10194FF90F005CB70B /* Release */,
+				34C12B11194FF90F005CB70B /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		34C12B16194FF90F005CB70B /* Build configuration list for PBXNativeTarget "OAUnitTests-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34C12B12194FF90F005CB70B /* Debug */,
+				34C12B13194FF90F005CB70B /* Release */,
+				34C12B14194FF90F005CB70B /* Coverage */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		4A4E085608AA75E90098FF0F /* Build configuration list for PBXProject "OmniAppKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -3364,7 +3801,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		4AA1E7F308AA764600E2FF6B /* Build configuration list for PBXNativeTarget "OmniAppKit (Framework)" */ = {
+		4AA1E7F308AA764600E2FF6B /* Build configuration list for PBXNativeTarget "OmniAppKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4AA1E7F408AA764600E2FF6B /* Debug */,

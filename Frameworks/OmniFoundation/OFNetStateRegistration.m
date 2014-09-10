@@ -1,4 +1,4 @@
-// Copyright 2008-2013 The Omni Group. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,13 @@ static NSInteger OFNetStateRegistrationDebug;
 
 
 // <http://www.dns-sd.org/ServiceTypes.html> Short name of protocol, fourteen characters maximum, conforming to normal DNS host name rules: Only lower-case letters, digits, and hyphens; must begin and end with lower-case letter or digit.
+
+#if 0 && defined(DEBUG)
+NSString * const OFNetStateServiceType = @"_omnidebug._tcp."; // Different service type to make it easier to work on local builds w/o seeing chatter from a zillion other devices on the network.
+#else
 NSString * const OFNetStateServiceType = @"_omnistate._tcp."; // OBFinishPorting register this
+#endif
+
 #ifdef USE_WIDE
 NSString * const OFNetStateServiceDomain = @""; // can go across Back to my Mac
 #else
@@ -120,7 +126,7 @@ static NSString * const OFNetStateRegistrationGroupTerminator = @" ";
     _groupIdentifier = [groupIdentifier copy];
     _memberIdentifier = [memberIdentifier copy];
     _name = [name copy];
-    _state = [state copy];
+    _localState = [state copy];
     _version = OFXMLCreateID();
     
     _registrationIdentifier = OFXMLCreateID();
@@ -183,21 +189,21 @@ NSString * const OFNetStateRegistrationMemberIdentifierKey = @"m";
 NSString * const OFNetStateRegistrationStateKey = @"s";
 NSString * const OFNetStateRegistrationVersionKey = @"v";
 
-- (void)setState:(NSData *)state;
+- (void)setLocalState:(NSData *)state;
 {
     // Might get backgrounded and have some background task that finishes up. If we ever get foregrounded again, we'll remember the state to publish.
     //OBPRECONDITION(_service); // not invalidated
     
-    if (OFISEQUAL(_state, state))
+    if (OFISEQUAL(_localState, state))
         return;
     
     DEBUG_REGISTRATION(1, @"Setting state");
     DEBUG_REGISTRATION(2, @"   ... new value is %@", state);
 
-    _state = [state copy];
+    _localState = [state copy];
     _version = OFXMLCreateID();
     
-    if (_state && _service)
+    if (_localState && _service)
         [self _queueTXTRecordUpdate];
 }
 
@@ -241,9 +247,9 @@ NSString * const OFNetStateRegistrationVersionKey = @"v";
     if (_groupIdentifier)
         txtRecord[OFNetStateRegistrationGroupIdentifierKey] = _groupIdentifier;
     
-    if (_state) {
-        DEBUG_REGISTRATION(2, @"_state %@", _state);
-        NSData *state = _state;
+    if (_localState) {
+        DEBUG_REGISTRATION(2, @"_localState %@", _localState);
+        NSData *state = _localState;
         if ([state length] > 20) { // SHA-1 digest length
             state = [state sha1Signature];
             DEBUG_REGISTRATION(1, @"state, SHA1 %@", state);
@@ -286,10 +292,15 @@ NSString * const OFNetStateRegistrationVersionKey = @"v";
 - (void)_performDelayedTXTDataUpdate:(NSTimer *)timer;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(_delayedUpdateTimer == timer);
     
     DEBUG_REGISTRATION(1, @"Performing delayed TXT record update");
 
+    if (_delayedUpdateTimer == nil) {
+        // We don't cancel the timer immediately in -invalidate since we have to dispatch to the main queue. This might give it time to fire.
+        OBASSERT(_service == nil);
+        return;
+    }
+    
     NSNetService *service = timer.userInfo;
     
     NSData *txtData = _delayedUpdateTXTData;
@@ -306,6 +317,8 @@ static void _updateTXTRecord(OFNetStateRegistration *self, NSNetService *service
     if (![service setTXTRecordData:txtData] && ![txtData isEqual:[service TXTRecordData]]) {
         NSLog(@"%@: unable to set TXT record of %@ to %@", self, service, [txtData unadornedLowercaseHexString]);
         OBASSERT_NOT_REACHED("What happened that prevented setting the TXT record?");
+    } else {
+        DEBUG_REGISTRATION(2, "Set TXT data on service %@ to %@", service, txtData);
     }
     self->_lastUpdateTimeInterval = [NSDate timeIntervalSinceReferenceDate];
 }

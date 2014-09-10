@@ -11,6 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFXMLSignature.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
+#import <OmniFoundation/OFSecurityUtilities.h>
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
@@ -34,7 +35,7 @@ enum TestKeyType {
 static Boolean generateTestKey(SecKeychainRef intoKeychain, SecAccessRef initialAccess, enum TestKeyType keytype, unsigned int keybits, CFErrorRef *outError);
 static SecKeyRef copyKeyFromKeychain(SecKeychainRef keychain, xmlNode *signatureMethod, enum OFXMLSignatureOperation op, NSError **outError);
 
-#define FailedForWrongReason(e) STFail(@"Failed for wrong reason: %@ / %@", [error description], [[error userInfo] description]);
+#define FailedForWrongReason(e) XCTFail(@"Failed for wrong reason: %@ / %@", [error description], [[error userInfo] description]);
 
 @interface OFXMLSignatureTests_Abstract : OFTestCase
 {
@@ -78,19 +79,6 @@ static SecKeyRef copyKeyFromKeychain(SecKeychainRef keychain, xmlNode *signature
         CFRelease(forcedKeychain);
     }
 }
-
-#if defined(__OBJC_GC__) && __OBJC_GC__
-- (void)finalize
-{
-    if (externalCerts) {
-        CFRelease(externalCerts);
-    }
-    if (forcedKeychain) {
-        CFRelease(forcedKeychain);
-    }
-    [super finalize];
-}
-#endif
 
 - (void)setKeySource:(enum testKeySources)s;
 {
@@ -179,7 +167,7 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
             if ([keytype isEqual:(id)kSecAttrKeyTypeECDSA]) {
                 int sigorder = -1;
                 SecKeyRef retval = OFXMLSigCopyKeyFromEllipticKeyValue(keyvalue, &sigorder, outError);
-                OBASSERT(sigorder >= 0 && sigorder == OFSecKeyGetGroupSize(retval));
+                OBASSERT(sigorder > 0);
                 return retval;
             }
         }
@@ -403,7 +391,7 @@ static BOOL ofErrorFromOSError(NSError **outError, OSStatus oserr, NSString *fun
         
         NSError *failWhy = nil;
         BOOL didVerify = [sig verifyReferenceAtIndex:n toBuffer:NULL error:&failWhy];
-        STAssertTrue(didVerify, @"Verification of reference digest");
+        XCTAssertTrue(didVerify, @"Verification of reference digest");
         if (didVerify) {
             NSLog(@"-> Ref %lu of %@ passed", n, docName);
         } else {
@@ -481,7 +469,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
 {
     NSArray *sigs = [self getSigs:@"signature-enveloped-dsa.xml"];
     NSError *error;
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedValues]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -494,21 +482,21 @@ static BOOL isExpectedBadSignatureError(NSError *error)
     NSError *error;
     
     sigs = [self getSigs:@"signature-enveloping-dsa.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedValues]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
                      [self checkReferences:sig];);
     
     sigs = [self getSigs:@"signature-enveloping-rsa.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedValues]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
                      [self checkReferences:sig];);
     
     sigs = [self getSigs:@"signature-enveloping-hmac-sha1.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACSecret]);
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
     NSLog(@"SKIPPING HMAC tests on Lion (RADAR 10424173 et al.)");
@@ -519,7 +507,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
 #endif
     
     sigs = [self getSigs:@"signature-enveloping-b64-dsa.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedValues]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -532,14 +520,14 @@ static BOOL isExpectedBadSignatureError(NSError *error)
     NSError *error;
     
     sigs = [self getSigs:@"signature-external-b64-dsa.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedValues]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
                      [self checkReferences:sig];);
     
     sigs = [self getSigs:@"signature-external-dsa.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedValues]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -552,7 +540,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
     NSError *error;
     
     sigs = [self getSigs:@"signature-x509-ski.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromExternalCertificate]);
     [[sigs objectAtIndex:0] loadExternalCerts:[[self baseDir] stringByAppendingPathComponent:@"certs"]];
     OFForEachInArray(sigs, OFXMLSignature *, sig,
@@ -568,7 +556,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
     NSError *error;
     
     sigs = [self getSigs:@"signature-x509-crt.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedCertificate]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -576,7 +564,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
     
     
     sigs = [self getSigs:@"signature-x509-crt-crl.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedCertificate]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -635,7 +623,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
 {
     NSArray *sigs = [self getSigs:@"signature-dsa-enveloped.xml"];
     NSError *error;
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedCertificate]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -651,7 +639,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
 {
     NSArray *sigs = [self getSigs:@"signature-rsa-enveloped.xml"];
     NSError *error;
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedCertificate]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -667,7 +655,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
 {
     NSArray *sigs = [self getSigs:@"signature-rsa-enveloping.xml"];
     NSError *error;
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedCertificate]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -683,7 +671,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
      */
     NSArray *sigs = [self getSigs:@"signature-rsa-detached.xml"];
     NSError *error;
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedCertificate]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -695,7 +683,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
      Contains a detached RSA signature with a manifest.
      */
     sigs = [self getSigs:@"signature-rsa-manifest.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedValues]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -712,7 +700,7 @@ static BOOL isExpectedBadSignatureError(NSError *error)
 {
     NSArray *sigs = [self getSigs:@"signature-dsa-enveloping.xml"];
     NSError *error;
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedCertificate]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -729,11 +717,11 @@ digest value.  Verification should FAIL.
 {
     NSArray *sigs = [self getSigs:@"signature-rsa-enveloped-bad-sig.xml"];
     NSError *error;
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedCertificate]);
     
     BOOL verified = [[sigs objectAtIndex:0] processSignatureElement:&error];
-    STAssertFalse(verified, @"This verification should fail!");
+    XCTAssertFalse(verified, @"This verification should fail!");
     if (!verified && !isExpectedBadSignatureError(error)) {
         FailedForWrongReason(error);
     }
@@ -749,11 +737,11 @@ after the signature value was computed.  Verification should FAIL.
 {
     NSArray *sigs = [self getSigs:@"signature-rsa-enveloped-bad-sig.xml"];
     NSError *error;
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedCertificate]);
     
     BOOL verified = [[sigs objectAtIndex:0] processSignatureElement:&error];
-    STAssertFalse(verified, @"This verification should fail!");
+    XCTAssertFalse(verified, @"This verification should fail!");
     if (!verified && !isExpectedBadSignatureError(error)) {
         FailedForWrongReason(error);
     }
@@ -769,7 +757,7 @@ after the signature value was computed.  Verification should FAIL.
      */
     NSArray *sigs = [self getSigs:@"signature-dsa-detached.xml"];
     NSError *error;
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedCertificate]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -781,7 +769,7 @@ after the signature value was computed.  Verification should FAIL.
      Contains a detached DSA signature with a manifest.
      */
     sigs = [self getSigs:@"signature-dsa-manifest.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+    XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
     OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromEmbeddedValues]);
     OFForEachInArray(sigs, OFXMLSignature *, sig,
                      OBShouldNotError([sig processSignatureElement:&error]);
@@ -793,7 +781,6 @@ after the signature value was computed.  Verification should FAIL.
 #if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
     NSLog(@"SKIPPING HMAC tests on Lion (RADAR 10424173 et al.)");
 #else
-    NSAutoreleasePool *p;
     NSArray *sigs;
     NSError *error;
     BOOL verifiedOK;
@@ -805,26 +792,26 @@ after the signature value was computed.  Verification should FAIL.
      as the canonicalization method.  The HMAC secret is the ASCII encoding of
      the word "test".
      */
-    p = [[NSAutoreleasePool alloc] init];
-    sigs = [self getSigs:@"signature-hmac-md5-c14n-enveloping.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
-    OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACTest]);
-    OFForEachInArray(sigs, OFXMLSignature *, sig,
-                     OBShouldNotError([sig processSignatureElement:&error]);
-                     [self checkReferences:sig];);
-    [p drain];
-    
-    p = [[NSAutoreleasePool alloc] init];
-    sigs = [self getSigs:@"signature-hmac-md5-c14n-enveloping.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
-    OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACBogus]);
-    verifiedOK = [[sigs objectAtIndex:0] processSignatureElement:&error];
-    STAssertFalse(verifiedOK, @"This verification should fail!");
-    if (!verifiedOK && !isExpectedBadSignatureError(error)) {
-        FailedForWrongReason(error);
+    @autoreleasepool {
+        sigs = [self getSigs:@"signature-hmac-md5-c14n-enveloping.xml"];
+        XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+        OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACTest]);
+        OFForEachInArray(sigs, OFXMLSignature *, sig,
+                         OBShouldNotError([sig processSignatureElement:&error]);
+                         [self checkReferences:sig];);
     }
-    [p drain];
-        
+
+    @autoreleasepool {
+        sigs = [self getSigs:@"signature-hmac-md5-c14n-enveloping.xml"];
+        XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+        OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACBogus]);
+        verifiedOK = [[sigs objectAtIndex:0] processSignatureElement:&error];
+        XCTAssertFalse(verifiedOK, @"This verification should fail!");
+        if (!verifiedOK && !isExpectedBadSignatureError(error)) {
+            FailedForWrongReason(error);
+        }
+    }
+    
     /*
      signature-hmac-sha1-exclusive-c14n-enveloped.xml
      ------------------------------------------------
@@ -832,23 +819,23 @@ after the signature value was computed.  Verification should FAIL.
      Canonicalization canonicalization method.  The HMAC secret is the ASCII 
      encoding of the word "test".
      */
-    p = [[NSAutoreleasePool alloc] init];
-    sigs = [self getSigs:@"signature-hmac-sha1-exclusive-c14n-enveloped.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
-    OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACTest]);
-    OFForEachInArray(sigs, OFXMLSignature *, sig,
-                     OBShouldNotError([sig processSignatureElement:&error]);
-                     [self checkReferences:sig];);
-    
-    sigs = [self getSigs:@"signature-hmac-sha1-exclusive-c14n-enveloped.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
-    OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACSecret]);
-    verifiedOK = [[sigs objectAtIndex:0] processSignatureElement:&error];
-    STAssertFalse(verifiedOK, @"This verification should fail!");
-    if (!verifiedOK && !isExpectedBadSignatureError(error)) {
-        FailedForWrongReason(error);
+    @autoreleasepool {
+        sigs = [self getSigs:@"signature-hmac-sha1-exclusive-c14n-enveloped.xml"];
+        XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+        OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACTest]);
+        OFForEachInArray(sigs, OFXMLSignature *, sig,
+                         OBShouldNotError([sig processSignatureElement:&error]);
+                         [self checkReferences:sig];);
+        
+        sigs = [self getSigs:@"signature-hmac-sha1-exclusive-c14n-enveloped.xml"];
+        XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+        OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACSecret]);
+        verifiedOK = [[sigs objectAtIndex:0] processSignatureElement:&error];
+        XCTAssertFalse(verifiedOK, @"This verification should fail!");
+        if (!verifiedOK && !isExpectedBadSignatureError(error)) {
+            FailedForWrongReason(error);
+        }
     }
-    [p drain];
 
     /*
      signature-hmac-sha1-exclusive-c14n-comments-detached.xml
@@ -857,14 +844,14 @@ after the signature value was computed.  Verification should FAIL.
      Canonicalization With Comments canonicalization method.  The HMAC secret 
      is the ASCII encoding of the word "test".
      */
-    p = [[NSAutoreleasePool alloc] init];
-    sigs = [self getSigs:@"signature-hmac-sha1-exclusive-c14n-comments-detached.xml"];
-    STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
-    OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACTest]);
-    OFForEachInArray(sigs, OFXMLSignature *, sig,
-                     OBShouldNotError([sig processSignatureElement:&error]);
-                     [self checkReferences:sig];);
-    [p drain];
+    @autoreleasepool {
+        sigs = [self getSigs:@"signature-hmac-sha1-exclusive-c14n-comments-detached.xml"];
+        XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+        OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyIsHMACTest]);
+        OFForEachInArray(sigs, OFXMLSignature *, sig,
+                         OBShouldNotError([sig processSignatureElement:&error]);
+                         [self checkReferences:sig];);
+    }
 #endif
 }
 
@@ -882,7 +869,7 @@ after the signature value was computed.  Verification should FAIL.
      */
     @autoreleasepool {
         sigs = [self getSigs:@"signature-rsa-manifest-x509-data-ski.xml"];
-        STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+        XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
         OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromExternalCertificate]);
         [[sigs objectAtIndex:0] loadExternalCerts:[[self baseDir] stringByAppendingPathComponent:@"certs"]];
         OFForEachInArray(sigs, OFXMLSignature *, sig,
@@ -897,7 +884,7 @@ after the signature value was computed.  Verification should FAIL.
         represents the certificate stored in certs/rsa-client-cert.der.
         */
         sigs = [self getSigs:@"signature-rsa-manifest-x509-data-cert.xml"];
-        STAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
+        XCTAssertTrue([sigs count] == 1, @"Should have found one signature in this file");
         /* Slipping in another test case here: we have some external certs, but none of them are the desired cert; the cert is actually embedded */
         OFForEachInArray(sigs, OFXMLSignatureTest *, sig, [sig setKeySource:keyFromExternalCertificate]);
         [[sigs objectAtIndex:0] loadExternalCerts:[[self baseDir] stringByAppendingPathComponent:@"certs"]];
@@ -1189,7 +1176,7 @@ static void alterSignature(xmlNode *sigNode, int delta)
     xmlFree(contentbuf);
 }
 
-static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAlg, enum OFXMLSignatureOperation op)
+static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAlg, enum OFXMLSignatureOperation op, enum OFKeyAlgorithm tp)
 {
     int result;
     xmlDoc *d = xmlNewDoc((xmlChar *)"1.0");
@@ -1201,7 +1188,31 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
         NSLog(@"%s: Unable to retrieve key for alg = %s", __PRETTY_FUNCTION__, (const char *)sigAlg);
         result = -1;
     } else {
-        result = OFSecKeyGetGroupSize(k);
+        SecItemClass kclass = 0;
+        unsigned ksize = 0;
+        enum OFKeyAlgorithm alg = OFSecKeyGetAlgorithm(k, &kclass, &ksize, NULL, NULL);
+        if (alg != tp) {
+            NSLog(@"%s: failed to retrieve alg from key ref (got %d, expected %d)", __PRETTY_FUNCTION__, (int)alg, (int)tp);
+            result = -1;
+        } else {
+            result = ksize;
+        }
+        
+        switch(op) {
+            case OFXMLSignature_Sign:
+                if (kclass != kSecPrivateKeyItemClass) {
+                    NSLog(@"%s: expected private key, got SecItemClass %d", __PRETTY_FUNCTION__, kclass);
+                    result = -1;
+                }
+                break;
+            case OFXMLSignature_Verify:
+                if (kclass != kSecPublicKeyItemClass) {
+                    NSLog(@"%s: expected public key, got SecItemClass %d", __PRETTY_FUNCTION__, kclass);
+                    result = -1;
+                }
+                break;
+        }
+        
         CFRelease(k);
     }
     
@@ -1211,15 +1222,15 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
 
 - (void)testSizes;
 {
-    /* Make sure that OFSecKeyGetGroupSize() returns the expected values for the three keys we generated in +setUp. */
-    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureRSA_SHA256, OFXMLSignature_Sign), 768, @"RSA private key size");
-    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureRSA_SHA256, OFXMLSignature_Verify), 768, @"RSA public key size");
+    /* Make sure that OFSecKeyGetAlgorithm() returns the expected values for the three keys we generated in +setUp. */
+    XCTAssertEqual(retrieveKeyAndCheckSize(kc, XMLPKSignatureRSA_SHA256, OFXMLSignature_Sign, ka_RSA), 768, @"RSA private key size");
+    XCTAssertEqual(retrieveKeyAndCheckSize(kc, XMLPKSignatureRSA_SHA256, OFXMLSignature_Verify, ka_RSA), 768, @"RSA public key size");
     
-    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureDSS, OFXMLSignature_Sign), 512, @"DSA private key size");
-    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureDSS, OFXMLSignature_Verify), 512, @"DSA public key size");
+    XCTAssertEqual(retrieveKeyAndCheckSize(kc, XMLPKSignatureDSS, OFXMLSignature_Sign, ka_DSA), 512, @"DSA private key size");
+    XCTAssertEqual(retrieveKeyAndCheckSize(kc, XMLPKSignatureDSS, OFXMLSignature_Verify, ka_DSA), 512, @"DSA public key size");
 
-    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureECDSA_SHA512, OFXMLSignature_Sign), 384, @"ECDSA private key size");
-    STAssertEquals(retrieveKeyAndCheckSize(kc, XMLPKSignatureECDSA_SHA512, OFXMLSignature_Verify), 384, @"ECDSA public key size");
+    XCTAssertEqual(retrieveKeyAndCheckSize(kc, XMLPKSignatureECDSA_SHA512, OFXMLSignature_Sign, ka_EC), 384, @"ECDSA private key size");
+    XCTAssertEqual(retrieveKeyAndCheckSize(kc, XMLPKSignatureECDSA_SHA512, OFXMLSignature_Verify, ka_EC), 384, @"ECDSA public key size");
 }
 
 - (void)testSign;
@@ -1233,14 +1244,14 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     OBShouldNotError([sig computeReferenceDigests:&error]);
 
     BOOL signSuccess = [sig processSignatureElement:OFXMLSignature_Sign error:&error];
-    STAssertFalse(signSuccess, @"Should fail to sign since no key is available");
+    XCTAssertFalse(signSuccess, @"Should fail to sign since no key is available");
     if (!signSuccess && !( [[error domain] isEqual:OFXMLSignatureErrorDomain] && [error code] == OFKeyNotAvailable )) {
-        STFail(@"Failed for wrong reason (expecting domain=%@ code=%d): %@", OFXMLSignatureErrorDomain, (int)OFKeyNotAvailable, [error description]);
+        XCTFail(@"Failed for wrong reason (expecting domain=%@ code=%d): %@", OFXMLSignatureErrorDomain, (int)OFKeyNotAvailable, [error description]);
     }
     
     
     NSArray *sigs = [OFXMLSignatureTest signaturesInTree:info];
-    STAssertEquals((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
+    XCTAssertEqual((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
     OFXMLSignatureTest *sigt = [sigs objectAtIndex:0];
     [sigt setKeySource:keyIsOnlyApplicableOneInKeychain];
     [sigt setKeychain:kc];
@@ -1249,7 +1260,7 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     // xmlDocDump(stdout, info);
     
     sigs = [OFXMLSignatureTest signaturesInTree:info];
-    STAssertEquals((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
+    XCTAssertEqual((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
     sigt = [sigs objectAtIndex:0];
     [sigt setKeySource:keyIsOnlyApplicableOneInKeychain];
     [sigt setKeychain:kc];
@@ -1285,7 +1296,7 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     xmlAddPrevSibling(xmlDocGetRootElement(info)->children, insert);
     
     NSArray *sigs = [OFXMLSignatureTest signaturesInTree:info];
-    STAssertEquals((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
+    XCTAssertEqual((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
     sig = [sigs objectAtIndex:0];
     [sig setKeySource:keyIsOnlyApplicableOneInKeychain];
     [sig setKeychain:kc];
@@ -1293,7 +1304,7 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     OBShouldNotError([sig processSignatureElement:OFXMLSignature_Verify error:&error]);    
     // ... but this should fail, since the reference no longer matches.
     BOOL verifiedOK = [sig verifyReferenceAtIndex:0 toBuffer:NULL error:&error];
-    STAssertFalse(verifiedOK, @"Modified document should not pass verification");
+    XCTAssertFalse(verifiedOK, @"Modified document should not pass verification");
     if (!verifiedOK && !isExpectedBadSignatureError(error)) {
         FailedForWrongReason(error);
     }
@@ -1308,13 +1319,13 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     alterSignature(sigNode, 42);
     
     sigs = [OFXMLSignatureTest signaturesInTree:info];
-    STAssertEquals((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
+    XCTAssertEqual((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
     sig = [sigs objectAtIndex:0];
     [sig setKeySource:keyIsOnlyApplicableOneInKeychain];
     [sig setKeychain:kc];
     // This should fail, since the <SignedInfo> section is no longer consistent
     verifiedOK = [sig processSignatureElement:OFXMLSignature_Verify error:&error];
-    STAssertFalse(verifiedOK, @"Modified document should not pass verification");
+    XCTAssertFalse(verifiedOK, @"Modified document should not pass verification");
     if (!verifiedOK && !isExpectedBadSignatureError(error)) {
         FailedForWrongReason(error);
     }
@@ -1323,7 +1334,7 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     alterSignature(sigNode, 256 - 42);
     
     sigs = [OFXMLSignatureTest signaturesInTree:info];
-    STAssertEquals((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
+    XCTAssertEqual((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
     sig = [sigs objectAtIndex:0];
     [sig setKeySource:keyIsOnlyApplicableOneInKeychain];
     [sig setKeychain:kc];
@@ -1344,11 +1355,11 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     OBShouldNotError([sig computeReferenceDigests:&error]);
     
     BOOL signSuccess = [sig processSignatureElement:OFXMLSignature_Sign error:&error];
-    STAssertFalse(signSuccess, @"Should fail to sign since no key is available");
+    XCTAssertFalse(signSuccess, @"Should fail to sign since no key is available");
     
     
     NSArray *sigs = [OFXMLSignatureTest signaturesInTree:info];
-    STAssertEquals((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
+    XCTAssertEqual((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
     OFXMLSignatureTest *sigt = [sigs objectAtIndex:0];
     [sigt setKeySource:keyIsOnlyApplicableOneInKeychain];
     [sigt setKeychain:kc];
@@ -1357,7 +1368,7 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     // xmlDocDump(stdout, info);
     
     sigs = [OFXMLSignatureTest signaturesInTree:info];
-    STAssertEquals((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
+    XCTAssertEqual((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
     sigt = [sigs objectAtIndex:0];
     [sigt setKeySource:keyIsOnlyApplicableOneInKeychain];
     [sigt setKeychain:kc];
@@ -1367,12 +1378,12 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     alterSignature(sigNode, 101);
     
     sigs = [OFXMLSignatureTest signaturesInTree:info];
-    STAssertEquals((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
+    XCTAssertEqual((unsigned)[sigs count], 1u, @"Should be exactly one signature node in this tree");
     sigt = [sigs objectAtIndex:0];
     [sigt setKeySource:keyIsOnlyApplicableOneInKeychain];
     [sigt setKeychain:kc];
     BOOL verifiedOK = [sigt processSignatureElement:OFXMLSignature_Verify error:&error];
-    STAssertFalse(verifiedOK, @"Modified document should not pass verification");
+    XCTAssertFalse(verifiedOK, @"Modified document should not pass verification");
     if (!verifiedOK && !isExpectedBadSignatureError(error)) {
         FailedForWrongReason(error);
     }
@@ -1385,9 +1396,9 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
 @end
 @implementation OFXMLSignatureTests_EllipticInterop
 
-+ (id)defaultTestSuite
++ (XCTestSuite *)defaultTestSuite;
 {
-    SenTestSuite *suite;
+    XCTestSuite *suite;
     @autoreleasepool {
         suite = [super defaultTestSuite];
         __unsafe_unretained NSString *files[] = { @"w3c_microsoft_ecc_p256_sha256_c14n.xml", @"w3c_microsoft_ecc_p521_sha256_c14n.xml", @"w3c_microsoft_ecc_p521_sha512_c14n.xml", @"w3c_oracle_signature-enveloping-p256_sha1.xml", @"w3c_oracle_signature-enveloping-p521_sha256.xml", nil };
@@ -1415,7 +1426,7 @@ static int retrieveKeyAndCheckSize(SecKeychainRef keychain, const xmlChar *sigAl
     NSArray *signatures = [self getSigs:filename];
     NSError *error;
     
-    STAssertEquals([signatures count], (NSUInteger)1, @"Should be exactly one signature node in this tree");
+    XCTAssertEqual([signatures count], (NSUInteger)1, @"Should be exactly one signature node in this tree");
 
     OFXMLSignatureTest *sig = [signatures objectAtIndex:0];
     

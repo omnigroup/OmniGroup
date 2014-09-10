@@ -21,7 +21,7 @@ RCS_ID("$Id$")
 
 // Same context used for read and write.
 typedef struct _CFDataFileContext {
-    CFDataRef data;
+    CFDataRef data; // Mutable iff this file is opened for writing
     void *bytes; // Only writable if created via OFDataCreateReadWriteStandardIOFile.
     size_t length;
     size_t position;
@@ -51,8 +51,8 @@ static int _CFData_writefn(void *_ctx, const char *buf, int nbytes)
     // Might be in the middle of a the file if a seek has been done so we can't just append naively!
     if (ctx->position + nbytes > ctx->length) {
         ctx->length = ctx->position + nbytes;
-        [(NSMutableData *)ctx->data setLength:ctx->length];
-        ctx->bytes = [(NSMutableData *)ctx->data mutableBytes]; // Might have moved after size change
+        CFDataSetLength((CFMutableDataRef)ctx->data, ctx->length);
+        ctx->bytes = CFDataGetMutableBytePtr((CFMutableDataRef)ctx->data); // Might have moved after size change
     }
     
     memcpy(ctx->bytes + ctx->position, buf, nbytes);

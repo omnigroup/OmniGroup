@@ -7,6 +7,8 @@
 
 #import <OmniFoundation/OFCredentials.h>
 
+#import <Foundation/NSURLCredential.h>
+
 #import "OFCredentials-Internal.h"
 
 RCS_ID("$Id$")
@@ -143,11 +145,11 @@ BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
             CFRelease(itemRef);
         } else if (err == errSecItemNotFound) {
             // Add a new entry.
-            OSStatus err = SecKeychainAddGenericPassword(keychain,
-                                                         (UInt32)[serviceIdentifierData length], [serviceIdentifierData bytes],
-                                                         (UInt32)[userNameData length], [userNameData bytes],
-                                                         (UInt32)[passwordData length], [passwordData bytes],
-                                                         NULL/*outItemRef*/);
+            err = SecKeychainAddGenericPassword(keychain,
+                                                (UInt32)[serviceIdentifierData length], [serviceIdentifierData bytes],
+                                                (UInt32)[userNameData length], [userNameData bytes],
+                                                (UInt32)[passwordData length], [passwordData bytes],
+                                                NULL/*outItemRef*/);
             if (err != errSecSuccess)
                 OFSecError("SecKeychainAddGenericPassword", err, outError);
             else

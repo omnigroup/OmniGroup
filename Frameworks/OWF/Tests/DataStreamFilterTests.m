@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2005, 2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,13 +11,13 @@
 #import <OWF/OWContentType.h>
 #import <OWF/OWDataStream.h>
 #import <OWF/OWDataStreamCursor.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 RCS_ID("$Id$");
 
 static NSDictionary *smalldata, *bigdata;
 
-@interface DataStreamFilterTests : SenTestCase
+@interface DataStreamFilterTests : XCTestCase
 {
 }
 
@@ -64,7 +64,7 @@ static NSDictionary *smalldata, *bigdata;
     [ds release];
     ds = nil;
 
-    should(reader != nil);
+    XCTAssertTrue(reader != nil);
 
     [reader retain];
     [pool release];
@@ -134,8 +134,8 @@ static NSDictionary *smalldata, *bigdata;
 
     gzIn = [smalldata objectForKey:@"gzIn"];
     gzOut = [smalldata objectForKey:@"gzOut"];
-    should(gzIn != nil);
-    should(gzOut != nil);
+    XCTAssertTrue(gzIn != nil);
+    XCTAssertTrue(gzOut != nil);
 
     [self testSmallIn:gzIn smallOut:gzOut coder:[OWContentType contentEncodingForString:@"gzip"]];
 }
@@ -146,8 +146,8 @@ static NSDictionary *smalldata, *bigdata;
 
     gzIn = [bigdata objectForKey:@"gzIn"];
     gzOut = [bigdata objectForKey:@"out"];
-    should(gzIn != nil);
-    should(gzOut != nil);
+    XCTAssertTrue(gzIn != nil);
+    XCTAssertTrue(gzOut != nil);
 
     [self testLargeIn:gzIn smallOut:gzOut coder:[OWContentType contentEncodingForString:@"gzip"]];
 }
@@ -158,8 +158,8 @@ static NSDictionary *smalldata, *bigdata;
 
     bzIn = [smalldata objectForKey:@"bzIn"];
     bzOut = [smalldata objectForKey:@"gzOut"];
-    should(bzIn != nil);
-    should(bzOut != nil);
+    XCTAssertTrue(bzIn != nil);
+    XCTAssertTrue(bzOut != nil);
 
     [self testSmallIn:bzIn smallOut:bzOut coder:[OWContentType contentEncodingForString:@"bzip2"]];
 }
@@ -170,8 +170,8 @@ static NSDictionary *smalldata, *bigdata;
 
     bzIn = [bigdata objectForKey:@"bzIn"];
     bzOut = [bigdata objectForKey:@"out"];
-    should(bzIn != nil);
-    should(bzOut != nil);
+    XCTAssertTrue(bzIn != nil);
+    XCTAssertTrue(bzOut != nil);
 
     [self testLargeIn:bzIn smallOut:bzOut coder:[OWContentType contentEncodingForString:@"bzip2"]];
 }

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,8 @@
 + (BOOL)shouldShowAutosaveIndicator;
 
 - initWithExistingFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
+// subclass this method if you need to set anything on the document after it's first been created from a template. (UUID's and the like)
+- (id)initWithExistingFileItemFromTemplate:(ODSFileItem *)fileItem error:(NSError *__autoreleasing *)outError;
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url templateURL:(NSURL *)templateURL error:(NSError **)outError;
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
 - initWithFileItem:(ODSFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;

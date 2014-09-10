@@ -1,11 +1,10 @@
-// Copyright 2002-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/NSCalendarDate-OFExtensions.h>
@@ -59,8 +58,7 @@ RCS_ID("$Id$")
 
     output = [input dateByRoundingToHourOfDay:hour minute:minute];
 
-    shouldBeEqual1(output, desired,
-                   ([NSString stringWithFormat:@"RoundToHHMM%@", [testCase description]]));
+    XCTAssertEqualObjects(output, desired, @"RoundToHHMM%@", [testCase description]);
 }
 
 - (void)testRoundingToDOW:(NSArray *)testCase;
@@ -74,8 +72,7 @@ RCS_ID("$Id$")
 
     output = [input dateByRoundingToDayOfWeek:dayOfWeek];
 
-    shouldBeEqual1(output, desired,
-                   ([NSString stringWithFormat:@"RoundToDOW%@", [testCase description]]));
+    XCTAssertEqualObjects(output, desired, @"RoundToDOW%@", [testCase description]);
 }
 
 - (NSString *)name
@@ -87,7 +84,7 @@ RCS_ID("$Id$")
     return [NSString stringWithFormat:@"-[%@ %@%@]", NSStringFromClass([self class]), NSStringFromSelector([[self invocation] selector]), [firstArg description]];
 }
 
-+ (id)defaultTestSuite
++ (XCTestSuite *)defaultTestSuite;
 {
     return [self dataDrivenTestSuite];
 }

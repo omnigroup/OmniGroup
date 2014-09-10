@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import "OATestCase.h"
 
+#import <AppKit/AppKit.h>
 #import <OmniBase/rcsid.h>
 #import <OmniAppKit/NSColor-OAExtensions.h>
 
@@ -21,18 +22,18 @@ static void _checkFile(OAColorArchivingTests *self, NSString *path, NSData *actu
 {
     // We expect to be run from the OmniAppKit folder
     path = [[NSBundle bundleForClass:[self class]] pathForResource:path ofType:nil];
-    STAssertNotNil(path, [NSString stringWithFormat:@"Expected to find test data resource \"%@\"", path]);
+    XCTAssertNotNil(path, @"Expected to find test data resource \"%@\"", path);
     if (!path)
         return;
     
     NSData *expectedData = [NSData dataWithContentsOfFile:path];
-    STAssertNotNil(expectedData, [NSString stringWithFormat:@"should have expected data in %@", path]);
+    XCTAssertNotNil(expectedData, @"should have expected data in %@", path);
     if (OFNOTEQUAL(expectedData, actualData)) {
         NSString *actualPath = [@"/tmp" stringByAppendingPathComponent:[path lastPathComponent]];
         NSLog(@"Actual data saved in %@", actualPath);
         [actualData writeToFile:actualPath atomically:YES];
     }
-    STAssertEqualObjects(expectedData, actualData, @"archived colors should be equal");
+    XCTAssertEqualObjects(expectedData, actualData, @"archived colors should be equal");
 }
 
 static BOOL _compareColors(NSColor *a, NSColor *b)
@@ -49,14 +50,14 @@ static BOOL _compareColors(NSColor *a, NSColor *b)
 
 static void _checkPlist(OAColorArchivingTests *self, NSColor *color, NSDictionary *plist, NSString *name, SEL sel)
 {
-    STAssertNotNil(plist, @"shoud have made a plist");
+    XCTAssertNotNil(plist, @"shoud have made a plist");
     if (plist == nil)
         return;
 
     NSString *error = nil;
     NSData *data = [NSPropertyListSerialization dataFromPropertyList:plist format:NSPropertyListXMLFormat_v1_0 errorDescription:&error];
-    STAssertNil(error, @"shoud be no error archiving");
-    STAssertNotNil(data, @"should get something back from archiving");
+    XCTAssertNil(error, @"shoud be no error archiving");
+    XCTAssertNotNil(data, @"should get something back from archiving");
     
     if (!data)
         return;
@@ -67,13 +68,13 @@ static void _checkPlist(OAColorArchivingTests *self, NSColor *color, NSDictionar
     if (plist) {
         // Reconstitute the color and compare them.
         NSColor *unarchived = [NSColor colorFromPropertyListRepresentation:plist];
-        STAssertTrue(_compareColors(color, unarchived), @"plist color archiving/unarchive should be idempotent");
+        XCTAssertTrue(_compareColors(color, unarchived), @"plist color archiving/unarchive should be idempotent");
     }
 }
 
 static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
 {
-    STAssertNotNil(color, @"shoud have gotten a color");
+    XCTAssertNotNil(color, @"shoud have gotten a color");
     if (color == nil)
         return;
 
@@ -102,7 +103,7 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
         // Reconstitute the color and compare them.
         OFXMLCursor *cursor = [[[OFXMLCursor alloc] initWithDocument:doc element:colorElement] autorelease];
         NSColor *unarchived = [NSColor colorFromXML:cursor];
-        STAssertTrue(_compareColors(color, unarchived), @"XML color archiving/unarchive should be idempotent");
+        XCTAssertTrue(_compareColors(color, unarchived), @"XML color archiving/unarchive should be idempotent");
     }
 }
 
@@ -158,7 +159,7 @@ static void _checkColor(OAColorArchivingTests *self, NSColor *color, SEL sel)
 - (void)testPattern;
 {
     NSImage *image = [NSImage imageNamed:@"pattern" inBundle:OMNI_BUNDLE];
-    STAssertNotNil(image, @"image should exist");
+    XCTAssertNotNil(image, @"image should exist");
     CHECK([NSColor colorWithPatternImage:image]);
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -115,14 +115,13 @@ RCS_ID("$Id$");
 // Tests the length calculations in the replacement portion of the NSMutableAttributedString mutator method
 - (BOOL)replaceString:(NSString *)searchString withString:(NSString *)replacementString inRange:(NSRange)searchRange;
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSAttributedString *replacementAttributedString = [[[NSAttributedString alloc] initWithString:replacementString attributes:nil] autorelease];
-    BOOL didReplace = [self mutateRangesInRange:searchRange matchingString:searchString with:^NSAttributedString *(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing) {
-        return replacementAttributedString;
-    }];
-    [pool drain];
-
-    return didReplace;
+    @autoreleasepool {
+        NSAttributedString *replacementAttributedString = [[[NSAttributedString alloc] initWithString:replacementString attributes:nil] autorelease];
+        BOOL didReplace = [self mutateRangesInRange:searchRange matchingString:searchString with:^NSAttributedString *(NSMutableAttributedString *source, NSDictionary *attributes, NSRange matchRange, NSRange effectiveAttributeRange, BOOL *isEditing) {
+            return replacementAttributedString;
+        }];
+        return didReplace;
+    }
 }
 
 @end

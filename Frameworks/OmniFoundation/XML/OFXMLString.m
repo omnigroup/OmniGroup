@@ -74,7 +74,7 @@ static NSString *CreateQuotedStringForEncoding(OFXMLString *self, CFStringEncodi
     NSString *text = [self newQuotedStringForDocument:doc];
     OBASSERT(text);
     if (text)
-	OFXMLBufferAppendString(xml, (CFStringRef)text);
+	OFXMLBufferAppendString(xml, (__bridge CFStringRef)text);
     [text release];
     return YES;
 }
@@ -353,7 +353,7 @@ NSString *OFStringForEntityName(NSString *entityName)
 {
     // Called when an element has a string as a direct child.
     NSString *text = OFXMLCreateStringWithEntityReferencesInCFEncoding(self, OFXMLBasicEntityMask, nil/*newlineReplacement*/, [doc stringEncoding]);
-    OFXMLBufferAppendString(xml, (CFStringRef)text);
+    OFXMLBufferAppendString(xml, (__bridge CFStringRef)text);
     [text release];
     return YES;
 }

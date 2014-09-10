@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,24 +11,24 @@
 
 @interface OFTestCase : OBTestCase
 
-+ (SenTest *)dataDrivenTestSuite;
-+ (SenTest *)testSuiteForMethod:(NSString *)methodName cases:(NSArray *)testCases;
-+ (SenTest *)testSuiteNamed:(NSString *)suiteName usingSelector:(SEL)testSelector cases:(NSArray *)testCases;
++ (XCTest *)dataDrivenTestSuite;
++ (XCTest *)testSuiteForMethod:(NSString *)methodName cases:(NSArray *)testCases;
++ (XCTest *)testSuiteNamed:(NSString *)suiteName usingSelector:(SEL)testSelector cases:(NSArray *)testCases;
 
 @end
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-#define OFDataShouldBeEqual(expected, actual) STAssertEquals(expected, actual, nil)
+#define OFDataShouldBeEqual(expected, actual) XCTAssertEqual(expected, actual, nil)
 #else
-extern void OFDiffData(SenTestCase *testCase, NSData *expected, NSData *actual);
-extern void OFDiffDataFiles(SenTestCase *testCase, NSString *expectedPath, NSString *actualPath);
+extern void OFDiffData(XCTestCase *testCase, NSData *expected, NSData *actual);
+extern void OFDiffDataFiles(XCTestCase *testCase, NSString *expectedPath, NSString *actualPath);
 
 #define OFDataShouldBeEqual(expected,actual) \
 do { \
     BOOL dataEqual = [expected isEqual:actual]; \
     if (!dataEqual) { \
         OFDiffData(self, expected, actual); \
-        STAssertTrue(dataEqual, nil); \
+        XCTAssertTrue(dataEqual); \
     } \
 } while (0)
 
@@ -37,13 +37,13 @@ do { \
     BOOL dataEqual = [expected isEqual:actual]; \
     if (!dataEqual) { \
         OFDiffDataFiles(self, expectedPath, actualPath); \
-        STAssertTrue(dataEqual, nil); \
+        XCTAssertTrue(dataEqual); \
     } \
 } while (0)
 
 #endif
 
 typedef BOOL (^OFDiffFilesPathFilter)(NSString *relativePath);
-extern BOOL OFSameFiles(SenTestCase *testCase, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter); // query, not required
-extern void OFDiffFiles(SenTestCase *testCase, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter); // fails if the files aren't the same
+extern BOOL OFSameFiles(XCTestCase *testCase, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter); // query, not required
+extern void OFDiffFiles(XCTestCase *testCase, NSString *path1, NSString *path2, OFDiffFilesPathFilter pathFilter); // fails if the files aren't the same
 

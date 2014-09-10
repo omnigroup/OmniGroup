@@ -36,3 +36,6 @@ HEADER_SEARCH_PATHS = $(value) $(CONFIGURATION_BUILD_DIR)/include $(CONFIGURATIO
 // The point of this is that OmniBase/macros.h will make errors if we use the
 // main-bundle localized string lookup macros.
 OTHER_CFLAGS = $(value) -DOMNI_BUILDING_FRAMEWORK
+
+// This isn't defined for the library target for some reason
+TEST_FRAMEWORK_SEARCH_PATHS=$(PLATFORM_DIR)/Developer/Library/Frameworks $(SDKROOT)/Developer/Library/Frameworks

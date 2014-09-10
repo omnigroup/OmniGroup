@@ -5,3 +5,4 @@
 #include "Omni-Application-Common-MacAppStore.xcconfig"
 
 OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX = Pro.MacAppStore
+OMNI_STORE_IDENTIFIER_SUFFIX =  $(OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX)

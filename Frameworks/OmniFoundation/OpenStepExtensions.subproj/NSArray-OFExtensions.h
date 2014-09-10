@@ -1,4 +1,4 @@
-// Copyright 1997-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,12 +28,11 @@
 - (NSUInteger)indexOfString:(NSString *)aString options:(unsigned int)someOptions 	range:(NSRange)aRange;
 - (NSString *)componentsJoinedByComma;
 
-- (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
 - (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingSelector:(SEL)selector;
 - (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingComparator:(NSComparator)comparator;
 - (NSUInteger)indexWhereObjectWouldBelong:(id)anObject inArraySortedUsingSortDescriptors:(NSArray *)sortDescriptors;
 
-- (NSUInteger)indexOfObject: (id) anObject identical:(BOOL)requireIdentity inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
+- (NSUInteger)indexOfObject:(id)anObject identical:(BOOL)requireIdentity inArraySortedUsingComparator:(NSComparator)comparator;
 
 - (NSUInteger)indexOfObject: (id) anObject inArraySortedUsingSelector: (SEL) selector;
 - (NSUInteger)indexOfObjectIdenticalTo: (id) anObject inArraySortedUsingSelector: (SEL) selector;
@@ -68,6 +67,7 @@
 - (id)last:(OFPredicateBlock)predicate;
 - (id)lastInRange:(NSRange)range that:(OFPredicateBlock)predicate;
 
+- (BOOL)all:(OFPredicateBlock)predicate;
 
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector;
 - (NSArray *)objectsSatisfyingCondition:(SEL)aSelector withObject:(id)anObject;

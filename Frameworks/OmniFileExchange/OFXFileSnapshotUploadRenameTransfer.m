@@ -32,7 +32,7 @@ RCS_ID("$Id$")
 - (id)initWithConnection:(OFXConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory currentRemoteSnapshotURL:(NSURL *)currentRemoteSnapshotURL error:(NSError **)outError;
 {
     OBPRECONDITION(currentSnapshot.localState.missing, "Should use the 'contents' upload transfer instead");
-    OBPRECONDITION(currentSnapshot.localState.moved, "Only for renames");
+    OBPRECONDITION(currentSnapshot.localState.userMoved, "Only for renames");
     OBPRECONDITION(currentRemoteSnapshotURL);
 
     if (!(self = [super initWithConnection:connection currentSnapshot:currentSnapshot remoteTemporaryDirectory:remoteTemporaryDirectory]))
@@ -118,8 +118,10 @@ RCS_ID("$Id$")
         __autoreleasing NSError *finishError;
         if (![_uploadingSnapshot finishedUploadingWithError:&finishError])
             error = OBChainedError(finishError);
-        else
+        else {
             DEBUG_TRANSFER(1, @"Uploaded %@", temporaryRemoteSnapshotURL);
+            TRACE_SIGNAL(OFXFileSnapshotUploadRenameTransfer.remote_metadata_rename);
+        }
     }
     
     // Allow commit() callback to get the redirected URL.

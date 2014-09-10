@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,7 +37,12 @@ RCS_ID("$Id$");
     return [[self alloc] initWithTitle:title image:nil action:action];
 }
 
-- initWithTitle:(NSString *)title image:(UIImage *)image options:(NSArray *)options destructive:(BOOL)destructive action:(OUIMenuOptionAction)action;
++ (instancetype)optionWithTitle:(NSString *)title action:(OUIMenuOptionAction)action validator:(OUIMenuOptionValidatorAction)validator;
+{
+    return [[self alloc] initWithTitle:title image:nil options:nil destructive:NO action:action validator:validator];
+}
+
+- initWithTitle:(NSString *)title image:(UIImage *)image options:(NSArray *)options destructive:(BOOL)destructive action:(OUIMenuOptionAction)action validator:(OUIMenuOptionValidatorAction)validator;
 {
     OBPRECONDITION(title);
     //OBPRECONDITION(action || [options count] > 0); We allow placeholder disabled actions
@@ -46,6 +51,7 @@ RCS_ID("$Id$");
         return nil;
     
     _action = [action copy];
+    _validator = [validator copy];
     _title = [title copy];
     _image = image;
     _destructive = destructive;
@@ -53,10 +59,24 @@ RCS_ID("$Id$");
     
     return self;
 }
+- initWithTitle:(NSString *)title image:(UIImage *)image options:(NSArray *)options destructive:(BOOL)destructive action:(OUIMenuOptionAction)action;
+{
+    return [self initWithTitle:title image:image options:options destructive:destructive action:action validator:NULL];
+}
 
 - initWithTitle:(NSString *)title image:(UIImage *)image action:(OUIMenuOptionAction)action;
 {
     return [self initWithTitle:title image:image options:nil destructive:NO action:action];
+}
+
+- (BOOL)isEnabled;
+{
+    if (self.validator) {
+        return self.validator();
+    }
+    else {
+        return YES;
+    }
 }
 
 @end

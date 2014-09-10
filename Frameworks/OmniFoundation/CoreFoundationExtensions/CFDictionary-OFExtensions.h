@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010, 2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,10 +17,6 @@ extern const CFDictionaryKeyCallBacks OFCaseInsensitiveStringKeyDictionaryCallba
 // Convenience functions
 @class NSMutableDictionary;
 extern NSMutableDictionary *OFCreateCaseInsensitiveKeyMutableDictionary(void) NS_RETURNS_RETAINED;
-
-// Applier functions
-extern void OFPerformSelectorOnKeyApplierFunction(const void *key, const void *value, void *context);   // context==SEL
-extern void OFPerformSelectorOnValueApplierFunction(const void *key, const void *value, void *context); // context==SEL
 
 // Conveniences for when the value is an integer
 // Making these inline functions (rather than macros) means that the compiler will handle any integer width conversions for us

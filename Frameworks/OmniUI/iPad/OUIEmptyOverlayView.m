@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,12 +6,13 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIEmptyOverlayView.h>
-
-#import "OUIParameters.h"
+#import <OmniUI/OUIAppearanceColors.h>
 
 RCS_ID(")$Id$");
 
 @interface OUIEmptyOverlayView ()
+
+- (IBAction)_buttonTapped:(id)sender;
 
 @property (nonatomic, retain) IBOutlet UILabel *messageLabel;
 @property (nonatomic, retain) IBOutlet UIButton *button;
@@ -48,13 +49,10 @@ RCS_ID(")$Id$");
 {
     OBASSERT_NOTNULL(_messageLabel);
     _messageLabel.text = message;
-    _messageLabel.preferredMaxLayoutWidth = kOUIEmptyOverlayViewMessagePreferredMaxLayoutWidth;
-    _messageLabel.textColor = [UIColor colorWithWhite:0.502 alpha:0.750];
+    _messageLabel.textColor = [OUIAppearanceDefaultColors appearance].omniNeutralPlaceholderColor;
     
     OBASSERT_NOTNULL(_button);
     [_button setTitle:buttonTitle forState:UIControlStateNormal];
-    _button.titleLabel.font = [UIFont boldSystemFontOfSize:18.0];
-    [_button addTarget:self action:@selector(_buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
 #if 0 && defined(DEBUG_jake)
     self.backgroundColor = [[UIColor redColor] colorWithAlphaComponent:0.4];
@@ -63,6 +61,22 @@ RCS_ID(")$Id$");
 #endif
     
     _action = action;
+}
+
+- (void)layoutSubviews;
+{
+    // -layoutSubviews should be called after our superview has been laid out (and our own frame has therefore been determined and set).
+    _messageLabel.preferredMaxLayoutWidth = self.bounds.size.width * [OUIAppearance appearance].emptyOverlayViewLabelMaxWidthRatio;
+    [super layoutSubviews];
+}
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
+{
+    UIView *hitView = [super hitTest:point withEvent:event];
+    if (hitView == self)
+        return nil;
+    else
+        return hitView;
 }
 
 #pragma mark - Helpers

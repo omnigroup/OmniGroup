@@ -558,7 +558,7 @@
 				34ECCC071214773400BE430C /* OmniFoundation.framework */,
 				34ECCC091214773400BE430C /* libOmniFoundation.a */,
 				34ECCC0B1214773400BE430C /* libOmniFoundationTouchTests.a */,
-				34ECCC0D1214773400BE430C /* OFUnitTests.octest */,
+				34ECCC0D1214773400BE430C /* OFUnitTests.xctest */,
 				34ECCC0F1214773400BE430C /* OFSimpleLockTest */,
 				34ECCC111214773400BE430C /* OFDedicatedThreadSchedulerTest */,
 				34ECCC131214773400BE430C /* OFClobberDetectionTest */,
@@ -582,7 +582,7 @@
 			isa = PBXGroup;
 			children = (
 				34ECCC271214773400BE430C /* OmniAppKit.framework */,
-				34ECCC291214773400BE430C /* OAUnitTests.octest */,
+				34ECCC291214773400BE430C /* OAUnitTests.xctest */,
 				34ECCC2B1214773400BE430C /* OAMakeImageSizeIntegral */,
 				34ECCC2D1214773400BE430C /* OAPatternColorPicker.bundle */,
 				34ECCC2F1214773400BE430C /* libOmniAppKit.a */,
@@ -748,10 +748,10 @@
 			remoteRef = 34ECCC0A1214773400BE430C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34ECCC0D1214773400BE430C /* OFUnitTests.octest */ = {
+		34ECCC0D1214773400BE430C /* OFUnitTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
-			path = OFUnitTests.octest;
+			path = OFUnitTests.xctest;
 			remoteRef = 34ECCC0C1214773400BE430C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -818,10 +818,10 @@
 			remoteRef = 34ECCC261214773400BE430C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34ECCC291214773400BE430C /* OAUnitTests.octest */ = {
+		34ECCC291214773400BE430C /* OAUnitTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
-			path = OAUnitTests.octest;
+			path = OAUnitTests.xctest;
 			remoteRef = 34ECCC281214773400BE430C /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};

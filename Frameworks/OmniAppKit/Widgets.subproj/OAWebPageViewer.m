@@ -214,7 +214,7 @@ RCS_ID("$Id$")
     }
     
     // Open links in the user's browser
-    [[NSWorkspace sharedWorkspace] openURL:url];
+    [[OAController sharedController] openURL:url];
     [listener ignore];
 }
 

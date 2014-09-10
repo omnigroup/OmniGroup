@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,8 @@
 @interface ODSFilter : NSObject
 
 - (instancetype)initWithStore:(ODSStore *)store;
-- (instancetype)initWithScope:(ODSScope *)scope;
+- (instancetype)initWithTopLevelOfScope:(ODSScope *)scope;
+- (instancetype)initWithFileItemsInScope:(ODSScope *)scope;
 - (instancetype)initWithFolderItem:(ODSFolderItem *)folder;
 
 @property (readonly) ODSScope *scope;

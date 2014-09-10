@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@ RCS_ID("$Id$")
 - (BOOL)prepareToUploadRename:(NSError **)outError;
 {
     OBPRECONDITION(self.localState.missing, "Otherwise use the normal upload transfer and snapshot");
-    OBPRECONDITION(self.localState.moved, "Why are we uploading, otherwise");
+    OBPRECONDITION(self.localState.userMoved, "Why are we uploading, otherwise");
 
     // Write out updated info dictionary as if the move has happened already.
     NSMutableDictionary *infoDictionary = [self.infoDictionary mutableCopy];

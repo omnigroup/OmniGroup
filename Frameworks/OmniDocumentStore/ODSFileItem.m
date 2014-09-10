@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -146,6 +146,8 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
             [self willChangeValueForKey:ODSFileItemFileURLBinding];
             _fileURL = fileURL;
             [self didChangeValueForKey:ODSFileItemFileURLBinding];
+            NSString *uti = OFUTIForFileURLPreferringNative(_fileURL, NULL);
+            [self setFileType:uti];
         }
     }
 }

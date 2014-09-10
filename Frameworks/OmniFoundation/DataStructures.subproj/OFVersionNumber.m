@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,23 +59,12 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-+ (BOOL)isOperatingSystemiOS61OrLater; // iOS 6.1
++ (BOOL)isOperatingSystemiOS80OrLater; // iOS 8.0
 {
     static BOOL isLater;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemLaterThanVersionString(@"6.1");
-    });
-    
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystemiOS7OrLater; // iOS 7
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemLaterThanVersionString(@"7");
+        isLater = isOperatingSystemLaterThanVersionString(@"8.0");
     });
     
     return isLater;
@@ -83,23 +72,12 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
 
 #else
 
-+ (BOOL)isOperatingSystemMountainLionOrLater; // 10.8
++ (BOOL)isOperatingSystemYosemiteOrLater; // 10.10
 {
     static BOOL isLater;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemLaterThanVersionString(@"10.8");
-    });
-
-    return isLater;
-}
-
-+ (BOOL)isOperatingSystemMavericksOrLater; // 10.9
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemLaterThanVersionString(@"10.9");
+        isLater = isOperatingSystemLaterThanVersionString(@"10.10");
     });
 
     return isLater;
@@ -130,7 +108,7 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
         scannerSkipPeekedCharacter(scanner);
 
     NSUInteger componentsBufSize = 40; // big enough for five 64-bit version number components
-    _components = OBAllocateCollectable(componentsBufSize, 0);
+    _components = malloc(componentsBufSize);
     
     while (scannerHasData(scanner)) {
         // TODO: Add a OFCharacterScanner method that allows you specify the maximum uint32 value (and a parameterless version that uses UINT_MAX) and passes back a BOOL indicating success (since any uint32 would be valid).
@@ -146,7 +124,7 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
         _componentCount++;
         if (_componentCount*sizeof(*_components) > componentsBufSize) {
             componentsBufSize = _componentCount*sizeof(*_components);
-            _components = OBReallocateCollectable(_components, componentsBufSize, 0);
+            _components = realloc(_components, componentsBufSize);
         }
         _components[_componentCount - 1] = component;
 

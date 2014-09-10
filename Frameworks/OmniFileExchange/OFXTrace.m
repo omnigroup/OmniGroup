@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,6 +36,8 @@ void OFXTraceReset(void)
 
 void OFXTraceSignal(NSString *name)
 {
+    OBPRECONDITION([name rangeOfString:@"\""].location == NSNotFound, "Should not add quotes when passing the name in via a macro");
+    
     _OFXTraceInitialize();
     
     dispatch_async(Queue, ^{
@@ -46,20 +48,27 @@ void OFXTraceSignal(NSString *name)
 
 NSUInteger OFXTraceSignalCount(NSString *name)
 {
+    OBPRECONDITION([name rangeOfString:@"\""].location == NSNotFound, "Should not add quotes when passing the name in via a macro");
+
     __block NSUInteger count = NO;
     dispatch_barrier_sync(Queue, ^{
         count = [Signals countForObject:name];
+        //NSLog(@"TRACE COUNT \"%@\" is %ld", name, count);
     });
     return count;
 }
 
 BOOL OFXTraceHasSignal(NSString *name)
 {
+    OBPRECONDITION([name rangeOfString:@"\""].location == NSNotFound, "Should not add quotes when passing the name in via a macro");
+
     return OFXTraceSignalCount(name) > 0;
 }
 
 static BOOL _OFXTraceWait(NSString *name)
 {
+    OBPRECONDITION([name rangeOfString:@"\""].location == NSNotFound, "Should not add quotes when passing the name in via a macro");
+
     __block BOOL found = NO;
     dispatch_barrier_sync(Queue, ^{
         if ([Signals countForObject:name] > 0) {
@@ -73,6 +82,8 @@ static BOOL _OFXTraceWait(NSString *name)
 
 void OFXTraceWait(NSString *name)
 {
+    OBPRECONDITION([name rangeOfString:@"\""].location == NSNotFound, "Should not add quotes when passing the name in via a macro");
+
     _OFXTraceInitialize();
     
     while (!_OFXTraceWait(name)) {

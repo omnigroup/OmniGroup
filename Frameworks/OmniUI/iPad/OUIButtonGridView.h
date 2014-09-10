@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,7 @@ typedef enum {
 - (UIButton *)buttonGridView:(OUIButtonGridView *)buttonGridView buttonForColumnAtIndexPath:(NSIndexPath *)indexPath;
 - (NSUInteger)numberOfRowsInButtonGridView:(OUIButtonGridView *)buttonGridView;
 
-- (void)buttonGridView:(OUIButtonGridView *)buttonGridView didSelectRowAtIndexPath:(NSIndexPath *)indexPath;
+- (void)buttonGridView:(OUIButtonGridView *)buttonGridView tappedButton:(UIButton *)button atIndexPath:(NSIndexPath *)indexPath;
 
 @end
 
@@ -37,6 +37,11 @@ typedef enum {
 
 @property (nonatomic, assign) IBOutlet id <OUIButtonGridViewDataSource> dataSource;
 @property (nonatomic, assign) NSUInteger borderMask;
+
+- (UIButton *)buttonAtIndexPath:(NSIndexPath *)indexPath;
+
+// Currently exposed for AX purposes only.
+@property (nonatomic, readonly, copy) NSArray *buttons;
 
 @end
 

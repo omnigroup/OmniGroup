@@ -1,4 +1,4 @@
-// Copyright 2009-2010 The Omni Group. All rights reserved.
+// Copyright 2009-2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -87,7 +87,7 @@ static void _addFlip(CALayer *parentLayer, NSRect layerViewRect, NSImage *image,
     }
     
     NSRect viewScreenRect = [parentView convertRect:viewFrame toView:nil];
-    viewScreenRect.origin = [parentWindow convertBaseToScreen:viewScreenRect.origin];
+    viewScreenRect = [parentWindow convertRectToScreen:viewScreenRect];
     //NSLog(@"viewScreenRect = %@", NSStringFromRect(viewScreenRect));
     
     // TODO: Actual math re: perepective warp on near edge.
@@ -107,7 +107,7 @@ static void _addFlip(CALayer *parentLayer, NSRect layerViewRect, NSImage *image,
 
     // Compute the rect w/in our window that covers the view to be replaced
     NSRect layerViewRect = viewScreenRect;
-    layerViewRect.origin = [window convertScreenToBase:layerViewRect.origin];
+    layerViewRect = [window convertRectFromScreen:layerViewRect];
     
     [CATransaction begin];
     

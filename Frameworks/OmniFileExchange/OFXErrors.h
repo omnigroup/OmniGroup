@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,6 @@ enum {
     OFXAccountRepositoryCorrupt,
     OFXAccountRepositoryTooNew,
     OFXAccountRepositoryTooOld,
-    OFXFileShadowed,
     OFXFileUpdatedWhileDeleting,
     OFXFileItemDetectedRemoteEdit,
     OFXFileDeletedWhileDownloading,
@@ -33,6 +32,7 @@ enum {
     OFXCloudScanFailed,
     OFXAccountScanFailed,
     OFXLocalAccountDirectoryNotUsable,
+    OFXLocalAccountDirectoryModifiedWhileScanning,
     OFXAccountUnableToStoreClientInfo,
     OFXAccountUnableToCreateContainer,
     OFXAccountUnableToRecordFileContents,
@@ -44,6 +44,7 @@ enum {
     OFXAccountNotPreparedForRemoval, // Internal and should never been seen under properly working conditions
     OFXAccountLocalDocumentsDirectoryInvalidForDeletion, // Returned by +[OFXServerAccount deleteGeneratedLocalDocumentsURL:error:] if the passed in URL looks suspicious
     OFXNoContainer,
+    OFXTooManyRecentFileTransferErrors,
     
     // Document store scope
     OFXFileItemNotDownloaded,
@@ -53,3 +54,13 @@ extern NSString * const OFXErrorDomain;
 
 #define OFXErrorWithInfo(error, code, description, suggestion, ...) _OBError(error, OFXErrorDomain, code, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (suggestion), ## __VA_ARGS__)
 #define OFXError(error, code, description, reason) OFXErrorWithInfo((error), (code), (description), (reason), nil)
+
+@interface OFXRecentError : NSObject
+
++ (instancetype)recentError:(NSError *)error withDate:(NSDate *)date;
+- (instancetype)initWithError:(NSError *)error withDate:(NSDate *)date;
+
+@property(nonatomic,readonly) NSDate *date;
+@property(nonatomic,readonly) NSError *error;
+
+@end

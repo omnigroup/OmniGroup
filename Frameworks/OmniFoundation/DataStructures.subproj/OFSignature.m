@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ RCS_ID("$Id$")
 
 - (void) dealloc;
 {
-    NSZoneFree(NULL, _private);
+    free(_private);
     [_signatureData release];
     [super dealloc];
 }
@@ -45,7 +45,7 @@ RCS_ID("$Id$")
     if (!(self = [super init]))
         return nil;
 
-    _private = NSZoneMalloc(NULL, sizeof(*CONTEXT));
+    _private = malloc(sizeof(*CONTEXT));
     CC_SHA1_Init(CONTEXT);
 
     [self addBytes: bytes length: length];

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,20 +7,18 @@
 //
 // $Id$
 
-#import <Foundation/NSObject.h>
+#import <OmniUI/OUIWrappingViewController.h>
 #import <OmniUIDocument/OUIDocumentPickerDelegate.h>
 
 @class UINavigationController;
 @class ODSStore, ODSScope, ODSFileItem, ODSFolderItem, OUIDocumentPickerViewController, OUIDocumentPickerScrollView;
 
-@interface OUIDocumentPicker : NSObject
+@interface OUIDocumentPicker : OUIWrappingViewController
 
 - (instancetype)initWithDocumentStore:(ODSStore *)documentStore;
 
 @property (retain, nonatomic) ODSStore *documentStore;
 @property (weak, nonatomic) id<OUIDocumentPickerDelegate> delegate;
-
-@property (readonly, nonatomic) UINavigationController *navigationController; // receiver is the delegate of this navigation controller
 
 - (void)showDocuments;
 - (void)navigateToFolder:(ODSFolderItem *)folderItem animated:(BOOL)animated;
@@ -30,4 +28,5 @@
 
 @property (nonatomic, readonly) OUIDocumentPickerViewController *selectedScopeViewController;
 
+- (void)enableAppMenuBarButtonItem:(BOOL)enable;
 @end

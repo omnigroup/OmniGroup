@@ -7,68 +7,78 @@
 
 #import <OmniUI/OUIAppController+InAppStore.h>
 
+#import <OmniFoundation/OFPreference.h>
 #import <OmniUI/OUIInAppStoreViewController.h>
-
 #import <Security/Security.h>
-
 
 RCS_ID("$Id$");
 
-static const UInt8 kKeychainIdentifier[] = "com.omnigroup.InAppPurchase";
+static NSString *keychainIdentifier = @"com.omnigroup.InAppPurchase";
 
 @implementation OUIAppController (InAppStore)
 
-- (BOOL)importIsUnlocked:(NSString *)productIdentifier;
+- (BOOL)isPurchaseUnlocked:(NSString *)productIdentifier;
 {
-    return [self readImportUnlockedFlagFromKeychain:productIdentifier];
+    return [self _isPurchasedProductInKeychain:productIdentifier];
 }
 
 - (NSString *)vendorID;
 {
-    return [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    static OFPreference *vendorIDPreference;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        vendorIDPreference = [OFPreference preferenceForKey:@"OUIVendorID"];
+    });
+
+    if (![vendorIDPreference hasNonDefaultValue]) {
+        NSString *newVendorID = [[NSUUID UUID] UUIDString];
+        [vendorIDPreference setObjectValue:newVendorID];
+    }
+
+    NSString *vendorID = [vendorIDPreference objectValue];
+    OBPOSTCONDITION(vendorID != nil);
+    return vendorID;
 }
 
-- (BOOL)addImportUnlockedFlagToKeychain:(NSString *)productIdentifier;
+- (BOOL)addPurchasedProductToKeychain:(NSString *)productIdentifier;
 {
-    NSData *unlockData = [productIdentifier dataUsingEncoding:NSUTF8StringEncoding];
-    NSData *unlockValue = [[self vendorID] dataUsingEncoding:NSUTF8StringEncoding];
-    
-    NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-                           [NSData dataWithBytes:kKeychainIdentifier length:strlen((const char *)kKeychainIdentifier)], (__bridge id)kSecAttrGeneric,
-                           (__bridge id)kSecClassGenericPassword, (__bridge id)kSecClass,
-                           unlockData, (__bridge id)kSecAttrAccount,
-                           nil];
-    NSMutableDictionary *attributes = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                       unlockValue, (__bridge id)kSecValueData,
-                                       kSecAttrAccessibleWhenUnlockedThisDeviceOnly, (__bridge id)kSecAttrAccessible,
-                                       nil];
-    
-    OSStatus result = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)attributes);
+    NSDictionary *query = @{
+        (__bridge id)kSecAttrGeneric : [keychainIdentifier dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
+        (__bridge id)kSecAttrAccount : [productIdentifier dataUsingEncoding:NSUTF8StringEncoding],
+    };
+
+    NSDictionary *updateAttributes = @{
+        (__bridge id)kSecValueData : [[self vendorID] dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecAttrAccessible : (__bridge id)kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+    };
+
+    OSStatus result = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)updateAttributes);
+    if (result == errSecSuccess)
+        return YES;
+
     if (result == errSecItemNotFound) {
-        [attributes setObject:[NSData dataWithBytes:kKeychainIdentifier length:strlen((const char *)kKeychainIdentifier)] forKey:(__bridge id)kSecAttrGeneric];
-        [attributes setObject:(__bridge id)kSecClassGenericPassword forKey:(__bridge id)kSecClass];
-        [attributes setObject:unlockData forKey:(__bridge id)kSecAttrAccount];
-        result = SecItemAdd((__bridge CFDictionaryRef)attributes, NULL);
+        NSMutableDictionary *newAttributes = [updateAttributes mutableCopy];
+        [newAttributes addEntriesFromDictionary:query];
+        result = SecItemAdd((__bridge CFDictionaryRef)newAttributes, NULL);
         if (result == errSecSuccess)
             return YES;
     }
+
     return NO;
 }
 
-- (BOOL)readImportUnlockedFlagFromKeychain:(NSString *)productIdentifier;
+- (BOOL)_isPurchasedProductInKeychain:(NSString *)productIdentifier;
 {
-    BOOL isUnlocked = NO;
-    
-    NSData *unlockData = [productIdentifier dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-                           [NSData dataWithBytes:kKeychainIdentifier length:strlen((const char *)kKeychainIdentifier)], (__bridge id)kSecAttrGeneric,
-                           (__bridge id)kSecClassGenericPassword, (__bridge id)kSecClass,
-                           unlockData, (__bridge id)kSecAttrAccount,
-                           (__bridge id)kSecMatchLimitAll, (__bridge id)kSecMatchLimit, // only one result
-                           (id)kCFBooleanTrue, (__bridge id)kSecReturnAttributes, // return the attributes previously set
-                           (id)kCFBooleanTrue, (__bridge id)kSecReturnData, // and the payload data
-                           nil];
-    
+    NSDictionary *query = @{
+        (__bridge id)kSecAttrGeneric : [keychainIdentifier dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
+        (__bridge id)kSecAttrAccount : [productIdentifier dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecMatchLimit : (__bridge id)kSecMatchLimitAll, // only one result
+        (__bridge id)kSecReturnAttributes : (id)kCFBooleanTrue, // return the attributes previously set
+        (__bridge id)kSecReturnData : (id)kCFBooleanTrue, // and the payload data
+    };
+
     CFArrayRef matches = nil;
     OSStatus result = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&matches);
     if (result == errSecSuccess) {
@@ -76,55 +86,69 @@ static const UInt8 kKeychainIdentifier[] = "com.omnigroup.InAppPurchase";
             NSData *passwordData = [item objectForKey:(__bridge id)kSecValueData];
             NSString *keychainUUID = [[NSString alloc] initWithData:passwordData encoding:NSUTF8StringEncoding];
             
-            isUnlocked = [keychainUUID isEqualToString:[self vendorID]];
+            return [keychainUUID isEqualToString:[self vendorID]];
         }
     }
-    //    else if (result != errSecItemNotFound)
-    //    {
-    //        NSLog(@"%s: SecItemCopyMatching -> %ld", __PRETTY_FUNCTION__, result);
-    //    }
-    
-    return isUnlocked;
+
+    return NO;
 }
 
 
-- (void)deleteImportPurchasedFlag:(NSString *)productIdentifier;
+- (void)removePurchasedProductFromKeychain:(NSString *)productIdentifier;
 {
-    NSData *unlockData = [productIdentifier dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary *query = [NSDictionary dictionaryWithObjectsAndKeys:
-                           [NSData dataWithBytes:kKeychainIdentifier length:strlen((const char *)kKeychainIdentifier)], (__bridge id)kSecAttrGeneric,
-                           (__bridge id)kSecClassGenericPassword, (__bridge id)kSecClass,
-                           unlockData, (__bridge id)kSecAttrAccount,
-                           nil];
+    NSDictionary *query = @{
+        (__bridge id)kSecAttrGeneric : [keychainIdentifier dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
+        (__bridge id)kSecAttrAccount : [productIdentifier dataUsingEncoding:NSUTF8StringEncoding],
+    };
+
     OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
     if (status != errSecSuccess) {
         UIAlertView *keychainResetFailedAlert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"Couldn't Re-Lock %@", [self sheetTitleForInAppStoreProductIdentifier:productIdentifier]] message:[NSString stringWithFormat:@"Keychain error: %ld", (long)status] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [keychainResetFailedAlert show];
     } else {
-        UIAlertView *keychainResetSuccessAlert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"Re-Locked %@", [self sheetTitleForInAppStoreProductIdentifier:productIdentifier]] message:[NSString stringWithFormat:@"%@ is now re-locked", [self titleForInAppStoreProductIdentifier:productIdentifier]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        UIAlertView *keychainResetSuccessAlert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"Re-Locked %@", [self sheetTitleForInAppStoreProductIdentifier:productIdentifier]] message:[NSString stringWithFormat:@"%@ is now re-locked", [self sheetTitleForInAppStoreProductIdentifier:productIdentifier]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [keychainResetSuccessAlert show];
     }
 }
 
-- (void)showInAppPurchases:(NSString *)productIdentifier navigationController:(UINavigationController *)navigationController;
+- (void)_showInAppPurchases:(NSString *)productIdentifier viewController:(UIViewController *)viewController pushOntoNavigationStack:(BOOL)shouldPushOntoNavigationStack;
 {
+    OBPRECONDITION(viewController != nil);
+    
     if (![[self inAppPurchaseIdentifiers] containsObject:productIdentifier])
         return;
     
-    OUIInAppStoreViewController *storeViewController =  [[OUIInAppStoreViewController alloc] initWithProductIdentifier:productIdentifier];
-    if (navigationController) {
+    OUIInAppStoreViewController *storeViewController = [[OUIInAppStoreViewController alloc] initWithProductIdentifier:productIdentifier];
+
+    if (shouldPushOntoNavigationStack) {
+        UINavigationController *navigationController = OB_CHECKED_CAST(UINavigationController, viewController);
         [navigationController pushViewController:storeViewController animated:YES];
     } else {
-        OBFinishPortingLater("The root view controller might not be right for everyone");
         UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:storeViewController];
         navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
         navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
         
-        UIViewController *viewController = self.window.rootViewController;
-        [viewController presentViewController:navigationController animated:YES completion:nil];
+        if (viewController.presentedViewController) {
+            [viewController dismissViewControllerAnimated:YES completion:^{
+                [viewController presentViewController:navigationController animated:YES completion:nil];
+            }];
+        }
+        else {
+            [viewController presentViewController:navigationController animated:YES completion:nil];
+        }
     }
 }
 
+- (void)showInAppPurchases:(NSString *)productIdentifier viewController:(UIViewController *)viewController;
+{
+    [self _showInAppPurchases:productIdentifier viewController:viewController pushOntoNavigationStack:NO];
+}
+
+- (void)showInAppPurchases:(NSString *)productIdentifier navigationController:(UINavigationController *)navigationController;
+{
+    [self _showInAppPurchases:productIdentifier viewController:navigationController pushOntoNavigationStack:YES];
+}
 
 // for subclassers
 
@@ -135,41 +159,41 @@ static const UInt8 kKeychainIdentifier[] = "com.omnigroup.InAppPurchase";
 
 - (NSString *)purchaseMenuItemTitleForInAppStoreProductIdentifier:(NSString *)productIdentifier;
 {
-    return nil;
+    OBRequestConcreteImplementation(self, _cmd);
 }
 
 - (NSString *)sheetTitleForInAppStoreProductIdentifier:(NSString *)productIdentifier;
 {
-    return nil;
+    OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (NSString *)titleForInAppStoreProductIdentifier:(NSString *)productIdentifier;
+- (NSURL *)descriptionURLForProductIdentifier:(NSString *)productIdentifier;
 {
-    return nil;
+    OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (NSString *)subtitleForInAppStoreProductIdentifier:(NSString *)productIdentifier;
+- (NSURL *)purchasedDescriptionURLForProductIdentifier:(NSString *)productIdentifier;
 {
-    return nil;
+    OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (NSString *)descriptionForInAppStoreProductIdentifier:(NSString *)productIdentifier;
+- (NSArray *)pricingOptionSKUsForProductIdentifier:(NSString *)productIdentifier;
 {
-    return nil;
+    OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (UIImage *)imageForInAppStoreProductIdentifier:(NSString *)productIdentifier;
+- (NSString *)descriptionForPricingOptionSKU:(NSString *)pricingOptionSKU;
 {
-    return nil;
+    OBRequestConcreteImplementation(self, _cmd);
+}
+
+- (void)validateEligibilityForPricingOptionSKU:(NSString *)pricingOptionSKU completion:(void (^)(BOOL isValidated))completionBlock;
+{
+    OBRequestConcreteImplementation(self, _cmd);
 }
 
 - (void)didUnlockInAppPurchase:(NSString *)productIdentifier;
 {
-}
-
-- (NSString *)documentUTIForInAppStoreProductIdentifier:(NSString *)productIdentifier;
-{
-    return nil;
 }
 
 @end

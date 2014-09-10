@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,9 +59,9 @@ void _OFBulkBlockPoolGetPage(OFBulkBlockPool *pool)
         // Make room to store another page
         pool->pageCount++;
         if (pool->pages)
-            pool->pages = NSZoneRealloc(NSDefaultMallocZone(), pool->pages, sizeof(void *) * pool->pageCount);
+            pool->pages = (typeof(pool->pages))realloc(pool->pages, sizeof(*pool->pages) * pool->pageCount);
         else
-            pool->pages = NSZoneMalloc(NSDefaultMallocZone(), sizeof(void *) * pool->pageCount);
+            pool->pages = (typeof(pool->pages))malloc(sizeof(*pool->pages) * pool->pageCount);
 
         // Allocate the page
         OBASSERT(_OFBulkBlockPageSize);
@@ -121,7 +121,7 @@ void OFBulkBlockPoolDeallocateAllBlocks(OFBulkBlockPool *pool)
         }
 
 
-        NSZoneFree(NSDefaultMallocZone(), pool->pages);
+        free(pool->pages);
         
         pool->pages       = NULL;
         pool->currentPage = NULL;

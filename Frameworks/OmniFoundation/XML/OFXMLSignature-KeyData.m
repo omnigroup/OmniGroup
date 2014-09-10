@@ -470,11 +470,14 @@ static const struct namedCurveInfo {
     short derOidLength;                   /* Byte length of the above */
     short generatorSize;                  /* number of bits needed to represent a value in the key's field */
 } namedCurves[] = {
+//  { "urn:oid:1.2.840.10045.3.1.1", secp192r1OidBytes, secp192r1OidByteCount, 192 },   // Referenced in Apple's framework, but apparently not implemented
+//  { "urn:oid:1.3.132.0.33",        secp224r1OidBytes, secp224r1OidByteCount, 224 },   // Referenced in Apple's framework, but apparently not implemented
     { "urn:oid:1.2.840.10045.3.1.7", secp256r1OidBytes, secp256r1OidByteCount, 256 },
     { "urn:oid:1.3.132.0.34",        secp384r1OidBytes, secp384r1OidByteCount, 384 },
     { "urn:oid:1.3.132.0.35",        secp521r1OidBytes, secp521r1OidByteCount, 521 },
     { NULL,                          0,                 0,                     0   }
 };
+/* Other elliptic curve identifiers of interest: the Brainpool curves assigned in RFC5639 */
 
 static NSData *getNamedCurve(const xmlChar *curveName, int *log2_p_out, NSError **outError)
 {

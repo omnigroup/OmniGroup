@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+
+$LocalDAVDirectory = "/Users/Shared/bungi/LocalWebDAVServer/Documents/test/propfind-test"
+$DAVURL = "https://crispy.local:8001/test/propfind-test"
+
+$DAVTool = `echo $HOME/Library/Developer/Xcode/DerivedData/OmniPresence-*/Build/Products/Debug/odav`.chomp
+if $DAVTool.size == 0
+  fail "Cannot find DAV tool"
+end
+ENV["DYLD_FRAMEWORK_PATH"] = File.dirname($DAVTool)
+
+$MaxItems = 10000
+$ItemsPerBatch = 100
+
+FileUtils.rm_rf($LocalDAVDirectory)
+FileUtils.mkdir($LocalDAVDirectory)
+
+# Do the tests for both flat files and directories
+files_root = $LocalDAVDirectory + "/files"
+dirs_root = $LocalDAVDirectory + "/dirs"
+FileUtils.mkdir(files_root)
+FileUtils.mkdir(dirs_root)
+
+print "count,file,directory\n"
+
+itemsMade = 0
+while itemsMade < $MaxItems
+  batchIndex = 0
+  while batchIndex < $ItemsPerBatch
+    FileUtils.touch("#{files_root}/#{itemsMade+batchIndex}")
+    FileUtils.mkdir("#{dirs_root}/#{itemsMade+batchIndex}")
+    batchIndex = batchIndex + 1
+  end
+  itemsMade += batchIndex
+
+  start = Time.now
+  `#{$DAVTool} ls #{$DAVURL}/files &> /dev/null`
+  finish = Time.now
+  file_time = finish-start
+  
+  start = Time.now
+  `#{$DAVTool} ls #{$DAVURL}/dirs &> /dev/null`
+  finish = Time.now
+  dir_time = finish-start
+  
+  
+  print "#{itemsMade},#{file_time},#{dir_time}\n"
+end
+

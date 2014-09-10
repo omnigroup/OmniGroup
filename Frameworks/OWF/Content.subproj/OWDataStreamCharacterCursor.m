@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2005, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -358,14 +358,13 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
         {
             unichar *characterBuffer;
             NSUInteger characterCount;
-            NSZone *localZone = [self zone];
             
-            characterBuffer = NSZoneMalloc(localZone, sizeof(unichar) * UNICHAR_BUF_SIZE);
+            characterBuffer = malloc(sizeof(unichar) * UNICHAR_BUF_SIZE);
 
             NS_DURING {
                 characterCount = _getCharacters(self, characterBuffer, UNICHAR_BUF_SIZE, YES);
             } NS_HANDLER {
-                NSZoneFree(localZone, characterBuffer);
+                free(characterBuffer);
                 [localException raise];
                 characterCount = OWDataStreamCharacterCursor_EOF; /* NOTREACHED - compiler pacifier */
             } NS_ENDHANDLER;
@@ -374,9 +373,9 @@ static inline NSString *_getAllRemainingCharactersRetained(OWDataStreamCharacter
                 return NO;
             
             if (characterCount > 0) {
-                appendix = [[NSString allocWithZone:localZone] initWithCharactersNoCopy:characterBuffer length:characterCount freeWhenDone:YES];
+                appendix = [[NSString alloc] initWithCharactersNoCopy:characterBuffer length:characterCount freeWhenDone:YES];
             } else {
-                NSZoneFree(localZone, characterBuffer);
+                free(characterBuffer);
                 appendix = nil;
             }
             

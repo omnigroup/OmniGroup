@@ -1,11 +1,10 @@
-// Copyright 2002-2009, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2009, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/OFHeap.h>
@@ -31,26 +30,26 @@ RCS_ID("$Id$");
 
 @implementation OFHeapTests
 
-// Methods automatically found and invoked by the SenTesting framework
+// Methods automatically found and invoked by the XCTest framework
 
 - (void)testHeapSingle
 {
     OFHeap *heap = [[OFHeap alloc] init];
-    should([heap count] == 0);
+    XCTAssertTrue([heap count] == 0);
 
     [heap addObject:@"one"];
-    should([heap count] == 1);
-    should([heap removeObjectLessThanObject:@"aaa"] == nil);
-    should([heap count] == 1);
-    shouldBeEqual([heap peekObject], @"one");
-    should([heap count] == 1);
+    XCTAssertTrue([heap count] == 1);
+    XCTAssertTrue([heap removeObjectLessThanObject:@"aaa"] == nil);
+    XCTAssertTrue([heap count] == 1);
+    XCTAssertEqual([heap peekObject], @"one");
+    XCTAssertTrue([heap count] == 1);
     NSString *str = [heap removeObject];
-    should([heap count] == 0);
-    shouldBeEqual(str, @"one");
-    should([heap removeObjectLessThanObject:@"aaa"] == nil);
-    should([heap count] == 0);
+    XCTAssertTrue([heap count] == 0);
+    XCTAssertEqual(str, @"one");
+    XCTAssertTrue([heap removeObjectLessThanObject:@"aaa"] == nil);
+    XCTAssertTrue([heap count] == 0);
     [heap removeAllObjects];
-    should([heap count] == 0);
+    XCTAssertTrue([heap count] == 0);
 }
 
 - (void)testHeapPermutations
@@ -72,26 +71,26 @@ RCS_ID("$Id$");
 
     for (NSUInteger group = 0; groups[group].field > 0; group ++) {
         OFHeap *heap = [[OFHeap alloc] init];
-        should([heap count] == 0);
+        XCTAssertTrue([heap count] == 0);
         
         @autoreleasepool {
             NSUInteger element = groups[group].generator;
             for (NSUInteger elementCount = 0; elementCount < (groups[group].field-1); elementCount ++) {
-                should([heap count] == elementCount);
+                XCTAssertTrue([heap count] == elementCount);
                 [heap addObject:[NSString stringWithFormat:@"%06lu in (%ld,%ld)", element, groups[group].field, groups[group].generator]];
                 element = (element * groups[group].generator ) % groups[group].field;
             }
         }
 
-        should([heap count] == (groups[group].field-1));
+        XCTAssertTrue([heap count] == (groups[group].field-1));
 
         for (NSUInteger elementCount = 1; elementCount < (groups[group].field); elementCount ++) {
             @autoreleasepool {
                 NSString *str = [heap removeObject];
-                should([str unsignedLongValue] == elementCount);
+                XCTAssertTrue([str unsignedLongValue] == elementCount);
             }
 
-            should([heap count] == (groups[group].field - elementCount - 1));
+            XCTAssertTrue([heap count] == (groups[group].field - elementCount - 1));
         }
 
     }

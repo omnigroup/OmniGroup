@@ -18,6 +18,10 @@ RCS_ID("$Id$");
 {
     NSString *_scriptIdentifier;
     NSScriptObjectSpecifier *_objectSpecifier;
+
+    struct {
+        unsigned int isInsideApplicationWrapper:1;
+    } _oaFlags;
 }
 
 - (void)dealloc;
@@ -25,6 +29,16 @@ RCS_ID("$Id$");
     [_scriptIdentifier release];
     [_objectSpecifier release];
     [super dealloc];
+}
+
++ (BOOL)isFileURLInApplicationWrapper:(NSURL *)fileURL;
+{
+    return [[[fileURL path] stringByStandardizingPath] hasPrefix:[[[NSBundle mainBundle] bundlePath] stringByStandardizingPath]];
+}
+
+- (BOOL)isInsideApplicationWrapper;
+{
+    return _oaFlags.isInsideApplicationWrapper;
 }
 
 #pragma mark - AppleScript
@@ -77,6 +91,12 @@ RCS_ID("$Id$");
 
 #pragma mark - NSDocument subclass
 
+- (void)setFileURL:(NSURL *)fileURL;
+{
+    _oaFlags.isInsideApplicationWrapper = [self.class isFileURLInApplicationWrapper:fileURL];
+    [super setFileURL:fileURL];
+}
+
 - (void)canCloseDocumentWithDelegate:(id)delegate shouldCloseSelector:(SEL)shouldCloseSelector contextInfo:(void *)contextInfo;
 {
     void (^completion)(BOOL) = ^(BOOL shouldClose){
@@ -86,6 +106,128 @@ RCS_ID("$Id$");
     };
     
     [self canCloseDocument:completion];
+}
+
+- (BOOL)isInViewingMode;
+{
+    if (self.isInsideApplicationWrapper)
+        return YES;
+
+    return [super isInViewingMode];
+}
+
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)anItem;
+{
+    SEL action = [anItem action];
+    if (action == @selector(renameDocument:)
+        || action == @selector(saveDocument:)
+        || action == @selector(lockDocument:)
+        || action == @selector(unlockDocument:)
+        || action == @selector(moveDocument:)) {
+        return !(self.isInsideApplicationWrapper) && [super validateUserInterfaceItem:anItem];
+    } else {
+        return [super validateUserInterfaceItem:anItem];
+    }
+}
+
+- (void)lockWithCompletionHandler:(void (^)(NSError *))completionHandler;
+{
+    if (self.isInsideApplicationWrapper) {
+        NSError *error = nil;
+        NSBundle *bundle = [NSBundle bundleWithIdentifier:OMNI_BUNDLE_IDENTIFIER];
+        OBASSERT(bundle);
+
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniAppKit", bundle, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Cannot lock a document inside the application package.", @"OmniAppKit", bundle, @"error message");
+        _OBError(&error, OMNI_BUNDLE_IDENTIFIER, 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
+
+        completionHandler(error);
+    } else
+        [super lockWithCompletionHandler:completionHandler];
+}
+
+- (void)lockDocumentWithCompletionHandler:(void (^)(BOOL))completionHandler;
+{
+    if (self.isInsideApplicationWrapper)
+        completionHandler(NO);
+    else
+        [super lockDocumentWithCompletionHandler:completionHandler];
+}
+
+- (void)unlockWithCompletionHandler:(void (^)(NSError *))completionHandler;
+{
+    if (self.isInsideApplicationWrapper) {
+        NSError *error = nil;
+        NSBundle *bundle = [NSBundle bundleWithIdentifier:OMNI_BUNDLE_IDENTIFIER];
+        OBASSERT(bundle);
+
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to unlock document.", @"OmniAppKit", bundle, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Cannot unlock a document inside the application package.", @"OmniAppKit", bundle, @"error message");
+        _OBError(&error, OMNI_BUNDLE_IDENTIFIER, 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
+
+        completionHandler(error);
+    } else
+        [super unlockWithCompletionHandler:completionHandler];
+}
+
+- (void)unlockDocumentWithCompletionHandler:(void (^)(BOOL))completionHandler;
+{
+    if (self.isInsideApplicationWrapper)
+        completionHandler(NO);
+    else
+        [super unlockDocumentWithCompletionHandler:completionHandler];
+}
+
+- (void)moveDocumentWithCompletionHandler:(void (^)(BOOL))completionHandler;
+{
+    if (self.isInsideApplicationWrapper)
+        completionHandler(NO);
+    else
+        [super moveDocumentWithCompletionHandler:completionHandler];
+}
+
+- (void)moveToURL:(NSURL *)url completionHandler:(void (^)(NSError *))completionHandler;
+{
+    NSError *error = nil;
+    if (!([self canMoveToURL:url error:&error])) {
+        completionHandler(error);
+        return;
+    }
+
+    [super moveToURL:url completionHandler:completionHandler];
+}
+
+#pragma mark - OADocumentSubclass category
+
+- (BOOL)canSaveToURL:(NSURL *)url error:(NSError **)error;
+{
+    if ([self.class isFileURLInApplicationWrapper:url]) {
+        NSBundle *bundle = [NSBundle bundleWithIdentifier:OMNI_BUNDLE_IDENTIFIER];
+        OBASSERT(bundle);
+
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save document.", @"OmniAppKit", bundle, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Documents cannot be saved inside the application package.", @"OmniAppKit", bundle, @"error message");
+        _OBError(error, OMNI_BUNDLE_IDENTIFIER, 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
+
+        return NO;
+    }
+    return YES;
+
+}
+
+- (BOOL)canMoveToURL:(NSURL *)url error:(NSError **)error;
+{
+    if ([self.class isFileURLInApplicationWrapper:url]) {
+        NSBundle *bundle = [NSBundle bundleWithIdentifier:OMNI_BUNDLE_IDENTIFIER];
+        OBASSERT(bundle);
+
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to move document.", @"OmniAppKit", bundle, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Documents cannot be moved inside the application package.", @"OmniAppKit", bundle, @"error message");
+        _OBError(error, OMNI_BUNDLE_IDENTIFIER, 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
+
+        return NO;
+    }
+    return YES;
 }
 
 @end

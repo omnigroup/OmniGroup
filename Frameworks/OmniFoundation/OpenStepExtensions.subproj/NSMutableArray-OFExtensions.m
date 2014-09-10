@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,18 +52,17 @@ RCS_ID("$Id$")
     va_end(argList);
 }
 
-static void addObjectToArray(const void *value, void *context)
-{
-    [(NSMutableArray *)context addObject:(id)value];
-}
-
 - (void)addObjectsFromSet:(NSSet *)aSet;
 {
-    if (aSet == nil || [aSet count] == 0)
-        return;
+    for (id object in aSet)
+        [self addObject:object];
+}
 
-    /* We use this instead of an NSSet method in order to avoid autoreleases */
-    CFSetApplyFunction((CFSetRef)aSet, addObjectToArray, (void *)self);
+- (void)addObjectIgnoringNil:(id)object; // adds the object if it is not nil, ignoring otherwise.
+{
+    if (object != nil) {
+        [self addObject:object];
+    }
 }
 
 - (void)removeObjectsInSet:(NSSet *)aSet;
@@ -88,15 +87,10 @@ static void addObjectToArray(const void *value, void *context)
 - (void)replaceObjectsInRange:(NSRange)replacementRange byApplyingSelector:(SEL)selector
 {
     NSMutableArray *replacements = [[NSMutableArray alloc] initWithCapacity:replacementRange.length];
-    NSUInteger objectIndex;
 
-    NS_DURING;
-    
-    for(objectIndex = 0; objectIndex < replacementRange.length; objectIndex ++) {
-        id sourceObject, replacementObject;
-
-        sourceObject = [self objectAtIndex:(replacementRange.location + objectIndex)];
-        replacementObject = [sourceObject performSelector:selector];
+    for (NSUInteger objectIndex = 0; objectIndex < replacementRange.length; objectIndex ++) {
+        id sourceObject = self[replacementRange.location + objectIndex];
+        id replacementObject = OBSendObjectReturnMessage(sourceObject, selector);
         if (replacementObject == nil)
             OBRejectInvalidCall(self, _cmd,
                                 @"Object at index %lu returned nil from %@",
@@ -106,11 +100,6 @@ static void addObjectToArray(const void *value, void *context)
     }
 
     [self replaceObjectsInRange:replacementRange withObjectsFromArray:replacements];
-
-    NS_HANDLER {
-        [replacements release];
-        [localException raise];
-    } NS_ENDHANDLER;
 
     [replacements release];
 }
@@ -137,56 +126,43 @@ static void  __attribute__((constructor)) check_sizes(void)
 }
 #endif
 
-struct sortOrderingContext {
-    CFMutableDictionaryRef sortOrdering;
-    BOOL putUnknownObjectsAtFront;
-};
-
-static NSComparisonResult orderObjectsBySavedIndex(id object1, id object2, void *_context)
-{
-    const struct sortOrderingContext context = *(struct sortOrderingContext *)_context;
-    Boolean obj1Known, obj2Known;
-    NSUInteger obj1Index, obj2Index;
-    
-    if (object1 == object2)
-        return NSOrderedSame;
-    
-    obj1Index = obj2Index = 0;
-    obj1Known = OFCFDictionaryGetUIntegerValueIfPresent(context.sortOrdering, object1, &obj1Index);
-    obj2Known = OFCFDictionaryGetUIntegerValueIfPresent(context.sortOrdering, object2, &obj2Index);
-
-    if (obj1Known) {
-        if (obj2Known) {
-            if (obj1Index < obj2Index)
-                return NSOrderedAscending;
-            else {
-                OBASSERT(obj1Index != obj2Index);
-                return NSOrderedDescending;
-            }
-        } else
-            return context.putUnknownObjectsAtFront ? NSOrderedDescending : NSOrderedAscending;
-    } else {
-        if (obj2Known)
-            return context.putUnknownObjectsAtFront ? NSOrderedAscending : NSOrderedDescending;
-        else
-            return NSOrderedSame;
-    }
-}
-
 - (void)sortBasedOnOrderInArray:(NSArray *)ordering identical:(BOOL)usePointerEquality unknownAtFront:(BOOL)putUnknownObjectsAtFront;
 {
-    struct sortOrderingContext context;
     NSUInteger orderingCount = [ordering count];
-    NSUInteger orderingIndex;
     
-    context.putUnknownObjectsAtFront = putUnknownObjectsAtFront;
-    context.sortOrdering = CFDictionaryCreateMutable(kCFAllocatorDefault, orderingCount,
-                                                     usePointerEquality? &OFNonOwnedPointerDictionaryKeyCallbacks : &OFNSObjectDictionaryKeyCallbacks,
-                                                     &OFIntegerDictionaryValueCallbacks);
-    for(orderingIndex = 0; orderingIndex < orderingCount; orderingIndex++)
-        OFCFDictionaryAddUIntegerValue(context.sortOrdering, [ordering objectAtIndex:orderingIndex], orderingIndex);
-    [self sortUsingFunction:&orderObjectsBySavedIndex context:&context];
-    CFRelease(context.sortOrdering);
+    CFMutableDictionaryRef sortOrdering = CFDictionaryCreateMutable(kCFAllocatorDefault, orderingCount,
+                                                                    usePointerEquality? &OFNonOwnedPointerDictionaryKeyCallbacks : &OFNSObjectDictionaryKeyCallbacks,
+                                                                    &OFIntegerDictionaryValueCallbacks);
+    for (NSUInteger orderingIndex = 0; orderingIndex < orderingCount; orderingIndex++)
+        OFCFDictionaryAddUIntegerValue(sortOrdering, ordering[orderingIndex], orderingIndex);
+    
+    [self sortUsingComparator:^NSComparisonResult(id object1, id object2) {
+        if (object1 == object2)
+            return NSOrderedSame;
+        
+        NSUInteger obj1Index = 0, obj2Index = 0;
+        Boolean obj1Known = OFCFDictionaryGetUIntegerValueIfPresent(sortOrdering, (__bridge void *)object1, &obj1Index);
+        Boolean obj2Known = OFCFDictionaryGetUIntegerValueIfPresent(sortOrdering, (__bridge void *)object2, &obj2Index);
+        
+        if (obj1Known) {
+            if (obj2Known) {
+                if (obj1Index < obj2Index)
+                    return NSOrderedAscending;
+                else {
+                    OBASSERT(obj1Index != obj2Index);
+                    return NSOrderedDescending;
+                }
+            } else
+                return putUnknownObjectsAtFront ? NSOrderedDescending : NSOrderedAscending;
+        } else {
+            if (obj2Known)
+                return putUnknownObjectsAtFront ? NSOrderedAscending : NSOrderedDescending;
+            else
+                return NSOrderedSame;
+        }
+    }];
+    
+    CFRelease(sortOrdering);
 }
 
 
@@ -203,12 +179,6 @@ static NSComparisonResult orderObjectsBySavedIndex(id object1, id object2, void 
     [self insertObject:anObject atIndex:objectIndex];
 }
 
-- (void)insertObject:(id)anObject inArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))compare context:(void *)context;
-{
-    NSUInteger objectIndex = [self indexWhereObjectWouldBelong:anObject inArraySortedUsingFunction:compare context:context];
-    [self insertObject:anObject atIndex:objectIndex];
-}
-
 /* Assumes the array is already sorted to find the object quickly and remove it */
 - (void)removeObjectIdenticalTo: (id)anObject fromArraySortedUsingSelector:(SEL)selector
 {
@@ -217,9 +187,9 @@ static NSComparisonResult orderObjectsBySavedIndex(id object1, id object2, void 
         [self removeObjectAtIndex: objectIndex];
 }
 
-- (void)removeObjectIdenticalTo:(id)anObject fromArraySortedUsingFunction:(NSComparisonResult (*)(id, id, void *))compare context:(void *)context;
+- (void)removeObjectIdenticalTo:(id)anObject fromArraySortedUsingComparator:(NSComparator)comparator;
 {
-    NSUInteger objectIndex = [self indexOfObject:anObject identical:YES inArraySortedUsingFunction:compare context:context];
+    NSUInteger objectIndex = [self indexOfObject:anObject identical:YES inArraySortedUsingComparator:comparator];
     if (objectIndex != NSNotFound)
         [self removeObjectAtIndex:objectIndex];
 }
@@ -233,12 +203,13 @@ static NSComparisonResult doCompareOnAttribute(id a, id b, void *ctxt)
 {
     SEL getAttribute = ((struct sortOnAttributeContext *)ctxt)->getAttribute;
     SEL compareAttributes = ((struct sortOnAttributeContext *)ctxt)->compareAttributes;
-    id attributeA, attributeB;
 
-    attributeA = [a performSelector:getAttribute];
-    attributeB = [b performSelector:getAttribute];
+    id attributeA = OBSendObjectReturnMessage(a, getAttribute);
+    id attributeB = OBSendObjectReturnMessage(b, getAttribute);
 
-    return (NSComparisonResult)[attributeA performSelector:compareAttributes withObject:attributeB];
+    NSComparisonResult (*cmp)(id, SEL, id) = (typeof(cmp))objc_msgSend;
+    
+    return (NSComparisonResult)cmp(attributeA, compareAttributes, attributeB);
 }
     
 - (void)sortOnAttribute:(SEL)fetchAttributeSelector usingSelector:(SEL)comparisonSelector

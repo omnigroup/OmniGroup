@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@ RCS_ID("$Id$")
 
 @implementation OFXInterruptSyncTestCase
 
-+ (id)defaultTestSuite;
++ (XCTestSuite *)defaultTestSuite;
 {
     if (self == [OFXInterruptSyncTestCase class])
         return nil; // Don't run tests for this abstract superclass
@@ -37,7 +37,7 @@ RCS_ID("$Id$")
     [self waitForFileMetadata:agentA where:^BOOL(OFXFileMetadata *metadata) {
         float percentUploaded = metadata.percentUploaded;
         if (percentUploaded >= 1) {
-            STFail(@"Waited too long!");
+            XCTFail(@"Waited too long!");
         }
         if (percentUploaded > 0.1) {
             // Turn off syncing. This should cancel the pending transfer.
@@ -57,7 +57,7 @@ RCS_ID("$Id$")
     // Sync on another agent and there should be nothing present
     OFXAgent *agentB = self.agentB;
     [self waitForSync:agentB];
-    STAssertEquals([[self metadataItemsForAgent:agentB] count], 0ULL, @"should be no metadata items");
+    XCTAssertEqual([[self metadataItemsForAgent:agentB] count], 0ULL, @"should be no metadata items");
         
     // Turn syncing back on and wait for the file to get uploaded
     [self enableAgent:agentA];
@@ -66,14 +66,13 @@ RCS_ID("$Id$")
     }];
     
     // The item should then appear on the other agent.
-    [self waitForSync:agentB];
-    NSSet *metadataItemsB = [self metadataItemsForAgent:agentB];
-    STAssertEquals([metadataItemsB count], 1ULL, @"should be no metadata items");
+    OFXFileMetadata *metadataB = [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
+        return YES;
+    }];
     
     // Download it
-    OFXFileMetadata *metadataB = [metadataItemsB anyObject];
     [self.agentB requestDownloadOfItemAtURL:metadataB.fileURL completionHandler:^(NSError *errorOrNil) {
-        STAssertNil(errorOrNil, @"Download should start");
+        XCTAssertNil(errorOrNil, @"Download should start");
     }];
     [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
         return (metadata.downloaded == YES && metadata.percentDownloaded >= 1);
@@ -86,7 +85,7 @@ RCS_ID("$Id$")
         
         NSURL *randomTextURL = [account.localDocumentsURL URLByAppendingPathComponent:@"random.txt"];
         NSString *downloadedRandomText = [[NSString alloc] initWithContentsOfURL:randomTextURL encoding:NSUTF8StringEncoding error:NULL];
-        STAssertTrue([randomText isEqual:downloadedRandomText], @"Downloaded text should be the same as uploaded");
+        XCTAssertTrue([randomText isEqual:downloadedRandomText], @"Downloaded text should be the same as uploaded");
     }
 }
 
@@ -110,7 +109,7 @@ RCS_ID("$Id$")
     OFXAgent *agentB = self.agentB;
     [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
         [self.agentB requestDownloadOfItemAtURL:metadata.fileURL completionHandler:^(NSError *errorOrNil) {
-            STAssertNil(errorOrNil, @"Download should start");
+            XCTAssertNil(errorOrNil, @"Download should start");
         }];
         return YES;
     }];
@@ -119,7 +118,7 @@ RCS_ID("$Id$")
     [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
         float percentDownloaded = metadata.percentDownloaded;
         if (percentDownloaded >= 1) {
-            STFail(@"Waited too long!");
+            XCTFail(@"Waited too long!");
         }
         if (percentDownloaded > 0.1) {
             [self disableAgent:agentB];
@@ -148,7 +147,7 @@ RCS_ID("$Id$")
         
         NSURL *randomTextURL = [account.localDocumentsURL URLByAppendingPathComponent:@"random.txt"];
         NSString *downloadedRandomText = [[NSString alloc] initWithContentsOfURL:randomTextURL encoding:NSUTF8StringEncoding error:NULL];
-        STAssertTrue([randomText isEqual:downloadedRandomText], @"Downloaded text should be the same as uploaded");
+        XCTAssertTrue([randomText isEqual:downloadedRandomText], @"Downloaded text should be the same as uploaded");
     }
 }
 
@@ -256,7 +255,7 @@ RCS_ID("$Id$")
     [self waitForSync:agentB];
     [self waitForSeconds:1];
 
-    STAssertEquals([[self metadataItemsForAgent:agentB] count], 1ULL, @"Delete should not have been pushed");
+    XCTAssertEqual([[self metadataItemsForAgent:agentB] count], 1ULL, @"Delete should not have been pushed");
 
     // Turn syncing back on and then the file should disappear on the second agent.
     [self enableAgent:agentA];
@@ -302,7 +301,7 @@ RCS_ID("$Id$")
     [self waitForSeconds:1];
     [self waitForSync:agentB];
     [self waitForSeconds:1];
-    STAssertEquals([[self metadataItemsForAgent:agentB] count], 1ULL, @"Delete should not have been pushed");
+    XCTAssertEqual([[self metadataItemsForAgent:agentB] count], 1ULL, @"Delete should not have been pushed");
     
     // Turn syncing back on and then the file should disappear on the second agent.
     [self enableAgent:agentA];

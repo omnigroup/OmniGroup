@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,9 +16,12 @@ RCS_ID("$Id$")
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict = [super debugDictionary];
+    dict[@"fileIdentifier"] = _fileIdentifier;
     if (_editIdentifier)
         dict[@"editIdentifier"] = _editIdentifier;
     dict[@"fileURL"] = _fileURL;
+    if (!OFURLEqualsURL(_fileURL, _intendedFileURL))
+        dict[@"intendedFileURL"] = _intendedFileURL;
     dict[@"fileSize"] = @(_fileSize);
     dict[@"directory"] = @(_directory);
     dict[@"creationDate"] = _creationDate;

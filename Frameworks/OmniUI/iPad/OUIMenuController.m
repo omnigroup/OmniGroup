@@ -17,79 +17,29 @@
 
 RCS_ID("$Id$");
 
-@interface OUIMenuController (/*Private*/) <UINavigationControllerDelegate, UIPopoverControllerDelegate>
+@interface OUIMenuController (/*Private*/) <UINavigationControllerDelegate, UIPopoverPresentationControllerDelegate>
 @end
 
 @implementation OUIMenuController
 {
-    __weak id <OUIMenuControllerDelegate> _nonretained_delegate;
-    
-    id _retainCycleWhileShown;
-    
-    UIPopoverController *_menuPopoverController;
     UINavigationController *_menuNavigationController;
-    
-    NSArray *_topOptions;
-    CGSize _topMenuPreferredContentSize;
+    BOOL _isShowingAsPopover;
 }
 
-+ (void)showPromptFromSender:(id)sender title:(NSString *)title destructive:(BOOL)destructive action:(OUIMenuOptionAction)action;
+- (instancetype)init;
 {
-    // 14797381: UIActivityIndicator has incorrect padding at the bottom
-    OUIMenuOption *option = [[OUIMenuOption alloc] initWithTitle:title image:nil options:nil destructive:YES action:action];
-    
-    OUIMenuController *menu = [[OUIMenuController alloc] initWithOptions:@[option]];
-    menu.sizesToOptionWidth = YES;
-    menu.textAlignment = NSTextAlignmentCenter;
-    [menu showMenuFromSender:sender];
-}
-
-+ (void)showPromptFromSender:(id)sender title:(NSString *)title tintColor:(UIColor *)tintColor action:(OUIMenuOptionAction)action;
-{
-    // 14797381: UIActivityIndicator has incorrect padding at the bottom
-    OUIMenuOption *option = [[OUIMenuOption alloc] initWithTitle:title image:nil action:action];
-    
-    OUIMenuController *menu = [[OUIMenuController alloc] initWithOptions:@[option]];
-    menu.sizesToOptionWidth = YES;
-    menu.textAlignment = NSTextAlignmentCenter;
-    menu.tintColor = tintColor;
-    [menu showMenuFromSender:sender];
-}
-
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
-{
-    OBRejectUnusedImplementation(self, _cmd); // Use -initWithDelegate:
-}
-
-- initWithDelegate:(id <OUIMenuControllerDelegate>)delegate;
-{
-    OBPRECONDITION(delegate);
-    
-    if (!(self = [super init]))
-        return nil;
-
-    _showsDividersBetweenOptions = YES;
-    _nonretained_delegate = delegate;
-    
-    return self;
-}
-
-- initWithOptions:(NSArray *)options;
-{
-    OBPRECONDITION([options count] > 0);
-    
     if (!(self = [super init]))
         return nil;
     
     _showsDividersBetweenOptions = YES;
-    _topOptions = [options copy];
+    self.modalPresentationStyle = UIModalPresentationPopover;
     
     return self;
 }
 
 - (void)dealloc;
 {
-    _menuPopoverController.delegate = nil;
+    _menuNavigationController.popoverPresentationController.delegate = nil;
     _menuNavigationController.delegate = nil;
 }
 
@@ -98,100 +48,76 @@ RCS_ID("$Id$");
     if (OFISEQUAL(_tintColor, tintColor))
         return;
     
-    _tintColor = tintColor;
+    _tintColor = [tintColor copy];
+    
+    if (self.isViewLoaded)
+        self.view.tintColor = _tintColor;
+}
+
+- (void)viewDidLoad;
+{
+    self.view.tintColor = _tintColor;
+    [super viewDidLoad];
+}
+
+- (void)viewWillAppear:(BOOL)animated;
+{
+    if (!_menuNavigationController) {
+        _menuNavigationController = [[UINavigationController alloc] init];
+        _menuNavigationController.delegate = self;
+        _menuNavigationController.modalPresentationStyle = UIModalPresentationPopover;
+        self.wrappedViewController = _menuNavigationController;
+    }
+    
+    [_menuNavigationController setViewControllers:@[[self _makeTopMenu]] animated:NO];
+
+    [super viewWillAppear:animated];
 }
 
 - (OUIMenuOptionsController *)_makeTopMenu;
 {
-    // Options chould change each time we are presented.
-    if (_nonretained_delegate) {
-        _topOptions = [[_nonretained_delegate menuControllerOptions:self] copy];
-    } else {
-        // The options should be set in this case and we should keep using the static list.
-    }
-    
     OUIMenuOptionsController *topMenu = [[OUIMenuOptionsController alloc] initWithController:self options:_topOptions];
     topMenu.tintColor = _tintColor;
     topMenu.sizesToOptionWidth = _sizesToOptionWidth;
     topMenu.textAlignment = _textAlignment;
     topMenu.showsDividersBetweenOptions = _showsDividersBetweenOptions;
-    topMenu.padTopAndBottom = _padTopAndBottom;
-    topMenu.title = _title;
+    topMenu.title = self.title;
+    
+    UINavigationItem *navItem = topMenu.navigationItem;
+    navItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(cancelButton:)];
+    navItem.title = self.title;
     
     [topMenu view]; // So we can ask it its preferred content size
-    _topMenuPreferredContentSize = topMenu.preferredContentSize;
     
     return topMenu;
 }
 
-- (void)showMenuFromSender:(id)sender;
+- (UIPopoverPresentationController *)popoverPresentationController;
 {
-    OBPRECONDITION([sender isKindOfClass:[UIBarButtonItem class]] || [sender isKindOfClass:[UIView class]]);
+    UIPopoverPresentationController *controller = [super popoverPresentationController];
     
-    // Keep ourselves alive while the popover is on screen (so that delegate calls work).
-    _retainCycleWhileShown = self;
-    
-    if (!_menuNavigationController) {
-        OUIMenuOptionsController *topMenu = [self _makeTopMenu];
-        
-        _menuNavigationController = [[UINavigationController alloc] initWithRootViewController:topMenu];
-        _menuNavigationController.delegate = self;
-        _menuNavigationController.preferredContentSize = _topMenuPreferredContentSize;
-        _menuNavigationController.view.tintColor = _tintColor; // Needed for back buttons, if nothing else.
-        _menuNavigationController.navigationBarHidden = [NSString isEmptyString:_title];
+    // Set up a default delegate that has the correct behavior, but only do it once per unique popover presentation controller in case a client of this class wants to change it.
+    static char *delegateKey = "com.omnigroup.OUIMenuController.DefaultPopoverPresentationControllerDelegate";
+    if (objc_getAssociatedObject(controller, delegateKey) == nil) {
+        objc_setAssociatedObject(controller, delegateKey, self, OBJC_ASSOCIATION_ASSIGN);
+        controller.delegate = self;
     }
     
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-        OBFinishPorting;
-        // The following code is bing disabled. We are removing calls to -[OUIAppController topViewController]. In a ViewController Containment world, topViewController could be ambiguous. We need to find a better way to handle this.
-#if 0
-        _menuNavigationController.navigationBarHidden = NO;
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelButton:)];
-        [[[OUIAppController controller] topViewController] presentViewController:_menuNavigationController animated:YES completion:NULL];
-#endif
-    } else {
-        if (!_menuPopoverController) {
-            _menuPopoverController = [[UIPopoverController alloc] initWithContentViewController:_menuNavigationController];
-            _menuPopoverController.delegate = self;
-            _menuPopoverController.backgroundColor = [UIColor colorWithWhite:1.0f alpha:kOUIMenuControllerBackgroundOpacity];
-        }
-        
-        // Popover animations between different sizes are ... not good. This assumes the top level menu is a decent size, and just makes the child menu scrollable if needed.
-        _menuPopoverController.popoverContentSize = _menuNavigationController.preferredContentSize;
-
-        if ([sender isKindOfClass:[UIView class]]) {
-            [[OUIAppController controller] presentPopover:_menuPopoverController fromRect:[sender frame] inView:[sender superview] permittedArrowDirections:(UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown) animated:NO];
-        } else {
-            OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]);
-            [[OUIAppController controller] presentPopover:_menuPopoverController fromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:NO];
-        }
-    }
-}
-
-- (void)dismissMenuAnimated:(BOOL)animated;
-{
-    [_menuPopoverController dismissPopoverAnimated:animated];
-}
-
-- (BOOL)visible;
-{
-    return _menuPopoverController.isPopoverVisible;
+    return controller;
 }
 
 // Called by OUIMenuOptionsController
-- (void)didInvokeOption:(OUIMenuOption *)option;
+- (void)dismissAndInvokeOption:(OUIMenuOption *)option;
 {
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-        OBFinishPorting; // We need to release ourselves on this path and clear up the menu (the iPad path makes sure the delegate method is called)
-        [_menuNavigationController dismissViewControllerAnimated:YES completion:NULL];
-    } else {
+    {
         if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionDismiss) {
-            [[OUIAppController controller] dismissPopover:_menuPopoverController animated:YES];
+            [_menuNavigationController dismissViewControllerAnimated:YES completion:^{if (option.action != nil) option.action();}];
         } else if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionReload) {
-            if (_nonretained_delegate) {
-                OUIMenuOptionsController *topMenu = [self _makeTopMenu];
-                [_menuNavigationController setViewControllers:@[topMenu] animated:NO];
+            if ((option.action != nil) && option.isEnabled) {
+                option.action();
             }
+            
+            _menuNavigationController.viewControllers = @[[self _makeTopMenu]];
         }
     }
 }
@@ -200,22 +126,49 @@ RCS_ID("$Id$");
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
 {
-    // UIPopoverController will grow the popover if a pushed view controller is taller, but that animates poorly too. So, keep it the same height as the top menu always.
-//    viewController.preferredContentSize = _topMenuPreferredContentSize;
+    OBPRECONDITION(navigationController == _menuNavigationController);
     
-    BOOL hideBar;
-    if (viewController == navigationController.topViewController) {
-        hideBar = [NSString isEmptyString:_title];
-    } else {
-        OBASSERT_NOT_REACHED("This method isn't being called on push right now... iOS bug -- we're doing it in the pushing code instead?");
-        hideBar = NO; // back button
-    }
-    navigationController.navigationBarHidden = hideBar;
+    if (!_isShowingAsPopover)
+        return;
+    
+    NSArray *viewControllers = navigationController.viewControllers;
+    BOOL atTopLevel = viewControllers.count > 0 && viewController == viewControllers[0];
+    navigationController.navigationBarHidden = atTopLevel;
+    
+    navigationController.preferredContentSize = viewController.preferredContentSize;
+    self.preferredContentSize = navigationController.preferredContentSize;
 }
 
-#pragma mark - UIPopoverControllerDelegate
+#pragma mark - UIPopoverPresentationControllerDelegate
 
-- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController;
+- (UIModalPresentationStyle)adaptivePresentationStyleForPresentationController:(UIPresentationController *)controller;
+{
+    return UIModalPresentationFullScreen;
+}
+
+- (UIViewController *)presentationController:(UIPresentationController *)controller viewControllerForAdaptivePresentationStyle:(UIModalPresentationStyle)style;
+{
+    OBPRECONDITION(controller.presentedViewController == _menuNavigationController);
+    OBPRECONDITION(_isShowingAsPopover, "At some point we transitioned to an adaptive presentation without getting notified");
+    
+    _isShowingAsPopover = NO;
+    _menuNavigationController.navigationBarHidden = NO;
+    return self;
+}
+
+- (void)prepareForPopoverPresentation:(UIPopoverPresentationController *)popoverPresentationController;
+{
+    OBPRECONDITION(popoverPresentationController.presentedViewController == _menuNavigationController);
+    OBPRECONDITION(!_isShowingAsPopover, "At some point we transitioned to being a popover without getting notified");
+    
+    _isShowingAsPopover = YES;
+    BOOL atTopLevel = _menuNavigationController.viewControllers.count < 2;
+    _menuNavigationController.navigationBarHidden = atTopLevel;
+    
+    self.preferredContentSize = _menuNavigationController.preferredContentSize;
+}
+
+- (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController;
 {
     [self _discardMenu];
 
@@ -237,8 +190,7 @@ RCS_ID("$Id$");
 
 - (void)_discardMenu;
 {
-    _menuPopoverController.delegate = nil;
-    _menuPopoverController = nil;
+    _menuNavigationController.popoverPresentationController.delegate = nil;
     _menuNavigationController = nil;
     _topOptions = nil;
 }
@@ -250,10 +202,6 @@ RCS_ID("$Id$");
         _didFinish = nil;
         didFinish();
     }
-    
-    // Matching the setup in -showMenuFromSender:
-    OBRetainAutorelease(self);
-    _retainCycleWhileShown = nil;
 }
 
 @end

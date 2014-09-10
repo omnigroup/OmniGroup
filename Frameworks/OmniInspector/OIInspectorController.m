@@ -46,7 +46,7 @@ NSString * const OIInspectorControllerDidChangeExpandednessNotification = @"OIIn
 
 @end
 
-NSComparisonResult sortByDefaultDisplayOrderInGroup(OIInspectorController *a, OIInspectorController *b, void *context)
+NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, OIInspectorController *b)
 {
     NSUInteger aOrder = [[a inspector] defaultOrderingWithinGroup];
     NSUInteger bOrder = [[b inspector] defaultOrderingWithinGroup];
@@ -456,12 +456,18 @@ NSComparisonResult sortByDefaultDisplayOrderInGroup(OIInspectorController *a, OI
 }
 
 #pragma mark - Private
+// Added this so that Graffle could update it's header look to yosemite
+// Can go away when that is resolved
+- (Class)headingButtonClass;
+{
+    return [OIInspectorHeaderView class];
+}
 
 - (void)_buildHeadingView;
 {
     OBPRECONDITION(headingButton == nil);
     
-    headingButton = [[OIInspectorHeaderView alloc] initWithFrame:NSMakeRect(0.0f, OIInspectorSpaceBetweenButtons,
+    headingButton = [[[self headingButtonClass] alloc] initWithFrame:NSMakeRect(0.0f, OIInspectorSpaceBetweenButtons,
                                                                             [self.inspectorRegistry inspectorWidth],
                                                                             OIInspectorStartingHeaderButtonHeight)];
     [headingButton setTitle:[inspector displayName]];
@@ -746,20 +752,27 @@ NSComparisonResult sortByDefaultDisplayOrderInGroup(OIInspectorController *a, OI
 
 - (NSUndoManager *)windowWillReturnUndoManager:(NSWindow *)aWindow;
 {
-    NSWindow *mainWindow;
-    NSResponder *nextResponder;
-    NSUndoManager *undoManager = nil;
-    
-    mainWindow = [NSApp mainWindow];
-    nextResponder = [mainWindow firstResponder];
+    NSWindow *mainWindow = [NSApp mainWindow];
+    NSResponder *nextResponder = [mainWindow firstResponder];
     if (nextResponder == nil)
         nextResponder = mainWindow;
     
+    NSUndoManager *(^getUndoManager)(id object) = ^NSUndoManager *(id object){
+        if ([object respondsToSelector:@selector(undoManager)])
+            return [object undoManager];
+        
+        if ([nextResponder respondsToSelector:@selector(delegate)]) {
+            id delegate = [(id)nextResponder delegate];
+            if ([delegate respondsToSelector:@selector(undoManager)]) {
+                return [delegate undoManager];
+            }
+        }
+        return nil;
+    };
+    
+    NSUndoManager *undoManager = nil;
     do {
-        if ([nextResponder respondsToSelector:@selector(undoManager)])
-            undoManager = [nextResponder undoManager];
-        else if ([nextResponder respondsToSelector:@selector(delegate)] && [[(id)nextResponder delegate] respondsToSelector:@selector(undoManager)])
-            undoManager = [[(id)nextResponder delegate] undoManager];
+        undoManager = getUndoManager(nextResponder);
         nextResponder = [nextResponder nextResponder];
     } while (nextResponder && !undoManager);
     

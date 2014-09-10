@@ -78,8 +78,10 @@ static void *_OFCompressionError(CFErrorRef *outError, NSInteger code, NSString 
     
     if (outError) {
         // CFErrorRef is toll-free bridged; but CF APIs return retained instances.
-        OFError((NSError **)outError, OFUnableToDecompressData, description, reason);
-        CFRetain(*outError); // OBError creates an autoreleased instance, but this is a CF API
+        __autoreleasing NSError *error = nil;
+        OFError(&error, OFUnableToDecompressData, description, reason);
+        
+        *outError = (CFErrorRef)CFBridgingRetain(error); // OFError creates an autoreleased instance, but this is a CF API
     }
     
     return NULL;
@@ -213,19 +215,19 @@ CFDataRef OFDataCreateDecompressedBzip2Data(CFAllocatorRef decompressedDataAlloc
 
 #define OF_ZLIB_BUFFER_SIZE (2 * 64 * 1024)
 
-static CFMutableDataRef makeRFC1952MemberHeader(time_t modtime,
-                                                NSString *orig_filename,
-                                                NSString *file_comment,
-                                                Boolean withCRC16,
-                                                Boolean isText,
-                                                u_int8_t xfl) CF_RETURNS_RETAINED;
+static CFDataRef makeRFC1952MemberHeader(time_t modtime,
+                                         NSString *orig_filename,
+                                         NSString *file_comment,
+                                         Boolean withCRC16,
+                                         Boolean isText,
+                                         u_int8_t xfl) CF_RETURNS_RETAINED;
 
-static CFMutableDataRef makeRFC1952MemberHeader(time_t modtime,
-                                                NSString *orig_filename,
-                                                NSString *file_comment,
-                                                Boolean withCRC16,
-                                                Boolean isText,
-                                                u_int8_t xfl)
+static CFDataRef makeRFC1952MemberHeader(time_t modtime,
+                                         NSString *orig_filename,
+                                         NSString *file_comment,
+                                         Boolean withCRC16,
+                                         Boolean isText,
+                                         u_int8_t xfl)
 {
     NSData *filename_bytes, *comment_bytes;
     
@@ -283,7 +285,7 @@ static CFMutableDataRef makeRFC1952MemberHeader(time_t modtime,
         NSUInteger length = [filename_bytes length];
         OBASSERT(length < INT_MAX);
         
-        [filename_bytes getBytes:header];
+        [filename_bytes getBytes:header length:length];
         header[length] = (char)0;
         headerCRC = crc32(headerCRC, header, (int)length+1);
         header += length+1;
@@ -294,7 +296,7 @@ static CFMutableDataRef makeRFC1952MemberHeader(time_t modtime,
         NSUInteger length = [comment_bytes length];
         OBASSERT(length < INT_MAX);
 
-        [comment_bytes getBytes:header];
+        [comment_bytes getBytes:header length:length];
         header[length] = (char)0;
         headerCRC = crc32(headerCRC, header, (int)length+1);
         header += length+1;
@@ -341,7 +343,7 @@ static Boolean readNullTerminatedString(FILE *fp,
     *runningCRC = crc32(*runningCRC, CFDataGetBytePtr(buffer), (int)bufferSize);
     
     if (into) {
-        *into = [[[NSString alloc] initWithData:(NSData *)buffer encoding:encoding] autorelease];
+        *into = [[[NSString alloc] initWithData:(__bridge NSData *)buffer encoding:encoding] autorelease];
     }
     
     CFRelease(buffer);
@@ -574,9 +576,8 @@ CFDataRef OFDataCreateCompressedGzipData(CFDataRef data, Boolean includeHeader, 
     OFDataBufferInit(&writeDataBuffer);
         
     if (includeHeader) {
-        CFMutableDataRef header = makeRFC1952MemberHeader((time_t)0, nil, nil, FALSE, FALSE, 0);
-        OFDataBufferAppendData(&writeDataBuffer, (NSData *)header);
-        CFRelease(header);
+        NSData *header = CFBridgingRelease(makeRFC1952MemberHeader((time_t)0, nil, nil, FALSE, FALSE, 0));
+        OFDataBufferAppendData(&writeDataBuffer, header);
     }
     
     Boolean ok = handleRFC1952MemberBody(&writeDataBuffer, data, (NSRange){0, CFDataGetLength(data)}, level, includeHeader, TRUE, outError);

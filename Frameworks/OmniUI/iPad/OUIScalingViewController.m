@@ -218,39 +218,24 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     return YES;
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator;
 {
-    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     
-    OUIScalingView *view = _scalingView(self);
-    view.rotating = YES;
-}
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        OUIScalingView *view = _scalingView(self);
+        view.rotating = YES;
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        OUIScalingView *view = _scalingView(self);
+        view.rotating = NO;
 
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation;
-{
-    OUIScalingView *view = _scalingView(self);
-    view.rotating = NO;
-    
-    //OUILogViewTree(view);
-    
-//    [view setShadowEdgeViewVisibility:NO];
-//    
-//    [UIView beginAnimations:@"didRotateFromInterfaceOrientation animation" context:NULL];
-//    {
-//        [UIView setAnimationDelegate:self];
-//        [UIView setAnimationDidStopSelector:@selector(zoomAdjustmentAnimationDidStop:finished:context:)];
-//        //[UIView setAnimationDuration:1.0];
-        
-        if (_lastScaleWasFullScale)
+        if (_lastScaleWasFullScale) {
             [self sizeInitialViewSizeFromCanvasSize];
-        else
+        }
+        else {
             [self adjustContentInset];
-//    }
-//    [UIView commitAnimations];
-
-    //[self _logScrollInfo:@"did rotate"];
-
-    [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
+        }
+    }];
 }
 
 #pragma mark -

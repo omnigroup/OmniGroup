@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2010-2012, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -141,7 +141,7 @@ static NSFont *labelFont = nil;
 	
             NSImage *image = [provider thumbnailImageAtIndex:thumbnailIndex];
 	    if (image) {
-		[image compositeToPoint:point operation:NSCompositeCopy];
+                [image drawAtPoint:point fromRect:(NSRect){NSZeroPoint, [image size]} operation:NSCompositeCopy fraction:1.0];
 	    } else {
 		[self drawMissingThumbnailRect:imageRect];
                 [provider missedThumbnailImageInView:self rect:imageRect atIndex:thumbnailIndex];

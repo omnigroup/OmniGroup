@@ -1,11 +1,50 @@
-﻿/* error description */
-"%s is not reachable." = "%s に接続できません。";
+/* Software update report format for number of cores in the CPU */
+"%@ cores" = "%@ コア";
+
+/* error description - the host from which we retrieve updates is unreachable */
+"%@ is not reachable." = "%@ に接続できません。";
+
+/* Software update report entry string for multiple crashes */
+"%ld crashes" = "%ld クラッシュ回数";
+
+/* Software update report entry string for a multiple hours of use */
+"%ld hours" = "%ld 時間";
+
+/* Software update report entry string for a single launch */
+"%ld launches" = "%ld 起動回数";
+
+/* Software update report entry string for a multiple minutes of use */
+"%ld minutes" = "%ld 分";
+
+/* Software update report entry name for information about the runs of all versions of the app */
+"All versions" = "すべてのバージョン";
+
+/* OmniSoftwareUpdate privacy notice message format */
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ にハードウェアモデルと iOS のバージョンを定期的にレポートさせますか？\nレポートいただくと、サポートを行うにあたっての一番大切な組み合わせを知ることができます。この回答は環境設定で後から変更できます。";
+
+/* Software update report entry name */
+"Application identifier" = "アプリケーション ID";
+
+/* Software update report entry name */
+"Application version" = "アプリケーション バージョン";
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
 "Check operation failed." = "チェック操作に失敗しました。";
 
 /* error text generated when software update is unable to retrieve the list of current software versions */
-"Could not contact %s." = "%s に接続できませんでした。";
+"Could not contact %@." = "%@ に連絡できません。";
+
+/* Software update report entry name */
+"CPU" = "CPU";
+
+/* Software update report entry name */
+"Device" = "デバイス";
+
+/* software update settings title */
+"Device Information" = "デバイス情報";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Don't Report" = "レポートしない";
 
 /* error description */
 "Error fetching software update information." = "ソフトウェアアップデート情報の取得中にエラー";
@@ -16,17 +55,74 @@
 /* error reason */
 "Exception raised: %@" = "例外が発生: %@";
 
+/* software update settings cell detail text */
+"Help The Omni Group decide which devices and iOS versions to support" = "サポートを受けるデバイスと iOS バージョンを Omni Group に診てもらう";
+
+/* Settings preferences detail text */
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "この情報を共有するを選ぶと、私達のソフトウェアがサポートすべきデバイスとiOSバージョンをお知らせいただくことになります。\nこの情報は完全に匿名で送信されます。";
+
+/* Software update report entry name */
+"iOS version" = "iOS バージョン";
+
+/* Software update report entry name */
+"Language" = "言語";
+
+/* Software update report entry name */
+"Memory" = "メモリー";
+
+/* OmniSoftwareUpdate privacy notice alert title */
+"Omni Software Update" = "Omni ソフトウェアアップデート";
+
+/* Software update report entry string for a single crash */
+"One crash" = "1クラッシュ";
+
+/* Software update report entry string for a single hour of use */
+"One hour" = "1時間";
+
+/* Software update report entry string for a single launch */
+"One launch" = "1回の起動";
+
+/* Software update report entry string for a single minute of use */
+"One minute" = "1分";
+
 /* error reason */
 "Please try again later or contact us to let us know this is broken." = "後ほどやり直すか、テクニカルサポートまでご連絡ください。";
 
+/* Software update report entry name */
+"Report identifier" = "IDをレポート";
+
+/* Software update report entry name */
+"Report version" = "レポートバージョン";
+
+/* software update settings cell title */
+"Send anonymous device information" = "デバイス情報を匿名で送信";
+
+/* Settings option title */
+"Send anonymous device information?" = "デバイス情報を匿名で送信";
+
+/* OmniSoftwareUpdate privacy notice button title */
+"Send Reports" = "レポートを送信";
+
+/* software update settings menu title */
+"Settings" = "設定";
+
+/* Software update report entry name */
+"Storage" = "ストレージ";
+
 /* error description */
 "The data returned from <%@> was not a valid XML document." = "<%@> から返されたデータは有効な XML 書類ではありませんでした。";
+
+/* Settings option title */
+"The following information will be sent:" = "次の情報が送信されます:";
 
 /* error description - the update information wasn't signed at all, but we require it to be signed */
 "The update information is not signed." = "アップデート情報に署名がありません。";
 
 /* error description - the checksum or signature didn't match - more info in underlying error */
 "There was a problem checking the signature." = "署名の確認で問題がありました。";
+
+/* Software update report entry name for information about the runs of the current version of the app */
+"This version" = "このバージョン";
 
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "ツールから何もデータが返されませんでした";

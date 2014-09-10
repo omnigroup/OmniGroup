@@ -19,49 +19,11 @@ RCS_ID("$Id$");
     return set == nil || set.count == 0;
 }
 
-struct performAndAddContext {
-    SEL sel;
-    id singleObject;
-    NSMutableSet *result;
-};
-
-static void performAndAdd(const void *anObject, void *_context)
-{
-    struct performAndAddContext *context = _context;
-    id addend = [(id <NSObject>)anObject performSelector:context->sel];
-    if (addend) {
-        if (context->singleObject == addend) {
-            /* ok */
-        } else if (context->result != nil) {
-            [context->result addObject:addend];
-        } else if (context->singleObject == nil) {
-            context->singleObject = addend;
-        } else {
-            NSMutableSet *newSet = [NSMutableSet set];
-            [newSet addObject:context->singleObject];
-            [newSet addObject:addend];
-            context->singleObject = nil;
-            context->result = newSet;
-        }
-    }
-}
-
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
 {
-    struct performAndAddContext ctxt = {
-        .result = nil,
-        .singleObject = nil,
-        .sel = aSelector
-    };
-    
-    CFSetApplyFunction((CFSetRef)self, performAndAdd, &ctxt);
-    
-    if (ctxt.result)
-        return ctxt.result;
-    else if (ctxt.singleObject)
-        return [NSSet setWithObject:ctxt.singleObject];
-    else
-        return [NSSet set];
+    return [self setByPerformingBlock:^(id object){
+        return OBSendObjectReturnMessage(object, aSelector);
+    }];
 }
 
 - (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)block;
@@ -94,50 +56,24 @@ static void performAndAdd(const void *anObject, void *_context)
     }]];
 }
 
-struct insertionSortContext {
-    SEL sel;
-    NSMutableArray *into;
-};
-
-static void insertionSort(const void *anObject, void *_context)
-{
-    struct insertionSortContext *context = _context;
-    [context->into insertObject:(id)anObject inArraySortedUsingSelector:context->sel];
-}
-
 - (NSArray *)sortedArrayUsingSelector:(SEL)comparator;
 {
-    struct insertionSortContext ctxt;
+    NSMutableArray *into = [NSMutableArray arrayWithCapacity:[self count]];
+    for (id object in self) {
+        [into insertObject:object inArraySortedUsingSelector:comparator];
+    }
     
-    ctxt.sel = comparator;
-    ctxt.into = [NSMutableArray arrayWithCapacity:[self count]];
-    
-    CFSetApplyFunction((CFSetRef)self, insertionSort, &ctxt);
-    
-    return ctxt.into;
-}
-
-struct comparatorInsertionSortContext {
-    NSComparator comparator;
-    NSMutableArray *into;
-};
-
-static void comparatorInsertionSort(const void *anObject, void *_context)
-{
-    struct comparatorInsertionSortContext *context = _context;
-    [context->into insertObject:(id)anObject inArraySortedUsingComparator:context->comparator];
+    return into;
 }
 
 - (NSArray *)sortedArrayUsingComparator:(NSComparator)comparator;
 {
-    struct comparatorInsertionSortContext ctxt;
+    NSMutableArray *into = [NSMutableArray arrayWithCapacity:[self count]];
+    for (id object in self) {
+        [into insertObject:object inArraySortedUsingComparator:comparator];
+    }
     
-    ctxt.comparator = comparator;
-    ctxt.into = [NSMutableArray arrayWithCapacity:[self count]];
-    
-    CFSetApplyFunction((CFSetRef)self, comparatorInsertionSort, &ctxt);
-    
-    return ctxt.into;
+    return into;
 }
 
 // This is just nice so that you don't have to check for a NULL set.
@@ -215,5 +151,21 @@ static void comparatorInsertionSort(const void *anObject, void *_context)
     return matches;
 }
 
+- (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
+{
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    
+    for (id object in self) {
+        id key;
+        if ((key = blk(object)) != nil) {
+            OBASSERT(dict[key] == nil, "We may want a non-unique index variant later, but this is probably an error");
+            [dict setObject:object forKey:key];
+        }
+    }
+    
+    NSDictionary *result = [NSDictionary dictionaryWithDictionary:dict];
+    [dict release];
+    return result;
+}
 
 @end

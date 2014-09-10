@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,14 +64,11 @@ static OFQueueProcessor *detachingQueueProcessor;
 
 - (void)processQueueUntilEmpty:(BOOL)onlyUntilEmpty forTime:(NSTimeInterval)maximumTime;
 {
-    OFInvocation *retainedInvocation;
     BOOL waitForMessages = !onlyUntilEmpty;
-    NSAutoreleasePool *autoreleasePool;
     NSTimeInterval startingInterval, endTime;
     
     startingInterval = [NSDate timeIntervalSinceReferenceDate];
     endTime = ( maximumTime >= 0 ) ? startingInterval + maximumTime : startingInterval;
-    autoreleasePool = [[NSAutoreleasePool alloc] init];
     
     if (detachingQueueProcessor == self) {
         detachingQueueProcessor = nil;
@@ -81,52 +78,52 @@ static OFQueueProcessor *detachingQueueProcessor;
 
     if (OFQueueProcessorDebug)
         NSLog(@"%@: processQueueUntilEmpty: %d", [self shortDescription], onlyUntilEmpty);
-        
-    while ((retainedInvocation = [messageQueue copyNextInvocationWithBlock:waitForMessages])) {
-        [currentInvocationLock lock];
-        currentInvocation = retainedInvocation;
-        schedulingInfo = [currentInvocation messageQueueSchedulingInfo];
-        [currentInvocationLock unlock];
-        
-        if (OFQueueProcessorDebug) {
-            NSLog(@"%@: invoking %@", [self shortDescription], [retainedInvocation shortDescription]);
-        }
-
+    
+    while (YES) {
         @autoreleasepool {
-            [retainedInvocation invoke];
-        }
-
-        if (OFQueueProcessorDebug) {
-	    NSLog(@"%@: finished %@", [self shortDescription], [retainedInvocation shortDescription]);
-        }
-
-        [currentInvocationLock lock];
-        currentInvocation = nil;
-        schedulingInfo = OFMessageQueueSchedulingInfoDefault;
-        [currentInvocationLock unlock];
-
-        [retainedInvocation release];
-
-        if (maximumTime >= 0) {
-            // TJW -- Bug #332 about why this time check is here
-            if (endTime < [NSDate timeIntervalSinceReferenceDate])
+            OFInvocation *retainedInvocation = [messageQueue copyNextInvocationWithBlock:waitForMessages];
+            if (!retainedInvocation)
                 break;
-        }
-        
-        if (waitForMessages) {
-            [autoreleasePool drain];
-            autoreleasePool = [[NSAutoreleasePool alloc] init];
-        } else {
-            if ([self shouldProcessQueueEnd])
-                break;
+            
+            [currentInvocationLock lock];
+            currentInvocation = retainedInvocation;
+            schedulingInfo = [currentInvocation messageQueueSchedulingInfo];
+            [currentInvocationLock unlock];
+            
+            if (OFQueueProcessorDebug) {
+                NSLog(@"%@: invoking %@", [self shortDescription], [retainedInvocation shortDescription]);
+            }
+            
+            @autoreleasepool {
+                [retainedInvocation invoke];
+            }
+            
+            if (OFQueueProcessorDebug) {
+                NSLog(@"%@: finished %@", [self shortDescription], [retainedInvocation shortDescription]);
+            }
+            
+            [currentInvocationLock lock];
+            currentInvocation = nil;
+            schedulingInfo = OFMessageQueueSchedulingInfoDefault;
+            [currentInvocationLock unlock];
+            
+            [retainedInvocation release];
+            
+            if (maximumTime >= 0) {
+                // TJW -- Bug #332 about why this time check is here
+                if (endTime < [NSDate timeIntervalSinceReferenceDate])
+                    break;
+            }
+            
+            if (!waitForMessages) {
+                if ([self shouldProcessQueueEnd])
+                    break;
+            }
         }
     }
 
     if (OFQueueProcessorDebug)
         NSLog(@"%@: processQueueUntilEmpty: (exiting)", [self shortDescription]);
-        
-    
-    [autoreleasePool drain];
 }
 
 - (void)processQueueUntilEmpty;
@@ -181,11 +178,11 @@ static OFQueueProcessor *detachingQueueProcessor;
 {
     detachingQueueProcessor = self;
     for (;;) {
-        NS_DURING {
+        @try {
             [self processQueueForever];
-        } NS_HANDLER {
-            NSLog(@"%@", [localException reason]);
-        } NS_ENDHANDLER;
+        } @catch (NSException *exc) {
+            NSLog(@"%@", [exc reason]);
+        }
     }
 }
 

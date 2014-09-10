@@ -88,7 +88,7 @@ RCS_ID("$Id$")
     NSString *finalPath = [NSString pathWithComponents:components];
     
     NSMutableArray *trim = [[NSMutableArray alloc] initWithArray:components];
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     for (NSUInteger trimCount = 0; trimCount < dirCount && !error; trimCount ++) {
         struct stat statbuf;
         
@@ -262,32 +262,9 @@ static void _appendPropertiesOfTreeAtURL(NSFileManager *self, NSMutableString *s
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 - (BOOL)addExcludedFromBackupAttributeToItemAtPath:(NSString *)path error:(NSError **)error;
 {
-    if (&NSURLIsExcludedFromBackupKey != NULL) {
-        NSURL *url = [NSURL fileURLWithPath:path];
-        BOOL result = [url setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:error];
-        return result;
-    } else {
-        // See Technical Q&A QA1719
-        // http://developer.apple.com/library/ios/#qa/qa1719/_index.html
-        
-        const char* filePath = [path fileSystemRepresentation];
-        const char* attrName = "com.apple.MobileBackup";
-        u_int8_t attrValue = 1;
-        
-        int result = setxattr(filePath, attrName, &attrValue, sizeof(attrValue), 0, 0);
-        if (result != 0 && error != NULL) {
-            NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
-                                      path, NSFilePathErrorKey,
-                                      nil
-                                      ];
-            *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:result userInfo:userInfo];
-        }
-        
-        return result == 0;
-    }
-    
-    OBASSERT_NOT_REACHED("");
-    return NO;
+    NSURL *url = [NSURL fileURLWithPath:path];
+    BOOL result = [url setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:error];
+    return result;
 }
 #endif
 

@@ -57,80 +57,6 @@ static BOOL implementsInstanceMethod(Class cls, SEL aSelector)
     return [NSBundle bundleForClass:self];
 }
 
-- (NSBundle *)bundle;
-{
-    return [[self class] bundle];
-}
-
-struct reversedApplyContext {
-    NSObject *receiver;
-    SEL sel;
-    IMP impl;
-    NSMutableArray *storage;
-};
-
-static void OFPerformWithObject(const void *arg, void *context)
-{
-    id target = (id)arg;
-    struct reversedApplyContext *c = context;
-    
-    id (*imp)(id self, SEL _cmd, id target) = (typeof(imp))c->impl;
-    imp(c->receiver, c->sel, target);
-}
-
-static void OFPerformWithObjectAndStore(const void *arg, void *context)
-{
-    id target = (id)arg;
-    struct reversedApplyContext *c = context;
-    
-    id (*imp)(id self, SEL _cmd, id target) = (typeof(imp))c->impl;
-    id result = imp(c->receiver, c->sel, target);
-    
-    [c->storage addObject:result];
-}
-
-static struct reversedApplyContext OFMakeApplyContext(NSObject *rcvr, SEL sel)
-{
-    Class receiverClass = object_getClass(rcvr);
-    
-    IMP impl = class_getMethodImplementation(receiverClass, sel);
-    
-    return (struct reversedApplyContext){ .receiver = rcvr, .sel = sel, .impl = impl, .storage = nil };
-}
-
-- (void)performSelector:(SEL)sel withEachObjectInArray:(NSArray *)array
-{
-    if (!array)
-        return;
-    CFIndex count = CFArrayGetCount((CFArrayRef)array);
-    if (count == 0)
-        return;
-    struct reversedApplyContext ctxt = OFMakeApplyContext(self, sel);
-    CFArrayApplyFunction((CFArrayRef)array, CFRangeMake(0, count), OFPerformWithObject, &ctxt);
-}
-
-- (NSArray *)arrayByPerformingSelector:(SEL)sel withEachObjectInArray:(NSArray *)array;
-{
-    if (!array)
-        return nil;
-    CFIndex count = CFArrayGetCount((CFArrayRef)array);
-    if (count == 0)
-        return [NSArray array];
-    struct reversedApplyContext ctxt = OFMakeApplyContext(self, sel);
-    ctxt.storage = [[NSMutableArray alloc] initWithCapacity:count];
-    [ctxt.storage autorelease]; // In case one of the perform: calls raises an exception
-    CFArrayApplyFunction((CFArrayRef)array, CFRangeMake(0, count), OFPerformWithObjectAndStore, &ctxt);
-    return ctxt.storage;
-}
-
-- (void)performSelector:(SEL)sel withEachObjectInSet:(NSSet *)set
-{
-    if (!set)
-        return;
-    struct reversedApplyContext ctxt = OFMakeApplyContext(self, sel);
-    CFSetApplyFunction((CFSetRef)set, OFPerformWithObject, &ctxt);
-}
-
 typedef char   (*byteImp_t)(id self, SEL _cmd, id arg);
 typedef short  (*shortImp_t)(id self, SEL _cmd, id arg);
 typedef int    (*intImp_t)(id self, SEL _cmd, id arg);
@@ -216,35 +142,42 @@ typedef double (*dblImp_t)(id self, SEL _cmd, id arg);
     return returnDictionary;
 }
 
-- (void)afterDelay:(NSTimeInterval)delay performBlock:(void (^)(void))block;
+@end
+
+void OFAfterDelayPerformBlock(NSTimeInterval delay, void (^block)(void))
 {
     /*
-     dispatch_get_current_queue is deprecated, or this could be a bit simpler. Instead, we do the scheduling on the main queue and then send that back to the original queue. This requires the main queue to be unblocked (which it really should be anyway). All the current callers are from the main queue, anyway. Assert this is still true so that we can make sure to test the non-main caller case if/when it happens.
+     dispatch_get_current_queue is deprecated, or this could be a bit simpler. Instead, we schedule a block on the main dispatch queue that will then send the original block back to the original operation queue. This requires the main queue to be unblocked (which it really should be anyway). All the current callers are from the main queue, anyway. Assert this is still true so that we can make sure to test the non-main caller case if/when it happens.
      */
     OBPRECONDITION([NSThread isMainThread]);
     
     NSOperationQueue *operationQueue = [NSOperationQueue currentQueue];
     
-    block = [[block copy] autorelease];
-        
-    dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER,
-                                                     0/* handle -- not applicable */,
-                                                     0/* mask -- not applicable */,
-                                                     dispatch_get_main_queue());
+    block = [block copy];
     
     dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * 1e9) /* dispatch_time() takes nanoseconds */);
-    dispatch_source_set_timer(timer, startTime, 0/*interval*/, 0/*leeway*/);
     
-    dispatch_source_set_event_handler(timer, ^{
+    dispatch_after(startTime, dispatch_get_main_queue(), ^{
         [operationQueue addOperationWithBlock:block];
-        dispatch_source_cancel(timer);
-#if !OB_ARC
-        dispatch_release(timer);
-#endif
     });
-
-    // Fire it up.
-    dispatch_resume(timer);
+    [block release];
 }
 
-@end
+void OFPerformInBackground(void (^block)(void))
+{
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    [queue addOperationWithBlock:^{
+        block();
+        [queue release];
+    }];
+}
+
+#import <Foundation/NSThread.h>
+#import <dispatch/queue.h>
+
+void OFMainThreadPerformBlock(void (^block)(void)) {
+    if ([NSThread isMainThread])
+        block();
+    else
+        dispatch_async(dispatch_get_main_queue(), block);
+}

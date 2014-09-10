@@ -14,34 +14,30 @@
 
 RCS_ID("$Id$")
 
-@interface OFMutableKnownKeyDictionary ()
-- _initWithTemplate:(OFKnownKeyDictionaryTemplate *) template;
-@end
-
 @interface _OFMutableKnownKeyDictionaryEnumerator : NSEnumerator
-{
-    id *_conditions;
-    id *_objects;
-    NSUInteger _objectCount;
-    NSUInteger _nextIndex;
-    id _owner;
-}
 
-- initWithConditionList:(id *)conditions
-             objectList:(id *)objects
+- initWithConditionList:(__unsafe_unretained id const *)conditions
+             objectList:(__unsafe_unretained id const *)objects
                   count:(NSUInteger)count
-                  owner:(id)owner;
+                  owner:(OFMutableKnownKeyDictionary *)owner;
 
 - (id)nextObject;
 
 @end
 
 @implementation _OFMutableKnownKeyDictionaryEnumerator
+{
+    __unsafe_unretained id const *_conditions;
+    __unsafe_unretained id const *_objects;
+    NSUInteger _objectCount;
+    NSUInteger _nextIndex;
+    OFMutableKnownKeyDictionary *_owner;
+}
 
-- initWithConditionList:(id *)conditions
-             objectList:(id *)objects
+- initWithConditionList:(__unsafe_unretained id const *)conditions
+             objectList:(__unsafe_unretained id const *)objects
                   count:(NSUInteger)count
-                  owner:(id)owner;
+                  owner:(OFMutableKnownKeyDictionary *)owner;
 {
     if (!(self = [super init]))
         return nil;
@@ -50,7 +46,7 @@ RCS_ID("$Id$")
     _objects = objects;
     _objectCount = count;
     
-    [_owner retain]; // this should keep _conditions or _objects from becoming invalid in ref counted mode
+    _owner = [owner retain]; // this should keep _conditions or _objects from becoming invalid in ref counted mode
 
     return self;
 }
@@ -80,7 +76,7 @@ RCS_ID("$Id$")
 
 @end
 
-static inline NSUInteger _offsetForKeyAllowNotFound(id key, id *keys, NSUInteger keyCount)
+static inline NSUInteger _offsetForKeyAllowNotFound(id key, __unsafe_unretained id const *keys, NSUInteger keyCount)
 {
     // Binary search, since our keys array is in ascending pointer order
     NSUInteger low = 0;
@@ -109,7 +105,7 @@ static inline NSUInteger _offsetForKeyAllowNotFound(id key, id *keys, NSUInteger
     return ~(NSUInteger)0;
 }
 
-static inline NSUInteger _offsetForKey(id key, id *keys, NSUInteger keyCount)
+static inline NSUInteger _offsetForKey(id key, __unsafe_unretained id const *keys, NSUInteger keyCount)
 {
     // Binary search, since our keys array is in ascending pointer order
     NSUInteger low = 0;
@@ -151,14 +147,21 @@ static inline void _nonNilKey(id key)
 
 @implementation OFMutableKnownKeyDictionary
 {
-    OFKnownKeyDictionaryTemplate *_template;
+    __unsafe_unretained OFKnownKeyDictionaryTemplate *_template; // These never get deallocated
+    
     // ... indexed ivars for values
 }
 
 + (OFMutableKnownKeyDictionary *)newWithTemplate:(OFKnownKeyDictionaryTemplate *)template;
 {
-    OFMutableKnownKeyDictionary *dict = NSAllocateObject(self, template->_keyCount * sizeof(id), NULL);
+    OFMutableKnownKeyDictionary *dict = OBAllocateObjectWithIndexedIvars(self, template->_keyCount * sizeof(id));
     return [dict _initWithTemplate: template];
+}
+
+// We tell the compiler our values are __unsafe_unretained so that it won't introduce reference counting operations, and then we use OBStrong{Retain,Release} as needed when operating on the buffer.
+static __unsafe_unretained NSObject **_getValues(OFMutableKnownKeyDictionary *self)
+{
+    return (__unsafe_unretained NSObject **)OBObjectGetIndexedIvars(self);
 }
 
 - (void)dealloc;
@@ -166,9 +169,9 @@ static inline void _nonNilKey(id key)
     // _template is not retained since it lives forever
     
     NSUInteger valueCount = _template->_keyCount;
-    NSObject **values = object_getIndexedIvars(self);
+    __unsafe_unretained NSObject **values = _getValues(self);
     while (valueCount--) {
-        [*values release];
+        OBStrongRelease(*values);
         values++;
     }
 
@@ -181,7 +184,7 @@ static inline void _nonNilKey(id key)
 {
     // Count the non-nil slots
     NSUInteger fullCount = 0;
-    NSObject **values = object_getIndexedIvars(self);
+    __unsafe_unretained NSObject **values = _getValues(self);
     for (NSUInteger objectIndex = 0; objectIndex < _template->_keyCount; objectIndex++) {
         if (values[objectIndex])
             fullCount++;
@@ -193,7 +196,7 @@ static inline void _nonNilKey(id key)
 - (NSEnumerator *)keyEnumerator;
 {
     // enumerate over keys with non-nil values
-    NSObject **values = object_getIndexedIvars(self);
+    __unsafe_unretained NSObject **values = _getValues(self);
     return [[[_OFMutableKnownKeyDictionaryEnumerator alloc] initWithConditionList:&values[0]
                                                                        objectList:&_template->_keys[0]
                                                                             count:_template->_keyCount
@@ -206,7 +209,7 @@ static inline void _nonNilKey(id key)
     NSUInteger keyIndex = _offsetForKeyAllowNotFound(aKey, &_template->_keys[0], _template->_keyCount);
     if (keyIndex == ~(NSUInteger)0)
         return nil;
-    NSObject **values = object_getIndexedIvars(self);
+    __unsafe_unretained NSObject **values = _getValues(self);
     return values[keyIndex];
 }
 
@@ -221,11 +224,11 @@ static inline void _nonNilKey(id key)
     // the keys array from the template.
 
     // Collect the non-nil keys in here
-    id *keys = alloca(sizeof(id) * _template->_keyCount);
+    __unsafe_unretained id *keys = (__unsafe_unretained id *)alloca(sizeof(id) * _template->_keyCount);
 
     // Count the non-nil slots
     NSUInteger fullCount = 0;
-    NSObject **values = object_getIndexedIvars(self);
+    __unsafe_unretained NSObject **values = _getValues(self);
     for (NSUInteger objectIndex = 0; objectIndex < _template->_keyCount; objectIndex++) {
         if (values[objectIndex]) {
             // store the *key* for this non-nil value
@@ -245,11 +248,11 @@ static inline void _nonNilKey(id key)
 - (NSArray *)allValues;
 {
     // Collect the values for the non-nil keys in here
-    id *filledValues = alloca(sizeof(id) * _template->_keyCount);
+    __unsafe_unretained id *filledValues = (__unsafe_unretained id *)alloca(sizeof(id) * _template->_keyCount);
 
     // Count the non-nil slots
     NSUInteger fullCount = 0;
-    NSObject **values = object_getIndexedIvars(self);
+    __unsafe_unretained NSObject **values = _getValues(self);
     for (NSUInteger objectIndex = 0; objectIndex < _template->_keyCount; objectIndex++) {
         if (values[objectIndex]) {
             // store the non-nil value
@@ -265,7 +268,7 @@ static inline void _nonNilKey(id key)
 - (NSEnumerator *)objectEnumerator;
 {
     // enumerate over non-nil values (the values themselves are the condition)
-    NSObject **values = object_getIndexedIvars(self);
+    __unsafe_unretained NSObject **values = _getValues(self);
     return [[[_OFMutableKnownKeyDictionaryEnumerator alloc] initWithConditionList:&values[0]
                                                                        objectList:&values[0]
                                                                             count:_template->_keyCount
@@ -281,7 +284,7 @@ static inline void _nonNilKey(id key)
     BOOL stop = NO;
     
     NSUInteger valueIndex = _template->_keyCount;
-    NSObject **values = object_getIndexedIvars(self);
+    __unsafe_unretained NSObject **values = _getValues(self);
     
     while (valueIndex--) {
         id value = values[valueIndex];
@@ -299,8 +302,8 @@ static inline void _nonNilKey(id key)
 {
     _nonNilKey(aKey);
     NSUInteger keyIndex = _offsetForKey(aKey, &_template->_keys[0], _template->_keyCount);
-    NSObject **values = object_getIndexedIvars(self);
-    [values[keyIndex] release];
+    __unsafe_unretained NSObject **values = _getValues(self);
+    OBStrongRelease(values[keyIndex]);
     values[keyIndex] = nil;
 }
 
@@ -308,10 +311,11 @@ static inline void _nonNilKey(id key)
 {
     _nonNilKey(aKey);
     NSUInteger keyIndex = _offsetForKey(aKey, &_template->_keys[0], _template->_keyCount);
-    NSObject **values = object_getIndexedIvars(self);
+    __unsafe_unretained NSObject **values = _getValues(self);
     if (values[keyIndex] != anObject) {
-        [values[keyIndex] release];
-        values[keyIndex] = [anObject retain];
+        OBStrongRelease(values[keyIndex]);
+        OBStrongRetain(anObject);
+        values[keyIndex] = anObject;
     }
 }
 
@@ -319,14 +323,17 @@ static inline void _nonNilKey(id key)
 
 - (OFMutableKnownKeyDictionary *)mutableKnownKeyCopyWithZone:(NSZone *)zone;
 {
-    OFMutableKnownKeyDictionary *copy = NSAllocateObject([self class], _template->_keyCount * sizeof(id), zone);
+    OFMutableKnownKeyDictionary *copy = OBAllocateObjectWithIndexedIvars([self class], _template->_keyCount * sizeof(id));
     copy->_template = _template;
     NSUInteger valueCount = _template->_keyCount;
     
-    NSObject **source = object_getIndexedIvars(self);
-    NSObject **dest = object_getIndexedIvars(copy);
+    __unsafe_unretained NSObject **source = _getValues(self);
+    __unsafe_unretained NSObject **dest = _getValues(copy);
     while (valueCount--) {
-        *dest = [*source retain];
+        id sourceValue = *source;
+        OBStrongRetain(sourceValue);
+        
+        *dest = sourceValue;
         dest++;
         source++;
     }
@@ -341,15 +348,17 @@ static inline void _nonNilKey(id key)
 
     NSUInteger valueIndex = _template->_keyCount;
 
-    NSObject **values = object_getIndexedIvars(self);
-    NSObject **fromValues = object_getIndexedIvars(fromDictionary);
+    __unsafe_unretained NSObject **values = _getValues(self);
+    __unsafe_unretained NSObject **fromValues = _getValues(fromDictionary);
 
     while (valueIndex--) {
         if (values[valueIndex])
             continue;
         id fromValue = fromValues[valueIndex];
-        if (fromValue)
-            values[valueIndex] = [fromValue retain];
+        if (fromValue) {
+            OBStrongRetain(fromValue);
+            values[valueIndex] = fromValue;
+        }
     }
 }
 
@@ -359,8 +368,8 @@ static inline void _nonNilKey(id key)
     OBPRECONDITION(_template == pairDictionary->_template);
 
     NSUInteger valueIndex = _template->_keyCount;
-    NSObject **values = object_getIndexedIvars(self);
-    NSObject **pairValues = object_getIndexedIvars(pairDictionary);
+    __unsafe_unretained NSObject **values = _getValues(self);
+    __unsafe_unretained NSObject **pairValues = _getValues(pairDictionary);
     BOOL stop = NO;
     
     while (valueIndex--) {

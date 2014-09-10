@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2005, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,7 +86,7 @@ OWF_PRIVATE_EXTERN NSData *OWKCGetItemAttribute(SecKeychainItemRef item, SecItem
     keychainStatus = KCGetAttribute(item, &attr, &actualLength);
     if (keychainStatus == errKCBufferTooSmall) {
         /* the attribute length will have been placed into actualLength */
-        freeMe = NSZoneMalloc(NULL, actualLength);
+        freeMe = malloc(actualLength);
         attr.length = actualLength;
         attr.data = freeMe;
         keychainStatus = KCGetAttribute(item, &attr, &actualLength);
@@ -94,13 +94,13 @@ OWF_PRIVATE_EXTERN NSData *OWKCGetItemAttribute(SecKeychainItemRef item, SecItem
     if (keychainStatus == noErr) {
         NSData *retval = [NSData dataWithBytes:attr.data length:actualLength];
 	if (freeMe != NULL)
-            NSZoneFree(NULL, freeMe);
+            free(freeMe);
         // NSLog(@"attr '%c%c%c%c' value %@", ((char *)&attrTag)[0], ((char *)&attrTag)[1], ((char *)&attrTag)[2], ((char *)&attrTag)[3], retval);
         return retval;
     }
     
     if (freeMe != NULL)
-        NSZoneFree(NULL, freeMe);
+        free(freeMe);
 
     if (keychainStatus == errKCNoSuchAttr) {
         /* An expected error. Return nil for nonexistent attributes. */

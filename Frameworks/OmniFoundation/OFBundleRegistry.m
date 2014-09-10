@@ -62,7 +62,7 @@ static NSString * const PathBundleDescriptionKey = @"path";
 
 static NSMutableSet *registeredBundleNames;
 static NSMutableDictionary *softwareVersionDictionary;
-static NSMutableArray *knownBundles;
+static NSMutableSet *registeredBundleDescriptions;
 static NSMutableDictionary *additionalBundleDescriptions;
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
 static NSArray *oldDisabledBundleNames;
@@ -76,7 +76,7 @@ static NSArray *oldDisabledBundleNames;
 
     registeredBundleNames = [[NSMutableSet alloc] init];
     softwareVersionDictionary = [[NSMutableDictionary alloc] init];
-    knownBundles = [[NSMutableArray alloc] init];
+    registeredBundleDescriptions = [[NSMutableSet alloc] init];
     additionalBundleDescriptions = nil;  // Lazily create this one since not all apps use it
     
 #ifdef OMNI_ASSERTIONS_ON
@@ -130,21 +130,21 @@ static NSArray *oldDisabledBundleNames;
 
 + (NSArray *)knownBundles;
 {
-    NSMutableArray *allBundleDescriptions;
-    NSEnumerator *foreignBundleEnumerator;
-    NSArray *foreignBundleDescriptions;
-    
     // If there aren't any additional registrations, just return our known bundles
-    if (!additionalBundleDescriptions || ![additionalBundleDescriptions count])
-        return knownBundles;
-
-    allBundleDescriptions = [[NSMutableArray alloc] initWithArray:knownBundles];
-    [allBundleDescriptions autorelease];
-    foreignBundleEnumerator = [additionalBundleDescriptions objectEnumerator];
-    while( (foreignBundleDescriptions = [foreignBundleEnumerator nextObject]) != nil)
-        [allBundleDescriptions addObjectsFromArray:foreignBundleDescriptions];
-
-    return allBundleDescriptions;
+    NSArray *knownBundles = [registeredBundleDescriptions allObjects];
+    
+    if ([additionalBundleDescriptions count] > 0) {
+        NSMutableArray *allBundleDescriptions = [[[NSMutableArray alloc] initWithArray:knownBundles] autorelease];
+        
+        NSEnumerator *foreignBundleEnumerator = [additionalBundleDescriptions objectEnumerator];
+        NSArray *foreignBundleDescriptions;
+        while( (foreignBundleDescriptions = [foreignBundleEnumerator nextObject]) != nil)
+            [allBundleDescriptions addObjectsFromArray:foreignBundleDescriptions];
+        
+        knownBundles = allBundleDescriptions;
+    }
+    
+    return knownBundles;
 }
 
 #if 0
@@ -295,7 +295,6 @@ static NSString *_normalizedPath(NSString *path)
 {
     NSMutableArray *linkedBundles = [NSMutableArray array];
 
-#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     // The frameworks and main bundle are already loaded, so we should register them first.
     NSEnumerator *frameworkEnumerator = [[NSBundle allFrameworks] objectEnumerator];
     NSBundle *framework;
@@ -303,6 +302,7 @@ static NSString *_normalizedPath(NSString *path)
         [linkedBundles addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:framework, @"bundle", @"YES", @"loaded", @"YES", @"preloaded", nil]];
     }
     
+#ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING
     // Add in any dynamically loaded bundles that are already present.  In particular, unit test bundles might have registration dicitionaries for their test cases.
     NSEnumerator *bundleEnumerator = [[NSBundle allBundles] objectEnumerator];
     NSBundle *bundle;
@@ -325,7 +325,7 @@ static NSString *_normalizedPath(NSString *path)
     // Make a note of paths we've already examined so we can skip them this time
     NSMutableSet *seenPaths = [[NSMutableSet alloc] init];
     
-    for (NSDictionary *bundleDict in knownBundles) {
+    for (NSDictionary *bundleDict in registeredBundleDescriptions) {
         NSString *aPath;
         
         aPath = _normalizedPath([bundleDict objectForKey:PathBundleDescriptionKey]);
@@ -436,7 +436,7 @@ static NSString *_normalizedPath(NSString *path)
 
     NSMutableDictionary *newlyLoadedBundleDescription = nil;
 
-    for (NSMutableDictionary *aBundleDict in knownBundles) {
+    for (NSMutableDictionary *aBundleDict in registeredBundleDescriptions) {
         NSBundle *aBundle = [aBundleDict objectForKey:@"bundle"];
         if (aBundle == theBundle) {
             newlyLoadedBundleDescription = aBundleDict;
@@ -447,7 +447,7 @@ static NSString *_normalizedPath(NSString *path)
     if (newlyLoadedBundleDescription == nil) {
         // somebody loaded a bundle we didn't already know about
         newlyLoadedBundleDescription = [NSMutableDictionary dictionaryWithObjectsAndKeys:theBundle, @"bundle", nil];
-        [knownBundles addObject:newlyLoadedBundleDescription];
+        [registeredBundleDescriptions addObject:newlyLoadedBundleDescription];
     }
 
     [newlyLoadedBundleDescription setObject:@"YES" forKey:@"loaded"];
@@ -568,13 +568,16 @@ static NSString *_normalizedPath(NSString *path)
 {
     if (!configDictionary)
         return;
-
-    [knownBundles addObjectsFromArray:bundleDescriptions];
     
     for (NSMutableDictionary *description in bundleDescriptions) {
         // skip invalidated bundles
         if ([description objectForKey:@"invalid"] != nil)
             continue;
+        
+        // Skip items we've seen before
+        if ([registeredBundleDescriptions member:description])
+            continue;
+        [registeredBundleDescriptions addObject:description];
         
         NSBundle *bundle = [description objectForKey:@"bundle"];
 
@@ -617,6 +620,13 @@ static NSString *_normalizedPath(NSString *path)
 #else
         NSString *infoDictionaryPath = [bundle pathForResource:@"Info" ofType:@"plist"];
         NSDictionary *infoDictionary = [NSDictionary dictionaryWithContentsOfFile:infoDictionaryPath];
+        if (!infoDictionary) {
+            // On iOS 8 beta 5, at least, some directories in /usr/lib get registered as framework bundles. On the device, these are in the root, but in the simulator they are in the SDK (hence the suffix check).
+            OBASSERT([bundlePath hasSuffix:@"/usr/lib"] ||
+                     [bundlePath hasSuffix:@"/usr/lib/system"] ||
+                     [bundlePath hasSuffix:@"/usr/lib/system/introspection"]);
+            continue;
+        }
 #endif
 
         OBASSERT(infoDictionary != nil);
@@ -644,6 +654,30 @@ static NSString *_normalizedPath(NSString *path)
         if (OFBundleRegistryDebug)
             NSLog(@"OFBundleRegistry: Registering %@ (version %@) (%ld registrations)", bundlePath, softwareVersion, [registrationDictionary count]);
         [self registerDictionary:registrationDictionary forBundle:description];
+        
+        // Allow registration dictionaries to also be placed in the bundle as 'registration' resources (but don't look at system bundles).
+        // This should be preferred to the ".defaults" file support in -registerDictionary:description: in the future. Both may become less useful if we convert all our iOS static library targets to frameworks.
+        if (![bundlePath hasPrefix:@"/System/"]) {
+            for (NSString *path in [bundle pathsForResourcesOfType:@"registrations" inDirectory:nil]) {
+                CFErrorRef error = NULL;
+                CFPropertyListRef registrations = OFCreatePropertyListFromFile((OB_BRIDGE CFStringRef)path, kCFPropertyListImmutable, &error);
+                if (!registrations) {
+                    [(OB_BRIDGE NSError *)error log:@"Unable to parse \"%@\" as a property list", path];
+                    if (error)
+                        CFRelease(error);
+                    continue;
+                }
+                
+                if (![(OB_BRIDGE id)registrations isKindOfClass:[NSDictionary class]]) {
+                    NSLog(@"Contents of %@ is not a dictionary.", path);
+                    CFRelease(registrations);
+                    continue;
+                }
+                
+                [self registerDictionary:registrations forBundle:description];
+                CFRelease(registrations);
+            }
+        }
     }
 }
 

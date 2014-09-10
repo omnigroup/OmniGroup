@@ -22,11 +22,14 @@
 #import "OFXFileItem-Internal.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
 #import "OFXFileSnapshotTransfer.h"
+#import "OFXRegistrationTable.h"
 
 RCS_ID("$Id$")
 
 @interface OFXContainerAgent ()
 @end
+
+static OFPreference *OFXFileItemSkipTransfersWithErrorsInTimeInterval;
 
 static NSURL *_createContainerSubdirectory(NSURL *localContainerDirectory, NSString *name, NSError **outError) NS_RETURNS_RETAINED;
 static NSURL *_createContainerSubdirectory(NSURL *localContainerDirectory, NSString *name, NSError **outError)
@@ -58,6 +61,19 @@ static NSURL *_createContainerSubdirectory(NSURL *localContainerDirectory, NSStr
     BOOL _hasUnknownRemoteEdit;
     
     OFXContainerDocumentIndex *_documentIndex;
+    
+    BOOL _hasScheduledMetadataUpdate;
+    NSMutableSet *_fileItemsNeedingMetadataUpdate;
+    NSMutableSet *_fileItemsNeedingMetadataRemoved;
+    
+    BOOL _hasScheduledDeferredTransferRequestForPreviouslySkippedFiles;
+}
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+    
+    OFXFileItemSkipTransfersWithErrorsInTimeInterval = [OFPreference preferenceForKey:@"OFXFileItemSkipTransfersWithErrorsInTimeInterval"];
 }
 
 // We have to allow empty path extensions (for example "README"), so we can't use a plain path extension (since an empty string isn't a valid path component).
@@ -147,7 +163,9 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
     
     _started = NO;
 
-    [_documentIndex invalidate];
+    [_documentIndex enumerateFileItems:^(NSString *identifier, OFXFileItem *fileItem) {
+        [self _fileItemNeedsMetadataRemoved:fileItem];
+    }];
     _documentIndex = nil;
 }
 
@@ -218,8 +236,10 @@ tryAgain:
             __autoreleasing NSError *error;
             if (![missingFileItem handleIncomingDeleteWithFilePresenter:filePresenter error:&error]) {
                 NSLog(@"Error handling incoming delete of %@ <%@>: %@", missingFileItem, missingFileItem.localDocumentURL, [error toPropertyList]);
-            } else
+            } else {
                 [_documentIndex forgetFileItemForRemoteDeletion:missingFileItem];
+                [self _fileItemNeedsMetadataRemoved:missingFileItem];
+            }
         }
     }
     
@@ -253,6 +273,9 @@ tryAgain:
             }
         } else {
             // New remote document
+            
+            DEBUG_TRANSFER(2, @"Initializing new snapshot by fetching %@", fileInfo.originalURL);
+            
             __autoreleasing NSError *documentError = nil;
             fileItem = [[OFXFileItem alloc] initWithNewRemoteSnapshotAtURL:fileInfo.originalURL container:self filePresenter:filePresenter connection:connection error:&documentError];
             if (!fileItem) {
@@ -266,6 +289,19 @@ tryAgain:
                 return;
             }
             
+            OFXFileItem *previouslyRegisteredFileItem = [_documentIndex fileItemWithLocalRelativePath:fileItem.localRelativePath];
+            if (previouslyRegisteredFileItem) {
+                __autoreleasing NSError *relocateError = nil;
+                
+                // We don't need to know about any possible move this does since we'll update our state immediately.
+                NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:self.filePresenter];
+                if (![self _relocateFileAtURL:previouslyRegisteredFileItem.localDocumentURL toMakeWayForFileItem:fileItem coordinator:coordinator error:&relocateError]) {
+                    [relocateError log:@"Error relocating previously known file item %@ to make room for incoming file item %@", previouslyRegisteredFileItem, fileItem];
+                    return;
+                }
+            }
+            
+            [self _fileItemNeedsMetadataUpdated:fileItem];
             [_documentIndex registerRemotelyAppearingFileItem:fileItem];
             
             if (_automaticallyDownloadFileContents) {
@@ -280,6 +316,8 @@ tryAgain:
         _hasUnknownRemoteEdit = NO;
         DEBUG_TRANSFER(1, @"Unknown remote edit should be known now.");
     }
+
+    [self _generateAutomaticMovesToAvoidNameConflicts];
     
     if (needsDownload) {
         [_weak_accountAgent containerNeedsFileTransfer:self];
@@ -299,10 +337,6 @@ tryAgain:
         retries++;
         goto tryAgain;
     } else {
-        // This is definitely ideal, since we don't have complete information here (but we can't, really). If there are downloads going on, they might fix whatever name conflicts we have. But, if there is a large/slow download going on, we don't want to wait for it (and there might be more queued up after that...).
-        // TODO: We could wait for a small amount of time here after detecting there is a problem before trying to resolve it. But we might also want to wait longer if there are multiple Bonjour clients on the network and we have reason to believe another might solve the problem (for example, iOS clients might want to defer to Mac clients by waiting a bit longer).
-        // For now, we just won't wait.
-        [self _resolveNameConflicts];
         return YES;
     }
 }
@@ -317,8 +351,36 @@ tryAgain:
         return;
     }
     
-    [_documentIndex enumerateFileItems:^(NSString *identifier, OFXFileItem *fileItem) {
+    NSTimeInterval skipFilesWithLastErrorAfterTimeInterval = [NSDate timeIntervalSinceReferenceDate] - [OFXFileItemSkipTransfersWithErrorsInTimeInterval doubleValue];
+    
+    __block BOOL skippedFile = NO;
+    __block NSTimeInterval nextRetryInterval = 0;
+
+    [_documentIndex enumerateFileItems:^(NSString *identifier, OFXFileItem *fileItem){
         DEBUG_TRANSFER(2, @"Checking document %@ %@.", identifier, fileItem.localDocumentURL);
+        
+        // If we have a very recent transfer error, skip this transfer rather than pounding the server. But we let the caller know that there was a skip so that it can ask again later.
+        OFXRecentError *recentError = fileItem.mostRecentTransferError;
+        if (recentError) {
+            DEBUG_TRANSFER(2, @"  Most recent error is at %@", recentError.date);
+            NSTimeInterval errorTimeInterval = [recentError.date timeIntervalSinceReferenceDate];
+            NSTimeInterval fileRetryInterval = errorTimeInterval - skipFilesWithLastErrorAfterTimeInterval;
+            DEBUG_TRANSFER(2, @"  fileRetryInterval %f", fileRetryInterval);
+            if (fileRetryInterval < 0) {
+                // Go ahead and do it now, this error was long enough ago.
+            } else {
+                if (!skippedFile) {
+                    skippedFile = YES;
+                    nextRetryInterval = fileRetryInterval;
+                } else {
+                    // Try again when the next file will be ready
+                    nextRetryInterval = MIN(nextRetryInterval, fileRetryInterval);
+                }
+                
+                // We might not have wanted to do anything, but lets delay since we had a recent error. This certainly isn't perfect (the operation we are going to try now might be different enough to clear up the error), but better than pounding the server.
+                return;
+            }
+        }
         
         OFXFileState *localState = fileItem.localState;
         OFXFileState *remoteState = fileItem.remoteState;
@@ -327,7 +389,6 @@ tryAgain:
             DEBUG_TRANSFER(2, @"  Already downloaded, no remote updates.");
             return;
         }
-        
         // Do local deletes before downloads so that delete/missing will actually push a delete rather than trying a download.
         if (localState.deleted) {
             // If the remote side is edited, this will result in a conflict in the transfer itself.
@@ -338,8 +399,9 @@ tryAgain:
         }
 
         // Preferring download of remote edits to uploads for now. In the case of a remote edit + local move our upload will fail due to ETag preconditions (when two clients are fighting over resolving a name vs. name conflict).
-        if (remoteState.edited || remoteState.moved) {
-            OBASSERT(remoteState.moved == NO, "We don't actually know about remote renames until we download the snapshot");
+        OBASSERT(remoteState.autoMoved == NO, "The server only has user intended moves");
+        if (remoteState.edited || remoteState.userMoved) {
+            OBASSERT(remoteState.userMoved == NO, "We don't actually know about remote renames until we download the snapshot");
             // May have a local edit or locally created file -- we resolve conflicts when committing the download
             //OBASSERT(localState.normal || localState.moved, "Handle content conflicts before this. We preserve local renames for name v. name conflict resolution.");
             DEBUG_TRANSFER(2, @"  Remotely edited or moved, queuing download.");
@@ -352,8 +414,9 @@ tryAgain:
             addTransfer(fileItem, OFXFileItemUploadTransferKind);
             return;
         }
-        if (localState.edited || localState.moved) {
-            DEBUG_TRANSFER(2, @"  Locally edited more moved, queuing upload.");
+
+        if (localState.edited || localState.userMoved) {
+            DEBUG_TRANSFER(2, @"  Locally edited or moved, queuing upload.");
             addTransfer(fileItem, OFXFileItemUploadTransferKind);
             return;
         }
@@ -369,8 +432,39 @@ tryAgain:
             return;
         }
         
+        if (localState.autoMoved) {
+            DEBUG_TRANSFER(2, @"  Just locally automatically moved.");
+            return;
+        }
+        
         OBASSERT_NOT_REACHED("Unhandled file state");
     }];
+    
+    // Register our desire to start transfers again in the future
+    if (skippedFile && !_hasScheduledDeferredTransferRequestForPreviouslySkippedFiles) {
+        _hasScheduledDeferredTransferRequestForPreviouslySkippedFiles = YES;
+        
+        NSOperationQueue *queue = [NSOperationQueue currentQueue]; // This is the account operation's queue, asserted above
+        __weak OFXContainerAgent *weakSelf = self;
+        
+        nextRetryInterval += 0.01;
+        DEBUG_TRANSFER(2, @"  Requesting transfers again in %f seconds.", nextRetryInterval);
+
+        // Jump to the main thread so that our request lives on it's runloop and will survive
+        OBFinishPortingLater("OFAfterDelayPerformBlock already does this queue bouncing for us");
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            OFAfterDelayPerformBlock(nextRetryInterval, ^{
+                [queue addOperationWithBlock:^{
+                    OFXContainerAgent *strongSelf = weakSelf;
+                    if (strongSelf) {
+                        OBASSERT(strongSelf->_hasScheduledDeferredTransferRequestForPreviouslySkippedFiles);
+                        strongSelf->_hasScheduledDeferredTransferRequestForPreviouslySkippedFiles = NO;
+                        [strongSelf->_weak_accountAgent containerNeedsFileTransfer:strongSelf];
+                    }
+                }];
+            });
+        }];
+    }
 }
 
 - (OFXFileSnapshotTransfer *)prepareUploadTransferForFileItem:(OFXFileItem *)fileItem error:(NSError **)outError;
@@ -383,7 +477,7 @@ tryAgain:
         OBUserCancelledError(outError);
         return nil;
     }
-    OBASSERT(fileItem.remoteState.missing || fileItem.localState.edited || fileItem.localState.moved);
+    OBASSERT(fileItem.remoteState.missing || fileItem.localState.edited || fileItem.localState.userMoved);
 
     OFXConnection *connection = [self _makeConnection];
     if (!connection)
@@ -394,7 +488,7 @@ tryAgain:
     __autoreleasing NSError *error;
     OFXFileSnapshotTransfer *transfer = [fileItem prepareUploadTransferWithConnection:connection error:&error];
     if (!transfer)
-        return NO;
+        return nil;
 
     OBASSERT(fileItem.isUploading); // should be set even before the operation starts so that our queue won't start more.
     
@@ -442,7 +536,7 @@ tryAgain:
                 }
                 
                 // Might also have been moved while the upload was going on.
-                if (hasBeenEdited || fileItem.localState.moved) {
+                if (hasBeenEdited || fileItem.localState.userMoved) {
                     OFXAccountAgent *accountAgent = _weak_accountAgent;
                     OBASSERT(accountAgent);
                     [accountAgent containerNeedsFileTransfer:self];
@@ -517,15 +611,20 @@ tryAgain:
         if (errorOrNil == nil) {
             NSString *updatedLocalRelativePath = fileItem.localRelativePath;
             if (OFNOTEQUAL(originalLocalRelativePath, updatedLocalRelativePath)) {
-                // The file moved as part of the download.
-                [_documentIndex fileItemMoved:fileItem fromLocalRelativePath:originalLocalRelativePath toLocalRelativePath:updatedLocalRelativePath];
+                if (fileItem.localState.autoMoved) {
+                    // The file was locally moved as part of conflict resoluation
+                    OBASSERT([_documentIndex fileItemWithLocalRelativePath:updatedLocalRelativePath] == fileItem);
+                } else {
+                    // The file moved as part of the download.
+                    [_documentIndex fileItemMoved:fileItem fromLocalRelativePath:originalLocalRelativePath toLocalRelativePath:updatedLocalRelativePath];
+                }
             }
             
             // Check if another download request came in that wanted contents with this download only being for metadata.
             if (fileItem.contentsRequested) {
                 OFXFileState *localState = fileItem.localState;
                 OFXFileState *remoteState = fileItem.remoteState;
-                if (localState.missing || remoteState.edited || remoteState.moved) {
+                if (localState.missing || remoteState.edited || remoteState.userMoved) {
                     OBASSERT(localState.missing || remoteState.edited, "We don't know about remote renames for real. We might have seen a new version on the server before our first download finished, so we might still be in the create state");
                     [_weak_accountAgent containerNeedsFileTransfer:self];
                 }
@@ -598,7 +697,8 @@ tryAgain:
         
         if (didRemove) {
             [_documentIndex completeLocalDeletionOfFileItem:fileItem];
-            
+            [self _fileItemNeedsMetadataRemoved:fileItem];
+
             if (errorOrNil == nil) {
                 // Only publish a new identifier if the *remote* delete happened.
                 [self _updatePublishedFileVersions];
@@ -623,13 +723,34 @@ tryAgain:
     return transfer;
 }
 
-- (OFXFileItem *)publishedFileItemWithURL:(NSURL *)fileURL;
+- (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary *)recentErrorsByLocalRelativePath;
+{
+    OBPRECONDITION([self _runningOnAccountAgentQueue]);
+    
+    [_documentIndex enumerateFileItems:^(NSString *identifier, OFXFileItem *fileItem) {
+        [fileItem addRecentTransferErrorsByLocalRelativePath:recentErrorsByLocalRelativePath];
+    }];
+}
+
+- (void)clearRecentErrorsOnAllFileItems;
+{
+    OBPRECONDITION([self _runningOnAccountAgentQueue]);
+    
+    // Clear this too so that we'll look again rather than just bailing on making new transfers
+    _hasUnknownRemoteEdit = NO;
+    
+    [_documentIndex enumerateFileItems:^(NSString *identifier, OFXFileItem *fileItem) {
+        [fileItem clearRecentTransferErrors];
+    }];
+}
+
+- (OFXFileItem *)fileItemWithURL:(NSURL *)fileURL;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
     OBPRECONDITION([[[self class] containerAgentIdentifierForFileURL:fileURL] isEqual:_identifier]);
     
     NSString *relativePath = [self _localRelativePathForFileURL:fileURL];
-    return [_documentIndex publishedFileItemWithLocalRelativePath:relativePath];
+    return [_documentIndex fileItemWithLocalRelativePath:relativePath];
 }
 
 // Probe used by OFXAccountAgent to determine if a rename is a directory rename.
@@ -654,27 +775,83 @@ tryAgain:
     return [[OFXContainerScan alloc] initWithDocumentIndexState:indexState];
 }
 
-- (BOOL)finishedScan:(OFXContainerScan *)scan error:(NSError **)outError;
+- (BOOL)finishedScan:(OFXContainerScan *)_scan error:(NSError **)outError;
 {
     OBPRECONDITION([self _checkInvariants]); // checks the queue too
     
     // TODO: Test exchange of two files/directories? There is nothing with NSFileCoordination to support this, but we could observe an uncoordinated exchangedata/FSExchangeObjects. Probably OK to do something a little unexpected in this case...
     
-    OBPRECONDITION(OFISEQUAL(scan.documentIndexState, [_documentIndex copyIndexState]), @"No file item registration changes should have happened between the scan starting and finishing");
-    NSMutableArray *newFileURLs = [NSMutableArray new];
-    NSMutableDictionary *remainingLocalRelativePathToPublishedFileItem = [_documentIndex copyLocalRelativePathToPublishedFileItem];
+    OBPRECONDITION(OFISEQUAL(_scan.documentIndexState, [_documentIndex copyIndexState]), @"No file item registration changes should have happened between the scan starting and finishing");
     
-    DEBUG_SCAN(1, @"Finished scan with URLs %@", scan.scannedFileURLs);
+    DEBUG_SCAN(1, @"Finished scan with URLs %@", _scan.scannedFileURLs);
+    
+    // Experimentally, if we create 1000 files, remove them and then immediately create 1000 more, inodes continue to increase in number. Presumably at some point they'll be recycled, but the system does seem to want to make inodes be at least short-term unique identifiers for files.
+    // Build an index of inode->relative path for the scanned items. We assume everything we are operating on is w/in our directory is on one filesystem (the one for our account's local documents directory).
 
-    for (NSURL *fileURL in scan.scannedFileURLs) {
+    NSMutableDictionary *inodeToScannedURL = [NSMutableDictionary dictionary];
+    for (NSURL *fileURL in _scan.scannedFileURLs) {
+        __autoreleasing NSError *error;
+        NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[fileURL path] error:&error];
+        NSNumber *inode = attributes[NSFileSystemFileNumber];
+        if (!inode) {
+            // Something was moved/deleted while we were scanning -- try again.
+            if ([error causedByMissingFile]) {
+                DEBUG_SCAN(2, @"   ... file missing at %@, must rescan", fileURL);
+                NSString *reason = [NSString stringWithFormat:@"Local file at %@ has been removed or renamed.", fileURL];
+                OFXError(outError, OFXLocalAccountDirectoryModifiedWhileScanning, @"Local account directory has been modified since scan began.", reason);
+            } else {
+                NSLog(@"Error getting inode for URL %@: %@", fileURL, [error toPropertyList]);
+                
+                if (outError)
+                    *outError = error;
+            }
+            return NO;
+        }
+        inodeToScannedURL[inode] = fileURL;
+    }
+    
+    // Check for renames (same inode) so that we don't mistakenly create new files when we have a move of a->b and a creation of something new at "a". Also handle swapping renames by doing these in bulk.
+    {
+        __block NSMutableDictionary *fileItemToUpdatedURL = nil;
+        
+        [[_documentIndex copyLocalRelativePathToFileItem] enumerateKeysAndObjectsUsingBlock:^(NSString *localRelativePath, OFXFileItem *fileItem, BOOL *stop) {
+            NSNumber *inode = fileItem.inode;
+            if (!inode)
+                return; // Locally missing
+            NSURL *updatedURL = inodeToScannedURL[inode];
+            if (!updatedURL)
+                return; // New file, likely
+            
+            // Same root inode, so these are the same item.
+            if (OFNOTEQUAL(fileItem.localDocumentURL, updatedURL)) {
+                if (!fileItemToUpdatedURL)
+                    fileItemToUpdatedURL = [[NSMutableDictionary alloc] init];
+                fileItemToUpdatedURL[fileItem] = updatedURL;
+            }
+        }];
+        
+        if (fileItemToUpdatedURL) {
+            NSMutableArray *intendedRelativePathsResolved = [[NSMutableArray alloc] init];
+            [self _fileItemsMoved:fileItemToUpdatedURL intendedRelativePathsResolved:intendedRelativePathsResolved];
+            
+            // If any files have been moved from a conflict URL to their original intended relative path, then the user is picking a winner and the other conflict names are to be made real.
+            [self _finalizeConflictNamesForFilesIntendingToBeAtRelativePaths:intendedRelativePathsResolved];
+        }
+    }
+    
+    // Now look for edits and creation of new files
+    NSMutableArray *newFileURLs = [NSMutableArray new];
+    NSMutableDictionary *remainingLocalRelativePathToFileItem = [_documentIndex copyLocalRelativePathToFileItem];
+    
+    for (NSURL *fileURL in _scan.scannedFileURLs) {
         OBASSERT([[[self class] containerAgentIdentifierForFileURL:fileURL] isEqual:_identifier]);
 
         // Most likely this is an existing file, possibly modified. We don't try to handle the case of exchangedata/FSExchangeObjects. So, if we have urlA and urlB and whose contents get swapped, we'll treat this as content updates to both rather than swapping moves.
         NSString *localRelativePath = [self _localRelativePathForFileURL:fileURL];
-        OFXFileItem *fileItem = [_documentIndex publishedFileItemWithLocalRelativePath:localRelativePath];
+        OFXFileItem *fileItem = [_documentIndex fileItemWithLocalRelativePath:localRelativePath];
         if (fileItem) {
-            OBASSERT(remainingLocalRelativePathToPublishedFileItem[localRelativePath] == fileItem);
-            [remainingLocalRelativePathToPublishedFileItem removeObjectForKey:localRelativePath];
+            OBASSERT(remainingLocalRelativePathToFileItem[localRelativePath] == fileItem);
+            [remainingLocalRelativePathToFileItem removeObjectForKey:localRelativePath];
              
             // Don't try to upload if this is a new stub, new uploading document, or previously edited document that is still uploading.
             // We might also be in the middle of downloading and shouldn't start an upload. In this case, we may have been notified of a remote edit and have locally saved in the mean time (most commonly in test cases that are intentionally racing). In this case, when the download completes, the commit validation in the download transfer operation will notice a conflict.
@@ -682,7 +859,14 @@ tryAgain:
                 __autoreleasing NSError *error;
                 NSNumber *same = [fileItem hasSameContentsAsLocalDocumentAtURL:fileURL error:&error];
                 if (!same) {
-                    NSLog(@"Error checking for changes in contents for %@: %@", fileURL, [error toPropertyList]);
+                    if ([error causedByMissingFile]) {
+                        DEBUG_SCAN(2, @"   ... file missing at %@, must rescan", fileURL);
+                        NSString *reason = [NSString stringWithFormat:@"Local file at %@ has been removed or renamed.", fileURL];
+                        OFXError(outError, OFXLocalAccountDirectoryModifiedWhileScanning, @"Local account directory has been modified since scan began.", reason);
+                        return NO;
+                    } else {
+                        NSLog(@"Error checking for changes in contents for %@: %@", fileURL, [error toPropertyList]);
+                    }
                 } else {
                     if ([same boolValue] == NO && !fileItem.localState.edited) {
                         __autoreleasing NSError *error;
@@ -701,13 +885,6 @@ tryAgain:
         }
     }
     
-    if ([newFileURLs count] > 0 && [remainingLocalRelativePathToPublishedFileItem count] > 0) {
-        DEBUG_SCAN(1, @"Attempt to infer moves based on new URLs %@ and old relative paths %@", newFileURLs, remainingLocalRelativePathToPublishedFileItem);
-        
-        // Possibly have some uncoordinated moves or moves that NSFileCoordinator didn't tell us about. Try to match up by inode and then a has-same-contents check.
-        [self _handlePossibleMovesOfFileURLs:newFileURLs remainingLocalRelativePathToPublishedFileItem:remainingLocalRelativePathToPublishedFileItem];
-    }
-    
     for (NSURL *fileURL in newFileURLs) {
         // New document!
         DEBUG_SCAN(1, @"Register document for new URL %@", fileURL);
@@ -717,9 +894,9 @@ tryAgain:
     __block BOOL success = YES;
     __block NSError *error;
     
-    [remainingLocalRelativePathToPublishedFileItem enumerateKeysAndObjectsUsingBlock:^(NSString *localRelativePath, OFXFileItem *fileItem, BOOL *stop) {
+    [remainingLocalRelativePathToFileItem enumerateKeysAndObjectsUsingBlock:^(NSString *localRelativePath, OFXFileItem *fileItem, BOOL *stop) {
         if (fileItem.localState.missing || fileItem.localState.deleted) {
-            OBASSERT_NOT_REACHED("We should only get published file items (downloaded and not locally deleted), but got %@", fileItem); // Check at runtime even though this should never happen so we don't treat a missing file as a delete.
+            // We don't expect this file to exist on disk, so its absense doesn't indicate a deletion.
             return;
         }
         
@@ -734,6 +911,8 @@ tryAgain:
         }
     }];
     
+    [self _publishMetadataUpdates];
+
     OBPOSTCONDITION([self _checkInvariants]); // checks the queue too
     return success;
 }
@@ -742,7 +921,7 @@ tryAgain:
 {
     OBPRECONDITION([self _checkInvariants]); // checks the queue too
     OBPRECONDITION(fileItem);
-    OBPRECONDITION(fileItem.localState.missing || [_documentIndex publishedFileItemWithLocalRelativePath:fileItem.localRelativePath] == fileItem);
+    OBPRECONDITION(fileItem.localState.missing || [_documentIndex fileItemWithLocalRelativePath:fileItem.localRelativePath] == fileItem);
     
     OFXAccountAgent *accountAgent = _weak_accountAgent;
     if (!accountAgent) {
@@ -772,16 +951,17 @@ tryAgain:
     // TODO: Case insensitivity restrictions?
     NSString *oldRelativePath = [self _localRelativePathForFileURL:oldURL];
     NSString *newRelativePath = [self _localRelativePathForFileURL:newURL];
-    OBASSERT(OFNOTEQUAL(oldRelativePath, newRelativePath));
+
+    BOOL pathChanged = OFNOTEQUAL(oldRelativePath, newRelativePath);
+    OBASSERT((fileItem.localState.autoMoved && byUser) || pathChanged, "Unless we are finalizing a conflict name, this should be an automove getting finalized");
     
     OBASSERT(fileItem.localState.missing || OFURLIsStandardizedOrMissing(newURL)); // standardizing non-existent URLS doesn't work so don't check if we are renaming something that isn't downloaded. It might have also been moved and then quickly moved again or deleted before we could process the rename.
 
     // If this is coming from the server, don't call back to the item (it will update itself) or provoke an upload of the move.
-    if (byUser) {
-        [fileItem didMoveToURL:newURL];
-    }
+    [fileItem markAsMovedToURL:newURL source:byUser ? OFXFileItemMoveSourceLocalUser : OFXFileItemMoveSourceAutomatic];
     
-    [_documentIndex fileItemMoved:fileItem fromLocalRelativePath:oldRelativePath toLocalRelativePath:newRelativePath];
+    if (pathChanged)
+        [_documentIndex fileItemMoved:fileItem fromLocalRelativePath:oldRelativePath toLocalRelativePath:newRelativePath];
     
     if (byUser) {
         OFXAccountAgent *accountAgent = _weak_accountAgent;
@@ -792,12 +972,54 @@ tryAgain:
     OBPOSTCONDITION([self _checkInvariants]);
 }
 
+// Bulk move that handles swapping renames. All moves are "by-user"
+- (void)_fileItemsMoved:(NSDictionary *)fileItemToUpdatedURL intendedRelativePathsResolved:(NSMutableArray *)intendedRelativePathsResolved;
+{
+    OBPRECONDITION([self _checkInvariants]); // checks the queue too
+    
+    if ([fileItemToUpdatedURL count] == 0)
+        return;
+    
+    NSMutableArray *fileItemMoves = [[NSMutableArray alloc] init];
+    [fileItemToUpdatedURL enumerateKeysAndObjectsUsingBlock:^(OFXFileItem *fileItem, NSURL *updatedFileURL, BOOL *stop) {
+        NSString *updatedRelativePath = [self _localRelativePathForFileURL:updatedFileURL];
+
+        OBASSERT(fileItem.localState.missing || OFURLIsStandardizedOrMissing(updatedFileURL)); // standardizing non-existent URLS doesn't work so don't check if we are renaming something that isn't downloaded. It might have also been moved and then quickly moved again or deleted before we could process the rename.
+        
+        // Capture the file item's current relative path before updating it...
+        OFXContainerDocumentIndexMove *move = [OFXContainerDocumentIndexMove new];
+        move.fileItem = fileItem;
+        move.originalRelativePath = fileItem.localRelativePath;
+        move.updatedRelativePath = updatedRelativePath;
+        [fileItemMoves addObject:move];
+
+        // If the file item is being moved by the user to its original non-conflict operation, this isn't a publishable move.
+        OFXFileItemMoveSource moveSource = OFXFileItemMoveSourceLocalUser;
+        
+        OBASSERT_NOTNULL(updatedRelativePath);
+        if (fileItem.localState.autoMoved && OFISEQUAL(updatedRelativePath, fileItem.intendedLocalRelativePath)) {
+            [intendedRelativePathsResolved addObject:updatedRelativePath]; // Let the caller know that *other* items wanting this relative path have been told they can't have it.
+            moveSource = OFXFileItemMoveSourceAutomatic;
+        }
+        
+        [fileItem markAsMovedToURL:updatedFileURL source:moveSource];
+    }];
+    
+    [_documentIndex fileItemsMoved:fileItemMoves];
+    
+    OFXAccountAgent *accountAgent = _weak_accountAgent;
+    OBASSERT(accountAgent);
+    [accountAgent containerNeedsFileTransfer:self];
+    
+    OBPOSTCONDITION([self _checkInvariants]);
+}
+
 - (void)_operateOnFileAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler withAction:(void (^)(OFXFileItem *))fileAction;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
     
     NSString *relativePath = [self _localRelativePathForFileURL:fileURL];
-    OFXFileItem *fileItem = [_documentIndex publishableFileItemWithLocalRelativePath:relativePath];
+    OFXFileItem *fileItem = [_documentIndex fileItemWithLocalRelativePath:relativePath];
     
     if (!fileItem) {
         __autoreleasing NSError *error;
@@ -867,6 +1089,28 @@ tryAgain:
     }];
 }
 
+- (BOOL)_performMoveFromURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL error:(NSError **)outError;
+{
+    // NOTE: Case-only renames are busticated for file presenter notifications (see screed in -[NSFileCoordinator(OFExtensions) moveItemAtURL:toURL:createIntermediateDirectories:error:]). So, we have to pass a file presenter to the coordinator and will notify ourselves about the rename, at least for that one presenter). If there are multiple presenters, some of them are screwed.
+    id <NSFilePresenter> filePresenter = _weak_filePresenter;
+    OBASSERT(filePresenter);
+    
+    TRACE_SIGNAL(OFXContainerAgent.move_item.file_coordination);
+    
+    __autoreleasing NSError *moveError;
+    NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:filePresenter];
+    if ([coordinator moveItemAtURL:originalFileURL toURL:updatedFileURL createIntermediateDirectories:YES error:&moveError])
+        return YES;
+    
+    // Maybe hit in http://rt.omnigroup.com/Ticket/Display.html?id=886781 and http://rt.omnigroup.com/Ticket/Display.html?id=886777
+    // Definitely hit in http://rt.omnigroup.com/Ticket/Attachment/14329504/8130862/
+    // Presumably we've downloaded conflict resolution done on another machine, but there have been multiple conflicts or conflicting resolutions. Punt instead of OBFinishPorting, and we'll hopefully retry on the next sync when we have more info.
+    [moveError log:@"Error moving %@ to %@", originalFileURL, updatedFileURL];
+    if (outError)
+        *outError = moveError;
+    return NO;
+}
+
 - (BOOL)_moveFileItem:(OFXFileItem *)fileItem fromURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL byUser:(BOOL)byUser error:(NSError **)outError;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
@@ -880,27 +1124,19 @@ tryAgain:
         [self fileItemMoved:fileItem fromURL:originalFileURL toURL:updatedFileURL byUser:byUser];
         return YES;
     } else {
-        // NOTE: Case-only renames are busticated for file presenter notifications (see screed in -[NSFileCoordinator(OFExtensions) moveItemAtURL:toURL:createIntermediateDirectories:error:]). So, we have to pass a file presenter to the coordinator and will notify ourselves about the rename, at least for that one presenter). If there are multiple presenters, some of them are screwed.
-        id <NSFilePresenter> filePresenter = _weak_filePresenter;
-        OBASSERT(filePresenter);
-        
-        TRACE_SIGNAL(OFXContainerAgent.move_item.file_coordination);
-        
-        __autoreleasing NSError *moveError;
-        NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:filePresenter];
-        if (![coordinator moveItemAtURL:originalFileURL toURL:updatedFileURL createIntermediateDirectories:YES error:&moveError]) {
-            // Maybe hit in http://rt.omnigroup.com/Ticket/Display.html?id=886781 and http://rt.omnigroup.com/Ticket/Display.html?id=886777
-            // Definitely hit in http://rt.omnigroup.com/Ticket/Attachment/14329504/8130862/
-            // Presumably we've downloaded conflict resolution done on another machine, but there have been multiple conflicts or conflicting resolutions. Punt instead of OBFinishPorting, and we'll hopefully retry on the next sync when we have more info.
-            [moveError log:@"Error moving %@ to %@", originalFileURL, updatedFileURL];
-            if (outError)
-                *outError = moveError;
-            return NO;
+        // This can happen when we are called from -_finalizeConflictNamesForFilesIntendingToBeAtRelativePaths:.
+        BOOL success;
+        if (OFURLEqualsURL(originalFileURL, updatedFileURL)) {
+            OBASSERT(fileItem.localState.autoMoved);
+            success = YES;
         } else {
-            OFXNoteContentMoved(self, originalFileURL, updatedFileURL);
-            [self fileItemMoved:fileItem fromURL:originalFileURL toURL:updatedFileURL byUser:YES];
-            return  YES;
+            success = [self _performMoveFromURL:originalFileURL toURL:updatedFileURL error:outError];
         }
+        if (success) {
+            OFXNoteContentMoved(self, originalFileURL, updatedFileURL);
+            [self fileItemMoved:fileItem fromURL:originalFileURL toURL:updatedFileURL byUser:byUser];
+        }
+        return success;
     }
 }
 
@@ -918,13 +1154,6 @@ tryAgain:
     }];
 }
 
-- (void)newlyUnshadowedFileItemRequestsContents:(OFXFileItem *)fileItem;
-{
-    OBPRECONDITION([self _runningOnAccountAgentQueue]);
-
-    [_weak_accountAgent containerNeedsFileTransfer:self];
-}
-
 #pragma mark - Debugging
 
 - (NSString *)shortDescription;
@@ -939,6 +1168,7 @@ tryAgain:
 
 - (NSString *)_localRelativePathForFileURL:(NSURL *)fileURL;
 {
+    // TODO: This can spuriously fail if an external source moves the file since this tries to standardize the URL, which might fail if it doesn't exist. Really, we should only be accessing the filesystem under file coordination.
     NSURL *localDocumentsURL = _account.localDocumentsURL;
     OBASSERT(OFURLContainsURL(localDocumentsURL, fileURL));
     
@@ -950,15 +1180,26 @@ tryAgain:
     return [_account.localDocumentsURL URLByAppendingPathComponent:relativePath isDirectory:isDirectory];
 }
 
-- (void)_fileItemDidGenerateConflict:(OFXFileItem *)fileItem;
+- (void)_fileItem:(OFXFileItem *)fileItem didGenerateConflictAtURL:(NSURL *)conflictURL coordinator:(NSFileCoordinator *)coordinator;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
     
-    OFXAccountAgent *accountAgent = _weak_accountAgent;
-    if (!accountAgent)
+    // Make a new file item to take over the snapshot the original file item (which is about to get -didGiveUpLocalContents:). Record the conflict location as the automatically assigned relative path, but keep the same user desired path.
+    __autoreleasing NSError *error = nil;
+    OFXFileItem *conflictItem = [[OFXFileItem alloc] initWithNewLocalDocumentURL:conflictURL asConflictGeneratedFromFileItem:fileItem coordinator:coordinator container:self error:&error];
+    if (!conflictURL) {
+        // If the file real is there and we can eventually read it, we'll end up making a new document that has the conflictURL is its user-intended location.
+        [error log:@"Error creating new file item for conflict version at %@", conflictURL];
         return;
+    }
+
+    [conflictItem self];
     
-    [accountAgent _fileItemDidGenerateConflict:fileItem];
+    [self _fileItemNeedsMetadataUpdated:conflictItem];
+    [_documentIndex registerScannedLocalFileItem:conflictItem];
+
+    [self _updatePublishedFileVersions];
+    OBPOSTCONDITION([self _checkInvariants]);
 }
 
 // We don't know what the remote version is in this case. The container needs to scan to find out.
@@ -988,34 +1229,137 @@ tryAgain:
     OBASSERT(conflictURL);
     DEBUG_CONFLICT(1, @"Making way for incoming document by moving published document aside to %@", conflictURL);
 
-    OFXFileItem *otherItem = [self publishedFileItemWithURL:fileURL];
-    OBASSERT(otherItem != fileItem);
-    if (otherItem && otherItem != fileItem) {        
+    OFXFileItem *otherItem = [self fileItemWithURL:fileURL];
+    if (otherItem == fileItem) {
+        // There is something in the way of this item, which is the registered owner for this path.
+        otherItem = nil;
+    }
+    
+    if (!otherItem) {
+        // The thing in our way appeared very recently (possibly as a result of our provoking autosave, as in -[OFXConflictTestCase testIncomingMoveVsLocalAutosaveCreation]).
+        // Make a file item for it right now and mark it as auto-moved immediately, so that we record the user's intended name, rather than doing a conflict move here and promoting that name to the user intended name).
+        NSError *error = nil;
+        if (!(otherItem = [[OFXFileItem alloc] initWithNewLocalDocumentURL:fileURL container:self error:&error])) {
+            // Well, we tried. Move aside the file by itself -- thus promoting the file name to the user intended name, but at least preserving the contents.
+            // The coordinator should have a file presenter so that this move is not interpreted as moving *us*, but sadly we have no way of asserting that here.
+            __autoreleasing NSError *moveError = nil;
+            if ([coordinator moveItemAtURL:fileURL toURL:conflictURL createIntermediateDirectories:NO/*sibling*/ error:&moveError])
+                return YES;
+            
+            if (outError)
+                *outError = moveError;
+            OBChainError(outError);
+            return NO;
+        }
+        
+        // Move the existing file aside before registering this item.
+        __autoreleasing NSError *moveError = nil;
+        if (![self _performMoveFromURL:fileURL toURL:conflictURL error:&moveError]) {
+            // Hopefully someone else moved/delete the file...
+            if (outError)
+                *outError = moveError;
+            OBChainError(outError);
+            return NO;
+        }
+
+        // Tell the item about the move, but don't go through our -fileItemMoved:fromURL:toURL:byUser: since that also updates the index (and the item isn't in there yet).
+        OFXNoteContentMoved(self, fileURL, conflictURL);
+        [otherItem markAsMovedToURL:conflictURL source:OFXFileItemMoveSourceAutomatic];
+        
+        // Then, register it under its new name.
+        [self _fileItemNeedsMetadataUpdated:otherItem];
+        [_documentIndex registerLocallyAppearingFileItem:otherItem];
+        return YES;
+    } else {
         // Use our API so the otherItem's URL is updated.
         __autoreleasing NSError *conflictError;
-        if ([self _moveFileItem:otherItem fromURL:otherItem.localDocumentURL toURL:conflictURL byUser:YES error:&conflictError])
+        if ([self _moveFileItem:otherItem fromURL:otherItem.localDocumentURL toURL:conflictURL byUser:NO error:&conflictError])
             return YES;
         if (outError)
             *outError = conflictError;
         OBChainError(outError);
         return NO;
     }
-    
-    if (!otherItem) {
-        // The thing in our way appeared very recently (possibly as a result of our provoking autosave, as in -[OFXConflictTestCase testIncomingMoveVsLocalAutosaveCreation]).
-        // The coordinator should have a file presenter so that this move is not interpreted as moving *us*, but sadly we have no way of asserting that here.
-        __autoreleasing NSError *moveError = nil;
-        if ([coordinator moveItemAtURL:fileURL toURL:conflictURL createIntermediateDirectories:NO/*sibling*/ error:&moveError])
-            return YES;
-        
-        if (outError)
-            *outError = moveError;
-        OBChainError(outError);
-        return NO;
+}
+
+- (void)_fileItemNeedsMetadataUpdated:(OFXFileItem *)fileItem;
+{
+    OBPRECONDITION([self _runningOnAccountAgentQueue]);
+
+    if (fileItem.localState.deleted && (fileItem.remoteState.missing || fileItem.remoteState.deleted)) {
+        // This was never uploaded, or has been deleted remotely too, so the "delete" transfer isn't going to actually do any network work (which is why we delay clearing the metadata -- so we can show the number of delete operations that need to be performed). Also, if we generate metadata here, we'll hit assertions.
+        [self _fileItemNeedsMetadataRemoved:fileItem];
+    } else {
+        DEBUG_METADATA(1, @"Needs to update metadata for %@", [fileItem shortDescription]);
+        if (!_fileItemsNeedingMetadataUpdate)
+            _fileItemsNeedingMetadataUpdate = [[NSMutableSet alloc] init];
+        [_fileItemsNeedingMetadataRemoved removeObject:fileItem];
+        [_fileItemsNeedingMetadataUpdate addObject:fileItem];
     }
+
+    [self _scheduleMetadataUpdate];
+}
+
+- (void)_fileItemNeedsMetadataRemoved:(OFXFileItem *)fileItem;
+{
+    OBPRECONDITION([self _runningOnAccountAgentQueue]);
+
+    DEBUG_METADATA(1, @"Needs to clear metadata for %@", [fileItem shortDescription]);
+    if (!_fileItemsNeedingMetadataRemoved)
+        _fileItemsNeedingMetadataRemoved = [[NSMutableSet alloc] init];
+    [_fileItemsNeedingMetadataUpdate removeObject:fileItem];
+    [_fileItemsNeedingMetadataRemoved addObject:fileItem];
+
+    [self _scheduleMetadataUpdate];
+}
+
+- (void)_scheduleMetadataUpdate;
+{
+    if (_hasScheduledMetadataUpdate)
+        return;
     
-    OBASSERT_NOT_REACHED("Should have hit one of the cases above");
-    return YES; // Caller will try its move again and will fail again.
+    _hasScheduledMetadataUpdate = YES;
+    
+    DEBUG_METADATA(1, @"Scheduling metadata update");
+    
+    // Schedule a delayed timer to perform the update, if we don't do it manually.
+    OFXAccountAgent *accountAgent = _weak_accountAgent;
+    [accountAgent _containerAgentNeedsMetadataUpdate:self];
+}
+
+- (void)_publishMetadataUpdates;
+{
+    OBPRECONDITION([self _runningOnAccountAgentQueue]);
+    OBPRECONDITION([_fileItemsNeedingMetadataUpdate intersectsSet:_fileItemsNeedingMetadataRemoved] == NO, "Removals and updates should be disjoint");
+    
+    DEBUG_METADATA(1, @"Publishing metadata removals for %@", _fileItemsNeedingMetadataRemoved);
+    DEBUG_METADATA(1, @"Publishing metadata updates for %@", _fileItemsNeedingMetadataUpdate);
+
+    // Might get reset during conflict resolution.
+    _hasScheduledMetadataUpdate = NO;
+    
+    // Make sure we don't publish two file items that say they are at the same file URL.
+    [self _generateAutomaticMovesToAvoidNameConflicts];
+    
+    // Don't expect reentrant updates, but let's check
+    NSSet *removals = _fileItemsNeedingMetadataRemoved;
+    _fileItemsNeedingMetadataRemoved = nil;
+    
+    NSSet *updates = _fileItemsNeedingMetadataUpdate;
+    _fileItemsNeedingMetadataUpdate = nil;
+    
+    // Do these updates in bulk. Otherwise, we run the risk of publishing two items with the same URL. For example, -[OFXRenameTestCase testRenameOfFileAndCreationOfNewFileAsSamePathWhileNotRunning] would occassionally do so.
+    NSMutableArray *removeIdentifiers = [[NSMutableArray alloc] init];
+    for (OFXFileItem *fileItem in removals)
+        [removeIdentifiers addObject:fileItem.identifier];
+    NSMutableDictionary *addItems = [[NSMutableDictionary alloc] init];
+    for (OFXFileItem *fileItem in updates)
+        addItems[fileItem.identifier] = [fileItem _makeMetadata];
+
+    [_metadataRegistrationTable removeObjectsWithKeys:removeIdentifiers setObjectsWithDictionary:addItems];
+    
+    OBPOSTCONDITION(_fileItemsNeedingMetadataRemoved == nil);
+    OBPOSTCONDITION(_fileItemsNeedingMetadataUpdate == nil);
 }
 
 - (NSString *)debugName;
@@ -1042,7 +1386,7 @@ tryAgain:
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
     OBPRECONDITION(_documentIndex == nil);
     
-    DEBUG_SYNC(1, @"Performing Snapshots scan");
+    DEBUG_SCAN(1, @"Performing Snapshots scan");
     
     id <NSFilePresenter> filePresenter = _weak_filePresenter;
     
@@ -1068,67 +1412,16 @@ tryAgain:
         }
         OBASSERT(OFISEQUAL([localSnapshotURL lastPathComponent], fileItem.identifier));
 
+        if (fileItem.localState.deleted == NO) // Would just try to remove the metadata, if the local snapshot represents an un-pushed delete, but we haven't generated any metadata yet.
+            [self _fileItemNeedsMetadataUpdated:fileItem];
+        
         [_documentIndex registerScannedLocalFileItem:fileItem];
     }
     
-    DEBUG_SYNC(2, @"_documentIndex = %@", [_documentIndex debugDictionary]);
+    DEBUG_SCAN(2, @"_documentIndex = %@", [_documentIndex debugDictionary]);
     
     [self _updatePublishedFileVersions];
     OBPOSTCONDITION([self _checkInvariants]);
-}
-
-
-- (void)_handlePossibleMovesOfFileURLs:(NSMutableArray *)newFileURLs remainingLocalRelativePathToPublishedFileItem:(NSMutableDictionary *)remainingLocalRelativePathToPublishedFileItem;
-{
-    OBPRECONDITION([self _runningOnAccountAgentQueue]);
-    OBPRECONDITION([newFileURLs count] > 0);
-    OBPRECONDITION([remainingLocalRelativePathToPublishedFileItem count] > 0);
-    
-    // We assume everything we are operating on is w/in our directory is on one filesystem (the one for our account's local documents directory).
-    
-    DEBUG_SYNC(2, @"Checking for possible renames");
-    DEBUG_SYNC(2, @"  newFileURLs = %@", newFileURLs);
-    DEBUG_SYNC(2, @"  remainingLocalRelativePathToPublishedFileItem = %@", remainingLocalRelativePathToPublishedFileItem);
-    
-    NSMutableDictionary *inodeToFileURL = [NSMutableDictionary new];
-    for (NSURL *fileURL in newFileURLs) {
-        __autoreleasing NSError *error;
-        NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[fileURL path] error:&error];
-        NSNumber *inode = attributes[NSFileSystemFileNumber];
-        if (!inode) {
-            NSLog(@"Error getting inode for URL %@: %@", fileURL, [error toPropertyList]);
-            continue;
-        }
-        inodeToFileURL[inode] = fileURL;
-    }
-    DEBUG_SYNC(3, @"inodeToFileURL = %@", inodeToFileURL);
-
-    // Can't mutate the original, so copy first... kinda ugly.
-    [[remainingLocalRelativePathToPublishedFileItem copy] enumerateKeysAndObjectsUsingBlock:^(NSString *localRelativePath, OFXFileItem *fileItem, BOOL *stop) {
-        NSNumber *inode = fileItem.inode;
-        NSURL *fileURL = inodeToFileURL[inode];
-        if (fileURL == nil)
-            return;
-        
-        __autoreleasing NSError *error;
-        NSNumber *same = [fileItem hasSameContentsAsLocalDocumentAtURL:fileURL error:&error];
-        if (!same) {
-            NSLog(@"Error checking if file item %@ has same contents as %@: %@", [fileItem shortDescription], fileURL, [error toPropertyList]);
-            return;
-        }
-        if ([same boolValue]) {
-            // Uncoordinated/unreported rename. Mark this pair as handled!
-            DEBUG_SYNC(2, @"Found that %@ was renamed to %@", fileItem.localDocumentURL, fileURL);
-
-            OBASSERT(remainingLocalRelativePathToPublishedFileItem[fileItem.localRelativePath] != nil);
-            [remainingLocalRelativePathToPublishedFileItem removeObjectForKey:fileItem.localRelativePath];
-            [newFileURLs removeObject:fileURL];
-            
-            // And do the rename itself
-            [self fileItemMoved:fileItem fromURL:fileItem.localDocumentURL toURL:fileURL byUser:YES];
-        }
-    }];
-    
 }
 
 - (OFXFileItem *)_handleNewLocalDocument:(NSURL *)fileURL;
@@ -1136,7 +1429,7 @@ tryAgain:
     OBPRECONDITION([self _checkInvariants]); // checks the queue too
     OBPRECONDITION(_documentIndex);
     
-    DEBUG_SYNC(1, @"Making snapshot for new local document %@", fileURL);
+    DEBUG_SCAN(1, @"Making snapshot for new local document %@", fileURL);
 
     __autoreleasing NSError *error = nil;
     OFXFileItem *fileItem = [[OFXFileItem alloc] initWithNewLocalDocumentURL:fileURL container:self error:&error];
@@ -1145,6 +1438,7 @@ tryAgain:
         return nil;
     }
 
+    [self _fileItemNeedsMetadataUpdated:fileItem];
     [_documentIndex registerLocallyAppearingFileItem:fileItem];
     
     OBPOSTCONDITION([self _checkInvariants]);
@@ -1256,32 +1550,83 @@ tryAgain:
     }];
 }
 
-- (void)_resolveNameConflicts;
+// If we have multpile file items that want to be at a given relative path, update the local filename (and move the file if they are actually published). We will *not* upload these renames to the server since they don't reflect the user's intent and since doing so can cause a rename storm.
+- (void)_generateAutomaticMovesToAvoidNameConflicts;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 
-    NSDictionary *losingFileItemsByWinner = [_documentIndex copyRenameConflictLoserFileItemsByWinningFileItem];
-    if ([losingFileItemsByWinner count] == 0)
-        return;
-    
-    [losingFileItemsByWinner enumerateKeysAndObjectsUsingBlock:^(OFXFileItem *winningFileItem, NSArray *losingFileItems, BOOL *stop) {
-        DEBUG_CONFLICT(1, @"Resolving name conflicts for %@ -> %@", [winningFileItem shortDescription], [losingFileItems arrayByPerformingBlock:^(OFXFileItem *losingFileItem){
-            return [losingFileItem shortDescription];
-        }]);
-        DEBUG_CONTENT(1, @"Name conflict winner %@ has content %@", [winningFileItem shortDescription], OFXLookupDisplayNameForContentIdentifier(winningFileItem.currentContentIdentifier));
+    NSDictionary *intendedLocalRelativePathToFileItems = [_documentIndex copyIntendedLocalRelativePathToFileItems];
+    [intendedLocalRelativePathToFileItems enumerateKeysAndObjectsUsingBlock:^(NSString *relativePath, NSArray *fileItems, BOOL *stop) {
+        if ([fileItems count] < 2) {
+            // Check if there is a automatic rename that can be undone now that we have a single document intending to be at that location
+            OFXFileItem *fileItem = [fileItems lastObject];
+            OBASSERT(fileItem);
+            
+            if (fileItem.localState.autoMoved) {
+                DEBUG_CONTENT(1, @"Name conflict for %@ has been resolved to %@", relativePath, [fileItem shortDescription]);
+                
+                NSURL *intendedLocalURL = [fileItem _intendedLocalDocumentURL];
+
+                // Note that we pass byUser:NO even though we are renaming to the user-intended file. This is an automatic move that should remove the 'autoMove' state flag.
+                DEBUG_CONFLICT(1, @"  ... moving %@ to %@", [fileItem shortDescription], intendedLocalURL);
+                TRACE_SIGNAL(OFXContainerAgent.conflict_automove_undone);
+                
+                __autoreleasing NSError *moveError;
+                if (![self _moveFileItem:fileItem fromURL:fileItem.localDocumentURL toURL:intendedLocalURL byUser:NO error:&moveError])
+                    [moveError log:@"Error moving name conflict winner to %@", intendedLocalURL];
+                else {
+                    OBASSERT(fileItem.localState.autoMoved == NO);
+                }
+            }
+            
+            return;
+        }
         
-        for (OFXFileItem *fileItem in losingFileItems) {
-            DEBUG_CONTENT(1, @"Name conflict loser %@ has content %@", [fileItem shortDescription], OFXLookupDisplayNameForContentIdentifier(fileItem.currentContentIdentifier));
+        DEBUG_CONFLICT(1, @"Checking for name conflicts for %@ -> %@", relativePath, [fileItems arrayByPerformingBlock:^(OFXFileItem *fileItem){
+            return [fileItem shortDescription];
+        }]);
+        
+        for (OFXFileItem *fileItem in fileItems) {
+            if (fileItem.localState.autoMoved)
+                continue; // Already relocated
+            
+            DEBUG_CONTENT(1, @"Conflicting file %@ has content %@", [fileItem shortDescription], OFXLookupDisplayNameForContentIdentifier(fileItem.currentContentIdentifier));
 
             NSURL *conflictURL = [fileItem fileURLForConflictVersion];
             
-            // Can't use the URL-based -moveItemAtURL:toURL:completionHandler: since the losing file item might be shadowed.
+            // Can't use the URL-based -moveItemAtURL:toURL:completionHandler: since by definition all have the same desired local URL right now.
             DEBUG_CONFLICT(1, @"  ... moving %@ to %@", [fileItem shortDescription], conflictURL);
+            TRACE_SIGNAL(OFXContainerAgent.conflict_automove_done);
             __autoreleasing NSError *moveError;
-            if (![self _moveFileItem:fileItem fromURL:fileItem.localDocumentURL toURL:conflictURL byUser:YES error:&moveError])
+            if (![self _moveFileItem:fileItem fromURL:fileItem.localDocumentURL toURL:conflictURL byUser:NO error:&moveError])
                 [moveError log:@"Error moving name conflict loser to %@", conflictURL];
         }
     }];
+}
+
+// This is called when the user renames an automoved file to have its original name, thus declaring which file is the winner of the conflict. At that point, all the other files that were intending to be at that path have their automoved conflict paths made their intended path (and pushed to the server and other clients).
+- (void)_finalizeConflictNamesForFilesIntendingToBeAtRelativePaths:(NSArray *)relativePaths;
+{
+    if ([relativePaths count] == 0)
+        return;
+    
+    NSDictionary *intendedLocalRelativePathToFileItems = [_documentIndex copyIntendedLocalRelativePathToFileItems];
+
+    for (NSString *relativePath in relativePaths) {
+        for (OFXFileItem *fileItem in intendedLocalRelativePathToFileItems[relativePath]) {
+            if (!fileItem.localState.autoMoved) {
+                continue; // The winner still intends to have this path
+            }
+            
+            // Note that the source and destination URL are the same here so the lower level methods need to accept that.
+            NSURL *finalizedURL = fileItem.localDocumentURL;
+            
+            __autoreleasing NSError *error = nil;
+            if (![self _moveFileItem:fileItem fromURL:finalizedURL toURL:finalizedURL byUser:YES error:&error]) {
+                [error log:@"Error finalizing file item's path at %@", fileItem.localDocumentURL];
+            }
+        }
+    }
 }
 
 #ifdef OMNI_ASSERTIONS_ON

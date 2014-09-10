@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,8 +76,8 @@ static OWDataStreamCursor *applyCursor(NSArray *coderInfo, OWDataStreamCursor *a
     OBASSERT([coderClass instancesRespondToSelector:coderInitSel]);
 
     // objc_msgSend avoids confusing clang-sa's reference tracking
-    OWDataStreamCursor *(*imp)(Class cls, SEL _cmd, NSZone *) = (typeof(imp))objc_msgSend;
-    newCursor = imp(coderClass, @selector(allocWithZone:), [aCursor zone]);
+    OWDataStreamCursor *(*imp)(Class cls, SEL _cmd) = (typeof(imp))objc_msgSend;
+    newCursor = imp(coderClass, @selector(alloc));
     newCursor = [newCursor performSelector:coderInitSel withObject:aCursor];
     
     OBAutorelease(newCursor);

@@ -303,14 +303,14 @@ RCS_ID("$Id$")
 - (void)makeValuesPerformSelector:(SEL)sel withObject:(id)object;
 {
     [self enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
-        [value performSelector:sel withObject:object];
+        OBSendVoidMessageWithObject(value, sel, object);
     }];
 }
 
 - (void)makeValuesPerformSelector:(SEL)sel;
 {
     [self enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
-        [value performSelector:sel];
+        OBSendVoidMessage(value, sel);
     }];
 }
 
@@ -347,15 +347,15 @@ static id copyDictionaryKeys(CFDictionaryRef self, Class resultClass)
 {
     NSUInteger keyCount = CFDictionaryGetCount(self);
     
-    __unsafe_unretained id *keys;
+    void **keys;
     size_t byteCount = sizeof(*keys) * keyCount;
     BOOL useMalloc = byteCount >= SAFE_ALLOCA_SIZE;
-    keys = useMalloc ? malloc(byteCount) : alloca(byteCount);
+    keys = (void **)(useMalloc ? malloc(byteCount) : alloca(byteCount));
     
     CFDictionaryGetKeysAndValues((CFDictionaryRef)self, (const void **)keys, NULL);
     
     id keyArray;
-    keyArray = [[resultClass alloc] initWithObjects:keys count:keyCount];
+    keyArray = [[resultClass alloc] initWithObjects:OBCastMemoryBufferToUnsafeObjectArray(keys) count:keyCount];
     
     if (useMalloc)
         free(keys);

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,7 +15,6 @@ RCS_ID("$Id$");
 
 @implementation OUIEditableLabeledValueCell
 {
-    SEL _action;
     UITextField *_valueField;
 }
 
@@ -33,7 +32,7 @@ RCS_ID("$Id$");
 }
 
 @synthesize delegate = _weak_delegate;
-@synthesize target = _weak_target;
+@synthesize valueChangedTarget = _weak_valueChangedTarget;
 
 - (void)dealloc
 {
@@ -147,7 +146,8 @@ RCS_ID("$Id$");
     if ([delegate respondsToSelector:@selector(editableLabeledValueCell:textFieldDidEndEditing:)])
         [delegate editableLabeledValueCell:self textFieldDidEndEditing:textField];
 
-    OBSendVoidMessageWithObject(self.target, self.action, self);
+    if (_valueChangedAction)
+        OBSendVoidMessageWithObject(self.valueChangedTarget, _valueChangedAction, self);
 
     [self setNeedsDisplay];
     OBAutorelease(self);

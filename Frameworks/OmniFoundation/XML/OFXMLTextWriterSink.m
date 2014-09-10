@@ -1,4 +1,4 @@
-// Copyright 2009-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2009-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -201,7 +201,7 @@ static const xmlChar *getTerminatedStringBuf(NSString *nsstring, void **freeThis
     }
     
     /* Otherwise, we need to copy it out into a NUL-terminated buffer. */
-    CFStringRef cfString = (CFStringRef)nsstring;
+    CFStringRef cfString = (__bridge CFStringRef)nsstring;
     CFIndex sourceStringLength = CFStringGetLength(cfString);
     CFIndex bufferSize = 0;
 
@@ -239,7 +239,7 @@ static void writeString(xmlTextWriter *writer, NSString *str)
     /* The complicated case */
 #define CONV_BUF_SIZE 2048
     UInt8 buf[CONV_BUF_SIZE+1];
-    CFStringRef cfString = (CFStringRef)str;
+    CFStringRef cfString = (__bridge CFStringRef)str;
     CFIndex sourceStringLength = CFStringGetLength(cfString);
     CFIndex conversionLocation = 0;
     while(conversionLocation < sourceStringLength) {

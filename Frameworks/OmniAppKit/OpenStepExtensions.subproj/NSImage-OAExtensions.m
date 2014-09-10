@@ -314,7 +314,7 @@ static NSDictionary *titleFontAttributes;
     NSRectFill(NSMakeRect(0, 0, totalSize.width, totalSize.height));
 
     // Draw icon
-    [image compositeToPoint:NSMakePoint(0.0f, totalSize.height - (CGFloat)rint(totalSize.height / 2.0f + imageSize.height / 2.0f)) operation:NSCompositeSourceOver];
+    [image drawAtPoint:NSMakePoint(0.0f, totalSize.height - (CGFloat)rint(totalSize.height / 2.0f + imageSize.height / 2.0f)) fromRect:(CGRect){CGPointZero, imageSize} operation:NSCompositeSourceOver fraction:1.0];
     
     // Draw box around title
     titleBox.origin.x = imageSize.width + X_SPACE_BETWEEN_ICON_AND_TEXT_BOX;
@@ -635,9 +635,12 @@ static NSDictionary *titleFontAttributes;
 - (NSData *)pngData;
 {
     NSBitmapImageRep *bitmapImageRep = (id)[self imageRepOfClass:[NSBitmapImageRep class]];
-    if (bitmapImageRep)
-        return [bitmapImageRep representationUsingType:NSPNGFileType properties:nil];
-    
+    if (bitmapImageRep != nil) {
+        NSData *pngData = [bitmapImageRep representationUsingType:NSPNGFileType properties:nil];
+        if (pngData != nil) // On Yosemite, this can fail with "ImageIO: PNG gamma value does not match sRGB"
+            return pngData;
+    }
+
     // This will log CG errors if there is just a "NSCGImageSnapshotRep", which is what you get if you've drawn into an image via -lockFocus.
 #if 0
     // Not sure what this does with there are multiples.  Does it write multi-resolution TIFF? What does it do for PNG?

@@ -39,7 +39,6 @@
 
 /* error reason - listing a directory that doesn't exist
    error reason - listing contents of a nonexistent directory */
-
 "No document exists at \"%@\"." = "“%@” に書類はありません。";
 
 /* error reason */
@@ -86,3 +85,4 @@
 
 /* time display format for yesterday */
 "Yesterday, %@ <day name>" = "昨日, %@";
+

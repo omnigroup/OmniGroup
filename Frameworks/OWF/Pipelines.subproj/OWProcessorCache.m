@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -58,121 +58,114 @@ RCS_ID("$Id$");
 
 - (NSArray *)allArcs;
 {
-    NSMutableArray *arcs = nil;
+    __block NSMutableArray *arcs = nil;
 
-    OFLockRegion_Begin(lock);
-
-    arcs = [[NSMutableArray alloc] initWithArray:[processorsFromHashableSources allValues]];
-    [arcs addObjectsFromArray:otherProcessors];
-
-    OFLockRegion_End(lock);
+    OFWithLock(lock, ^{
+        arcs = [[NSMutableArray alloc] initWithArray:[processorsFromHashableSources allValues]];
+        [arcs addObjectsFromArray:otherProcessors];
+    });
     
     return [arcs autorelease];
 }
 
 - (NSArray *)arcsWithRelation:(OWCacheArcRelationship)relation toEntry:(OWContent *)anEntry inPipeline:(OWPipeline *)pipe
 {
-    NSUInteger linkCount, linkIndex, processorIndex, preexistingProcessorCount;
-    NSMutableArray *result;
-    NSMutableArray *delayedRelease;
-    NSArray *possibleLinks;
-    BOOL localOnly;
-    BOOL anEntryIsHashable;
-
     /* We're only able to look up arcs (processors) by their source */
     if (!(relation & (OWCacheArcSubject | OWCacheArcSource)))
         return nil;
 
+    BOOL localOnly;
     if ([[pipe contextObjectForKey:OWCacheArcCacheBehaviorKey] isEqual:OWCacheArcForbidNetwork])
         localOnly = YES;
     else
         localOnly = NO;
 
     /* Get a list of OWContentTypeLinks describing processors we could use */
-    possibleLinks = [[anEntry contentType] directTargetContentTypes];
+    NSArray *possibleLinks = [[anEntry contentType] directTargetContentTypes];
     if ([anEntry isSource])
         possibleLinks = [possibleLinks arrayByAddingObjectsFromArray:[[OWContentType sourceContentType] directTargetContentTypes]];
-    linkCount = [possibleLinks count];
+    NSUInteger linkCount = [possibleLinks count];
 
     if (linkCount == 0)
         return nil;
 
-    result = [NSMutableArray array];
-    delayedRelease = [[NSMutableArray alloc] init];
+    NSMutableArray *result = [NSMutableArray array];
+    NSMutableArray *delayedRelease = [[NSMutableArray alloc] init];
 
-    OFLockRegion_Begin(lock);
-
-    anEntryIsHashable = [anEntry isHashable];
-
-    if (anEntryIsHashable) {
-        NSArray *preexistingProcessors;
+    OFWithLock(lock, ^{
         
-        // If the source content is "complete", then it's possible to store it in a hash table. In this case we check to see if the processorsFromHashableSources dictionary has any applicable arcs for this source content.
-
-        preexistingProcessors = [processorsFromHashableSources arrayForKey:anEntry];
-        preexistingProcessorCount = [preexistingProcessors count];
-
-        for (linkIndex = linkCount; linkIndex > 0; linkIndex--) {
-            OWContentTypeLink *possible = [possibleLinks objectAtIndex:linkIndex-1];
-
-            for (processorIndex = 0; processorIndex < preexistingProcessorCount; processorIndex ++) {
-                OWProcessorCacheArc *extant = [preexistingProcessors objectAtIndex:processorIndex];
-
-                if ([extant processorDescription] != [possible processorDescription])
-                    continue;
-
-                [result addObject:extant];
+        NSUInteger preexistingProcessorCount;
+        BOOL anEntryIsHashable = [anEntry isHashable];
+        
+        if (anEntryIsHashable) {
+            NSArray *preexistingProcessors;
+            
+            // If the source content is "complete", then it's possible to store it in a hash table. In this case we check to see if the processorsFromHashableSources dictionary has any applicable arcs for this source content.
+            
+            preexistingProcessors = [processorsFromHashableSources arrayForKey:anEntry];
+            preexistingProcessorCount = [preexistingProcessors count];
+            
+            for (NSUInteger linkIndex = linkCount; linkIndex > 0; linkIndex--) {
+                OWContentTypeLink *possible = [possibleLinks objectAtIndex:linkIndex-1];
+                
+                for (NSUInteger processorIndex = 0; processorIndex < preexistingProcessorCount; processorIndex ++) {
+                    OWProcessorCacheArc *extant = [preexistingProcessors objectAtIndex:processorIndex];
+                    
+                    if ([extant processorDescription] != [possible processorDescription])
+                        continue;
+                    
+                    [result addObject:extant];
+                }
             }
         }
-    }
-
-    // We also may have some processors whose source content is not yet hashable; we have to scan through those as well.
-    preexistingProcessorCount = [otherProcessors count];
-    for (processorIndex = 0; processorIndex < preexistingProcessorCount; processorIndex++) {
-        OWProcessorCacheArc *extant = [otherProcessors objectAtIndex:processorIndex];
-        OWContent *extantSource = [extant source];
-
-        if ([anEntry isEqual:extantSource]) {
-            [result addObject:extant];
+        
+        // We also may have some processors whose source content is not yet hashable; we have to scan through those as well.
+        preexistingProcessorCount = [otherProcessors count];
+        for (NSUInteger processorIndex = 0; processorIndex < preexistingProcessorCount; processorIndex++) {
+            OWProcessorCacheArc *extant = [otherProcessors objectAtIndex:processorIndex];
+            OWContent *extantSource = [extant source];
+            
+            if ([anEntry isEqual:extantSource]) {
+                [result addObject:extant];
+            }
+            
+            // If this processor's source content has become hashable since the last time we looked at it, move it to the (more efficient) OFMultiValueDictionary.
+            if ([extantSource isHashable]) {
+                [processorsFromHashableSources addObject:extant forKey:extantSource];
+                [delayedRelease addObject:extant];
+                // Adding the arc to the delayedRelease array (above) gives it a strong retain which prevents it from trying to invalidate itself. Otherwise, if its last (external) strong retain went away while we were processing, it could try to invalidate itself when we remove it from our otherProcessors array (below), and we'd deadlock with ourselves.
+                [otherProcessors removeObjectAtIndex:processorIndex];
+                processorIndex--;
+                preexistingProcessorCount--;
+            }
         }
-
-        // If this processor's source content has become hashable since the last time we looked at it, move it to the (more efficient) OFMultiValueDictionary.
-        if ([extantSource isHashable]) {
-            [processorsFromHashableSources addObject:extant forKey:extantSource];
-            [delayedRelease addObject:extant];
-            // Adding the arc to the delayedRelease array (above) gives it a strong retain which prevents it from trying to invalidate itself. Otherwise, if its last (external) strong retain went away while we were processing, it could try to invalidate itself when we remove it from our otherProcessors array (below), and we'd deadlock with ourselves.
-            [otherProcessors removeObjectAtIndex:processorIndex];
-            processorIndex--;
-            preexistingProcessorCount--;
+        
+        // Finally, create arcs for any desirable processors which didn't already exist in our cache.
+        for (NSUInteger linkIndex = 0; linkIndex < linkCount; linkIndex++) {
+            OWContentTypeLink *possible = [possibleLinks objectAtIndex:linkIndex];
+            OWProcessorDescription *proc = [possible processorDescription];
+            OWProcessorCacheArc *newArc;
+            
+            if (localOnly && [proc usesNetwork])
+                continue;
+            
+            newArc = [[OWProcessorCacheArc alloc] initWithSource:anEntry link:possible inCache:self forPipeline:pipe];
+            
+            OBASSERT(processorsFromHashableSources != nil);
+            OBASSERT(otherProcessors != nil);
+            if (anEntryIsHashable)
+                [processorsFromHashableSources addObject:newArc forKey:anEntry];
+            else
+                [otherProcessors addObject:newArc];
+            OBASSERT([newArc retainCount] >= 2);
+            [newArc incrementWeakRetainCount]; // Convert the strong retain from the processorsFromHashableSources or otherProcessors container into a weak retain
+            
+            [result addObject:newArc];
+            
+            [newArc release]; // Pairs with -alloc above
         }
-    }
-    
-    // Finally, create arcs for any desirable processors which didn't already exist in our cache.
-    for (linkIndex = 0; linkIndex < linkCount; linkIndex++) {
-        OWContentTypeLink *possible = [possibleLinks objectAtIndex:linkIndex];
-        OWProcessorDescription *proc = [possible processorDescription];
-        OWProcessorCacheArc *newArc;
-
-        if (localOnly && [proc usesNetwork])
-            continue;
-
-        newArc = [[OWProcessorCacheArc alloc] initWithSource:anEntry link:possible inCache:self forPipeline:pipe];
-
-        OBASSERT(processorsFromHashableSources != nil);
-        OBASSERT(otherProcessors != nil);
-        if (anEntryIsHashable)
-            [processorsFromHashableSources addObject:newArc forKey:anEntry];
-        else
-            [otherProcessors addObject:newArc];
-        OBASSERT([newArc retainCount] >= 2);
-        [newArc incrementWeakRetainCount]; // Convert the strong retain from the processorsFromHashableSources or otherProcessors container into a weak retain
-
-        [result addObject:newArc];
-
-        [newArc release]; // Pairs with -alloc above
-    }
-
-    OFLockRegion_End(lock);
+        
+    });
 
     [delayedRelease release];
 
@@ -187,23 +180,23 @@ RCS_ID("$Id$");
 
 - (void)removeArc:(OWProcessorCacheArc *)anArc
 {
-    BOOL removed;
-
     [anArc retain]; // Avoid weak-retain-release shenanigans inside the lock.
-    OFLockRegion_Begin(lock);
-
-    NSUInteger arrayIndex = [otherProcessors indexOfObjectIdenticalTo:anArc];
-    if (arrayIndex != NSNotFound) {
-        [otherProcessors removeObjectAtIndex:arrayIndex];
-        removed = YES;
-    } else {
-        removed = [processorsFromHashableSources removeObjectIdenticalTo:anArc forKey:[anArc source]];
-    }
-    if (removed)
-        [anArc decrementWeakRetainCount];
-    OBASSERT(removed);
-
-    OFLockRegion_End(lock);
+    
+    OFWithLock(lock, ^{
+        BOOL removed;
+        
+        NSUInteger arrayIndex = [otherProcessors indexOfObjectIdenticalTo:anArc];
+        if (arrayIndex != NSNotFound) {
+            [otherProcessors removeObjectAtIndex:arrayIndex];
+            removed = YES;
+        } else {
+            removed = [processorsFromHashableSources removeObjectIdenticalTo:anArc forKey:[anArc source]];
+        }
+        if (removed)
+            [anArc decrementWeakRetainCount];
+        OBASSERT(removed);
+    });
+    
     [anArc release];
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,12 +8,12 @@
 #import <OmniFoundation/OFIndexPath.h>
 #import <OmniFoundation/NSArray-OFExtensions.h>
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <OmniBase/OmniBase.h>
 
 RCS_ID("$Id$");
 
-@interface OFIndexPathTests : SenTestCase
+@interface OFIndexPathTests : XCTestCase
 @end
 
 @implementation OFIndexPathTests
@@ -21,15 +21,15 @@ RCS_ID("$Id$");
 - (void)testEmpty;
 {
     OFIndexPath *path = [OFIndexPath emptyIndexPath];
-    STAssertEquals([path length], 0UL, @"should be have length of 0");
-    STAssertEqualObjects([path description], @"", @"should have empty description");
+    XCTAssertEqual([path length], 0UL, @"should be have length of 0");
+    XCTAssertEqualObjects([path description], @"", @"should have empty description");
 }
 
 - (void)testSingleIndex;
 {
     OFIndexPath *path = [OFIndexPath indexPathWithIndex:42];
-    STAssertEquals([path length], 1UL, @"should be have length of 1");
-    STAssertEqualObjects([path description], @"42", @"should have single component description");
+    XCTAssertEqual([path length], 1UL, @"should be have length of 1");
+    XCTAssertEqualObjects([path description], @"42", @"should have single component description");
 }
 
 - (void)testMultipleIndexes;
@@ -38,8 +38,8 @@ RCS_ID("$Id$");
     path = [path indexPathByAddingIndex:2];
     path = [path indexPathByAddingIndex:3];
     
-    STAssertEquals([path length], 3UL, @"should be have length of 3");
-    STAssertEqualObjects([path description], @"1.2.3", @"should have multiple component description");
+    XCTAssertEqual([path length], 3UL, @"should be have length of 3");
+    XCTAssertEqualObjects([path description], @"1.2.3", @"should have multiple component description");
 }
 
 - (void)testRemoveLastIndex;
@@ -49,8 +49,8 @@ RCS_ID("$Id$");
     path = [path indexPathByAddingIndex:3];
     path = [path indexPathByRemovingLastIndex];
     
-    STAssertEquals([path length], 2UL, @"should be have length of 2");
-    STAssertEqualObjects([path description], @"1.2", @"should have multiple component description");
+    XCTAssertEqual([path length], 2UL, @"should be have length of 2");
+    XCTAssertEqualObjects([path description], @"1.2", @"should have multiple component description");
 }
 
 - (void)testGetIndexes;
@@ -61,9 +61,9 @@ RCS_ID("$Id$");
     
     NSUInteger indexes[3];
     [path getIndexes:indexes];
-    STAssertEquals(indexes[0], 1UL, @"should first index");
-    STAssertEquals(indexes[1], 2UL, @"should second index");
-    STAssertEquals(indexes[2], 3UL, @"should third index");
+    XCTAssertEqual(indexes[0], 1UL, @"should first index");
+    XCTAssertEqual(indexes[1], 2UL, @"should second index");
+    XCTAssertEqual(indexes[2], 3UL, @"should third index");
 }
 
 - (void)testIndexAtPosition;
@@ -72,21 +72,21 @@ RCS_ID("$Id$");
     path = [path indexPathByAddingIndex:2];
     path = [path indexPathByAddingIndex:3];
     
-    STAssertEquals([path indexAtPosition:0], 1UL, @"should first index");
-    STAssertEquals([path indexAtPosition:1], 2UL, @"should second index");
-    STAssertEquals([path indexAtPosition:2], 3UL, @"should third index");
+    XCTAssertEqual([path indexAtPosition:0], 1UL, @"should first index");
+    XCTAssertEqual([path indexAtPosition:1], 2UL, @"should second index");
+    XCTAssertEqual([path indexAtPosition:2], 3UL, @"should third index");
 }
 
 - (void)testCompareVsSame;
 {
     OFIndexPath *empty = [OFIndexPath emptyIndexPath];
-    STAssertEquals([empty compare:empty], NSOrderedSame, NULL);
+    XCTAssertEqual([empty compare:empty], NSOrderedSame);
     
     OFIndexPath *pathA = [OFIndexPath indexPathWithIndex:1];
     OFIndexPath *pathB = [OFIndexPath indexPathWithIndex:1];
-    STAssertEquals([pathA compare:pathB], NSOrderedSame, NULL);
+    XCTAssertEqual([pathA compare:pathB], NSOrderedSame);
     
-    STAssertEquals([[pathA indexPathByAddingIndex:2] compare:[pathB indexPathByAddingIndex:2]], NSOrderedSame, NULL);
+    XCTAssertEqual([[pathA indexPathByAddingIndex:2] compare:[pathB indexPathByAddingIndex:2]], NSOrderedSame);
 }
 
 - (void)testCompareVsEmpty;
@@ -94,11 +94,11 @@ RCS_ID("$Id$");
     OFIndexPath *path1 = [OFIndexPath emptyIndexPath];
     OFIndexPath *path2 = [OFIndexPath indexPathWithIndex:42];
     
-    STAssertEquals([path1 compare:path2], NSOrderedAscending, NULL);
-    STAssertEquals([path2 compare:path1], NSOrderedDescending, NULL);
+    XCTAssertEqual([path1 compare:path2], NSOrderedAscending);
+    XCTAssertEqual([path2 compare:path1], NSOrderedDescending);
     
-    STAssertEquals([path1 parentsLastCompare:path2], NSOrderedDescending, NULL);
-    STAssertEquals([path2 parentsLastCompare:path1], NSOrderedAscending, NULL);
+    XCTAssertEqual([path1 parentsLastCompare:path2], NSOrderedDescending);
+    XCTAssertEqual([path2 parentsLastCompare:path1], NSOrderedAscending);
 }
 
 - (void)testCompareVsNonEmpty;
@@ -106,28 +106,28 @@ RCS_ID("$Id$");
     OFIndexPath *path1 = [[OFIndexPath indexPathWithIndex:1] indexPathByAddingIndex:2];
     OFIndexPath *path2 = [path1 indexPathByAddingIndex:3];
     
-    STAssertEquals([path1 compare:path2], NSOrderedAscending, NULL);
-    STAssertEquals([path2 compare:path1], NSOrderedDescending, NULL);
+    XCTAssertEqual([path1 compare:path2], NSOrderedAscending);
+    XCTAssertEqual([path2 compare:path1], NSOrderedDescending);
     
-    STAssertEquals([path1 parentsLastCompare:path2], NSOrderedDescending, NULL);
-    STAssertEquals([path2 parentsLastCompare:path1], NSOrderedAscending, NULL);
+    XCTAssertEqual([path1 parentsLastCompare:path2], NSOrderedDescending);
+    XCTAssertEqual([path2 parentsLastCompare:path1], NSOrderedAscending);
 }
 
 - (void)testComparisons;
 {
-    STAssertTrue([[OFIndexPath emptyIndexPath] compare:[OFIndexPath emptyIndexPath]] == NSOrderedSame, nil);
-    STAssertTrue([[OFIndexPath indexPathWithIndex:1] compare:[OFIndexPath indexPathWithIndex:1]] == NSOrderedSame, nil);
-    STAssertTrue([[[OFIndexPath indexPathWithIndex:1] indexPathByAddingIndex:1] compare:[[OFIndexPath indexPathWithIndex:1] indexPathByAddingIndex:1]] == NSOrderedSame, nil);
+    XCTAssertTrue([[OFIndexPath emptyIndexPath] compare:[OFIndexPath emptyIndexPath]] == NSOrderedSame);
+    XCTAssertTrue([[OFIndexPath indexPathWithIndex:1] compare:[OFIndexPath indexPathWithIndex:1]] == NSOrderedSame);
+    XCTAssertTrue([[[OFIndexPath indexPathWithIndex:1] indexPathByAddingIndex:1] compare:[[OFIndexPath indexPathWithIndex:1] indexPathByAddingIndex:1]] == NSOrderedSame);
     
-    STAssertTrue([[OFIndexPath emptyIndexPath] compare:[OFIndexPath indexPathWithIndex:1]] == NSOrderedAscending, nil);
-    STAssertTrue([[OFIndexPath indexPathWithIndex:1] compare:[OFIndexPath indexPathWithIndex:2]] == NSOrderedAscending, nil);
-    STAssertTrue([[OFIndexPath indexPathWithIndex:1] compare:[[OFIndexPath indexPathWithIndex:1] indexPathByAddingIndex:1]] == NSOrderedAscending, nil);
-    STAssertTrue([[[[[[[[[[[OFIndexPath indexPathWithIndex:10] indexPathByAddingIndex:9] indexPathByAddingIndex:8] indexPathByAddingIndex:7] indexPathByAddingIndex:6] indexPathByAddingIndex:5] indexPathByAddingIndex:4] indexPathByAddingIndex:3] indexPathByAddingIndex:2] indexPathByAddingIndex:1] compare:[OFIndexPath indexPathWithIndex:11]] == NSOrderedAscending, nil);
+    XCTAssertTrue([[OFIndexPath emptyIndexPath] compare:[OFIndexPath indexPathWithIndex:1]] == NSOrderedAscending);
+    XCTAssertTrue([[OFIndexPath indexPathWithIndex:1] compare:[OFIndexPath indexPathWithIndex:2]] == NSOrderedAscending);
+    XCTAssertTrue([[OFIndexPath indexPathWithIndex:1] compare:[[OFIndexPath indexPathWithIndex:1] indexPathByAddingIndex:1]] == NSOrderedAscending);
+    XCTAssertTrue([[[[[[[[[[[OFIndexPath indexPathWithIndex:10] indexPathByAddingIndex:9] indexPathByAddingIndex:8] indexPathByAddingIndex:7] indexPathByAddingIndex:6] indexPathByAddingIndex:5] indexPathByAddingIndex:4] indexPathByAddingIndex:3] indexPathByAddingIndex:2] indexPathByAddingIndex:1] compare:[OFIndexPath indexPathWithIndex:11]] == NSOrderedAscending);
     
-    STAssertTrue([[OFIndexPath indexPathWithIndex:1] compare:[OFIndexPath emptyIndexPath]] == NSOrderedDescending, nil);
-    STAssertTrue([[OFIndexPath indexPathWithIndex:2] compare:[OFIndexPath indexPathWithIndex:1]] == NSOrderedDescending, nil);
-    STAssertTrue([[[OFIndexPath indexPathWithIndex:1] indexPathByAddingIndex:1] compare:[OFIndexPath indexPathWithIndex:1]] == NSOrderedDescending, nil);
-    STAssertTrue([[OFIndexPath indexPathWithIndex:11] compare:[[[[[[[[[[OFIndexPath indexPathWithIndex:10] indexPathByAddingIndex:9] indexPathByAddingIndex:8] indexPathByAddingIndex:7] indexPathByAddingIndex:6] indexPathByAddingIndex:5] indexPathByAddingIndex:4] indexPathByAddingIndex:3] indexPathByAddingIndex:2] indexPathByAddingIndex:1]] == NSOrderedDescending, nil);
+    XCTAssertTrue([[OFIndexPath indexPathWithIndex:1] compare:[OFIndexPath emptyIndexPath]] == NSOrderedDescending);
+    XCTAssertTrue([[OFIndexPath indexPathWithIndex:2] compare:[OFIndexPath indexPathWithIndex:1]] == NSOrderedDescending);
+    XCTAssertTrue([[[OFIndexPath indexPathWithIndex:1] indexPathByAddingIndex:1] compare:[OFIndexPath indexPathWithIndex:1]] == NSOrderedDescending);
+    XCTAssertTrue([[OFIndexPath indexPathWithIndex:11] compare:[[[[[[[[[[OFIndexPath indexPathWithIndex:10] indexPathByAddingIndex:9] indexPathByAddingIndex:8] indexPathByAddingIndex:7] indexPathByAddingIndex:6] indexPathByAddingIndex:5] indexPathByAddingIndex:4] indexPathByAddingIndex:3] indexPathByAddingIndex:2] indexPathByAddingIndex:1]] == NSOrderedDescending);
     
     NSArray *originalArray = [NSArray arrayWithObjects:
                               [OFIndexPath emptyIndexPath],
@@ -149,7 +149,7 @@ RCS_ID("$Id$");
 #ifdef DEBUG_kc
     NSLog(@"originalArray = %@, reversedArray = %@, sortedOriginalArray = %@, sortedReversedArray = %@", originalArray, reversedArray, sortedOriginalArray, sortedReversedArray);
 #endif
-    STAssertEqualObjects(sortedOriginalArray, sortedReversedArray, nil);
+    XCTAssertEqualObjects(sortedOriginalArray, sortedReversedArray);
 }
 
 

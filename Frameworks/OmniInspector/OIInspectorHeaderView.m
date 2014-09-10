@@ -117,7 +117,6 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 {
     if (image != anImage) {
         // If the image is PDF, we don't want to uses it's native size (which might be too big).
-        [anImage setScalesWhenResized:YES];
         [anImage setSize:NSMakeSize(IMAGE_SIZE, IMAGE_SIZE)];
         
         image = anImage;

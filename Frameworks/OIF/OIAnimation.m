@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,14 +34,13 @@ static NSString *animationContentName = nil;
     if (!(self = [super initWithName:animationContentName]))
         return nil;
 
-    NSZone *zone = [self zone];
     sourceContent = [someContent retain];
-    frames = [[NSMutableArray allocWithZone:zone] init];
+    frames = [[NSMutableArray alloc] init];
 
     loopCount = aLoopCount;
 
-    waitingInstances = [[NSMutableArray allocWithZone:zone] init];
-    lock = [[NSLock allocWithZone:zone] init];
+    waitingInstances = [[NSMutableArray alloc] init];
+    lock = [[NSLock alloc] init];
     haveAllFrames = NO;
     return self;
 }
@@ -85,7 +84,7 @@ static NSString *animationContentName = nil;
 
     // Notify waiting instances
     snapshotOfWaitingInstances = waitingInstances; // inherit retain
-    waitingInstances = [[NSMutableArray allocWithZone:[self zone]] init];
+    waitingInstances = [[NSMutableArray alloc] init];
     [lock unlock];
 
     for (waitingInstanceIndex = 0; waitingInstanceIndex < waitingInstanceCount; waitingInstanceIndex++)
@@ -130,7 +129,7 @@ static NSString *animationContentName = nil;
     [lock unlock];
 
     if (!result)
-        result = [[[OIAnimationInstance allocWithZone:[self zone]] initWithAnimation:self] autorelease];
+        result = [[[OIAnimationInstance alloc] initWithAnimation:self] autorelease];
     return result;
 #endif
 }

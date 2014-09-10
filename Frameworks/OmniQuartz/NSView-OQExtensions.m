@@ -1,4 +1,4 @@
-// Copyright 2005-2013 The Omni Group. All rights reserved.
+// Copyright 2005-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -266,23 +266,6 @@ typedef struct _TransitionUserInfo {
     CIImage *image = [info->filter valueForKey:@"outputImage"];
     
     NSWindow *window = [self window];
-    if (0) {
-	static unsigned int x = 0;
-	CFStringRef outputURLString = (CFStringRef)[NSString stringWithFormat:@"file:///tmp/x-%03d.png", x++];
-	NSLog(@"%@", outputURLString);
-	CFURLRef destURL = CFURLCreateWithString(kCFAllocatorDefault, outputURLString, NULL);
-	CGImageDestinationRef dest = CGImageDestinationCreateWithURL(destURL, kUTTypePNG, 1, NULL);
-	CFRelease(destURL);
-	
-	CGImageRef destImage = [[[window graphicsContext] CIContext] createCGImage:image fromRect:[image extent]];
-	
-	CGImageDestinationAddImage(dest, destImage, NULL);
-	CFRelease(destImage);
-	
-	if (!CGImageDestinationFinalize(dest))
-	    NSLog(@"finalize failed");
-	CFRelease(dest);
-    }
     
     {
 	NSDisableScreenUpdates();

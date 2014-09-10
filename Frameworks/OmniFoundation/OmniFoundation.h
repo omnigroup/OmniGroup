@@ -23,8 +23,11 @@
 #import <OmniFoundation/OFKnownKeyDictionaryTemplate.h>
 #import <OmniFoundation/OFMultiValueDictionary.h>
 #import <OmniFoundation/OFMutableKnownKeyDictionary.h>
+#import <OmniFoundation/OFNetStateNotifier.h>
+#import <OmniFoundation/OFNetStateRegistration.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFObject.h>
+#import <OmniFoundation/OFPerformanceMeasurement.h>
 #import <OmniFoundation/OFPoint.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFRandom.h>
@@ -64,7 +67,6 @@
     #import <OmniFoundation/OFMultipleOptionErrorRecovery.h>
     #import <OmniFoundation/OFObject-Queue.h>
     #import <OmniFoundation/OFQueueProcessor.h>
-    #import <OmniFoundation/OFReadWriteLock.h>
     #import <OmniFoundation/OFResultHolder.h>
     #import <OmniFoundation/OFRunLoopQueueProcessor.h>
     #import <OmniFoundation/OFScheduledEvent.h>
@@ -108,7 +110,6 @@
 // Formatters
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
     #import <OmniFoundation/OFCapitalizeFormatter.h>
-    #import <OmniFoundation/OFDateFormatter.h>
     #import <OmniFoundation/OFMetricPrefixFormatter.h>
     #import <OmniFoundation/OFMultipleNumberFormatter.h>
     #import <OmniFoundation/OFNumberFormatter.h>
@@ -123,6 +124,7 @@
 #import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSAttributedString-OFExtensions.h>
 #import <OmniFoundation/NSData-OFEncoding.h>
+#import <OmniFoundation/NSData-OFSignature.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>

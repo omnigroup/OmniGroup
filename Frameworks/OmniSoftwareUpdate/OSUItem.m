@@ -273,8 +273,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
         _currencyCode = [currency copy];
     }
     
-    // OSUInstaller returns the extensions of the package formats it can unpack; we prepend a dot to each one so we can use them in string suffix tests
-    NSArray *packageExtensions = [@"." arrayByPerformingSelector:@selector(stringByAppendingString:) withEachObjectInArray:[OSUInstaller supportedPackageFormats]];
+    NSArray *packagePathExtensions = [OSUInstaller supportedPackageFormats];
     
     OSUChecker *checker = [OSUChecker sharedUpdateChecker];
     
@@ -312,7 +311,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
         }
 
         NSXMLElement *bestEnclosureNode = nil;
-        NSUInteger bestEnclosurePrecedence = [packageExtensions count];
+        NSUInteger bestEnclosurePrecedence = [packagePathExtensions count];
         NSURL *bestEnclosureURL = nil;
         
         NSUInteger nodeIndex = [enclosureNodes count];
@@ -331,9 +330,8 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
                 continue;
             }
             
-            NSUInteger thisEnclosurePrecedence;
-            for(thisEnclosurePrecedence = 0; thisEnclosurePrecedence < bestEnclosurePrecedence; thisEnclosurePrecedence ++) {
-                if ([[downloadURL path] hasSuffix:[packageExtensions objectAtIndex:thisEnclosurePrecedence]]) {
+            for (NSUInteger thisEnclosurePrecedence = 0; thisEnclosurePrecedence < bestEnclosurePrecedence; thisEnclosurePrecedence ++) {
+                if ([[downloadURL pathExtension] isEqual:packagePathExtensions[thisEnclosurePrecedence]]) {
                     // This enclosure's suffix is in OSUInstaller's list of supported formats, and either it's the first/only enclosure we've found, or its suffix is closer to the start of the list than the last one we found (since this loop only goes up to bestEnclosurePrecedence, not to the end of the list of formats).
                     bestEnclosureNode = node;
                     bestEnclosurePrecedence = thisEnclosurePrecedence;

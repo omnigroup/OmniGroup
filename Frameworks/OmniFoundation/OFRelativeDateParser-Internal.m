@@ -25,10 +25,18 @@ NSString * _OFRelativeDateParserLocalizedStringFromTableInBundle(NSString *key, 
 #else
         NSBundle *mainBundle = [NSBundle mainBundle];
 #endif
-        NSArray *localizations = [mainBundle localizations];
-        
+        BOOL isLocalized = NO;
+        for (NSString *localization in [mainBundle localizations]) {
+            if ([localization isEqualToString:@"Base"] || [localization isEqualToString:@"en"]) {
+                continue;
+            }
+            
+            isLocalized = YES;
+            break;
+        }
+
         // If the application is not localized, let's look up the strings from OmniFoundation's localized table anyway
-        if ([localizations count] == 1) {
+        if (!isLocalized) {
             NSArray *languages = [[NSUserDefaults standardUserDefaults] arrayForKey:@"AppleLanguages"];
             NSSet *bundleLocalizations = [NSSet setWithArray:[bundle localizations]];
             
@@ -41,16 +49,21 @@ NSString * _OFRelativeDateParserLocalizedStringFromTableInBundle(NSString *key, 
             }
         }
         
+#ifdef OMNI_ASSERTIONS_ON
         if (!shouldUseRelativeStringHack) {
-            OBASSERT([[localizations firstObject] isEqualToString:@"en"]);
+            if ([[[mainBundle localizations] firstObject] isEqualToString:@"Base"]) {
+                OBASSERT([[[mainBundle localizations] objectAtIndex:1] isEqualToString:@"en"]);
+            } else {
+                OBASSERT([[[mainBundle localizations] firstObject] isEqualToString:@"en"]);
+            }
         }
+#endif
     });
     
     if (shouldUseRelativeStringHack && dateProcessingLocalization != nil && [table isEqualToString:@"OFDateProcessing"]) {
         static NSDictionary *stringsTable = nil;
         if (stringsTable == nil) {
-            NSBundle *bundle = OMNI_BUNDLE;
-            NSString *path = [bundle pathForResource:table ofType:@"strings" inDirectory:nil forLocalization:dateProcessingLocalization];
+            NSString *path = [OMNI_BUNDLE pathForResource:table ofType:@"strings" inDirectory:nil forLocalization:dateProcessingLocalization];
             
             stringsTable = [[NSDictionary alloc] initWithContentsOfFile:path];
             OBPOSTCONDITION(stringsTable != nil);

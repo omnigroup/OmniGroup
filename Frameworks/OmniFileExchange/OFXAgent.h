@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <OmniBase/OBObject.h>
 #import <OmniFileExchange/OFXSyncSchedule.h>
 
+@class OFPreference;
+@class ODAVConnectionConfiguration;
 @class OFXServerAccountRegistry, OFXServerAccount, OFXRegistrationTable, OFXAccountClientParameters, OFXFileMetadata;
 
 @interface OFXAgent : OBObject
@@ -18,8 +20,10 @@
 + (BOOL)hasDefaultSyncPathExtensions;
 + (OFXAccountClientParameters *)defaultClientParameters;
 
++ (ODAVConnectionConfiguration *)makeConnectionConfiguration;
 + (BOOL)isCellularSyncEnabled;
 + (void)setCellularSyncEnabled:(BOOL)cellularSyncEnabled;
++ (OFPreference *)cellularSyncEnabledPreference;
 
 // Returns an agent configured for shared use in an app (using default account registry, info from the main bundle plist).
 - init;
@@ -41,6 +45,7 @@
 - (void)applicationDidEnterBackground; // Disables Bonjour and timer based sync events.
 
 @property(nonatomic) OFXSyncSchedule syncSchedule; // Defaults to OFXSyncScheduleAutomatic, but can be adjusted before -applicationLaunched to prevent automatic syncing.
+- (void)restoreSyncEnabledForAccount:(OFXServerAccount *)account;
 
 @property(readonly,nonatomic) NSSet *runningAccounts; // KVO observable. Updated after a OFXServerAccount is added to our OFXServerAccountRegistry, once syncing has actually started with that account. Until this point, -metadataItemRegistrationTableForAccount: is not valid.
 - (OFXRegistrationTable *)metadataItemRegistrationTableForAccount:(OFXServerAccount *)account; // Returns nil until the account agent is registered

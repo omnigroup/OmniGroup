@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,6 +34,15 @@ RCS_ID("$Id$");
 {
     UIFontDescriptor *descriptor = [[UIFont preferredFontForTextStyle:style] fontDescriptor];
     descriptor = [descriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitItalic];
+    UIFont *result = [UIFont fontWithDescriptor:descriptor size:0.0];
+    
+    return result;
+}
+
++ (UIFont *)preferredBoldFontForTextStyle:(NSString *)style;
+{
+    UIFontDescriptor *descriptor = [[UIFont preferredFontForTextStyle:style] fontDescriptor];
+    descriptor = [descriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
     UIFont *result = [UIFont fontWithDescriptor:descriptor size:0.0];
     
     return result;

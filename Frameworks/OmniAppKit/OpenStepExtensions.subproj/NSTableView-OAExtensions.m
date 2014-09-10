@@ -447,7 +447,7 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
 
 // NSDraggingSource
 
-- (void)draggedImage:(NSImage *)image endedAt:(NSPoint)screenPoint operation:(NSDragOperation)operation;
+- (void)draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation;
 {
     // We get NSDragOperationDelete now for dragging to the Trash.
     if (operation == NSDragOperationDelete) {

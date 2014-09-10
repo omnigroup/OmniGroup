@@ -1,11 +1,10 @@
-// Copyright 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniBase/OmniBase.h>
@@ -37,32 +36,32 @@ RCS_ID("$Id$");
     NSError *uniqueErrorObject = [NSError errorWithDomain:@"blah" code:42 userInfo:[NSDictionary dictionary]];
     NSError *err = uniqueErrorObject;
     
-    STAssertEqualObjects(([smallData filterDataThroughCommandAtPath:@"/usr/bin/tr" withArguments:[NSArray arrayWithObjects:@"A-Za-z", @"N-ZA-Mn-za-m", nil] error:&err]),
+    XCTAssertEqualObjects(([smallData filterDataThroughCommandAtPath:@"/usr/bin/tr" withArguments:[NSArray arrayWithObjects:@"A-Za-z", @"N-ZA-Mn-za-m", nil] error:&err]),
                          smallData13, @"Piping through rot13");
-    STAssertTrue(err == uniqueErrorObject, @"should not have modified *error (is now %@)", err);
+    XCTAssertTrue(err == uniqueErrorObject, @"should not have modified *error (is now %@)", err);
     
     int mediumSize = 67890;
     NSData *mediumData = [NSData randomDataOfLength:mediumSize];
     NSData *mediumR = [mediumData filterDataThroughCommandAtPath:@"/usr/bin/wc" withArguments:[NSArray arrayWithObject:@"-c"] error:NULL];
-    STAssertTrue(mediumSize == atoi([mediumR bytes]), @"Piping through wc");
+    XCTAssertTrue(mediumSize == atoi([mediumR bytes]), @"Piping through wc");
     
     err = uniqueErrorObject;
-    STAssertEqualObjects(([mediumData filterDataThroughCommandAtPath:@"/bin/cat" withArguments:[NSArray array] error:NULL]),
+    XCTAssertEqualObjects(([mediumData filterDataThroughCommandAtPath:@"/bin/cat" withArguments:[NSArray array] error:NULL]),
                          mediumData, @"");
-    STAssertTrue(err == uniqueErrorObject, @"should not have modified *error (is now %@)", err);
+    XCTAssertTrue(err == uniqueErrorObject, @"should not have modified *error (is now %@)", err);
     
     err = nil;
     OFScratchFile *scratch = [OFScratchFile scratchFileNamed:@"ofdatatest" error:&err];
-    STAssertNotNil(scratch, @"scratch file");
+    XCTAssertNotNil(scratch, @"scratch file");
     if (!scratch)
         return;
     
-    [mediumData writeToFile:[scratch filename] atomically:NO];
+    [mediumData writeToURL:scratch.fileURL atomically:NO];
     
     err = uniqueErrorObject;
-    STAssertEqualObjects(([[NSData data] filterDataThroughCommandAtPath:@"/bin/cat" withArguments:[NSArray arrayWithObject:[scratch filename]] error:NULL]),
+    XCTAssertEqualObjects(([[NSData data] filterDataThroughCommandAtPath:@"/bin/cat" withArguments:[NSArray arrayWithObject:[[scratch fileURL] path]] error:NULL]),
                          mediumData, @"");
-    STAssertTrue(err == uniqueErrorObject, @"should not have modified *error (is now %@)", err);
+    XCTAssertTrue(err == uniqueErrorObject, @"should not have modified *error (is now %@)", err);
 }
 
 - (void)testPipeLarge
@@ -87,17 +86,17 @@ RCS_ID("$Id$");
                 }
                 [a addObject:d];
             }
-            pldata = CFBridgingRelease(CFPropertyListCreateXMLData(kCFAllocatorDefault, (__bridge CFPropertyListRef)a));
+            pldata = CFBridgingRelease(CFPropertyListCreateData(kCFAllocatorDefault, (__bridge CFPropertyListRef)a, kCFPropertyListXMLFormat_v1_0, 0, NULL));
         }
     }
     
     NSData *bzipme = [pldata filterDataThroughCommandAtPath:@"/usr/bin/bzip2" withArguments:[NSArray arrayWithObject:@"--compress"] error:NULL];
     NSData *unzipt = [bzipme filterDataThroughCommandAtPath:@"/usr/bin/bzip2" withArguments:[NSArray arrayWithObject:@"--decompress"] error:NULL];
-    STAssertEqualObjects(pldata, unzipt, @"bzip+bunzip");
+    XCTAssertEqualObjects(pldata, unzipt, @"bzip+bunzip");
     
     NSData *gzipme  = [pldata filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObject:@"-cf9"] error:NULL];
     NSData *ungzipt = [gzipme filterDataThroughCommandAtPath:@"/usr/bin/gzip" withArguments:[NSArray arrayWithObject:@"-cd"] error:NULL];
-    STAssertEqualObjects(pldata, ungzipt, @"gzip+gunzip");
+    XCTAssertEqualObjects(pldata, ungzipt, @"gzip+gunzip");
     
 }
 
@@ -120,7 +119,7 @@ RCS_ID("$Id$");
                 }
                 [a addObject:d];
             }
-            pldata = CFBridgingRelease(CFPropertyListCreateXMLData(kCFAllocatorDefault, (__bridge CFPropertyListRef)a));
+            pldata = CFBridgingRelease(CFPropertyListCreateData(kCFAllocatorDefault, (__bridge CFPropertyListRef)a, kCFPropertyListXMLFormat_v1_0, 0, NULL));
         }
     }
     
@@ -190,8 +189,8 @@ RCS_ID("$Id$");
     }
     
         
-    STAssertEqualObjects(pldata, [resultStream3 propertyForKey:NSStreamDataWrittenToMemoryStreamKey], @"bzip+unbzip");
-    STAssertEqualObjects(pldata, [resultStream4 propertyForKey:NSStreamDataWrittenToMemoryStreamKey], @"gzip+gunzip");
+    XCTAssertEqualObjects(pldata, [resultStream3 propertyForKey:NSStreamDataWrittenToMemoryStreamKey], @"bzip+unbzip");
+    XCTAssertEqualObjects(pldata, [resultStream4 propertyForKey:NSStreamDataWrittenToMemoryStreamKey], @"gzip+gunzip");
     
 }
 
@@ -201,29 +200,29 @@ RCS_ID("$Id$");
     NSError *errbuf;
     
     errbuf = nil;
-    STAssertNil([smallData filterDataThroughCommandAtPath:@"/usr/bin/false" withArguments:[NSArray array] error:&errbuf], @"command should fail");
-    STAssertNotNil(errbuf, @"");
+    XCTAssertNil([smallData filterDataThroughCommandAtPath:@"/usr/bin/false" withArguments:[NSArray array] error:&errbuf], @"command should fail");
+    XCTAssertNotNil(errbuf, @"");
     //NSLog(@"fail w/ exit status: %@", errbuf);
     
     errbuf = nil;
-    STAssertNil([smallData filterDataThroughCommandAtPath:@"/bin/quux-nonexist" withArguments:[NSArray array] error:&errbuf], @"command should fail");
-    STAssertNotNil(errbuf, @"");
+    XCTAssertNil([smallData filterDataThroughCommandAtPath:@"/bin/quux-nonexist" withArguments:[NSArray array] error:&errbuf], @"command should fail");
+    XCTAssertNotNil(errbuf, @"");
     //NSLog(@"fail w/ exec failure: %@", errbuf);
     
     if (YES) {
         OBFinishPortingLater("-filterDataThroughCommandAtPath: doesn't seem to be catching signals to the shell on Lion");
     } else {
         errbuf = nil;
-        STAssertNil([smallData filterDataThroughCommandAtPath:@"/bin/sh" withArguments:([NSArray arrayWithObjects:@"-c", @"kill -USR1 $$", nil]) error:&errbuf], @"command should fail");
-        STAssertNotNil(errbuf, @"");
+        XCTAssertNil([smallData filterDataThroughCommandAtPath:@"/bin/sh" withArguments:([NSArray arrayWithObjects:@"-c", @"kill -USR1 $$", nil]) error:&errbuf], @"command should fail");
+        XCTAssertNotNil(errbuf, @"");
         //NSLog(@"fail w/ signal: %@", errbuf);
-        STAssertEquals((int)[[[[errbuf userInfo] objectForKey:NSUnderlyingErrorKey] userInfo] intForKey:OFProcessExitSignalErrorKey], (int)SIGUSR1, @"properly collected exit status");
+        XCTAssertEqual((int)[[[[errbuf userInfo] objectForKey:NSUnderlyingErrorKey] userInfo] intForKey:OFProcessExitSignalErrorKey], (int)SIGUSR1, @"properly collected exit status");
     }
     
     errbuf = nil;
-    STAssertEqualObjects([NSData data],
+    XCTAssertEqualObjects([NSData data],
                          [smallData filterDataThroughCommandAtPath:@"/usr/bin/true" withArguments:[NSArray array] error:&errbuf], @"command should succeed without output");
-    STAssertNil(errbuf, @"");
+    XCTAssertNil(errbuf, @"");
 }
 
 /* This is really a test of OFFilterProcess, but the main use of that class is for filtering NSDatas, so it's here */
@@ -246,13 +245,13 @@ RCS_ID("$Id$");
                                               nil], OFFilterProcessAdditionalEnvironmentKey,
                                              nil]
                                      inMode:nil standardOutput:&outBuf standardError:&errBuf error:&err];
-    STAssertTrue(ok, @"running process 'printenv'");
-    STAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
+    XCTAssertTrue(ok, @"running process 'printenv'");
+    XCTAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
     if (err) NSLog(@"error: %@", err);
-    STAssertNil(err, nil);
+    XCTAssertNil(err);
     NSString *outStr = [NSString stringWithData:outBuf encoding:NSASCIIStringEncoding];
-    STAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"BAR=bar"], @"process environment contains string");
-    STAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"TICK=spoon"], @"process environment contains string generated from NSData");
+    XCTAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"BAR=bar"], @"process environment contains string");
+    XCTAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"TICK=spoon"], @"process environment contains string generated from NSData");
     
     /* Invoke printenv via the shell, with a $PATH that doesn't include printenv: case 1, replace entire environment */
     outBuf = nil;
@@ -265,15 +264,15 @@ RCS_ID("$Id$");
                                               nil], OFFilterProcessReplacementEnvironmentKey,
                                              nil]
                                      inMode:nil standardOutput:&outBuf standardError:&errBuf error:&err];
-    STAssertFalse(ok, @"running process 'printenv'");
+    XCTAssertFalse(ok, @"running process 'printenv'");
     // if (err) NSLog(@"error: %@", err);
-    STAssertNotNil(err, @"should have returned an error to us");
+    XCTAssertNotNil(err, @"should have returned an error to us");
     if(err) {
-        STAssertEqualObjects([err domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain", nil);
-        STAssertEquals([err code], (NSInteger)OFFilterDataCommandReturnedErrorCodeError, nil);
-        STAssertTrue([[[err userInfo] objectForKey:OFProcessExitStatusErrorKey] intValue] > 0, @"should indicate process had nonzero exit");
+        XCTAssertEqualObjects([err domain], @"com.omnigroup.framework.OmniFoundation.ErrorDomain");
+        XCTAssertEqual([err code], (NSInteger)OFFilterDataCommandReturnedErrorCodeError);
+        XCTAssertTrue([[[err userInfo] objectForKey:OFProcessExitStatusErrorKey] intValue] > 0, @"should indicate process had nonzero exit");
     }
-    STAssertFalse([errBuf isEqual:[NSData data]], @"captured stderr should be nonempty");
+    XCTAssertFalse([errBuf isEqual:[NSData data]], @"captured stderr should be nonempty");
     
     
     /* Invoke printenv via the shell, using OFFilterProcessAdditionalPathEntryKey to ensure $PATH contains its path */
@@ -288,12 +287,12 @@ RCS_ID("$Id$");
                                              @"/usr/bin", OFFilterProcessAdditionalPathEntryKey,
                                              nil]
                                      inMode:nil standardOutput:&outBuf standardError:&errBuf error:&err];
-    STAssertTrue(ok, @"running process 'printenv'");
+    XCTAssertTrue(ok, @"running process 'printenv'");
     if (err) NSLog(@"error: %@", err);
-    STAssertNil(err, nil);
-    STAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
+    XCTAssertNil(err);
+    XCTAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
     outStr = [NSString stringWithData:outBuf encoding:NSASCIIStringEncoding];
-    STAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"PATH=/tmp:/:/usr/bin"], @"process environment $PATH value");
+    XCTAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"PATH=/tmp:/:/usr/bin"], @"process environment $PATH value");
     
     /* Invoke printenv via the shell, with a $PATH that doesn't include printenv: case 2, just override $PATH */
     outBuf = nil;
@@ -306,10 +305,10 @@ RCS_ID("$Id$");
                                               nil], OFFilterProcessAdditionalEnvironmentKey,
                                              nil]
                                      inMode:nil standardOutput:&outBuf standardError:&errBuf error:&err];
-    STAssertFalse(ok, @"running process 'printenv'");
+    XCTAssertFalse(ok, @"running process 'printenv'");
     // if (err) NSLog(@"error: %@", err);
-    STAssertNotNil(err, @"should have returned an error to us");
-    STAssertFalse([errBuf isEqual:[NSData data]], @"captured stderr should be nonempty");
+    XCTAssertNotNil(err, @"should have returned an error to us");
+    XCTAssertFalse([errBuf isEqual:[NSData data]], @"captured stderr should be nonempty");
     
     /* Invoke printenv via the shell, using OFFilterProcessAdditionalPathEntryKey to ensure $PATH contains its path: case 2 */
     outBuf = nil;
@@ -323,12 +322,12 @@ RCS_ID("$Id$");
                                              @"/usr/bin", OFFilterProcessAdditionalPathEntryKey,
                                              nil]
                                      inMode:nil standardOutput:&outBuf standardError:&errBuf error:&err];
-    STAssertTrue(ok, @"running process 'printenv'");
+    XCTAssertTrue(ok, @"running process 'printenv'");
     if (err) NSLog(@"error: %@", err);
-    STAssertNil(err, nil);
-    STAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
+    XCTAssertNil(err);
+    XCTAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
     outStr = [NSString stringWithData:outBuf encoding:NSASCIIStringEncoding];
-    STAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"PATH=/tmp:/:/usr/bin"], @"process environment $PATH value");
+    XCTAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"PATH=/tmp:/:/usr/bin"], @"process environment $PATH value");
     
     /* Make sure that a redundant OFFilterProcessAdditionalPathEntryKey doesn't screw anything up */
     outBuf = nil;
@@ -342,20 +341,20 @@ RCS_ID("$Id$");
                                              @"/tmp", OFFilterProcessAdditionalPathEntryKey,
                                              nil]
                                      inMode:nil standardOutput:&outBuf standardError:&errBuf error:&err];
-    STAssertTrue(ok, @"running process 'printenv'");
+    XCTAssertTrue(ok, @"running process 'printenv'");
     if (err) NSLog(@"error: %@", err);
-    STAssertNil(err, nil);
-    STAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
+    XCTAssertNil(err);
+    XCTAssertEqualObjects(errBuf, [NSData data], @"should produce no output on stderr");
     outStr = [NSString stringWithData:outBuf encoding:NSASCIIStringEncoding];
-    STAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"PATH=/usr/bin:/bin:/tmp:/sbin:/usr/local/bin"], @"process environment $PATH value");
+    XCTAssertTrue([[outStr componentsSeparatedByString:@"\n"] containsObject:@"PATH=/usr/bin:/bin:/tmp:/sbin:/usr/local/bin"], @"process environment $PATH value");
 }
 
 - (void)testMergingStdoutAndStderr;
 {
     NSError *error = nil;
     NSData *outputData = [[NSData data] filterDataThroughCommandAtPath:@"/bin/sh" withArguments:[NSArray arrayWithObjects:@"-c", @"echo foo; echo bar 1>&2", nil] includeErrorsInOutput:YES errorStream:nil error:&error];
-    STAssertEqualObjects(outputData, [@"foo\nbar\n" dataUsingEncoding:NSUTF8StringEncoding], @"");
-    STAssertTrue(error == nil, @"");
+    XCTAssertEqualObjects(outputData, [@"foo\nbar\n" dataUsingEncoding:NSUTF8StringEncoding], @"");
+    XCTAssertTrue(error == nil, @"");
 }
 
 - (void)testSendingStderrToStream;
@@ -367,9 +366,9 @@ RCS_ID("$Id$");
     
     NSData *outputData = [[NSData data] filterDataThroughCommandAtPath:@"/bin/sh" withArguments:[NSArray arrayWithObjects:@"-c", @"echo foo; echo bar 1>&2", nil] includeErrorsInOutput:NO errorStream:errorStream error:&error];
     
-    STAssertEqualObjects(outputData, [@"foo\n" dataUsingEncoding:NSUTF8StringEncoding], @"");
-    STAssertEqualObjects([errorStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey], [@"bar\n" dataUsingEncoding:NSUTF8StringEncoding], @"");
-    STAssertTrue(error == nil, @"no error");
+    XCTAssertEqualObjects(outputData, [@"foo\n" dataUsingEncoding:NSUTF8StringEncoding], @"");
+    XCTAssertEqualObjects([errorStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey], [@"bar\n" dataUsingEncoding:NSUTF8StringEncoding], @"");
+    XCTAssertTrue(error == nil, @"no error");
 }
 
 - (void)testAppendString
@@ -387,29 +386,29 @@ RCS_ID("$Id$");
     buf = [NSMutableData data];
     [buf appendString:@"foo" encoding:NSASCIIStringEncoding];
     [buf appendString:@"bar" encoding:NSUTF8StringEncoding];
-    STAssertEqualObjects(buf, d1, @"");
+    XCTAssertEqualObjects(buf, d1, @"");
     
     buf = [NSMutableData data];
     [buf appendString:@"fo" encoding:NSISOLatin1StringEncoding];
     [buf appendString:@"obar" encoding:NSMacOSRomanStringEncoding];
-    STAssertEqualObjects(buf, d1, @"");
+    XCTAssertEqualObjects(buf, d1, @"");
     
     buf = [NSMutableData data];
     [buf appendString:@"foo" encoding:NSUTF16LittleEndianStringEncoding];
     [buf appendString:@"bar" encoding:NSUTF16BigEndianStringEncoding];
-    STAssertEqualObjects(buf, d2, @"");
+    XCTAssertEqualObjects(buf, d2, @"");
     
     buf = [NSMutableData data];
     [buf appendString:@"th" encoding:NSASCIIStringEncoding];
     [buf appendString:st encoding:NSASCIIStringEncoding];
     [buf appendString:@"at" encoding:NSASCIIStringEncoding];
-    STAssertEqualObjects(buf, d3, @"");
+    XCTAssertEqualObjects(buf, d3, @"");
     
     buf = [NSMutableData data];
     [buf appendString:@"th" encoding:NSASCIIStringEncoding];
     [buf appendString:st2 encoding:NSMacOSRomanStringEncoding];
     [buf appendString:@"at" encoding:NSASCIIStringEncoding];
-    STAssertEqualObjects(buf, d3, @"");
+    XCTAssertEqualObjects(buf, d3, @"");
     
 }
 

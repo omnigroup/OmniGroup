@@ -9,7 +9,7 @@ DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 
 // Use the latest iOS SDK with a specific deployment target
 SDKROOT = iphoneos
-IPHONEOS_DEPLOYMENT_TARGET = 7.0
+IPHONEOS_DEPLOYMENT_TARGET = 8.0
 
 GCC_THUMB_SUPPORT = NO
 
@@ -17,7 +17,10 @@ GCC_THUMB_SUPPORT = NO
 GCC_VERSION = com.apple.compilers.llvm.clang.1_0
 
 // For Xcode builds, we sign our applications using our individual development certificates ("iPhone Developer: [Person]"). For distribution builds, our build scripts will re-sign as "iPhone Distribution: [Company]" (for App Store submissions).
-CODE_SIGN_IDENTITY = iPhone Developer:
+CODE_SIGN_IDENTITY = iPhone Developer
 
 // Output strings in UTF-8 format for Simulator builds; This is a more convenient format for the localizers to work with
 STRINGS_FILE_OUTPUT_ENCODING[sdk=iphonesimulator*] = UTF-8
+
+// Temporary while getting iOS 8 builds working
+WARNING_CFLAGS = $(value) -Wno-error-deprecated-declarations -Wno-error-deprecated-implementations -Wno-error-unreachable-code -Wno-error-undeclared-selector

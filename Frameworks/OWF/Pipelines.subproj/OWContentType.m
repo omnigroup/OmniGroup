@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -131,7 +131,6 @@ static OWContentType *unknownContentType;
 static OWContentType *errorContentType;
 static OWContentType *nothingContentType;
 static NSTimeInterval defaultExpirationTimeInterval = 0.0;
-static NSZone *zone;
 
 // This is a hack.
 static NSString *privateSupertypes[] = {
@@ -148,16 +147,15 @@ static NSString *privateSupertypes[] = {
 {
     OBINITIALIZE;
 
-    zone = NSCreateZone(NSPageSize(), NSPageSize(), YES);
-    contentTypeLock = [[NSRecursiveLock allocWithZone:zone] init];
+    contentTypeLock = [[NSRecursiveLock alloc] init];
     
     // Use our case-insensitive string key dictionary for these to avoid calling -lowercaseString
     contentTypeDictionary = OFCreateCaseInsensitiveKeyMutableDictionary();
     extensionToContentTypeDictionary = OFCreateCaseInsensitiveKeyMutableDictionary();
-    macOSTypeToContentTypeDictionary = [[NSMutableDictionary allocWithZone:zone] init];
+    macOSTypeToContentTypeDictionary = [[NSMutableDictionary alloc] init];
     replacedContentTypes = [[NSMutableArray alloc] init];
     
-    contentEncodings = [[NSMutableArray allocWithZone:zone] initWithCapacity:5];
+    contentEncodings = [[NSMutableArray alloc] initWithCapacity:5];
 
     wildcardContentType = [self contentTypeForString:@"*/*"];
     sourceContentType = [self contentTypeForString:@"omni/source"]; // a pseudo-type; no actual content will have this type, but targets an request it in order to receive content (of any type) whose producers have marked it as being "source" content.
@@ -246,7 +244,7 @@ static NSString *privateSupertypes[] = {
         // Go ahead and put lowercase strings in the content type and dictionary even though we want to avoid lowercasing during lookups.
         aString = [aString lowercaseString];
         OBASSERT([contentTypeDictionary objectForKey:aString] == nil); 
-        contentType = [[self allocWithZone:zone] _initWithContentTypeString:aString];
+        contentType = [[self alloc] _initWithContentTypeString:aString];
 	[contentTypeDictionary setObject:contentType forKey:aString];
         if ([contentType isEncoding])
             [contentEncodings addObject:contentType];
@@ -380,7 +378,7 @@ got_path:
 
     [contentTypeLock lock];
     
-    key = [[extension lowercaseString] copyWithZone:zone];
+    key = [[extension lowercaseString] copy];
     if ((oldContentType = [extensionToContentTypeDictionary objectForKey:key])) {
         if (contentType != oldContentType) {
             NSLog(@"Overriding extension to content type mapping for extension '%@'.  Old mapping was %@, new mapping is %@.", extension, oldContentType, contentType);
@@ -533,7 +531,7 @@ got_path:
     if (extensions == someExtensions)
 	return;
     [extensions release];
-    extensions = [someExtensions copyWithZone:zone];
+    extensions = [someExtensions copy];
 }
 
 - (NSArray *)extensions;
@@ -577,7 +575,7 @@ got_path:
         NSString *oldImageName;
 
         oldImageName = imageName;
-        imageName = [newImageName copyWithZone:zone];
+        imageName = [newImageName copy];
         [oldImageName release];
     }
 }
@@ -616,7 +614,7 @@ got_path:
 
 - (void)registerAlias:(NSString *)newAlias;
 {
-    NSString *key = [[newAlias lowercaseString] copyWithZone:zone];
+    NSString *key = [[newAlias lowercaseString] copy];
 
     [contentTypeLock lock];
     OWContentType *replacedContentType = [contentTypeDictionary objectForKey:key];
@@ -667,7 +665,7 @@ got_path:
             [type _locked_flushConversionPaths];
     }
 
-    link = [[OWContentTypeLink allocWithZone:zone] initWithProcessorDescription:aProcessorDescription sourceContentType:self targetContentType:targetContentType cost:aCost];
+    link = [[OWContentTypeLink alloc] initWithProcessorDescription:aProcessorDescription sourceContentType:self targetContentType:targetContentType cost:aCost];
     [links addObject:link];
     [link release];
     [targetContentType _addReverseContentType:self];
@@ -978,13 +976,8 @@ got_path:
     imageNamesEnumerator = [iconsDictionary objectEnumerator];
 
     while ((aContentTypeString = [contentTypeEnumerator nextObject])) {
-        NSString *imageNameString;
-        OWContentType *contentType;
-
-        imageNameString = [imageNamesEnumerator nextObject];
-        if ([imageNameString zone] != zone)
-            imageNameString = [[imageNameString copyWithZone:zone] autorelease];
-        contentType = [self contentTypeForString:aContentTypeString];
+        NSString *imageNameString = [imageNamesEnumerator nextObject];
+        OWContentType *contentType = [self contentTypeForString:aContentTypeString];
         [contentType setImageName:imageNameString];
     }
 }
@@ -1030,9 +1023,9 @@ got_path:
     if (!(self = [super init]))
 	return nil;
 
-    contentTypeString = [aString copyWithZone:zone];
+    contentTypeString = [aString copy];
     hash = [contentTypeString hash];
-    links = [[NSMutableArray allocWithZone:zone] init];
+    links = [[NSMutableArray alloc] init];
     reverseLinks = nil;
     extensions = nil;
     expirationTimeInterval = defaultExpirationTimeInterval;
@@ -1057,7 +1050,7 @@ got_path:
 
         range = [contentTypeString rangeOfString:@"/"];
         if (range.location != NSNotFound)
-            readableString = [[[contentTypeString substringFromIndex:NSMaxRange(range)] capitalizedString] copyWithZone:zone];
+            readableString = [[[contentTypeString substringFromIndex:NSMaxRange(range)] capitalizedString] copy];
         else
             readableString = nil;
     }
@@ -1068,7 +1061,7 @@ got_path:
 - (void)_addReverseContentType:(OWContentType *)sourceContentType;
 {
     if (!reverseLinks)
-        reverseLinks = [[NSMutableSet allocWithZone:zone] initWithCapacity:5];
+        reverseLinks = [[NSMutableSet alloc] initWithCapacity:5];
 
     [reverseLinks addObject:sourceContentType];
 }

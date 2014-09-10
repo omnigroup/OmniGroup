@@ -5,7 +5,6 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniBase/system.h>
@@ -47,37 +46,37 @@ RCS_ID("$Id$");
             continue;
         }
 
-        should1(roundTrip == enc,
-                ([NSString stringWithFormat:@"CFEncoding %lu encodes to \"%@\" decodes to %lu", (unsigned long)enc, savable, (unsigned long)roundTrip]));
+        XCTAssertTrue(roundTrip == enc,
+                      @"CFEncoding %lu encodes to \"%@\" decodes to %lu", (unsigned long)enc, savable, (unsigned long)roundTrip);
     }
     
-    should([NSString cfStringEncodingForDefaultValue:@"iana iso-8859-1"] == kCFStringEncodingISOLatin1);
-    should([NSString cfStringEncodingForDefaultValue:@"iana utf-8"] == kCFStringEncodingUTF8);
-    should([NSString cfStringEncodingForDefaultValue:@"iana UTF-8"] == kCFStringEncodingUTF8);
+    XCTAssertTrue([NSString cfStringEncodingForDefaultValue:@"iana iso-8859-1"] == kCFStringEncodingISOLatin1);
+    XCTAssertTrue([NSString cfStringEncodingForDefaultValue:@"iana utf-8"] == kCFStringEncodingUTF8);
+    XCTAssertTrue([NSString cfStringEncodingForDefaultValue:@"iana UTF-8"] == kCFStringEncodingUTF8);
 }
 
 
 
 - (void)testAbbreviatedStringForHz;
 {
-    shouldBeEqual([NSString abbreviatedStringForHertz:0], @"0 Hz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:1], @"1 Hz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:9], @"9 Hz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:10], @"10 Hz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:11], @"11 Hz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:100], @"100 Hz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:990], @"990 Hz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:999], @"1.0 KHz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:1000], @"1.0 KHz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:1099], @"1.1 KHz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:1100], @"1.1 KHz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:1000000], @"1.0 MHz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:10000000], @"10.0 MHz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:100000000], @"100.0 MHz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:1000000000], @"1.0 GHz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:1800000000], @"1.8 GHz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:2000000000], @"2.0 GHz");
-    shouldBeEqual([NSString abbreviatedStringForHertz:10000000000LL], @"10.0 GHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:0], @"0 Hz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:1], @"1 Hz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:9], @"9 Hz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:10], @"10 Hz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:11], @"11 Hz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:100], @"100 Hz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:990], @"990 Hz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:999], @"1.0 KHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:1000], @"1.0 KHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:1099], @"1.1 KHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:1100], @"1.1 KHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:1000000], @"1.0 MHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:10000000], @"10.0 MHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:100000000], @"100.0 MHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:1000000000], @"1.0 GHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:1800000000], @"1.8 GHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:2000000000], @"2.0 GHz");
+    XCTAssertEqualObjects([NSString abbreviatedStringForHertz:10000000000LL], @"10.0 GHz");
 }
 
 - (void)testTrimming
@@ -90,35 +89,35 @@ RCS_ID("$Id$");
     int sl[3] = { 6, 8, 6 };
     int i;
 
-    shouldBeEqual([@"" stringByRemovingSurroundingWhitespace], @"");
-    shouldBeEqual([@" " stringByRemovingSurroundingWhitespace], @"");
-    shouldBeEqual([@"  " stringByRemovingSurroundingWhitespace], @"");
-    shouldBeEqual([@"\t\n\r " stringByRemovingSurroundingWhitespace], @"");
-    shouldBeEqual([@"foo " stringByRemovingSurroundingWhitespace], @"foo");
-    shouldBeEqual([@"foo  " stringByRemovingSurroundingWhitespace], @"foo");
-    shouldBeEqual([@"o " stringByRemovingSurroundingWhitespace], @"o");
-    shouldBeEqual([@" f " stringByRemovingSurroundingWhitespace], @"f");
-    shouldBeEqual([@" foo " stringByRemovingSurroundingWhitespace], @"foo");
-    shouldBeEqual([@"  foo " stringByRemovingSurroundingWhitespace], @"foo");
-    shouldBeEqual([@"foo" stringByRemovingSurroundingWhitespace], @"foo");
-    shouldBeEqual([@"  foo" stringByRemovingSurroundingWhitespace], @"foo");
+    XCTAssertEqualObjects([@"" stringByRemovingSurroundingWhitespace], @"");
+    XCTAssertEqualObjects([@" " stringByRemovingSurroundingWhitespace], @"");
+    XCTAssertEqualObjects([@"  " stringByRemovingSurroundingWhitespace], @"");
+    XCTAssertEqualObjects([@"\t\n\r " stringByRemovingSurroundingWhitespace], @"");
+    XCTAssertEqualObjects([@"foo " stringByRemovingSurroundingWhitespace], @"foo");
+    XCTAssertEqualObjects([@"foo  " stringByRemovingSurroundingWhitespace], @"foo");
+    XCTAssertEqualObjects([@"o " stringByRemovingSurroundingWhitespace], @"o");
+    XCTAssertEqualObjects([@" f " stringByRemovingSurroundingWhitespace], @"f");
+    XCTAssertEqualObjects([@" foo " stringByRemovingSurroundingWhitespace], @"foo");
+    XCTAssertEqualObjects([@"  foo " stringByRemovingSurroundingWhitespace], @"foo");
+    XCTAssertEqualObjects([@"foo" stringByRemovingSurroundingWhitespace], @"foo");
+    XCTAssertEqualObjects([@"  foo" stringByRemovingSurroundingWhitespace], @"foo");
     
     for(i = 0; i < 3; i ++) {
         NSString *t = [NSString stringWithCharacters:2+s[i] length:sl[i]-4];
-        shouldBeEqual([[NSString stringWithCharacters:s[i]   length:sl[i]  ] stringByRemovingSurroundingWhitespace], t);
-        shouldBeEqual([[NSString stringWithCharacters:s[i]+2 length:sl[i]-2] stringByRemovingSurroundingWhitespace], t);
-        shouldBeEqual([[NSString stringWithCharacters:s[i]   length:sl[i]-2] stringByRemovingSurroundingWhitespace], t);
-        shouldBeEqual([[NSString stringWithCharacters:s[i]+2 length:sl[i]-4] stringByRemovingSurroundingWhitespace], t);
+        XCTAssertEqualObjects([[NSString stringWithCharacters:s[i]   length:sl[i]  ] stringByRemovingSurroundingWhitespace], t);
+        XCTAssertEqualObjects([[NSString stringWithCharacters:s[i]+2 length:sl[i]-2] stringByRemovingSurroundingWhitespace], t);
+        XCTAssertEqualObjects([[NSString stringWithCharacters:s[i]   length:sl[i]-2] stringByRemovingSurroundingWhitespace], t);
+        XCTAssertEqualObjects([[NSString stringWithCharacters:s[i]+2 length:sl[i]-4] stringByRemovingSurroundingWhitespace], t);
     }
     
     NSMutableString *buf = [[NSMutableString alloc] init];
 
     for(i = 0; i < 3; i ++) {
         NSString *t = [NSString stringWithCharacters:2+s[i] length:sl[i]-4];
-        [buf setString:[NSString stringWithCharacters:s[i]   length:sl[i]  ]]; shouldBeEqual([buf stringByRemovingSurroundingWhitespace], t);
-        [buf setString:[NSString stringWithCharacters:s[i]+2 length:sl[i]-2]]; shouldBeEqual([buf stringByRemovingSurroundingWhitespace], t);
-        [buf setString:[NSString stringWithCharacters:s[i]   length:sl[i]-2]]; shouldBeEqual([buf stringByRemovingSurroundingWhitespace], t);
-        [buf setString:[NSString stringWithCharacters:s[i]+2 length:sl[i]-4]]; shouldBeEqual([buf stringByRemovingSurroundingWhitespace], t);
+        [buf setString:[NSString stringWithCharacters:s[i]   length:sl[i]  ]]; XCTAssertEqualObjects([buf stringByRemovingSurroundingWhitespace], t);
+        [buf setString:[NSString stringWithCharacters:s[i]+2 length:sl[i]-2]]; XCTAssertEqualObjects([buf stringByRemovingSurroundingWhitespace], t);
+        [buf setString:[NSString stringWithCharacters:s[i]   length:sl[i]-2]]; XCTAssertEqualObjects([buf stringByRemovingSurroundingWhitespace], t);
+        [buf setString:[NSString stringWithCharacters:s[i]+2 length:sl[i]-4]]; XCTAssertEqualObjects([buf stringByRemovingSurroundingWhitespace], t);
     }
 }
 
@@ -134,19 +133,19 @@ RCS_ID("$Id$");
     buf = OFShortASCIIDecimalStringFromDouble(d, OF_FLT_DIGITS_E, YES, YES);
     t2 = CFBridgingRelease(CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, buf, kCFStringEncodingASCII, kCFAllocatorMalloc));
     
-    shouldBeEqual(t0, decimalized);
-    shouldBeEqual(t1, decimalized);
+    XCTAssertEqualObjects(t0, decimalized);
+    XCTAssertEqualObjects(t1, decimalized);
     if (exponential) {
-        shouldBeEqual(t2, exponential);
+        XCTAssertEqualObjects(t2, exponential);
     } else {
-        shouldBeEqual(t2, decimalized);
+        XCTAssertEqualObjects(t2, decimalized);
     }
     
     
     if ([decimalized hasPrefix:@"0."]) {
         buf = OFShortASCIIDecimalStringFromDouble(d, OF_FLT_DIGITS_E, NO, NO);
         t1 = CFBridgingRelease(CFStringCreateWithCStringNoCopy(kCFAllocatorDefault, buf, kCFStringEncodingASCII, kCFAllocatorMalloc));
-        shouldBeEqual(t1, [decimalized substringFromIndex:1]);
+        XCTAssertEqualObjects(t1, [decimalized substringFromIndex:1]);
     }
 }
 
@@ -193,7 +192,7 @@ RCS_ID("$Id$");
     [self testDecimal:1.000001e-20 expecting:@"0.00000000000000000001000001" :@"1000001e-26"];
     [self testDecimal:-2.000002e-20 expecting:@"-0.00000000000000000002000002" :@"-2000002e-26"];
     
-#define TESTIT(num, expok, force, expect) { char *buf = OFShortASCIIDecimalStringFromDouble(num, OF_FLT_DIGITS_E, expok, force); should1(strcmp(buf, expect) == 0, ([NSString stringWithFormat:@"formatted %g (expok=%d forcelz=%d) got \"%s\" expected \"%s\"", num, expok, force, buf, expect])); free(buf); }
+#define TESTIT(num, expok, force, expect) { char *buf = OFShortASCIIDecimalStringFromDouble(num, OF_FLT_DIGITS_E, expok, force); XCTAssertTrue(strcmp(buf, expect) == 0, "formatted %g (expok=%d forcelz=%d) got \"%s\" expected \"%s\"", num, expok, force, buf, expect); free(buf); }
         
     TESTIT(0.017,   1, 0, ".017");
     TESTIT(0.017,   1, 1, "0.017");
@@ -217,8 +216,8 @@ RCS_ID("$Id$");
         n = nextafterf(n, 100.0f), i++) {
         char *buf = OFShortASCIIDecimalStringFromDouble(n, OF_FLT_DIGITS_E, 0, 1);
         float n2 = -1;
-        should1(sscanf(buf, "%f", &n2) == 1 && (n == n2),
-                ([NSString stringWithFormat:@"formatted %.10g got \"%s\" scanned %.10g", n, buf, n2]));
+        XCTAssertTrue(sscanf(buf, "%f", &n2) == 1 && (n == n2),
+                      @"formatted %.10g got \"%s\" scanned %.10g", n, buf, n2);
         free(buf);
     }
     
@@ -227,8 +226,8 @@ RCS_ID("$Id$");
         n = nextafterf(n, -100.0f), i++) {
         char *buf = OFShortASCIIDecimalStringFromDouble(n, OF_FLT_DIGITS_E, 0, 1);
         float n2 = -1;
-        should1(sscanf(buf, "%f", &n2) == 1 && (n == n2),
-                ([NSString stringWithFormat:@"formatted %.10g got \"%s\" scanned %.10g", n, buf, n2]));
+        XCTAssertTrue(sscanf(buf, "%f", &n2) == 1 && (n == n2),
+                      @"formatted %.10g got \"%s\" scanned %.10g", n, buf, n2);
         free(buf);
     }
 }
@@ -238,9 +237,9 @@ RCS_ID("$Id$");
     NSCharacterSet *delimiterSet = [NSCharacterSet punctuationCharacterSet];
     NSCharacterSet *emptySet = [NSCharacterSet characterSetWithCharactersInString:@""];
     
-    shouldBeEqual([@"Hi.there" componentsSeparatedByCharactersFromSet:delimiterSet], ([NSArray arrayWithObjects:@"Hi", @"there", nil]));
-    shouldBeEqual([@"Hi.there" componentsSeparatedByCharactersFromSet:emptySet], ([NSArray arrayWithObject:@"Hi.there"]));
-    shouldBeEqual([@".Hi.there!" componentsSeparatedByCharactersFromSet:delimiterSet], ([NSArray arrayWithObjects:@"", @"Hi", @"there", @"", nil]));
+    XCTAssertEqualObjects([@"Hi.there" componentsSeparatedByCharactersFromSet:delimiterSet], ([NSArray arrayWithObjects:@"Hi", @"there", nil]));
+    XCTAssertEqualObjects([@"Hi.there" componentsSeparatedByCharactersFromSet:emptySet], ([NSArray arrayWithObject:@"Hi.there"]));
+    XCTAssertEqualObjects([@".Hi.there!" componentsSeparatedByCharactersFromSet:delimiterSet], ([NSArray arrayWithObjects:@"", @"Hi", @"there", @"", nil]));
 }
 
 static NSString *simpleXMLEscape(NSString *str, NSRange *where, void *dummy)
@@ -287,20 +286,20 @@ static NSString *unpair(NSString *str, NSRange *where, void *dummy)
     NSCharacterSet *s = [NSCharacterSet characterSetWithCharactersInString:@"<&>"];
     
     t = @"This is a silly ole test.";
-    should(t == [t stringByPerformingReplacement:simpleXMLEscape onCharacters:s]);
+    XCTAssertTrue(t == [t stringByPerformingReplacement:simpleXMLEscape onCharacters:s]);
     
-    shouldBeEqual([@"This & that" stringByPerformingReplacement:simpleXMLEscape onCharacters:s], @"This &amp; that");
-    shouldBeEqual([@"&" stringByPerformingReplacement:simpleXMLEscape onCharacters:s], @"&amp;");
-    shouldBeEqual([@"foo &&" stringByPerformingReplacement:simpleXMLEscape onCharacters:s], @"foo &amp;&amp;");
-    shouldBeEqual([@"<&>" stringByPerformingReplacement:simpleXMLEscape onCharacters:s], @"&lt;&amp;&gt;");
-    shouldBeEqual([@"<&> beelzebub" stringByPerformingReplacement:simpleXMLEscape onCharacters:[NSCharacterSet characterSetWithCharactersInString:@"< "]], @"&lt;&>&#32;beelzebub");
+    XCTAssertEqualObjects([@"This & that" stringByPerformingReplacement:simpleXMLEscape onCharacters:s], @"This &amp; that");
+    XCTAssertEqualObjects([@"&" stringByPerformingReplacement:simpleXMLEscape onCharacters:s], @"&amp;");
+    XCTAssertEqualObjects([@"foo &&" stringByPerformingReplacement:simpleXMLEscape onCharacters:s], @"foo &amp;&amp;");
+    XCTAssertEqualObjects([@"<&>" stringByPerformingReplacement:simpleXMLEscape onCharacters:s], @"&lt;&amp;&gt;");
+    XCTAssertEqualObjects([@"<&> beelzebub" stringByPerformingReplacement:simpleXMLEscape onCharacters:[NSCharacterSet characterSetWithCharactersInString:@"< "]], @"&lt;&>&#32;beelzebub");
     
     t = @"This is a silly ole test.";
-    should(t == [t stringByPerformingReplacement:unpair onCharacters:s]);
-    shouldBeEqual([t stringByPerformingReplacement:unpair onCharacters:[s invertedSet]], @"This is a sily ole test.");
-    shouldBeEqual([@"mississippi" stringByPerformingReplacement:unpair onCharacters:[s invertedSet]], @"misisipi");
-    shouldBeEqual([@"mmississippi" stringByPerformingReplacement:unpair onCharacters:[NSCharacterSet characterSetWithCharactersInString:@"ms"]], @"misisippi");
-    shouldBeEqual([@"mmississippii" stringByPerformingReplacement:unpair onCharacters:[NSCharacterSet characterSetWithCharactersInString:@"ip"]], @"mmississipi");
+    XCTAssertTrue(t == [t stringByPerformingReplacement:unpair onCharacters:s]);
+    XCTAssertEqualObjects([t stringByPerformingReplacement:unpair onCharacters:[s invertedSet]], @"This is a sily ole test.");
+    XCTAssertEqualObjects([@"mississippi" stringByPerformingReplacement:unpair onCharacters:[s invertedSet]], @"misisipi");
+    XCTAssertEqualObjects([@"mmississippi" stringByPerformingReplacement:unpair onCharacters:[NSCharacterSet characterSetWithCharactersInString:@"ms"]], @"misisippi");
+    XCTAssertEqualObjects([@"mmississippii" stringByPerformingReplacement:unpair onCharacters:[NSCharacterSet characterSetWithCharactersInString:@"ip"]], @"mmississipi");
 }
 
 - (void)testGenericReplaceRange
@@ -316,7 +315,7 @@ static NSString *unpair(NSString *str, NSRange *where, void *dummy)
             NSRange midRange;
             midRange.location = l;
             midRange.length = r - l;
-            shouldBeEqual(([NSString stringWithStrings:head, [[t substringWithRange:midRange] stringByPerformingReplacement:simpleXMLEscape onCharacters:s], tail, nil]),
+            XCTAssertEqualObjects(([NSString stringWithStrings:head, [[t substringWithRange:midRange] stringByPerformingReplacement:simpleXMLEscape onCharacters:s], tail, nil]),
                           [t stringByPerformingReplacement:simpleXMLEscape onCharacters:s context:NULL options:0 range:midRange]);
         }
     }
@@ -339,17 +338,17 @@ static NSString *unpair(NSString *str, NSRange *where, void *dummy)
                 uint32_t tmp;
                 
                 id p = OFCreatePlistFor4CC(fcc);
-                should1(OFGet4CCFromPlist(p, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc]));
+                XCTAssertTrue(OFGet4CCFromPlist(p, &tmp) && (tmp == fcc), @"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc);
                 
                 str = CFBridgingRelease(UTCreateStringForOSType(fcc));
-                should1(OFGet4CCFromPlist(str, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x out=%08x", shift, i, (uint32_t)fcc, tmp]));
-                should1(UTGetOSTypeFromString((__bridge CFStringRef)str) == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc]));
-                should1([str fourCharCodeValue] == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc]));
+                XCTAssertTrue(OFGet4CCFromPlist(str, &tmp) && (tmp == fcc), @"s=%d i=%d 4cc=%08x out=%08x", shift, i, (uint32_t)fcc, tmp);
+                XCTAssertTrue(UTGetOSTypeFromString((__bridge CFStringRef)str) == fcc, @"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc);
+                XCTAssertTrue([str fourCharCodeValue] == fcc, @"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc);
                 
                 str = [NSString stringWithFourCharCode:fcc];
-                should1(OFGet4CCFromPlist(str, &tmp) && (tmp == fcc), ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x out=%08x", shift, i, (uint32_t)fcc, tmp]));
-                should1(UTGetOSTypeFromString((__bridge CFStringRef)str) == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc]));
-                should1([str fourCharCodeValue] == fcc, ([NSString stringWithFormat:@"s=%d i=%d 4cc=%08x out=%08x", shift, i, (uint32_t)fcc, (uint32_t)[str fourCharCodeValue]]));
+                XCTAssertTrue(OFGet4CCFromPlist(str, &tmp) && (tmp == fcc), @"s=%d i=%d 4cc=%08x out=%08x", shift, i, (uint32_t)fcc, tmp);
+                XCTAssertTrue(UTGetOSTypeFromString((__bridge CFStringRef)str) == fcc, @"s=%d i=%d 4cc=%08x", shift, i, (uint32_t)fcc);
+                XCTAssertTrue([str fourCharCodeValue] == fcc, @"s=%d i=%d 4cc=%08x out=%08x", shift, i, (uint32_t)fcc, (uint32_t)[str fourCharCodeValue]);
             }
         }
     }
@@ -383,36 +382,36 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     NSMutableString *t;
     
     s = [NSString stringWithCharacter:'f'];
-    shouldBeEqual(s, ([Foo substringWithRange:(NSRange){0,1}]));
+    XCTAssertEqualObjects(s, ([Foo substringWithRange:(NSRange){0,1}]));
     
     s = [NSString stringWithCharacter:0x00FE];  // LATIN SMALL LETTER THORN
-    shouldBeEqual(s, ([Fuu substringWithRange:(NSRange){0,1}]));
+    XCTAssertEqualObjects(s, ([Fuu substringWithRange:(NSRange){0,1}]));
     s = [s stringByAppendingString:[NSString stringWithCharacter:0x00FC]];  // LATIN SMALL LETTER U WITH DIAERESIS
     t = [s mutableCopy];
     [t appendLongCharacter:'u']; // LATIN SMALL LETTER U
     [t appendLongCharacter:0x308]; // COMBINING DIAERESIS
-    should([t compare:Fuu options:0] == NSOrderedSame);
-    should([t compare:Fuu16 options:0] == NSOrderedSame);
-    should([Fuu compare:Fuu16 options:0] == NSOrderedSame);
-    shouldBeEqual([t decomposedStringWithCanonicalMapping], [Fuu decomposedStringWithCanonicalMapping]);
-    shouldBeEqual([t decomposedStringWithCanonicalMapping], [Fuu16 decomposedStringWithCanonicalMapping]);
+    XCTAssertTrue([t compare:Fuu options:0] == NSOrderedSame);
+    XCTAssertTrue([t compare:Fuu16 options:0] == NSOrderedSame);
+    XCTAssertTrue([Fuu compare:Fuu16 options:0] == NSOrderedSame);
+    XCTAssertEqualObjects([t decomposedStringWithCanonicalMapping], [Fuu decomposedStringWithCanonicalMapping]);
+    XCTAssertEqualObjects([t decomposedStringWithCanonicalMapping], [Fuu16 decomposedStringWithCanonicalMapping]);
     t = [s mutableCopy];
     [t appendLongCharacter:0xFC]; // LATIN SMALL LETTER U WITH DIAERESIS
-    shouldBeEqual(t, Fuu);
+    XCTAssertEqualObjects(t, Fuu);
     
     s = [NSString stringWithCharacter:0x1D072]; // BYZANTINE MUSICAL SYMBOL GORGOSYNTHETON
-    shouldBeEqual(s, Gorgo);
-    shouldBeEqual(s, Gorgo16);
-    shouldBeEqual(Gorgo, Gorgo16);
+    XCTAssertEqualObjects(s, Gorgo);
+    XCTAssertEqualObjects(s, Gorgo16);
+    XCTAssertEqualObjects(Gorgo, Gorgo16);
     
     t = (NSMutableString *)[NSMutableString stringWithCharacter:'z'];
     [t appendLongCharacter:0x1D072]; // BYZANTINE MUSICAL SYMBOL GORGOSYNTHETON
     [t replaceCharactersInRange:(NSRange){0,1} withString:@""];
-    shouldBeEqual(t, Gorgo);
+    XCTAssertEqualObjects(t, Gorgo);
     [t appendLongCharacter:'z'];
-    should(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:0],(NSRange){0,2}));
-    should(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:1],(NSRange){0,2}));
-    should(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:2],(NSRange){2,1}));
+    XCTAssertTrue(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:0],(NSRange){0,2}));
+    XCTAssertTrue(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:1],(NSRange){0,2}));
+    XCTAssertTrue(NSEqualRanges([t rangeOfComposedCharacterSequenceAtIndex:2],(NSRange){2,1}));
 }
 
 #define CFStringFromUnicharArray(x) CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, x, sizeof(x)/sizeof(x[0]), kCFAllocatorNull)
@@ -435,20 +434,20 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     static const unichar bad8[4] = { 'H', 'i', '0', 0xDFEE };  // broken pair
 
 #define USTR(x) (__bridge CFStringRef)CFBridgingRelease(CFStringFromUnicharArray(x))
-    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad1)), nil);
-    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad2)), nil);
-    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad3)), nil);
-    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad4)), nil);
-    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad5)), nil);
-    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad6)), nil);
-    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad7)), nil);
-    STAssertTrue(OFStringContainsInvalidSequences(USTR(bad8)), nil);
+    XCTAssertTrue(OFStringContainsInvalidSequences(USTR(bad1)));
+    XCTAssertTrue(OFStringContainsInvalidSequences(USTR(bad2)));
+    XCTAssertTrue(OFStringContainsInvalidSequences(USTR(bad3)));
+    XCTAssertTrue(OFStringContainsInvalidSequences(USTR(bad4)));
+    XCTAssertTrue(OFStringContainsInvalidSequences(USTR(bad5)));
+    XCTAssertTrue(OFStringContainsInvalidSequences(USTR(bad6)));
+    XCTAssertTrue(OFStringContainsInvalidSequences(USTR(bad7)));
+    XCTAssertTrue(OFStringContainsInvalidSequences(USTR(bad8)));
     
-    STAssertFalse(OFStringContainsInvalidSequences(USTR(good0)), nil);
-    STAssertFalse(OFStringContainsInvalidSequences(USTR(good1)), nil);
-    STAssertFalse(OFStringContainsInvalidSequences(USTR(good2)), nil);
-    STAssertFalse(OFStringContainsInvalidSequences(USTR(good3)), nil);
-    STAssertFalse(OFStringContainsInvalidSequences(USTR(good4)), nil);
+    XCTAssertFalse(OFStringContainsInvalidSequences(USTR(good0)));
+    XCTAssertFalse(OFStringContainsInvalidSequences(USTR(good1)));
+    XCTAssertFalse(OFStringContainsInvalidSequences(USTR(good2)));
+    XCTAssertFalse(OFStringContainsInvalidSequences(USTR(good3)));
+    XCTAssertFalse(OFStringContainsInvalidSequences(USTR(good4)));
 #undef USTR
 }
 
@@ -461,24 +460,24 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     NSCharacterSet *illegal = [NSString invalidXMLCharacterSet];
     NSCharacterSet *discouraged = [NSString discouragedXMLCharacterSet];
     
-    STAssertTrue([[NSString stringWithUTF8String:t0_utf8] containsCharacterInSet:illegal], @"0xFFFE in +invalidXMLCharacterSet");
-    STAssertTrue([[NSString stringWithUTF8String:t1_utf8] containsCharacterInSet:illegal], @"0xFFFF in +invalidXMLCharacterSet");
-    STAssertFalse([[NSString stringWithUTF8String:t2_utf8] containsCharacterInSet:illegal], @"0xFEFF not in +invalidXMLCharacterSet");
+    XCTAssertTrue([[NSString stringWithUTF8String:t0_utf8] containsCharacterInSet:illegal], @"0xFFFE in +invalidXMLCharacterSet");
+    XCTAssertTrue([[NSString stringWithUTF8String:t1_utf8] containsCharacterInSet:illegal], @"0xFFFF in +invalidXMLCharacterSet");
+    XCTAssertFalse([[NSString stringWithUTF8String:t2_utf8] containsCharacterInSet:illegal], @"0xFEFF not in +invalidXMLCharacterSet");
     
-    STAssertTrue([@"\x0B" containsCharacterInSet:illegal], @"Page-feed in +invalidXMLCharacterSet");
-    STAssertFalse([@"\x0D" containsCharacterInSet:illegal], @"Carriage-return in +invalidXMLCharacterSet");
+    XCTAssertTrue([@"\x0B" containsCharacterInSet:illegal], @"Page-feed in +invalidXMLCharacterSet");
+    XCTAssertFalse([@"\x0D" containsCharacterInSet:illegal], @"Carriage-return in +invalidXMLCharacterSet");
 
-    STAssertFalse([[NSString stringWithCharacter:0x8A] containsCharacterInSet:illegal], nil);
-    STAssertTrue([[NSString stringWithCharacter:0x8A] containsCharacterInSet:discouraged], nil);
-    STAssertFalse([[NSString stringWithCharacter:0x85] containsCharacterInSet:discouraged], nil);
+    XCTAssertFalse([[NSString stringWithCharacter:0x8A] containsCharacterInSet:illegal]);
+    XCTAssertTrue([[NSString stringWithCharacter:0x8A] containsCharacterInSet:discouraged]);
+    XCTAssertFalse([[NSString stringWithCharacter:0x85] containsCharacterInSet:discouraged]);
     
     /* Check some non-BMP characters. NSString represents those using surrogate pairs internally, and those use UTF-16 values which map to invalid codepoints if you interpret them directly. So make sure we're not breaking all non-BMP strings by forbidding those codepoints. */
     
     static const char t3_utf8[] = { 't', 0xf0, 0x9a, 0xaf, 0x8d, 0 }; // Valid UTF8 for 0x01ABCD
     static const char t4_utf8[] = { 't', 0xf0, 0xaf, 0xbf, 0xbe, 0 }; // Valid UTF8 for 0x02FFFE
-    STAssertFalse([[NSString stringWithUTF8String:t3_utf8] containsCharacterInSet:illegal], nil);
-    STAssertFalse([[NSString stringWithUTF8String:t4_utf8] containsCharacterInSet:illegal], nil);
-    STAssertTrue([[NSString stringWithUTF8String:t4_utf8] containsCharacterInSet:discouraged], nil);
+    XCTAssertFalse([[NSString stringWithUTF8String:t3_utf8] containsCharacterInSet:illegal]);
+    XCTAssertFalse([[NSString stringWithUTF8String:t4_utf8] containsCharacterInSet:illegal]);
+    XCTAssertTrue([[NSString stringWithUTF8String:t4_utf8] containsCharacterInSet:discouraged]);
     
     /* Check some invalid UTF-16 sequences. I'm not entirely sure how these occur in practice, but users have managed to get broken surrogate pairs into their documents on multiple occasions. */
     CFStringRef s;
@@ -486,42 +485,42 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
 #if 0 /* It seems that -containsCharacterInSet: can't detect the reserved codepoints in the surrogate range */
     static const unichar t5_utf16[] = { 't', 0xDFFF, 'k' };          // unpaired low surrogate
     s = CFStringFromUnicharArray(t5_utf16);
-    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:illegal], @"t5 - broken surrogate");
-    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t5 - broken surrogate");
+    XCTAssertTrue([(__bridge NSString *)s containsCharacterInSet:illegal], @"t5 - broken surrogate");
+    XCTAssertTrue([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t5 - broken surrogate");
     CFRelease(s);
     
     static const unichar t6_utf16[] = { 't', 0xD801, 'k' };          // unpaired high surrogate
     s = CFStringFromUnicharArray(t6_utf16);
-    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:illegal], @"t6 - broken surrogate");
-    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t6 - broken surrogate");
+    XCTAssertTrue([(__bridge NSString *)s containsCharacterInSet:illegal], @"t6 - broken surrogate");
+    XCTAssertTrue([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t6 - broken surrogate");
     CFRelease(s);
 #endif
     
     static const unichar t7_utf16[] = { 't', 0xD83D, 0xDCA9, 'k' };  // valid UTF-16 for U+1F4A9 PILE OF POO
     s = CFStringFromUnicharArray(t7_utf16);
-    STAssertFalse([(__bridge NSString *)s containsCharacterInSet:illegal], @"t7 - valid surrogate");
-    STAssertFalse([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t7 - valid surrogate");
+    XCTAssertFalse([(__bridge NSString *)s containsCharacterInSet:illegal], @"t7 - valid surrogate");
+    XCTAssertFalse([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t7 - valid surrogate");
     CFRelease(s);
 
     static const unichar t8_utf16[] = { 't', 0xD83F, 0xDFFF, 'z' };  // valid surrogate pair encoding an invalid codepoint
     s = CFStringFromUnicharArray(t8_utf16);
-    STAssertFalse([(__bridge NSString *)s containsCharacterInSet:illegal], @"t8 - valid surrogate, reserved codepoint");
-    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:discouraged], @"t8 - valid surrogate, reserved codepoint");
-    STAssertTrue([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t8 - valid surrogate, invalid codepoint");
+    XCTAssertFalse([(__bridge NSString *)s containsCharacterInSet:illegal], @"t8 - valid surrogate, reserved codepoint");
+    XCTAssertTrue([(__bridge NSString *)s containsCharacterInSet:discouraged], @"t8 - valid surrogate, reserved codepoint");
+    XCTAssertTrue([(__bridge NSString *)s containsCharacterInSet:[NSCharacterSet illegalCharacterSet]], @"t8 - valid surrogate, invalid codepoint");
     CFRelease(s);
 }
 
 - (void)testReplaceRegex;
 {
-    shouldBeEqual([@"    good stuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"^ +" withString:@"X"], @"Xgood stuff    ");
-    shouldBeEqual([@"    good stuff.    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"\\.? +$" withString:@"X"], @"    good stuffX");
-    shouldBeEqual([@"    good stuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"\\.? +$" withString:@"X"], @"    good stuffX");
-    shouldBeEqual([@"    goodstuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"^ +| +$" withString:@"X"], @"XgoodstuffX");
-    shouldBeEqual([@"    good stuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"^ +| +$" withString:@"X"], @"Xgood stuffX");
+    XCTAssertEqualObjects([@"    good stuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"^ +" withString:@"X"], @"Xgood stuff    ");
+    XCTAssertEqualObjects([@"    good stuff.    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"\\.? +$" withString:@"X"], @"    good stuffX");
+    XCTAssertEqualObjects([@"    good stuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"\\.? +$" withString:@"X"], @"    good stuffX");
+    XCTAssertEqualObjects([@"    goodstuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"^ +| +$" withString:@"X"], @"XgoodstuffX");
+    XCTAssertEqualObjects([@"    good stuff    " stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"^ +| +$" withString:@"X"], @"Xgood stuffX");
     
     // Make sure we don't re-process characters from the replacement string
-    shouldBeEqual([@"aaaa" stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"a" withString:@"aa"], @"aaaaaaaa");
-    shouldBeEqual([@"aaaa" stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"aa" withString:@"a"], @"aa");
+    XCTAssertEqualObjects([@"aaaa" stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"a" withString:@"aa"], @"aaaaaaaa");
+    XCTAssertEqualObjects([@"aaaa" stringByReplacingAllOccurrencesOfRegularExpressionPattern:@"aa" withString:@"a"], @"aa");
 }
 
 @end
@@ -533,25 +532,25 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
 
 - (void)testRelativePaths;
 {
-    shouldBeEqual([NSString commonRootPathOfFilename:@"/this/is/a/path" andFilename:@"/this/is/another/path"], @"/this/is");
-    shouldBeEqual([NSString commonRootPathOfFilename:@"/this/is/a/path" andFilename:@"/that/is/another/path"], @"/");
-    shouldBeEqual([NSString commonRootPathOfFilename:@"/this/is/a/path" andFilename:@"/this/is"], @"/this/is");
-    shouldBeEqual([NSString commonRootPathOfFilename:@"/this" andFilename:@"/this/is/the/way/the/world/ends"], @"/this");
-    shouldBeEqual([NSString commonRootPathOfFilename:@"/I/scream/for/ice/cream" andFilename:@"/you/scream/for/ice/cream"], @"/");
-    shouldBeEqual([NSString commonRootPathOfFilename:@"/I/scream/for/ice/cream" andFilename:@"I/scream/for/ice/cream"], nil);
+    XCTAssertEqualObjects([NSString commonRootPathOfFilename:@"/this/is/a/path" andFilename:@"/this/is/another/path"], @"/this/is");
+    XCTAssertEqualObjects([NSString commonRootPathOfFilename:@"/this/is/a/path" andFilename:@"/that/is/another/path"], @"/");
+    XCTAssertEqualObjects([NSString commonRootPathOfFilename:@"/this/is/a/path" andFilename:@"/this/is"], @"/this/is");
+    XCTAssertEqualObjects([NSString commonRootPathOfFilename:@"/this" andFilename:@"/this/is/the/way/the/world/ends"], @"/this");
+    XCTAssertEqualObjects([NSString commonRootPathOfFilename:@"/I/scream/for/ice/cream" andFilename:@"/you/scream/for/ice/cream"], @"/");
+    XCTAssertNil([NSString commonRootPathOfFilename:@"/I/scream/for/ice/cream" andFilename:@"I/scream/for/ice/cream"]);
     
-    shouldBeEqual([@"/biff/boof" relativePathToFilename:@"/biff/boof/zik/zak/zik"], @"zik/zak/zik");
-    shouldBeEqual([@"/biff/boof" relativePathToFilename:@"/biff/zik/zak/zik"], @"../zik/zak/zik");
-    shouldBeEqual([@"/biff/boof" relativePathToFilename:@"/zik/zak/zik"], @"../../zik/zak/zik");
-    shouldBeEqual([@"/biff/boof/zik/zak/zik" relativePathToFilename:@"/biff/boof"], @"../../..");
-    shouldBeEqual([@"/biff/boof/zik/zak/zik" relativePathToFilename:@"/biff/boof/"], @"../../..");
+    XCTAssertEqualObjects([@"/biff/boof" relativePathToFilename:@"/biff/boof/zik/zak/zik"], @"zik/zak/zik");
+    XCTAssertEqualObjects([@"/biff/boof" relativePathToFilename:@"/biff/zik/zak/zik"], @"../zik/zak/zik");
+    XCTAssertEqualObjects([@"/biff/boof" relativePathToFilename:@"/zik/zak/zik"], @"../../zik/zak/zik");
+    XCTAssertEqualObjects([@"/biff/boof/zik/zak/zik" relativePathToFilename:@"/biff/boof"], @"../../..");
+    XCTAssertEqualObjects([@"/biff/boof/zik/zak/zik" relativePathToFilename:@"/biff/boof/"], @"../../..");
     
-    shouldBeEqual([@"/biff/boof/" relativePathToFilename:@"/biff/boof/zik/zak/zik"], @"zik/zak/zik");
-    shouldBeEqual([@"/biff/boof/" relativePathToFilename:@"/biff/zik/zak/zik"], @"../zik/zak/zik");
-    shouldBeEqual([@"/biff/boof/" relativePathToFilename:@"/biff/zik/zak/zik/"], @"../zik/zak/zik");
-    shouldBeEqual([@"/biff/boof/" relativePathToFilename:@"/zik/zak/zik"], @"../../zik/zak/zik");
-    shouldBeEqual([@"/biff/boof/zik/zak/zik/" relativePathToFilename:@"/biff/boof"], @"../../..");
-    shouldBeEqual([@"/biff/boof/zik/zak/zik/" relativePathToFilename:@"/biff/boof/"], @"../../..");
+    XCTAssertEqualObjects([@"/biff/boof/" relativePathToFilename:@"/biff/boof/zik/zak/zik"], @"zik/zak/zik");
+    XCTAssertEqualObjects([@"/biff/boof/" relativePathToFilename:@"/biff/zik/zak/zik"], @"../zik/zak/zik");
+    XCTAssertEqualObjects([@"/biff/boof/" relativePathToFilename:@"/biff/zik/zak/zik/"], @"../zik/zak/zik");
+    XCTAssertEqualObjects([@"/biff/boof/" relativePathToFilename:@"/zik/zak/zik"], @"../../zik/zak/zik");
+    XCTAssertEqualObjects([@"/biff/boof/zik/zak/zik/" relativePathToFilename:@"/biff/boof"], @"../../..");
+    XCTAssertEqualObjects([@"/biff/boof/zik/zak/zik/" relativePathToFilename:@"/biff/boof/"], @"../../..");
 }
 
 - (void)testFancySubpath
@@ -560,10 +559,10 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     NSFileManager *fm = [NSFileManager defaultManager];
     
     relative = nil;
-    shouldnt([fm path:@"/foo/bar/baz" isAncestorOfPath:@"/foo/bar" relativePath:&relative]);
-    shouldBeEqual(relative, nil);
-    should([fm path:@"/foo/bar" isAncestorOfPath:@"/foo/bar/baz" relativePath:&relative]);
-    shouldBeEqual(relative, @"baz");
+    XCTAssertFalse([fm path:@"/foo/bar/baz" isAncestorOfPath:@"/foo/bar" relativePath:&relative]);
+    XCTAssertNil(relative);
+    XCTAssertTrue([fm path:@"/foo/bar" isAncestorOfPath:@"/foo/bar/baz" relativePath:&relative]);
+    XCTAssertEqualObjects(relative, @"baz");
     
     NSError *error = nil;
     
@@ -577,7 +576,7 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
     OBShouldNotError([fm createDirectoryAtPath:sc2 withIntermediateDirectories:NO attributes:nil error:&error]);
     
     //NSLog(@"%@", [[NSArray arrayWithObjects:scratchMe, sc0, sc1, sc2, nil] description]);
-    shouldBeEqual([scratchMe relativePathToFilename:sc2], @"zik/zak/zik");
+    XCTAssertEqualObjects([scratchMe relativePathToFilename:sc2], @"zik/zak/zik");
     
     NSString *pScratchMe = [@"/private" stringByAppendingString:scratchMe];
     NSString *psc0 = [pScratchMe stringByAppendingPathComponent:@"zik"];
@@ -586,27 +585,27 @@ static NSString *fromutf8(const unsigned char *u, unsigned int length)
 
     //NSLog(@"%@", [[NSArray arrayWithObjects:pScratchMe, psc0, psc1, psc2, nil] description]);
 
-    should([fm fileExistsAtPath:psc2]);
+    XCTAssertTrue([fm fileExistsAtPath:psc2]);
 
     relative = nil;
-    should([fm path:scratchMe isAncestorOfPath:sc2 relativePath:&relative]);
-    shouldBeEqual(relative, @"zik/zak/zik");
+    XCTAssertTrue([fm path:scratchMe isAncestorOfPath:sc2 relativePath:&relative]);
+    XCTAssertEqualObjects(relative, @"zik/zak/zik");
     
     relative = nil;
-    should([fm path:sc0 isAncestorOfPath:sc2 relativePath:&relative]);
-    shouldBeEqual(relative, @"zak/zik");
+    XCTAssertTrue([fm path:sc0 isAncestorOfPath:sc2 relativePath:&relative]);
+    XCTAssertEqualObjects(relative, @"zak/zik");
     
     relative = nil;
-    should([fm path:psc0 isAncestorOfPath:sc1 relativePath:&relative]);
-    shouldBeEqual(relative, @"zak");
+    XCTAssertTrue([fm path:psc0 isAncestorOfPath:sc1 relativePath:&relative]);
+    XCTAssertEqualObjects(relative, @"zak");
     
     relative = nil;
-    should([fm path:scratchMe isAncestorOfPath:psc2 relativePath:&relative]);
-    shouldBeEqual(relative, @"zik/zak/zik");
+    XCTAssertTrue([fm path:scratchMe isAncestorOfPath:psc2 relativePath:&relative]);
+    XCTAssertEqualObjects(relative, @"zik/zak/zik");
     
     relative = nil;
-    should([fm path:psc0 isAncestorOfPath:sc2 relativePath:&relative]);
-    shouldBeEqual(relative, @"zak/zik");
+    XCTAssertTrue([fm path:psc0 isAncestorOfPath:sc2 relativePath:&relative]);
+    XCTAssertEqualObjects(relative, @"zak/zik");
 
     system([[NSString stringWithFormat:@"rm -r '%@'", scratchMe] UTF8String]);
 }

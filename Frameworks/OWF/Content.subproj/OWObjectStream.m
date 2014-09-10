@@ -51,7 +51,7 @@ enum {
 {
     if (!(self = [super initWithName:aName]))
 	return nil;
-    first = last = NSZoneMalloc(NULL, sizeof(OWObjectStreamBuffer));
+    first = last = malloc(sizeof(OWObjectStreamBuffer));
     last->nextIndex = OWObjectStreamBuffer_BufferedObjectsLength;
     last->next = NULL;
     nextObjectInBuffer = last->objects;
@@ -73,7 +73,7 @@ enum {
             beyondBuffer -= (first->nextIndex - count);
         while (nextObjectInBuffer < beyondBuffer)
             [*nextObjectInBuffer++ release];
-        NSZoneFree(NULL, first);
+        free(first);
         first = last;
     }
     [objectsLock release];
@@ -91,7 +91,7 @@ enum {
     *nextObjectInBuffer = [anObject retain];
     count++;
     if (++nextObjectInBuffer == beyondBuffer) {
-        last->next = NSZoneCalloc(NULL, sizeof(OWObjectStreamBuffer), 1);
+        last->next = calloc(sizeof(OWObjectStreamBuffer), 1);
         last = last->next;
         last->nextIndex = count + OWObjectStreamBuffer_BufferedObjectsLength;
         last->next = NULL;

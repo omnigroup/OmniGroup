@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,51 +7,19 @@
 //
 // $Id$
 
-#import <OmniBase/OBObject.h>
+#import <Foundation/NSObject.h>
 
 #import <OmniBase/macros.h>
 #import <Foundation/NSString.h> // For unichar
 
-@interface OFTrieNode : OBObject
-{
-@public
-    unsigned int childCount;
-    unichar *characters;
-    OB_STRONG id *children;
-}
+@interface OFTrieNode : NSObject
 
 - (void)addChild:(id)aChild withCharacter:(unichar)aCharacter;
 
 @end
 
-static inline unsigned int
-trieFindIndex(OFTrieNode *node, unichar aCharacter)
-{
-    unsigned int low = 0;
-    unsigned int range = 1;
-    unsigned int test = 0;
-
-    while (node->childCount >= range) // range is the lowest power of 2 > childCount
-        range <<= 1;
-
-    while (range) {
-        test = low + (range >>= 1);
-        if (test >= node->childCount)
-            continue;
-        if (node->characters[test] < aCharacter)
-            low = test+1;
-    }
-    return low;
-}
-
-static inline id
-trieFindChild(OFTrieNode *node, unichar aCharacter)
-{
-    unsigned int foundIndex;
-    
-    foundIndex = trieFindIndex(node, aCharacter);
-    if (foundIndex < node->childCount && node->characters[foundIndex] == aCharacter)
-	return node->children[foundIndex];
-    else
-	return nil;
-}
+extern NSUInteger trieFindIndex(OFTrieNode *node, unichar aCharacter);
+extern NSUInteger trieChildCount(OFTrieNode *node);
+extern id trieChildAtIndex(OFTrieNode *node, NSUInteger childIndex);
+extern id trieFindChild(OFTrieNode *node, unichar aCharacter);
+extern const unichar *trieCharacters(OFTrieNode *node);

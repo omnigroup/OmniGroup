@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		34CA5FA30FDEE29C005FF9D0 /* ONFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34ED2DA11946802B005643C9 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED2DA01946802B005643C9 /* XCTest.framework */; };
 		4AFE726D08A02E9D00ED9F2D /* OmniNetworking.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E97FE8AB1FF11C9CC38 /* OmniNetworking.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AFE726E08A02E9D00ED9F2D /* ONHost.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E99FE8AB1FF11C9CC38 /* ONHost.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AFE726F08A02E9D00ED9F2D /* ONHostAddress.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51E9AFE8AB1FF11C9CC38 /* ONHostAddress.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -46,7 +47,6 @@
 		4AFE72B108A02E9D00ED9F2D /* ONHostAddressTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2D556100454A4CB0097A146 /* ONHostAddressTests.m */; };
 		4AFE72B208A02E9D00ED9F2D /* ONUDPTrafficTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2D3FF4C0458A9E70097A146 /* ONUDPTrafficTests.m */; };
 		4AFE72B308A02E9D00ED9F2D /* IDNEncodingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A2962D2506D28BAA00D7261C /* IDNEncodingTests.m */; };
-		4AFE72B508A02E9D00ED9F2D /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B5B6FEF041972B8135B98E4 /* SenTestingKit.framework */; };
 		4AFE72B608A02E9D00ED9F2D /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */; };
 		4AFE72B708A02E9D00ED9F2D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51EBBFE8AB1FF11C9CC38 /* OmniBase.framework */; };
 		4AFE72C708A02E9D00ED9F2D /* ListInterfaces.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B82CFFA0444F39D13F6A094 /* ListInterfaces.m */; };
@@ -130,6 +130,7 @@
 		18EAC01EFFC40E94C697A14E /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniNetworking.strings; sourceTree = "<group>"; };
 		34A1595A056458170097A113 /* OmniNetworking.order */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniNetworking.order; sourceTree = "<group>"; };
 		34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONFeatures.h; sourceTree = "<group>"; };
+		34ED2DA01946802B005643C9 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		4A3CECEF08B02E15003A2A9D /* OmniNetworking_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniNetworking_Prefix.h; sourceTree = "<group>"; };
 		4AB8F3C108AD260400DBB061 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AB8F3C208AD260400DBB061 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -138,7 +139,7 @@
 		4AB8F3C508AD260400DBB061 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AB8F3C608AD260400DBB061 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
 		4AFE729B08A02E9D00ED9F2D /* OmniNetworking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniNetworking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AFE72C108A02E9D00ED9F2D /* ONUnitTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ONUnitTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AFE72C108A02E9D00ED9F2D /* ONUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ONUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AFE72D208A02E9D00ED9F2D /* ListInterfaces */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ListInterfaces; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AFE72E408A02E9E00ED9F2D /* ONThreadedLookupTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ONThreadedLookupTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AFE72F808A02F7F00ED9F2D /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Coverage.xcconfig"; path = "../../Configurations/Omni-Framework-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
@@ -151,7 +152,6 @@
 		4AFE734108A042A400ED9F2D /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AFE734208A042A400ED9F2D /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
 		8B086B3504195FDD1339F5EC /* ONSocketStreamTests.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; path = ONSocketStreamTests.m; sourceTree = "<group>"; };
-		8B5B6FEF041972B8135B98E4 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		8B82CFEC0444CA9113F6A094 /* ONLinkLayerHostAddress.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ONLinkLayerHostAddress.m; sourceTree = "<group>"; };
 		8B82CFED0444CA9113F6A094 /* ONLinkLayerHostAddress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONLinkLayerHostAddress.h; sourceTree = "<group>"; };
 		8B82CFFA0444F39D13F6A094 /* ListInterfaces.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = ListInterfaces.m; path = Examples/ListInterfaces.m; sourceTree = "<group>"; };
@@ -186,7 +186,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AFE72B508A02E9D00ED9F2D /* SenTestingKit.framework in Frameworks */,
+				34ED2DA11946802B005643C9 /* XCTest.framework in Frameworks */,
 				4AFE72B608A02E9D00ED9F2D /* Foundation.framework in Frameworks */,
 				4AFE72B708A02E9D00ED9F2D /* OmniBase.framework in Frameworks */,
 				4AFE72EF08A02E9E00ED9F2D /* OmniNetworking.framework in Frameworks */,
@@ -262,7 +262,7 @@
 				00E51EBBFE8AB1FF11C9CC38 /* OmniBase.framework */,
 				00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */,
 				A2B5A9F005192F930097A146 /* SystemConfiguration.framework */,
-				8B5B6FEF041972B8135B98E4 /* SenTestingKit.framework */,
+				34ED2DA01946802B005643C9 /* XCTest.framework */,
 			);
 			name = "External Frameworks and Libraries";
 			sourceTree = "<group>";
@@ -370,7 +370,7 @@
 		8BEC418904463436133F7B26 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				4AFE72C108A02E9D00ED9F2D /* ONUnitTests.octest */,
+				4AFE72C108A02E9D00ED9F2D /* ONUnitTests.xctest */,
 				4AFE72E408A02E9E00ED9F2D /* ONThreadedLookupTest */,
 			);
 			name = Tests;
@@ -467,8 +467,8 @@
 			name = ONUnitTests;
 			productInstallPath = "$(USER_LIBRARY_DIR)/Bundles";
 			productName = ONUnitTests;
-			productReference = 4AFE72C108A02E9D00ED9F2D /* ONUnitTests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productReference = 4AFE72C108A02E9D00ED9F2D /* ONUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		4AFE72C208A02E9D00ED9F2D /* ListInterfaces */ = {
 			isa = PBXNativeTarget;
@@ -516,7 +516,7 @@
 		00E51E85FE8AB1FF11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0600;
 			};
 			buildConfigurationList = 4A07274708A02D1300A31187 /* Build configuration list for PBXProject "OmniNetworking" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -746,16 +746,13 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
-				);
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(GCC_PREPROCESSOR_DEFINITIONS)",
-					"STEnableDeprecatedAssertionMacros=1",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				INFOPLIST_FILE = "Info-ONUnitTests.plist";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
-				WRAPPER_EXTENSION = octest;
+				WRAPPER_EXTENSION = xctest;
 			};
 			name = Debug;
 		};
@@ -766,17 +763,14 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
-				);
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(GCC_PREPROCESSOR_DEFINITIONS)",
-					"STEnableDeprecatedAssertionMacros=1",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				INFOPLIST_FILE = "Info-ONUnitTests.plist";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
 				SKIP_INSTALL = YES;
-				WRAPPER_EXTENSION = octest;
+				WRAPPER_EXTENSION = xctest;
 			};
 			name = Release;
 		};
@@ -787,16 +781,13 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
 					"$(DEVELOPER_FRAMEWORKS_DIR_QUOTED)",
-				);
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(GCC_PREPROCESSOR_DEFINITIONS)",
-					"STEnableDeprecatedAssertionMacros=1",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				INFOPLIST_FILE = "Info-ONUnitTests.plist";
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
-				WRAPPER_EXTENSION = octest;
+				WRAPPER_EXTENSION = xctest;
 			};
 			name = Coverage;
 		};

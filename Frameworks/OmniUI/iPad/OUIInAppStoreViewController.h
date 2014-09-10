@@ -1,4 +1,4 @@
-// Copyright 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,28 +16,18 @@
 
 @interface OUIInAppStoreViewController : UIViewController <SKProductsRequestDelegate, OUIInAppStoreObserverDelegate>
 
-@property (nonatomic,strong) SKProductsRequest *request;
-@property (nonatomic,strong) SKProduct *purchaseProduct;
-@property (nonatomic,strong) UIBarButtonItem *restoreButton;
-@property (nonatomic,strong) OUIInAppStoreObserver *storeObserver;
-@property (nonatomic, strong) IBOutlet NSLayoutConstraint *leftMarginConstraint;
-@property (nonatomic,strong) IBOutlet UIImageView *featureImageWell;
-@property (nonatomic,strong) IBOutlet UITextView *featureDescriptionTextView;
-@property (nonatomic,strong) IBOutlet UILabel *featureTitleLabel;
-@property (nonatomic,strong) IBOutlet UILabel *featureSubtitleLabel;
-@property (nonatomic,strong) IBOutlet UIButton *buyButton;
-@property (nonatomic,strong) IBOutlet UIActivityIndicatorView *spinner;
-@property (nonatomic,strong) NSString *productIdentifier;
+@property (nonatomic, strong) IBOutlet UIWebView *featureWebView;
+@property (nonatomic, strong) IBOutlet UISegmentedControl *pricingOptionsSegmentedControl;
+@property (nonatomic, strong) IBOutlet UILabel *pricingOptionDescriptionLabel;
+@property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
+@property (nonatomic, strong) IBOutlet UIButton *buyButton;
+@property (nonatomic, strong) IBOutlet UIButton *restoreButton;
 
 - (id)initWithProductIdentifier:(NSString *)aProductID;
 
+- (IBAction)updateSelectedPricingOption:(id)sender;
 - (IBAction)purchase:(id)sender;
 - (IBAction)restore:(id)sender;
 - (IBAction)done:(id)sender;
-- (void)disableStoreInteraction;
-- (void)enableStoreInteraction;
-- (void)showPurchasedText:(NSString *)aProductID;
-
-- (void)updateUIForProductIdentifier:(NSString *)aProductID;
 
 @end

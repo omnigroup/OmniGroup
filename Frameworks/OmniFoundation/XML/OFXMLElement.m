@@ -132,7 +132,7 @@ RCS_ID("$Id$");
     if (!_children)
 	// This happens a lot; avoid the placeholder goo
 	_children = (OB_BRIDGE NSMutableArray *)CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectArrayCallbacks);
-    CFArrayAppendValue((CFMutableArrayRef)_children, child);
+    CFArrayAppendValue((CFMutableArrayRef)_children, (__bridge CFTypeRef)child);
 }
 
 - (void)removeChild:(id)child;
@@ -458,7 +458,7 @@ RCS_ID("$Id$");
         whitespaceBehavior = parentBehavior;
 
     OFXMLBufferAppendUTF8CString(xml, "<");
-    OFXMLBufferAppendString(xml, (CFStringRef)_name);
+    OFXMLBufferAppendString(xml, (__bridge CFStringRef)_name);
     
     if (_attributeOrder) {
         // Quote the attribute values
@@ -474,12 +474,12 @@ RCS_ID("$Id$");
             OBASSERT(![value containsCharacterInSet:[NSString discouragedXMLCharacterSet]]);
             
             OFXMLBufferAppendUTF8CString(xml, " ");
-            OFXMLBufferAppendString(xml, (CFStringRef)name);
+            OFXMLBufferAppendString(xml, (__bridge CFStringRef)name);
             
             if (value) {
                 OFXMLBufferAppendUTF8CString(xml, "=\"");
                 NSString *quotedString = OFXMLCreateStringWithEntityReferencesInCFEncoding(value, OFXMLBasicEntityMask, nil, encoding);
-                OFXMLBufferAppendString(xml, (CFStringRef)quotedString);
+                OFXMLBufferAppendString(xml, (__bridge CFStringRef)quotedString);
                 [quotedString release];
                 OFXMLBufferAppendUTF8CString(xml, "\"");
             }
@@ -522,7 +522,7 @@ RCS_ID("$Id$");
     
     if (hasWrittenChild) {
         OFXMLBufferAppendUTF8CString(xml, "</");
-        OFXMLBufferAppendString(xml, (CFStringRef)_name);
+        OFXMLBufferAppendString(xml, (__bridge CFStringRef)_name);
         OFXMLBufferAppendUTF8CString(xml, ">");
     } else
         OFXMLBufferAppendUTF8CString(xml, "/>");

@@ -1187,8 +1187,8 @@ static void _enumerateBestDataForTypes(UIPasteboard *pasteboard, NSArray *types,
 {
     BOOL preserveStyles = YES;
     id <OUITextViewDelegate> delegate = self.delegate;
-    if ([delegate respondsToSelector:@selector(textViewShouldPreserveStylesWhenPasting:)])
-        preserveStyles = [delegate textViewShouldPreserveStylesWhenPasting:self];
+    if ([delegate respondsToSelector:@selector(textViewShouldPreserveStylesWhenPasting:defaultValue:sender:)])
+        preserveStyles = [delegate textViewShouldPreserveStylesWhenPasting:self defaultValue:preserveStyles sender:sender];
     [self _pastePreservingStyles:preserveStyles];
 }
 
@@ -1196,8 +1196,8 @@ static void _enumerateBestDataForTypes(UIPasteboard *pasteboard, NSArray *types,
 {
     BOOL preserveStyles = NO;
     id <OUITextViewDelegate> delegate = self.delegate;
-    if ([delegate respondsToSelector:@selector(textViewShouldPreserveStylesWhenPasting:)])
-        preserveStyles = ![delegate textViewShouldPreserveStylesWhenPasting:self];
+    if ([delegate respondsToSelector:@selector(textViewShouldPreserveStylesWhenPasting:defaultValue:sender:)])
+        preserveStyles = ![delegate textViewShouldPreserveStylesWhenPasting:self defaultValue:!preserveStyles sender:sender];
     [self _pastePreservingStyles:preserveStyles];
 }
 

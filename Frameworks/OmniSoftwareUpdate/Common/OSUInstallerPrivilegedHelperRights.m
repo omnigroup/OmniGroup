@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc.  All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,11 +69,11 @@ void OSUInstallerSetUpAuthorizationRights(void)
     }
     
     NSArray *rightsArray = OSUInstallerAuthoriziationRights();
-    for (NSDictionary *right in rightsArray) {
+    for (NSDictionary *_right in rightsArray) {
         // Attempt to get the right. If we get back errAuthorizationDenied that means there's no current definition, so we add our default one.
-        NSString *authRightName = right[OSUInstallerRightNameKey];
-        NSDictionary *authRightDefault = right[OSUInstallerRightDefaultKey];
-        NSString *authRightDescription = right[OSUInstallerRightDescriptionKey];
+        NSString *authRightName = _right[OSUInstallerRightNameKey];
+        NSDictionary *authRightDefault = _right[OSUInstallerRightDefaultKey];
+        NSString *authRightDescription = _right[OSUInstallerRightDescriptionKey];
         CFDictionaryRef right = NULL;
         
         status = AuthorizationRightGet([authRightName UTF8String], &right);

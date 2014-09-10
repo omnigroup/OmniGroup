@@ -14,7 +14,7 @@
 "Accept" = "Accepteren";
 
 /* Web view nagivation button for going back in history. */
-"Back" = "Achteraan";
+"Back" = "Terug";
 
 /* Bold button accessibility label */
 "Bold" = "Vet";
@@ -110,6 +110,9 @@
 
 /* placeholder text */
 "password" = "wachtwoord";
+
+/* Photos view controller title. */
+"Photos" = "Foto's";
 
 /* alert title */
 "Preference changed" = "Voorkeur gewijzigd";

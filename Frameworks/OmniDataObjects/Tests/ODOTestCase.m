@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2010, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,7 +76,7 @@ RCS_ID("$Id$")
     
     // This will actually close undo groups in all undo managers.
     [[NSRunLoop currentRunLoop] runUntilDate:[NSDate distantPast]];
-    should([_undoManager groupingLevel] == 0);
+    XCTAssertTrue([_undoManager groupingLevel] == 0);
 }
 
 - (BOOL)save:(NSError **)outError;

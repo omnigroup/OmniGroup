@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,9 +8,16 @@
 // $Id$
 
 #import <UIKit/UIViewControllerTransitioning.h>
+#import <UIKit/UINavigationController.h>
+#import <OmniUIDocument/OUIDocumentPickerHomeScreenViewController.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 
 @interface OUIDocumentHomeScreenAnimator : NSObject  <UIViewControllerAnimatedTransitioning>
 
-+ (instancetype)sharedAnimator;
+@property (nonatomic, getter=isPushing) BOOL pushing;
 
+@end
+
+@interface OUIDocumentPickerHomeScreenViewController (HomeScreenAnimatorSupport)
+- (CGRect)frameOfCellForScope:(ODSScope *)scope inView:(UIView *)transitionContainerView;
 @end

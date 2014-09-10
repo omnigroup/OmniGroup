@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,8 +24,8 @@ RCS_ID("$Id$");
     
     [bijection setObject:@"bar" forKey:@"foo"];
     
-    STAssertEquals((NSUInteger)1, [bijection count], @"Bijection added wrong number of objects");
-    STAssertEqualObjects(@"bar", [bijection objectForKey:@"foo"], @"Bijection added object value for key");
+    XCTAssertEqual((NSUInteger)1, [bijection count], @"Bijection added wrong number of objects");
+    XCTAssertEqualObjects(@"bar", [bijection objectForKey:@"foo"], @"Bijection added object value for key");
 }
 
 - (void)testReplacingObject;
@@ -34,8 +34,8 @@ RCS_ID("$Id$");
     
     [bijection setObject:@"baz" forKey:@"foo"];
     
-    STAssertEquals((NSUInteger)1, [bijection count], @"Bijection unexpectedly changed number of objects");
-    STAssertEqualObjects(@"baz", [bijection objectForKey:@"foo"], @"Bijection set wrong object for key");
+    XCTAssertEqual((NSUInteger)1, [bijection count], @"Bijection unexpectedly changed number of objects");
+    XCTAssertEqualObjects(@"baz", [bijection objectForKey:@"foo"], @"Bijection set wrong object for key");
 }
 
 - (void)testRemovingObject;
@@ -44,8 +44,8 @@ RCS_ID("$Id$");
     
     [bijection setObject:nil forKey:@"foo"];
     
-    STAssertEquals((NSUInteger)0, [bijection count], @"Bijection removed wrong number of objects");
-    STAssertNil([bijection objectForKey:@"foo"], @"Bijection failed to remove object for key");
+    XCTAssertEqual((NSUInteger)0, [bijection count], @"Bijection removed wrong number of objects");
+    XCTAssertNil([bijection objectForKey:@"foo"], @"Bijection failed to remove object for key");
 }
 
 - (void)testInvert;
@@ -54,7 +54,7 @@ RCS_ID("$Id$");
     
     [bijection invert];
     
-    STAssertEqualObjects(@"foo", [bijection objectForKey:@"bar"], @"Bijection did not maintain key-object mapping through inversion");
+    XCTAssertEqualObjects(@"foo", [bijection objectForKey:@"bar"], @"Bijection did not maintain key-object mapping through inversion");
 }
 
 @end

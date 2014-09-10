@@ -1,4 +1,4 @@
-// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -500,6 +500,7 @@ static void _validateMethodSignatures(void)
             CLASSNAME_HAS_PREFIX(clsName, "CA") ||
             CLASSNAME_HAS_PREFIX(clsName, "_CN") ||
             CLASSNAME_HAS_PREFIX(clsName, "VGL") ||
+            CLASSNAME_HAS_PREFIX(clsName, "VK") ||
             strcmp(clsName, "DRDevice") == 0) {
             /* In particular, _NS[View]Animator chokes in this case. But we don't really need to check any _NS classes. */
             continue;
@@ -616,14 +617,15 @@ static void _checkForMethodsInDeprecatedProtocols(void)
         Class cls = classes[classIndex];
 	
 	// Several Cocoa classes have problems.  Radar 6333766.
-	const char *name = class_getName(cls);
-	if (strcmp(name, "ISDComplainer") == 0 ||
-	    strcmp(name, "ILMediaObjectsViewController") == 0 ||
-	    strcmp(name, "ABBackupManager") == 0 ||
-	    strcmp(name, "ABPeopleController") == 0 ||
-	    strcmp(name, "ABAddressBook") == 0 ||
+        const char *name = class_getName(cls);
+        if (strcmp(name, "ISDComplainer") == 0 ||
+            strcmp(name, "ILMediaObjectsViewController") == 0 ||
+            strcmp(name, "ABBackupManager") == 0 ||
+            strcmp(name, "ABPeopleController") == 0 ||
+            strcmp(name, "ABAddressBook") == 0 ||
             strcmp(name, "ABPhoneFormatsPreferencesModule") == 0 ||
             strcmp(name, "GFNodeManagerView") == 0 ||
+            strcmp(name, "FileReference") == 0 || // IOBluetooth has non-prefixed class that implements deprecated API, 17362328
             strcmp(name, "QCPatchActor") == 0)
 	    continue;
         

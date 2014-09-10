@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2005, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,7 @@ RCS_ID("$Id$")
         // Setting the minimum read buffer length to NSPageSize means that we'll read at least one page's worth of 1-byte characters into our unichar buffer, in the common case where 1 byte --> 1 unichar.
 
     bufferSize = minimumReadBufferLength;
-    buffer = (unichar *)NSZoneMalloc([self zone], bufferSize * sizeof(unichar));
+    buffer = (unichar *)malloc(MAX(bufferSize, 1UL) * sizeof(unichar));
     bufferLength = 0;
     bufferOffset = 0;
     
@@ -46,7 +46,7 @@ RCS_ID("$Id$")
 - (void)dealloc;
 {
     [streamCursor release];
-    NSZoneFree(NSZoneFromPointer(buffer), buffer);
+    free(buffer);
     [super dealloc];
 }
 
@@ -96,7 +96,7 @@ RCS_ID("$Id$")
     newBufferSize = bufferLength + charactersToRead;
     
     if (newBufferSize > bufferSize || (newBufferSize < (bufferSize / 8))) {
-        buffer = NSZoneRealloc(NULL, buffer, newBufferSize * sizeof(unichar));
+        buffer = realloc(buffer, newBufferSize * sizeof(unichar));
         bufferSize = newBufferSize;
     }
     

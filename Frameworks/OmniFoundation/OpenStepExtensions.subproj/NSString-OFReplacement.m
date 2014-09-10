@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -91,27 +91,14 @@ RCS_ID("$Id$");
     return newString;
 }
 
-struct DictionaryVariableSubstitution {
-    BOOL removeUndefinedKeys;
-    NSDictionary *dictionary;
-};
-
-static NSString *_variableSubstitutionInDictionary(NSString *key, void *context)
-{
-    struct DictionaryVariableSubstitution *info = (struct DictionaryVariableSubstitution *)context;
-    NSString *value = [info->dictionary objectForKey:key];
-    if (value == nil && info->removeUndefinedKeys)
-	value = @"";
-    return value;
-}
-
 - (NSString *)stringByReplacingKeysInDictionary:(NSDictionary *)keywordDictionary startingDelimiter:(NSString *)startingDelimiterString endingDelimiter:(NSString *)endingDelimiterString removeUndefinedKeys: (BOOL)removeUndefinedKeys;
 {
-    struct DictionaryVariableSubstitution info;
-    
-    info.removeUndefinedKeys = removeUndefinedKeys;
-    info.dictionary = keywordDictionary;
-    return [self stringByReplacingKeys:_variableSubstitutionInDictionary startingDelimiter:startingDelimiterString endingDelimiter:endingDelimiterString context:&info];
+    return [self stringByReplacingKeysWithStartingDelimiter:startingDelimiterString endingDelimiter:endingDelimiterString usingBlock:^NSString *(NSString *key) {
+        NSString *value = [keywordDictionary objectForKey:key];
+        if (value == nil && removeUndefinedKeys)
+            value = @"";
+        return value;
+    }];
 }
 
 - (NSString *)stringByReplacingKeysInDictionary:(NSDictionary *)keywordDictionary startingDelimiter:(NSString *)startingDelimiterString endingDelimiter:(NSString *)endingDelimiterString;
@@ -119,7 +106,7 @@ static NSString *_variableSubstitutionInDictionary(NSString *key, void *context)
     return [self stringByReplacingKeysInDictionary:keywordDictionary startingDelimiter:startingDelimiterString endingDelimiter:endingDelimiterString removeUndefinedKeys:NO];
 }
 
-- (NSString *)stringByReplacingKeys:(OFVariableReplacementFunction)replacer startingDelimiter:(NSString *)startingDelimiterString endingDelimiter:(NSString *)endingDelimiterString context:(void *)context;
+- (NSString *)stringByReplacingKeysWithStartingDelimiter:(NSString *)startingDelimiterString endingDelimiter:(NSString *)endingDelimiterString usingBlock:(OFVariableReplacementBlock)replacer;
 {
     NSScanner *scanner = [NSScanner scannerWithString:self];
     
@@ -147,7 +134,7 @@ static NSString *_variableSubstitutionInDictionary(NSString *key, void *context)
         gotEndDelimiter = [scanner scanString:endingDelimiterString intoString:NULL];
         
         if (gotKey) {
-	    value = replacer(key, context);
+	    value = replacer(key);
 	    if (value == nil || ![value isKindOfClass:[NSString class]]) {
 		if (gotStartDelimiter)
 		    [interpolatedString appendString:startingDelimiterString];

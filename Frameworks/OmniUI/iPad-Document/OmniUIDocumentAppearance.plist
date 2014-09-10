@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>documentPickerLocationRowHeight</key>
+	<integer>100</integer>
+	<key>documentPickerAddAccountRowHeight</key>
+	<integer>60</integer>
+	<key>documentPickerHomeScreenAnimationDuration</key>
+	<real>0.6</real>
+	<key>documentPickerHomeScreenAnimationBounceFactor</key>
+	<real>0.75</real>
+	<key>documentPickerHomeScreenItemCountSeparator</key>
+	<string>•</string>
+	<key>documentPickerTintColorAgainstBackground</key>
+	<dict>
+		<key>w</key>
+		<integer>1</integer>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
+	<key>documentOpeningAnimationDuration</key>
+	<real>0.3</real>
+	<key>documentClosingAnimationDuration</key>
+	<real>0.5</real>
+</dict>
+</plist>

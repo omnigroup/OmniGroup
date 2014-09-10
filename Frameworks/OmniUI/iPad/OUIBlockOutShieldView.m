@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,7 +51,7 @@ RCS_ID("$Id$");
     [[UIColor blackColor] set];
     
     if (self.passthroughViews.count > 0) {
-        // This is a quick and dirty hack that will work for a single pass-through view or ones that stack to form a contiguous block. We just union all the pass-through views together and punch out a single rectangular whole.
+        // This is a quick and dirty hack that will work for a single pass-through view or ones that stack to form a contiguous block. We just union all the pass-through views together and punch out a single rectangular hole.
         // TODO: make this robust
         UIView *passThroughView = self.passthroughViews.firstObject;
         CGRect holeRect = [self convertRect:passThroughView.bounds fromView:passThroughView];

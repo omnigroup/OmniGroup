@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import "OFXAgent-Internal.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniFileExchange/OFXAccountClientParameters.h>
 #import <OmniFileExchange/OFXFileMetadata.h>
@@ -66,6 +67,8 @@ NSInteger OFXActivityDebug = INT_MAX;
     NSTimer *_periodicSyncTimer;
 }
 
+static NSString *UserAgent = nil;
+
 + (void)initialize;
 {
     OBINITIALIZE;
@@ -80,6 +83,10 @@ NSInteger OFXActivityDebug = INT_MAX;
     OFInitializeDebugLogLevel(OFXActivityDebug);
     
     OFInitializeTimeInterval(OFXAgentSyncInterval, 5*60, 5, 5*60);
+    
+    OFVersionNumber *version = [[self defaultClientParameters] currentFrameworkVersion];
+    NSString *versionString = [NSString stringWithFormat:@"OmniFileExchange/%@", [version cleanVersionString]];
+    UserAgent = [ODAVConnectionConfiguration userAgentStringByAddingComponents:@[versionString]];
     
     OBASSERT([[[NSBundle mainBundle] infoDictionary] objectForKey:@"OFSSyncContainerIdentifiers"] == nil); // Old key.
 }
@@ -132,14 +139,43 @@ BOOL OFXShouldSyncAllPathExtensions(NSSet *pathExtensions)
 
 static NSString * const CellularSyncEnabledPreferenceKey = @"OFXCellularSyncEnabled";
 
++ (ODAVConnectionConfiguration *)makeConnectionConfiguration;
+{
+#if ODAV_NSURLSESSION
+    OBFinishPortingLater("Look at the callers -- once we move to using NSURLSession, we'll be not reusing https connections across uploads/downloads");
+
+    NSURLSessionConfiguration *configuration = [[NSURLSessionConfiguration defaultSessionConfiguration] copy];
+    
+    // This is off by default. Turn it on?
+    //configuration.HTTPShouldUsePipelining = YES;
+    
+    // We could test +[OFXAgent isCellularSyncEnabled] here, but the user doesn't even see the "Use Cellular Data" switch until they've validated an account.
+    configuration.allowsCellularAccess = YES;
+
+    configuration.HTTPShouldUsePipelining = YES;
+#else
+    ODAVConnectionConfiguration *configuration = [ODAVConnectionConfiguration new];
+    
+    configuration.allowsCellularAccess = [self isCellularSyncEnabled];
+    configuration.userAgent = UserAgent;
+#endif
+    
+    return configuration;
+}
+
 + (BOOL)isCellularSyncEnabled;
 {
-    return [[OFPreference preferenceForKey:CellularSyncEnabledPreferenceKey] boolValue];
+    return [[self cellularSyncEnabledPreference] boolValue];
 }
 
 + (void)setCellularSyncEnabled:(BOOL)cellularSyncEnabled;
 {
-    [[OFPreference preferenceForKey:CellularSyncEnabledPreferenceKey] setBoolValue:cellularSyncEnabled];
+    [[self cellularSyncEnabledPreference] setBoolValue:cellularSyncEnabled];
+}
+
++ (OFPreference *)cellularSyncEnabledPreference;
+{
+    return [OFPreference preferenceForKey:CellularSyncEnabledPreferenceKey];
 }
 
 - init;
@@ -481,11 +517,11 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
         [self sync:nil];
 }
 
-- (BOOL)syncEnabled;
+// Called as part of retrying sync on an account that automatically paused itself due to errors.
+- (void)restoreSyncEnabledForAccount:(OFXServerAccount *)account;
 {
-    OBPRECONDITION([NSThread isMainThread]);
-
-    return _started && _syncSchedule > OFXSyncScheduleNone;
+    OFXAccountAgent *accountAgent = _uuidToAccountAgent[account.uuid];
+    accountAgent.syncingEnabled = [self _syncingAllowed];
 }
 
 - (void)setAutomaticallyDownloadFileContents:(BOOL)automaticallyDownloadFileContents;
@@ -525,7 +561,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     REQUIRE(_started, YES, @"Called -sync:.");
     
     // Try to stay alive while the sync is happening.
-    OFBackgroundActivity *activity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniUI.OUIDocumentAppController.performFetch"];
+    OFBackgroundActivity *activity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniFileExchange.Sync"];
     
     // TODO: Discard sync requests that are made while there is an unstarted sync request already queued?
     
@@ -536,7 +572,8 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     }];
     
     [_uuidToAccountAgent enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXAccountAgent *accountAgent, BOOL *stop) {
-        if (!accountAgent.started)
+        // TODO: Added a check for -syncingEnabled here, but this might make the 'manual' sync schedule not work.
+        if (!accountAgent.started || !accountAgent.syncingEnabled)
             return;
 
         // TODO: Consider using OFNetReachability to skip account agents which are unreachable (offline) or should not be accessed right now (isCellularSyncEnabled).
@@ -780,6 +817,10 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     
     // Update our idea of what agents we have
     _uuidToAccountAgent = [uuidToAccountAgent copy];
+    
+    // Disable syncing over cellular if we have lost our last agent. (That way if you add another one later we don't blow through your data plan before you have a chance to turn it off.)
+    if (_uuidToAccountAgent.count == 0)
+        [[self class] setCellularSyncEnabled:NO];
     
     // Start up any new agents
     for (OFXAccountAgent *accountAgent in addedAccountAgents) {

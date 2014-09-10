@@ -66,15 +66,13 @@ RCS_ID("$Id$")
 
 - (NSMutableArray *)_arrayForKey:(id)aKey alloc:(NSUInteger)allocCapacity;
 {
-    NSMutableArray *value;
-
     if (aKey == nil) {
         if (allocCapacity != 0)
             OBRejectInvalidCall(self, _cmd, @"Attempt to insert nil key");
         return nil;
     }
         
-    value = (id)CFDictionaryGetValue(dictionary, (OB_BRIDGE void *)aKey);
+    NSMutableArray *value = (id)CFDictionaryGetValue(dictionary, (OB_BRIDGE void *)aKey);
     if (allocCapacity && !value) {
         value = [[NSMutableArray alloc] initWithCapacity:allocCapacity];
         CFDictionaryAddValue(dictionary, (OB_BRIDGE const void *)aKey, (OB_BRIDGE void *)value);
@@ -197,39 +195,22 @@ RCS_ID("$Id$")
     return [(OB_BRIDGE NSDictionary *)dictionary keyEnumerator];
 }
 
-struct copyOutContext {
-    __unsafe_unretained NSMutableArray *copyKeys;
-    __unsafe_unretained NSMutableArray *copyValues;
-};
-
-static void copyFunction(const void *key, const void *value, void *context)
-{
-    struct copyOutContext *copyOut = context;
-
-    if (copyOut->copyKeys)
-        [copyOut->copyKeys addObject:(OB_BRIDGE id)key];
-    if (copyOut->copyValues)
-        [copyOut->copyValues addObjectsFromArray:(OB_BRIDGE NSArray *)value];
-}
-
 - (NSArray *)allKeys;
 {
-    struct copyOutContext copyOut;
-    
-    copyOut.copyKeys = [NSMutableArray array];
-    copyOut.copyValues = nil;
-    CFDictionaryApplyFunction(dictionary, &copyFunction, &copyOut);
-    return copyOut.copyKeys;
+    NSMutableArray *result = [NSMutableArray array];
+    [(__bridge NSDictionary *)dictionary enumerateKeysAndObjectsUsingBlock:^(id key, NSArray *values, BOOL *stop) {
+        [result addObject:key];
+    }];
+    return result;
 }
 
 - (NSArray *)allValues;
 {
-    struct copyOutContext copyOut;
-
-    copyOut.copyKeys = nil;
-    copyOut.copyValues = [NSMutableArray array];
-    CFDictionaryApplyFunction(dictionary, &copyFunction, &copyOut);
-    return copyOut.copyValues;
+    NSMutableArray *result = [NSMutableArray array];
+    [(__bridge NSDictionary *)dictionary enumerateKeysAndObjectsUsingBlock:^(id key, NSArray *values, BOOL *stop) {
+        [result addObjectsFromArray:values];
+    }];
+    return result;
 }
 
 - (NSMutableDictionary *)dictionary;
@@ -237,20 +218,15 @@ static void copyFunction(const void *key, const void *value, void *context)
     return (NSMutableDictionary *)dictionary;
 }
 
-static void duplicateFunction(const void *key, const void *value, void *context)
-{
-    OFMultiValueDictionary *other = (OB_BRIDGE OFMultiValueDictionary *)context;
-
-    [other setObjects:(OB_BRIDGE NSArray *)value forKey:(OB_BRIDGE id)key];
-}
-
 - mutableCopyWithZone:(NSZone *)newZone
 {
-    OFMultiValueDictionary *newSelf;
-
-    newSelf = [[[self class] allocWithZone:newZone] init];
-    CFDictionaryApplyFunction(dictionary, &duplicateFunction, (void *)newSelf);
-    return newSelf;
+    OFMultiValueDictionary *copy = [[[self class] allocWithZone:newZone] init];
+    
+    [(__bridge NSDictionary *)dictionary enumerateKeysAndObjectsUsingBlock:^(id key, NSArray *values, BOOL *stop) {
+        [copy setObjects:values forKey:key];
+    }];
+    
+    return copy;
 }
 
 - (BOOL)isEqual:anotherObject

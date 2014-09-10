@@ -53,7 +53,6 @@ OFController.o:___rcs_id_hack
 OFDOServer.o:___rcs_id_hack
 OFDataBuffer.o:___rcs_id_hack
 OFDataCursor.o:___rcs_id_hack
-OFDateFormatter.o:___rcs_id_hack
 OFDatedMutableDictionary.o:___rcs_id_hack
 OFDedicatedThreadScheduler.o:___rcs_id_hack
 OFDelayedEvent.o:___rcs_id_hack
@@ -84,7 +83,6 @@ OFPoint.o:___rcs_id_hack
 OFPreference.o:___rcs_id_hack
 OFQueueProcessor.o:___rcs_id_hack
 OFRandom.o:___rcs_id_hack
-OFReadWriteLock.o:___rcs_id_hack
 OFRegularExpressionMatch.o:___rcs_id_hack
 OFRemoveScriptCommand.o:___rcs_id_hack
 OFResultHolder.o:___rcs_id_hack

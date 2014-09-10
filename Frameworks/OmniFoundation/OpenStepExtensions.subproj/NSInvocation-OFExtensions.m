@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2005, 2007, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,11 +30,12 @@ RCS_ID("$Id$")
 - (BOOL)isDefinedByProtocol:(Protocol *)aProtocol
 {
     OBRequestConcreteImplementation(self, _cmd); // protocol_getMethodDescription has no documentation, so I'm guessing at how it works (particularly the 'isRequiredMethod' argument and the result).
-
+#if 0
     SEL invocationSelector = [self selector];
 
     struct objc_method_description desc = protocol_getMethodDescription(aProtocol, invocationSelector, YES /*isRequiredMethod*/, YES/*isInstanceMethod*/);
     return desc.name != NULL;
+#endif
 }
 
 @end

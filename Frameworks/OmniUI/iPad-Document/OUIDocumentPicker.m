@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,27 +8,44 @@
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniBase/OmniBase.h>
 
-#import "OUIDocumentPicker-Internal.h"
-#import <OmniUIDocument/OUIDocumentPickerHomeScreenViewController.h>
-#import <OmniUIDocument/OUIDocumentPickerHomeScreenCell.h>
-#import <OmniUIDocument/OUIDocumentPickerViewController.h>
-#import "OUIDocumentPickerViewController-Internal.h"
-#import <OmniUIDocument/OUIDocumentCreationTemplatePickerViewController.h>
-#import "OUIDocumentSubfolderAnimator.h"
-#import "OUIDocumentTemplateAnimator.h"
-#import "OUIDocumentHomeScreenAnimator.h"
-#import <OmniDocumentStore/ODSStore.h>
-#import <OmniDocumentStore/ODSScope.h>
 #import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniDocumentStore/ODSFolderItem.h>
+#import <OmniDocumentStore/ODSScope.h>
+#import <OmniDocumentStore/ODSStore.h>
 #import <OmniFoundation/OFPreference.h>
+#import <OmniUI/OUIAppController.h>
+#import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OUIDocumentCreationTemplatePickerViewController.h>
+#import <OmniUIDocument/OUIDocumentPickerHomeScreenViewController.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
+#import <OmniUIDocument/OmniUIDocumentAppearance.h>
+
+#import "OUIDocumentHomeScreenAnimator.h"
+#import "OUIDocumentPicker-Internal.h"
+#import "OUIDocumentPickerAdaptableContainerViewController.h"
+#import "OUIDocumentPickerViewController-Internal.h"
+#import "OUIDocumentSubfolderAnimator.h"
+#import "OUIDocumentTemplateAnimator.h"
 
 RCS_ID("$Id$")
 
 @interface OUIDocumentPicker () <UINavigationControllerDelegate>
+@property (nonatomic, readonly) UINavigationController *topLevelNavigationController;
+@property (nonatomic, strong) OUIDocumentPickerAdaptableContainerViewController *homeScreenContainer;
+@property (nonatomic, strong) OUIDocumentPickerHomeScreenViewController *homeScreenViewController;
 @end
 
 @implementation OUIDocumentPicker
+{
+    BOOL _isSetUpForCompact;
+    BOOL _receivedShowDocuments;
+    NSString *scopeIdentifierToSelect;
+}
+
+- (instancetype)init;
+{
+    OBRejectUnusedImplementation(self, _cmd); // use -initWithDocumentStore:
+}
 
 - (instancetype)initWithDocumentStore:(ODSStore *)documentStore;
 {
@@ -40,30 +57,47 @@ RCS_ID("$Id$")
     return self;
 }
 
-@synthesize navigationController=_navigationController;
+#pragma mark - API
 
-- (UINavigationController *)navigationController;
+- (UINavigationController *)topLevelNavigationController;
 {
-    if (!_navigationController) {
-        UIViewController *home;
-        
-        if ([_delegate respondsToSelector:@selector(documentPickerHomeViewController:)])
-            home = [_delegate documentPickerHomeViewController:self];
-        else
-            home = [[OUIDocumentPickerHomeScreenViewController alloc] initWithDocumentPicker:self];
-        _navigationController = [[UINavigationController alloc] initWithRootViewController:home];
-        _navigationController.delegate = self;
-    }
-    return _navigationController;
+    return OB_CHECKED_CAST(UINavigationController, self.wrappedViewController);
 }
 
-- (void)showDocuments;
+@synthesize homeScreenViewController = _homeScreenViewController;
+
+- (OUIDocumentPickerHomeScreenViewController *)homeScreenViewController;
+{
+    if (!_homeScreenViewController) {
+        if ([_delegate respondsToSelector:@selector(documentPickerHomeViewController:)])
+            _homeScreenViewController = [_delegate documentPickerHomeViewController:self];
+        else
+            _homeScreenViewController = [[OUIDocumentPickerHomeScreenViewController alloc] initWithDocumentPicker:self];
+    }
+    
+    return _homeScreenViewController;
+}
+
+@synthesize homeScreenContainer = _homeScreenContainer;
+
+- (OUIDocumentPickerAdaptableContainerViewController *)homeScreenContainer;
+{
+    if (!_homeScreenContainer) {
+        _homeScreenContainer = [[OUIDocumentPickerAdaptableContainerViewController alloc] init];
+        _homeScreenContainer.backgroundView.image = [[OUIDocumentAppController controller] documentPickerBackgroundImage];
+    }
+    
+    return _homeScreenContainer;
+}
+
+- (void)_populateHomeScreenAndNavigationToScopeFromPreferences;
 {
     ODSScope *selectScope = nil;
     NSString *identifier = [[OUIDocumentPickerViewController scopePreference] stringValue];
     NSString *folderPath = [[OUIDocumentPickerViewController folderPreference] stringValue];
-
-    [(OUIDocumentPickerHomeScreenViewController *)self.navigationController.viewControllers[0] finishedLoading];
+    
+    [_homeScreenViewController finishedLoading];
+    
     for (ODSScope *scope in _documentStore.scopes) {
         if ([identifier isEqualToString:scope.identifier]) {
             selectScope = scope;
@@ -79,9 +113,19 @@ RCS_ID("$Id$")
     }
 }
 
+- (void)showDocuments;
+{
+    _receivedShowDocuments = YES;
+    
+    if (_homeScreenViewController) {
+        // We got -showDocuments after -viewWillAppear:
+        [self _populateHomeScreenAndNavigationToScopeFromPreferences];
+    }
+}
+
 - (void)_endEditingMode;
 {
-    OUIDocumentPickerViewController *topVC = (OUIDocumentPickerViewController *)self.navigationController.topViewController;
+    OUIDocumentPickerViewController *topVC = (OUIDocumentPickerViewController *)self.topLevelNavigationController.topViewController;
     if ([topVC isKindOfClass:[OUIDocumentPickerViewController class]])
         topVC.editing = NO;
 }
@@ -94,7 +138,7 @@ RCS_ID("$Id$")
     
     NSMutableArray *newViewControllers = [[NSMutableArray alloc] init];
     
-    NSArray *existingViewControllers = self.navigationController.viewControllers;
+    NSArray *existingViewControllers = self.topLevelNavigationController.viewControllers;
     while (folderItem) {
         OUIDocumentPickerViewController *viewController = nil;
         for (NSUInteger i = 1; i < existingViewControllers.count; i++) {
@@ -119,16 +163,18 @@ RCS_ID("$Id$")
     }
     
     [newViewControllers insertObject:existingViewControllers[0] atIndex:0];
-    [self.navigationController setViewControllers:newViewControllers animated:animated];
+    [self.topLevelNavigationController setViewControllers:newViewControllers animated:animated];
 }
 
 - (void)navigateToContainerForItem:(ODSItem *)item animated:(BOOL)animated;
 {
+    UINavigationController *topLevelNavController = self.topLevelNavigationController;
+    
     ODSScope *scope = item.scope;
     if (!scope || ![_documentStore.scopes containsObject:scope]) {
-        [self.navigationController popToRootViewControllerAnimated:animated];
+        [topLevelNavController popToRootViewControllerAnimated:animated];
         return;
-    } else if (self.navigationController.viewControllers.count > 1 && ![self.navigationController.viewControllers.lastObject isKindOfClass:[OUIDocumentCreationTemplatePickerViewController class]] && [[(OUIDocumentPickerViewController *)self.navigationController.viewControllers.lastObject filteredItems] containsObject:item]) {
+    } else if (topLevelNavController.viewControllers.count > 1 && ![topLevelNavController.viewControllers.lastObject isKindOfClass:[OUIDocumentCreationTemplatePickerViewController class]] && [[(OUIDocumentPickerViewController *)topLevelNavController.viewControllers.lastObject filteredItems] containsObject:item]) {
         return;
     } else {
         ODSFolderItem *folder = [scope folderItemContainingItem:item];
@@ -146,8 +192,8 @@ RCS_ID("$Id$")
     [self _endEditingMode];
     
     OUIDocumentPickerViewController *picker = [[OUIDocumentPickerViewController alloc] initWithDocumentPicker:self scope:scope];
-    [self.navigationController popToRootViewControllerAnimated:NO];
-    [self.navigationController pushViewController:picker animated:animated];
+    [self.topLevelNavigationController popToRootViewControllerAnimated:NO];
+    [self.topLevelNavigationController pushViewController:picker animated:animated];
 }
 
 
@@ -157,6 +203,150 @@ RCS_ID("$Id$")
     return [sorted objectAtIndex:0];
 }
 
+- (OUIDocumentPickerViewController *)selectedScopeViewController;
+{
+    if (self.topLevelNavigationController.viewControllers.count < 2)
+        return nil;
+    else {
+        UIViewController *viewController = self.topLevelNavigationController.topViewController;
+        OBASSERT([viewController isKindOfClass:[OUIDocumentPickerViewController class]]);
+        return (OUIDocumentPickerViewController *)viewController;
+    }
+}
+
+- (void)enableAppMenuBarButtonItem:(BOOL)enable;
+{
+    for (UIBarButtonItem *item in self.homeScreenContainer.navigationItem.rightBarButtonItems) {
+        if ([item.target isKindOfClass:[OUIAppController class]]) {
+            item.enabled = enable;
+        }
+    }
+}
+
+#pragma mark - UIViewController subclass
+
+- (void)_setUpNavigationControllerForTraitCollection:(UITraitCollection *)traitCollection unconditionally:(BOOL)unconditional;
+{
+    BOOL traitCollectionIsCompact = traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact || traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+    
+    if (!unconditional && (traitCollectionIsCompact == _isSetUpForCompact))
+        return;
+ 
+    UINavigationController *topLevelNavController = self.topLevelNavigationController;
+    OUIDocumentPickerHomeScreenViewController *home = self.homeScreenViewController;
+    OUIDocumentPickerAdaptableContainerViewController *container = self.homeScreenContainer;
+    
+    if (traitCollectionIsCompact) {
+        // In a compact environment, we want all view controllers to exist in the outer navigation controller, and to promote the homeScreenViewController out of its homeScreenContainer.
+        
+        NSMutableArray *viewControllersToPromote = [[container popViewControllersForTransitionToCompactSizeClass] mutableCopy];
+        OBASSERT_IF(viewControllersToPromote.count > 1, [topLevelNavController.viewControllers count] <= 1, "Somehow we are navigated into both a storage location and something in the home screen. Should only be navigated into one controller at a time!");
+        
+        if (viewControllersToPromote.count == 0)
+            [viewControllersToPromote addObject:home];
+        else
+            viewControllersToPromote[0] = home;
+        
+        [topLevelNavController setViewControllers:viewControllersToPromote];
+    } else {
+        // In the regular-regular environment, we want an outer navigation controller that contains only the homeScreenContainer and any storage-location navigation. The homeScreenContainer's navigation controller should contain any view controllers for editing details of storage locations.
+        
+        NSMutableArray *topLevelNavStack = [NSMutableArray arrayWithArray:topLevelNavController.viewControllers];
+        NSUInteger topLevelCount = topLevelNavStack.count;
+        NSMutableArray *innerNavStack = [NSMutableArray arrayWithObject:home];
+
+        if (topLevelCount == 0)
+            [topLevelNavStack addObject:container];
+        else
+            topLevelNavStack[0] = container;
+            
+        if (topLevelCount > 1) {
+            if ([topLevelNavStack[1] isKindOfClass:[OUIDocumentPickerViewController class]]) {
+                // We're navigated into a storage location; all view controllers stay in the outer navigation controller.
+            } else {
+                NSRange rangeToMove = NSMakeRange(1, topLevelCount - 1);
+                [innerNavStack addObjectsFromArray:[topLevelNavStack subarrayWithRange:rangeToMove]];
+                [topLevelNavStack removeObjectsInRange:rangeToMove];
+            }
+        }
+        
+        [topLevelNavController setViewControllers:topLevelNavStack];
+        [container pushViewControllersForTransitionToRegularSizeClass:innerNavStack];
+    }
+    
+    _isSetUpForCompact = traitCollectionIsCompact;
+}
+
+- (void)willTransitionToTraitCollection:(UITraitCollection *)newCollection withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator;
+{
+    [self _setUpNavigationControllerForTraitCollection:newCollection unconditionally:NO];
+    [super willTransitionToTraitCollection:newCollection withTransitionCoordinator:coordinator];
+}
+
+- (void)viewWillAppear:(BOOL)animated;
+{
+    if (!self.wrappedViewController) {
+        UINavigationController *navigationController = [[UINavigationController alloc] init];
+        navigationController.delegate = self;
+        self.wrappedViewController = navigationController;
+        
+        [self _setUpNavigationControllerForTraitCollection:self.traitCollection unconditionally:YES];
+        
+        if (_receivedShowDocuments) {
+            // We got -showDocuments before -viewWillAppear:
+            [self _populateHomeScreenAndNavigationToScopeFromPreferences];
+        }
+    }
+    
+    [super viewWillAppear:animated];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle;
+{
+    if (((UINavigationController *)self.wrappedViewController).viewControllers.count == 1)
+        return UIStatusBarStyleLightContent;
+    else
+        return UIStatusBarStyleDefault;
+}
+
+#pragma mark - UINavigationControllerDelegate
+
+- (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated;
+{
+    UINavigationBar *navBar = navigationController.navigationBar;
+    UIImage *backgroundImage;
+    UIColor *barTintColor;
+    NSDictionary *barTitleAttributes;
+    
+    if (!_isSetUpForCompact && (viewController == _homeScreenContainer || viewController == _homeScreenViewController)) {
+        static UIImage *blankImage;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            blankImage = [UIImage new];
+        });
+        
+        backgroundImage = blankImage;
+        barTintColor = [[OmniUIDocumentAppearance appearance] documentPickerTintColorAgainstBackground];
+        barTitleAttributes = @{NSForegroundColorAttributeName : barTintColor};
+    } else {
+        backgroundImage = nil;
+        barTintColor = nil;
+        barTitleAttributes = nil;
+    }
+    
+    [navBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsCompact];
+    [navBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsCompactPrompt];
+    [navBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
+    [navBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefaultPrompt];
+    
+    [navBar setShadowImage:backgroundImage];
+    
+    navBar.tintColor = barTintColor;
+    navBar.titleTextAttributes = barTitleAttributes;
+    
+    [self setNeedsStatusBarAppearanceUpdate];
+}
+
 - (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
                                    animationControllerForOperation:(UINavigationControllerOperation)operation
                                                 fromViewController:(UIViewController *)fromVC
@@ -164,29 +354,14 @@ RCS_ID("$Id$")
 {
     if ([fromVC isKindOfClass:[OUIDocumentCreationTemplatePickerViewController class]] || [toVC isKindOfClass:[OUIDocumentCreationTemplatePickerViewController class]]) {
         return [OUIDocumentTemplateAnimator sharedAnimator];
-    } else if ([fromVC isKindOfClass:[OUIDocumentPickerHomeScreenViewController class]] && [toVC isKindOfClass:[OUIDocumentPickerViewController class]]) {
-        return [OUIDocumentHomeScreenAnimator sharedAnimator];
-    } else if ([toVC isKindOfClass:[OUIDocumentPickerHomeScreenViewController class]] && [fromVC isKindOfClass:[OUIDocumentPickerViewController class]]) {
-        ODSScope *scope = [(OUIDocumentPickerViewController *)fromVC selectedScope];
-        OUIDocumentPickerHomeScreenViewController *home = (OUIDocumentPickerHomeScreenViewController *)toVC;
-        
-        [home selectCellForScope:scope];
-        return [OUIDocumentHomeScreenAnimator sharedAnimator];
     } else if ([toVC isKindOfClass:[OUIDocumentPickerViewController class]] && [fromVC isKindOfClass:[OUIDocumentPickerViewController class]]) {
         return [OUIDocumentSubfolderAnimator sharedAnimator];
+    } else if (self.traitCollection.horizontalSizeClass != UIUserInterfaceSizeClassCompact && self.traitCollection.verticalSizeClass != UIUserInterfaceSizeClassCompact && operation != UINavigationControllerOperationNone) {
+        OUIDocumentHomeScreenAnimator *animator = [[OUIDocumentHomeScreenAnimator alloc] init];
+        animator.pushing = (operation == UINavigationControllerOperationPush);
+        return animator;
     }
     return nil;
-}
-
-- (OUIDocumentPickerViewController *)selectedScopeViewController;
-{
-    if (_navigationController.viewControllers.count < 2)
-        return nil;
-    else {
-        UIViewController *viewController = _navigationController.topViewController;
-        OBASSERT([viewController isKindOfClass:[OUIDocumentPickerViewController class]]);
-        return (OUIDocumentPickerViewController *)viewController;
-    }
 }
 
 #pragma mark - Internal
@@ -195,7 +370,7 @@ RCS_ID("$Id$")
 {
     ODSFolderItem *parentFolder = nil;
     
-    for (UIViewController *vc in self.navigationController.viewControllers) {
+    for (UIViewController *vc in self.topLevelNavigationController.viewControllers) {
         if (![vc isKindOfClass:[OUIDocumentPickerViewController class]])
             continue;
         else {
@@ -211,6 +386,29 @@ RCS_ID("$Id$")
         [self navigateToFolder:parentFolder animated:animated];
     else
         [self navigateToScope:deletedItem.scope animated:animated];
+}
+
+- (ODSFileItem *)preferredVisibleItemForNextPreviewUpdate:(NSSet *)eligibleItems;
+{
+    UIViewController *top = self.topLevelNavigationController.topViewController;
+    
+    if ([top isKindOfClass:[OUIDocumentPickerViewController class]])
+        return [(OUIDocumentPickerViewController *)top _preferredVisibleItemFromSet:eligibleItems];
+    else
+        return nil;
+}
+
+- (NSArray *)availableFiltersForScope:(ODSScope *)scope;
+{
+    // do not allow filtering on the trash scope.
+    if (scope.isTrash)
+        return @[];
+    
+    if ([_delegate respondsToSelector:@selector(documentPickerAvailableFilters:)])
+        return [_delegate documentPickerAvailableFilters:self];
+    
+    else
+        return @[];
 }
 
 @end

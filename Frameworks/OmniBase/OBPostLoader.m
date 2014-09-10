@@ -1,4 +1,4 @@
-// Copyright 1997-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -171,7 +171,7 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
 
     unsigned int impSize = 256;
     unsigned int impIndex, impCount = 0;
-    IMP *imps = NSZoneMalloc(NULL, sizeof(IMP) * impSize);
+    IMP *imps = malloc(sizeof(IMP) * impSize);
 
     //POSTLOADER_DEBUG("Checking for implementations of +[%s %s]\n", class_getName(aClass), sel_getName(selectorToCall));
 
@@ -188,7 +188,7 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
             if (!NSHashGet(calledImplementations, imp)) {
                 if (impCount >= impSize) {
                     impSize *= 2;
-                    imps = NSZoneRealloc(NULL, imps, sizeof(IMP) * impSize);
+                    imps = realloc(imps, sizeof(IMP) * impSize);
                 }
                 
                 imps[impCount] = imp;
@@ -236,7 +236,7 @@ This can be used instead of +[NSThread isMultiThreaded].  The difference is that
         }
     }
 
-    NSZoneFree(NULL, imps);
+    free(imps);
 
     return impCount != 0;
 }

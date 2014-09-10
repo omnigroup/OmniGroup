@@ -19,14 +19,60 @@ RCS_ID("$Id$")
 
 @implementation OFXConflictTestCase
 
+BOOL OFXIsConflict(OFXFileMetadata *metadata)
+{
+    return [[[metadata.fileURL lastPathComponent] stringByDeletingPathExtension] containsString:@"Conflict" options:NSCaseInsensitiveSearch];
+}
+
+static NSString *_fileContents(OFXConflictTestCase *self, OFXFileMetadata *metadata)
+{
+    NSString *contents = [[NSString alloc] initWithContentsOfFile:metadata.fileURL.path encoding:NSUTF8StringEncoding error:NULL];
+    XCTAssertNotNil(contents);
+    return contents;
+}
+
+static NSSet *_contentsOfFiles(OFXConflictTestCase *self, NSSet *metadataItems)
+{
+    return [metadataItems setByPerformingBlock:^id(OFXFileMetadata *metadata) {
+        return _fileContents(self, metadata);
+    }];
+}
+
+static OFXFileMetadata *_fileWithContents(OFXConflictTestCase *self, NSSet *metadataItems, NSString *contents)
+{
+    for (OFXFileMetadata *metadata in metadataItems) {
+        __autoreleasing NSError *error = nil;
+        
+        NSString *string = [[NSString alloc] initWithContentsOfFile:metadata.fileURL.path encoding:NSUTF8StringEncoding error:&error];
+        if ([error causedByMissingFile])
+            continue; // This file has been moved already -- keep looking
+
+        if ([string isEqual:contents])
+            return metadata;
+    }
+    
+    XCTFail(@"No file found with the specified contents");
+    return nil;
+}
+
+static OFXFileMetadata *_fileWithIdentifier(OFXConflictTestCase *self, NSSet *metadataItems, NSString *fileIdentifier)
+{
+    for (OFXFileMetadata *metadata in metadataItems) {
+        if (OFISEQUAL(metadata.fileIdentifier, fileIdentifier))
+            return metadata;
+    }
+    XCTFail(@"No file found with the specified identifier");
+    return nil;
+}
+
 - (void)_waitForConflictResolutionWithContentName:(NSString *)contentName1 andContentName:(NSString *)contentName2;
 {
     BOOL (^predicate)(NSSet *) = ^BOOL(NSSet *metadataItems){
-        // should end up with two documents
-        if ([metadataItems count] != 2) {
-            // Sometimes we get three files if both clients try to resolve the conflict. This is rare, but it can happen (ideally it wouldn't, but this is hard to avoid).
-            if ([metadataItems count] > 3)
-                [NSException raise:NSGenericException reason:@"Too many metadata items"];
+        // should end up with two documents; no spurious conflicts should be created
+        if ([metadataItems count] < 2)
+            return NO; // Wait for items to appear
+        if ([metadataItems count] > 2) {
+            [NSException raise:NSGenericException reason:@"Too many metadata items"];
             return NO;
         }
 
@@ -39,28 +85,7 @@ RCS_ID("$Id$")
         }])
             return NO;
         
-        // Sometimes both agents try to resolve the conflict and we end up with both having the conflict name. It may be possible to resolve this, but it doesn't seem like a super high priority.
-        // <bug:///87499> (Sometimes a conflict can result in two "conflict" documents)
-#if 0
-        // one should have the original name
-        if (![metadataItems any:^BOOL(OFXFileMetadata *metadata) {
-            if (![[metadata.fileURL lastPathComponent] isEqual:@"test.package"])
-                return NO;
-            return YES;
-        }])
-            return NO;
-        
-        // one should have a conflict name
-        if (![metadataItems any:^BOOL(OFXFileMetadata *metadata) {
-            if (![[[metadata.fileURL lastPathComponent] pathExtension] isEqual:@"package"])
-                return NO;
-            if (![[[metadata.fileURL lastPathComponent] stringByDeletingPathExtension] containsString:@"Conflict" options:NSCaseInsensitiveSearch])
-                return NO;
-            return YES;
-        }])
-            return NO;
-#else
-        // They should have different names and one should have a conflict name (but both might as noticed in the bug referenced above).
+        // Currently we (transiently) rename both files to have conflict names.
         {
             OFXFileMetadata *metadata1 = [metadataItems anyObject];
             NSMutableSet *otherMetadataItems = [metadataItems mutableCopy];
@@ -68,15 +93,16 @@ RCS_ID("$Id$")
             OFXFileMetadata *metadata2 = [otherMetadataItems anyObject];
             
             if ([[metadata1.fileURL lastPathComponent] isEqual:[metadata2.fileURL lastPathComponent]]) {
-                STFail(@"We should never report two metadata items with the same fileURL anyway");
+                XCTFail(@"We should never report two metadata items with the same fileURL anyway");
                 return NO;
             }
             
-            if (![[[metadata1.fileURL lastPathComponent] stringByDeletingPathExtension] containsString:@"Conflict" options:NSCaseInsensitiveSearch] &&
-                ![[[metadata2.fileURL lastPathComponent] stringByDeletingPathExtension] containsString:@"Conflict" options:NSCaseInsensitiveSearch])
+            if (!OFXIsConflict(metadata1) || !OFXIsConflict(metadata2))
                 return NO;
+            
+            // Both should have the same desired URL
+            XCTAssertTrue(OFURLEqualsURL(metadata1.intendedFileURL, metadata2.intendedFileURL), @"Both files should remember the same user intended URL");
         }
-#endif
         
         if (compareContents) {
             // Both sets of new data should appear, but we don't know which file will get which
@@ -93,7 +119,6 @@ RCS_ID("$Id$")
         
         return YES;
     };
-    
     
     [self waitForFileMetadataItems:self.agentA where:predicate];
     [self waitForFileMetadataItems:self.agentB where:predicate];
@@ -137,8 +162,8 @@ RCS_ID("$Id$")
         return metadata.isDownloaded;
     }];
     
-    STAssertTrue(OFXTraceHasSignal(@"OFXFileItem.delete_transfer.commit.removed_local_snapshot"), @"should have removed the old snapshot");
-    STAssertTrue(OFSameFiles(self, [[self fixtureNamed:@"test2.package"] path], [restoredFile.fileURL path], NULL/*filter*/), @"Updated contents should have been restored");
+    XCTAssertTrue(OFXTraceHasSignal(@"OFXFileItem.delete_transfer.commit.removed_local_snapshot"), @"should have removed the old snapshot");
+    XCTAssertTrue(OFSameFiles(self, [[self fixtureNamed:@"test2.package"] path], [restoredFile.fileURL path], NULL/*filter*/), @"Updated contents should have been restored");
 }
 
 - (void)testDeleteVsUnsavedEditConflict;
@@ -159,9 +184,9 @@ RCS_ID("$Id$")
         return OFNOTEQUAL(metadata.fileIdentifier, originalMetadata.fileIdentifier) && metadata.isDownloaded;
     }];
 
-    STAssertTrue(OFXTraceHasSignal(@"OFXFileItem.incoming_delete.removed_local_snapshot"), @"should have removed the old snapshot");
-    STAssertTrue(OFXTraceSignalCount(@"OFXFileItem.incoming_delete.removed_local_document") == 0, @"should not have removed the local document");
-    STAssertTrue(OFSameFiles(self, [[self fixtureNamed:@"test2.package"] path], [restoredFile.fileURL path], NULL/*filter*/), @"Updated contents should have been restored");
+    XCTAssertTrue(OFXTraceHasSignal(@"OFXFileItem.incoming_delete.removed_local_snapshot"), @"should have removed the old snapshot");
+    XCTAssertTrue(OFXTraceSignalCount(@"OFXFileItem.incoming_delete.removed_local_document") == 0, @"should not have removed the local document");
+    XCTAssertTrue(OFSameFiles(self, [[self fixtureNamed:@"test2.package"] path], [restoredFile.fileURL path], NULL/*filter*/), @"Updated contents should have been restored");
 }
 
 - (void)testTwoDifferentFilesCreatedWithSameName;
@@ -191,7 +216,6 @@ RCS_ID("$Id$")
 
 - (void)testTwoDifferentFilesCreatedWithSameNameWithDownloadingOff;
 {
-    // The case above renames one of the files due to the download commit failing (since it starts before the shadowing is known). Make sure we do conflict renames even if no downloads happen.
     OFXAgent *agentA = self.agentA;
     OFXAgent *agentB = self.agentB;
     
@@ -321,8 +345,8 @@ RCS_ID("$Id$")
     [self waitForFileMetadataItems:agentA where:predicate];
     [self waitForFileMetadataItems:agentB where:predicate];
 
-    STAssertNil([self lastErrorInAgent:agentA], nil);
-    STAssertNil([self lastErrorInAgent:agentB], nil);
+    XCTAssertNil([self lastErrorInAgent:agentA]);
+    XCTAssertNil([self lastErrorInAgent:agentB]);
 }
 
 - (void)testIncomingCreationVsLocalAutosaveCreation;
@@ -362,7 +386,7 @@ RCS_ID("$Id$")
 #if 0
 - (void)testIncomingEditAndMoveVsLocalAutosaveCreation;
 {
-    STFail(@"Implement me");
+    XCTFail(@"Implement me");
 }
 #endif
 
@@ -395,23 +419,24 @@ RCS_ID("$Id$")
     [self waitForChangeToMetadata:originalMetadata inAgent:agentB];
     
     // Wait for the agents to settle down to a common state.
-    [self waitForAgentsToAgree];
+    [self waitForAgentsEditsToAgree];
+    [self requireAgentsToHaveSameFilesByName];
     
     // Ideally we'll have just one file, with one of the two possible names, but sometimes we get two files.
     NSSet *metadataItems = [self metadataItemsForAgent:agentA];
-    STAssertTrue([metadataItems count] == 1 || [metadataItems count] == 2, @"Expect one or two file items, depending on how the conflict is resolved.");
+    XCTAssertTrue([metadataItems count] == 1 || [metadataItems count] == 2, @"Expect one or two file items, depending on how the conflict is resolved.");
     if ([metadataItems count] == 1) {
         OBASSERT_NOT_REACHED("This type of conflict resolution currently produces two files, but it would be nice if this got fixed");
-        STAssertEquals([metadataItems count], 1UL, @"Rename-only conflict should not generate another copy of the file");
+        XCTAssertEqual([metadataItems count], 1UL, @"Rename-only conflict should not generate another copy of the file");
         
         OFXFileMetadata *finalMetadata = [metadataItems anyObject];
         NSString *finalName = [finalMetadata.fileURL lastPathComponent];
-        STAssertTrue([finalName isEqual:@"test-A.package"] || [finalName isEqual:@"test-B.package"], @"Rename conflict should pick one of the names");
+        XCTAssertTrue([finalName isEqual:@"test-A.package"] || [finalName isEqual:@"test-B.package"], @"Rename conflict should pick one of the names");
         
-        STAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadata, @"test2.package"), @"Rename conflict should have kept edited contents");
+        XCTAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadata, @"test2.package"), @"Rename conflict should have kept edited contents");
     } else {
         NSSet *metadataItems = [self metadataItemsForAgent:agentA];
-        STAssertEquals([metadataItems count], 2UL, @"Expecting rename conflict to keep both files");
+        XCTAssertEqual([metadataItems count], 2UL, @"Expecting rename conflict to keep both files");
         
         OFXFileMetadata *finalMetadataA = [metadataItems any:^BOOL(OFXFileMetadata *metadata) {
             return [[metadata.fileURL lastPathComponent] isEqual:@"test-A.package"];
@@ -420,15 +445,15 @@ RCS_ID("$Id$")
             return [[metadata.fileURL lastPathComponent] isEqual:@"test-B.package"];
         }];
         
-        STAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataA, @"test.package"), @"Expecting to currently keep both files");
-        STAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataB, @"test2.package"), @"Expecting to currently keep both files");
+        XCTAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataA, @"test.package"), @"Expecting to currently keep both files");
+        XCTAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataB, @"test2.package"), @"Expecting to currently keep both files");
     }
 }
 
 #if 0
 - (void)testIncomingEditAndMoveVsLocalEdit;
 {
-    STFail(@"Implement me");
+    XCTFail(@"Implement me");
 }
 #endif
 
@@ -439,7 +464,6 @@ RCS_ID("$Id$")
     OFXAgent *agentB = self.agentB;
     
     NSURL *localDocumentsA = [self singleAccountInAgent:agentA].localDocumentsURL;
-    NSURL *localDocumentsB = [self singleAccountInAgent:agentB].localDocumentsURL;
 
     // Get the same file on both.
     OFXFileMetadata *originalFile = [self uploadFixture:@"flat1.txt"];
@@ -451,12 +475,7 @@ RCS_ID("$Id$")
     const NSUInteger collisionCount = 5;
     NSMutableSet *allGeneratedDatas = [NSMutableSet set];
     
-    void (^validate)(NSUInteger collisions) = ^(NSUInteger collisions){
-        [self requireAgentsToHaveSameFiles];
-
-        // On each write operation, we should lose one data. That is, we had file X and tried to overwrite it with Y and Z. One of those should win and one should disappear. We start with 'flat1.txt' being the intial loser, so on the first collision we should end up with 2 files. On the second, 3. Third 4. In some relatively rare cases, we end up duplicating files during conflict resolution, so we can't just check the file count.
-        NSUInteger expectedDataCount = (collisions + 1);
-        
+    void (^checkExistingDatasVsAllGeneratedDatas)(NSUInteger collisions) = ^(NSUInteger expectedDataCount){
         NSError *error;
         NSArray *fileURLs;
         OBShouldNotError(fileURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:localDocumentsA includingPropertiesForKeys:nil options:NSDirectoryEnumerationSkipsHiddenFiles error:&error]);
@@ -465,21 +484,24 @@ RCS_ID("$Id$")
         for (NSURL *fileURL in fileURLs) {
             // Not using coordination to read here, but we waited for all the writes to finish (in theory).
             NSData *fileData = [[NSData alloc] initWithContentsOfURL:fileURL];
-            STAssertNotNil(fileData, nil);
+            XCTAssertNotNil(fileData);
             
-            STAssertNotNil([allGeneratedDatas member:fileData], nil);
+            XCTAssertNotNil([allGeneratedDatas member:fileData]);
             [foundDatas addObject:fileData];
         }
         
-        STAssertEquals([foundDatas count], expectedDataCount, @"All datas should have appeared in some resulting file");
+        XCTAssertEqual([foundDatas count], expectedDataCount, @"All datas should have appeared in some resulting file");
     };
     
-    for (NSUInteger collisionIndex = 0; collisionIndex < collisionCount; collisionIndex++) {
+    // collisionIndex is marked __block so that the blocks below don't capture a single value, but read it each time they are executed
+    for (__block NSUInteger collisionIndex = 0; collisionIndex < collisionCount; collisionIndex++) {
+        
+        // On each write operation, we should lose one data. That is, we had file X and tried to overwrite it with Y and Z. One of those should win and one should disappear. We start with 'flat1.txt' being the intial loser, so on the first collision we should end up with 2 files. On the second, 3, and so on.
+        NSUInteger expectedDataCount = (collisionIndex + 2);
+
         OFXFileMetadata *metadataA = [self metadataWithIdentifier:originalFile.fileIdentifier inAgent:agentA];
         OFXFileMetadata *metadataB = [self metadataWithIdentifier:originalFile.fileIdentifier inAgent:agentB];
 
-        NSLog(@"### starting %ld ###", collisionIndex);
-        
         NSData *dataA = OFRandomCreateDataOfLength(128);
         NSData *dataB = OFRandomCreateDataOfLength(128);
         
@@ -491,28 +513,26 @@ RCS_ID("$Id$")
         BOOL success = [coordinator prepareToWriteItemsAtURLs:@[metadataA.fileURL, metadataB.fileURL] withChanges:YES error:&error byAccessor:^BOOL(NSError **outError){
             return [coordinator writeData:dataA toURL:metadataA.fileURL options:NSDataWritingAtomic error:outError] && [coordinator writeData:dataB toURL:metadataB.fileURL options:NSDataWritingAtomic error:outError];
         }];
-        STAssertTrue(success, nil);
+        XCTAssertTrue(success);
         
-        // Wait for the edit identifiers to change and uploads to be done
-        [self waitUntil:^BOOL{
-            OFXFileMetadata *updatedMetadataA = [self metadataWithIdentifier:originalFile.fileIdentifier inAgent:agentA];
-            if ([updatedMetadataA.editIdentifier isEqualToString:metadataA.editIdentifier] || updatedMetadataA.uploading)
+        // As noted above, on each iteration, we should gain one more conflict file. Wait until we have this many on each agent and they are all downloaded.
+        BOOL (^waitForDownload)(NSSet *) = ^BOOL(NSSet *metadataItems){
+            if ([metadataItems count] != expectedDataCount)
                 return NO;
-            
-            OFXFileMetadata *updatedMetadataB = [self metadataWithIdentifier:originalFile.fileIdentifier inAgent:agentB];
-            if ([updatedMetadataB.editIdentifier isEqualToString:metadataB.editIdentifier] || updatedMetadataB.uploading)
-                return NO;
-            
-            return YES;
-        }];
+            return [metadataItems all:^BOOL(OFXFileMetadata *metadata) {
+                return metadata.downloaded;
+            }];
+        };
+        [self waitForFileMetadataItems:agentA where:waitForDownload];
+        [self waitForFileMetadataItems:agentB where:waitForDownload];
         
-        // The wait for the agents to have the same set of files. Could maybe also do this based on having the same set of {file id,edit id} identifier tuples.
+        // Then wait for the agents to have the same set of files. Could maybe also do this based on having the same set of {file id,edit id} identifier tuples.
         [self waitUntil:^BOOL{
-            return OFSameFiles(self, [localDocumentsA path], [localDocumentsB path], nil/*filter*/);
+            return [self agentsToHaveSameIntendedFiles];
         }];
         
         // For now, validate on each operation
-        validate(collisionIndex + 1);
+        checkExistingDatasVsAllGeneratedDatas(expectedDataCount);
     }
 }
 
@@ -552,12 +572,428 @@ RCS_ID("$Id$")
     }
     
     // Wait for both sides to be idle
-    [self waitForAgentsToAgree];
+    [self waitForAgentsEditsToAgree];
+    [self requireAgentsToHaveSameFilesByName];
 
     // There should be no conflicts.
     for (OFXFileMetadata *metadata in [self metadataItemsForAgent:agentA]) {
-        STAssertFalse([[[metadata.fileURL lastPathComponent] stringByDeletingPathExtension] containsString:@"Conflict" options:NSCaseInsensitiveSearch], @"should be no conflicts, but found %@", metadata.fileURL);
+        XCTAssertFalse(OFXIsConflict(metadata), @"should be no conflicts, but found %@", metadata.fileURL);
     }
+}
+
+static void _waitForAndResolveLateConflictByRenaming(OFXConflictTestCase *self,
+                                                     OFXAgent *agentA, OFXAgent *agentB, OFXAgent *agentC,
+                                                     NSString *random1, NSString *random2, NSString *random3)
+{
+    OBPRECONDITION(agentA.syncSchedule == OFXSyncScheduleNone);
+    OBPRECONDITION(agentB.syncSchedule == OFXSyncScheduleNone);
+    OBPRECONDITION(agentC.syncSchedule == OFXSyncScheduleNone);
+
+    // Turn on syncing on two agents, wait for everything to idle.
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
+    
+    // Wait for the uploads to be done and conflict to occur
+    [self waitForFileMetadataItems:agentA where:^BOOL(NSSet *metadataItems) {
+        if ([metadataItems count] != 2)
+            return NO;
+        return [metadataItems all:^BOOL(OFXFileMetadata *metadata) {
+            return metadata.uploaded && metadata.downloaded && OFXIsConflict(metadata);
+        }];
+    }];
+
+    // Wait for B to catch up and make sure we got the same contents (by identifier -- the names conflict chosen may differ).
+    [self waitForAgentsEditsToAgree:@[agentA, agentB]];
+    [self requireAgentsToHaveSameFilesByIdentifier:@[agentA, agentB]];
+    
+    // Turn the third agent on and wait for it to download everything
+    agentC.syncSchedule = OFXSyncScheduleAutomatic;
+    
+    [self waitForAgentsEditsToAgree:@[agentA, agentB, agentC] withFileCount:3];
+    [self requireAgentsToHaveSameFilesByIdentifier:@[agentA, agentB, agentC]];
+    
+    // Check that we ended up with the right set of contents and three files in conflict
+    [self waitForFileMetadataItems:agentA where:^BOOL(NSSet *metadataItems) {
+        if ([metadataItems count] != 3)
+            return NO;
+        if (![metadataItems all:^BOOL(OFXFileMetadata *metadata) {
+            return metadata.downloaded && OFXIsConflict(metadata);
+        }])
+            return NO;
+        
+        NSMutableSet *fileContents = [NSMutableSet set];
+        for (OFXFileMetadata *metadata in metadataItems) {
+            NSString *string = [[NSString alloc] initWithContentsOfFile:metadata.fileURL.path encoding:NSUTF8StringEncoding error:NULL];
+            OBASSERT(string);
+            [fileContents addObject:string];
+        }
+        
+        XCTAssertNotNil([fileContents member:random1]);
+        XCTAssertNotNil([fileContents member:random2]);
+        XCTAssertNotNil([fileContents member:random3]);
+        return YES;
+    }];
+    
+    // Resolve the conflict by moving aside two of the files. The third should automatically resolve to the original name
+    NSSet *metadataItems = [self metadataItemsForAgent:agentA];
+    [self movePath:[_fileWithContents(self, metadataItems, random1).fileURL lastPathComponent] toPath:@"test1.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    [self movePath:[_fileWithContents(self, metadataItems, random2).fileURL lastPathComponent] toPath:@"test2.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    
+    // Wait for A to upload its changes so that the 'wait to agree' is on the new state, not old.
+    [self waitForFileMetadataItems:agentA where:^BOOL(NSSet *metadataItems) {
+        return [metadataItems all:^BOOL(OFXFileMetadata *metadata) {
+            return metadata.uploaded && !OFXIsConflict(metadata);
+        }];
+    }];
+    
+    NSArray *agents = @[agentA, agentB, agentC];
+    [self waitForAgentsEditsToAgree:agents];
+    
+    // -waitForAgentsEditsToAgree: only makes sure the file identifier to edit identifier mapping is the same, but our new conflict resolution can just do local renames, so we need to wait for all the agents to have no conflict files too.
+    for (OFXAgent *agent in agents) {
+        [self waitForFileMetadataItems:agent where:^BOOL(NSSet *metadataItems) {
+            return [metadataItems all:^BOOL(OFXFileMetadata *metadata) {
+                return !OFXIsConflict(metadata);
+            }];
+        }];
+    }
+    
+    [self requireAgentsToHaveSameFilesByName:@[agentA, agentB, agentC]];
+    
+    NSSet *fileNames = [[self metadataItemsForAgent:agentA] setByPerformingBlock:^(OFXFileMetadata *metadata){
+        return metadata.fileURL.lastPathComponent;
+    }];
+    
+    XCTAssertTrue([fileNames containsObject:@"test.txt"], @"Original name should have been taken over by the remaining conflict");
+    XCTAssertTrue([fileNames containsObject:@"test1.txt"], @"Conflict file should have been renamed");
+    XCTAssertTrue([fileNames containsObject:@"test2.txt"], @"Conflict file should have been renamed");
+}
+
+- (void)testLateAppearanceOfAnotherConflictByCreation;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+    OFXAgent *agentC = self.agentC;
+    
+    [agentC applicationLaunched]; // Won't have been automatically started by our superclass
+
+    // Make sure syncing is off
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
+    agentC.syncSchedule = OFXSyncScheduleNone;
+
+    // Make three random files at the same location
+    NSString *random1 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    NSString *random2 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentB]];
+    NSString *random3 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentC]];
+
+    _waitForAndResolveLateConflictByRenaming(self, agentA, agentB, agentC, random1, random2, random3);
+}
+
+- (void)testLateAppearanceOfAnotherConflictByEditing;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+    OFXAgent *agentC = self.agentC;
+    
+    [agentC applicationLaunched]; // Won't have been automatically started by our superclass
+    
+    // Copy a file into place
+    [self copyFixtureNamed:@"flat1.txt" toPath:@"test.txt" waitingForAgentsToDownload:@[agentB, agentC]];
+
+    // Make sure syncing is off
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
+    agentC.syncSchedule = OFXSyncScheduleNone;
+    
+    // Replace the original file by three random edits
+    NSString *random1 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    NSString *random2 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentB]];
+    NSString *random3 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentC]];
+    
+    _waitForAndResolveLateConflictByRenaming(self, agentA, agentB, agentC, random1, random2, random3);
+}
+
+// -testLateAppearanceOfAnotherConflictByCreation and -testLateAppearanceOfAnotherConflictByEditing handle the renaming case
+//- (void)testUserResolvedConflictByRenaming;
+//{
+//    XCTFail(@"Test that once a conflict has happened, the user can rename a file to a totally different name and the remaining file will revert to its desired name");
+//}
+
+- (void)testUserResolvedConflictByDeleting;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+
+    // Make two files at the same location
+    
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
+
+    NSString *random1 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    NSString *random2 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentB]];
+    
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
+
+    // Get everything in sync
+    [self waitForAgentsEditsToAgree:@[agentA, agentB] withFileCount:2];
+    [self requireAgentsToHaveSameFilesByIdentifier:@[agentA, agentB]];
+    
+    // Remove the conflicting file generated by A
+    OFXFileMetadata *file1 = _fileWithContents(self, [agentA metadataItemsForAccount:[self singleAccountInAgent:agentA]], random1);
+    XCTAssertTrue(OFXIsConflict(file1));
+    
+    [self deletePath:[file1.fileURL lastPathComponent] inAgent:agentA];
+    
+    // Wait for A to sync the delete and for B to see this
+    [self waitForAgentsEditsToAgree:@[agentA, agentB] withFileCount:1];
+    [self requireAgentsToHaveSameFilesByIdentifier:@[agentA, agentB]];
+    
+    // There should be a single file left with the original name and the contents generated on B.
+    NSSet *metadataItems = [agentA metadataItemsForAccount:[self singleAccountInAgent:agentA]];
+    XCTAssertEqual([metadataItems count], 1UL);
+    
+    OFXFileMetadata *metadata = [metadataItems anyObject];
+    XCTAssertFalse(OFXIsConflict(metadata));
+    XCTAssertNotNil(_fileWithContents(self, metadataItems, random2));
+}
+
+- (void)testUserResolvedConflictByRenamingWinnerToOriginalName;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+    
+    // Make two files at the same location
+    
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
+    
+    NSString *random1 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    NSString *random2 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentB]];
+    
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
+    
+    // Get everything in sync
+    [self waitForAgentsEditsToAgree:@[agentA, agentB] withFileCount:2];
+    [self requireAgentsToHaveSameFilesByIdentifier:@[agentA, agentB]];
+    
+    // Rename the conflicting file generated by A
+    OFXFileMetadata *file1 = _fileWithContents(self, [agentA metadataItemsForAccount:[self singleAccountInAgent:agentA]], random1);
+    XCTAssertTrue(OFXIsConflict(file1));
+    
+    // The expected behavior is the the agent that sees a move of a file into the original name should interpret this as its queue to finalize the other conflict names by making them non-automatic moves and publishing them to the server (which may cause moves on the other clients if they chose different names). The move of the original file should not be published (since it was an automove) and so the other agents should eventually move that file back to its desired name as the other files vacate that location.
+    // This finalization of conflict names means that if the user lets a conflict sit around for a while and then decides that they don't want the original file (maybe forgetting about the conflict file), and deletes it, the other file would move into the old unconflicted name.
+    // NOTE: A quick move of the 'winner' with an edit as well, should be published to the server as an edit, falling under -testEditOfConflictVersion. Might be some extra sharp edges in there still (in flight upload of an edit followed by a quick rename of the file to be the winner before the upload commits?)
+    OFXTraceReset();
+    
+    [self movePath:[file1.fileURL lastPathComponent] toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    
+    // This should settle down to both agents agreeing that file1 is test.txt and file2 is its conflict name and that it is a final name.
+    for (OFXAgent *agent in @[agentA, agentB]) {
+        [self waitForFileMetadataItems:agent where:^BOOL(NSSet *metadataItems) {
+            if ([metadataItems count] != 2)
+                return NO;
+            
+            // Nothing should be untransfered or at a location it doesn't want
+            if ([metadataItems any:^BOOL(OFXFileMetadata *metadata) {
+                if (!metadata.uploaded || metadata.uploading || !metadata.downloaded || metadata.downloading)
+                    return YES;
+                if (OFNOTEQUAL(metadata.intendedFileURL, metadata.fileURL))
+                    return YES;
+                return NO;
+            }])
+                return NO;
+            
+            // One item should be at a conflict name...
+            if (![metadataItems any:^BOOL(OFXFileMetadata *metadata) {
+                return OFXIsConflict(metadata);
+            }])
+                return NO;
+            
+            // ... and the other should be at the original name
+            if (![metadataItems any:^BOOL(OFXFileMetadata *metadata) {
+                return [[metadata.fileURL lastPathComponent] isEqual:@"test.txt"];
+            }])
+                return NO;
+            
+            // Check that the files have the expected contents on both sides
+            XCTAssertEqualObjects([_fileWithContents(self, metadataItems, random1).fileURL lastPathComponent], @"test.txt");
+            XCTAssertTrue(OFXIsConflict(_fileWithContents(self, metadataItems, random2)));
+
+            return YES;
+        }];
+    }
+    
+    // During all this, no automoves should have been done, but one should have been undone (on B -- the user initiated undo of the automove doesn't get counted by this trace).
+    XCTAssertEqual(OFXTraceSignalCount(@"OFXContainerAgent.conflict_automove_undone"), 1UL);
+    XCTAssertEqual(OFXTraceSignalCount(@"OFXContainerAgent.conflict_automove_done"), 0UL);
+}
+
+- (void)testEditOfConflictVersion;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+    
+    // Make two files at the same location
+    
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
+    
+    NSString *random1 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    NSString *random2 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentB]];
+    
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
+    
+    // Get everything in sync
+    [self waitForAgentsEditsToAgree:@[agentA, agentB] withFileCount:2];
+    [self requireAgentsToHaveSameFilesByIdentifier:@[agentA, agentB]];
+    
+    // Remember the conflict names on A and B
+    OFXFileMetadata *file1a = _fileWithContents(self, [agentA metadataItemsForAccount:[self singleAccountInAgent:agentA]], random1);
+    OFXFileMetadata *file2a = _fileWithContents(self, [agentA metadataItemsForAccount:[self singleAccountInAgent:agentA]], random2);
+    OFXFileMetadata *file1b = _fileWithContents(self, [agentB metadataItemsForAccount:[self singleAccountInAgent:agentB]], random1);
+    OFXFileMetadata *file2b = _fileWithContents(self, [agentB metadataItemsForAccount:[self singleAccountInAgent:agentB]], random2);
+
+    XCTAssertTrue(OFXIsConflict(file1a));
+    XCTAssertTrue(OFXIsConflict(file2a));
+    XCTAssertTrue(OFXIsConflict(file1b));
+    XCTAssertTrue(OFXIsConflict(file2b));
+
+    // Make an edit to the file generated on A.
+    NSString *random3 = [self copyRandomTextFileOfLength:16 toPath:[file1a.fileURL lastPathComponent] ofAccount:[self singleAccountInAgent:agentA]];
+    
+    // Wait for A to upload this edit and for B to download it.
+    [self waitForChangeToMetadata:file1a inAgent:agentA];
+    [self waitForAgentsEditsToAgree:@[agentA, agentB]];
+    
+    // Now, all the files should still be in conflict, should not have changed conflict names, but the contents of file1[ab] should have changed.
+    NSSet *updatedMetadataItemsA = [agentA metadataItemsForAccount:[self singleAccountInAgent:agentA]];
+    NSSet *updatedMetadataItemsB = [agentB metadataItemsForAccount:[self singleAccountInAgent:agentB]];
+    
+    OFXFileMetadata *updatedFile1a = _fileWithIdentifier(self, updatedMetadataItemsA, file1a.fileIdentifier);
+    OFXFileMetadata *updatedFile2a = _fileWithIdentifier(self, updatedMetadataItemsA, file2a.fileIdentifier);
+    OFXFileMetadata *updatedFile1b = _fileWithIdentifier(self, updatedMetadataItemsB, file1b.fileIdentifier);
+    OFXFileMetadata *updatedFile2b = _fileWithIdentifier(self, updatedMetadataItemsB, file2b.fileIdentifier);
+
+    // Files should not have moved
+    XCTAssertEqualObjects(file1a.fileURL, updatedFile1a.fileURL);
+    XCTAssertEqualObjects(file2a.fileURL, updatedFile2a.fileURL);
+    XCTAssertEqualObjects(file1b.fileURL, updatedFile1b.fileURL);
+    XCTAssertEqualObjects(file2b.fileURL, updatedFile2b.fileURL);
+    
+    // Contents should be as expected
+    XCTAssertEqualObjects(random3, _fileContents(self, updatedFile1a));
+    XCTAssertEqualObjects(random3, _fileContents(self, updatedFile1b));
+
+    XCTAssertEqualObjects(random2, _fileContents(self, updatedFile2a));
+    XCTAssertEqualObjects(random2, _fileContents(self, updatedFile2b));
+}
+
+// Make a conflict between agents A and B. Add a third file on C that tries to conflict with one of the automove chosen names on A,B. This is pretty contrived, but...
+- (void)testRenameFileConflictWithConflictVersion;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+    OFXAgent *agentC = self.agentC;
+    
+    // Get agentC alive, but ignoring the others
+    [agentC applicationLaunched];
+    agentC.syncSchedule = OFXSyncScheduleNone;
+
+    // Make two files at the same location on two agents
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
+    
+    NSString *random1 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    NSString *random2 = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentB]];
+    
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
+    
+    // Get everything in sync between just those two
+    [self waitForAgentsEditsToAgree:@[agentA, agentB] withFileCount:2];
+    [self requireAgentsToHaveSameFilesByIdentifier:@[agentA, agentB]];
+    
+    // Add a file on C that uses the name of one of the files that exist on A/B
+    OFXFileMetadata *file1a = _fileWithContents(self, [self metadataItemsForAgent:agentA], random1);
+    NSURL *fileC = file1a.fileURL;
+    NSString *random3 = [self copyRandomTextFileOfLength:16 toPath:[fileC lastPathComponent] ofAccount:[self singleAccountInAgent:agentB]];
+    
+    // Turn on sync on C and wait for the dust to settle.
+    agentC.syncSchedule = OFXSyncScheduleAutomatic;
+    [self waitForAgentsEditsToAgree:@[agentA, agentB, agentC] withFileCount:3];
+    
+    // All the file contents should be around
+    NSSet *metadataItems = [self metadataItemsForAgent:agentA];
+    NSSet *contents = _contentsOfFiles(self, metadataItems);
+    XCTAssertNotNil([contents member:random1]);
+    XCTAssertNotNil([contents member:random2]);
+    XCTAssertNotNil([contents member:random3]);
+    
+    // The file at fileC should not be a conflict version.
+    OFXFileMetadata *metadataC = _fileWithContents(self, metadataItems, random3);
+    XCTAssertEqualObjects(metadataC.fileURL.lastPathComponent, fileC.lastPathComponent);
+    XCTAssertEqualObjects(metadataC.fileURL, metadataC.intendedFileURL);
+    
+    // The other files should be conflict versions
+    for (OFXFileMetadata *metadata in metadataItems) {
+        if (metadata == metadataC)
+            continue;
+        XCTAssertFalse([metadata.fileURL isEqual:metadata.intendedFileURL]);
+        XCTAssertTrue(OFXIsConflict(metadata));
+    }
+}
+
+- (void)testMoveTwoFilesToSameLocation;
+{
+    // Make a couple files, minding their own business...
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+
+    NSString *random1 = [self copyRandomTextFileOfLength:16 toPath:@"test1.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    NSString *random2 = [self copyRandomTextFileOfLength:16 toPath:@"test2.txt" ofAccount:[self singleAccountInAgent:agentB]];
+
+    [self waitForAgentsEditsToAgree:@[agentA, agentB] withFileCount:2];
+    
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
+    
+    // Then try to move them to the same spot while offline
+    [self movePath:@"test1.txt" toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    [self movePath:@"test2.txt" toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentB]];
+    
+    // Wait for each agent to realize its move happened locally
+    for (OFXAgent *agent in @[agentA, agentB]) {
+        [self waitForFileMetadata:agent where:^BOOL(OFXFileMetadata *metadata) {
+            return [metadata.fileURL.lastPathComponent isEqualToString:@"test.txt"];
+        }];
+    }
+    
+    // Turn syncing on and wait for stuff to settle out
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
+    
+    for (OFXAgent *agent in @[agentA, agentB]) {
+        [self waitForFileMetadataItems:agent where:^BOOL(NSSet *metadataItems) {
+            if ([metadataItems count] != 2)
+                return NO;
+            return [metadataItems all:^BOOL(OFXFileMetadata *metadata) {
+                if (!OFXIsConflict(metadata))
+                    return NO;
+                if (![[metadata.intendedFileURL lastPathComponent] isEqual:@"test.txt"])
+                    return NO;
+                return YES;
+            }];
+        }];
+    }
+    
+    // Make sure we still have both contents
+    NSSet *contents = _contentsOfFiles(self, [self metadataItemsForAgent:agentA]);
+    XCTAssertNotNil([contents member:random1]);
+    XCTAssertNotNil([contents member:random2]);
 }
 
 // Test edit on one side, rename on the other

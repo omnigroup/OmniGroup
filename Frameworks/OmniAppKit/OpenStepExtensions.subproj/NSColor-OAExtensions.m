@@ -124,10 +124,28 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
                 NSLog(@"Exception unarchiving NSColor: %@", exc);
             }
             
-            if ([unarchived isKindOfClass:[NSColor class]])
-                return unarchived;
+            // Hidden preference to keep around the giant color archives
+            BOOL preserve = [[NSUserDefaults standardUserDefaults] objectForKey:@"PreserveColorProfileData"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"PreserveColorProfileData"];
+            
+            if (!preserve) {
+                if ([unarchived isKindOfClass:[NSColor class]]) {
+                    CGColorRef cgColor = [unarchived CGColor];
+                    CGColorSpaceRef space = CGColorGetColorSpace(cgColor);
+                    CGColorSpaceModel model = CGColorSpaceGetModel(space);
+                    if (model == kCGColorSpaceModelCMYK) {
+                        CGFloat c,m,y,k,a;
+                        [unarchived getCyan:&c magenta:&m yellow:&y black:&k alpha:&a];
+                        return [NSColor colorWithDeviceCyan:c magenta:m yellow:y black:k alpha:a];
+                    }
+                    if (NO && model == kCGColorSpaceModelMonochrome) {
+                        CGFloat w,a;
+                        [unarchived getWhite:&w alpha:&a];
+                        return [NSColor colorWithWhite:w alpha:a];
+                    }
+                }
+            }
+            return unarchived;
         }
-        
         // otherwise, fallback -- might be a rgb color in the plist too.
     }
     
@@ -314,14 +332,36 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     } else if ([colorSpaceName isEqualToString:NSPatternColorSpace]) {
         adders.data(container, @"tiff", [[self patternImage] TIFFRepresentation]);
     } else {
-        NSColor *rgbColor = [self colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
-        if (rgbColor) {
-            [rgbColor _addComponentsToContainer:container adders:adders omittingDefaultValues:omittingDefaultValues];
+        BOOL preserve = [[NSUserDefaults standardUserDefaults] objectForKey:@"PreserveColorProfileData"] && [[NSUserDefaults standardUserDefaults] boolForKey:@"PreserveColorProfileData"];
+
+        CGColorRef cgColor = [self CGColor];
+        CGColorSpaceRef space = CGColorGetColorSpace(cgColor);
+        CGColorSpaceModel model = CGColorSpaceGetModel(space);
+        if (!preserve && model == kCGColorSpaceModelCMYK) {
+            CGFloat components[5]; // Assuming that it'll write out alpha too.
+            [self getComponents:components];
+            
+            adders.component(container, @"c", components[0]);
+            adders.component(container, @"m", components[1]);
+            adders.component(container, @"y", components[2]);
+            adders.component(container, @"k", components[3]);
+            adders.component(container, @"a", components[4]);
+        } else if (!preserve && model == kCGColorSpaceModelMonochrome) {
+            CGFloat components[2]; // Assuming that it'll write out alpha too.
+            [self getComponents:components];
+            adders.component(container, @"w", components[0]);
+            adders.component(container, @"a", components[1]);
         } else {
-            NSData *archive = [NSKeyedArchiver archivedDataWithRootObject:self];
-            if (archive != nil && [archive length] > 0)
-                adders.data(container, @"archive", archive);
+            NSColor *rgbColor = [self colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+            if (!preserve && rgbColor) {
+                [rgbColor _addComponentsToContainer:container adders:adders omittingDefaultValues:omittingDefaultValues];
+            } else {
+                NSData *archive = [NSKeyedArchiver archivedDataWithRootObject:self];
+                if (archive != nil && [archive length] > 0)
+                    adders.data(container, @"archive", archive);
+            }
         }
+
         return;
     }
     if (hasAlpha) {
@@ -833,48 +873,6 @@ static NSData *_xmlCursorDataGetter(void *container, NSString *key)
     };
     return [NSColor _colorFromContainer:cursor getters:getters];
 }
-
-static BOOL _xmlNodeAttributeDictionaryComponentGetter(void *container, NSString *key, CGFloat *outComponent)
-{
-    NSString *attribute = [(NSDictionary *)container objectForKey:key];
-    if (!attribute)
-        return NO;
-    *outComponent = [attribute cgFloatValue];
-    return YES;
-}
-
-static NSString *_xmlNodeAttributeDictionaryStringGetter(void *container, NSString *key)
-{
-    return [(NSDictionary *)container objectForKey:key];
-}
-
-static NSData *_xmlNodeAttributeDictionaryDataGetter(void *container, NSString *key)
-{
-    NSString *string = [(NSDictionary *)container objectForKey:key];
-    if (!string)
-        return nil;
-    return [[[NSData alloc] initWithBase64String:string] autorelease];
-}
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#pragma clang diagnostic ignored "-Wdeprecated-implementations"
-+ (NSColor *)colorFromXMLTreeRef:(CFXMLTreeRef)treeRef;
-{
-    CFXMLNodeRef nodeRef = CFXMLTreeGetNode(treeRef);
-    if (nodeRef == NULL)
-        return [NSColor whiteColor];
-    
-    NSDictionary *colorAttributes = (NSDictionary *)(((CFXMLElementInfo *)CFXMLNodeGetInfoPtr(nodeRef))->attributes);
-    
-    OAColorGetters getters = {
-        .component = _xmlNodeAttributeDictionaryComponentGetter,
-        .string = _xmlNodeAttributeDictionaryStringGetter,
-        .data = _xmlNodeAttributeDictionaryDataGetter
-    };
-    return [NSColor _colorFromContainer:colorAttributes getters:getters];
-}
-#pragma clang diagnostic pop
 
 @end
 

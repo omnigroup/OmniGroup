@@ -1,11 +1,10 @@
-// Copyright 2004-2008, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2008, 2012-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#define STEnableDeprecatedAssertionMacros
 #import "OFTestCase.h"
 
 #import <OmniFoundation/OFAlias.h>
@@ -29,35 +28,35 @@ RCS_ID("$Id$")
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
     NSString *path = [fileManager tempFilenameFromHashesTemplate:@"/tmp/OFAliasTest-######"];
-    should(path != nil);
+    XCTAssertTrue(path != nil);
     if (!path)
         return;
     
-    should([[NSData data] writeToFile:path options:0 error:NULL]);
+    XCTAssertTrue([[NSData data] writeToFile:path options:0 error:NULL]);
     
     OFAlias *originalAlias = [[OFAlias alloc] initWithPath:path];
     NSString *resolvedPath = [originalAlias path];
     
-    shouldBeEqual([path stringByStandardizingPath], [resolvedPath stringByStandardizingPath]);
+    XCTAssertEqualObjects([path stringByStandardizingPath], [resolvedPath stringByStandardizingPath]);
     
     NSData *aliasData = [originalAlias data];
     OFAlias *restoredAlias = [[OFAlias alloc] initWithData:aliasData];
     
     NSString *moveToPath1 = [fileManager tempFilenameFromHashesTemplate:@"/tmp/OFAliasTest-######"];
-    should([fileManager moveItemAtPath:path toPath:moveToPath1 error:NULL]);
+    XCTAssertTrue([fileManager moveItemAtPath:path toPath:moveToPath1 error:NULL]);
     
     NSString *resolvedMovedPath = [restoredAlias path];
     
-    shouldBeEqual([moveToPath1 stringByStandardizingPath], [resolvedMovedPath stringByStandardizingPath]);
+    XCTAssertEqualObjects([moveToPath1 stringByStandardizingPath], [resolvedMovedPath stringByStandardizingPath]);
     
     NSString *moveToPath2 = [fileManager tempFilenameFromHashesTemplate:@"/tmp/OFAliasTest-######"];
-    should([fileManager moveItemAtPath:moveToPath1 toPath:moveToPath2 error:NULL]);
+    XCTAssertTrue([fileManager moveItemAtPath:moveToPath1 toPath:moveToPath2 error:NULL]);
     
     NSData *movedAliasData = [[NSData alloc] initWithBase64String:[[restoredAlias data] base64String]];
     OFAlias *movedAliasFromData = [[OFAlias alloc] initWithData:movedAliasData];
-    should([movedAliasFromData path] != nil);
+    XCTAssertTrue([movedAliasFromData path] != nil);
     
-    should([fileManager removeItemAtPath:moveToPath2 error:NULL]);
+    XCTAssertTrue([fileManager removeItemAtPath:moveToPath2 error:NULL]);
     
 }
 

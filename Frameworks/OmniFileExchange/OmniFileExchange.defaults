@@ -8,5 +8,11 @@
 	<string/>
 	<key>OFXCellularSyncEnabled</key>
 	<false/>
+    <key>OFXFileItemRecentErrorExpirationTimeInterval</key>
+    <real>120</real>
+    <key>OFXFileItemSkipTransfersWithErrorsInTimeInterval</key>
+    <real>5</real>
+    <key>OFXRecentTransferErrorThresholdBeforeAutomaticallyStopping</key>
+    <integer>10</integer>
 </dict>
 </plist>
