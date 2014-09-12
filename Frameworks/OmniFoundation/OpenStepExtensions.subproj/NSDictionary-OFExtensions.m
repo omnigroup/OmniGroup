@@ -99,8 +99,10 @@ RCS_ID("$Id$")
         }
     }];
 
-    if (mutatedDictionary)
+    if (mutatedDictionary) {
+        [mutatedDictionary autorelease];
         return [[mutatedDictionary copy] autorelease];
+    }
     return [[self copy] autorelease];
 }
 
