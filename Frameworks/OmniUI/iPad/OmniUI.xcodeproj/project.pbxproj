@@ -320,6 +320,7 @@
 		3E609C15198B7951006BCF43 /* OUIDebugURLCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 3E609C13198B7951006BCF43 /* OUIDebugURLCommand.m */; };
 		3EC4402317C5410000715DD9 /* OUICrossfadeViewControllerTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EC4402117C5410000715DD9 /* OUICrossfadeViewControllerTransition.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3EC4402417C5410000715DD9 /* OUICrossfadeViewControllerTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 3EC4402217C5410000715DD9 /* OUICrossfadeViewControllerTransition.m */; };
+		4261A0E819CB801D007FDDD7 /* OUIInAppStoreViewController.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4261A0EA19CB801D007FDDD7 /* OUIInAppStoreViewController.xib */; };
 		4906932717C70543004BD77B /* OUINumericFieldTableCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 4906932417C70543004BD77B /* OUINumericFieldTableCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4906932817C70543004BD77B /* OUINumericFieldTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 4906932517C70543004BD77B /* OUINumericFieldTableCell.m */; };
 		492D21F217C70D3D00514ACC /* OUINumericFieldTableCell.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = 4906932617C70543004BD77B /* OUINumericFieldTableCell.xib */; };
@@ -356,8 +357,6 @@
 		4D5016C213C3D84500AD3367 /* OUIMinimalScrollNotifierImplementation.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D5016C013C3D84500AD3367 /* OUIMinimalScrollNotifierImplementation.m */; };
 		4D6E60B915B61C6E001950DB /* OUITapGestureRecognizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D6E60B715B61C6E001950DB /* OUITapGestureRecognizer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4D6E60BA15B61C6E001950DB /* OUITapGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D6E60B815B61C6E001950DB /* OUITapGestureRecognizer.m */; };
-		4D8878E813E870A50001404E /* OUIViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D8878E613E870A50001404E /* OUIViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4D8878E913E870A50001404E /* OUIViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D8878E713E870A50001404E /* OUIViewController.m */; };
 		4DCCB28D14100BD2007B31AD /* OUIKeyboardLock.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DCCB28B14100BD2007B31AD /* OUIKeyboardLock.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4DCCB28E14100BD2007B31AD /* OUIKeyboardLock.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DCCB28C14100BD2007B31AD /* OUIKeyboardLock.m */; };
 		50AA85971958E89E00103938 /* OUINoteInspectorPane.h in Headers */ = {isa = PBXBuildFile; fileRef = 50AA85941958E89E00103938 /* OUINoteInspectorPane.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -429,7 +428,6 @@
 		E25772DA1456162900E0A716 /* OUICompletionMatchCell.m in Sources */ = {isa = PBXBuildFile; fileRef = E25772D81456162900E0A716 /* OUICompletionMatchCell.m */; };
 		E263D2A917DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.h in Headers */ = {isa = PBXBuildFile; fileRef = E263D2A717DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E263D2AA17DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.m in Sources */ = {isa = PBXBuildFile; fileRef = E263D2A817DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.m */; };
-		E2962B0017CDD75800BE0ED7 /* OUIInAppStoreViewController.xib in Copy Resources */ = {isa = PBXBuildFile; fileRef = E2962AFF17CDD61F00BE0ED7 /* OUIInAppStoreViewController.xib */; };
 		E2A0014D1835913F00B13EB7 /* OUIFullScreenNoteTextViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = E2A001491835913F00B13EB7 /* OUIFullScreenNoteTextViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E2A0014E1835913F00B13EB7 /* OUIFullScreenNoteTextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E2A0014A1835913F00B13EB7 /* OUIFullScreenNoteTextViewController.m */; };
 		E2A0014F1835913F00B13EB7 /* OUIFullScreenNoteTransition.h in Headers */ = {isa = PBXBuildFile; fileRef = E2A0014B1835913F00B13EB7 /* OUIFullScreenNoteTransition.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -439,6 +437,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		234940C019D49FFF00F73FC2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34218E4A19C23ECE00899C9A;
+			remoteInfo = "OmniQuartz-iOS";
+		};
 		2787A65E1991F4E0008D3495 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */;
@@ -460,20 +465,6 @@
 			remoteGlobalIDString = 4AA1E81E08AA764700E2FF6B;
 			remoteInfo = OAMakeImageSizeIntegral;
 		};
-		2787A6641991F4E0008D3495 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3434791511923B54007D0CE5;
-			remoteInfo = OmniAppKitTouch;
-		};
-		2787A6661991F4E0008D3495 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3401163511E5181A0016ADB3;
-			remoteInfo = OmniAppKitTouchTests;
-		};
 		2787A6681991F4E0008D3495 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */;
@@ -488,33 +479,12 @@
 			remoteGlobalIDString = 34C12B06194FF90F005CB70B;
 			remoteInfo = "OAUnitTests-iOS";
 		};
-		2787A66C1991F4ED008D3495 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3434791411923B54007D0CE5;
-			remoteInfo = OmniAppKitTouch;
-		};
 		27D1BBD81991F78A00976618 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 8DC2EF5B0486A6940098B216;
 			remoteInfo = OmniQuartz;
-		};
-		27D1BBDA1991F78A00976618 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 345613D41193197700E7D187;
-			remoteInfo = OmniQuartzTouch;
-		};
-		27D1BBDC1991F79900976618 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 27D1BBCD1991F78A00976618 /* OmniQuartz.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 345613D31193197700E7D187;
-			remoteInfo = OmniQuartzTouch;
 		};
 		27D1BBE31991F7D800976618 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -536,6 +506,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 34E20FC9119314D200ECA875;
 			remoteInfo = OmniUnzipTouch;
+		};
+		347135F719C1087F00D94A75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2787A6541991F4E0008D3495 /* OmniAppKit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34C12AFB194FF90F005CB70B;
+			remoteInfo = "OmniAppKit-iOS";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -559,7 +536,7 @@
 				231A234C17D945DF009E4CA8 /* OUIEmptyOverlayView.xib in Copy Resources */,
 				493DD89B17CEC3290021D057 /* OUIStepperMinus.png in Copy Resources */,
 				493DD89C17CEC3290021D057 /* OUIStepperPlus.png in Copy Resources */,
-				E2962B0017CDD75800BE0ED7 /* OUIInAppStoreViewController.xib in Copy Resources */,
+				4261A0E819CB801D007FDDD7 /* OUIInAppStoreViewController.xib in Copy Resources */,
 				492D21F217C70D3D00514ACC /* OUINumericFieldTableCell.xib in Copy Resources */,
 				34FF349C178B2110005A4F1F /* OmniUI.keycommands in Copy Resources */,
 				34383259167A861E008A4FD0 /* OUIMenuItemAbout.png in Copy Resources */,
@@ -817,7 +794,7 @@
 		346C4A6E1193273600BE8C49 /* OUIShadowBorderTop.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUIShadowBorderTop.png; path = Images/OUIShadowBorderTop.png; sourceTree = SOURCE_ROOT; };
 		346C4A6F1193273600BE8C49 /* OUITextSelectionOverlay.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = OUITextSelectionOverlay.png; path = Images/OUITextSelectionOverlay.png; sourceTree = SOURCE_ROOT; };
 		346C4A741193273600BE8C49 /* OUIColorComponentSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIColorComponentSlider.h; sourceTree = "<group>"; };
-		346C4A751193273600BE8C49 /* OUIColorComponentSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = OUIColorComponentSlider.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		346C4A751193273600BE8C49 /* OUIColorComponentSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = OUIColorComponentSlider.m; sourceTree = "<group>"; };
 		346C4A761193273600BE8C49 /* OUIColorInspectorPane.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = OUIColorInspectorPane.xib; sourceTree = "<group>"; };
 		346C4A771193273600BE8C49 /* OUIColorInspectorGraySegment.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorInspectorGraySegment.png; sourceTree = "<group>"; };
 		346C4A781193273600BE8C49 /* OUIColorInspectorHSVSegment.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OUIColorInspectorHSVSegment.png; sourceTree = "<group>"; };
@@ -1016,6 +993,7 @@
 		3E609C13198B7951006BCF43 /* OUIDebugURLCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDebugURLCommand.m; sourceTree = "<group>"; };
 		3EC4402117C5410000715DD9 /* OUICrossfadeViewControllerTransition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUICrossfadeViewControllerTransition.h; sourceTree = "<group>"; };
 		3EC4402217C5410000715DD9 /* OUICrossfadeViewControllerTransition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUICrossfadeViewControllerTransition.m; sourceTree = "<group>"; };
+		4261A0F119CB804F007FDDD7 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OUIInAppStoreViewController.xib; sourceTree = "<group>"; };
 		4906932417C70543004BD77B /* OUINumericFieldTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINumericFieldTableCell.h; sourceTree = "<group>"; };
 		4906932517C70543004BD77B /* OUINumericFieldTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUINumericFieldTableCell.m; sourceTree = "<group>"; };
 		4906932617C70543004BD77B /* OUINumericFieldTableCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUINumericFieldTableCell.xib; sourceTree = "<group>"; };
@@ -1053,8 +1031,6 @@
 		4D5016C013C3D84500AD3367 /* OUIMinimalScrollNotifierImplementation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIMinimalScrollNotifierImplementation.m; sourceTree = "<group>"; };
 		4D6E60B715B61C6E001950DB /* OUITapGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUITapGestureRecognizer.h; sourceTree = "<group>"; };
 		4D6E60B815B61C6E001950DB /* OUITapGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUITapGestureRecognizer.m; sourceTree = "<group>"; };
-		4D8878E613E870A50001404E /* OUIViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIViewController.h; sourceTree = "<group>"; };
-		4D8878E713E870A50001404E /* OUIViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIViewController.m; sourceTree = "<group>"; };
 		4DCCB28B14100BD2007B31AD /* OUIKeyboardLock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIKeyboardLock.h; sourceTree = "<group>"; };
 		4DCCB28C14100BD2007B31AD /* OUIKeyboardLock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIKeyboardLock.m; sourceTree = "<group>"; };
 		50AA85941958E89E00103938 /* OUINoteInspectorPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUINoteInspectorPane.h; sourceTree = "<group>"; };
@@ -1118,6 +1094,28 @@
 		AA747D9E0F9514B9006C5449 /* OmniUI_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUI_Prefix.h; sourceTree = "<group>"; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		AB3EC723150FCCF70027AC6F /* OUIOverlayBackground@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIOverlayBackground@2x.png"; sourceTree = "<group>"; };
+		AB69E40119D222A900F31468 /* OUIColorComponentSliderKnob@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIColorComponentSliderKnob@3x.png"; sourceTree = "<group>"; };
+		AB69E40219D222A900F31468 /* OUIMenuItemAbout@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemAbout@3x.png"; sourceTree = "<group>"; };
+		AB69E40319D222A900F31468 /* OUIMenuItemHelp@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemHelp@3x.png"; sourceTree = "<group>"; };
+		AB69E40419D222A900F31468 /* OUIMenuItemPurchases@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemPurchases@3x.png"; sourceTree = "<group>"; };
+		AB69E40519D222A900F31468 /* OUIMenuItemReleaseNotes@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemReleaseNotes@3x.png"; sourceTree = "<group>"; };
+		AB69E40619D222A900F31468 /* OUIMenuItemRestoreSampleDocuments@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemRestoreSampleDocuments@3x.png"; sourceTree = "<group>"; };
+		AB69E40719D222A900F31468 /* OUIMenuItemSendFeedback@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSendFeedback@3x.png"; sourceTree = "<group>"; };
+		AB69E40819D222A900F31468 /* OUIMenuItemSettings@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSettings@3x.png"; sourceTree = "<group>"; };
+		AB69E40919D222A900F31468 /* OUIMenuItemSync@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIMenuItemSync@3x.png"; sourceTree = "<group>"; };
+		AB69E40A19D222A900F31468 /* OUIParagraphAlignmentCenter@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIParagraphAlignmentCenter@3x.png"; sourceTree = "<group>"; };
+		AB69E40B19D222A900F31468 /* OUIParagraphAlignmentJustified@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIParagraphAlignmentJustified@3x.png"; sourceTree = "<group>"; };
+		AB69E40C19D222A900F31468 /* OUIParagraphAlignmentLeft@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIParagraphAlignmentLeft@3x.png"; sourceTree = "<group>"; };
+		AB69E40D19D222A900F31468 /* OUIParagraphAlignmentRight@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIParagraphAlignmentRight@3x.png"; sourceTree = "<group>"; };
+		AB69E40E19D222A900F31468 /* OUIScalingViewBackgroundPattern@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIScalingViewBackgroundPattern@3x.png"; sourceTree = "<group>"; };
+		AB69E40F19D222A900F31468 /* OUIStepperMinus@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIStepperMinus@3x.png"; sourceTree = "<group>"; };
+		AB69E41019D222A900F31468 /* OUIStepperPlus@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIStepperPlus@3x.png"; sourceTree = "<group>"; };
+		AB69E41119D222A900F31468 /* OUITableViewItemSelection-Highlighted@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Highlighted@3x.png"; sourceTree = "<group>"; };
+		AB69E41219D222A900F31468 /* OUITableViewItemSelection-Mixed@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Mixed@3x.png"; sourceTree = "<group>"; };
+		AB69E41319D222A900F31468 /* OUITableViewItemSelection-Normal@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Normal@3x.png"; sourceTree = "<group>"; };
+		AB69E41419D222A900F31468 /* OUITableViewItemSelection-Selected@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITableViewItemSelection-Selected@3x.png"; sourceTree = "<group>"; };
+		AB69E41519D222A900F31468 /* OUITextSelectionOverlay@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUITextSelectionOverlay@3x.png"; sourceTree = "<group>"; };
+		AB69E41619D222A900F31468 /* OUIToolbarInfo@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarInfo@3x.png"; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libOmniUI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniUI.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E215F45C16542E2000E2CD70 /* OUISegmentedControlInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISegmentedControlInspectorSlice.h; sourceTree = "<group>"; };
 		E215F45D16542E2000E2CD70 /* OUISegmentedControlInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISegmentedControlInspectorSlice.m; sourceTree = "<group>"; };
@@ -1127,7 +1125,6 @@
 		E25772D81456162900E0A716 /* OUICompletionMatchCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUICompletionMatchCell.m; sourceTree = "<group>"; };
 		E263D2A717DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIBorderedAuxiliaryButton.h; sourceTree = "<group>"; };
 		E263D2A817DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIBorderedAuxiliaryButton.m; sourceTree = "<group>"; };
-		E2962AFF17CDD61F00BE0ED7 /* OUIInAppStoreViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUIInAppStoreViewController.xib; sourceTree = "<group>"; };
 		E2A001481835913F00B13EB7 /* OUIFullScreenNoteTextView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUIFullScreenNoteTextView.xib; sourceTree = "<group>"; };
 		E2A001491835913F00B13EB7 /* OUIFullScreenNoteTextViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFullScreenNoteTextViewController.h; sourceTree = "<group>"; };
 		E2A0014A1835913F00B13EB7 /* OUIFullScreenNoteTextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFullScreenNoteTextViewController.m; sourceTree = "<group>"; };
@@ -1285,7 +1282,7 @@
 				27636F0D1799E2BB00C9F4FE /* OUIInAppStoreObserver.m */,
 				27636F0E1799E2BB00C9F4FE /* OUIInAppStoreViewController.h */,
 				27636F0F1799E2BB00C9F4FE /* OUIInAppStoreViewController.m */,
-				E2962AFF17CDD61F00BE0ED7 /* OUIInAppStoreViewController.xib */,
+				4261A0EA19CB801D007FDDD7 /* OUIInAppStoreViewController.xib */,
 			);
 			name = "In-App Purchase";
 			sourceTree = "<group>";
@@ -1295,11 +1292,9 @@
 			children = (
 				2787A65F1991F4E0008D3495 /* OmniAppKit.framework */,
 				2787A6611991F4E0008D3495 /* OAUnitTests.xctest */,
-				2787A6631991F4E0008D3495 /* OAMakeImageSizeIntegral */,
-				2787A6651991F4E0008D3495 /* libOmniAppKit.a */,
-				2787A6671991F4E0008D3495 /* libOmniAppKitTouchTests.a */,
 				2787A6691991F4E0008D3495 /* OmniAppKit.framework */,
 				2787A66B1991F4E0008D3495 /* OAUnitTests.xctest */,
+				2787A6631991F4E0008D3495 /* OAMakeImageSizeIntegral */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1308,7 +1303,7 @@
 			isa = PBXGroup;
 			children = (
 				27D1BBD91991F78A00976618 /* OmniQuartz.framework */,
-				27D1BBDB1991F78A00976618 /* libOmniQuartz.a */,
+				234940C119D49FFF00F73FC2 /* OmniQuartz.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1383,6 +1378,28 @@
 		346C4A521193273600BE8C49 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				AB69E40119D222A900F31468 /* OUIColorComponentSliderKnob@3x.png */,
+				AB69E40219D222A900F31468 /* OUIMenuItemAbout@3x.png */,
+				AB69E40319D222A900F31468 /* OUIMenuItemHelp@3x.png */,
+				AB69E40419D222A900F31468 /* OUIMenuItemPurchases@3x.png */,
+				AB69E40519D222A900F31468 /* OUIMenuItemReleaseNotes@3x.png */,
+				AB69E40619D222A900F31468 /* OUIMenuItemRestoreSampleDocuments@3x.png */,
+				AB69E40719D222A900F31468 /* OUIMenuItemSendFeedback@3x.png */,
+				AB69E40819D222A900F31468 /* OUIMenuItemSettings@3x.png */,
+				AB69E40919D222A900F31468 /* OUIMenuItemSync@3x.png */,
+				AB69E40A19D222A900F31468 /* OUIParagraphAlignmentCenter@3x.png */,
+				AB69E40B19D222A900F31468 /* OUIParagraphAlignmentJustified@3x.png */,
+				AB69E40C19D222A900F31468 /* OUIParagraphAlignmentLeft@3x.png */,
+				AB69E40D19D222A900F31468 /* OUIParagraphAlignmentRight@3x.png */,
+				AB69E40E19D222A900F31468 /* OUIScalingViewBackgroundPattern@3x.png */,
+				AB69E40F19D222A900F31468 /* OUIStepperMinus@3x.png */,
+				AB69E41019D222A900F31468 /* OUIStepperPlus@3x.png */,
+				AB69E41119D222A900F31468 /* OUITableViewItemSelection-Highlighted@3x.png */,
+				AB69E41219D222A900F31468 /* OUITableViewItemSelection-Mixed@3x.png */,
+				AB69E41319D222A900F31468 /* OUITableViewItemSelection-Normal@3x.png */,
+				AB69E41419D222A900F31468 /* OUITableViewItemSelection-Selected@3x.png */,
+				AB69E41519D222A900F31468 /* OUITextSelectionOverlay@3x.png */,
+				AB69E41619D222A900F31468 /* OUIToolbarInfo@3x.png */,
 				50AA859C195B92CB00103938 /* OUINoteFullScreenZoom.png */,
 				50AA859A195B8F4C00103938 /* OUINoteFullScreenZoomBackground.png */,
 				3438324E167A85D1008A4FD0 /* OUIMenuItemAbout.png */,
@@ -1601,8 +1618,6 @@
 				345A398E121C992900ABA3F0 /* OUIToolbarButton.m */,
 				346C4B121193273600BE8C49 /* OUIUndoIndicator.h */,
 				346C4B131193273600BE8C49 /* OUIUndoIndicator.m */,
-				4D8878E613E870A50001404E /* OUIViewController.h */,
-				4D8878E713E870A50001404E /* OUIViewController.m */,
 				5F9EF96B15AF89A9000DAEF6 /* UIColor-OUIExtensions.h */,
 				5F9EF96C15AF89A9000DAEF6 /* UIColor-OUIExtensions.m */,
 				5F85377D17CBC03600AEB4A1 /* UIFont-OUIExtensions.h */,
@@ -1908,7 +1923,6 @@
 				3EC4402317C5410000715DD9 /* OUICrossfadeViewControllerTransition.h in Headers */,
 				3E14F63B1781DA96001427E9 /* OUIAppearance.h in Headers */,
 				4DCCB28D14100BD2007B31AD /* OUIKeyboardLock.h in Headers */,
-				4D8878E813E870A50001404E /* OUIViewController.h in Headers */,
 				943C22151280AE660049EC15 /* UIViewController-OUIExtensions.h in Headers */,
 				5F4AB93B19AD235B00202116 /* NSUndoManager-OUIExtensions.h in Headers */,
 				5F408771179FA18400D5D27D /* OUITabBarButton.h in Headers */,
@@ -2087,8 +2101,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				2787A66D1991F4ED008D3495 /* PBXTargetDependency */,
-				27D1BBDD1991F79900976618 /* PBXTargetDependency */,
+				347135F819C1087F00D94A75 /* PBXTargetDependency */,
 				27D1BBE81991F7F100976618 /* PBXTargetDependency */,
 			);
 			name = OmniUITouch;
@@ -2102,7 +2115,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "OmniUI" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2110,6 +2123,7 @@
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* OmniUITouch */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -2136,6 +2150,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		234940C119D49FFF00F73FC2 /* OmniQuartz.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniQuartz.framework;
+			remoteRef = 234940C019D49FFF00F73FC2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		2787A65F1991F4E0008D3495 /* OmniAppKit.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -2157,20 +2178,6 @@
 			remoteRef = 2787A6621991F4E0008D3495 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		2787A6651991F4E0008D3495 /* libOmniAppKit.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniAppKit.a;
-			remoteRef = 2787A6641991F4E0008D3495 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2787A6671991F4E0008D3495 /* libOmniAppKitTouchTests.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniAppKitTouchTests.a;
-			remoteRef = 2787A6661991F4E0008D3495 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		2787A6691991F4E0008D3495 /* OmniAppKit.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -2190,13 +2197,6 @@
 			fileType = wrapper.framework;
 			path = OmniQuartz.framework;
 			remoteRef = 27D1BBD81991F78A00976618 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		27D1BBDB1991F78A00976618 /* libOmniQuartz.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniQuartz.a;
-			remoteRef = 27D1BBDA1991F78A00976618 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		27D1BBE41991F7D800976618 /* OmniUnzip.framework */ = {
@@ -2363,7 +2363,6 @@
 				34A5F1DF13841E990025353B /* UIScrollView-OUIExtensions.m in Sources */,
 				4D3C314613BD3C980065B582 /* OUIScrollNotifier.m in Sources */,
 				4D5016C213C3D84500AD3367 /* OUIMinimalScrollNotifierImplementation.m in Sources */,
-				4D8878E913E870A50001404E /* OUIViewController.m in Sources */,
 				3EC4402417C5410000715DD9 /* OUICrossfadeViewControllerTransition.m in Sources */,
 				230612D413E9CB3A005BD284 /* OUIShieldView.m in Sources */,
 				6C0F040213F5DAE300B4D5C2 /* OUIMultiSegmentStackedSlicesInspectorPane.m in Sources */,
@@ -2395,20 +2394,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		2787A66D1991F4ED008D3495 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = OmniAppKitTouch;
-			targetProxy = 2787A66C1991F4ED008D3495 /* PBXContainerItemProxy */;
-		};
-		27D1BBDD1991F79900976618 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = OmniQuartzTouch;
-			targetProxy = 27D1BBDC1991F79900976618 /* PBXContainerItemProxy */;
-		};
 		27D1BBE81991F7F100976618 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = OmniUnzipTouch;
 			targetProxy = 27D1BBE71991F7F100976618 /* PBXContainerItemProxy */;
+		};
+		347135F819C1087F00D94A75 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "OmniAppKit-iOS";
+			targetProxy = 347135F719C1087F00D94A75 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2419,6 +2413,14 @@
 				3485C3E9133BFCAA00FD0086 /* English */,
 			);
 			name = OUIDefaultPaletteThemes.strings;
+			sourceTree = "<group>";
+		};
+		4261A0EA19CB801D007FDDD7 /* OUIInAppStoreViewController.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4261A0F119CB804F007FDDD7 /* Base */,
+			);
+			name = OUIInAppStoreViewController.xib;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

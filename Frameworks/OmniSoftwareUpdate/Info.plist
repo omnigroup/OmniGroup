@@ -40,6 +40,8 @@
           <array>
             <string>OSUCheckInterval</string>
             <string>OSUIncludeHardwareDetails</string>
+            <string>OSUSendSystemInfoEnabled</string>
+            <string>AutomaticSoftwareUpdateCheckEnabled</string>
           </array>
           <key>helpURL</key>
           <string>anchor:updatepreferences</string>

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,10 @@ RCS_ID("$Id$");
             break;
             
         case OUILabelStyleInspectorSliceInstructionText:
-            self.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+            self.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+            self.textColor = [UIColor grayColor];
+            self.textAlignment = NSTextAlignmentLeft;
+
             break;
             
         default:

@@ -1,4 +1,4 @@
-// Copyright 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -50,6 +50,7 @@
 - (void)awakeFromInsert;
 - (void)awakeFromFetch;
 - (void)awakeFromUnarchive; // Never called by the framework; for subclasses and apps that implement archiving
+- (void)didAwakeFromFetch;
 
 @property(readonly) ODOEntity *entity; // do not subclass
 @property(readonly) ODOEditingContext *editingContext; // do not subclass
@@ -86,7 +87,7 @@
 - (NSDictionary *)changedValues;
 
 - (id)committedValueForKey:(NSString *)key;
-- (NSDictionary *)committedValuesForKeys:(NSArray *)keys;
+// - (NSDictionary *)committedValuesForKeys:(NSArray *)keys;
 
 + (void)addDerivedPropertyNames:(NSMutableSet *)set withEntity:(ODOEntity *)entity;
 - (BOOL)changedNonDerivedChangedValue;

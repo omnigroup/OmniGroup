@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,10 +70,14 @@ RCS_ID("$Id$")
     [UIView animateWithDuration:duration animations:^{
         snapshot.alpha = 1.0;
     } completion:^(BOOL finished) {
-        [snapshot removeFromSuperview];
-        [sourceShot removeFromSuperview];
-        destinationView.frame = fromFrame;
-        [transitionContext completeTransition:finished];
+        if (finished) {
+            [snapshot removeFromSuperview];
+            [sourceShot removeFromSuperview];
+            destinationView.frame = fromFrame;
+            [transitionContext completeTransition:finished];            
+        }else{
+            OBASSERT_NOT_REACHED("we were expecting the transition animation to have finished.  UI may be in unreasonable state.");
+        }
     }];
 }
 

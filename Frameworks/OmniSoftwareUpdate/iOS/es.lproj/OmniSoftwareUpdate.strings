@@ -23,10 +23,10 @@
 "Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "¿Desea que %@ envíe informes periódicos sobre su modelo de hardware y versión de iOS?\nEsto nos permitirá saber qué configuraciones necesitan más soporte. Puede cambiar su respuesta más adelante en las preferencias MUMBLE MUMBLE MUMBLE.";
 
 /* Software update report entry name */
-"Application identifier" = "Identificador de la aplicación";
+"App ID" = "ID de App";
 
 /* Software update report entry name */
-"Application version" = "Versión de la aplicación";
+"App version" = "Versión de App";
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
 "Check operation failed." = "Error en la operación de comprobación.";
@@ -40,14 +40,16 @@
 /* Software update report entry name */
 "Device" = "Dispositivo";
 
-/* software update settings title */
+/* software update settings section title
+   software update settings title */
+
 "Device Information" = "Información del dispositivo";
 
 /* OmniSoftwareUpdate privacy notice button title */
 "Don't Report" = "No comunicar";
 
 /* error description */
-"Error fetching software update information." = "Error al buscar información sobre la actualización de software.";
+"Error fetching software update information." = "Error al recoger información sobre la actualización de software.";
 
 /* error description */
 "Error while checking for updated version." = "Error al buscar una versión actualizada.";
@@ -56,10 +58,10 @@
 "Exception raised: %@" = "Excepción: %@";
 
 /* software update settings cell detail text */
-"Help The Omni Group decide which devices and iOS versions to support" = "Ayude a The Omni Group a decidir la compatibilidad de dispositivos y versiones de iOS";
+"Help The Omni Group decide which devices and iOS versions to support" = "Ayude a The Omni Group a decidir qué dispositivos y versiones de iOS deben ser compatibles con sus productos";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Si comparte esta información, nos ayuda a obtener datos importantes sobre la compatibilidad de dispositivos y versiones de iOS con nuestro software.\nEsta información es totalmente anónima.";
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Si comparte esta información, nos ayuda con datos importantes sobre la compatibilidad de dispositivos y versiones de iOS con nuestro software.\nEsta información es totalmente anónima.";
 
 /* Software update report entry name */
 "iOS version" = "Versión de iOS";
@@ -89,16 +91,15 @@
 "Please try again later or contact us to let us know this is broken." = "Inténtelo de nuevo más tarde o póngase en contacto con nosotros para informarnos del error.";
 
 /* Software update report entry name */
-"Report identifier" = "Identificador del informe";
+"Report ID" = "ID de informe";
 
 /* Software update report entry name */
 "Report version" = "Versión del informe";
 
-/* software update settings cell title */
-"Send anonymous device information" = "Enviar información anónima del dispositivo";
+/* Settings option title
+   software update settings cell title */
 
-/* Settings option title */
-"Send anonymous device information?" = "¿Desea enviar información anónima del dispositivo?";
+"Send Anonymous Data" = "Enviar información anónima";
 
 /* OmniSoftwareUpdate privacy notice button title */
 "Send Reports" = "Enviar informes";
@@ -131,7 +132,7 @@
 "Unable to authenticate the response from the software update server." = "No se ha podido autenticar la respuesta del servidor de actualizaciones de software.";
 
 /* error description - will be followed by more detailed error reason */
-"Unable to fetch software update information." = "No se ha podido buscar información sobre la actualización de software.";
+"Unable to fetch software update information." = "No se ha podido recoger información sobre la actualización de software.";
 
 /* error description */
 "Unable to parse response from the software update server." = "No se ha podido analizar la respuesta del servidor de actualizaciones de software.";

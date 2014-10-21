@@ -11,10 +11,11 @@
 #import <libxml/parser.h>
 #import <OmniFoundation/CFArray-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
-#import <OmniFoundation/OFXMLError.h>
 #import <OmniFoundation/OFXMLInternedStringTable.h>
 #import <OmniFoundation/OFXMLQName.h>
 #import <OmniBase/assertions.h>
+
+#import "OFXMLError.h"
 
 RCS_ID("$Id$");
 

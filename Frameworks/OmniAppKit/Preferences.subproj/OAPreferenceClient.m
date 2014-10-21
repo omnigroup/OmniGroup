@@ -18,10 +18,6 @@
 
 RCS_ID("$Id$")
 
-@interface OAPreferenceClient (Private)
-- (void)_restoreDefaultsSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;
-@end
-
 @implementation OAPreferenceClient
 
 - initWithPreferenceClientRecord:(OAPreferenceClientRecord *)clientRecord controller:(OAPreferenceController *)controller;
@@ -158,11 +154,17 @@ RCS_ID("$Id$")
 /*" Restores all defaults for this preference client to their original installation values. "*/
 - (IBAction)restoreDefaults:(id)sender;
 {
-    NSString *mainPrompt = [NSString stringWithFormat:[[self class] resetPreferencesMainPromptString], _title];
-    NSString *secondaryPrompt = [NSString stringWithFormat:[[self class] resetPreferencesSecondaryPromptString], [[NSProcessInfo processInfo] processName]];
-    NSString *defaultButton = [[self class] resetButtonTitle];
-    NSString *otherButton = [[self class] cancelButtonTitle];
-    NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, [_controlBox window], self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), NULL, @"%@", secondaryPrompt);
+    NSAlert *alert = [[NSAlert alloc] init];
+    alert.messageText = [NSString stringWithFormat:[[self class] resetPreferencesMainPromptString], _title];
+    alert.informativeText = [NSString stringWithFormat:[[self class] resetPreferencesSecondaryPromptString], [[NSProcessInfo processInfo] processName]];
+    [alert addButtonWithTitle:[[self class] resetButtonTitle]];
+    [alert addButtonWithTitle:[[self class] cancelButtonTitle]];
+    [alert beginSheetModalForWindow:_controlBox.window completionHandler:^(NSModalResponse returnCode) {
+        if (returnCode != NSAlertFirstButtonReturn)
+            return;
+        [self restoreDefaultsNoPrompt];
+        [self valuesHaveChanged];
+    }];
 }
 
 - (void)restoreDefaultsNoPrompt;
@@ -246,14 +248,3 @@ RCS_ID("$Id$")
 
 @end
 
-@implementation OAPreferenceClient (Private)
-
-- (void)_restoreDefaultsSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;
-{
-    if (returnCode != NSAlertDefaultReturn)
-        return;
-    [self restoreDefaultsNoPrompt];
-    [self valuesHaveChanged];
-}
-
-@end

@@ -31,6 +31,7 @@
     NSMutableSet *_processedDeletedObjects;
     
     NSMutableSet *_recentlyInsertedObjects;
+    ODOObject *_nonretainedLastRecentlyInsertedObject;
     NSMutableSet *_recentlyUpdatedObjects;
     NSMutableSet *_recentlyDeletedObjects;
     

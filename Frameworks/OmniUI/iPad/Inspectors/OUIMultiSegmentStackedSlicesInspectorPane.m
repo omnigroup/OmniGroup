@@ -115,16 +115,17 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
     newFrame.size.width = OUIInspectorContentWidth;
     
     OUIInspectorBackgroundView *tabBackground = [[OUIInspectorBackgroundView alloc] initWithFrame:newFrame];
-    tabBackground.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin;
+    tabBackground.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin|UIViewAutoresizingFlexibleWidth;
     [container addSubview:tabBackground];
     
     _titleTabBar.frame = CGRectInset(tabBackground.bounds, 0.0, VERTICAL_SPACING_AROUND_TABS);
+    _titleTabBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [tabBackground addSubview:_titleTabBar];
     
     newFrame.origin.y = CGRectGetMaxY(newFrame);
     newFrame.size.height = CGRectGetMaxY(container.bounds) - newFrame.origin.y;
     _contentView.frame = newFrame;
-    _contentView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+    _contentView.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
     [container addSubview:_contentView];
     
     self.view = container;

@@ -11,8 +11,8 @@
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOEditingContext.h>
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
+#import <OmniDataObjects/ODOObject-Accessors.h>
 
-#import "ODOObject-Accessors.h"
 #import "ODOProperty-Internal.h"
 #import "ODODatabase-Internal.h"
 #import "ODOSQLStatement.h"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0600"
+   LastUpgradeVersion = "0610"
    version = "1.8">
    <BuildAction
       parallelizeBuildables = "NO"
@@ -28,9 +28,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "342163B111907BF600C06E45"
-               BuildableName = "libOmniBase.a"
-               BlueprintName = "OmniBaseTouch"
+               BlueprintIdentifier = "34637CCB194F448F009B51C5"
+               BuildableName = "OmniBase.framework"
+               BlueprintName = "OmniBase-iOS"
                ReferencedContainer = "container:../Frameworks/OmniBase/OmniBase.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -42,10 +42,38 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "344D08B91190D47300264D89"
-               BuildableName = "libOmniFoundation.a"
-               BlueprintName = "OmniFoundationTouch"
+               BlueprintIdentifier = "34F16B19194F6C3200AD9C4D"
+               BuildableName = "OmniFoundation.framework"
+               BlueprintName = "OmniFoundation-iOS"
                ReferencedContainer = "container:../Frameworks/OmniFoundation/OmniFoundation.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34C12AFB194FF90F005CB70B"
+               BuildableName = "OmniAppKit.framework"
+               BlueprintName = "OmniAppKit-iOS"
+               ReferencedContainer = "container:../Frameworks/OmniAppKit/OmniAppKit.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34218E4919C23ECE00899C9A"
+               BuildableName = "OmniQuartz.framework"
+               BlueprintName = "OmniQuartz-iOS"
+               ReferencedContainer = "container:../Frameworks/OmniQuartz/OmniQuartz.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -74,48 +102,6 @@
                BuildableName = "libOmniDAV.a"
                BlueprintName = "OmniDAVTouch"
                ReferencedContainer = "container:../Frameworks/OmniDAV/OmniDAV.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34D06C53125D202500CA3963"
-               BuildableName = "libOmniFileStore.a"
-               BlueprintName = "OmniFileStoreTouch"
-               ReferencedContainer = "container:../Frameworks/OmniFileStore/OmniFileStore.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3434791411923B54007D0CE5"
-               BuildableName = "libOmniAppKit.a"
-               BlueprintName = "OmniAppKitTouch"
-               ReferencedContainer = "container:../Frameworks/OmniAppKit/OmniAppKit.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "345613D31193197700E7D187"
-               BuildableName = "libOmniQuartz.a"
-               BlueprintName = "OmniQuartzTouch"
-               ReferencedContainer = "container:../Frameworks/OmniQuartz/OmniQuartz.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry

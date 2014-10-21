@@ -85,7 +85,12 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
             NSDictionary *info = [OSUItem informationForTrack:runningTrack];
             
             if (!info || ![info boolForKey:@"isKnown"]) {
-                NSRunAlertPanel(@"Unknown software update track", @"Specified the track '%@' but that isn't a track we know about.  Typo?", @"OK", nil, nil, runningTrack);
+                NSAlert *alert = [[NSAlert alloc] init];
+                alert.messageText = @"Unknown software update track";
+                alert.informativeText = [NSString stringWithFormat:@"Specified the track \"%@\" but that isn't a track we know about.  Typo?", runningTrack];
+                [alert addButtonWithTitle:@"OK"];
+                [alert runModal];
+                [alert release];
             }
         }
     }

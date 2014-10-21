@@ -42,7 +42,8 @@ RCS_ID("$Id$");
     
     if (_showsFullwidthSeparator) {
         CGRect ourBounds = self.bounds;
-        CGRect separatorFrame = (CGRect){.origin.x = CGRectGetMinX(ourBounds), .origin.y = CGRectGetMaxY(ourBounds), .size.width = CGRectGetWidth(ourBounds), .size.height = 0.5f};
+        CGFloat lineSize = 1/[[UIScreen mainScreen] scale];        
+        CGRect separatorFrame = (CGRect){.origin.x = CGRectGetMinX(ourBounds), .origin.y = CGRectGetMaxY(ourBounds), .size.width = CGRectGetWidth(ourBounds), .size.height = lineSize};
         if (_fullwidthSeparator) {
             _fullwidthSeparator.frame = separatorFrame;
         } else {

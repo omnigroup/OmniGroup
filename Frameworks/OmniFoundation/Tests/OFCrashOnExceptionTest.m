@@ -19,11 +19,6 @@ RCS_ID("$Id$")
 
 @implementation OFCrashOnExceptionController
 
-- (BOOL)crashOnAssertionOrUnhandledException;
-{
-    return YES;
-}
-
 - (unsigned int)exceptionHandlingMask;
 {
     // OFController doesn't include NSLogOtherExceptionMask by default

@@ -1,5 +1,5 @@
-/* setting failure alert message */
-"“%@”\nwas not successful" = "“%@”\nis niet gelukt";
+/* In App Store pricing option format */
+"%@ %@" = "%1$@ %2$@";
 
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ van %2$@";
@@ -10,8 +10,8 @@
 /* Default title for the About menu item */
 "About %@" = "Over %@";
 
-/* alert button title */
-"Accept" = "Accepteren";
+/* No purchases found message format */
+"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Alle aankopen voor uw huidige App Store-account zijn hersteld, maar %@ was geen van die aankopen.";
 
 /* Web view nagivation button for going back in history. */
 "Back" = "Terug";
@@ -19,11 +19,11 @@
 /* Bold button accessibility label */
 "Bold" = "Vet";
 
+/* Disabled 'Buy' button title string */
+"Buy" = "Koop";
+
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
 "Buy %@" = "Koop %@";
-
-/* 'Buy' and a currency symbol for purchase button */
-"Buy $%@" = "Koop $%@";
 
 /* button title
    cancel button title
@@ -44,8 +44,8 @@
 /* Certificate trust alert button title */
 "Continue" = "Ga door";
 
-/* setting failure alert title */
-"Could not perform command" = "Kan de opdracht niet uitvoeren";
+/* increment button accessibility label */
+"Decrement" = "Vermindering";
 
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "Uitgeschakeld";
@@ -75,6 +75,15 @@
 
 /* Purchasing is disabled details */
 "In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "In-app aankoop is niet beschikbaar of niet toegestaan op dit apparaat. Om het aanschaffen in te schakelen, schakelt u Beperkingen in de app Instellingen in.";
+
+/* increment button accessibility label */
+"Increment" = "Vermeerdering";
+
+/* default special URL confirm button title */
+"Invoke" = "Aanroepen";
+
+/* button title */
+"Invoke and Quit" = "Roep aan en stop";
 
 /* Italic button accessibility label */
 "Italic" = "Cursief";
@@ -111,9 +120,6 @@
 /* placeholder text */
 "password" = "wachtwoord";
 
-/* Photos view controller title. */
-"Photos" = "Foto's";
-
 /* alert title */
 "Preference changed" = "Voorkeur gewijzigd";
 
@@ -135,19 +141,16 @@
 /* App menu item title
    release notes html screen title */
 
-"Release Notes" = "Versie-info";
+"Release Notes" = "Release-opmerkingen";
 
-/* Restore purchases button title */
-"Restore" = "Herstel";
+/* No purchases found title */
+"Restore Complete" = "Herstel is voltooid";
 
 /* Restore failed alert title */
 "Restore Failed" = "Herstel mislukt";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Tekst rechts uitlijnen";
-
-/* App menu item title */
-"Run Tests" = "Voer tests uit";
 
 /* Search field placeholder text */
 "Search" = "Zoek";
@@ -170,11 +173,17 @@
 /* placeholder text */
 "username" = "gebruikersnaam";
 
+/* in app purchase verify button title */
+"Verify" = "Controleer";
+
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "U hebt op een koppeling getikt die de volgende voorkeuren zal wijzigen:\n\n“%@”\n\nWilt u deze wijzigingen accepteren?";
 
 /* debug setting alert message */
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "U hebt op een koppeling getikt die de volgende foutopsporingsopdracht zal uitvoeren:\n\n“%@”\n\nDoe dit niet als u dit niet bent gevraagd door de mensen van de Omni-ondersteuningsdienst.\nWilt u deze opdracht uitvoeren?";
+
+/* default special URL alert message */
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "U hebt op een speciale URL van Omni getikt:\n\n“%@”\n\nDeze opdracht uitvoeren?";
 
 /* zoom label */
 "Zoom" = "Zoom";

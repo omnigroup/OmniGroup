@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -438,13 +438,37 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
                 NSDate *userModificationDate = fileModificationDate;
                 
                 NSURL *fileURL = fileInfo.fileURL;
-                
+
                 if (!fileItem) {
                     __autoreleasing NSNumber *isDirectory = nil;
                     __autoreleasing NSError *resourceError = nil;
                     if (![fileURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&resourceError]) {
                         NSLog(@"Error getting directory key for %@: %@", fileURL, [resourceError toPropertyList]);
                         isDirectory = @([[fileURL absoluteString] hasSuffix:@"/"]);
+                    }
+
+                    NSString *fileType = OFUTIForFileExtensionPreferringNative([fileURL pathExtension], isDirectory);
+
+                    if (![self.documentStore canViewFileTypeWithIdentifier:fileType]) {
+                        [self performAsynchronousFileAccessUsingBlock:^{
+                            // Passing nil for the presenter so that we get our normal deletion notification via file coordination.
+                            NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+                            __autoreleasing NSError *error = nil;
+                            [coordinator removeItemAtURL:fileURL error:&error byAccessor:^BOOL(NSURL *newURL, NSError **outError){
+                                DEBUG_STORE(@"  coordinator issued URL to delete %@", newURL);
+
+                                __autoreleasing NSError *deleteError = nil;
+                                if (![[NSFileManager defaultManager] removeItemAtURL:newURL error:&deleteError]) {
+                                    NSLog(@"Error deleting %@: %@", [newURL absoluteString], [deleteError toPropertyList]);
+                                    if (outError)
+                                        *outError = deleteError;
+                                    return NO;
+                                }
+
+                                return YES;
+                            }];
+                        }];
+                        return;
                     }
 
                     fileItem = [self makeFileItemForURL:fileURL isDirectory:[isDirectory boolValue] fileModificationDate:fileModificationDate userModificationDate:userModificationDate];

@@ -8,6 +8,7 @@
 // $Id$
 
 #import <Foundation/NSDictionary.h>
+#import <Foundation/NSSet.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Foundation/NSGeometry.h> // For NSPoint, NSSize, and NSRect

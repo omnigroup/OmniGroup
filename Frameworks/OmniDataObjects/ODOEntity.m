@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -103,13 +103,17 @@ static CFComparisonResult _comparePropertyName(const void *val1, const void *val
     }
     
     // Property names should all be ASCII.  But, it seems that they like to store 1-byte per character strings in Mac Roman.
+    //
+    // Whether or not CFStringGetCStringPtr returns a valid pointer or NULL depends on many factors, all of which depend on how the string was created and its properties. In addition, the function result might change between different releases and on different platforms. So do not count on receiving a non-NULL result from this function under any circumstances.
+    //
+    // If we can get c-string pointers, use strcmp, otherwise use CFStringCompare.
+    
     const char *str1 = CFStringGetCStringPtr(name1, kCFStringEncodingMacRoman);
     const char *str2 = CFStringGetCStringPtr(name2, kCFStringEncodingMacRoman);
     
     if (str1 && str2)
         return strcmp(str1, str2);
-    
-    OBASSERT_NOT_REACHED("non-ASCII property name?");
+
     return CFStringCompare((CFStringRef)name1, (CFStringRef)name2, 0/*options*/);
 }
 
@@ -311,8 +315,11 @@ extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString 
     entity->_instanceClass = NSClassFromString(instanceClassName);
     OBASSERT(OBClassIsSubclassOfClass(entity->_instanceClass, [ODOObject class]));
 
+#if 0
+    // Turns out nothing declares or implements -validateForDelete: right now. (The OFMTask implementation is #if'd out as well.)
     OBASSERT(![entity->_instanceClass instancesRespondToSelector:@selector(validateForDelete:)]); // OmniFocus doesn't need this right now, so ODOEditingContext doesn't support it.
-    
+#endif
+	
     // Disallow subclassing some of the ODOObject methods for now.  We may want to optimize them or inline them in certain places
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(entity)) == [ODOObject class]);
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(objectID)) == [ODOObject class]);
@@ -325,10 +332,6 @@ extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString 
 
     // Use the -insertObject:undeletable: instead of subclassing
     OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(isUndeletable)) == [ODOObject class]);
-
-    // Methods that used to exist but don't now and shouldn't on ODOObject or subclasses
-    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(primitiveValueForProperty:)) == Nil);
-    OBASSERT(OBClassImplementingMethod(entity->_instanceClass, @selector(setPrimitiveValue:forProperty:)) == Nil);
     
     entity->_instanceClassName = [instanceClassName copy];
 

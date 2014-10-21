@@ -20,6 +20,7 @@ extern NSString * const ODSDocumentPickerFilterTemplateIdentifier;
 @property(nonatomic,copy) NSPredicate *predicate; // Suitable for use with ODSFilter
 
 @property(nonatomic,copy) NSString *localizedFilterChooserButtonLabel; /*! Like "Show stencils" */
+@property(nonatomic,copy) NSString *localizedFilterChooserShortButtonLabel; /*! Like "Stencils".  For compact horizontal size class. */
 @property(nonatomic,copy) NSString *localizedMatchingObjectsDescription; /*! Standalone name of the kind of things this filter shows (like "stencils") */
 
 @end

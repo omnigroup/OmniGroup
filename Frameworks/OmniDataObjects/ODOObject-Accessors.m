@@ -1,11 +1,11 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "ODOObject-Accessors.h"
+#import <OmniDataObjects/ODOObject-Accessors.h>
 
 #import <OmniDataObjects/ODOEntity.h>
 #import <OmniDataObjects/ODORelationship.h>
@@ -56,7 +56,12 @@ const char *ODOObjectSetterSignature(void)
 // Pass a key of nil if you don't know or care what the key is and just want to clear the fault.  Right now we short circuit on the primary key attribute name.
 static inline void __inline_ODOObjectWillAccessValueForKey(ODOObject *self, NSString *key)
 {
-    OBPRECONDITION(![self isDeleted] || [key isEqualToString:[[[self->_objectID entity] primaryKeyAttribute] name]]);
+#ifdef OMNI_ASSERTIONS_ON
+    // We can always access the primary key. But, other properties we can't access once we are deleted. We let in-progress deletes look up properties here, though, so since -isDeleted returns YES for objects that are in the middle of deletion (so that triggering OFMLiveFetch updates won't return result sets with about-to-be-deleted objects). See r202914 with the fix for <bug:///98546> (Crash updating forecast/inbox badge after sync? -[HomeController _forecastCount])
+    if ([key isEqualToString:self->_objectID.entity.primaryKeyAttribute.name] == NO) {
+        OBPRECONDITION(![self isDeleted] || [self->_editingContext _isBeingDeleted:self]);
+    }
+#endif
     
     if (!self->_flags.invalid && self->_flags.isFault) {
         // Don't clear faults for the primary key
@@ -465,9 +470,33 @@ void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity)
 
     DEBUG_DYNAMIC_METHODS(@"Registering dynamic methods for %@ -> %@", [entity name], NSStringFromClass(instanceClass));
     
+#ifdef OMNI_ASSERTIONS_ON
+    BOOL missingDynamicProperty = NO;
+#endif
+    
     // Force dynamic property accessors to be registered now. The NSKVO cover class screws this up.
     for (ODOProperty *prop in entity.properties) {
         SEL sel;
+        
+        // All the matching ObjC properties must be @dynamic since ODOObject maintains its own storage for persistent properties.
+#ifdef OMNI_ASSERTIONS_ON
+        {
+            objc_property_t objcProperty = class_getProperty(instanceClass, [prop->_name UTF8String]);
+            OBASSERT(objcProperty);
+            
+            // https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html
+            const char *attributes = property_getAttributes(objcProperty);
+            DEBUG_DYNAMIC_METHODS(@"  property attributes = %s", attributes);
+            
+            // 'T' is first, so ',D' should be there somewhere (typically last). Need to check if @encode for structs can have commas in them, but for now we require that all propertyes are object typed.
+            OBASSERT(strstr(attributes, "T@") == attributes, "Property %@.%@ should be object-typed!", NSStringFromClass(instanceClass), prop->_name);
+
+            if (strstr(attributes, ",D") == NULL) {
+                NSLog(@"Property %@.%@ should be marked @dynamic!", NSStringFromClass(instanceClass), prop->_name);
+                missingDynamicProperty = YES;
+            }
+        }
+#endif
         
         if ((sel = prop->_sel.get) && !class_getInstanceMethod(instanceClass, sel)) {
             IMP imp = (IMP)ODOGetterForProperty(prop);
@@ -483,5 +512,6 @@ void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity)
         }
     }
     
+    OBASSERT(missingDynamicProperty == NO, "Missing @dynamic property definitions");
 }
 #endif

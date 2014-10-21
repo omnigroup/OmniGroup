@@ -23,13 +23,13 @@
 "Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ toestaan om periodiek informatie over uw hardwaremodel en iOS-versie door te geven?\nHiermee kunnen we weten welke configuraties het belangrijkst zijn voor de ondersteuning. U kunt uw antwoord later wijzigen in de voorkeuren.";
 
 /* Software update report entry name */
-"Application identifier" = "Programma-id";
+"App ID" = "App-ID";
 
 /* Software update report entry name */
-"Application version" = "Programmaversie";
+"App version" = "App-versie";
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
-"Check operation failed." = "Controlebewerking mislukt.";
+"Check operation failed." = "Controle bewerking mislukt.";
 
 /* error text generated when software update is unable to retrieve the list of current software versions */
 "Could not contact %@." = "Kan geen contact opnemen met %@.";
@@ -40,7 +40,9 @@
 /* Software update report entry name */
 "Device" = "Apparaat";
 
-/* software update settings title */
+/* software update settings section title
+   software update settings title */
+
 "Device Information" = "Apparaatinformatie";
 
 /* OmniSoftwareUpdate privacy notice button title */
@@ -59,7 +61,7 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "Help de Omni Group te beslissen welke apparaten en iOS-versies moeten worden ondersteund";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Als u ervoor kiest deze informatie te delen, helpt u ons op de hoogte te blijven van de apparaten en iOS-versies die onze software moet ondersteunen.\nDeze informatie wordt volledig anoniem gehouden.";
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Als u deze informatie met ons deelt, helpt u ons op de hoogte te blijven van apparaten en iOS-versies die onze software moet ondersteunen.\nDeze informatie wordt volledig anoniem gehouden.";
 
 /* Software update report entry name */
 "iOS version" = "iOS-versie";
@@ -89,16 +91,15 @@
 "Please try again later or contact us to let us know this is broken." = "Probeer het later opnieuw of neem contact op met ons om te laten weten dat dit beschadigd is.";
 
 /* Software update report entry name */
-"Report identifier" = "Rapport-id";
+"Report ID" = "Rapport-ID";
 
 /* Software update report entry name */
 "Report version" = "Rapportversie";
 
-/* software update settings cell title */
-"Send anonymous device information" = "Stuur anonieme apparaatinformatie";
+/* Settings option title
+   software update settings cell title */
 
-/* Settings option title */
-"Send anonymous device information?" = "Anonieme apparaatinformatie sturen?";
+"Send Anonymous Data" = "Verzend anonieme gegevens";
 
 /* OmniSoftwareUpdate privacy notice button title */
 "Send Reports" = "Verzend rapporten";
@@ -110,7 +111,7 @@
 "Storage" = "Opslag";
 
 /* error description */
-"The data returned from <%@> was not a valid XML document." = "De gegevens die zijn geretourneerd van <%@> zijn geen geldig XML-document.";
+"The data returned from <%@> was not a valid XML document." = "De gegevens die zijn geretourneerd van “%@” zijn geen geldig XML-document.";
 
 /* Settings option title */
 "The following information will be sent:" = "De volgende informatie wordt verstuurd.";
@@ -125,7 +126,7 @@
 "This version" = "Deze versie";
 
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
-"Tool returned no data" = "Hulpprogramma heeft geen gegevens geretourneerd";
+"Tool returned no data" = "Het hulpprogramma heeft geen gegevens geretourneerd";
 
 /* error description - we have some update information but it doesn't look authentic */
 "Unable to authenticate the response from the software update server." = "Reactie van de server voor software-updates kan niet worden gecontroleerd.";
@@ -134,7 +135,7 @@
 "Unable to fetch software update information." = "Informatie over nieuwe softwareversie kan niet worden opgehaald.";
 
 /* error description */
-"Unable to parse response from the software update server." = "Reactie van de server voor nieuwe softwareversies kan niet worden ontleed.";
+"Unable to parse response from the software update server." = "Reactie van de software-updateserver kan niet worden ontleed.";
 
 /* error text generated when software update is unable to retrieve the list of current software versions */
 "Your Internet connection might not be active, or there might be a problem somewhere along the network." = "Uw internetverbinding is mogelijk niet actief of er kan ergens op het netwerk een probleem zijn.";

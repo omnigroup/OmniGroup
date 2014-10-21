@@ -298,7 +298,12 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
     // (Alternative strategies exist, such as reading the tools embedded Info.plist, or embedding the version number in the launchd job dictionary.)
     
     BOOL privilegedHelperInstalled = NO;
+    
+    // <bug:///108728> (Unassigned: Deprecated SMJob API used in OSUInstallerService)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CFDictionaryRef jobDictionary = SMJobCopyDictionary(kSMDomainSystemLaunchd, (CFStringRef)OSUInstallerPrivilegedHelperJobLabel);
+#pragma clang diagnostic pop
     if (jobDictionary != NULL) {
         // Check to make sure that the helper tool actually exists. If it doesn't, the error handler on the remote proxy is never called (Neither are the invalidation or interruption handlers on the NSXPCConnection.)
         NSString *executablePath = [[(NSDictionary *)jobDictionary objectForKey:@"ProgramArguments"] firstObject];
@@ -363,7 +368,11 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
 - (BOOL)uninstallPrivilegedHelperToolWithAuthorizationData:(NSData *)authorizationData installedToolVersion:(NSInteger)installedToolVersion error:(NSError **)outError;
 {
     BOOL privilegedHelperInstalled = NO;
+    // <bug:///108728> (Unassigned: Deprecated SMJob API used in OSUInstallerService)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CFDictionaryRef jobDictionary = SMJobCopyDictionary(kSMDomainSystemLaunchd, (CFStringRef)OSUInstallerPrivilegedHelperJobLabel);
+#pragma clang diagnostic pop
     if (jobDictionary != NULL) {
         privilegedHelperInstalled = YES;
         CFRelease(jobDictionary);
@@ -384,7 +393,11 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
         }
         
         CFErrorRef jobRemoveError = NULL;
+        // <bug:///108728> (Unassigned: Deprecated SMJob API used in OSUInstallerService)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         BOOL success = SMJobRemove(kSMDomainSystemLaunchd, (CFStringRef)OSUInstallerPrivilegedHelperJobLabel, authorizationRef, YES, &jobRemoveError);
+#pragma clang diagnostic pop
         if (!success) {
             AuthorizationFree(authorizationRef, kAuthorizationFlagDefaults);
             authorizationRef = NULL;
@@ -438,11 +451,15 @@ typedef NS_OPTIONS(NSUInteger, OSUInstallerServiceUpdateOptions) {
         if (authorizationRef != NULL) {
             // Remove the job - SMJobRemove will validate the rights in the authorization ref
             CFErrorRef jobRemoveError = NULL;
+            // <bug:///108728> (Unassigned: Deprecated SMJob API used in OSUInstallerService)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             if (!SMJobRemove(kSMDomainSystemLaunchd, (CFStringRef)OSUInstallerPrivilegedHelperJobLabel, authorizationRef, YES, &jobRemoveError)){
                 if (outError != NULL) {
                     *outError = [(id)jobRemoveError copy];
                 }
             }
+#pragma clang diagnostic pop
             
             AuthorizationFree(authorizationRef, kAuthorizationFlagDefaults);
             authorizationRef = NULL;

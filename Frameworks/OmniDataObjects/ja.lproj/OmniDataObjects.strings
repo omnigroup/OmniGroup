@@ -1,0 +1,221 @@
+/* error reason */
+"Attempted to disconnect while not connected." = "接続していない状態で接続を解除しようとしました。";
+
+/* error reason */
+"Attribute %@.%@ has type %d with unknown SQL column type." = "属性 %1$@.%2$@ は不明な SQL 列タイプを伴うタイプ %3$d です。";
+
+/* error reason */
+"Attribute %@.%@ has unknown value type but isn't transient." = "属性 %1$@.%2$@ は不明な値タイプですが、過渡的なものではありません。";
+
+/* error reason */
+"Attribute %@.%@ specified a transient or optional primary key." = "属性 %1$@.%2$@ で、過渡的な、またはオプションのプライマリキーが指定されています。";
+
+/* error reason */
+"Attribute has type unsupported type %d." = "属性のタイプが対応していないタイプ %d です。";
+
+/* error reason */
+"Attribute specified default value '%@' for attribute of type of '%@'." = "属性のタイプ '%2$@' に対して、デフォルト値に '%1$@' が指定されています。";
+
+/* error reason */
+"Attribute specified invalid type of '%@'." = "属性で無効なタイプ '%@' が指定されています。";
+
+/* error reason */
+"Attribute specified no type." = "属性でタイプが指定されていません。";
+
+/* error reason */
+"Cannot connect to '%@' since the database is already connected to '%@'." = "データベースがすでに '%2$@' に接続されているため、'%1$@' には接続できません。";
+
+/* error reason */
+"Cannot disconnect from database at '%@'." = "'%@' にあるデータベースとの接続を解除できません。";
+
+/* error reason */
+"Cannot open database at '%@'." = "'%@' にあるデータベースを開けません。";
+
+/* error reason */
+"Cannot prepare fetch for key %@ for query %@ while not connected to a database." = "データベースに接続していない状態では、クエリ %2$@ のキー %1$@ に対する取得を準備できません。";
+
+/* error reason */
+"Couldn't create OFXMLDocument." = "OFXMLDocument を作成できませんでした。";
+
+/* error reason */
+"Entity '%@' has multiple primary key attributes." = "エンティティ '%@' には複数のプライマリキー属性があります。";
+
+/* error reason */
+"Entity '%@' has multiple properties named '%@'." = "エンティティ '%1$@' には '%2$@' という名前の複数のプロパティがあります。";
+
+/* error reason */
+"Entity '%@' has no instance class name." = "エンティティ '%@' にはインスタンスのクラス名がありません。";
+
+/* error reason */
+"Entity '%@' has no primary key attributes." = "エンティティ '%@' にはプライマリキー属性がありません。";
+
+/* error reason */
+"Entity '%@' specified instance class name of '%@', but no such class was found." = "エンティティ '%1$@' で '%2$@' という名前のインスタンスのクラスが指定されましたが、そのようなクラスは見つかりませんでした。";
+
+/* error reason */
+"Entity '%@' specified instance class name of '%@', but this class is not a subclass of ODOObject." = "エンティティ '%1$@' で '%2$@' という名前のインスタンスのクラスが指定されましたが、このクラスは ODOObject のサブクラスではありません。";
+
+/* error reason */
+"Entity '%@' specified primary key attribute '%@' with a default value." = "エンティティ '%1$@' で、プライマリーキー属性 '%2$@' がデフォルト値を使って指定されました。";
+
+/* error reason */
+"Entity '%@' specified primary key attribute '%@' with type %d, but only strings are supported." = "エンティティ '%1$@' でプライマリーキー属性 '%2$@' がタイプ %3$d を使って指定されましたが、これは文字列にしか対応していません。";
+
+/* error reason */
+"Entity has no name." = "エンティティに名前がありません。";
+
+/* error reason */
+"Entity name '%@' is reserved." = "エンティティ名 '%@' は予約されています。";
+
+/* error description */
+"Error disconnecting from database." = "データベースとの接続を解除するときにエラーが発生しました。";
+
+/* error reason */
+"Exception raised while saving: %@" = "保存中に例外が発生しました： %@";
+
+/* error reason */
+"Exception raised while sending -willSave: %@" = "送信中に例外が発生しました -willSave： %@";
+
+/* error reason */
+"Failed to convert '%@' to a property list data: %@." = "'%1$@' を次のプロパティリストデータに変換できませんでした： %2$@。";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@' and no such object was registered." = "フォルトの取得で ID '%@' を持つオブジェクトが返されましたが、そのようなオブジェクトは登録されていません。";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared." = "フォルトの取得で ID '%@' を持つオブジェクトが返されましたが、そのオブジェクトのフォルトはすでにクリアされています。";
+
+/* error reason */
+"Model '%@' has multiple properties named '%@'." = "モデル '%1$@' には '%2$@' という名前の複数のプロパティがあります。";
+
+/* error reason */
+"Multiple validation errors occurred while saving." = "保存中に複数の検証エラーが発生しました。";
+
+/* error reason */
+"Property has no name." = "プロパティに名前がありません。";
+
+/* error reason */
+"Relationship %@.%@ specified a destination entity of '%@', but there is no such entity." = "リレーションシップ %1$@.%2$@ でデスティネーションエンティティ '%3$@' が指定されていますが、そのようなエンティティはありません。";
+
+/* error reason */
+"Relationship %@.%@ specified an inverse relationship %@.%@, but there is no such relationship." = "リレーションシップ %1$@.%2$@ で逆リレーションシップ %3$@.%4$@ が指定されていますが、そのようなリレーションシップはありません。";
+
+/* error reason */
+"Relationship %@.%@ specified invalid type of '%@'." = "リレーションシップ %1$@.%2$@ で無効なタイプ '%3$@' が指定されています。";
+
+/* error reason */
+"Relationship %@.%@ specified no destination entity." = "リレーションシップ %1$@.%2$@ で、デスティネーションエンティティが指定されていません。";
+
+/* error reason */
+"Relationship %@.%@ specified no inverse relationship." = "リレーションシップ %1$@.%2$@ で、逆相リレーションシップが指定されていません。";
+
+/* error reason */
+"Relationship %@.%@ specified no type." = "リレーションシップ %1$@.%2$@ で、タイプが指定されていません。";
+
+/* error reason */
+"The cache database was removed while it was still open. Close and reopen the database to recover." = "キャッシュデータベースは、それが開いていたときに削除されました。回復するには、そのデータベースを閉じてから開き直してください。";
+
+/* error reason */
+"Tried 100 times to settle -willSave, but edits kept being made." = "-willSave を安定させようと 100 回試みましたが、その都度編集が行われました。";
+
+/* error reason */
+"Unable bind boolean to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d にブールをバインドできません。";
+
+/* error reason */
+"Unable bind constant '%@' of unknown type to slot %d of statement with SQL '%@'." = "SQL '%3$@' を使ってステートメントのスロット %2$d に不明なタイプの定数 '%1$@' をバインドできません。";
+
+/* error reason */
+"Unable bind data to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d にデータをバインドできません。";
+
+/* error reason */
+"Unable bind date to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d に日付をバインドできません。";
+
+/* error reason */
+"Unable bind float64 to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d に float64 をバインドできません。";
+
+/* error reason */
+"Unable bind int32 to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d に int32 をバインドできません。";
+
+/* error reason */
+"Unable bind null to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d に null をバインドできません。";
+
+/* error reason */
+"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'." = "SQL '%4$@' を使ってステートメントのスロット %3$d にタイプ %2$ld の数字 '%1$@' をバインドできません。";
+
+/* error reason */
+"Unable bind string to slot %d of statement with SQL '%@'." = "SQL '%2$@' を使ってステートメントのスロット %1$d に文字列をバインドできません。";
+
+/* error reason */
+"Unable convert expression of type %lu (%@)." = "タイプ %1$lu（%2$@）の式を変換できません。";
+
+/* error reason */
+"Unable convert IN expression with non-constant value; %@." = "非定数値 %@ のある IN 式を変換できません。";
+
+/* error reason */
+"Unable convert predicate of type %lu (%@)." = "タイプ %1$lu（%2$@）の述語を変換できません。";
+
+/* error reason */
+"Unable get value of type %d for result column %d of '%@'." = "'%3$@' の結果列 %2$d に対するタイプ %1$d の値を取得できません。";
+
+/* error reason */
+"Unable prepare statement for SQL '%@'." = "SQL '%@' のステートメントを準備できません。";
+
+/* error description */
+"Unable to bind attribute value to SQL." = "SQL に属性値をバインドできません。";
+
+/* error description */
+"Unable to bind constant to SQL statement." = "SQL ステートメントに定数をバインドできません。";
+
+/* error description */
+"Unable to bind null to SQL statement." = "SQL ステートメントに null をバインドできません。";
+
+/* error description */
+"Unable to bind value to SQL statement." = "SQL ステートメントに値をバインドできません。";
+
+/* error description */
+"Unable to connect to database." = "データベースに接続できません。";
+
+/* error description */
+"Unable to create schema." = "スキーマを作成できません。";
+
+/* error description */
+"Unable to create SQL query." = "SQL クエリを作成できません。";
+
+/* error description */
+"Unable to create SQL statement." = "SQL ステートメントを作成できません。";
+
+/* error description */
+"Unable to disconnect from database." = "データベースとの接続を解除できません。";
+
+/* error description */
+"Unable to execute SQL." = "SQL を実行できません。";
+
+/* faulting exception */
+"Unable to fulfill fault: %@" = "フォルト処理を実行できません： %@";
+
+/* error description */
+"Unable to fulfill fault." = "フォルト処理を実行できません。";
+
+/* error description */
+"Unable to load model." = "モデルを読み込めません。";
+
+/* error description */
+"Unable to open database." = "データベースを開けません。";
+
+/* error reason */
+"Unable to run SQL for statement '%@'." = "SQL ステートメント '%@' を実行できません。";
+
+/* error description */
+"Unable to save changes to database" = "変更をデータベースに保存できません";
+
+/* error description */
+"Unable to save metadata to database." = "メタデータをデータベースに保存できません。";
+
+/* error description */
+"Unable to save." = "保存できません。";
+
+/* error reason */
+"Wrong root element name.  Was expecting '%@' but found '%@'." = "ルート要素名が正しくありません。'%1$@' が期待されていましたが、見つかったのは '%2$@' です。";
+
+/* error reason */
+"Wrong root element namespace.  Was expecting '%@' but found '%@'." = "ルート要素の名前空間が正しくありません。'%1$@' が期待されていましたが、見つかったのは '%2$@' です。";

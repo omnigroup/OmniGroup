@@ -7,7 +7,6 @@
 //
 // $Id$
 
-#import <OmniUI/OUIViewController.h>
 #import <OmniUI/OUIScrollNotifier.h>
 #import <OmniUI/OUIScalingScrollView.h>
 
@@ -15,7 +14,7 @@
 
 @class OUIScalingScrollView;
 
-@interface OUIScalingViewController : OUIViewController <OUIScallingScrollViewDelegate, OUIScrollNotifier>
+@interface OUIScalingViewController : UIViewController <OUIScallingScrollViewDelegate, OUIScrollNotifier>
 
 @property(nonatomic,strong) IBOutlet OUIScalingScrollView *scrollView;
 

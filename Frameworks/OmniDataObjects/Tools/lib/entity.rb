@@ -48,12 +48,8 @@ module OmniDataObjects
       "@\"#{k.to_s}:#{name}\""
     end
     
-    def category_name
-      "#{model.name}Properties"
-    end
-    
     def header_file_name
-      "#{instance_class}-#{category_name}.h"
+      "#{instance_class}-Properties.h"
     end
 
     def header_file(fs)    
@@ -69,7 +65,7 @@ module OmniDataObjects
         fp.h << "@class #{c};\n"
       }
       
-      fp.h << "@interface #{instance_class} (#{category_name})\n"
+      fp.h << "@interface #{instance_class} ()\n"
       begin
         properties.each {|p|
           p.emitInterface(fp.h)
@@ -77,6 +73,12 @@ module OmniDataObjects
       end
       fp.h << "@end\n"
       fp.h.br
+      
+      if properties.length > 0
+        fp.h << "#define #{instance_class}_DynamicProperties @dynamic #{(properties.map {|p| p.name}).join(", ")}"
+        fp.h.br
+      end
+      
       return if abstract # Don't want the global for the entity name
       super
     end

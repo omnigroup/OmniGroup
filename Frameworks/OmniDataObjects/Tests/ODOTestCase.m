@@ -54,13 +54,13 @@ RCS_ID("$Id$")
     if ([_database connectedURL]) {
         NSError *error = nil;
         if (![_database disconnect:&error])
-            NSLog(@"Error disconnecting from database at %@: %@", _databasePath, [error toPropertyList]);
+            NSLog(@"Error disconnecting from database at '%@': %@", _databasePath, [error toPropertyList]);
     }
     [_database release];
     _database = nil;
     
     if (_databasePath) {
-	NSError *error = nil;
+        NSError *error = nil;
         if (![[NSFileManager defaultManager] removeItemAtPath:_databasePath error:&error])
             NSLog(@"Error removing database file at '%@': %@", _databasePath, [error toPropertyList]);
         [_databasePath release];
@@ -100,17 +100,33 @@ RCS_ID("$Id$")
 @end
 
 @implementation ODOTestCaseMaster
+ODOTestCaseMaster_DynamicProperties;
 @end
 @implementation ODOTestCaseDetail
+ODOTestCaseDetail_DynamicProperties;
 @end
 @implementation ODOTestCaseAllAttributeTypes
+ODOTestCaseAllAttributeTypes_DynamicProperties;
 @end
 @implementation ODOTestCaseLeftHand
+ODOTestCaseLeftHand_DynamicProperties;
 @end
 @implementation ODOTestCaseRightHand
+ODOTestCaseRightHand_DynamicProperties;
 @end
 @implementation ODOTestCaseLeftHandRequired
+ODOTestCaseLeftHandRequired_DynamicProperties;
 @end
 @implementation ODOTestCaseRightHandRequired
+ODOTestCaseRightHandRequired_DynamicProperties;
 @end
+@implementation ODOTestCasePeerA
+ODOTestCasePeerA_DynamicProperties;
+@end
+@implementation ODOTestCasePeerB
+ODOTestCasePeerB_DynamicProperties;
+@end
+
+// The generated model source
+#import "ODOTestCaseModel.m"
 

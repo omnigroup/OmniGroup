@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2011,2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2011,2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -211,6 +211,30 @@ static NSString *methodsWithPrefix(Class cls, char prefix)
 - (void)expectDeallocationSoon;
 {
     
+}
+
++ (NSString *)protocols;
+{
+    NSMutableString *result = [NSMutableString string];
+
+    Class cls = self;
+    while (cls) {
+        [result appendFormat:@"%@:\n", NSStringFromClass(cls)];
+        
+        unsigned int protocolCount = 0;
+        Protocol * __unsafe_unretained * protocols = class_copyProtocolList(cls, &protocolCount);
+        if (protocols) {
+            for (unsigned int protocolIndex = 0; protocolIndex < protocolCount; protocolIndex++) {
+                __unsafe_unretained Protocol *p = protocols[protocolIndex];
+                [result appendFormat:@"\t%s\n", protocol_getName(p)];
+            }
+            free(protocols);
+        }
+
+        cls = class_getSuperclass(cls);
+    }
+    
+    return result;
 }
 
 #endif

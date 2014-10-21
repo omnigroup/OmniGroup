@@ -36,9 +36,7 @@ extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 
 @property(nonatomic,assign) BOOL shouldHideTopControlsOnNextLayout;
 
-- (void)willRotateWithDuration:(NSTimeInterval)duration;
-- (void)didRotate;
-@property(nonatomic,assign) BOOL landscape;
+- (void)retileItems;
 
 @property(nonatomic,retain) UIView *topControls;
 @property(nonatomic,retain) OUIDocumentRenameSession *renameSession;

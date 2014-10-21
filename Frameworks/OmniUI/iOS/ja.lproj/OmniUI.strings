@@ -1,17 +1,17 @@
-/* setting failure alert message */
-"“%@”\nwas not successful" = "“%@”\nは成功しませんでした";
+/* In App Store pricing option format */
+"%@ %@" = "%1$@ %2$@";
 
 /* OUITabBar N of M accessibility value */
-"%@ of %@" = "%1$@ / %2$@";
+"%@ of %@" = "%1$@／%2$@";
 
 /* title for successful in app purchase */
-"%@ Purchased" = "%@ 購入済み";
+"%@ Purchased" = "%@ を購入しました";
 
 /* Default title for the About menu item */
 "About %@" = "%@ について";
 
-/* alert button title */
-"Accept" = "承認する";
+/* No purchases found message format */
+"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "現在の App Store アカウントに対する購入はすべて復元されましたが、%@ はこれらの購入に含まれていませんでした。";
 
 /* Web view nagivation button for going back in history. */
 "Back" = "戻る";
@@ -19,15 +19,17 @@
 /* Bold button accessibility label */
 "Bold" = "ボールド";
 
+/* Disabled 'Buy' button title string */
+"Buy" = "購入";
+
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
 "Buy %@" = "%@ を購入";
-
-/* 'Buy' and a currency symbol for purchase button */
-"Buy $%@" = "%@ を購入";
 
 /* button title
    cancel button title
    toolbar item title */
+
+
 "Cancel" = "キャンセル";
 
 /* Center Text Align button accessibility label. */
@@ -42,13 +44,15 @@
 /* Certificate trust alert button title */
 "Continue" = "続ける";
 
-/* setting failure alert title */
-"Could not perform command" = "コマンドを実行できませんでした";
+/* increment button accessibility label */
+"Decrement" = "減らす";
 
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "無効";
 
-/* toolbar item title */
+/* Done
+   toolbar item title */
+
 "Done" = "完了";
 
 /* toolbar item title */
@@ -58,7 +62,7 @@
 "Error" = "エラー";
 
 /* Alert title for error loading product information */
-"Error Loading Store" = "ストアの読み込みエラー";
+"Error Loading Store" = "ストアの読み込み時にエラー";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "このデモでは機能が無効になっています";
@@ -70,7 +74,16 @@
 "Help and Settings" = "ヘルプと設定";
 
 /* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "このデバイスでは App 内での購入が利用できない、または許可されていません。設定アプリの機能制限をチェックしてください。";
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "アプリ内課金が利用できないか、このデバイス上では許可されていません。設定アプリの機能制限を確認してください。";
+
+/* increment button accessibility label */
+"Increment" = "増やす";
+
+/* default special URL confirm button title */
+"Invoke" = "起動";
+
+/* button title */
+"Invoke and Quit" = "起動して終了";
 
 /* Italic button accessibility label */
 "Italic" = "イタリック";
@@ -82,7 +95,7 @@
 "Left text align" = "テキストの左揃え";
 
 /* Web view error opening URL title. */
-"Link could not be opened. Please check Safari restrictions in Settings." = "リンクを開くことができません。Safari の設定で制限をチェックしてください。";
+"Link could not be opened. Please check Safari restrictions in Settings." = "リンクを開けませんでした。設定で Safari に関する制限を確認してください。";
 
 /* Buy button title while app store is loading */
 "Loading" = "読み込み中";
@@ -93,39 +106,45 @@
 /* Full screen note editor title */
 "Note" = "メモ";
 
-/* button title */
+/* button title
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
+
+
+
+
 "OK" = "OK";
 
 /* placeholder text */
 "password" = "パスワード";
 
-/* Photos view controller title. */
-"Photos" = "写真";
-
 /* alert title */
-"Preference changed" = "環境設定の変更";
+"Preference changed" = "環境設定が変更されました";
 
 /* title for successful in app purchase */
 "Purchase %@" = "%@ を購入";
 
 /* Purchase failed alert title */
-"Purchase Failed" = "購入に失敗しました";
+"Purchase Failed" = "購入に失敗";
 
 /* Buy button thank you message */
-"Purchased. Thank you!" = "購入しました。ありがとうございます！";
+"Purchased. Thank you!" = "お買い上げいただき、ありがとうございます！";
 
 /* Purchasing is disabled alert title */
-"Purchasing is Disabled" = "購入方法が無効です";
+"Purchasing is Disabled" = "購入機能が無効";
 
 /* Redo button title */
 "Redo" = "やり直し";
 
 /* App menu item title
    release notes html screen title */
+
 "Release Notes" = "リリースノート";
 
-/* Restore purchases button title */
-"Restore" = "復元";
+/* No purchases found title */
+"Restore Complete" = "復元完了";
 
 /* Restore failed alert title */
 "Restore Failed" = "復元に失敗";
@@ -133,17 +152,14 @@
 /* Right Text Align button accessibility label. */
 "Right text align" = "テキストの右揃え";
 
-/* App menu item title */
-"Run Tests" = "テストを実行";
-
 /* Search field placeholder text */
 "Search" = "検索";
 
 /* Strike Through button accessibility label */
-"Strike Through" = "打ち消し線";
+"Strike Through" = "取り消し線";
 
 /* Alert description for error loading product information */
-"There was an error loading information from the App Store" = "App Store からの情報を読み込み中にエラーがありました";
+"There was an error loading information from the App Store" = "App Store からの情報を読み込み中にエラーが発生しました";
 
 /* Certificate trust alert button title */
 "Trust Always" = "常に信頼する";
@@ -154,15 +170,20 @@
 /* Undo button title */
 "Undo" = "取り消し";
 
-/* default for WebDAV username edit field */
+/* placeholder text */
 "username" = "ユーザ名";
 
+/* in app purchase verify button title */
+"Verify" = "検証";
+
 /* alert message */
-"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "以下の環境設定を変更するリンクをタップしました:\n\n“%@”\n\n変更を承認しますか？";
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "以下の環境設定を変更するリンクをタップしました：\n\n“%@”\n\n変更を承認しますか？";
 
 /* debug setting alert message */
-"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "次のデバッグ用コマンドを実行するリンクをタップしました:\n\n“%@”\n\nOmni のサポートスタッフからの指示でない場合には実行しないでください。\nこのコマンドを実行しますか？";
+"You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "以下のデバッグ用コマンドを実行するリンクをタップしました：\n\n“%@”\n\nこれが Omni サポートスタッフからの指示でない場合は、実行しないでください。\nこのコマンドを実行しますか？";
+
+/* default special URL alert message */
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Omni の特別な URL をタップしました：\n\n“%@”\n\nこのコマンドを実行しますか？";
 
 /* zoom label */
-"Zoom" = "拡大/縮小";
-
+"Zoom" = "拡大／縮小";

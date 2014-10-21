@@ -146,7 +146,9 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
         
         [_exportOptions addObject:option];
     }
-    
+
+    [_inAppPurchaseButton setTitle:NSLocalizedStringFromTableInBundle(@"Purchase Now", @"OmniUIDocument", OMNI_BUNDLE, @"purchase now button title") forState:UIControlStateNormal];
+
     NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
     if ([inAppPurchaseExportTypes count] > 0) {
         OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type

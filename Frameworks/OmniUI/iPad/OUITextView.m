@@ -198,6 +198,11 @@ static NSString *_positionDescription(OUITextView *self, OUEFTextPosition *posit
     return 0;
 }
 
+- (NSDictionary *)typingAttributesWithAllAttributes;
+{
+    return self.typingAttributes;
+}
+
 - (void)ensureLayout;
 {
     [self.layoutManager ensureLayoutForTextContainer:self.textContainer];
@@ -1254,7 +1259,7 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     
     if (!preserveStyles) {
         // We want to revert to the typing attributes, but keep a few special attributes.
-        NSMutableDictionary *attributes = [self.typingAttributes mutableCopy];
+        NSMutableDictionary *attributes = [self.typingAttributesWithAllAttributes mutableCopy];
         
         NSMutableAttributedString *prunedAttributedString = [attributedString mutableCopy];
         [prunedAttributedString enumerateAttributesInRange:NSMakeRange(0, [attributedString length]) options:0 usingBlock:^(NSDictionary *attrs, NSRange range, BOOL *stop) {

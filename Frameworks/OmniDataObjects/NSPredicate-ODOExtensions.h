@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,11 +13,13 @@
 
 // iPhone doesn't have NSPredicate and I don't want to re-implement the parsing in the 'format' routines.  Here are some utilities to create the kinds of predicates we need.
 
+extern NSPredicate *ODOCompareSelfToValuePredicate(NSPredicateOperatorType op, id value);
+
 extern NSPredicate *ODOKeyPathEqualToValuePredicate(NSString *keyPath, id value);
 extern NSPredicate *ODOKeyPathCompareToValuePredicate(NSString *keyPath, NSPredicateOperatorType op, id value);
 extern NSPredicate *ODOKeyPathTruePredicate(NSString *keyPath);
 extern NSPredicate *ODOKeyPathFalsePredicate(NSString *keyPath);
 
 extern NSPredicate *ODOMakeCompoundPredicate(NSCompoundPredicateType type, NSPredicate *firstPredicate, va_list args);
-extern NSPredicate *ODOAndPredicates(NSPredicate *firstPredicate, ...);
-extern NSPredicate *ODOOrPredicates(NSPredicate *firstPredicate, ...);
+extern NSPredicate *ODOAndPredicates(NSPredicate *firstPredicate, ...) NS_REQUIRES_NIL_TERMINATION;
+extern NSPredicate *ODOOrPredicates(NSPredicate *firstPredicate, ...) NS_REQUIRES_NIL_TERMINATION;

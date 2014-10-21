@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,17 +18,30 @@
 - (void)_snapshotObjectPropertiesIfNeeded:(ODOObject *)object;
 - (NSArray *)_committedPropertySnapshotForObjectID:(ODOObjectID *)objectID;
 
+#ifdef OMNI_ASSERTIONS_ON
+- (BOOL)_isBeingDeleted:(ODOObject *)object;
+#endif
+
 @end
 
 @class NSPredicate;
 @class ODOEntity, ODORelationship;
 
-__private_extern__ ODOObject *ODOEditingContextLookupObjectOrRegisterFaultForObjectID(ODOEditingContext *self, ODOObjectID *objectID);
+ODOObject *ODOEditingContextLookupObjectOrRegisterFaultForObjectID(ODOEditingContext *self, ODOObjectID *objectID) OB_HIDDEN;
 
-__private_extern__ NSMutableSet *ODOEditingContextCreateRecentSet(ODOEditingContext *self);
+NSMutableSet *ODOEditingContextCreateRecentSet(ODOEditingContext *self) OB_HIDDEN;
 
-__private_extern__ void ODOUpdateResultSetForInMemoryChanges(ODOEditingContext *self, NSMutableArray *results, ODOEntity *entity, NSPredicate *predicate);
+void ODOUpdateResultSetForInMemoryChanges(ODOEditingContext *self, NSMutableArray *results, ODOEntity *entity, NSPredicate *predicate) OB_HIDDEN;
 
-__private_extern__ void ODOFetchObjectFault(ODOEditingContext *self, ODOObject *object);
-__private_extern__ NSMutableSet *ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORelationship *rel);
+void ODOFetchObjectFault(ODOEditingContext *self, ODOObject *object) OB_HIDDEN;
+NSMutableSet *ODOFetchSetFault(ODOEditingContext *self, ODOObject *owner, ODORelationship *rel) OB_HIDDEN;
+
+BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext *self, ODOObject *object) OB_HIDDEN;
+
+static inline BOOL _queryUniqueSet(NSSet *set, ODOObject *query)
+{
+    id obj = [set member:query];
+    OBASSERT(obj == nil || obj == query);
+    return obj != nil;
+}
 

@@ -14,6 +14,7 @@
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIColorInspectorPaneParentSlice.h>
+#import <OmniUI/UIViewController-OUIExtensions.h>
 
 RCS_ID("$Id$");
 

@@ -14,6 +14,7 @@
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorSliceView.h>
 #import <OmniUI/OUIMinimalScrollNotifierImplementation.h>
+#import <OmniUI/UIViewController-OUIExtensions.h>
 
 #import "OUIParameters.h"
 
@@ -216,7 +217,7 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     
     CGFloat yOffset = _setSliceSizes(self, _slices, nil);
     
-    self.contentSize = CGSizeMake(bounds.size.width, yOffset);
+    self.contentSize = CGSizeMake(bounds.size.width, yOffset + 44);
 
     // Have to do this after the previous adjustments or the background view can get stuck scrolled part way down when we become unscrollable.
     _backgroundView.frame = self.bounds;

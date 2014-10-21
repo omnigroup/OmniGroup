@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniFoundation/OFXMLFrozenElement.h>
+#import "OFXMLFrozenElement.h"
 
 #import <Foundation/Foundation.h>
 

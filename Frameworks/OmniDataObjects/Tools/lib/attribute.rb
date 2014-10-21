@@ -66,17 +66,22 @@ module OmniDataObjects
     def add_class_names(names)
       names << objcValueClass
     end
+    
+    def read_only?
+      primary || calculated
+    end
+    
     def emitInterface(f)
       # We don't currently make any pretense at being thread-safe (other that the whole stack being used in a thread).  So, use nonatomic.  Also, all attribute values should be copied on assignment _if_ they are writable.  Calculated properties are declared to be read-only, but their implementations my redefine the property internally to be writable. We have to still use 'copy' in that case, though, else the compiler signals a storage mechanism conflict when redefining.
       return if self.inherited_from # don't redeclare inherited attributes since they'll have the same definition in the superclass
       
-      if calculated
-        read_only = ",readonly"
+      if read_only?
+        read_only_attribute = ",readonly"
       else
-        read_only = ""
+        read_only_attribute = ""
       end
       
-      f << "@property(nonatomic,copy#{read_only}) #{objcValueClass} *#{name};\n"
+      f << "@property(nonatomic,copy#{read_only_attribute}) #{objcValueClass} *#{name};\n"
     end
     
     def emitCreation(f)

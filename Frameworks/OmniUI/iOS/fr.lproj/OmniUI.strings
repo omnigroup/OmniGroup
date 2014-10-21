@@ -1,5 +1,5 @@
-/* setting failure alert message */
-"“%@”\nwas not successful" = "Échec de\n“%@”";
+/* In App Store pricing option format */
+"%@ %@" = "%1$@ %2$@";
 
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ sur %2$@";
@@ -10,8 +10,8 @@
 /* Default title for the About menu item */
 "About %@" = "À propos de %@";
 
-/* alert button title */
-"Accept" = "Accepter";
+/* No purchases found message format */
+"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Tous les achats de votre compte App Store ont été restaurés, mais %@ n’en faisait pas partie.";
 
 /* Web view nagivation button for going back in history. */
 "Back" = "Retour";
@@ -19,11 +19,11 @@
 /* Bold button accessibility label */
 "Bold" = "Gras";
 
+/* Disabled 'Buy' button title string */
+"Buy" = "Acheter";
+
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
 "Buy %@" = "Acheter %@";
-
-/* 'Buy' and a currency symbol for purchase button */
-"Buy $%@" = "Acheter $%@";
 
 /* button title
    cancel button title
@@ -44,8 +44,8 @@
 /* Certificate trust alert button title */
 "Continue" = "Continuer";
 
-/* setting failure alert title */
-"Could not perform command" = "Impossible d’exécuter la commande";
+/* increment button accessibility label */
+"Decrement" = "Diminuer";
 
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "Désactivé";
@@ -75,6 +75,15 @@
 
 /* Purchasing is disabled details */
 "In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "L’achat intégré n’est pas disponible ou autorisé sur cet appareil. Pour activer l’achat, vérifiez les restrictions dans l’app Réglages.";
+
+/* increment button accessibility label */
+"Increment" = "Augmenter";
+
+/* default special URL confirm button title */
+"Invoke" = "Invoquer";
+
+/* button title */
+"Invoke and Quit" = "Invoquer et quitter";
 
 /* Italic button accessibility label */
 "Italic" = "Italique";
@@ -111,9 +120,6 @@
 /* placeholder text */
 "password" = "mot de passe";
 
-/* Photos view controller title. */
-"Photos" = "Photos";
-
 /* alert title */
 "Preference changed" = "Préférence modifiée";
 
@@ -137,17 +143,14 @@
 
 "Release Notes" = "Notes sur la version";
 
-/* Restore purchases button title */
-"Restore" = "Restaurer";
+/* No purchases found title */
+"Restore Complete" = "Restauration terminée";
 
 /* Restore failed alert title */
 "Restore Failed" = "Échec de la restauration";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Texte aligné à droite";
-
-/* App menu item title */
-"Run Tests" = "Lancer les tests";
 
 /* Search field placeholder text */
 "Search" = "Rechercher";
@@ -170,11 +173,17 @@
 /* placeholder text */
 "username" = "nom d’utilisateur";
 
+/* in app purchase verify button title */
+"Verify" = "Vérifier";
+
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Vous avez touché un lien qui modifiera les préférences suivantes :\n\n“%@”\n\nSouhaitez-vous accepter ces modifications ?";
 
 /* debug setting alert message */
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Vous avez touché un lien qui exécutera la commande de débogage suivante :\n\n“%@”\n\nSi cela ne vous a pas été recommandé par des techniciens d’assistance Omni, ne le faites pas.\nSouhaitez-vous exécuter cette commande ?";
+
+/* default special URL alert message */
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Vous avez touché une URL spéciale Omni :\n\n« %@ »\n\nVoulez-vous exécuter cette commande ?";
 
 /* zoom label */
 "Zoom" = "Réduire/agrandir";

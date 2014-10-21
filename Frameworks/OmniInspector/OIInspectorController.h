@@ -92,5 +92,7 @@ extern NSString * const OIInspectorControllerDidChangeExpandednessNotification;
 
 @end
 
+#import <OmniBase/macros.h>
+
 NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, OIInspectorController *b) OB_HIDDEN;
 

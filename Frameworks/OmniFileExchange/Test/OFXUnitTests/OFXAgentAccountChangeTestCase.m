@@ -199,6 +199,7 @@ RCS_ID("$Id$")
 - (void)testRemoveLocalDocumentsDirectoryWhileDownloadingDocuments;
 {
     OBFinishPortingLater("This test is disabled for now."); //  It fails with the current framework, and while we have some ideas for a fix, this is rare enough and the fix dangerous enough that we're leaving this as is for 1.0
+#if 0
     return;
     
     // Add an account on A and upload a large-ish document
@@ -268,6 +269,7 @@ RCS_ID("$Id$")
     }];
     
     [coordinationQueue self]; // make sure this stays alive and running our operation.
+#endif
 }
 
 // TODO: Test failing to add an account pointing at a pre-existing non-empty documents URL

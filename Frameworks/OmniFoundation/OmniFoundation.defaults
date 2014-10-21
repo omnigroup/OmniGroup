@@ -21,5 +21,9 @@
         <key>OFCertificateTrustExceptions</key>
         <dict/>
         
+		<!-- Only used on Mac in OFController -->
+		<key>OFCrashOnAssertionOrUnhandledException</key>
+		<true/>
+		
     </dict>
 </plist>

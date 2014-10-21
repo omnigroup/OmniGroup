@@ -14,13 +14,14 @@
 
 RCS_ID("$Id$")
 
-@interface OAWebPageViewer () <OAFindControllerTarget> {
+@interface OAWebPageViewer () <OAFindControllerTarget, NSWindowDelegate> {
   @private
     BOOL _usesWebPageTitleForWindowTitle;
     NSMutableDictionary *_scriptObjects;
 }
 
 @property (nonatomic, copy) NSString *name;
+@property (nonatomic, strong) NSView <WebDocumentView> *webDocumentView;
 
 @end
 
@@ -28,23 +29,23 @@ RCS_ID("$Id$")
 
 @implementation OAWebPageViewer
 
+static NSMutableDictionary *sharedViewerCache = nil;
+
 + (OAWebPageViewer *)sharedViewerNamed:(NSString *)name;
 {
-    static NSMutableDictionary *cache = nil;
-
     if (name == nil)
         return nil;
 
-    if (cache == nil)
-        cache = [[NSMutableDictionary alloc] init];
+    if (sharedViewerCache == nil)
+        sharedViewerCache = [[NSMutableDictionary alloc] init];
 
-    OAWebPageViewer *cachedViewer = cache[name];
+    OAWebPageViewer *cachedViewer = sharedViewerCache[name];
     if (cachedViewer != nil)
         return cachedViewer;
 
     OAWebPageViewer *newViewer = [[self alloc] init];
     newViewer.name = name;
-    cache[name] = newViewer;
+    sharedViewerCache[name] = newViewer;
     
     // PlugIns are disabled by default. They can be turned on per instance if necessary.
     // (If PlugIns are enabled, Adobe Acrobat will interfere with displaying inline PDFs in our help content.)
@@ -67,18 +68,25 @@ RCS_ID("$Id$")
 
 - (void)invalidate;
 {
-    OBPRECONDITION(_name == nil); // To invalidate a shared viewer, we'll need to remove it from the cache
+    @autoreleasepool {
+        self.webDocumentView = nil;
 
-    [_scriptObjects removeAllObjects];
+        [_scriptObjects removeAllObjects];
 
-    _webView.UIDelegate = nil;
-    _webView.resourceLoadDelegate = nil;
-    _webView.downloadDelegate = nil;
-    _webView.frameLoadDelegate = nil;
-    _webView.policyDelegate = nil;
+        _webView.UIDelegate = nil;
+        _webView.resourceLoadDelegate = nil;
+        _webView.downloadDelegate = nil;
+        _webView.frameLoadDelegate = nil;
+        _webView.policyDelegate = nil;
+        _webView.hostWindow = nil;
 
-    [_webView removeFromSuperview];
-    _webView = nil;
+        [_webView close];
+        [_webView removeFromSuperview];
+        _webView = nil;
+        
+        if (_name != nil)
+            [sharedViewerCache removeObjectForKey:_name];
+    }
 }
 
 - (void)loadPath:(NSString *)path;
@@ -162,6 +170,18 @@ RCS_ID("$Id$")
     [super windowDidLoad];
     
     OBASSERT(_webView != nil);
+    _webView.layerUsesCoreImageFilters = YES;
+    _webView.preferences.usesPageCache = NO;
+    _webView.preferences.cacheModel = WebCacheModelDocumentBrowser;
+    _webView.preferences.suppressesIncrementalRendering = YES;
+    [_webView setMaintainsBackForwardList:NO];
+}
+
+- (void)windowWillClose:(NSNotification *)notification;
+{
+    @autoreleasepool {
+        [self invalidate];
+    }
 }
 
 #pragma mark -
@@ -227,14 +247,50 @@ RCS_ID("$Id$")
     }
 }
 
+- (void)setWebDocumentView:(NSView <WebDocumentView> *)webDocumentView;
+{
+    // This can't be good for scrolling performance, but we now watch for scroll notifications in the main frame and when scrolling happens we immediately perform layout and display on the main frame's document view.
+
+    NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
+
+    if (_webDocumentView != nil) {
+        [defaultCenter removeObserver:self name:NSViewBoundsDidChangeNotification object:_webDocumentView];
+        [_webDocumentView.superview setPostsBoundsChangedNotifications:NO];
+    }
+
+    _webDocumentView = webDocumentView;
+    _webDocumentView.wantsLayer = YES;
+
+    if (_webDocumentView != nil) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_webDocumentScrolledNotification:) name:NSViewBoundsDidChangeNotification object:_webDocumentView.superview];
+    }
+}
+
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
 {
+    if (frame == [sender mainFrame])
+        self.webDocumentView = frame.frameView.documentView;
+
+    [self _layoutDocumentView];
     [self showWindow:nil];
+}
+
+- (void)_layoutDocumentView;
+{
+    // We would call -setNeedsLayout: and -setNeedsDisplay:, but then layout won't actually happen immediately when the window is being scrolled in the background--which means our fixed CSS elements will wander out of place.
+    [_webDocumentView layout];
+    [_webDocumentView display];
+}
+
+- (void)_webDocumentScrolledNotification:(NSNotification *)note
+{
+    [self _layoutDocumentView];
 }
 
 - (void)webView:(WebView *)sender didChangeLocationWithinPageForFrame:(WebFrame *)frame;
 {
     // If the user clicks on a page that is already loaded, we want to show our window even though we didn't get a -webView:didFinishLoadForFrame: message.
+    [self _layoutDocumentView];
     [self showWindow:nil];
 }
 

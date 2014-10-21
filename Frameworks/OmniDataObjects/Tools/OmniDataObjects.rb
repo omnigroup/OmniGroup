@@ -20,13 +20,6 @@ module OmniDataObjects
       @@ModelOutputDirectory=d
     end
 
-    @@CheckOnly=false
-    def self.check_only
-      @@CheckOnly
-    end
-    def self.check_only=(flag)
-      @@CheckOnly=flag
-    end
   end
 end
 

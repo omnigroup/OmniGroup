@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,11 @@
 
 #import <OmniDataObjects/ODOModel.h>
 #import <OmniDataObjects/ODOAttribute.h>
+#import <OmniDataObjects/ODOObject-Accessors.h>
+#import <OmniDataObjects/ODOModel-Creation.h>
 
-#import "ODOObject-Accessors.h"
 #import "ODOEntity-Internal.h"
 #import "ODOProperty-Internal.h"
-#import "ODOModel-Creation.h"
 
 RCS_ID("$Id$")
 
@@ -83,19 +83,18 @@ RCS_ID("$Id$")
 }
 #endif
 
-void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags flags, BOOL optional, BOOL calculated, BOOL transient, SEL get, SEL set)
+void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags flags, BOOL optional, BOOL transient, SEL get, SEL set)
 {
     OBPRECONDITION([self isKindOfClass:[ODOProperty class]]);
     OBPRECONDITION([name length] > 0);
     OBPRECONDITION(get);
-    OBPRECONDITION(set);
     
     self->_nonretained_entity = (ODOEntity *)0xdeadbeef;
     self->_name = [name copy];
     self->_flags = flags; // We'll override the property-specific bits of this.
     self->_flags.optional = optional;
     self->_flags.transient = transient;
-    self->_flags.calculated = calculated;
+    self->_flags.calculated = (set == NULL);
     self->_sel.get = get;
     self->_sel.set = set;
 }

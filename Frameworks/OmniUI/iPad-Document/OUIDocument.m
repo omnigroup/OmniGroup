@@ -13,6 +13,7 @@
 #import <OmniDocumentStore/ODSUtilities.h>
 #import <OmniFileExchange/OmniFileExchange.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
+#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/OFBackgroundActivity.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIAlert.h>
@@ -634,12 +635,19 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
                 // NSURL caches resource values that it has retrieved and OFUTIForFileURLPreferringNative() uses the resource values to determine the UTI. If we're going to change the file from flat to package (most likely case this is happening) then we need to clear the cache for the 'is directory' flag so that OFUTIForFileURLPreferringNative() returns the correct UTI next time we try to open the document. By the way, the NSURL documentation states that it's resource value cache is cleared at the turn of each runloop, but clearly it's not. Will try to repro and file a radar.
                 [url removeCachedResourceValueForKey:NSURLIsDirectoryKey];
             }
+            BOOL skipBackupAttributeSuccess = [[NSFileManager defaultManager] removeExcludedFromBackupAttributeToItemAtURL:url error:NULL];
+#ifdef OMNI_ASSERTIONS_ON
+            OBPOSTCONDITION(skipBackupAttributeSuccess);
+#else
+            (void)skipBackupAttributeSuccess;
+#endif
 
             if (updateCompletionHandler)
                 updateCompletionHandler(success, url, nil);
 
             if (completionHandler)
                 completionHandler(success);
+
         }];
     };
 

@@ -25,32 +25,48 @@ end
 options = GetoptLong.new(
 [ "--help", "-h", GetoptLong::NO_ARGUMENT ],
 [ "--debug", "-d", GetoptLong::NO_ARGUMENT ],
-[ "--output-directory", "-D", GetoptLong::REQUIRED_ARGUMENT ],
-[ "--check", "-C", GetoptLong::NO_ARGUMENT ]
 )
 
-output_directory = nil
+output_directory = ENV["DERIVED_FILE_DIR"] || fail("DERIVED_FILE_DIR not defined!")
+FileUtils.mkdir_p(output_directory)
+OmniDataObjects::Options.model_output_directory = output_directory
+
 options.each do |opt, arg|
   case opt
   when "--debug"
     OmniDataObjects::Options.debug = true
-  when "--output-directory"
-    output_directory = arg
-  when "--check"
-    OmniDataObjects::Options.check_only = true
   else
     usage()
   end
 end
 
-# The remaining arguments are assumed to be .odomodel files to evaluate.
-# Each output is directed to the same directory as the input file
-ARGV.each {|arg|
-  path = Pathname.new(arg).realpath
-  
-  output = (output_directory || path.dirname.to_s)
-  OmniDataObjects::Options.model_output_directory = output
-  FileUtils.mkdir_p(output) unless OmniDataObjects::Options.check_only
-  
-  eval(File.read(path))
+fail "Should be exactly one model file specified" unless ARGV.length == 1
+
+path = Pathname.new(ARGV[0]).realpath
+eval(File.read(path))
+
+# Check that the files that got written are the ones we expected
+expected_paths = []
+while path = ENV["SCRIPT_OUTPUT_FILE_#{expected_paths.length}"]
+  expected_paths << Pathname.new(path).realpath.to_s
+end
+
+actual_paths = OmniDataObjects::SourceFile.written_paths.map {|path| Pathname.new(path).realpath.to_s}
+had_error = false
+expected_paths.each {|path|
+  path_index = actual_paths.index(path)
+  if path_index
+    actual_paths.delete_at(path_index)
+  else
+    STDERR.print "*** Error: Did not write expected file \"#{path}\"\n"
+    had_error = true
+  end
 }
+actual_paths.each {|path|
+  STDERR.print "*** Error: Wrote unexpected file \"#{path}\"\n"
+  had_error = true
+}
+
+if had_error
+  exit(1)
+end

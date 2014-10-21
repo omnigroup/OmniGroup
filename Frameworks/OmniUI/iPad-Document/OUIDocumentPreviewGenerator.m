@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -181,10 +181,11 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, ODSFile
     }
 
     Class cls = [delegate previewGenerator:self documentClassForFileURL:fileURL];
-    OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
     if (!cls)
         return;
-    
+
+    OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
+
     __autoreleasing NSError *error = nil;
     OUIDocument *document = [[cls alloc] initWithExistingFileItem:self->_currentPreviewUpdatingFileItem error:&error];
     if (!document) {

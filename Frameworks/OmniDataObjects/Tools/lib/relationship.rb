@@ -36,6 +36,11 @@ module OmniDataObjects
       "ODORelationshipDeleteRule#{delete.capitalize_first}"
     end
     
+    def read_only?
+      # To-many relationships are implicitly calculated/read-only. The inverse to-one is the editable side.
+      calculated || @many
+    end
+    
     # Would be better to have emitInterface have a way for use to declare properties and pass the class.  Then it could collect those and emit the @class w/o us repeating this logic.
     def add_class_names(names)
       if @many
@@ -60,12 +65,12 @@ module OmniDataObjects
           fail "Expect abstract entities to be self joins." unless entity.name == target
           f << "@property(readonly) #{entity.instance_class} *#{name};\n"
         else
-          if calculated
-            read_only = ",readonly"
+          if read_only?
+            read_only_attribute = ",readonly"
           else
-            read_only = ""
+            read_only_attribute = ""
           end
-          f << "@property(nonatomic#{read_only},retain) #{@target.instance_class} *#{name};\n"
+          f << "@property(nonatomic#{read_only_attribute},retain) #{@target.instance_class} *#{name};\n"
        end
       end
     end

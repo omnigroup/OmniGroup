@@ -223,6 +223,23 @@ module Xcode
     def self.kind_name
       "Shell Script"
     end
+    
+    def input_paths
+      dict['inputPaths']
+    end
+    def output_paths
+      dict['outputPaths']
+    end
+    def deployment_only?
+      dict['runOnlyForDeploymentPostprocessing'] == 1
+    end
+    def shell
+      dict['shellPath']
+    end
+    def script
+      dict['shellScript']
+    end
+    
   end
   class PBXSourcesBuildPhase < BuildPhase
     def self.kind_name

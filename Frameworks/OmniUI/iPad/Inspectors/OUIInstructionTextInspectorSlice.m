@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,6 +71,16 @@ RCS_ID("$Id$");
     return [label sizeThatFits:CGSizeMake(width, 0)].height;
 }
 
+- (UIView *)makeSliceBackgroundView;
+{
+    return nil;
+}
+
+- (CGFloat)paddingToInspectorLeft;
+{
+    return [super paddingToInspectorLeft] - 6;
+}
+
 #pragma mark - UIViewController subclass
 
 - (void)loadView;
@@ -79,7 +89,6 @@ RCS_ID("$Id$");
     [label applyStyle:OUILabelStyleInspectorSliceInstructionText];
     
     label.numberOfLines = 0; // No limit
-    label.textAlignment = NSTextAlignmentCenter;
     label.text = _instructionText;
     label.lineBreakMode = NSLineBreakByWordWrapping;
     

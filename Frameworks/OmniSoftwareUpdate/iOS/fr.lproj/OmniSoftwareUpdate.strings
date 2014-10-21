@@ -23,13 +23,13 @@
 "Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Souhaitez-vous autoriser %@ à envoyer périodiquement des informations sur votre modèle de matériel et votre version iOS ?\nNous pourrons ainsi connaître les configurations pour lesquelles il est prioritaire de fournir une assistance. Vous pourrez changer votre réponse ultérieurement dans les préférences.";
 
 /* Software update report entry name */
-"Application identifier" = "Identifiant d’application";
+"App ID" = "ID Apple";
 
 /* Software update report entry name */
-"Application version" = "Version d’application";
+"App version" = "Version d’application";
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
-"Check operation failed." = "L’opération de vérification a échoué.";
+"Check operation failed." = "L’opération de recherche a échoué.";
 
 /* error text generated when software update is unable to retrieve the list of current software versions */
 "Could not contact %@." = "Impossible de contacter %@.";
@@ -40,7 +40,9 @@
 /* Software update report entry name */
 "Device" = "Appareil";
 
-/* software update settings title */
+/* software update settings section title
+   software update settings title */
+
 "Device Information" = "Infos sur l’appareil";
 
 /* OmniSoftwareUpdate privacy notice button title */
@@ -59,7 +61,7 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "Aidez Omni Group à déterminer les appareils et les versions d’iOS à prendre en charge";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "En partageant ces informations, vous nous aiderez à nous tenir informés des appareils et des versions d’iOS à prendre en charge pour nos logiciels.\nCes informations resteront totalement anonymes.";
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Vous nous aiderez ainsi à nous tenir informés des appareils et des versions d’iOS à prendre en charge pour nos logiciels.\nCes informations resteront totalement anonymes.";
 
 /* Software update report entry name */
 "iOS version" = "Version iOS";
@@ -86,19 +88,18 @@
 "One minute" = "Une minute";
 
 /* error reason */
-"Please try again later or contact us to let us know this is broken." = "Réessayez ou contactez-nous pour nous signaler que cela ne fonctionne pas.";
+"Please try again later or contact us to let us know this is broken." = "Réessayez ou contactez-nous pour nous signaler un dysfonctionnement.";
 
 /* Software update report entry name */
-"Report identifier" = "Identifiant de rapport";
+"Report ID" = "ID de rapport";
 
 /* Software update report entry name */
 "Report version" = "Version de rapport";
 
-/* software update settings cell title */
-"Send anonymous device information" = "Envoyer des informations anonymes sur l’appareil";
+/* Settings option title
+   software update settings cell title */
 
-/* Settings option title */
-"Send anonymous device information?" = "Envoyer des informations anonymes sur l’appareil ?";
+"Send Anonymous Data" = "Envoyer des données anonymes";
 
 /* OmniSoftwareUpdate privacy notice button title */
 "Send Reports" = "Envoyer les rapports";
@@ -110,7 +111,7 @@
 "Storage" = "Stockage";
 
 /* error description */
-"The data returned from <%@> was not a valid XML document." = "Les données renvoyées par <%@> n’étaient pas un document XML valide.";
+"The data returned from <%@> was not a valid XML document." = "Les données renvoyées par “%@” n’étaient pas un document XML valide.";
 
 /* Settings option title */
 "The following information will be sent:" = "Les informations suivantes seront envoyées :";
@@ -125,16 +126,16 @@
 "This version" = "Cette version";
 
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
-"Tool returned no data" = "L’outil n’a renvoyé aucune donnée.";
+"Tool returned no data" = "L’outil n’a renvoyé aucune donnée";
 
 /* error description - we have some update information but it doesn't look authentic */
 "Unable to authenticate the response from the software update server." = "Impossible d’authentifier la réponse du serveur de mise à jour de logiciels.";
 
 /* error description - will be followed by more detailed error reason */
-"Unable to fetch software update information." = "Impossible d’extraire les informations de mise à jour des logiciels.";
+"Unable to fetch software update information." = "Impossible de récupérer les informations de mise à jour de logiciels.";
 
 /* error description */
-"Unable to parse response from the software update server." = "Impossible d’analyser la réponse du serveur de mise à jour de logiciels.";
+"Unable to parse response from the software update server." = "Impossible d’analyser la réponse du serveur de mise à jour.";
 
 /* error text generated when software update is unable to retrieve the list of current software versions */
 "Your Internet connection might not be active, or there might be a problem somewhere along the network." = "Votre connexion Internet n’est peut-être pas active ou il peut y avoir un problème quelque part dans le réseau.";

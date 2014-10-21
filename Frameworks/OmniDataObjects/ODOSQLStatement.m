@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,8 @@
 
 #import <OmniDataObjects/ODOProperty.h>
 #import <OmniDataObjects/ODORelationship.h>
+#import <OmniDataObjects/ODOObject-Accessors.h>
 
-#import "ODOObject-Accessors.h"
 #import "ODOObject-Internal.h"
 #import "ODOEntity-SQL.h"
 #import "ODODatabase-Internal.h"
@@ -125,9 +125,6 @@ RCS_ID("$Id$")
     OBPRECONDITION(database != nil);
     OBPRECONDITION([rootEntity model] == [database model]);
     
-    if (!(self = [super init]))
-        return nil;
-
     // TODO: Not handling joins until we actually need them.
     
     NSMutableArray *constants = nil;
@@ -140,7 +137,7 @@ RCS_ID("$Id$")
         }
     }
     
-    if (![self initWithDatabase:database sql:mutableSQL error:outError])
+    if (!(self = [self initWithDatabase:database sql:mutableSQL error:outError]))
         return nil;
     
     if (constants) {
@@ -326,7 +323,7 @@ BOOL ODOSQLStatementBindConstant(ODOSQLStatement *self, struct sqlite3 *sqlite, 
                 break;
                 default: {
                     NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to bind constant to SQL statement.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-                    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind number '%@' of type %d to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), constant, type, bindIndex, self->_sql];
+                    NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), constant, type, bindIndex, self->_sql];
                     ODOError(outError, ODOUnableToCreateSQLStatement, description, reason);
                     return NO;
                 }
@@ -446,6 +443,9 @@ void ODOSQLStatementLogSQL(NSString *format, ...)
 
 BOOL ODOSQLStatementRun(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOSQLStatementCallbacks callbacks, void *context, NSError **outError)
 {
+    static CFAbsoluteTime totalTime = 0;
+    static unsigned int totalRowCount = 0;
+    
     CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
     NSUInteger rowCount = 0;
     if (ODOLogSQL)
@@ -469,14 +469,18 @@ BOOL ODOSQLStatementRun(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOS
         
         ODOSQLiteError(outError, rc, sqlite); // stack the underlying error
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to execute SQL.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable run SQL for statement '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), statement->_sql];
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable to run SQL for statement '%@'.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), statement->_sql];
         ODOError(outError, ODOUnableToExecuteSQL, description, reason);
         return NO;
     }
     
     if (ODOLogSQL) {
-        CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
-        ODOSQLStatementLogSQL(@"/* ... %d rows fetched, %d rows changed, %g sec */\n", rowCount, sqlite3_changes(sqlite), end - start);
+        CFAbsoluteTime delta = CFAbsoluteTimeGetCurrent() - start;
+        
+        totalTime += delta;
+        totalRowCount += rowCount;
+        
+        ODOSQLStatementLogSQL(@"/* ... %d rows fetched, %d rows changed, %g sec, total now %g sec, %d rows */\n", rowCount, sqlite3_changes(sqlite), delta, totalTime, totalRowCount);
     }
     
     if (callbacks.atEnd && !callbacks.atEnd(sqlite, statement, context, outError))
@@ -488,6 +492,7 @@ BOOL ODOSQLStatementRun(struct sqlite3 *sqlite, ODOSQLStatement *statement, ODOS
 #endif
     sqlite3_reset(statement->_statement);
     OBASSERT(rc == SQLITE_OK);
+#pragma unused(rc)
     return YES;
 }
 

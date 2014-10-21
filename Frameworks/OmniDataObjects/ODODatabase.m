@@ -1,4 +1,4 @@
-// Copyright 2008-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,6 +55,11 @@ static void ODOComparisonPredicateContainsStringGeneric(sqlite3_context *ctx, in
     }
     
     const unsigned char *lhs = sqlite3_value_text(values[0]);
+    if (lhs == NULL) { // A null value does not contain anything
+        sqlite3_result_int(ctx, false);
+        return;
+    }
+
     const unsigned char *rhs = sqlite3_value_text(values[1]);
     int options = sqlite3_value_int(values[2]);
     
@@ -349,6 +354,11 @@ static BOOL ODOVacuumOnDisconnect = NO;
     [_pendingMetadataChanges setObject:value forKey:key];
 }
 
+- (BOOL)deleteCommittedMetadataForKey:(NSString *)key error:(NSError **)outError;
+{
+    return [self executeSQLWithoutResults:[NSString stringWithFormat:@"DELETE FROM %@ WHERE key = '%@';", ODODatabaseMetadataTableName, key] error:outError];
+}
+
 static BOOL _fetchRowCountCallback(struct sqlite3 *sqlite, ODOSQLStatement *statement, void *context, NSError **outError)
 {
     uint64_t *outRowCount = context;
@@ -437,10 +447,10 @@ static BOOL _populateCachedMetadataRowCallback(struct sqlite3 *sqlite, ODOSQLSta
     int length = sqlite3_column_bytes(statement->_statement, 1);
     NSData *data = [NSData dataWithBytesNoCopy:(void *)bytes length:length freeWhenDone:NO];
     
-    NSString *errorString = nil;
-    id plist = [NSPropertyListSerialization propertyListFromData:data mutabilityOption:NSPropertyListImmutable format:NULL errorDescription:&errorString];
+    NSError *error = nil;
+    id plist = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:&error];
     if (!plist) {
-        NSLog(@"Unable to archive plist for metadata key '%@': %@", key, errorString);
+        NSLog(@"Unable to archive plist for metadata key '%@': %@", key, error);
         return YES;
     }
     
@@ -609,8 +619,8 @@ static void ODOWriteMetadataApplier(const void *key, const void *value, void *co
             return;
         }
         
-        NSString *errorDesc = nil;
-        NSData *plistData = [NSPropertyListSerialization dataFromPropertyList:plistObject format:NSPropertyListBinaryFormat_v1_0 errorDescription:&errorDesc];
+        NSError *error = nil;
+        NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:plistObject format:NSPropertyListBinaryFormat_v1_0 options:0 error:&error];
         if (!plistData) {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save metadata to database.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
             NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Failed to convert '%@' to a property list data: %@.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), plistObject, plistData];

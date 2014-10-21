@@ -1183,7 +1183,7 @@
 		34AFACD8164B0E70009E39AB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0610;
 				ORGANIZATIONNAME = "The Omni Group";
 			};
 			buildConfigurationList = 34AFACDB164B0E70009E39AB /* Build configuration list for PBXProject "OmniFileExchange" */;

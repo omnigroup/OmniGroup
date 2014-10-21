@@ -89,7 +89,7 @@ OQLinearRGBA OQGetColorRefComponents(CGColorRef c)
                 OBASSERT(CGColorGetNumberOfComponents(c) == 4);
                 return (OQLinearRGBA){components[0], components[1], components[2], components[3]};
             default:
-                OBFinishPortingLater("Unknow color space model!");
+                OBFinishPortingLater("Unknown color space model!");
                 return (OQLinearRGBA){1, 0, 0, 1};
         }
 #else

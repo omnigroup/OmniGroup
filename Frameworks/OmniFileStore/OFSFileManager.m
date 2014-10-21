@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@
 #import <OmniFileStore/OFSDAVFileManager.h>
 #import <OmniFileStore/OFSFileFileManager.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
+#import <OmniBase/macros.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
@@ -80,6 +81,12 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 
 @synthesize baseURL = _baseURL;
 @synthesize delegate = _weak_delegate;
+
+- (NSString *)locationDescription;
+{
+    // This is just used for including locations in error messages.
+    return [_baseURL absoluteString];
+}
 
 - (void)invalidate;
 {

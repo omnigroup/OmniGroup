@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,10 +11,10 @@
 
 #import "ODOEntity-Internal.h"
 
-extern void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags flags, BOOL optional, BOOL calculated, BOOL transient, SEL get, SEL set);
+extern void ODOPropertyInit(ODOProperty *self, NSString *name, struct _ODOPropertyFlags flags, BOOL optional, BOOL transient, SEL get, SEL set);
 
 @class ODOObject;
-__private_extern__ BOOL ODOPropertyHasIdenticalName(ODOProperty *property, NSString *name);
+BOOL ODOPropertyHasIdenticalName(ODOProperty *property, NSString *name) OB_HIDDEN;
 
 #define ODO_PRIMARY_KEY_SNAPSHOT_INDEX ((NSUInteger)((1<<ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH)-1)) // Only have ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH bits
 #define ODO_NON_SNAPSHOT_PROPERTY_INDEX ((NSUInteger)((1<<ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH)-2)) // Only have ODO_PROPERTY_SNAPSHOT_INDEX_WIDTH bits
@@ -34,7 +34,7 @@ static inline NSString *ODOPropertyName(ODOProperty *prop)
 }
 
 
-__private_extern__ void ODOPropertySnapshotAssignSnapshotIndex(ODOProperty *property, NSUInteger snapshotIndex);
+void ODOPropertySnapshotAssignSnapshotIndex(ODOProperty *property, NSUInteger snapshotIndex) OB_HIDDEN;
 
 static inline NSUInteger ODOPropertySnapshotIndex(ODOProperty *property)
 {
@@ -47,8 +47,7 @@ static inline NSUInteger ODOPropertySnapshotIndex(ODOProperty *property)
     return snapshotIndex;
 }
 
-__private_extern__ SEL ODOPropertyGetterSelector(ODOProperty *property);
-__private_extern__ SEL ODOPropertySetterSelector(ODOProperty *property);
-__private_extern__ ODOPropertyGetter ODOPropertyGetterImpl(ODOProperty *property);
-__private_extern__ ODOPropertySetter ODOPropertySetterImpl(ODOProperty *property);
-
+SEL ODOPropertyGetterSelector(ODOProperty *property) OB_HIDDEN;
+SEL ODOPropertySetterSelector(ODOProperty *property) OB_HIDDEN;
+ODOPropertyGetter ODOPropertyGetterImpl(ODOProperty *property) OB_HIDDEN;
+ODOPropertySetter ODOPropertySetterImpl(ODOProperty *property) OB_HIDDEN;

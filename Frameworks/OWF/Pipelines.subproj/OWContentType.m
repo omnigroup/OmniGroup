@@ -64,10 +64,9 @@ typedef struct {
                 
                 ufsResourceForkPath = [[path stringByDeletingLastPathComponent] stringByAppendingPathComponent:[@"._" stringByAppendingString:[path lastPathComponent]]];
                 if ([self fileExistsAtPath:ufsResourceForkPath isDirectory:&isDirectory] == YES && isDirectory == NO) {
-                    NSData *resourceFork;
                     const unsigned int offsetOfTypeInResourceFork = 50;
                     
-                    resourceFork = [NSData dataWithContentsOfMappedFile:ufsResourceForkPath];
+                    NSData *resourceFork = [NSData dataWithContentsOfFile:ufsResourceForkPath options:NSDataReadingMappedIfSafe error:NULL];
                     if ([resourceFork length] < offsetOfTypeInResourceFork + sizeof(unsigned long) + sizeof(unsigned long))
                         return errorCode;
                     

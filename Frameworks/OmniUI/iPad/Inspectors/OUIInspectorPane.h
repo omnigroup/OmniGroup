@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,11 @@
 //
 // $Id$
 
-#import <OmniUI/OUIViewController.h>
 #import <OmniUI/OUIInspectorUpdateReason.h>
 
 @class OUIInspector, OUIInspectorSlice;
 
-@interface OUIInspectorPane : OUIViewController
+@interface OUIInspectorPane : UIViewController
 
 @property(readonly,nonatomic) BOOL inInspector;
 @property(weak,nonatomic) OUIInspector *inspector; // Set by the containing inspector

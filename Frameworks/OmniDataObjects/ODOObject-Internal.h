@@ -29,7 +29,7 @@
 
 @end
 
-__private_extern__ NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self);
+NSArray *_ODOObjectCreatePropertySnapshot(ODOObject *self) OB_HIDDEN;
 
 // Make it more clear what we mean when we compare to nil.
 #define ODO_OBJECT_LAZY_TO_MANY_FAULT_MARKER (nil)
@@ -39,7 +39,7 @@ static inline BOOL ODOObjectValueIsLazyToManyFault(id value)
 }
 
 #ifdef OMNI_ASSERTIONS_ON
-__private_extern__ BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot);
+BOOL _ODOAssertSnapshotIsValidForObject(ODOObject *self, CFArrayRef snapshot) OB_HIDDEN;
 #endif
 
 static inline void _ODOObjectCreateNullValues(ODOObject *self)
@@ -152,20 +152,20 @@ static inline BOOL _ODOObjectIsUndeletable(ODOObject *self)
 
 @class ODORelationship;
 
-__private_extern__ void ODOObjectClearValues(ODOObject *self, BOOL deleting);
+void ODOObjectClearValues(ODOObject *self, BOOL deleting) OB_HIDDEN;
 
-__private_extern__ void ODOObjectPrepareForAwakeFromFetch(ODOObject *self);
-__private_extern__ void ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(ODOObject *self);
-__private_extern__ void ODOObjectFinalizeAwakeFromFetch(ODOObject *self);
+void ODOObjectPrepareForAwakeFromFetch(ODOObject *self) OB_HIDDEN;
+void ODOObjectPerformAwakeFromFetchWithoutRegisteringEdits(ODOObject *self) OB_HIDDEN;
+void ODOObjectFinalizeAwakeFromFetch(ODOObject *self) OB_HIDDEN;
 
-__private_extern__ void ODOObjectAwakeSingleObjectFromFetch(ODOObject *object);
-__private_extern__ void ODOObjectAwakeObjectsFromFetch(NSArray *objects);
+void ODOObjectAwakeSingleObjectFromFetch(ODOObject *object) OB_HIDDEN;
+void ODOObjectAwakeObjectsFromFetch(NSArray *objects) OB_HIDDEN;
 
-__private_extern__ BOOL ODOObjectToManyRelationshipIsFault(ODOObject *self, ODORelationship *rel);
-__private_extern__ NSMutableSet *ODOObjectToManyRelationshipIfNotFault(ODOObject *self, ODORelationship *rel);
+BOOL ODOObjectToManyRelationshipIsFault(ODOObject *self, ODORelationship *rel) OB_HIDDEN;
+NSMutableSet *ODOObjectToManyRelationshipIfNotFault(ODOObject *self, ODORelationship *rel) OB_HIDDEN;
 
-__private_extern__ void ODOObjectSetChangeProcessingEnabled(ODOObject *self, BOOL enabled);
-__private_extern__ BOOL ODOObjectChangeProcessingEnabled(ODOObject *self);
+void ODOObjectSetChangeProcessingEnabled(ODOObject *self, BOOL enabled) OB_HIDDEN;
+BOOL ODOObjectChangeProcessingEnabled(ODOObject *self) OB_HIDDEN;
 
-__private_extern__ CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, CFArrayRef snapshot);
-__private_extern__ void ODOObjectApplyDifferenceRecord(ODOObject *self, CFArrayRef diff);
+CFArrayRef ODOObjectCreateDifferenceRecordFromSnapshot(ODOObject *self, CFArrayRef snapshot) OB_HIDDEN;
+void ODOObjectApplyDifferenceRecord(ODOObject *self, CFArrayRef diff) OB_HIDDEN;

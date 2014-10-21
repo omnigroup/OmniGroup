@@ -51,6 +51,7 @@ extern const CGFloat OUIScrollContext;
 
 @property(nonatomic,readonly) CGFloat firstLineAscent;
 
+- (NSDictionary *)typingAttributesWithAllAttributes; // allow subclasses to ensure that the typing attributes contain the extra attributes which are sometimes stripped out by the runtime.
 - (void)ensureLayout;
 
 - (UITextRange *)selectionRangeForPoint:(CGPoint)pt granularity:(UITextGranularity)granularity;

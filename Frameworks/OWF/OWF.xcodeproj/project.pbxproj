@@ -292,20 +292,6 @@
 			remoteGlobalIDString = 4A4E075308AA72B10098FF0F;
 			remoteInfo = OmniFoundation;
 		};
-		344B89B516C9A2BC004C709D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34D029D1167E5CB8005E680B /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 344D08BA1190D47300264D89;
-			remoteInfo = OmniFoundationTouch;
-		};
-		344B89B716C9A2BC004C709D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34D029D1167E5CB8005E680B /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 340115D411E515DB0016ADB3;
-			remoteInfo = OmniFoundationTouchTests;
-		};
 		344B89B916C9A2BC004C709D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34D029D1167E5CB8005E680B /* OmniFoundation.xcodeproj */;
@@ -375,20 +361,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 34778CD211810BE700EC28C1;
 			remoteInfo = OBLoadBundle;
-		};
-		344B89D816C9A2BD004C709D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34D029CE167E5CB8005E680B /* OmniBase.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 342163B211907BF600C06E45;
-			remoteInfo = OmniBaseTouch;
-		};
-		344B89DA16C9A2BD004C709D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34D029CE167E5CB8005E680B /* OmniBase.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 340115B011E515790016ADB3;
-			remoteInfo = OmniBaseTouchTests;
 		};
 		344B89DC16C9A2BD004C709D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1204,8 +1176,6 @@
 			isa = PBXGroup;
 			children = (
 				344B89B416C9A2BC004C709D /* OmniFoundation.framework */,
-				344B89B616C9A2BC004C709D /* libOmniFoundation.a */,
-				344B89B816C9A2BC004C709D /* libOmniFoundationTouchTests.a */,
 				343EB4CA19509EFE000534A9 /* OmniFoundation.framework */,
 				343EB4CC19509EFE000534A9 /* OFUnitTests.xctest */,
 				344B89BA16C9A2BC004C709D /* OFUnitTests.xctest */,
@@ -1228,8 +1198,6 @@
 			children = (
 				344B89D516C9A2BD004C709D /* OmniBase.framework */,
 				344B89D716C9A2BD004C709D /* OBLoadBundle */,
-				344B89D916C9A2BD004C709D /* libOmniBase.a */,
-				344B89DB16C9A2BD004C709D /* libOmniBaseTouchTests.a */,
 				344B89DD16C9A2BD004C709D /* OBUnitTests.xctest */,
 				343EB4B519509EFE000534A9 /* OmniBase.framework */,
 				343EB4B719509EFE000534A9 /* OBUnitTests.xctest */,
@@ -1607,7 +1575,6 @@
 				4AA535DC08B27DE600F0872D /* Resources */,
 				4AA535E208B27DE600F0872D /* Sources */,
 				4AA5363608B27DE600F0872D /* Frameworks */,
-				4AA5363E08B27DE600F0872D /* Rez */,
 			);
 			buildRules = (
 			);
@@ -1626,7 +1593,6 @@
 				4AA5365108B27DE600F0872D /* Headers */,
 				4AA5365608B27DE600F0872D /* Sources */,
 				4AA5365B08B27DE600F0872D /* Frameworks */,
-				4AA5366108B27DE600F0872D /* Rez */,
 			);
 			buildRules = (
 			);
@@ -1648,7 +1614,6 @@
 				4AA5366F08B27DE600F0872D /* ShellScript */,
 				4AA5367008B27DE600F0872D /* Sources */,
 				4AA5367708B27DE600F0872D /* Frameworks */,
-				4AA5367D08B27DE600F0872D /* Rez */,
 			);
 			buildRules = (
 			);
@@ -1669,7 +1634,6 @@
 				4AA5368B08B27DE600F0872D /* Resources */,
 				4AA5368C08B27DE600F0872D /* Sources */,
 				4AA5368F08B27DE600F0872D /* Frameworks */,
-				4AA5369608B27DE600F0872D /* Rez */,
 			);
 			buildRules = (
 			);
@@ -1689,7 +1653,6 @@
 				4AA5369E08B27DE600F0872D /* Headers */,
 				4AA536A208B27DE600F0872D /* Sources */,
 				4AA536A608B27DE600F0872D /* Frameworks */,
-				4AA536AC08B27DE600F0872D /* Rez */,
 			);
 			buildRules = (
 			);
@@ -1708,7 +1671,6 @@
 				4AA536B608B27DE600F0872D /* Headers */,
 				4AA536B708B27DE600F0872D /* Sources */,
 				4AA536B908B27DE600F0872D /* Frameworks */,
-				4AA536C308B27DE600F0872D /* Rez */,
 			);
 			buildRules = (
 			);
@@ -1727,7 +1689,7 @@
 		00E52059FE8AB39F11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1804,20 +1766,6 @@
 			remoteRef = 344B89B316C9A2BC004C709D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		344B89B616C9A2BC004C709D /* libOmniFoundation.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniFoundation.a;
-			remoteRef = 344B89B516C9A2BC004C709D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		344B89B816C9A2BC004C709D /* libOmniFoundationTouchTests.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniFoundationTouchTests.a;
-			remoteRef = 344B89B716C9A2BC004C709D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		344B89BA16C9A2BC004C709D /* OFUnitTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
@@ -1886,20 +1834,6 @@
 			fileType = "compiled.mach-o.executable";
 			path = OBLoadBundle;
 			remoteRef = 344B89D616C9A2BD004C709D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		344B89D916C9A2BD004C709D /* libOmniBase.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniBase.a;
-			remoteRef = 344B89D816C9A2BD004C709D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		344B89DB16C9A2BD004C709D /* libOmniBaseTouchTests.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniBaseTouchTests.a;
-			remoteRef = 344B89DA16C9A2BD004C709D /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		344B89DD16C9A2BD004C709D /* OBUnitTests.xctest */ = {
@@ -1989,51 +1923,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXRezBuildPhase section */
-		4AA5363E08B27DE600F0872D /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4AA5366108B27DE600F0872D /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4AA5367D08B27DE600F0872D /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4AA5369608B27DE600F0872D /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4AA536AC08B27DE600F0872D /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4AA536C308B27DE600F0872D /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXRezBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		4AA5366F08B27DE600F0872D /* ShellScript */ = {

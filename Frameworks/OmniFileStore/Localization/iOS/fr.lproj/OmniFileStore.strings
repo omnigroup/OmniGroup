@@ -16,8 +16,7 @@
 /* error reason */
 "Failed to move \"%@\" to \"%@\"." = "Le déplacement de “%1$@” vers “%2$@” a échoué.";
 
-/* error reason - listing a directory that doesn't exist
-   error reason - listing contents of a nonexistent directory */
+/* error reason - listing a directory that doesn't exist */
 "No document exists at \"%@\"." = "Aucun document n’existe dans “%@”.";
 
 /* error reason */
@@ -34,4 +33,3 @@
 
 /* error description */
 "Unable to read document." = "Impossible de lire le document.";
-

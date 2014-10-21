@@ -1,4 +1,4 @@
-// Copyright 2012-2013 Omni Development. Inc. All rights reserved.
+// Copyright 2012-2014 Omni Development. Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,10 +15,9 @@
 // OABoxSeparator's lineColor and backgroundColor properties, respectively, to
 // create a three-stop gradient going from 0% alpha to 100% and back again.
 
-@interface OAGradientBoxSeparator : OABoxSeparator {
-    NSGradient *_lineGradient;
-    NSGradient *_backgroundGradient;
-}
+@class NSGradient;
+
+@interface OAGradientBoxSeparator : OABoxSeparator
 
 @property (nonatomic, retain) NSGradient *lineGradient;
 @property (nonatomic, retain) NSGradient *backgroundGradient;

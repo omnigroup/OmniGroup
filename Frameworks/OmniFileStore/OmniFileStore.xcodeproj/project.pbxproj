@@ -80,6 +80,8 @@
 		15F7CBF3185F991900EFB846 /* nl.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = nl.lproj; path = Localization/iOS/nl.lproj; sourceTree = "<group>"; };
 		15F7CBF4185F991900EFB846 /* ru.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ru.lproj; path = Localization/iOS/ru.lproj; sourceTree = "<group>"; };
 		15F7CBF5185F991900EFB846 /* zh-Hans.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "zh-Hans.lproj"; path = "Localization/iOS/zh-Hans.lproj"; sourceTree = "<group>"; };
+		1EF8B67319A42B8B002590DF /* OFSEncryptingFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFSEncryptingFileManager.m; sourceTree = "<group>"; };
+		1EF8B67519A42B9F002590DF /* OFSEncryptingFileManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OFSEncryptingFileManager.h; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* OmniFileStore_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniFileStore_Prefix.h; sourceTree = "<group>"; };
 		34201EE11464897900A45403 /* OFSFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFSFeatures.h; sourceTree = "<group>"; };
 		3421AE820F71F89C0096AADB /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
@@ -223,6 +225,8 @@
 				3444B0650F71FFFF005CFD59 /* OFSFileManager.m */,
 				3444B0B80F72022C005CFD59 /* Errors.h */,
 				3444B0B90F72022C005CFD59 /* Errors.m */,
+				1EF8B67519A42B9F002590DF /* OFSEncryptingFileManager.h */,
+				1EF8B67319A42B8B002590DF /* OFSEncryptingFileManager.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -371,7 +375,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniFileStore" */;
 			compatibilityVersion = "Xcode 3.2";

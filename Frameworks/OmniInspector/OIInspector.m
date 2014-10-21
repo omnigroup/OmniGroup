@@ -117,7 +117,7 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     OBPRECONDITION(dict);
     OBPRECONDITION([self conformsToProtocol:@protocol(OIConcreteInspector)]);
 
-    if (!(self = [super init]))
+    if (!(self = [super initWithNibName:nil bundle:sourceBundle]))
         return nil;
 
     {

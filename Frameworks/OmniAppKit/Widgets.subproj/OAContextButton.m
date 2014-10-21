@@ -16,7 +16,7 @@
 
 RCS_ID("$Id$");
 
-@interface OAContextButton ()
+@interface OAContextButton () <NSAccessibility>
 @property(nonatomic,readonly) NSMenu *shownMenu;
 @end
 
@@ -72,7 +72,7 @@ RCS_ID("$Id$");
 {
     [super awakeFromNib];
 
-    OBASSERT([[self cell] isKindOfClass:[OAContextButtonCell class]], "Need to set the cell class in xib too");
+    OBASSERT([[self cell] isKindOfClass:[[self class] cellClass]], "Need to set the cell class in xib too");
     
     NSImage *image = [self image];
     if (image == nil) {
@@ -107,14 +107,16 @@ RCS_ID("$Id$");
 
 #pragma mark - Accessibility
 
-- (id)accessibilityAttributeValue:(NSString *)attribute;
+// See also -accessibilityChildren and -accessibilityPerformShowMenu on our cell
+
+- (NSString *)accessibilityRole;
 {
-    if ([attribute isEqual:NSAccessibilityRoleAttribute])
-        return NSAccessibilityMenuButtonRole;
-    if ([attribute isEqual:NSAccessibilityShownMenuAttribute]) {
-        return _shownMenu;
-    }
-    return [super accessibilityAttributeValue:attribute];
+    return NSAccessibilityMenuButtonRole;
+}
+
+- (id)accessibilityShownMenu;
+{
+    return _shownMenu;
 }
 
 #pragma mark - API
@@ -201,76 +203,34 @@ RCS_ID("$Id$");
 
 @end
 
-// NSButton or NSControl delegates accessiblity to its cell, strangely.
 @implementation OAContextButtonCell
 
-// NSAccessibilityShownMenuAttribute isn't required for NSAccessibilityMenuButtonRole apparently, but that seems weird. Of course, if the menu is up, the menu shows its parent, but the parent doesn't know about the child...
-- (NSArray *)accessibilityAttributeNames;
+// These two methods don't work (or even get called, if they are on the button).
+
+- (NSArray *)accessibilityChildren;
 {
-#define EXTRA_ATTRIBUTES @[NSAccessibilityChildrenAttribute, NSAccessibilityShownMenuAttribute]
-    NSArray *attributes = [super accessibilityAttributeNames];
-    if (attributes)
-        return [attributes arrayByAddingObjectsFromArray:EXTRA_ATTRIBUTES];
-    else
-        return EXTRA_ATTRIBUTES;
+    // Sadly, the AppleScript in System Events doesn't have a "shown menu" property on the "menu button" class. So, we'll report this in the children too.
+    OAContextButton *button = OB_CHECKED_CAST(OAContextButton, self.controlView);
+    NSMenu *menu = button.shownMenu;
+    if (!menu)
+        return @[];
+    return @[menu];
 }
 
-- (id)accessibilityAttributeValue:(NSString *)attribute;
+- (BOOL)accessibilityPerformShowMenu;
 {
-    if ([attribute isEqual:NSAccessibilityRoleAttribute])
-        return NSAccessibilityMenuButtonRole;
-    if ([attribute isEqual:NSAccessibilityShownMenuAttribute]) {
-        OAContextButton *button = OB_CHECKED_CAST(OAContextButton, self.controlView);
-        return button.shownMenu;
-    }
-    if ([attribute isEqual:NSAccessibilityChildrenAttribute]) {
-        // Sadly, the AppleScript in System Events doesn't have a "shown menu" property on the "menu button" class. So, we'll report this in the children too.
-        OBASSERT([[super accessibilityAttributeNames] containsObject:NSAccessibilityChildrenAttribute] == NO);
-        OAContextButton *button = OB_CHECKED_CAST(OAContextButton, self.controlView);
-        NSMenu *menu = button.shownMenu;
-        if (!menu)
-            return @[];
-        return @[menu];
-    }
+    OAContextButton *button = OB_CHECKED_CAST(OAContextButton, self.controlView);
     
-    return [super accessibilityAttributeValue:attribute];
-}
-
-- (BOOL)accessibilityIsAttributeSettable:(NSString *)attribute;
-{
-    if ([attribute isEqual:NSAccessibilityShownMenuAttribute])
-        return NO;
-    if ([attribute isEqual:NSAccessibilityChildrenAttribute])
-        return NO;
-    return [super accessibilityIsAttributeSettable:attribute];
-}
-
-- (NSArray *)accessibilityActionNames;
-{
-    NSArray *actions = [super accessibilityActionNames];
+    // This is ugly. -[NSMenu popUpMenuPositioningItem:atLocation:inView:] starts a tracking loop unconditionally and takes several seconds to time out if there are no events in the queue. So, we simulate a single click.
+    NSWindow *window = button.window;
+    CGRect buttonRect = [button convertRect:button.bounds toView:nil];
+    NSPoint buttonMiddle = CGPointMake(CGRectGetMidX(buttonRect), CGRectGetMidY(buttonRect));
+    NSTimeInterval timestamp = [NSDate timeIntervalSinceReferenceDate];
     
-    if (actions)
-        return [actions arrayByAddingObject:NSAccessibilityShowMenuAction];
-    else
-        return @[NSAccessibilityShowMenuAction];
-}
-
-- (void)accessibilityPerformAction:(NSString *)action;
-{
-    if ([action isEqualToString:NSAccessibilityShowMenuAction]) {
-        OAContextButton *button = OB_CHECKED_CAST(OAContextButton, self.controlView);
-        
-        // This is ugly. -[NSMenu popUpMenuPositioningItem:atLocation:inView:] starts a tracking loop unconditionally and takes several seconds to time out if there are no events in the queue. So, we simulate a single click.
-        NSWindow *window = button.window;
-        CGRect buttonRect = [button convertRect:button.bounds toView:nil];
-        NSPoint buttonMiddle = CGPointMake(CGRectGetMidX(buttonRect), CGRectGetMidY(buttonRect));
-        NSTimeInterval timestamp = [NSDate timeIntervalSinceReferenceDate];
-        
-        // If we post a matching up, the menu hides immediately.
-        [NSApp postEvent:[NSEvent mouseEventWithType:NSLeftMouseDown location:buttonMiddle modifierFlags:0 timestamp:timestamp windowNumber:[window windowNumber] context:[window graphicsContext] eventNumber:-1 clickCount:1 pressure:1.0] atStart:NO];
-    } else {
-        [super accessibilityPerformAction:action];
-    }
+    // If we post a matching up, the menu hides immediately.
+    [NSApp postEvent:[NSEvent mouseEventWithType:NSLeftMouseDown location:buttonMiddle modifierFlags:0 timestamp:timestamp windowNumber:[window windowNumber] context:[window graphicsContext] eventNumber:-1 clickCount:1 pressure:1.0] atStart:NO];
+    
+    return YES;
 }
 
 @end

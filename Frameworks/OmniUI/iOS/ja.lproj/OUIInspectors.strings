@@ -2,28 +2,28 @@
 "%@ points" = "%@ ポイント";
 
 /* title format for color component slider */
-"<alpha title+value>" = "不透明度: %d%%";
+"<alpha title+value>" = "不透明度： %d%%";
 
 /* title format for color component slider */
 "<blue title+value>" = "ブルー: %d";
 
 /* title format for color component slider */
-"<brightness title+value>" = "明度: %d%%";
+"<brightness title+value>" = "明度： %d%%";
 
 /* title format for color component slider */
-"<green title+value>" = "グリーン: %d";
+"<green title+value>" = "グリーン： %d";
 
 /* title format for color component slider */
-"<hue title+value>" = "色相: %d°";
+"<hue title+value>" = "色相： %d°";
 
 /* title format for color component slider */
-"<red title+value>" = "レッド: %d";
+"<red title+value>" = "レッド： %d";
 
 /* title format for color component slider */
-"<saturation title+value>" = "彩度: %d%%";
+"<saturation title+value>" = "彩度： %d%%";
 
 /* title format for color component slider */
-"<white title+value>" = "ホワイト: %d%%";
+"<white title+value>" = "ホワイト： %d%%";
 
 /* Title for section of font list */
 "All Fonts" = "すべてのフォント";
@@ -50,7 +50,7 @@
 "No color selected" = "色が選択されていません";
 
 /* popover inspector label title for no selected objects */
-"No Selection" = "選択なし";
+"No Selection" = "選択されていません";
 
 /* Title for section of font list */
 "Recommended Fonts" = "推奨フォント";
@@ -65,5 +65,4 @@
 "Text color" = "テキストの色";
 
 /* Inspector title */
-"Text Style" = "テキスト スタイル";
-
+"Text Style" = "テキストスタイル";

@@ -26,9 +26,6 @@ RCS_ID("$Id$");
 
 @implementation ODAVOperation
 {
-    NSURLRequest *_request;
-    NSOperationQueue *_callbackQueue;
-    
     // For PUT operations
     long long _bodyBytesSent;
     long long _expectedBytesToWrite;

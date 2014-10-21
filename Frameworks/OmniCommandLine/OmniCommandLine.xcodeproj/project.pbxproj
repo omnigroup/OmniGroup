@@ -49,20 +49,6 @@
 			remoteGlobalIDString = 34778CD211810BE700EC28C1;
 			remoteInfo = OBLoadBundle;
 		};
-		34824B1C1742E74C00253D52 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34824B101742E74B00253D52 /* OmniBase.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 342163B211907BF600C06E45;
-			remoteInfo = OmniBaseTouch;
-		};
-		34824B1E1742E74C00253D52 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34824B101742E74B00253D52 /* OmniBase.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 340115B011E515790016ADB3;
-			remoteInfo = OmniBaseTouchTests;
-		};
 		34824B201742E74C00253D52 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34824B101742E74B00253D52 /* OmniBase.xcodeproj */;
@@ -76,20 +62,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 4A4E075308AA72B10098FF0F;
 			remoteInfo = OmniFoundation;
-		};
-		34824B341742E75A00253D52 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34824B221742E75900253D52 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 344D08BA1190D47300264D89;
-			remoteInfo = OmniFoundationTouch;
-		};
-		34824B361742E75A00253D52 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34824B221742E75900253D52 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 340115D411E515DB0016ADB3;
-			remoteInfo = OmniFoundationTouchTests;
 		};
 		34824B381742E75A00253D52 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -364,8 +336,6 @@
 			children = (
 				34824B191742E74C00253D52 /* OmniBase.framework */,
 				34824B1B1742E74C00253D52 /* OBLoadBundle */,
-				34824B1D1742E74C00253D52 /* libOmniBase.a */,
-				34824B1F1742E74C00253D52 /* libOmniBaseTouchTests.a */,
 				34824B211742E74C00253D52 /* OBUnitTests.xctest */,
 				34825EF419509B150026EABC /* OmniBase.framework */,
 				34825EF619509B150026EABC /* OBUnitTests.xctest */,
@@ -377,8 +347,6 @@
 			isa = PBXGroup;
 			children = (
 				34824B331742E75A00253D52 /* OmniFoundation.framework */,
-				34824B351742E75A00253D52 /* libOmniFoundation.a */,
-				34824B371742E75A00253D52 /* libOmniFoundationTouchTests.a */,
 				34825F0919509B150026EABC /* OmniFoundation.framework */,
 				34825F0B19509B150026EABC /* OFUnitTests.xctest */,
 				34824B391742E75A00253D52 /* OFUnitTests.xctest */,
@@ -497,20 +465,6 @@
 			remoteRef = 34824B1A1742E74C00253D52 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34824B1D1742E74C00253D52 /* libOmniBase.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniBase.a;
-			remoteRef = 34824B1C1742E74C00253D52 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34824B1F1742E74C00253D52 /* libOmniBaseTouchTests.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniBaseTouchTests.a;
-			remoteRef = 34824B1E1742E74C00253D52 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		34824B211742E74C00253D52 /* OBUnitTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
@@ -523,20 +477,6 @@
 			fileType = wrapper.framework;
 			path = OmniFoundation.framework;
 			remoteRef = 34824B321742E75A00253D52 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34824B351742E75A00253D52 /* libOmniFoundation.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniFoundation.a;
-			remoteRef = 34824B341742E75A00253D52 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34824B371742E75A00253D52 /* libOmniFoundationTouchTests.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniFoundationTouchTests.a;
-			remoteRef = 34824B361742E75A00253D52 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34824B391742E75A00253D52 /* OFUnitTests.xctest */ = {

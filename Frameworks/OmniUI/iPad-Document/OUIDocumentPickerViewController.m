@@ -50,6 +50,7 @@
 #import <OmniUI/UIGestureRecognizer-OUIExtensions.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/UIViewController-OUIExtensions.h>
 #import <OmniUIDocument/OUIDocument.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentCreationTemplatePickerViewController.h>
@@ -188,6 +189,9 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     }
     
     _documentStoreFilter = [self newDocumentStoreFilter];
+
+    if ([picker.delegate respondsToSelector:@selector(defaultDocumentStoreFilterFilterPredicate:)])
+        _documentStoreFilter.filterPredicate = [picker.delegate defaultDocumentStoreFilterFilterPredicate:picker];
     
     [self _flushAfterDocumentStoreInitializationActions];
     
@@ -1887,10 +1891,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 {
     [super viewDidLoad];
     
-    BOOL landscape = UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
-    _mainScrollView.landscape = landscape;
-    
     _backgroundView.image = [[OUIDocumentAppController controller] documentPickerBackgroundImage];
+    if (!_backgroundView.image)
+        _backgroundView.backgroundColor = [UIColor colorWithWhite:0.9 alpha:1.0];
+    else
+        _backgroundView.contentMode = UIViewContentModeTop;
     
     [self _setupTopControls];
     
@@ -1923,40 +1928,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     return YES;
 }
 
-// <bug:///104267> (Unassigned: Stop implementing deprecated ratation methods in OUIDocumentPickerViewController)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-implementations"
-
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration;
-{
-    [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
-    
-    [[UIPrintInteractionController sharedPrintController] dismissAnimated:NO];
-    
-    BOOL landscape = UIInterfaceOrientationIsLandscape(toInterfaceOrientation);
-    
-    [_mainScrollView willRotateWithDuration:duration];
-    _mainScrollView.landscape = landscape;
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation;
-{
-    [_mainScrollView didRotate];
-    [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
-}
-
-#pragma clang diagnostic pop
-
 - (void)willMoveToParentViewController:(UIViewController *)parent;
 {
     [super willMoveToParentViewController:parent];
     
-    // Start out with the right grid size. Also, the device might be rotated while we a document was open and we weren't in the view controller tree
     if (parent) {
-        BOOL landscape = UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
-
-        _mainScrollView.landscape = landscape;
-
         if (!_isObservingKeyboardNotifier) {
             _isObservingKeyboardNotifier = YES;
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardHeightWillChange:) name:OUIKeyboardNotifierKeyboardWillChangeFrameNotification object:nil];
@@ -1968,12 +1944,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 {
     [super didMoveToParentViewController:parent];
     
-    if (parent) {
-        // If the user starts closing a document and then rotates the device before the close finishes, we can get send {will,did}MoveToParentViewController: where the "will" has one orientation and the "did" has another, but we are not sent -willRotateToInterfaceOrientation:duration:, but we *are* sent the "didRotate...".
-        BOOL landscape = UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
-        
-        _mainScrollView.landscape = landscape;
-    } else {
+    if (!parent) {
         if (_isObservingKeyboardNotifier) {
             _isObservingKeyboardNotifier = NO;
             [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIKeyboardNotifierKeyboardWillChangeFrameNotification object:nil];
@@ -1992,14 +1963,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     
     self.navigationController.navigationBar.barStyle = UIBarStyleDefault;
 
-    // If we are being exposed rather than added (Help modal view controller being dismissed), we might have missed an orientation change
-    if ([self isMovingToParentViewController] == NO) {
-        BOOL landscape = UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
-        
-        if (_mainScrollView.landscape ^ landscape) {
-            _mainScrollView.landscape = landscape;
-        }
-    }
+    [_mainScrollView retileItems];
     
     // Might have been disabled while we went off screen (like when making a new document)
     [self _performDelayedItemPropagationWithCompletionHandler:nil];
@@ -2667,6 +2631,18 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
 
 #define TOP_CONTROLS_TOP_MARGIN 28.0
 #define TOP_CONTROLS_SPACING 20.0
+#define TOP_CONTROLS_VERTICAL_SPACING 16.0
+
+- (void)ensureLegibilityOfSegmentedControl:(UISegmentedControl*)control{
+    // compenstate for the fact that controls will be tinted grey instead of white if Darken Colors accessbility setting is on (which actually reduces contrast in this case rather than increasing it)
+    if (UIAccessibilityDarkerSystemColorsEnabled()) {
+        [control setTitleTextAttributes:@{NSForegroundColorAttributeName : [UIColor blackColor]} forState:UIControlStateSelected];
+        [control setTitleTextAttributes:@{NSForegroundColorAttributeName : [UIColor blackColor]} forState:UIControlStateNormal];
+    }else{
+        [control setTitleTextAttributes:nil forState:UIControlStateSelected];
+        [control setTitleTextAttributes:nil forState:UIControlStateNormal];
+    }
+}
 
 - (void)_setupTopControls;
 {
@@ -2675,8 +2651,23 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
 
     CGRect topRect = CGRectZero;
     _topControls = [[UIView alloc] initWithFrame:topRect];
-    
+
     _topControls.tintColor = [[OmniUIDocumentAppearance appearance] documentPickerTintColorAgainstBackground];
+    
+    __weak OUIDocumentPickerViewController *weakSelf = self;
+    [[NSNotificationCenter defaultCenter] addObserverForName:UIAccessibilityDarkerSystemColorsStatusDidChangeNotification
+                                                      object:nil
+                                                       queue:[NSOperationQueue mainQueue]
+                                                  usingBlock:^(NSNotification *note) {
+                                                      OUIDocumentPickerViewController *strongSelf = weakSelf;
+                                                      if (strongSelf) {
+                                                          for (UIView *subview in strongSelf->_topControls.subviews) {
+                                                              if ([subview isKindOfClass:[UISegmentedControl class]]) {
+                                                                  [self ensureLegibilityOfSegmentedControl:(UISegmentedControl*)subview];
+                                                              }
+                                                          }
+                                                      }
+                                                  }];
     
     // Sort
     if ([self supportsUpdatingSorting]) {
@@ -2688,14 +2679,9 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
         UISegmentedControl *sortSegmentedControl = [[UISegmentedControl alloc] initWithItems:sortTitles];
         [sortSegmentedControl addTarget:self action:@selector(sortSegmentChanged:) forControlEvents:UIControlEventValueChanged];
         sortSegmentedControl.selectedSegmentIndex = [[[self class] sortPreference] enumeratedValue];
+        [self ensureLegibilityOfSegmentedControl:sortSegmentedControl];
+
         [sortSegmentedControl sizeToFit];
-        
-        CGRect controlFrame = sortSegmentedControl.frame;
-        
-        controlFrame.origin = CGPointMake(CGRectGetMaxX(topRect), TOP_CONTROLS_TOP_MARGIN);
-        topRect.size.width = CGRectGetMaxX(controlFrame);
-        topRect.size.height = CGRectGetHeight(controlFrame);
-        sortSegmentedControl.frame = controlFrame;
         [_topControls addSubview:sortSegmentedControl];
         self.sortSegmentedControl = sortSegmentedControl;
     }
@@ -2714,15 +2700,13 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
         self.filtersSegmentedControl = [[UISegmentedControl alloc] initWithItems:filterTitles];
         [self.filtersSegmentedControl addTarget:self action:@selector(filterSegmentChanged:) forControlEvents:UIControlEventValueChanged];
         self.filtersSegmentedControl.selectedSegmentIndex = selectedIndex;
+        [self ensureLegibilityOfSegmentedControl:self.filtersSegmentedControl];
 
         [self.filtersSegmentedControl sizeToFit];
-        CGRect controlFrame = self.filtersSegmentedControl.frame;
-        
-        controlFrame.origin = CGPointMake(CGRectGetMaxX(topRect)+TOP_CONTROLS_SPACING, TOP_CONTROLS_TOP_MARGIN);
-        topRect.size.width = CGRectGetMaxX(controlFrame);
-        self.filtersSegmentedControl.frame = controlFrame;
         [_topControls addSubview:self.filtersSegmentedControl];
     }
+    
+    [self adjustTopControlsForTraitCollection:self.traitCollection];
     
     // Search
     if (/* DISABLES CODE */ (0))
@@ -2738,10 +2722,167 @@ static UIBarButtonItem *NewSpacerBarButtonItem()
         button.frame = controlFrame;
         [_topControls addSubview:button];
     }
-    topRect.size.height += TOP_CONTROLS_TOP_MARGIN;
-    _topControls.frame = topRect;
     
     _mainScrollView.topControls = _topControls;
+}
+
+- (void)willTransitionToTraitCollection:(UITraitCollection *)newCollection withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator{
+    [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self adjustTopControlsForTraitCollection:newCollection];
+    }
+                                 completion:nil];
+}
+
+
+- (void)adjustTopControlsForTraitCollection:(UITraitCollection *)traitCollection{
+    
+    CGRect topRect = CGRectZero;
+    
+    NSArray *availableFilters = [self availableFilters];
+    BOOL willDisplayFilter = ([availableFilters count] > 1);
+    NSArray *filterTitles;
+    
+    NSMutableArray *verticalConstraints = [NSMutableArray array];
+    NSMutableArray *horizontalConstraints = [NSMutableArray array];
+    
+    NSDictionary *metricsDict = @{ @"topMargin" : [NSNumber numberWithCGFloat:TOP_CONTROLS_TOP_MARGIN],
+                                   @"verticalSpacing" : [NSNumber numberWithCGFloat:TOP_CONTROLS_VERTICAL_SPACING],
+                                   @"horizontalSpacing" : [NSNumber numberWithCGFloat:TOP_CONTROLS_SPACING] };
+    
+    NSDictionary *viewsDict = [NSMutableDictionary dictionary];
+    if (self.sortSegmentedControl) {
+        [viewsDict setValue:self.sortSegmentedControl forKey:@"sort"];
+    }
+    if (self.filtersSegmentedControl) {
+        [viewsDict setValue:self.filtersSegmentedControl forKey:@"filters"];
+    }
+                                 
+    
+    if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact) {
+        // use short labels for the filters control
+        filterTitles = [availableFilters arrayByPerformingBlock:^(OUIDocumentPickerFilter *filter) {
+            return filter.localizedFilterChooserShortButtonLabel;
+        }];
+        for (NSUInteger i = 0; i < filterTitles.count; i++) {
+            NSString *title = filterTitles[i];
+            [self.filtersSegmentedControl setTitle:title forSegmentAtIndex:i];
+        }
+        [self.filtersSegmentedControl sizeToFit];
+        
+        // constraints
+        if (self.sortSegmentedControl && willDisplayFilter) {
+            [verticalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-topMargin-[sort]-verticalSpacing-[filters]|"
+                                                                                             options:kNilOptions
+                                                                                             metrics:metricsDict
+                                                                                               views:viewsDict]];
+            [horizontalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[sort]|"
+                                                                                               options:kNilOptions
+                                                                                               metrics:nil
+                                                                                                 views:viewsDict]];
+            [horizontalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[filters]|"
+                                                                                               options:kNilOptions
+                                                                                               metrics:nil
+                                                                                                 views:viewsDict]];
+            topRect.size.height = TOP_CONTROLS_TOP_MARGIN + self.sortSegmentedControl.frame.size.height + TOP_CONTROLS_VERTICAL_SPACING + self.filtersSegmentedControl.frame.size.height;
+            topRect.size.width = fmax(self.sortSegmentedControl.frame.size.width, self.filtersSegmentedControl.frame.size.width);
+        }else{
+            if (self.sortSegmentedControl) {
+                [verticalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-topMargin-[sort]|"
+                                                                                                 options:kNilOptions
+                                                                                                 metrics:metricsDict
+                                                                                                   views:viewsDict]];
+                [horizontalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[sort]-0-|"
+                                                                                                   options:kNilOptions
+                                                                                                   metrics:nil
+                                                                                                views:viewsDict]];
+                topRect.size.height = TOP_CONTROLS_TOP_MARGIN + self.sortSegmentedControl.frame.size.height;
+                topRect.size.width = self.sortSegmentedControl.frame.size.width;
+            }
+            if (willDisplayFilter) {
+                [verticalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-topMargin-[filters]|"
+                                                                                                 options:kNilOptions
+                                                                                                 metrics:metricsDict
+                                                                                                   views:viewsDict]];
+                [horizontalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[filters]-0-|"
+                                                                                                   options:kNilOptions
+                                                                                                   metrics:nil
+                                                                                                     views:viewsDict]];
+                topRect.size.height = TOP_CONTROLS_TOP_MARGIN + self.filtersSegmentedControl.frame.size.height;
+                topRect.size.width = self.filtersSegmentedControl.frame.size.width;
+            }
+        }
+    }else{
+        // use regular labels for the filters control
+        filterTitles = [availableFilters arrayByPerformingBlock:^(OUIDocumentPickerFilter *filter) {
+            return filter.localizedFilterChooserButtonLabel;
+        }];
+        for (NSUInteger i = 0; i < filterTitles.count; i++) {
+            NSString *title = filterTitles[i];
+            [self.filtersSegmentedControl setTitle:title forSegmentAtIndex:i];
+        }
+        [self.filtersSegmentedControl sizeToFit];
+        
+        // constraints
+        if (self.sortSegmentedControl && willDisplayFilter) {
+            [verticalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-topMargin-[sort]-0@990-|"
+                                                                                             options:kNilOptions
+                                                                                             metrics:metricsDict
+                                                                                               views:viewsDict]];
+            [verticalConstraints addObject:[NSLayoutConstraint constraintWithItem:self.sortSegmentedControl
+                                                                       attribute:NSLayoutAttributeCenterY
+                                                                       relatedBy:NSLayoutRelationEqual
+                                                                          toItem:self.filtersSegmentedControl
+                                                                       attribute:NSLayoutAttributeCenterY
+                                                                      multiplier:1.0f
+                                                                        constant:0.0f]];
+            [verticalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[filters]-0@990-|"
+                                                                                             options:kNilOptions
+                                                                                             metrics:metricsDict
+                                                                                               views:viewsDict]];
+            [horizontalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[sort]-horizontalSpacing-[filters]|"
+                                                                                               options:kNilOptions
+                                                                                               metrics:metricsDict
+                                                                                                 views:viewsDict]];
+            topRect.size.height = TOP_CONTROLS_TOP_MARGIN + fmax(self.sortSegmentedControl.frame.size.height, self.filtersSegmentedControl.frame.size.height);
+            topRect.size.width = self.sortSegmentedControl.frame.size.width + TOP_CONTROLS_SPACING + self.filtersSegmentedControl.frame.size.width;
+        }else{
+            if (self.sortSegmentedControl) {
+                [verticalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-topMargin-[sort]|"
+                                                                                                 options:kNilOptions
+                                                                                                 metrics:metricsDict
+                                                                                                   views:viewsDict]];
+                [horizontalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[sort]|"
+                                                                                                   options:kNilOptions
+                                                                                                   metrics:metricsDict
+                                                                                                     views:viewsDict]];
+                topRect.size.height = TOP_CONTROLS_TOP_MARGIN + self.sortSegmentedControl.frame.size.height;
+                topRect.size.width = self.sortSegmentedControl.frame.size.width;
+            }
+            if (willDisplayFilter) {
+                [verticalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-topMargin-[filters]|"
+                                                                                                 options:kNilOptions
+                                                                                                 metrics:metricsDict
+                                                                                                   views:viewsDict]];
+                [horizontalConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[filters]|"
+                                                                                                   options:kNilOptions
+                                                                                                   metrics:metricsDict
+                                                                                                     views:viewsDict]];
+                topRect.size.height = TOP_CONTROLS_TOP_MARGIN + self.filtersSegmentedControl.frame.size.height;
+                topRect.size.width = self.filtersSegmentedControl.frame.size.width;
+            }
+        }
+    }
+    
+    // add constraints
+    for (UIView *subview in _topControls.subviews){
+        subview.translatesAutoresizingMaskIntoConstraints = NO;
+    }
+    [_topControls removeConstraints:_topControls.constraints];
+    
+    [_topControls addConstraints:verticalConstraints];
+    [_topControls addConstraints:horizontalConstraints];
+    
+    _topControls.frame = topRect;
 }
 
 - (void)_sendEmailWithSubject:(NSString *)subject messageBody:(NSString *)messageBody isHTML:(BOOL)isHTML attachmentName:(NSString *)attachmentFileName data:(NSData *)attachmentData fileType:(NSString *)fileType;

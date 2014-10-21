@@ -25,7 +25,6 @@
 #import <IOKit/graphics/IOGraphicsLib.h>
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
-#import <QuickTime/QuickTime.h>
 #import <mach/mach_error.h>
 #endif
 

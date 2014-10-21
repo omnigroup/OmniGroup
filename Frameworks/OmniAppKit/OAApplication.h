@@ -12,24 +12,11 @@
 #import <Foundation/NSPathUtilities.h> // For NSSearchPathDomainMask
 #import <AppKit/NSNibDeclarations.h> // For IBAction
 
-@class NSDate, NSException, NSMutableArray, NSMutableDictionary;
+@class NSDate;
 @class NSPanel;
 @class OADocument;
 
 @interface OAApplication : NSApplication
-{
-    NSDate *exceptionCheckpointDate;
-    unsigned int exceptionCount;
-    NSTimeInterval lastEventTimeInterval;
-    NSUInteger mouseButtonState;
-    NSMapTable *windowsForSheets;
-    NSMutableArray *sheetQueue;
-    NSPanel *currentRunExceptionPanel;
-}
-
-- (void)handleInitException:(NSException *)anException;
-- (void)handleRunException:(NSException *)anException;
-- (NSPanel *)currentRunExceptionPanel;
 
 - (NSWindow *)frontWindowForMouseLocation;
 

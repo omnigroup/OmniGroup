@@ -9,14 +9,16 @@
 
 #import "OAApplication-OIExtensions.h"
 #import "OAToolbarWindowController-OIExtensions.h"
-
-#import "OIInspector.h"
 #import "OIInspectableControllerProtocol.h"
 #import "OIInspectionSet.h"
+#import "OIInspector.h"
 #import "OIInspectorController.h"
-#import "OIInspectorRegistry.h"
-
-// These are needed for OmniGraffle, but might not need to be public after the tabbed-inspector merge.  Reevaluate after that and make non-public if possible
 #import "OIInspectorGroup.h"
-#import "OITabbedInspector.h"
 #import "OIInspectorHeaderView.h"
+#import "OIInspectorRegistry.h"
+#import "OIInspectorSection.h"
+#import "OIInspectorTabController.h"
+#import "OIMatrix.h"
+#import "OISectionedInspector.h"
+#import "OITabMatrix.h"
+#import "OITabbedInspector.h"

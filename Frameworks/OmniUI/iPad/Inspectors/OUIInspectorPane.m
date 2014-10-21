@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,6 +51,28 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     // For subclasses
 }
 
+- (void)doneButton:(id)sender;
+{
+    [self.inspector dismiss];
+}
+
+- (void)_updateForContainment;
+{
+    if (self.inspector.mainPane == self) {
+        // For the mainPane, when modal show a done button, when in a popover show nothing
+        if ([self.inspector isVisible]) {
+            
+            // If we just now were modal and we transitioned to a popover (i.e. 6+ portrait->landscape), the popover is going to be positioned and sized terribly. Better to dismiss it.
+            if (self.navigationItem.leftBarButtonItem.action == @selector(doneButton:)) {
+                [self.inspector dismissAnimated:NO];
+                self.navigationItem.leftBarButtonItem = nil;
+            }
+        } else if (!self.navigationItem.leftBarButtonItem) {
+            self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneButton:)];
+        }
+    }
+}
+
 #pragma mark -
 #pragma mark UIViewController
 
@@ -59,7 +81,7 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     OBPRECONDITION(_weak_inspector); // should have been set by now
     
     [super viewWillAppear:animated];
-    
+    [self _updateForContainment];
     [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
 }
 
@@ -73,6 +95,14 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 - (BOOL)shouldAutorotate;
 {
     return YES;
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator NS_AVAILABLE_IOS(8_0);
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    [coordinator animateAlongsideTransition:NULL completion:^(id <UIViewControllerTransitionCoordinator> coordinator) {
+        [self _updateForContainment];
+    }];
 }
 
 @end

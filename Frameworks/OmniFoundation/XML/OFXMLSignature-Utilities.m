@@ -275,47 +275,6 @@ NSData *OFASN1UnwrapUnsignedInteger(NSData *buf, NSUInteger *inOutWhere, NSError
     return result;
 }
 
-NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len)
-{
-    if (!bytes)
-        return nil;
-    if (len < 1)
-        return @"{ }";
-    
-    
-    // The first byte has a special encoding.
-    unsigned int c0 = bytes[0] / 40;
-    unsigned int c1 = bytes[0] % 40;
-    
-    NSMutableString *buf = [NSMutableString stringWithFormat:@"{ %u %u ", c0, c1];
-
-    size_t p = 1;
-    while(p < len) {
-        size_t e = p;
-        while(e < len && (bytes[e] & 0x80))
-            e++;
-        if (!(e < len)) {
-            [buf appendString:@"*TRUNC "];
-            break;
-        } else {
-            size_t nbytes = 1 + e - p;
-            if (nbytes * 7 >= sizeof(unsigned long)*NBBY) {
-                [buf appendString:@"*BIG "];
-            } else {
-                unsigned long value = 0;
-                while(p <= e) {
-                    value = ( value << 7 ) | ( bytes[p] & 0x7F );
-                    p++;
-                }
-                [buf appendFormat:@"%lu ", value];
-            }
-        }
-    }
-    
-    [buf appendString:@"}"];
-    return buf;
-}
-
 #pragma mark SecItem debugging
 
 

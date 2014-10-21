@@ -15,6 +15,10 @@ RCS_ID("$Id$");
 static NSString * const OQFlipSwapViewAnimationName = @"OQFlipSwapViewAnimation";
 
 @implementation OQFlipSwapViewAnimation
+{
+    CALayer *_targetLayer;
+    NSWindow *_window;
+}
 
 static NSImage *_imageForView(NSView *view)
 {

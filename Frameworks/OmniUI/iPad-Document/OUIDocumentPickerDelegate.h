@@ -38,6 +38,9 @@
 - (OUIDocumentPickerFilter *)documentPickerDocumentFilter:(OUIDocumentPicker *)picker;
 - (OUIDocumentPickerFilter *)documentPickerTemplateDocumentFilter:(OUIDocumentPicker *)picker;
 
+// Default documentStoreFilter's filterPredicate
+- (NSPredicate *)defaultDocumentStoreFilterFilterPredicate:(OUIDocumentPicker *)picker;
+
 // Your opportunity to customize the default item view before it's in its superview
 - (void)documentPicker:(OUIDocumentPicker *)picker willDisplayItemView:(OUIDocumentPickerItemView *)itemView;
 - (void)documentPicker:(OUIDocumentPicker *)picker willEndDisplayingItemView:(OUIDocumentPickerItemView *)itemView;

@@ -20,13 +20,13 @@
 "All versions" = "Tutte le versioni";
 
 /* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Consentire a %@ di segnalare periodicamente informazioni sul modello hardware e sulla versione di iOS?\nIn questo modo potremo conoscere le configurazioni più importanti da supportare. Puoi anche modificare la risposta in seguito nelle preferenze mediante MUMBLE MUMBLE MUMBLE.";
+"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Consentire a %@ di segnalare periodicamente informazioni sul modello hardware e sulla versione di iOS?\nIn questo modo potremo conoscere le configurazioni più importanti da supportare. Puoi anche modificare la risposta in seguito nelle preferenze mediante BLA BLA BLA.";
 
 /* Software update report entry name */
-"Application identifier" = "Identificatore applicazione";
+"App ID" = "ID app";
 
 /* Software update report entry name */
-"Application version" = "Versione applicazione";
+"App version" = "Versione app";
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
 "Check operation failed." = "Controllo operazione non riuscito.";
@@ -40,8 +40,10 @@
 /* Software update report entry name */
 "Device" = "Dispositivo";
 
-/* software update settings title */
-"Device Information" = "Informazioni dispositivo…";
+/* software update settings section title
+   software update settings title */
+
+"Device Information" = "Informazioni dispositivo";
 
 /* OmniSoftwareUpdate privacy notice button title */
 "Don't Report" = "Non segnalare";
@@ -59,7 +61,7 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "Aiuta The Omni Group a decidere quali dispositivi e versioni di iOS supportare";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Se scegli di condividere queste informazioni, ci aiuterai a sapere quali dispositivi e versioni di iOS debbano essere supportati dal nostro software.\nTali informazioni saranno in forma del tutto anonima.";
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Se scegli di condividere queste informazioni, ci aiuterai a stabilire quali dispositivi e versioni di iOS supportare nel software.\nQueste informazioni saranno conservate in forma del tutto anonima.";
 
 /* Software update report entry name */
 "iOS version" = "Versione iOS";
@@ -89,19 +91,18 @@
 "Please try again later or contact us to let us know this is broken." = "Riprova più tardi o contattaci per comunicare l’errore.";
 
 /* Software update report entry name */
-"Report identifier" = "Identificatore resoconto";
+"Report ID" = "ID segnalazione";
 
 /* Software update report entry name */
-"Report version" = "Versione resoconto";
+"Report version" = "Versione segnalazione";
 
-/* software update settings cell title */
-"Send anonymous device information" = "Invia informazioni anonime sul dispositivo";
+/* Settings option title
+   software update settings cell title */
 
-/* Settings option title */
-"Send anonymous device information?" = "Inviare informazioni anonime sul dispositivo?";
+"Send Anonymous Data" = "Invia dati anonimi";
 
 /* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "Invia resoconti";
+"Send Reports" = "Invia segnalazioni";
 
 /* software update settings menu title */
 "Settings" = "Impostazioni";

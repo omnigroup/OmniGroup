@@ -23,10 +23,10 @@
 "Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Разрешить %@ периодически отправлять данные о модели устройства и версии iOS?\nЭто поможет нам определить приоритетные для поддержки конфигурации. Этот параметр можно будет изменить в параметрах MUMBLE MUMBLE MUMBLE.";
 
 /* Software update report entry name */
-"Application identifier" = "Идентификатор программы";
+"App ID" = "ID программы";
 
 /* Software update report entry name */
-"Application version" = "Версия программы";
+"App version" = "Версия программы";
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
 "Check operation failed." = "Сбой операции проверки.";
@@ -40,7 +40,9 @@
 /* Software update report entry name */
 "Device" = "Устройство";
 
-/* software update settings title */
+/* software update settings section title
+   software update settings title */
+
 "Device Information" = "Данные об устройстве";
 
 /* OmniSoftwareUpdate privacy notice button title */
@@ -56,7 +58,7 @@
 "Exception raised: %@" = "Произошло исключение: %@";
 
 /* software update settings cell detail text */
-"Help The Omni Group decide which devices and iOS versions to support" = "Помогите нам определить решить, какие устройства/версии iOS поддерживать";
+"Help The Omni Group decide which devices and iOS versions to support" = "Помогите компании Omni Group решить, какие устройства и версии iOS поддерживать";
 
 /* Settings preferences detail text */
 "If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Если вы отправите эти данные, они помогут нам узнать, какие устройства и версии iOS мы должны поддерживать.\nЭти данные полностью анонимны.";
@@ -89,16 +91,15 @@
 "Please try again later or contact us to let us know this is broken." = "Повторите попытку позже или свяжитесь с нами, чтобы сообщить о проблеме.";
 
 /* Software update report entry name */
-"Report identifier" = "Идентификатор отчета";
+"Report ID" = "ID отчета";
 
 /* Software update report entry name */
 "Report version" = "Версия отчета";
 
-/* software update settings cell title */
-"Send anonymous device information" = "Отправить анонимные данные об устройстве";
+/* Settings option title
+   software update settings cell title */
 
-/* Settings option title */
-"Send anonymous device information?" = "Отправить анонимные данные об устройстве?";
+"Send Anonymous Data" = "Отправлять анонимные данные";
 
 /* OmniSoftwareUpdate privacy notice button title */
 "Send Reports" = "Отправить отчеты";
@@ -110,7 +111,7 @@
 "Storage" = "Память";
 
 /* error description */
-"The data returned from <%@> was not a valid XML document." = "Полученные из &lt;%@&gr; данные не являются допустимым документом XML.";
+"The data returned from <%@> was not a valid XML document." = "Полученные из <%@> данные не являются допустимым документом XML.";
 
 /* Settings option title */
 "The following information will be sent:" = "Будут отправлены следующие данные:";

@@ -11,6 +11,9 @@
 #import <OmniFoundation/NSMutableArray-OFExtensions.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/assertions.h>
+#import <OmniBase/objc.h>
+#import <OmniBase/OBUtilities.h>
+
 #include <stdlib.h>
 
 RCS_ID("$Id$")

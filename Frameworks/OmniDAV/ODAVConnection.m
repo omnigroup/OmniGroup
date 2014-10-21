@@ -1351,9 +1351,28 @@ didReceiveResponse:(NSURLResponse *)response
 
 #pragma mark - NSURLConnectionDelegate
 
+#define MaximumRetries (5)
+
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
 {
-    [[self _operationForConnection:connection] _didCompleteWithError:error];
+    ODAVOperation *op = [self _operationForConnection:connection andRemove:YES];
+    
+    if ([error hasUnderlyingErrorDomain:(NSString *)kCFErrorDomainCFNetwork code:kCFURLErrorNetworkConnectionLost]) {
+        if (op.didReceiveBytes || op.didReceiveData || op.didSendBytes) {
+            // Retry will need to be handled at a higher level since we might have sent/gotten some bytes and these blocks might have reported some progress already. But if we only have a 'did finish', we can just start over.
+        } else  if (op.retryIndex < MaximumRetries) {
+            // Try again -- server shut down the remote side of a HTTP 1.1 connection, maybe?
+            ODAVOperation *retry = [self _makeOperationForRequest:op.request];
+            
+            retry.didFinish = op.didFinish;
+            retry.retryIndex = op.retryIndex + 1;
+            
+            [retry startWithCallbackQueue:op.callbackQueue];
+            return;
+        }
+    }
+    
+    [op _didCompleteWithError:error];
 }
 
 #if 0 // As far as I can tell, this never gets called (maybe since we implement -connection:willSendRequestForAuthenticationChallenge:.
@@ -1496,7 +1515,7 @@ didReceiveResponse:(NSURLResponse *)response
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection;
 {
-    [[self _operationForConnection:connection] _didCompleteWithError:nil];
+    [[self _operationForConnection:connection andRemove:YES] _didCompleteWithError:nil];
 }
 
 - (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse;
@@ -1554,10 +1573,19 @@ didReceiveResponse:(NSURLResponse *)response
 #else
 - (ODAVOperation *)_operationForConnection:(NSURLConnection *)connection;
 {
+    return [self _operationForConnection:connection andRemove:NO];
+}
+
+- (ODAVOperation *)_operationForConnection:(NSURLConnection *)connection andRemove:(BOOL)removeOperation;
+{
     ODAVOperation *operation;
     @synchronized(self) {
         operation = [_locked_runningOperationByConnection objectForKey:connection];
         DEBUG_TASK(2, @"Found operation %@ for connection %@", operation, connection);
+        
+        if (removeOperation) {
+            [_locked_runningOperationByConnection removeObjectForKey:connection];
+        }
     }
     OBASSERT(operation);
     return operation;
@@ -1599,6 +1627,7 @@ didReceiveResponse:(NSURLResponse *)response
     ODAVOperation *operation = [self _makeOperationForRequest:request];
     
     operation.didFinish = ^(ODAVOperation *op, NSError *error) {
+        OBINVARIANT(error == op.error);
         if (ODAVConnectionDebug > 1) {
             static NSTimeInterval totalWait = 0;
             NSTimeInterval operationWait = [NSDate timeIntervalSinceReferenceDate] - start;

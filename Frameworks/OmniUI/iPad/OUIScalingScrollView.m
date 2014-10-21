@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -122,16 +122,19 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     
     //NSLog(@"adjustContentInset");
     
-    // If the contained view has a size smaller than the scroll view, it will get pinned to the upper left.
+    // If the contained view has a size smaller than the scroll view, it will get pinned to the upper left if there are no content insets.
     CGSize viewSize = view.frame.size;
     CGSize scrollSize = self.bounds.size;
     
     CGFloat xSpace = MAX(0, scrollSize.width - viewSize.width);
     CGFloat ySpace = MAX(0, scrollSize.height - viewSize.height);
     
-    UIEdgeInsets zi = UIEdgeInsetsMake(ySpace/2, xSpace/2, ySpace/2, xSpace/2);
-    UIEdgeInsets ei = self.extraEdgeInsets;
-    UIEdgeInsets totalInsets = UIEdgeInsetsMake(zi.top + ei.top, zi.left + ei.left, zi.bottom + ei.bottom, zi.right + ei.right);
+    UIEdgeInsets zi = UIEdgeInsetsMake(ySpace/2, xSpace/2, ySpace/2, xSpace/2);  // natural insets to center the canvas
+    UIEdgeInsets ei = self.extraEdgeInsets;                                    // insets required for avoiding the navbar and toolbar
+    UIEdgeInsets totalInsets = UIEdgeInsetsMake(fmax(zi.top, ei.top),
+                                                fmax(zi.left, ei.left),
+                                                fmax(zi.bottom, ei.bottom),
+                                                fmax(zi.right, ei.right));
     
     
     if (UIEdgeInsetsEqualToEdgeInsets(self.contentInset, totalInsets))
@@ -153,7 +156,9 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 #pragma mark UIView subclass
 
 - (void)layoutSubviews;
-{
+{   // layoutSubviews gets called frequently while scrolling, so it would be nice to only do this once,
+    // but it turns out that we only get the correct height of the status bar after a few times through.
+    // and since there's no noticeable performance problem here, we'll just keep calling it over and over and over again.
     [self adjustContentInsetAnimated:NO];
 }
 

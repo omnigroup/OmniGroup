@@ -12,9 +12,10 @@ RCS_ID("$Id$")
 @interface ODOTestCaseDynamicProperty : ODOObject
 @end
 
-#import "ODOTestCaseDynamicProperty-ODOTestCaseProperties.h"
+#import "ODOTestCaseDynamicProperty-Properties.h"
 
 @implementation ODOTestCaseDynamicProperty
+ODOTestCaseDynamicProperty_DynamicProperties;
 @end
 
 @interface ODODynamicPropertyTests : ODOTestCase

@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -126,7 +126,7 @@ static void _appendAttribute(NSEntityDescription *entity, NSAttributeDescription
                 oType = ODOAttributeTypeData;
                 break;
             default:
-                NSLog(@"Attribute %@.%@ has unknown type %d.", [entity name], [attr name], type);
+                NSLog(@"Attribute %@.%@ has unknown type %lu.", [entity name], [attr name], type);
                 exit(1);
         }
 
@@ -145,7 +145,7 @@ static void _appendAttribute(NSEntityDescription *entity, NSAttributeDescription
                     [doc setAttribute:ODOAttributeDefaultValueAttributeName string:[defaultValue boolValue] ? @"true" : @"false"];
                     break;
                 default:
-                    NSLog(@"Default value not supported for attribute %@.%@ with type %d.", [entity name], [attr name], type);
+                    NSLog(@"Default value not supported for attribute %@.%@ with type %lu.", [entity name], [attr name], type);
                     exit(1);
             }
         }
@@ -159,7 +159,7 @@ static void _appendRelationship(NSEntityDescription *entity, NSRelationshipDescr
     NSUInteger maxCount = [rel maxCount];
     
     if (minCount > 1 || maxCount > 1) {
-        NSLog(@"Not supporting relationships with other than basic cardinality options.  %@.%@ has %d/%d", [entity name], [rel name], minCount, maxCount);
+        NSLog(@"Not supporting relationships with other than basic cardinality options.  %@.%@ has %lu/%lu", [entity name], [rel name], minCount, maxCount);
         exit(1);
     }
     
@@ -199,7 +199,7 @@ static void _appendRelationship(NSEntityDescription *entity, NSRelationshipDescr
                 deleteRule = ODORelationshipDeleteRuleDeny;
                 break;
             default:
-                NSLog(@"Relationship %@.%@ has unsupported delete rule %d.", [entity name], [rel name], [rel deleteRule]);
+                NSLog(@"Relationship %@.%@ has unsupported delete rule %lu.", [entity name], [rel name], [rel deleteRule]);
                 exit(1);
         }
         [doc setAttribute:ODORelationshipDeleteRuleAttributeName string:[ODORelationshipDeleteRuleEnumNameTable() nameForEnum:deleteRule]];
@@ -239,7 +239,7 @@ static void _appendEntity(NSEntityDescription *entity, OFXMLDocument *doc)
         
         NSDictionary *attributesByName = [entity attributesByName];
         NSArray *attributeNames = [[attributesByName allKeys] sortedArrayUsingSelector:@selector(compare:)];
-        unsigned int attributeIndex, attributeCount = [attributeNames count];
+        NSUInteger attributeIndex, attributeCount = [attributeNames count];
         for (attributeIndex = 0; attributeIndex < attributeCount; attributeIndex++) {
             NSString *name = [attributeNames objectAtIndex:attributeIndex];
             _appendAttribute(entity, [attributesByName objectForKey:name], doc);
@@ -247,7 +247,7 @@ static void _appendEntity(NSEntityDescription *entity, OFXMLDocument *doc)
 
         NSDictionary *relationshipsByName = [entity relationshipsByName];
         NSArray *relationshipNames = [[relationshipsByName allKeys] sortedArrayUsingSelector:@selector(compare:)];
-        unsigned int relationshipIndex, relationshipCount = [relationshipNames count];
+        NSUInteger relationshipIndex, relationshipCount = [relationshipNames count];
         for (relationshipIndex = 0; relationshipIndex < relationshipCount; relationshipIndex++) {
             NSString *name = [relationshipNames objectAtIndex:relationshipIndex];
             _appendRelationship(entity, [relationshipsByName objectForKey:name], doc);
@@ -300,14 +300,16 @@ int main(int argc, char *argv[])
     // Sort by name?
     NSDictionary *entitiesByName = [model entitiesByName];
     NSArray *entityNames = [[entitiesByName allKeys] sortedArrayUsingSelector:@selector(compare:)];
-    unsigned int entityIndex, entityCount = [entityNames count];
+    NSUInteger entityIndex, entityCount = [entityNames count];
     for (entityIndex = 0; entityIndex < entityCount; entityIndex++) {
         NSString *name = [entityNames objectAtIndex:entityIndex];
         _appendEntity([entitiesByName objectForKey:name], doc);
     }
-
+    [model release];
+    
     NSData *data = [doc xmlData:&error];
-    if (![data writeToURL:[NSURL fileURLWithPath:outputPath] options:NSAtomicWrite error:&error]) {
+    [doc release];
+    if (![data writeToURL:[NSURL fileURLWithPath:outputPath] options:NSDataWritingAtomic error:&error]) {
         NSLog(@"Unable to write XML document: %@", [error toPropertyList]);
         exit(1);
     }

@@ -1,4 +1,4 @@
-// Copyright 2003-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <OmniFoundation/OFObject.h>
 #import <Availability.h>
+
+#import <OmniBase/assertions.h>
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <Foundation/NSGeometry.h>
@@ -72,15 +74,15 @@ extern BOOL OQCompositeColors(NSColor **ioTopColor, NSColor *bottomColor);
 extern BOOL OQCompositeColors(OQColor **ioTopColor, OQColor *bottomColor);
 #endif
 
-extern CGColorRef OQCreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor, BOOL *isOpaque);
+extern CGColorRef OQCreateCompositeColorRef(CGColorRef topColor, CGColorRef bottomColor, BOOL *isOpaque) CF_RETURNS_RETAINED;
 
-CGColorRef OQCreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpace, NSArray *colors); // Bottom-most color goes first and must be opaque
+CGColorRef OQCreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpace, NSArray *colors) CF_RETURNS_RETAINED; // Bottom-most color goes first and must be opaque
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-extern CGColorRef OQCreateColorRefFromColor(CGColorSpaceRef destinationColorSpace, NSColor *c);
+extern CGColorRef OQCreateColorRefFromColor(CGColorSpaceRef destinationColorSpace, NSColor *c) CF_RETURNS_RETAINED;
 extern NSColor *OQColorFromColorRef(CGColorRef c);
 
-extern CGColorRef OQCreateGrayColorRefFromColor(NSColor *c);
+extern CGColorRef OQCreateGrayColorRefFromColor(NSColor *c) CF_RETURNS_RETAINED;
 #endif
 
 typedef enum {

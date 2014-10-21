@@ -51,4 +51,15 @@ model "ODOTestCase" do
     attribute "name", :string, :optional => true
     relationship "leftHand", "LeftHandRequired", "rightHand", :delete => :cascade, :calculated => true
   end
+  
+  entity "PeerA" do
+    attribute "pk", :string, :primary => true
+    relationship "peerB", "PeerB", "peerA", :delete => :nullify
+  end
+  
+  entity "PeerB" do
+    attribute "pk", :string, :primary => true
+    relationship "peerA", "PeerA", "peerB", :delete => :nullify, :calculated => true
+  end
+  
 end

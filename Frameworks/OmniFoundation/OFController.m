@@ -17,6 +17,7 @@
 #import <OmniFoundation/OFObject-Queue.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/OFWeakReference.h>
+#import <OmniFoundation/OFPreference.h>
 
 RCS_ID("$Id$")
 
@@ -32,6 +33,8 @@ RCS_ID("$Id$")
     NSMutableArray *_observerReferences; // OFWeakReferences holding the observers
     NSMutableSet *postponingObservers;
     NSMutableDictionary *queues;
+    
+    OFPreference *_crashOnAssertionOrUnhandledExceptionPreference;
 }
 
 static OFController *sharedController = nil;
@@ -79,7 +82,7 @@ static void _OFControllerCheckTerminated(void)
         if (!controllingBundle)
             controllingBundle = [[NSBundle mainBundle] retain];
         
-        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.8 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
+        // If the controlling bundle specifies a minimum OS revision, make sure it is at least 10.10 (since that is our global minimum on the trunk right now).  Only really applies for LaunchServices-started bundles (applications).
 #ifdef OMNI_ASSERTIONS_ON
         {
             NSString *requiredVersionString = [[controllingBundle infoDictionary] objectForKey:@"LSMinimumSystemVersion"];
@@ -87,7 +90,7 @@ static void _OFControllerCheckTerminated(void)
                 OFVersionNumber *requiredVersion = [[OFVersionNumber alloc] initWithVersionString:requiredVersionString];
                 OBASSERT(requiredVersion);
                 
-                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.8"];
+                OFVersionNumber *globalRequiredVersion = [[OFVersionNumber alloc] initWithVersionString:@"10.10"];
                 OBASSERT([globalRequiredVersion compareToVersionNumber:requiredVersion] != NSOrderedDescending);
                 [requiredVersion release];
                 [globalRequiredVersion release];
@@ -148,6 +151,7 @@ static void _OFControllerCheckTerminated(void)
     return sharedController;
 }
 
+
 - (id)init;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -172,8 +176,9 @@ static void _OFControllerCheckTerminated(void)
     // We are setting up the shared instance in +sharedController
     if (!(self = [super init]))
         return nil;
-    
-    CrashOnAssertionOrUnhandledException = [self crashOnAssertionOrUnhandledException];
+
+    // We can't depend on the default being registered here since we are early in startup. Default to on, but then cache the actual value in -didInitialize, once things get registered.
+    CrashOnAssertionOrUnhandledException = YES;
     
     NSExceptionHandler *handler = [NSExceptionHandler defaultExceptionHandler];
     [handler setDelegate:self];
@@ -198,6 +203,11 @@ static void _OFControllerCheckTerminated(void)
 {
     OBPRECONDITION([NSThread isMainThread]);
 
+    if (_crashOnAssertionOrUnhandledExceptionPreference) {
+        [OFPreference removeObserver:self forPreference:_crashOnAssertionOrUnhandledExceptionPreference];
+        [_crashOnAssertionOrUnhandledExceptionPreference release];
+    }
+    
     [_observerReferences release];
     [postponingObservers release];
     [queues release];
@@ -305,6 +315,16 @@ static void _OFControllerCheckTerminated(void)
     OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(_status == OFControllerNotInitializedStatus);
     
+    // See -init for why we delay this work
+    {
+        static NSString * const CrashOnAssertionOrUnhandledExceptionKey = @"OFCrashOnAssertionOrUnhandledException";
+        OBPRECONDITION([[OFPreference registeredKeys] member:CrashOnAssertionOrUnhandledExceptionKey]);
+        
+        _crashOnAssertionOrUnhandledExceptionPreference = [[OFPreference preferenceForKey:CrashOnAssertionOrUnhandledExceptionKey] retain];
+        [OFPreference addObserver:self selector:@selector(_crashOnAssertionPreferenceChanged:) forPreference:_crashOnAssertionOrUnhandledExceptionPreference];
+        [self _crashOnAssertionPreferenceChanged:nil];
+    }
+
     self.status = OFControllerInitializedStatus;
     [self _makeObserversPerformSelector:@selector(controllerDidInitialize:)];
 }
@@ -420,13 +440,6 @@ static void _OFControllerCheckTerminated(void)
 #endif
 }
 
-- (BOOL)crashOnAssertionOrUnhandledException;
-{
-    // This acts as a global throttle on the 'crash on exeception' support.  If this is off, we assume the app doesn't want the behavior at all.
-    // Some applications, like OmniFocus, are in a constantly saved state.  In this case, there is little to lose by crashing and lots to gain (avoid corrupting data, get reports from users so we can fix them, etc.).  Other applications aren't always saved, so crashing at the first sign of trouble would lead to data loss.  Each application can pick their behavior by setting this key in their Info.plist in the defaults registration area.
-    return [[NSUserDefaults standardUserDefaults] boolForKey:@"OFCrashOnAssertionOrUnhandledException"];
-}
-
 static void OFCrashImmediately(void)
 {
     unsigned int *bad = (unsigned int *)sizeof(unsigned int);
@@ -465,12 +478,6 @@ static void OFCrashImmediately(void)
                         mask, [exception name], [exception reason], [exception userInfo], symbolicBacktrace];
 
     [self crashWithReport:report];
-}
-
-- (void)handleUncaughtException:(NSException *)exception;
-{
-    OBRecordBacktrace(NULL, OBBacktraceBuffer_NSException);
-    [self crashWithException:exception mask:NSLogUncaughtExceptionMask];
 }
 
 - (BOOL)shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
@@ -651,6 +658,13 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 }
 
 #pragma mark - Private
+
+- (void)_crashOnAssertionPreferenceChanged:(NSNotification *)note;
+{
+    OBPRECONDITION(!note || note.object == _crashOnAssertionOrUnhandledExceptionPreference);
+    
+    CrashOnAssertionOrUnhandledException = [_crashOnAssertionOrUnhandledExceptionPreference boolValue];
+}
 
 - (void)_makeObserversPerformSelector:(SEL)aSelector;
 {

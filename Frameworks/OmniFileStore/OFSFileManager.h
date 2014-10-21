@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,7 @@ extern NSInteger OFSFileManagerDebug;
 
 @property(nonatomic,readonly) NSURL *baseURL;
 @property(nonatomic,weak,readonly) id <OFSFileManagerDelegate> delegate;
+@property(nonatomic,readonly) NSString *locationDescription;
 
 - (void)invalidate;
 

@@ -12,10 +12,12 @@ RCS_ID("$Id$");
 #import <Foundation/NSStream.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFXMLBuffer.h>
-#import <OmniFoundation/OFXMLError.h>
 #import <OmniFoundation/OFXMLQName.h>
 #import <OmniFoundation/OFXMLInternedStringTable.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
+
+#import "OFXMLError.h"
+
 #import <libxml/xmlIO.h>
 #import <libxml/xmlreader.h>
 

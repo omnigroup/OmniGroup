@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,8 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniDataObjects/ODOAttribute.h>
+
+#import <OmniFoundation/OFEnumNameTable.h>
 
 RCS_ID("$Id$")
 
@@ -56,7 +58,7 @@ RCS_ID("$Id$")
 #pragma mark ODOModel creation
 
 // No validation is done for non-DEBUG builds.  The Ruby generator is expected to have done it.
-ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL calculated, BOOL transient, SEL get, SEL set,
+ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL transient, SEL get, SEL set,
                                  ODOAttributeType type, Class valueClass, NSObject <NSCopying> *defaultValue, BOOL isPrimaryKey)
 {
     OBPRECONDITION(type > ODOAttributeTypeInvalid);
@@ -75,7 +77,7 @@ ODOAttribute *ODOAttributeCreate(NSString *name, BOOL optional, BOOL calculated,
         // The primary key isn't in the snapshot, but has a special marker for that.
         baseFlags.snapshotIndex = ODO_PRIMARY_KEY_SNAPSHOT_INDEX;
     
-    ODOPropertyInit(attr, name, baseFlags, optional, calculated, transient, get, set);
+    ODOPropertyInit(attr, name, baseFlags, optional, transient, get, set);
 
     attr->_type = type;
     attr->_valueClass = valueClass;

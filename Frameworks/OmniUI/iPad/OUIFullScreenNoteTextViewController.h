@@ -7,8 +7,6 @@
 //
 // $Id$
 
-#import <OmniUI/OUIViewController.h>
-
 @class OUINoteTextView;
 @class OUIFullScreenNoteTextViewController;
 

@@ -263,9 +263,27 @@ static void _appendPropertiesOfTreeAtURL(NSFileManager *self, NSMutableString *s
 - (BOOL)addExcludedFromBackupAttributeToItemAtPath:(NSString *)path error:(NSError **)error;
 {
     NSURL *url = [NSURL fileURLWithPath:path];
+    return [self addExcludedFromBackupAttributeToItemAtURL:url error:error];
+}
+
+- (BOOL)addExcludedFromBackupAttributeToItemAtURL:(NSURL *)url error:(NSError **)error;
+{
     BOOL result = [url setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:error];
     return result;
 }
+
+- (BOOL)removeExcludedFromBackupAttributeToItemAtURL:(NSURL *)url error:(NSError **)error;
+{
+    BOOL result = [url setResourceValue:[NSNumber numberWithBool:NO] forKey:NSURLIsExcludedFromBackupKey error:error];
+    return result;
+}
+
+- (BOOL)removeExcludedFromBackupAttributeToItemAtPath:(NSString *)path error:(NSError **)error;
+{
+    NSURL *url = [NSURL fileURLWithPath:path];
+    return [self removeExcludedFromBackupAttributeToItemAtURL:url error:error];
+}
+
 #endif
 
 @end

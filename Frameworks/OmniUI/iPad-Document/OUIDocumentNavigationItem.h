@@ -18,7 +18,7 @@
 - (instancetype)initWithDocument:(OUIDocument *)document;
 
 @property(nonatomic,strong) UIColor *titleColor;
-
+@property(nonatomic,assign) BOOL hideTitle;
 /*!
  * @brief Causes the navigation item to leave 'rename mode'.
  * @return YES if the navigation item successfully returned to normal mode. If called, while in normal mode it will return YES. NO otherwise.

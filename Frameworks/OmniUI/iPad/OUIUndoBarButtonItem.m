@@ -216,55 +216,93 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 
 - (void)_showUndoMenu;
 {
-    
-    if (!_menuController) {
-        _menuController = [[OUIMenuController alloc] init];
-        _menuController.sizesToOptionWidth = YES;
-        _menuController.textAlignment = NSTextAlignmentCenter;
-        _menuController.showsDividersBetweenOptions = NO;
-
-        // We will provide exactly the same number/title options but possibly w/o an action.
-        _menuController.optionInvocationAction = OUIMenuControllerOptionInvocationActionReload;
-    }
-
-    // retint each time, because Focus uses multiple tints
-    _menuController.tintColor = [OUIAppController controller].window.tintColor;
-    
-    id <OUIUndoBarButtonItemTarget> target = _weak_undoBarButtonItemTarget;
-    
-    // Build Options
-    OUIMenuOption *undoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title")
-                                              action:^{
-                                                  if (target) {
-                                                      [target undo:nil];
-                                                  }
-                                              } validator:^BOOL{
-                                                  return [target canPerformAction:@selector(undo:) withSender:nil];
-                                              }];
-    
-    
-    OUIMenuOption *redoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title")
-                                              action:^{
-                                                  if (target) {
-                                                      [target redo:nil];
-                                                  }
-                                              } validator:^BOOL{
-                                                  return [target canPerformAction:@selector(redo:) withSender:nil];
-                                              }];
-    
-    _menuController.topOptions = @[undoOption, redoOption];
-
-    
-    // Setup Popover Presentation Controller - This must be done each time becase when the popover is dismissed the current popoverPresentationController is released and a new one is created next time.
-    _menuController.popoverPresentationController.barButtonItem = self;
-    
-    // Present
-    [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoPopoverWillShowNotification object:self];
     UIViewController *viewControllerToPresentMenu = [self.delegate viewControllerToPresentMenuForUndoBarButtonItem:self];
-    [viewControllerToPresentMenu presentViewController:_menuController animated:YES completion:^{
-        // The menu controller "helpfully" adds passthrough views for us at presentation time – clear them out afterwards
-        _menuController.popoverPresentationController.passthroughViews = @[];
-    }];
+    
+    if (viewControllerToPresentMenu.traitCollection.horizontalSizeClass != UIUserInterfaceSizeClassCompact) {
+        // we can use our popover
+        if (!_menuController) {
+            _menuController = [[OUIMenuController alloc] init];
+            _menuController.sizesToOptionWidth = YES;
+            _menuController.textAlignment = NSTextAlignmentCenter;
+            _menuController.showsDividersBetweenOptions = NO;
+            
+            // We will provide exactly the same number/title options but possibly w/o an action.
+            _menuController.optionInvocationAction = OUIMenuControllerOptionInvocationActionReload;
+        }
+        
+        // retint each time, because Focus uses multiple tints
+        _menuController.tintColor = [OUIAppController controller].window.tintColor;
+        
+        id <OUIUndoBarButtonItemTarget> target = _weak_undoBarButtonItemTarget;
+        
+        // Build Options
+        OUIMenuOption *undoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title")
+                                                            action:^{
+                                                                if (target) {
+                                                                    [target undo:nil];
+                                                                }
+                                                            } validator:^BOOL{
+                                                                return [target canPerformAction:@selector(undo:) withSender:nil];
+                                                            }];
+        
+        
+        OUIMenuOption *redoOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title")
+                                                            action:^{
+                                                                if (target) {
+                                                                    [target redo:nil];
+                                                                }
+                                                            } validator:^BOOL{
+                                                                return [target canPerformAction:@selector(redo:) withSender:nil];
+                                                            }];
+        
+        _menuController.topOptions = @[undoOption, redoOption];
+        
+        
+        // Setup Popover Presentation Controller - This must be done each time becase when the popover is dismissed the current popoverPresentationController is released and a new one is created next time.
+        _menuController.popoverPresentationController.barButtonItem = self;
+        
+        // Present
+        [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoPopoverWillShowNotification object:self];
+        
+        [viewControllerToPresentMenu presentViewController:_menuController animated:YES completion:^{
+            // The menu controller "helpfully" adds passthrough views for us at presentation time – clear them out afterwards
+            _menuController.popoverPresentationController.passthroughViews = @[];
+        }];
+    }else{
+        id <OUIUndoBarButtonItemTarget> target = _weak_undoBarButtonItemTarget;
+        // the sheet will dismiss as soon as the user makes a choice, so they will have to tap again to get Redo.
+        
+        UIAlertController *undoController = [UIAlertController alertControllerWithTitle:nil
+                                                                                message:nil
+                                                                         preferredStyle:UIAlertControllerStyleActionSheet];
+        
+        
+        if ([target canPerformAction:@selector(undo:) withSender:nil]){
+            [undoController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title")
+                                                               style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction *action) {
+                                                                 if (target) {
+                                                                     [target undo:nil];
+                                                                 }
+                                                             }]];
+        }
+        if ([target canPerformAction:@selector(redo:) withSender:nil]){
+            [undoController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Redo", @"OmniUI", OMNI_BUNDLE, @"Redo button title")
+                                                               style:UIAlertActionStyleDefault
+                                                             handler:^(UIAlertAction *action) {
+                                                                 if (target) {
+                                                                     [target redo:nil];
+                                                                 }
+                                                             }]];
+        }
+        [undoController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"Cancel button title")
+                                                           style:UIAlertActionStyleCancel
+                                                         handler:nil]];
+        
+        [viewControllerToPresentMenu presentViewController:undoController
+                                                  animated:YES
+                                                completion:nil];  // we could update the "Undo" title of the button to "Redo" in this case, if redo were the only possible option, but this is consistent with the regular width trait class behavior
+    }
 }
 
 - (void)_touchDown:(id)sender;

@@ -91,8 +91,7 @@ static id _commonInit(OADatePickerTextField *self)
     OFRelativeDateFormatter *formatter = [self formatter];
     NSDateComponents *dueTimeDateComponents = [formatter defaultTimeDateComponents];
     NSCalendar *currentCalendar = [NSCalendar currentCalendar];
-    NSCalendarDate *midnightToday = [NSCalendarDate calendarDate];
-    midnightToday = [midnightToday dateByAddingYears:0 months:0 days:0 hours:(-[midnightToday hourOfDay]) minutes:-[midnightToday minuteOfHour] seconds:0];
+    NSDate *midnightToday = [currentCalendar startOfDayForDate:[NSDate date]];
     NSDateComponents *defaultDateComponents = [currentCalendar components:NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay fromDate:midnightToday];
     [defaultDateComponents setHour:[dueTimeDateComponents hour]];
     [defaultDateComponents setMinute:[dueTimeDateComponents minute]];

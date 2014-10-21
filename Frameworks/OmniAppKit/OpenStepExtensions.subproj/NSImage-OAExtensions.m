@@ -16,6 +16,10 @@
 
 #import "OAVersion.h"
 
+#include <stdlib.h>
+#include <memory.h>
+
+
 RCS_ID("$Id$")
 
 NSString * const OADropDownTriangleImageName = @"OADropDownTriangle";
@@ -478,9 +482,6 @@ static NSDictionary *titleFontAttributes;
     [scaledImage unlockFocus];
     return scaledImage;
 }
-
-#include <stdlib.h>
-#include <memory.h>
 
 - (NSData *)bmpData;
 {

@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,9 +9,10 @@
 
 #import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOModel-Creation.h>
+#import <OmniDataObjects/ODOObject-Accessors.h>
+
 #import "ODOEntity-Internal.h"
 #import "ODODatabase-Internal.h"
-#import "ODOObject-Accessors.h"
 
 RCS_ID("$Id$")
 
@@ -100,15 +101,17 @@ void ODOModelFinalize(ODOModel *model)
 #endif
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
 - (void)dealloc;
 {
     // See the @dynamic support in ODOObject, including +resolveInstanceMethod:
     OBRejectUnusedImplementation(self, _cmd);
-    
     [_name release];
     [_entitiesByName release];
     [super dealloc];
 }
+#pragma clang diagnostic pop
 
 - (NSDictionary *)entitiesByName;
 {

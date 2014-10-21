@@ -5,7 +5,7 @@
 "Discard Report" = "レポートを破棄";
 
 /* alert button title */
-"Not Now" = "後で";
+"Not Now" = "今はしない";
 
 /* alert button title */
 "Send Report" = "レポートを送信";
@@ -14,5 +14,4 @@
 "Submit Report?" = "レポートを送信しますか？";
 
 /* crash report alert message */
-"The last time you used %@, it unexpectedly quit. Submitting a report will help us fix the problem in future releases." = "%@ は前回予期せず終了しました。レポートを送信していただくと、将来のリリースでその問題を修正することができます。";
-
+"The last time you used %@, it unexpectedly quit. Submitting a report will help us fix the problem in future releases." = "%@ は前回予期せず終了しました。送信していただいたレポートは、弊社が今後のリリースでその問題を修正するのに役立ちます。";

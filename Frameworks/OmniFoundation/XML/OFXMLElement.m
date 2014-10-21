@@ -9,18 +9,18 @@
 
 #import <Foundation/Foundation.h>
 
-#import <OmniFoundation/OFXMLDocument.h>
-#import <OmniFoundation/OFXMLString.h>
-#import <OmniFoundation/NSString-OFUnicodeCharacters.h>
-#import <OmniFoundation/NSString-OFSimpleMatching.h>
-#import <OmniFoundation/NSString-OFConversion.h>
 #import <OmniFoundation/CFArray-OFExtensions.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
+#import <OmniFoundation/NSString-OFConversion.h>
+#import <OmniFoundation/NSString-OFSimpleMatching.h>
+#import <OmniFoundation/NSString-OFUnicodeCharacters.h>
 #import <OmniFoundation/OFNull.h>
-
 #import <OmniFoundation/OFXMLBuffer.h>
-#import <OmniFoundation/OFXMLFrozenElement.h>
+#import <OmniFoundation/OFXMLDocument.h>
+#import <OmniFoundation/OFXMLString.h>
 #import <OmniFoundation/OFXMLUnparsedElement.h>
+
+#import "OFXMLFrozenElement.h"
 
 #import <OmniBase/OmniBase.h>
 

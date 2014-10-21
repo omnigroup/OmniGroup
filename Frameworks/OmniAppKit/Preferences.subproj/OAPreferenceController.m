@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -430,26 +430,40 @@ static NSString *windowFrameSaveName = @"Preferences";
 {
     if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) && ([[NSApp currentEvent] modifierFlags] & NSShiftKeyMask)) {
         // warn & wipe the entire defaults domain
-        NSString *mainPrompt, *secondaryPrompt, *defaultButton, *otherButton;
-        NSBundle *bundle;
-
-        bundle = [OAPreferenceClient bundle];
-        mainPrompt = NSLocalizedStringFromTableInBundle(@"Reset all preferences and other settings to their original values?", @"OmniAppKit", bundle, "message text for reset-to-defaults alert");
-        secondaryPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings (including options not in this Preferences window, such as window sizes and toolbars) to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
-        defaultButton = NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button");
-        otherButton = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, "alert panel button");
-        NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, _window, self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), @"RestoreEverything", @"%@", secondaryPrompt);
+        NSBundle *bundle = [OAPreferenceClient bundle];
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        alert.messageText = NSLocalizedStringFromTableInBundle(@"Reset all preferences and other settings to their original values?", @"OmniAppKit", bundle, "message text for reset-to-defaults alert");
+        alert.informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings (including options not in this Preferences window, such as window sizes and toolbars) to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
+        [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button")];
+        [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, "alert panel button")];
+        [alert beginSheetModalForWindow:_window completionHandler:^(NSModalResponse returnCode) {
+            if (returnCode != NSAlertFirstButtonReturn)
+                return;
+            [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            [nonretained_currentClient valuesHaveChanged];
+        }];
     } else if ([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) {
         // warn & wipe all prefs shown in the panel
-        NSString *mainPrompt, *secondaryPrompt, *defaultButton, *otherButton;
-        NSBundle *bundle;
-
-        bundle = [OAPreferenceClient bundle];
-        mainPrompt = NSLocalizedStringFromTableInBundle(@"Reset all preferences to their original values?", @"OmniAppKit", bundle, "message text for reset-to-defaults alert");
-        secondaryPrompt = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings in all preference panes to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
-        defaultButton = NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button");
-        otherButton = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, "alert panel button");
-        NSBeginAlertSheet(mainPrompt, defaultButton, otherButton, nil, _window, self, NULL, @selector(_restoreDefaultsSheetDidEnd:returnCode:contextInfo:), NULL, @"%@", secondaryPrompt);
+        NSBundle *bundle = [OAPreferenceClient bundle];
+        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        alert.messageText = NSLocalizedStringFromTableInBundle(@"Reset all preferences to their original values?", @"OmniAppKit", bundle, "message text for reset-to-defaults alert");
+        alert.informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings in all preference panes to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
+        [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button")];
+        [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniAppKit", bundle, "alert panel button")];
+        [alert beginSheetModalForWindow:_window completionHandler:^(NSModalResponse returnCode) {
+            if (returnCode != NSAlertFirstButtonReturn)
+                return;
+            
+            for (OAPreferenceClientRecord *aClientRecord in [self clientRecords]) {
+                NSArray *preferenceKeys = [[NSArray array] arrayByAddingObjectsFromArray:[[aClientRecord defaultsDictionary] allKeys]];
+                preferenceKeys = [preferenceKeys arrayByAddingObjectsFromArray:[aClientRecord defaultsArray]];
+                
+                for (NSString *aKey in preferenceKeys)
+                    [[OFPreference preferenceForKey:aKey] restoreDefaultValue];
+            }
+            [nonretained_currentClient valuesHaveChanged];
+        }];
     } else {
         // OAPreferenceClient will handle warning & reverting
         [nonretained_currentClient restoreDefaults:sender];
@@ -837,35 +851,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     }
 }
 
-- (void)_restoreDefaultsSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;
-{
-    if (returnCode != NSAlertDefaultReturn)
-        return;
-
-    if (contextInfo != NULL) {
-        [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    } else {
-        NSEnumerator *clientEnumerator;
-        OAPreferenceClientRecord *aClientRecord;
-        
-        clientEnumerator = [[self clientRecords] objectEnumerator];
-        while ((aClientRecord = [clientEnumerator nextObject])) {
-            NSArray *preferenceKeys;
-            NSEnumerator *keyEnumerator;
-            NSString *aKey;
-
-            preferenceKeys = [[NSArray array] arrayByAddingObjectsFromArray:[[aClientRecord defaultsDictionary] allKeys]];
-            preferenceKeys = [preferenceKeys arrayByAddingObjectsFromArray:[aClientRecord defaultsArray]];
-            keyEnumerator = [preferenceKeys objectEnumerator];
-            while ((aKey = [keyEnumerator nextObject])) 
-                [[OFPreference preferenceForKey:aKey] restoreDefaultValue];
-        }
-    }
-    [nonretained_currentClient valuesHaveChanged];
-}
-
-// 
+//
 
 static NSComparisonResult OAPreferenceControllerCompareCategoryNames(id name1, id name2, void *context)
 {

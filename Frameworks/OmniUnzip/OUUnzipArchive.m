@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008, 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,11 @@
 #import <OmniUnzip/OUUnzipEntry.h>
 #import <OmniUnzip/OUErrors.h>
 #import <OmniBase/system.h> // S_IFMT, etc
-#import "unzip.h"
+#import <OmniFoundation/OFByteProviderProtocol.h>
+#include "OUUtilities.h"
+#include "unzip.h"
+
+OB_REQUIRE_ARC
 
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 
@@ -36,12 +40,25 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
 }
 #define UNZIP_ERROR(f) _unzipError(self, #f, err, outError)
 
-// Zip has no real notion of directories, so we just have a flat list of files, like it does.  Some will have slashes in their names.  Some might end in '/' and have directory flags set in their attributes.  We could probably just ignore those (unless they have interesting properties, like finder info or other custom metadata, once we start handling that).
 - initWithPath:(NSString *)path error:(NSError **)outError;
+{
+    return [self initWithPath:path data:nil error:outError];
+}
+
+// Zip has no real notion of directories, so we just have a flat list of files, like it does.  Some will have slashes in their names.  Some might end in '/' and have directory flags set in their attributes.  We could probably just ignore those (unless they have interesting properties, like finder info or other custom metadata, once we start handling that).
+- initWithPath:(NSString *)path data:(NSObject <OFByteProvider> *)store error:(NSError **)outError;
 {
     _path = [path copy];
     
-    unzFile unzip = unzOpen([[NSFileManager defaultManager] fileSystemRepresentationWithPath:path]);
+    unzFile unzip;
+    if (store) {
+        _store = store;
+        unzip = unzOpen2((__bridge void *)_store, &OUReadIOImpl);
+    } else {
+        _store = nil;
+        unzip = unzOpen([[NSFileManager defaultManager] fileSystemRepresentationWithPath:path]);
+    }
+
     if (!unzip) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to open zip archive.", @"OmniUnzip", OMNI_BUNDLE, @"error description");
         NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The unzip library failed to open %@.", @"OmniUnzip", OMNI_BUNDLE, @"error reason"), path];
@@ -148,15 +165,8 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
 }
 #undef UNZIP_ERROR
 
-- (NSString *)path;
-{
-    return _path;
-}
-
-- (NSArray *)entries;
-{
-    return _entries;
-}
+@synthesize path = _path;
+@synthesize entries = _entries;
 
 // TODO: Add case sensitivity control?
 - (OUUnzipEntry *)entryNamed:(NSString *)name;
@@ -199,7 +209,14 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
 {
     OBPRECONDITION(entry);
     
-    unzFile unzip = unzOpen([[NSFileManager defaultManager] fileSystemRepresentationWithPath:_path]);
+    unzFile unzip;
+    if (_store) {
+        unzip = unzOpen2((__bridge void *)_store, &OUReadIOImpl);
+    } else {
+        _store = nil;
+        unzip = unzOpen([[NSFileManager defaultManager] fileSystemRepresentationWithPath:_path]);
+    }
+    
     if (!unzip) {
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to read zip data.", @"OmniUnzip", OMNI_BUNDLE, @"error reason");
         NSString *reason = [NSString stringWithFormat:@"Unable to open zip file \"%@\".", _path];
@@ -335,3 +352,4 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
 }
 
 @end
+

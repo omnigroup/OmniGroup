@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -75,7 +75,7 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark Creation
 
-ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL calculated, BOOL transient, SEL get, SEL set,
+ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL transient, SEL get, SEL set,
                                        BOOL toMany, ODORelationshipDeleteRule deleteRule)
 {
     OBPRECONDITION(deleteRule > ODORelationshipDeleteRuleInvalid);
@@ -91,7 +91,7 @@ ODORelationship *ODORelationshipCreate(NSString *name, BOOL optional, BOOL calcu
     baseFlags.relationship = YES;
     baseFlags.toMany = toMany;
     
-    ODOPropertyInit(rel, name, baseFlags, optional, calculated, transient, get, set);
+    ODOPropertyInit(rel, name, baseFlags, optional, transient, get, set);
     
     rel->_deleteRule = deleteRule;
     

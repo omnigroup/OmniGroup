@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -131,9 +131,6 @@ static UIImage *_OUIInspectorWellCachedImage(NSCache *cache, OUIDrawIntoImageCac
         }
         OUIGraphicsEndImageContext();
         
-        //NSString *path = [NSString stringWithFormat:@"~/tmp/cache-%@-%@.png", cache.name, cacheKey];
-        //[UIImagePNGRepresentation(image) writeToFile:[path stringByExpandingTildeInPath] atomically:YES];
-
         image = [image resizableImageWithCapInsets:edgeInsets];
         [cache setObject:image forKey:cacheKey];
     }
@@ -172,9 +169,6 @@ static CGImageRef _OUICopyRoundedBorderImageMask(CGSize imageSize, OUIInspectorW
         
         UIImage *uiImage = UIGraphicsGetImageFromCurrentImageContext();
         image = CGImageRetain([uiImage CGImage]);
-        
-        //NSData *pngData = UIImagePNGRepresentation(uiImage);
-        //[pngData writeToFile:[@"~/tmp/mask.png" stringByExpandingTildeInPath] atomically:YES];
     }
     UIGraphicsEndImageContext();
     return image;

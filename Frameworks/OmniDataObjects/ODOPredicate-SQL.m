@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -130,7 +130,7 @@ static BOOL _appendLHSOpRHS(NSComparisonPredicate *self, NSString *op, NSMutable
             [sql appendString:@" IS NOT NULL"];
         else {
             // Unsupported comparison vs. NULL
-            OBRequestConcreteImplementation(self, @selector(_appendLHSOpRHS));
+            OBFinishPorting; // Want to throw an exception, but can't use OBRequestConcreteImplementation in a function
             return NO;
         }
     } else {
@@ -245,7 +245,7 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
             return _appendStringCompareFunction(self, sql, entity, (id)CFSTR(ODO_CONTAINS), constants, outError);
         default: {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert predicate of type %d (%@).", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), opType, self];
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert predicate of type %lu (%@).", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), opType, self];
             ODOError(outError, ODOUnableToCreateSQLStatement, description, reason);
             OBASSERT_NOT_REACHED("Fix me");
             return NO;
@@ -307,7 +307,7 @@ static BOOL _appendStringCompareFunction(NSComparisonPredicate *self, NSMutableS
         }
         default: {
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create SQL query.", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
-            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert expression of type %d (%@).", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type, self];
+            NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Unable convert expression of type %lu (%@).", @"OmniDataObjects", OMNI_BUNDLE, @"error reason"), type, self];
             ODOError(outError, ODOUnableToCreateSQLStatement, description, reason);
             OBASSERT_NOT_REACHED("Fix me");
             return NO;

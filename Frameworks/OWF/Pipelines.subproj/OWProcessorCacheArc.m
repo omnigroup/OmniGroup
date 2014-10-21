@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2005, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1072,8 +1072,10 @@ OWFWeakRetainConcreteImplementation_IMPLEMENTATION;
         [debugDictionary setValue:OBShortObjectDescription(processor) forKey:@"processor"];
     if (didLock || 1)
         [debugDictionary setValue:[[dependentContext allKeys] description] forKey:@"dependentContext"];
-    else
+    else {
+        OBASSERT_NOT_REACHED("The '|| 1' produces a warning here...");
         [debugDictionary setValue:OBShortObjectDescription(dependentContext) forKey:@"dependentContext"];
+    }
     if (didLock)
         [debugDictionary setValue:object forKey:@"object"];
     else

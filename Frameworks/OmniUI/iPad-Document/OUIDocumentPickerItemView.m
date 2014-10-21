@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -695,9 +695,19 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     NSDate *date = [_item userModificationDate];
 
     NSString *dateString;
-    if (date)
-        dateString = [[_item class] displayStringForDate:date];
-    else
+    if (date) {
+        if (CGRectGetWidth(self.frame) < 200.0) {
+            static NSDateFormatter *formatter = nil;
+            
+            if (!formatter) {
+                formatter = [[NSDateFormatter alloc] init];
+                formatter.dateStyle = NSDateFormatterLongStyle;
+                formatter.timeStyle = NSDateFormatterNoStyle;
+            }
+            dateString = [formatter stringFromDate:date];
+        } else
+            dateString = [[_item class] displayStringForDate:date];
+    } else
         dateString = @"";
         
     _metadataView.dateString = dateString;

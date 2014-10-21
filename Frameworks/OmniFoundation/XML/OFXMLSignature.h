@@ -92,7 +92,7 @@ enum OFXMLSignatureOperation {
 
 /* Object lifecycle */
 + (NSArray *)signaturesInTree:(xmlDoc *)libxmlDocument;
-- initWithElement:(xmlNode *)sig inDocument:(xmlDoc *)doc;
+- initWithElement:(xmlNode *)sig inDocument:(xmlDoc *)doc NS_DESIGNATED_INITIALIZER ;
 - (BOOL)processSignatureElement:(NSError **)err;
 - (BOOL)processSignatureElement:(enum OFXMLSignatureOperation)op error:(NSError **)err;
 
@@ -131,7 +131,6 @@ NSMutableData *OFASN1CreateForTag(uint8_t tag, NSUInteger byteCount) NS_RETURNS_
 NSMutableData *OFASN1CreateForSequence(NSData *item, ...)  __attribute__((sentinel)) NS_RETURNS_RETAINED;
 NSUInteger OFASN1UnwrapSequence(NSData *seq, NSError **outError);
 NSData *OFASN1UnwrapUnsignedInteger(NSData *buf, NSUInteger *inOutWhere, NSError **outError);
-NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len); // Textual description for debugging
 
 /* Routines for extracting key information from an XML signature */
 NSDictionary *OFXMLSigParseX509DataNode(xmlNode *x509Data);

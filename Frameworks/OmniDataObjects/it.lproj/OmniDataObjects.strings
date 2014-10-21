@@ -1,0 +1,222 @@
+/* error reason */
+"Attempted to disconnect while not connected." = "Tentativo di disconnessione quando non connesso.";
+
+/* error reason */
+"Attribute %@.%@ has type %d with unknown SQL column type." = "L'attributo %1$@.%2$@ possiede il tipo %3$d con tipo colonna SQL sconosciuto.";
+
+/* error reason */
+"Attribute %@.%@ has unknown value type but isn't transient." = "L'attributo %1$@.%2$@ possiede un tipo di valore sconosciuto ma non è transitorio.";
+
+/* error reason */
+"Attribute %@.%@ specified a transient or optional primary key." = "L'attributo %1$@.%2$@ ha specificato una chiave primaria transitoria o facoltativa.";
+
+/* error reason */
+"Attribute has type unsupported type %d." = "L'attributo possiede il tipo non supportato %d.";
+
+/* error reason */
+"Attribute specified default value '%@' for attribute of type of '%@'." = "L'attributo ha specificato il valore di default '%1$@' per l'attributo del tipo '%2$@'.";
+
+/* error reason */
+"Attribute specified invalid type of '%@'." = "L'attributo ha specificato il tipo non valido di '%@'.";
+
+/* error reason */
+"Attribute specified no type." = "L'attributo non ha specificato nessun tipo.";
+
+/* error reason */
+"Cannot connect to '%@' since the database is already connected to '%@'." = "Impossibile connettere a '%1$@' poiché il database è già connesso a '%2$@'.";
+
+/* error reason */
+"Cannot disconnect from database at '%@'." = "Impossibile disconnettere dal database in '%@'.";
+
+/* error reason */
+"Cannot open database at '%@'." = "Impossibile aprire il database in '%@'.";
+
+/* error reason */
+"Cannot prepare fetch for key %@ for query %@ while not connected to a database." = "Impossibile preparare la ricezione della chiave %1$@ per la query %2$@ se non sei connesso al database.";
+
+/* error reason */
+"Couldn't create OFXMLDocument." = "Impossibile creare OFXMLDocument.";
+
+/* error reason */
+"Entity '%@' has multiple primary key attributes." = "L'entità '%@' possiede attributi di chiave primaria multipli.";
+
+/* error reason */
+"Entity '%@' has multiple properties named '%@'." = "L'entità '%1$@' possiede diverse proprietà chiamate '%2$@'.";
+
+/* error reason */
+"Entity '%@' has no instance class name." = "L'entità '%@' non possiede un nome classe esempio.";
+
+/* error reason */
+"Entity '%@' has no primary key attributes." = "L'entità '%@' non possiede attributi di chiave primaria.";
+
+/* error reason */
+"Entity '%@' specified instance class name of '%@', but no such class was found." = "L'entità '%1$@' ha specificato il nome classe esempio '%2$@', ma non è stata trovata nessuna classe tale.";
+
+/* error reason */
+"Entity '%@' specified instance class name of '%@', but this class is not a subclass of ODOObject." = "L'entità '%1$@' ha specificato il nome classe esempio '%2$@', ma questa classe non è una sottoclasse di ODOObject.";
+
+/* error reason */
+"Entity '%@' specified primary key attribute '%@' with a default value." = "L'entità '%1$@' ha specificato un attributo di chiave primaria '%2$@' con un valore di default.";
+
+/* error reason */
+"Entity '%@' specified primary key attribute '%@' with type %d, but only strings are supported." = "L'entità '%1$@' ha specificato l'attributo di chiave primaria '%2$@' del tipo %3$d, ma sono supportate solamente le stringhe.";
+
+/* error reason */
+"Entity has no name." = "L'entità non ha nome.";
+
+/* error reason */
+"Entity name '%@' is reserved." = "Il nome dell'entità '%@' è riservato.";
+
+/* error description */
+"Error disconnecting from database." = "Errore durante la disconnessione dal database.";
+
+/* error reason */
+"Exception raised while saving: %@" = "Eccezione rilevata durante la registrazione: %@";
+
+/* error reason */
+"Exception raised while sending -willSave: %@" = "Eccezione rilevata durante l'invio di -willSave: %@";
+
+/* error reason */
+"Failed to convert '%@' to a property list data: %@." = "Conversione di '%1$@' in un dato di elenco di proprietà non riuscita: %2$@.";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@' and no such object was registered." = "Ricevi oggetto che ha restituito errore con ID '%@' e tale oggetto non era registrato.";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared." = "Ricevi oggetto che ha restituito errore con ID '%@', ma l'oggetto ha già chiarito l'errore.";
+
+/* error reason */
+"Model '%@' has multiple properties named '%@'." = "Il modello '%1$@' possiede diverse proprietà chiamate '%2$@'.";
+
+/* error reason */
+"Multiple validation errors occurred while saving." = "Durante la registrazione si sono verificati diversi errori di convalida.";
+
+/* error reason */
+"Property has no name." = "La proprietà non ha nome.";
+
+/* error reason */
+"Relationship %@.%@ specified a destination entity of '%@', but there is no such entity." = "La relazione %1$@.%2$@ ha specificato un'entità destinazione di '%3$@', ma tale entità non esiste.";
+
+/* error reason */
+"Relationship %@.%@ specified an inverse relationship %@.%@, but there is no such relationship." = "La relazione %1$@.%2$@ ha specificato una relazione inversa %3$@.%4$@, ma tale relazione non esiste.";
+
+/* error reason */
+"Relationship %@.%@ specified invalid type of '%@'." = "La relazione %1$@.%2$@ ha specificato un tipo di '%3$@' non valido.";
+
+/* error reason */
+"Relationship %@.%@ specified no destination entity." = "La relazione %1$@.%2$@ non ha specificato nessuna entità destinazione.";
+
+/* error reason */
+"Relationship %@.%@ specified no inverse relationship." = "La relazione %1$@.%2$@ non ha specificato nessuna relazione inversa.";
+
+/* error reason */
+"Relationship %@.%@ specified no type." = "La relazione %1$@.%2$@ non ha specificato nessun tipo.";
+
+/* error reason */
+"The cache database was removed while it was still open. Close and reopen the database to recover." = "Il database di cache è stato rimosso mentre era ancora aperto. Per ripristinare il database, chiudi e riapri.";
+
+/* error reason */
+"Tried 100 times to settle -willSave, but edits kept being made." = "Tentativo di fissare -willSave ripetuto 100 volte, ma continuano ad essere apportate modifiche.";
+
+/* error reason */
+"Unable bind boolean to slot %d of statement with SQL '%@'." = "Impossibile vincolare il booleano allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind constant '%@' of unknown type to slot %d of statement with SQL '%@'." = "Impossibile vincolare la costante '%1$@' di tipo sconosciuto allo slot %2$d di istruzione con SQL '%3$@'.";
+
+/* error reason */
+"Unable bind data to slot %d of statement with SQL '%@'." = "Impossibile vincolare i dati allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind date to slot %d of statement with SQL '%@'." = "Impossibile vincolare i dati allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind float64 to slot %d of statement with SQL '%@'." = "Impossibile vincolare float64 allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind int32 to slot %d of statement with SQL '%@'." = "Impossibile vincolare int32 allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind null to slot %d of statement with SQL '%@'." = "Impossibile vincolare NULL allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'." = "Impossibile vincolare il numero “%1$@” di tipo %2$ld allo slot %3$d di istruzione con SQL “%4$@”.";
+
+/* error reason */
+"Unable bind string to slot %d of statement with SQL '%@'." = "Impossibile vincolare la stringa allo slot %1$d di istruzione con SQL '%2$@'.";
+
+/* error reason */
+"Unable convert expression of type %lu (%@)." = "Impossibile convertire l’espressione del tipo %1$lu (%2$@).";
+
+/* error reason */
+"Unable convert IN expression with non-constant value; %@." = "Impossibile convertire l’espressione IN con valore non costante; %@.";
+
+/* error reason */
+"Unable convert predicate of type %lu (%@)." = "Impossibile convertire il predicato del tipo %1$lu (%2$@).";
+
+/* error reason */
+"Unable get value of type %d for result column %d of '%@'." = "Impossibile ottenere il valore del tipo %1$d per la colonna risultato %2$d di '%3$@'.";
+
+/* error reason */
+"Unable prepare statement for SQL '%@'." = "Impossibile preparare l'istruzione per SQL '%@'.";
+
+/* error description */
+"Unable to bind attribute value to SQL." = "Impossibile vincolare il valore attributo a SQL.";
+
+/* error description */
+"Unable to bind constant to SQL statement." = "Impossibile vincolare la costante all'istruzione SQL.";
+
+/* error description */
+"Unable to bind null to SQL statement." = "Impossibile vincolare NULL all'istruzione SQL.";
+
+/* error description */
+"Unable to bind value to SQL statement." = "Impossibile vincolare il valore all'istruzione SQL.";
+
+/* error description */
+"Unable to connect to database." = "Impossibile connettere al database.";
+
+/* error description */
+"Unable to create schema." = "Impossibile creare schema.";
+
+/* error description */
+"Unable to create SQL query." = "Impossibile creare query SQL.";
+
+/* error description */
+"Unable to create SQL statement." = "Impossibile creare istruzione SQL.";
+
+/* error description */
+"Unable to disconnect from database." = "Impossibile disconnettere dal database.";
+
+/* error description */
+"Unable to execute SQL." = "Impossibile eseguire SQL.";
+
+/* faulting exception */
+"Unable to fulfill fault: %@" = "Impossibile eseguire l'errore: %@";
+
+/* error description */
+"Unable to fulfill fault." = "Impossibile eseguire l'errore.";
+
+/* error description */
+"Unable to load model." = "Impossibile caricare modello.";
+
+/* error description */
+"Unable to open database." = "Impossibile aprire il database.";
+
+/* error reason */
+"Unable to run SQL for statement '%@'." = "Impossibile eseguire SQL per l’istruzione “%@”.";
+
+/* error description */
+"Unable to save changes to database" = "Impossibile registrare le modifiche nel database.";
+
+/* error description */
+"Unable to save metadata to database." = "Impossibile registrare metadati sul database.";
+
+/* error description */
+"Unable to save." = "Impossibile registrare.";
+
+/* error reason */
+"Wrong root element name.  Was expecting '%@' but found '%@'." = "Il nome dell'elemento root è sbagliato. Era atteso '%1$@', ma è stato rilevato '%2$@'.";
+
+/* error reason */
+"Wrong root element namespace.  Was expecting '%@' but found '%@'." = "Namespace dell'elemento root sbagliato. Era atteso '%1$@', ma è stato rilevato '%2$@'.";
+

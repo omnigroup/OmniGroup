@@ -1,4 +1,4 @@
-// Copyright 2006-2011 The Omni Group. All rights reserved.
+// Copyright 2006-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <QuartzCore/CIColor.h>
 
 @interface CIColor (OQExtensions)
 

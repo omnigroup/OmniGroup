@@ -7,8 +7,6 @@
 //
 // $Id$
 
-#import <OmniUI/OUIViewController.h>
-
 #import <OmniDocumentStore/ODSStore.h>
 #import <OmniUIDocument/OUIDocumentPickerScrollView.h>
 #import <OmniUIDocument/OUIReplaceDocumentAlert.h>
@@ -20,7 +18,7 @@
 
 @protocol OUIDocumentPickerDelegate;
 
-@interface OUIDocumentPickerViewController : OUIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate, OUIReplaceDocumentAlertDelegate>
+@interface OUIDocumentPickerViewController : UIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate, OUIReplaceDocumentAlertDelegate>
 
 - (instancetype)initWithDocumentPicker:(OUIDocumentPicker *)picker scope:(ODSScope *)scope;
 - (instancetype)initWithDocumentPicker:(OUIDocumentPicker *)picker folderItem:(ODSFolderItem *)folderItem;

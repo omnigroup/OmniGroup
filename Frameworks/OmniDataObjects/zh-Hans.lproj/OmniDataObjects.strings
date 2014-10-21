@@ -1,0 +1,222 @@
+/* error reason */
+"Attempted to disconnect while not connected." = "尝试在未连接的情况下断开连接。";
+
+/* error reason */
+"Attribute %@.%@ has type %d with unknown SQL column type." = "属性 %1$@.%2$@ 的 类型 %3$d 具有未知的 SQL 栏类型。";
+
+/* error reason */
+"Attribute %@.%@ has unknown value type but isn't transient." = "属性 %1$@.%2$@ 具有未知的值类型，但它并非是短暂的。";
+
+/* error reason */
+"Attribute %@.%@ specified a transient or optional primary key." = "属性 %1$@.%2$@ 指定了短暂或可选的主密钥。";
+
+/* error reason */
+"Attribute has type unsupported type %d." = "属性的类型不支持类型 %d。";
+
+/* error reason */
+"Attribute specified default value '%@' for attribute of type of '%@'." = "属性针对类型为“%2$@”的属性指定了预设值“%1$@”。";
+
+/* error reason */
+"Attribute specified invalid type of '%@'." = "属性指定了无效类型“%@”。";
+
+/* error reason */
+"Attribute specified no type." = "属性未指定类型。";
+
+/* error reason */
+"Cannot connect to '%@' since the database is already connected to '%@'." = "无法连接到“%1$@”，因为数据库已连接到“%2$@”。";
+
+/* error reason */
+"Cannot disconnect from database at '%@'." = "无法中断连接位于“%@”的数据库。";
+
+/* error reason */
+"Cannot open database at '%@'." = "无法打开位于“%@”的数据库。";
+
+/* error reason */
+"Cannot prepare fetch for key %@ for query %@ while not connected to a database." = "无法在未连接到数据库的情况下准备取回查询 %2$@ 的密钥 %1$@。";
+
+/* error reason */
+"Couldn't create OFXMLDocument." = "无法创建 OFXMLDocument。";
+
+/* error reason */
+"Entity '%@' has multiple primary key attributes." = "实体“%@”具有多个主密钥属性。";
+
+/* error reason */
+"Entity '%@' has multiple properties named '%@'." = "实体“%1$@”具有多个名称为“%2$@”的属性。";
+
+/* error reason */
+"Entity '%@' has no instance class name." = "实体“%@”没有实例类名称。";
+
+/* error reason */
+"Entity '%@' has no primary key attributes." = "实体“%@”没有主密钥属性。";
+
+/* error reason */
+"Entity '%@' specified instance class name of '%@', but no such class was found." = "实体“%1$@”指定了实例类名称“%2$@”，但找不到这样的类。";
+
+/* error reason */
+"Entity '%@' specified instance class name of '%@', but this class is not a subclass of ODOObject." = "实体“%1$@”指定了实例类名称“%2$@”，但此类并非 ODOObject 的子类。";
+
+/* error reason */
+"Entity '%@' specified primary key attribute '%@' with a default value." = "实体“%1$@”指定的主密钥属性“%2$@”具有预设值。";
+
+/* error reason */
+"Entity '%@' specified primary key attribute '%@' with type %d, but only strings are supported." = "实体“%1$@”指定的主密钥属性“%2$@”具有类型 %3$d，但仅支持字符串。";
+
+/* error reason */
+"Entity has no name." = "实体没有名称。";
+
+/* error reason */
+"Entity name '%@' is reserved." = "实体名称“%@”已保留。";
+
+/* error description */
+"Error disconnecting from database." = "中断连接数据库时发生错误。";
+
+/* error reason */
+"Exception raised while saving: %@" = "在存储时发生例外：%@";
+
+/* error reason */
+"Exception raised while sending -willSave: %@" = "在发送 -willSave 时发生例外：%@";
+
+/* error reason */
+"Failed to convert '%@' to a property list data: %@." = "将“%1$@”转换为属性列表数据失败：%2$@。";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@' and no such object was registered." = "取回 ID 为“%@”的故障返回对象，而这样的对象都没有进行注册。";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared." = "取回 ID 为“%@”的故障返回对象，而此对象的故障已清除。";
+
+/* error reason */
+"Model '%@' has multiple properties named '%@'." = "模型“%1$@”具有多个名称为“%2$@”的属性。";
+
+/* error reason */
+"Multiple validation errors occurred while saving." = "存储时发生多个验证错误。";
+
+/* error reason */
+"Property has no name." = "属性没有名称。";
+
+/* error reason */
+"Relationship %@.%@ specified a destination entity of '%@', but there is no such entity." = "关系 %1$@.%2$@ 指定了目标实体“%3$@”，但并不存在这样的实体。";
+
+/* error reason */
+"Relationship %@.%@ specified an inverse relationship %@.%@, but there is no such relationship." = "关系 %1$@.%2$@ 指定了逆关系 %3$@.%4$@，但并不存在这样的关系。";
+
+/* error reason */
+"Relationship %@.%@ specified invalid type of '%@'." = "关系 %1$@.%2$@ 指定了无效的类型“%3$@”。";
+
+/* error reason */
+"Relationship %@.%@ specified no destination entity." = "关系 %1$@.%2$@ 未指定目标实体。";
+
+/* error reason */
+"Relationship %@.%@ specified no inverse relationship." = "关系 %1$@.%2$@ 未指定逆关系。";
+
+/* error reason */
+"Relationship %@.%@ specified no type." = "关系 %1$@.%2$@ 未指定类型。";
+
+/* error reason */
+"The cache database was removed while it was still open. Close and reopen the database to recover." = "高速缓存数据库在仍打开的状态下被移去。请关闭并重新打开数据库进行恢复。";
+
+/* error reason */
+"Tried 100 times to settle -willSave, but edits kept being made." = "尝试了 100 次存放 -willSave，但编辑一直都在进行。";
+
+/* error reason */
+"Unable bind boolean to slot %d of statement with SQL '%@'." = "无法绑定布尔至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind constant '%@' of unknown type to slot %d of statement with SQL '%@'." = "无法绑定未知类型常量“%1$@”至具有 SQL“%3$@”的语句的插槽 %2$d。";
+
+/* error reason */
+"Unable bind data to slot %d of statement with SQL '%@'." = "无法绑定数据至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind date to slot %d of statement with SQL '%@'." = "无法绑定日期至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind float64 to slot %d of statement with SQL '%@'." = "无法绑定浮点 64 至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind int32 to slot %d of statement with SQL '%@'." = "无法绑定 int32 至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind null to slot %d of statement with SQL '%@'." = "无法绑定 Null 至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'." = "无法绑定类型为 %2$ld 的数字“%1$@”至具有 SQL“%4$@”的语句的插槽 %3$d。";
+
+/* error reason */
+"Unable bind string to slot %d of statement with SQL '%@'." = "无法绑定字符串至具有 SQL“%2$@”的语句的插槽 %1$d。";
+
+/* error reason */
+"Unable convert expression of type %lu (%@)." = "无法转换类型为 %1$lu (%2$@) 的表达式。";
+
+/* error reason */
+"Unable convert IN expression with non-constant value; %@." = "无法转换具有非常量值的 IN 表达式；%@。";
+
+/* error reason */
+"Unable convert predicate of type %lu (%@)." = "无法转换类型为 %1$lu (%2$@) 的谓词。";
+
+/* error reason */
+"Unable get value of type %d for result column %d of '%@'." = "无法针对“%3$@”的结果栏 %2$d 获取类型为 %1$d 的值。";
+
+/* error reason */
+"Unable prepare statement for SQL '%@'." = "无法准备 SQL“%@”的语句。";
+
+/* error description */
+"Unable to bind attribute value to SQL." = "无法绑定属性值至 SQL。";
+
+/* error description */
+"Unable to bind constant to SQL statement." = "无法绑定常量至 SQL 语句。";
+
+/* error description */
+"Unable to bind null to SQL statement." = "无法绑定 Null 至 SQL 语句。";
+
+/* error description */
+"Unable to bind value to SQL statement." = "无法绑定值至 SQL 语句。";
+
+/* error description */
+"Unable to connect to database." = "无法连接至数据库。";
+
+/* error description */
+"Unable to create schema." = "无法创建方案。";
+
+/* error description */
+"Unable to create SQL query." = "无法创建 SQL 查询。";
+
+/* error description */
+"Unable to create SQL statement." = "无法创建 SQL 语句。";
+
+/* error description */
+"Unable to disconnect from database." = "无法中断连接数据库。";
+
+/* error description */
+"Unable to execute SQL." = "无法执行 SQL。";
+
+/* faulting exception */
+"Unable to fulfill fault: %@" = "无法结束故障：%@";
+
+/* error description */
+"Unable to fulfill fault." = "无法结束故障。";
+
+/* error description */
+"Unable to load model." = "无法载入模型。";
+
+/* error description */
+"Unable to open database." = "无法打开数据库。";
+
+/* error reason */
+"Unable to run SQL for statement '%@'." = "无法执行语句“%@”的 SQL。";
+
+/* error description */
+"Unable to save changes to database" = "无法将更改存储至数据库";
+
+/* error description */
+"Unable to save metadata to database." = "无法将元数据存储至数据库。";
+
+/* error description */
+"Unable to save." = "无法存储。";
+
+/* error reason */
+"Wrong root element name.  Was expecting '%@' but found '%@'." = "根元素名称错误。应该是“%1$@”，但却找到“%2$@”。";
+
+/* error reason */
+"Wrong root element namespace.  Was expecting '%@' but found '%@'." = "根元素名称空间错误。应该是“%1$@”，但却找到“%2$@”。";
+

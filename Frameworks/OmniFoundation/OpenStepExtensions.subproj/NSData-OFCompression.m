@@ -22,39 +22,36 @@ RCS_ID("$Id$")
 - (NSData *)compressedData:(NSError **)outError;
 {
     CFErrorRef error = NULL;
-    NSData *result = CFBridgingRelease(OFDataCreateCompressedData((OB_BRIDGE CFDataRef)self, &error));
+    CFDataRef result = OFDataCreateCompressedData((OB_BRIDGE CFDataRef)self, outError? &error : NULL);
     if (!result) {
         if (outError)
             *outError = CFBridgingRelease(error);
-        else
-            CFRelease(error);
+        return nil;
     }
-    return result;
+    return CFBridgingRelease(result);
 }
 
 - (NSData *)decompressedData:(NSError **)outError;
 {
     CFErrorRef error = NULL;
-    NSData *result = CFBridgingRelease(OFDataCreateDecompressedData(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, &error));
+    CFDataRef result = OFDataCreateDecompressedData(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, outError? &error : NULL);
     if (!result) {
         if (outError)
             *outError = CFBridgingRelease(error);
-        else
-            CFRelease(error);
+        return nil;
     }
-    return result;
+    return CFBridgingRelease(result);
 }
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSData *)compressedBzip2Data:(NSError **)outError;
 {
     CFErrorRef error = NULL;
-    NSData *result = CFBridgingRelease(OFDataCreateCompressedBzip2Data((OB_BRIDGE CFDataRef)self, &error));
+    NSData *result = CFBridgingRelease(OFDataCreateCompressedBzip2Data((OB_BRIDGE CFDataRef)self, outError? &error : NULL));
     if (!result) {
         if (outError)
             *outError = CFBridgingRelease(error);
-        else
-            CFRelease(error);
+        return nil;
     }
     return result;
 }
@@ -62,12 +59,11 @@ RCS_ID("$Id$")
 - (NSData *)decompressedBzip2Data:(NSError **)outError;
 {
     CFErrorRef error = NULL;
-    NSData *result = CFBridgingRelease(OFDataCreateDecompressedBzip2Data(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, &error));
+    NSData *result = CFBridgingRelease(OFDataCreateDecompressedBzip2Data(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, outError? &error : NULL));
     if (!result) {
         if (outError)
             *outError = CFBridgingRelease(error);
-        else
-            CFRelease(error);
+        return nil;
     }
     return result;
 }
@@ -76,12 +72,11 @@ RCS_ID("$Id$")
 - (NSData *)compressedDataWithGzipHeader:(BOOL)includeHeader compressionLevel:(int)level error:(NSError **)outError;
 {
     CFErrorRef error = NULL;
-    NSData *result = CFBridgingRelease(OFDataCreateCompressedGzipData((OB_BRIDGE CFDataRef)self, includeHeader, level, &error));
+    NSData *result = CFBridgingRelease(OFDataCreateCompressedGzipData((OB_BRIDGE CFDataRef)self, includeHeader, level, outError? &error : NULL));
     if (!result) {
         if (outError)
             *outError = CFBridgingRelease(error);
-        else
-            CFRelease(error);
+        return nil;
     }
     return result;
 }
@@ -89,12 +84,11 @@ RCS_ID("$Id$")
 - (NSData *)decompressedGzipData:(NSError **)outError;
 {
     CFErrorRef error = NULL;
-    NSData *result = CFBridgingRelease(OFDataCreateDecompressedGzip2Data(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, &error));
+    NSData *result = CFBridgingRelease(OFDataCreateDecompressedGzip2Data(kCFAllocatorDefault, (OB_BRIDGE CFDataRef)self, outError? &error : NULL));
     if (!result) {
         if (outError)
             *outError = CFBridgingRelease(error);
-        else
-            CFRelease(error);
+        return nil;
     }
     return result;
 }

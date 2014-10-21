@@ -436,7 +436,6 @@
 				4AFE727E08A02E9D00ED9F2D /* Resources */,
 				4AFE728008A02E9D00ED9F2D /* Sources */,
 				4AFE728E08A02E9D00ED9F2D /* Frameworks */,
-				4AFE729208A02E9D00ED9F2D /* Rez */,
 				4AFE729308A02E9D00ED9F2D /* CopyFiles */,
 			);
 			buildRules = (
@@ -457,7 +456,6 @@
 				4AFE72AE08A02E9D00ED9F2D /* Resources */,
 				4AFE72AF08A02E9D00ED9F2D /* Sources */,
 				4AFE72B408A02E9D00ED9F2D /* Frameworks */,
-				4AFE72BA08A02E9D00ED9F2D /* Rez */,
 			);
 			buildRules = (
 			);
@@ -477,7 +475,6 @@
 				4AFE72C508A02E9D00ED9F2D /* Headers */,
 				4AFE72C608A02E9D00ED9F2D /* Sources */,
 				4AFE72C808A02E9D00ED9F2D /* Frameworks */,
-				4AFE72CC08A02E9D00ED9F2D /* Rez */,
 			);
 			buildRules = (
 			);
@@ -497,7 +494,6 @@
 				4AFE72D708A02E9D00ED9F2D /* Headers */,
 				4AFE72D808A02E9D00ED9F2D /* Sources */,
 				4AFE72DA08A02E9D00ED9F2D /* Frameworks */,
-				4AFE72DE08A02E9D00ED9F2D /* Rez */,
 			);
 			buildRules = (
 			);
@@ -516,7 +512,7 @@
 		00E51E85FE8AB1FF11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = 4A07274708A02D1300A31187 /* Build configuration list for PBXProject "OmniNetworking" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -558,37 +554,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXRezBuildPhase section */
-		4AFE729208A02E9D00ED9F2D /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4AFE72BA08A02E9D00ED9F2D /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4AFE72CC08A02E9D00ED9F2D /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4AFE72DE08A02E9D00ED9F2D /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXRezBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		4AFE728008A02E9D00ED9F2D /* Sources */ = {

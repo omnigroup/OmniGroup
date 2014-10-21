@@ -36,14 +36,15 @@ module OmniDataObjects
       "@selector(#{name})"
     end
     def objcSetSel
+      return "NULL" if read_only?
       "@selector(set#{name.capitalize_first}:)"
     end
-
+    
     def emitBinding(fp)
     end
     
     def property_init_args
-      "#{keyName}, #{objcBool(optional)}/*optional*/, #{objcBool(calculated)}/*calculated*/, #{objcBool(transient)}/*transient*/, #{objcGetSel}, #{objcSetSel}"
+      "#{keyName}, #{objcBool(optional)}/*optional*/, #{objcBool(transient)}/*transient*/, #{objcGetSel}, #{objcSetSel}"
     end
   end
 end

@@ -504,6 +504,12 @@ static unsigned SyncAgentRunningAccountsContext;
                 return;
             }
             [callingQueue addOperationWithBlock:^{
+                BOOL skipBackupAttributeSuccess = [[NSFileManager defaultManager] addExcludedFromBackupAttributeToItemAtURL:duplicateFileItem.fileURL error:NULL];
+#ifdef OMNI_ASSERTIONS_ON
+                OBPOSTCONDITION(skipBackupAttributeSuccess);
+#else
+                (void)skipBackupAttributeSuccess;
+#endif
                 OBASSERT([nameToURL objectForKey:sampleName] == nil);
                 [nameToURL setObject:duplicateFileItem.fileURL forKey:sampleName];
             }];
@@ -1994,9 +2000,10 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     
     [UIView performWithoutAnimation:^{
         [view setFrame:presentFromViewController.view.bounds];
-        [view layoutIfNeeded];
-        [toPresent.view setFrame:presentFromViewController.view.bounds];
-        [toPresent.view layoutIfNeeded];
+        //[view layoutIfNeeded];  // this seems to be unnecessary and appears to screw up the initial positioning of the canvas
+        // We shouldn't setup toPresent.view here, before it knows how it's going to display. We should wait for the presentation and adaptability mechanisms to cause layout.
+//        [toPresent.view setFrame:presentFromViewController.view.bounds];
+//        [toPresent.view layoutIfNeeded];
     }];
     
     OBASSERT(![document hasUnsavedChanges]); // We just loaded our document and created our view, we shouldn't have any view state that needs to be saved. If we do, we should probably investigate to prevent bugs like <bug:///80514> ("Document Updated" on (null) alert is still hanging around), perhaps discarding view state changes if we can't prevent them.

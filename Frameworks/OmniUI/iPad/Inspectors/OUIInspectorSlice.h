@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,6 @@
 //
 // $Id$
 
-#import <OmniUI/OUIViewController.h>
 #import <OmniUI/OUIInspectorUpdateReason.h>
 #import <UIKit/UINibDeclarations.h>
 
@@ -23,7 +22,7 @@ typedef NS_ENUM(NSInteger, OUIInspectorSliceGroupPosition) {
 };
 
 
-@interface OUIInspectorSlice : OUIViewController
+@interface OUIInspectorSlice : UIViewController
 
 + (instancetype)slice;
 

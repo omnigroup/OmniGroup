@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,25 +11,25 @@
 
 #import <OmniDataObjects/ODOProperty.h>
 
-__private_extern__ const char *ODOObjectGetterSignature(void);
-__private_extern__ const char *ODOObjectSetterSignature(void);
+const char *ODOObjectGetterSignature(void) OB_HIDDEN;
+const char *ODOObjectSetterSignature(void) OB_HIDDEN;
 
-__private_extern__ void ODOObjectWillAccessValueForKey(ODOObject *self, NSString *key);
+void ODOObjectWillAccessValueForKey(ODOObject *self, NSString *key) OB_HIDDEN;
 
-__private_extern__ id ODOObjectPrimitiveValueForProperty(ODOObject *object, ODOProperty *prop);
-__private_extern__ void ODOObjectSetPrimitiveValueForProperty(ODOObject *object, id value, ODOProperty *prop);
+id ODOObjectPrimitiveValueForProperty(ODOObject *object, ODOProperty *prop) OB_HIDDEN;
+void ODOObjectSetPrimitiveValueForProperty(ODOObject *object, id value, ODOProperty *prop) OB_HIDDEN;
 
-__private_extern__ id ODODynamicValueForProperty(ODOObject *object, ODOProperty *prop);
-__private_extern__ void ODODynamicSetValueForProperty(ODOObject *object, SEL _cmd, ODOProperty *prop, id value);
+id ODODynamicValueForProperty(ODOObject *object, ODOProperty *prop) OB_HIDDEN;
+void ODODynamicSetValueForProperty(ODOObject *object, SEL _cmd, ODOProperty *prop, id value) OB_HIDDEN;
 
-__private_extern__ id ODOGetterForUnknownOffset(ODOObject *self, SEL _cmd);
-__private_extern__ void ODOSetterForUnknownOffset(ODOObject *self, SEL _cmd, id value);
+id ODOGetterForUnknownOffset(ODOObject *self, SEL _cmd) OB_HIDDEN;
+void ODOSetterForUnknownOffset(ODOObject *self, SEL _cmd, id value) OB_HIDDEN;
 
-__private_extern__ ODOPropertyGetter ODOGetterForProperty(ODOProperty *prop);
-__private_extern__ ODOPropertySetter ODOSetterForProperty(ODOProperty *prop);
+ODOPropertyGetter ODOGetterForProperty(ODOProperty *prop) OB_HIDDEN;
+ODOPropertySetter ODOSetterForProperty(ODOProperty *prop) OB_HIDDEN;
 
-__private_extern__ void ODOObjectSetInternalValueForProperty(ODOObject *self, id value, ODOProperty *prop);
+void ODOObjectSetInternalValueForProperty(ODOObject *self, id value, ODOProperty *prop) OB_HIDDEN;
 
 #if !LAZY_DYNAMIC_ACCESSORS
-__private_extern__ void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity);
+void ODOObjectCreateDynamicAccessorsForEntity(ODOEntity *entity) OB_HIDDEN;
 #endif

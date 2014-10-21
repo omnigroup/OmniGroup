@@ -14,7 +14,7 @@ OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64 -DOBJC_OLD_DISPATCH_PROTOTYPES=0 -
 SHARED_PRECOMPS_DIR = $(CONFIGURATION_BUILD_DIR)/SharedPrecompiledHeaders
 
 GCC_PREFIX_HEADER = $(PROJECT_NAME)_Prefix.h
-// Xcode 6 beta 5 goes crazy lots when this is used.
+// Xcode 6.1 still loses its mind when doing incremental builds
 //GCC_PRECOMPILE_PREFIX_HEADER = YES
 
 YACC = $(DT_TOOLCHAIN_DIR)/usr/bin/bison

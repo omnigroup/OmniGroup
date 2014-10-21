@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2008, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <Foundation/NSData.h>
 #import <stdio.h>
 
-@class NSArray, NSError, NSOutputStream;
+@class NSArray, NSError;
 
 // Extra methods factored out into another category
 #import <OmniFoundation/NSData-OFEncoding.h>

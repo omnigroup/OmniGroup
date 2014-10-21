@@ -14,10 +14,9 @@
 "Failed to delete \"%@\"." = "„%@“ konnte nicht gelöscht werden.";
 
 /* error reason */
-"Failed to move \"%@\" to \"%@\"." = "„%1$@“ konnte nicht nach „%2$@“ verschoben werden.";
+"Failed to move \"%@\" to \"%@\"." = "„%1$@“ konnte nicht nach „%2$@“ bewegt werden.";
 
-/* error reason - listing a directory that doesn't exist
-   error reason - listing contents of a nonexistent directory */
+/* error reason - listing a directory that doesn't exist */
 "No document exists at \"%@\"." = "Kein Dokument unter „%@“ vorhanden.";
 
 /* error reason */
@@ -30,8 +29,7 @@
 "Unable to delete file." = "Datei kann nicht gelöscht werden.";
 
 /* error description */
-"Unable to move file." = "Datei kann nicht verschoben werden.";
+"Unable to move file." = "Datei kann nicht bewegt werden.";
 
 /* error description */
 "Unable to read document." = "Dokument kann nicht gelesen werden.";
-

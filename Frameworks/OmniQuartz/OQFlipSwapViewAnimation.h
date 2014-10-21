@@ -1,4 +1,4 @@
-// Copyright 2009-2010 The Omni Group. All rights reserved.
+// Copyright 2009-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,12 +9,9 @@
 
 #import <QuartzCore/CAAnimation.h>
 
+@class NSResponder, NSView;
+
 @interface OQFlipSwapViewAnimation : CABasicAnimation
-{
-@private
-    CALayer *_targetLayer;
-    NSWindow *_window;
-}
 
 + (void)replaceView:(NSView *)oldView withView:(NSView *)newView setFirstResponder:(NSResponder *)newFirstResponder;
 

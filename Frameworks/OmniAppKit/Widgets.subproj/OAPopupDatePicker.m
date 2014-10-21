@@ -258,6 +258,16 @@ static NSSize calendarImageSize;
     [super setWindow:newWindow];
 }
 
+- (void)closePopoverIfOpen;
+{
+    NSWindow *window = [self window];
+    if (window) {
+        NSWindow *parentWindow = [window parentWindow];
+        [parentWindow removeChildWindow:window];
+        [window close];
+    }
+}
+
 #pragma mark -
 #pragma mark KVC
 

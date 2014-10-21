@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6249" systemVersion="14A379a" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment defaultVersion="1090" identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5053"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6249"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="OITabbedInspector">
             <connections>
                 <outlet property="buttonMatrix" destination="261" id="270"/>
                 <outlet property="contentView" destination="238" id="245"/>
-                <outlet property="inspectionView" destination="104" id="156"/>
-                <outlet property="view" destination="104" id="7bb-Wr-8oz"/>
+                <outlet property="view" destination="104" id="Wsj-xn-OHt"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
-        <customObject id="-3" userLabel="Application"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customView id="104" userLabel="Custom View">
             <rect key="frame" x="0.0" y="0.0" width="200" height="165"/>
             <autoresizingMask key="autoresizingMask"/>
@@ -29,7 +27,7 @@
                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                             <size key="cellSize" width="34" height="31"/>
                             <size key="intercellSpacing" width="-1" height="0.0"/>
-                            <buttonCell key="prototype" type="square" bezelStyle="shadowlessSquare" image="6DEC45C0-3DD5-481D-B01F-BA503C53F8B4" imagePosition="only" alignment="center" tag="-1" inset="2" id="273" customClass="OITabCell">
+                            <buttonCell key="prototype" type="square" bezelStyle="shadowlessSquare" image="7D6E16DD-991E-4800-A144-8186797CE18C" imagePosition="only" alignment="center" tag="-1" inset="2" id="273" customClass="OITabCell">
                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
                                 <font key="font" metaFont="system" size="10"/>
                             </buttonCell>
@@ -102,7 +100,7 @@
         </view>
     </objects>
     <resources>
-        <image name="6DEC45C0-3DD5-481D-B01F-BA503C53F8B4" width="1" height="1">
+        <image name="7D6E16DD-991E-4800-A144-8186797CE18C" width="1" height="1">
             <mutableData key="keyedArchiveRepresentation">
 YnBsaXN0MDDUAQIDBAUGPj9YJHZlcnNpb25YJG9iamVjdHNZJGFyY2hpdmVyVCR0b3ASAAGGoK4HCBMU
 GR4fIyQsLzI4O1UkbnVsbNUJCgsMDQ4PEBESVk5TU2l6ZVYkY2xhc3NcTlNJbWFnZUZsYWdzVk5TUmVw

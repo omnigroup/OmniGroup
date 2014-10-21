@@ -23,10 +23,10 @@
 "Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "允许 %@ 定期报告有关硬件型号和 iOS 版本的信息?\n这样一来，我们就知道最需要支持哪些配置。可在以后通过 MUMBLE MUMBLE MUMBLE 在预置中更改回答。";
 
 /* Software update report entry name */
-"Application identifier" = "应用程序标识符";
+"App ID" = "App ID";
 
 /* Software update report entry name */
-"Application version" = "应用程序版本";
+"App version" = "App 版本";
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
 "Check operation failed." = "检查操作失败。";
@@ -40,7 +40,9 @@
 /* Software update report entry name */
 "Device" = "设备";
 
-/* software update settings title */
+/* software update settings section title
+   software update settings title */
+
 "Device Information" = "设备信息";
 
 /* OmniSoftwareUpdate privacy notice button title */
@@ -53,13 +55,13 @@
 "Error while checking for updated version." = "检查更新版本时出错。";
 
 /* error reason */
-"Exception raised: %@" = "出现异常： %@";
+"Exception raised: %@" = "出现异常 : %@";
 
 /* software update settings cell detail text */
 "Help The Omni Group decide which devices and iOS versions to support" = "帮助 Omni 团队确定要支持哪些设备和 iOS 版本";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "如果选择共享该信息，您将帮助我们随时了解应该支持哪些设备和 iOS 版本。\n该信息完全保持匿名。";
+"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "若选择共享该信息，将帮助我们随时了解应支持哪些设备和 iOS 版本。\n该信息完全保持匿名。";
 
 /* Software update report entry name */
 "iOS version" = "iOS 版本";
@@ -89,16 +91,15 @@
 "Please try again later or contact us to let us know this is broken." = "请稍后重试，或联系我们，告知此已损坏。";
 
 /* Software update report entry name */
-"Report identifier" = "报告标识符";
+"Report ID" = "报告 ID";
 
 /* Software update report entry name */
 "Report version" = "报告版本";
 
-/* software update settings cell title */
-"Send anonymous device information" = "发送匿名设备信息";
+/* Settings option title
+   software update settings cell title */
 
-/* Settings option title */
-"Send anonymous device information?" = "是否发送匿名设备信息?";
+"Send Anonymous Data" = "发送匿名数据";
 
 /* OmniSoftwareUpdate privacy notice button title */
 "Send Reports" = "发送报告";
@@ -110,13 +111,13 @@
 "Storage" = "存储";
 
 /* error description */
-"The data returned from <%@> was not a valid XML document." = "<%@> 返回的数据不是有效的 XML 文稿。";
+"The data returned from <%@> was not a valid XML document." = "“%@”返回的数据不是有效的 XML 文稿。";
 
 /* Settings option title */
 "The following information will be sent:" = "将发送以下信息:";
 
 /* error description - the update information wasn't signed at all, but we require it to be signed */
-"The update information is not signed." = "更新信息未签发。";
+"The update information is not signed." = "更新信息未得到签名。";
 
 /* error description - the checksum or signature didn't match - more info in underlying error */
 "There was a problem checking the signature." = "检查签名时出现问题。";
@@ -128,7 +129,7 @@
 "Tool returned no data" = "工具没有返回任何数据";
 
 /* error description - we have some update information but it doesn't look authentic */
-"Unable to authenticate the response from the software update server." = "无法验证软件更新服务器的响应。";
+"Unable to authenticate the response from the software update server." = "无法鉴定软件更新服务器发出的响应。";
 
 /* error description - will be followed by more detailed error reason */
 "Unable to fetch software update information." = "无法取回软件更新信息。";
@@ -137,4 +138,4 @@
 "Unable to parse response from the software update server." = "无法解析软件更新服务器的响应。";
 
 /* error text generated when software update is unable to retrieve the list of current software versions */
-"Your Internet connection might not be active, or there might be a problem somewhere along the network." = "您的 Internet 连接可能未处于活动状态，或者网络某处可能存在问题。";
+"Your Internet connection might not be active, or there might be a problem somewhere along the network." = "Internet 连接可能未处于活动状态，或者网络某处可能存在问题。";

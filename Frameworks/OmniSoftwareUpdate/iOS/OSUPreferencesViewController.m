@@ -180,7 +180,7 @@ enum {
     self.title = NSLocalizedStringFromTableInBundle(@"Device Information", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update settings title");
     
     _settingFooterView = [[OSUPreferencesTableViewLabel alloc] initWithText:NSLocalizedStringFromTableInBundle(@"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Settings preferences detail text") paddingOnTop:NO];
-    _settingFooterView.textAlignment = NSTextAlignmentCenter;
+    _settingFooterView.textAlignment = NSTextAlignmentLeft;
     
     _infoHeaderView = [[OSUPreferencesTableViewLabel alloc] initWithText:NSLocalizedStringFromTableInBundle(@"The following information will be sent:", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Settings option title") paddingOnTop:YES];
 
@@ -449,8 +449,10 @@ enum {
     UITableView *tableView = (UITableView *)self.view;
     
     UIEdgeInsets separatorInsets = tableView.separatorInset;
-    _settingFooterView.tableViewSeparatorInset = separatorInsets.left;
-    _infoHeaderView.tableViewSeparatorInset = separatorInsets.left;
+    CGFloat seperatorInset = separatorInsets.left + 6; // the separator inset LIES in iOS 8. (by lies, I mean that it does not measure the distance between the edge of the cell and the seperator. I'm not clear on what it IS measuring.) This is a fudge-factor to get it to line up. Sorry.
+
+    _settingFooterView.tableViewSeparatorInset = seperatorInset;
+    _infoHeaderView.tableViewSeparatorInset = seperatorInset;
 
     
     // UITableView doesn't call -sizeThatFits: on the header/footer views.

@@ -18,69 +18,150 @@
 		340FC3221199B8FD00D16C6A /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 340FC3211199B8FD00D16C6A /* libz.dylib */; };
 		340FC3241199B90100D16C6A /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 340FC3231199B90100D16C6A /* MobileCoreServices.framework */; };
 		340FC3271199B90600D16C6A /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 340FC3261199B90600D16C6A /* MessageUI.framework */; };
+		34392AA219C37B3200D08401 /* OmniQuartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34392A9B19C37B1C00D08401 /* OmniQuartz.framework */; };
+		34392AA319C37B3200D08401 /* OmniQuartz.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 34392A9B19C37B1C00D08401 /* OmniQuartz.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		34404B32116FEAB400865DB8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34404B31116FEAB400865DB8 /* QuartzCore.framework */; };
 		34404B46116FEC6800865DB8 /* ScalingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34404B45116FEC6800865DB8 /* ScalingView.m */; };
+		348ADC9F19C1146A003AEF77 /* OmniAppKit.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 348ADC6B19C113C2003AEF77 /* OmniAppKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		348ADCA019C1146E003AEF77 /* OmniFoundation.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 348ADC8C19C113C2003AEF77 /* OmniFoundation.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		348ADCA119C11475003AEF77 /* OmniBase.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 348ADC7719C113C2003AEF77 /* OmniBase.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		348ADCA219C11482003AEF77 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED74341199B7110023E017 /* OmniBase.framework */; };
+		348ADCA319C11487003AEF77 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348ADC8C19C113C2003AEF77 /* OmniFoundation.framework */; };
+		348ADCA419C1148A003AEF77 /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348ADC6B19C113C2003AEF77 /* OmniAppKit.framework */; };
+		34BF040319C11514009C28B0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34BF040219C11514009C28B0 /* StoreKit.framework */; };
 		34CDFE9B12691FA3005B04A7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CDFE9A12691FA3005B04A7 /* Security.framework */; };
 		34CDFE9D12691FA3005B04A7 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CDFE9C12691FA3005B04A7 /* SystemConfiguration.framework */; };
-		34CDFEF912691FE9005B04A7 /* libOmniFileStore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CDFEF212691FCA005B04A7 /* libOmniFileStore.a */; };
 		34ED74AB1199B8960023E017 /* libOmniUI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED746F1199B73C0023E017 /* libOmniUI.a */; };
-		34ED74AC1199B8980023E017 /* libOmniAppKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED749B1199B8570023E017 /* libOmniAppKit.a */; };
-		34ED74AD1199B89B0023E017 /* libOmniQuartz.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED74661199B72F0023E017 /* libOmniQuartz.a */; };
-		34ED74AE1199B89E0023E017 /* libOmniFoundation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED744C1199B7240023E017 /* libOmniFoundation.a */; };
-		34ED74AF1199B8A00023E017 /* libOmniBase.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED74361199B7110023E017 /* libOmniBase.a */; };
 		34ED74B31199B8AE0023E017 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED74B21199B8AE0023E017 /* CoreText.framework */; };
 		34ED74B61199B8B40023E017 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED74B51199B8B40023E017 /* libxml2.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		34CDFDE812691E76005B04A7 /* PBXContainerItemProxy */ = {
+		34392A9A19C37B1C00D08401 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED745B1199B72F0023E017 /* OmniQuartz.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34218E4A19C23ECE00899C9A;
+			remoteInfo = "OmniQuartz-iOS";
+		};
+		34392AA419C37B3300D08401 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED745B1199B72F0023E017 /* OmniQuartz.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34218E4919C23ECE00899C9A;
+			remoteInfo = "OmniQuartz-iOS";
+		};
+		348ADC6A19C113C2003AEF77 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ED74861199B8560023E017 /* OmniAppKit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 3401163511E5181A0016ADB3 /* libOmniAppKitTouchTests.a */;
-			remoteInfo = OmniAppKitTouchTests;
+			remoteGlobalIDString = 34C12AFC194FF90F005CB70B;
+			remoteInfo = "OmniAppKit-iOS";
 		};
-		34CDFDF512691E76005B04A7 /* PBXContainerItemProxy */ = {
+		348ADC6C19C113C2003AEF77 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
+			containerPortal = 34ED74861199B8560023E017 /* OmniAppKit.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 340115D411E515DB0016ADB3 /* libOmniFoundationTouchTests.a */;
-			remoteInfo = OmniFoundationTouchTests;
+			remoteGlobalIDString = 34C12B06194FF90F005CB70B;
+			remoteInfo = "OAUnitTests-iOS";
 		};
-		34CDFDFA12691E76005B04A7 /* PBXContainerItemProxy */ = {
+		348ADC7419C113C2003AEF77 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ED742A1199B7110023E017 /* OmniBase.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 340115B011E515790016ADB3 /* libOmniBaseTouchTests.a */;
-			remoteInfo = OmniBaseTouchTests;
+			remoteGlobalIDString = 34EE20D114F0354300722491;
+			remoteInfo = OBUnitTests;
 		};
-		34CDFEEF12691FCA005B04A7 /* PBXContainerItemProxy */ = {
+		348ADC7619C113C2003AEF77 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 34CDFEE412691FC7005B04A7 /* OmniFileStore.xcodeproj */;
+			containerPortal = 34ED742A1199B7110023E017 /* OmniBase.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 8DC2EF5B0486A6940098B216 /* OmniFileStore.framework */;
-			remoteInfo = OmniFileStore;
+			remoteGlobalIDString = 34637CCC194F448F009B51C5;
+			remoteInfo = "OmniBase-iOS";
 		};
-		34CDFEF112691FCA005B04A7 /* PBXContainerItemProxy */ = {
+		348ADC7819C113C2003AEF77 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 34CDFEE412691FC7005B04A7 /* OmniFileStore.xcodeproj */;
+			containerPortal = 34ED742A1199B7110023E017 /* OmniBase.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 34D06C54125D202500CA3963 /* libOmniFileStore.a */;
-			remoteInfo = OmniFileStoreTouch;
+			remoteGlobalIDString = 34637CD6194F448F009B51C5;
+			remoteInfo = "OBUnitTests-iOS";
 		};
-		34CDFEF312691FCA005B04A7 /* PBXContainerItemProxy */ = {
+		348ADC8B19C113C2003AEF77 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 34CDFEE412691FC7005B04A7 /* OmniFileStore.xcodeproj */;
+			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 34C017A410995278001C110D /* ofs */;
-			remoteInfo = ofs;
+			remoteGlobalIDString = 34F16B1A194F6C3200AD9C4D;
+			remoteInfo = "OmniFoundation-iOS";
 		};
-		34CDFEF512691FDE005B04A7 /* PBXContainerItemProxy */ = {
+		348ADC8D19C113C2003AEF77 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 34CDFEE412691FC7005B04A7 /* OmniFileStore.xcodeproj */;
+			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34F16B24194F6C3200AD9C4D;
+			remoteInfo = "OFUnitTests-iOS";
+		};
+		348ADC8F19C113C2003AEF77 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 349E02521649AE5400E466F5;
+			remoteInfo = OFXMLParsingTest;
+		};
+		348ADC9119C113C2003AEF77 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34B2F63B17188539000E45DF;
+			remoteInfo = OFXMLIdHash;
+		};
+		348ADC9319C113C2003AEF77 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 344D562417BD47110049F9E5;
+			remoteInfo = OFNetStateNotifierTest;
+		};
+		348ADC9519C113C2003AEF77 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 342691D317C578F600B1372F;
+			remoteInfo = OFNetStateNotifier;
+		};
+		348ADC9819C1143C003AEF77 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED742A1199B7110023E017 /* OmniBase.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 34D06C53125D202500CA3963 /* OmniFileStoreTouch */;
-			remoteInfo = OmniFileStoreTouch;
+			remoteGlobalIDString = 34637CCB194F448F009B51C5;
+			remoteInfo = "OmniBase-iOS";
+		};
+		348ADC9A19C1143C003AEF77 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34F16B19194F6C3200AD9C4D;
+			remoteInfo = "OmniFoundation-iOS";
+		};
+		348ADC9C19C1143C003AEF77 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED74861199B8560023E017 /* OmniAppKit.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34C12AFB194FF90F005CB70B;
+			remoteInfo = "OmniAppKit-iOS";
+		};
+		34B8F3B919C116F100ECF31F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34B8F3B519C116F000ECF31F /* FixStringsFile.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8DD76F7E0486A8DE00D96B5E;
+			remoteInfo = FixStringsFile;
+		};
+		34B8F3D819C116FC00ECF31F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34B8F3B519C116F000ECF31F /* FixStringsFile.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DD76F740486A8DE00D96B5E;
+			remoteInfo = FixStringsFile;
 		};
 		34ED74331199B7110023E017 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -88,13 +169,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 4A33D42808A0191B003A3FA5;
 			remoteInfo = OmniBase;
-		};
-		34ED74351199B7110023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED742A1199B7110023E017 /* OmniBase.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 342163B211907BF600C06E45;
-			remoteInfo = OmniBaseTouch;
 		};
 		34ED74371199B7110023E017 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -109,13 +183,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 4A4E075308AA72B10098FF0F;
 			remoteInfo = OmniFoundation;
-		};
-		34ED744B1199B7240023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 344D08BA1190D47300264D89;
-			remoteInfo = OmniFoundationTouch;
 		};
 		34ED744D1199B7240023E017 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -173,13 +240,6 @@
 			remoteGlobalIDString = 8DC2EF5B0486A6940098B216;
 			remoteInfo = OmniQuartz;
 		};
-		34ED74651199B72F0023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED745B1199B72F0023E017 /* OmniQuartz.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 345613D41193197700E7D187;
-			remoteInfo = OmniQuartzTouch;
-		};
 		34ED746E1199B73C0023E017 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34ED74671199B73C0023E017 /* OmniUI.xcodeproj */;
@@ -193,27 +253,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = D2AAC07D0554694100DB518D;
 			remoteInfo = OmniUITouch;
-		};
-		34ED747E1199B7FA0023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 344D08B91190D47300264D89;
-			remoteInfo = OmniFoundationTouch;
-		};
-		34ED74801199B7FA0023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED745B1199B72F0023E017 /* OmniQuartz.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 345613D31193197700E7D187;
-			remoteInfo = OmniQuartzTouch;
-		};
-		34ED74821199B7FA0023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED742A1199B7110023E017 /* OmniBase.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 342163B111907BF600C06E45;
-			remoteInfo = OmniBaseTouch;
 		};
 		34ED74921199B8570023E017 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -236,28 +275,24 @@
 			remoteGlobalIDString = 4AA1E81E08AA764700E2FF6B;
 			remoteInfo = OAMakeImageSizeIntegral;
 		};
-		34ED74981199B8570023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED74861199B8560023E017 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4AA1E82C08AA764700E2FF6B;
-			remoteInfo = OAPatternColorPicker;
-		};
-		34ED749A1199B8570023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED74861199B8560023E017 /* OmniAppKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 3434791511923B54007D0CE5;
-			remoteInfo = OmniAppKitTouch;
-		};
-		34ED749C1199B8630023E017 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34ED74861199B8560023E017 /* OmniAppKit.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 3434791411923B54007D0CE5;
-			remoteInfo = OmniAppKitTouch;
-		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		348ADC9E19C11447003AEF77 /* Copy Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				348ADC9F19C1146A003AEF77 /* OmniAppKit.framework in Copy Frameworks */,
+				348ADCA019C1146E003AEF77 /* OmniFoundation.framework in Copy Frameworks */,
+				34392AA319C37B3200D08401 /* OmniQuartz.framework in Copy Frameworks */,
+				348ADCA119C11475003AEF77 /* OmniBase.framework in Copy Frameworks */,
+			);
+			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -286,9 +321,10 @@
 		34915C79116FE3E4005EA90E /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34915C7A116FE3E4005EA90E /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
 		34915C7B116FE3E4005EA90E /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
+		34B8F3B519C116F000ECF31F /* FixStringsFile.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FixStringsFile.xcodeproj; path = Tools/FixStringsFile/FixStringsFile.xcodeproj; sourceTree = "<group>"; };
+		34BF040219C11514009C28B0 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS8.0.sdk/System/Library/Frameworks/StoreKit.framework; sourceTree = DEVELOPER_DIR; };
 		34CDFE9A12691FA3005B04A7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		34CDFE9C12691FA3005B04A7 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
-		34CDFEE412691FC7005B04A7 /* OmniFileStore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniFileStore.xcodeproj; path = ../../../../OmniFileStore/OmniFileStore.xcodeproj; sourceTree = SOURCE_ROOT; };
 		34ED740C1199B6C80023E017 /* Omni-Bundle-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
 		34ED740D1199B6C80023E017 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34ED740E1199B6C80023E017 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -330,23 +366,23 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34392AA219C37B3200D08401 /* OmniQuartz.framework in Frameworks */,
+				348ADCA219C11482003AEF77 /* OmniBase.framework in Frameworks */,
+				348ADCA319C11487003AEF77 /* OmniFoundation.framework in Frameworks */,
+				348ADCA419C1148A003AEF77 /* OmniAppKit.framework in Frameworks */,
+				34ED74AB1199B8960023E017 /* libOmniUI.a in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
+				34BF040319C11514009C28B0 /* StoreKit.framework in Frameworks */,
 				288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */,
 				34404B32116FEAB400865DB8 /* QuartzCore.framework in Frameworks */,
-				34ED74AB1199B8960023E017 /* libOmniUI.a in Frameworks */,
-				34ED74AC1199B8980023E017 /* libOmniAppKit.a in Frameworks */,
-				34ED74AD1199B89B0023E017 /* libOmniQuartz.a in Frameworks */,
-				34ED74AE1199B89E0023E017 /* libOmniFoundation.a in Frameworks */,
-				34ED74AF1199B8A00023E017 /* libOmniBase.a in Frameworks */,
 				34ED74B31199B8AE0023E017 /* CoreText.framework in Frameworks */,
-				34ED74B61199B8B40023E017 /* libxml2.dylib in Frameworks */,
-				340FC3221199B8FD00D16C6A /* libz.dylib in Frameworks */,
 				340FC3241199B90100D16C6A /* MobileCoreServices.framework in Frameworks */,
 				340FC3271199B90600D16C6A /* MessageUI.framework in Frameworks */,
 				34CDFE9B12691FA3005B04A7 /* Security.framework in Frameworks */,
 				34CDFE9D12691FA3005B04A7 /* SystemConfiguration.framework in Frameworks */,
-				34CDFEF912691FE9005B04A7 /* libOmniFileStore.a in Frameworks */,
+				34ED74B61199B8B40023E017 /* libxml2.dylib in Frameworks */,
+				340FC3221199B8FD00D16C6A /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -377,7 +413,6 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
-				34915982116FE1ED005EA90E /* OmniGroup */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -409,6 +444,16 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				34915982116FE1ED005EA90E /* Omni */,
+				34392A8119C37B1C00D08401 /* Apple */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		34392A8119C37B1C00D08401 /* Apple */ = {
+			isa = PBXGroup;
+			children = (
+				34BF040219C11514009C28B0 /* StoreKit.framework */,
 				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
 				288765A40DF7441C002DB57D /* CoreGraphics.framework */,
@@ -421,21 +466,21 @@
 				34CDFE9A12691FA3005B04A7 /* Security.framework */,
 				34CDFE9C12691FA3005B04A7 /* SystemConfiguration.framework */,
 			);
-			name = Frameworks;
+			name = Apple;
 			sourceTree = "<group>";
 		};
-		34915982116FE1ED005EA90E /* OmniGroup */ = {
+		34915982116FE1ED005EA90E /* Omni */ = {
 			isa = PBXGroup;
 			children = (
 				34915C73116FE3E4005EA90E /* Configurations */,
+				34B8F3B519C116F000ECF31F /* FixStringsFile.xcodeproj */,
 				34ED742A1199B7110023E017 /* OmniBase.xcodeproj */,
 				34ED74391199B7240023E017 /* OmniFoundation.xcodeproj */,
 				34ED745B1199B72F0023E017 /* OmniQuartz.xcodeproj */,
 				34ED74861199B8560023E017 /* OmniAppKit.xcodeproj */,
-				34CDFEE412691FC7005B04A7 /* OmniFileStore.xcodeproj */,
 				34ED74671199B73C0023E017 /* OmniUI.xcodeproj */,
 			);
-			name = OmniGroup;
+			name = Omni;
 			path = ../../../../..;
 			sourceTree = "<group>";
 		};
@@ -480,12 +525,10 @@
 			path = Configurations;
 			sourceTree = "<group>";
 		};
-		34CDFEEA12691FCA005B04A7 /* Products */ = {
+		34B8F3B619C116F000ECF31F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				34CDFEF012691FCA005B04A7 /* OmniFileStore.framework */,
-				34CDFEF212691FCA005B04A7 /* libOmniFileStore.a */,
-				34CDFEF412691FCA005B04A7 /* ofs */,
+				34B8F3BA19C116F100ECF31F /* FixStringsFile */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -495,8 +538,9 @@
 			children = (
 				34ED74341199B7110023E017 /* OmniBase.framework */,
 				34ED74381199B7110023E017 /* OBLoadBundle */,
-				34ED74361199B7110023E017 /* libOmniBase.a */,
-				34CDFDFB12691E76005B04A7 /* libOmniBaseTouchTests.a */,
+				348ADC7519C113C2003AEF77 /* OBUnitTests.xctest */,
+				348ADC7719C113C2003AEF77 /* OmniBase.framework */,
+				348ADC7919C113C2003AEF77 /* OBUnitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -505,8 +549,8 @@
 			isa = PBXGroup;
 			children = (
 				34ED744A1199B7240023E017 /* OmniFoundation.framework */,
-				34ED744C1199B7240023E017 /* libOmniFoundation.a */,
-				34CDFDF612691E76005B04A7 /* libOmniFoundationTouchTests.a */,
+				348ADC8C19C113C2003AEF77 /* OmniFoundation.framework */,
+				348ADC8E19C113C2003AEF77 /* OFUnitTests.xctest */,
 				34ED744E1199B7240023E017 /* OFUnitTests.xctest */,
 				34ED74501199B7240023E017 /* OFSimpleLockTest */,
 				34ED74521199B7240023E017 /* OFDedicatedThreadSchedulerTest */,
@@ -514,6 +558,10 @@
 				34ED74561199B7240023E017 /* OFMainThreadLockTest */,
 				34ED74581199B7240023E017 /* OFCrashOnExceptionTest */,
 				34ED745A1199B7240023E017 /* OFRandomRepeatTest */,
+				348ADC9019C113C2003AEF77 /* OFXMLParsingTest */,
+				348ADC9219C113C2003AEF77 /* OFXMLIdHash */,
+				348ADC9419C113C2003AEF77 /* OFNetStateNotifierTest */,
+				348ADC9619C113C2003AEF77 /* OFNetStateNotifier.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -522,7 +570,7 @@
 			isa = PBXGroup;
 			children = (
 				34ED74641199B72F0023E017 /* OmniQuartz.framework */,
-				34ED74661199B72F0023E017 /* libOmniQuartz.a */,
+				34392A9B19C37B1C00D08401 /* OmniQuartz.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -540,10 +588,9 @@
 			children = (
 				34ED74931199B8570023E017 /* OmniAppKit.framework */,
 				34ED74951199B8570023E017 /* OAUnitTests.xctest */,
+				348ADC6B19C113C2003AEF77 /* OmniAppKit.framework */,
+				348ADC6D19C113C2003AEF77 /* OAUnitTests.xctest */,
 				34ED74971199B8570023E017 /* OAMakeImageSizeIntegral */,
-				34ED74991199B8570023E017 /* OAPatternColorPicker.bundle */,
-				34ED749B1199B8570023E017 /* libOmniAppKit.a */,
-				34CDFDE912691E76005B04A7 /* libOmniAppKitTouchTests.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -559,15 +606,16 @@
 				34ED74761199B7A80023E017 /* Copy Library Resources */,
 				1D60588E0D05DD3D006BFB54 /* Sources */,
 				1D60588F0D05DD3D006BFB54 /* Frameworks */,
+				348ADC9E19C11447003AEF77 /* Copy Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				34ED74831199B7FA0023E017 /* PBXTargetDependency */,
-				34ED747F1199B7FA0023E017 /* PBXTargetDependency */,
-				34ED749D1199B8630023E017 /* PBXTargetDependency */,
-				34ED74811199B7FA0023E017 /* PBXTargetDependency */,
-				34CDFEF612691FDE005B04A7 /* PBXTargetDependency */,
+				34B8F3D919C116FC00ECF31F /* PBXTargetDependency */,
+				348ADC9919C1143C003AEF77 /* PBXTargetDependency */,
+				348ADC9B19C1143C003AEF77 /* PBXTargetDependency */,
+				348ADC9D19C1143C003AEF77 /* PBXTargetDependency */,
+				34392AA519C37B3300D08401 /* PBXTargetDependency */,
 				34ED747D1199B7FA0023E017 /* PBXTargetDependency */,
 			);
 			name = ScalingScrollView;
@@ -580,6 +628,9 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0600;
+			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "ScalingScrollView" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
@@ -594,16 +645,16 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
+					ProductGroup = 34B8F3B619C116F000ECF31F /* Products */;
+					ProjectRef = 34B8F3B519C116F000ECF31F /* FixStringsFile.xcodeproj */;
+				},
+				{
 					ProductGroup = 34ED74871199B8560023E017 /* Products */;
 					ProjectRef = 34ED74861199B8560023E017 /* OmniAppKit.xcodeproj */;
 				},
 				{
 					ProductGroup = 34ED742B1199B7110023E017 /* Products */;
 					ProjectRef = 34ED742A1199B7110023E017 /* OmniBase.xcodeproj */;
-				},
-				{
-					ProductGroup = 34CDFEEA12691FCA005B04A7 /* Products */;
-					ProjectRef = 34CDFEE412691FC7005B04A7 /* OmniFileStore.xcodeproj */;
 				},
 				{
 					ProductGroup = 34ED743A1199B7240023E017 /* Products */;
@@ -626,46 +677,95 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		34CDFDE912691E76005B04A7 /* libOmniAppKitTouchTests.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniAppKitTouchTests.a;
-			remoteRef = 34CDFDE812691E76005B04A7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34CDFDF612691E76005B04A7 /* libOmniFoundationTouchTests.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniFoundationTouchTests.a;
-			remoteRef = 34CDFDF512691E76005B04A7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34CDFDFB12691E76005B04A7 /* libOmniBaseTouchTests.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniBaseTouchTests.a;
-			remoteRef = 34CDFDFA12691E76005B04A7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34CDFEF012691FCA005B04A7 /* OmniFileStore.framework */ = {
+		34392A9B19C37B1C00D08401 /* OmniQuartz.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
-			path = OmniFileStore.framework;
-			remoteRef = 34CDFEEF12691FCA005B04A7 /* PBXContainerItemProxy */;
+			path = OmniQuartz.framework;
+			remoteRef = 34392A9A19C37B1C00D08401 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34CDFEF212691FCA005B04A7 /* libOmniFileStore.a */ = {
+		348ADC6B19C113C2003AEF77 /* OmniAppKit.framework */ = {
 			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniFileStore.a;
-			remoteRef = 34CDFEF112691FCA005B04A7 /* PBXContainerItemProxy */;
+			fileType = wrapper.framework;
+			path = OmniAppKit.framework;
+			remoteRef = 348ADC6A19C113C2003AEF77 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34CDFEF412691FCA005B04A7 /* ofs */ = {
+		348ADC6D19C113C2003AEF77 /* OAUnitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OAUnitTests.xctest;
+			remoteRef = 348ADC6C19C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		348ADC7519C113C2003AEF77 /* OBUnitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OBUnitTests.xctest;
+			remoteRef = 348ADC7419C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		348ADC7719C113C2003AEF77 /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 348ADC7619C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		348ADC7919C113C2003AEF77 /* OBUnitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OBUnitTests.xctest;
+			remoteRef = 348ADC7819C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		348ADC8C19C113C2003AEF77 /* OmniFoundation.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniFoundation.framework;
+			remoteRef = 348ADC8B19C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		348ADC8E19C113C2003AEF77 /* OFUnitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = OFUnitTests.xctest;
+			remoteRef = 348ADC8D19C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		348ADC9019C113C2003AEF77 /* OFXMLParsingTest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
-			path = ofs;
-			remoteRef = 34CDFEF312691FCA005B04A7 /* PBXContainerItemProxy */;
+			path = OFXMLParsingTest;
+			remoteRef = 348ADC8F19C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		348ADC9219C113C2003AEF77 /* OFXMLIdHash */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFXMLIdHash;
+			remoteRef = 348ADC9119C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		348ADC9419C113C2003AEF77 /* OFNetStateNotifierTest */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = OFNetStateNotifierTest;
+			remoteRef = 348ADC9319C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		348ADC9619C113C2003AEF77 /* OFNetStateNotifier.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = OFNetStateNotifier.app;
+			remoteRef = 348ADC9519C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34B8F3BA19C116F100ECF31F /* FixStringsFile */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = FixStringsFile;
+			remoteRef = 34B8F3B919C116F100ECF31F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34ED74341199B7110023E017 /* OmniBase.framework */ = {
@@ -673,13 +773,6 @@
 			fileType = wrapper.framework;
 			path = OmniBase.framework;
 			remoteRef = 34ED74331199B7110023E017 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34ED74361199B7110023E017 /* libOmniBase.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniBase.a;
-			remoteRef = 34ED74351199B7110023E017 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34ED74381199B7110023E017 /* OBLoadBundle */ = {
@@ -694,13 +787,6 @@
 			fileType = wrapper.framework;
 			path = OmniFoundation.framework;
 			remoteRef = 34ED74491199B7240023E017 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34ED744C1199B7240023E017 /* libOmniFoundation.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniFoundation.a;
-			remoteRef = 34ED744B1199B7240023E017 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34ED744E1199B7240023E017 /* OFUnitTests.xctest */ = {
@@ -759,13 +845,6 @@
 			remoteRef = 34ED74631199B72F0023E017 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34ED74661199B72F0023E017 /* libOmniQuartz.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniQuartz.a;
-			remoteRef = 34ED74651199B72F0023E017 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		34ED746F1199B73C0023E017 /* libOmniUI.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -792,20 +871,6 @@
 			fileType = "compiled.mach-o.executable";
 			path = OAMakeImageSizeIntegral;
 			remoteRef = 34ED74961199B8570023E017 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34ED74991199B8570023E017 /* OAPatternColorPicker.bundle */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = OAPatternColorPicker.bundle;
-			remoteRef = 34ED74981199B8570023E017 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34ED749B1199B8570023E017 /* libOmniAppKit.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniAppKit.a;
-			remoteRef = 34ED749A1199B8570023E017 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -855,35 +920,35 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		34CDFEF612691FDE005B04A7 /* PBXTargetDependency */ = {
+		34392AA519C37B3300D08401 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = OmniFileStoreTouch;
-			targetProxy = 34CDFEF512691FDE005B04A7 /* PBXContainerItemProxy */;
+			name = "OmniQuartz-iOS";
+			targetProxy = 34392AA419C37B3300D08401 /* PBXContainerItemProxy */;
+		};
+		348ADC9919C1143C003AEF77 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "OmniBase-iOS";
+			targetProxy = 348ADC9819C1143C003AEF77 /* PBXContainerItemProxy */;
+		};
+		348ADC9B19C1143C003AEF77 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "OmniFoundation-iOS";
+			targetProxy = 348ADC9A19C1143C003AEF77 /* PBXContainerItemProxy */;
+		};
+		348ADC9D19C1143C003AEF77 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "OmniAppKit-iOS";
+			targetProxy = 348ADC9C19C1143C003AEF77 /* PBXContainerItemProxy */;
+		};
+		34B8F3D919C116FC00ECF31F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = FixStringsFile;
+			targetProxy = 34B8F3D819C116FC00ECF31F /* PBXContainerItemProxy */;
 		};
 		34ED747D1199B7FA0023E017 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = OmniUITouch;
 			targetProxy = 34ED747C1199B7FA0023E017 /* PBXContainerItemProxy */;
-		};
-		34ED747F1199B7FA0023E017 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = OmniFoundationTouch;
-			targetProxy = 34ED747E1199B7FA0023E017 /* PBXContainerItemProxy */;
-		};
-		34ED74811199B7FA0023E017 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = OmniQuartzTouch;
-			targetProxy = 34ED74801199B7FA0023E017 /* PBXContainerItemProxy */;
-		};
-		34ED74831199B7FA0023E017 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = OmniBaseTouch;
-			targetProxy = 34ED74821199B7FA0023E017 /* PBXContainerItemProxy */;
-		};
-		34ED749D1199B8630023E017 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = OmniAppKitTouch;
-			targetProxy = 34ED749C1199B8630023E017 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -899,7 +964,8 @@
 					$DERIVED_SOURCES_DIR/FrameworkHeaders,
 				);
 				INFOPLIST_FILE = "ScalingScrollView-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniUI.ScalingScrollView;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.ScalingScrollView;
 				PRODUCT_NAME = ScalingScrollView;
 				TARGETED_DEVICE_FAMILY = 2;
 			};
@@ -911,7 +977,8 @@
 			buildSettings = {
 				GCC_PREFIX_HEADER = ScalingScrollView_Prefix.pch;
 				INFOPLIST_FILE = "ScalingScrollView-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniUI.ScalingScrollView;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.ScalingScrollView;
 				PRODUCT_NAME = ScalingScrollView;
 				TARGETED_DEVICE_FAMILY = 2;
 			};
@@ -921,8 +988,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34915C7A116FE3E4005EA90E /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 			};
 			name = Debug;
 		};
@@ -930,8 +995,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34915C7B116FE3E4005EA90E /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 			};
 			name = Release;
 		};

@@ -7,16 +7,18 @@
 
 #import <OmniDataObjects/ODOEditingContext.h>
 
+#import <Foundation/NSFileManager.h>
 #import <OmniDataObjects/ODOFetchRequest.h>
 #import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOObjectID.h>
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
 #import <OmniDataObjects/ODOModel.h>
+#import <OmniDataObjects/Errors.h>
+#import <OmniDataObjects/ODOObject-Accessors.h>
 
 #import "ODOProperty-Internal.h"
 #import "ODOEditingContext-Internal.h"
-#import "ODOObject-Accessors.h"
 #import "ODOObject-Internal.h"
 #import "ODODatabase-Internal.h"
 #import "ODOEntity-SQL.h"
@@ -29,6 +31,7 @@
 
 #import <Foundation/NSUndoManager.h>
 #import <Foundation/FoundationErrors.h>
+#import <OmniFoundation/NSUndoManager-OFExtensions.h>
 
 #if 0 && defined(DEBUG)
     #define DEBUG_DELETE(format, ...) NSLog((format), ## __VA_ARGS__)
@@ -150,6 +153,9 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
 {
     OBINVARIANT([self _checkInvariants]);
 
+    // This cleanup can cause us to be deallocated if there are no other strong references
+    OBRetainAutorelease(self);
+    
     // Give observers a chance to clear caches of objects we are about to obliterate.  During this time, if any fetching is attempted on us, we'll return nil.  It's important to do the reset in two phases like this for the case of cascading caches; clearing cache A may invoke KVO that would cause messages to objects in cache B.  If the objects in B are already invalidated, then bad things happen.  This lets everyone shut down and then start up again.
     _isResetting = YES;
     @try {
@@ -173,6 +179,7 @@ static void _runLoopObserverCallBack(CFRunLoopObserverRef observer, CFRunLoopAct
         
         [_recentlyInsertedObjects release];
         _recentlyInsertedObjects = nil;
+        _nonretainedLastRecentlyInsertedObject = nil;
         [_recentlyUpdatedObjects release];
         _recentlyUpdatedObjects = nil;
         [_recentlyDeletedObjects release];
@@ -213,6 +220,7 @@ static void ODOEditingContextInternalInsertObject(ODOEditingContext *self, ODOOb
         self->_recentlyInsertedObjects = ODOEditingContextCreateRecentSet(self);
     
     [self->_recentlyInsertedObjects addObject:object];
+    self->_nonretainedLastRecentlyInsertedObject = object;
     [self _registerObject:object];
 }
 
@@ -313,7 +321,7 @@ static void _traceToManyRelationship(ODOObject *object, ODORelationship *rel, Tr
 
     if (rule == ODORelationshipDeleteRuleDeny) {
         OBASSERT([inverseRel isToMany] == NO); // We don't allow many-to-many relationships in the model loading code
-        OBRequestConcreteImplementation(object, @selector(_traceToManyRelationship)); // Handle once we have a test case
+        OBFinishPorting; // Handle once we have a test case
     }
 
     BOOL alsoCascade;
@@ -322,7 +330,7 @@ static void _traceToManyRelationship(ODOObject *object, ODORelationship *rel, Tr
     } else if (rule == ODORelationshipDeleteRuleCascade) {
         alsoCascade = YES;
     } else {
-        OBRequestConcreteImplementation(object, @selector(_traceToManyRelationship)); // unknown delete rule
+        OBASSERT_NOT_REACHED("Expected to identify the delete rule in question"); // unknown delete rule
     }
     
     // Nullify all the inverse to-ones.
@@ -400,7 +408,7 @@ static void _traceToOneRelationship(ODOObject *object, ODORelationship *rel, Tra
         return;
     }
     
-    OBRequestConcreteImplementation(object, @selector(_traceForDeletion)); // unknown delete rule
+    OBASSERT_NOT_REACHED("Expected to identify the delete rule in question"); // unknown delete rule
 }
 
 static void _traceForDeletion(ODOObject *object, TraceForDeletionContext *ctx)
@@ -449,14 +457,11 @@ static void _validateForDeleteApplier(const void *value, void *context)
 }
 #endif
 
-static void _snapshotAndClearObjectForDeletionApplier(const void *value, void *context)
+- (void)_snapshotAndClearObjectForDeletion:(ODOObject *)object;
 {
-    ODOObject *object = (ODOObject *)value;
-    ODOEditingContext *self = context;
-    
     // Reject if object is undeletable... should not have gotten this far. This means all undeletable objects must be inserted w/o undo enabled or having undo flushed afterwards.
     if (_ODOObjectIsUndeletable(object))
-        OBRejectInvalidCall(self, @selector(_snapshotAndClearObjectForDeletionApplier), @"Undeletable objects should not be deleted!");
+        OBRejectInvalidCall(self, _cmd, @"Undeletable objects should not be deleted!");
     
 #ifdef OMNI_ASSERTIONS_ON
     // All the to-one relationships must be nil at this point. Otherwise, observation across a keyPath won't trigger due to objects along that keyPath being deleted and we might leak observation info.  Additionally, when a 'did delete' notification goes out and the observer removes its observed keyPath, the crossings of to-one relationships can return nil and be correct w/o asserting about asserting that we aren't doing KVC on deleted objects.
@@ -469,8 +474,9 @@ static void _snapshotAndClearObjectForDeletionApplier(const void *value, void *c
     }
 #endif
     
-    // Might have been snapshotted if we had a recent or processed update.  Otherwise, it shouldn't have been and we need to snapshot it now.
-    OBASSERT(([self->_objectIDToCommittedPropertySnapshot objectForKey:[object objectID]] == nil && [self->_objectIDToLastProcessedSnapshot objectForKey:[object objectID]] == nil) == ([self->_recentlyUpdatedObjects member:object] == nil && [self->_processedUpdatedObjects member:object] == nil));
+    // Might have been snapshotted if we had a recent or processed update. Since we are about to delete it, it is already in the _recentlyDeletedObjects set and has been remove from _recentlyUpdatedObjects.
+    // OBASSERT(([_objectIDToCommittedPropertySnapshot objectForKey:[object objectID]] == nil && [_objectIDToLastProcessedSnapshot objectForKey:[object objectID]] == nil) == ([_recentlyUpdatedObjects member:object] == nil && [_processedUpdatedObjects member:object] == nil));
+    
     [self _snapshotObjectPropertiesIfNeeded:object];
     
     // Turn the object into a fault.  This is what CoreData does, and our OFMTask/OFMProjectInfo mirroring expects this.
@@ -525,18 +531,41 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
 {
     DEBUG_DELETE(@"DELETE: internal delete %@", [toDelete setByPerformingSelector:@selector(shortDescription)]);
 
-    // Some objects (I'm looking at you NSArrayController) are dumb as posts and if you clear their content, they'll ask their old content questions like, "Hey; what's your value for this key?".  That doesn't work well for deleted objects.  CoreData has some hack into NSArrayController to avoid this, we need something of the like.  For now we'll post a note before finalizing the deletion.
-    [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextObjectsWillBeDeletedNotification object:self userInfo:[NSDictionary dictionaryWithObject:toDelete forKey:ODODeletedObjectsKey]];
-    
-    CFSetApplyFunction((CFSetRef)toDelete, _snapshotAndClearObjectForDeletionApplier, self);
-    
+    // Before calling out to our observer with the "will be deleted" notification, add the object we're deleting to our set of recently deleted objects--and remove it from our recently updated objects.  This means that it's safe for the observer to call -processPendingChanges without getting a bogus "object changed" notification.
+    // (In <bug:///98546> (Crash updating forecast/inbox badge after sync? -[HomeController _forecastCount]), the observer was the OFMLiveFetch for overdue objects, and it removed the deleted object from its object set.  Great, this is what we want.  This fired off the OFMLiveFetchObjectsBinding, which was seen by HomeController and triggered a refresh of the badges for visible nodes.  HomeController was asking AppController for the set of overdue tasks.  Still, so far so good.  But then -overdueTasks was calling back to our -processPendingChanges which was firing off a notification which included this deleted object in its update set (failing an assertion, since this method was supposed to guarantee that couldn't happen).  So then the OFMLiveFetch for overdue tasks saw the update for our not-yet-deleted object, and added it back to its set.  After -processPendingChanges returned, -overdueTasks tried to sort the returned task by due date and hit this deleted object and... kaboom!)
     if (!self->_recentlyDeletedObjects)
         self->_recentlyDeletedObjects = ODOEditingContextCreateRecentSet(self);
+    
+    // Before this, the objects shouldn't claim to be deleted.
+#ifdef OMNI_ASSERTIONS_ON
+    for (ODOObject *object in toDelete)
+        OBASSERT(![object isDeleted]);
+#endif
     
     // Still shouldn't have any insertions, but we might have some locally created updates.  Some of these may now be overridden by our deletions (but the updates to their inverses won't be).
     OBASSERT(!self->_recentlyInsertedObjects);
     [self->_recentlyDeletedObjects unionSet:toDelete];
     [self->_recentlyUpdatedObjects minusSet:toDelete];
+
+    // Now they should so that observers of the notification can't remove objects in response to the notification, then trigger a fetch that would find the objects and accidentally re-add them. A possibly better long-term fix for this would be to have a pending-deletes list that we'd use to filter fetches and such.
+#ifdef OMNI_ASSERTIONS_ON
+    for (ODOObject *object in toDelete) {
+        OBASSERT([object isDeleted]);
+        OBASSERT([self _isBeingDeleted:object]);
+    }
+#endif
+    
+    // If someone calls back into -processPendingChanges, we're going to try to register undos for objects from our set of recently deleted objects.  Those undos will need to reference snapshots, so we'd better add those snapshots now.  Fixes <bug:///99138> (Regression: Exception when trying to syncing after deleting an inbox task (Assert failed: requires snapshot) [_registerUndoForRecentChanges]).
+    for (ODOObject *object in toDelete) {
+        [self _snapshotObjectPropertiesIfNeeded:object];
+    }
+
+    // Some objects (I'm looking at you NSArrayController) are dumb as posts and if you clear their content, they'll ask their old content questions like, "Hey; what's your value for this key?".  That doesn't work well for deleted objects.  CoreData has some hack into NSArrayController to avoid this, we need something of the like.  For now we'll post a note before finalizing the deletion.
+    [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextObjectsWillBeDeletedNotification object:self userInfo:[NSDictionary dictionaryWithObject:toDelete forKey:ODODeletedObjectsKey]];
+    
+    for (ODOObject *object in toDelete) {
+        [self _snapshotAndClearObjectForDeletion:object];
+    }
 }
 
 // Since we do delete propagation immediately, and since there is no other good point, we have an out NSError argument here for the results from -validateForDelete:.
@@ -549,11 +578,11 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     OBPRECONDITION(object);
     OBPRECONDITION([object editingContext] == self);
     OBPRECONDITION([_registeredObjectByID objectForKey:[object objectID]] == object); // has to be registered
-    OBPRECONDITION(![_undoManager isUndoing] && ![_undoManager isRedoing]); // this public API shouldn't be called to undo/redo.  Only to 'do'.
+    OBPRECONDITION(![_undoManager isUndoingOrRedoing]); // this public API shouldn't be called to undo/redo.  Only to 'do'.
     
     // Bail on objects that are already deleted or invalid instead of crashing.  This can easily happen if UI code can select both a parent and child and delete them w/o knowing that the deletion of the parent will get the child too.  Nice if the UI handles it, but shouldn't crash or do something crazy otherwise.
-    if ([object isInvalid] || [object isDeleted]) {
-        DEBUG_DELETE(@"DELETE: already invalid:%d deleted:%d -- bailing", [object isInvalid], [object isDeleted]);
+    if (!object || [object isInvalid] || [object isDeleted]) {
+        DEBUG_DELETE(@"DELETE: %@ already invalid:%d deleted:%d -- bailing", [object shortDescription], [object isInvalid], [object isDeleted]);
         return YES; // maybe return a user-cancelled error?
     }
     
@@ -594,7 +623,7 @@ static void ODOEditingContextInternalDeleteObjects(ODOEditingContext *self, NSSe
     
     _traceForDeletion(object, &ctx);
     if (ctx.fail) {
-        if (outError)
+        if (outError != NULL)
             *outError = ctx.error;
         return NO;
     }
@@ -754,6 +783,7 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet *inserted, NSSet
     }
     
     // Any remaining recent operations should merge right across.  If we didn't have changes in a category, steal the recent set rather than building a new one.
+    _nonretainedLastRecentlyInsertedObject = nil;
     if (_processedInsertedObjects)
         [_processedInsertedObjects unionSet:_recentlyInsertedObjects];
     else  {
@@ -799,19 +829,21 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet *inserted, NSSet
     OBPRECONDITION(![_recentlyInsertedObjects intersectsSet:_recentlyDeletedObjects]);
     OBPRECONDITION(![_recentlyUpdatedObjects intersectsSet:_recentlyDeletedObjects]);
     
-    if (!_recentlyInsertedObjects && !_recentlyUpdatedObjects && !_recentlyDeletedObjects)
-        return NO;
-    
-    OBASSERT(_inProcessPendingChanges == NO);
-    
-    BOOL success = YES;
-    _inProcessPendingChanges = YES;
-    @try {
-        success = [self _internal_processPendingChanges];
-    } @finally {
-        _inProcessPendingChanges = NO;
+    @autoreleasepool {
+        if (!_recentlyInsertedObjects && !_recentlyUpdatedObjects && !_recentlyDeletedObjects)
+            return NO;
+        
+        OBASSERT(_inProcessPendingChanges == NO);
+        
+        BOOL success = YES;
+        _inProcessPendingChanges = YES;
+        @try {
+            success = [self _internal_processPendingChanges];
+        } @finally {
+            _inProcessPendingChanges = NO;
+        }
+        return success;
     }
-    return success;
 }
 
 // These reflect the total current set of unsaved edits, including unprocessed changes.  Note that since we need to send 'updated' notifications when an inserted object gets further edits, the recently updated set might contain inserted objects.  This doesn't mean the object is in the inserted state as far as what will happen when -save: is called, though.
@@ -870,11 +902,9 @@ static NSDictionary *_createChangeSetNotificationUserInfo(NSSet *inserted, NSSet
     return [NSDictionary dictionaryWithDictionary:_registeredObjectByID];
 }
 
-static BOOL _queryUniqueSet(NSSet *set, ODOObject *query)
+BOOL ODOEditingContextObjectIsInsertedNotConsideringDeletions(ODOEditingContext *self, ODOObject *object)
 {
-    id obj = [set member:query];
-    OBASSERT(obj == nil || obj == query);
-    return obj != nil;
+    return _queryUniqueSet(self->_processedInsertedObjects, object) || _queryUniqueSet(self->_recentlyInsertedObjects, object);
 }
 
 - (BOOL)isInserted:(ODOObject *)object;
@@ -882,7 +912,7 @@ static BOOL _queryUniqueSet(NSSet *set, ODOObject *query)
     // Pending delete that might kill the insert when processed?
     if (_queryUniqueSet(_recentlyDeletedObjects, object))
         return NO;
-    return _queryUniqueSet(_processedInsertedObjects, object) || _queryUniqueSet(_recentlyInsertedObjects, object);
+    return ODOEditingContextObjectIsInsertedNotConsideringDeletions(self, object);
 }
 
 // As with -updatedObjects, this is tricky since processed inserts can be recently updated for notification/undo purposes.
@@ -937,9 +967,19 @@ static BOOL _queryUniqueSet(NSSet *set, ODOObject *query)
     //NSLog(@"saving...");
     
     _saveDate = [saveDate copy];
-    
-    if (![self _sendWillSave:outError]) {
+
+    BOOL willSaveSuccess;
+    NSError *willSaveError = nil;
+    @autoreleasepool {
+        willSaveSuccess = [self _sendWillSave:&willSaveError];
+        if (!willSaveSuccess) {
+            [willSaveError retain];
+        }
+    }
+    if (!willSaveSuccess) {
         OBINVARIANT([self _checkInvariants]);
+        if (outError)
+            *outError = [willSaveError autorelease];
         [_saveDate release];
         _saveDate = nil;
         return NO;
@@ -975,8 +1015,22 @@ static BOOL _queryUniqueSet(NSSet *set, ODOObject *query)
         }
         
         // Ask ODODatabase to write (but not clear) its _pendingMetadataChanges
-        if (![_database _writeMetadataChanges:outError]) {
+        NSError *databaseError = nil;
+        if (![_database _writeMetadataChanges:&databaseError]) {
+            // <bug:///102226> (Discussion: Are at least some of the recent SQL error reports being caused by Clean My Mac, MacKeeper, etc.?)
+            NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save changes to database", @"OmniDataObjects", OMNI_BUNDLE, @"error description");
+            NSString *reason;
+            BOOL underlyingErrorRequiresReopen = [databaseError hasUnderlyingErrorDomain:ODOSQLiteErrorDomain code:SQLITE_IOERR];
+            if (underlyingErrorRequiresReopen)
+                reason = NSLocalizedStringFromTableInBundle(@"The cache database was removed while it was still open. Close and reopen the database to recover.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
+            else
+                reason = [databaseError localizedFailureReason];
+            
+            NSInteger code = (underlyingErrorRequiresReopen ? ODOUnableToSaveTryReopen : ODOUnableToSave);
+            ODOError(&databaseError, code, description, reason);
             OBINVARIANT([self _checkInvariants]);
+            if (outError != NULL)
+                *outError = databaseError;
             return NO;
         }
         
@@ -1225,7 +1279,7 @@ static BOOL _fetchPrimaryKeyCallback(struct sqlite3 *sqlite, ODOSQLStatement *st
     // This won't detect the inverse case (SQL doesn't match but in memory doesn't).
     if (predicate) {
         for (ODOObject *object in ctx.results)
-            OBPOSTCONDITION([predicate evaluateWithObject:object]);
+            OBPOSTCONDITION([predicate evaluateWithObject:object]); // Might have a predicate supplying a relationship's identifier where it should supply the actual object
     }
 #endif
     
@@ -1405,7 +1459,7 @@ static void _validateApplier(const void *value, void *context)
     
     // TODO: Should we collect the validation errors into an ivar?  This approach will build an array of arrays of errors rather than a flat array of all errors across all objects.
     if ([ctx.validationErrors count] == 1) {
-        if (outError)
+        if (outError != NULL)
             *outError = [ctx.validationErrors lastObject];
     } else {
         NSString *reason = NSLocalizedStringFromTableInBundle(@"Multiple validation errors occurred while saving.", @"OmniDataObjects", OMNI_BUNDLE, @"error reason");
@@ -1588,18 +1642,25 @@ static void _recordChangesToUndoUpdate(const void *value, void *context)
         [ctx.results release];
     }
     
+    BOOL hasChanges = NO;
     DEBUG_UNDO(@"Registering operation during %@:", [_undoManager isUndoing] ? @"undo" : ([_undoManager isRedoing] ? @"redo" : @"'doing'"));
     if (objectIDsAndSnapshotsToInsert) {
-        DEBUG_UNDO(@"objectIDsAndSnapshotsToInsert = %@", [(id)CFCopyDescription(objectIDsAndSnapshotsToInsert) autorelease]);
+        DEBUG_UNDO(@"  objectIDsAndSnapshotsToInsert = %@", [(id)CFCopyDescription(objectIDsAndSnapshotsToInsert) autorelease]);
+        hasChanges = YES;
     }
     if (updates) {
-        DEBUG_UNDO(@"updates = %@", [(id)CFCopyDescription(updates) autorelease]);
+        DEBUG_UNDO(@"  updates = %@", [(id)CFCopyDescription(updates) autorelease]);
+        hasChanges = YES;
     }
     if (objectIDsToDelete) {
-        DEBUG_UNDO(@"objectIDsToDelete = %@", objectIDsToDelete);
+        DEBUG_UNDO(@"  objectIDsToDelete = %@", objectIDsToDelete);
+        hasChanges = YES;
     }
     
-    [[_undoManager prepareWithInvocationTarget:self] _undoWithObjectIDsAndSnapshotsToInsert:objectIDsAndSnapshotsToInsert updates:updates objectIDsToDelete:objectIDsToDelete];
+    if (hasChanges)
+        [[_undoManager prepareWithInvocationTarget:self] _undoWithObjectIDsAndSnapshotsToInsert:objectIDsAndSnapshotsToInsert updates:updates objectIDsToDelete:objectIDsToDelete];
+	else
+        DEBUG_UNDO(@"  ... no changes to report");
 
     [updates release];
     [objectIDsToDelete release];

@@ -1,5 +1,5 @@
-/* setting failure alert message */
-"“%@”\nwas not successful" = "„%@“\nwar nicht erfolgreich";
+/* In App Store pricing option format */
+"%@ %@" = "%2$@: %1$@ ";
 
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ von %2$@";
@@ -10,8 +10,8 @@
 /* Default title for the About menu item */
 "About %@" = "Über %@";
 
-/* alert button title */
-"Accept" = "Akzeptieren";
+/* No purchases found message format */
+"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Alle Käufe für Ihren aktuellen App Store-Account wurden wiederhergestellt, aber %@ war nicht unter diesen Käufen.";
 
 /* Web view nagivation button for going back in history. */
 "Back" = "Zurück";
@@ -19,11 +19,11 @@
 /* Bold button accessibility label */
 "Bold" = "Fett";
 
+/* Disabled 'Buy' button title string */
+"Buy" = "Kaufen";
+
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
 "Buy %@" = "%@ kaufen";
-
-/* 'Buy' and a currency symbol for purchase button */
-"Buy $%@" = "$%@ kaufen";
 
 /* button title
    cancel button title
@@ -44,8 +44,8 @@
 /* Certificate trust alert button title */
 "Continue" = "Fortfahren";
 
-/* setting failure alert title */
-"Could not perform command" = "Befehl konnte nicht ausgeführt werden";
+/* increment button accessibility label */
+"Decrement" = "Reduzieren";
 
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "Deaktiviert";
@@ -75,6 +75,15 @@
 
 /* Purchasing is disabled details */
 "In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "In-App-Käufe sind auf diesem Gerät nicht erhältlich oder nicht zugelassen. Überprüfen Sie zum Aktivieren von Käufen in der App „Einstellungen“ die Option „Einschränkungen“.";
+
+/* increment button accessibility label */
+"Increment" = "Erhöhen";
+
+/* default special URL confirm button title */
+"Invoke" = "Aufrufen";
+
+/* button title */
+"Invoke and Quit" = "Aufrufen und beenden";
 
 /* Italic button accessibility label */
 "Italic" = "Kursiv";
@@ -111,11 +120,8 @@
 /* placeholder text */
 "password" = "Kennwort";
 
-/* Photos view controller title. */
-"Photos" = "Fotos";
-
 /* alert title */
-"Preference changed" = "Einstellung wurde geändert";
+"Preference changed" = "Einstellung geändert";
 
 /* title for successful in app purchase */
 "Purchase %@" = "%@ kaufen";
@@ -137,17 +143,14 @@
 
 "Release Notes" = "Versionsanmerkungen";
 
-/* Restore purchases button title */
-"Restore" = "Wiederherstellen";
+/* No purchases found title */
+"Restore Complete" = "Wiederherstellung abgeschlossen";
 
 /* Restore failed alert title */
 "Restore Failed" = "Wiederherstellung fehlgeschlagen";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Rechtsbündig ausrichten";
-
-/* App menu item title */
-"Run Tests" = "Tests ausführen";
 
 /* Search field placeholder text */
 "Search" = "Suchen";
@@ -170,11 +173,17 @@
 /* placeholder text */
 "username" = "Benutzername";
 
+/* in app purchase verify button title */
+"Verify" = "Überprüfen";
+
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Sie haben auf einen Link getippt, der die folgenden Einstellungen ändert:\n\n„%@“\n\nMöchten Sie diese Änderungen akzeptieren?";
 
 /* debug setting alert message */
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Sie haben auf einen Link getippt, der folgenden Befehl zur Fehlerbehebung ausführen wird:\n\n„%@“\n\nWenn Sie nicht von den Omni-Support-Mitarbeitern dazu aufgefordert wurden, lassen Sie das bitte.\nMöchten Sie diesen Befehl ausführen?";
+
+/* default special URL alert message */
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Sie haben auf eine Omni-spezifische URL getippt:\n\n„%@“\n\nSoll dieser Befehl ausgeführt werden?";
 
 /* zoom label */
 "Zoom" = "Zoomen";

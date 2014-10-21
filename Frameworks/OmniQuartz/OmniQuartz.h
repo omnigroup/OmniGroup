@@ -7,27 +7,26 @@
 //
 // $Id$
 
-#import <Availability.h>
+#import <Foundation/Foundation.h>
 
 // Mac-only
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-#import <OmniQuartz/OQTargetAnimation.h>
-#import <OmniQuartz/OQSlideOutLayerRemovalAnimation.h>
-#import <OmniQuartz/OQFadeOutLayerRemovalAnimation.h>
-#import <OmniQuartz/OQFlipSwapViewAnimation.h>
-
-#import <OmniQuartz/OQHoleLayer.h>
 #import <OmniQuartz/CIColor-OQExtensions.h>
 #import <OmniQuartz/CIContext-OQExtensions.h>
 #import <OmniQuartz/CIImage-OQExtensions.h>
 #import <OmniQuartz/NSView-OQExtensions.h>
 #import <OmniQuartz/OQAlphaScaleFilter.h>
+#import <OmniQuartz/OQFadeOutLayerRemovalAnimation.h>
+#import <OmniQuartz/OQFlipSwapViewAnimation.h>
 #import <OmniQuartz/OQGradient.h>
+#import <OmniQuartz/OQHoleLayer.h>
 #import <OmniQuartz/OQSimpleFilter.h>
+#import <OmniQuartz/OQSlideOutLayerRemovalAnimation.h>
+#import <OmniQuartz/OQTargetAnimation.h>
 #endif
 
-
-#import <OmniQuartz/OQContentAnimatingLayer.h>
-
 #import <OmniQuartz/CALayer-OQExtensions.h>
+#import <OmniQuartz/OQColor-Archiving.h>
 #import <OmniQuartz/OQColor.h>
+#import <OmniQuartz/OQContentAnimatingLayer.h>
+#import <OmniQuartz/OQDrawing.h>

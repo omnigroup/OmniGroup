@@ -14,7 +14,7 @@
 #endif
 
 #if 0 && defined(DEBUG)
-    #define DEBUG_DYNAMIC_METHODS(format, ...) NSLog((format), ## __VA_ARGS__)
+    #define DEBUG_DYNAMIC_METHODS(format, ...) NSLog(@"ODO METHODS: " format, ## __VA_ARGS__)
 #else
     #define DEBUG_DYNAMIC_METHODS(format, ...) do {} while (0)
 #endif

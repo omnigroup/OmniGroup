@@ -1,0 +1,222 @@
+/* error reason */
+"Attempted to disconnect while not connected." = "Была выполнена попытка отключения при отсутствии подключения.";
+
+/* error reason */
+"Attribute %@.%@ has type %d with unknown SQL column type." = "Атрибут %1$@.%2$@ имеет тип %3$d с неизвестным типом столбца SQL.";
+
+/* error reason */
+"Attribute %@.%@ has unknown value type but isn't transient." = "Атрибут %1$@.%2$@ имеет неизвестный тип значения и не является переходным.";
+
+/* error reason */
+"Attribute %@.%@ specified a transient or optional primary key." = "Атрибут %1$@.%2$@ задает переходный или необязательный основной ключ.";
+
+/* error reason */
+"Attribute has type unsupported type %d." = "Атрибут имеет неподдерживаемый тип %d.";
+
+/* error reason */
+"Attribute specified default value '%@' for attribute of type of '%@'." = "Атрибут задает значение по умолчанию «%1$@» для атрибута типа «%2$@».";
+
+/* error reason */
+"Attribute specified invalid type of '%@'." = "Атрибут задает недопустимый тип «%@».";
+
+/* error reason */
+"Attribute specified no type." = "Атрибут не задает тип.";
+
+/* error reason */
+"Cannot connect to '%@' since the database is already connected to '%@'." = "Не удается подключиться к «%1$@», поскольку база данных уже подключена к «%2$@».";
+
+/* error reason */
+"Cannot disconnect from database at '%@'." = "Не удается отключиться от базы данных в «%@».";
+
+/* error reason */
+"Cannot open database at '%@'." = "Не удается открыть базу данных в «%@».";
+
+/* error reason */
+"Cannot prepare fetch for key %@ for query %@ while not connected to a database." = "Не удается подготовить извлечение для ключа %1$@ запроса %2$@ без подключения к базе данных.";
+
+/* error reason */
+"Couldn't create OFXMLDocument." = "Не удалось создать объект OFXMLDocument.";
+
+/* error reason */
+"Entity '%@' has multiple primary key attributes." = "Объект «%@» имеет несколько атрибутов основного ключа.";
+
+/* error reason */
+"Entity '%@' has multiple properties named '%@'." = "Объект «%1$@» имеет несколько свойств «%2$@».";
+
+/* error reason */
+"Entity '%@' has no instance class name." = "Объект «%@» не имеет имени класса экземпляра.";
+
+/* error reason */
+"Entity '%@' has no primary key attributes." = "Объект «%@» не имеет атрибутов основного ключа.";
+
+/* error reason */
+"Entity '%@' specified instance class name of '%@', but no such class was found." = "Объектом «%1$@» было задано имя экземпляра класса для «%2$@», но класс не обнаружен.";
+
+/* error reason */
+"Entity '%@' specified instance class name of '%@', but this class is not a subclass of ODOObject." = "Объектом «%1$@» было задано имя экземпляра класса для «%2$@», но этот класс не является подклассом объекта ODOObject.";
+
+/* error reason */
+"Entity '%@' specified primary key attribute '%@' with a default value." = "Объектом «%1$@» указанный был задан атрибут основного ключа «%2$@» со значением по умолчанию.";
+
+/* error reason */
+"Entity '%@' specified primary key attribute '%@' with type %d, but only strings are supported." = "Объектом «%1$@» указанный был задан атрибут основного ключа «%2$@» типа %3$d, однако поддерживаются только строки.";
+
+/* error reason */
+"Entity has no name." = "Объект не имеет имени.";
+
+/* error reason */
+"Entity name '%@' is reserved." = "Имя объекта «%@» зарезервировано.";
+
+/* error description */
+"Error disconnecting from database." = "Ошибка отключения от базы данных.";
+
+/* error reason */
+"Exception raised while saving: %@" = "При сохранении произошло исключение: %@";
+
+/* error reason */
+"Exception raised while sending -willSave: %@" = "При отправке параметра -willSave произошло исключение: %@";
+
+/* error reason */
+"Failed to convert '%@' to a property list data: %@." = "Сбой преобразования «%1$@» в данные списка свойств: %2$@.";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@' and no such object was registered." = "Было выполнено извлечение для недопустимого объекта с идентификатором «%@», и оказалось, что такой объект не зарегистрирован.";
+
+/* error reason */
+"Fetch for fault returned object with ID '%@', but that object has already had its fault cleared." = "Было выполнено извлечение для недопустимого объекта с идентификатором «%@», и оказалось, что для объекта состояние сбоя уже очищено.";
+
+/* error reason */
+"Model '%@' has multiple properties named '%@'." = "Модель «%1$@» имеет несколько свойств «%2$@».";
+
+/* error reason */
+"Multiple validation errors occurred while saving." = "При сохранении произошло несколько ошибок проверки.";
+
+/* error reason */
+"Property has no name." = "Свойство не имеет имени.";
+
+/* error reason */
+"Relationship %@.%@ specified a destination entity of '%@', but there is no such entity." = "Отношение %1$@.%2$@ указывало запись назначения «%3$@», но такой записи не существует.";
+
+/* error reason */
+"Relationship %@.%@ specified an inverse relationship %@.%@, but there is no such relationship." = "Отношение %1$@.%2$@ указывало обратное отношение %3$@.%4$@, но такого отношения не существует.";
+
+/* error reason */
+"Relationship %@.%@ specified invalid type of '%@'." = "Отношение %1$@.%2$@ указывало недопустимый тип для «%3$@».";
+
+/* error reason */
+"Relationship %@.%@ specified no destination entity." = "Отношение %1$@.%2$@ не указывало запись назначения.";
+
+/* error reason */
+"Relationship %@.%@ specified no inverse relationship." = "Отношение %1$@.%2$@ не указывало обратного отношения.";
+
+/* error reason */
+"Relationship %@.%@ specified no type." = "Отношение %1$@.%2$@ не указывало тип.";
+
+/* error reason */
+"The cache database was removed while it was still open. Close and reopen the database to recover." = "База данных кэша удалена в тот момент, когда она была открыта. Закройте и снова откройте базу данных, чтобы восстановить ее.";
+
+/* error reason */
+"Tried 100 times to settle -willSave, but edits kept being made." = "Выполнено 100 попыток задать -willSave, но режим редактирования не завершился.";
+
+/* error reason */
+"Unable bind boolean to slot %d of statement with SQL '%@'." = "Не удается привязать логическое выражение к слоту %1$d выражения с SQL «%2$@».";
+
+/* error reason */
+"Unable bind constant '%@' of unknown type to slot %d of statement with SQL '%@'." = "Не удается привязать константу «%1$@» неизвестного типа к слоту %2$d выражения с SQL «%3$@».";
+
+/* error reason */
+"Unable bind data to slot %d of statement with SQL '%@'." = "Не удается привязать данные к слоту %1$d выражения с SQL «%2$@».";
+
+/* error reason */
+"Unable bind date to slot %d of statement with SQL '%@'." = "Не удается привязать дату к слоту %1$d выражения с SQL «%2$@».";
+
+/* error reason */
+"Unable bind float64 to slot %d of statement with SQL '%@'." = "Не удается привязать значение float64 к слоту %1$d выражения с SQL «%2$@».";
+
+/* error reason */
+"Unable bind int32 to slot %d of statement with SQL '%@'." = "Не удается привязать значение int32 к слоту %1$d выражения с SQL «%2$@».";
+
+/* error reason */
+"Unable bind null to slot %d of statement with SQL '%@'." = "Не удается привязать значение null к слоту %1$d выражения с SQL «%2$@».";
+
+/* error reason */
+"Unable bind number '%@' of type %ld to slot %d of statement with SQL '%@'." = "Не удается привязать число «%1$@» типа %2$ld к слоту %3$d выражения с SQL «%4$@».";
+
+/* error reason */
+"Unable bind string to slot %d of statement with SQL '%@'." = "Не удается привязать строку к слоту %1$d выражения с SQL «%2$@».";
+
+/* error reason */
+"Unable convert expression of type %lu (%@)." = "Не удается преобразовать выражение типа %1$lu (%2$@).";
+
+/* error reason */
+"Unable convert IN expression with non-constant value; %@." = "Не удается преобразовать выражение IN с непостоянным значением; %@.";
+
+/* error reason */
+"Unable convert predicate of type %lu (%@)." = "Не удается преобразовать предикат типа %1$lu (%2$@).";
+
+/* error reason */
+"Unable get value of type %d for result column %d of '%@'." = "Не удается получить значение типа %1$d для столбца результатов %2$d «%3$@».";
+
+/* error reason */
+"Unable prepare statement for SQL '%@'." = "Не удается подготовить выражение для SQL «%@».";
+
+/* error description */
+"Unable to bind attribute value to SQL." = "Не удается привязать значение атрибута к SQL.";
+
+/* error description */
+"Unable to bind constant to SQL statement." = "Не удается привязать константу к выражению SQL.";
+
+/* error description */
+"Unable to bind null to SQL statement." = "Не удается привязать пустое значение к выражению SQL.";
+
+/* error description */
+"Unable to bind value to SQL statement." = "Не удается привязать значение к выражению SQL.";
+
+/* error description */
+"Unable to connect to database." = "Не удается подключиться к базе данных.";
+
+/* error description */
+"Unable to create schema." = "Не удается создать схему.";
+
+/* error description */
+"Unable to create SQL query." = "Не удается создать SQL-запрос.";
+
+/* error description */
+"Unable to create SQL statement." = "Не удается создать SQL-выражение.";
+
+/* error description */
+"Unable to disconnect from database." = "Не удается отключить от базы данных.";
+
+/* error description */
+"Unable to execute SQL." = "Не удается выполнить SQL.";
+
+/* faulting exception */
+"Unable to fulfill fault: %@" = "Не удается обработать сбой: %@";
+
+/* error description */
+"Unable to fulfill fault." = "Не удается обработать сбой.";
+
+/* error description */
+"Unable to load model." = "Не удается загрузить модель.";
+
+/* error description */
+"Unable to open database." = "Не удается открыть базу данных.";
+
+/* error reason */
+"Unable to run SQL for statement '%@'." = "Не удается выполнить SQL-запрос для выражения «%@».";
+
+/* error description */
+"Unable to save changes to database" = "Не удается сохранить изменения в базу данных.";
+
+/* error description */
+"Unable to save metadata to database." = "Не удается сохранить метаданные в базу данных.";
+
+/* error description */
+"Unable to save." = "Не удается выполнить сохранение.";
+
+/* error reason */
+"Wrong root element name.  Was expecting '%@' but found '%@'." = "Неверное имя корневого элемента.  Ожидалось «%1$@», получено «%2$@».";
+
+/* error reason */
+"Wrong root element namespace.  Was expecting '%@' but found '%@'." = "Неверное пространство имен корневого элемента.  Ожидалось «%1$@», получено «%2$@».";
+

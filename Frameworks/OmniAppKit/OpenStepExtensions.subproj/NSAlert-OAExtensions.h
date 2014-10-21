@@ -1,4 +1,4 @@
-// Copyright 1997-2009, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2009, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,6 @@
 
 #import <AppKit/NSAlert.h>
 
-typedef void (^OAAlertSheetCompletionHandler)(NSAlert *alert, NSInteger returnCode);
+typedef void (^OAAlertSheetCompletionHandler)(NSModalResponse returnCode);
 
-@interface NSAlert (OAExtensions)
-- (void)oa_beginSheetModalForWindow:(NSWindow *)window completionHandler:(OAAlertSheetCompletionHandler)completionHandler;
-@end
-
-// Runs an NSAlert with an optional completion block. The returnCode passed to the block is based on the NSAlertFirstButtonReturn+N convention.
 extern void OABeginAlertSheet(NSString *title, NSString *defaultButton, NSString *alternateButton, NSString *otherButton, NSWindow *docWindow, OAAlertSheetCompletionHandler completionHandler, NSString *msgFormat, ...);

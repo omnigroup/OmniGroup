@@ -148,6 +148,10 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     // Processed inserted objects can be updated again (for notification/undo purposes), but recently inserted objects shouldn't be updated.  Until the object tracks this state, we have to ignore it.
     //OBPRECONDITION([_processedInsertedObjects member:object] == nil || [_processedInsertedObjects member:object] == object);
     
+    if (_nonretainedLastRecentlyInsertedObject == object)
+        // Ignore updates from the last recently inserted object (as with _recentlyInsertedObjects below)
+        return;
+
     if ([_recentlyUpdatedObjects member:object]) {
         OBASSERT([_objectIDToCommittedPropertySnapshot objectForKey:[object objectID]] || [_objectIDToLastProcessedSnapshot objectForKey:[object objectID]] || [_processedInsertedObjects member:object]); // should have a snapshot already, unless this is a recent update to a processed insert
         return; // Already been marked updated this round.
@@ -187,7 +191,8 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
         // This object has already been snapshotted this editing processing cycle.
         // Inserted objects can be 'updated' in the recent set.  Can't use -isUpdated in our assertion since that will return NO for inserted objects that have been updated since being first processed.
 #ifdef OMNI_ASSERTIONS_ON
-        BOOL isInserted = ([_processedInsertedObjects member:object] != nil) || ([_recentlyInsertedObjects member:object] != nil);
+        // Here isInserted might mean 'was inserted but we are cancelling that for a deletion'. If we are in the middle of -deleteObject:error:, the object can be in both the processed inserts and the recent deletes. In both the case that the object is inserted and still pending insertion and was inserted but about to go away, we don't want a snapshot registered.
+        BOOL isInserted = ODOEditingContextObjectIsInsertedNotConsideringDeletions(self, object);
         
         if (isInserted) {
             // Should be no committed snapshot for inserted objects
@@ -210,7 +215,8 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     
     // The first edit to a database-resident object (non-inserted) should make a committed value snapshot too
     if ([_objectIDToCommittedPropertySnapshot objectForKey:objectID] == nil) {
-        if (![object isInserted]) {
+        // As above, -[ODOObject isInserted:] will be NO already for objects that were inserted, but are being deleted.
+        if (!ODOEditingContextObjectIsInsertedNotConsideringDeletions(self, object)) {
             if (!_objectIDToCommittedPropertySnapshot)
                 _objectIDToCommittedPropertySnapshot = [[NSMutableDictionary alloc] init];
             [_objectIDToCommittedPropertySnapshot setObject:snapshot forKey:objectID];
@@ -235,6 +241,14 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     
     return snapshot;
 }
+
+#ifdef OMNI_ASSERTIONS_ON
+// A weaker form of -isDeleted:, only used in assertions right now.
+- (BOOL)_isBeingDeleted:(ODOObject *)object;
+{
+    return _queryUniqueSet(_recentlyDeletedObjects, object);
+}
+#endif
 
 - (void)_undoGroupStarterHack;
 {

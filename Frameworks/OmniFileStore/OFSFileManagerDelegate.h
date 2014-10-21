@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,8 +14,15 @@
 
 @protocol OFSFileManagerDelegate <NSObject>
 @optional
+
+// Determines the the value of NSURLRequest.allowsCellularAccess
 - (BOOL)fileManagerShouldAllowCellularAccess:(OFSFileManager *)manager;
+
+// Invoked from our -[NSURLConnectionDelegate connectionShouldUseCredentialStorage:] implementation, which isn't called any more (especially since we've moved from NSURLConnection to NSURLSession), so this is never called either
 - (BOOL)fileManagerShouldUseCredentialStorage:(OFSFileManager *)manager;
+
+// These are called to satisfy NSURLSession's authentication delegate methods
 - (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
 - (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
+
 @end

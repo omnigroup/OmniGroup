@@ -1,5 +1,5 @@
-/* setting failure alert message */
-"“%@”\nwas not successful" = "Операция «%@»\nне была успешно выполнена";
+/* In App Store pricing option format */
+"%@ %@" = "%2$@, %1$@";
 
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ из %2$@";
@@ -10,8 +10,8 @@
 /* Default title for the About menu item */
 "About %@" = "О программе %@";
 
-/* alert button title */
-"Accept" = "Принять";
+/* No purchases found message format */
+"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Все покупки для текущей уч. записи App Store восстановлены, однако %@ в списке покупок отсутствует.";
 
 /* Web view nagivation button for going back in history. */
 "Back" = "Назад";
@@ -19,11 +19,11 @@
 /* Bold button accessibility label */
 "Bold" = "Жирный";
 
+/* Disabled 'Buy' button title string */
+"Buy" = "Приобрести";
+
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
 "Buy %@" = "Приобрести %@";
-
-/* 'Buy' and a currency symbol for purchase button */
-"Buy $%@" = "Приобрести $%@";
 
 /* button title
    cancel button title
@@ -44,8 +44,8 @@
 /* Certificate trust alert button title */
 "Continue" = "Продолжить";
 
-/* setting failure alert title */
-"Could not perform command" = "Не удалось выполнить команду";
+/* increment button accessibility label */
+"Decrement" = "Дециметр";
 
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "Отключено";
@@ -76,6 +76,15 @@
 /* Purchasing is disabled details */
 "In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "Покупки в программе недоступны или не разрешены на этом устройстве. Чтобы разрешить покупки, проверьте ограничения в программе «Настройки».";
 
+/* increment button accessibility label */
+"Increment" = "Прирост";
+
+/* default special URL confirm button title */
+"Invoke" = "Вызвать";
+
+/* button title */
+"Invoke and Quit" = "Вызвать и выйти";
+
 /* Italic button accessibility label */
 "Italic" = "Курсив";
 
@@ -92,7 +101,7 @@
 "Loading" = "Загрузка";
 
 /* empty value cell placeholder */
-"None" = "Нет";
+"None" = "Отсутствует";
 
 /* Full screen note editor title */
 "Note" = "Примечание";
@@ -106,13 +115,10 @@
 
 
 
-"OK" = "ОК";
+"OK" = "OK";
 
 /* placeholder text */
 "password" = "пароль";
-
-/* Photos view controller title. */
-"Photos" = "Фото";
 
 /* alert title */
 "Preference changed" = "Параметр изменен";
@@ -137,17 +143,14 @@
 
 "Release Notes" = "Сведения о выпуске";
 
-/* Restore purchases button title */
-"Restore" = "Восстановить";
+/* No purchases found title */
+"Restore Complete" = "Восстановление выполнено";
 
 /* Restore failed alert title */
 "Restore Failed" = "Сбой восстановления";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "Выравнивание по правому краю";
-
-/* App menu item title */
-"Run Tests" = "Запустить проверки";
 
 /* Search field placeholder text */
 "Search" = "Поиск";
@@ -170,11 +173,17 @@
 /* placeholder text */
 "username" = "имя пользователя";
 
+/* in app purchase verify button title */
+"Verify" = "Проверить";
+
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Выбор ссылки изменит следующие настройки:\n\n«%@»\n\nПрименить эти изменения?";
 
 /* debug setting alert message */
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Вы нажали ссылку, вызывающую следующую команду отладки:\n\n«%@»\n\nЕсли вы не получали такие инструкции от службы поддержки Omni, не делайте этого.\nЗапустить эту команду?";
+
+/* default special URL alert message */
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Вы коснулись специальной URL-ссылки Omni:\n\n«%@»\n\nВыполнить эту команду?";
 
 /* zoom label */
 "Zoom" = "Масштаб";

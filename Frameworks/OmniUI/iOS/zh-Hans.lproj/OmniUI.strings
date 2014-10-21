@@ -1,5 +1,5 @@
-/* setting failure alert message */
-"“%@”\nwas not successful" = "“%@”\n不成功";
+/* In App Store pricing option format */
+"%@ %@" = "%1$@ %2$@";
 
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
@@ -10,20 +10,20 @@
 /* Default title for the About menu item */
 "About %@" = "关于 %@";
 
-/* alert button title */
-"Accept" = "接受";
+/* No purchases found message format */
+"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "已恢复当前 App Store 帐户的所有购买，但 %@ 不是这些购买中的一项。";
 
 /* Web view nagivation button for going back in history. */
-"Back" = "后移";
+"Back" = "返回";
 
 /* Bold button accessibility label */
 "Bold" = "粗体";
 
+/* Disabled 'Buy' button title string */
+"Buy" = "购买";
+
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
 "Buy %@" = "购买 %@";
-
-/* 'Buy' and a currency symbol for purchase button */
-"Buy $%@" = "购买 $%@";
 
 /* button title
    cancel button title
@@ -36,7 +36,7 @@
 "Center text align" = "文本居中对齐";
 
 /* Certificate trust alert title */
-"Certificate Trust" = "信任证书";
+"Certificate Trust" = "证书信任";
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "将“%1$@”预置从“%2$@”更改为“%3$@”";
@@ -44,8 +44,8 @@
 /* Certificate trust alert button title */
 "Continue" = "继续";
 
-/* setting failure alert title */
-"Could not perform command" = "无法执行命令";
+/* increment button accessibility label */
+"Decrement" = "减少";
 
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "已禁用";
@@ -65,16 +65,25 @@
 "Error Loading Store" = "载入 Store 时出错";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "对于此演示，功能未启用";
+"Feature not enabled for this demo" = "本试用版未启用此功能";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "适合";
 
 /* Help and Settings toolbar item accessibility label. */
-"Help and Settings" = "帮助和设置";
+"Help and Settings" = "帮助与设置";
 
 /* Purchasing is disabled details */
 "In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "此设备无法使用或不允许使用应用程序内购买。要启用购买，请查看设置应用程序中的限制。";
+
+/* increment button accessibility label */
+"Increment" = "增加";
+
+/* default special URL confirm button title */
+"Invoke" = "激活";
+
+/* button title */
+"Invoke and Quit" = "调用并退出";
 
 /* Italic button accessibility label */
 "Italic" = "斜体";
@@ -95,7 +104,7 @@
 "None" = "无";
 
 /* Full screen note editor title */
-"Note" = "备注";
+"Note" = "注释";
 
 /* button title
    Dismiss failed purchase alert
@@ -110,9 +119,6 @@
 
 /* placeholder text */
 "password" = "密码";
-
-/* Photos view controller title. */
-"Photos" = "照片";
 
 /* alert title */
 "Preference changed" = "预置已更改";
@@ -135,19 +141,16 @@
 /* App menu item title
    release notes html screen title */
 
-"Release Notes" = "发布说明";
+"Release Notes" = "发行说明";
 
-/* Restore purchases button title */
-"Restore" = "恢复";
+/* No purchases found title */
+"Restore Complete" = "恢复完成";
 
 /* Restore failed alert title */
 "Restore Failed" = "恢复失败";
 
 /* Right Text Align button accessibility label. */
 "Right text align" = "文本右对齐";
-
-/* App menu item title */
-"Run Tests" = "运行测试";
 
 /* Search field placeholder text */
 "Search" = "搜索";
@@ -170,11 +173,17 @@
 /* placeholder text */
 "username" = "用户名";
 
+/* in app purchase verify button title */
+"Verify" = "验证";
+
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "已轻按一个将会更改以下偏好设置的链接：\n\n“%@”\n\n是否要接受这些变更？";
 
 /* debug setting alert message */
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "您已轻按链接，此举将会运行以下调试命令：\n\n“%@”\n\n在未受到 Omni 支持专家指导的情况下，请勿执行此操作。\n您是否要执行此命令？";
+
+/* default special URL alert message */
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "您已轻按 Omni 特殊 URL:\n\n“%@”\n\n是否要运行此命令？";
 
 /* zoom label */
 "Zoom" = "缩放";

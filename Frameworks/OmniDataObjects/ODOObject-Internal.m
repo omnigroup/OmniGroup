@@ -1,4 +1,4 @@
-// Copyright 2008-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,8 +10,8 @@
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOEditingContext.h>
 #import <OmniDataObjects/ODOObjectID.h>
+#import <OmniDataObjects/ODOObject-Accessors.h>
 
-#import "ODOObject-Accessors.h"
 #import "ODOProperty-Internal.h"
 #import "ODOEditingContext-Internal.h"
 
@@ -347,6 +347,8 @@ void ODOObjectFinalizeAwakeFromFetch(ODOObject *self)
     OBPRECONDITION(self->_flags.changeProcessingDisabled == YES);
     
     self->_flags.changeProcessingDisabled = NO;
+    
+    [self didAwakeFromFetch];
 }
 
 void ODOObjectAwakeSingleObjectFromFetch(ODOObject *object)

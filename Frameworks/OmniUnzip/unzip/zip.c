@@ -502,7 +502,7 @@ extern zipFile ZEXPORT zipOpen2 (pathname, append, globalcomment, pzlib_filefunc
     const char *pathname;
     int append;
     zipcharpc* globalcomment;
-    zlib_filefunc_def* pzlib_filefunc_def;
+    const zlib_filefunc_def* pzlib_filefunc_def;
 {
     zip_internal ziinit;
     zip_internal* zi;
@@ -1055,7 +1055,7 @@ extern int ZEXPORT zipCloseFileInZipRaw (file, uncompressed_size, _crc32)
         if (zi->ci.stream.avail_out == 0)
         {
             if (zipFlushWriteBuffer(zi) == ZIP_ERRNO) {
-                // TJW: Clang deteced a dead store here.  The enclosing loop should probably be exited instead of overwriting this error with the result of deflate() below, so I' added the break.
+                // TJW: Clang detected a dead store here.  The enclosing loop should probably be exited instead of overwriting this error with the result of deflate() below, so I' added the break.
                 err = ZIP_ERRNO;
                 break;
             }

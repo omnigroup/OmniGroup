@@ -54,9 +54,8 @@ static void _checkPlist(OAColorArchivingTests *self, NSColor *color, NSDictionar
     if (plist == nil)
         return;
 
-    NSString *error = nil;
-    NSData *data = [NSPropertyListSerialization dataFromPropertyList:plist format:NSPropertyListXMLFormat_v1_0 errorDescription:&error];
-    XCTAssertNil(error, @"shoud be no error archiving");
+    __autoreleasing NSError *error = nil;
+    NSData *data = [NSPropertyListSerialization dataWithPropertyList:plist format:NSPropertyListXMLFormat_v1_0 options:0 error:&error];
     XCTAssertNotNil(data, @"should get something back from archiving");
     
     if (!data)

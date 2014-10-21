@@ -1,4 +1,4 @@
-// Copyright 2010-2012 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,6 @@
 //
 // $Id$
 
-#ifdef __OBJC__
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <UIKit/UIKit.h>
@@ -26,5 +25,3 @@ NSString *OUINameOfEnum(NSInteger v, const OUIEnumName *ns) OB_HIDDEN;
 
 #define OUITextDirectionName(d) OUINameOfEnum(d, OUITextDirectionEnumNames)
 #define OUISelectionGranularityName(g) OUINameOfEnum(g, OUITextSelectionGranularityNames)
-
-#endif

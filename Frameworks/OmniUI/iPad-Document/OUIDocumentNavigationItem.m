@@ -137,6 +137,22 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     _documentTitleView.delegate = nil;
 }
 
+- (BOOL)hideTitle;
+{
+    return [self.title isEqualToString:@""];
+}
+
+- (void)setHideTitle:(BOOL)hideTitle;
+{
+    if (hideTitle) {
+        self.title = @"";
+        _documentTitleView.titleCanBeTapped = NO;
+    } else {
+        self.title = self.document.fileItem.name;
+        _documentTitleView.titleCanBeTapped = YES;
+    }
+}
+
 /*!
  * @brief Sets both the navigation item's title (for use in a back button) and the title visable to the user in our custom documentTitleView.
  */

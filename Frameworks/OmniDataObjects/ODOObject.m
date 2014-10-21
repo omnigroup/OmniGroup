@@ -1,4 +1,4 @@
-// Copyright 2008-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,9 +11,9 @@
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODOModel.h>
+#import <OmniDataObjects/ODOObject-Accessors.h>
 
 #import "ODOEntity-Internal.h"
-#import "ODOObject-Accessors.h"
 #import "ODOObject-Internal.h"
 #import "ODOEditingContext-Internal.h"
 #import "ODODatabase-Internal.h"
@@ -73,6 +73,8 @@ NSString * const ODODetailedErrorsKey = @"ODODetailedErrorsKey";
 // The vastly common case is that a single model is loaded once and never released.  Additionally, we assume that there is a 1-1 mapping between entities and instance classes AND that only 'leaf' classes are instance classes for an entity.  This won't satisfy everyone, but it should be the common case.  I'm not a big fan of making this assumption, but otherwise we're kinda screwed for @dynamic properties here.  I'm not sure which cases CoreData handles...
 + (BOOL)resolveInstanceMethod:(SEL)sel;
 {
+    OBFinishPorting; // If this does get re-enabled, it'll need to be checked vs updates in ODOObjectCreateDynamicAccessorsForEntity()
+    
     DEBUG_DYNAMIC_METHODS(@"+[%s %s] %s", class_getName(self), sel_getName(_cmd), sel_getName(sel));
     
     ODOEntity *entity = [ODOModel entityForClass:self];
@@ -120,8 +122,13 @@ not_handled:
 
 - (void)didAccessValueForKey:(NSString *)key;
 {
-    OBPRECONDITION(![self isDeleted] || [key isEqualToString:[[[_objectID entity] primaryKeyAttribute] name]]);
-
+#ifdef OMNI_ASSERTIONS_ON
+    // See commentary in __inline_ODOObjectWillAccessValueForKey()
+    if ([key isEqualToString:_objectID.entity.primaryKeyAttribute.name] == NO) {
+        OBPRECONDITION(![self isDeleted] || [_editingContext _isBeingDeleted:self]);
+    }
+#endif
+    
     // Nothing.
 }
 
@@ -159,7 +166,11 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 - (void)willChangeValueForKey:(NSString *)key;
 {
     ODOObjectWillChangeValueForKey(self, key);
-    [super willChangeValueForKey:key];
+    if (!self->_flags.changeProcessingDisabled) {
+        // If we are in -awakeFromFetch and mutate our properties, we shouldn't publish KVO since we aren't really changing, just getting set up.
+        OBASSERT(!self->_flags.needsAwakeFromFetch, "We shouldn't be in -awakeFromFetch");
+        [super willChangeValueForKey:key];
+    }
 }
 
 #ifdef OMNI_ASSERTIONS_ON
@@ -167,13 +178,19 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 {
     if ([[self->_objectID entity] propertyNamed:key])
         OBASSERT(!_flags.isFault); // Cleared in 'will'
-    [super didChangeValueForKey:key];
+    if (!self->_flags.changeProcessingDisabled) {
+        // If we are in -awakeFromFetch and mutate our properties, we shouldn't publish KVO since we aren't really changing, just getting set up.
+        OBASSERT(!self->_flags.needsAwakeFromFetch, "We shouldn't be in -awakeFromFetch");
+        [super didChangeValueForKey:key];
+    }
 }
 #endif    
 
 // Even if the only change to an object is to a to-many, it needs to be marked updated so it will get notified on save and so it will be included in the updated object set when ODOEditingContext processes changes or saves.
 - (void)willChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)inMutationKind usingObjects:(NSSet *)inObjects;
 {
+    OBPRECONDITION(self->_flags.changeProcessingDisabled == NO, "Do we need to handle the case of mutations in -awakeFromFetch here too?");
+    
     ODOProperty *prop = [[self entity] propertyNamed:key];
 
     // These get called as we update inverse to-many relationships due to edits to to-one relationships.  ODO doesn't snapshot to-many relationships in -changedValues, so we track this here.  This adds one more reason that undo/redo needs to provide correct KVO notifiactions.
@@ -199,6 +216,8 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 #ifdef OMNI_ASSERTIONS_ON
 - (void)didChangeValueForKey:(NSString *)key withSetMutation:(NSKeyValueSetMutationKind)inMutationKind usingObjects:(NSSet *)inObjects;
 {
+    OBPRECONDITION(self->_flags.changeProcessingDisabled == NO, "Do we need to handle the case of mutations in -awakeFromFetch here too?");
+
     if ([[self->_objectID entity] propertyNamed:key])
         OBASSERT(!_flags.isFault); // Cleared in 'will'
     [super didChangeValueForKey:key withSetMutation:inMutationKind usingObjects:inObjects];
@@ -215,6 +234,14 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 {
     return _observationInfo;
 }
+
+#ifdef OMNI_ASSERTIONS_ON
+- (void)addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void *)context;
+{
+    OBPRECONDITION(self->_flags.changeProcessingDisabled == NO, "Adding an observer when changeProcessingDisabled. willChangeValueForKey:/didChangeValueForKey: may not fire.");
+    [super addObserver:observer forKeyPath:keyPath options:options context:context];
+}
+#endif
 
 - (void)setPrimitiveValue:(id)value forKey:(NSString *)key;
 {
@@ -329,6 +356,14 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
     
 }
 
+- (void)didAwakeFromFetch;
+{
+    OBPRECONDITION(!_flags.changeProcessingDisabled); // set by ODOObjectAwakeFromFetchWithoutRegisteringEdits
+    OBPRECONDITION(!_flags.isFault);
+
+    // Nothing for us to do; for subclasses to add observers after change processing (re)enabled
+}
+
 - (ODOEntity *)entity;
 {
     OBPRECONDITION(_objectID);
@@ -374,7 +409,7 @@ static void ODOObjectWillChangeValueForKey(ODOObject *self, NSString *key)
 
 - (void)didSave;
 {
-    // Nothing; this is for subclasses
+    _flags.hasChangedModifyingToManyRelationshipSinceLastSave = NO;
 }
 
 typedef struct {
@@ -457,7 +492,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
                 }
             }
             if (ctx.error) {
-                if (outError)
+                if (outError != NULL)
                     *outError = ctx.error;
                 return NO;
             }
@@ -609,17 +644,20 @@ static void _validateRelatedObjectClass(const void *value, void *context)
 // Possibly faster alternative to -changedValues (for small numbers of keys).  Returns NO if the object is inserted, YES if deleted (though a previously nil property might be "nil" after deletion in some sense, it is a whole new level of nil).  The deleted case probably shouldn't happen anyway.
 - (BOOL)hasChangedKeySinceLastSave:(NSString *)key;
 {
-    // CoreData apparently will return non-nil here.  Probably is snapshotting after -awakeFromInsert.  We don't do that (right now) and it would be nice to avoid having to.  So, don't allow this for inserted objects.
-    OBPRECONDITION(![self isInserted]);
     OBPRECONDITION(_editingContext);
     OBPRECONDITION(!_flags.invalid);
+    
+    if ([self isInserted]) {
+        // Return YES if we have a value for this key ("changed" from nil). Might be better to snapshot after -awakeFromInsert, but it would be nice to avoid that.
+        return ([self valueForKey:key] != nil);
+    }
     
     NSArray *snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
     if (!snapshot) {
         // We are either inserted or totally unmodified
         return NO;
     }
-        
+    
     if ([self isDeleted]) {
         OBASSERT_NOT_REACHED("Why do you ask?");
         return YES;
@@ -668,14 +706,13 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     NSArray *snapshot = [_editingContext _committedPropertySnapshotForObjectID:_objectID];
     if (!snapshot) {
         if ([self isInserted]) {
-            // Does inserting mean all the values are changed or none?
-            OBRequestConcreteImplementation(self, _cmd);
+            // Does inserting mean all the values are changed or none? We'll fall through and report all values as changes (or at least if they are different from nil).
+        } else {
+            OBASSERT(![self isUpdated]);
+            OBASSERT(![self isDeleted]);
+            
+            return nil;
         }
-        
-        OBASSERT(![self isUpdated]);
-        OBASSERT(![self isDeleted]);
-        
-        return nil;
     }
     
     NSMutableDictionary *changes = [NSMutableDictionary dictionary];
@@ -775,6 +812,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     return value;
 }
 
+#if 0
 - (NSDictionary *)committedValuesForKeys:(NSArray *)keys;    
 {
     OBPRECONDITION(_editingContext);
@@ -791,6 +829,7 @@ static void _validateRelatedObjectClass(const void *value, void *context)
     OBRequestConcreteImplementation(self, _cmd);
     return nil;
 }
+#endif
 
 #if 0 && defined(DEBUG)
     #define DEBUG_CHANGE_SET(format, ...) NSLog((format), ## __VA_ARGS__)

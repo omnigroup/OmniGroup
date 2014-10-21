@@ -637,18 +637,18 @@ static CGFloat _colorCloseness(const OANamedColorEntry *e1, const OANamedColorEn
     
     NSString *closestColorDescription = nil;
     if (saturationString != nil && brightnessString != nil)
-        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@, %@ %@", @"OmniAppKit", [OAColorProfile bundle], "format string for color with saturation and brightness descriptions"), brightnessString, saturationString, closestEntry->name];
+        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@, %@ %@", @"OmniAppKit", [OAColorProfile bundle], "format string for color with saturation and brightness descriptions (brightness, saturation, color name)"), brightnessString, saturationString, closestEntry->name];
     else if (saturationString != nil)
-        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ %@", @"OmniAppKit", [OAColorProfile bundle], "format string for color with saturation description"), saturationString, closestEntry->name];
+        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ %@", @"OmniAppKit", [OAColorProfile bundle], "format string for color with saturation description (saturation, color name)"), saturationString, closestEntry->name];
     else if (brightnessString != nil)
-        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ %@", @"OmniAppKit", [OAColorProfile bundle], "format string for color with brightness description"), brightnessString, closestEntry->name];
+        closestColorDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%@ %@", @"OmniAppKit", [OAColorProfile bundle], "format string for color with brightness description (brightness, color name)"), brightnessString, closestEntry->name];
     else
         closestColorDescription = closestEntry->name;
 
     if (colorEntry.a <= 0.001)
         return NSLocalizedStringFromTableInBundle(@"Clear", @"OmniAppKit", [OAColorProfile bundle], "name of completely transparent color");
     else if (colorEntry.a < .999)
-        return [NSString stringWithFormat:@"%d%% %@", (int)(colorEntry.a * 100), closestColorDescription];
+        return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"%d%% %@", @"OmniAppKit", [OAColorProfile bundle], "alpha with color description"), (int)(colorEntry.a * 100), closestColorDescription];
     else
         return closestColorDescription;
 }

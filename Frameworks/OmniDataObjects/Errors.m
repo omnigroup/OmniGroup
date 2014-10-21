@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,8 +11,7 @@
 
 RCS_ID("$Id$")
 
-NSString * const ODOErrorDomain = @"com.omnigroup.framework.OmniDataObjects.ErrorDomain";
-
+NSString * const ODOErrorDomain = @"com.omnigroup.framework.OmniDataObjects.ErrorDomain"; // could be building for iOS, where OMNI_BUNDLE is unavailable
 NSString * const ODOSQLiteErrorDomain = @"org.sqlite.sqlite3";
 
 NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sqlite)
@@ -34,14 +33,14 @@ NSError *_ODOSQLiteError(NSError *underlyingError, int code, struct sqlite3 *sql
     NSString *message;
     const char *messageUTF8String = sqlite3_errmsg(sqlite);
     if (messageUTF8String)
-        message = [[NSString alloc] initWithUTF8String:messageUTF8String];
+        message = [NSString stringWithUTF8String:messageUTF8String];
     else
         message = @"Null message from SQLite";
     
-    NSDictionary *userInfo = [[NSDictionary alloc] initWithObjectsAndKeys:NSLocalizedDescriptionKey, message, nil];
-    [message release];
+    NSDictionary *userInfo = [[NSDictionary alloc] initWithObjectsAndKeys:message, NSLocalizedDescriptionKey, nil];
     
     NSError *error = [NSError errorWithDomain:ODOSQLiteErrorDomain code:code userInfo:userInfo];
+
     [userInfo release];
     return error;
 }

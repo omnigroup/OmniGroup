@@ -150,6 +150,9 @@
 /* For doing retain-and-assign or copy-and-assign with CF objects */
 #define OB_ASSIGN_CFRELEASE(lval, rval) { __typeof__(rval) new_ ## lval = (rval); if (lval != NULL) { CFRelease(lval); } lval = new_ ## lval; }
 
+/* For filling your NSError out-parameter from the CFErrorRef you got from another function */
+#define OB_CFERROR_TO_NS(outNSError, cfError) do{ if(outNSError) { *(outNSError) = CFBridgingRelease(cfError); } else { CFRelease(cfError); } }while(0)
+
 /* Replacement for __private_extern__, which is deprecated as of Xcode 4.6 DP2 */
 #define OB_HIDDEN __attribute__((visibility("hidden")))
 

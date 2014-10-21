@@ -1,4 +1,4 @@
-// Copyright 2011-2013 The Omni Group. All rights reserved.
+// Copyright 2011-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,12 +7,10 @@
 //
 // $Id$
 
-#import <OmniUI/OUIViewController.h>
-
 /*
  Single-shot view controllers that want to pass back results to a caller w/o having to invent some delegate protocol each time.
  */
-@interface OUIActionViewController : OUIViewController
+@interface OUIActionViewController : UIViewController
 
 // Typed as id so you can pass a block that takes the actual type of the view controller.
 @property(nonatomic,copy) void (^finished)(id viewController, NSError *errorOrNil);

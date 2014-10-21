@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,16 +45,15 @@ RCS_ID("$Id$")
     return _primaryKey;
 }
 
-#ifdef DEBUG
 - (NSString *)descriptionWithLocale:(NSDictionary *)locale indent:(NSUInteger)level;
 {
     return [self shortDescription];
 }
+
 - (NSString *)shortDescription;
 {
     return [NSString stringWithFormat:@"<%@:%p %@/%@>", NSStringFromClass([self class]), self, [_entity name], _primaryKey];
 }
-#endif
 
 #pragma mark -
 #pragma mark NSCopying

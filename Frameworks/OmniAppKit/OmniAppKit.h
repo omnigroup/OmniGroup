@@ -69,6 +69,7 @@
 #import <OmniAppKit/OAApplication.h>
 #import <OmniAppKit/OAAquaButton.h>
 #import <OmniAppKit/OABackgroundImageControl.h>
+#import <OmniAppKit/OABoxSeparator.h>
 #import <OmniAppKit/OABrowserCell.h>
 #import <OmniAppKit/OACalendarView.h>
 #import <OmniAppKit/OAChasingArrowsProgressIndicator.h>
@@ -93,6 +94,7 @@
 #import <OmniAppKit/OAFlippedView.h>
 #import <OmniAppKit/OAFontCache.h>
 #import <OmniAppKit/OAFontView.h>
+#import <OmniAppKit/OAGradientBoxSeparator.h>
 #import <OmniAppKit/OAGradientTableView.h>
 #import <OmniAppKit/OAGridView.h>
 #import <OmniAppKit/OAHierarchicalPopUpController.h>
@@ -109,6 +111,8 @@
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniAppKit/OARegExFindPattern.h>
 #import <OmniAppKit/OAResizingByteFormatter.h>
+#import <OmniAppKit/OAResizingTitleBarButton.h>
+#import <OmniAppKit/OAScriptToolbarHelper.h>
 #import <OmniAppKit/OAScrollView.h>
 #import <OmniAppKit/OASearchField.h>
 #import <OmniAppKit/OASendFeedbackErrorRecovery.h>
@@ -119,6 +123,7 @@
 #import <OmniAppKit/OASpringLoadHelper.h>
 #import <OmniAppKit/OAStackView.h>
 #import <OmniAppKit/OASteppableTextField.h>
+#import <OmniAppKit/OASubtleScroller.h>
 #import <OmniAppKit/OASwitcherBarButtonCell.h>
 #import <OmniAppKit/OASwitcherBarMatrix.h>
 #import <OmniAppKit/OASwoopView.h>
@@ -140,6 +145,9 @@
 #import <OmniAppKit/OAVectorCell.h>
 #import <OmniAppKit/OAVectorView.h>
 #import <OmniAppKit/OAVersion.h>
+#import <OmniAppKit/OAViewPicker.h>
+#import <OmniAppKit/OAWebPageViewer.h>
+#import <OmniAppKit/OAWebPageViewerDelegate.h>
 #import <OmniAppKit/OAWindowCascade.h>
 #import <OmniAppKit/OAZoomableViewProtocol.h>
 #endif

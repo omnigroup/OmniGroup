@@ -130,8 +130,23 @@ RCS_ID("$Id$")
     DETAIL(detail_undeletable, master);
     
     NSError *error = nil;
+    OBShouldNotError([self save:&error]);
+    
     OBShouldNotError([_editingContext deleteObject:master error:&error]);
+    
+    XCTAssertTrue([master isDeleted], @"direct deletion should work");
+    XCTAssertFalse([detail_undeletable isDeleted], @"cascade should not happen");
+    XCTAssertNil(detail_undeletable.master, @"instead we should nullify");
+}
 
+- (void)testCascadeToUndeletableWithoutSavingFirst;
+{
+    MASTER(master);
+    DETAIL(detail_undeletable, master);
+    
+    NSError *error = nil;
+    OBShouldNotError([_editingContext deleteObject:master error:&error]);
+    
     XCTAssertTrue([master isDeleted], @"direct deletion should work");
     XCTAssertFalse([detail_undeletable isDeleted], @"cascade should not happen");
     XCTAssertNil(detail_undeletable.master, @"instead we should nullify");

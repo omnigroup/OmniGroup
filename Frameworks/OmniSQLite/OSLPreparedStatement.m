@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2005, 2008, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import "OSLPreparedStatement.h"
 
+#import <OmniFoundation/CFPropertyList-OFExtensions.h>
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 
@@ -128,7 +129,7 @@ RCS_ID("$Id$")
 
 - (void)bindPropertyList:(id)propertyList;
 {
-    NSData *propertyListXMLData = (NSData *)CFPropertyListCreateXMLData(kCFAllocatorDefault, propertyList);
+    NSData *propertyListXMLData = OFCreateNSDataFromPropertyList(propertyList, kCFPropertyListXMLFormat_v1_0, NULL);
     [self bindBlob:propertyListXMLData];
     [propertyListXMLData release];
 }

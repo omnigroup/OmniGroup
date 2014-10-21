@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2014 The Omni Group. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,13 @@ typedef NS_OPTIONS(NSUInteger, OUIViewControllerDescendantType) {
 #define OUIViewControllerDescendantTypeNone 0
 #define OUIViewControllerDescendantTypeAny (OUIViewControllerDescendantTypeChild | OUIViewControllerDescendantTypePresented)
 
+typedef enum {
+    OUIViewControllerVisibilityHidden,
+    OUIViewControllerVisibilityAppearing,
+    OUIViewControllerVisibilityVisible,
+    OUIViewControllerVisibilityDisappearing,
+} OUIViewControllerVisibility;
+
 @interface UIViewController (OUIExtensions)
 
 /**
@@ -27,5 +34,14 @@ typedef NS_OPTIONS(NSUInteger, OUIViewControllerDescendantType) {
  @return YES if otherVC can be reached from the receiver through the given kinds of view controller relationships; NO otherwise
  */
 - (BOOL)isDescendant:(OUIViewControllerDescendantType)descendantType ofViewController:(UIViewController *)otherVC;
+
+- (BOOL)isChildViewController:(UIViewController *)child;
+
+@property(readonly,nonatomic) OUIViewControllerVisibility visibility;
+
+#if defined(DEBUG)
+/// Returns a list of this view controller and all its children recursively, one per line, indented to show hierarchy. Analogous to -[UIView recursiveDescription].
+- (NSString *)recursiveDescription;
+#endif
 
 @end

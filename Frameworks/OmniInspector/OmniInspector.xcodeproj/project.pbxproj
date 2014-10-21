@@ -96,6 +96,8 @@
 		A2F861290C960DAF00BE4827 /* OITabDepressionBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = A2F861280C960DAF00BE4827 /* OITabDepressionBackground.png */; };
 		A2F8617C0C961A4800BE4827 /* OIInspectorHeaderBackground.h in Headers */ = {isa = PBXBuildFile; fileRef = A2F8617A0C961A4800BE4827 /* OIInspectorHeaderBackground.h */; };
 		A2F8617D0C961A4800BE4827 /* OIInspectorHeaderBackground.m in Sources */ = {isa = PBXBuildFile; fileRef = A2F8617B0C961A4800BE4827 /* OIInspectorHeaderBackground.m */; };
+		AB85468619CB9300007B666A /* OIWorkspaceRestore@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB85468419CB9300007B666A /* OIWorkspaceRestore@2x.png */; };
+		AB85468719CB9300007B666A /* OIWorkspaceStore@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB85468519CB9300007B666A /* OIWorkspaceStore@2x.png */; };
 		E2B8A8C915BDF90B00B5F26B /* OICollapsed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C115BDF90B00B5F26B /* OICollapsed@2x.png */; };
 		E2B8A8CA15BDF90B00B5F26B /* OIExpanded@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C215BDF90B00B5F26B /* OIExpanded@2x.png */; };
 		E2B8A8CB15BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Graphite@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E2B8A8C315BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Graphite@2x.png */; };
@@ -218,6 +220,8 @@
 		A2F861280C960DAF00BE4827 /* OITabDepressionBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OITabDepressionBackground.png; sourceTree = "<group>"; };
 		A2F8617A0C961A4800BE4827 /* OIInspectorHeaderBackground.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorHeaderBackground.h; sourceTree = "<group>"; };
 		A2F8617B0C961A4800BE4827 /* OIInspectorHeaderBackground.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorHeaderBackground.m; sourceTree = "<group>"; };
+		AB85468419CB9300007B666A /* OIWorkspaceRestore@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWorkspaceRestore@2x.png"; sourceTree = "<group>"; };
+		AB85468519CB9300007B666A /* OIWorkspaceStore@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWorkspaceStore@2x.png"; sourceTree = "<group>"; };
 		E2B8A8C115BDF90B00B5F26B /* OICollapsed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OICollapsed@2x.png"; sourceTree = "<group>"; };
 		E2B8A8C215BDF90B00B5F26B /* OIExpanded@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIExpanded@2x.png"; sourceTree = "<group>"; };
 		E2B8A8C315BDF90B00B5F26B /* OIWindowSmallCloseBox-Normal-Graphite@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OIWindowSmallCloseBox-Normal-Graphite@2x.png"; sourceTree = "<group>"; };
@@ -395,6 +399,8 @@
 		34D2B76008D0E06D00C74260 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				AB85468419CB9300007B666A /* OIWorkspaceRestore@2x.png */,
+				AB85468519CB9300007B666A /* OIWorkspaceStore@2x.png */,
 				34D2B76308D0E09C00C74260 /* ColorsInfo.png */,
 				34D2B76408D0E09C00C74260 /* FontsInfo.png */,
 				34D2B76508D0E09C00C74260 /* OICollapsed.png */,
@@ -519,7 +525,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0610;
 			};
 			buildConfigurationList = 34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -551,6 +557,8 @@
 				34D2B77C08D0E09C00C74260 /* OIExpanded.png in Resources */,
 				34D2B77D08D0E09C00C74260 /* OIFontInspector.png in Resources */,
 				34D2B77E08D0E09C00C74260 /* OIHeaderCap-Ice-Pressed.png in Resources */,
+				AB85468719CB9300007B666A /* OIWorkspaceStore@2x.png in Resources */,
+				AB85468619CB9300007B666A /* OIWorkspaceRestore@2x.png in Resources */,
 				34D2B77F08D0E09C00C74260 /* OIHeaderCap-Ice.png in Resources */,
 				34D2B78008D0E09C00C74260 /* OIHeaderWash-Ice-Pressed.png in Resources */,
 				34D2B78108D0E09C00C74260 /* OIHeaderWash-Ice.png in Resources */,

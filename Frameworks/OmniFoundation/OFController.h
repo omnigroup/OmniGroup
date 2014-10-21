@@ -1,4 +1,4 @@
-// Copyright 1998-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2011, 2013-2014 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,11 +59,8 @@ typedef enum _OFControllerTerminateReply {
 
 - (unsigned int)exceptionHandlingMask;
 
-- (BOOL)crashOnAssertionOrUnhandledException;
-
 - (void)crashWithReport:(NSString *)report;
 - (void)crashWithException:(NSException *)exception mask:(NSUInteger)mask;
-- (void)handleUncaughtException:(NSException *)exception;
 - (BOOL)shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
 
 // NSAssertionHandler customization

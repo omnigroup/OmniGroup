@@ -10,7 +10,9 @@
 #import <OmniUnzip/OUErrors.h>
 #import <OmniUnzip/OUZipMember.h>
 #import <OmniBase/system.h> // S_IFDIR, etc.
+#import <OmniFoundation/OFByteProviderProtocol.h>
 #import "zip.h"
+#import "OUUtilities.h"
 
 RCS_ID("$Id$");
 
@@ -88,6 +90,28 @@ RCS_ID("$Id$");
         return nil;
 
     _zip = zipOpen([[NSFileManager defaultManager] fileSystemRepresentationWithPath:path], 0/*append*/);
+    if (!_zip) {
+        NSString *reason = @"zipOpen returned NULL.";
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create zip file.", @"OmniUnzip", OMNI_BUNDLE, @"error reason");
+        OmniUnzipError(outError, OmniUnzipUnableToCreateZipFile, description, reason);
+        return nil;
+    }
+    
+    return self;
+}
+
+- initWithByteAcceptor:(NSObject <OFByteAcceptor> *)fh error:(NSError **)outError;
+{
+    if (!fh)
+        OBRejectInvalidCall(self, _cmd, @"Byte acceptor must not be nil");
+    
+    if (!(self = [super init]))
+        return nil;
+    
+    _zip = zipOpen2((__bridge void *)fh,
+                    0 /* append */,
+                    NULL /* globalComment */,
+                    &OUWriteIOImpl);
     if (!_zip) {
         NSString *reason = @"zipOpen returned NULL.";
         NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to create zip file.", @"OmniUnzip", OMNI_BUNDLE, @"error reason");
@@ -211,3 +235,4 @@ static BOOL _zipError(id self, const char *func, int err, NSError **outError)
 }
 
 @end
+
