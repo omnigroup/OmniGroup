@@ -1,17 +1,8 @@
-/* Class = "IBUIButton"; normalTitle = "Buy"; ObjectID = "368"; */
-"368.normalTitle" = "Koop";
+/* Class = "IBUIButton"; normalTitle = "Button"; ObjectID = "0AU-4E-ijm"; */
+"0AU-4E-ijm.normalTitle" = "Button";
 
-/* Class = "IBUISegmentedControl"; iWt-z3-s9c.segmentTitles[0] = "$39.99 Pro Upgrade DNL"; ObjectID = "iWt-z3-s9c"; */
-"iWt-z3-s9c.segmentTitles[0]" = "$39.99 Pro Upgrade DNL";
-
-/* Class = "IBUISegmentedControl"; iWt-z3-s9c.segmentTitles[1] = "$0.00 Pro Upgrade DNL"; ObjectID = "iWt-z3-s9c"; */
-"iWt-z3-s9c.segmentTitles[1]" = "$0.00 Pro Upgrade DNL";
+/* Class = "IBUILabel"; text = "Label"; ObjectID = "m7m-fF-i3z"; */
+"m7m-fF-i3z.text" = "Label";
 
 /* Class = "IBUILabel"; text = "Text text text text text text text text text text text text text text text text text text text text text text"; ObjectID = "nqI-a5-9l1"; */
 "nqI-a5-9l1.text" = "Text text text text text text text text text text text text text text text text text text text text text text";
-
-/* Class = "IBUIButton"; normalTitle = "Restore Purchases"; ObjectID = "pTV-oL-HSX"; */
-"pTV-oL-HSX.normalTitle" = "Herstel aankopen";
-
-/* Class = "IBUILabel"; text = "Pricing Options"; ObjectID = "wAe-SQ-xzu"; */
-"wAe-SQ-xzu.text" = "Prijsopties";

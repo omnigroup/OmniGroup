@@ -14,8 +14,7 @@
 
 RCS_ID("$Id$")
 
-static NSInteger OFXRegistrationTableDebug = INT_MAX; // Make sure to log if we hit a log call before this is loaded from preferences/environment
-
+static OFDeclareDebugLogLevel(OFXRegistrationTableDebug);
 #define DEBUG_TABLE(level, format, ...) do { \
     if (OFXRegistrationTableDebug >= (level)) \
         NSLog(@"TABLE %@: " format, [self shortDescription], ## __VA_ARGS__); \
@@ -27,13 +26,6 @@ static NSInteger OFXRegistrationTableDebug = INT_MAX; // Make sure to log if we 
     dispatch_queue_t _queue;
     NSMutableDictionary *_internalTable; // The current version which is protected by serialization through _queue
     BOOL _publicUpdateQueued; // YES if there is a pending update already queued and we should avoid queuing another.
-}
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    OFInitializeDebugLogLevel(OFXRegistrationTableDebug);
 }
 
 - init;

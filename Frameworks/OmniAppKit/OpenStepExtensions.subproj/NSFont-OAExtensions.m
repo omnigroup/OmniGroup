@@ -1,4 +1,4 @@
-// Copyright 1997-2005,2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,74 @@
 RCS_ID("$Id$")
 
 @implementation NSFont (OAExtensions)
+
+// N.B. These were empirically determined; they may not be stable across OS releases.
+static const CGFloat OASystemFontWeightHeavy = 11;
+static const CGFloat OASystemFontWeightMedium = 6;
+static const CGFloat OASystemFontWeightLight = 3;
+static const CGFloat OASystemFontWeightThin = 3;
+static const CGFloat OASystemFontWeightUltraLight = 2;
+
+static const CGFloat OASystemFontWeightBoldCutoverWeight = OASystemFontWeightMedium;
+
++ (NSFont *)OA_systemFontOfSize:(CGFloat)size weight:(CGFloat)weight;
+{
+    static NSMutableDictionary *fontCache = nil;
+    if (fontCache == nil) {
+        fontCache = [[NSMutableDictionary alloc] init];
+    }
+    
+    NSString *cacheKey = [NSString stringWithFormat:@"size=%.2f; weight=%.2f", size, weight];
+    NSFont *cachedResult = fontCache[cacheKey];
+    if (cachedResult != nil) {
+        return cachedResult;
+    }
+    
+    static NSString *systemFontFamily = nil;
+    if (systemFontFamily == nil) {
+        NSFont *systemFont = [self systemFontOfSize:[NSFont systemFontSize]];
+        systemFontFamily = [systemFont.familyName copy];
+    }
+    
+    NSFont *weightedSystemFont = [[NSFontManager sharedFontManager] fontWithFamily:systemFontFamily traits:0 weight:weight size:size];
+    OBASSERT(weightedSystemFont != nil);
+    if (weightedSystemFont == nil) {
+        if (weight >= OASystemFontWeightBoldCutoverWeight) {
+            weightedSystemFont = [NSFont boldSystemFontOfSize:size];
+        } else {
+            weightedSystemFont = [NSFont systemFontOfSize:size];
+        }
+    }
+    
+    fontCache[cacheKey] = weightedSystemFont;
+    
+    return weightedSystemFont;
+}
+
++ (NSFont *)heavySystemFontOfSize:(CGFloat)size;
+{
+    return [self OA_systemFontOfSize:size weight:OASystemFontWeightHeavy];
+}
+
++ (NSFont *)mediumSystemFontOfSize:(CGFloat)size;
+{
+    return [self OA_systemFontOfSize:size weight:OASystemFontWeightMedium];
+}
+
++ (NSFont *)lightSystemFontOfSize:(CGFloat)size;
+{
+    return [self OA_systemFontOfSize:size weight:OASystemFontWeightLight];
+}
+
++ (NSFont *)thinSystemFontOfSize:(CGFloat)size;
+{
+    return [self OA_systemFontOfSize:size weight:OASystemFontWeightThin];
+}
+
++ (NSFont *)ultraLightSystemFontOfSize:(CGFloat)size;
+{
+    return [self OA_systemFontOfSize:size weight:OASystemFontWeightUltraLight];
+}
 
 - (BOOL)isScreenFont;
 {
@@ -80,6 +148,8 @@ Some PANOSE specification information can be found at http://www.panose.com/Prod
             panose[0], panose[1], panose[2], panose[3], panose[4],
             panose[5], panose[6], panose[7], panose[8], panose[9]];
 }
+
+
 
 
 @end

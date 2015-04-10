@@ -1,4 +1,4 @@
-// Copyright 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -99,7 +99,7 @@ RCS_ID("$Id$");
     overlayView.text = string;
     overlayView.image = nil;
 
-    [overlayView centerAtPositionForGestureRecognizer:gestureRecognizer inView:view];
+    [overlayView centerAtPositionForGestureRecognizer:gestureRecognizer inView:view withinBounds:view.bounds];
     
     if (displayInterval) {
         overlayView.messageDisplayInterval = displayInterval;
@@ -230,6 +230,7 @@ RCS_ID("$Id$");
     self.userInteractionEnabled = NO;
     self.translucent = YES;
     self.opaque = NO;
+    self.backgroundColor = [UIColor whiteColor];
     
     [self resetDefaults];
     
@@ -398,16 +399,18 @@ RCS_ID("$Id$");
     
     CGRect newFrame = CGRectMake(topLeft.x, topLeft.y, suggestedSize.width, suggestedSize.height);
     
-    // Don't go past edges
-    if (newFrame.origin.y < OUIOverlayViewDistanceFromTopEdge)
-        newFrame.origin.y = OUIOverlayViewDistanceFromTopEdge;
-    if (newFrame.origin.x < OUIOverlayViewDistanceFromHorizontalEdge)
-        newFrame.origin.x = OUIOverlayViewDistanceFromHorizontalEdge;
+    // Don't go past edges of requested bounds
+    if (newFrame.origin.y < superBounds.origin.y + OUIOverlayViewDistanceFromTopEdge)
+        newFrame.origin.y = superBounds.origin.y + OUIOverlayViewDistanceFromTopEdge;
+    if (newFrame.origin.x < superBounds.origin.x + OUIOverlayViewDistanceFromHorizontalEdge)
+        newFrame.origin.x = superBounds.origin.x + OUIOverlayViewDistanceFromHorizontalEdge;
     if (CGRectGetMaxX(newFrame) + OUIOverlayViewDistanceFromHorizontalEdge > CGRectGetMaxX(superBounds))
         newFrame.origin.x = CGRectGetMaxX(superBounds) - suggestedSize.width - OUIOverlayViewDistanceFromHorizontalEdge;
-    
+    if (CGRectGetMaxY(newFrame) + OUIOverlayViewDistanceFromTopEdge > CGRectGetMaxY(superBounds))
+        newFrame.origin.y = CGRectGetMaxY(superBounds) - suggestedSize.height - OUIOverlayViewDistanceFromTopEdge;
+
     newFrame = CGRectIntegral(newFrame);
-    
+    OBASSERT(CGRectContainsRect(superBounds, newFrame));
     self.frame = newFrame;
 }
 
@@ -487,21 +490,26 @@ RCS_ID("$Id$");
 
 - (void)centerAtPositionForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer inView:(UIView *)view;
 {
+    [self centerAtPositionForGestureRecognizer:gestureRecognizer inView:view withinBounds:view.bounds];
+}
+
+- (void)centerAtPositionForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer inView:(UIView *)view withinBounds:(CGRect)bounds;
+{
     // If no gesture recognizer was specified, fall back to aligning mid-center
     if (!gestureRecognizer) {
-        [self useAlignment:OUIOverlayViewAlignmentMidCenter withinBounds:view.bounds];
+        [self useAlignment:OUIOverlayViewAlignmentMidCenter withinBounds:bounds];
         return;
     }
     
     // If gesture recognizer has just one touch, fall back to positioning above the finger
     if ([gestureRecognizer numberOfTouches] == 1) {
-        [self centerAbovePoint:[gestureRecognizer locationInView:view] withinBounds:view.bounds];
+        [self centerAbovePoint:[gestureRecognizer locationInView:view] withinBounds:bounds];
         return;
     }
     
     CGPoint p = [self positionForTwoTouchGestureRecognizer:gestureRecognizer inView:view];
     
-    [self centerAtPoint:p withOffset:CGPointZero withinBounds:view.bounds];
+    [self centerAtPoint:p withOffset:CGPointZero withinBounds:bounds];
 }
 
 #pragma mark - UIView subclass
@@ -510,11 +518,8 @@ RCS_ID("$Id$");
 {
     CGRect bounds = self.bounds;
     
-    // No background image currently
-    //[[[self class] backgroundImage] drawInRect:bounds blendMode:kCGBlendModeNormal alpha:0.8];
-    
     UIBezierPath *roundedRect = [UIBezierPath bezierPathWithRoundedRect:CGRectInset(bounds, 0.5, 0.5) cornerRadius:6.0f];
-    [[[UIColor whiteColor] colorWithAlphaComponent:0.90] set];
+    [[self.backgroundColor colorWithAlphaComponent:0.90] set];
     [roundedRect fill];
     [[UIColor lightGrayColor] set];
     [roundedRect stroke];

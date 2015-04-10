@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -385,7 +385,7 @@ static void OUIViewPerformPosingForThreading(void)
     return [self snapshotImageWithScale:1.0];
 }
 
-- (void)addMotionMaxTilt:(CGFloat)maxTilt;
+- (UIMotionEffect *)tiltMotionEffectWithMaxTilt:(CGFloat)maxTilt;
 {
     UIInterpolatingMotionEffect *xAxis = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.x" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
     xAxis.minimumRelativeValue = [NSNumber numberWithFloat:-maxTilt];
@@ -397,7 +397,12 @@ static void OUIViewPerformPosingForThreading(void)
     
     UIMotionEffectGroup *group = [[UIMotionEffectGroup alloc] init];
     group.motionEffects = @[xAxis, yAxis];
-    [self addMotionEffect:group];
+    return group;
+}
+
+- (void)addMotionMaxTilt:(CGFloat)maxTilt;
+{
+    [self addMotionEffect:[self tiltMotionEffectWithMaxTilt:maxTilt]];
 }
 
 - (id)containingViewOfClass:(Class)cls; // can return self

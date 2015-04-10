@@ -35,12 +35,12 @@
 
 - (BOOL)openURL:(NSURL *)url; // Passes this off to -[NSWorkspace openURL:] if the local app doesn't intercept the URL
 
-// OAController has concrete implementations of the following NSApplicationDelegate methods. They're responsible for driving the OFController behavior at appropriate times during the app's lifecycle. If you override these methods, be sure to call super's implementation.
-- (void)applicationWillFinishLaunching:(NSNotification *)notification;
-- (void)applicationDidFinishLaunching:(NSNotification *)notification;
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
-- (void)applicationWillTerminate:(NSNotification *)notification;
-
 - (void)checkMessageOfTheDay; // This will display the message of the day if it has changed since the last time it was displayed.
+
+// OAController has concrete implementations of the following NSApplicationDelegate methods. They're responsible for driving the OFController behavior at appropriate times during the app's lifecycle. If you override these methods, be sure to call super's implementation.
+- (void)applicationWillFinishLaunching:(NSNotification *)notification NS_REQUIRES_SUPER;
+- (void)applicationDidFinishLaunching:(NSNotification *)notification NS_REQUIRES_SUPER;
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender NS_REQUIRES_SUPER;
+- (void)applicationWillTerminate:(NSNotification *)notification NS_REQUIRES_SUPER;
 
 @end

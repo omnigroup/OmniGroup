@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -81,7 +81,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     // Unsandboxed applications can execute scripts or workflows from any of the standard locations.
 
     NSMutableArray *scriptPaths = [NSMutableArray array];
-    NSString *applicationSupportDirectoryName = [NSApp applicationSupportDirectoryName];
+    NSString *applicationSupportDirectoryName = [[OAApplication sharedApplication] applicationSupportDirectoryName];
     NSArray *libraryDirectories = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSAllDomainsMask & ~(NSSystemDomainMask), YES);
     for (NSString *libraryDirectory in libraryDirectories) {
         NSString *scriptDirectory = [libraryDirectory stringByAppendingPathComponent:@"Scripts"];
@@ -350,6 +350,12 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 - (void)_sandboxedExecuteOSAScriptForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
 {
     NSString *path = [[self pathForItem:toolbarItem] stringByExpandingTildeInPath];
+    if (!path) {
+        // This can happen if the user removes a script while the app is running.
+        NSLog(@"No script found for toolbar item %@", toolbarItem.itemIdentifier);
+        NSBeep();
+        return;
+    }
     NSURL *url = [NSURL fileURLWithPath:path];
     
     NSError *error = nil;

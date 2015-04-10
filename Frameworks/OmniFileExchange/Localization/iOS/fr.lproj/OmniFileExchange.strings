@@ -4,6 +4,9 @@
 /* Conflict file format */
 "%@ (conflict from %@)" = "%1$@ (conflit depuis %2$@)";
 
+/* Conflict last edit file format */
+"%@ on %@" = "%1$@ sur %2$@";
+
 /* Conflict file regular expression */
 "^(.*) \\(conflict( [0-9+])? from .*\\)$" = "^(.*) \\(conflit( [0-9+])? depuis .*\\)$";
 
@@ -18,6 +21,9 @@
 
 /* Add server account type */
 "Add WebDAV Server" = "Ajouter un serveur WebDAV";
+
+/* error description */
+"Another account is syncing to this folder already." = "Un autre compte est en train de synchroniser des données avec ce dossier.";
 
 /* error reason */
 "Cannot locate synchronized documents folder." = "Impossible de localiser le dossier de documents synchronisés.";
@@ -72,6 +78,7 @@
 
 /* Server account type
    Set up server account title */
+
 "Omni Sync Server" = "Omni Sync Server";
 
 /* account validation error suggestion */
@@ -116,6 +123,12 @@
 /* error reason */
 "This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Cette app nécessite le format OmniPresence %1$@, mais le compte du cloud utilise le format %2$@. Mettez le compte du cloud à niveau.";
 
+/* Error reason */
+"This OmniPresence folder contains another OmniPresence synced folder." = "Ce dossier OmniPresence contient un autre dossier OmniPresence synchronisé.";
+
+/* Error description when syncing will be disabled due to too many recent errors */
+"Too many file transfers encountered errors recently." = "Il y a eu trop d’erreurs de transfert de fichiers récemment.";
+
 /* error description */
 "Unable to create temporary items in the proposed location." = "Impossible de créer des éléments temporaires dans l’emplacement proposé.";
 
@@ -145,4 +158,3 @@
 
 /* Set up server account title */
 "WebDAV Server" = "Serveur WebDAV";
-

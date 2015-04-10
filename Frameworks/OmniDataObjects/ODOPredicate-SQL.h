@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,5 +18,5 @@
 - (BOOL)_appendSQL:(NSMutableString *)sql entity:(ODOEntity *)entity constants:(NSMutableArray *)constants error:(NSError **)outError;
 @end
 
-const char * const ODOComparisonPredicateStartsWithFunctionName OB_HIDDEN;
-const char * const ODOComparisonPredicateContainsFunctionName OB_HIDDEN;
+OB_HIDDEN extern const char * const ODOComparisonPredicateStartsWithFunctionName;
+OB_HIDDEN extern const char * const ODOComparisonPredicateContainsFunctionName;

@@ -1,0 +1,53 @@
+<!-- This file must be saved with UTF-8 encoding for OSUPreferencesClient to load it correctly! -->
+<html>
+	<head>
+		<title>${OSU_FRAMEWORK} : ${OSU_PANE_TITLE}</title>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <style type="text/css">
+body {
+    margin: 0px 18px;
+    padding: 0;
+    font-family: "Lucida Grande", Verdana, sans-serif;
+    font-size: 10pt;
+}
+
+.toptable, .subtable {
+	font-family: "Lucida Grande", Verdana, sans-serif;
+    font-size: 8pt;
+    border-collapse: collapse;
+    margin: 16px 0px;
+}
+
+.toptable tr td, .toptable tr th {
+	text-align: left;
+	border-top: 1px solid #e6e6e6;
+	border-bottom: 1px solid #e6e6e6;
+	padding: 6px;
+}
+
+.toptable tr th {
+	background-color: #f0f0f0;
+}
+
+.toptable {
+    width: 440px;
+}
+
+@media osu-full {
+    .if-mini {
+        display: none;
+    }
+}
+@media not osu-full {
+    .if-full {
+        display: none;
+    }
+}
+
+    </style>
+  </head>
+  <body>
+    <br>
+    ${OSU_BODY}
+  </body>
+</html>

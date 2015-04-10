@@ -20,7 +20,7 @@
 
 + (BOOL)netServiceName:(NSString *)serviceName matchesAnyGroup:(NSSet *)groupIdentifiers;
 
-- initWithGroupIdentifier:(NSString *)groupIdentifier memberIdentifier:(NSString *)memberIdentifier name:(NSString *)name state:(NSData *)state;
+- initWithGroupIdentifier:(NSString *)groupIdentifier memberIdentifier:(NSString *)memberIdentifier name:(NSString *)name state:(NSData *)state NS_EXTENSION_UNAVAILABLE_IOS("This depends on UIApplication, which isn't available in application extensions");
 
 - (void)invalidate;
 

@@ -1,26 +1,15 @@
-/* In App Store pricing option format */
-"%@ %@" = "%2$@, %1$@";
-
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ из %2$@";
 
-/* title for successful in app purchase */
-"%@ Purchased" = "%@ приобретено";
-
 /* Default title for the About menu item */
+
 "About %@" = "О программе %@";
 
 /* No purchases found message format */
 "All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Все покупки для текущей уч. записи App Store восстановлены, однако %@ в списке покупок отсутствует.";
 
-/* Web view nagivation button for going back in history. */
-"Back" = "Назад";
-
 /* Bold button accessibility label */
 "Bold" = "Жирный";
-
-/* Disabled 'Buy' button title string */
-"Buy" = "Приобрести";
 
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
 "Buy %@" = "Приобрести %@";
@@ -28,6 +17,7 @@
 /* button title
    cancel button title
    toolbar item title */
+
 
 
 "Cancel" = "Отмена";
@@ -40,6 +30,9 @@
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "Значение параметра «%1$@»изменено с «%2$@» на «%3$@»";
+
+/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
+"Check for Free Upgrade" = "Право на беспл. обновление";
 
 /* Certificate trust alert button title */
 "Continue" = "Продолжить";
@@ -58,11 +51,11 @@
 /* toolbar item title */
 "Edit" = "Изменить";
 
+/* Title explaining that user is eligible for discounted upgrade */
+"Eligible for free upgrade" = "Право на бесплатное обновление";
+
 /* In app Buy button error title */
 "Error" = "Ошибка";
-
-/* Alert title for error loading product information */
-"Error Loading Store" = "Ошибка загрузки магазина";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "В демо-версии эта функция не работает";
@@ -97,8 +90,8 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Не удалось открыть ссылку. Проверьте ограничения Safari в настройках.";
 
-/* Buy button title while app store is loading */
-"Loading" = "Загрузка";
+/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
+"More Info" = "Дополнительно";
 
 /* empty value cell placeholder */
 "None" = "Отсутствует";
@@ -123,9 +116,6 @@
 /* alert title */
 "Preference changed" = "Параметр изменен";
 
-/* title for successful in app purchase */
-"Purchase %@" = "Купить %@";
-
 /* Purchase failed alert title */
 "Purchase Failed" = "Сбой покупки";
 
@@ -149,6 +139,9 @@
 /* Restore failed alert title */
 "Restore Failed" = "Сбой восстановления";
 
+/* 'Restore Purchases' button title string */
+"Restore Purchases" = "Восстановить покупки";
+
 /* Right Text Align button accessibility label. */
 "Right text align" = "Выравнивание по правому краю";
 
@@ -159,10 +152,13 @@
 "Strike Through" = "Зачеркивание";
 
 /* Alert description for error loading product information */
-"There was an error loading information from the App Store" = "При загрузке данных из App Store произошла ошибка";
+"This device might not be connected to the Internet." = "Возможно, на устройстве подключение к Интернету.";
 
 /* Certificate trust alert button title */
 "Trust Always" = "Всегда доверять";
+
+/* Alert title for error loading product information */
+"Unable to reach App Store" = "Не удается получить доступ к App Store";
 
 /* Underline button accessibility label */
 "Underline" = "Подчеркивание";
@@ -172,9 +168,6 @@
 
 /* placeholder text */
 "username" = "имя пользователя";
-
-/* in app purchase verify button title */
-"Verify" = "Проверить";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Выбор ссылки изменит следующие настройки:\n\n«%@»\n\nПрименить эти изменения?";

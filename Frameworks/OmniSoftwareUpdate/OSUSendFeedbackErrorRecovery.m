@@ -1,4 +1,4 @@
-// Copyright 2007, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,6 @@
 
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniBase/rcsid.h>
-
-#import "OSUErrors.h"
 
 RCS_ID("$Id$")
 
@@ -23,17 +21,6 @@ RCS_ID("$Id$")
 
     if ([error causedByUnreachableHost])
         return NO; // Unreachable hosts cannot be solved by the app
-
-    NSError *osuError = [error underlyingErrorWithDomain:OSUErrorDomain];
-    if (osuError != nil) {
-        switch ([osuError code]) {
-            case OSURemoteNetworkFailure:
-            case OSULocalNetworkFailure:
-                return NO; // We can't help the user with network failures
-            default:
-                break;
-        }
-    }
 
     if ([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOSPC]) {
         // Local filesystem is out of space.

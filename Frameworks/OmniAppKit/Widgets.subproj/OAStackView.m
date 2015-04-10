@@ -317,7 +317,7 @@ Goes through the subviews and finds the first subview that is willing to stretch
 {
     flags.needsLayout = YES;
 
-    [NSWindow beforeDisplayIfNeededPerformBlock:^{
+    [self.window beforeDisplayIfNeededPerformBlock:^{
         [self _layoutSubviews];
     }];
 }

@@ -31,8 +31,7 @@
 
 OB_REQUIRE_ARC
 
-static NSInteger OFNetStateRegistrationDebug;
-
+static OFDeclareDebugLogLevel(OFNetStateRegistrationDebug);
 #define DEBUG_REGISTRATION(level, format, ...) do { \
     if (OFNetStateRegistrationDebug >= (level)) \
         NSLog(@"STATE REGISTRATION %@: " format, [self shortDescription], ## __VA_ARGS__); \
@@ -93,8 +92,6 @@ static const NSTimeInterval kCoalesceTimeInterval = 3;
 {
     OBINITIALIZE;
     
-    OFInitializeDebugLogLevel(OFNetStateRegistrationDebug);
-
 #ifdef OMNI_ASSERTIONS_ON
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     // No NSProcessInfo or readable entitlements on iOS, of course...
@@ -133,7 +130,7 @@ static NSString * const OFNetStateRegistrationGroupTerminator = @" ";
     _socket = -1;
     
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    BOOL inForeground = ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground);
+    BOOL inForeground = ([OFSharedApplication() applicationState] != UIApplicationStateBackground);
 #else
     BOOL inForeground = YES;
 #endif

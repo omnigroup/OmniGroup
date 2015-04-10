@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -98,7 +98,7 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
     return _contentView;
 }
 
-#define VERTICAL_SPACING_AROUND_TABS 5.0
+#define VERTICAL_SPACING_AROUND_TABS 0.0
 
 - (void)loadView;
 {
@@ -109,6 +109,7 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
     UIScrollView *container = [[UIScrollView alloc] initWithFrame:CGRectMake(0,0, OUIInspectorContentWidth, 50.0)];
     container.autoresizesSubviews = YES;
     container.scrollEnabled = NO;
+    container.backgroundColor = [OUIInspector backgroundColor];
     
     CGRect newFrame = CGRectInset(_titleTabBar.frame, 0.0, -VERTICAL_SPACING_AROUND_TABS);
     newFrame.origin.y = 0.0;

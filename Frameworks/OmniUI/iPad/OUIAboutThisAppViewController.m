@@ -1,4 +1,4 @@
-// Copyright 2014 The Omni Group. All rights reserved.
+// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,8 +64,8 @@ RCS_ID("$Id$")
 - (void)loadAboutPanelWithTitle:(NSString *)title URL:(NSURL *)URL javascriptBindingsDictionary:(NSDictionary *)javascriptBindingsDictionary;
 {
     self.navigationItem.title = title;
-    _aboutURL = URL;
-    _javascriptBindingsDictionary = javascriptBindingsDictionary;
+    _aboutURL = [URL copy];
+    _javascriptBindingsDictionary = [javascriptBindingsDictionary copy];
 
     if (_webView != nil)
         [_webView loadRequest:[NSURLRequest requestWithURL:_aboutURL]];
@@ -101,11 +101,14 @@ RCS_ID("$Id$")
 	NSString *scheme = [[requestURL scheme] lowercaseString];
 	
         // Mailto link
+        OUIAppController *appController = [OUIAppController controller];
 	if ([scheme isEqualToString:@"mailto"]) {
-	    MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
-	    controller.mailComposeDelegate = self;
-	    [controller setToRecipients:[NSArray arrayWithObject:[requestURL resourceSpecifier]]];
-	    [self presentViewController:controller animated:YES completion:nil];
+            if (![appController showFeatureDisabledForRetailDemoAlert]) {
+                MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
+                controller.mailComposeDelegate = self;
+                [controller setToRecipients:[NSArray arrayWithObject:[requestURL resourceSpecifier]]];
+                [self presentViewController:controller animated:YES completion:nil];
+            }
             return NO; // Don't load this in the WebView
 	}
         

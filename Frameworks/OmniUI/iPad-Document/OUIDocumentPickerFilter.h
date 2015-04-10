@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,12 +15,20 @@ extern NSString * const ODSDocumentPickerFilterTemplateIdentifier;
 
 @interface OUIDocumentPickerFilter : NSObject
 
-@property(nonatomic,copy) NSString *identifier;
-@property(nonatomic,copy) NSString *imageName;
-@property(nonatomic,copy) NSPredicate *predicate; // Suitable for use with ODSFilter
+- initWithIdentifier:(NSString *)identifier
+           imageName:(NSString  *)imageName
+           predicate:(NSPredicate *)predicate
+localizedFilterChooserButtonLabel:(NSString *)localizedFilterChooserButtonLabel
+localizedFilterChooserShortButtonLabel:(NSString *)localizedFilterChooserShortButtonLabel
+localizedMatchingObjectsDescription:(NSString *)localizedMatchingObjectsDescription;
 
-@property(nonatomic,copy) NSString *localizedFilterChooserButtonLabel; /*! Like "Show stencils" */
-@property(nonatomic,copy) NSString *localizedFilterChooserShortButtonLabel; /*! Like "Stencils".  For compact horizontal size class. */
-@property(nonatomic,copy) NSString *localizedMatchingObjectsDescription; /*! Standalone name of the kind of things this filter shows (like "stencils") */
+
+@property(nonatomic,readonly) NSString *identifier;
+@property(nonatomic,readonly) NSString *imageName;
+@property(nonatomic,readonly) NSPredicate *predicate; // Suitable for use with ODSFilter
+
+@property(nonatomic,readonly) NSString *localizedFilterChooserButtonLabel; /*! Like "Show stencils" */
+@property(nonatomic,readonly) NSString *localizedFilterChooserShortButtonLabel; /*! Like "Stencils".  For compact horizontal size class. */
+@property(nonatomic,readonly) NSString *localizedMatchingObjectsDescription; /*! Standalone name of the kind of things this filter shows (like "stencils") */
 
 @end

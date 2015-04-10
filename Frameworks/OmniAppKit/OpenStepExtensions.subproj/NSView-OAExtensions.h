@@ -1,4 +1,4 @@
-// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -77,6 +77,9 @@
 - (NSMutableArray *)animationsToStackSubviews:(NSArray *)newContent finalFrameSize:(NSSize *)outNewFrameSize;
 
 // Constraints
++ (void)appendConstraints:(NSMutableArray *)constraints forView:(NSView *)view toHaveSameFrameAsView:(NSView *)otherView;
++ (void)appendConstraints:(NSMutableArray *)constraints forView:(NSView *)view toHaveSameHorizontalExtentAsView:(NSView *)otherView;
++ (void)appendConstraints:(NSMutableArray *)constraints forView:(NSView *)view toHaveSameVerticalExtentAsView:(NSView *)otherView;
 
 - (void)addConstraintsToHaveSameFrameAsView:(NSView *)view;
 - (void)addConstraintsToHaveSameHorizontalExtentAsView:(NSView *)view;
@@ -89,6 +92,7 @@
 // Debugging
 - (void)logViewHierarchy;
 - (void)logConstraintsInvolvingView;
+- (void)logVibrantViews;
 
 @end
 

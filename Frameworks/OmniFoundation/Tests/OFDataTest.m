@@ -194,6 +194,62 @@ RCS_ID("$Id$");
     
 }
 
+- (void)testPipeRunloopEarlyExit
+{
+    NSRunLoop *l = [NSRunLoop currentRunLoop];
+    NSOutputStream *resultStream;
+    OFFilterProcess *proc;
+    
+    resultStream = [NSOutputStream outputStreamToMemory];
+    proc = [[OFFilterProcess alloc] initWithParameters:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                        @"/bin/sh", OFFilterProcessCommandPathKey,
+                                                        [NSArray arrayWithObjects:@"-c", @"echo okay", nil], OFFilterProcessArgumentsKey,
+                                                        [NSData data], OFFilterProcessInputDataKey,
+                                                        @"NO", OFFilterProcessDetachTTYKey,
+                                                        nil]
+                                        standardOutput:resultStream
+                                         standardError:nil];
+    
+    /* Wait long enough for the subprocess to exit */
+    usleep(250000);
+    
+    [proc scheduleInRunLoop:l forMode:NSRunLoopCommonModes];
+    
+    do {
+        [l runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:10.0]];
+    } while ([proc isRunning]);
+    
+    [proc removeFromRunLoop:l forMode:NSRunLoopCommonModes];
+    
+    XCTAssertNil(proc.error);
+    XCTAssertEqualObjects([resultStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey], [NSData dataWithBytes:"okay\n" length:5]);
+    
+    resultStream = [NSOutputStream outputStreamToMemory];
+    proc = [[OFFilterProcess alloc] initWithParameters:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                        @"/bin/sh", OFFilterProcessCommandPathKey,
+                                                        [NSArray arrayWithObjects:@"-c", @"echo okay; exit 12", nil], OFFilterProcessArgumentsKey,
+                                                        [NSData data], OFFilterProcessInputDataKey,
+                                                        @"NO", OFFilterProcessDetachTTYKey,
+                                                        nil]
+                                        standardOutput:resultStream
+                                         standardError:nil];
+    
+    /* Wait long enough for the subprocess to exit */
+    usleep(250000);
+    
+    [proc scheduleInRunLoop:l forMode:NSRunLoopCommonModes];
+    
+    do {
+        [l runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:10.0]];
+    } while ([proc isRunning]);
+    
+    [proc removeFromRunLoop:l forMode:NSRunLoopCommonModes];
+    
+    XCTAssertNotNil(proc.error);
+    XCTAssertEqual([proc.error.userInfo intForKey:OFProcessExitStatusErrorKey], 12);
+    XCTAssertEqualObjects([resultStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey], [NSData dataWithBytes:"okay\n" length:5]);
+}
+
 - (void)testPipeFailure
 {
     NSData *smallData   = [NSData dataWithBytes:"Just remember ... wherever you go ... there you are." length:52];
@@ -209,15 +265,11 @@ RCS_ID("$Id$");
     XCTAssertNotNil(errbuf, @"");
     //NSLog(@"fail w/ exec failure: %@", errbuf);
     
-    if (YES) {
-        OBFinishPortingLater("-filterDataThroughCommandAtPath: doesn't seem to be catching signals to the shell on Lion");
-    } else {
-        errbuf = nil;
-        XCTAssertNil([smallData filterDataThroughCommandAtPath:@"/bin/sh" withArguments:([NSArray arrayWithObjects:@"-c", @"kill -USR1 $$", nil]) error:&errbuf], @"command should fail");
-        XCTAssertNotNil(errbuf, @"");
-        //NSLog(@"fail w/ signal: %@", errbuf);
-        XCTAssertEqual((int)[[[[errbuf userInfo] objectForKey:NSUnderlyingErrorKey] userInfo] intForKey:OFProcessExitSignalErrorKey], (int)SIGUSR1, @"properly collected exit status");
-    }
+    errbuf = nil;
+    XCTAssertNil([smallData filterDataThroughCommandAtPath:@"/bin/sh" withArguments:([NSArray arrayWithObjects:@"-c", @"kill -USR1 $$", nil]) error:&errbuf], @"command should fail");
+    XCTAssertNotNil(errbuf, @"");
+    NSLog(@"fail w/ signal: %@", errbuf);
+    XCTAssertEqual((int)[[[[errbuf userInfo] objectForKey:NSUnderlyingErrorKey] userInfo] intForKey:OFProcessExitSignalErrorKey], (int)SIGUSR1, @"properly collected exit status");
     
     errbuf = nil;
     XCTAssertEqualObjects([NSData data],

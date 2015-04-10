@@ -1,4 +1,4 @@
-// Copyright 2011-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,7 +35,7 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
 {
     [super viewDidLoad];
     
-    self.enterFullScreenButton.alpha = EnterFullScreenButtonStandardAlpha;
+    self.enterFullScreenButton.alpha = 0.0;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChange:) name:UIKeyboardDidChangeFrameNotification object:nil];
 }
@@ -43,6 +43,20 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
 - (void)viewDidAppear:(BOOL)animated;
 {
     [super viewDidAppear:animated];
+
+    // If we're already fullscreen, no need for the enter full screen button
+    if (self.view.window.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact && self.inspector.useFullScreenOnHorizontalCompact) {
+        self.enterFullScreenButton.hidden = YES;
+    } else {
+        self.enterFullScreenButton.hidden = NO;
+        self.enterFullScreenButton.alpha = EnterFullScreenButtonStandardAlpha; // fade in
+    }
+
+    // Larger left/right insets
+    UIEdgeInsets insets = self.textView.textContainerInset;
+    insets.left = 6.0;
+    insets.right = 6.0;
+    self.textView.textContainerInset = insets;
     
     [self.textView becomeFirstResponder];
 }
@@ -123,6 +137,8 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
         self.textView.text = dismissedController.textView.text;
         if (self.textView.selectedRange.length)
             [self.textView becomeFirstResponder];
+        else
+            [self applyChangesFromNoteTextView];
     };
     controller.modalPresentationStyle = UIModalPresentationOverFullScreen;
     

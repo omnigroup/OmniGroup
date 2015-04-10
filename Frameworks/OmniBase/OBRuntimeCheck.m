@@ -1,4 +1,4 @@
-// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -501,7 +501,9 @@ static void _validateMethodSignatures(void)
             CLASSNAME_HAS_PREFIX(clsName, "_CN") ||
             CLASSNAME_HAS_PREFIX(clsName, "VGL") ||
             CLASSNAME_HAS_PREFIX(clsName, "VK") ||
-            strcmp(clsName, "DRDevice") == 0) {
+            strcmp(clsName, "DRDevice") == 0 ||
+            strcmp(clsName, "OMUUID") == 0 /* TextExpander bundles an old version of OMUUID that incorrectly declares -hash. Ignore it. */
+            ) {
             /* In particular, _NS[View]Animator chokes in this case. But we don't really need to check any _NS classes. */
             continue;
         }

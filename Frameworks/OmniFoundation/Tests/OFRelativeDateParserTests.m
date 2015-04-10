@@ -790,6 +790,14 @@ do { \
     parseDate( string, expectedDate, baseDate, @"MM/dd/yy", @"HH:mm" );
 }
 
+- (void)testTodayAtNoon;
+{
+    NSString *string = @"today at noon";
+    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2001, 1, 1, 12, 0, 0, calendar);
+    parseDate( string, expectedDate, baseDate, @"MM/dd/yy", @"HH:mm" );
+}
+
 - (void)testRoundtripCommaFormat;
 {
     NSString *commaFormat = @"M/d/yy, h:mm a";
@@ -866,7 +874,7 @@ do { \
 - (void)testLocaleWeekdays;
 {
     NSLocale *currentLocale = [NSLocale currentLocale];
-    NSArray *availableLocales = [NSArray arrayWithObjects:@"de", /*@"es",*/ @"fr", @"en_US", /*@"it",*/ @"ja", @"nl", @"zh_CN", nil];//[NSLocale availableLocaleIdentifiers];
+    NSArray *availableLocales = [NSArray arrayWithObjects:@"de", @"es", @"fr", @"en_US", @"it", @"ja", @"nl", @"zh_CN", nil];//[NSLocale availableLocaleIdentifiers];
     unsigned int localeIndex;
     for (localeIndex = 0; localeIndex < [availableLocales count]; localeIndex++) {
 	NSLocale *locale = [[NSLocale alloc] initWithLocaleIdentifier:[availableLocales objectAtIndex:localeIndex]];

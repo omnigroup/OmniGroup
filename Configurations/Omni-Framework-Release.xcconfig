@@ -4,7 +4,3 @@
 
 // Common settings for Framework targets
 #include "Omni-Framework-Common.xcconfig"
-
-// Common settings for Release configurations of Framework targets
-OMNI_FRAMEWORK_TARGET_PATH = @rpath
-SKIP_INSTALL = NO

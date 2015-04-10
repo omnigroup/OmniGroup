@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,6 +27,7 @@ RCS_ID("$Id$");
 
 @interface OAResizingTitleBarButton (/* private */)
 @property (nonatomic,copy) OATitleBarButtonTextForButtonCallback callback; // must not retain host window, see titleBarButtonWithKey:forWindow:textCallback:
+@property (nonatomic) NSView *borderView;
 @end
 
 static NSFont *_OAButtonTitleFont(void)
@@ -49,18 +50,30 @@ static CGFloat _OAMinButtonX(NSWindow *window, NSView *borderView)
         maxTitleX = NSMaxX([windowButton frame]);
     } else {
         CGFloat titleWidth = [NSWindow minFrameWidthWithTitle:[window title] styleMask:[window styleMask]];
-        // try calculating the width that the title, document icon and versions button takes up
-        if ((windowButton = [window standardWindowButton:NSWindowCloseButton]))
-            titleWidth -= NSWidth([windowButton frame]);
-        if ((windowButton = [window standardWindowButton:NSWindowMiniaturizeButton]))
-            titleWidth -= NSWidth([windowButton frame]);
-        if ((windowButton = [window standardWindowButton:NSWindowZoomButton]))
-            titleWidth -= NSWidth([windowButton frame]);
-        if ((windowButton = [window standardWindowButton:NSWindowToolbarButton]))
-            titleWidth -= NSWidth([windowButton frame]);
-        if ((windowButton = [window standardWindowButton:NSWindowFullScreenButton]))
-            titleWidth -= NSWidth([windowButton frame]);
-        
+
+        static void *OAResizingTitleBarButtonWidthsKey = &OAResizingTitleBarButtonWidthsKey;
+
+        NSNumber *widthOfButtons = objc_getAssociatedObject(window, OAResizingTitleBarButtonWidthsKey);
+        if (!widthOfButtons) {
+
+            CGFloat width = 0.0;
+
+            // try calculating the width that the title, document icon and versions button takes up
+            if ((windowButton = [window standardWindowButton:NSWindowCloseButton])) {
+                width += NSWidth([windowButton frame]);
+            }
+            if ((windowButton = [window standardWindowButton:NSWindowMiniaturizeButton])) {
+                width += NSWidth([windowButton frame]);
+            }
+            if ((windowButton = [window standardWindowButton:NSWindowZoomButton])) {
+                width += NSWidth([windowButton frame]);
+            }
+
+            widthOfButtons = @(width);
+            objc_setAssociatedObject(window, OAResizingTitleBarButtonWidthsKey, widthOfButtons, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        }
+
+        titleWidth -= widthOfButtons.cgFloatValue;
         maxTitleX = NSMidX([borderView frame]) + titleWidth/2;
     }
     
@@ -71,27 +84,13 @@ static CGFloat _OAMaxButtonX(NSWindow *window, NSView *borderView)
 {
     OBPRECONDITION(borderView != nil);
     
-    CGFloat minTopRightCornerX = 0.0f;
-    NSButton *buttonInTopRightCorner = [window standardWindowButton:NSWindowToolbarButton];
-    if (buttonInTopRightCorner == nil) {
-        buttonInTopRightCorner = [window standardWindowButton:NSWindowFullScreenButton];
-    }
-    
-    if (buttonInTopRightCorner != nil) {
-        minTopRightCornerX = NSMinX(buttonInTopRightCorner.frame);
-    } else {
-        // no button
-        NSRect borderBounds = [borderView bounds];
-        minTopRightCornerX = NSMaxX(borderBounds);
-    }
-    
+    CGFloat minTopRightCornerX = NSMaxX(borderView.bounds);
     return minTopRightCornerX - OA_BUTTON_SPACER;
 }
 
-static CGFloat _OAWidthAvailableForButtonText(NSWindow * window)
+static CGFloat _OAWidthAvailableForButtonText(NSWindow * window, NSView *borderView)
 {
-    NSView *borderView = _OABorderView(window);
-    if (borderView == nil)
+     if (borderView == nil)
         return 0.0f;
     
     return _OAMaxButtonX(window, borderView) - _OAMinButtonX(window, borderView) - OA_BUTTON_TEXT_CUSHION;
@@ -235,18 +234,18 @@ static void *OAResizingTitleBarButtonObservingWindowContext;
 - (void)viewDidMoveToWindow;
 {
     NSWindow *window = self.window;
-    
+
+    self.borderView = nil;
     if (!window)
         return;
-    
+
     NSButton *mobileTitleBarButton = _OAMobileTitleBarButton(window);
     if (mobileTitleBarButton != nil) {
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_titleBarDidChange:) name:NSViewFrameDidChangeNotification object:mobileTitleBarButton];
         DEBUG_TITLE_BAR_BUTTON(@"Subscribed to frame changes mobileTitleBarButton %@", OBShortObjectDescription(mobileTitleBarButton));
         _isObservingWindowTitle = NO;
     } else {
-        NSView *borderView = _OABorderView(window);
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_titleBarDidChange:) name:NSViewFrameDidChangeNotification object:borderView];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_titleBarDidChange:) name:NSViewFrameDidChangeNotification object:self.borderView];
         [window addObserver:self forKeyPath:@"title" options:NSKeyValueObservingOptionNew context:&OAResizingTitleBarButtonObservingWindowContext];
         DEBUG_TITLE_BAR_BUTTON(@"Subscribed to frame changes borderView %@", OBShortObjectDescription(borderView));
         _isObservingWindowTitle = YES;
@@ -258,11 +257,13 @@ static void *OAResizingTitleBarButtonObservingWindowContext;
 {
     DEBUG_TITLE_BAR_BUTTON(@"Will move to superview %@", OBShortObjectDescription(newSuperview));
     [super viewWillMoveToSuperview:newSuperview];
+    self.borderView = nil;
 }
 - (void)viewDidMoveToSuperview;
 {
     [super viewDidMoveToSuperview];
     DEBUG_TITLE_BAR_BUTTON(@"Did move to superview");
+    self.borderView = nil;
 }
 #endif
 
@@ -271,12 +272,32 @@ static void *OAResizingTitleBarButtonObservingWindowContext;
 // utility method for use by callback blocks to determine the width of a putative button title
 - (CGFloat)widthForText:(NSString *)text;
 {
-    NSDictionary *attributes = @{NSFontAttributeName:_OAButtonTitleFont()};
-    CGFloat textWidth = [text sizeWithAttributes:attributes].width;
-    return textWidth;
+    static NSCache *cache = nil;
+    if (!cache) {
+        cache = [NSCache new];
+    }
+
+    NSNumber *cachedWidth = [cache objectForKey:text];
+    if (cachedWidth) {
+        return cachedWidth.cgFloatValue;
+    }
+
+    CGFloat width = ceilf([text sizeWithAttributes:[self _textAttributes]].width);
+    [cache setObject:@(width) forKey:text];
+
+    return width;
 }
 
 #pragma mark Private API
+
+- (NSView *)borderView {
+
+    if (!_borderView) {
+        _borderView = _OABorderView(self.window);
+    }
+
+    return _borderView;
+}
 
 - (void)_titleBarDidChange:(NSNotification *)notification;
 {
@@ -304,6 +325,21 @@ static void *OAResizingTitleBarButtonObservingWindowContext;
     [self _updateTitleBarButtonFrame];
 }
 
+- (NSDictionary *)_textAttributes {
+
+    static NSDictionary *attributes = nil;
+    if (!attributes) {
+        NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+        [paragraphStyle setAlignment:NSCenterTextAlignment];
+
+        attributes = [@{NSFontAttributeName:_OAButtonTitleFont(), NSParagraphStyleAttributeName:paragraphStyle} retain];
+
+        [paragraphStyle release];
+    }
+
+    return attributes;
+}
+
 - (void)_updateTitleBarButtonFrame;
 {
     DEBUG_TITLE_BAR_BUTTON(@"Updating button %@", [self shortDescription]);
@@ -322,36 +358,35 @@ static void *OAResizingTitleBarButtonObservingWindowContext;
         // no need to do any more work
         return;
     }
-    
+
     NSColor *textColor = nil;
-    NSString *text = self.callback(self, _OAWidthAvailableForButtonText(window), &textColor);
+    NSString *text = self.callback(self, _OAWidthAvailableForButtonText(window, self.borderView), &textColor);
     if (text == nil) {
         [self setHidden:YES];
         return;
     }
 
-    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-    [paragraphStyle setAlignment:NSCenterTextAlignment];
-    NSDictionary *attributes = @{NSFontAttributeName:_OAButtonTitleFont(), NSForegroundColorAttributeName:textColor, NSParagraphStyleAttributeName:paragraphStyle};
-    [paragraphStyle release];
+    NSMutableDictionary *attributes = [[[self _textAttributes] mutableCopy] autorelease];
+    attributes[NSForegroundColorAttributeName] = textColor;
     NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text attributes:attributes];
-    self.attributedTitle = attributedString;
+    if (![self.attributedTitle isEqual:attributedString]) {
+        self.attributedTitle = attributedString;
+    }
     [attributedString release];
-    
-    CGFloat textWidth = [text sizeWithAttributes:attributes].width;
+
+    CGFloat textWidth = [self widthForText:text];
     CGFloat width = textWidth + OA_BUTTON_TEXT_CUSHION; // button needs more cushion for the whole text to be drawn
 
-    NSView *borderView = _OABorderView(window);
-    NSRect borderBounds = [borderView bounds];
+    NSRect borderBounds = self.borderView.bounds;
     const float height = OA_BUTTON_HEIGHT;
     
-    CGFloat originX = _OAMaxButtonX(window, borderView) - width;
+    CGFloat originX = _OAMaxButtonX(window, self.borderView) - width;
     CGFloat originY = NSMaxY(borderBounds) - height + OA_BUTTON_VERTICAL_OFFSET;
     NSRect frame = NSMakeRect(originX, originY, width, height);
     if (! NSEqualRects(frame, self.frame))
         self.frame = frame;
     
-    shouldHideButton |= textWidth > _OAWidthAvailableForButtonText(window);
+    shouldHideButton |= textWidth > _OAWidthAvailableForButtonText(window, self.borderView);
     [self setHidden:shouldHideButton];
 }
 

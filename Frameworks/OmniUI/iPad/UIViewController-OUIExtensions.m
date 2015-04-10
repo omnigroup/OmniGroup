@@ -46,11 +46,11 @@ RCS_ID("$Id$");
     else if (self.isBeingDismissed || self.isMovingFromParentViewController) {
         return OUIViewControllerVisibilityDisappearing;
     }
-    else if (self.isViewLoaded == NO) {
-        return OUIViewControllerVisibilityHidden;
+    else if (self.isViewLoaded == YES && self.view.window != nil) {
+        return OUIViewControllerVisibilityVisible;
     }
     else {
-        return OUIViewControllerVisibilityVisible;
+        return OUIViewControllerVisibilityHidden;
     }
 }
 

@@ -22,7 +22,7 @@
 
 RCS_ID("$Id$");
 
-NSInteger OFSFileManagerDebug = 0;
+OFDeclareDebugLogLevel(OFSFileManagerDebug);
 
 
 // If the file name ends in a number, we are likely dealing with a duplicate.
@@ -32,13 +32,6 @@ void OFSFileManagerSplitNameAndCounter(NSString *originalName, NSString **outNam
 }
 
 @implementation OFSFileManager
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    OFInitializeDebugLogLevel(OFSFileManagerDebug);
-}
 
 + (Class)fileManagerClassForURLScheme:(NSString *)scheme;
 {

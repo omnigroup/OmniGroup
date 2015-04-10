@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -96,11 +96,21 @@ static unsigned GroupItemContext;
         }
         
         [subviewsToRemove makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        
-        CGSize miniPreviewSize = kOUIDocumentPickerFolderItemMiniPreviewSize;
-        UIEdgeInsets miniPreviewInsets = kOUIDocumentPickerFolderItemMiniPreviewInsets;
-        CGFloat spacing = kOUIDocumentPickerFolderItemMiniPreviewSpacing;
-        
+
+        CGSize miniPreviewSize;
+        UIEdgeInsets miniPreviewInsets;
+        CGFloat spacing;
+
+        if (self.isSmallSize) {
+            miniPreviewSize = kOUIDocumentPickerFolderSmallItemMiniPreviewSize;
+            miniPreviewInsets = kOUIDocumentPickerFolderSmallItemMiniPreviewInsets;
+            spacing = kOUIDocumentPickerFolderSmallItemMiniPreviewSpacing;
+        } else {
+            miniPreviewSize = kOUIDocumentPickerFolderItemMiniPreviewSize;
+            miniPreviewInsets = kOUIDocumentPickerFolderItemMiniPreviewInsets;
+            spacing = kOUIDocumentPickerFolderItemMiniPreviewSpacing;
+        }
+
         NSUInteger tag = 0;
         for (CGFloat y = miniPreviewInsets.top; y < CGRectGetMaxY(bounds) - miniPreviewInsets.bottom; y += miniPreviewSize.height + spacing) {
             for (CGFloat x = miniPreviewInsets.left; x < CGRectGetMaxX(bounds) - miniPreviewInsets.right; x += miniPreviewSize.width + spacing) {

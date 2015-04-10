@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -185,7 +185,7 @@ static unsigned MetadataRegistrationContext;
 #endif
 }
 
-- (BOOL)performMoveFromURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL filePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
+- (OFFileMotionResult *)performMoveFromURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL filePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
 {
     NSURL *documentsURL = self.documentsURL;
     if (!OFURLContainsURL(documentsURL, sourceURL)) {
@@ -194,12 +194,14 @@ static unsigned MetadataRegistrationContext;
     }
     
     // We are running on the scope's queue here, but the agent wants actions invoked on the main queue. This call is expected to be blocking, so we'll dispatch and wait.
-    __block NSError *resultError;
+    __block OFFileMotionResult *moveResult;
+    __block NSError *moveError;
     NSConditionLock *lock = [[NSConditionLock alloc] initWithCondition:NO];
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [_syncAgent moveItemAtURL:sourceURL toURL:destinationURL completionHandler:^(NSError *errorOrNil){
-            resultError = errorOrNil;
+        [_syncAgent moveItemAtURL:sourceURL toURL:destinationURL completionHandler:^(OFFileMotionResult *result, NSError *errorOrNil){
+            moveResult = result;
+            moveError = errorOrNil;
             [lock lock];
             [lock unlockWithCondition:YES];
         }];
@@ -208,12 +210,12 @@ static unsigned MetadataRegistrationContext;
     [lock lockWhenCondition:YES];
     [lock unlock];
     
-    if (resultError) {
+    if (!moveResult) {
         if (outError)
-            *outError = resultError;
-        return NO;
+            *outError = moveError;
+        return nil;
     }
-    return YES;
+    return moveResult;
 }
 
 #pragma mark - ODSScope subclass
@@ -272,12 +274,21 @@ static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKe
 
 #define UPDATE_METADATA_FLAG(keySuffix) _updateFlagFromAttributes(fileItem, ODSItem ## keySuffix ## Binding, metadata, OFXFileMetadata ## keySuffix ## Key, kODSFileItemDefault_ ## keySuffix)
 
-- (void)updateFileItem:(ODSFileItem *)fileItem withMetadata:(id)metadata fileModificationDate:(NSDate *)fileModificationDate;
+- (void)updateFileItem:(ODSFileItem *)fileItem withMetadata:(id)metadata fileEdit:(OFFileEdit *)fileEdit;
 {
     OBPRECONDITION([NSThread isMainThread]); // Fire KVO from the main thread
+    OBPRECONDITION(metadata != nil || fileEdit != nil, "We should either have a server file or local file");
     
     OFXFileMetadata *metadataItem = metadata;
-    OBASSERT(!metadataItem || [metadataItem isKindOfClass:[OFXFileMetadata class]]);
+    
+    if (!metadataItem) {
+        // This is a newly created file. Give it a temporary identifier and version. The real identifier and version number will be created later when the background queue scans the filesystem. We'll come background to it in _updateFileItems and will publish a change from the temporary id to a permanent one.
+        OBASSERT(fileEdit);
+        OBASSERT(fileItem.scopeIdentifier == nil);
+    } else {
+        OBASSERT([metadataItem isKindOfClass:[OFXFileMetadata class]]);
+        OBASSERT([fileItem.scopeIdentifier isEqual:metadataItem.fileIdentifier]);
+    }
     
     DEBUG_METADATA(2, "Update file item %@ with metadata: %@", [fileItem shortDescription], [metadataItem debugDictionary]);
 
@@ -287,13 +298,18 @@ static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKe
         userModificationDate = metadataItem.modificationDate;
         OBASSERT(userModificationDate);
     } else {
-        OBASSERT(fileModificationDate);
-        userModificationDate = fileModificationDate;
+        userModificationDate = fileEdit.fileModificationDate;
     }
-    if (!userModificationDate)
+    if (!userModificationDate) {
+        OBASSERT_NOT_REACHED("Should have either had a server date or local date");
         userModificationDate = [NSDate date];
+    }
     
-    fileItem.fileModificationDate = fileModificationDate;
+    // Now that we coalesce metadata updates, updates to small files might never publish a OFXFileMetadata with downloading=YES. So, we will report a download if the version changes
+    // Only consider the edit 'changed' if it was non-nil before. Otherwise, this is a new file item, not one that is being edited (which is what the notification below is for).
+    BOOL fileChanged = fileItem.fileEdit && OFNOTEQUAL(fileItem.fileEdit.uniqueEditIdentifier, fileEdit.uniqueEditIdentifier);
+    
+    fileItem.fileEdit = fileEdit;
     fileItem.userModificationDate = userModificationDate;
     
     UPDATE_METADATA_FLAG(HasDownloadQueued);
@@ -325,27 +341,24 @@ static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKe
     if (fileItem.downloadedSize != downloadedSize)
         fileItem.downloadedSize = downloadedSize;
     
+    ODSStore *documentStore = self.documentStore;
+    if (!documentStore)
+        return; // Weak pointer cleared -- shutting down when a download finished
+    
     if (!wasDownloaded && fileItem.isDownloaded) {
         [_fileItemsToAutomaticallyDownload removeObject:fileItem];
         fileItem.hasDownloadQueued = NO;
         [self _requestDownloadOfFileItem];
         
-        ODSStore *documentStore = self.documentStore;
-        if (!documentStore)
-            return; // Weak pointer cleared
-                
-        // The file type and modification date stored in this file item may not have changed (since undownloaded file items know those). So, -_queueContentsChanged may end up posting no notification. Rather than forcing it to do so in this case, we have a specific notification for a download finishing.
+        OBASSERT(fileEdit);
+        fileChanged = YES; // Need a preview for the first download
+    }
+    
+    // If our version has changed and there is accompanying poking at the file, we need a new preview. If there is no change in file modification date, this is an upload finishing.
+    if (fileChanged) {
         NSDictionary *userInfo = [NSDictionary dictionaryWithObject:fileItem forKey:ODSFileItemInfoKey];
         [[NSNotificationCenter defaultCenter] postNotificationName:ODSFileItemFinishedDownloadingNotification object:documentStore userInfo:userInfo];
     }
-}
-
-- (void)fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date finishedMoveToURL:(NSURL *)newURL successfully:(BOOL)successfully;
-{
-    [super fileWithURL:oldURL andDate:date finishedMoveToURL:newURL successfully:successfully];
-    
-    if (successfully)
-        [self _updateUsedFileURLs];
 }
 
 - (NSMutableSet *)copyCurrentlyUsedFileNamesInFolderAtURL:(NSURL *)folderURL ignoringFileURL:(NSURL *)fileURLToIgnore;
@@ -413,9 +426,9 @@ static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKe
     NSMutableDictionary *existingFileItemByIdentifier = [NSMutableDictionary new];
     NSMutableDictionary *newFileItemsByCacheKey = nil;
     for (ODSFileItem *fileItem in self.fileItems) {
-        NSString *identifier = fileItem.scopeInfo;
+        NSString *identifier = fileItem.scopeIdentifier;
         
-        // Newly created documents will go through the fast path, which calls -makeFileItemForURL:... and inserts it into our file items w/o a scan. The down side of this fix is that on the next scan, we won't match up the existing file item and the URL and we'll end up creating a new file item.
+        // Newly created documents will go through the fast path, which calls -makeFileItemForURL:... and inserts it into our file items w/o a scan. The down side of this fix is that on the next scan, we won't match up the existing file item and the URL and we'll end up creating a new file item if we aren't careful.
         if (identifier) {
             OBASSERT([identifier isKindOfClass:[NSString class]]);
             OBASSERT(existingFileItemByIdentifier[identifier] == nil);
@@ -460,32 +473,32 @@ static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKe
         NSDate *userModificationDate = metadataItem.modificationDate;
         OBASSERT(userModificationDate);
         
-        // We don't use file coordination here since we'll get notified via a metadata update if there is another change and since we are on the main queue and any coordinated read could deadlock.
-        __autoreleasing NSError *attributesError;
-        NSDate *fileModificationDate = [[NSFileManager defaultManager] attributesOfItemAtPath:[[fileURL absoluteURL] path] error:&attributesError].fileModificationDate;
-        if (!fileModificationDate) {
-            if ([attributesError causedByMissingFile]) {
-                // The file might not yet be downloaded (and we no longer publish stubs), but it might also be disappearing due to a bulk delete operation being synced over from the Mac (deleting a whole folder of documents).
-                // OBASSERT(metadataItem.isDownloaded == NO);
-            } else
-                NSLog(@"Error getting file modification date for %@: %@", fileURL, [attributesError toPropertyList]);
+        // We're on the main thread, so file coordination is out. We'll get a new metadata update if there is another change to the local file.
+        OFFileEdit *fileEdit = nil;
+        NSDate *fileModificationDate = metadataItem.fileModificationDate;
+        if (fileModificationDate) {
+            fileEdit = [[OFFileEdit alloc] initWithFileURL:fileURL fileModificationDate:fileModificationDate inode:[metadataItem.inode unsignedLongValue] isDirectory:metadataItem.directory];
+        } else {
+            OBASSERT(metadataItem.downloaded == NO);
         }
         
         BOOL isNewItem = NO;
-        
         if (!fileItem) {
             // Might be a new item created by the new-document fast path. Try to associate the identifier with it instead of creating a new file item.
             fileItem = newFileItemsByCacheKey[ODSScopeCacheKeyForURL(metadataItem.fileURL)];
-            fileItem.scopeInfo = fileIdentifier;
+            if (fileItem) {
+                DEBUG_METADATA(2, @"Assigning identifier %@ to file item %@", fileIdentifier, fileItem);
+                fileItem.scopeIdentifier = fileIdentifier;
+            }
         }
         
         if (!fileItem) {
-            fileItem = [self makeFileItemForURL:fileURL isDirectory:metadataItem.isDirectory fileModificationDate:fileModificationDate userModificationDate:userModificationDate];
+            fileItem = [self makeFileItemForURL:fileURL isDirectory:metadataItem.isDirectory fileEdit:fileEdit userModificationDate:userModificationDate];
             if (!fileItem) {
                 OBASSERT_NOT_REACHED("Failed to make a file item!");
                 continue;
             }
-            fileItem.scopeInfo = fileIdentifier;
+            fileItem.scopeIdentifier = fileIdentifier;
             
             [updatedFileItems addObject:fileItem];
             isNewItem = YES;
@@ -501,7 +514,7 @@ static void _updateFlagFromAttributes(ODSFileItem *fileItem, NSString *bindingKe
         
         DEBUG_METADATA(2, @"Updating metadata properties on file item %@", [fileItem shortDescription]);
         // If we have one already, use the date in the OFXFileMetadata (as well as other info) instead of the local filesystem modification date. Otherwise use the local filesystem date and defaults for the other metadata until we get one. But, we definitely know this item was in a sync container.
-        [self updateFileItem:fileItem withMetadata:metadataItem fileModificationDate:fileModificationDate];
+        [self updateFileItem:fileItem withMetadata:metadataItem fileEdit:fileEdit];
         
         if (isNewItem)
             [self _possiblyEnqueueDownloadRequestForNewlyAddedFileItem:fileItem metadataItem:metadataItem];

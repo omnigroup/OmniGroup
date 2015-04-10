@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,6 +26,11 @@ enum {
     // DAV
     OFSDAVFileManagerConformanceFailed,
     OFSDAVOperationInvalidMultiStatusResponse,
+    
+    // Encryption
+    OFSEncryptionBadFormat,       // We don't understand the encryption metadata
+    OFSEncryptionWrongPassword,   // Incorrect passphrase given
+    OFSEncryptionPasswordNeeded,  // No passphrase given, key not available, biometric authentication needed, etc.
 };
 
 extern NSString * const OFSErrorDomain;

@@ -73,9 +73,14 @@
 /* error description */
 "Cannot create socket." = "Невозможно создать сокет.";
 
+/* alert title when clicking on a configuration value URL */
+"Change configuration?" = "Изменить конфигурацию?";
+
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
+
+
 "Could not create directory" = "Не удалось создать каталог";
 
 /* time span formatter span */
@@ -97,7 +102,7 @@
 "Failed to create directory for lock file at \"%@\"." = "Сбой создания каталога для блокирования файла по адресу %@.";
 
 /* error reason */
-"Failed to serialize lock information.  %@" = "Сбой сериализации данных блокировки.  %@";
+"Failed to serialize lock information." = "Сбой сериализации данных блокировки.";
 
 /* error reason */
 "Failed to write lock file.  %@" = "Сбой записи заблокированного файла.  %@";
@@ -144,6 +149,12 @@
 /* OFMLockfile recovery option */
 "Override Lock" = "Перезаписать блокировку";
 
+/* alert message format when clicking on a configuration value URL */
+"Restore \"%@\" to its default value" = "Восстановить значение «%@» по умолчанию";
+
+/* alert title when clicking on a configuration value URL */
+"Restore all internal configuration settings to defaults" = "Восстановить для всех внутренних настроек значения по умолчанию";
+
 /* time span formatter span */
 "s" = "с";
 
@@ -152,6 +163,9 @@
 
 /* time span formatter span */
 "seconds" = "секунд";
+
+/* alert message format when clicking on a configuration value URL */
+"Set \"%@\" to \"%@\"" = "Задать для «%1$@» значение «%2$@»";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Возможно, сертификат сервера «%@» недействителен. Этот сайт может являться ненадежным. Подключиться в любом случае?";
@@ -167,6 +181,9 @@
 
 /* server certificate untrusted */
 "The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Сертификат сервера «%@» подписан ненадежным корневым сервером. Этот сайт может являться ненадежным. Подключиться в любом случае?";
+
+/* alert message header when clicking on a configuration value URL */
+"This configuration link will make the following changes:" = "Эта ссылка конфигурации внесет следующие изменения:";
 
 /* error reason */
 "This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Эта блокировка выполнена пользователем %1$@ на компьютере «%2$@» %3$@ в %4$@.";
@@ -221,4 +238,3 @@
 
 /* zlib error reason */
 "zlib returned error code %d. %s." = "возвращенный код ошибки zlib %1$d. %2$s.";
-

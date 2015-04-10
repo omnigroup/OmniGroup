@@ -996,6 +996,47 @@ static void _waitForAndResolveLateConflictByRenaming(OFXConflictTestCase *self,
     XCTAssertNotNil([contents member:random2]);
 }
 
+- (void)testEditToMovedFile;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+    
+    [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    [self waitForAgentsEditsToAgree:@[agentA, agentB] withFileCount:1];
+    
+    agentA.syncSchedule = OFXSyncScheduleNone;
+    agentB.syncSchedule = OFXSyncScheduleNone;
+    
+    // On A, move aside the original file and replace it.
+    [self movePath:@"test.txt" toPath:@"moved.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    NSString *textA = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    
+    // On B, update the original file's contents
+    NSString *textB = [self copyRandomTextFileOfLength:16 toPath:@"test.txt" ofAccount:[self singleAccountInAgent:agentB]];
+    
+    // Turn syncing on and wait for stuff to settle out
+    agentA.syncSchedule = OFXSyncScheduleAutomatic;
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
+
+    [self waitUntil:^BOOL{
+        // Both should be on the same versions
+        if (![self agentEditsAgree:@[agentA, agentB] withFileCount:2])
+            return NO;
+        
+        // There should be no conflicts
+        for (OFXAgent *agent in @[agentA, agentB]) {
+            if ([[self metadataItemsForAgent:agent] any:^BOOL(OFXFileMetadata *metadata) { return OFXIsConflict(metadata); }])
+                return NO;
+        }
+        
+        // We should have the expected contents
+        return [self agent:agentA hasTextContentsByPath:@{@"test.txt": textA, @"moved.txt":textB}];
+    }];
+    
+    // Make sure the other side ended up with the same.
+    [self requireAgentsToHaveSameFilesByName];
+}
+
 // Test edit on one side, rename on the other
 // Test making the same edits on two agents -- ETag based conflicts would still call this a conflict, but it might be nice to notice that the contents are the same and just ignore it. This wouldn't work reliably w/o app help though -- for example identifiers for new rows in OmniOutliner would differ, even if they had the exact same cell values.
 

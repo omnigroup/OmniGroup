@@ -2,6 +2,7 @@
 "%@ points" = "%@ 点";
 
 /* title format for color component slider */
+
 "<alpha title+value>" = "不透明度：%d%%";
 
 /* title format for color component slider */
@@ -66,4 +67,3 @@
 
 /* Inspector title */
 "Text Style" = "文本样式";
-

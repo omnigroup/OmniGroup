@@ -1,4 +1,4 @@
-// Copyright 1997-2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,77 @@
 #include <sys/sysctl.h>
 
 RCS_ID("$Id$")
+
+
+#ifdef DEBUG
+// In Xcode 6.2 beta 4, environment variables set in a Xcode scheme are prefixed with $(SRCROOT).
+
+static void _fixPreferences(void) __attribute__((constructor));
+static void _fixPreferences(void) {
+    NSDictionary *environment = [[NSProcessInfo processInfo] environment];
+    NSString *prefix = environment[@"OBFixXcodeBustedEnvironment"];
+    if (!prefix)
+        return;
+    
+    if ([prefix hasSuffix:@"/1"] == NO) {
+        NSLog(@"Found OBFixXcodeBustedEnvironment of \"%@\", but it must be set to \"1\" in Xcode.", prefix);
+        return;
+    }
+    
+    prefix = [prefix substringToIndex:[prefix length] - 1]; // Get rid of the "1" so we have the path the Xcode incorrectly used as a prefix
+    
+    NSMutableDictionary *updatedEnvironment = [environment mutableCopy];
+    [environment enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+        if ([value hasPrefix:prefix]) {
+            value = [value substringFromIndex:[prefix length]];
+            
+            // Looks like they *also* run the entire thing through path normalization, so 'https://' in the environment gets turned into 'https:/'
+            value = [value stringByReplacingOccurrencesOfString:@"http:/" withString:@"http://"];
+            value = [value stringByReplacingOccurrencesOfString:@"https:/" withString:@"https://"];
+            
+            NSLog(@"## Fixing environment variable \"%@\" to have value \"%@\"", key, value);
+            [updatedEnvironment setObject:value forKey:key];
+            
+            setenv([key UTF8String], [value UTF8String], TRUE/*overwrite*/);
+        }
+    }];
+
+    // No public setter, but this is just a hack...
+    [[NSProcessInfo processInfo] setValue:environment forKey:@"environment"];
+}
+
+// Call this from main() to fix arguments...
+void OBFixXcodeBustedArguments(int argc, char *argv[])
+{
+    NSDictionary *environment = [[NSProcessInfo processInfo] environment];
+    NSString *prefixString = environment[@"OBFixXcodeBustedEnvironment"];
+    if (!prefixString)
+        return;
+    
+    if ([prefixString hasSuffix:@"/1"] == NO) {
+        NSLog(@"Found OBFixXcodeBustedEnvironment of \"%@\", but it must be set to \"1\" in Xcode.", prefixString);
+        return;
+    }
+    
+    // Duplicate the prefix and trim the '1'.
+    char *prefix = strdup([prefixString UTF8String]);
+    size_t prefixLength = strlen(prefix);
+    prefix[prefixLength - 1] = 0;
+    prefixLength--;
+    
+    for (int argi = 1; argi < argc; argi++) {
+        if (strnstr(argv[argi], prefix, prefixLength) == argv[argi]) {
+            // Instead of moving stuff around, just replace the argument strings.
+            NSLog(@"## Fixing command line argument \"%s\"", argv[argi]);
+            char *argument = argv[argi] + prefixLength;
+            argv[argi] = strdup(argument);
+        }
+    }
+    
+    free(prefix);
+}
+
+#endif
 
 static BOOL _OBRegisterMethod(IMP imp, Class cls, const char *types, SEL name)
 {

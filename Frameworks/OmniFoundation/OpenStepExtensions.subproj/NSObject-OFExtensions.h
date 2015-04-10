@@ -30,3 +30,10 @@ extern void OFAfterDelayPerformBlock(NSTimeInterval delay, void (^block)(void));
 extern void OFPerformInBackground(void (^block)(void));
 
 extern void OFMainThreadPerformBlock(void (^block)(void));
+
+typedef NS_ENUM(NSUInteger, OFRunLoopRunType) {
+    OFRunLoopRunTypeBlocking,
+    OFRunLoopRunTypePolling,
+};
+
+extern BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, BOOL(^predicate)(void));

@@ -8,6 +8,7 @@
 #import "OFXTestCase.h"
 
 #import <OmniFoundation/OFNull.h>
+#import <OmniFileExchange/OFXAccountClientParameters.h>
 
 #import "OFXTrace.h"
 
@@ -45,6 +46,18 @@ RCS_ID("$Id$")
     return suite;
 }
 #endif
+
+- (OFXAccountClientParameters *)accountClientParametersForAgentName:(NSString *)agentName;
+{
+    OFXAccountClientParameters *clientParameters = [super accountClientParametersForAgentName:agentName];
+    
+    if (self.invocation.selector == @selector(testRaceBetweenDownloadUpdateAndLocalDeletion) && [agentName isEqual:@"B"]) {
+        // Speed up the metadata updates since we are trying to catch it while it is downloading.
+        clientParameters.metadataUpdateInterval = 0.0001;
+    }
+    
+    return clientParameters;
+}
 
 - (void)testFile;
 {
@@ -450,6 +463,7 @@ RCS_ID("$Id$")
     }];
     
     // For each file, write an update and then as soon as B starts downloading it, delete it locally. We are hoping to catch issues with the commit of a downoaded update racing with noticing the local deletion.
+    __block NSUInteger deletesAttemptedWhileDownloading = 0;
     NSMutableDictionary *filenameToContents = [NSMutableDictionary new];;
     for (OFXFileMetadata *metadataItem in [self metadataItemsForAgent:self.agentA]) {
         NSData *updatedContents = OFRandomCreateDataOfLength(metadataItem.fileSize);
@@ -463,6 +477,7 @@ RCS_ID("$Id$")
                 return NO;
             
             if (updatedMetadata.downloading) {
+                deletesAttemptedWhileDownloading++;
                 [self deletePath:[updatedMetadata.fileURL lastPathComponent] inAgent:self.agentB];
                 return YES;
             }
@@ -474,20 +489,14 @@ RCS_ID("$Id$")
         }];
     }
     
+    XCTAssertGreaterThan(deletesAttemptedWhileDownloading, 0ULL, "Should have managed at least one attempt at a delete while we were still downloading");
+    
     // Some of the deletes might happen, some might get dropped. Any files that are left should have the updated contents.
     [self waitForAgentsEditsToAgree];
     [self requireAgentsToHaveSameFilesByName];
     
-    NSSet *finalMetadataItems = [self metadataItemsForAgent:self.agentA];
-    XCTAssertTrue([finalMetadataItems count] < fileCount, @"We expect that some of the deletes will have won, found %ld final metadata items vs %ld total", [finalMetadataItems count], fileCount); // Unlikely that all will have failed, but it could happen.
-    
-    for (OFXFileMetadata *metadataItem in finalMetadataItems) {
-        NSError *error;
-        NSData *contents;
-        OBShouldNotError((contents = [[NSData alloc] initWithContentsOfURL:metadataItem.fileURL options:0 error:&error]));
-        
-        XCTAssertEqualObjects(contents, filenameToContents[[metadataItem.fileURL lastPathComponent]]);
-    }
+    // We expect that we'll get all the updated contents (no deletes should win). Once we start a download, deletes are delayed until the download ends, and once the download ends, there will be a file in place (so the next scan won't issue a delete).
+    [self requireAgent:self.agentB toHaveDataContentsByPath:filenameToContents];
 }
 
 // <bug:///88190> (Clients out of sync after deleting subfolder while uploading contents)
@@ -586,6 +595,43 @@ RCS_ID("$Id$")
     [self waitForFileMetadataItems:agentB where:^BOOL(NSSet *metadataItems) {
         return [metadataItems count] == 0;
     }];
+}
+
+- (void)testDocumentWithMultipleVersionsOnServer;
+{
+    OFXAgent *agentA = self.agentA;
+    OFXAgent *agentB = self.agentB;
+    
+    OFXTraceReset();
+    
+    // Make sure neither agent cleans up file versions so that there are multiple to delete
+    agentA.clientParameters.deletePreviousFileVersionAfterNewVersionUploaded = NO;
+    agentB.clientParameters.deletePreviousFileVersionAfterNewVersionUploaded = NO;
+    agentA.clientParameters.deleteStaleFileVersionsWhenSyncing = NO;
+    agentB.clientParameters.deleteStaleFileVersionsWhenSyncing = NO;
+    
+    // Upload two versions of a file on A
+    OFXFileMetadata *originalMetadata = [self uploadFixture:@"test.package"];
+    [self uploadFixture:@"test2.package" as:@"test.package" replacingMetadata:originalMetadata];
+
+    // Make sure B sees the file so that we can use this as a check that the delete has happened (since in-progress deletes vend no metadata, so we can't check agentA's metadata items.
+    [self waitForFileMetadataItems:agentB where:^BOOL(NSSet *metadataItems) {
+        return [metadataItems count] == 1;
+    }];
+    
+    // Deleting this should remove both versions
+    [self deletePath:@"test.package" ofAccount:[self singleAccountInAgent:agentA]];
+    
+    [self waitForFileMetadataItems:agentB where:^BOOL(NSSet *metadataItems) {
+        return [metadataItems count] == 0;
+    }];
+    
+    NSArray *deletedURLs = OFXTraceCopy(@"OFXFileSnapshotDeleteTransfer.deleted_urls");
+    XCTAssertEqual([deletedURLs count], 2UL, "Delete should have removed both versions");
+
+    // A little inside-baseball here to know how versions are represented.
+    XCTAssert([[deletedURLs[0] lastPathComponent] hasSuffix:@"~0"], "Should delete the oldest version first");
+    XCTAssert([[deletedURLs[1] lastPathComponent] hasSuffix:@"~1"], "Should delete the newest version second");
 }
 
 @end

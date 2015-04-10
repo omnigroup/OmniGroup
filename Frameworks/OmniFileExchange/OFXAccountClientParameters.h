@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,5 +15,11 @@
 @property(nonatomic) NSTimeInterval staleInterval;
 
 @property(nonatomic) NSTimeInterval remoteTemporaryFileCleanupInterval; // How often we check for stale files. Also used for the age of files (vs the server date) for how old they should be before we remove them.
+
+@property(nonatomic) NSTimeInterval metadataUpdateInterval; // How often OFXFileMetadata updates will be published.
+
+// Testing hooks
+@property(nonatomic) BOOL deletePreviousFileVersionAfterNewVersionUploaded; // Allows us to test our clean up of stale files
+@property(nonatomic) BOOL deleteStaleFileVersionsWhenSyncing;
 
 @end

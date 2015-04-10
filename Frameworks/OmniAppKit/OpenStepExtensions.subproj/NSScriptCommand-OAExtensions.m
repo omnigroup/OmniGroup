@@ -20,7 +20,7 @@ static id replacement_executeCommand(NSScriptCommand *self, SEL _cmd)
     id result = original_executeCommand(self, _cmd);
     
     // The top-level autorelease pool doesn't get flushed for Apple Events, only for "real" events. Radar 15553008.
-    [NSApp flushTopLevelAutoreleasePool];
+    [[NSApplication sharedApplication] flushTopLevelAutoreleasePool];
     
     return result;
 }

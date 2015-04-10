@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,9 +34,9 @@
 
 RCS_ID("$Id$")
 
-NSInteger ODAVConnectionDebug = NSIntegerMax;
-NSInteger ODAVConnectionTaskDebug = NSIntegerMax;
-static NSInteger ODAVConnectionSessionDebug = NSIntegerMax;
+OFDeclareDebugLogLevel(ODAVConnectionDebug);
+OFDeclareDebugLogLevel(ODAVConnectionTaskDebug)
+static OFDeclareDebugLogLevel(ODAVConnectionSessionDebug);
 
 #define DEBUG_SESSION(level, format, ...) do { \
     if (ODAVConnectionSessionDebug >= (level)) \
@@ -53,7 +53,8 @@ static NSInteger ODAVConnectionSessionDebug = NSIntegerMax;
 @end
 @implementation ODAVSingleFileInfoResult
 @end
-
+@implementation ODAVURLResult
+@end
 
 @implementation ODAVConnectionConfiguration
 
@@ -131,7 +132,7 @@ static NSString *StandardUserAgentString;
         extraComponents = @" ";
     }
     
-    return [[NSString alloc] initWithFormat:@"%@%@Darwin/%@(%@) (%@)", appInfo, extraComponents, osVersionString, hardwareModel, clientName];
+    return [[NSString alloc] initWithFormat:@"%@%@Darwin/%@ (%@) (%@)", appInfo, extraComponents, osVersionString, hardwareModel, clientName];
 }
 
 - init;
@@ -173,10 +174,6 @@ static NSString *StandardUserAgentString;
 + (void)initialize;
 {
     OBINITIALIZE;
-    
-    OFInitializeDebugLogLevel(ODAVConnectionDebug);
-    OFInitializeDebugLogLevel(ODAVConnectionTaskDebug);
-    OFInitializeDebugLogLevel(ODAVConnectionSessionDebug);
     
 #if defined(OMNI_ASSERTIONS_ON) && (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
     if ([[NSProcessInfo processInfo] isSandboxed]) {
@@ -268,8 +265,8 @@ static NSString *StandardUserAgentString;
     
     completionHandler = [completionHandler copy];
     
-    [self _runRequestExpectingEmptyResultData:request completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
-        if (!resultURL) {
+    [self _runRequestExpectingEmptyResultData:request completionHandler:^(ODAVURLResult *result, NSError *errorOrNil) {
+        if (!result) {
             if ([errorOrNil hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
                 NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"No such file \"%@\".", @"OmniDAV", OMNI_BUNDLE, @"error reason"), [url absoluteString]];
                 __autoreleasing NSError *error = errorOrNil;
@@ -290,8 +287,8 @@ static NSString *StandardUserAgentString;
     
     completionHandler = [completionHandler copy];
 
-    [self _runRequestExpectingEmptyResultData:request completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
-        COMPLETE_AND_RETURN(resultURL, errorOrNil);
+    [self _runRequestExpectingEmptyResultData:request completionHandler:^(ODAVURLResult *result, NSError *errorOrNil) {
+        COMPLETE_AND_RETURN(result, errorOrNil);
     }];
 }
 
@@ -304,7 +301,10 @@ static NSString *StandardUserAgentString;
         if (result) {
             ODAVFileInfo *directoryInfo = result.fileInfo;
             if (directoryInfo.exists && directoryInfo.isDirectory) { // If there is a flat file, fall through to the MKCOL to get a 409 Conflict filled in
-                COMPLETE_AND_RETURN(directoryInfo.originalURL, nil);
+                ODAVURLResult *urlResult = [ODAVURLResult new];
+                urlResult.URL = directoryInfo.originalURL;
+                urlResult.redirects = result.redirects;
+                COMPLETE_AND_RETURN(urlResult, nil);
             }
         }
         
@@ -320,17 +320,17 @@ static NSString *StandardUserAgentString;
             COMPLETE_AND_RETURN(nil, baseError);
         }
         
-        [self makeCollectionAtURLIfMissing:[requestedDirectoryURL URLByDeletingLastPathComponent] baseURL:baseURL completionHandler:^(NSURL *parentURL, NSError *errorOrNil) {
-            if (!parentURL) {
+        [self makeCollectionAtURLIfMissing:[requestedDirectoryURL URLByDeletingLastPathComponent] baseURL:baseURL completionHandler:^(ODAVURLResult *parentResult, NSError *errorOrNil) {
+            if (!parentResult) {
                 COMPLETE_AND_RETURN(nil, errorOrNil);
             }
             
             // Try to avoid extra redirects
-            NSURL *attemptedCreateDirectoryURL = [parentURL URLByAppendingPathComponent:[requestedDirectoryURL lastPathComponent] isDirectory:YES];
+            NSURL *attemptedCreateDirectoryURL = [parentResult.URL URLByAppendingPathComponent:[requestedDirectoryURL lastPathComponent] isDirectory:YES];
             
-            [self makeCollectionAtURL:attemptedCreateDirectoryURL completionHandler:^(NSURL *createdDirectoryURL, NSError *makeCollectionError) {
-                if (createdDirectoryURL) {
-                    COMPLETE_AND_RETURN(createdDirectoryURL, nil);
+            [self makeCollectionAtURL:attemptedCreateDirectoryURL completionHandler:^(ODAVURLResult *createdDirectoryResult, NSError *makeCollectionError) {
+                if (createdDirectoryResult) {
+                    COMPLETE_AND_RETURN(createdDirectoryResult, nil);
                 }
                     
                 // Might have been racing against another creator.
@@ -341,7 +341,10 @@ static NSString *StandardUserAgentString;
                 
                 // Looks like we were racing -- double-check and get the redirected final URL.
                 [self fileInfoAtURL:requestedDirectoryURL ETag:nil completionHandler:^(ODAVSingleFileInfoResult *finalResult, NSError *finalError) {
-                    COMPLETE_AND_RETURN(finalResult.fileInfo.originalURL, finalError);
+                    ODAVURLResult *urlResult = [ODAVURLResult new];
+                    urlResult.URL = finalResult.fileInfo.originalURL;
+                    urlResult.redirects = finalResult.redirects;
+                    COMPLETE_AND_RETURN(urlResult, finalError);
                 }];
             }];
         }];
@@ -493,9 +496,9 @@ static NSString *ODAVDepthName(ODAVDepth depth)
                     break;
                 }
                 
-                NSString *encodedPath = OFCharacterDataFromElement([cursor currentElement]);
+                NSString *responsePath = OFCharacterDataFromElement([cursor currentElement]);
                 [cursor closeElement]; // href
-                //NSLog(@"encodedPath = %@", encodedPath);
+                //NSLog(@"responsePath = %@", responsePath);
                 
                 // There will one propstat element per status.  If there is a directory, for example, we'll get one for the resource type with status200 and one for the getcontentlength with status=404.
                 // For files, there should be one propstat with both in the same <prop>.
@@ -557,7 +560,7 @@ static NSString *ODAVDepthName(ODAVDepth depth)
                 }
                 
                 if (!hasPropstat) {
-                    NSLog(@"No propstat element found for path '%@' of propfind of %@", encodedPath, url);
+                    NSLog(@"No propstat element found for path '%@' of propfind of %@", responsePath, url);
                     if ([unexpectedPropstatElements count] > 0)
                         NSLog(@"Unexpected propstat elements: %@", [unexpectedPropstatElements valueForKey:@"name"]);
                         
@@ -567,7 +570,17 @@ static NSString *ODAVDepthName(ODAVDepth depth)
                 // We used to remove the trailing slash here to normalize, but now we do that closer to where we need it.
                 // If we make a request for this URL later, we should use the URL exactly as the server gave it to us, slash or not.
                 
-                NSURL *fullURL = [NSURL URLWithString:encodedPath relativeToURL:resultsBaseURL];
+                NSURL *fullURL = [NSURL URLWithString:responsePath relativeToURL:resultsBaseURL];
+                if (fullURL == nil) {
+                    // If a PROPFIND result's path comes back unencoded (as with Apache/2.2.26 + svn/1.8.10) then let's try encoding it.
+                    fullURL = [NSURL URLWithString:[NSString encodeURLString:responsePath asQuery:NO leaveSlashes:YES leaveColons:YES] relativeToURL:resultsBaseURL];
+                    if (fullURL == nil) {
+                        __autoreleasing NSError *error;
+                        NSString *reason = [NSString stringWithFormat:@"Unable to parse path “%@” in PROPFIND result from %@.", responsePath, [request shortDescription]];
+                        ODAVError(&error, ODAVOperationInvalidPath, @"Invalid path in PROPFIND result", reason);
+                        COMPLETE_AND_RETURN(nil, error);
+                    }
+                }
                 
                 ODAVFileInfo *info = [[ODAVFileInfo alloc] initWithOriginalURL:fullURL name:nil exists:exists directory:directory size:size lastModifiedDate:dateModified ETag:ETag];
                 [fileInfos addObject:info];
@@ -629,7 +642,14 @@ static NSString *ODAVDepthName(ODAVDepth depth)
             NSURL *foundURL = [fileInfo originalURL];
             if (!OFURLEqualsURL(url, foundURL)) {
                 // The URLs will legitimately not be equal if we got a redirect -- don't spuriously warn in that case.
-                if (OFNOTEQUAL([ODAVFileInfo nameForURL:url], [ODAVFileInfo nameForURL:foundURL])) {
+                BOOL foundRedirect = NO;
+                for (ODAVRedirect *redirect in result.redirects) {
+                    if (OFURLEqualsURL(url, redirect.from) && OFURLEqualsURL(foundURL, redirect.to)) {
+                        foundRedirect = YES;
+                        break;
+                    }
+                }
+                if (!foundRedirect) {
                     OBASSERT_NOT_REACHED("Any issues with encoding normalization or whatnot?");
                     NSLog(@"url: %@", url);
                     NSLog(@"foundURL: %@", foundURL);
@@ -786,8 +806,8 @@ static NSString *ODAVDepthName(ODAVDepth depth)
     [request setHTTPMethod:@"PUT"];
     [request setHTTPBody:data];
     
-    [self _runRequestExpectingEmptyResultData:request completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
-        COMPLETE_AND_RETURN(resultURL, errorOrNil);
+    [self _runRequestExpectingEmptyResultData:request completionHandler:^(ODAVURLResult *result, NSError *errorOrNil) {
+        COMPLETE_AND_RETURN(result, errorOrNil);
     }];
 }
 
@@ -827,9 +847,9 @@ typedef void (^OFSAddPredicate)(NSMutableURLRequest *request, NSURL *sourceURL, 
     if (predicate)
         predicate(request, sourceURL, destURL);
     
-    [self _runRequestExpectingEmptyResultData:request completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
-        if (resultURL) {
-            COMPLETE_AND_RETURN(resultURL, nil);
+    [self _runRequestExpectingEmptyResultData:request completionHandler:^(ODAVURLResult *result, NSError *errorOrNil) {
+        if (result) {
+            COMPLETE_AND_RETURN(result, nil);
         }
     
         // Work around for <bug://bugs/48303> (Some https servers incorrectly return Bad Gateway (502) for a MOVE to a destination with an https URL [bingodisk])
@@ -843,9 +863,9 @@ typedef void (^OFSAddPredicate)(NSMutableURLRequest *request, NSURL *sourceURL, 
                 predicate(request, sourceURL, updatedDestURL);
             }
             
-            [self _runRequestExpectingEmptyResultData:request completionHandler:^(NSURL *workaroundResultURL, NSError *workaroundErrorOrNil){
-                if (workaroundResultURL)
-                    COMPLETE_AND_RETURN(workaroundResultURL, nil);
+            [self _runRequestExpectingEmptyResultData:request completionHandler:^(ODAVURLResult *workaroundResult, NSError *workaroundErrorOrNil){
+                if (workaroundResult)
+                    COMPLETE_AND_RETURN(workaroundResult, nil);
                 else
                     COMPLETE_AND_RETURN(nil, workaroundErrorOrNil);
             }];
@@ -1012,8 +1032,8 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
     [request setHTTPMethod:@"UNLOCK"];
     [request addValue:lockToken forHTTPHeaderField:@"Lock-Token"];
     
-    [self _runRequestExpectingEmptyResultData:request completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
-        if (!resultURL)
+    [self _runRequestExpectingEmptyResultData:request completionHandler:^(ODAVURLResult *result, NSError *errorOrNil) {
+        if (!result)
             COMPLETE_AND_RETURN(errorOrNil);
         else
             COMPLETE_AND_RETURN(nil);
@@ -1357,9 +1377,11 @@ didReceiveResponse:(NSURLResponse *)response
 {
     ODAVOperation *op = [self _operationForConnection:connection andRemove:YES];
     
+    DEBUG_DAV(3, @"did fail with error %@", error);
+    
     if ([error hasUnderlyingErrorDomain:(NSString *)kCFErrorDomainCFNetwork code:kCFURLErrorNetworkConnectionLost]) {
-        if (op.didReceiveBytes || op.didReceiveData || op.didSendBytes) {
-            // Retry will need to be handled at a higher level since we might have sent/gotten some bytes and these blocks might have reported some progress already. But if we only have a 'did finish', we can just start over.
+        if (!op.retryable || op.didReceiveBytes || op.didReceiveData || op.didSendBytes) {
+            // Retry will need to be handled at a higher level since we might have sent/gotten some bytes and these blocks might have reported some progress already. But if we only have a 'did finish', we can just start over (assuming this is a repeatable operation like a GET/PROPFIND). If this is a PUT/POST or other mutating command, we can't know here whether the operation actually happened on the server.
         } else  if (op.retryIndex < MaximumRetries) {
             // Try again -- server shut down the remote side of a HTTP 1.1 connection, maybe?
             ODAVOperation *retry = [self _makeOperationForRequest:op.request];
@@ -1367,6 +1389,8 @@ didReceiveResponse:(NSURLResponse *)response
             retry.didFinish = op.didFinish;
             retry.retryIndex = op.retryIndex + 1;
             
+            DEBUG_DAV(2, @"connection lost; retrying with new op: %@", OBShortObjectDescription(retry));
+
             [retry startWithCallbackQueue:op.callbackQueue];
             return;
         }
@@ -1656,13 +1680,15 @@ didReceiveResponse:(NSURLResponse *)response
             // still, we didn't get an error code, so let it pass
         }
         
-        NSURL *resultLocation;
+        NSURL *resultLocation = nil;
         
         // If the response specified a Location header, use that (this will be set to the the Destination for COPY/MOVE, possibly already redirected).
         NSString *resultLocationString = [operation valueForResponseHeader:@"Location"];
         if (![NSString isEmptyString:resultLocationString]) {
+            // See note below about Apache sending back unencoded URIs in the Location header.
             resultLocation = [NSURL URLWithString:resultLocationString];
-            
+        }
+        if (resultLocation) {
             NSString *requestScheme = [request.URL.scheme lowercaseString];
             NSString *resultScheme = [resultLocation.scheme lowercaseString];
             if ([requestScheme isEqualToString:@"https"] && ![resultScheme isEqualToString:@"https"]) {
@@ -1698,7 +1724,7 @@ didReceiveResponse:(NSURLResponse *)response
         }
 
         if (!resultLocation) {
-            // Otherwise use the original URL, looking up any redirection that happened on it.
+            // Otherwise use the original URL (for MKCOL, for example), looking up any redirection that happened on it.
             resultLocation = request.URL;
         
             NSArray *redirects = operation.redirects;
@@ -1710,7 +1736,10 @@ didReceiveResponse:(NSURLResponse *)response
             }
         }
         
-        COMPLETE_AND_RETURN(resultLocation, nil);
+        ODAVURLResult *result = [ODAVURLResult new];
+        result.URL = resultLocation;
+        result.redirects = operation.redirects;
+        COMPLETE_AND_RETURN(result, nil);
     }];
 }
 
@@ -1722,7 +1751,7 @@ typedef void (^ODAVConnectionDocumentCompletionHandler)(OFXMLDocument *document,
     
     [self _runRequest:request completionHandler:^(ODAVOperation *operation) {
         NSData *responseData = operation.resultData;
-        if (!responseData)
+        if (operation.error)
             COMPLETE_AND_RETURN(nil, operation, operation.error);
         
         OFXMLDocument *doc = nil;
@@ -1845,27 +1874,27 @@ void ODAVSyncOperations(const char *file, unsigned line, ODAVAddOperations addOp
     return (error == nil);
 }
 
-- (NSURL *)synchronousMakeCollectionAtURL:(NSURL *)url error:(NSError **)outError;
+- (ODAVURLResult *)synchronousMakeCollectionAtURL:(NSURL *)url error:(NSError **)outError;
 {
     OBPRECONDITION(url);
 
     __block NSError *resultError;
-    __block NSURL *resultURL;
+    __block ODAVURLResult *result;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
-        [self makeCollectionAtURL:url completionHandler:^(NSURL *createdURL, NSError *createError){
-            OBASSERT(createdURL || createError);
-            if (createdURL)
-                resultURL = createdURL;
+        [self makeCollectionAtURL:url completionHandler:^(ODAVURLResult *createdResult, NSError *createError){
+            OBASSERT(createdResult || createError);
+            if (createdResult)
+                result = createdResult;
             else
                 resultError = createError;
             done();
         }];
     });
     
-    if (!resultURL && outError)
+    if (!result && outError)
         *outError = resultError;
-    return resultURL;
+    return result;
 }
 
 - (ODAVFileInfo *)synchronousFileInfoAtURL:(NSURL *)url error:(NSError **)outError;
@@ -1959,22 +1988,22 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
     OBPRECONDITION(data, @"Pass an empty data if that's really what you want");
     OBPRECONDITION(url);
     
-    __block NSURL *returnURL;
+    __block ODAVURLResult *returnResult;
     __block NSError *returnError;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
-        [self putData:data toURL:url completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
-            if (resultURL)
-                returnURL = resultURL;
+        [self putData:data toURL:url completionHandler:^(ODAVURLResult *result, NSError *errorOrNil) {
+            if (result)
+                returnResult = result;
             else
                 returnError = errorOrNil;
             done();
         }];
     });
     
-    if (!returnURL && outError)
+    if (!returnResult && outError)
         *outError = returnError;
-    return returnURL;
+    return returnResult.URL;
 }
 
 - (NSURL *)synchronousCopyURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceETag:(NSString *)sourceETag overwrite:(BOOL)overwrite error:(NSError **)outError;
@@ -1982,18 +2011,18 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
     OBPRECONDITION(sourceURL);
     OBPRECONDITION(destURL);
     
-    __block NSURL *URL;
+    __block ODAVURLResult *result;
     __block NSError *error;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
-        [self copyURL:sourceURL toURL:destURL withSourceETag:sourceETag overwrite:overwrite completionHandler:^(NSURL *copiedURL, NSError *copyError) {
-            URL = copiedURL;
+        [self copyURL:sourceURL toURL:destURL withSourceETag:sourceETag overwrite:overwrite completionHandler:^(ODAVURLResult *copiedResult, NSError *copyError) {
+            result = copiedResult;
             error = copyError;
             done();
         }];
     });
     
-    return _returnURLOrError(URL, error, outError);
+    return _returnURLOrError(result.URL, error, outError);
 }
 
 - (NSURL *)synchronousMoveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationETag:(NSString *)ETag overwrite:(BOOL)overwrite error:(NSError **)outError;
@@ -2001,18 +2030,18 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
     OBPRECONDITION(sourceURL);
     OBPRECONDITION(destURL);
     
-    __block NSURL *URL;
+    __block ODAVURLResult *result;
     __block NSError *error;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
-        [self moveURL:sourceURL toURL:destURL withDestinationETag:ETag overwrite:overwrite completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
-            URL = resultURL;
+        [self moveURL:sourceURL toURL:destURL withDestinationETag:ETag overwrite:overwrite completionHandler:^(ODAVURLResult *moveResult, NSError *errorOrNil) {
+            result = moveResult;
             error = errorOrNil;
             done();
         }];
     });
     
-    return _returnURLOrError(URL, error, outError);
+    return _returnURLOrError(result.URL, error, outError);
 }
 
 - (NSURL *)synchronousMoveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withSourceLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
@@ -2020,18 +2049,18 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
     OBPRECONDITION(sourceURL);
     OBPRECONDITION(destURL);
     
-    __block NSURL *URL;
+    __block ODAVURLResult *result;
     __block NSError *error;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
-        [self moveURL:sourceURL toURL:destURL withSourceLock:lock overwrite:overwrite completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
-            URL = resultURL;
+        [self moveURL:sourceURL toURL:destURL withSourceLock:lock overwrite:overwrite completionHandler:^(ODAVURLResult *moveResult, NSError *errorOrNil) {
+            result = moveResult;
             error = errorOrNil;
             done();
         }];
     });
     
-    return _returnURLOrError(URL, error, outError);
+    return _returnURLOrError(result.URL, error, outError);
 }
 
 - (NSURL *)synchronousMoveURL:(NSURL *)sourceURL toURL:(NSURL *)destURL withDestinationLock:(NSString *)lock overwrite:(BOOL)overwrite error:(NSError **)outError;
@@ -2039,18 +2068,18 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
     OBPRECONDITION(sourceURL);
     OBPRECONDITION(destURL);
     
-    __block NSURL *URL;
+    __block ODAVURLResult *result;
     __block NSError *error;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
-        [self moveURL:sourceURL toURL:destURL withDestinationLock:lock overwrite:overwrite completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
-            URL = resultURL;
+        [self moveURL:sourceURL toURL:destURL withDestinationLock:lock overwrite:overwrite completionHandler:^(ODAVURLResult *moveResult, NSError *errorOrNil) {
+            result = moveResult;
             error = errorOrNil;
             done();
         }];
     });
     
-    return _returnURLOrError(URL, error, outError);
+    return _returnURLOrError(result.URL, error, outError);
 }
 
 - (NSURL *)synchronousMoveURL:(NSURL *)sourceURL toMissingURL:(NSURL *)destURL error:(NSError **)outError;
@@ -2058,18 +2087,18 @@ static NSURL *_returnURLOrError(NSURL *URL, NSError *error, NSError **outError)
     OBPRECONDITION(sourceURL);
     OBPRECONDITION(destURL);
     
-    __block NSURL *URL;
+    __block ODAVURLResult *result;
     __block NSError *error;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
-        [self moveURL:sourceURL toMissingURL:destURL completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
-            URL = resultURL;
+        [self moveURL:sourceURL toMissingURL:destURL completionHandler:^(ODAVURLResult *moveResult, NSError *errorOrNil) {
+            result = moveResult;
             error = errorOrNil;
             done();
         }];
     });
     
-    return _returnURLOrError(URL, error, outError);
+    return _returnURLOrError(result.URL, error, outError);
 }
 
 - (NSString *)synchronousLockURL:(NSURL *)url error:(NSError **)outError;

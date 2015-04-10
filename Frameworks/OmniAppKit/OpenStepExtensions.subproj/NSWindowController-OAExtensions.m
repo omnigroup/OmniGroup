@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,7 +33,7 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
         return NO;
 
     // Let the application's delegate check.
-    id controller = [NSApp delegate];
+    id controller = [[NSApplication sharedApplication] delegate];
     if ([controller respondsToSelector:@selector(shouldShowLongOperationIndicatorForWindow:)])
         return [controller shouldShowLongOperationIndicatorForWindow:window];
     
@@ -328,7 +328,7 @@ static NSWindow *RootlessProgressWindow = nil;
         return nil;
         
     // This is to work around <bug://bugs/33685>.  Otherwise we unhide a hidden app. 
-    if ([NSApp isHidden])
+    if ([[NSApplication sharedApplication] isHidden])
 	return nil;
     
     if (RootlessProgressWindow == nil) {

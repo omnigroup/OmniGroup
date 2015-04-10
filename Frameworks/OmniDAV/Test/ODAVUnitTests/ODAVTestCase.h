@@ -1,4 +1,4 @@
-// Copyright 2008-2013 The Omni Group. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,9 +11,15 @@
 
 @interface ODAVTestCase : OFTestCase
 
+@property(nonatomic,readonly) BOOL shouldUseRedirectingRemoteBaseURL;
 @property(nonatomic,readonly) NSURL *accountRemoteBaseURL;
+
 - (NSURLCredential *)accountCredentialWithPersistence:(NSURLCredentialPersistence)persistence;
+
 @end
+
+extern NSString * const ODAVTestCaseRedirectSourceDirectoryName;
+extern NSString * const ODAVTestCaseRedirectDestinationDirectoryName;
 
 // Synchronous wrappers for these tests
 #import <OmniDAV/ODAVConnection.h>

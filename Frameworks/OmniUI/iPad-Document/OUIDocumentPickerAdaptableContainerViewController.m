@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,7 +57,7 @@ RCS_ID("$Id$")
 
 - (UIImageView *)backgroundView;
 {
-    [self view];
+    (void)[self view];
     return _backgroundView;
 }
 
@@ -97,6 +97,20 @@ RCS_ID("$Id$")
     [self.parentViewController showViewController:viewController sender:sender];
 }
 
+- (NSArray*)displayedBarButtonItems
+{
+    return _stolenBarItems;
+}
+
+- (void)resetBarButtonItems:(NSArray *)rightBarButtonItems
+{
+    UIViewController *topViewController = ((UINavigationController *)self.wrappedViewController).topViewController;
+    if ([topViewController isKindOfClass:[OUIDocumentPickerHomeScreenViewController class]]) {
+        _stolenBarItems = rightBarButtonItems;
+        [self _updateBarButtonItemsForTopViewControllerAnimated:YES];
+    }
+}
+
 #pragma mark - UINavigationControllerDelegate
 
 - (void)_updateBarButtonItemsForTopViewControllerAnimated:(BOOL)animated;
@@ -128,6 +142,27 @@ RCS_ID("$Id$")
         [self showViewController:viewController sender:sender];
     else
         [target showUnembeddedViewController:viewController sender:sender];
+}
+
+@end
+
+
+
+@implementation UIViewController (OUIDocumentPickerAdaptableContainerViewControllerAdditions)
+
++ (OUIDocumentPickerAdaptableContainerViewController *)adaptableContainerControllerForController:(UIViewController*)controller;
+{
+    UIViewController *parentVC = controller.parentViewController;
+    while (parentVC != nil) {
+        if ([parentVC isKindOfClass:[OUIDocumentPickerAdaptableContainerViewController class]]) {
+            break;
+        }
+        
+        parentVC = parentVC.parentViewController;
+    }
+    
+    OBASSERT_IF(parentVC != nil, [parentVC isKindOfClass:[OUIDocumentPickerAdaptableContainerViewController class]]);
+    return (OUIDocumentPickerAdaptableContainerViewController *)parentVC;
 }
 
 @end

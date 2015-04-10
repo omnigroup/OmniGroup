@@ -23,5 +23,11 @@
 	<real>0.3</real>
 	<key>documentClosingAnimationDuration</key>
 	<real>0.5</real>
+    
+    <key>documentSyncMinimumVisiblityFromActivityStartTimeInterval</key>
+    <real>0.45</real>
+    <key>documentSyncMinimumVisiblityFromLastActivityTimeInterval</key>
+    <real>0.3</real>
+    
 </dict>
 </plist>

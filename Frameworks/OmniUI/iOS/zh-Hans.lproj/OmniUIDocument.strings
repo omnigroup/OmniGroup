@@ -13,11 +13,17 @@
 /* megabytes */
 "%@ MB" = "%@ MB";
 
+/* home screen detail label */
+"%d items" = "%d 个项";
+
 /* Main toolbar title for a multiple selected documents. */
 "%ld Documents Selected" = "已选择 %ld 个文稿";
 
 /* Main toolbar title for a multiple selected items. */
 "%ld Items Selected" = "已选择 %ld 个项目";
+
+/* home screen detail format -- count and item description */
+"%lu %@" = "%1$lu %2$@";
 
 /* Main toolbar title for a single selected document. */
 "1 Document Selected" = "已选择 1 个文稿";
@@ -41,17 +47,20 @@
 "Actions" = "操作";
 
 /* Cloud Setup button title to add a new account */
+
 "Add an Account" = "添加帐户";
 
 /* Cloud setup modal sheet title */
 "Add Cloud Account" = "添加云帐户";
 
-/* for WebDAV Both (Import and Export) account type */
-"Both" = "两者";
-
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
+
+
+
+
+
 "Cancel" = "取消";
 
 /* item not fully downloaded error title */
@@ -66,17 +75,11 @@
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "选择模板";
 
+/* Cloud setup modal sheet title */
+"Choose Account Type" = "选择帐户类型";
+
 /* export options title */
 "Choose Format" = "选择格式";
-
-/* Cloud setup modal sheet title */
-"Cloud Setup" = "云设置";
-
-/* App menu item title */
-"Cloud Setup..." = "云设置…";
-
-/* Account setup toolbar button title to save account settings */
-"Connect" = "连接";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "已连接";
@@ -87,11 +90,23 @@
 /* Menu option in the document picker view */
 "Copy as Image" = "复制为图像";
 
+/* moved aside custom sample document name */
+"CustomizedSampleDocumentName" = "%@ 自定义";
+
+/* sort by date */
+"Date" = "日期";
+
 /* Delete toolbar item accessibility label. */
 "Delete" = "删除";
 
+/* Server account setup confirmation action label format */
+"Delete \"%@\"" = "删除“%@”";
+
 /* delete button title */
 "Delete %ld Documents" = "删除 %ld 个文稿";
+
+/* Server Account Setup button label */
+"Delete Account" = "删除帐户";
 
 /* delete button title */
 "Delete Document" = "删除文稿";
@@ -108,9 +123,6 @@
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "文稿";
 
-/* Done */
-"Done" = "完成";
-
 /* Duplicate toolbar item accessibility label. */
 "Duplicate" = "复制";
 
@@ -123,6 +135,9 @@
 /* omni sync server setup help */
 "Easily sync Omni documents between devices. Signup is free!" = "在多个设备间轻松同步 Omni 文稿。 注册免费！";
 
+/* When displaying a sync error, this is the option to change the username and password. */
+"Edit Credentials" = "编辑凭据";
+
 /* empty trash button title */
 "Empty Trash" = "清空废纸篓";
 
@@ -131,8 +146,9 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
+
+
 "Export" = "输出";
 
 /* export action description */
@@ -141,23 +157,13 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "导出至 WebDAV";
 
-/* disabled for demo */
-"Feature not enabled for this demo" = "未针对此演示启用功能";
-
 /* finished */
 "Finished" = "已完成";
 
-/* Import section title */
+/* gear menu item
+   Import WebDAV server account list */
+
 "Import" = "输入";
-
-/* Import document title */
-"Import Document…" = "输入文稿…";
-
-/* for WebDAV Import/Export account type */
-"Import/Export" = "导入/导出";
-
-/* Group label for Cloud Setup */
-"Import/Export Accounts" = "输入/输出帐户";
 
 /* Info item accessibility label */
 "Info" = "信息";
@@ -176,6 +182,7 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
+
 "Move" = "移动";
 
 /* move to trash button title */
@@ -183,10 +190,10 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
+
 "Move to Trash" = "移至废纸篓";
 
-/* Action sheet button title
-   Menu popover title */
+/* Share menu title */
 "Move to..." = "移至…";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
@@ -210,6 +217,12 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "昵称";
 
+/* Export message for empty table view */
+"No accounts are configured for exporting." = "未针对导出配置帐户";
+
+/* Import message for empty table view */
+"No accounts are configured for importing." = "未针对导入配置帐户";
+
 /* Not downloaded accessibility label. */
 "Not downloaded" = "未下载";
 
@@ -217,18 +230,9 @@
 "Not uploaded" = "未上传";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
+
 "OK" = "好";
-
-/* for WebDAV OmniPresence edit field */
-"OmniPresence" = "OmniPresence";
-
-/* Group label for Cloud Setup */
-"OmniPresence Accounts" = "OmniPresence 帐户";
-
-/* omni sync server nickname help */
-"OmniPresence automatically keeps your documents up to date on all of your iPads and Macs." = "OmniPresence 可自动使您所有 iPad 和 Mac 上的文稿保持最新状态。";
 
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "OmniPresence 配置：%@";
@@ -238,6 +242,9 @@
 
 /* Server Account Setup label: password */
 "Password" = "密码";
+
+/* Photo Library permisssions error description. */
+"Photo Library permission denied." = "照片库许可被拒绝。";
 
 /* Menu option in the document picker view */
 "Print" = "打印";
@@ -272,6 +279,12 @@
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "重试同步";
 
+/* Account setup toolbar button title to save account settings */
+"Save" = "存储";
+
+/* document picker button label */
+"Search" = "搜索";
+
 /* edit button title for doc picker in non-edit mode */
 "Select" = "选择";
 
@@ -292,6 +305,7 @@
 
 /* export options title
    Menu option in the document picker view */
+
 "Send via Mail" = "通过邮件发送";
 
 /* email action description */
@@ -303,14 +317,11 @@
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "注册新帐户";
 
-/* sort by date */
-"Sort by date" = "按日期排序";
-
-/* sort by title */
-"Sort by title" = "按标题排序";
-
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "立即同步";
+
+/* empty template picker button text */
+"Tap here to add a document without a template." = "轻按此处添加没有模板的文稿。";
 
 /* empty picker button text */
 "Tap here, or on the + in the toolbar, to add a document." = "轻按此处或工具栏中的 +，添加文稿。";
@@ -333,6 +344,9 @@
 /* error description */
 "The zip archive must contain a single document." = "zip 归档文件必须包含一个文稿。";
 
+/* Photo Library permisssions error suggestion. */
+"This app does not have access to your Photo Library." = "该应用程序不能访问您的照片库。";
+
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "此云帐户不再存在。";
 
@@ -342,12 +356,11 @@
 /* item not fully downloaded error message */
 "This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "此项目未完全下载，因而无法输出。 再次尝试前，请轻按项目并等待下载。";
 
+/* sort by title */
+"Title" = "标题";
+
 /* error title */
 "Unable to open file." = "无法打开文件。";
 
-/* Label for switch which controls whether cloud sync is allowed to use cellular data */
-"Use Cellular Data" = "使用蜂窝数据";
-
 /* Account validation status string. */
 "Validating account..." = "正在验证帐户…";
-

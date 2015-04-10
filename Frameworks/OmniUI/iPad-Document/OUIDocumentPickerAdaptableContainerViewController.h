@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,8 @@
 
 @property (readonly, weak, nonatomic) UIImageView *backgroundView;
 
+- (NSArray*)displayedBarButtonItems;
+- (void)resetBarButtonItems:(NSArray*)rightBarButtonItems;
 - (NSArray *)popViewControllersForTransitionToCompactSizeClass; /*! The first element is the home screen view controller */
 - (void)pushViewControllersForTransitionToRegularSizeClass:(NSArray *)viewControllersToAdd; /*! The first element should be the home screen view controller */
 @end
@@ -26,4 +28,10 @@
  *
  *  OUIDocumentPickerAdaptableViewController overrides this method and reinterprets it to send -showViewController:sender to its parent view controller. */
 - (void)showUnembeddedViewController:(UIViewController *)viewController sender:(id)sender;
+@end
+
+@interface UIViewController (OUIDocumentPickerAdaptableContainerViewControllerAdditions)
+
++ (OUIDocumentPickerAdaptableContainerViewController *)adaptableContainerControllerForController:(UIViewController*)controller;
+
 @end

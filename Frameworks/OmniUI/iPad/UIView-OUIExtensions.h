@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,6 +35,7 @@ typedef OUIViewVisitorResult(^OUIViewVisitorBlock)(UIView *view);
 - (UIImage *)snapshotImageWithScale:(CGFloat)scale;
 - (UIImage *)snapshotImage;
 
+- (UIMotionEffect *)tiltMotionEffectWithMaxTilt:(CGFloat)maxTilt;
 - (void)addMotionMaxTilt:(CGFloat)maxTilt;
 
 - (id)containingViewOfClass:(Class)cls; // can return self

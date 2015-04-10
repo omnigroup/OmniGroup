@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,8 @@
 #import "OAToolbar.h"
 #import "OAToolbarItem.h"
 #import "NSImage-OAExtensions.h"
+
+OB_REQUIRE_ARC
 
 RCS_ID("$Id$")
 
@@ -45,7 +47,6 @@ static NSMutableDictionary *helpersByExtension = nil;
     
     OAScriptToolbarHelper *helper = [[OAScriptToolbarHelper alloc] init];
     [self registerToolbarHelper:helper];
-    [helper release];
 }
 
 + (void)registerToolbarHelper:(NSObject <OAToolbarHelper> *)helperObject;
@@ -73,14 +74,7 @@ static NSMutableDictionary *helpersByExtension = nil;
 
 - (void)dealloc;
 {
-    for (OAToolbarItem *item in _toolbar.items) {
-        if ([item isKindOfClass:[OAToolbarItem class]] && item.delegate == self)
-            item.delegate = nil;
-    }
-    
     [_toolbar setDelegate:nil];
-    [_toolbar release];
-    [super dealloc];
 }
 
 
@@ -105,7 +99,6 @@ static NSMutableDictionary *helpersByExtension = nil;
     @try {
 	if (_toolbar) {
 	    [_toolbar setDelegate:nil];
-	    [_toolbar release];
 	}
 	
 	// The subclass may change its response to all the subclass methods and then call this (see OmniOutliner's document-specific toolbar support)
@@ -280,7 +273,7 @@ static void copyProperty(NSToolbarItem *anItem,
     NSString *nameWithoutExtension;
     
     // Always use OAToolbarItem since we can't know up front whether we'll need a delegate or not.
-    newItem = [[[[[self class] toolbarItemClass] alloc] initWithItemIdentifier:itemIdentifier] autorelease];
+    newItem = [[[[self class] toolbarItemClass] alloc] initWithItemIdentifier:itemIdentifier];
     
     NSBundle *bundle = [[self class] toolbarBundle];
     NSString *stringsFileName;
@@ -330,8 +323,20 @@ static void copyProperty(NSToolbarItem *anItem,
         // Default to having the min size be the current size of the view and the max size unbounded.
         if (customView)
             [newItem setMinSize:customView.frame.size];
+    } else if ([itemInfo boolForKey:@"hasButton"]) {
+
+        // Yosemite-style toolbar buttons
+        NSSize buttonSize = NSMakeSize(44, 32); //Matches Apple's size in Numbers and Pages as of 14 Nov. 2014
+        NSButton *button = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, buttonSize.width, buttonSize.height)];
+        button.buttonType = NSMomentaryChangeButton;
+        button.bezelStyle = NSTexturedRoundedBezelStyle;
+        button.buttonType = NSMomentaryLightButton;
+
+        newItem.view = button;
+        newItem.minSize = buttonSize;
+        newItem.maxSize = buttonSize;
     }
-    
+
     if ((value = [itemInfo objectForKey:@"target"])) {
         if ([value isEqualToString:@"firstResponder"])
             [newItem setTarget:nil];

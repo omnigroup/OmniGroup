@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,6 +41,12 @@ RCS_ID("$Id$");
     return self;
 }
 
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:YES];
+    self.displayedTitleString = NSLocalizedStringFromTableInBundle(@"Choose a Template", @"OmniUIDocument", OMNI_BUNDLE, @"toolbar prompt when choosing a template");
+    [self scrollToTopAnimated:YES];
+}
+
 - (void)_cancelChooseTemplate:(id)sender;
 {
     [self.navigationController popViewControllerAnimated:YES];
@@ -76,9 +82,10 @@ RCS_ID("$Id$");
     id <OUIDocumentPickerDelegate> delegate = picker.delegate;
     if ([delegate respondsToSelector:@selector(documentPickerTemplateDocumentFilter:)]) {
         OUIDocumentPickerFilter *templateFilter = [delegate documentPickerTemplateDocumentFilter:picker];
-        NSPredicate *predicate = templateFilter.predicate;
-        templateFilter.predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-            if (![predicate evaluateWithObject:evaluatedObject])
+
+        // Return a new filter with an extra not-in-trash check in the predicate. The new document template picker should never show any of the strings, but we'll keep the other properties too.
+        NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+            if (![templateFilter.predicate evaluateWithObject:evaluatedObject])
                 return NO;
             // filter out fileItems in the trash.
             ODSItem *item = evaluatedObject;
@@ -88,7 +95,7 @@ RCS_ID("$Id$");
                 return YES;
         }];
 
-        return templateFilter;
+        return [[OUIDocumentPickerFilter alloc] initWithIdentifier:templateFilter.identifier imageName:templateFilter.identifier predicate:predicate localizedFilterChooserButtonLabel:templateFilter.localizedFilterChooserButtonLabel localizedFilterChooserShortButtonLabel:templateFilter.localizedFilterChooserShortButtonLabel localizedMatchingObjectsDescription:templateFilter.localizedMatchingObjectsDescription];
     }
     return nil;
 }
@@ -122,7 +129,6 @@ RCS_ID("$Id$");
 
     UINavigationItem *navigationItem = self.navigationItem;
 
-    navigationItem.title = NSLocalizedStringFromTableInBundle(@"Choose a Template", @"OmniUIDocument", OMNI_BUNDLE, @"toolbar prompt when choosing a template");
     [navigationItem setLeftBarButtonItem:[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(_cancelChooseTemplate:)] animated:animated];
     [navigationItem setRightBarButtonItem:nil animated:animated];
 }

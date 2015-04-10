@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -611,6 +611,7 @@ static void _setDisplayUnitBit(OFTimeSpanFormatter *self, unsigned bitIndex, BOO
     }
     DLOG(@"secondsLeft = %f", secondsLeft);
     
+    secondsLeft = round(secondsLeft); // not interested in showing anything smaller than a single second difference, so round to nearest second
     if (secondsLeft < 0.0) {  
 	isNegative = YES;
 	secondsLeft = -secondsLeft;

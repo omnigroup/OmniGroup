@@ -73,9 +73,14 @@
 /* error description */
 "Cannot create socket." = "Kan socket niet aanmaken.";
 
+/* alert title when clicking on a configuration value URL */
+"Change configuration?" = "Configuratie wijzigen?";
+
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
+
+
 "Could not create directory" = "Map kan niet worden gemaakt";
 
 /* time span formatter span */
@@ -97,7 +102,7 @@
 "Failed to create directory for lock file at \"%@\"." = "Map voor vergrendelingsbestand op '%@' kan niet worden gemaakt.";
 
 /* error reason */
-"Failed to serialize lock information.  %@" = "Vergrendelingsinformatie kan niet worden geserialiseerd.  %@";
+"Failed to serialize lock information." = "Vergrendelingsinformatie kan niet worden geserialiseerd.";
 
 /* error reason */
 "Failed to write lock file.  %@" = "Vergrendelingsbestand kan niet worden geschreven.  %@";
@@ -144,6 +149,12 @@
 /* OFMLockfile recovery option */
 "Override Lock" = "Hef vergrendeling op";
 
+/* alert message format when clicking on a configuration value URL */
+"Restore \"%@\" to its default value" = "Herstel “%@” naar zijn standaardwaarde";
+
+/* alert title when clicking on a configuration value URL */
+"Restore all internal configuration settings to defaults" = "Herstel alle interne configuratie-instellingen naar de standaardwaarden";
+
 /* time span formatter span */
 "s" = "s";
 
@@ -152,6 +163,9 @@
 
 /* time span formatter span */
 "seconds" = "seconden";
+
+/* alert message format when clicking on a configuration value URL */
+"Set \"%@\" to \"%@\"" = "Stel “%1$@” in op “%2$@”";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Het servercertificaat voor “%@” lijkt niet geldig. Deze site is mogelijk niet betrouwbaar. Wilt u toch een verbinding maken?";
@@ -167,6 +181,9 @@
 
 /* server certificate untrusted */
 "The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Het servercertificaat voor “%@” is ondertekend door een niet-vertrouwde rootserver. Deze site is mogelijk niet betrouwbaar. Wilt u toch een verbinding maken?";
+
+/* alert message header when clicking on a configuration value URL */
+"This configuration link will make the following changes:" = "Deze configuratiekoppeling brengt de volgende wijzigingen aan:";
 
 /* error reason */
 "This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "De vergrendeling is uitgevoerd door %1$@ met de computer “%2$@” op %3$@ om %4$@.";
@@ -221,4 +238,3 @@
 
 /* zlib error reason */
 "zlib returned error code %d. %s." = "zlib heeft foutcode %1$d geretourneerd. %2$s.";
-

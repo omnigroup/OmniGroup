@@ -2,6 +2,7 @@
 "%@ points" = "%@ ポイント";
 
 /* title format for color component slider */
+
 "<alpha title+value>" = "不透明度： %d%%";
 
 /* title format for color component slider */

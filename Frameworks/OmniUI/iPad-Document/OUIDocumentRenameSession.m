@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -144,8 +144,8 @@ RCS_ID("$Id$");
     BOOL isEmpty = [NSString isEmptyString:newName];
     BOOL usingEditingName = (_item.type == ODSItemTypeFile && [_item isKindOfClass:[ODSFileItem class]]);
     NSString *nameTest = usingEditingName ? [(ODSFileItem *)_item editingName] : _item.name;
-    
-    BOOL isSameName = isEmpty || [newName isEqualToString:nameTest];
+
+    BOOL isSameName = isEmpty || ([nameTest localizedCompare:newName] == NSOrderedSame);
     if (_isAttemptingRename || _isFinishedRenaming || isSameName) {
         if (isSameName) {
             _isFinishedRenaming = YES;
@@ -191,6 +191,11 @@ RCS_ID("$Id$");
     
     OBASSERT(_nameTextField.delegate == self);
     _nameTextField.delegate = nil;
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField{
+    [textField resignFirstResponder];
+    return NO;
 }
 
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;

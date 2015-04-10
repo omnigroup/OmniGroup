@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,9 +36,9 @@ RCS_ID("$Id$");
 }
 
 // Sadly we can't query the normal UIBarButtonItem for its localized titles. It just reports nil. Thanks guys!
-static NSString *_titleForItemStyle(UIBarButtonSystemItem itemStyle)
+static NSString *_titleForSystemItem(UIBarButtonSystemItem systemItem)
 {
-    switch (itemStyle) {
+    switch (systemItem) {
         case UIBarButtonSystemItemDone:
             return NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"toolbar item title");
         case UIBarButtonSystemItemEdit:
@@ -46,7 +46,7 @@ static NSString *_titleForItemStyle(UIBarButtonSystemItem itemStyle)
         case UIBarButtonSystemItemCancel:
             return NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"toolbar item title");
         default:
-            OBASSERT_NOT_REACHED("Unhandled item style");
+            OBASSERT_NOT_REACHED("Unhandled system item");
             return nil;
     }
 }
@@ -59,14 +59,19 @@ static NSString *_titleForItemStyle(UIBarButtonSystemItem itemStyle)
         NSMutableSet *titles = [NSMutableSet set];
         
         // Might need to split this up into Edit+Done and Edit+Cancel if one string is excessively long in a localization
-        [titles addObject:_titleForItemStyle(UIBarButtonSystemItemEdit)];
-        [titles addObject:_titleForItemStyle(UIBarButtonSystemItemCancel)];
-        [titles addObject:_titleForItemStyle(UIBarButtonSystemItemDone)];
+        [titles addObject:_titleForSystemItem(UIBarButtonSystemItemEdit)];
+        [titles addObject:_titleForSystemItem(UIBarButtonSystemItemCancel)];
+        [titles addObject:_titleForSystemItem(UIBarButtonSystemItemDone)];
         
         editTitles = [titles copy];
     }
     
     return editTitles;
+}
+
++ (NSString *)titleForEditButtonBarSystemItem:(UIBarButtonSystemItem)systemItem;
+{
+    return _titleForSystemItem(systemItem);
 }
 
 - (id)initWithImage:(UIImage *)image style:(UIBarButtonItemStyle)style target:(id)target action:(SEL)action;
@@ -86,28 +91,8 @@ static NSString *_titleForItemStyle(UIBarButtonSystemItem itemStyle)
 
 - (id)initWithBarButtonSystemItem:(UIBarButtonSystemItem)systemItem target:(id)target action:(SEL)action;
 {
-    OUIBarButtonItem *item;
-
-    switch (systemItem) {
-        case UIBarButtonSystemItemDone: {
-            item = [self initWithTintColor:nil image:nil title:NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
-            item.possibleTitles = [[self class] possibleTitlesForEditBarButtonItems];
-            break;
-        }
-        case UIBarButtonSystemItemEdit: {
-            item = [self initWithTintColor:nil image:nil title:NSLocalizedStringFromTableInBundle(@"Edit", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
-            item.possibleTitles = [[self class] possibleTitlesForEditBarButtonItems];
-            break;
-        }
-        case UIBarButtonSystemItemCancel: {
-            item = [self initWithTintColor:nil image:nil title:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"toolbar item title") target:target action:action];
-            item.possibleTitles = [[self class] possibleTitlesForEditBarButtonItems];
-            break;
-        }
-        default:
-            OBRejectUnusedImplementation(self, _cmd);
-            return nil;
-    }
+    OUIBarButtonItem *item = [self initWithTintColor:nil image:nil title:_titleForSystemItem(systemItem) target:target action:action];
+    item.possibleTitles = [[self class] possibleTitlesForEditBarButtonItems];
 
     OUIWithoutAnimating(^{
         [item.button layoutIfNeeded];

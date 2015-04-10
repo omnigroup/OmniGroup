@@ -1,4 +1,4 @@
-// Copyright 2001-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -105,7 +105,6 @@ static NSString *_optionalStringNode(NSXMLElement *elt, NSString *tag, NSString 
     if (!str) { \
         if (OSUItemDebug) \
             NSLog(@"Ignoring item due to missing string node with tag '%@' in element:\n%@", (tag), (element)); \
-        [self release]; \
         return nil; \
     } \
     var = [str copy]; \
@@ -144,8 +143,8 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     NSColor *paidColor = [NSColor colorWithCalibratedRed:0/255.0f green:128/255.0f blue:0.0f alpha:1.0f];
     PaidAttributes = [[NSDictionary alloc] initWithObjectsAndKeys:boldFont, NSFontAttributeName, paidColor, NSForegroundColorAttributeName, nil];
     
-    itemFont = [font retain];
-    ignoredFont = [italicFont retain];
+    itemFont = font;
+    ignoredFont = italicFont;
     ignoredFontNeedsObliquity = lackingObliquity;
 }
 
@@ -184,7 +183,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     static NSPredicate *predicate = nil;
     
     if (!predicate)
-        predicate = [[NSPredicate predicateWithFormat:@"%K = YES AND %K = NO", OSUItemAvailableBinding, OSUItemSupersededBinding] retain];
+        predicate = [NSPredicate predicateWithFormat:@"%K = YES AND %K = NO", OSUItemAvailableBinding, OSUItemSupersededBinding];
     return predicate;
 }
 
@@ -194,7 +193,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     static NSPredicate *predicate = nil;
     
     if (!predicate)
-        predicate = [[NSPredicate predicateWithFormat:@"%K = YES AND %K = NO AND %K = NO AND %K = NO", OSUItemAvailableBinding, OSUItemSupersededBinding, OSUItemIgnoredBinding, OSUItemOldStableBinding] retain];
+        predicate = [NSPredicate predicateWithFormat:@"%K = YES AND %K = NO AND %K = NO AND %K = NO", OSUItemAvailableBinding, OSUItemSupersededBinding, OSUItemIgnoredBinding, OSUItemOldStableBinding];
     return predicate;
 }
 
@@ -203,7 +202,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     static NSPredicate *predicate = nil;
     
     if (!predicate)
-        predicate = [[NSPredicate predicateWithFormat:@"%K = YES AND %K = NO AND %K = YES", OSUItemAvailableBinding, OSUItemIgnoredBinding, OSUItemOldStableBinding] retain];
+        predicate = [NSPredicate predicateWithFormat:@"%K = YES AND %K = NO AND %K = YES", OSUItemAvailableBinding, OSUItemIgnoredBinding, OSUItemOldStableBinding];
     return predicate;
 }
 
@@ -229,15 +228,12 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     NSString *versionString;
     AssignRequiredString(versionString, OSUAppcastXMLNamespace, @"buildVersion");
     _buildVersion = [[OFVersionNumber alloc] initWithVersionString:versionString];
-    [versionString release];
     
     AssignRequiredString(versionString, OSUAppcastXMLNamespace, @"marketingVersion");
     _marketingVersion = [[OFVersionNumber alloc] initWithVersionString:versionString];
-    [versionString release];
     
     AssignRequiredString(versionString, OSUAppcastXMLNamespace, @"minimumSystemVersion");
     _minimumSystemVersion = [[OFVersionNumber alloc] initWithVersionString:versionString];
-    [versionString release];
     _available = YES; // Assume until told otherwise
     
     AssignRequiredString(_title, nil, @"title");
@@ -282,10 +278,8 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     
     if (OFISEQUAL(licenseType, OSULicenseTypeExpiring) || OFISEQUAL(licenseType, OSULicenseTypeTrial)) {
         // Display *nothing* in the price column.  This might be a built-in demo license for a beta or a site license.  In lieu of displaying the right thing, let's display nothing instead of something possibly wrong ("free").  See <bug://43521> and <bug:///73711>
-        [_price release];
         _price = nil;
     } else if (OFNOTEQUAL(licenseType, OSULicenseTypeUnset) && OFNOTEQUAL(licenseType, OSULicenseTypeNone) && ([_marketingVersion componentAtIndex:0] == [[checker applicationMarketingVersion] componentAtIndex:0])) {
-        [_price release];
         _price = [[NSDecimalNumber zero] copy]; // display 'free' in the price column for users with a valid license
     }
     
@@ -306,7 +300,6 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
         if (!enclosureNodes && !itemHasIndividualLink) {
             if (OSUItemDebug)
                 NSLog(@"Ignoring item without enclosures or link:\n%@", element);
-            [self release];
             return nil;
         }
 
@@ -363,7 +356,6 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
                     [sums setObject:[hashAttribute stringValue] forKey:hashAlgo];
             }
             if ([sums count]) {
-                [_checksums release];
                 _checksums = [sums copy];
             }
         } else {
@@ -396,18 +388,6 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
 {
     [OFPreference removeObserver:self forPreference:[OSUPreferences ignoredUpdates]];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:OSUTrackVisibilityChangedNotification object:nil];
-    [_buildVersion release];
-    [_marketingVersion release];
-    [_minimumSystemVersion release];
-    [_title release];
-    [_track release];
-    [_price release];
-    [_currencyCode release];
-    [_releaseNotesURL release];
-    [_downloadURL release];
-    [_notionalItemOrigin release];
-    [_checksums release];
-    [super dealloc];
 }
 
 + (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)aKey
@@ -620,8 +600,6 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
             }
         }
         
-        [fileData release];
-        
         if ([badSums count]) {
             return [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The file's checksum does not match (%@). It might be corrupted.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"caution text - we downloaded a file, but its checksum is not correct - warn that it might be damaged or even maliciously replaced. Parameter is name(s) of hash algorithms (md5, sha1, etc)"), [badSums componentsJoinedByComma]];
         }
@@ -758,11 +736,9 @@ static void loadFallbackTrackInfoIfNeeded()
         while(ix-- > 0) {
             NSString *aTrack = [result objectAtIndex:ix];
             if (![knownTrackOrderings objectForKey:aTrack]) {
-                [aTrack retain];
                 [result removeObjectAtIndex:ix];
                 unknownInsertion --;
                 [result insertObject:aTrack atIndex:unknownInsertion];
-                [aTrack release];
             }
         }
     }
@@ -838,7 +814,6 @@ static void collectText(NSMutableDictionary *into, NSXMLElement *trackinfo, NSSt
     });
     
     [into setObject:byLanguage forKey:nodename];
-    [byLanguage release];
 }
 
 /* This does what -attributeForLocalName:URI: *should* do. */
@@ -897,14 +872,12 @@ static NSXMLNode *_attr(NSXMLElement *elt, NSString *localName, NSString *URI)
     BOOL didChange = NO;
     
     if (!knownTrackOrderings || ![ordering isEqual:knownTrackOrderings]) {
-        [knownTrackOrderings autorelease];
         knownTrackOrderings = [ordering copy];
         trackOrderingsAreCurrent = YES;
         didChange = YES;
     }
     
     if (!trackLocalizedStrings || ![strings isEqual:trackLocalizedStrings]) {
-        [trackLocalizedStrings autorelease];
         trackLocalizedStrings = [strings copy];
         didChange = YES;
     }

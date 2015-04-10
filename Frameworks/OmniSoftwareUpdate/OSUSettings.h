@@ -1,0 +1,15 @@
+// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
+//
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+//
+// $Id$
+
+@class NSString;
+
+// For OmniSoftwareUpdate settings that are shared among all users of the framework. These settings are intended to be updated very infrequently. Values must be plist-able.
+
+extern id OSUSettingGetValueForKey(NSString *key);
+extern void OSUSettingSetValueForKey(NSString *key, id value);

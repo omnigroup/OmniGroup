@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,22 +33,22 @@ RCS_ID("$Id$");
     
     OUIColorComponentSlider *red = [OUIColorComponentSlider slider];
     red.range = 255;
-    red.formatString = NSLocalizedStringWithDefaultValue(@"<red title+value>", @"OUIInspectors", OMNI_BUNDLE, @"Red: %d", @"title format for color component slider");
+    red.formatString = NSLocalizedStringWithDefaultValue(@"<red title+value>", @"OUIInspectors", OMNI_BUNDLE, @"Red: %d", @"title format for color component slider - red component in RGB model, 0-255");
     [sliders addObject:red];
     
     OUIColorComponentSlider *green = [OUIColorComponentSlider slider];
     green.range = 255;
-    green.formatString = NSLocalizedStringWithDefaultValue(@"<green title+value>", @"OUIInspectors", OMNI_BUNDLE, @"Green: %d", @"title format for color component slider");
+    green.formatString = NSLocalizedStringWithDefaultValue(@"<green title+value>", @"OUIInspectors", OMNI_BUNDLE, @"Green: %d", @"title format for color component slider - green component in RGB model, 0-255");
     [sliders addObject:green];
     
     OUIColorComponentSlider *blue = [OUIColorComponentSlider slider];
     blue.range = 255;
-    blue.formatString = NSLocalizedStringWithDefaultValue(@"<blue title+value>", @"OUIInspectors", OMNI_BUNDLE, @"Blue: %d", @"title format for color component slider");
+    blue.formatString = NSLocalizedStringWithDefaultValue(@"<blue title+value>", @"OUIInspectors", OMNI_BUNDLE, @"Blue: %d", @"title format for color component slider - blue component in RGB model, 0-255");
     [sliders addObject:blue];
     
     OUIColorComponentSlider *alpha = [OUIColorComponentSlider slider];
     alpha.range = 100;
-    alpha.formatString = NSLocalizedStringWithDefaultValue(@"<alpha title+value>", @"OUIInspectors", OMNI_BUNDLE, @"Opacity: %d%%", @"title format for color component slider");
+    alpha.formatString = NSLocalizedStringWithDefaultValue(@"<alpha title+value>", @"OUIInspectors", OMNI_BUNDLE, @"Opacity: %d%%", @"title format for color component slider - alpha component, 0-100");
     alpha.representsAlpha = YES;
     [sliders addObject:alpha];
     

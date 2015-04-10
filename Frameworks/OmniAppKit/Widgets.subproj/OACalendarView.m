@@ -371,7 +371,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 	return;
     }
     
-    NSEvent *event = [NSApp currentEvent];
+    NSEvent *event = [[NSApplication sharedApplication] currentEvent];
     NSUInteger kflags = [event modifierFlags];
     BOOL shiftMask = (0 != (kflags & NSShiftKeyMask));
     BOOL commandMask = (0 != (kflags & NSCommandKeyMask));
@@ -546,7 +546,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
 - (IBAction)previousMonth:(id)sender;
 {
-    if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) != 0)
+    if (([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask) != 0)
         return [self previousYear:sender];
     
     NSDateComponents *components = [[NSDateComponents alloc] init];
@@ -557,7 +557,7 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 
 - (IBAction)nextMonth:(id)sender;
 {
-    if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) != 0)
+    if (([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask) != 0)
         return [self nextYear:sender];
 
     NSDateComponents *components = [[NSDateComponents alloc] init];

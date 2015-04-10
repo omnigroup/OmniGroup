@@ -20,15 +20,15 @@
     <string>1</string>
     <key>SMPrivilegedExecutables</key>
     <dict>
-        <key>com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper</key>
+        <key>OSUInstallerPrivilegedHelperIdentifier</key>
 <!---
 #ifdef DEBUG
 -->
-        <string>identifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper and anchor apple generic and certificate leaf[subject.CN] = "Mac Developer:"*</string>
+        <string>identifier OSUInstallerPrivilegedHelperIdentifier and anchor apple generic and certificate leaf[subject.CN] = "Mac Developer:"*</string>
 <!--
 #else
 -->
-        <string>identifier com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper and anchor apple generic and certificate leaf[subject.CN] = "Developer ID Application: The Omni Group"</string>
+        <string>identifier OSUInstallerPrivilegedHelperIdentifier and anchor apple generic and certificate leaf[subject.CN] = "Developer ID Application: The Omni Group"</string>
 <!--
 #endif
 -->

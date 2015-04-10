@@ -45,7 +45,7 @@ RCS_ID("$Id$");
 
 - (NSString *)scriptIdentifier;
 {
-    while (!_scriptIdentifier || [NSApp valueInOrderedDocumentsWithUniqueID:_scriptIdentifier ignoringDocument:self]) {
+    while (!_scriptIdentifier || [[OAApplication sharedApplication] valueInOrderedDocumentsWithUniqueID:_scriptIdentifier ignoringDocument:self]) {
         [_scriptIdentifier release];
         _scriptIdentifier = OFXMLCreateID();
     }
@@ -62,7 +62,7 @@ RCS_ID("$Id$");
     if (_objectSpecifier)
         return _objectSpecifier;
     
-    NSScriptClassDescription *desc = [NSScriptClassDescription classDescriptionForClass:[NSApp class]];
+    NSScriptClassDescription *desc = [NSScriptClassDescription classDescriptionForClass:[[OAApplication sharedApplication] class]];
     _objectSpecifier = [[NSUniqueIDSpecifier alloc] initWithContainerClassDescription:desc
                                                                    containerSpecifier:nil
                                                                                   key:@"orderedDocuments"

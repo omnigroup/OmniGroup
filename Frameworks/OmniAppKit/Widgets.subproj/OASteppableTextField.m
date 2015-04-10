@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -70,7 +70,7 @@ RCS_ID("$Id$");
         return NO;
     
     [self setObjectValue:objectValue];
-    [NSApp sendAction:[self action] to:[self target] from:self];
+    [[NSApplication sharedApplication] sendAction:[self action] to:[self target] from:self];
     
     OAPushValueThroughBinding(self, objectValue, NSValueBinding);
     

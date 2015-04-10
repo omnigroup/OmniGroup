@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -116,7 +116,7 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
     
     NSUInteger tilesWide = (NSUInteger)ceil((CGRectGetMaxX(visibleRect) - tileStartX) / kTileSize);
     NSUInteger tilesHigh = (NSUInteger)ceil((CGRectGetMaxY(visibleRect) - tileStartY) / kTileSize);
-    DEBUG_TILE_LAYOUT(@"  Using %d x %d tiles", tilesWide, tilesHigh);
+    DEBUG_TILE_LAYOUT(@"  Using %lu x %lu tiles", tilesWide, (unsigned long)tilesHigh);
     
     
     NSMutableArray *neededRects = nil;
@@ -155,7 +155,7 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
     
     // Now that all the existing tiles that can be reused have been, make new tiles.    
     if (neededRects) {
-        DEBUG_TILE_LAYOUT(@"  Need new %d tiles", [neededRects count]);
+        DEBUG_TILE_LAYOUT(@"  Need new %lu tiles", (unsigned long)[neededRects count]);
         
         // If we are rotating, we don't want to use tiles with existing content. Otherwise, they'll fly across the screen, looking weird.
         // Do allow reuse of hidden tiles here, though, so that multiple rotations don't build up more and more tiles.

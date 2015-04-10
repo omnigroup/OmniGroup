@@ -82,6 +82,12 @@ static inline id OBCallObjectReturnIMPWithObject(IMP imp, id self, SEL _cmd, id 
     return f(self, _cmd, object);
 }
 
+static inline BOOL OBCallBoolReturnIMPWithObjectObject(IMP imp, id self, SEL _cmd, id object1, id object2)
+{
+    BOOL (*f)(id, SEL, id, id) = (typeof(f))imp;
+    return f(self, _cmd, object1, object2);
+}
+
 static inline void OBSendVoidMessage(id self, SEL _cmd)
 {
     OBCallVoidIMP(objc_msgSend, self, _cmd);
@@ -110,6 +116,11 @@ static inline id OBSendObjectReturnMessage(id self, SEL _cmd)
 static inline id OBSendObjectReturnMessageWithObject(id self, SEL _cmd, id object)
 {
     return OBCallObjectReturnIMPWithObject(objc_msgSend, self, _cmd, object);
+}
+
+static inline BOOL OBSendBoolReturnMessageWithObjectObject(id self, SEL _cmd, id object1, id object2)
+{
+    return OBCallBoolReturnIMPWithObjectObject(objc_msgSend, self, _cmd, object1, object2);
 }
 
 // In a few cases we retain and release things in ways that clang-sa isn't happy about (e.g., callbacks and state machines). These macros let us hide the retain/release from the static analyzer.

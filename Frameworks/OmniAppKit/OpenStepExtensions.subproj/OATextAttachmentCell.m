@@ -1,4 +1,4 @@
-// Copyright 2011-2014 The Omni Group. All rights reserved.
+// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,20 +47,12 @@ RCS_ID("$Id$");
 
 @implementation OATextAttachmentCell (OATextAttachmentCellXML)
 
-+ (void)appendXMLForNonDefaultCellInformation:(OFXMLDocument *)doc image:(id)image;
++ (void)appendXMLForNonDefaultCellInformation:(OFXMLDocument *)doc imageSize:(CGSize)imageSize;
 {
-    if (image) {
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-        CGImageRef imageRef = (CGImageRef)image;
-        CGSize size = CGSizeMake(CGImageGetWidth(imageRef), CGImageGetHeight(imageRef));
-#else
-        CGSize size = [(NSImage *)image size];
-#endif
-        OBASSERT(size.width >= FLT_MIN && size.width <= FLT_MAX);
-        OBASSERT(size.height >= FLT_MIN && size.height <= FLT_MAX);
-        [doc setAttribute:@"width" real:(float)size.width];
-        [doc setAttribute:@"height" real:(float)size.height];
-    }
+    OBPRECONDITION(imageSize.width >= FLT_MIN && imageSize.width <= FLT_MAX);
+    OBPRECONDITION(imageSize.height >= FLT_MIN && imageSize.height <= FLT_MAX);
+    [doc setAttribute:@"width" real:(float)imageSize.width];
+    [doc setAttribute:@"height" real:(float)imageSize.height];
 }
 
 @end

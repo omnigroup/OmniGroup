@@ -62,6 +62,8 @@ extern BOOL OFXIsConflict(OFXFileMetadata *metadata);
 - (void)waitForChangeToMetadata:(OFXFileMetadata *)originalMetadata inAgent:(OFXAgent *)agent;
 
 // Only checks the file identifiers and edit identifiers match
+- (BOOL)agentEditsAgree:(NSArray *)agents withFileCount:(NSUInteger)fileCount;
+- (BOOL)agentEditsAgree:(NSArray *)agents waitingForTransfers:(BOOL)waitingForTransfers withFileCount:(NSUInteger)fileCount;
 - (void)waitForAgentsEditsToAgree;
 - (void)waitForAgentsEditsToAgree:(NSArray *)agents;
 - (void)waitForAgentsEditsToAgree:(NSArray *)agents withFileCount:(NSUInteger)fileCount;
@@ -71,6 +73,10 @@ extern BOOL OFXIsConflict(OFXFileMetadata *metadata);
 - (void)requireAgentsToHaveSameFilesByName:(NSArray *)agents;
 
 - (void)requireAgentsToHaveSameFilesByIdentifier:(NSArray *)agents;
+
+- (BOOL)agent:(OFXAgent *)agent hasTextContentsByPath:(NSDictionary *)textContentsByPath;
+- (void)requireAgent:(OFXAgent *)agent toHaveDataContentsByPath:(NSDictionary *)dataContentsByPath;
+- (void)requireAgent:(OFXAgent *)agent toHaveTextContentsByPath:(NSDictionary *)textContentsByPath; // mapping of filename->contents
 
 - (BOOL)agentsToHaveSameIntendedFiles; // Requires identical contents for intended file names
 

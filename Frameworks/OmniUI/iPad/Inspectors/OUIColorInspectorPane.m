@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,13 +7,14 @@
 
 #import <OmniUI/OUIColorInspectorPane.h>
 
+#import <OmniUI/OUIColorInspectorPaneParentSlice.h>
 #import <OmniUI/OUIColorPicker.h>
 #import <OmniUI/OUIColorValue.h>
-#import <OmniUI/OUISegmentedControl.h>
-#import <OmniUI/OUISegmentedControlButton.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSlice.h>
-#import <OmniUI/OUIColorInspectorPaneParentSlice.h>
+#import <OmniUI/OUINavigationController.h>
+#import <OmniUI/OUISegmentedControl.h>
+#import <OmniUI/OUISegmentedControlButton.h>
 #import <OmniUI/UIViewController-OUIExtensions.h>
 
 RCS_ID("$Id$");
@@ -84,11 +85,6 @@ RCS_ID("$Id$");
         pickerView.frame = self.view.bounds;
         pickerView.alpha = 0.0;
         [self.view addSubview:pickerView];
-        
-        if ([pickerView isKindOfClass:[UIScrollView class]]) {
-            UIScrollView *scrollview = (UIScrollView *)pickerView;
-            scrollview.contentInset = UIEdgeInsetsMake(44+CGRectGetHeight(_colorTypeSegmentedControl.frame)+7,0,0,0);
-        }
     }
 
     void (^viewChangeAnimation)(void) = ^{
@@ -164,7 +160,7 @@ RCS_ID("$Id$");
 
 - (UIView *)navigationBarAccessoryView;
 {
-    [self view]; // load view if we haven't yet
+    (void)[self view]; // load view if we haven't yet
     return _colorTypeSegmentedControl;
 }
 
@@ -194,6 +190,22 @@ RCS_ID("$Id$");
     while (segmentIndex--) {
         OUIColorPicker *picker = [_colorTypeSegmentedControl segmentAtIndex:segmentIndex].representedObject;
         picker.target = self;
+    }
+}
+
+#define BOTTOM_SPACING_BELOW_ACCESSORY 7.0
+
+- (void)viewDidLayoutSubviews;
+{
+    UIView *pickerView = _currentColorPicker.view;
+    if ([pickerView isKindOfClass:[UIScrollView class]]) {
+        UIScrollView *scrollview = OB_CHECKED_CAST(UIScrollView, pickerView);
+        CGFloat topOffset = self.topLayoutGuide.length + CGRectGetHeight(_colorTypeSegmentedControl.frame) + BOTTOM_SPACING_BELOW_ACCESSORY + 8.0f;
+        scrollview.contentInset = UIEdgeInsetsMake(topOffset, 0.0f, 0.0f, 0.0f);
+        scrollview.contentOffset = (CGPoint){0.0f, -topOffset};
+
+        // After updating our inset, we want to give our picker the opportunity to scroll back to its selected value
+        [_currentColorPicker scrollToSelectionValueAnimated:NO];
     }
 }
 

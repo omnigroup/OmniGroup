@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,8 +41,8 @@
 @property(readonly, nonatomic) OAPreferenceController *controller;
 
 @property(retain, nonatomic) IBOutlet NSView *controlBox;
-@property(assign, nonatomic) IBOutlet NSView *initialFirstResponder;
-@property(assign, nonatomic) IBOutlet NSView *lastKeyView;
+@property(retain, nonatomic) IBOutlet NSView *initialFirstResponder;
+@property(retain, nonatomic) IBOutlet NSView *lastKeyView;
 
 - (void)resetFloatValueToDefaultNamed:(NSString *)defaultName inTextField:(NSTextField *)textField;
 - (void)resetIntValueToDefaultNamed:(NSString *)defaultName inTextField:(NSTextField *)textField;

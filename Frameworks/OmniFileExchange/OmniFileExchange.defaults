@@ -6,8 +6,8 @@
 	<integer>250000</integer>
 	<key>OFXSyncClientIdentifier</key>
 	<string/>
-	<key>OFXCellularSyncEnabled</key>
-	<false/>
+	<key>OFXHiddenShouldUseCellularDataForSync</key>
+	<true/>
     <key>OFXFileItemRecentErrorExpirationTimeInterval</key>
     <real>120</real>
     <key>OFXFileItemSkipTransfersWithErrorsInTimeInterval</key>

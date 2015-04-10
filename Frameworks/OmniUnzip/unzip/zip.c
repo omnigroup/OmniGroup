@@ -35,6 +35,7 @@
 /* compile with -Dlocal if your debugger can't find static symbols */
 
 #ifndef VERSIONMADEBY
+# error The default value of VERSIONMADEBY is probably not what you want
 # define VERSIONMADEBY   (0x0) /* platform depedent */
 #endif
 

@@ -62,6 +62,7 @@ RCS_ID("$Id$");
     if (userCacheDirectory == nil) {
         FSRef foundFolder;
         OSErr err;
+        OSStatus serr;
         NSString *result = nil;
         
         err = FSFindFolder(kUserDomain, kCachedDataFolderType, TRUE, &foundFolder);
@@ -69,8 +70,8 @@ RCS_ID("$Id$");
             UInt32 pathSize = PATH_MAX * 2;  // generous max path len
             char *buf = alloca(pathSize);
     
-            err = FSRefMakePath(&foundFolder, (unsigned char *)buf, pathSize);
-            if (err == noErr) {
+            serr = FSRefMakePath(&foundFolder, (unsigned char *)buf, pathSize);
+            if (serr == noErr) {
                 result = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:buf length:strlen(buf)];
             }
         }

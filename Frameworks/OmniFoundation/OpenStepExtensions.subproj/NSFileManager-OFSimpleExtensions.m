@@ -13,6 +13,9 @@
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <sys/xattr.h>
+#else
+#import <OmniFoundation/NSFileManager-OFExtensions.h> // We use a few of the not-shared bit in this case
+#import <OmniFoundation/NSProcessInfo-OFExtensions.h>
 #endif
 
 RCS_ID("$Id$")
@@ -285,5 +288,71 @@ static void _appendPropertiesOfTreeAtURL(NSFileManager *self, NSMutableString *s
 }
 
 #endif
+
+#pragma mark - Group Containers
+
+- (NSString *)groupContainerIdentifierForBaseIdentifier:(NSString *)baseIdentifier;
+{
+    OBPRECONDITION(![NSString isEmptyString:baseIdentifier], "Must pass a base identifier");
+    OBPRECONDITION([baseIdentifier hasPrefix:@"group."] == NO, "Don't pass in the iOS-style 'group.' prefix");
+    
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    // On the iOS, the entitlement and value passed to -containerURLForSecurityApplicationGroupIdentifier: are both 'group.identifier'
+    return [@"group." stringByAppendingString:baseIdentifier];
+#else
+    // On the Mac, the entitlement is "TeamID.identifier". During development, we can grant ourselves any group container entitlement, but MAS would (or should) reject us if we didn't prefix with our Team ID.
+    // Individual applications can have their own prefix, instead of using the team prefix. We don't do that currently -- we could possibly look at other entries in the code sign info dictionary to determine the right prefix.
+    // Non-sandboxed apps will use a non-prefixed group container since we don't have a team id (meaning they will have different settings values than sandboxed apps, but the apps we care about are all going to be sandboxed) -- only internal apps will be unsandboxed.
+    
+    if ([[NSProcessInfo processInfo] isSandboxed]) {
+        NSString *teamIdentifier = [[NSProcessInfo processInfo] codeSigningTeamIdentifier];
+        assert(![NSString isEmptyString:teamIdentifier]); // Signal fatal error ASAP if our code signing entitlements are messed up.
+        
+        OBASSERT([baseIdentifier hasPrefix:teamIdentifier] == NO, "Don't pass in the Mac-style team/app-prefixed identifier");
+        return [NSString stringWithFormat:@"%@.%@", teamIdentifier, baseIdentifier];
+    }
+    
+    // Fall back to a group container without a team prefix if we are not sandboxed or couldn't find the team identifier (though in the latter case, this will only work if our entitlements specify the same identifier and we'll (likely) get rejected from MAS w/o the team identifier.
+    return baseIdentifier;
+#endif
+}
+
+- (NSURL *)containerURLForBaseGroupContainerIdentifier:(NSString *)baseIdentifier;
+{
+    NSString *groupContainerIdentifier = [self groupContainerIdentifierForBaseIdentifier:baseIdentifier];
+    
+    // We have no good way of checking these entitlements on iOS, but still need them.
+#if (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE) && defined(OMNI_ASSERTIONS_ON)
+    if ([[NSProcessInfo processInfo] isSandboxed]) {
+        NSDictionary *entitlements = [[NSProcessInfo processInfo] codeSigningEntitlements];
+        id value = [entitlements objectForKey:@"com.apple.security.application-groups"];
+        if (value == nil)
+            value = [NSArray array];
+        NSArray *preferenceDomains = [value isKindOfClass:[NSArray class]] ? value : [NSArray arrayWithObject:value];
+        assert([preferenceDomains containsObject:groupContainerIdentifier]);
+    }
+#endif
+    
+    NSURL *containerURL = [self containerURLForSecurityApplicationGroupIdentifier:groupContainerIdentifier];
+    if (!containerURL) {
+        OBASSERT_NOT_REACHED("Unable to determine container for OmniSoftwareUpdate settings");
+        return nil;
+    }
+    
+    // The group container will have been created by the system at this point if our entitlements are right. Double-check in debug builds.
+#ifdef DEBUG
+    __autoreleasing NSError *error = nil;
+    if (![self createDirectoryAtURL:containerURL withIntermediateDirectories:NO attributes:nil error:&error]) {
+        if ([error hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:EEXIST]) {
+            // Already there.
+        } else {
+            [error log:@"Unable to create %@", containerURL];
+            return nil;
+        }
+    }
+#endif
+    
+    return containerURL;
+}
 
 @end

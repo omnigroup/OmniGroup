@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,8 +10,8 @@
 #import <OmniDocumentStore/ODSStore.h>
 
 @interface ODSStore ()
-- (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date willMoveToURL:(NSURL *)newURL;
-- (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date finishedMoveToURL:(NSURL *)newURL successfully:(BOOL)successfully;
-- (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date willCopyToURL:(NSURL *)newURL;
-- (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date finishedCopyToURL:(NSURL *)newURL andDate:(NSDate *)newDate successfully:(BOOL)successfully;
+- (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
+- (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
 @end
+
+OB_HIDDEN NSString *ODSPathExtensionForFileType(NSString *fileType, BOOL *outIsPackage);

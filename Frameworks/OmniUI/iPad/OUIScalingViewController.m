@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 #import <OmniUI/OUIOverlayView.h>
 #import <OmniUI/OUITiledScalingView.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/UINavigationController-OUIExtensions.h>
 
 RCS_ID("$Id$");
 
@@ -18,6 +19,7 @@ RCS_ID("$Id$");
 {
     BOOL _isZooming;
     BOOL _lastScaleWasFullScale;
+    BOOL _haveInitializedLastScaleWasFullScale;
 }
 
 - (void)dealloc;
@@ -62,15 +64,15 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 
 - (CGFloat)fullScreenScale;
 {
-    return [_scrollView fullScreenScaleForCanvasSize:[self canvasSize]];
+    return [_scrollView fullScreenScaleForUnscaledContentSize:[self unscaledContentSize]];
 }
 
 - (CGSize)fullScreenSize;
 {
-    CGSize canvasSize = [self canvasSize];
+    CGSize unscaledContentSize = [self unscaledContentSize];
     CGFloat fullScreenScale = [self fullScreenScale];
     
-    return CGSizeMake(canvasSize.width*fullScreenScale, canvasSize.height*fullScreenScale);
+    return CGSizeMake(unscaledContentSize.width*fullScreenScale, unscaledContentSize.height*fullScreenScale);
 }
 
 - (CGFloat)snapZoomScale:(CGFloat)scale;
@@ -134,8 +136,8 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     if (!view)
         return;
     
-    CGSize canvasSize = self.canvasSize;
-    [_scrollView adjustScaleTo:scale canvasSize:canvasSize];
+    CGSize unscaledContentSize = self.unscaledContentSize;
+    [_scrollView adjustScaleTo:scale unscaledContentSize:unscaledContentSize];
     
     _lastScaleWasFullScale = (view.scale == [self fullScreenScale]);
 }
@@ -162,23 +164,18 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     [_scrollView adjustContentInsetAnimated:NO];
 }
 
-- (void)sizeInitialViewSizeFromCanvasSize;
+- (void)sizeInitialViewSizeFromUnscaledContentSize;
 {
     OUIScalingView *view = _scalingView(self);
     if (!view)
         return;
     
-    CGSize canvasSize = self.canvasSize;
-    if (CGSizeEqualToSize(canvasSize, CGSizeZero))
+    CGSize unscaledContentSize = self.unscaledContentSize;
+    if (CGSizeEqualToSize(unscaledContentSize, CGSizeZero))
         return;
     
     [self adjustScaleTo:-1]; // Scales as large as possible, respecting aspect ratio and the hard maximum scale.
     [self adjustContentInset];
-    
-//    UIEdgeInsets insets = _scrollView.contentInset;
-//    _scrollView.contentOffset
-    [_scrollView scrollRectToVisible:view.frame animated:NO];
-//    NSLog(@"initial offset = %@, inset %@", NSStringFromPoint(_scrollView.contentOffset), NSStringFromUIEdgeInsets(_scrollView.contentInset));
 }
 
 - (BOOL)isZooming;
@@ -187,7 +184,7 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 }
 
 // Subclasses need to return the nominal size of the canvas; the size in CoreGraphics coordinates.
-- (CGSize)canvasSize;
+- (CGSize)unscaledContentSize;
 {
     return CGSizeZero;
 }
@@ -200,12 +197,8 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 - (UIGestureRecognizer *)zoomingGestureRecognizer;
 // This could break in the future if the architecture of UIScrollView is changed, but it's the only way I know of to get the current centroid of touches from a gesture recognizer that has captured the touch event stream.
 {
-    UIView *view = _scrollView;
-    for (UIGestureRecognizer *gestureRecognizer in [view gestureRecognizers]) {
-        if ([gestureRecognizer isKindOfClass:[UIPinchGestureRecognizer class]]) {
-            //NSLog(@"GR: %@", gestureRecognizer);
-            return gestureRecognizer;
-        }
+    if (_scrollView.pinchGestureRecognizer) {
+        return _scrollView.pinchGestureRecognizer;
     }
     OBASSERT_NOT_REACHED("Was unable to find a pinch gesture recognizer in the scrollview.");
     return nil;
@@ -230,7 +223,7 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
         view.rotating = NO;
 
         if (_lastScaleWasFullScale) {
-            [self sizeInitialViewSizeFromCanvasSize];
+            [self sizeInitialViewSizeFromUnscaledContentSize];
         }
         else {
             [self adjustContentInset];
@@ -238,13 +231,21 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     }];
 }
 
+-(void)viewDidLayoutSubviews{
+    [super viewDidLayoutSubviews];
+    if (!_haveInitializedLastScaleWasFullScale) {
+        _lastScaleWasFullScale = (_scalingView(self).scale == [self fullScreenScale]);
+        _haveInitializedLastScaleWasFullScale = YES;
+    }
+}
+
 #pragma mark -
 #pragma mark UIScrollViewDelegate
 #pragma mark OUIScrollNotifier
 
-- (CGRect)scallingScrollViewContentViewFullScreenBounds:(OUIScalingScrollView *)scallingScrollView;
+- (CGRect)scalingScrollViewContentViewFullScreenBounds:(OUIScalingScrollView *)scalingScrollView;
 {
-    return self.view.bounds;
+    return scalingScrollView.bounds;
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView;
@@ -299,9 +300,13 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     overlay.text = NSLocalizedStringFromTableInBundle(@"Zoom", @"OmniUI", OMNI_BUNDLE, @"zoom label");
 
     UIView *stableView = scrollView.superview;
-    
+    CGRect bounds = stableView.bounds;
+    if (self.navigationController) {
+        bounds = [self.navigationController visibleRectOfContainedView:_scalingView(self)];
+        bounds = [_scalingView(self) convertRect:bounds toView:stableView];
+    }
     // This automatically falls back to something sensible if the gesture recognizer is nil:
-    [overlay centerAtPositionForGestureRecognizer:[self zoomingGestureRecognizer] inView:stableView];
+    [overlay centerAtPositionForGestureRecognizer:[self zoomingGestureRecognizer] inView:stableView withinBounds:bounds];
     [overlay displayInView:stableView];
     
     OUIPostScrollingWillBeginNotification(scrollView);

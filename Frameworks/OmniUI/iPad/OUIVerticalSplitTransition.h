@@ -21,6 +21,7 @@ typedef enum {
 @property (nonatomic, assign) OUIVerticalSplitFadeType fadeType;
 
 - (void)insertToViewIntoContainer:(id<UIViewControllerContextTransitioning>)transitionContext;
+- (void)didInsertViewIntoContainer:(id<UIViewControllerContextTransitioning>)transitionContext NS_REQUIRES_SUPER;
 
 @property (nonatomic, strong) UIView *topSnapshot;
 @property (nonatomic, strong) UIView *bottomSnapshot;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,12 @@
 
 #import <OmniFoundation/NSScanner-OFExtensions.h>
 #import <OmniFoundation/OFMultiValueDictionary.h>
+#import <OmniFoundation/OFStringScanner.h>
 
 RCS_ID("$Id$")
+
+@interface OFCharacterScanner () <OFHTTPHeaderDictionaryReadLineSource>
+@end
 
 @implementation OFHTTPHeaderDictionary
 {
@@ -188,6 +192,47 @@ NSString * const OFHTTPContentTypeHeaderKey = @"content-type";
     
     
     return lines;
+}
+
+- (void)_parseRFC822Header:(NSString *)aHeader;
+{
+    // Use rangeOfString: rather than having a 8k character set to hold a single character
+    NSRange colonRange = [aHeader rangeOfString:@":"];
+    if (colonRange.length == 0)
+	return;
+
+    NSString *key = [aHeader substringToIndex:colonRange.location];
+    NSString *value = [[aHeader substringFromIndex:NSMaxRange(colonRange)] stringByRemovingSurroundingWhitespace];
+    [self addString:value forKey:key];
+}
+
+- (void)readRFC822HeadersFromReadLineSource:(id <OFHTTPHeaderDictionaryReadLineSource>)readLineSource;
+{
+    NSString *header = nil;
+
+    do {
+	NSString *newLine = [readLineSource readLine];
+	if ([newLine hasLeadingWhitespace]) {
+	    header = [header stringByAppendingString:newLine];
+            continue;
+        }
+
+        if (header != nil) {
+            [self _parseRFC822Header:header];
+        }
+
+        header = newLine;
+        if ([newLine isEqualToString:@"."]) {
+            break;
+        }
+    } while (header && [header length] > 0);
+}
+
+- (void)readRFC822HeadersFromString:(NSString *)string;
+{
+    OFCharacterScanner *scanner = [[OFStringScanner alloc] initWithString:string];
+    [self readRFC822HeadersFromReadLineSource:scanner];
+    [scanner release];
 }
 
 + (NSString *)formatHeaderParameter:(NSString *)name value:(NSString *)value;

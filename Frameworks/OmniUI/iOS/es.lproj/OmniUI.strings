@@ -1,45 +1,38 @@
-/* In App Store pricing option format */
-"%@ %@" = "%2$@: %1$@";
-
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ de %2$@";
 
-/* title for successful in app purchase */
-"%@ Purchased" = "%@ comprado";
-
 /* Default title for the About menu item */
+
 "About %@" = "Acerca de %@";
 
 /* No purchases found message format */
 "All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Se han restaurado todas las compras de su cuenta actual de la App Store, pero %@ no figuraba entre dichas compras.";
 
-/* Web view nagivation button for going back in history. */
-"Back" = "Atrás";
-
 /* Bold button accessibility label */
 "Bold" = "Negrita";
 
-/* Disabled 'Buy' button title string */
-"Buy" = "Comprar";
-
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
-"Buy %@" = "Comprar: %@";
+"Buy %@" = "Comprar %@";
 
 /* button title
    cancel button title
    toolbar item title */
 
 
+
 "Cancel" = "Cancelar";
 
 /* Center Text Align button accessibility label. */
-"Center text align" = "Alinear texto en el centro";
+"Center text align" = "Centrar texto";
 
 /* Certificate trust alert title */
 "Certificate Trust" = "Certificado de confianza";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Preferencia '%1$@' modificada de '%2$@' a '%3$@'";
+"Changed the '%@' preference from '%@' to '%@'" = "Preferencia “%1$@” modificada de “%2$@” a “%3$@”";
+
+/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
+"Check for Free Upgrade" = "Consultar actualización gratuita";
 
 /* Certificate trust alert button title */
 "Continue" = "Continuar";
@@ -58,11 +51,11 @@
 /* toolbar item title */
 "Edit" = "Editar";
 
+/* Title explaining that user is eligible for discounted upgrade */
+"Eligible for free upgrade" = "Apto para actualización gratuita";
+
 /* In app Buy button error title */
 "Error" = "Error";
-
-/* Alert title for error loading product information */
-"Error Loading Store" = "Error al cargar la tienda";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "Función no activada para esta demo";
@@ -89,16 +82,16 @@
 "Italic" = "Cursiva";
 
 /* Justified Text Align button accessibility label. */
-"Justified text align" = "Alinear texto justificado";
+"Justified text align" = "Justificar texto";
 
 /* Left Text Align button accessibility label. */
 "Left text align" = "Alinear texto a la izquierda";
 
 /* Web view error opening URL title. */
-"Link could not be opened. Please check Safari restrictions in Settings." = "No puedo abrirse el enlace. Compruebe las restricciones de Safari en Ajustes.";
+"Link could not be opened. Please check Safari restrictions in Settings." = "No puede abrirse el enlace. Compruebe las restricciones de Safari en Ajustes.";
 
-/* Buy button title while app store is loading */
-"Loading" = "Cargando";
+/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
+"More Info" = "Más información";
 
 /* empty value cell placeholder */
 "None" = "Ninguno";
@@ -107,10 +100,7 @@
 "Note" = "Nota";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
-   OK button label
-   Web view error opening URL cancel button. */
+   OK button label */
 
 
 
@@ -123,14 +113,11 @@
 /* alert title */
 "Preference changed" = "Preferencia modificada";
 
-/* title for successful in app purchase */
-"Purchase %@" = "Comprar %@";
-
 /* Purchase failed alert title */
 "Purchase Failed" = "Error en la compra";
 
 /* Buy button thank you message */
-"Purchased. Thank you!" = "Comprado. Gracias";
+"Purchased. Thank you!" = "Comprado. Gracias.";
 
 /* Purchasing is disabled alert title */
 "Purchasing is Disabled" = "La compra está desactivada";
@@ -149,6 +136,9 @@
 /* Restore failed alert title */
 "Restore Failed" = "Error al restaurar";
 
+/* 'Restore Purchases' button title string */
+"Restore Purchases" = "Restaurar compras";
+
 /* Right Text Align button accessibility label. */
 "Right text align" = "Alinear texto a la derecha";
 
@@ -159,22 +149,22 @@
 "Strike Through" = "Tachar";
 
 /* Alert description for error loading product information */
-"There was an error loading information from the App Store" = "Se produjo un error al cargar la información desde la App Store";
+"This device might not be connected to the Internet." = "Es posible que este dispositivo no esté conectado a Internet.";
 
 /* Certificate trust alert button title */
 "Trust Always" = "Confiar siempre";
 
+/* Alert title for error loading product information */
+"Unable to reach App Store" = "No se puede conectar con la App Store";
+
 /* Underline button accessibility label */
-"Underline" = "Subrayado";
+"Underline" = "Subrayar";
 
 /* Undo button title */
 "Undo" = "Deshacer";
 
 /* placeholder text */
 "username" = "nombre de usuario";
-
-/* in app purchase verify button title */
-"Verify" = "Verificar";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Ha pulsado un enlace que modificará las siguientes preferencias:\n\n“%@”\n\n¿Desea aceptar estos cambios?";

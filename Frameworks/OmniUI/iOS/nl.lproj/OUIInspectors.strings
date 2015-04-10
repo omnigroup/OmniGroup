@@ -2,6 +2,7 @@
 "%@ points" = "%@ punten";
 
 /* title format for color component slider */
+
 "<alpha title+value>" = "Doorzichtigheid: %d%%";
 
 /* title format for color component slider */

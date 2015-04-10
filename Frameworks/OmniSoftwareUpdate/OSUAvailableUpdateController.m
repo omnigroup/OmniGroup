@@ -1,4 +1,4 @@
-// Copyright 2007-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,6 +43,21 @@ NSString * const OSUAvailableUpdateControllerLastCheckUserInitiatedBinding = @"l
 RCS_ID("$Id$");
 
 @interface OSUAvailableUpdateController ()
+
+@property(nonatomic,strong) IBOutlet NSArrayController *availableItemController;
+@property(nonatomic,strong) IBOutlet NSTextField *titleTextField;
+@property(nonatomic,strong) IBOutlet NSTextField *messageTextField;
+@property(nonatomic,strong) IBOutlet NSProgressIndicator *spinner;
+@property(nonatomic,strong) IBOutlet NSSplitView *itemsAndReleaseNotesSplitView;
+@property(nonatomic,strong) IBOutlet NSTableView *itemTableView;
+@property(nonatomic,strong) IBOutlet WebView *releaseNotesWebView;
+@property(nonatomic,strong) IBOutlet NSImageView *appIconImageView;
+@property(nonatomic,strong) IBOutlet NSButton *installButton;
+@property(nonatomic,strong) IBOutlet NSButton *cancelButton;
+
+@property(nonatomic,strong) IBOutlet NSView *itemAlertPane;
+@property(nonatomic,strong) IBOutlet NSTextField *itemAlertMessage;
+
 - (void)_resizeInterface:(BOOL)resetDividerPosition;
 - (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
 - (void)_refreshDefaultAction;
@@ -50,6 +65,23 @@ RCS_ID("$Id$");
 @end
 
 @implementation OSUAvailableUpdateController
+{
+    CGFloat _minimumAlertPaneHeight;
+    CGSize _buttonExtraSize;
+    
+    BOOL _displayingWarningPane;
+    
+    // KVC
+    NSArray *_itemSortDescriptors;
+    NSPredicate *_itemFilterPredicate;
+    NSArray *_availableItems;
+    NSIndexSet *_selectedItemIndexes;
+    OSUItem *_selectedItem;
+    BOOL _loadingReleaseNotes;
+    BOOL _checkInProgress;
+    BOOL _lastCheckFailed;
+    BOOL _lastCheckExplicit;
+}
 
 + (OSUAvailableUpdateController *)availableUpdateController:(BOOL)shouldCreate;
 {
@@ -73,7 +105,7 @@ RCS_ID("$Id$");
     
     NSError *error = nil;
     if (![[OSUController sharedController] beginDownloadAndInstallFromPackageAtURL:downloadURL item:item error:&error])
-        [NSApp presentError:error];
+        [[NSApplication sharedApplication] presentError:error];
     else
         [self close];
 }
@@ -99,7 +131,6 @@ RCS_ID("$Id$");
 {
     [self unbind:OSUAvailableUpdateControllerCheckInProgressBinding];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSViewFrameDidChangeNotification object:nil];
-    [super dealloc];
 }
 
 - (NSString *)windowNibName;
@@ -114,9 +145,8 @@ RCS_ID("$Id$");
     // Most recent version should be at the top so the user doesn't have to scroll down if a bunch of versions are shown.
     NSSortDescriptor *byVersion = [[NSSortDescriptor alloc] initWithKey:@"buildVersion" ascending:NO selector:@selector(compareToVersionNumber:)];
     _itemSortDescriptors = [[NSArray alloc] initWithObjects:byVersion, nil];
-    [byVersion release];
     
-    _itemFilterPredicate = [[OSUItem availableAndNotSupersededPredicate] retain];
+    _itemFilterPredicate = [OSUItem availableAndNotSupersededPredicate];
 }
 
 - (void)windowDidLoad;
@@ -134,9 +164,6 @@ RCS_ID("$Id$");
         [_installButton setFrame:oldFrame];
     }
         
-    // If running on 10.6+, use the "pane splitter" style instead of the "thick divider" style (they're *almost* identical...)
-    [_itemsAndReleaseNotesSplitView setDividerStyle:NSSplitViewDividerStylePaneSplitter];
-    
     // Allow @media {...} in the release notes to display differently when we are showing the content
     [_releaseNotesWebView setMediaStyle:@"osu-available-updates"];
     
@@ -219,7 +246,6 @@ RCS_ID("$Id$");
         // Append the bundle version
         OFVersionNumber *versionNumber = [[OFVersionNumber alloc] initWithVersionString:[bundleInfo objectForKey:(id)kCFBundleVersionKey]];
         version = [version stringByAppendingFormat:@" (v%@ built %s)", [versionNumber prettyVersionString], __DATE__];
-        [versionNumber release];
     }
 
     NSArray *displayedItems = [_availableItemController arrangedObjects];
@@ -247,7 +273,7 @@ RCS_ID("$Id$");
         formatted = [[formatted stringByAppendingString:@"  "] stringByAppendingString:format];
     }
     
-    NSMutableAttributedString *detailText = [[[NSMutableAttributedString alloc] initWithString:formatted] autorelease];
+    NSMutableAttributedString *detailText = [[NSMutableAttributedString alloc] initWithString:formatted];
     [detailText addAttribute:NSFontAttributeName value:[NSFont messageFontOfSize:[NSFont smallSystemFontSize]] range:(NSRange){0, [detailText length]}];
     NSRange leftBracket = [[detailText string] rangeOfString:@"["];
     NSRange rightBracket = [[detailText string] rangeOfString:@"]"];
@@ -279,12 +305,11 @@ RCS_ID("$Id$");
         return;
     
     [self willChangeValueForKey:OSUAvailableUpdateControllerAvailableItemsBinding];
-    [_availableItems release];
     _availableItems = [[NSArray alloc] initWithArray:items];
     [self didChangeValueForKey:OSUAvailableUpdateControllerAvailableItemsBinding];
     
     /* The code below adjusts some ui state according to _availableItems, so we need to make sure the nib has been loaded. Our callers try not to even create us if our window won't be shown, so this bit of non-laziness shouldn't incur any extra cost. */
-    [self window];
+    (void)[self window];
     
     /* The price column should be visible only if there's anything in it. */
     BOOL haveAnyPrices = NO;
@@ -322,7 +347,6 @@ RCS_ID("$Id$");
         return;
     
     [self willChangeValueForKey:OSUAvailableUpdateControllerSelectedItemIndexesBinding];
-    [_selectedItemIndexes release];
     _selectedItemIndexes = [indexes copy];
     [self didChangeValueForKey:OSUAvailableUpdateControllerSelectedItemIndexesBinding];
     [self _refreshSelectedItem:nil];
@@ -607,7 +631,6 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
         if (priceString != nil) {
             NSAttributedString *s = [[NSAttributedString alloc] initWithString:[rowItem priceString] attributes:[rowItem priceAttributesForStyle:[cell backgroundStyle]]];
             [cell setAttributedStringValue:s];
-            [s release];
         } else {
             [cell setStringValue:@""];
         }
@@ -881,7 +904,6 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
 
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:releaseNotesURL cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:120.0];
     [[_releaseNotesWebView mainFrame] loadRequest:request];
-    [request release];
 }
 
 - (void)_adjustViewLayout:(NSNotification *)note

@@ -8,6 +8,7 @@
 #import "OFXTestCase.h"
 
 #import "OFXTrace.h"
+#import "OFXAccountClientParameters.h"
 
 #import <OmniFoundation/OFNull.h>
 #import <OmniDAV/ODAVErrors.h>
@@ -523,6 +524,38 @@ RCS_ID("$Id$")
         XCTAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataB, @"test2.package"));
     }
 }
+
+// Simulate a network failure while trying to delete version N of a file after uploading version N+1. This started happening fairly often in 10.10, seemingly due to changes in the network stack <bug:///109269> (Unassigned: Please don't interpret network loss as a conflict error [distance, ssl]). We now ignore network failures when doing this cleanup on an upload, but we should eventually notice these stale versions and clean them up.
+- (void)testCleanupOfStaleVersions;
+{
+    OFXAgent *agentA = self.agentA;
+    agentA.clientParameters.deletePreviousFileVersionAfterNewVersionUploaded = NO;
+
+    OFXAgent *agentB = self.agentB;
+    agentB.syncSchedule = OFXSyncScheduleNone;
+
+    // Upload two versions of a file on A
+    OFXFileMetadata *originalMetadata = [self uploadFixture:@"test.package"];
+    OFXFileMetadata *updatedMetadata = [self uploadFixture:@"test2.package" as:@"test.package" replacingMetadata:originalMetadata];
+
+    // Turn syncing on for agent B; it should download the newest version of the document and delete the old one.
+    agentB.syncSchedule = OFXSyncScheduleAutomatic;
+    
+    OFXFileMetadata *finalMetadataB = [self waitForFileMetadata:agentB where:^BOOL(OFXFileMetadata *metadata) {
+        if ([metadata.fileIdentifier isEqual:updatedMetadata.fileIdentifier] && [metadata.editIdentifier isEqual:updatedMetadata.editIdentifier]) {
+            if (metadata.downloaded)
+                return YES;
+            if (!metadata.downloading)
+                [agentB requestDownloadOfItemAtURL:metadata.fileURL completionHandler:nil];
+        }
+        return NO;
+    }];
+    
+    XCTAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadataB, @"test2.package"), "Agent B should have downloaded the current version, not the stale version");
+    XCTAssert(OFXTraceHasSignal(@"OFXContainerAgent.delete_stale_version_during_sync"), "The old version should have been noticed and cleaned up.");
+}
+
+
 
 // Write version of -testLocalUpdateWhileDownloading where we simulate local unsaved changes when there is an incoming download update of a file
 // Test uploading a new document w/o automatically downloading a different large document

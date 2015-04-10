@@ -46,6 +46,7 @@
 - (NSArray *)arrayByInsertingObject:(id)anObject atIndex:(NSUInteger)index;
 - (NSArray *)arrayByRemovingObject:(id)anObject;
 - (NSArray *)arrayByRemovingObjectIdenticalTo:(id)anObject;
+- (NSArray *)arrayByReplacingObjectAtIndex:(NSUInteger)index withObject:(id)anObject;
 - (NSDictionary *)indexBySelector:(SEL)aSelector;
 - (NSDictionary *)indexBySelector:(SEL)aSelector withObject:(id)argument;
 - (NSArray *)arrayByPerformingSelector:(SEL)aSelector;

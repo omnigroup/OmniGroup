@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -61,7 +61,7 @@ RCS_ID("$Id$")
 
 - (UINavigationController *)topLevelNavigationController;
 {
-    return OB_CHECKED_CAST(UINavigationController, self.wrappedViewController);
+    return OB_CHECKED_CAST_OR_NIL(UINavigationController, self.wrappedViewController);
 }
 
 @synthesize homeScreenViewController = _homeScreenViewController;
@@ -161,8 +161,10 @@ RCS_ID("$Id$")
         [newViewControllers insertObject:viewController atIndex:0];
         folderItem = folderItem.parentFolder;
     }
-    
-    [newViewControllers insertObject:existingViewControllers[0] atIndex:0];
+
+    UIViewController *firstExistingViewController = [existingViewControllers firstObject];
+    OBASSERT(firstExistingViewController != nil);
+    [newViewControllers insertObject:firstExistingViewController atIndex:0];
     [self.topLevelNavigationController setViewControllers:newViewControllers animated:animated];
 }
 
@@ -196,6 +198,24 @@ RCS_ID("$Id$")
     [self.topLevelNavigationController pushViewController:picker animated:animated];
 }
 
+- (void)editSettingsForAccount:(OFXServerAccount *)account;
+{
+    [self _endEditingMode];
+    
+#ifdef OMNI_ASSERTIONS_ON
+    // We need to pop to either the homeScreenContainer or the homeScreenViewController. This depends on size classes, but one of those should ALWAYS be at the root of topLevelNavigationController. So now we just assert and unconditionally call -popToRootViewController:.
+    UIViewController *navRootVC = [self.topLevelNavigationController.viewControllers firstObject];
+    OBASSERT([navRootVC isKindOfClass:[self.homeScreenContainer class]] || [navRootVC isKindOfClass:[self.homeScreenViewController class]]);
+#endif
+    
+    // This was originally setup to pop non-animated and then -editSettingsForAccount: below would end up pushing a new view controller on. Under some circumstances, this was causing our view/view controllers to be left in an unuseable state. (See bug:///111954) Popping with animation and using the transition coordinator to push the new view controller once the pop animation completes seems to work, and we have the added bonus of keeping the user's context. (They get to see the pop and push to the 'edit creds' screen.)
+    [self.topLevelNavigationController popToRootViewControllerAnimated:YES];
+    [self.topLevelNavigationController.transitionCoordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        // Nothing to do here, we just want the completion handler
+    } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self.homeScreenViewController editSettingsForAccount:account];
+    }];
+}
 
 - (ODSScope *)localDocumentsScope;
 {
@@ -209,8 +229,11 @@ RCS_ID("$Id$")
         return nil;
     else {
         UIViewController *viewController = self.topLevelNavigationController.topViewController;
-        OBASSERT([viewController isKindOfClass:[OUIDocumentPickerViewController class]]);
-        return (OUIDocumentPickerViewController *)viewController;
+        if ([viewController isKindOfClass:[OUIDocumentPickerViewController class]]) {
+            return (OUIDocumentPickerViewController *)viewController;
+        }else{
+            return nil;
+        }
     }
 }
 
@@ -303,7 +326,7 @@ RCS_ID("$Id$")
 
 - (UIStatusBarStyle)preferredStatusBarStyle;
 {
-    if (((UINavigationController *)self.wrappedViewController).viewControllers.count == 1)
+    if ([(((UINavigationController *)self.wrappedViewController).navigationBar.tintColor) isEqual:[UIColor whiteColor]])
         return UIStatusBarStyleLightContent;
     else
         return UIStatusBarStyleDefault;

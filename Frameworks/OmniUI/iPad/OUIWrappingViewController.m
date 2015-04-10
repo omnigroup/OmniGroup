@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 #import <OmniUI/OUIWrappingViewController.h>
 
 #import <objc/runtime.h>
+
+#import <OmniUI/OUIRotationLock.h>
 
 RCS_ID("$Id$")
 
@@ -91,6 +93,17 @@ RCS_ID("$Id$")
 - (UIViewController *)childViewControllerForStatusBarStyle;
 {
     return self.wrappedViewController.childViewControllerForStatusBarStyle;
+}
+
+- (BOOL)shouldAutorotate;
+{
+    NSUInteger rotationLockCount = [OUIRotationLock activeLocks].count;
+    if (rotationLockCount > 0) {
+        return NO;
+    }
+    else {
+        return YES;
+    }
 }
 
 @end

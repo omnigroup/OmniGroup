@@ -1,4 +1,4 @@
-// Copyright 2000-2006, 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -86,7 +86,6 @@ OAHierarchicalPopUpController should be instantiated in a NIB file, with its the
     OBASSERT(theButton != nil);
     OBASSERT(theTopMenu == nil);
 
-    [theButton retain];
     if ([theButton pullsDown]) {
         pulldownButtonTitleItem = [[theButton itemAtIndex:0] retain];
     } else {

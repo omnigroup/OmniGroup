@@ -126,7 +126,7 @@
 		00E51EA5FE8AB1FF11C9CC38 /* ONUDPSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONUDPSocket.h; sourceTree = "<group>"; };
 		00E51EB7FE8AB1FF11C9CC38 /* OmniSourceLicense.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OmniSourceLicense.html; sourceTree = "<group>"; };
 		00E51EBBFE8AB1FF11C9CC38 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		00E51EBCFE8AB1FF11C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		18EAC01EFFC40E94C697A14E /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/OmniNetworking.strings; sourceTree = "<group>"; };
 		34A1595A056458170097A113 /* OmniNetworking.order */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniNetworking.order; sourceTree = "<group>"; };
 		34CA5FA20FDEE29C005FF9D0 /* ONFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ONFeatures.h; sourceTree = "<group>"; };
@@ -166,7 +166,7 @@
 		A2962D0506D2703C00D7261C /* rfc3491.txt */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 1; name = rfc3491.txt; path = /Network/Public/Documentation/RFC/rfc3491.txt; sourceTree = "<absolute>"; };
 		A2962D1006D2735900D7261C /* rfc3454.txt */ = {isa = PBXFileReference; explicitFileType = text; fileEncoding = 1; name = rfc3454.txt; path = /Network/Public/Documentation/RFC/rfc3454.txt; sourceTree = "<absolute>"; };
 		A2962D2506D28BAA00D7261C /* IDNEncodingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = IDNEncodingTests.m; path = UnitTests/IDNEncodingTests.m; sourceTree = "<group>"; };
-		A2B5A9F005192F930097A146 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = /System/Library/Frameworks/SystemConfiguration.framework; sourceTree = "<absolute>"; };
+		A2B5A9F005192F930097A146 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		A2D3FF4C0458A9E70097A146 /* ONUDPTrafficTests.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = ONUDPTrafficTests.m; path = UnitTests/ONUDPTrafficTests.m; sourceTree = "<group>"; };
 		A2D556100454A4CB0097A146 /* ONHostAddressTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ONHostAddressTests.m; path = UnitTests/ONHostAddressTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -512,7 +512,7 @@
 		00E51E85FE8AB1FF11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0630;
 			};
 			buildConfigurationList = 4A07274708A02D1300A31187 /* Build configuration list for PBXProject "OmniNetworking" */;
 			compatibilityVersion = "Xcode 3.2";

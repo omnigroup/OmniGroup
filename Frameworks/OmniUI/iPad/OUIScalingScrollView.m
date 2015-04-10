@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,12 @@
 #import <OmniUI/OUIAppController.h>
 
 RCS_ID("$Id$");
+
+@interface OUIScalingScrollView ()
+
+@property (nonatomic) BOOL haveDoneInitialInsetAdjustment;
+
+@end
 
 @implementation OUIScalingScrollView
 
@@ -36,8 +42,11 @@ static id _commonInit(OUIScalingScrollView *self)
     return _commonInit(self);
 }
 
-// Caller should call -sizeInitialViewSizeFromCanvasSize on us after setting this.
+// Caller should call -sizeInitialViewSizeFromUnscaledContentSize on us after setting this.
 @synthesize allowedEffectiveScaleExtent = _allowedEffectiveScaleExtent;
+
+// Need to explicitly declare this @dynamic since the superclass, not this implementation, is responsible for synthesizing it
+@dynamic delegate;
 
 static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 {
@@ -47,18 +56,18 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     return view;
 }
 
-- (CGFloat)fullScreenScaleForCanvasSize:(CGSize)canvasSize;
+- (CGFloat)fullScreenScaleForUnscaledContentSize:(CGSize)unscaledContentSize;
 {
-    CGRect scrollBounds = [self.delegate scallingScrollViewContentViewFullScreenBounds:self];
+    CGRect scrollBounds = [self.delegate scalingScrollViewContentViewFullScreenBounds:self];
 
-    CGFloat fitXScale = CGRectGetWidth(scrollBounds) / canvasSize.width;
-    CGFloat fitYScale = CGRectGetHeight(scrollBounds) / canvasSize.height;
+    CGFloat fitXScale = CGRectGetWidth(scrollBounds) / unscaledContentSize.width;
+    CGFloat fitYScale = CGRectGetHeight(scrollBounds) / unscaledContentSize.height;
     CGFloat fullScreenScale = MIN(fitXScale, fitYScale); // the maximum size that won't make us scrollable.
     
     return fullScreenScale;
 }
 
-- (void)adjustScaleTo:(CGFloat)effectiveScale canvasSize:(CGSize)canvasSize;
+- (void)adjustScaleTo:(CGFloat)effectiveScale unscaledContentSize:(CGSize)unscaledContentSize;
 {
     OUIScalingView *view = _scalingView(self);
     if (!view)
@@ -70,12 +79,12 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     view.transform = CGAffineTransformIdentity;
     
     // Build the new frame based on an integral scaling of the canvas size and make the bounds match. Thus the view is 1-1 pixel resolution.
-    CGRect scaledCanvasSize = CGRectIntegral(CGRectMake(0, 0, effectiveScale * canvasSize.width, effectiveScale * canvasSize.height));
-    view.frame = scaledCanvasSize;
-    view.bounds = scaledCanvasSize;
+    CGRect scaledContentSize = CGRectIntegral(CGRectMake(0, 0, effectiveScale * unscaledContentSize.width, effectiveScale * unscaledContentSize.height));
+    view.frame = scaledContentSize;
+    view.bounds = scaledContentSize;
     
     // Need to reset the min/max zoom to be factors of our current scale.  The minimum scale allowed needs to be sufficient to fit the whole graph on screen.  Then, allow zooming up to at least 4x that size or 4x the canvas size, whatever is larger.
-    CGFloat minimumZoom = MIN(OFExtentMin(_allowedEffectiveScaleExtent), [self fullScreenScaleForCanvasSize:canvasSize]);
+    CGFloat minimumZoom = MIN(OFExtentMin(_allowedEffectiveScaleExtent), [self fullScreenScaleForUnscaledContentSize:unscaledContentSize]);
     CGFloat maximumZoom = OFExtentMax(_allowedEffectiveScaleExtent);
 
     BOOL isTiled = [view isKindOfClass:[OUITiledScalingView class]];
@@ -84,7 +93,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
         
         // Limit the maximum zoom size (for now) based on the pixel count we'll cover.  Assume each pixel in the view backing store is 4 bytes. Limit to 16MB of video memory (other backing stores, animating between two zoom levels will temporarily double this). This does mean that if you have a large canvas, we might not even allow you to reach 100%. Better than crashing.
         CGFloat maxVideoMemory = 16*1024*1024;
-        CGFloat canvasVideoUsage = 4 * canvasSize.width * canvasSize.height;
+        CGFloat canvasVideoUsage = 4 * unscaledContentSize.width * unscaledContentSize.height;
         maximumZoom = MIN(maximumZoom, sqrt(maxVideoMemory / canvasVideoUsage));
     }
         
@@ -102,9 +111,9 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
         [(OUITiledScalingView *)view tileVisibleRect];
     
     CGSize viewSize = view.frame.size;
-    self.contentSize = CGSizeMake(viewSize.width, viewSize.height);
+    self.contentSize = viewSize;// this has the side effect of scrolling back to origin of scrollview
 
-    [self adjustContentInsetAnimated:NO];
+    [self adjustContentInsetAnimated:NO];  // this has the side effect of scrolling back to origin of scrollview
     
     // UIScrollView will show scrollers if we have the same (or maybe it is nearly the same) size but aren't really scrollable.  See <bug://bugs/60077> (weird scroller issues in landscape mode)
     CGSize scrollSize = self.bounds.size;
@@ -129,13 +138,21 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
     CGFloat xSpace = MAX(0, scrollSize.width - viewSize.width);
     CGFloat ySpace = MAX(0, scrollSize.height - viewSize.height);
     
-    UIEdgeInsets zi = UIEdgeInsetsMake(ySpace/2, xSpace/2, ySpace/2, xSpace/2);  // natural insets to center the canvas
-    UIEdgeInsets ei = self.extraEdgeInsets;                                    // insets required for avoiding the navbar and toolbar
-    UIEdgeInsets totalInsets = UIEdgeInsetsMake(fmax(zi.top, ei.top),
-                                                fmax(zi.left, ei.left),
-                                                fmax(zi.bottom, ei.bottom),
-                                                fmax(zi.right, ei.right));
+    UIEdgeInsets totalInsets = UIEdgeInsetsMake(ySpace/2, xSpace/2, ySpace/2, xSpace/2);  // natural insets to center the canvas
+    totalInsets.left = fmax(totalInsets.left, self.minimumInsets.left);
+    totalInsets.right = fmax(totalInsets.right, self.minimumInsets.right);
     
+    if (ySpace > self.minimumInsets.top + self.minimumInsets.bottom) {
+        // need more top or bottom insets
+        totalInsets.top = fmax(totalInsets.top, self.minimumInsets.top);
+        totalInsets.bottom = fmax(totalInsets.bottom, self.minimumInsets.bottom);
+    } else {
+        // all the needed space is accounted for.  don't try to divide it evenly because that may not be correct (toolbars are shorter than nav bars).
+        totalInsets.top = self.minimumInsets.top;
+        totalInsets.bottom = self.minimumInsets.bottom;
+    }
+    
+    totalInsets.bottom = fmax(totalInsets.bottom, self.temporaryBottomInset);
     
     if (UIEdgeInsetsEqualToEdgeInsets(self.contentInset, totalInsets))
         return;
@@ -156,10 +173,11 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 #pragma mark UIView subclass
 
 - (void)layoutSubviews;
-{   // layoutSubviews gets called frequently while scrolling, so it would be nice to only do this once,
-    // but it turns out that we only get the correct height of the status bar after a few times through.
-    // and since there's no noticeable performance problem here, we'll just keep calling it over and over and over again.
-    [self adjustContentInsetAnimated:NO];
+{
+    if (!_haveDoneInitialInsetAdjustment) {
+        [self adjustContentInsetAnimated:NO];
+        _haveDoneInitialInsetAdjustment = YES;
+    }
 }
 
 @end

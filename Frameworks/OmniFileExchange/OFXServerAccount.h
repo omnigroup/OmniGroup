@@ -9,7 +9,7 @@
 
 #import <Foundation/NSObject.h>
 
-@class OFXServerAccountType;
+@class OFXServerAccountType, OFXServerAccountRegistry;
 
 // This is a terrible name, but it is better than having separate defines that are really all the same.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
@@ -33,6 +33,8 @@ typedef NS_ENUM(NSUInteger, OFXServerAccountUsageMode) {
 @interface OFXServerAccount : NSObject
 
 + (BOOL)validateLocalDocumentsURL:(NSURL *)documentsURL reason:(OFXServerAccountLocalDirectoryValidationReason)reason error:(NSError **)outError;
++ (BOOL)validatePotentialLocalDocumentsParentURL:(NSURL *)documentsURL registry:(OFXServerAccountRegistry *)registry error:(NSError **)outError; // For NSSavePanel in the UI
+
 + (NSURL *)signinURLFromWebDAVString:(NSString *)webdavString;
 + (NSString *)suggestedDisplayNameForAccountType:(OFXServerAccountType *)accountType url:(NSURL *)url username:(NSString *)username excludingAccount:(OFXServerAccount *)excludeAccount;
 

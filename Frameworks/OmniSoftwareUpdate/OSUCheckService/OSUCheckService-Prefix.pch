@@ -1,0 +1,5 @@
+#import <OmniBase/rcsid.h>
+#import <OmniBase/macros.h>
+
+#import <Foundation/Foundation.h>
+

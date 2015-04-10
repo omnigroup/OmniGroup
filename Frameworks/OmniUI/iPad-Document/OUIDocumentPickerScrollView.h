@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,6 +28,9 @@ extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 
 - (NSArray *)sortDescriptorsForDocumentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView;
 - (BOOL)isReadyOnlyForDocumentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView;
+
+- (BOOL)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView rectIsFullyVisible:(CGRect)rect;
+
 @end
 
 @interface OUIDocumentPickerScrollView : UIScrollView <UIGestureRecognizerDelegate>
@@ -35,9 +38,15 @@ extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 @property(nonatomic,assign) id <OUIDocumentPickerScrollViewDelegate> delegate;
 
 @property(nonatomic,assign) BOOL shouldHideTopControlsOnNextLayout;
+@property(nonatomic,readonly) BOOL isShowingTitleLabel;
+
+- (CGFloat)contentOffsetYToHideTopControls;
+- (CGFloat)contentOffsetYForTopControlsFullAlpha;
+- (CGFloat)contentOffsetYToShowTopControls;
 
 - (void)retileItems;
 
+@property(nonatomic,retain) UILabel *titleViewForCompactWidth;
 @property(nonatomic,retain) UIView *topControls;
 @property(nonatomic,retain) OUIDocumentRenameSession *renameSession;
 

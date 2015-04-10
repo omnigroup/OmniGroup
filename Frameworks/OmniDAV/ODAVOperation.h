@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,16 +22,22 @@
 
 @property(nonatomic,readonly) NSArray *redirects; /* see below */
 
+@property(nonatomic,readonly) BOOL retryable;
 @property(nonatomic,assign) NSUInteger retryIndex;
 
 @end
 
 /* The array returned by -redirects holds a sequence of dictionaries, each corresponding to one redirection or URL rewrite. */
 @interface ODAVRedirect : NSObject
+
++ (NSURL *)suggestAlternateURLForURL:(NSURL *)url withRedirects:(NSArray *)redirects;
+
 @property(nonatomic,readonly,copy) NSURL *from;
 @property(nonatomic,readonly,copy) NSURL *to;
 @property(nonatomic,readonly,copy) NSString *type;
 @end
+
+extern NSString * const ODAVContentTypeHeader;
 
 /* Non-3xx redirect types here */
 #define    kODAVRedirectPROPFIND    (@"PROPFIND")  /* Redirected ourselves because PROPFIND returned a URL other than the one we did a PROPFIND on; see for example the last paragraph of RFC4918 [5.2] */

@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,13 +14,11 @@
 #import <OmniAppKit/OATextAttributes.h>
 #import <CoreGraphics/CGBase.h>
 
-@class OUIStackedSlicesInspectorPane, OUIInspectorPane, OUIInspectorSlice, OUIInspectorPopoverController, OUIBarButtonItem;
-@class UIBarButtonItem, UINavigationController, UIPopoverController;
+@class OUIStackedSlicesInspectorPane, OUIInspectorPane, OUIInspectorSlice, OUIBarButtonItem;
+@class UIBarButtonItem, UINavigationController;
 
 extern CGFloat OUIInspectorContentWidth;
 extern const NSTimeInterval OUICrossFadeDuration;
-
-extern NSString * const OUIInspectorDidPresentNotification;
 
 extern NSString * const OUIInspectorWillBeginChangingInspectedObjectsNotification;
 extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
@@ -28,6 +26,7 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 @interface OUIInspector : NSObject
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
++ (UIBarButtonItem *)inspectorOUIBarButtonItemWithTarget:(id)target action:(SEL)action;
 
 + (UIColor *)backgroundColor;
 + (UIColor *)disabledLabelTextColor;
@@ -42,6 +41,8 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 @property(readonly,nonatomic) OUIInspectorPane *mainPane;
 @property(readonly,nonatomic) CGFloat height;
 @property(assign,nonatomic) BOOL alwaysShowToolbar;
+@property(nonatomic, weak) UIView *gesturePassThroughView;
+@property(nonatomic) BOOL animatingPushOrPop;
 
 @property(weak,nonatomic) id <OUIInspectorDelegate> delegate;
 
@@ -53,11 +54,19 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 @property(readonly,nonatomic,getter=isVisible) BOOL visible;
 
-- (BOOL)inspectObjects:(NSArray *)objects fromBarButtonItem:(UIBarButtonItem *)item;
-- (BOOL)inspectObjects:(NSArray *)objects fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
+- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact fromBarButtonItem:(UIBarButtonItem *)item;
+- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)item;
+- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
+- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
+- (void)redisplayInspectorForNewTraitCollection:(UITraitCollection *)traitsCollection;
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason; // If you wrap edits in the will/did change methods below, this will be called automatically on the 'did'.
+- (void)dismissImmediatelyIfVisible;
 - (void)dismiss;
 - (void)dismissAnimated:(BOOL)animated;
+
+@property (nonatomic) BOOL useFullScreenOnHorizontalCompact;
+
+- (void)updateInspectorWithTraitCollection:(UITraitCollection *)traitCollection;
 
 - (NSArray *)makeAvailableSlicesForStackedSlicesPane:(OUIStackedSlicesInspectorPane *)pane;
 
@@ -74,6 +83,11 @@ extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
 
 - (void)beginChangeGroup;  // start of intermideate event
 - (void)endChangeGroup;    // end of intermediate event
+
+@property (copy, nonatomic) void (^presentInspectorCompletion)(void);
+@property (copy, nonatomic) void (^animationsToPerformAlongsidePresentation)(id<UIViewControllerTransitionCoordinatorContext> context);
+@property (copy, nonatomic) void (^dismissInspectorCompletion)(void);
+@property (copy, nonatomic) void (^animationsToPerformAlongsideDismissal)(id<UIViewControllerTransitionCoordinatorContext> context);
 
 @end
 

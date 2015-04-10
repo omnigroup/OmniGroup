@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -138,10 +138,15 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
         finishWithError(error);
     }
 
-    _credentialsAccepted = NO;
-    _attemptCredential = [NSURLCredential credentialWithUser:_username password:_password persistence:NSURLCredentialPersistenceNone];
-    
-    [self _checkCredentials];
+    if (_credentialsAccepted && OFISEQUAL(_attemptCredential.user, _username) && OFISEQUAL(_attemptCredential.password, _password)) {
+        // The provided credentials were accepted last time (we must be retrying for some other reason), so we can skip checking the credentials (which would likely fail since we're using NSURLCredentialPersistenceForSession and thus won't be challenged until our session expires).
+        [self _checkRemoteAccountDirectory];
+    } else {
+        _credentialsAccepted = NO;
+        _attemptCredential = [NSURLCredential credentialWithUser:_username password:_password persistence:NSURLCredentialPersistenceNone];
+        
+        [self _checkCredentials];
+    }
 }
 
 #pragma mark - Private
@@ -219,10 +224,10 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
         // An additional test before starting the real validation - check for creation of the OmniPresence folder
         NSURL *remoteSyncDirectory = [_account.remoteBaseURL URLByAppendingPathComponent:@".com.omnigroup.OmniPresence" isDirectory:YES];
         
-        [_connection makeCollectionAtURLIfMissing:remoteSyncDirectory baseURL:_account.remoteBaseURL completionHandler:^(NSURL *resultURL, NSError *errorOrNil) {
+        [_connection makeCollectionAtURLIfMissing:remoteSyncDirectory baseURL:_account.remoteBaseURL completionHandler:^(ODAVURLResult *result, NSError *errorOrNil) {
             OBASSERT([NSOperationQueue currentQueue] == _validationOperationQueue);
 
-            if (!resultURL)
+            if (!result)
                 finishWithError(errorOrNil);
             
             if (_challengeServiceIdentifier == nil) {
@@ -254,8 +259,8 @@ static void _finishWithError(OFXDAVServerAccountValidator *self, NSError *error)
     conformanceTest.finished = ^(NSError *errorOrNil){
         OBASSERT([NSThread isMainThread]);
         
-        // Don't leave speculatively added credentials around
-        if (errorOrNil && _challengeServiceIdentifier) {
+        // Don't leave unaccepted credentials around
+        if (errorOrNil && _challengeServiceIdentifier != nil && !_credentialsAccepted) {
             OFDeleteCredentialsForServiceIdentifier(_challengeServiceIdentifier, NULL);
         }
         finishWithError(errorOrNil);

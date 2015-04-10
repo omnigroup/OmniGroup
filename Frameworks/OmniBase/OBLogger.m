@@ -1,4 +1,4 @@
-// Copyright 2013-2014 The Omni Group.  All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -169,7 +169,7 @@ static void _setPOSIXError(NSError **error, NSString *description)
     
     _messageDateFormatter = [[NSDateFormatter alloc] init];
     [_messageDateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]];
-    [_messageDateFormatter setDateFormat:@"yyyy-MM-dd hh:mm:ss.mmm ZZZ"];
+    [_messageDateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss.mmm ZZZ"];
     
     _fileNameDateFormatter = [[NSDateFormatter alloc] init];
     [_fileNameDateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"GMT"]];

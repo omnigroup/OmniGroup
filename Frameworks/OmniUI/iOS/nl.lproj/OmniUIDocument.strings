@@ -13,11 +13,17 @@
 /* megabytes */
 "%@ MB" = "%@ MB";
 
+/* home screen detail label */
+"%d items" = "%d onderdelen";
+
 /* Main toolbar title for a multiple selected documents. */
 "%ld Documents Selected" = "%ld documenten geselecteerd";
 
 /* Main toolbar title for a multiple selected items. */
 "%ld Items Selected" = "%ld onderdelen geselecteerd";
+
+/* home screen detail format -- count and item description */
+"%lu %@" = "%1$lu %2$@";
 
 /* Main toolbar title for a single selected document. */
 "1 Document Selected" = "1 document geselecteerd";
@@ -41,17 +47,20 @@
 "Actions" = "Acties";
 
 /* Cloud Setup button title to add a new account */
+
 "Add an Account" = "Voeg een account toe";
 
 /* Cloud setup modal sheet title */
 "Add Cloud Account" = "Voeg een Cloud-account toe";
 
-/* for WebDAV Both (Import and Export) account type */
-"Both" = "Beide";
-
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
+
+
+
+
+
 "Cancel" = "Annuleer";
 
 /* item not fully downloaded error title */
@@ -66,17 +75,11 @@
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Kies een sjabloon";
 
+/* Cloud setup modal sheet title */
+"Choose Account Type" = "Kies accounttype";
+
 /* export options title */
 "Choose Format" = "Kies een opmaak";
-
-/* Cloud setup modal sheet title */
-"Cloud Setup" = "Cloud-instelling";
-
-/* App menu item title */
-"Cloud Setup..." = "Cloud-instelling…";
-
-/* Account setup toolbar button title to save account settings */
-"Connect" = "Verbind";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Aangesloten";
@@ -87,11 +90,23 @@
 /* Menu option in the document picker view */
 "Copy as Image" = "Kopieer als afbeelding";
 
+/* moved aside custom sample document name */
+"CustomizedSampleDocumentName" = "%@ aangepast";
+
+/* sort by date */
+"Date" = "Datum";
+
 /* Delete toolbar item accessibility label. */
 "Delete" = "Verwijder";
 
+/* Server account setup confirmation action label format */
+"Delete \"%@\"" = "Verwijder \"%@\"";
+
 /* delete button title */
 "Delete %ld Documents" = "Verwijder %ld documenten";
+
+/* Server Account Setup button label */
+"Delete Account" = "Verwijder account";
 
 /* delete button title */
 "Delete Document" = "Verwijder document";
@@ -108,9 +123,6 @@
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "Documenten";
 
-/* Done */
-"Done" = "Gereed";
-
 /* Duplicate toolbar item accessibility label. */
 "Duplicate" = "Dupliceer";
 
@@ -123,6 +135,9 @@
 /* omni sync server setup help */
 "Easily sync Omni documents between devices. Signup is free!" = "Synchr. van Omni-documenten tussen apparaten. Aanmelden is gratis.";
 
+/* When displaying a sync error, this is the option to change the username and password. */
+"Edit Credentials" = "Wijzig gegevens";
+
 /* empty trash button title */
 "Empty Trash" = "Leeg prullenmand";
 
@@ -131,8 +146,9 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
+
+
 "Export" = "Exporteer";
 
 /* export action description */
@@ -141,23 +157,13 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Exporteer naar WebDAV";
 
-/* disabled for demo */
-"Feature not enabled for this demo" = "Functie niet ingeschakeld voor deze demo";
-
 /* finished */
 "Finished" = "Voltooid";
 
-/* Import section title */
+/* gear menu item
+   Import WebDAV server account list */
+
 "Import" = "Importeer";
-
-/* Import document title */
-"Import Document…" = "Importeer document…";
-
-/* for WebDAV Import/Export account type */
-"Import/Export" = "Importeer/exporteer";
-
-/* Group label for Cloud Setup */
-"Import/Export Accounts" = "Importeer/exporteer accounts";
 
 /* Info item accessibility label */
 "Info" = "info";
@@ -176,6 +182,7 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
+
 "Move" = "Verplaats";
 
 /* move to trash button title */
@@ -183,10 +190,10 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
+
 "Move to Trash" = "Verplaats naar prullenmand";
 
-/* Action sheet button title
-   Menu popover title */
+/* Share menu title */
 "Move to..." = "Verplaats naar";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
@@ -210,6 +217,12 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "Bijnaam";
 
+/* Export message for empty table view */
+"No accounts are configured for exporting." = "Er zijn geen accounts geconfigureerd voor het exporteren.";
+
+/* Import message for empty table view */
+"No accounts are configured for importing." = "Er zijn geen accounts geconfigureerd voor het importeren.";
+
 /* Not downloaded accessibility label. */
 "Not downloaded" = "Niet gedownload";
 
@@ -217,18 +230,9 @@
 "Not uploaded" = "Niet geüpload";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
+
 "OK" = "OK";
-
-/* for WebDAV OmniPresence edit field */
-"OmniPresence" = "OmniPresence";
-
-/* Group label for Cloud Setup */
-"OmniPresence Accounts" = "OmniPresence-accounts";
-
-/* omni sync server nickname help */
-"OmniPresence automatically keeps your documents up to date on all of your iPads and Macs." = "OmniPresence houdt uw documenten automatisch up-to-date op al uw iPad's en Mac's.";
 
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "Configuratie OmniPresence: %@";
@@ -238,6 +242,9 @@
 
 /* Server Account Setup label: password */
 "Password" = "Wachtwoord";
+
+/* Photo Library permisssions error description. */
+"Photo Library permission denied." = "Toestemming fotobibliotheek geweigerd.";
 
 /* Menu option in the document picker view */
 "Print" = "Druk af";
@@ -272,6 +279,12 @@
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "Probeer opnieuw te synchroniseren";
 
+/* Account setup toolbar button title to save account settings */
+"Save" = "Bewaar";
+
+/* document picker button label */
+"Search" = "Zoek";
+
 /* edit button title for doc picker in non-edit mode */
 "Select" = "Selecteer";
 
@@ -292,6 +305,7 @@
 
 /* export options title
    Menu option in the document picker view */
+
 "Send via Mail" = "Verstuur via e-mail";
 
 /* email action description */
@@ -303,14 +317,11 @@
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "Meld u aan voor een nieuwe account";
 
-/* sort by date */
-"Sort by date" = "Sorteer op datum";
-
-/* sort by title */
-"Sort by title" = "Sorteer op titel";
-
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "Synchroniseer nu";
+
+/* empty template picker button text */
+"Tap here to add a document without a template." = "Tik hier om een document zonder sjabloon toe te voegen.";
 
 /* empty picker button text */
 "Tap here, or on the + in the toolbar, to add a document." = "Tik hier of op de + in de werkbalk om een document toe te voegen.";
@@ -333,6 +344,9 @@
 /* error description */
 "The zip archive must contain a single document." = "Het zip-archief moet één document bevatten.";
 
+/* Photo Library permisssions error suggestion. */
+"This app does not have access to your Photo Library." = "Deze app heeft geen toegang tot uw fotobibliotheek.";
+
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Deze Cloud-account bestaat niet meer.";
 
@@ -342,12 +356,11 @@
 /* item not fully downloaded error message */
 "This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Dit item kan niet worden geëxporteerd omdat het niet volledig is gedownload. Tik op het item en wacht tot het is gedowload voordat u het opnieuw probeert.";
 
+/* sort by title */
+"Title" = "Titel";
+
 /* error title */
 "Unable to open file." = "Kan bestand niet openen.";
 
-/* Label for switch which controls whether cloud sync is allowed to use cellular data */
-"Use Cellular Data" = "Gebruik mobiele gegevens";
-
 /* Account validation status string. */
 "Validating account..." = "Bezig met valideren van de account…";
-

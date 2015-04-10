@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,7 +108,7 @@ RCS_ID("$Id$")
         [shield removeFromSuperview];
         [border removeFromSuperview];
         [snapshots makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        [transitionContext completeTransition:finished];
+        [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
         
         [destinationView setAlpha:1];
     };
@@ -208,7 +208,7 @@ RCS_ID("$Id$")
     } completion:^(BOOL finished) {
         [shield removeFromSuperview];
         [snapshots makeObjectsPerformSelector:@selector(removeFromSuperview)];
-        [transitionContext completeTransition:finished];
+        [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
     }];
     
 }
@@ -229,7 +229,7 @@ RCS_ID("$Id$")
     [UIView animateWithDuration:duration animations:^{
         destinationView.alpha = 1.0;
     } completion:^(BOOL finished) {
-        [transitionContext completeTransition:finished];
+        [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
     }];
 }
 

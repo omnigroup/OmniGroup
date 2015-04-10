@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -130,6 +130,11 @@ static void _checkInvariantsApplier(const void *key, const void *value, void *co
     
     
     return YES;
+}
+
+- (BOOL)_isValidatingAndWritingChanges;
+{
+    return _isValidatingAndWritingChanges;
 }
 #endif
 

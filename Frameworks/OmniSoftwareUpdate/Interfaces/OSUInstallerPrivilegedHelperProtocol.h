@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc.  All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,9 @@
 
 #import <Foundation/NSObject.h>
 
-#import "OSUInstallerPrivilegedHelperVersion.h"
-
 @class NSError, NSArray, NSURL, NSData;
 
-// The value for OSUInstallerPrivilegedHelperVersion (located in OSUInstallerPrivilegedHelperVersion.h) *must* be bumped every time something in this protocol changes.
+// The value for OSUInstallerPrivilegedHelperVersion (set in the project as a custom build setting so that the app and tool see the same value, and it can be used in other build settings and Info.plists) *must* be bumped every time something in this protocol changes.
 // The version number is how we determine at runtime whether we have a compatible tool installed, or must upgrade/downgrade it before doing an update.
 //
 // Whenever any significant implementation detail changes, you should also bump the version number so that we update the privileged helper tool before using it.
@@ -27,9 +25,10 @@
 
 #pragma mark Version 3 API
 
+// NOTE: As of version 6, we install per-version helper tools rather than uninstalling the old one. Older versions will attempt to uninstall a mismatching version and install their own so they know how to talk to it.
 // This will remove the launchd job associated with this privileged helper, and remove the tool from the filesystem if, and only if, the caller holds the only active connection.
 // The privileged helper will exit after sending the reply.
-- (void)uninstallWithAuthorizationData:(NSData *)authorizationData reply:(void (^)(BOOL success, NSError *error))reply;
+//- (void)uninstallWithAuthorizationData:(NSData *)authorizationData reply:(void (^)(BOOL success, NSError *error))reply;
 
 // Run the embedded installer script do to a privilege escallated install
 - (void)runInstallerScriptWithArguments:(NSArray *)arguments localizationBundleURL:(NSURL *)bundleURL authorizationData:(NSData *)authorizationData reply:(void (^)(BOOL success, NSError *error))reply;

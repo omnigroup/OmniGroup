@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -323,6 +323,13 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     }
 }
 
+- (void)setIsSmallSize:(BOOL)isSmallSize;
+{
+    _isSmallSize = isSmallSize;
+    self.metadataView.isSmallSize = isSmallSize;
+
+}
+
 #pragma mark -
 #pragma mark UIView subclass
 
@@ -374,14 +381,24 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
         _hairlineBorderView.frame = bounds;
 
         // Selection
+        CGFloat thickness = [self _borderWidth];
         if (_selectionBorderView)
-            _selectionBorderView.frame = CGRectInset(bounds, -kOUIDocumentPreviewViewSelectedBorderThickness, -kOUIDocumentPreviewViewSelectedBorderThickness);
+            _selectionBorderView.frame = CGRectInset(bounds, thickness * -1, thickness * -1);
         
         if (_statusImageView) {
+            _statusImageView.contentMode = UIViewContentModeScaleAspectFit;
+
             UIImage *statusImage = _statusImageView.image;
             if (statusImage) {
                 CGFloat positionFactor = 0.1;
                 CGSize statusImageSize = statusImage.size;
+
+                if (self.isSmallSize) {
+                    // lets scale the badges by the same ratio that the actual thumbs are scaled
+                    CGFloat decreaseFactor = kOUIDocumentPickerItemSmallSize / kOUIDocumentPickerItemNormalSize;
+                    statusImageSize.height *= decreaseFactor;
+                    statusImageSize.width *= decreaseFactor;
+                }
 
                 CGPoint center = CGPointMake(CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
                 center.x = center.x - statusImageSize.width*positionFactor;
@@ -520,7 +537,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
         DEBUG_PREVIEW_DISPLAY(@"  loading op for %@", [_item shortDescription]);
         
         Class documentClass = [[OUIDocumentAppController controller] documentClassForURL:fileItem.fileURL];
-        OUIDocumentPreview *preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileURL:fileItem.fileURL date:fileItem.fileModificationDate withArea:self.previewArea];
+        OUIDocumentPreview *preview = [OUIDocumentPreview makePreviewForDocumentClass:documentClass fileItem:fileItem withArea:self.previewArea];
         
         // Don't explode if the preview fails to load and there is no default.
         if (preview)
@@ -674,7 +691,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
             _selectionBorderView = [[UIView alloc] init];
             _selectionBorderView.userInteractionEnabled = NO;
             _selectionBorderView.layer.borderColor = [[OQMakeColor(kOUIDocumentPreviewViewSelectedBorderColor) toColor] CGColor];
-            _selectionBorderView.layer.borderWidth = kOUIDocumentPreviewViewSelectedBorderThickness;
+            _selectionBorderView.layer.borderWidth = [self _borderWidth];
             [self insertSubview:_selectionBorderView belowSubview:_hairlineBorderView];
         });
     } else if (!_selected && _selectionBorderView) {
@@ -740,6 +757,11 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     
     self.showsProgress = showProgress;
     self.progress = percent;
+}
+
+- (CGFloat)_borderWidth;
+{
+    return self.isSmallSize ? kOUIDocumentPreviewViewSmallSelectedBorderThickness : kOUIDocumentPreviewViewSelectedBorderThickness;
 }
 
 @end

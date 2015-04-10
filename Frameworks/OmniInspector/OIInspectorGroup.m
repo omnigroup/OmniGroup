@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -562,7 +562,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 
     // If there were previously no visible inspectors, update the inspection set.  We need to do this now (not queued) and even if there are no inspectors visible (since there aren't).  The issue is that the inspection set may hold pointers to objects from closed documents that are partially dead or otherwise invalid.  We want the inspectors to show the right stuff when they come on screen anyway rather than coming up and then getting updated.  We do NOT want to tell the inspectors about the updated inspection set immediately (+updateInspectionSetImmediatelyAndUnconditionally doesn't) since -prepareWindowForDisplay will do that and it would just be redundant.
     if (!hadVisibleInspector)
-        [OIInspectorRegistry updateInspectionSetImmediatelyAndUnconditionallyForWindow:[NSApp mainWindow]];
+        [OIInspectorRegistry updateInspectionSetImmediatelyAndUnconditionallyForWindow:[[NSApplication sharedApplication] mainWindow]];
     
     index = count;
     while (index--) {
@@ -837,8 +837,6 @@ static BOOL useASeparateMenuForWorkspaces = NO;
         return;
     }
     
-    [self setInitialBottommostInspector];
-    
     if (willBeVisible) {
         OIInspectorRegistry *registry = [OIInspectorRegistry inspectorRegistryForMainWindow];
         if (registry.applicationDidFinishRestoringWindows)
@@ -847,6 +845,8 @@ static BOOL useASeparateMenuForWorkspaces = NO;
             [registry addGroupToShowAfterWindowRestoration:self];
     } else
         [self _hideGroup];
+    
+    [self setInitialBottommostInspector];
 }
 
 - (void)setInitialBottommostInspector;

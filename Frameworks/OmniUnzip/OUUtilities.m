@@ -18,6 +18,8 @@ RCS_ID("$Id$");
 #error This file is not ARC-compatible
 #endif
 
+// #define DEBUG_BUFFERING
+
 #define OUZ_BUFFER_SIZE 128
 #define OUZ_UNBUFFER_THRESHOLD 16
 
@@ -101,7 +103,9 @@ static void output(struct ouzProviderBuffer *st, NSUInteger position, NSUInteger
         st->cachedProviderLength = end;
     }
     
+#ifdef DEBUG_BUFFERING
     printf("OBP %s %4" PRIuNS " at %5" PRIuNS "\n", opn, length, position);
+#endif
     
     [st->storage replaceBytesInRange:(NSRange){ position, length } withBytes:buf];
 }
@@ -178,14 +182,18 @@ static uLong ouzRead(voidpf opaque, voidpf stream, void* buf, uLong size)
             st->bufferLength = OUZ_BUFFER_SIZE;
         }
         
+#ifdef DEBUG_BUFFERING
         printf("OBP fill %5" PRIuNS " at %5" PRIuNS "\n", st->bufferLength, st->bufferStart);
+#endif
         [st->storage getBytes:st->buffer range:(NSRange){ .location = st->bufferStart, .length = st->bufferLength }];
         st->bufferState = ouz_readBuffer;
         memcpy(buf, st->buffer + (st->position - st->bufferStart), size);
     } else {
         /* Pass large reads through to the provider */
         
+#ifdef DEBUG_BUFFERING
         printf("OBP read %5lu at %5" PRIuNS "\n", size, st->position);
+#endif
         
         [(st->storage) getBytes:buf range:(NSRange){ .location = st->position, .length = size }];
     }

@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,8 @@
 #import <OmniFoundation/OFErrorRecovery.h>
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFExtent.h>
-#import <OmniFoundation/OFFilePresenterEdits.h>
+#import <OmniFoundation/OFFileEdit.h>
+#import <OmniFoundation/OFFileMotionResult.h>
 #import <OmniFoundation/OFGeometry.h>
 #import <OmniFoundation/OFHTTPState.h>
 #import <OmniFoundation/OFHTTPStateMachine.h>

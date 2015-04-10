@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -165,6 +165,12 @@ static id _commonInit(OADatePickerTextField *self)
 
 #pragma mark -
 #pragma mark NSControl subclass
+
+- (void)setEnabled:(BOOL)enabled;
+{
+    [super setEditable:enabled];
+    [calendarButton setEnabled:enabled];
+}
 
 - (void)setEditable:(BOOL)editable;
 {

@@ -63,7 +63,7 @@ module Plist
     def initialize( plist_data_or_file, listener )
       if plist_data_or_file.respond_to? :read
         @xml = plist_data_or_file.read
-      elsif File.exists? plist_data_or_file
+      elsif File.exist? plist_data_or_file
         @xml = File.read( plist_data_or_file )
       else
         @xml = plist_data_or_file

@@ -1,11 +1,11 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OUIInspectorSearchWell.h"
+#import <OmniUI/OUIInspectorSearchWell.h>
 #import <OmniUI/OUIInspectorSliceView.h>
 
 RCS_ID("$Id$");
@@ -13,10 +13,15 @@ RCS_ID("$Id$");
 
 @implementation OUIInspectorSearchWell
 
++ (NSString *)searchPlaceHolderText;
+{
+    return NSLocalizedStringFromTableInBundle(@"Search", @"OmniUI", OMNI_BUNDLE, @"Search field placeholder text");
+}
+
 static id _commonInit(OUIInspectorSearchWell *self)
 {
     self.backgroundColor = [UIColor colorWithWhite:.89 alpha:1.0f];
-    self.placeholderText = NSLocalizedStringFromTableInBundle(@"Search", @"OmniUI", OMNI_BUNDLE, @"Search field placeholder text");
+    self.placeholderText = [OUIInspectorSearchWell searchPlaceHolderText];
     self.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self.spellCheckingType = UITextSpellCheckingTypeNo;
     self.clearButtonMode = UITextFieldViewModeWhileEditing;

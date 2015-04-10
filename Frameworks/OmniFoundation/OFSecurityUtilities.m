@@ -1,4 +1,4 @@
-// Copyright 2009-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,12 @@
 
 #import <OmniFoundation/OFSecurityUtilities.h>
 
+#import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFFeatures.h>
+#import <OmniFoundation/OFUtilities.h>
+#import <Foundation/NSData.h>
+#import <Foundation/NSDictionary.h>
+#import <Foundation/NSString.h>
 #import <Security/Security.h>
 #import <Security/SecTrust.h>
 
@@ -39,19 +44,19 @@ static const struct { SecTrustResultType code; __unsafe_unretained NSString *dis
     { 0, nil }
 };
 
-static const struct { enum OFKeyAlgorithm algid; NSString *name; } algnames[] = {
-    { ka_DH,               @"DH" },       // Diffie-Hellman
-//  { CSSM_ALGID_PH,       @"PH" },       // Pohlig-Hellman
-    { ka_RSA,              @"RSA" },
-    { ka_DSA,              @"DSA" },
-//  { CSSM_ALGID_MQV,      @"MQV" },      // Menezes-Qu-Vanstone key agreement
-//  { CSSM_ALGID_ElGamal,  @"ElGamal" },
+static const struct { enum OFKeyAlgorithm algid; const char *name; } algnames[] = {
+    { ka_DH,               "DH" },       // Diffie-Hellman
+//  { CSSM_ALGID_PH,       "PH" },       // Pohlig-Hellman
+    { ka_RSA,              "RSA" },
+    { ka_DSA,              "DSA" },
+//  { CSSM_ALGID_MQV,      "MQV" },      // Menezes-Qu-Vanstone key agreement
+//  { CSSM_ALGID_ElGamal,  "ElGamal" },
     
-    { ka_EC,               @"EC" },
-//  { CSSM_ALGID_ECMQV,    @"ECMQV" },
+    { ka_EC,               "EC" },
+//  { CSSM_ALGID_ECMQV,    "ECMQV" },
     
-    { ka_AES,              @"AES" },
-    { ka_DES,              @"DES" },
+    { ka_AES,              "AES" },
+    { ka_DES,              "DES" },
 };
 
 #define arraycount(a) (sizeof(a)/sizeof(a[0]))
@@ -82,7 +87,7 @@ enum OFKeyAlgorithm OFSecKeyGetAlgorithm(SecKeyRef aKey, OFSecItemClass *outItem
         return result;
 #endif
     
-    /* As a last resort, try SecItemCopyMatching(). This function has a history of failing for no apparent reason and sometimes even returning information for a *different key*, so we really don't want to use it. [Wiml: verified broken in 10.7 and 10.9] */
+    /* As a last resort, try SecItemCopyMatching(). This function has a history of failing for no apparent reason and sometimes even returning information for a *different key*, so we really don't want to use it. [Wiml: verified broken in OSX 10.7 and 10.9, iOS 8.1] */
     NSError *subErr3;
     result = OFSecKeyGetAlgorithm_CopyMatching(aKey, outItemClass, outKeySize, outKeyFlags, err? &subErr3 : NULL);
     if (result != ka_Failure)
@@ -107,7 +112,7 @@ NSString *OFSecKeyAlgorithmDescription(enum OFKeyAlgorithm alg, unsigned int key
     
     for(unsigned i = 0; i < arraycount(algnames); i++) {
         if(algnames[i].algid == alg) {
-            algorithmName = algnames[i].name;
+            algorithmName = [NSString stringWithCString:algnames[i].name encoding:NSASCIIStringEncoding];
             break;
         }
     }
@@ -344,6 +349,24 @@ static Boolean getboolattr(CFDictionaryRef dict, CFTypeRef dictKey)
     }
 }
 
+static Boolean compareattr(CFTypeRef a, CFTypeRef b)
+{
+    /* For several attributes (at least kSecAttrKeyClass and kSecAttrKeyType), the values returned from SecItemCopyMatching() are CFNumbers, but the values of the kSecAttrKeyTypeRSA (etc.) constants which are their documented values are CFStrings. This function works around that bug. RADAR #19804744 */
+    if (!a || !b)
+        return false;
+    if (CFEqual(a, b))
+        return true;
+    if (CFGetTypeID(a) == CFNumberGetTypeID() && CFGetTypeID(b) == CFStringGetTypeID()) {
+        SInt32 numeric = CFStringGetIntValue(b);
+        CFNumberRef b_ = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &numeric);
+        Boolean result = CFEqual(a, b_);
+        CFRelease(b_);
+        if (result)
+            return true;
+    }
+    return false;
+}
+
 static enum OFKeyAlgorithm OFSecKeyGetAlgorithm_CopyMatching(SecKeyRef aKey, OFSecItemClass *outItemClass, unsigned int *outKeySize, uint32_t *outKeyFlags, NSError **err)
 {
     enum OFKeyAlgorithm keyType;
@@ -359,6 +382,18 @@ static enum OFKeyAlgorithm OFSecKeyGetAlgorithm_CopyMatching(SecKeyRef aKey, OFS
                            nil];
     CFTypeRef result = NULL;
     OSStatus rc = SecItemCopyMatching((__bridge CFDictionaryRef)query, &result);
+    
+#if TARGET_OS_IPHONE
+    if (rc == errSecParam) {
+        /* Try again, supplying the (other) completely bogus and undocumented set of query keys which are necessary to function on iOS */
+        const void *ks[6] = { kSecClass,     kSecValueRef, kSecAttrSynchronizable,         kSecReturnAttributes, kSecReturnRef,  kSecMatchLimit    };
+        const void *vs[6] = { kSecClassKey,  aKey,         kSecAttrSynchronizableAny,      kCFBooleanTrue,       kCFBooleanTrue, kSecMatchLimitAll };
+        CFDictionaryRef qdict = CFDictionaryCreate(kCFAllocatorDefault, ks, vs, 6, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        rc = SecItemCopyMatching(qdict, &result);
+        CFRelease(qdict);
+    }
+#endif
+    
     if (err != noErr || !result) {
         if (err) {
             *err = [NSError errorWithDomain:NSOSStatusErrorDomain
@@ -417,18 +452,18 @@ static enum OFKeyAlgorithm OFSecKeyGetAlgorithm_CopyMatching(SecKeyRef aKey, OFS
     
     /* Okay, we've verified that the results from SecItemCopyMatching() are basically plausible. Convert to common format. */
     
-    if (CFEqual(keyAlg, kSecAttrKeyTypeRSA)) {
+    if (compareattr(keyAlg, kSecAttrKeyTypeRSA)) {
         keyType = ka_RSA;
-    } else if (CFEqual(keyAlg, kSecAttrKeyTypeEC)) {
+    } else if (compareattr(keyAlg, kSecAttrKeyTypeEC)) {
         keyType = ka_EC;
 #if !TARGET_OS_IPHONE /* iOS has a really impoverished crypto subsystem */
-    } else if (CFEqual(keyAlg, kSecAttrKeyTypeECDSA)) {
+    } else if (compareattr(keyAlg, kSecAttrKeyTypeECDSA)) {
         keyType = ka_EC;
-    } else if (CFEqual(keyAlg, kSecAttrKeyTypeDSA)) {
+    } else if (compareattr(keyAlg, kSecAttrKeyTypeDSA)) {
         keyType = ka_DSA;
-    } else if (CFEqual(keyAlg, kSecAttrKeyTypeDES) || CFEqual(keyAlg, kSecAttrKeyType3DES)) {
+    } else if (compareattr(keyAlg, kSecAttrKeyTypeDES) || compareattr(keyAlg, kSecAttrKeyType3DES)) {
         keyType = ka_DES;
-    } else if (CFEqual(keyAlg, kSecAttrKeyTypeAES)) {
+    } else if (compareattr(keyAlg, kSecAttrKeyTypeAES)) {
         keyType = ka_AES;
 #endif
     } else {
@@ -436,11 +471,11 @@ static enum OFKeyAlgorithm OFSecKeyGetAlgorithm_CopyMatching(SecKeyRef aKey, OFS
     }
     
     if (outItemClass) {
-        if (CFEqual(keyClass, kSecAttrKeyClassPublic)) {
+        if (compareattr(keyClass, kSecAttrKeyClassPublic)) {
             *outItemClass = kSecPublicKeyItemClass;
-        } else if (CFEqual(keyClass, kSecAttrKeyClassPrivate)) {
+        } else if (compareattr(keyClass, kSecAttrKeyClassPrivate)) {
             *outItemClass = kSecPrivateKeyItemClass;
-        } else if (CFEqual(keyClass, kSecAttrKeyClassSymmetric)) {
+        } else if (compareattr(keyClass, kSecAttrKeyClassSymmetric)) {
             *outItemClass = kSecSymmetricKeyItemClass;
         } else {
             *outItemClass = 0;
@@ -717,4 +752,69 @@ static enum OFKeyAlgorithm OFSecKeyGetAlgorithm_CSSM(SecKeyRef aKey, SecItemClas
 }
 
 #endif
+
+#define secp192r1OidByteCount 10
+static const uint8_t secp192r1OidBytes[secp192r1OidByteCount] = {
+    /* tag = OBJECT IDENTIFIER */
+    0x06,
+    /* length = 8 */
+    0x08,
+    /* iso(1) member-body(2) us(840) ansi-x9-62(10045) curves(3) prime(1) secp192r1(1) */
+    0x2a, 0x86, 0x48, 0xce, 0x3D, 0x03, 0x01, 0x01
+};
+
+#define secp224r1OidByteCount 7
+static const uint8_t secp224r1OidBytes[secp224r1OidByteCount] = {
+    /* tag = OBJECT IDENTIFIER */
+    0x06,
+    /* length = 5 */
+    0x05,
+    /* iso(1) identified-organization(3) certicom(132) curve(0) secp224r1(33) */
+    0x2b, 0x81, 0x04, 0x00, 0x21
+};
+
+#define secp256r1OidByteCount 10
+static const uint8_t secp256r1OidBytes[secp256r1OidByteCount] = {
+    /* tag = OBJECT IDENTIFIER */
+    0x06,
+    /* length = 8 */
+    0x08,
+    /* iso(1) member-body(2) us(840) ansi-x9-62(10045) curves(3) prime(1) secp256r1(7) */
+    0x2a, 0x86, 0x48, 0xce, 0x3D, 0x03, 0x01, 0x07
+};
+
+#define secp384r1OidByteCount 7
+static const uint8_t secp384r1OidBytes[secp384r1OidByteCount] = {
+    /* tag = OBJECT IDENTIFIER */
+    0x06,
+    /* length = 5 */
+    0x05,
+    /* iso(1) identified-organization(3) certicom(132) curve(0) secp384r1(34) */
+    0x2b, 0x81, 0x04, 0x00, 0x22
+};
+
+#define secp521r1OidByteCount 7
+static const uint8_t secp521r1OidBytes[secp521r1OidByteCount] = {
+    /* tag = OBJECT IDENTIFIER */
+    0x06,
+    /* length = 5 */
+    0x05,
+    /* iso(1) identified-organization(3) certicom(132) curve(0) secp521r1(35) */
+    0x2b, 0x81, 0x04, 0x00, 0x23
+};
+
+/* Hardcode the handful of named curves we'll see rather than parsing the OID and DER-encoding it */
+/* (we need to have a list of them anyway in order to know log2_p) */
+const struct OFNamedCurveInfo _OFEllipticCurveInfoTable[] = {
+    
+#define ENTRY(name, oidstr, size)  { #name , oidstr, name ## OidBytes, sizeof(name ## OidBytes), size }
+    ENTRY(secp192r1, "1.2.840.10045.3.1.1", 192),   // Referenced in Apple's framework, but apparently not implemented
+    ENTRY(secp224r1, "1.3.132.0.33",        224),   // Referenced in Apple's framework, but apparently not implemented
+    ENTRY(secp256r1, "1.2.840.10045.3.1.7", 256),
+    ENTRY(secp384r1, "1.3.132.0.34",        384),
+    ENTRY(secp521r1, "1.3.132.0.35",        521),
+    { NULL, NULL, NULL, 0, 0 }
+#undef ENTRY
+};
+/* Other elliptic curve identifiers of interest: the Brainpool curves assigned in RFC5639? */
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,15 +25,17 @@
 @end
 
 // NOTE: If NSRegularExpressionAnchorsMatchLines is not specified, ^ and $ do work, but only match the beginning and end of the string, not lines w/in the string. So /^a/ will match once vs "a\na" and twice if NSRegularExpressionAnchorsMatchLines is used.
-#define OFCreateRegularExpression(name, pattern) \
+#define OFCreateRegularExpressionWithOptions(name, pattern, _options) \
     static NSRegularExpression *name = nil; \
     do { \
         static dispatch_once_t onceToken; \
         dispatch_once(&onceToken, ^{ \
             OB_AUTORELEASING NSError *expressionError = nil; \
-            name = [[NSRegularExpression alloc] initWithPattern:pattern options:NSRegularExpressionAnchorsMatchLines error:&expressionError]; \
+            name = [[NSRegularExpression alloc] initWithPattern:pattern options:_options error:&expressionError]; \
             if (!name) { \
                 NSLog(@"Error creating regular expression '%@' from pattern: %@ --> %@", @#name, pattern, [expressionError toPropertyList]); \
             } \
         }); \
     } while(0)
+
+#define OFCreateRegularExpression(name, pattern) OFCreateRegularExpressionWithOptions(name, pattern, NSRegularExpressionAnchorsMatchLines)

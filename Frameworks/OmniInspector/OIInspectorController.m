@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -447,6 +447,10 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 {
     [self _buildHeadingView];
     
+    if (!self.isExpanded && self.interfaceType == OIInspectorInterfaceTypeFloating) {
+        [window setContentSize:headingButton.frame.size];
+    }
+
     [[self containerView] addSubview:headingButton];
     
     headingBackground = [[OIInspectorHeaderBackground alloc] initWithFrame:[headingButton frame]];
@@ -565,7 +569,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
             // If no inspectors were previously visible, the inspector registry's selection set may not be up-to-date, so tell it to update
             // (an alternate approach would be to have the registry keep track of whether or not it was up to date, and here we would simply tell the registry to update if it needed to, rather than us basing this off of whether or not any inspectors were previously visible, thus requiring us to know that -[OIInspectorRegistry _recalculateInspectorsAndInspectWindow] doesn't do anything if no inspectors are visible)
             if (!hadVisibleInspectors)
-                [OIInspectorRegistry updateInspectorForWindow:[NSApp mainWindow]];
+                [OIInspectorRegistry updateInspectorForWindow:[[NSApplication sharedApplication] mainWindow]];
             [self updateInspector]; // call this first because the view could change sizes based on the selection in -updateInspector
         }
             
@@ -752,7 +756,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (NSUndoManager *)windowWillReturnUndoManager:(NSWindow *)aWindow;
 {
-    NSWindow *mainWindow = [NSApp mainWindow];
+    NSWindow *mainWindow = [[NSApplication sharedApplication] mainWindow];
     NSResponder *nextResponder = [mainWindow firstResponder];
     if (nextResponder == nil)
         nextResponder = mainWindow;

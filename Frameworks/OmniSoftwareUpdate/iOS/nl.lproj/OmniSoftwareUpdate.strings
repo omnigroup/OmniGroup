@@ -1,9 +1,6 @@
 /* Software update report format for number of cores in the CPU */
 "%@ cores" = "%@ kernen";
 
-/* error description - the host from which we retrieve updates is unreachable */
-"%@ is not reachable." = "%@ is niet bereikbaar.";
-
 /* Software update report entry string for multiple crashes */
 "%ld crashes" = "%ld crashes";
 
@@ -19,9 +16,6 @@
 /* Software update report entry name for information about the runs of all versions of the app */
 "All versions" = "Alle versies";
 
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ toestaan om periodiek informatie over uw hardwaremodel en iOS-versie door te geven?\nHiermee kunnen we weten welke configuraties het belangrijkst zijn voor de ondersteuning. U kunt uw antwoord later wijzigen in de voorkeuren.";
-
 /* Software update report entry name */
 "App ID" = "App-ID";
 
@@ -30,9 +24,6 @@
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
 "Check operation failed." = "Controle bewerking mislukt.";
-
-/* error text generated when software update is unable to retrieve the list of current software versions */
-"Could not contact %@." = "Kan geen contact opnemen met %@.";
 
 /* Software update report entry name */
 "CPU" = "CPU";
@@ -44,9 +35,6 @@
    software update settings title */
 
 "Device Information" = "Apparaatinformatie";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "Rapporteer niet";
 
 /* error description */
 "Error fetching software update information." = "Fout bij het ophalen van informatie over de softwareupdate.";
@@ -61,7 +49,7 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "Help de Omni Group te beslissen welke apparaten en iOS-versies moeten worden ondersteund";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Als u deze informatie met ons deelt, helpt u ons op de hoogte te blijven van apparaten en iOS-versies die onze software moet ondersteunen.\nDeze informatie wordt volledig anoniem gehouden.";
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Als u ervoor kiest deze informatie te delen, helpt u ons op de hoogte te blijven van de apparaten en iOS-versies die onze software moet ondersteunen.\nDeze informatie wordt volledig anoniem gehouden. ";
 
 /* Software update report entry name */
 "iOS version" = "iOS-versie";
@@ -71,9 +59,6 @@
 
 /* Software update report entry name */
 "Memory" = "Geheugen";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Omni Software Update";
 
 /* Software update report entry string for a single crash */
 "One crash" = "Eén crash";
@@ -101,14 +86,14 @@
 
 "Send Anonymous Data" = "Verzend anonieme gegevens";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "Verzend rapporten";
-
 /* software update settings menu title */
 "Settings" = "Instellingen";
 
 /* Software update report entry name */
 "Storage" = "Opslag";
+
+/* error reason */
+"The background software update service failed." = "De service voor software-updates op de achtergrond is mislukt.";
 
 /* error description */
 "The data returned from <%@> was not a valid XML document." = "De gegevens die zijn geretourneerd van “%@” zijn geen geldig XML-document.";
@@ -125,6 +110,9 @@
 /* Software update report entry name for information about the runs of the current version of the app */
 "This version" = "Deze versie";
 
+/* error reason */
+"Timed out waiting for the software update service." = "Er is een time-out opgetreden voor de service voor software-updates.";
+
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "Het hulpprogramma heeft geen gegevens geretourneerd";
 
@@ -136,6 +124,3 @@
 
 /* error description */
 "Unable to parse response from the software update server." = "Reactie van de software-updateserver kan niet worden ontleed.";
-
-/* error text generated when software update is unable to retrieve the list of current software versions */
-"Your Internet connection might not be active, or there might be a problem somewhere along the network." = "Uw internetverbinding is mogelijk niet actief of er kan ergens op het netwerk een probleem zijn.";

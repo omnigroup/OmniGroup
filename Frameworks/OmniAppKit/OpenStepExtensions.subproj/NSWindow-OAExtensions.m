@@ -54,33 +54,57 @@ static NSMutableArray *zOrder;
 + (NSArray *)windowsInZOrder;
 {
     zOrder = [[NSMutableArray alloc] init];
-    [NSApp makeWindowsPerform:@selector(_addToZOrderArray) inOrder:YES];
+    [[NSApplication sharedApplication] makeWindowsPerform:@selector(_addToZOrderArray) inOrder:YES];
     NSArray *result = zOrder;
     zOrder = nil;
     return [result autorelease];
 }
 
 static NSLock *displayIfNeededBlocksLock = nil;
-static NSMutableArray *displayIfNeededBlocks = nil;
+static NSMapTable *displayIfNeededBlocks = nil;
 static BOOL displayIfNeededBlocksInProgress = NO;
 
-+ (void)beforeDisplayIfNeededPerformBlock:(void (^)(void))block;
++ (void)window:(NSWindow *)window beforeDisplayIfNeededPerformBlock:(void (^)(void))block;
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        displayIfNeededBlocks = [[NSMutableArray alloc] init];
+        displayIfNeededBlocks = [[NSMapTable weakToStrongObjectsMapTable] retain];;
         displayIfNeededBlocksLock = [[NSLock alloc] init];
     });
 
     void (^copiedBlock)(void) = [block copy];
     [displayIfNeededBlocksLock lock];
-    BOOL needsQueue = !displayIfNeededBlocksInProgress && displayIfNeededBlocks.count == 0;
-    [displayIfNeededBlocks addObject:copiedBlock];
+    
+    id key = window ?: [NSNull null];
+    NSMutableArray *perWindowBlocks = [displayIfNeededBlocks objectForKey:key];
+    BOOL needsQueue = !displayIfNeededBlocksInProgress && perWindowBlocks.count == 0;
+
+    if (perWindowBlocks == nil) {
+        perWindowBlocks = [NSMutableArray array];
+        [displayIfNeededBlocks setObject:perWindowBlocks forKey:key];
+    }
+    [perWindowBlocks addObject:copiedBlock];
+    
     [displayIfNeededBlocksLock unlock];
     [copiedBlock release];
 
-    if (needsQueue)
-        [self queueSelector:@selector(performDisplayIfNeededBlocks)];
+    if (needsQueue) {
+        if (window != nil) {
+            [window queueSelector:@selector(performDisplayIfNeededBlocks)];
+        } else {
+            [self queueSelector:@selector(performDisplayIfNeededBlocks)];
+        }
+    }
+}
+
++ (void)beforeAnyDisplayIfNeededPerformBlock:(void (^)(void))block;
+{
+    [self window:nil beforeDisplayIfNeededPerformBlock:block];
+}
+
+- (void)beforeDisplayIfNeededPerformBlock:(void (^)(void))block;
+{
+    [NSWindow window:self beforeDisplayIfNeededPerformBlock:block];
 }
 
 #ifdef DEBUG_kc0
@@ -89,26 +113,49 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 
 + (void)performDisplayIfNeededBlocks;
 {
+    [self performDisplayIfNeededBlocksForWindow:nil];
+}
+
+- (void)performDisplayIfNeededBlocks;
+{
+    // Perform all the display if needed blocks registered for us, then all registered for any window
+    
+    [NSWindow performDisplayIfNeededBlocksForWindow:self];
+    [NSWindow performDisplayIfNeededBlocksForWindow:nil];
+}
+
++ (void)performDisplayIfNeededBlocksForWindow:(NSWindow *)window;
+{
+    // Make sure we are executing these blocks only on the main thread
+    OBPRECONDITION([NSThread isMainThread]);
+    if (![NSThread isMainThread]) {
+        return;
+    }
+    
     [displayIfNeededBlocksLock lock];
-    if (displayIfNeededBlocks.count != 0) {
+
+    id key = window ?: [NSNull null];
+    NSMutableArray *perWindowBlocks = [displayIfNeededBlocks objectForKey:key];
+    
+    if (perWindowBlocks.count != 0) {
 #if TIME_PERFORM_DISPLAY_IF_NEEDED
         NSLog(@"-[%@ %@]: begin", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
 #endif
         displayIfNeededBlocksInProgress = YES;
-
-        while (displayIfNeededBlocks.count != 0) {
-            NSArray *queuedBlocks = displayIfNeededBlocks;
-            displayIfNeededBlocks = [[NSMutableArray alloc] init];
+        
+        while (perWindowBlocks.count != 0) {
+            NSArray *queuedBlocks = [perWindowBlocks copy];
+            [perWindowBlocks removeAllObjects];
             [displayIfNeededBlocksLock unlock];
-
+            
             for (void (^block)(void) in queuedBlocks) {
                 block();
             }
-
+            
             [queuedBlocks release];
             [displayIfNeededBlocksLock lock];
         }
-
+        
         displayIfNeededBlocksInProgress = NO;
 #if TIME_PERFORM_DISPLAY_IF_NEEDED
         NSLog(@"-[%@ %@]: end", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
@@ -197,7 +244,7 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 
 - (void)_OA_replacement_displayIfNeeded;
 {
-    [NSWindow performDisplayIfNeededBlocks];
+    [self performDisplayIfNeededBlocks];
     oldDisplayIfNeededIMP(self, _cmd);
 }
 

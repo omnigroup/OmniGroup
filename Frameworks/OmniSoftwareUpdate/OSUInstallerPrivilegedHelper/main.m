@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group.  All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,12 +14,10 @@
 #import "OSUErrors.h"
 #import "OSUInstallerPrivilegedHelperProtocol.h"
 #import "OSUInstallerPrivilegedHelperRights.h"
-#import "OSUInstallerPrivilegedHelperVersion.h"
 #import "OSUInstallerScript.h"
 
 RCS_ID("$Id$")
 
-static NSString * OSUInstallerPrivilegedHelperServiceName = @"com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper";
 static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.ErrorFileLineAndNumber";
 
 #define ERROR_FILENAME_AND_NUMBER \
@@ -41,49 +39,6 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
 - (void)getVersionWithReply:(void (^)(NSUInteger version))reply;
 {
     reply(OSUInstallerPrivilegedHelperVersion);
-}
-
-- (void)uninstallWithAuthorizationData:(NSData *)authorizationData reply:(void (^)(BOOL success, NSError *error))reply;
-{
-    NSError *error = nil;
-
-    // We can only uninstall ourselves if there are no active connections doing useful work
-    if (_activeConnectionCount > 0) {
-        NSDictionary *userInfo = @{
-            OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey : ERROR_FILENAME_AND_NUMBER,
-        };
-        error = [NSError errorWithDomain:OSUErrorDomain code:OSUCannotUninstallPrivilegedHelper userInfo:userInfo];
-        reply(NO, error);
-        return;
-    }
-    
-    NSString *rightName = [NSString stringWithCString:kSMRightModifySystemDaemons encoding:NSUTF8StringEncoding];
-    if (![self _validateAuthorizationData:authorizationData forRightWithName:rightName error:&error]) {
-        reply(NO, error);
-        return;
-    }
-
-    // Finally, remove the executable on disk
-    const uint32_t MAX_PATH_LEN = 1024;
-    char path[MAX_PATH_LEN + 1];
-    uint32_t bufsize = sizeof(path);
-    int rc = _NSGetExecutablePath(path, &bufsize);
-    if (rc != 0) {
-        NSDictionary *userInfo = @{
-            OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey : ERROR_FILENAME_AND_NUMBER,
-        };
-        error = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:userInfo];
-        reply(NO, error);
-        return;
-    }
-    
-    NSString *fileSystemPath = [[NSFileManager defaultManager] stringWithFileSystemRepresentation:path length:bufsize];
-    if (![[NSFileManager defaultManager] removeItemAtPath:fileSystemPath error:&error]) {
-        reply(NO, error);
-        return;
-    }
-
-    reply(YES, nil);
 }
 
 - (void)runInstallerScriptWithArguments:(NSArray *)arguments localizationBundleURL:(NSURL *)bundleURL authorizationData:(NSData *)authorizationData reply:(void (^)(BOOL success, NSError *error))reply;
@@ -126,7 +81,7 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
             NSURL *destinationURL = [trashDirectoryURL URLByAppendingPathComponent:[itemURL lastPathComponent]];
             while ([fileManager fileExistsAtPath:[destinationURL path]]) {
                 // Add a timestamp to the destination file
-                NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
+                NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
                 [formatter setDateFormat:@" HH-mm-ss-SSS"];
                 
                 NSString *timestamp = [formatter stringFromDate:[NSDate date]];
@@ -243,15 +198,12 @@ int main(int argc, const char * argv[])
 {
     @autoreleasepool {
         OSUInstallerPrivilegedHelper *helper = [[OSUInstallerPrivilegedHelper alloc] init];
-        NSXPCListener *listener = [[NSXPCListener alloc] initWithMachServiceName:OSUInstallerPrivilegedHelperServiceName];
+        NSXPCListener *listener = [[NSXPCListener alloc] initWithMachServiceName:OSUInstallerPrivilegedHelperJobLabel];
 
         [listener setDelegate:helper];
         [listener resume];
         
         [[NSRunLoop currentRunLoop] run];
-
-        [listener release];
-        [helper release];
     }
 
     return 0;

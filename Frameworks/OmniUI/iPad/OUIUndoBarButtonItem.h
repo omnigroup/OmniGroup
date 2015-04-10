@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,27 +18,32 @@ extern NSString * const OUIUndoPopoverWillShowNotification;
 - (void)undo:(id)sender;
 - (void)redo:(id)sender;
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender; // in case the target is not a subclass of UIResponder (like with OUIDocumentAppController)
-@end
-
-@protocol OUIUndoBarButtonItemDelegate <NSObject>
-- (UIViewController *)viewControllerToPresentMenuForUndoBarButtonItem:(OUIUndoBarButtonItem *)undoBarButtonItem;
+@optional
+- (void)willPresentMenuForUndoRedo;
 @end
 
 @interface OUIUndoBarButtonItem : UIBarButtonItem
 
-// These are monitored for undo/redo groups. The OUIUndoBarButtonItemTarget is expected to figure out which one should do the action.
-- (void)addUndoManager:(NSUndoManager *)undoManager;
-- (void)removeUndoManager:(NSUndoManager *)undoManager;
-- (BOOL)hasUndoManagers;
-
-// This will get called automatically when the added undo managers post notifications, but in some cases the target might change its answer to -canPerformAction:withSender: before this happens (for example, UITextView doesn't log an undo in its private undo manager right away when editing text).
-- (void)updateState;
+// Normally, OUIUndoBarButtonItem listens for any undo manager notifications and updates its state from its target in response.
+// Call this method if something else changes that requires any visible undo buttons to update their state. (For example, UITextView doesn't log an undo in its private undo manager right away when editing text, so delegates need to call this to inform OUIUndoBarButtonItem that they return a different value from -canPerformAction:withSender:).
++ (void)updateState;
 
 @property(nonatomic,weak) id <OUIUndoBarButtonItemTarget> undoBarButtonItemTarget;
-@property (nonatomic, weak) id<OUIUndoBarButtonItemDelegate> delegate;
 
 @property(nonatomic,readonly) OUIToolbarButton *button;
 
-- (BOOL)dismissUndoMenu;
++ (BOOL)dismissUndoMenu;
 
+- (void)updateButtonForCompact:(BOOL)isCompact;
+
+@end
+
+@interface UIViewController (OUIUndoBarButtonItemPresentation)
+/*! Presents the undo menu for long-press gestures.
+ *
+ *  When the undo button is long-pressed, it sends -targetForAction:withSender: to the button's target, with this selector as the action argument. By deafult, this will result in the receiver returning itself if -canPerformAction:withSender: returns YES with the same selector argument. (If the button's target does not respond to -targetForAction:withSender:, it assumes that it would have returned self). It then sends -presentMenuForUndoBarButtonItem: to the result if it responds to that selector.
+ *
+ * Implement or override -targetForAction:withSender: in your button's target to specify a different receiver for -presentMenuForUndoBarButtonItem:.
+ */
+- (void)presentMenuForUndoBarButtonItem:(OUIUndoBarButtonItem *)barButtonItem;
 @end

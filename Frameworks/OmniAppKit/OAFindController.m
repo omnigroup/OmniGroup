@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,8 +22,9 @@ RCS_ID("$Id$")
 
 @interface OAFindController ()
 
-@property (nonatomic, retain) IBOutlet NSForm *searchTextForm;
-@property (nonatomic, retain) IBOutlet NSForm *replaceTextForm;
+@property (nonatomic, retain) IBOutlet NSTextField *searchTextField;
+@property (nonatomic, retain) IBOutlet NSTextField *replaceTextField;
+
 @property (nonatomic, retain) IBOutlet NSButton *ignoreCaseButton;
 @property (nonatomic, retain) IBOutlet NSButton *wholeWordButton;
 @property (nonatomic, retain) IBOutlet NSButton *findNextButton;
@@ -56,8 +57,8 @@ RCS_ID("$Id$")
 
 - (void)dealloc;
 {
-    [_searchTextForm release];
-    [_replaceTextForm release];
+    [_searchTextField release];
+    [_replaceTextField release];
     [_ignoreCaseButton release];
     [_wholeWordButton release];
     [_findNextButton release];
@@ -84,29 +85,27 @@ RCS_ID("$Id$")
     NSWindow *window = [self window]; // Load interface if needed
     OBASSERT(window);
     
-    [[_searchTextForm cellAtIndex:0] setStringValue:[self restoreFindText]];
+    [_searchTextField setStringValue:[self restoreFindText]];
     [window setFrame:[OAWindowCascade unobscuredWindowFrameFromStartingFrame:window.frame avoidingWindows:nil] display:YES animate:YES];
     [window makeKeyAndOrderFront:NULL];
-    [_searchTextForm selectTextAtIndex:0];
+    [_searchTextField selectText:sender];
 }
 
 - (IBAction)findNext:(id)sender;
 {
-    [self window]; // Load interface if needed
+    (void)[self window]; // Load interface if needed
     [_findNextButton performClick:nil];
 }
 
 - (IBAction)findPrevious:(id)sender;
 {
-    [self window]; // Load interface if needed
+    (void)[self window]; // Load interface if needed
     [_findPreviousButton performClick:nil];
 }
 
 - (IBAction)enterSelection:(id)sender;
 {
-    NSString *selectionString;
-
-    selectionString = [self enterSelectionString];
+    NSString *selectionString = [self enterSelectionString];
     if (!selectionString)
         return;
     [self enterSelectionWithString:selectionString];
@@ -133,19 +132,16 @@ RCS_ID("$Id$")
 
 - (IBAction)replaceAll:(id)sender;
 {
-    id <OAFindPattern> pattern;
-    id target;
-    
-    target = [self target];
-    pattern = [self currentPatternWithBackwardsFlag:NO];
+    id target = [self target];
+    id <OAFindPattern> pattern = [self currentPatternWithBackwardsFlag:NO];
     
     if (!target || !pattern || ![target respondsToSelector:@selector(replaceAllOfPattern:)]) {
         NSBeep();
         return;
     }
-    [pattern setReplacementString:[[_replaceTextForm cellAtIndex:0] stringValue]];
+    [pattern setReplacementString:[_replaceTextField stringValue]];
     
-    [self window]; // Load interface if needed
+    (void)[self window]; // Load interface if needed
     if ([_replaceInSelectionCheckbox state] && [target respondsToSelector:@selector(replaceAllOfPatternInCurrentSelection:)])
         [target replaceAllOfPatternInCurrentSelection:pattern];
     else
@@ -154,16 +150,13 @@ RCS_ID("$Id$")
 
 - (IBAction)replace:(id)sender;
 {
-    id target;
-    NSString *replacement;
-    
-    target = [self target];
+    id target = [self target];
     if (!target || ![target respondsToSelector:@selector(replaceSelectionWithString:)]) {
         NSBeep();
         return;
     }
     
-    replacement = [[_replaceTextForm cellAtIndex:0] stringValue];
+    NSString *replacement = [_replaceTextField stringValue];
     if (_currentPattern) {
         [_currentPattern setReplacementString:replacement];
         replacement = [_currentPattern replacementStringForLastFind];
@@ -201,7 +194,7 @@ RCS_ID("$Id$")
         [subview setFrameOrigin:NSMakePoint((CGFloat)floor(([_additionalControlsBox frame].size.width - [subview frame].size.width) / 2), 0)];
         [_additionalControlsBox addSubview:subview];
     }
-    [_replaceTextForm setNextKeyView:nextKeyView];
+    [_replaceTextField setNextKeyView:nextKeyView];
 }
 
 // Updating the selection popup...
@@ -210,7 +203,7 @@ RCS_ID("$Id$")
 {
     NSString *subexpressionFormatString = NSLocalizedStringFromTableInBundle(@"Subexpression #%d", @"OmniAppKit", [OAFindController bundle], "Contents of popup in regular expression find options");
     
-    NSRegularExpression *expression = [[NSRegularExpression alloc] initWithPattern:[[_searchTextForm cellAtIndex:0] stringValue] options:0 error:NULL];
+    NSRegularExpression *expression = [[NSRegularExpression alloc] initWithPattern:[_searchTextField stringValue] options:0 error:NULL];
     if (expression != nil) {
         NSUInteger captureGroupCount = [expression numberOfCaptureGroups];
         [expression release];
@@ -232,10 +225,10 @@ RCS_ID("$Id$")
 
 - (void)enterSelectionWithString:(NSString *)selectionString;
 {
-    [self window]; // Load interface if needed
+    (void)[self window]; // Load interface if needed
     [self saveFindText:selectionString];
-    [[_searchTextForm cellAtIndex:0] setStringValue:selectionString];
-    [_searchTextForm selectTextAtIndex:0];
+    [_searchTextField setStringValue:selectionString];
+    [_searchTextField selectText:self];
 }
 
 - (void)saveFindText:(NSString *)string;
@@ -268,7 +261,7 @@ RCS_ID("$Id$")
 
 - (id <OAFindControllerTarget>)target;
 {
-    NSWindow *mainWindow = [NSApp mainWindow];
+    NSWindow *mainWindow = [[NSApplication sharedApplication] mainWindow];
     id target = [(id)[mainWindow delegate] omniFindControllerTarget];
     if (target != nil)
         return target;
@@ -364,7 +357,7 @@ RCS_ID("$Id$")
     NSString *findString;
 
     if ([self isWindowLoaded] && [self.window isVisible]) {
-        findString = [[_searchTextForm cellAtIndex:0] stringValue];
+        findString = [_searchTextField stringValue];
         [self saveFindText:findString];
     } else
         findString = [self restoreFindText];
@@ -372,7 +365,7 @@ RCS_ID("$Id$")
     if (![findString length])
         return nil;
 
-    [self window]; // Load interface if needed
+    (void)[self window]; // Load interface if needed
     if ([[_findTypeMatrix selectedCell] tag] == 0) {
         pattern = [[OAFindPattern alloc] initWithString:findString ignoreCase:[_ignoreCaseButton state] wholeWord:[_wholeWordButton state] backwards:backwardsFlag];
     } else {
@@ -403,15 +396,15 @@ RCS_ID("$Id$")
         return NO;
 
     result = [target findPattern:pattern backwards:backwardsFlag wrap:YES];
-    [_searchTextForm selectTextAtIndex:0];
+    [_searchTextField selectText:self];
     return result;
 }
 
 - (NSText *)enterSelectionTarget;
 {
-    NSWindow *selectionWindow = [NSApp keyWindow];
+    NSWindow *selectionWindow = [[NSApplication sharedApplication] keyWindow];
     if ([self isWindowLoaded] && selectionWindow == self.window)
-        selectionWindow = [NSApp mainWindow];
+        selectionWindow = [[NSApplication sharedApplication] mainWindow];
     NSText *enterSelectionTarget = (id)[selectionWindow firstResponder];
     
     if ([enterSelectionTarget respondsToSelector:@selector(selectedString)])

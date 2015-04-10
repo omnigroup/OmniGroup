@@ -2,6 +2,7 @@
 "%@ points" = "%@ punti";
 
 /* title format for color component slider */
+
 "<alpha title+value>" = "Opacità: %d%%";
 
 /* title format for color component slider */
@@ -66,4 +67,3 @@
 
 /* Inspector title */
 "Text Style" = "Stile testo";
-

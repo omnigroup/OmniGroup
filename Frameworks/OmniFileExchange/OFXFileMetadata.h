@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,6 +39,9 @@
 @property(nonatomic,readonly) float percentUploaded; // 0..1
 
 @property(nonatomic,readonly,getter=isDeleting) BOOL deleting;
+
+@property(nonatomic,readonly,copy) NSDate *fileModificationDate; // nil if the file isn't downloaded
+@property(nonatomic,readonly,copy) NSNumber *inode; // nil if the file isn't downloaded.
 
 @end
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,7 @@
 #import <OmniFoundation/OFCFCallbacks.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFUTI.h>
+#import <OmniFoundation/OFXMLIdentifier.h>
 
 #import "ODSItem-Internal.h"
 #import "ODSFileItem-Internal.h"
@@ -45,9 +46,31 @@
 
 RCS_ID("$Id$");
 
-OBDEPRECATED_METHOD(-createNewDocument:); // -createNewDocumentInScope:completionHandler:
+OBDEPRECATED_METHOD(-createNewDocument:);
+OBDEPRECATED_METHOD(-createdNewDocument:templateURL:completionHandler:);
 OBDEPRECATED_METHOD(-urlForNewDocumentOfType:); // could write a wrapper that asks the scope, but it has this now.
 OBDEPRECATED_METHOD(-documentStore:scannedFileItems:); // -documentStore:addedFileItems:
+
+OBDEPRECATED_METHOD(-documentStore:fileWithURL:andDate:willMoveToURL:);
+OBDEPRECATED_METHOD(-documentStore:fileWithURL:andDate:finishedMoveToURL:successfully:);
+
+
+NSString *ODSPathExtensionForFileType(NSString *fileType, BOOL *outIsPackage)
+{
+    OBPRECONDITION(fileType);
+    
+    NSString *extension = CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension));
+    OBASSERT(extension);
+    OBASSERT([extension hasPrefix:@"dyn."] == NO, "UTI not registered in the Info.plist?");
+    
+    if (outIsPackage) {
+        BOOL isPackage = UTTypeConformsTo((__bridge CFStringRef)fileType, kUTTypePackage);
+        OBASSERT_IF(!isPackage, !UTTypeConformsTo((__bridge CFStringRef)fileType, kUTTypeFolder), "Types should be declared as conforming to kUTTypePackage, not kUTTypeFolder");
+        *outIsPackage = isPackage;
+    }
+    
+    return extension;
+}
 
 @implementation ODSStore
 {
@@ -388,68 +411,57 @@ static unsigned ScopeContext;
     return nil;
 }
 
+- (NSString *)defaultFilenameForDocumentType:(ODSDocumentType)type isDirectory:(BOOL *)outIsDirectory;
+{
+    NSString *documentType = [self documentTypeForNewFilesOfType:type];
+    
+    id <ODSStoreDelegate> delegate = _weak_delegate;
+    NSString *baseName;
+    if (type == ODSDocumentTypeTemplate)
+        baseName = [delegate documentStoreBaseNameForNewTemplateFiles:self];
+    else
+        baseName = [delegate documentStoreBaseNameForNewFiles:self];
+    if (!baseName) {
+        OBASSERT_NOT_REACHED("No delegate? You probably want one to provide a better base untitled document name.");
+        baseName = @"My Document";
+    }
+    
+    NSString *pathExtension = ODSPathExtensionForFileType(documentType, outIsDirectory);
+    
+    return [baseName stringByAppendingPathExtension:pathExtension];
+}
+
 - (NSString *)documentTypeForNewFiles;
 {
     return [self documentTypeForNewFilesOfType:ODSDocumentTypeNormal];
 }
 
-- (void)duplicateDocumentFromTemplateInScope:(ODSScope *)scope folder:(ODSFolderItem *)folder documentType:(ODSDocumentType)type templateFileItem:(ODSFileItem *)templateFileItem completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
+- (NSURL *)temporaryURLForCreatingNewDocumentOfType:(ODSDocumentType)type;
+{
+    BOOL isDirectory;
+    NSString *documentType = [self documentTypeForNewFilesOfType:type];
+    NSString *pathExtension = ODSPathExtensionForFileType(documentType, &isDirectory);
+    
+    NSString *temporaryFilename = [OFXMLCreateID() stringByAppendingPathExtension:pathExtension];
+    return [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:temporaryFilename] isDirectory:isDirectory];
+}
+
+- (void)moveNewTemporaryDocumentAtURL:(NSURL *)fileURL toScope:(ODSScope *)scope folder:(ODSFolderItem *)folder documentType:(ODSDocumentType)type completionHandler:(void (^)(ODSFileItem *createdFileItem, NSError *error))handler;
 {
     NSString *documentType = [self documentTypeForNewFilesOfType:type];
 
-    ODSScopeDocumentCreationAction action = ^(void (^actionHandler)(NSURL *targetURL, NSError *errorOrNil)){
-        actionHandler = [actionHandler copy];
-
-        id <ODSStoreDelegate> delegate = _weak_delegate;
-
-        NSString *baseName = nil;
-        if (type == ODSDocumentTypeTemplate)
-            baseName = [delegate documentStoreBaseNameForNewTemplateFiles:self];
-        else
-            baseName = [delegate documentStoreBaseNameForNewFiles:self];
-        if (!baseName) {
-            OBASSERT_NOT_REACHED("No delegate? You probably want one to provide a better base untitled document name.");
-            baseName = @"My Document";
-        }
-
-        NSURL *newDocumentURL = [scope urlForNewDocumentInFolder:folder baseName:baseName fileType:documentType];
-
-        // Might be creating a document in a folder that has only undownloaded documents, in which case we won't have created it yet.
-        NSURL *parentDirectoryURL = [newDocumentURL URLByDeletingLastPathComponent];
-        NSError *directoryError;
-        if (![[NSFileManager defaultManager] createDirectoryAtURL:parentDirectoryURL withIntermediateDirectories:YES attributes:nil error:&directoryError]) {
-            if (![directoryError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:EEXIST]) {
-                if (actionHandler)
-                    actionHandler(nil, directoryError);
-                return;
-            }
-        }
-
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            if (templateFileItem != nil) {
-                // Copy our template document to our new document URL
-                NSError *copyError = nil;
-                if (![[NSFileManager defaultManager] copyItemAtURL:templateFileItem.fileURL toURL:newDocumentURL error:&copyError]) {
-                    actionHandler(nil, copyError);
-                    return;
-                }
-            } else {
-                // We are going to create a document without an actual file on disk since there is no template to copy over. createdNewDocument:templateURL:completionHandler: should do the right thing for creating an empty new document.
-            }
-
-            BOOL isDirectory = [[newDocumentURL absoluteString] hasSuffix:@"/"];
-            ODSFileItem *newDocument = [[ODSFileItem alloc] initWithScope:scope fileURL:newDocumentURL isDirectory:isDirectory fileModificationDate:[NSDate date] userModificationDate:[NSDate date]];
-            [delegate createdNewDocument:newDocument templateURL:templateFileItem.fileURL completionHandler:^(NSError *errorOrNil){
-                if (actionHandler) {
-                    if (errorOrNil)
-                        actionHandler(nil, errorOrNil);
-                    else
-                        actionHandler(newDocumentURL, nil);
-                }
-            }];
-        }];
-    };
-    [scope performDocumentCreationAction:action handler:handler];
+    id <ODSStoreDelegate> delegate = _weak_delegate;
+    NSString *baseName = nil;
+    if (type == ODSDocumentTypeTemplate)
+        baseName = [delegate documentStoreBaseNameForNewTemplateFiles:self];
+    else
+        baseName = [delegate documentStoreBaseNameForNewFiles:self];
+    if (!baseName) {
+        OBASSERT_NOT_REACHED("No delegate? You probably want one to provide a better base untitled document name.");
+        baseName = @"My Document";
+    }
+    
+    [scope addDocumentInFolder:folder baseName:baseName fileType:documentType fromURL:fileURL option:ODSStoreAddByMovingTemporarySourceToAvailableDestinationURL completionHandler:handler];
 }
 
 #pragma mark - NSObject (NSKeyValueObserving)
@@ -551,41 +563,22 @@ static unsigned ScopeContext;
     }];
 }
 
-
-- (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date willMoveToURL:(NSURL *)newURL;
+- (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
     id <ODSStoreDelegate> delegate = _weak_delegate;
-    if ([delegate respondsToSelector:@selector(documentStore:fileWithURL:andDate:willMoveToURL:)])
-        [delegate documentStore:self fileWithURL:oldURL andDate:date willMoveToURL:newURL];
+    if ([delegate respondsToSelector:@selector(documentStore:fileItemEdit:willCopyToURL:)])
+        [delegate documentStore:self fileItemEdit:fileItemEdit willCopyToURL:newURL];
 }
 
-- (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date finishedMoveToURL:(NSURL *)newURL successfully:(BOOL)successfully;
+- (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
     id <ODSStoreDelegate> delegate = _weak_delegate;
-    if ([delegate respondsToSelector:@selector(documentStore:fileWithURL:andDate:finishedMoveToURL:successfully:)])
-        [delegate documentStore:self fileWithURL:oldURL andDate:date finishedMoveToURL:newURL successfully:successfully];
-}
-
-- (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date willCopyToURL:(NSURL *)newURL;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    
-    id <ODSStoreDelegate> delegate = _weak_delegate;
-    if ([delegate respondsToSelector:@selector(documentStore:fileWithURL:andDate:willCopyToURL:)])
-        [delegate documentStore:self fileWithURL:oldURL andDate:date willCopyToURL:newURL];
-}
-
-- (void)_fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date finishedCopyToURL:(NSURL *)newURL andDate:(NSDate *)newDate successfully:(BOOL)successfully;
-{
-    OBPRECONDITION([NSThread isMainThread]);
-    
-    id <ODSStoreDelegate> delegate = _weak_delegate;
-    if ([delegate respondsToSelector:@selector(documentStore:fileWithURL:andDate:finishedCopyToURL:andDate:successfully:)])
-        [delegate documentStore:self fileWithURL:oldURL andDate:date finishedCopyToURL:newURL andDate:newDate successfully:successfully];
+    if ([delegate respondsToSelector:@selector(documentStore:fileItemEdit:finishedCopyToURL:withFileItemEdit:)])
+        [delegate documentStore:self fileItemEdit:fileItemEdit finishedCopyToURL:destinationURL withFileItemEdit:destinationFileItemEditOrNil];
 }
 
 @end

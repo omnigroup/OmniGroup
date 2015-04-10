@@ -257,7 +257,7 @@ static NSString *OAAboutPanelMainBundleContentVariants = @"OAAboutPanelMainBundl
     if ([link isKindOfClass:[NSURL class]]) {
         NSURL *linkURL = link;
         if (OFISEQUAL([linkURL scheme], @"help")) {
-            [NSApp showHelpURL:[linkURL resourceSpecifier]];
+            [[OAApplication sharedApplication] showHelpURL:[linkURL resourceSpecifier]];
             return YES; // We've handled the link
         }
     }

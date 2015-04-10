@@ -6,5 +6,27 @@
 	<real>0.4</real>
 	<key>emptyOverlayViewLabelMaxWidthRatio</key>
 	<real>0.67</real>
+	<key>overlayInspectorWindowHeightFraction</key>
+	<real>0.65</real>
+	<key>overlayInspectorTopSeparatorColor</key>
+	<dict>
+		<key>w</key>
+		<real>0</real>
+		<key>a</key>
+		<real>0.4</real>
+	</dict>
+        <key>navigationBarTextFieldBackgroundImageInsets</key>
+        <dict>
+            <key>left</key>
+            <real>4</real>
+            <key>right</key>
+            <real>4</real>
+            <key>top</key>
+            <real>4</real>
+            <key>bottom</key>
+            <real>4</real>
+        </dict>
+        <key>navigationBarTextFieldLineHeightMultiplier</key>
+        <real>1.2</real>
 </dict>
 </plist>

@@ -599,18 +599,18 @@ static NSFont *smallSystemFont;
 
     while (YES) {
         // Peek at the next event
-        theEvent = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:NO];
+        theEvent = [[NSApplication sharedApplication] nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:NO];
         // Break the loop if there is no next event
         if (!theEvent)
             break;
         // Skip over key-up events
         else if ([theEvent type] == NSKeyUp) {
-            [super keyUp:[NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:YES]];
+            [super keyUp:[[NSApplication sharedApplication] nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:YES]];
             continue;
         }
         // Respond only to key-down events
         else if ([theEvent type] == NSKeyDown) {
-            [self processKeyDownEvent:[NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:YES]];
+            [self processKeyDownEvent:[[NSApplication sharedApplication] nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:YES]];
         }
         // Break the loop on all other event types
         else

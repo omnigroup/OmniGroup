@@ -1,4 +1,4 @@
-// Copyright 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,6 +46,7 @@ typedef enum {
 @property(strong,nonatomic) NSAttributedString *attributedText;
 @property(readonly,nonatomic) OUITextLayout *textLayout;
 @property(strong,nonatomic) UIImage *image;
+@property(strong,nonatomic) UIColor *backgroundColor;
 @property(nonatomic) CGSize borderSize;
 @property(nonatomic) NSTimeInterval messageDisplayInterval;  // seconds
 @property(readonly, nonatomic) BOOL isVisible;
@@ -56,5 +57,6 @@ typedef enum {
 - (void)useAlignment:(OUIOverlayViewAlignment)alignment withinBounds:(CGRect)superBounds;
 
 - (void)centerAtPositionForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer inView:(UIView *)view;
+- (void)centerAtPositionForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer inView:(UIView *)view withinBounds:(CGRect)bounds;
 
 @end

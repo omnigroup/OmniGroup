@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,18 +14,13 @@
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
+#import <OmniFoundation/OFFileEdit.h>
+#import <OmniFoundation/OFXMLIdentifier.h>
 
 #import "ODSScope-Internal.h"
 #import "ODSFileItem-Internal.h"
 
 RCS_ID("$Id$");
-
-@interface ODSLocalDirectoryScopeFileInfo : NSObject
-@property(nonatomic,copy) NSURL *fileURL;
-@property(nonatomic,copy) NSDate *fileModificationDate;
-@end
-@implementation ODSLocalDirectoryScopeFileInfo
-@end
 
 @interface ODSLocalDirectoryScope () <ODSConcreteScope, NSFilePresenter>
 @end
@@ -339,15 +334,16 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
 
 #define UPDATE_LOCAL_FLAG(keySuffix) _updateFlag(fileItem, ODSItem ## keySuffix ## Binding, kODSFileItemDefault_ ## keySuffix)
 
-- (void)updateFileItem:(ODSFileItem *)fileItem withMetadata:(id)metadata fileModificationDate:(NSDate *)fileModificationDate;
+- (void)updateFileItem:(ODSFileItem *)fileItem withMetadata:(id)metadata fileEdit:(OFFileEdit *)fileEdit;
 {
     OBPRECONDITION(metadata == nil);
     OBPRECONDITION([NSThread isMainThread]); // Fire KVO from the main thread
+    OBPRECONDITION(fileEdit);
     OBPRECONDITION(fileItem.isDownloaded); // Local files should always be downloaded and never post a ODSFileItemFinishedDownloadingNotification notification
     
     // Local filesystem items have the actual filesystem time as their user edit time.
-    fileItem.fileModificationDate = fileModificationDate;
-    fileItem.userModificationDate = fileModificationDate;
+    fileItem.fileEdit = fileEdit;
+    fileItem.userModificationDate = fileEdit.fileModificationDate;
     
     UPDATE_LOCAL_FLAG(HasDownloadQueued);
     UPDATE_LOCAL_FLAG(IsDownloaded);
@@ -374,12 +370,14 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
     
     // <bug:///88352> (Need to deal with remotely defined package extensions when scanning our document store scopes)
     OFScanPathExtensionIsPackage isPackage = OFIsPackageWithKnownPackageExtensions(nil);
-
-    OFScanDirectory(folderURL, NO/*shouldRecurse*/, ODSScanDirectoryExcludeInboxItemsFilter(), isPackage, ^(NSFileManager *fileManager, NSURL *fileURL){
+    OFScanDirectoryItemHandler itemHandler = ^(NSFileManager *fileManager, NSURL *fileURL){
         if (fileURLToIgnore && OFURLEqualsURL(fileURLToIgnore, [fileURL URLByStandardizingPath]))
             return;
         [usedFileNames addObject:[fileURL lastPathComponent]];
-    });
+    };
+    OFScanErrorHandler errorHandler = nil;
+    
+    OFScanDirectory(folderURL, NO/*shouldRecurse*/, ODSScanDirectoryExcludeInboxItemsFilter(), isPackage, itemHandler, errorHandler);
     
     return usedFileNames;
 }
@@ -404,14 +402,14 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
         NSMutableDictionary *cacheKeyToFileInfo = [[NSMutableDictionary alloc] init];
         
         void (^itemBlock)(NSFileManager *fileManager, NSURL *fileURL) = ^(NSFileManager *fileManager, NSURL *fileURL){
-            NSString *cacheKey = ODSScopeCacheKeyForURL(fileURL);
-            NSDate *modificationDate = ODSModificationDateForFileURL(fileManager, fileURL);
+            __autoreleasing NSError *error;
+            OFFileEdit *fileEdit = [[OFFileEdit alloc] initWithFileURL:fileURL error:&error];
+            if (!fileEdit) {
+                [error log:@"Unable to get info about file at %@", fileURL];
+                return;
+            }
             
-            ODSLocalDirectoryScopeFileInfo *fileInfo = [ODSLocalDirectoryScopeFileInfo new];
-            fileInfo.fileURL = fileURL;
-            fileInfo.fileModificationDate = modificationDate;
-            
-            [cacheKeyToFileInfo setObject:fileInfo forKey:cacheKey];
+            cacheKeyToFileInfo[ODSScopeCacheKeyForURL(fileURL)] = fileEdit;
         };
         
         void (^scanFinished)(void) = ^{
@@ -430,24 +428,17 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
             NSMutableSet *updatedFileItems = [[NSMutableSet alloc] init];;
             
             // Update or create file items
-            [cacheKeyToFileInfo enumerateKeysAndObjectsUsingBlock:^(NSString *cacheKey, ODSLocalDirectoryScopeFileInfo *fileInfo, BOOL *stop) {
+            [cacheKeyToFileInfo enumerateKeysAndObjectsUsingBlock:^(NSString *cacheKey, OFFileEdit *fileEdit, BOOL *stop){
                 ODSFileItem *fileItem = existingFileItemByCacheKey[cacheKey];
                 
                 // Our filesystem and user modification date are the same for local directory documents
-                NSDate *fileModificationDate = fileInfo.fileModificationDate;
+                NSDate *fileModificationDate = fileEdit.fileModificationDate;
                 NSDate *userModificationDate = fileModificationDate;
                 
-                NSURL *fileURL = fileInfo.fileURL;
+                NSURL *fileURL = fileEdit.originalFileURL;
 
                 if (!fileItem) {
-                    __autoreleasing NSNumber *isDirectory = nil;
-                    __autoreleasing NSError *resourceError = nil;
-                    if (![fileURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&resourceError]) {
-                        NSLog(@"Error getting directory key for %@: %@", fileURL, [resourceError toPropertyList]);
-                        isDirectory = @([[fileURL absoluteString] hasSuffix:@"/"]);
-                    }
-
-                    NSString *fileType = OFUTIForFileExtensionPreferringNative([fileURL pathExtension], isDirectory);
+                    NSString *fileType = OFUTIForFileExtensionPreferringNative([fileURL pathExtension], @(fileEdit.directory));
 
                     if (![self.documentStore canViewFileTypeWithIdentifier:fileType]) {
                         [self performAsynchronousFileAccessUsingBlock:^{
@@ -471,7 +462,7 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
                         return;
                     }
 
-                    fileItem = [self makeFileItemForURL:fileURL isDirectory:[isDirectory boolValue] fileModificationDate:fileModificationDate userModificationDate:userModificationDate];
+                    fileItem = [self makeFileItemForURL:fileURL isDirectory:fileEdit.directory fileEdit:fileEdit userModificationDate:userModificationDate];
                     if (!fileItem) {
                         OBASSERT_NOT_REACHED("Failed to make a file item!");
                         return;
@@ -482,7 +473,7 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
                 [updatedFileItems addObject:fileItem];
 
                 DEBUG_METADATA(@"Updating metadata properties on file item %@", [fileItem shortDescription]);
-                [self updateFileItem:fileItem withMetadata:nil fileModificationDate:fileModificationDate];
+                [self updateFileItem:fileItem withMetadata:nil fileEdit:fileEdit];
             }];
 
             [self setFileItems:updatedFileItems itemMoved:NO];
@@ -508,8 +499,12 @@ static void _updateFlag(ODSFileItem *fileItem, NSString *bindingKey, BOOL value)
         
         // <bug:///88352> (Need to deal with remotely defined package extensions when scanning our document store scopes)
         OFScanPathExtensionIsPackage isPackage = OFIsPackageWithKnownPackageExtensions(nil);
-
-        OFScanDirectory(_directoryURL, YES/*shouldRecurse*/, ODSScanDirectoryExcludeInboxItemsFilter(), isPackage, itemBlock);
+        OFScanErrorHandler errorHandler = ^(NSURL *fileURL, NSError *error){
+            [error log:@"Unable to scan local file(s) at %@", fileURL];
+            return YES; // Keep trying to get as many as we can...
+        };
+        
+        OFScanDirectory(_directoryURL, YES/*shouldRecurse*/, ODSScanDirectoryExcludeInboxItemsFilter(), isPackage, itemBlock, errorHandler);
         
         if (scanFinished)
             [[NSOperationQueue mainQueue] addOperationWithBlock:scanFinished];

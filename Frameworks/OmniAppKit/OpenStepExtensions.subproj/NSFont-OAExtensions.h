@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,12 @@
 #import <AppKit/NSFont.h>
 
 @interface NSFont (OAExtensions)
+
++ (NSFont *)heavySystemFontOfSize:(CGFloat)size;
++ (NSFont *)mediumSystemFontOfSize:(CGFloat)size;
++ (NSFont *)lightSystemFontOfSize:(CGFloat)size;
++ (NSFont *)thinSystemFontOfSize:(CGFloat)size;
++ (NSFont *)ultraLightSystemFontOfSize:(CGFloat)size;
 
 - (BOOL)isScreenFont;
 

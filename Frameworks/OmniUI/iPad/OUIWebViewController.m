@@ -32,10 +32,6 @@ RCS_ID("$Id$")
     webView.backgroundColor = [UIColor clearColor];
 #endif
 
-    _backButton = [[OUIBarButtonItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Back", @"OmniUI", OMNI_BUNDLE, @"Web view nagivation button for going back in history.")
-                                                   style:UIBarButtonItemStylePlain target:self action:@selector(goBack:)];
-    self.navigationItem.leftBarButtonItem = _backButton;
-
     self.view = webView;
 }
 
@@ -56,7 +52,6 @@ RCS_ID("$Id$")
 {
     UIWebView *webView = (UIWebView *)self.view;
     [webView goBack];
-    _backButton.enabled = webView.canGoBack;
 }
 
 - (IBAction)close:(id)sender;
@@ -68,7 +63,7 @@ RCS_ID("$Id$")
 
 - (void)_updateBarButtonItemForURL:(NSURL *)aURL;
 {
-    self.navigationItem.rightBarButtonItem = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)];
 }
 
 - (void)setURL:(NSURL *)aURL;
@@ -93,11 +88,6 @@ RCS_ID("$Id$")
     [(UIWebView *)self.view loadData:data MIMEType:mimeType textEncodingName:@"utf-8" baseURL:nil];
 }
 
-- (NSArray *)saveControllerState;
-{
-    return nil;
-}
-
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error;
 {
     [self dismissViewControllerAnimated:YES completion:nil];
@@ -106,63 +96,58 @@ RCS_ID("$Id$")
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType;
 {
     NSURL *requestURL = [request URL];
-    
+
     if (navigationType == UIWebViewNavigationTypeLinkClicked) {
 #ifdef DEBUG_kc
         NSLog(@"WebView link: %@", requestURL);
 #endif
-        
-	NSString *scheme = [[requestURL scheme] lowercaseString];
-	
+
+        NSString *scheme = [[requestURL scheme] lowercaseString];
+
         // Mailto link
-	if ([scheme isEqualToString:@"mailto"]) {
-	    MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
-	    controller.mailComposeDelegate = self;
-	    [controller setToRecipients:[NSArray arrayWithObject:[requestURL resourceSpecifier]]];
-	    [self presentViewController:controller animated:YES completion:nil];
+        if ([scheme isEqualToString:@"mailto"]) {
+            MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
+            controller.mailComposeDelegate = self;
+            [controller setToRecipients:[NSArray arrayWithObject:[requestURL resourceSpecifier]]];
+            [self presentViewController:controller animated:YES completion:nil];
             return NO; // Don't load this in the WebView
-	}
-        
+        }
+
         // Explicitly kick over to Safari
         if ([scheme isEqualToString:@"x-safari"]) { // Hand off x-safari URLs to the OS
             NSURL *safariURL = [NSURL URLWithString:[requestURL resourceSpecifier]];
             if (safariURL != nil && [[UIApplication sharedApplication] openURL:safariURL])
-                return NO; // Don't load this in the WebView
+            return NO; // Don't load this in the WebView
         }
-        
-        
-        // Implicitly kick web URLs not pointing to *.omnigroup.com over to Safari (or all URLs in retail demos)
+
+
+        // Implicitly kick web all URLs over to Safari 
         BOOL isWebURL = !([requestURL isFileURL]);
 
         if (isWebURL) {
             if ([[UIApplication sharedApplication] openURL:requestURL] == NO) {
                 NSString *alertTitle = NSLocalizedStringFromTableInBundle(@"Link could not be opened. Please check Safari restrictions in Settings.", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL title.");
-                
+
                 OUIAlert *alert = [[OUIAlert alloc] initWithTitle:alertTitle message:nil cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL cancel button.") cancelAction:NULL];
-                
+
                 [alert show];
             }
-            
+
             // The above call to -openURL can return no if Safari is off due to restriction. We still don't want to handle the URL.
             return NO;
         }
 
         // Special URL
         if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:nil handleOpenURL:requestURL]) {
-                return NO; // Don't load this in the WebView
+            return NO; // Don't load this in the WebView
         }
     }
 
     // Go ahead and load this in the WebView
     [self _updateBarButtonItemForURL:requestURL];
 
-    
+    // we have removed the back button so if you get here, hopefully you are our initial launch page and nothing else.
     return YES;
-}
-
-- (void)webViewDidFinishLoad:(UIWebView *)webView;
-{
-    _backButton.enabled = webView.canGoBack;
 }
 
 #pragma mark - UIViewController subclass

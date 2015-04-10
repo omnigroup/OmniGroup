@@ -1,4 +1,4 @@
-// Copyright 1998-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <ExceptionHandling/NSExceptionHandler.h>
 #import <OmniBase/system.h>
+#import <OmniBase/OBBacktraceBuffer.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSString-OFExtensions.h>
 #import <OmniFoundation/NSThread-OFExtensions.h>
@@ -35,6 +36,9 @@ RCS_ID("$Id$")
     NSMutableDictionary *queues;
     
     OFPreference *_crashOnAssertionOrUnhandledExceptionPreference;
+
+    NSLock *_noficiationOwnersLock;
+    NSMutableArray *_locked_notificationOwnerReferences;
 }
 
 static OFController *sharedController = nil;
@@ -142,6 +146,9 @@ static void _OFControllerCheckTerminated(void)
 
         assert(_stillSettingUpSharedController == YES);
         _stillSettingUpSharedController = NO;
+        
+        // For one-time setup that we don't want to do in -init if we are going to be a losing instance.
+        [sharedController becameSharedController];
     }
     
     OBASSERT([sharedController isKindOfClass:self]);
@@ -192,6 +199,9 @@ static void _OFControllerCheckTerminated(void)
     _observerReferences = [[NSMutableArray alloc] init];
     postponingObservers = [[NSMutableSet alloc] init];
     
+    _noficiationOwnersLock = [[NSLock alloc] init];
+    _locked_notificationOwnerReferences = [[NSMutableArray alloc] init];
+    
 #ifdef OMNI_ASSERTIONS_ON
     atexit(_OFControllerCheckTerminated);
 #endif
@@ -212,8 +222,35 @@ static void _OFControllerCheckTerminated(void)
     [postponingObservers release];
     [queues release];
     
+    [_locked_notificationOwnerReferences release];
+    [_noficiationOwnersLock release];
+
     [super dealloc];
 }
+
+#ifdef OMNI_ASSERTIONS_ON
+static void (*originalUserNotificationCenterSetDelegate)(id self, SEL _cmd, id object) = NULL;
+
+static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id object)
+{
+    OBASSERT_NOT_REACHED("The OAController instance should be the delgate of NSUserNotificationCenter. Use -[OAController addNotificationOwner:] instead.");
+}
+#endif
+
+- (void)becameSharedController;
+{
+    OBASSERT([NSUserNotificationCenter defaultUserNotificationCenter].delegate == nil, "NSUserNotificationCenter delegate was already set to %@, but will be clobbered by %@", [NSUserNotificationCenter defaultUserNotificationCenter].delegate, self);
+    
+    NSUserNotificationCenter *center = [NSUserNotificationCenter defaultUserNotificationCenter];
+    center.delegate = self;
+    
+    // Once we've set the delegate to us, replace the method with one that will assert if other code tries to mess it up.
+#ifdef OMNI_ASSERTIONS_ON
+    // The returned instance is of a concrete subclass; the superclass doesn't even implement -setDelegate:.
+    originalUserNotificationCenterSetDelegate = (typeof(originalUserNotificationCenterSetDelegate))OBReplaceMethodImplementation([center class], @selector(setDelegate:), (IMP)_replacement_userNotificationCenterSetDelegate);
+#endif
+}
+
 
 - (OFControllerStatus)status;
 {
@@ -454,8 +491,8 @@ static void OFCrashImmediately(void)
     OFCrashImmediately();
 }
 
-- (void)crashWithException:(NSException *)exception mask:(NSUInteger)mask;
-{
+static NSString *OFSymbolicBacktrace(NSException *exception) {
+
     NSString *symbolicBacktrace = nil;
 
     // Try the system method
@@ -470,10 +507,17 @@ static void OFCrashImmediately(void)
         if (![NSString isEmptyString:numericBacktrace])
             symbolicBacktrace = [OFCopySymbolicBacktraceForNumericBacktrace(numericBacktrace) autorelease];
     }
-    
-    if (!symbolicBacktrace)
+
+    if (!symbolicBacktrace) {
         symbolicBacktrace = @"No numeric backtrace found";
-    
+    }
+
+    return symbolicBacktrace;
+}
+
+- (void)crashWithException:(NSException *)exception mask:(NSUInteger)mask;
+{
+    NSString *symbolicBacktrace = OFSymbolicBacktrace(exception);
     NSString *report = [NSString stringWithFormat:@"Exception raised:\n---------------------------\nMask: 0x%08lx\nName: %@\nReason: %@\nInfo:\n%@\nBacktrace:\n%@\n---------------------------",
                         mask, [exception name], [exception reason], [exception userInfo], symbolicBacktrace];
 
@@ -482,10 +526,40 @@ static void OFCrashImmediately(void)
 
 - (BOOL)shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
 {
-    if ([exception.name isEqual:@"SenTestFailureException"])
+    if ([exception.name isEqual:@"SenTestFailureException"]) {
         return NO;
+    }
+    if ([self _isDictionaryDefinitionException:exception]) {
+        return NO;
+    }
 
     return YES;
+}
+
+- (BOOL)_isDictionaryDefinitionException:(NSException *)exception;
+{
+    // <omnicrashsorter:///ticket/1321506> (Crash in OmniOutliner 4.1.4 reported by Chenjie Gu)
+    // Apple's show-definition feature (ctrl-cmd-D) throws an exception in some cases. Those exceptions should be ignored. It's Apple’s bug.
+    // One way to reproduce:
+    //   1. Create a new empty headline in Outliner, Focus, or Plan.
+    //   2. Type a single space.
+    //   3. Move the mouse pointer over the space. Leave the insertion point where it is.
+    //   4. Type ctrl-cmd-D.
+    // You get an NSRangeException, and the backtrace includes specific methods in either NSTextView or LUAccessibility (part of the Lookup module).
+    // Filed as <rdar://19942655>
+
+    if (![exception.name isEqualToString:NSRangeException]) {
+        return NO;
+    }
+
+    NSString *symbolicBacktrace = OFSymbolicBacktrace(exception);
+    NSArray *matchStrings = @[@"-[NSTextView _showDefinitionForAttributedString:characterIndex:range:options:baselineOriginProvider:]", @"-[NSTextView showDefinitionForAttributedString:range:options:baselineOriginProvider:]", @"-[LUAccessibilityTextAccessor termForRange:textOrigin:language:partOfSpeech:]"];
+    for (NSString *oneMatchString in matchStrings) {
+        if ([symbolicBacktrace containsString:oneMatchString]) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 #pragma mark -
@@ -620,6 +694,9 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
             OFCrashImmediately();
         }
 
+        if ([self _isDictionaryDefinitionException:exception]) {
+            return NO;
+        }
         [self crashWithException:exception mask:aMask];
         return YES; // normal handler; we shouldn't get here, though.
     }
@@ -655,6 +732,86 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     }
     handlingException = NO;
     return NO; // we already did
+}
+
+#pragma mark - Notification owner registration
+
+- (void)addNotificationOwner:(__weak id <OFNotificationOwner>)notificationOwner;
+{
+    OBPRECONDITION(notificationOwner != nil);
+    OBPRECONDITION(_noficiationOwnersLock);
+    
+    [_noficiationOwnersLock lock];
+    
+    OBASSERT([self _locked_indexOfNotificationOwner:notificationOwner] == NSNotFound, "Adding the same notification owner twice is very likely a bug");
+    
+    OFWeakReference *ref = [[OFWeakReference alloc] initWithObject:notificationOwner];
+    [_locked_notificationOwnerReferences addObject:ref];
+    [ref release];
+    
+    [_noficiationOwnersLock unlock];
+}
+
+- (void)removeNotificationOwner:(__weak id <OFNotificationOwner>)notificationOwner;
+{
+    OBPRECONDITION(notificationOwner != nil);
+    OBPRECONDITION(_noficiationOwnersLock);
+    
+    [_noficiationOwnersLock lock];
+    
+    NSUInteger ownerIndex = [self _locked_indexOfNotificationOwner:notificationOwner];
+    
+    OBASSERT(ownerIndex != NSNotFound, "Removing a notification owner that wasn't added is very likely a bug");
+    if (ownerIndex != NSNotFound)
+        [_locked_notificationOwnerReferences removeObjectAtIndex:ownerIndex];
+    
+    [_noficiationOwnersLock unlock];
+}
+
+
+#pragma mark - NSUserNotificationCenterDelegate
+
+- (void)userNotificationCenter:(NSUserNotificationCenter *)center didDeliverNotification:(NSUserNotification *)notification;
+{
+    id <OFNotificationOwner> owner = [self _ownerForUserNotification:notification];
+    
+    if (owner == (id)self) {
+        // The subclass should have implemented this method if it wanted to do something, and is just calling super to satisfy NS_REQUIRES_SUPER
+    } else if ([owner respondsToSelector:_cmd]) {
+        OBSendVoidMessageWithObjectObject(owner, _cmd, center, notification);
+    } else if (owner == nil) {
+        OBASSERT_NOT_REACHED("No owner for user notification %@ %@", notification.identifier, notification);
+    }
+}
+
+- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification;
+{
+    id <OFNotificationOwner> owner = [self _ownerForUserNotification:notification];
+    
+    if (owner == (id)self) {
+        // The subclass should have implemented this method if it wanted to do something, and is just calling super to satisfy NS_REQUIRES_SUPER
+    } else if ([owner respondsToSelector:_cmd]) {
+        OBSendVoidMessageWithObjectObject(owner, _cmd, center, notification);
+    } else if (owner == nil) {
+        OBASSERT_NOT_REACHED("No owner for user notification %@ %@", notification.identifier, notification);
+    }
+}
+
+- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification;
+{
+    id <OFNotificationOwner> owner = [self _ownerForUserNotification:notification];
+    
+    if (owner == (id)self) {
+        // The subclass should have implemented this method if it wanted to do something, and is just calling super to satisfy NS_REQUIRES_SUPER.
+        // Though this will result in weird code if the subclass wants to return YES; it will need to call super, ignore the result and then return YES.
+        return NO;
+    } else if ([owner respondsToSelector:_cmd]) {
+        return OBSendBoolReturnMessageWithObjectObject(owner, _cmd, center, notification);
+    } else if (owner == nil) {
+        OBASSERT_NOT_REACHED("No owner for user notification %@ %@", notification.identifier, notification);
+        return NO;
+    }
+    return NO;
 }
 
 #pragma mark - Private
@@ -742,6 +899,46 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
         } else
             break;
     }
+}
+
+- (NSUInteger)_locked_indexOfNotificationOwner:(id)owner;
+{
+    OBPRECONDITION(_locked_notificationOwnerReferences);
+    
+    return [_locked_notificationOwnerReferences indexOfObjectPassingTest:^BOOL(OFWeakReference *ref, NSUInteger idx, BOOL *stop) {
+        return [ref referencesObject:(OB_BRIDGE void *)owner];
+    }];
+}
+
+- (NSArray *)_notificationOwnersSnapshot;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    NSMutableArray *owners = [[NSMutableArray alloc] init];
+    
+    [_noficiationOwnersLock lock];
+    {
+        for (OFWeakReference *ref in _locked_notificationOwnerReferences) {
+            id object = ref.object;
+            if (object)
+                [owners addObject:object];
+        }
+    }
+    [_noficiationOwnersLock unlock];
+    
+    return [owners autorelease];
+}
+
+- (id <OFNotificationOwner>)_ownerForUserNotification:(NSUserNotification *)userNotification;
+{
+    NSArray *owners = [self _notificationOwnersSnapshot];
+    
+    for (id <OFNotificationOwner> owner in owners) {
+        if ([owner ownsNotification:userNotification])
+            return owner;
+    }
+    
+    return nil;
 }
 
 @end

@@ -4,6 +4,9 @@
 /* Conflict file format */
 "%@ (conflict from %@)" = "%1$@（来自 %2$@ 的冲突）";
 
+/* Conflict last edit file format */
+"%@ on %@" = "%2$@ 上的 %1$@";
+
 /* Conflict file regular expression */
 "^(.*) \\(conflict( [0-9+])? from .*\\)$" = "^(.*) \\（来自 .*\\ 的冲突 ([0-9+])?）$";
 
@@ -18,6 +21,9 @@
 
 /* Add server account type */
 "Add WebDAV Server" = "添加 WebDAV 服务器";
+
+/* error description */
+"Another account is syncing to this folder already." = "已有另一个帐户同步到该文件夹。";
 
 /* error reason */
 "Cannot locate synchronized documents folder." = "无法定位已同步文稿文件夹。";
@@ -72,6 +78,7 @@
 
 /* Server account type
    Set up server account title */
+
 "Omni Sync Server" = "Omni Sync Server";
 
 /* account validation error suggestion */
@@ -116,6 +123,12 @@
 /* error reason */
 "This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "此应用程序要求 OmniPresence 格式 %1$@，但云帐户正在使用格式 %2$@。 请升级云帐户。";
 
+/* Error reason */
+"This OmniPresence folder contains another OmniPresence synced folder." = "该 OmniPresence 文件夹包含其他 OmniPresence 的已同步文件夹。";
+
+/* Error description when syncing will be disabled due to too many recent errors */
+"Too many file transfers encountered errors recently." = "近期出现太多遇到错误的文件传输。";
+
 /* error description */
 "Unable to create temporary items in the proposed location." = "无法在建议位置创建临时项目。";
 
@@ -145,4 +158,3 @@
 
 /* Set up server account title */
 "WebDAV Server" = "WebDAV 服务器";
-

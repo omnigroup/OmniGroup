@@ -1,4 +1,4 @@
-// Copyright 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,7 +73,7 @@
 - (void)documentPicker:(OUIDocumentPicker *)picker addExportActions:(void (^)(NSString *title, UIImage *image, void (^action)(void)))addAction;
 
 - (UIImage *)documentPicker:(OUIDocumentPicker *)picker iconForUTI:(CFStringRef)fileUTI;        // used by the export file browser
-- (UIImage *)documentPicker:(OUIDocumentPicker *)picker exportIconForUTI:(CFStringRef)fileUTI;  // used by the large export options buttons
+- (UIImage *)documentPicker:(OUIDocumentPicker *)picker exportIconForUTI:(CFStringRef)fileUTI;  // used by the large export options buttons; should be 128 x 96 and appropriate @[2,3]x
 - (NSString *)documentPicker:(OUIDocumentPicker *)picker labelForUTI:(CFStringRef)fileUTI;
 
 - (NSString *)documentPicker:(OUIDocumentPicker *)picker purchaseDescriptionForExportType:(CFStringRef)fileUTI;

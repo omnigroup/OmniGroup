@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 
 #import <OmniFileExchange/OFXSyncSchedule.h>
 
+@class OFFileMotionResult;
 @class OFXRegistrationTable;
 @class OFXServerAccount, OFXContainerAgent, OFXAccountClientParameters;
 
@@ -50,7 +51,7 @@
 - (void)containerPublishedFileVersionsChanged:(OFXContainerAgent *)container;
 - (void)requestDownloadOfItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 - (void)deleteItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
-- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(OFFileMotionResult *moveResult, NSError *errorOrNil))completionHandler;
 
 - (void)countPendingTransfers:(void (^)(NSError *errorOrNil, NSUInteger count))completionHandler;
 - (void)countFileItemsWithLocalChanges:(void (^)(NSError *errorOrNil, NSUInteger count))completionHandler;

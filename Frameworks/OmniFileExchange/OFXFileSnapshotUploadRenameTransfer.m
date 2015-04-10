@@ -68,14 +68,15 @@ RCS_ID("$Id$")
     
     DEBUG_TRANSFER(1, @"Preparing remote rename by doing COPY of %@ -> %@", _currentRemoteSnapshotURL, self.temporaryRemoteSnapshotURL);
 
+    OFXConnection *connection = self.connection;
+
     __block NSError *error;
-    __block NSURL *temporaryRemoteSnapshotURL = self.temporaryRemoteSnapshotURL;
+    __block NSURL *temporaryRemoteSnapshotURL = [connection suggestRedirectedURLForURL:self.temporaryRemoteSnapshotURL];
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done) {
         // Copy the server-side snapshot
-        OFXConnection *connection = self.connection;
-        [connection copyURL:_currentRemoteSnapshotURL toURL:temporaryRemoteSnapshotURL withSourceETag:nil overwrite:NO completionHandler:^(NSURL *temporaryRemoteSnapshotURL, NSError *copyError) {
-            if (!temporaryRemoteSnapshotURL) {
+        [connection copyURL:_currentRemoteSnapshotURL toURL:temporaryRemoteSnapshotURL withSourceETag:nil overwrite:NO completionHandler:^(ODAVURLResult *temporaryRemoteSnapshotResult, NSError *copyError) {
+            if (!temporaryRemoteSnapshotResult) {
                 error = OBChainedError(copyError);
                 done();
                 return;
@@ -100,8 +101,8 @@ RCS_ID("$Id$")
                 }
                 
                 NSURL *infoURL = [temporaryRemoteSnapshotURL URLByAppendingPathComponent:kOFXRemoteInfoFilename isDirectory:NO];
-                [connection putData:infoData toURL:infoURL completionHandler:^(NSURL *writtenURL, NSError *writeError) {
-                    if (!writtenURL) {
+                [connection putData:infoData toURL:infoURL completionHandler:^(ODAVURLResult *writtenResult, NSError *writeError) {
+                    if (!writtenResult) {
                         error = OBChainedError(writeError);
                         done();
                         return;

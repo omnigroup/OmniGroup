@@ -1,26 +1,15 @@
-/* In App Store pricing option format */
-"%@ %@" = "%1$@ %2$@";
-
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@/%2$@";
 
-/* title for successful in app purchase */
-"%@ Purchased" = "已购买 %@";
-
 /* Default title for the About menu item */
+
 "About %@" = "关于 %@";
 
 /* No purchases found message format */
 "All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "已恢复当前 App Store 帐户的所有购买，但 %@ 不是这些购买中的一项。";
 
-/* Web view nagivation button for going back in history. */
-"Back" = "返回";
-
 /* Bold button accessibility label */
 "Bold" = "粗体";
-
-/* Disabled 'Buy' button title string */
-"Buy" = "购买";
 
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
 "Buy %@" = "购买 %@";
@@ -28,6 +17,7 @@
 /* button title
    cancel button title
    toolbar item title */
+
 
 
 "Cancel" = "取消";
@@ -40,6 +30,9 @@
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "将“%1$@”预置从“%2$@”更改为“%3$@”";
+
+/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
+"Check for Free Upgrade" = "检查免费升级";
 
 /* Certificate trust alert button title */
 "Continue" = "继续";
@@ -58,11 +51,11 @@
 /* toolbar item title */
 "Edit" = "编辑";
 
+/* Title explaining that user is eligible for discounted upgrade */
+"Eligible for free upgrade" = "有资格免费升级";
+
 /* In app Buy button error title */
 "Error" = "错误";
-
-/* Alert title for error loading product information */
-"Error Loading Store" = "载入 Store 时出错";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "本试用版未启用此功能";
@@ -97,8 +90,8 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "无法打开链接。请检查设置中的 Safari 限制。";
 
-/* Buy button title while app store is loading */
-"Loading" = "正在载入";
+/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
+"More Info" = "更多信息";
 
 /* empty value cell placeholder */
 "None" = "无";
@@ -123,9 +116,6 @@
 /* alert title */
 "Preference changed" = "预置已更改";
 
-/* title for successful in app purchase */
-"Purchase %@" = "购买 %@";
-
 /* Purchase failed alert title */
 "Purchase Failed" = "购买失败";
 
@@ -149,6 +139,9 @@
 /* Restore failed alert title */
 "Restore Failed" = "恢复失败";
 
+/* 'Restore Purchases' button title string */
+"Restore Purchases" = "恢复购买";
+
 /* Right Text Align button accessibility label. */
 "Right text align" = "文本右对齐";
 
@@ -159,10 +152,13 @@
 "Strike Through" = "删去";
 
 /* Alert description for error loading product information */
-"There was an error loading information from the App Store" = "从 App Store 加载信息时存在错误";
+"This device might not be connected to the Internet." = "该设备可能未连接到 Internet。";
 
 /* Certificate trust alert button title */
 "Trust Always" = "总是信任";
+
+/* Alert title for error loading product information */
+"Unable to reach App Store" = "无法到达 App Store";
 
 /* Underline button accessibility label */
 "Underline" = "底线";
@@ -172,9 +168,6 @@
 
 /* placeholder text */
 "username" = "用户名";
-
-/* in app purchase verify button title */
-"Verify" = "验证";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "已轻按一个将会更改以下偏好设置的链接：\n\n“%@”\n\n是否要接受这些变更？";

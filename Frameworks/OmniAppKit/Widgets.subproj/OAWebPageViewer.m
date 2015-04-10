@@ -1,4 +1,4 @@
-// Copyright 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc.All rights reserved.
+// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -69,6 +69,9 @@ static NSMutableDictionary *sharedViewerCache = nil;
 - (void)invalidate;
 {
     @autoreleasepool {
+        // This cleanup can mean we'll be deallocated. Don't let that happen while we're still poking our ivars <bug:///114229> (Unassigned: Crash closing the About panel or other OAWebPageViewer (Help, typically))
+        OBRetainAutorelease(self);
+        
         self.webDocumentView = nil;
 
         [_scriptObjects removeAllObjects];
@@ -211,7 +214,7 @@ static NSMutableDictionary *sharedViewerCache = nil;
 {
     NSURL *url = [actionInformation objectForKey:WebActionOriginalURLKey];
     if (OFISEQUAL([url scheme], @"help")) {
-        [NSApp showHelpURL:[url resourceSpecifier]];
+        [[OAApplication sharedApplication] showHelpURL:[url resourceSpecifier]];
         [listener ignore];
         return;
     }
@@ -249,21 +252,8 @@ static NSMutableDictionary *sharedViewerCache = nil;
 
 - (void)setWebDocumentView:(NSView <WebDocumentView> *)webDocumentView;
 {
-    // This can't be good for scrolling performance, but we now watch for scroll notifications in the main frame and when scrolling happens we immediately perform layout and display on the main frame's document view.
-
-    NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
-
-    if (_webDocumentView != nil) {
-        [defaultCenter removeObserver:self name:NSViewBoundsDidChangeNotification object:_webDocumentView];
-        [_webDocumentView.superview setPostsBoundsChangedNotifications:NO];
-    }
-
     _webDocumentView = webDocumentView;
     _webDocumentView.wantsLayer = YES;
-
-    if (_webDocumentView != nil) {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_webDocumentScrolledNotification:) name:NSViewBoundsDidChangeNotification object:_webDocumentView.superview];
-    }
 }
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
@@ -271,26 +261,12 @@ static NSMutableDictionary *sharedViewerCache = nil;
     if (frame == [sender mainFrame])
         self.webDocumentView = frame.frameView.documentView;
 
-    [self _layoutDocumentView];
     [self showWindow:nil];
-}
-
-- (void)_layoutDocumentView;
-{
-    // We would call -setNeedsLayout: and -setNeedsDisplay:, but then layout won't actually happen immediately when the window is being scrolled in the background--which means our fixed CSS elements will wander out of place.
-    [_webDocumentView layout];
-    [_webDocumentView display];
-}
-
-- (void)_webDocumentScrolledNotification:(NSNotification *)note
-{
-    [self _layoutDocumentView];
 }
 
 - (void)webView:(WebView *)sender didChangeLocationWithinPageForFrame:(WebFrame *)frame;
 {
     // If the user clicks on a page that is already loaded, we want to show our window even though we didn't get a -webView:didFinishLoadForFrame: message.
-    [self _layoutDocumentView];
     [self showWindow:nil];
 }
 
@@ -396,6 +372,27 @@ static NSMutableDictionary *sharedViewerCache = nil;
 - (void)_ensureWindowLoaded;
 {
     (void)[self window];
+}
+
+@end
+
+
+@interface OAWebPageContainerView : NSView
+@end
+
+@implementation OAWebPageContainerView
+
+- (void)resizeSubviewsWithOldSize:(NSSize)oldSize {
+
+    // <bug:///110229> (Unassigned: White line at top of Help window looks odd)
+    // For some reason a 1-point-tall line would sometimes appear between the WebView and the window title bar. This makes sure that that won't happen.
+
+    [super resizeSubviewsWithOldSize:oldSize];
+
+    WebView *webview = self.subviews.firstObject;
+    if (!NSEqualRects(webview.frame, self.bounds)) {
+        webview.frame = self.bounds;
+    }
 }
 
 @end

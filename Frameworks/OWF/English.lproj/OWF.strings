@@ -4,12 +4,6 @@
 /* httpsession status for HTTP/0.9 servers */
 "%@ is ancient, good luck!" = "%@ is ancient, good luck!";
 
-/* webpipeline timed refresh NSCalendarDate format */
-"%b %d %H:%M:%S" = "%1$b %2$d %3$H:%4$M:%5$S";
-
-/* fileprocessor lastChangeDate calendar format */
-"%d-%b-%Y %H:%M:%S %z" = "%1$d-%2$b-%3$Y %4$H:%5$M:%6$S %7$z";
-
 /* netlocation string to remove from addresses when displaying them in short form */
 ".com" = ".com";
 

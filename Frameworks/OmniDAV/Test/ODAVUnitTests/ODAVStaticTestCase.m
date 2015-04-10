@@ -1,4 +1,4 @@
-// Copyright 2008-2014 The Omni Group. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -116,7 +116,7 @@
     NSURL *dir2 = [self.remoteBaseURL URLByAppendingPathComponent:@"dir-2" isDirectory:YES];
     
     __autoreleasing NSError *error;
-    dir1 = [self.connection synchronousMakeCollectionAtURL:dir1 error:&error];
+    dir1 = [self.connection synchronousMakeCollectionAtURL:dir1 error:&error].URL;
     OBShouldNotError(dir1);
     
     error = nil;
@@ -133,7 +133,7 @@
     NSURL *dir2 = [self.remoteBaseURL URLByAppendingPathComponent:@"dir-2" isDirectory:YES];
     
     __autoreleasing NSError *error;
-    dir1 = [self.connection synchronousMakeCollectionAtURL:dir1 error:&error];
+    dir1 = [self.connection synchronousMakeCollectionAtURL:dir1 error:&error].URL;
     OBShouldNotError(dir1);
     
     error = nil;

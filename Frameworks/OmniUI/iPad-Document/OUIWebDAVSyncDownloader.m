@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -369,7 +369,7 @@ RCS_ID("$Id$");
             targetURL = OFURLWithTrailingSlash(OFURLWithNameAffix(targetURL, temporaryNameSuffix, NO, YES));
         }
         
-        NSURL *parentURL = [connection synchronousMakeCollectionAtURL:targetURL error:&error];
+        NSURL *parentURL = [connection synchronousMakeCollectionAtURL:targetURL error:&error].URL;
         if (atomically) {
             _uploadTemporaryURL = parentURL;
             if (parentURL != nil && !OFURLEqualsURL(parentURL, targetURL)) {

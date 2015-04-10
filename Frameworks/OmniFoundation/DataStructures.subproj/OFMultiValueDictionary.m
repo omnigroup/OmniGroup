@@ -390,11 +390,10 @@ static OFCharacterSet *_valueDelimiterOFCharacterSet(void)
     return ValueDelimiterSet;
 }
 
-- (OFMultiValueDictionary *)parametersFromQueryString;
+- (void)parseQueryString:(void (^)(NSString *decodedName, NSString *decodedValue, BOOL *stop))handlePair;
 {
     OFCharacterSet *nameDelimiterSet = _nameDelimiterOFCharacterSet();
     OFCharacterSet *valueDelimiterSet = _valueDelimiterOFCharacterSet();
-    OFMultiValueDictionary *parameters = [[[OFMultiValueDictionary alloc] init] autorelease];
     OFStringScanner *scanner = [[OFStringScanner alloc] initWithString:self];
     while (scannerHasData(scanner)) {
         NSString *encodedName = [scanner readFullTokenWithDelimiterOFCharacterSet:nameDelimiterSet forceLowercase:NO];
@@ -411,9 +410,23 @@ static OFCharacterSet *_valueDelimiterOFCharacterSet(void)
             decodedValue = encodedValue;
         if (decodedValue == nil)
             decodedValue = (id)[NSNull null];
-        [parameters addObject:decodedValue forKey:decodedName];
+        
+        BOOL stop = NO;
+        handlePair(decodedName, decodedValue, &stop);
+        if (stop)
+            break;
     }
     [scanner release];
+}
+
+- (OFMultiValueDictionary *)parametersFromQueryString;
+{
+    OFMultiValueDictionary *parameters = [[[OFMultiValueDictionary alloc] init] autorelease];
+    [self parseQueryString:^(NSString *decodedName, NSString *decodedValue, BOOL *stop) {
+        if (decodedValue == nil)
+            decodedValue = (id)[NSNull null];
+        [parameters addObject:decodedValue forKey:decodedName];
+    }];
     return parameters;
 }
 

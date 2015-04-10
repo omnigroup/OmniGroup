@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007, 2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,6 @@
     NSString *_optionKeyToolTip;
     SEL _optionKeyAction;
     
-    id _nonretained_delegate;
     BOOL inOptionKeyState;
     BOOL observingTintOverrideChanges;
     
@@ -27,7 +26,7 @@
     NSBundle *tintedImageBundle;
 }
 
-@property(nonatomic,assign) id delegate;
+@property(nonatomic,weak) id delegate;
     // Right now, the only thing we're doing with our delegate is using it as a validator; AppKit's auto-validation scheme can be useful for changing more attributes than just enabled/disabled, but it currently only works for items that have a target and action, which many custom toolbar items don't.
 
 @property(nonatomic,retain) NSImage *optionKeyImage;

@@ -2,13 +2,14 @@
 "%@ points" = "%@ puntos";
 
 /* title format for color component slider */
-"<alpha title+value>" = "Opacidad: %d%%";
+
+"<alpha title+value>" = "Opacidad: %d %%";
 
 /* title format for color component slider */
 "<blue title+value>" = "Azul: %d";
 
 /* title format for color component slider */
-"<brightness title+value>" = "Brillo: %d%%";
+"<brightness title+value>" = "Brillo: %d %%";
 
 /* title format for color component slider */
 "<green title+value>" = "Verde: %d";
@@ -20,10 +21,10 @@
 "<red title+value>" = "Rojo: %d";
 
 /* title format for color component slider */
-"<saturation title+value>" = "Saturación: %d%%";
+"<saturation title+value>" = "Saturación: %d %%";
 
 /* title format for color component slider */
-"<white title+value>" = "Blanco: %d%%";
+"<white title+value>" = "Blanco: %d %%";
 
 /* Title for section of font list */
 "All Fonts" = "Todos los tipos de letra";
@@ -66,4 +67,3 @@
 
 /* Inspector title */
 "Text Style" = "Estilo del texto";
-

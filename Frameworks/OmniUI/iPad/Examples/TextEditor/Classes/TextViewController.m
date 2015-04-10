@@ -116,10 +116,12 @@ RCS_ID("$Id$");
         // Don't steal the toolbar items from any possibly open document
         if (!self.forPreviewGeneration) {
             AppController *controller = [AppController controller];
+            OUIUndoBarButtonItem *undoItem = [[[OUIUndoBarButtonItem alloc] init] autorelease];
+            undoItem.undoBarButtonItemTarget = controller;
             // Listed left to right.
             self.navigationItem.leftBarButtonItems = @[
                                                        controller.closeDocumentBarButtonItem,
-                                                       controller.undoBarButtonItem
+                                                       undoItem
                                                        ];
             
             // Custom title view and OmniPresence Sync button are handled by the OUIDocumentNavigatonItem.

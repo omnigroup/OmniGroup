@@ -434,3 +434,12 @@ id OFCreatePlistFor4CC(uint32_t v)
         return (OB_BRIDGE NSString *)CFStringCreateWithBytes(kCFAllocatorDefault, buf.c, 4, kCFStringEncodingMacRoman, FALSE);
     }
 }
+
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+UIApplication *OFSharedApplication(void)
+{
+    return [NSClassFromString(@"UIApplication") sharedApplication];
+}
+#endif
+

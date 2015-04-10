@@ -1,13 +1,12 @@
-// Copyright 2010 Omni Development, Inc.  All rights reserved.
-// NSCalendarDate is deprecated.  Leaving this here for a while so we can refer to it as we convert any remaining uses to NSCalendar/NSDateComponents/NSDate/NSLocale
-#if 0
-
-// Copyright 1997-2005, 2007-2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+
+// NSCalendarDate is deprecated.  Leaving this here for a while so we can refer to it as we convert any remaining uses to NSCalendar/NSDateComponents/NSDate/NSLocale
+#if 0
 
 #import <OmniFoundation/NSCalendarDate-OFExtensions.h>
 

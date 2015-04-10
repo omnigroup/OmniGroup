@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,6 @@ typedef NS_ENUM(NSInteger, HomeScreenSections) {
 
 typedef NS_ENUM(NSInteger, EditModeSectionRows) {
     AddCloudAccountRow,
-    ToggleBackgroundCellularSyncRow,
     EditModeSectionRowCount,
 };
 
@@ -53,7 +52,6 @@ typedef NS_ENUM(NSInteger, EditModeSectionRows) {
 
 NSString *const HomeScreenCellReuseIdentifier = @"documentPickerHomeScreenCell";
 NSString *const AddCloudAccountReuseIdentifier = @"addCloudAccount";
-NSString *const ToggleBackgroundCellarSyncReuseIdentifier = @"toggleBackgroundCellularSync";
 
 #pragma mark - KVO Contexts
 
@@ -68,6 +66,19 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
 @end
 
 @implementation _OUIDocumentPickerObservedFilterRecord
+@end
+
+@interface _ButtonishTableViewCell : UITableViewCell
+@end
+
+@implementation _ButtonishTableViewCell
+
+- (void)tintColorDidChange;
+{
+    self.textLabel.textColor = [self tintColor];
+    [super tintColorDidChange];
+}
+
 @end
 
 #pragma mark - View Controller
@@ -96,6 +107,7 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Locations", @"OmniUIDocument", OMNI_BUNDLE, @"top level doc picker title");
     
     self.navigationItem.rightBarButtonItems = @[self.editButtonItem, [[OUIAppController controller] newAppMenuBarButtonItem]];
+    [self _updateEditButton];
     
     UITableView *tableView = self.tableView;
     tableView.separatorInset = UIEdgeInsetsZero;
@@ -106,8 +118,6 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
 
 - (void)dealloc;
 {
-    [OFPreference removeObserver:self forPreference:[OFXAgent cellularSyncEnabledPreference]];
-    
     [self _stopObservingScope:_documentPicker.documentStore.trashScope];
     
     for (OFXDocumentStoreScope *scope in _orderedScopes)
@@ -150,8 +160,6 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
     UITableView *tableView = self.tableView;
     tableView.backgroundColor = [UIColor whiteColor];
     
-    [OFPreference addObserver:self selector:@selector(_cellularSyncPreferenceChanged:) forPreference:[OFXAgent cellularSyncEnabledPreference]];
-    
     [super viewDidLoad];
 }
 
@@ -160,13 +168,16 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
     [super viewDidAppear:animated];
     [[OUIDocumentPickerViewController scopePreference] setStringValue:@""];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
+    [self _updateEditButton];
+}
+
+- (void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    [self setEditing:NO animated:NO];
 }
 
 - (void)setEditing:(BOOL)editing;
 {
-    if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlert])
-        return;
-    
     [super setEditing:editing];
     if (self.isViewLoaded)
         [self.tableView reloadData];
@@ -174,9 +185,6 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 {
-    if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlert])
-        return;
-    
     BOOL wasEditing = self.editing;
     
     [super setEditing:editing animated:animated];
@@ -185,11 +193,7 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
         return;
     
     UITableView *tableView = self.tableView;
-    if (editing)
-        [tableView insertSections:[NSIndexSet indexSetWithIndex:EditModeSection] withRowAnimation:UITableViewRowAnimationFade];
-    else
-        [tableView deleteSections:[NSIndexSet indexSetWithIndex:EditModeSection] withRowAnimation:UITableViewRowAnimationFade];
-    
+
     // We need to reload the rows that can't be edited, rather than just call -_updateCell:forScope:, because changing the tintAdjustmentMode is not animatable.
     NSMutableArray *indexPaths = [NSMutableArray new];
     for (NSUInteger i = 0; i < _orderedScopes.count; i++) {
@@ -334,6 +338,50 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
     }
 
     [tableView endUpdates];
+    
+    [self _updateEditButton];
+}
+
+- (void)_updateEditButton{
+    BOOL someScopeIsEditable = NO;
+    for (ODSScope *scope in _orderedScopes) {
+        if ([scope isKindOfClass:[OFXDocumentStoreScope class]]) {
+            someScopeIsEditable = YES;
+            break;
+        }
+    }
+    
+    OUIDocumentPickerAdaptableContainerViewController *parentController = [OUIDocumentPickerAdaptableContainerViewController adaptableContainerControllerForController:self];
+    NSArray *currentRightBarButtonItems;
+    if (parentController) {
+        currentRightBarButtonItems = [parentController displayedBarButtonItems];
+    } else {
+        currentRightBarButtonItems = self.navigationItem.rightBarButtonItems;
+    }
+    NSArray *appropriateButtons = nil;
+    if (someScopeIsEditable) {
+        if (![currentRightBarButtonItems containsObject:self.editButtonItem]) {
+            NSMutableArray *buttonsIncludingEditButton = [NSMutableArray arrayWithArray:currentRightBarButtonItems];
+            [buttonsIncludingEditButton insertObject:self.editButtonItem atIndex:0];
+            appropriateButtons = buttonsIncludingEditButton;
+        }
+    }else{
+        if ([currentRightBarButtonItems containsObject:self.editButtonItem]) {
+            NSMutableArray *buttonsWithoutEditButton = [NSMutableArray arrayWithArray:currentRightBarButtonItems];
+            [buttonsWithoutEditButton removeObject:self.editButtonItem];
+            appropriateButtons = buttonsWithoutEditButton;
+        }
+        if (self.editing) {
+            [self setEditing:NO animated:YES];
+        }
+    }
+    if (appropriateButtons) {
+        if (parentController) {
+            [parentController resetBarButtonItems:appropriateButtons];
+        } else {
+            [self.navigationItem setRightBarButtonItems:appropriateButtons animated:YES];
+        }
+    }
 }
 
 - (void)finishedLoading;
@@ -350,66 +398,19 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
 {
     if (!_finishedLoading)
         return 0;
-    else if (self.editing)
-        return SectionCount;
     else
-        return SectionCount - 1;
-}
-
-static BOOL _scanForCellularInterface(void);
-
-static BOOL _autoHasCellularInterface(void)
-{
-    static BOOL foundCellularInterface = NO;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        foundCellularInterface = _scanForCellularInterface();
-    });
-    return foundCellularInterface;
-}
-
-static BOOL _hasCellularInterface(void)
-{
-    typedef NS_ENUM(NSUInteger, OUIDocumentPickerCellularInterfaceType) {
-        OUIDocumentPickerHasCellularInterfaceAuto,
-        OUIDocumentPickerHasCellularInterfaceAlways,
-        OUIDocumentPickerHasCellularInterfaceNever,
-    };
-    static OFPreference *hasCellularInterfacePreference;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        OFEnumNameTable *enumeration = [[OFEnumNameTable alloc] initWithDefaultEnumValue:OUIDocumentPickerItemSortByDate];
-        [enumeration setName:@"auto" forEnumValue:OUIDocumentPickerHasCellularInterfaceAuto];
-        [enumeration setName:@"always" forEnumValue:OUIDocumentPickerHasCellularInterfaceAlways];
-        [enumeration setName:@"never" forEnumValue:OUIDocumentPickerHasCellularInterfaceNever];
-        hasCellularInterfacePreference = [OFPreference preferenceForKey:@"OUIDocumentPickerHasCellularInterface" enumeration:enumeration];
-    });
-
-    OUIDocumentPickerCellularInterfaceType cellType = [hasCellularInterfacePreference enumeratedValue];
-    switch (cellType) {
-        default:
-        case OUIDocumentPickerHasCellularInterfaceAuto:
-            return _autoHasCellularInterface();
-        case OUIDocumentPickerHasCellularInterfaceAlways:
-            return YES;
-        case OUIDocumentPickerHasCellularInterfaceNever:
-            return NO;
-    }
+        return SectionCount;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
 {
     OBPRECONDITION(_finishedLoading, "Asked for the number of rows when we haven't loaded yet!");
     OBPRECONDITION(section == AccountsListSection || section == EditModeSection);
-    OBASSERT_IF(!self.editing, section == AccountsListSection, "Asked for rows in the Add Account section when no such section should exist");
     
     if (section == AccountsListSection)
         return _orderedScopes.count;
-
-    if (_hasCellularInterface())
-        return EditModeSectionRowCount;
-    else
-        return EditModeSectionRowCount - 1;
+    
+    return EditModeSectionRowCount;
 }
 
 - (ODSScope <ODSConcreteScope> *)_scopeAtIndex:(NSUInteger)index;
@@ -431,6 +432,12 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
 - (void)selectCellForScope:(ODSScope *)scope;
 {
     [self.tableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:[_orderedScopes indexOfObjectIdenticalTo:scope] inSection:0] animated:YES scrollPosition:UITableViewScrollPositionMiddle];
+}
+
+- (void)editSettingsForAccount:(OFXServerAccount *)account;
+{
+    [self setEditing:YES animated:NO];
+    [self _editAccountSettings:account sender:self.tableView];
 }
 
 - (void)_updateCell:(UITableViewCell *)cell forScope:(ODSScope *)scope;
@@ -469,6 +476,8 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
     if ([scope isKindOfClass:[OFXDocumentStoreScope class]]) {
         cell.imageView.image = cloudImage;
         cell.editingAccessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.textLabel.textColor = nil;
+        cell.detailTextLabel.textColor = nil;
     } else {
         cell.imageView.image = scope.isTrash ? trashImage : localImage;
         cell.editingAccessoryType = UITableViewCellAccessoryNone;
@@ -495,24 +504,11 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
         
         return cell;
     } else if (indexPath.row == AddCloudAccountRow) {
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:AddCloudAccountReuseIdentifier];
+        _ButtonishTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:AddCloudAccountReuseIdentifier];
         if (!cell)
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:AddCloudAccountReuseIdentifier];
+            cell = [[_ButtonishTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:AddCloudAccountReuseIdentifier];
         cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Add Cloud Account", @"OmniUIDocument", OMNI_BUNDLE, @"home screen button label");
-        cell.textLabel.textColor = [tableView tintColor];
-        return cell;
-    } else if (indexPath.row == ToggleBackgroundCellularSyncRow) {
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:ToggleBackgroundCellarSyncReuseIdentifier];
-        if (!cell) {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ToggleBackgroundCellarSyncReuseIdentifier];
-            UISwitch *cellularDataSwitch = [[UISwitch alloc] init];
-            [cellularDataSwitch addTarget:self action:@selector(_takeUseCellularDataForBackgroundSyncFrom:) forControlEvents:UIControlEventValueChanged];
-            cell.accessoryView = cellularDataSwitch;
-        }
-        
-        ((UISwitch *)cell.accessoryView).on = [OFXAgent isCellularSyncEnabled];
-        cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Use Cellular Data", @"OmniUIDocument", OMNI_BUNDLE, @"Label for switch which controls whether cloud sync is allowed to use cellular data");
-        
+        cell.textLabel.textColor = [self.view tintColor];
         return cell;
     }
     
@@ -545,46 +541,47 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
         return [[OmniUIDocumentAppearance appearance] documentPickerAddAccountRowHeight];
 }
 
+- (void)_editAccountSettings:(OFXServerAccount *)account sender:(id)sender;
+{
+    OUIServerAccountSetupViewController *setupController = [[OUIServerAccountSetupViewController alloc] initWithAccount:account];
+    setupController.finished = ^(id account, NSError *error) { };
+    [self showViewController:setupController sender:sender];
+}
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     OBPRECONDITION(_finishedLoading);
     
-    if (self.isEditing) {
-        if (indexPath.section == AccountsListSection) {
+    if (indexPath.section == AccountsListSection) {
+        if (self.isEditing) {
             OFXDocumentStoreScope *scope = OB_CHECKED_CAST(OFXDocumentStoreScope, [self _scopeAtIndex:indexPath.row]);
             OFXServerAccount *account = scope.account;
-            OUIServerAccountSetupViewController *setupController = [[OUIServerAccountSetupViewController alloc] initWithAccount:account];
-            setupController.finished = ^(id account, NSError *error) { };
-            [self showViewController:setupController sender:tableView];
-        } else {
-            OBPRECONDITION(indexPath.section == EditModeSection);
-            OBPRECONDITION(indexPath.row == AddCloudAccountRow);
+            [self _editAccountSettings:account sender:tableView];
+        }else{
+            ODSScope *scope = [self _scopeAtIndex:indexPath.item];
             
-            OUIAddCloudAccountViewController *addController = [[OUIAddCloudAccountViewController alloc] initWithUsageMode:OFXServerAccountUsageModeCloudSync];
-            addController.finished = ^(OFXServerAccount *newAccountOrNil) {
-                [self.navigationController popToViewController:self animated:YES];
-                
-                if (newAccountOrNil) {
-                    for (ODSScope *scope in _documentPicker.documentStore.scopes) {
-                        if ([scope isKindOfClass:[OFXDocumentStoreScope class]] && ((OFXDocumentStoreScope*)scope).account == newAccountOrNil) {
-                            [_documentPicker navigateToScope:scope animated:YES];
-                            break;
-                        }
-                    }
-                }
-            };
+            OUIDocumentPickerFilter *filter ;
+            OFPreference *filterPreference = [OUIDocumentPickerViewController filterPreference];
+            [filterPreference setStringValue:filter.identifier];
             
-            [self.navigationController pushViewController:addController animated:YES];
+            OUIDocumentPickerViewController *picker = [[OUIDocumentPickerViewController alloc] initWithDocumentPicker:_documentPicker scope:scope];
+            [self showUnembeddedViewController:picker sender:self];
         }
     } else {
-        ODSScope *scope = [self _scopeAtIndex:indexPath.item];
-
-        OUIDocumentPickerFilter *filter ;
-        OFPreference *filterPreference = [OUIDocumentPickerViewController filterPreference];
-        [filterPreference setStringValue:filter.identifier];
-
-        OUIDocumentPickerViewController *picker = [[OUIDocumentPickerViewController alloc] initWithDocumentPicker:_documentPicker scope:scope];
-        [self showUnembeddedViewController:picker sender:self];
+        OBPRECONDITION(indexPath.section == EditModeSection);
+        OBPRECONDITION(indexPath.row == AddCloudAccountRow);
+        
+        if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlert]) {
+            // Early out if we are currently in retail demo mode.
+            return;
+        }
+        
+        OUIAddCloudAccountViewController *addController = [[OUIAddCloudAccountViewController alloc] initWithUsageMode:OFXServerAccountUsageModeCloudSync];
+        addController.finished = ^(OFXServerAccount *newAccountOrNil) {
+            [self.navigationController popToViewController:self animated:YES];
+        };
+        
+        [self.navigationController pushViewController:addController animated:YES];
     }
 }
 
@@ -610,7 +607,7 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
 
 - (BOOL)tableView:(UITableView *)tableView shouldHighlightRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    if (!self.isEditing)
+    if (!self.isEditing && indexPath.section == AccountsListSection)
         return YES;
     
     if (indexPath.section == AccountsListSection && !_canEditScope([self _scopeAtIndex:indexPath.row]))
@@ -622,22 +619,6 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
     return YES;
 }
 
-#pragma mark - Actions from table view cells
-
-- (void)_takeUseCellularDataForBackgroundSyncFrom:(id)sender;
-{
-    UISwitch *cellularDataSwitch = OB_CHECKED_CAST(UISwitch, sender);
-    [OFXAgent setCellularSyncEnabled:cellularDataSwitch.on];
-}
-
-- (void)_cellularSyncPreferenceChanged:(NSNotification *)note;
-{
-    UITableViewCell *toggleCell = [self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:ToggleBackgroundCellularSyncRow inSection:EditModeSection]];
-    
-    if (toggleCell)
-        ((UISwitch *)toggleCell.accessoryView).on = [OFXAgent isCellularSyncEnabled];
-}
-
 @end
 
 #pragma mark - Animation Support
@@ -647,53 +628,18 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
 - (CGRect)frameOfCellForScope:(ODSScope *)scope inView:(UIView *)transitionContainerView;
 {
     NSUInteger scopeIndex = [_orderedScopes indexOfObject:scope];
-    OBASSERT(scopeIndex != NSNotFound);
-    
+
+    CGRect frame = CGRectZero;
     UITableView *tableView = self.tableView;
-    CGRect cellFrame = [tableView rectForRowAtIndexPath:[NSIndexPath indexPathForRow:scopeIndex inSection:AccountsListSection]];
-    return [transitionContainerView convertRect:cellFrame fromView:tableView];
+
+    if (scopeIndex == NSNotFound) {
+        frame = [tableView frame];
+    } else {
+        frame = [tableView rectForRowAtIndexPath:[NSIndexPath indexPathForRow:scopeIndex inSection:AccountsListSection]];
+    }
+    return [transitionContainerView convertRect:frame fromView:tableView];
 }
 
 @end
 
-#import <sys/types.h>
-#import <sys/socket.h>
-#import <ifaddrs.h>
-#import <net/if_dl.h>
 
-// #import <net/if_types.h> // Not available in the iOS SDK, so we define IFT_CELLULAR by hand.  Fortunately, it's well-defined across systems: see RFC1573 and <http://www.iana.org/assignments/smi-numbers>.
-
-#ifndef IFT_CELLULAR
-#define	IFT_CELLULAR	0xff	/* Packet Data over Cellular */
-#endif
-
-static BOOL _scanForCellularInterface(void)
-{
-    struct ifaddrs *interfaceAddresses = NULL;
-    const struct ifaddrs *interfaceCursor;
-
-    if (getifaddrs(&interfaceAddresses) != 0)
-        return YES; // If we're not sure, err on the side of caution
-
-    BOOL foundCellularInterface = NO;
-    for (interfaceCursor = interfaceAddresses; interfaceCursor != NULL; interfaceCursor = interfaceCursor->ifa_next) {
-        if (interfaceCursor->ifa_addr == NULL)
-            continue;
-
-        sa_family_t interfaceFamily = interfaceCursor->ifa_addr->sa_family;
-        if (interfaceFamily == AF_LINK) {
-            struct sockaddr_dl *linkLevelAddress = (struct sockaddr_dl *)(interfaceCursor->ifa_addr);
-            u_char interfaceType = linkLevelAddress->sdl_type;
-            if (interfaceType == IFT_CELLULAR)
-                foundCellularInterface = YES;
-
-#ifdef DEBUG_kc
-            NSString *name = [NSString stringWithUTF8String:interfaceCursor->ifa_name];
-            u_short interfaceIndex = linkLevelAddress->sdl_index;
-            NSLog(@"_scanForCellularInterface(): scanning link [%@], index=%u, type=0x%x", name, interfaceIndex, interfaceType);
-#endif
-        }
-    }
-    freeifaddrs(interfaceAddresses);
-    return foundCellularInterface;
-}

@@ -181,7 +181,7 @@ RCS_ID("$Id$")
         return nil;
     }
     
-    if (![self _updateVersionDictionary:versionDictionary error:outError])
+    if (![self _updateVersionDictionary:versionDictionary reason:@"init upload contents" error:outError])
         return nil;
     if (![self _updateInfoDictionary:infoDictionary error:outError])
         return nil;

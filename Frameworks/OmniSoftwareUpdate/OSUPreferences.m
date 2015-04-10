@@ -1,4 +1,4 @@
-// Copyright 2001-2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,14 +26,14 @@ static OFPreference *visibleTracks = nil;
     OBINITIALIZE;
 
 #if MAC_APP_STORE
-    automaticSoftwareUpdateCheckEnabled = [[OFPreference preferenceForKey:@"OSUSendSystemInfoEnabled"] retain];
+    automaticSoftwareUpdateCheckEnabled = [OFPreference preferenceForKey:@"OSUSendSystemInfoEnabled"];
 #else
-    automaticSoftwareUpdateCheckEnabled = [[OFPreference preferenceForKey:@"AutomaticSoftwareUpdateCheckEnabled"] retain];
+    automaticSoftwareUpdateCheckEnabled = [OFPreference preferenceForKey:@"AutomaticSoftwareUpdateCheckEnabled"];
 #endif
-    checkInterval = [[OFPreference preferenceForKey:@"OSUCheckInterval"] retain];
-    includeHardwareDetails = [[OFPreference preferenceForKey:@"OSUIncludeHardwareDetails"] retain];
-    updatesToIgnore = [[OFPreference preferenceForKey:@"OSUIgnoredUpdates"] retain];
-    visibleTracks = [[OFPreference preferenceForKey:@"OSUVisibleTracks"] retain];
+    checkInterval = [OFPreference preferenceForKey:@"OSUCheckInterval"];
+    includeHardwareDetails = [OFPreference preferenceForKey:@"OSUIncludeHardwareDetails"];
+    updatesToIgnore = [OFPreference preferenceForKey:@"OSUIgnoredUpdates"];
+    visibleTracks = [OFPreference preferenceForKey:@"OSUVisibleTracks"];
 }
 
 + (OFPreference *)automaticSoftwareUpdateCheckEnabled;

@@ -13,11 +13,17 @@
 /* megabytes */
 "%@ MB" = "%@ Mo";
 
+/* home screen detail label */
+"%d items" = "%d éléments";
+
 /* Main toolbar title for a multiple selected documents. */
 "%ld Documents Selected" = "%ld documents sélectionnés";
 
 /* Main toolbar title for a multiple selected items. */
 "%ld Items Selected" = "%ld éléments sélectionnés";
+
+/* home screen detail format -- count and item description */
+"%lu %@" = "%1$lu %2$@";
 
 /* Main toolbar title for a single selected document. */
 "1 Document Selected" = "1 document sélectionné";
@@ -41,17 +47,20 @@
 "Actions" = "Actions";
 
 /* Cloud Setup button title to add a new account */
+
 "Add an Account" = "Ajouter un compte";
 
 /* Cloud setup modal sheet title */
 "Add Cloud Account" = "Ajouter un compte de cloud";
 
-/* for WebDAV Both (Import and Export) account type */
-"Both" = "Les deux";
-
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
+
+
+
+
+
 "Cancel" = "Annuler";
 
 /* item not fully downloaded error title */
@@ -66,17 +75,11 @@
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Choisir un modèle";
 
+/* Cloud setup modal sheet title */
+"Choose Account Type" = "Choisir un type de compte";
+
 /* export options title */
 "Choose Format" = "Choisir un format";
-
-/* Cloud setup modal sheet title */
-"Cloud Setup" = "Configuration du cloud";
-
-/* App menu item title */
-"Cloud Setup..." = "Configuration du cloud…";
-
-/* Account setup toolbar button title to save account settings */
-"Connect" = "Se connecter";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Connecté";
@@ -87,11 +90,23 @@
 /* Menu option in the document picker view */
 "Copy as Image" = "Copier comme image";
 
+/* moved aside custom sample document name */
+"CustomizedSampleDocumentName" = "%@ personnalisé";
+
+/* sort by date */
+"Date" = "Date";
+
 /* Delete toolbar item accessibility label. */
 "Delete" = "Supprimer";
 
+/* Server account setup confirmation action label format */
+"Delete \"%@\"" = "Supprimer “%@”";
+
 /* delete button title */
 "Delete %ld Documents" = "Supprimer %ld documents";
+
+/* Server Account Setup button label */
+"Delete Account" = "Supprimer le compte";
 
 /* delete button title */
 "Delete Document" = "Supprimer le document";
@@ -108,9 +123,6 @@
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "Documents";
 
-/* Done */
-"Done" = "Terminé";
-
 /* Duplicate toolbar item accessibility label. */
 "Duplicate" = "Dupliquer";
 
@@ -123,6 +135,9 @@
 /* omni sync server setup help */
 "Easily sync Omni documents between devices. Signup is free!" = "Synchr. des documents Omni entre appareils. L’abonnement est gratuit !";
 
+/* When displaying a sync error, this is the option to change the username and password. */
+"Edit Credentials" = "Éditer les données d’identification";
+
 /* empty trash button title */
 "Empty Trash" = "Vider la corbeille";
 
@@ -131,8 +146,9 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
+
+
 "Export" = "Exporter";
 
 /* export action description */
@@ -141,23 +157,13 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Exporter vers WebDAV";
 
-/* disabled for demo */
-"Feature not enabled for this demo" = "Fonction inactive pour cette démo.";
-
 /* finished */
 "Finished" = "Terminé";
 
-/* Import section title */
+/* gear menu item
+   Import WebDAV server account list */
+
 "Import" = "Importer";
-
-/* Import document title */
-"Import Document…" = "Importer un document…";
-
-/* for WebDAV Import/Export account type */
-"Import/Export" = "Importer/Exporter";
-
-/* Group label for Cloud Setup */
-"Import/Export Accounts" = "Importer/Exporter des comptes";
 
 /* Info item accessibility label */
 "Info" = "Infos";
@@ -176,6 +182,7 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
+
 "Move" = "Déplacer";
 
 /* move to trash button title */
@@ -183,10 +190,10 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
+
 "Move to Trash" = "Placer dans la corbeille";
 
-/* Action sheet button title
-   Menu popover title */
+/* Share menu title */
 "Move to..." = "Placer dans…";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
@@ -210,6 +217,12 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "Pseudo";
 
+/* Export message for empty table view */
+"No accounts are configured for exporting." = "Aucun compte n’est configuré pour l’exportation.";
+
+/* Import message for empty table view */
+"No accounts are configured for importing." = "Aucun compte n’est configuré pour l’importation.";
+
 /* Not downloaded accessibility label. */
 "Not downloaded" = "Non téléchargé";
 
@@ -217,18 +230,9 @@
 "Not uploaded" = "Non chargé";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
+
 "OK" = "OK";
-
-/* for WebDAV OmniPresence edit field */
-"OmniPresence" = "OmniPresence";
-
-/* Group label for Cloud Setup */
-"OmniPresence Accounts" = "Comptes OmniPresence";
-
-/* omni sync server nickname help */
-"OmniPresence automatically keeps your documents up to date on all of your iPads and Macs." = "OmniPresence maintient automatiquement vos documents à jour sur tous vos iPad et Mac.";
 
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "Configuration d’OmniPresence : %@";
@@ -238,6 +242,9 @@
 
 /* Server Account Setup label: password */
 "Password" = "Mot de passe";
+
+/* Photo Library permisssions error description. */
+"Photo Library permission denied." = "Autorisation d’accès à la photothèque refusée.";
 
 /* Menu option in the document picker view */
 "Print" = "Imprimer";
@@ -272,6 +279,12 @@
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "Réessayer la synchronisation";
 
+/* Account setup toolbar button title to save account settings */
+"Save" = "Enregistrer";
+
+/* document picker button label */
+"Search" = "Rechercher";
+
 /* edit button title for doc picker in non-edit mode */
 "Select" = "Sélectionner";
 
@@ -292,6 +305,7 @@
 
 /* export options title
    Menu option in the document picker view */
+
 "Send via Mail" = "Envoyer par e-mail";
 
 /* email action description */
@@ -303,14 +317,11 @@
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "S’abonner à un nouveau compte";
 
-/* sort by date */
-"Sort by date" = "Trier par date";
-
-/* sort by title */
-"Sort by title" = "Trier par titre";
-
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "Synchroniser";
+
+/* empty template picker button text */
+"Tap here to add a document without a template." = "Touchez ici pour ajouter un document sans modèle.";
 
 /* empty picker button text */
 "Tap here, or on the + in the toolbar, to add a document." = "Pour ajouter un document, touchez ici ou le + dans la barre d’outils.";
@@ -322,7 +333,7 @@
 "The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Le compte “%1$@” possède %2$ld documents modifiés qui n’ont pas encore été synchronisés sur le cloud. Souhaitez-vous ignorer ces modifications ?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Le compte “%1$@” possède un document modifié qui n’a pas encore été synchronisé sur le cloud. Souhaitez-vous ignorer ces modifications ?";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Le compte “%@” possède un document modifié qui n’a pas encore été synchronisé sur le cloud. Souhaitez-vous ignorer ces modifications ?";
 
 /* Discard unsynced edits dialog: message format */
 "The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "Le compte “%@” possède peut-être des documents modifiés qui n’ont pas encore été synchronisés sur le cloud. Souhaitez-vous ignorer ces modifications locales ?";
@@ -333,6 +344,9 @@
 /* error description */
 "The zip archive must contain a single document." = "L’archive zip doit contenir un seul document.";
 
+/* Photo Library permisssions error suggestion. */
+"This app does not have access to your Photo Library." = "Cette app n’a pas accès à votre photothèque.";
+
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Ce compte de cloud n’existe plus.";
 
@@ -342,12 +356,11 @@
 /* item not fully downloaded error message */
 "This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Cet élément ne peut pas être exporté car il n’a pas été complètement téléchargé. Touchez l’élément et attendez qu’il soit téléchargé avant de réessayer.";
 
+/* sort by title */
+"Title" = "Titre";
+
 /* error title */
 "Unable to open file." = "Impossible d’ouvrir le fichier.";
 
-/* Label for switch which controls whether cloud sync is allowed to use cellular data */
-"Use Cellular Data" = "Utiliser les données cellulaires";
-
 /* Account validation status string. */
 "Validating account..." = "Validation du compte…";
-

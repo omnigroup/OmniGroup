@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,13 +22,19 @@ static NSString *keychainIdentifier = @"com.omnigroup.InAppPurchase";
     return [self _isPurchasedProductInKeychain:productIdentifier];
 }
 
-- (NSString *)vendorID;
++ (OFPreference *)vendorIDPreference;
 {
     static OFPreference *vendorIDPreference;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         vendorIDPreference = [OFPreference preferenceForKey:@"OUIVendorID"];
     });
+    return vendorIDPreference;
+}
+
+- (NSString *)vendorID;
+{
+    OFPreference *vendorIDPreference = [[self class] vendorIDPreference];
 
     if (![vendorIDPreference hasNonDefaultValue]) {
         NSString *newVendorID = [[NSUUID UUID] UUIDString];
@@ -115,7 +121,12 @@ static NSString *keychainIdentifier = @"com.omnigroup.InAppPurchase";
 - (void)_showInAppPurchases:(NSString *)productIdentifier viewController:(UIViewController *)viewController pushOntoNavigationStack:(BOOL)shouldPushOntoNavigationStack;
 {
     OBPRECONDITION(viewController != nil);
-    
+
+    if ([self isRunningRetailDemo]) {
+        [self showFeatureDisabledForRetailDemoAlert];
+        return;
+    }
+
     if (![[self inAppPurchaseIdentifiers] containsObject:productIdentifier])
         return;
     
@@ -152,8 +163,38 @@ static NSString *keychainIdentifier = @"com.omnigroup.InAppPurchase";
 
 // for subclassers
 
+- (BOOL)isEligibleForProUpgradeDiscount;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+    return NO;
+}
+
+- (NSString *)proUpgradePaidSKU;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+    return nil;
+}
+
+- (NSString *)proUpgradeDiscountSKU;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+    return nil;
+}
+
+- (NSURL *)proUpgradeMoreInfoURL;
+{
+    return nil;
+}
+
+- (NSString *)proUpgradeProductIdentifier;
+{
+    OBRequestConcreteImplementation(self, _cmd);
+    return nil;
+}
+
 - (NSArray *)inAppPurchaseIdentifiers;
 {
+    OBRequestConcreteImplementation(self, _cmd);
     return nil;
 }
 
@@ -168,11 +209,6 @@ static NSString *keychainIdentifier = @"com.omnigroup.InAppPurchase";
 }
 
 - (NSURL *)descriptionURLForProductIdentifier:(NSString *)productIdentifier;
-{
-    OBRequestConcreteImplementation(self, _cmd);
-}
-
-- (NSURL *)purchasedDescriptionURLForProductIdentifier:(NSString *)productIdentifier;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }

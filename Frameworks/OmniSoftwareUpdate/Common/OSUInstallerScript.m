@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group.  All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,8 +26,8 @@ RCS_ID("$Id$")
 @property (nonatomic, copy) NSString *stdoutPath;
 @property (nonatomic, copy) NSString *stderrPath;
 
-@property (nonatomic, retain) NSFileHandle *stdoutFileHandle;
-@property (nonatomic, retain) NSFileHandle *stderrFileHandle;
+@property (nonatomic, strong) NSFileHandle *stdoutFileHandle;
+@property (nonatomic, strong) NSFileHandle *stderrFileHandle;
 
 @end
 
@@ -47,12 +47,11 @@ RCS_ID("$Id$")
         
         BOOL success = [installerScript run:error];
 
-        [installerScript release];
         installerScript = nil;
 
         return success;
     } @finally {
-        [installerScript release];
+        installerScript = nil;
     }
 
     // Unreachable
@@ -71,7 +70,6 @@ RCS_ID("$Id$")
         if (error != NULL) {
             *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:paramErr userInfo:nil];
         }
-        [self release];
         return nil;
     }
     
@@ -95,26 +93,11 @@ RCS_ID("$Id$")
     _scriptData = [[NSData alloc] initWithBytes:ptr length:length];
     _scriptPath = [scriptPath copy];
     _scriptArguments = [arguments copy];
-    _localizationBundle = [localizationBundle retain];
+    _localizationBundle = localizationBundle;
 
     return self;
 }
 
-- (void)dealloc;
-{
-    [_scriptData release];
-    [_scriptPath release];
-    [_scriptArguments release];
-    [_localizationBundle release];
-    
-    [_stdoutPath release];
-    [_stderrPath release];
-
-    [_stdoutFileHandle release];
-    [_stderrFileHandle release];
-
-    [super dealloc];
-}
 
 - (BOOL)run:(NSError **)error;
 {
@@ -234,7 +217,7 @@ RCS_ID("$Id$")
         return data;
     }
 
-    return [string autorelease];
+    return string;
 }
 
 @end

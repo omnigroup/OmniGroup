@@ -31,5 +31,9 @@
 		<string>0.930953 0.643015 0.482506</string>
 	</array>
 
+    <!-- OUIAppController+InAppStore.m -->
+	<key>OUIVendorID</key>
+	<string></string>
+
 </dict>
 </plist>

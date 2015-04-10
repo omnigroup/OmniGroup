@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,14 +18,21 @@ RCS_ID("$Id$")
  In several places we want to get the fileInfos at a directory *and* ensure we have a server date. We also want to be sure the directory exists so that our server date is valid and so that following operations can write to the directory. Finally, we may be racing against other clients (usually in the tests).
  */
 
-NSArray *OFXFetchFileInfosEnsuringDirectoryExists(OFXConnection *connection, NSURL *directoryURL, NSDate **outServerDate, NSError **outError)
+ODAVMultipleFileInfoResult *OFXFetchFileInfosEnsuringDirectoryExists(OFXConnection *connection, NSURL *originalDirectoryURL, NSError **outError)
 {
+    __block NSURL *directoryURL = originalDirectoryURL;
     __block ODAVMultipleFileInfoResult *resultProperties;
     __block NSError *resultError;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
         [connection directoryContentsAtURL:directoryURL withETag:nil completionHandler:^(ODAVMultipleFileInfoResult *firstProperties, NSError *firstContentsError) {
             if (firstProperties) {
+                // When the directory doesn't exist, we might have gotten a redirect, but it won't be returned to us here (so we don't bother to do this on the error path).
+                if ([firstProperties.redirects count] > 0) {
+                    [connection updateBaseURLWithRedirects:firstProperties.redirects];
+                    directoryURL = [connection suggestRedirectedURLForURL:directoryURL];
+                }
+                
                 resultProperties = firstProperties;
                 done();
                 return;
@@ -37,7 +44,7 @@ NSArray *OFXFetchFileInfosEnsuringDirectoryExists(OFXConnection *connection, NSU
             }
 
             // Create the directory so that we can get a snapshot of the server date.
-            [connection makeCollectionAtURL:directoryURL completionHandler:^(NSURL *createdURL, NSError *createError) {
+            [connection makeCollectionAtURL:directoryURL completionHandler:^(ODAVURLResult *createResult, NSError *createError) {
                 if (createError && (![createError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_METHOD_NOT_ALLOWED] &&
                                     ![createError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_CONFLICT])) {
                     // Some non-racing error.
@@ -47,6 +54,11 @@ NSArray *OFXFetchFileInfosEnsuringDirectoryExists(OFXConnection *connection, NSU
                     return;
                 }
                 
+                if ([createResult.redirects count] > 0) {
+                    [connection updateBaseURLWithRedirects:createResult.redirects];
+                    directoryURL = [connection suggestRedirectedURLForURL:directoryURL];
+                }
+
                 // Otherwise, it looks like we were racing. Try the PROPFIND again, so that we get a notion of what the server thinks the time is (and whatever might have appeared in the collection while racing).
                 [connection directoryContentsAtURL:directoryURL withETag:nil completionHandler:^(ODAVMultipleFileInfoResult *secondProperties, NSError *secondContentsError) {
                     if (secondProperties)
@@ -60,9 +72,12 @@ NSArray *OFXFetchFileInfosEnsuringDirectoryExists(OFXConnection *connection, NSU
     });
     
     if (resultProperties) {
-        if (outServerDate)
-            *outServerDate = resultProperties.serverDate;
-        return resultProperties.fileInfos;
+        // Remember any redirects encountered.
+        if ([resultProperties.redirects count] > 0) {
+            [connection updateBaseURLWithRedirects:resultProperties.redirects];
+        }
+        
+        return resultProperties;
     } else {
         if (outError)
             *outError = resultError;
@@ -95,16 +110,19 @@ void OFXWriteDataToURLAtomically(OFXConnection *connection, NSData *data, NSURL 
     completionHandler = [completionHandler copy];
     
     void (^moveIntoPlace)(NSURL *temporaryFileURL) = [^(NSURL *temporaryFileURL){
+        
+        NSURL *redirectedDestinationURL = [connection suggestRedirectedURLForURL:destinationURL];
+        
         // This overwrites the destination if it exists.
         if (overwrite) {
             // We could leak a temporary file if the destination collection disappears.
-            [connection moveURL:temporaryFileURL toURL:destinationURL completionHandler:^(NSURL *movedURL, NSError *moveError) {
-                completionHandler(movedURL, moveError);
+            [connection moveURL:temporaryFileURL toURL:redirectedDestinationURL completionHandler:^(ODAVURLResult *moveResult, NSError *moveError) {
+                completionHandler(moveResult.URL, moveError);
             }];
         } else {
-            [connection moveURL:temporaryFileURL toMissingURL:destinationURL completionHandler:^(NSURL *movedURL, NSError *moveError) {
-                if (movedURL) {
-                    completionHandler(movedURL, nil);
+            [connection moveURL:temporaryFileURL toMissingURL:redirectedDestinationURL completionHandler:^(ODAVURLResult *moveResult, NSError *moveError) {
+                if (moveResult) {
+                    completionHandler(moveResult.URL, nil);
                     return;
                 }
                 
@@ -115,12 +133,15 @@ void OFXWriteDataToURLAtomically(OFXConnection *connection, NSData *data, NSURL 
         }
     } copy];
     
-
-    [connection putData:data toURL:[temporaryDirectoryURL URLByAppendingPathComponent:temporaryFilename isDirectory:NO]
-      completionHandler:^(NSURL *firstPutURL, NSError *firstPutError) {
-        if (firstPutURL) {
+    accountBaseURL = [connection suggestRedirectedURLForURL:accountBaseURL];
+    temporaryDirectoryURL = [connection suggestRedirectedURLForURL:temporaryDirectoryURL];
+    NSURL *temporaryURL = [temporaryDirectoryURL URLByAppendingPathComponent:temporaryFilename isDirectory:NO];
+    
+    [connection putData:data toURL:temporaryURL
+      completionHandler:^(ODAVURLResult *firstPutResult, NSError *firstPutError) {
+        if (firstPutResult) {
             // Assumption correct! Move the temporary file into place.
-            moveIntoPlace(firstPutURL);
+            moveIntoPlace(firstPutResult.URL);
             return;
         }
         
@@ -130,16 +151,16 @@ void OFXWriteDataToURLAtomically(OFXConnection *connection, NSData *data, NSURL 
         }
         
         // Create the temporary directory and remember the redirection, if any. This 'if necessary' method does race recovery, so we don't need to check for conflict/method not allowed errors here.
-        [connection makeCollectionAtURLIfMissing:temporaryDirectoryURL baseURL:accountBaseURL completionHandler:^(NSURL *createdURL, NSError *createError) {
-            if (!createdURL) {
+        [connection makeCollectionAtURLIfMissing:temporaryDirectoryURL baseURL:accountBaseURL completionHandler:^(ODAVURLResult *createResult, NSError *createError) {
+            if (!createResult) {
                 completionHandler(nil, createError);
                 return;
             }
             
             // Try writing the file again.
-            [connection putData:data toURL:[createdURL URLByAppendingPathComponent:temporaryFilename isDirectory:NO] completionHandler:^(NSURL *secondPutURL, NSError *secondPutError) {
-                if (secondPutURL)
-                    moveIntoPlace(secondPutURL);
+            [connection putData:data toURL:[createResult.URL URLByAppendingPathComponent:temporaryFilename isDirectory:NO] completionHandler:^(ODAVURLResult *secondPutResult, NSError *secondPutError) {
+                if (secondPutResult)
+                    moveIntoPlace(secondPutResult.URL);
                 else
                     completionHandler(nil, secondPutError);
             }];
@@ -155,9 +176,9 @@ NSURL *OFXMoveURLToMissingURLCreatingContainerIfNeeded(OFXConnection *connection
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done) {
         // Assume the parent directory exists already.
-        [connection moveURL:sourceURL toMissingURL:destinationURL completionHandler:^(NSURL *firstMovedURL, NSError *firstMoveError) {
-            if (firstMovedURL) {
-                resultURL = firstMovedURL;
+        [connection moveURL:sourceURL toMissingURL:destinationURL completionHandler:^(ODAVURLResult *firstMovedResult, NSError *firstMoveError) {
+            if (firstMovedResult) {
+                resultURL = firstMovedResult.URL;
                 done();
                 return;
             }
@@ -168,8 +189,8 @@ NSURL *OFXMoveURLToMissingURLCreatingContainerIfNeeded(OFXConnection *connection
                 return;
             }
             
-            [connection makeCollectionAtURLIfMissing:[destinationURL URLByDeletingLastPathComponent] baseURL:connection.baseURL completionHandler:^(NSURL *parentDirectory, NSError *createError) {
-                if (!parentDirectory) {
+            [connection makeCollectionAtURLIfMissing:[destinationURL URLByDeletingLastPathComponent] baseURL:connection.baseURL completionHandler:^(ODAVURLResult *parentResult, NSError *createError) {
+                if (!parentResult) {
                     resultError = createError;
                     done();
                     return;
@@ -177,11 +198,11 @@ NSURL *OFXMoveURLToMissingURLCreatingContainerIfNeeded(OFXConnection *connection
                 
                 // Update for possible redirection
                 BOOL isDirectory = [[destinationURL absoluteString] hasSuffix:@"/"];
-                NSURL *redirectedDestinationURL = [parentDirectory URLByAppendingPathComponent:[destinationURL lastPathComponent] isDirectory:isDirectory];
+                NSURL *redirectedDestinationURL = [parentResult.URL URLByAppendingPathComponent:[destinationURL lastPathComponent] isDirectory:isDirectory];
                 
-                [connection moveURL:sourceURL toMissingURL:redirectedDestinationURL completionHandler:^(NSURL *secondMovedURL, NSError *secondMoveError) {
-                    if (secondMovedURL)
-                        resultURL = secondMovedURL;
+                [connection moveURL:sourceURL toMissingURL:redirectedDestinationURL completionHandler:^(ODAVURLResult *secondMoveResult, NSError *secondMoveError) {
+                    if (secondMoveResult)
+                        resultURL = secondMoveResult.URL;
                     else
                         resultError = secondMoveError;
                     done();

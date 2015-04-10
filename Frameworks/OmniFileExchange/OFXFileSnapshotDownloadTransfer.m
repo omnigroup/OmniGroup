@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ RCS_ID("$Id$")
     NSMutableData *_resultData; // Would need a separate map for op->results if we run more than one at a time.
     
     BOOL _cancelled;
-    BOOL _didTryToMakeLocalTemporaryDocumentContentsURL;
+    BOOL _hasCreatedLocalTemporaryDocumentContentsURL;
     
     long long _totalBytesToRead;
     long long _totalBytesRead;
@@ -80,7 +80,7 @@ RCS_ID("$Id$")
     }
     
     // If our content is the same as our old snapshot, this is probably just a rename. We compute this so that higher level code can disavow download status if our "download" is just metadata.
-    OBFinishPortingLater("Is it safe to look at the snapshot localState on this queue? The bookkeeping queue might be futzing with the status if the user makes a local edit while we are doing this download (and presumably about to hit a conflict if there really is content download needed");
+    // Is it safe to look at the snapshot localState on this queue? The bookkeeping queue might be futzing with the status if the user makes a local edit while we are doing this download (and presumably about to hit a conflict if there really is content download needed.
     _isContentDownload = !(_currentSnapshot.localState.normal && [_downloadingSnapshot hasSameContentsAsSnapshot:_currentSnapshot]);
     if (_started) {
         typeof(_started) started = [_started copy]; // Don't crash if we are racing with cancellation
@@ -93,11 +93,10 @@ RCS_ID("$Id$")
     OBASSERT(_downloadingSnapshot.localState.missing);
 
     if (_localTemporaryDocumentContentsURL) {
-        DEBUG_TRANSFER(1, @"  Downloading %@ to %@", _remoteSnapshotURL, _localTemporaryDocumentContentsURL);
+        DEBUG_TRANSFER(2, @"  Downloading %@ to %@", _remoteSnapshotURL, _localTemporaryDocumentContentsURL);
 
-        _didTryToMakeLocalTemporaryDocumentContentsURL = YES;
-        
-        if (![_downloadingSnapshot makeDownloadStructureAt:_localTemporaryDocumentContentsURL error:&error withFileApplier:^(NSURL *fileURL, long long fileSize, NSString *hash){
+        _hasCreatedLocalTemporaryDocumentContentsURL = NO;
+        if (![_downloadingSnapshot makeDownloadStructureAt:_localTemporaryDocumentContentsURL didCreateDirectoryOrLink:&_hasCreatedLocalTemporaryDocumentContentsURL error:&error withFileApplier:^(NSURL *fileURL, long long fileSize, NSString *hash){
             // TODO: Avoid redownloading data we've already downloaded. This is not terribly likely, but we could have a document with the same image attached multiple times.
 
             NSURL *remoteFileURL = [_remoteSnapshotURL URLByAppendingPathComponent:hash];
@@ -129,8 +128,12 @@ RCS_ID("$Id$")
             
             _totalBytesToRead += fileSize;
         }]) {
-            // It might have been partially created... clean up after ourselves.
-            [[NSFileManager defaultManager] removeItemAtURL:_localTemporaryDocumentContentsURL error:NULL];
+            // It might have been partially created... clean up after ourselves if something was created already
+            if (_hasCreatedLocalTemporaryDocumentContentsURL) {
+                [[NSFileManager defaultManager] removeItemAtURL:_localTemporaryDocumentContentsURL error:NULL];
+                _localTemporaryDocumentContentsURL = nil;
+                _hasCreatedLocalTemporaryDocumentContentsURL = NO;
+            }
             
             DEBUG_TRANSFER(1, @"  download failed %@", [error toPropertyList]);
             OFXFileSnapshotTransferReturnWithError(error);
@@ -177,11 +180,12 @@ RCS_ID("$Id$")
             [cleanupError log:@"Error cleaning up temporary download snapshot at %@", temporarySnapshotURL];
         _downloadingSnapshot = nil;
     }
-    if (_localTemporaryDocumentContentsURL && _didTryToMakeLocalTemporaryDocumentContentsURL) {
+    if (_localTemporaryDocumentContentsURL && _hasCreatedLocalTemporaryDocumentContentsURL) {
         __autoreleasing NSError *cleanupError;
         if (![[NSFileManager defaultManager] removeItemAtURL:_localTemporaryDocumentContentsURL error:&cleanupError])
             [cleanupError log:@"Error cleaning up temporary downloaded document at %@", _localTemporaryDocumentContentsURL];
         _localTemporaryDocumentContentsURL = nil;
+        _hasCreatedLocalTemporaryDocumentContentsURL = NO;
     }
 }
 
@@ -217,7 +221,7 @@ RCS_ID("$Id$")
     
     NSURL *fileURL = _readOperationToLocalFileURL[operation];
     
-    OBFinishPortingLater("One downside to always using Info.plist is that we lose this check for the main plist. Random bit corruption on disk would have a relatively low chance of clobbering XML structure. If we gzip the plist, this'll be more likely to be noticed");
+    // One downside to always using Info.plist is that we lose this check for the main plist. Random bit corruption on disk would have a relatively low chance of clobbering XML structure. If we gzip the plist, this'll be more likely to be noticed.
     // Validate the hash.
     // TODO: Queue this so that the hash validation can run concurrently with the next file download.
     NSString *expectedHash = OFXHashFileNameForData(_resultData);
@@ -232,7 +236,10 @@ RCS_ID("$Id$")
     __autoreleasing NSError *writeError;
     if (![_resultData writeToURL:fileURL options:0 error:&writeError])
         OFXFileSnapshotTransferReturnWithError(writeError);
-    
+
+    // This might be the root of our download (for a flat file) or somewhere down in a directory (in which case this flag will have been set already).
+    _hasCreatedLocalTemporaryDocumentContentsURL = YES;
+
     [_readOperationToLocalFileURL removeObjectForKey:operation];
     _runningOperation = nil;
     _resultData = nil;
@@ -259,14 +266,14 @@ RCS_ID("$Id$")
         if (![_downloadingSnapshot finishedDownloadingToURL:_localTemporaryDocumentContentsURL error:&error])
             OFXFileSnapshotTransferReturnWithError(error);
         
-        DEBUG_TRANSFER(1, @"  downloaded contents into %@", [_downloadingSnapshot shortDescription]);
+        DEBUG_TRANSFER(2, @"  downloaded contents into %@", [_downloadingSnapshot shortDescription]);
     }
     
     // Reload the downloaded snapshot as a regular snapshot so the caller can use it.
     _downloadedSnapshot = [[OFXDownloadFileSnapshot alloc] initWithExistingLocalSnapshotURL:_downloadingSnapshot.localSnapshotURL error:&error];
     if (!_downloadedSnapshot)
         OFXFileSnapshotTransferReturnWithError(error);
-    DEBUG_TRANSFER(1, @"  reloaded downloaded snapshot %@", [_downloadedSnapshot shortDescription]);
+    DEBUG_TRANSFER(2, @"  reloaded downloaded snapshot %@", [_downloadedSnapshot shortDescription]);
     
     [self finished:nil];
 }

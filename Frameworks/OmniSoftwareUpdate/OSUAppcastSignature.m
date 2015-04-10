@@ -1,4 +1,4 @@
-// Copyright 2009-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,12 +30,6 @@ RCS_ID("$Id$");
 }
 
 @synthesize trustedKeys;
-
-- (void)dealloc;
-{
-    [trustedKeys release];
-    [super dealloc];
-}
 
 static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *where)
 {
@@ -96,7 +90,7 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
     
     CFIndex auxCertCount = CFArrayGetCount(auxCertificates);
     OFForEachObject([testCertificates objectEnumerator], id, certReference) {
-        SecCertificateRef testCert = (SecCertificateRef)certReference;
+        SecCertificateRef testCert = (__bridge SecCertificateRef)certReference;
         
         // Create a trust evaluation context for this cert, including the auxiliary certificates in the group
         CFMutableArrayRef certGroup = CFArrayCreateMutable(kCFAllocatorDefault, 1 + auxCertCount, &kCFTypeArrayCallBacks);
@@ -113,7 +107,7 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
         
         // Replace the default set of anchors with our own. We don't want to trust the system set.
         // (Might want to allow that as an option someday, though.)
-        err = SecTrustSetAnchorCertificates(evaluationContext, (CFArrayRef)trustedKeys);
+        err = SecTrustSetAnchorCertificates(evaluationContext, (__bridge CFArrayRef)trustedKeys);
 //        if (err == noErr)
 //            err = SecTrustSetKeychains(evaluationContext, emptyArray);
         if (err != noErr) {
@@ -131,8 +125,6 @@ static void stashError(NSMutableDictionary *errorInfo, OSStatus code, NSString *
             CFRelease(evaluationContext);
             continue;
         }
-        
-        NSLog(@"SecTrustEvaluate -> %@", OFSummarizeTrustResult(evaluationContext));
         
         /*
          
@@ -202,55 +194,52 @@ NSArray *OSUGetSignedPortionsOfAppcast(NSData *xmlData, NSString *pemFile, NSErr
     }
     
     NSMutableArray *results = [NSMutableArray array];
-    
+    NSError *resultError = nil;
+
     // We don't want objects which reference the doc to live longer than the doc does
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
-    NSError *firstSignatureFailure = nil;
-    NSError *firstChecksumFailure = nil;
-    
-    NSArray *signatures = [OSUAppcastSignature signaturesInTree:untrustedDoc];
-    OFForEachObject([signatures objectEnumerator], OSUAppcastSignature *, signature) {
-        [signature setTrustedKeys:trusts];
+    @autoreleasepool {
+        NSError *firstSignatureFailure = nil;
+        NSError *firstChecksumFailure = nil;
         
-        NSError *thisError = nil;
-        
-        BOOL ok = [signature processSignatureElement:&thisError];
-        if (ok) {
-            NSUInteger signedStuffCount = [signature countOfReferenceNodes];
-            for(NSUInteger signedStuffIndex = 0; signedStuffIndex < signedStuffCount; signedStuffIndex ++) {
-                if ([signature isLocalReferenceAtIndex:signedStuffIndex]) {
-                    NSData *verified = [signature verifiedReferenceAtIndex:signedStuffIndex error:&thisError];
-                    if (verified)
-                        [results addObject:verified];
-                    else {
-                        NSLog(@"OmniSoftwareUpdate: (ref %u) %@", (unsigned)signedStuffIndex, [thisError description]);
-                        if (firstChecksumFailure == nil)
-                            firstChecksumFailure = thisError;
+        NSArray *signatures = [OSUAppcastSignature signaturesInTree:untrustedDoc];
+        OFForEachObject([signatures objectEnumerator], OSUAppcastSignature *, signature) {
+            [signature setTrustedKeys:trusts];
+            
+            NSError *thisError = nil;
+            
+            BOOL ok = [signature processSignatureElement:&thisError];
+            if (ok) {
+                NSUInteger signedStuffCount = [signature countOfReferenceNodes];
+                for(NSUInteger signedStuffIndex = 0; signedStuffIndex < signedStuffCount; signedStuffIndex ++) {
+                    if ([signature isLocalReferenceAtIndex:signedStuffIndex]) {
+                        NSData *verified = [signature verifiedReferenceAtIndex:signedStuffIndex error:&thisError];
+                        if (verified)
+                            [results addObject:verified];
+                        else {
+                            NSLog(@"OmniSoftwareUpdate: (ref %u) %@", (unsigned)signedStuffIndex, [thisError description]);
+                            if (firstChecksumFailure == nil)
+                                firstChecksumFailure = thisError;
+                        }
                     }
                 }
+            } else {
+                NSLog(@"OmniSoftwareUpdate: %@", [thisError description]);
+                if (firstSignatureFailure == nil)
+                    firstSignatureFailure = thisError;
             }
-        } else {
-            NSLog(@"OmniSoftwareUpdate: %@", [thisError description]);
-            if (firstSignatureFailure == nil)
-                firstSignatureFailure = thisError;
+        }
+        
+        if ([results count] == 0) {
+            if (firstChecksumFailure)
+                resultError = firstChecksumFailure;
+            else if (firstSignatureFailure)
+                resultError = firstSignatureFailure;
         }
     }
-    
-    NSError *resultError = nil;
-    if ([results count] == 0) {
-        if (firstChecksumFailure)
-            resultError = [firstChecksumFailure retain];
-        else if (firstSignatureFailure)
-            resultError = [firstSignatureFailure retain];
-    }
-    
-    [pool release];
     
     xmlFreeDoc(untrustedDoc);
     
     if (resultError) {
-        [resultError autorelease];
         if (outError)
             *outError = resultError;
         return nil;

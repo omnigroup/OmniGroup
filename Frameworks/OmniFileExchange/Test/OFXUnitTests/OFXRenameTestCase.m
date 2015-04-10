@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -147,9 +147,16 @@ RCS_ID("$Id$")
     OFXServerAccount *accountA = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
     OFXServerAccount *accountB = [self.agentB.accountRegistry.validCloudSyncAccounts lastObject];
     
+    // We don't download the file, but agent B needs to know it exists before attempting to move it.
+    [self waitForFileMetadata:self.agentB where:^BOOL(OFXFileMetadata *metadata) {
+        return YES;
+    }];
+    
     [self.agentB moveItemAtURL:[accountB.localDocumentsURL URLByAppendingPathComponent:@"test.package" isDirectory:YES]
                          toURL:[accountB.localDocumentsURL URLByAppendingPathComponent:@"test-rename.package" isDirectory:YES]
-             completionHandler:nil];
+             completionHandler:^(OFFileMotionResult *result, NSError *error){
+                 XCTAssertNil(error);
+             }];
 
     __block OFXFileMetadata *renamedFileMetadataA;
     [self waitForFileMetadataItems:self.agentA where:^BOOL(NSSet *metadataItems) {
@@ -212,7 +219,7 @@ RCS_ID("$Id$")
 
 - (void)testCaseOnlyRename;
 {
-    // NSFileCoordinator doesn't send file presenter messages when the rename is case-only, sadly.
+    // NSFileCoordinator doesn't send a did-move file presenter message when the rename is case-only, sadly.
     
     [self copyFixtureNamed:@"test.package"];
 
@@ -237,7 +244,7 @@ static BOOL _hasFileWithSuffix(NSSet *metadataItems, NSString *suffix)
 
 - (void)testCaseOnlyRenameOfFolder;
 {
-    // NSFileCoordinator doesn't send file presenter messages when the rename is case-only, sadly.
+    // NSFileCoordinator doesn't send a did-move file presenter message when the rename is case-only, sadly.
     
     OFXServerAccount *accountA = [self.agentA.accountRegistry.validCloudSyncAccounts lastObject];
     [self copyFixtureNamed:@"test.package" toPath:@"dir/test.package" ofAccount:accountA];

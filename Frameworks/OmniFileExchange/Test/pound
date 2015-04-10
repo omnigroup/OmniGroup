@@ -8,6 +8,7 @@ export OB_SUPPRESS_SUPPRESSED_CONFLICT_COUNT=1
 export NSDeallocateZombies=NO
 export NSZombieEnabled=YES
 export ODAVAccountRemoteBaseURL=https://LOCAL_HOST:8001/
+export ODAVRedirectAccountRemoteBaseURL=1
 export ODAVAccountUsername=test
 export ODAVAccountPassword=password
 #export OBASSERT_TIME_TO_WAIT=60
@@ -44,15 +45,25 @@ export DYLD_FALLBACK_FRAMEWORK_PATH=$ROOT
 TEST_BUNDLE=$ROOT/OFXUnitTests.xctest
 echo TEST_BUNDLE is $TEST_BUNDLE
 
-# OFXDeleteTestCase/testParentDirectory
-# OFXDeleteTestCase/testDeleteWhileUploadingEditOfExitingDocument
-
+# OFXDeleteTestCase/testRaceBetweenDownloadAndLocalDeletion
+# OFXDeleteTestCase/testRaceBetweenDownloadUpdateAndLocalDeletion
+# OFXDeleteTestCase/testRaceBetweenDownloadUpdateAndLocalDeletion
+# OFXDeleteTestCase/testRaceBetweenDownloadUpdateAndLocalDeletion
 
 counter=0
 while true; do
     sleep 1
     LOG_FILE="$LOG_DIR/$counter.log"
-    $XCTEST -XCTest OFXRenameTestCase/testRenameOfFileAndCreationOfNewFileAsSamePathWhileNotRunning "$TEST_BUNDLE" |& tee "$LOG_FILE" | egrep "(^Executed)|(failed)|(OBFinishPorting at )"
+    
+    # Keep a copy of the output for each run so we can look at failures.
+    export OFXTestBaseDirectory="$counter"
+    
+    $XCTEST -XCTest OFXDeleteTestCase  "$TEST_BUNDLE" |& tee "$LOG_FILE" | egrep "(^\s*Executed)|(failed)|(OBFinishPorting at )"
+
+    if grep -q failed "$LOG_FILE"; then
+        echo "### Failed case in $OFXTestBaseDirectory"
+    fi
+
     ((counter=$counter+1))
 done
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,7 +35,7 @@ RCS_ID("$Id$")
     [NSView performDeferredScrolling];
     [[NSThread currentThread] yieldMainThreadLock];
 
-    NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:NO];
+    NSEvent *event = [[NSApplication sharedApplication] nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSEventTrackingRunLoopMode dequeue:NO];
     if (event) {
         if (OFQueueProcessorDebug)
             NSLog(@"%@: breaking for event: %@", OBShortObjectDescription(self), event);

@@ -13,11 +13,17 @@
 /* megabytes */
 "%@ MB" = "%@ MB";
 
+/* home screen detail label */
+"%d items" = "%d ítems";
+
 /* Main toolbar title for a multiple selected documents. */
 "%ld Documents Selected" = "%ld documentos seleccionados";
 
 /* Main toolbar title for a multiple selected items. */
 "%ld Items Selected" = "%ld elementos seleccionados";
+
+/* home screen detail format -- count and item description */
+"%lu %@" = "%1$lu %2$@";
 
 /* Main toolbar title for a single selected document. */
 "1 Document Selected" = "1 documento seleccionado";
@@ -41,17 +47,20 @@
 "Actions" = "Acciones";
 
 /* Cloud Setup button title to add a new account */
+
 "Add an Account" = "Añadir una cuenta";
 
 /* Cloud setup modal sheet title */
 "Add Cloud Account" = "Añadir una cuenta en la nube";
 
-/* for WebDAV Both (Import and Export) account type */
-"Both" = "Ambos";
-
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
+
+
+
+
+
 "Cancel" = "Cancelar";
 
 /* item not fully downloaded error title */
@@ -66,17 +75,11 @@
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Elegir una plantilla";
 
+/* Cloud setup modal sheet title */
+"Choose Account Type" = "Elegir tipo de cuenta";
+
 /* export options title */
 "Choose Format" = "Seleccione un formato";
-
-/* Cloud setup modal sheet title */
-"Cloud Setup" = "Ajustes de la nube";
-
-/* App menu item title */
-"Cloud Setup..." = "Ajustes de la nube…";
-
-/* Account setup toolbar button title to save account settings */
-"Connect" = "Conectar";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Conectado";
@@ -87,11 +90,23 @@
 /* Menu option in the document picker view */
 "Copy as Image" = "Copiar como imagen";
 
+/* moved aside custom sample document name */
+"CustomizedSampleDocumentName" = "%@ (personalizado)";
+
+/* sort by date */
+"Date" = "Fecha";
+
 /* Delete toolbar item accessibility label. */
 "Delete" = "Eliminar";
 
+/* Server account setup confirmation action label format */
+"Delete \"%@\"" = "Eliminar “%@”";
+
 /* delete button title */
 "Delete %ld Documents" = "Eliminar %ld documentos";
+
+/* Server Account Setup button label */
+"Delete Account" = "Eliminar cuenta";
 
 /* delete button title */
 "Delete Document" = "Eliminar documento";
@@ -108,9 +123,6 @@
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "Documentos";
 
-/* Done */
-"Done" = "Hecho";
-
 /* Duplicate toolbar item accessibility label. */
 "Duplicate" = "Duplicar";
 
@@ -123,6 +135,9 @@
 /* omni sync server setup help */
 "Easily sync Omni documents between devices. Signup is free!" = "Sincronice documentos Omni entre dispositivos. El registro es gratuito.";
 
+/* When displaying a sync error, this is the option to change the username and password. */
+"Edit Credentials" = "Editar credenciales";
+
 /* empty trash button title */
 "Empty Trash" = "Vaciar papelera";
 
@@ -131,8 +146,9 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
+
+
 "Export" = "Exportar";
 
 /* export action description */
@@ -141,23 +157,13 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Exportar a WebDAV";
 
-/* disabled for demo */
-"Feature not enabled for this demo" = "Función no activada para esta demo";
-
 /* finished */
 "Finished" = "Finalizado";
 
-/* Import section title */
+/* gear menu item
+   Import WebDAV server account list */
+
 "Import" = "Importar";
-
-/* Import document title */
-"Import Document…" = "Importar documento…";
-
-/* for WebDAV Import/Export account type */
-"Import/Export" = "Importar/Exportar";
-
-/* Group label for Cloud Setup */
-"Import/Export Accounts" = "Importar/Exportar cuentas";
 
 /* Info item accessibility label */
 "Info" = "Información";
@@ -176,6 +182,7 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
+
 "Move" = "Mover";
 
 /* move to trash button title */
@@ -183,10 +190,10 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
+
 "Move to Trash" = "Trasladar a la Papelera";
 
-/* Action sheet button title
-   Menu popover title */
+/* Share menu title */
 "Move to..." = "Mover a…";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
@@ -210,6 +217,12 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "Alias";
 
+/* Export message for empty table view */
+"No accounts are configured for exporting." = "No hay ninguna cuenta configurada para su exportación.";
+
+/* Import message for empty table view */
+"No accounts are configured for importing." = "No hay ninguna cuenta configurada para su importación.";
+
 /* Not downloaded accessibility label. */
 "Not downloaded" = "No descargado";
 
@@ -217,18 +230,9 @@
 "Not uploaded" = "No se ha subido";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
+
 "OK" = "OK";
-
-/* for WebDAV OmniPresence edit field */
-"OmniPresence" = "OmniPresence";
-
-/* Group label for Cloud Setup */
-"OmniPresence Accounts" = "Cuentas de OmniPresence";
-
-/* omni sync server nickname help */
-"OmniPresence automatically keeps your documents up to date on all of your iPads and Macs." = "OmniPresence actualiza automáticamente todos los documentos en sus dispositivos iPad y Mac.";
 
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "Configuración de OmniPresence: %@";
@@ -238,6 +242,9 @@
 
 /* Server Account Setup label: password */
 "Password" = "Contraseña";
+
+/* Photo Library permisssions error description. */
+"Photo Library permission denied." = "Permiso denegado a la biblioteca de imágenes.";
 
 /* Menu option in the document picker view */
 "Print" = "Imprimir";
@@ -272,6 +279,12 @@
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "Reintentar sincronización";
 
+/* Account setup toolbar button title to save account settings */
+"Save" = "Guardar";
+
+/* document picker button label */
+"Search" = "Buscar";
+
 /* edit button title for doc picker in non-edit mode */
 "Select" = "Seleccionar";
 
@@ -292,6 +305,7 @@
 
 /* export options title
    Menu option in the document picker view */
+
 "Send via Mail" = "Enviar por correo";
 
 /* email action description */
@@ -303,14 +317,11 @@
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "Abrir una cuenta nueva";
 
-/* sort by date */
-"Sort by date" = "Ordenar por fecha";
-
-/* sort by title */
-"Sort by title" = "Ordenar por título";
-
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "Sincronizar ahora";
+
+/* empty template picker button text */
+"Tap here to add a document without a template." = "Toque aquí para añadir un documento sin plantilla.";
 
 /* empty picker button text */
 "Tap here, or on the + in the toolbar, to add a document." = "Pulse aquí o el signo + de la barra de herramientas para añadir un documento.";
@@ -333,6 +344,9 @@
 /* error description */
 "The zip archive must contain a single document." = "El archivo zip debe contener un solo documento.";
 
+/* Photo Library permisssions error suggestion. */
+"This app does not have access to your Photo Library." = "Esta aplicación no tiene acceso a su biblioteca de imágenes.";
+
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Esta cuenta de la nube ya no existe.";
 
@@ -342,12 +356,11 @@
 /* item not fully downloaded error message */
 "This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "No se puede exportar el elemento porque no se ha descargado completamente. Pulse el elemento y espere a que se descargue antes de intentarlo de nuevo.";
 
+/* sort by title */
+"Title" = "Título";
+
 /* error title */
 "Unable to open file." = "No se ha podido abrir el archivo.";
 
-/* Label for switch which controls whether cloud sync is allowed to use cellular data */
-"Use Cellular Data" = "Usar datos móviles";
-
 /* Account validation status string. */
 "Validating account..." = "Validando cuenta…";
-

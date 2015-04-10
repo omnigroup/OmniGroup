@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 
 #import <objc/objc.h>
 #import <Foundation/NSObjCRuntime.h>
+#import <OmniBase/OBBacktraceBuffer.h>
 
 #if defined(DEBUG) || defined(OMNI_FORCE_ASSERTIONS)
 #define OMNI_ASSERTIONS_ON
@@ -173,7 +174,7 @@ extern void OBLogAssertionFailure(const char *type, const char *expression, cons
     #define OBPOSTCONDITION(expression, ...) do {} while(0)
     #define OBINVARIANT(expression, ...) do {} while(0)
     #define OBASSERT(expression, ...) do {} while(0)
-    #define OBASSERT_NOT_REACHED(...) do {} while(0)
+    #define OBASSERT_NOT_REACHED(...) do { OBRecordBacktrace("NOTREACHED", OBBacktraceBuffer_OBAssertionFailure); } while(0)
     #define OBASSERT_IF(condition, implication, ...) do {} while(0)
 
     #define OBPRECONDITION_EXPENSIVE(expression, ...) do {} while(0)

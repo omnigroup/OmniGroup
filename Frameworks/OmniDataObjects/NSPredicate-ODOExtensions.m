@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,3 +76,20 @@ NSPredicate *ODOOrPredicates(NSPredicate *firstPredicate, ...)
     va_end(argList);
     return result;
 }
+
+BOOL ODOIsTruePredicate(NSPredicate *predicate)
+{
+    OBPRECONDITION(predicate != nil);
+    if (predicate == nil) {
+        return NO;
+    }
+    
+    static NSPredicate *truePredicate = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        truePredicate = [NSPredicate predicateWithValue:YES];
+    });
+    
+    return [predicate isEqual:truePredicate];
+}
+

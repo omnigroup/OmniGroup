@@ -11,6 +11,8 @@
 		008AB54814032D2B001F29CD /* OATinyPopUpButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 008AB54614032D2B001F29CD /* OATinyPopUpButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		008AB54914032D2B001F29CD /* OATinyPopUpButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 008AB54714032D2B001F29CD /* OATinyPopUpButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		008AB54C14032D67001F29CD /* OADropDownTriangle.png in Resources */ = {isa = PBXBuildFile; fileRef = 008AB54B14032D67001F29CD /* OADropDownTriangle.png */; };
+		0AE262141AD48E4700C449C4 /* OAColorSpaceManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 0AE262121AD48E4700C449C4 /* OAColorSpaceManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0AE262161AD49B3800C449C4 /* OAColorSpaceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AE262131AD48E4700C449C4 /* OAColorSpaceManager.m */; };
 		271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 271A9D9E1533DA2800A78CCB /* OAAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		271A9DA11533DA2800A78CCB /* OAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 271A9D9F1533DA2800A78CCB /* OAAnimation.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		272023F315C06D7D0089BC49 /* OAInfoTemplate.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 272023F215C06D7D0089BC49 /* OAInfoTemplate.pdf */; };
@@ -140,6 +142,9 @@
 		3484DDD9194FFE5600D83731 /* WhiteAlpha.xml in Resources */ = {isa = PBXBuildFile; fileRef = A2C0C37E0E3596E600773D47 /* WhiteAlpha.xml */; };
 		3484DDDE194FFEA700D83731 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51FBBFE8AB2E911C9CC38 /* OmniBase.framework */; };
 		3484DDDF194FFEAD00D83731 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 010AE8EBFF38DCF8C697A13D /* OmniFoundation.framework */; };
+		348DC6DD1A0828EC002C2CD8 /* OAChangeConfigurationValue.h in Headers */ = {isa = PBXBuildFile; fileRef = 348DC6DB1A0828EC002C2CD8 /* OAChangeConfigurationValue.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		348DC6DE1A0828EC002C2CD8 /* OAChangeConfigurationValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 348DC6DC1A0828EC002C2CD8 /* OAChangeConfigurationValue.m */; };
+		348DC7511A0835D2002C2CD8 /* OAChangeConfigurationValues.xib in Resources */ = {isa = PBXBuildFile; fileRef = 348DC7501A0835D2002C2CD8 /* OAChangeConfigurationValues.xib */; };
 		349F65E20EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 349F65E00EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		349F65E30EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 349F65E10EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		34A201230FF0454400B699DB /* NSAlert-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2011E0FF0453800B699DB /* NSAlert-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -165,6 +170,7 @@
 		3EF5F1BF19104DEF0072ED90 /* OAWebPageViewerDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 3EF5F1BE191049DD0072ED90 /* OAWebPageViewerDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4205721F0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4205721D0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		420572200CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4205721E0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		425CC9E31A37BDC000A6760B /* OACrayonNames.strings in Resources */ = {isa = PBXBuildFile; fileRef = 425CC9E11A37BDC000A6760B /* OACrayonNames.strings */; };
 		4268E9300DBD5319002F30B1 /* OAColorProfile-Deprecated.m in Sources */ = {isa = PBXBuildFile; fileRef = 4268E92E0DBD5319002F30B1 /* OAColorProfile-Deprecated.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations -fno-objc-arc"; }; };
 		4268E9CC0DBE6B03002F30B1 /* OAColorProfile-Deprecated.h in Headers */ = {isa = PBXBuildFile; fileRef = 4268E9990DBE52D2002F30B1 /* OAColorProfile-Deprecated.h */; };
 		42B9CE4D197871B700FDB1E6 /* OADocumentSubclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 42B9CE4C197871B700FDB1E6 /* OADocumentSubclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -202,7 +208,6 @@
 		4AA1E69908AA764600E2FF6B /* OAPasteboardHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F05FE8AB2E911C9CC38 /* OAPasteboardHelper.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69A08AA764600E2FF6B /* OARegExFindPattern.h in Headers */ = {isa = PBXBuildFile; fileRef = 137CBE730118A5EC7F000001 /* OARegExFindPattern.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69C08AA764600E2FF6B /* OAScriptToolbarHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = F57089B301FEA73201B4A65B /* OAScriptToolbarHelper.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E69D08AA764600E2FF6B /* OASheetRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A04B9CB047BFCE40097A149 /* OASheetRequest.h */; };
 		4AA1E69E08AA764600E2FF6B /* OAToolbarWindowController.h in Headers */ = {isa = PBXBuildFile; fileRef = F59B07CF01FE36AE01B4A65D /* OAToolbarWindowController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E69F08AA764600E2FF6B /* OAUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A0277F608959F0400594E5E /* OAUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6A008AA764600E2FF6B /* OAVersion.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DAF8660556CA0D0097A113 /* OAVersion.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -364,8 +369,7 @@
 		4AA1E78208AA764600E2FF6B /* OAPasteboardHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51EFAFE8AB2E911C9CC38 /* OAPasteboardHelper.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E78308AA764600E2FF6B /* OARegExFindPattern.m in Sources */ = {isa = PBXBuildFile; fileRef = 137CBE740118A5EC7F000001 /* OARegExFindPattern.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E78508AA764600E2FF6B /* OAScriptToolbarHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = F57089B401FEA73201B4A65B /* OAScriptToolbarHelper.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		4AA1E78608AA764600E2FF6B /* OASheetRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A04B9CC047BFCE40097A149 /* OASheetRequest.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		4AA1E78708AA764600E2FF6B /* OAToolbarWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = F59B07D001FE36AE01B4A65D /* OAToolbarWindowController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E78708AA764600E2FF6B /* OAToolbarWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = F59B07D001FE36AE01B4A65D /* OAToolbarWindowController.m */; };
 		4AA1E78808AA764600E2FF6B /* NSAppleEventDescriptor-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 66D9C72B029F5AF60097A138 /* NSAppleEventDescriptor-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E78908AA764600E2FF6B /* NSAppleScript-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 66D9C71C029F51620097A138 /* NSAppleScript-OAExtensions.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E78A08AA764600E2FF6B /* NSApplication-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F1FFE8AB2E911C9CC38 /* NSApplication-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -415,7 +419,7 @@
 		4AA1E7BB08AA764600E2FF6B /* OAConfigurableColumnTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7BFE8AB2E911C9CC38 /* OAConfigurableColumnTableView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7BC08AA764600E2FF6B /* OAContextButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B5C3F57A050FE63D0097A10E /* OAContextButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7BD08AA764600E2FF6B /* OADataSourceTableColumn.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B14EED0572E2820097A113 /* OADataSourceTableColumn.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		4AA1E7BE08AA764600E2FF6B /* OADefaultSettingIndicatorButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B584AFE7058A7A2F0097A10E /* OADefaultSettingIndicatorButton.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7BE08AA764600E2FF6B /* OADefaultSettingIndicatorButton.m in Sources */ = {isa = PBXBuildFile; fileRef = B584AFE7058A7A2F0097A10E /* OADefaultSettingIndicatorButton.m */; };
 		4AA1E7C108AA764600E2FF6B /* OADocumentPositioningView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5BEAF23F01FF6D7D0297A15C /* OADocumentPositioningView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7C208AA764600E2FF6B /* OADottedLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 662681AE00DFECA50097A13D /* OADottedLine.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7C608AA764600E2FF6B /* OAFontView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F7AFE8AB2E911C9CC38 /* OAFontView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -442,9 +446,9 @@
 		4AA1E7DE08AA764600E2FF6B /* OATextField.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F84FE8AB2E911C9CC38 /* OATextField.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7DF08AA764600E2FF6B /* OATextWithIconCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 010A51C1005212DBC697A13D /* OATextWithIconCell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7E008AA764600E2FF6B /* OAThumbnailView.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F86FE8AB2E911C9CC38 /* OAThumbnailView.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		4AA1E7E108AA764600E2FF6B /* OAToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 34476AE406DF790B0097A113 /* OAToolbar.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E108AA764600E2FF6B /* OAToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 34476AE406DF790B0097A113 /* OAToolbar.m */; };
 		4AA1E7E208AA764600E2FF6B /* OAToolbarImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0147B43A003E0D307F000001 /* OAToolbarImageView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		4AA1E7E308AA764600E2FF6B /* OAToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 34001C4B00325FDBC697A13D /* OAToolbarItem.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7E308AA764600E2FF6B /* OAToolbarItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 34001C4B00325FDBC697A13D /* OAToolbarItem.m */; };
 		4AA1E7E508AA764600E2FF6B /* OAVectorCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A508C05715F0A0097A113 /* OAVectorCell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7E608AA764600E2FF6B /* OAVectorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 348A507A0571430C0097A113 /* OAVectorView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7E708AA764600E2FF6B /* OAWindowCascade.m in Sources */ = {isa = PBXBuildFile; fileRef = 0CF02C25FF1319B8C697A12F /* OAWindowCascade.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -481,6 +485,10 @@
 		5F92996216A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5F92996016A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png */; };
 		5FC09127191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FC09125191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.h */; };
 		5FC09128191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FC09126191ACB4600C04B0B /* NSAppleEventManager-OAExtensions.m */; };
+		843878731AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOff.png in Resources */ = {isa = PBXBuildFile; fileRef = 8438786F1AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOff.png */; };
+		843878741AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOff@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 843878701AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOff@2x.png */; };
+		843878751AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 843878711AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOn.png */; };
+		843878761AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOn@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 843878721AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOn@2x.png */; };
 		94E1CE0B10D803C5000A01F9 /* OACloseButtonOverlay.h in Headers */ = {isa = PBXBuildFile; fileRef = 94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		94E1CE0C10D803C5000A01F9 /* OACloseButtonOverlay.m in Sources */ = {isa = PBXBuildFile; fileRef = 94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		9FFB676D0C18A44000910EEF /* OADatePicker.h in Headers */ = {isa = PBXBuildFile; fileRef = 9FFB676B0C18A44000910EEF /* OADatePicker.h */; };
@@ -712,6 +720,8 @@
 		0147B43A003E0D307F000001 /* OAToolbarImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbarImageView.m; sourceTree = "<group>"; };
 		01563696FFE9F5FAC697A14E /* OAPreferencesIconView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPreferencesIconView.h; sourceTree = "<group>"; };
 		01563697FFE9F5FAC697A14E /* OAPreferencesIconView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPreferencesIconView.m; sourceTree = "<group>"; };
+		0AE262121AD48E4700C449C4 /* OAColorSpaceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAColorSpaceManager.h; sourceTree = "<group>"; };
+		0AE262131AD48E4700C449C4 /* OAColorSpaceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAColorSpaceManager.m; sourceTree = "<group>"; };
 		0B9399D6FFCA29A4C697A10E /* NSMenu-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMenu-OAExtensions.h"; sourceTree = "<group>"; };
 		0B9399D7FFCA29A4C697A10E /* NSMenu-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMenu-OAExtensions.m"; sourceTree = "<group>"; };
 		0CCB227E004327677F000001 /* OAForwardArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OAForwardArrow.png; sourceTree = "<group>"; };
@@ -825,6 +835,9 @@
 		348A507A0571430C0097A113 /* OAVectorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAVectorView.m; sourceTree = "<group>"; };
 		348A508B05715F0A0097A113 /* OAVectorCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAVectorCell.h; sourceTree = "<group>"; };
 		348A508C05715F0A0097A113 /* OAVectorCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAVectorCell.m; sourceTree = "<group>"; };
+		348DC6DB1A0828EC002C2CD8 /* OAChangeConfigurationValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAChangeConfigurationValue.h; sourceTree = "<group>"; };
+		348DC6DC1A0828EC002C2CD8 /* OAChangeConfigurationValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAChangeConfigurationValue.m; sourceTree = "<group>"; };
+		348DC7501A0835D2002C2CD8 /* OAChangeConfigurationValues.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OAChangeConfigurationValues.xib; sourceTree = "<group>"; };
 		349F65E00EBBA2AB00AB6E36 /* NSResponder-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSResponder-OAExtensions.h"; sourceTree = "<group>"; };
 		349F65E10EBBA2AB00AB6E36 /* NSResponder-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSResponder-OAExtensions.m"; sourceTree = "<group>"; };
 		34A1594805642A810097A113 /* OmniAppKit.order */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = OmniAppKit.order; sourceTree = "<group>"; };
@@ -877,9 +890,20 @@
 		4006B5FDFF2D5911C697A12F /* OAOutlineViewEnumerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAOutlineViewEnumerator.m; sourceTree = "<group>"; };
 		4205721D0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableAttributedString-OAExtensions.h"; sourceTree = "<group>"; };
 		4205721E0CA8767F005CB6A6 /* NSMutableAttributedString-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableAttributedString-OAExtensions.m"; sourceTree = "<group>"; };
+		425CC9E21A37BDC000A6760B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/OACrayonNames.strings; sourceTree = "<group>"; };
 		4268E92E0DBD5319002F30B1 /* OAColorProfile-Deprecated.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OAColorProfile-Deprecated.m"; sourceTree = "<group>"; };
 		4268E9990DBE52D2002F30B1 /* OAColorProfile-Deprecated.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OAColorProfile-Deprecated.h"; sourceTree = "<group>"; };
+		426C40531A40A56E00DEC1F2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OAPreferences.xib; sourceTree = "<group>"; };
+		426C40561A40AB9700DEC1F2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OAPopupDatePicker.xib; sourceTree = "<group>"; };
 		42B9CE4C197871B700FDB1E6 /* OADocumentSubclass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADocumentSubclass.h; sourceTree = "<group>"; };
+		42D8B5931A37C2FE002453BD /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/OACrayonNames.strings; sourceTree = "<group>"; };
+		42D8B5941A37C312002453BD /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/OACrayonNames.strings; sourceTree = "<group>"; };
+		42D8B5951A37C320002453BD /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/OACrayonNames.strings; sourceTree = "<group>"; };
+		42D8B5961A37C336002453BD /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/OACrayonNames.strings; sourceTree = "<group>"; };
+		42D8B5971A37C347002453BD /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/OACrayonNames.strings; sourceTree = "<group>"; };
+		42D8B5981A37C35C002453BD /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/OACrayonNames.strings"; sourceTree = "<group>"; };
+		42D8B5991A37C36D002453BD /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/OACrayonNames.strings; sourceTree = "<group>"; };
+		42D8B59A1A37C37A002453BD /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/OACrayonNames.strings; sourceTree = "<group>"; };
 		496D40DE14D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorCircleXOff.png; sourceTree = "<group>"; };
 		496D40DF14D7458D00F264B6 /* OADefaultSettingIndicatorCircleXOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorCircleXOn.png; sourceTree = "<group>"; };
 		49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = OAGearTemplate.tiff; sourceTree = "<group>"; };
@@ -887,8 +911,6 @@
 		49EF503B15F6EAD000254849 /* OALabelField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OALabelField.h; sourceTree = "<group>"; };
 		49EF503C15F6EAD000254849 /* OALabelField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OALabelField.m; sourceTree = "<group>"; };
 		4A0277F608959F0400594E5E /* OAUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAUtilities.h; sourceTree = "<group>"; };
-		4A04B9CB047BFCE40097A149 /* OASheetRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASheetRequest.h; sourceTree = "<group>"; };
-		4A04B9CC047BFCE40097A149 /* OASheetRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OASheetRequest.m; sourceTree = "<group>"; };
 		4A0AC9D005F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject-NSDraggingInfo-OAExtensions.h"; sourceTree = "<group>"; };
 		4A0AC9D105F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject-NSDraggingInfo-OAExtensions.m"; sourceTree = "<group>"; };
 		4A5714CD08B0436100B772DA /* Info-OAUnitTests.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-OAUnitTests.plist"; sourceTree = SOURCE_ROOT; };
@@ -898,7 +920,6 @@
 		4A5F17B61727772C001A60E5 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		4A785F570B040C3A00B513F3 /* OAPopupDatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAPopupDatePicker.h; sourceTree = "<group>"; };
 		4A785F580B040C3A00B513F3 /* OAPopupDatePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAPopupDatePicker.m; sourceTree = "<group>"; };
-		4A785F5F0B040CAE00B513F3 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/OAPopupDatePicker.xib; sourceTree = "<group>"; };
 		4A785F610B040CF500B513F3 /* OADatePickerTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADatePickerTextField.h; sourceTree = "<group>"; };
 		4A785F620B040CF500B513F3 /* OADatePickerTextField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OADatePickerTextField.m; sourceTree = "<group>"; };
 		4A785F650B040D2E00B513F3 /* OASteppableTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OASteppableTextField.h; sourceTree = "<group>"; };
@@ -979,6 +1000,10 @@
 		70BA5ED6FF72DDC0C697A146 /* OAHierarchicalPopUpController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAHierarchicalPopUpController.h; sourceTree = "<group>"; };
 		70BA5ED7FF72DDC0C697A146 /* OAHierarchicalPopUpController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAHierarchicalPopUpController.m; sourceTree = "<group>"; };
 		7F54986F041FDCAE0097A14E /* en */ = {isa = PBXFileReference; lastKnownFileType = file; name = en; path = "en.lproj/Classic Crayons.clr"; sourceTree = "<group>"; };
+		8438786F1AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorYosemiteOff.png; sourceTree = "<group>"; };
+		843878701AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOff@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorYosemiteOff@2x.png"; sourceTree = "<group>"; };
+		843878711AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OADefaultSettingIndicatorYosemiteOn.png; sourceTree = "<group>"; };
+		843878721AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOn@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OADefaultSettingIndicatorYosemiteOn@2x.png"; sourceTree = "<group>"; };
 		94E1CE0910D803C5000A01F9 /* OACloseButtonOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OACloseButtonOverlay.h; sourceTree = "<group>"; };
 		94E1CE0A10D803C5000A01F9 /* OACloseButtonOverlay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OACloseButtonOverlay.m; sourceTree = "<group>"; };
 		9FFB676B0C18A44000910EEF /* OADatePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OADatePicker.h; sourceTree = "<group>"; };
@@ -1114,7 +1139,6 @@
 		E235B69E15CC836000E162D6 /* OAToolbarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAToolbarButton.m; sourceTree = "<group>"; };
 		E274EDCB056D99550097A12E /* OAGradientTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAGradientTableView.h; sourceTree = "<group>"; };
 		E274EDCC056D99550097A12E /* OAGradientTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAGradientTableView.m; sourceTree = "<group>"; };
-		E2B8A8D715BE016E00B5F26B /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/OAPreferences.xib; sourceTree = "<group>"; };
 		E2B8AA0D15BE06F300B5F26B /* OALeftArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OALeftArrow@2x.png"; sourceTree = "<group>"; };
 		E2B8AA0E15BE06F300B5F26B /* OALeftArrowPressed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OALeftArrowPressed@2x.png"; sourceTree = "<group>"; };
 		E2B8AA0F15BE06F300B5F26B /* OARightArrow@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OARightArrow@2x.png"; sourceTree = "<group>"; };
@@ -1390,6 +1414,9 @@
 			children = (
 				2779DDBB16BB328500A2BC8F /* OAViewPicker.h */,
 				2779DDBD16BB338400A2BC8F /* OAViewPicker.m */,
+				348DC6DB1A0828EC002C2CD8 /* OAChangeConfigurationValue.h */,
+				348DC6DC1A0828EC002C2CD8 /* OAChangeConfigurationValue.m */,
+				348DC7501A0835D2002C2CD8 /* OAChangeConfigurationValues.xib */,
 			);
 			name = "Debugging tools";
 			sourceTree = "<group>";
@@ -1517,6 +1544,7 @@
 				0145F2A9FFAFE867C697A15C /* NSColor-OAExtensions.h */,
 				0145F2A8FFAFE867C697A15C /* NSColor-OAExtensions.m */,
 				7F549877041FECFE0097A14E /* Classic Crayons.clr */,
+				425CC9E11A37BDC000A6760B /* OACrayonNames.strings */,
 			);
 			name = NSColor;
 			sourceTree = "<group>";
@@ -1653,8 +1681,6 @@
 				3FDA4130020966F30297A14E /* Tabbed Window Controller */,
 				F54F12700204F49E0127B3D4 /* Text */,
 				3FDA413502096BE30297A14E /* Toolbar */,
-				4A04B9CB047BFCE40097A149 /* OASheetRequest.h */,
-				4A04B9CC047BFCE40097A149 /* OASheetRequest.m */,
 			);
 			name = "Omni Application Patterns";
 			sourceTree = "<group>";
@@ -2256,6 +2282,8 @@
 				6CBB57EB0416D8B200E7FE1C /* NSImage-ColorSyncExtensions.m */,
 				A23CDA6C07135B4200AC6F1A /* OAColorSpace.h */,
 				A23CDA6D07135B4200AC6F1A /* OAColorSpace.m */,
+				0AE262121AD48E4700C449C4 /* OAColorSpaceManager.h */,
+				0AE262131AD48E4700C449C4 /* OAColorSpaceManager.m */,
 			);
 			path = ColorSync;
 			sourceTree = "<group>";
@@ -2350,6 +2378,10 @@
 				4D7B031A16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOn@2x.png */,
 				B584AFEA058A7A5D0097A10E /* OADefaultSettingIndicatorOff.png */,
 				B584AFEC058A7A5D0097A10E /* OADefaultSettingIndicatorOn.png */,
+				8438786F1AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOff.png */,
+				843878701AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOff@2x.png */,
+				843878711AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOn.png */,
+				843878721AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOn@2x.png */,
 			);
 			name = Images;
 			sourceTree = "<group>";
@@ -2493,7 +2525,6 @@
 				4AA1E69908AA764600E2FF6B /* OAPasteboardHelper.h in Headers */,
 				4AA1E69A08AA764600E2FF6B /* OARegExFindPattern.h in Headers */,
 				4AA1E69C08AA764600E2FF6B /* OAScriptToolbarHelper.h in Headers */,
-				4AA1E69D08AA764600E2FF6B /* OASheetRequest.h in Headers */,
 				4AA1E69E08AA764600E2FF6B /* OAToolbarWindowController.h in Headers */,
 				4AA1E69F08AA764600E2FF6B /* OAUtilities.h in Headers */,
 				4AA1E6A008AA764600E2FF6B /* OAVersion.h in Headers */,
@@ -2589,6 +2620,7 @@
 				4AA1E70508AA764600E2FF6B /* OAWindowCascade.h in Headers */,
 				4AA1E70608AA764600E2FF6B /* OAZoomableViewProtocol.h in Headers */,
 				42B9CE4D197871B700FDB1E6 /* OADocumentSubclass.h in Headers */,
+				0AE262141AD48E4700C449C4 /* OAColorSpaceManager.h in Headers */,
 				4AA1E70808AA764600E2FF6B /* OAAutosizingHorizontalRule.h in Headers */,
 				50A5C89608C5505500B1C5E4 /* NSEvent-OAExtensions.h in Headers */,
 				34F0990109322B800001D0D5 /* OAAboutPanelController.h in Headers */,
@@ -2631,6 +2663,7 @@
 				49EF503D15F6EAD000254849 /* OALabelField.h in Headers */,
 				2779DDBC16BB328500A2BC8F /* OAViewPicker.h in Headers */,
 				4A5F17B3172772F5001A60E5 /* OAWebPageViewer.h in Headers */,
+				348DC6DD1A0828EC002C2CD8 /* OAChangeConfigurationValue.h in Headers */,
 				4D92F571174C10BA00E251EF /* OAResizingTitleBarButton.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2763,7 +2796,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0510;
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0630;
 				TargetAttributes = {
 					34C12AFB194FF90F005CB70B = {
 						CreatedOnToolsVersion = 6.0;
@@ -2784,6 +2817,14 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				es,
+				fr,
+				it,
+				ja,
+				"zh-Hans",
+				ru,
+				nl,
 			);
 			mainGroup = 00E51EF2FE8AB2E911C9CC38 /* OmniAppKit */;
 			projectDirPath = "";
@@ -2865,8 +2906,10 @@
 				4AA1E71B08AA764600E2FF6B /* OABackArrow.png in Resources */,
 				4AA1E71E08AA764600E2FF6B /* OAForwardArrow.png in Resources */,
 				4AA1E72008AA764600E2FF6B /* OAMiniAction.png in Resources */,
+				843878741AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOff@2x.png in Resources */,
 				4AA1E72108AA764600E2FF6B /* OAMiniAdd.png in Resources */,
 				4AA1E72208AA764600E2FF6B /* OAMiniRemove.png in Resources */,
+				348DC7511A0835D2002C2CD8 /* OAChangeConfigurationValues.xib in Resources */,
 				4AA1E72308AA764600E2FF6B /* Classic Crayons.clr in Resources */,
 				4AA1E72508AA764600E2FF6B /* OAPreferencesNextButton.png in Resources */,
 				4AA1E72608AA764600E2FF6B /* OAPreferencesPreviousButton.png in Resources */,
@@ -2891,6 +2934,7 @@
 				4AA1E74408AA764600E2FF6B /* SwitcherBar_CapRight_Press_A.png in Resources */,
 				4AA1E74508AA764600E2FF6B /* SwitcherBar_CapRight_Press_G.png in Resources */,
 				4AA1E74608AA764600E2FF6B /* SwitcherBar_DivLeft.png in Resources */,
+				425CC9E31A37BDC000A6760B /* OACrayonNames.strings in Resources */,
 				4AA1E74708AA764600E2FF6B /* SwitcherBar_DivLeft_A.png in Resources */,
 				4AA1E74808AA764600E2FF6B /* SwitcherBar_DivLeft_G.png in Resources */,
 				4AA1E74908AA764600E2FF6B /* SwitcherBar_DivLeft_Press.png in Resources */,
@@ -2907,11 +2951,13 @@
 				4AA1E75408AA764600E2FF6B /* SwitcherBar_Fill_G.png in Resources */,
 				4AA1E75508AA764600E2FF6B /* SwitcherBar_Fill_Press.png in Resources */,
 				4AA1E75608AA764600E2FF6B /* SwitcherBar_Fill_Press_A.png in Resources */,
+				843878761AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOn@2x.png in Resources */,
 				4AA1E75708AA764600E2FF6B /* SwitcherBar_Fill_Press_G.png in Resources */,
 				4AA1E75808AA764600E2FF6B /* namedColors.plist in Resources */,
 				4AA1E75908AA764600E2FF6B /* SwitcherBar_CapLeft_Select.png in Resources */,
 				4AA1E75A08AA764600E2FF6B /* SwitcherBar_CapRight_Select.png in Resources */,
 				4AA1E75B08AA764600E2FF6B /* SwitcherBar_DivLeft_Select.png in Resources */,
+				843878731AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOff.png in Resources */,
 				4AA1E75C08AA764600E2FF6B /* SwitcherBar_DivRight_Select.png in Resources */,
 				4AA1E75D08AA764600E2FF6B /* SwitcherBar_Fill_Select.png in Resources */,
 				4AA1E76108AA764600E2FF6B /* CharsetCategories.plist in Resources */,
@@ -2931,6 +2977,7 @@
 				49B035B1161D02CE0097E384 /* OAGearTemplate@2x.tiff in Resources */,
 				5F92995C16A50A9300AA4D18 /* OAScriptIconTemplate.png in Resources */,
 				5F92995D16A50A9300AA4D18 /* OAScriptIconTemplate@2x.png in Resources */,
+				843878751AB20BD80069E467 /* OADefaultSettingIndicatorYosemiteOn.png in Resources */,
 				5F92996116A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate.png in Resources */,
 				5F92996216A50A9C00AA4D18 /* OAAutomatorWorkflowIconTemplate@2x.png in Resources */,
 				4D7B031B16A9DA80006FA95D /* OADefaultSettingIndicatorCircleXOff@2x.png in Resources */,
@@ -3094,7 +3141,6 @@
 				4AA1E78208AA764600E2FF6B /* OAPasteboardHelper.m in Sources */,
 				4AA1E78308AA764600E2FF6B /* OARegExFindPattern.m in Sources */,
 				4AA1E78508AA764600E2FF6B /* OAScriptToolbarHelper.m in Sources */,
-				4AA1E78608AA764600E2FF6B /* OASheetRequest.m in Sources */,
 				4AA1E78708AA764600E2FF6B /* OAToolbarWindowController.m in Sources */,
 				4AA1E78808AA764600E2FF6B /* NSAppleEventDescriptor-OAExtensions.m in Sources */,
 				4AA1E78908AA764600E2FF6B /* NSAppleScript-OAExtensions.m in Sources */,
@@ -3120,6 +3166,7 @@
 				4AA1E79F08AA764600E2FF6B /* NSSliderCell-OAExtensions.m in Sources */,
 				4AA1E7A008AA764600E2FF6B /* NSSplitView-OAExtensions.m in Sources */,
 				4AA1E7A108AA764600E2FF6B /* NSString-OAExtensions.m in Sources */,
+				348DC6DE1A0828EC002C2CD8 /* OAChangeConfigurationValue.m in Sources */,
 				4AA1E7A208AA764600E2FF6B /* NSTableView-OAColumnConfigurationExtensions.m in Sources */,
 				4AA1E7A308AA764600E2FF6B /* NSTableView-OAExtensions.m in Sources */,
 				4AA1E7A408AA764600E2FF6B /* NSText-OAExtensions.m in Sources */,
@@ -3188,6 +3235,7 @@
 				340DD56209AD38E900E8A437 /* NSFileWrapper-OAExtensions.m in Sources */,
 				3425E49109C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m in Sources */,
 				34471AC209D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m in Sources */,
+				0AE262161AD49B3800C449C4 /* OAColorSpaceManager.m in Sources */,
 				342B41180A4C6B62002BFC4B /* NSWindowController-OAExtensions.m in Sources */,
 				A25653B90ADDBFB400A2A25B /* OAControlTextColorTransformer.m in Sources */,
 				4A785F5A0B040C3A00B513F3 /* OAPopupDatePicker.m in Sources */,
@@ -3295,10 +3343,26 @@
 			name = OAFindPanel.xib;
 			sourceTree = "<group>";
 		};
+		425CC9E11A37BDC000A6760B /* OACrayonNames.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				425CC9E21A37BDC000A6760B /* en */,
+				42D8B5931A37C2FE002453BD /* de */,
+				42D8B5941A37C312002453BD /* es */,
+				42D8B5951A37C320002453BD /* fr */,
+				42D8B5961A37C336002453BD /* it */,
+				42D8B5971A37C347002453BD /* ja */,
+				42D8B5981A37C35C002453BD /* zh-Hans */,
+				42D8B5991A37C36D002453BD /* ru */,
+				42D8B59A1A37C37A002453BD /* nl */,
+			);
+			name = OACrayonNames.strings;
+			sourceTree = "<group>";
+		};
 		4AA05CC60B0414F400EDED39 /* OAPopupDatePicker.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				4A785F5F0B040CAE00B513F3 /* en */,
+				426C40561A40AB9700DEC1F2 /* Base */,
 			);
 			name = OAPopupDatePicker.xib;
 			sourceTree = "<group>";
@@ -3314,7 +3378,7 @@
 		E2B8A8D615BE016E00B5F26B /* OAPreferences.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				E2B8A8D715BE016E00B5F26B /* en */,
+				426C40531A40A56E00DEC1F2 /* Base */,
 			);
 			name = OAPreferences.xib;
 			sourceTree = "<group>";
@@ -3334,6 +3398,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34C12B2B194FF926005CB70B /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -3344,6 +3409,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34C12B2C194FF926005CB70B /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -3354,6 +3420,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34C12B2A194FF926005CB70B /* Touch-Framework-Coverage.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
 				PRODUCT_NAME = OmniAppKit;
@@ -3430,6 +3497,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA1EBD108AA772700E2FF6B /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
@@ -3447,6 +3515,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA1EBD208AA772700E2FF6B /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;
@@ -3464,6 +3533,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA1EBD008AA772700E2FF6B /* Omni-Framework-Coverage.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniAppKit;

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -163,7 +163,7 @@ OFCharacterSet *CacheControlValueDelimiterSet;
     // TODO: Why are we calling -setProxyCacheDisabled:YES here? [wiml]
     [refreshPipeline setProxyCacheDisabled:YES];
     refreshDate = [[NSCalendarDate alloc] initWithTimeIntervalSinceNow:refreshTimeInterval];
-    [refreshDate setCalendarFormat:NSLocalizedStringFromTableInBundle(@"%b %d %H:%M:%S", @"OWF", [OWWebPipeline bundle], @"webpipeline timed refresh NSCalendarDate format")];
+    [refreshDate setCalendarFormat:@"%b %d %H:%M:%S"];
     [refreshPipeline setContextObject:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Timed Refresh at %@", @"OWF", [OWWebPipeline bundle], @"webpipeline timed refresh message"), refreshDate] forKey:@"Status"];
     if (referringURL)
         [refreshPipeline setReferringAddress:[OWAddress addressWithURL:referringURL]];

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,32 @@
 
 RCS_ID("$Id$");
 
-@interface OASwoopView (Private)
+@interface OASwoopView ()
+{
+    struct swoopcell {
+        NSCell *cell;           // pointer to a cell, or nil if this slot is empty
+        NSRect rect;            // frame of this cell
+        CGFloat parameter;      // generic user parameter of this cell
+    } *cells;                   // array of cells and locations; non-NULL
+    unsigned swoopCellCount;
+    
+    struct swooper {
+        unsigned cellIndex;     // Index of this cell in the cells array
+        short flags;            // Flags; will be 0 if swooper is idle
+        NSPoint begins;         // Cell position at t=0
+        NSPoint slideVector;    // Slide vector
+        NSTimeInterval duration; // Time to take to slide; may validly be 0
+        NSTimeInterval began;   // Time the motion began; assumed to be in past
+        enum OASwoopStyle kine; // Cell kinematic style
+    } *swoop;                   // may be NULL if swoopCount is 0
+    unsigned swoopCount;
+
+    NSTimer *motionTimer;
+
+    struct {
+        unsigned int delayingStart: 1;
+    } swoopFlags;
+}
 
 - (BOOL)_updatePositionsForTime:(NSTimeInterval)tPlus;
 - (unsigned)_indexOfCell:(NSCell *)aCell;
@@ -394,9 +419,7 @@ static unsigned do_insert(unsigned *mapping, unsigned mapIndex, OASwoopView *sel
     }
 }
 
-@end
-
-@implementation OASwoopView (Private)
+#pragma mark - Internal methods
 
 - (BOOL)_updatePositionsForTime:(NSTimeInterval)tPlus
 {

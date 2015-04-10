@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -321,7 +321,11 @@ static NSString *windowFrameSaveName = @"Preferences";
     
     // set up the global controls view
     if (self.helpButton)
-        [self.helpButton setEnabled:([nonretained_currentClientRecord helpURL] != nil)];        
+        [self.helpButton setEnabled:([nonretained_currentClientRecord helpURL] != nil)];
+    NSRect controlsRect = _globalControlsView.frame;
+    controlsRect.size.width = contentView.frame.size.width;
+    [_globalControlsView setFrame:controlsRect];
+    
     [contentView addSubview:_globalControlsView];
     
     // Add the new client box to the view hierarchy
@@ -428,7 +432,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (IBAction)restoreDefaults:(id)sender;
 {
-    if (([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) && ([[NSApp currentEvent] modifierFlags] & NSShiftKeyMask)) {
+    if (([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask) && ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSShiftKeyMask)) {
         // warn & wipe the entire defaults domain
         NSBundle *bundle = [OAPreferenceClient bundle];
         NSAlert *alert = [[[NSAlert alloc] init] autorelease];
@@ -443,7 +447,7 @@ static NSString *windowFrameSaveName = @"Preferences";
             [[NSUserDefaults standardUserDefaults] synchronize];
             [nonretained_currentClient valuesHaveChanged];
         }];
-    } else if ([[NSApp currentEvent] modifierFlags] & NSAlternateKeyMask) {
+    } else if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask) {
         // warn & wipe all prefs shown in the panel
         NSBundle *bundle = [OAPreferenceClient bundle];
         NSAlert *alert = [[[NSAlert alloc] init] autorelease];
@@ -502,7 +506,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     NSString *helpURL = [nonretained_currentClientRecord helpURL];
     
     if (helpURL)
-        [NSApp showHelpURL:helpURL];
+        [[OAApplication sharedApplication] showHelpURL:helpURL];
 }
 
 // NSWindow delegate
@@ -619,8 +623,6 @@ static NSString *windowFrameSaveName = @"Preferences";
     [(NSView *)[self.preferenceBox contentView] setAutoresizingMask:[self.preferenceBox autoresizingMask]];
     [[self.preferenceBox contentView] setAutoresizesSubviews:YES];
     
-    // TJW: Is this really necessary -- it's a top level nib object.
-    [_globalControlsView retain];
     idealWidth = NSWidth([_globalControlsView frame]);
     [_window center];
     [_window setFrameAutosaveName:windowFrameSaveName];

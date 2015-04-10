@@ -9,6 +9,7 @@
 
 #import <Security/Security.h>
 #import <TargetConditionals.h>
+#import <OmniBase/macros.h>
 
 /* The utilities in this file have two purposes: to make some common operations a little easier, and to paper over some of the gratuitous differences between the crypto APIs on MacOSX vs. iOS. */
 
@@ -28,7 +29,6 @@ enum OFKeyAlgorithm {
     ka_DH,
     ka_DSA,
     ka_AES,
-    ka_DES,
     ka_EC,
     ka_Other
 #endif
@@ -81,4 +81,14 @@ extern NSString *OFSecKeyAlgorithmDescription(enum OFKeyAlgorithm alg, unsigned 
 
 /* A description of a keychain item in -[NSObject shortDescription] format, e.g. "<SecKeyRef 0x123456: Public RSA-1024>" */
 extern NSString *OFSecItemDescription(CFTypeRef item);
+
+/* This is internal to OmniFoundation */
+struct OFNamedCurveInfo {
+    const char *name;
+    const char *urn;                      /* URN of this curve */
+    const uint8_t *derOid;                /* DER-encoded OID of this curve (including tag+length) */
+    unsigned short derOidLength;          /* Byte length of derOid */
+    unsigned short generatorSize;         /* number of bits needed to represent a value in the key's field */
+};
+extern const struct OFNamedCurveInfo _OFEllipticCurveInfoTable[] OB_HIDDEN;
 

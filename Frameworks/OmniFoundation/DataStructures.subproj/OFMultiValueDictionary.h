@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -46,5 +46,6 @@
 @end
 
 @interface NSString (OFMultiValueDictionary)
+- (void)parseQueryString:(void (^)(NSString *decodedName, NSString *decodedValue, BOOL *stop))handlePair;
 - (OFMultiValueDictionary *)parametersFromQueryString;
 @end

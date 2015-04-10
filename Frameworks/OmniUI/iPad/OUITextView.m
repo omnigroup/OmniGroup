@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,10 +43,15 @@ OBDEPRECATED_METHOD(-writeAttributedStringFromTextRange:toPasteboard:forTextView
 OBDEPRECATED_METHOD(-customMenuItemsForTextView:);
 OBDEPRECATED_METHOD(-canPerformEditingAction:forTextView:withSender:);
 
+NSString * const OUITextViewInsertionPointDidChangeNotification = @"OUITextViewInsertionPointDidChangeNotification";
+
+@interface OUITextViewSelectedTextHighlightView : UIView
+@end
 
 @implementation OUITextView
 {
     OUIInspector *_textInspector;
+    OUITextViewSelectedTextHighlightView *_selectedTextHighlightView;
 }
 
 #pragma mark Debugging helpers
@@ -411,10 +416,20 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
     return firstSpan;
 }
 
-- (void)inspectSelectedTextFromBarButtonItem:(UIBarButtonItem *)barButtonItem;
+- (void)dismissInspectorImmediatelyIfVisible;
+{
+    [_textInspector dismissImmediatelyIfVisible];
+}
+
+- (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^)(OUIInspector *))setupBlock;
 {
     NSArray *runs = [self _configureInspector];
-    [_textInspector inspectObjects:runs fromBarButtonItem:barButtonItem];
+    if (setupBlock != NULL)
+        setupBlock(_textInspector);
+    [_textInspector inspectObjects:runs withViewController:viewController fromBarButtonItem:barButtonItem];
+
+    _selectedTextHighlightView = [[OUITextViewSelectedTextHighlightView alloc] initWithFrame:self.bounds];
+    [self addSubview:_selectedTextHighlightView];
 }
 
 - (void)selectAllShowingMenu:(BOOL)show;
@@ -859,6 +874,7 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     // 14921726: TextKit: Selection controls should be dimmed and unresponsive while a popover is up
     // We'll dismiss the inspector in this case (since it is inspecting the original ranges of text and any edits it made would be to those old ranges). We could in theory update the inspected objects, but depending on what's in the selection/inspector the current view stack might not make sense (hypothetical, but say you had an image attachment selected and there was a filter/crop inspector pushed -- if you then adjusted the selection to be not on the image, we'd need to pop the child inspector pane).
     [super setSelectedTextRange:selectedTextRange];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OUITextViewInsertionPointDidChangeNotification object:self];
     
     [_textInspector dismissAnimated:YES];
 }
@@ -872,14 +888,20 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
 
 - (BOOL)becomeFirstResponder;
 {
+    if (![super becomeFirstResponder])
+        return NO;
+
     NSArray *menuItems = nil;
     id <OUITextViewDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(textViewCustomMenuItems:)])
         menuItems = [delegate textViewCustomMenuItems:self];
 
     [UIMenuController sharedMenuController].menuItems = menuItems;
-    
-    return [super becomeFirstResponder];
+
+    [_selectedTextHighlightView removeFromSuperview];
+    _selectedTextHighlightView = nil;
+
+    return YES;
 }
 
 static NSArray *_readableTypes(void)
@@ -1302,6 +1324,9 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 
 - (void)inspectorDidDismiss:(OUIInspector *)inspector;
 {
+    [_selectedTextHighlightView removeFromSuperview];
+    _selectedTextHighlightView = nil;
+
     [self becomeFirstResponder];
     
     // We might be able to save some time by keeping this around, but we also want to reset the inspector to its base state if it comes up again. ALSO, this is the easiest hack to get rid of lingering OSTextSelectionStyle objects which have problematic reference behavior. ARC will fix it all, of course.
@@ -1327,6 +1352,40 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     }
     
     return runs;
+}
+
+@end
+
+#import <OmniUI/UIView-OUIExtensions.h> // For -[UIView containingViewOfClass:]
+
+@implementation OUITextViewSelectedTextHighlightView
+
+- (instancetype)initWithFrame:(CGRect)frame;
+{
+    self = [super initWithFrame:frame];
+    if (self == nil)
+        return nil;
+
+    self.opaque = NO;
+    self.alpha = 0.25f;
+
+    return self;
+}
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
+{
+    return nil;
+}
+
+- (void)drawRect:(CGRect)rect;
+{
+    UITextView *textView = [self containingViewOfClass:[UITextView class]];
+    [self.tintColor setFill];
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    NSArray *selectionRects = [textView selectionRectsForRange:textView.selectedTextRange];
+    for (UITextSelectionRect *selectionRect in selectionRects) {
+        CGContextFillRect(ctx, CGRectIntegral(selectionRect.rect));
+    }
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2014 Omni Development. Inc. All rights reserved.
+// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,6 +29,8 @@
  @return Whether the URL was handled by the special URL system. A return value of YES simply means that a corresponding command was found and invoked for the given URL; it does not necessarily mean that the command succeeded.
  */
 - (BOOL)handleSpecialURL:(NSURL *)url;
+
+/// The view controller to use as the presenter if the invocation or confirmation of a special URL command requires presenting another view controller. The default implementation searches for the current topmost presented view controller from the main window's root; subclasses can override to provide a different view controller from which to present.
 - (UIViewController *)viewControllerForSpecialURLHandlingPresentation;
 
 @end

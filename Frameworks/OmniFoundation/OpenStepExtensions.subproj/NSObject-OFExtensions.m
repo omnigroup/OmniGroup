@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -180,4 +180,75 @@ void OFMainThreadPerformBlock(void (^block)(void)) {
         block();
     else
         dispatch_async(dispatch_get_main_queue(), block);
+}
+
+
+// Inspired by <https://github.com/n-b/CTT2>, but redone to use a timer to avoid spinning the runloop as fast as possible when polling.
+
+BOOL OFRunLoopRunUntil(NSTimeInterval timeout, OFRunLoopRunType runType, BOOL(^predicate)(void))
+{
+    __block BOOL done = NO;
+    
+    // Early out if this is already true
+    if (predicate()) {
+        return YES;
+    }
+    
+    CFRunLoopRef runLoop = CFRunLoopGetCurrent();
+    
+    // If we are polling, do so by installing an event source that will kick the runloop on a preferred polling interval (rather than running the predicate over and over as fast as possible).
+    CFRunLoopTimerRef timer = NULL;
+    if (runType == OFRunLoopRunTypePolling) {
+        timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, 0/*first fire date*/, 0.05/*interval*/, 0/*flags*/, 0/*order*/, ^(CFRunLoopTimerRef t){}/*block*/); // NULL block crashes.
+        CFRunLoopAddTimer(runLoop, timer, kCFRunLoopDefaultMode);
+    }
+    
+    void (^beforeWaiting)(CFRunLoopObserverRef observer, CFRunLoopActivity activity) =
+    ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+        // If our predicate succeeded, we stopped the runloop and should not be called again.
+        OBASSERT(!done);
+
+        done = predicate();
+        if (done) {
+            CFRunLoopStop(runLoop);
+        }
+    };
+    
+    CFRunLoopObserverRef observer = CFRunLoopObserverCreateWithHandler(NULL, kCFRunLoopBeforeWaiting, true, 0, beforeWaiting);
+    CFRunLoopAddObserver(runLoop, observer, kCFRunLoopDefaultMode);
+    
+    CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
+    while (YES) {
+        CFAbsoluteTime remainingTimeout = 0.0;
+        if (timeout > 0.0) {
+            CFAbsoluteTime currentTime = CFAbsoluteTimeGetCurrent();
+            remainingTimeout = (startTime + timeout) - currentTime;
+        }
+        
+        SInt32 returnReason = CFRunLoopRunInMode(kCFRunLoopDefaultMode, remainingTimeout, false);
+        OBASSERT(returnReason != kCFRunLoopRunFinished, "This should only be returned if the run loop has no sources or timers, but we added a source");
+        
+        if (returnReason == kCFRunLoopRunStopped) {
+            if (done) {
+                break;
+            } else {
+                // Some other source called CFRunLoopStop()?
+            }
+        }
+        if (returnReason == kCFRunLoopRunTimedOut) {
+            OBASSERT(!done); // Ran out of time
+            break;
+        }
+        // Otherwise, we are likely running on the main queue with AppKit and lots of other sources and got kCFRunLoopRunHandledSource. CFRunLoopRunInMode() will only handle 1 or possibly two sources before returning.
+    }
+    
+    CFRunLoopRemoveObserver(runLoop, observer, kCFRunLoopDefaultMode);
+    CFRelease(observer);
+    
+    if (timer) {
+        CFRunLoopRemoveTimer(runLoop, timer, kCFRunLoopDefaultMode);
+        CFRelease(timer);
+    }
+    
+    return done;
 }

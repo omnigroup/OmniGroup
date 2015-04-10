@@ -27,7 +27,7 @@ RCS_ID("$Id$")
 - (void)gotPostponedTerminateResult:(BOOL)isReadyToTerminate;
 {
     if ([self status] == OFControllerPostponingTerminateStatus)
-        [NSApp replyToApplicationShouldTerminate:isReadyToTerminate];
+        [[NSApplication sharedApplication] replyToApplicationShouldTerminate:isReadyToTerminate];
     
     [super gotPostponedTerminateResult:isReadyToTerminate];
 }
@@ -106,7 +106,7 @@ RCS_ID("$Id$")
         
         NSError *error = nil;
         if (![internetConfig launchMailTo:feedbackAddress carbonCopy:nil subject:subjectLine body:body error:&error])
-            [NSApp presentError:error];
+            [[NSApplication sharedApplication] presentError:error];
     }
 }
 
@@ -156,8 +156,7 @@ RCS_ID("$Id$")
     [self willTerminate];
 }
 
-#pragma mark -
-#pragma mark Actions
+#pragma mark - Actions
 
 - (IBAction)showAboutPanel:(id)sender;
 {
@@ -204,7 +203,7 @@ RCS_ID("$Id$")
     NSString *scriptsFolder = paths[0];
     NSError *error = nil;
     if (![[NSFileManager defaultManager] createDirectoryAtPath:scriptsFolder withIntermediateDirectories:YES attributes:nil error:&error]) {
-        [NSApp presentError:error];
+        [[NSApplication sharedApplication] presentError:error];
         return;
     }
 

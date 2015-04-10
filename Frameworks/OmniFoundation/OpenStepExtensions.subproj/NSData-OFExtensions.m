@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -101,7 +101,7 @@ RCS_ID("$Id$")
 
 - (NSUInteger)indexOfBytes:(const void *)patternBytes length:(NSUInteger)patternLength range:(NSRange)searchRange
 {
-    const uint8_t *selfBufferStart, *selfPtr, *selfPtrEnd;
+    const uint8_t *selfBufferStart;
     
     NSUInteger selfLength = [self length];
     if (searchRange.location > selfLength ||
@@ -116,23 +116,13 @@ RCS_ID("$Id$")
         return NSNotFound;
     }
     
-    
     selfBufferStart = [self bytes];
-    selfPtr    = selfBufferStart + searchRange.location;
-    selfPtrEnd = selfBufferStart + searchRange.location + searchRange.length + 1 - patternLength;
-    
-    for (;;) {
-        if (memcmp(selfPtr, patternBytes, patternLength) == 0)
-            return (selfPtr - selfBufferStart);
-        
-        selfPtr++;
-        if (selfPtr == selfPtrEnd)
-            break;
-        selfPtr = memchr(selfPtr, *(const uint8_t *)patternBytes, (selfPtrEnd - selfPtr));
-        if (!selfPtr)
-            break;
+    const uint8_t *found = memmem(selfBufferStart + searchRange.location, searchRange.length, patternBytes, patternLength);
+    if (found) {
+        return (found - selfBufferStart);
+    } else {
+        return NSNotFound;
     }
-    return NSNotFound;
 }
 
 - propertyList

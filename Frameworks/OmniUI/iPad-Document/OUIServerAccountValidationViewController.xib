@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6205" systemVersion="13E28" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6250" systemVersion="14A389" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6198"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6244"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="OUIServerAccountValidationViewController">
@@ -22,19 +22,19 @@
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lPM-kp-WoF" userLabel="Status View">
-                    <rect key="frame" x="100" y="142" width="340" height="160"/>
+                    <rect key="frame" x="100" y="142" width="340" height="159"/>
                     <subviews>
                         <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FL3-ek-OGD">
-                            <rect key="frame" x="20" y="138" width="300" height="2"/>
+                            <rect key="frame" x="20" y="137" width="300" height="2"/>
                         </progressView>
                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" text="Progess description — do not localize" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LSX-Zy-nGT">
-                            <rect key="frame" x="20" y="73" width="291" height="21"/>
+                            <rect key="frame" x="20" y="72" width="291" height="20.5"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" text="Server info — do not localize" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="10">
-                            <rect key="frame" x="20" y="20" width="221" height="21"/>
+                            <rect key="frame" x="20" y="20" width="221" height="20.5"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                             <nil key="highlightedColor"/>
@@ -51,7 +51,7 @@
                         <constraint firstAttribute="trailing" secondItem="LSX-Zy-nGT" secondAttribute="trailing" priority="749" constant="20" symbolic="YES" id="aJI-WC-DsC"/>
                         <constraint firstAttribute="trailing" secondItem="10" secondAttribute="trailing" priority="749" id="cqX-1H-xJS"/>
                         <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="LSX-Zy-nGT" secondAttribute="trailing" constant="20" symbolic="YES" id="llu-Fa-fxO"/>
-                        <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="340" id="oSY-GX-GT0"/>
+                        <constraint firstAttribute="width" relation="greaterThanOrEqual" priority="900" constant="340" id="oSY-GX-GT0"/>
                         <constraint firstItem="LSX-Zy-nGT" firstAttribute="leading" secondItem="lPM-kp-WoF" secondAttribute="leading" constant="20" symbolic="YES" id="tkN-fj-3KN"/>
                         <constraint firstItem="10" firstAttribute="leading" secondItem="lPM-kp-WoF" secondAttribute="leading" constant="20" symbolic="YES" id="xgV-jm-Df5"/>
                         <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="10" secondAttribute="trailing" constant="20" symbolic="YES" id="zmx-BR-DYk"/>
@@ -60,15 +60,15 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xPW-VJ-wgq" userLabel="Success View">
                     <rect key="frame" x="70" y="98" width="400" height="248"/>
                     <subviews>
-                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FyS-zd-cdJ">
+                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FyS-zd-cdJ">
                             <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="32"/>
                             <color key="textColor" white="0.29999999999999999" alpha="1" colorSpace="calibratedWhite"/>
                             <nil key="highlightedColor"/>
                         </label>
-                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bUr-WV-3x4">
+                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bUr-WV-3x4">
                             <rect key="frame" x="20" y="20" width="360" height="200"/>
                             <constraints>
-                                <constraint firstAttribute="width" constant="360" id="BIk-Mm-RhE"/>
+                                <constraint firstAttribute="width" priority="750" constant="360" id="BIk-Mm-RhE"/>
                                 <constraint firstAttribute="height" constant="200" id="nmj-Fj-hoM"/>
                             </constraints>
                         </imageView>
@@ -90,8 +90,10 @@
                 <constraint firstItem="lPM-kp-WoF" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="4" secondAttribute="leading" id="Cp7-SS-4zn"/>
                 <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="lPM-kp-WoF" secondAttribute="bottom" id="Dyo-U3-xrV"/>
                 <constraint firstAttribute="centerX" secondItem="lPM-kp-WoF" secondAttribute="centerX" priority="999" id="FXu-6z-RgG"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="xPW-VJ-wgq" secondAttribute="trailing" id="L31-aW-Sn1"/>
                 <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="lPM-kp-WoF" secondAttribute="trailing" id="MkH-F5-gEN"/>
                 <constraint firstAttribute="centerY" secondItem="xPW-VJ-wgq" secondAttribute="centerY" constant="0.5" id="bvs-N6-BJQ"/>
+                <constraint firstItem="xPW-VJ-wgq" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="4" secondAttribute="leading" id="fvl-cm-fba"/>
                 <constraint firstAttribute="centerY" secondItem="lPM-kp-WoF" secondAttribute="centerY" priority="999" id="i7j-sW-d6O"/>
                 <constraint firstItem="lPM-kp-WoF" firstAttribute="top" relation="greaterThanOrEqual" secondItem="4" secondAttribute="top" id="pSH-yG-WRp"/>
             </constraints>
@@ -102,9 +104,6 @@
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>
-        <simulatedScreenMetrics key="destination" type="retina4">
-            <size key="portraitSize" width="320" height="568"/>
-            <size key="landscapeSize" width="568" height="320"/>
-        </simulatedScreenMetrics>
+        <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
 </document>

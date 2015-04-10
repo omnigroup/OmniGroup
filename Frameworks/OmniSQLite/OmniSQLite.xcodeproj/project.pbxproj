@@ -17,7 +17,7 @@
 		4AB9E7BE08BBA9AC002A253E /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AB9E7BC08BBA9AC002A253E /* OmniBase.framework */; };
 		4AB9E7BF08BBA9AC002A253E /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AB9E7BD08BBA9AC002A253E /* OmniFoundation.framework */; };
 		4AB9E7D908BBAA0A002A253E /* OmniSQLite.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AB9E7D808BBAA0A002A253E /* OmniSQLite.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AC436D10B9E85E300A09E1A /* libsqlite3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AC436D00B9E85E300A09E1A /* libsqlite3.0.dylib */; };
+		4AC436D10B9E85E300A09E1A /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AC436D00B9E85E300A09E1A /* libsqlite3.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,11 +45,11 @@
 		4AB9E6E808BBA1E3002A253E /* OSLPreparedStatement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSLPreparedStatement.m; sourceTree = "<group>"; };
 		4AB9E6F508BBA242002A253E /* OSLDatabaseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSLDatabaseController.h; sourceTree = "<group>"; };
 		4AB9E6F608BBA242002A253E /* OSLDatabaseController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSLDatabaseController.m; sourceTree = "<group>"; };
-		4AB9E73708BBA967002A253E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		4AB9E73708BBA967002A253E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		4AB9E7BC08BBA9AC002A253E /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AB9E7BD08BBA9AC002A253E /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AB9E7D808BBAA0A002A253E /* OmniSQLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniSQLite.h; sourceTree = "<group>"; };
-		4AC436D00B9E85E300A09E1A /* libsqlite3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.0.dylib; path = /usr/lib/libsqlite3.0.dylib; sourceTree = "<absolute>"; };
+		4AC436D00B9E85E300A09E1A /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,7 +60,7 @@
 				4AB9E73808BBA967002A253E /* Foundation.framework in Frameworks */,
 				4AB9E7BE08BBA9AC002A253E /* OmniBase.framework in Frameworks */,
 				4AB9E7BF08BBA9AC002A253E /* OmniFoundation.framework in Frameworks */,
-				4AC436D10B9E85E300A09E1A /* libsqlite3.0.dylib in Frameworks */,
+				4AC436D10B9E85E300A09E1A /* libsqlite3.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,7 +108,7 @@
 		4AB9E7BA08BBA96B002A253E /* Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				4AC436D00B9E85E300A09E1A /* libsqlite3.0.dylib */,
+				4AC436D00B9E85E300A09E1A /* libsqlite3.dylib */,
 				4AB9E7BC08BBA9AC002A253E /* OmniBase.framework */,
 				4AB9E7BD08BBA9AC002A253E /* OmniFoundation.framework */,
 				4AB9E73708BBA967002A253E /* Foundation.framework */,
@@ -176,7 +176,7 @@
 		BFF16A5806ECEC1300D38503 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0630;
 			};
 			buildConfigurationList = 4AECC81F08B00400004B92BF /* Build configuration list for PBXProject "OmniSQLite" */;
 			compatibilityVersion = "Xcode 3.2";

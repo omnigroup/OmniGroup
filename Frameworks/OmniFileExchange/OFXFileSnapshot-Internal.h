@@ -15,7 +15,7 @@
 
 - _initTemporarySnapshotWithTargetLocalSnapshotURL:(NSURL *)localTargetURL localRelativePath:(NSString *)localRelativePath error:(NSError **)outError;
 - (BOOL)_updateInfoDictionary:(NSDictionary *)infoDictionary error:(NSError **)outError;
-- (BOOL)_updateVersionDictionary:(NSDictionary *)versionDictionary error:(NSError **)outError;
+- (BOOL)_updateVersionDictionary:(NSDictionary *)versionDictionary reason:(NSString *)reason error:(NSError **)outError;
 #ifdef OMNI_ASSERTIONS_ON
 - (BOOL)_checkInvariants;
 #endif

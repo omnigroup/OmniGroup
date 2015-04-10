@@ -2,6 +2,7 @@
 "%@ points" = "%@ пункт.";
 
 /* title format for color component slider */
+
 "<alpha title+value>" = "Непрозрачность: %d%%";
 
 /* title format for color component slider */
@@ -66,4 +67,3 @@
 
 /* Inspector title */
 "Text Style" = "Стиль текста";
-

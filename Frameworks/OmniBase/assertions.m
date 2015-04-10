@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008-2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniBase/rcsid.h>
 #import <OmniBase/OBUtilities.h>
 #import <OmniBase/macros.h>
-#import "OBBacktraceBuffer.h"
+#import <OmniBase/OBBacktraceBuffer.h>
 #import <unistd.h> // For getpid()
 
 RCS_ID("$Id$")

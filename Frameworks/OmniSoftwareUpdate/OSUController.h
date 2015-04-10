@@ -8,12 +8,11 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
-#import <AppKit/NSNibDeclarations.h>
 #import <OmniSoftwareUpdate/OSUCheckerTarget.h>
 
-@class NSDictionary, NSURL, NSError;
-@class NSButton, NSImageView, NSPanel, NSTextField, NSTextView, NSWindow;
-@class OSUDownloadController, OSUItem, OSUCheckOperation;
+@class NSURL, NSError;
+@class NSWindow;
+@class OSUItem;
 
 extern NSString * const OSUReleaseDisplayVersionKey;
 extern NSString * const OSUReleaseDownloadPageKey;
@@ -26,19 +25,11 @@ extern NSString * const OSUReleaseMinorSummaryKey;
 extern NSString * const OSUReleaseApplicationSummaryKey;
 
 @interface OSUController : NSObject <OSUCheckerTarget>
-{
-    OSUDownloadController *_currentDownloadController;
-}
 
 // API
 + (OSUController *)sharedController;
 + (void)checkSynchronouslyWithUIAttachedToWindow:(NSWindow *)aWindow;
 
 - (BOOL)beginDownloadAndInstallFromPackageAtURL:(NSURL *)packageURL item:(OSUItem *)item error:(NSError **)outError;
-
-// Actions
-//- (IBAction)downloadNow:(id)sender;
-//- (IBAction)showMoreInfo:(id)sender;
-//- (IBAction)cancel:(id)sender;
 
 @end

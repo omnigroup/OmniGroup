@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -78,7 +78,7 @@ static NSImage *ChasingArrows = nil;
 
 - (void)mouseUp:(NSEvent *)theEvent;
 {
-    [NSApp sendAction:action to:nonretainedTarget from:self];
+    [[NSApplication sharedApplication] sendAction:action to:nonretainedTarget from:self];
 }
 
 // NSView

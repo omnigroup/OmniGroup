@@ -10,8 +10,9 @@
 #import <Foundation/Foundation.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
-#import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/OFSecurityUtilities.h>
+#import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
 #import <OmniFoundation/NSMutableDictionary-OFExtensions.h>
 
@@ -432,56 +433,9 @@ SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyvalue, int *outOrder, 
     return key;
 }
 
-#define secp256r1OidByteCount 10
-static const unsigned char secp256r1OidBytes[secp256r1OidByteCount] = {
-    /* tag = OBJECT IDENTIFIER */
-    0x06,
-    /* length = 8 */
-    0x08,
-    /* iso(1) member-body(2) us(840) ansi-x9-62(10045) curves(3) prime(1) secp256r1(7) */
-    0x2a, 0x86, 0x48, 0xce, 0x3D, 0x03, 0x01, 0x07
-};
-
-#define secp384r1OidByteCount 7
-static const unsigned char secp384r1OidBytes[secp384r1OidByteCount] = {
-    /* tag = OBJECT IDENTIFIER */
-    0x06,
-    /* length = 5 */
-    0x05,
-    /* iso(1) identified-organization(3) certicom(132) curve(0) secp384r1(34) */
-    0x2b, 0x81, 0x04, 0x00, 0x22
-};
-
-#define secp521r1OidByteCount 7
-static const unsigned char secp521r1OidBytes[secp521r1OidByteCount] = {
-    /* tag = OBJECT IDENTIFIER */
-    0x06,
-    /* length = 5 */
-    0x05,
-    /* iso(1) identified-organization(3) certicom(132) curve(0) secp521r1(35) */
-    0x2b, 0x81, 0x04, 0x00, 0x23
-};
-
-/* Hardcode the handful of named curves we'll see rather than parsing the OID and DER-encoding it */
-/* (we need to have a list of them anyway in order to know log2_p) */
-static const struct namedCurveInfo {
-    const char *urn;                      /* URN of this curve */
-    const unsigned char *derOid;          /* DER-encoded OID of this curve */
-    short derOidLength;                   /* Byte length of the above */
-    short generatorSize;                  /* number of bits needed to represent a value in the key's field */
-} namedCurves[] = {
-//  { "urn:oid:1.2.840.10045.3.1.1", secp192r1OidBytes, secp192r1OidByteCount, 192 },   // Referenced in Apple's framework, but apparently not implemented
-//  { "urn:oid:1.3.132.0.33",        secp224r1OidBytes, secp224r1OidByteCount, 224 },   // Referenced in Apple's framework, but apparently not implemented
-    { "urn:oid:1.2.840.10045.3.1.7", secp256r1OidBytes, secp256r1OidByteCount, 256 },
-    { "urn:oid:1.3.132.0.34",        secp384r1OidBytes, secp384r1OidByteCount, 384 },
-    { "urn:oid:1.3.132.0.35",        secp521r1OidBytes, secp521r1OidByteCount, 521 },
-    { NULL,                          0,                 0,                     0   }
-};
-/* Other elliptic curve identifiers of interest: the Brainpool curves assigned in RFC5639 */
-
 static NSData *getNamedCurve(const xmlChar *curveName, int *log2_p_out, NSError **outError)
 {
-    for(const struct namedCurveInfo *cursor = namedCurves; cursor->urn; cursor++) {
+    for(const struct OFNamedCurveInfo *cursor = _OFEllipticCurveInfoTable; cursor->urn; cursor++) {
         if (xmlStrcmp(curveName, (xmlChar *)(cursor->urn)) == 0) {
             *log2_p_out = cursor->generatorSize;
             return [NSData dataWithBytesNoCopy:(void *)(cursor->derOid) length:(cursor->derOidLength) freeWhenDone:NO];

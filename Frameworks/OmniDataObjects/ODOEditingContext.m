@@ -1,4 +1,4 @@
-// Copyright 2008-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,6 @@
 
 #import <OmniDataObjects/ODOEditingContext.h>
 
-#import <Foundation/NSFileManager.h>
 #import <OmniDataObjects/ODOFetchRequest.h>
 #import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOObjectID.h>

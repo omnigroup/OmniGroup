@@ -44,7 +44,7 @@
 "month" = "月";
 
 /* months */
-"months" = "ヶ月";
+"months" = "カ月";
 
 /* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\" */
 "next" = "次";

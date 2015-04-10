@@ -1,4 +1,4 @@
-// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -494,7 +494,7 @@ static unsigned int scrollEntriesCount = 0;
 
     OBPRECONDITION([event type] == NSLeftMouseDown);
 
-    currentEvent = [NSApp currentEvent];
+    currentEvent = [[NSApplication sharedApplication] currentEvent];
     if (currentEvent != event) {
         // We've already processed this once, let's try to return the same answer as before.  (This lets you call this method more than once for the same event without it pausing to wait for a whole new set of drag / mouse up events.)
         return [currentEvent type] == NSLeftMouseDragged;
@@ -506,7 +506,7 @@ static unsigned int scrollEntriesCount = 0;
     while (1) {
         NSEvent *nextEvent;
 
-        nextEvent = [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask | NSLeftMouseUpMask untilDate:timeoutDate inMode:NSEventTrackingRunLoopMode dequeue:YES];
+        nextEvent = [[NSApplication sharedApplication] nextEventMatchingMask:NSLeftMouseDraggedMask | NSLeftMouseUpMask untilDate:timeoutDate inMode:NSEventTrackingRunLoopMode dequeue:YES];
         if (finalEventPointer != NULL)
             *finalEventPointer = nextEvent;
         if (nextEvent == nil) { // Timeout date reached
@@ -656,6 +656,27 @@ static inline NSAffineTransformStruct computeTransformFromExamples(NSPoint origi
 #pragma mark - Constraints
 
 #define EQUAL_CONSTRAINT(attr) [NSLayoutConstraint constraintWithItem:self attribute:attr relatedBy:NSLayoutRelationEqual toItem:view attribute:attr multiplier:1 constant:0]
+#define EQUAL_CONSTRAINT2(v1,v2,attr) [NSLayoutConstraint constraintWithItem:v1 attribute:attr relatedBy:NSLayoutRelationEqual toItem:v2 attribute:attr multiplier:1 constant:0]
+
++ (void)appendConstraints:(NSMutableArray *)constraints forView:(NSView *)view toHaveSameFrameAsView:(NSView *)otherView;
+{
+    [constraints addObject:EQUAL_CONSTRAINT2(view, otherView, NSLayoutAttributeLeft)];
+    [constraints addObject:EQUAL_CONSTRAINT2(view, otherView, NSLayoutAttributeRight)];
+    [constraints addObject:EQUAL_CONSTRAINT2(view, otherView, NSLayoutAttributeTop)];
+    [constraints addObject:EQUAL_CONSTRAINT2(view, otherView, NSLayoutAttributeBottom)];
+}
+
++ (void)appendConstraints:(NSMutableArray *)constraints forView:(NSView *)view toHaveSameHorizontalExtentAsView:(NSView *)otherView;
+{
+    [constraints addObject:EQUAL_CONSTRAINT2(view, otherView, NSLayoutAttributeLeft)];
+    [constraints addObject:EQUAL_CONSTRAINT2(view, otherView, NSLayoutAttributeRight)];
+}
+
++ (void)appendConstraints:(NSMutableArray *)constraints forView:(NSView *)view toHaveSameVerticalExtentAsView:(NSView *)otherView;
+{
+    [constraints addObject:EQUAL_CONSTRAINT2(view, otherView, NSLayoutAttributeTop)];
+    [constraints addObject:EQUAL_CONSTRAINT2(view, otherView, NSLayoutAttributeBottom)];
+}
 
 - (void)addConstraintsToHaveSameFrameAsView:(NSView *)view;
 {
@@ -794,6 +815,31 @@ unsigned int NSViewMaxDebugDepth = 10;
     NSLog(@"Constraints involving %@:\n%@", self.shortDescription, string);
     
     [string release];
+}
+
+static NSString *_vibrancyInfo(NSView *view, NSUInteger level)
+{
+    NSMutableArray *infos = [NSMutableArray array];
+    
+    for (NSView *subview in view.subviews) {
+        NSString *subInfo = _vibrancyInfo(subview, level + 1);
+        if (subInfo) {
+            [infos addObject:subInfo];
+        }
+    }
+    
+    if ([infos count] > 0 || [view isKindOfClass:[NSVisualEffectView class]] || view.allowsVibrancy) {
+        NSString *localInfo = [NSString stringWithFormat:@"%@<%@:%p allowsVibrancy:%d>", [NSString spacesOfLength:level * 2], NSStringFromClass([view class]), view, view.allowsVibrancy];
+        [infos insertObject:localInfo atIndex:0];
+        return [infos componentsJoinedByString:@"\n"];
+    }
+    
+    return nil;
+}
+
+- (void)logVibrantViews;
+{
+    NSLog(@"Vibrancy info for view tree starting at %@:\n%@", [self shortDescription], _vibrancyInfo(self, 0));
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@ RCS_ID("$Id$");
 
 static id _commonInit(OUIUndoButton *self)
 {
-    [self setTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title") forState:UIControlStateNormal];
+    [self setImage:[UIImage imageNamed:@"OUIToolbarUndo"] forState:UIControlStateNormal];
 
     return self;
 }

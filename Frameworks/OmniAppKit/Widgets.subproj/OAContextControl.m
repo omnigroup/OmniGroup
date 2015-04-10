@@ -48,7 +48,7 @@ void OAContextControlGetMenu(id delegate, NSControl *control, NSMenu **outMenu, 
     } else {
         // TODO: Check if any of the menu items in the resulting menu are valid?
 
-        id <OAContextControlDelegate> target = [NSApp targetForAction:@selector(menuForContextControl:)];
+        id <OAContextControlDelegate> target = [[NSApplication sharedApplication] targetForAction:@selector(menuForContextControl:)];
         if (target) {
             if ([target isKindOfClass:[NSView class]]) {
                 // Only needs to implement the menu generating method (and we checked for that with -targetForAction:).
@@ -59,12 +59,12 @@ void OAContextControlGetMenu(id delegate, NSControl *control, NSMenu **outMenu, 
                 targetView = [target targetViewForContextControl:control];
                 menu       = [target menuForContextControl:control];
             }
-        } else if ((target = [NSApp targetForAction:@selector(menu)])) {
+        } else if ((target = [[NSApplication sharedApplication] targetForAction:@selector(menu)])) {
             if ([target isKindOfClass:[NSView class]]) {
                 targetView = (NSView *)target;
                 menu       = [targetView menu];
             } else {
-                // This can happen when the responder we get to -menu is NSApp
+                // This can happen when the responder we get to -menu is the shared NSApplication
             }
         }
     }

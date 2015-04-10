@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,18 +34,19 @@
 
 RCS_ID("$Id$")
 
-static NSTimeInterval OFXAgentSyncInterval;
+static OFDeclareTimeInterval(OFXAgentSyncInterval, 5*60, 5, 5*60);
+
+OFDeclareDebugLogLevel(OFXSyncDebug);
 
 // Make sure to log if we hit a log call before this is loaded from preferences/environment
-NSInteger OFXSyncDebug = INT_MAX;
-NSInteger OFXFileCoordinatonDebug = INT_MAX;
-NSInteger OFXScanDebug = INT_MAX;
-NSInteger OFXLocalRelativePathDebug = INT_MAX;
-NSInteger OFXTransferDebug = INT_MAX;
-NSInteger OFXConflictDebug = INT_MAX;
-NSInteger OFXMetadataDebug = INT_MAX;
-NSInteger OFXContentDebug = INT_MAX;
-NSInteger OFXActivityDebug = INT_MAX;
+OFDeclareDebugLogLevel(OFXFileCoordinatonDebug);
+OFDeclareDebugLogLevel(OFXScanDebug);
+OFDeclareDebugLogLevel(OFXLocalRelativePathDebug);
+OFDeclareDebugLogLevel(OFXTransferDebug);
+OFDeclareDebugLogLevel(OFXConflictDebug);
+OFDeclareDebugLogLevel(OFXMetadataDebug);
+OFDeclareDebugLogLevel(OFXContentDebug);
+OFDeclareDebugLogLevel(OFXActivityDebug);
 
 @interface OFXAgent () <OFNetStateNotifierDelegate, OFNetReachabilityDelegate>
 @end
@@ -72,18 +73,7 @@ static NSString *UserAgent = nil;
 + (void)initialize;
 {
     OBINITIALIZE;
-    
-    OFInitializeDebugLogLevel(OFXSyncDebug);
-    OFInitializeDebugLogLevel(OFXFileCoordinatonDebug);
-    OFInitializeDebugLogLevel(OFXScanDebug);
-    OFInitializeDebugLogLevel(OFXLocalRelativePathDebug);
-    OFInitializeDebugLogLevel(OFXTransferDebug);
-    OFInitializeDebugLogLevel(OFXConflictDebug);
-    OFInitializeDebugLogLevel(OFXContentDebug);
-    OFInitializeDebugLogLevel(OFXActivityDebug);
-    
-    OFInitializeTimeInterval(OFXAgentSyncInterval, 5*60, 5, 5*60);
-    
+        
     OFVersionNumber *version = [[self defaultClientParameters] currentFrameworkVersion];
     NSString *versionString = [NSString stringWithFormat:@"OmniFileExchange/%@", [version cleanVersionString]];
     UserAgent = [ODAVConnectionConfiguration userAgentStringByAddingComponents:@[versionString]];
@@ -98,7 +88,11 @@ BOOL OFXShouldSyncAllPathExtensions(NSSet *pathExtensions)
     if ([pathExtensions member:OFXWildcardPathExtension]) {
         OBASSERT([pathExtensions count] == 1); // No reason to list other stuff
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-        OBASSERT_NOT_REACHED("At least for now, iOS apps shouldn't be syncing everything, but only their specific file types.");
+#ifdef OMNI_ASSERTIONS_ON
+        if (OFNOTEQUAL([[NSBundle mainBundle] bundleIdentifier], @"com.omnigroup.OmniPresence.iOS")) {
+            OBASSERT_NOT_REACHED("At least for now, iOS apps shouldn't be syncing everything, but only their specific file types.");
+        }
+#endif
 #endif
         return YES;
     }
@@ -137,8 +131,6 @@ BOOL OFXShouldSyncAllPathExtensions(NSSet *pathExtensions)
     return parameters;
 }
 
-static NSString * const CellularSyncEnabledPreferenceKey = @"OFXCellularSyncEnabled";
-
 + (ODAVConnectionConfiguration *)makeConnectionConfiguration;
 {
 #if ODAV_NSURLSESSION
@@ -149,8 +141,7 @@ static NSString * const CellularSyncEnabledPreferenceKey = @"OFXCellularSyncEnab
     // This is off by default. Turn it on?
     //configuration.HTTPShouldUsePipelining = YES;
     
-    // We could test +[OFXAgent isCellularSyncEnabled] here, but the user doesn't even see the "Use Cellular Data" switch until they've validated an account.
-    configuration.allowsCellularAccess = YES;
+    configuration.allowsCellularAccess = [self isCellularSyncEnabled];
 
     configuration.HTTPShouldUsePipelining = YES;
 #else
@@ -163,19 +154,10 @@ static NSString * const CellularSyncEnabledPreferenceKey = @"OFXCellularSyncEnab
     return configuration;
 }
 
+// Hidden default to change our default behavior of trying to use cellular data. The user can override this in the Settings app, so we don't have any UI for controlling it.
 + (BOOL)isCellularSyncEnabled;
 {
-    return [[self cellularSyncEnabledPreference] boolValue];
-}
-
-+ (void)setCellularSyncEnabled:(BOOL)cellularSyncEnabled;
-{
-    [[self cellularSyncEnabledPreference] setBoolValue:cellularSyncEnabled];
-}
-
-+ (OFPreference *)cellularSyncEnabledPreference;
-{
-    return [OFPreference preferenceForKey:CellularSyncEnabledPreferenceKey];
+    return [[OFPreference preferenceForKey:@"OFXHiddenShouldUseCellularDataForSync"] boolValue];
 }
 
 - init;
@@ -273,7 +255,6 @@ static NSString * const CellularSyncEnabledPreferenceKey = @"OFXCellularSyncEnab
     }
     
     // TODO: Sign up for network status changes and stop trying to sync when there is no network.
-    // TODO: Add preference for whether to sync over cellular or just wifi
     // TODO: Scan the local containers directory and purge containers that don't show up in our sync accounts any more (not sure how this would happen, though).
     
     // All the containers will live under here.
@@ -576,7 +557,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
         if (!accountAgent.started || !accountAgent.syncingEnabled)
             return;
 
-        // TODO: Consider using OFNetReachability to skip account agents which are unreachable (offline) or should not be accessed right now (isCellularSyncEnabled).
+        // TODO: Consider using OFNetReachability to skip account agents which are unreachable (offline).
 
         // Maybe should use a GCD semaphore or the like...?
         NSBlockOperation *completionIndicator = [NSBlockOperation blockOperationWithBlock:^{}];
@@ -589,27 +570,28 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     [[NSOperationQueue mainQueue] addOperation:completionOperation];
 }
 
-- (void)_operateOnFileAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler withAction:(void (^)(OFXAccountAgent *))accountAction;
+// Either the error handler is called (for preflight problems), or the action, but not both.
+- (void)_operateOnFileAtURL:(NSURL *)fileURL errorHandler:(void (^)(NSError *error))errorHandler withAction:(void (^)(OFXAccountAgent *))accountAction;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
     if (_started == NO) {
-        if (completionHandler) {
+        if (errorHandler) {
             __autoreleasing NSError *error;
             OFXError(&error, OFXAgentNotStarted, @"Attempted to operate on a document while the sync agent was not started.", nil);
-            completionHandler(error);
+            errorHandler(error);
         }
         return;
     }
     
-    completionHandler = [completionHandler copy];
+    errorHandler = [errorHandler copy];
     
     OFXAccountAgent *accountAgent = [self _accountAgentContainingFileURL:fileURL];
     if (!accountAgent) {
-        if (completionHandler) {
+        if (errorHandler) {
             __autoreleasing NSError *error;
             OFXError(&error, OFXFileNotContainedInAnyAccount, @"Attempted operate on a document that is not part of any account.", nil);
-            completionHandler(error);
+            errorHandler(error);
         }
     }
     
@@ -618,21 +600,25 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
 
 - (void)requestDownloadOfItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 {
-    [self _operateOnFileAtURL:fileURL completionHandler:completionHandler withAction:^(OFXAccountAgent *accountAgent){
+    [self _operateOnFileAtURL:fileURL errorHandler:completionHandler withAction:^(OFXAccountAgent *accountAgent){
         [accountAgent requestDownloadOfItemAtURL:fileURL completionHandler:completionHandler];
     }];
 }
 
 - (void)deleteItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 {
-    [self _operateOnFileAtURL:fileURL completionHandler:completionHandler withAction:^(OFXAccountAgent *accountAgent){
+    [self _operateOnFileAtURL:fileURL errorHandler:completionHandler withAction:^(OFXAccountAgent *accountAgent){
         [accountAgent deleteItemAtURL:fileURL completionHandler:completionHandler];
     }];
 }
 
-- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(OFFileMotionResult *result, NSError *errorOrNil))completionHandler;
 {
-    [self _operateOnFileAtURL:originalFileURL completionHandler:completionHandler withAction:^(OFXAccountAgent *accountAgent){
+    [self _operateOnFileAtURL:originalFileURL errorHandler:^(NSError *error){
+        OBASSERT([NSThread isMainThread]);
+        if (completionHandler)
+            completionHandler(nil, error);
+    } withAction:^(OFXAccountAgent *accountAgent){
         [accountAgent moveItemAtURL:originalFileURL toURL:updatedFileURL completionHandler:completionHandler];
     }];
 }
@@ -776,15 +762,38 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
         
     // Grab a snapshot of the server accounts that have credentials. We don't want to have a user add/remove accounts out from underneath us while syncing is going on. The most crucial properties on the server account are read-only (credentials are editable).
     NSArray *serverAccounts = [NSArray arrayWithArray:_accountRegistry.validCloudSyncAccounts];
-
+    NSMutableSet *failedAccounts = [[NSMutableSet alloc] init];
+    
     DEBUG_SYNC(2, @"Performing account change (%ld accounts)", [serverAccounts count]);
     
     NSMutableDictionary *uuidToAccountAgent = [NSMutableDictionary new];
     NSMutableArray *addedAccountAgents = [NSMutableArray new];
     
-    // Make sure we have account agents for all the accounts
+    // Collect resolve paths for all the accounts on the Mac. We do this up front so that we can detect if one account's local documents directory has been moved inside another.
+#if OFX_MAC_STYLE_ACCOUNT
+    NSMutableDictionary *uuidToLocalDocumentsURL = [[NSMutableDictionary alloc] init];
+#endif
+    
+    // Make sure we have account agents for all the accounts.
     for (OFXServerAccount *serverAccount in serverAccounts) {
         NSString *accountIdentifier = serverAccount.uuid;
+        
+#if OFX_MAC_STYLE_ACCOUNT
+        {
+            // Might not be able to resolve the local documents bookmark URL on the Mac.
+            __autoreleasing NSError *resolveError;
+            if (![serverAccount resolveLocalDocumentsURL:&resolveError]) {
+                OFXError(&resolveError, OFXLocalAccountDocumentsDirectoryMissing,
+                         NSLocalizedStringFromTableInBundle(@"Cannot start account agent.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description"),
+                         NSLocalizedStringFromTableInBundle(@"Unable to find synchronized folder for account.", @"OmniFileExchange", OMNI_BUNDLE, @"Error reason"));
+                [serverAccount reportError:resolveError format:@"Error starting account agent. Local account documents folder count not be resolved."];
+                [failedAccounts addObject:serverAccount];
+                continue;
+            }
+            
+            uuidToLocalDocumentsURL[accountIdentifier] = serverAccount.localDocumentsURL;
+        }
+#endif
         
         OFXAccountAgent *accountAgent = [_uuidToAccountAgent objectForKey:accountIdentifier];
         if (!accountAgent) {
@@ -794,6 +803,49 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
         
         [uuidToAccountAgent setObject:accountAgent forKey:accountIdentifier];
     }
+    
+#if OFX_MAC_STYLE_ACCOUNT
+    // Check if any account folders are inside other account folders. This can produce bad behaviors (though it works surprisingly well... unless the two folders are syncing to the same account)
+    // If we put A inside B, we'll disable syncing on B.
+    if ([serverAccounts count] > 1) {
+        NSMutableSet *parentPaths = [[NSMutableSet alloc] init];
+        for (OFXServerAccount *serverAccount in serverAccounts) {
+            NSString *path = [[uuidToLocalDocumentsURL[serverAccount.uuid] path] stringByDeletingLastPathComponent];
+            if (!path)
+                continue; // Path for this account couldn't be resolved -- possibly deleted.
+            
+            while (YES) {
+                [parentPaths addObject:path];
+                NSString *parentPath = [path stringByDeletingLastPathComponent];
+                if ([NSString isEmptyString:parentPath] || [parentPath isEqual:@"/"])
+                    break;
+                path = parentPath;
+            }
+        }
+        
+        for (OFXServerAccount *serverAccount in serverAccounts) {
+            NSString *path = [uuidToLocalDocumentsURL[serverAccount.uuid] path];
+            if (!path)
+                continue; // Path for this account couldn't be resolved -- possibly deleted.
+
+            if ([parentPaths containsObject:path]) {
+                __autoreleasing NSError *error;
+                OFXError(&error, OFXLocalAccountDocumentsInsideAnotherAccount,
+                         NSLocalizedStringFromTableInBundle(@"Cannot start syncing.", @"OmniFileExchange", OMNI_BUNDLE, @"Error description"),
+                         NSLocalizedStringFromTableInBundle(@"This OmniPresence folder contains another OmniPresence synced folder.", @"OmniFileExchange", OMNI_BUNDLE, @"Error reason"));
+
+                [serverAccount reportError:error];
+                
+                // This will make sure we stop the account (or don't start it)
+                OFXAccountAgent *agent = uuidToAccountAgent[serverAccount.uuid];
+                [uuidToAccountAgent removeObjectForKey:serverAccount.uuid];
+                [addedAccountAgents removeObject:agent];
+
+                [failedAccounts addObject:serverAccount];
+            }
+        }
+    }
+#endif
     
     // Inform any agents that we no longer have that they should cleanup and stop
     [_uuidToAccountAgent enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXAccountAgent *accountAgent, BOOL *stop){
@@ -818,10 +870,6 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
     // Update our idea of what agents we have
     _uuidToAccountAgent = [uuidToAccountAgent copy];
     
-    // Disable syncing over cellular if we have lost our last agent. (That way if you add another one later we don't blow through your data plan before you have a chance to turn it off.)
-    if (_uuidToAccountAgent.count == 0)
-        [[self class] setCellularSyncEnabled:NO];
-    
     // Start up any new agents
     for (OFXAccountAgent *accountAgent in addedAccountAgents) {
         DEBUG_SYNC(1, @"Starting account agent %@", accountAgent);
@@ -830,6 +878,7 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
         if (![accountAgent start:&startError]) {
             [startError log:@"Error starting account agent %@", accountAgent];
             [accountAgent.account reportError:startError];
+            [failedAccounts addObject:accountAgent.account];
             continue;
         }
         _startObservingAccountAgent(self, accountAgent);
@@ -844,16 +893,26 @@ static void _stopObservingAccountAgent(OFXAgent *self, OFXAccountAgent *accountA
             NSString *groupIdentifier = accountAgent.netStateRegistrationGroupIdentifier;
             if (groupIdentifier) // Might still be loading the Info.plist
                 [accountNetStateGroupIdentifiers addObject:groupIdentifier];
+        } else {
+            // Will already be in failedAccounts if it was newly appearing this time around and failed in -start:, but if it was in a previous round, it won't be.
+            [failedAccounts addObject:accountAgent.account];
         }
     }];
     
-    // Update our net state monitor for all the accounts we are using.
     if (OFNOTEQUAL(_runningAccounts, runningAccounts)) {
         [self willChangeValueForKey:OFValidateKeyPath(self, runningAccounts)];
         _runningAccounts = [runningAccounts copy];
         [self didChangeValueForKey:OFValidateKeyPath(self, runningAccounts)];
     }
+    if (OFNOTEQUAL(_failedAccounts, failedAccounts)) {
+        [self willChangeValueForKey:OFValidateKeyPath(self, failedAccounts)];
+        _failedAccounts = [failedAccounts copy];
+        [self didChangeValueForKey:OFValidateKeyPath(self, failedAccounts)];
+    }
+    OBASSERT([_runningAccounts count] + [_failedAccounts count] == [serverAccounts count], "Every account should be running or failed");
+    OBASSERT([_runningAccounts intersectsSet:_failedAccounts] == NO, "Cannot be running and failed");
     
+    // Update our net state monitor for all the accounts we are using.
     BOOL changedGroupIdentifiers = NO;
     OBASSERT(_stateNotifier);
     if (OFNOTEQUAL(_stateNotifier.monitoredGroupIdentifiers, accountNetStateGroupIdentifiers)) {

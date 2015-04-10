@@ -44,6 +44,11 @@ RCS_ID("$Id$")
     }];
 }
 
+- (void)didInsertViewIntoContainer:(id<UIViewControllerContextTransitioning>)transitionContext NS_REQUIRES_SUPER;
+{
+    // No additional work to perform in the base class
+}
+
 - (void)animateTransition:(id<UIViewControllerContextTransitioning>)transitionContext;
 {
     [super animateTransition:transitionContext];
@@ -67,8 +72,8 @@ RCS_ID("$Id$")
     }
     
     [self insertToViewIntoContainer:transitionContext];
-    
-    
+    [self didInsertViewIntoContainer:transitionContext];
+
     CGRect leftover;
     CGRect splitExclusionRect = [transitionContext.containerView convertRect:_splitExcludingRect fromView:transitionView];
     CGRectDivide(transitionFrame, &topRect, &leftover, CGRectGetMinY(splitExclusionRect), CGRectMinYEdge);

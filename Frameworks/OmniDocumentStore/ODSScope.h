@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,18 +9,29 @@
 
 #import <Foundation/NSObject.h>
 
-@class ODSStore, ODSFileItem, ODSFolderItem, ODSItem;
+@class ODSStore, ODSFileItem, ODSFolderItem, ODSItem, OFFileEdit, ODSFileItemEdit;
 
 typedef enum {
-    ODSStoreAddNormally,
-    ODSStoreAddByReplacing,
-    ODSStoreAddByRenaming,
+    ODSStoreAddByCopyingSourceToDestinationURL, // Will return an error if the destination already exists
+    ODSStoreAddByCopyingSourceToReplaceDestinationURL, // Overwrite with a copy
+    ODSStoreAddByCopyingSourceToAvailableDestinationURL, // If the destination URL is taken, a sibling with an available name will be used
+    ODSStoreAddByMovingTemporarySourceToAvailableDestinationURL, // Same as ODSStoreAddByCopyingSourceToAvailableDestinationURL, but the source is moved into place (and is presumed to be a file outside of any scope that doesn't need file coordination applied).
 } ODSStoreAddOption;
 
-typedef void (^ODSScopeDocumentCreationAction)(void (^handler)(NSURL *resultURL, NSError *errorOrNil));
+typedef void (^ODSScopeDocumentCreationAction)(void (^handler)(OFFileEdit *resultFileEdit, NSError *errorOrNil));
 typedef void (^ODSScopeDocumentCreationHandler)(ODSFileItem *createdFileItem, NSError *error);
 
-typedef void (^ODSScopeItemMotionStatus)(ODSFileItem *source, ODSFileItem *destination, NSError *errorOrNil);
+@interface ODSFileItemMotion : NSObject
+
+@property(nonatomic,readonly) ODSFileItem *fileItem;
+@property(nonatomic,readonly) ODSFileItemEdit *originalItemEdit; // Might be nil for files that haven't been downloaded
+@property(nonatomic,readonly) NSURL *sourceFileURL;
+@property(nonatomic,readonly) NSURL *destinationFileURL;
+
+@end
+
+// destinationEditOrNil is nil if the copy failed
+typedef void (^ODSScopeItemMotionStatus)(ODSFileItemMotion *itemMotion, NSURL *destinationURL, ODSFileItemEdit *destinationEditOrNil, NSError *errorOrNil);
 
 @interface ODSScope : NSObject <NSCopying>
 
@@ -40,7 +51,7 @@ typedef void (^ODSScopeItemMotionStatus)(ODSFileItem *source, ODSFileItem *desti
 
 - (ODSFileItem *)fileItemWithURL:(NSURL *)url;
 - (ODSFolderItem *)folderItemContainingItem:(ODSItem *)item;
-- (ODSFileItem *)makeFileItemForURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileModificationDate:(NSDate *)fileModificationDate userModificationDate:(NSDate *)userModificationDate;
+- (ODSFileItem *)makeFileItemForURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileEdit:(OFFileEdit *)fileEdit userModificationDate:(NSDate *)userModificationDate;
 
 - (void)performAsynchronousFileAccessUsingBlock:(void (^)(void))block;
 - (void)afterAsynchronousFileAccessFinishes:(void (^)(void))block;
@@ -50,8 +61,13 @@ typedef void (^ODSScopeItemMotionStatus)(ODSFileItem *source, ODSFileItem *desti
 - (NSURL *)urlForNewDocumentInFolderAtURL:(NSURL *)folderURL baseName:(NSString *)baseName fileType:(NSString *)documentUTI;
 - (void)performDocumentCreationAction:(ODSScopeDocumentCreationAction)createDocument handler:(ODSScopeDocumentCreationHandler)handler;
 
-// Added the ability to pass in a baseName which will be substitute in for the files name in to toURL. We use this for handling localized names when restoring sample documents. If you don't want the name changed when adding an item, either pass in nil for the baseName or call the alternate method that doesn't take a baseName. Pass in nil for scope to add to the default scope.
+// Infers the file type for the new document based on fromURL. Useful for duplicating documents.
 - (void)addDocumentInFolder:(ODSFolderItem *)folderItem baseName:(NSString *)baseName fromURL:(NSURL *)fromURL option:(ODSStoreAddOption)option completionHandler:(void (^)(ODSFileItem *duplicateFileItem, NSError *error))completionHandler;
+
+// Allows for a specific type. Useful for instantiating templates, when the template file type has a different file type.
+- (void)addDocumentInFolder:(ODSFolderItem *)folderItem baseName:(NSString *)baseName fileType:(NSString *)fileType fromURL:(NSURL *)fromURL option:(ODSStoreAddOption)option completionHandler:(void (^)(ODSFileItem *duplicateFileItem, NSError *error))completionHandler;
+
+// Uses a default base name for the new document.
 - (void)addDocumentInFolder:(ODSFolderItem *)folderItem fromURL:(NSURL *)fromURL option:(ODSStoreAddOption)option completionHandler:(void (^)(ODSFileItem *duplicateFileItem, NSError *error))completionHandler;
 
 // Somewhat like -addDocumentInFolderAtURL:... but this duplicates folders as well as files and only works for duplicating things currently in the scope (where -addDocumentInFolderAtURL: can be used to copy items into a copy from the iOS document Inbox). The status handler is called once for each copied file. If there is an error copying a file, the duplicateFileItem argument will be nil, but originalFileItem will not be. Once all the copying is done, the completion handler will be called with the top level items that resulted from the duplication (which will include folders for source folders, whereas the status block gets called recursively).

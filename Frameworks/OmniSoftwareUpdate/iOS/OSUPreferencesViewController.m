@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,8 @@
 #import "OSUChecker.h"
 #import "OSUCheckOperation.h"
 #import "OSUHardwareInfo.h"
+#import "OSURunOperation.h"
+
 #import <mach-o/arch.h>
 
 RCS_ID("$Id$");
@@ -144,6 +146,11 @@ enum {
     return NSLocalizedStringFromTableInBundle(@"Help The Omni Group decide which devices and iOS versions to support", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update settings cell detail text");
 }
 
++ (NSString *)localizedLongDescription;
+{
+    return NSLocalizedStringFromTableInBundle(@"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Settings preferences detail text");
+}
+
 // Convenience to run w/o a parent navigation controller.
 + (OUIMenuOption *)menuOption;
 {
@@ -179,7 +186,7 @@ enum {
     
     self.title = NSLocalizedStringFromTableInBundle(@"Device Information", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"software update settings title");
     
-    _settingFooterView = [[OSUPreferencesTableViewLabel alloc] initWithText:NSLocalizedStringFromTableInBundle(@"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Settings preferences detail text") paddingOnTop:NO];
+    _settingFooterView = [[OSUPreferencesTableViewLabel alloc] initWithText:[[self class] localizedLongDescription] paddingOnTop:NO];
     _settingFooterView.textAlignment = NSTextAlignmentLeft;
     
     _infoHeaderView = [[OSUPreferencesTableViewLabel alloc] initWithText:NSLocalizedStringFromTableInBundle(@"The following information will be sent:", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Settings option title") paddingOnTop:YES];
@@ -466,7 +473,7 @@ enum {
 
 - (void)_toggleEnabled:(UISwitch *)sender;
 {
-    BOOL enabled = [[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue] && [[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue];
+    BOOL enabled = [[OSUPreferences automaticSoftwareUpdateCheckEnabled] boolValue] && [[OSUPreferences includeHardwareDetails] boolValue];
     
     enabled = !enabled;
     [[OSUPreferences automaticSoftwareUpdateCheckEnabled] setBoolValue:enabled];

@@ -3,20 +3,22 @@
 <plist version="1.0">
 <dict>
 
-	<key>OUIDocumentPickerSelectedScope</key>
-	<string>local</string>
-        <key>OUIDocumentPickerSelectedFolderPath</key>
-        <string/>
-	<key>OUIDocumentPickerSelectedFilter</key>
-	<string/>
-	<key>OUIDocumentPickerSortKey</key>
-	<string>date</string>
-	
-	<key>OUIDocumentPickerShouldCrashBasedOnFileName</key>
-	<false/>
-	<key>OUIDocumentPickerUseTestCode</key>
-	<false/>
-        <key>OUIDocumentPickerHasCellularInterface</key>
-        <string>auto</string>
+    <key>OUIDocumentPickerSelectedScope</key>
+    <string>local</string>
+    <key>OUIDocumentPickerSelectedFolderPath</key>
+    <string/>
+    <key>OUIDocumentPickerSelectedFilter</key>
+    <string/>
+    <key>OUIDocumentPickerSortKey</key>
+    <string>date</string>
+
+    <key>OUIDocumentPickerShouldCrashBasedOnFileName</key>
+    <false/>
+    <key>OUIDocumentPickerUseTestCode</key>
+    <false/>
+    
+    <key>OUIMainWindowClass</key>
+    <string/>
+    
 </dict>
 </plist>

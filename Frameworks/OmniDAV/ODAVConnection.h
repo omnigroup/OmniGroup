@@ -1,4 +1,4 @@
-// Copyright 2008-2014 The Omni Group. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,11 +10,11 @@
 #import <Foundation/NSObject.h>
 #import <OmniDAV/ODAVFeatures.h>
 
-@class ODAVMultipleFileInfoResult, ODAVSingleFileInfoResult, ODAVFileInfo, ODAVOperation;
+@class ODAVMultipleFileInfoResult, ODAVSingleFileInfoResult, ODAVFileInfo, ODAVOperation, ODAVURLResult;
 
 typedef void (^ODAVConnectionBasicCompletionHandler)(NSError *errorOrNil);
 typedef void (^ODAVConnectionOperationCompletionHandler)(ODAVOperation *op);
-typedef void (^ODAVConnectionURLCompletionHandler)(NSURL *resultURL, NSError *errorOrNil);
+typedef void (^ODAVConnectionURLCompletionHandler)(ODAVURLResult *result, NSError *errorOrNil);
 typedef void (^ODAVConnectionStringCompletionHandler)(NSString *resultString, NSError *errorOrNil);
 typedef void (^ODAVConnectionMultipleFileInfoCompletionHandler)(ODAVMultipleFileInfoResult *properties, NSError *errorOrNil);
 typedef void (^ODAVConnectionSingleFileInfoCompletionHandler)(ODAVSingleFileInfoResult *properties, NSError *errorOrNil);
@@ -91,6 +91,11 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 @property(nonatomic,copy) NSDate *serverDate;
 @end
 
+@interface ODAVURLResult : NSObject
+@property(nonatomic,copy) NSURL *URL;
+@property(nonatomic,copy) NSArray *redirects;
+@end
+
 // Utilities to help when we want synchronous operations.
 
 // Adding a macro to wrap this up is a pain since we can't set breakpoints inside the block easily (and we have to wrap the block in an extra (...) if it has embedded commas that aren't inside parens already).
@@ -111,7 +116,7 @@ extern void ODAVSyncOperations(const char *file, unsigned line, ODAVAddOperation
 
 - (BOOL)synchronousDeleteURL:(NSURL *)url withETag:(NSString *)ETag error:(NSError **)outError;
 
-- (NSURL *)synchronousMakeCollectionAtURL:(NSURL *)url error:(NSError **)outError;
+- (ODAVURLResult *)synchronousMakeCollectionAtURL:(NSURL *)url error:(NSError **)outError;
 
 - (ODAVFileInfo *)synchronousFileInfoAtURL:(NSURL *)url error:(NSError **)outError;
 - (ODAVFileInfo *)synchronousFileInfoAtURL:(NSURL *)url serverDate:(NSDate **)outServerDate error:(NSError **)outError;

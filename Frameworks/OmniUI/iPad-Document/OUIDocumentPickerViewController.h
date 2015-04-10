@@ -28,6 +28,7 @@
 @property (nonatomic, readonly) OUIDocumentPicker *documentPicker;
 @property (nonatomic, retain) IBOutlet UIImageView *backgroundView;
 @property(nonatomic,retain) IBOutlet OUIDocumentPickerScrollView *mainScrollView;
+@property (nonatomic, strong) NSString *displayedTitleString;
 
 @property(nonatomic,readonly) ODSStore *documentStore;
 

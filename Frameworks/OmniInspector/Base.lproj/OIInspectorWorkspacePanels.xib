@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="6254" systemVersion="14B25" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="6254"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="OIInspectorRegistry">
+            <connections>
+                <outlet property="deleteWorkspaceButton" destination="160" id="171"/>
+                <outlet property="editWorkspacePanel" destination="149" id="172"/>
+                <outlet property="editWorkspaceTable" destination="152" id="173"/>
+                <outlet property="makeWorkspaceTextField" destination="141" id="jln-jf-O3A"/>
+                <outlet property="overwriteWorkspaceButton" destination="163" id="175"/>
+                <outlet property="restoreWorkspaceButton" destination="165" id="176"/>
+                <outlet property="saveWorkspacePanel" destination="139" id="177"/>
+                <outlet property="workspacesHelpButton" destination="169" id="178"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window title="Save Workspace" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="139" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="432" y="575" width="397" height="81"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1280" height="777"/>
+            <value key="minSize" type="size" width="397" height="81"/>
+            <value key="maxSize" type="size" width="397" height="81"/>
+            <view key="contentView" id="140">
+                <rect key="frame" x="0.0" y="0.0" width="397" height="81"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="141">
+                        <rect key="frame" x="67" y="52" width="231" height="22"/>
+                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="142">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                        <connections>
+                            <action selector="saveWorkspaceConfirmed:" target="-2" id="181"/>
+                        </connections>
+                    </textField>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="143">
+                        <rect key="frame" x="18" y="54" width="44" height="17"/>
+                        <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="right" title="Name:" id="144">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="145">
+                        <rect key="frame" x="300" y="44" width="83" height="32"/>
+                        <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="146">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="saveWorkspaceConfirmed:" target="-2" id="182"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="147">
+                        <rect key="frame" x="300" y="11" width="83" height="32"/>
+                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="148">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="cancelWorkspacePanel:" target="-2" id="183"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="147" firstAttribute="leading" secondItem="145" secondAttribute="leading" id="3cM-2g-nCl"/>
+                    <constraint firstItem="147" firstAttribute="top" secondItem="145" secondAttribute="bottom" constant="12" symbolic="YES" id="4DO-Vm-TQj"/>
+                    <constraint firstItem="145" firstAttribute="trailing" secondItem="147" secondAttribute="trailing" id="C3S-pf-OK9"/>
+                    <constraint firstAttribute="trailing" secondItem="145" secondAttribute="trailing" constant="20" symbolic="YES" id="D5b-xb-biS"/>
+                    <constraint firstItem="141" firstAttribute="baseline" secondItem="143" secondAttribute="baseline" id="PpJ-ne-iWS"/>
+                    <constraint firstItem="141" firstAttribute="baseline" secondItem="145" secondAttribute="baseline" id="tKE-Ql-rNG"/>
+                    <constraint firstItem="143" firstAttribute="top" secondItem="140" secondAttribute="top" constant="10" id="toJ-Iq-PpS"/>
+                    <constraint firstItem="143" firstAttribute="leading" secondItem="140" secondAttribute="leading" constant="20" symbolic="YES" id="uD6-vh-MNs"/>
+                    <constraint firstItem="141" firstAttribute="leading" secondItem="143" secondAttribute="trailing" constant="7" id="vTB-BG-AjJ"/>
+                    <constraint firstItem="145" firstAttribute="leading" secondItem="141" secondAttribute="trailing" constant="8" symbolic="YES" id="vyb-gM-oal"/>
+                </constraints>
+            </view>
+        </window>
+        <window title="Workspaces" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="149" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="978" y="355" width="242" height="230"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1280" height="777"/>
+            <value key="minSize" type="size" width="242" height="150"/>
+            <view key="contentView" id="150">
+                <rect key="frame" x="0.0" y="0.0" width="242" height="230"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <scrollView focusRingType="none" borderType="groove" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="151">
+                        <rect key="frame" x="20" y="41" width="202" height="142"/>
+                        <clipView key="contentView" id="zRz-1z-71V">
+                            <rect key="frame" x="2" y="2" width="198" height="136"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <tableView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnReordering="NO" columnResizing="NO" autosaveColumns="NO" id="152">
+                                    <rect key="frame" x="0.0" y="0.0" width="198" height="19"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <size key="intercellSpacing" width="3" height="2"/>
+                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                    <tableColumns>
+                                        <tableColumn identifier="Name" width="167" minWidth="8" maxWidth="1000" id="153">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Workspace Name">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="0.33333299" alpha="1" colorSpace="calibratedWhite"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="154">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            </textFieldCell>
+                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                        </tableColumn>
+                                        <tableColumn identifier="Key" editable="NO" width="25" minWidth="8" maxWidth="1000" id="155">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="right">
+                                                <font key="font" metaFont="smallSystem"/>
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="0.33333299" alpha="1" colorSpace="calibratedWhite"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="156">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            </textFieldCell>
+                                        </tableColumn>
+                                    </tableColumns>
+                                    <connections>
+                                        <outlet property="dataSource" destination="-2" id="179"/>
+                                        <outlet property="delegate" destination="-2" id="180"/>
+                                    </connections>
+                                </tableView>
+                            </subviews>
+                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="157">
+                            <rect key="frame" x="-100" y="-100" width="250" height="15"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" verticalHuggingPriority="750" controlSize="small" horizontal="NO" id="158">
+                            <rect key="frame" x="186" y="2" width="14" height="136"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
+                    <matrix verticalHuggingPriority="750" mode="list" allowsEmptySelection="NO" autosizesCells="NO" translatesAutoresizingMaskIntoConstraints="NO" id="159">
+                        <rect key="frame" x="20" y="10" width="45" height="22"/>
+                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        <size key="cellSize" width="23" height="22"/>
+                        <size key="intercellSpacing" width="-1" height="0.0"/>
+                        <buttonCell key="prototype" type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="162">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <cells>
+                            <column>
+                                <buttonCell type="smallSquare" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" toolTip="New workspace using a snapshot of the current configuration" imageScaling="proportionallyDown" inset="2" id="161">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <connections>
+                                        <action selector="addWorkspace:" target="-2" id="185"/>
+                                    </connections>
+                                </buttonCell>
+                            </column>
+                            <column>
+                                <buttonCell type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" state="on" borderStyle="border" toolTip="Delete workspace" imageScaling="proportionallyDown" inset="2" id="160">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <connections>
+                                        <action selector="deleteWithoutConfirmation:" target="-2" id="184"/>
+                                    </connections>
+                                </buttonCell>
+                            </column>
+                        </cells>
+                    </matrix>
+                    <button toolTip="Overwrite the selected workspace with a snapshot of the current configuration" translatesAutoresizingMaskIntoConstraints="NO" id="163">
+                        <rect key="frame" x="80" y="11" width="26" height="22"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="26" id="5Lp-HD-dvl"/>
+                        </constraints>
+                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="OIWorkspaceStore" imagePosition="overlaps" alignment="center" state="on" imageScaling="proportionallyUpOrDown" sound="OIWorkspaceSnap" inset="2" id="164">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="overwriteWorkspace:" target="-2" id="186"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Restore the selected workspace configuration" translatesAutoresizingMaskIntoConstraints="NO" id="165">
+                        <rect key="frame" x="111" y="11" width="25" height="22"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="25" id="i4K-ZK-zin"/>
+                        </constraints>
+                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="OIWorkspaceRestore" imagePosition="overlaps" alignment="center" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="166">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="restoreWorkspace:" target="-2" id="187"/>
+                        </connections>
+                    </button>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="167">
+                        <rect key="frame" x="17" y="191" width="208" height="28"/>
+                        <constraints>
+                            <constraint firstAttribute="height" relation="lessThanOrEqual" constant="60" id="RYT-zj-WWC"/>
+                        </constraints>
+                        <textFieldCell key="cell" controlSize="small" sendsActionOnEndEditing="YES" alignment="left" title="Workspaces store inspector and utility window configurations" id="168">
+                            <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" white="0.25" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <button horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="169">
+                        <rect key="frame" x="199" y="8" width="25" height="25"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="21" id="hNf-zH-i6r"/>
+                        </constraints>
+                        <buttonCell key="cell" type="help" bezelStyle="helpButton" alignment="center" borderStyle="border" inset="2" id="170">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="showWorkspacesHelp:" target="-2" id="188"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="159" firstAttribute="leading" secondItem="151" secondAttribute="leading" id="BC7-YJ-bxJ"/>
+                    <constraint firstItem="165" firstAttribute="top" secondItem="163" secondAttribute="top" id="BPO-za-IKZ"/>
+                    <constraint firstItem="165" firstAttribute="leading" secondItem="163" secondAttribute="trailing" constant="5" id="BZ9-60-eIx"/>
+                    <constraint firstAttribute="trailing" secondItem="167" secondAttribute="trailing" constant="19" id="IId-gY-RJq"/>
+                    <constraint firstItem="169" firstAttribute="bottom" secondItem="165" secondAttribute="bottom" id="Kfj-L4-rLk"/>
+                    <constraint firstAttribute="trailing" secondItem="151" secondAttribute="trailing" constant="20" symbolic="YES" id="Lml-p5-ZJx"/>
+                    <constraint firstItem="151" firstAttribute="centerX" secondItem="167" secondAttribute="centerX" id="O0w-Br-Vvi"/>
+                    <constraint firstAttribute="bottom" secondItem="159" secondAttribute="bottom" constant="10" id="UaO-bR-N3V"/>
+                    <constraint firstItem="159" firstAttribute="top" secondItem="169" secondAttribute="top" id="Ulu-pb-urA"/>
+                    <constraint firstItem="151" firstAttribute="trailing" secondItem="169" secondAttribute="trailing" id="WQI-bt-9lU"/>
+                    <constraint firstItem="151" firstAttribute="leading" secondItem="150" secondAttribute="leading" constant="20" symbolic="YES" id="XQn-PE-8tK"/>
+                    <constraint firstItem="167" firstAttribute="leading" secondItem="150" secondAttribute="leading" constant="19" id="XkJ-eI-gcE"/>
+                    <constraint firstItem="163" firstAttribute="leading" secondItem="159" secondAttribute="trailing" constant="15" id="bd9-3n-4vt"/>
+                    <constraint firstItem="165" firstAttribute="bottom" secondItem="163" secondAttribute="bottom" id="eDj-g0-NLK"/>
+                    <constraint firstItem="163" firstAttribute="top" secondItem="151" secondAttribute="bottom" constant="8" symbolic="YES" id="trl-cL-DCw"/>
+                    <constraint firstItem="159" firstAttribute="top" secondItem="151" secondAttribute="bottom" constant="9" id="wZb-N3-4jt"/>
+                    <constraint firstItem="151" firstAttribute="top" secondItem="167" secondAttribute="bottom" constant="8" symbolic="YES" id="zUn-Ds-NRb"/>
+                    <constraint firstItem="167" firstAttribute="top" secondItem="150" secondAttribute="top" constant="11" id="zuv-j9-Lg7"/>
+                </constraints>
+            </view>
+        </window>
+    </objects>
+    <resources>
+        <image name="NSAddTemplate" width="11" height="11"/>
+        <image name="NSRemoveTemplate" width="11" height="11"/>
+        <image name="OIWorkspaceRestore" width="23" height="22"/>
+        <image name="OIWorkspaceStore" width="23" height="22"/>
+        <sound name="OIWorkspaceSnap"/>
+    </resources>
+</document>

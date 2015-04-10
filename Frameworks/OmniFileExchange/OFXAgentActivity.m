@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@ RCS_ID("$Id$")
 @interface OFXAgentActivity ()
 @property(nonatomic,readwrite) BOOL isActive;
 @property(nonatomic,readwrite,copy) NSSet *accountUUIDsWithErrors;
+@property(nonatomic,readwrite) NSDate *lastSyncDate;
 @end
 
 @implementation OFXAgentActivity
@@ -42,6 +43,7 @@ static unsigned AccountContext;
     _accountUUIDToActivity = [NSMutableDictionary new];
     
     [_agent addObserver:self forKeyPath:OFValidateKeyPath(_agent, runningAccounts) options:0 context:&AgentContext];
+    [_agent addObserver:self forKeyPath:OFValidateKeyPath(_agent, failedAccounts) options:0 context:&AgentContext];
     [self _updateAccounts];
     
     return self;
@@ -50,6 +52,8 @@ static unsigned AccountContext;
 - (void)dealloc;
 {
     [_agent removeObserver:self forKeyPath:OFValidateKeyPath(_agent, runningAccounts) context:&AgentContext];
+    [_agent removeObserver:self forKeyPath:OFValidateKeyPath(_agent, failedAccounts) context:&AgentContext];
+
     [_accountUUIDToActivity enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXAccountActivity *accountActivity, BOOL *stop) {
         _stopObservingAccountActivity(self, accountActivity);
     }];
@@ -102,12 +106,14 @@ static void _startObservingAccountActivity(OFXAgentActivity *self, OFXAccountAct
 {
     [accountActivity addObserver:self forKeyPath:OFValidateKeyPath(accountActivity, isActive) options:0 context:&AccountContext];
     [accountActivity addObserver:self forKeyPath:OFValidateKeyPath(accountActivity, lastError) options:0 context:&AccountContext];
+    [accountActivity addObserver:self forKeyPath:OFValidateKeyPath(accountActivity, lastSyncDate) options:0 context:&AccountContext];
 }
 
 static void _stopObservingAccountActivity(OFXAgentActivity *self, OFXAccountActivity *accountActivity)
 {
     [accountActivity removeObserver:self forKeyPath:OFValidateKeyPath(accountActivity, isActive) context:&AccountContext];
     [accountActivity removeObserver:self forKeyPath:OFValidateKeyPath(accountActivity, lastError) context:&AccountContext];
+    [accountActivity removeObserver:self forKeyPath:OFValidateKeyPath(accountActivity, lastSyncDate) context:&AccountContext];
 }
 
 - (void)_updateAccounts;
@@ -118,17 +124,29 @@ static void _stopObservingAccountActivity(OFXAgentActivity *self, OFXAccountActi
     
     NSMutableDictionary *remainingAccountUUIDToActivity = [_accountUUIDToActivity mutableCopy];
     
-    for (OFXServerAccount *account in _agent.runningAccounts) {
+    void (^handleAccount)(OFXServerAccount *account, BOOL running) = ^(OFXServerAccount *account, BOOL running){
         OFXAccountActivity *activity = [_accountUUIDToActivity objectForKey:account.uuid];
         if (activity) {
             [remainingAccountUUIDToActivity removeObjectForKey:account.uuid];
         } else {
-            activity = [[OFXAccountActivity alloc] initWithRunningAccount:account agent:_agent];
+            if (running)
+                activity = [[OFXAccountActivity alloc] initWithRunningAccount:account agent:_agent];
+            else
+                activity = [[OFXAccountActivity alloc] initWithAccount:account agent:_agent]; // So we get the error
+
             _startObservingAccountActivity(self, activity);
             [_accountUUIDToActivity setObject:activity forKey:account.uuid];
             additionsOrRemovals = YES;
         }
+    };
+    
+    for (OFXServerAccount *account in _agent.runningAccounts) {
+        handleAccount(account, YES);
     }
+    for (OFXServerAccount *account in _agent.failedAccounts) {
+        handleAccount(account, NO);
+    }
+    
     [remainingAccountUUIDToActivity enumerateKeysAndObjectsUsingBlock:^(NSString *uuid, OFXAccountActivity *activity, BOOL *stop) {
         _stopObservingAccountActivity(self, activity);
         [_accountUUIDToActivity removeObjectForKey:uuid];
@@ -146,12 +164,20 @@ static void _stopObservingAccountActivity(OFXAgentActivity *self, OFXAccountActi
     NSMutableSet *accountUUIDsWithErrors = [NSMutableSet new];
     BOOL isActive = NO;
     
+    NSDate *lastSyncDate = nil;
+    
     for (OFXAccountActivity *activity in [_accountUUIDToActivity allValues]) {
         if (activity.lastError)
             [accountUUIDsWithErrors addObject:activity.account.uuid];
         if (activity.isActive)
             isActive = YES;
+        
+        NSDate *accountSyncDate = activity.lastSyncDate;
+        if (!lastSyncDate || (accountSyncDate && [accountSyncDate isAfterDate:lastSyncDate]))
+            lastSyncDate = accountSyncDate;
     }
+    self.lastSyncDate = lastSyncDate;
+    
     if (_isActive != isActive) {
         self.isActive = isActive;
         DEBUG_ACTIVITY(1, "active:%d", self.isActive);

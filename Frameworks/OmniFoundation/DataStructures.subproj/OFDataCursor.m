@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,7 @@ static OFByteSet *endOfLineByteSet;
     [endOfLineByteSet addBytesFromString:@"\r\n" encoding:NSASCIIStringEncoding];
 }
 
-- initWithData:(NSData *)someData;
+- (instancetype)initWithData:(NSData *)someData;
 {
     if (!(self = [super init]))
         return nil;
@@ -53,6 +53,8 @@ static OFByteSet *endOfLineByteSet;
     [data release];
     [super dealloc];
 }
+
+@synthesize stringEncoding = stringEncoding;
 
 - (BOOL)hasMoreData;
 {
@@ -477,6 +479,9 @@ SKIP_DATA_OF_TYPE(OFByte, Byte);
 
 - (NSString *)readLine;
 {
+    if (currentPosition == endPosition)
+        return nil;
+
     NSString *line;
     size_t lineLength = offsetToByteInSet(self, endOfLineByteSet);
     if (lineLength == 0)

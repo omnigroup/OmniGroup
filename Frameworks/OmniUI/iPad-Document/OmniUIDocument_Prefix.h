@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,11 +21,11 @@
     #define DEBUG_PREVIEW_DISPLAY(format, ...)
 #endif
 
-#if 0 && defined(DEBUG)
-    #define DEBUG_PREVIEW_GENERATION(format, ...) NSLog(@"PREVIEW: " format, ## __VA_ARGS__)
-#else
-    #define DEBUG_PREVIEW_GENERATION(format, ...)
-#endif
+OB_HIDDEN extern NSInteger OUIDocumentPreviewGeneratorDebug;
+#define DEBUG_PREVIEW_GENERATION(level, format, ...) do { \
+    if (OUIDocumentPreviewGeneratorDebug >= (level)) \
+        NSLog(@"PREVIEW: " format, ## __VA_ARGS__); \
+    } while (0)
 
 #if 0 && defined(DEBUG)
     #define DEBUG_DOCUMENT_DEFINED 1

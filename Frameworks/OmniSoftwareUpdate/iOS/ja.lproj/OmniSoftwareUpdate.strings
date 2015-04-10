@@ -1,9 +1,6 @@
 /* Software update report format for number of cores in the CPU */
 "%@ cores" = "%@ 個のコア";
 
-/* error description - the host from which we retrieve updates is unreachable */
-"%@ is not reachable." = "%@ に到達できません。";
-
 /* Software update report entry string for multiple crashes */
 "%ld crashes" = "クラッシュ %ld 回";
 
@@ -19,9 +16,6 @@
 /* Software update report entry name for information about the runs of all versions of the app */
 "All versions" = "すべてのバージョン";
 
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "%@ がハードウェアモデルと iOS バージョンに関する情報を定期的に報告できるようにしますか？\nこれらの情報は、弊社がお客様をサポートする上で、どのような構成が最も重要であるかを把握するのに役に立ちます。この回答は後で環境設定で変更できます。";
-
 /* Software update report entry name */
 "App ID" = "アプリ ID";
 
@@ -30,9 +24,6 @@
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
 "Check operation failed." = "確認操作に失敗しました。";
-
-/* error text generated when software update is unable to retrieve the list of current software versions */
-"Could not contact %@." = "%@ に接続できませんでした。";
 
 /* Software update report entry name */
 "CPU" = "CPU";
@@ -44,9 +35,6 @@
    software update settings title */
 
 "Device Information" = "デバイス情報";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "報告しない";
 
 /* error description */
 "Error fetching software update information." = "ソフトウェアアップデート情報を取得するときにエラー発生。";
@@ -61,7 +49,7 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "サポートするデバイスや iOS バージョンの決定にご協力ください";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "この情報を提供していただくことにより、弊社はその情報を基にして、弊社ソフトウェアがサポートすべきデバイスおよび iOS バージョンを判断いたします。\nこの情報は完全に匿名として扱われます。";
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "この情報を提供していただくことにより、弊社はその情報を基にして、弊社ソフトウェアがサポートすべきデバイスおよび iOS バージョンを判断いたします。\nこの情報は完全に匿名として扱われます。";
 
 /* Software update report entry name */
 "iOS version" = "iOS バージョン";
@@ -71,9 +59,6 @@
 
 /* Software update report entry name */
 "Memory" = "メモリ";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Omni ソフトウェアアップデート";
 
 /* Software update report entry string for a single crash */
 "One crash" = "クラッシュ 1 回";
@@ -101,14 +86,14 @@
 
 "Send Anonymous Data" = "匿名データを送信";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "レポートを送信";
-
 /* software update settings menu title */
 "Settings" = "設定";
 
 /* Software update report entry name */
 "Storage" = "ストレージ";
+
+/* error reason */
+"The background software update service failed." = "バックグラウンドのソフトウェアアップデートサービスに失敗しました。";
 
 /* error description */
 "The data returned from <%@> was not a valid XML document." = "<%@> から返されたデータは有効な XML 書類ではありませんでした。";
@@ -125,6 +110,9 @@
 /* Software update report entry name for information about the runs of the current version of the app */
 "This version" = "このバージョン";
 
+/* error reason */
+"Timed out waiting for the software update service." = "ソフトウェアアップデートサービスの待機中にタイムアウトしました。";
+
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "ツールからデータが返されませんでした";
 
@@ -136,6 +124,3 @@
 
 /* error description */
 "Unable to parse response from the software update server." = "ソフトウェアアップデートサーバからの応答を解析できません。";
-
-/* error text generated when software update is unable to retrieve the list of current software versions */
-"Your Internet connection might not be active, or there might be a problem somewhere along the network." = "インターネット接続が有効でないか、ネットワークに関連する問題があります。";

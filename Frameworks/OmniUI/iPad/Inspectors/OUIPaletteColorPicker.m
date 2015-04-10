@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,9 +59,13 @@ RCS_ID("$Id$");
 - (void)setSelectionValue:(OUIInspectorSelectionValue *)selectionValue;
 {
     [super setSelectionValue:selectionValue];
-    
+    [self scrollToSelectionValueAnimated:self.view.window != nil];
+}
+
+- (void)scrollToSelectionValueAnimated:(BOOL)animated;
+{
     // Don't check every color, just the most important one.
-    OQColor *color = selectionValue.firstValue;
+    OQColor *color = self.selectionValue.firstValue;
     
     // Note the location of the first matching view, so we can scroll to it.
     CGRect rectToScrollTo = CGRectNull;
@@ -78,12 +82,9 @@ RCS_ID("$Id$");
         }
     }
     
-    if(!CGRectIsNull(rectToScrollTo))
-    {
-        BOOL animate = (self.view.window != nil);
-        [(UIScrollView *)self.view scrollRectToVisible:rectToScrollTo animated:animate];
+    if (!CGRectIsNull(rectToScrollTo)) {
+        [OB_CHECKED_CAST(UIScrollView, self.view) scrollRectToVisible:rectToScrollTo animated:animated];
     }
-
 }
 
 #pragma mark -

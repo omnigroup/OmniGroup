@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,10 @@
 
 extern NSString * const OFHTTPContentDispositionHeaderKey;
 extern NSString * const OFHTTPContentTypeHeaderKey;
+
+@protocol OFHTTPHeaderDictionaryReadLineSource
+- (NSString *)readLine;
+@end
 
 @interface OFHTTPHeaderDictionary : OFObject
 
@@ -32,8 +36,10 @@ extern NSString * const OFHTTPContentTypeHeaderKey;
 - (NSString *)contentDispositionFilename;
 
 - (NSArray *)formatRFC822HeaderLines;
+- (void)readRFC822HeadersFromReadLineSource:(id <OFHTTPHeaderDictionaryReadLineSource>)readLineSource;
+- (void)readRFC822HeadersFromString:(NSString *)string;
 
-// Takes the contents of an OFMultiValueDictionary and produces a string which could be parsed by +parseParamterizedHeader:::. (Doesn't include the simple value, of course.)
+// Takes the contents of an OFMultiValueDictionary and produces a string which could be parsed by +parseParameterizedHeader:::. (Doesn't include the simple value, of course.)
 + (NSString *)formatHeaderParameter:(NSString *)name value:(NSString *)value;
 + (NSString *)formatHeaderParameters:(OFMultiValueDictionary *)parameters onlyLastValue:(BOOL)onlyLast;
 

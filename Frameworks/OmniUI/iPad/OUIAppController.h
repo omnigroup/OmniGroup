@@ -85,6 +85,10 @@ typedef NS_ENUM(NSInteger, OUIAppMenuOptionPosition) {
 - (NSURL *)aboutScreenURL;
 - (NSDictionary *)aboutScreenBindingsDictionary;
 
+extern NSString *const OUIAboutScreenBindingsDictionaryVersionStringKey; // @"versionString"
+extern NSString *const OUIAboutScreenBindingsDictionaryCopyrightStringKey; // @"copyrightString"
+extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"feedbackAddress"
+
 - (NSString *)feedbackMenuTitle;
 - (UIBarButtonItem *)newAppMenuBarButtonItem; // insert this into your view controllers; see -additionalAppMenuOptionsAtPosition: for customization
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions

@@ -1,4 +1,4 @@
-// Copyright 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -27,7 +27,7 @@ typedef NS_ENUM(NSUInteger, OUIMenuControllerOptionInvocationAction) {
 @property(nonatomic,assign) BOOL sizesToOptionWidth;
 @property(nonatomic,assign) NSTextAlignment textAlignment;
 @property(nonatomic,assign) BOOL showsDividersBetweenOptions; // Defaults to YES.
-
+@property(nonatomic,assign) BOOL alwaysShowsNavigationBar; // defaults to NO. - this means that the nav bar will only show when a second view controller is pushed on.
 @property(nonatomic,assign) OUIMenuControllerOptionInvocationAction optionInvocationAction; // OUIMenuControllerOptionInvocationActionDismiss by default
 
 // Called by OUIMenuOptionsController

@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,8 +10,6 @@
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniBase/OmniBase.h>
-
-#import <UIKit/UIPopoverController.h>
 
 RCS_ID("$Id$");
 
@@ -51,28 +49,6 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     // For subclasses
 }
 
-- (void)doneButton:(id)sender;
-{
-    [self.inspector dismiss];
-}
-
-- (void)_updateForContainment;
-{
-    if (self.inspector.mainPane == self) {
-        // For the mainPane, when modal show a done button, when in a popover show nothing
-        if ([self.inspector isVisible]) {
-            
-            // If we just now were modal and we transitioned to a popover (i.e. 6+ portrait->landscape), the popover is going to be positioned and sized terribly. Better to dismiss it.
-            if (self.navigationItem.leftBarButtonItem.action == @selector(doneButton:)) {
-                [self.inspector dismissAnimated:NO];
-                self.navigationItem.leftBarButtonItem = nil;
-            }
-        } else if (!self.navigationItem.leftBarButtonItem) {
-            self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneButton:)];
-        }
-    }
-}
-
 #pragma mark -
 #pragma mark UIViewController
 
@@ -81,15 +57,27 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     OBPRECONDITION(_weak_inspector); // should have been set by now
     
     [super viewWillAppear:animated];
-    [self _updateForContainment];
     [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
+}
+
+- (void)viewDidAppear:(BOOL)animated;
+{
+    [super viewDidAppear:animated];
+    self.inspector.animatingPushOrPop = NO;
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
+    self.inspector.animatingPushOrPop = YES;
     
     [[self view] endEditing:YES];
+}
+
+- (void)viewDidDisappear:(BOOL)animated
+{
+    [super viewDidDisappear:animated];
+    self.inspector.animatingPushOrPop = NO;
 }
 
 - (BOOL)shouldAutorotate;
@@ -97,12 +85,12 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     return YES;
 }
 
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator NS_AVAILABLE_IOS(8_0);
+- (void)willTransitionToTraitCollection:(UITraitCollection *)newCollection withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator NS_AVAILABLE_IOS(8_0);
 {
-    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    [coordinator animateAlongsideTransition:NULL completion:^(id <UIViewControllerTransitionCoordinator> coordinator) {
-        [self _updateForContainment];
-    }];
+    // no fancy logic just dismiss the inspector
+    [self.inspector dismiss];
+
+    [super willTransitionToTraitCollection:newCollection withTransitionCoordinator:coordinator];
 }
 
 @end

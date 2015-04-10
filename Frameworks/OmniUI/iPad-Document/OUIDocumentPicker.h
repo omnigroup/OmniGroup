@@ -26,6 +26,8 @@
 - (void)navigateToScope:(ODSScope *)scope animated:(BOOL)animated;
 - (ODSScope *)localDocumentsScope;
 
+- (void)editSettingsForAccount:(OFXServerAccount *)account;
+
 @property (nonatomic, readonly) OUIDocumentPickerViewController *selectedScopeViewController;
 
 - (void)enableAppMenuBarButtonItem:(BOOL)enable;

@@ -115,7 +115,7 @@ static void _addFlip(CALayer *parentLayer, NSRect layerViewRect, NSImage *image,
     
     [CATransaction begin];
     
-    if ([[NSApp currentEvent] modifierFlags] & NSShiftKeyMask)
+    if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSShiftKeyMask)
         [CATransaction setAnimationDuration:2.0];
     
     [CATransaction setDisableActions:YES];

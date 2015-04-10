@@ -3,7 +3,6 @@
 // $Id$
 
 // Common settings for this target type and configuration
-#include "Omni-Global-Debug.xcconfig"
 #include "Touch-Library-Common.xcconfig"
 
 // Common settings for Debug configurations of Library targets

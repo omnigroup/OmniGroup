@@ -1,4 +1,4 @@
-// Copyright 2011-2013 The Omni Group. All rights reserved.
+// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,7 +54,7 @@ static void _logTouchDescription(UITouch *aTouch)
     [super touchesBegan:touches withEvent:event];
     
 #ifdef DEBUG_RotationGesture
-    NSLog(@"%s (state = %i, capture touches = %lu, input = %lu)", __FUNCTION__, self.state, [_capturedTouches count], [touches count]);
+    NSLog(@"%s (state = %li, capture touches = %lu, input = %lu)", __FUNCTION__, self.state, [_capturedTouches count], [touches count]);
 #endif
     
     if (self.state != UIGestureRecognizerStatePossible)
@@ -93,7 +93,7 @@ static void _logTouchDescription(UITouch *aTouch)
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 {
 #ifdef DEBUG_RotationGesture
-    NSLog(@"%s (state = %i)", __FUNCTION__, self.state);
+    NSLog(@"%s (state = %li)", __FUNCTION__, self.state);
 #endif
     
     [super touchesMoved:touches withEvent:event];
@@ -144,7 +144,7 @@ static void _logTouchDescription(UITouch *aTouch)
         [_capturedTouches removeObjectIdenticalTo:touch];
     
 #ifdef DEBUG_RotationGesture
-    NSLog(@"%s (state = %i, capture touches = %lu, input = %lu)", __FUNCTION__, self.state, [_capturedTouches count], [touches count]);
+    NSLog(@"%s (state = %li, capture touches = %lu, input = %lu)", __FUNCTION__, self.state, [_capturedTouches count], [touches count]);
     for (UITouch *aTouch in _capturedTouches)
         _logTouchDescription(aTouch);
 #endif
@@ -182,7 +182,7 @@ static void _logTouchDescription(UITouch *aTouch)
 
 - (CGPoint)locationInView:(UIView*)view;
 {
-    return _centerTouchPoint;
+    return [self.view convertPoint:_centerTouchPoint toView:view];
 }
 
 @synthesize rotation= _rotation;

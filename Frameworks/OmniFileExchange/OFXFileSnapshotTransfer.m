@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,6 +17,7 @@ RCS_ID("$Id$")
 {
     NSMutableArray *_doneBlocks;
     BOOL _cancelled;
+    BOOL _finished;
 }
 
 - init;
@@ -107,7 +108,10 @@ static BOOL _shouldLogError(NSError *error)
 - (void)finished:(NSError *)errorOrNil;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _operationQueue);
+    OBPRECONDITION(_finished == NO, "Don't call -finished: multiple times");
 
+    _finished = YES;
+    
     if (errorOrNil) {
         if ([errorOrNil causedByUserCancelling])
             DEBUG_TRANSFER(1, @"Cancelled");

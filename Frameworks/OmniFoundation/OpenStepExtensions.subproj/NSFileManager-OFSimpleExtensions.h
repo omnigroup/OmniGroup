@@ -41,5 +41,11 @@
 - (BOOL)removeExcludedFromBackupAttributeToItemAtPath:(NSString *)path error:(NSError **)error;
 #endif
 
+// Group containers
+
+// baseIdentifier should be 'com.mycompany.whatever'. Appropriate modifications will be made to that base identifier based on platform and sandboxing.
+- (NSString *)groupContainerIdentifierForBaseIdentifier:(NSString *)baseIdentifier;
+- (NSURL *)containerURLForBaseGroupContainerIdentifier:(NSString *)baseIdentifier;
+
 @end
 

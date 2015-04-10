@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6206.8" systemVersion="14A329f" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6254" systemVersion="14C109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7026.1"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
@@ -14,7 +14,7 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="700" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="hEn-Dq-0oH">
-                        <rect key="frame" x="14" y="19.5" width="50" height="20.5"/>
+                        <rect key="frame" x="14" y="19" width="50" height="21"/>
                         <constraints>
                             <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="50" id="qZr-OL-R9q"/>
                         </constraints>
@@ -23,7 +23,7 @@
                         <nil key="highlightedColor"/>
                     </label>
                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="42" textAlignment="right" adjustsFontSizeToFit="NO" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="h7a-ti-a6F">
-                        <rect key="frame" x="213" y="19" width="24" height="21"/>
+                        <rect key="frame" x="202" y="19" width="24" height="21"/>
                         <constraints>
                             <constraint firstAttribute="width" relation="greaterThanOrEqual" priority="1" constant="50" id="PTY-8a-z9Y"/>
                         </constraints>
@@ -33,16 +33,24 @@
                             <outlet property="delegate" destination="kBQ-oB-sFC" id="Emb-Gw-JjB"/>
                         </connections>
                     </textField>
-                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ph6-bP-tBC">
-                        <rect key="frame" x="281" y="12" width="22" height="34"/>
+                    <button opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ph6-bP-tBC">
+                        <rect key="frame" x="270" y="7" width="44" height="44"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="44" id="ALK-LK-hnF"/>
+                            <constraint firstAttribute="width" constant="44" id="Wh7-gy-bSs"/>
+                        </constraints>
                         <fontDescription key="fontDescription" type="boldSystem" pointSize="28"/>
                         <state key="normal" image="OUIStepperPlus"/>
                         <connections>
                             <action selector="increment:" destination="kBQ-oB-sFC" eventType="touchUpInside" id="GiW-8y-k3q"/>
                         </connections>
                     </button>
-                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Kcg-88-uIR">
-                        <rect key="frame" x="257" y="12" width="16" height="34"/>
+                    <button opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Kcg-88-uIR">
+                        <rect key="frame" x="226" y="7" width="44" height="44"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="44" id="W7x-NS-pLr"/>
+                            <constraint firstAttribute="height" constant="44" id="z3g-PL-FUh"/>
+                        </constraints>
                         <fontDescription key="fontDescription" type="boldSystem" pointSize="28"/>
                         <state key="normal" image="OUIStepperMinus"/>
                         <connections>
@@ -50,7 +58,7 @@
                         </connections>
                     </button>
                     <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.0" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="units" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.75" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="p5O-TE-GEi">
-                        <rect key="frame" x="245" y="19.5" width="37" height="20.5"/>
+                        <rect key="frame" x="234" y="19" width="37" height="21"/>
                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                         <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                         <nil key="highlightedColor"/>
@@ -59,14 +67,14 @@
                 <constraints>
                     <constraint firstAttribute="centerY" secondItem="Kcg-88-uIR" secondAttribute="centerY" constant="1" id="2dM-8V-eb8"/>
                     <constraint firstAttribute="centerY" secondItem="hEn-Dq-0oH" secondAttribute="centerY" id="2wu-dH-3S4"/>
-                    <constraint firstAttribute="trailing" secondItem="Ph6-bP-tBC" secondAttribute="trailing" constant="17" id="4LE-Po-4Vp"/>
+                    <constraint firstAttribute="trailing" secondItem="Ph6-bP-tBC" secondAttribute="trailing" constant="6" id="4LE-Po-4Vp"/>
                     <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="p5O-TE-GEi" secondAttribute="trailing" constant="14" id="4ai-BE-6AG"/>
                     <constraint firstItem="h7a-ti-a6F" firstAttribute="baseline" secondItem="p5O-TE-GEi" secondAttribute="baseline" id="7Re-kh-cTz"/>
-                    <constraint firstItem="Ph6-bP-tBC" firstAttribute="leading" secondItem="Kcg-88-uIR" secondAttribute="trailing" constant="8" id="HxL-Pq-djp"/>
+                    <constraint firstItem="Ph6-bP-tBC" firstAttribute="leading" secondItem="Kcg-88-uIR" secondAttribute="trailing" id="HxL-Pq-djp"/>
                     <constraint firstItem="p5O-TE-GEi" firstAttribute="leading" secondItem="h7a-ti-a6F" secondAttribute="trailing" constant="8" id="Vc9-UK-RQI"/>
                     <constraint firstItem="h7a-ti-a6F" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="hEn-Dq-0oH" secondAttribute="trailing" constant="4" id="qZS-6H-MdS"/>
                     <constraint firstAttribute="centerY" secondItem="Ph6-bP-tBC" secondAttribute="centerY" constant="1" id="qc0-es-GFC"/>
-                    <constraint firstItem="Kcg-88-uIR" firstAttribute="leading" secondItem="h7a-ti-a6F" secondAttribute="trailing" constant="20" id="rVq-Hm-0yj"/>
+                    <constraint firstItem="Kcg-88-uIR" firstAttribute="leading" secondItem="h7a-ti-a6F" secondAttribute="trailing" id="rVq-Hm-0yj"/>
                     <constraint firstItem="hEn-Dq-0oH" firstAttribute="leading" secondItem="Mi4-eQ-nO1" secondAttribute="leading" constant="14" id="vaw-qw-DlU"/>
                     <constraint firstItem="hEn-Dq-0oH" firstAttribute="baseline" secondItem="h7a-ti-a6F" secondAttribute="baseline" id="wxj-cW-BcP"/>
                 </constraints>
@@ -79,6 +87,7 @@
                 <outlet property="valueTextField" destination="h7a-ti-a6F" id="ssQ-yb-hY0"/>
                 <outlet property="valueTextFieldMinimumWidthConstraint" destination="PTY-8a-z9Y" id="Sfk-eo-sdy"/>
             </connections>
+            <point key="canvasLocation" x="146" y="458"/>
         </tableViewCell>
     </objects>
     <resources>
@@ -88,9 +97,6 @@
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>
-        <simulatedScreenMetrics key="destination" type="retina4">
-            <size key="portraitSize" width="320" height="568"/>
-            <size key="landscapeSize" width="568" height="320"/>
-        </simulatedScreenMetrics>
+        <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
 </document>

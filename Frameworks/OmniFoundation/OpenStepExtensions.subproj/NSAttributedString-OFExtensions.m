@@ -1,4 +1,4 @@
-// Copyright 1997-2005,2007, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,45 @@
 RCS_ID("$Id$")
 
 @implementation NSAttributedString (OFExtensions)
+
+#ifdef DEBUG
+
+static id (*_original_immutable_initWithString_attributes)(id self, SEL _cmd, NSString *string, NSDictionary *attributes) = NULL;
+static id _replacement_immutable_initWithString_attributes(id self, SEL _cmd, NSString *string, NSDictionary *attributes)
+{
+    assert([string isKindOfClass:[NSString class]]);
+    return _original_immutable_initWithString_attributes(self, _cmd, string, attributes);
+}
+static id (*_original_immutable_initWithString)(id self, SEL _cmd, NSString *string) = NULL;
+static id _replacement_immutable_initWithString(id self, SEL _cmd, NSString *string)
+{
+    assert([string isKindOfClass:[NSString class]]);
+    return _original_immutable_initWithString(self, _cmd, string);
+}
+
+static id (*_original_mutable_initWithString_attributes)(id self, SEL _cmd, NSString *string, NSDictionary *attributes) = NULL;
+static id _replacement_mutable_initWithString_attributes(id self, SEL _cmd, NSString *string, NSDictionary *attributes)
+{
+    assert([string isKindOfClass:[NSString class]]);
+    return _original_mutable_initWithString_attributes(self, _cmd, string, attributes);
+}
+static id (*_original_mutable_initWithString)(id self, SEL _cmd, NSString *string) = NULL;
+static id _replacement_mutable_initWithString(id self, SEL _cmd, NSString *string)
+{
+    assert([string isKindOfClass:[NSString class]]);
+    return _original_mutable_initWithString(self, _cmd, string);
+}
+
++ (void)performPosing;
+{
+    _original_immutable_initWithString_attributes = (typeof(_original_immutable_initWithString_attributes))OBReplaceMethodImplementation(NSClassFromString(@"NSConcreteAttributedString"), @selector(initWithString:attributes:), (IMP)_replacement_immutable_initWithString_attributes);
+    _original_immutable_initWithString = (typeof(_original_immutable_initWithString))OBReplaceMethodImplementation(NSClassFromString(@"NSConcreteAttributedString"), @selector(initWithString:), (IMP)_replacement_immutable_initWithString);
+
+    _original_mutable_initWithString_attributes = (typeof(_original_mutable_initWithString_attributes))OBReplaceMethodImplementation(NSClassFromString(@"NSConcreteMutableAttributedString"), @selector(initWithString:attributes:), (IMP)_replacement_mutable_initWithString_attributes);
+    _original_mutable_initWithString = (typeof(_original_mutable_initWithString))OBReplaceMethodImplementation(NSClassFromString(@"NSConcreteMutableAttributedString"), @selector(initWithString:), (IMP)_replacement_mutable_initWithString);
+}
+#endif
+
 
 + (BOOL)isEmptyAttributedString:(NSAttributedString *)attributedString;
 {

@@ -1,9 +1,6 @@
 /* Software update report format for number of cores in the CPU */
 "%@ cores" = "Ядер: %@";
 
-/* error description - the host from which we retrieve updates is unreachable */
-"%@ is not reachable." = "%@ недоступен.";
-
 /* Software update report entry string for multiple crashes */
 "%ld crashes" = "Сбоев: %ld";
 
@@ -19,9 +16,6 @@
 /* Software update report entry name for information about the runs of all versions of the app */
 "All versions" = "Все версии";
 
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Разрешить %@ периодически отправлять данные о модели устройства и версии iOS?\nЭто поможет нам определить приоритетные для поддержки конфигурации. Этот параметр можно будет изменить в параметрах MUMBLE MUMBLE MUMBLE.";
-
 /* Software update report entry name */
 "App ID" = "ID программы";
 
@@ -30,9 +24,6 @@
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
 "Check operation failed." = "Сбой операции проверки.";
-
-/* error text generated when software update is unable to retrieve the list of current software versions */
-"Could not contact %@." = "Не удается связаться с %@.";
 
 /* Software update report entry name */
 "CPU" = "ЦП";
@@ -44,9 +35,6 @@
    software update settings title */
 
 "Device Information" = "Данные об устройстве";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "Не сообщать";
 
 /* error description */
 "Error fetching software update information." = "Ошибка получения данных об обновлении ПО.";
@@ -61,7 +49,7 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "Помогите компании Omni Group решить, какие устройства и версии iOS поддерживать";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Если вы отправите эти данные, они помогут нам узнать, какие устройства и версии iOS мы должны поддерживать.\nЭти данные полностью анонимны.";
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Если вы отправите эти данные, они помогут нам узнать, какие устройства и версии iOS мы должны поддерживать.\nЭти данные полностью анонимны. ";
 
 /* Software update report entry name */
 "iOS version" = "Версия iOS";
@@ -71,9 +59,6 @@
 
 /* Software update report entry name */
 "Memory" = "Объем памяти";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Обновление ПО Omni";
 
 /* Software update report entry string for a single crash */
 "One crash" = "Один сбой";
@@ -101,14 +86,14 @@
 
 "Send Anonymous Data" = "Отправлять анонимные данные";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "Отправить отчеты";
-
 /* software update settings menu title */
 "Settings" = "Настройки";
 
 /* Software update report entry name */
 "Storage" = "Память";
+
+/* error reason */
+"The background software update service failed." = "Сбой службы фонового обновления ПО.";
 
 /* error description */
 "The data returned from <%@> was not a valid XML document." = "Полученные из <%@> данные не являются допустимым документом XML.";
@@ -125,6 +110,9 @@
 /* Software update report entry name for information about the runs of the current version of the app */
 "This version" = "Эта версия";
 
+/* error reason */
+"Timed out waiting for the software update service." = "Истекло время ожидания службы обновления ПО.";
+
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "Средство не вернуло данные";
 
@@ -136,6 +124,3 @@
 
 /* error description */
 "Unable to parse response from the software update server." = "Не удается проанализировать ответ от сервера обновления ПО.";
-
-/* error text generated when software update is unable to retrieve the list of current software versions */
-"Your Internet connection might not be active, or there might be a problem somewhere along the network." = "Возможно, подключение к Интернету неактивно или имеется проблема с подключением к сети.";

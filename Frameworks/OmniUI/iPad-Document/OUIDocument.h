@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,17 +20,24 @@
 
 + (BOOL)shouldShowAutosaveIndicator;
 
+// Called when opening an existing document
 - initWithExistingFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
-// subclass this method if you need to set anything on the document after it's first been created from a template. (UUID's and the like)
-- (id)initWithExistingFileItemFromTemplate:(ODSFileItem *)fileItem error:(NSError *__autoreleasing *)outError;
-- initEmptyDocumentToBeSavedToURL:(NSURL *)url templateURL:(NSURL *)templateURL error:(NSError **)outError;
+
+// Subclass this method if you need to set anything on the document after it's first been created from a template. (UUID's and the like). Callers of this method must perform file coordination on the template URL. The saveURL will be in a temporary location and doesn't need file coordination.
+- initWithContentsOfTemplateAtURL:(NSURL *)templateURLOrNil toBeSavedToURL:(NSURL *)saveURL error:(NSError **)outError;
+
+// This can be called when creating a document to be read into and then saved by non-framework code.
 - initEmptyDocumentToBeSavedToURL:(NSURL *)url error:(NSError **)outError;
+
+// Funnel point for initializing documents
 - initWithFileItem:(ODSFileItem *)fileItem url:(NSURL *)url error:(NSError **)outError;
 
 // Can set this before opening a document to tell it that it is being opened for preview generation. Later we might want more control of how errors are captured for off-screen document work, but for now this just makes errors get logged instead of presented to the user. The document view controller may also opt to load less data or otherwise speed up its work by only doing what is necessary for preview generation.
 @property(nonatomic) BOOL forPreviewGeneration;
 
 @property(nonatomic,readonly) ODSFileItem *fileItem;
+
+- (void)willEditDocumentTitle;
 
 @property(nonatomic,readonly) UIViewController *viewControllerToPresent;
 @property(nonatomic,readonly) UIViewController <OUIDocumentViewController> *documentViewController;
@@ -54,6 +61,9 @@
 
 // Gives the document a chance to break retain cycles.
 - (void)didClose;
+
+// Must be called on a successful write after the new file is written. The passed in URL should be the argument to -writeContents:toURL:forSaveOperation:originalContentsURL:error:
+- (void)didWriteToURL:(NSURL *)url;
 
 // Subclass responsibility
 
@@ -82,6 +92,9 @@
 // Support for previews
 + (NSString *)placeholderPreviewImageNameForFileURL:(NSURL *)fileURL area:(OUIDocumentPreviewArea)area;
 + (void)writePreviewsForDocument:(OUIDocument *)document withCompletionHandler:(void (^)(void))completionHandler;
+
+// UIDocument method that we subclass and require our subclasses to call super on (though UIDocument strongly suggests it).
+- (void)saveToURL:(NSURL *)url forSaveOperation:(UIDocumentSaveOperation)saveOperation completionHandler:(void (^)(BOOL success))completionHandler NS_REQUIRES_SUPER;
 
 @end
 

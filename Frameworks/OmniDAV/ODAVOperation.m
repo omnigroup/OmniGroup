@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,8 @@
 #import <Security/SecTrust.h>
 
 RCS_ID("$Id$");
+
+NSString * const ODAVContentTypeHeader = @"Content-Type";
 
 @implementation ODAVOperation
 {
@@ -228,6 +230,11 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     return [_response allHeaderFields][header];
 }
 
+- (BOOL)retryable;
+{
+    return _isRead(self);
+}
+
 #pragma mark - ODAVAsynchronousOperation
 
 // These callbacks should all be called with this macro
@@ -419,22 +426,37 @@ static OFCharacterSet *TokenDelimiterSet = nil;
         }
     }
     
-    OBASSERT(statusCode < 300 || statusCode > 399); // shouldn't have been left with a redirection.
     OBASSERT(statusCode > 199);   // NSURLConnection should handle 100-Continue.
     if (statusCode >= 300) {
+        // When the source is a redirecting URL, we'll have gone through the normal redirection path. But when the Destination header points at something that needs redirection, we don't.
+        // Apache does *not* do the MOVE in this case, and does not return a Location header (possibly since there is nothing at that location).
+        // NSURLConnection presumably notices there is no Location header in the 301/302 response and doesn't do its redirection path.
+        // We can't recover from this easily here, so it is an error.
+        if (statusCode < 400) {
+#ifdef DEBUG_bungi
+            OBASSERT(NO, "This is likely a bug in the calling code");
+#endif
+            OBASSERT([[_request HTTPMethod] isEqual:@"COPY"] || [[_request HTTPMethod] isEqual:@"MOVE"]);
+#ifdef OMNI_ASSERTIONS_ON
+            NSDictionary *responseHeaders = [(NSHTTPURLResponse *)response allHeaderFields];
+            OBASSERT(responseHeaders[@"Location"] == nil);
+            NSLog(@"%@: Incorrect MOVE/COPY with Destination needing redirect %@", [self shortDescription], [_request valueForHTTPHeaderField:@"Destination"]);
+#endif
+        }
+        
         /* We treat 3xx codes as errors here (in addition to the 4xx and 5xx codes) because any redirection should have been handled at a lower level, by NSURLConnection. If we do end up with a 3xx response, we can't treat it as a success anyway, because the response body of a 3xx is not the entity we requested --- it's usually a little server-generated HTML snippet saying "click here if the redirect didn't work". */
         _shouldCollectDetailsForError = YES;
+        return;
     }
+    
     if (statusCode == ODAV_HTTP_MULTI_STATUS && ![[_request HTTPMethod] isEqual:@"PROPFIND"]) {
         // PROPFIND is supposed to return ODAV_HTTP_MULTI_STATUS, but if we get it for COPY/DELETE/MOVE, then it is an error
         // The response will be a DAV multistatus that we will turn into an error.
         _shouldCollectDetailsForError = YES;
-    } else {
-        OBASSERT(_isRead(self) ||
-                 statusCode == ODAV_HTTP_CREATED ||
-                 statusCode == ODAV_HTTP_NO_CONTENT ||
-                 statusCode >= 400 /* Some sort of error (e.g. missing file or permission denied) */);
+        return;
     }
+    
+    OBASSERT(_isRead(self) || statusCode == ODAV_HTTP_CREATED || statusCode == ODAV_HTTP_NO_CONTENT);
 }
 
 - (void)_didReceiveData:(NSData *)data;
@@ -655,6 +677,7 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     OBASSERT(_request != nil);
     if (_request != nil) {
         [info setObject:[_request allHTTPHeaderFields] forKey:@"headers"];
+        [info setObject:[_request HTTPMethod] forKey:@"method"];
     } else {
         NSLog(@"_request is nil in %s", __func__);
     }
@@ -669,10 +692,10 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     if (_errorData != nil) {
         [info setObject:_errorData forKey:@"errorData"];
         
-        NSString *contentType = [[_response allHeaderFields] objectForKey:@"Content-Type"];
+        NSString *contentType = [[_response allHeaderFields] objectForKey:ODAVContentTypeHeader];
         do {
             if (![contentType isKindOfClass:[NSString class]]) {
-                NSLog(@"Error Content-Type not a string");
+                NSLog(@"Error %@ not a string", ODAVContentTypeHeader);
                 break;
             }
             
@@ -742,7 +765,7 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     _didReceiveBytes = nil;
     _didReceiveData = nil;
     _didSendBytes = nil;
-    
+        
     PERFORM_CALLBACK(didFinish, self, _error);
 }
 
@@ -766,6 +789,70 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 
 @implementation ODAVRedirect
 
+static NSURL *_tryRedirect(Class self, NSString *urlString, NSURL *from, NSURL *to)
+{
+    NSString *fromString = [from absoluteString];
+    
+    if ([fromString hasSuffix:@"/"] == NO)
+        return nil; // Not doing redirects on files themselves, but the container. Don't want to assume that if "/a/b" got redirected to "/c/b" that everything in "/a" is redirected to "/c".
+    
+    if (![urlString hasPrefix:fromString])
+        return nil;
+    
+    NSString *redirectedURLString = [[to absoluteString] stringByAppendingString:[urlString substringFromIndex:[fromString length]]];
+    DEBUG_DAV(2, @"using it yields %@", redirectedURLString);
+    
+    NSURL *redirectedURL = [NSURL URLWithString:redirectedURLString];
+    if (!redirectedURL) {
+        NSLog(@"Attempting to redirect from %@ with redirect %@ -> %@ produced invalid URL string %@", urlString, from, to, redirectedURLString);
+        return nil;
+    }
+    
+    return redirectedURL;
+}
+
+static BOOL _emptyPath(NSURL *url)
+{
+    NSString *path = [url path];
+    
+    return [path isEqual:@"/"] || [NSString isEmptyString:path];
+}
+
++ (NSURL *)suggestAlternateURLForURL:(NSURL *)url withRedirects:(NSArray *)redirects;
+{
+    NSString *urlString = [url absoluteString];
+    DEBUG_DAV(1, @"checking for redirects that apply to %@", urlString);
+    
+    for (ODAVRedirect *redirect in redirects) {
+        DEBUG_DAV(2, @"checking %@", redirect);
+        
+        NSURL *from = redirect.from;
+        NSURL *to = redirect.to;
+        
+        // If we have a/b and there is a redirect from a/b/c to a/d/c, infer the redirect was really from a/b to a/d
+        do {
+            if (_emptyPath(from) || _emptyPath(to))
+                break;
+            
+            NSString *fromPathComponent = [from lastPathComponent];
+            NSString *toPathComponent = [to lastPathComponent];
+            DEBUG_DAV(2, @"from lastPathComponent %@", fromPathComponent);
+            DEBUG_DAV(2, @"to lastPathComponent %@", toPathComponent);
+            if ([toPathComponent isEqual:fromPathComponent] == NO)
+                break;
+            from = [from URLByDeletingLastPathComponent];
+            to = [to URLByDeletingLastPathComponent];
+        } while (YES);
+        
+        // If we have a/b/c and there is a redirect from a/b to a/d, this should give us a/d/c
+        NSURL *redirectedURL = _tryRedirect(self, urlString, from, to);
+        if (redirectedURL)
+            return redirectedURL;
+    }
+    
+    return nil;
+}
+
 - (NSMutableDictionary *)debugDictionary;
 {
     NSMutableDictionary *dict = [super debugDictionary];
@@ -780,6 +867,17 @@ static OFCharacterSet *TokenDelimiterSet = nil;
         dict[@"expires"] = _expires;
     
     return dict;
+}
+
+- (NSString *)description;
+{
+    NSMutableString *description = [NSMutableString stringWithFormat:@"<%@:%p %@ -> %@", NSStringFromClass([self class]), self, _from, _to];
+    if (_cacheControl)
+        [description appendFormat:@" cacheControl:%@", _cacheControl];
+    if (_expires)
+        [description appendFormat:@" expires:%@", _expires];
+    [description appendString:@">"];
+    return description;
 }
 
 @end

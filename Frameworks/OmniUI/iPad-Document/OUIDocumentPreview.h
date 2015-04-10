@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,8 @@
 #import <Foundation/NSObject.h>
 #import <OmniUI/OUIAppearance.h> // OUIDocumentPreviewArea
 
+@class ODSFileItem, OFFileEdit, ODSFileItemEdit;
+
 typedef NS_ENUM(NSUInteger, OUIDocumentPreviewType) {
     OUIDocumentPreviewTypeRegular, // Actual image that is based on document contents
     OUIDocumentPreviewTypePlaceholder, // There was no preview, so this is just a placeholder and we should try to make a real preview
@@ -17,10 +19,10 @@ typedef NS_ENUM(NSUInteger, OUIDocumentPreviewType) {
 };
 
 // Callback to add a single preview URL -> CGImageRef. This will scale down the image to the small and large sizes and will then write them as JPEG files to the proper URL.
-typedef void (^OUIDocumentPreviewCacheImage)(NSURL *fileURL, NSDate *date, CGImageRef image);
+typedef void (^OUIDocumentPreviewCacheImage)(OFFileEdit *fileEdit, CGImageRef image);
 
 /*
-This class maintains an in memory and disk cache of decoded preview images for use by the document picker. Instances represent a single entry in the cache. Each entry is uniqued by the document's fileURL and modification date.
+This class maintains an in memory and disk cache of decoded preview images for use by the document picker. Instances represent a single entry in the cache. Each entry is uniqued by a file item's unique edit identifier (which each scope subclass must fill out).
 */
 @interface OUIDocumentPreview : NSObject
 
@@ -30,16 +32,15 @@ This class maintains an in memory and disk cache of decoded preview images for u
 + (void)flushPreviewImageCache;
 + (void)invalidateDocumentPreviewsWithCompletionHandler:(void (^)(void))completionHandler;
 
-+ (void)cachePreviewImages:(void (^)(OUIDocumentPreviewCacheImage cacheImage))cachePreviews; // Call from +[OUIDocument writePreviewsForDocument:completionHandler:]
+// Call from +[OUIDocument writePreviewsForDocument:completionHandler:]. The fileEdit passed into cacheImage must be for the *new* state of the document or else the preview will be stored under the wrong filename.
++ (void)cachePreviewImages:(void (^)(OUIDocumentPreviewCacheImage cacheImage))cachePreviews;
 
 // Temporary URL-only aliases for in-flight moves/copies.
-+ (void)addAliasFromFileWithURL:(NSURL *)fromFileURL withDate:(NSDate *)date toFileWithURL:(NSURL *)toFileURL;
-+ (void)removeAliasFromFileWithURL:(NSURL *)fromFileURL withDate:(NSDate *)date toFileWithURL:(NSURL *)toFileURL;
++ (void)addAliasFromFileItemEdit:(ODSFileItemEdit *)fromFileItemEdit toFileWithURL:(NSURL *)toFileURL;
++ (void)removeAliasFromFileItemEdit:(ODSFileItemEdit *)fromFileItemEdit toFileWithURL:(NSURL *)toFileURL;
 
-+ (void)cachePreviewImagesForFileURL:(NSURL *)targetFileURL date:(NSDate *)targetDate
-            byDuplicatingFromFileURL:(NSURL *)sourceFileURL date:(NSDate *)sourceDate;
-
-+ (void)updateCacheAfterFileURL:(NSURL *)sourceFileURL withDate:(NSDate *)sourceDate didMoveToURL:(NSURL *)targetFileURL;
++ (void)cachePreviewImagesForFileEdit:(OFFileEdit *)targetFileEdit
+            byDuplicatingFromFileEdit:(OFFileEdit *)sourceFileEdit;
 
 + (NSString *)documentPreviewPlaceholderImageNameForType:(NSString *)fileType area:(OUIDocumentPreviewArea)area;
 
@@ -50,18 +51,19 @@ This class maintains an in memory and disk cache of decoded preview images for u
 + (void)afterAsynchronousPreviewOperation:(void (^)(void))block;
 
 // The previews might be cached failures, but that is OK. The next time the date changes on the file item, a new preview will be attempted.
-+ (BOOL)hasPreviewsForFileURL:(NSURL *)fileURL date:(NSDate *)date;
++ (BOOL)hasPreviewsForFileEdit:(OFFileEdit *)fileEdit;
 
 + (void)deletePreviewsNotUsedByFileItems:(id <NSFastEnumeration>)fileItems;
-+ (NSURL *)fileURLForPreviewOfFileURL:(NSURL *)fileURL date:(NSDate *)date withArea:(OUIDocumentPreviewArea)area;
-+ (void)writeEmptyPreviewForFileURL:(NSURL *)fileURL date:(NSDate *)date withArea:(OUIDocumentPreviewArea)area;
-+ (void)writeEmptyPreviewsForFileURL:(NSURL *)fileURL date:(NSDate *)date;
++ (NSURL *)fileURLForPreviewOfFileEdit:(OFFileEdit *)fileEdit withArea:(OUIDocumentPreviewArea)area;
++ (void)writeEmptyPreviewsForFileEdit:(OFFileEdit *)fileEdit;
 
-+ (OUIDocumentPreview *)makePreviewForDocumentClass:(Class)documentClass fileURL:(NSURL *)fileURL date:(NSDate *)date withArea:(OUIDocumentPreviewArea)area;
++ (OUIDocumentPreview *)makePreviewForDocumentClass:(Class)documentClass fileItem:(ODSFileItem *)fileItem withArea:(OUIDocumentPreviewArea)area;
 
 + (CGFloat)previewSizeForArea:(OUIDocumentPreviewArea)area;
 + (CGFloat)previewImageScale;
 
+@property(nonatomic,readonly) OFFileEdit *fileEdit;
+@property(nonatomic,readonly) NSString *fileEditIdentifier;
 @property(nonatomic,readonly) NSURL *fileURL;
 @property(nonatomic,readonly) NSDate *date;
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,46 +16,48 @@
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
 #import <OmniFoundation/OFBinding.h> // for OFKeysForKeyPath()
 #import <OmniFoundation/OFEnumNameTable.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniQuartz/OQColor-Archiving.h>
 #import <objc/runtime.h>
 
 NSString * const OUIAppearanceAliasesKey = @"OUIAppearanceAliases";
-
 NSString * const OUIAppearancePlistExtension = @"plist";
-
 NSString * const OUIAppearanceValuesWillChangeNotification = @"com.omnigroup.OmniUI.OUIAppearance.ValuesWillChange";
 NSString * const OUIAppearanceValuesDidChangeNotification = @"com.omnigroup.OmniUI.OUIAppearance.ValuesDidChange";
 
 #define OUI_PERFORM_FILE_PRESENTATION (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE)
 
+#if OUI_PERFORM_FILE_PRESENTATION
+
+@interface OUIAppearanceUserPlistFilePresenter : NSObject <NSFilePresenter> {
+  @private
+    __weak OUIAppearance *_weak_owner;
+    NSOperationQueue *_userPlistPresentationQueue;
+}
+
+- (instancetype)initWithOwner:(OUIAppearance *)owner;
+
+@end
+
+#endif // OUI_PERFORM_FILE_PRESENTATION
+
 RCS_ID("$Id$")
 
 static NSMapTable *ClassToAppearanceMap = nil;
 
-@interface OUIAppearance ()
+@interface OUIAppearance () {
+  @private
+    NSDictionary *_plist;
 #if OUI_PERFORM_FILE_PRESENTATION
-<NSFilePresenter>
+    OUIAppearanceUserPlistFilePresenter *_userPlistFilePresenter;
 #endif
+}
 
 @property (nonatomic, copy) NSString *plistName;
 @property (nonatomic, strong) NSBundle *plistBundle;
 
-#if OUI_PERFORM_FILE_PRESENTATION
-@property (nonatomic, strong) NSOperationQueue *userPlistPresentationQueue;
-#endif
-
 @end
 
 @implementation OUIAppearance
-{
-    NSDictionary *_plist;
-    
-    struct {
-#if OUI_PERFORM_FILE_PRESENTATION
-        unsigned int isPresentingUserPlist:1;
-#endif
-    } _flags;
-}
 
 #pragma mark - Lifecycle
 
@@ -93,61 +95,25 @@ void OUIAppearanceSetUserOverrideFolder(NSString *userOverrideFolder)
         
         for (Class cls in ClassToAppearanceMap) {
             OUIAppearance *appearance = [ClassToAppearanceMap objectForKey:cls];
+            [appearance endPresentingUserPlistIfNecessary];
             [appearance invalidateCachedValues];
+            [appearance beginPresentingUserPlistIfNecessary];
         }
     }
 }
 
 #endif
 
-#pragma mark - File presentation
-
-#if OUI_PERFORM_FILE_PRESENTATION
-- (NSURL *)presentedItemURL;
-{
-    return [self userPlistURL];
-}
-
-- (NSURL *)primaryPresentedItemURL;
-{
-    // Our machinery will try to auto synthesize this property.
-    return nil;
-}
-
-- (NSOperationQueue *)presentedItemOperationQueue;
-{
-    OBPRECONDITION(self.userPlistPresentationQueue != nil, @"Should have set up an operation queue before beginning file presentation");
-    return self.userPlistPresentationQueue;
-}
-
-- (void)presentedItemDidChange;
-{
-    [self invalidateCachedValues];
-}
-
-- (void)presentedItemDidMoveToURL:(NSURL *)newURL;
-{
-    // We deliberately continue presenting the same file URL here so that if the file comes back, we will continue receiving notifications
-    [self invalidateCachedValues];
-}
-
-- (void)accommodatePresentedItemDeletionWithCompletionHandler:(void (^)(NSError *))completionHandler;
-{
-    // We deliberately continue presenting the same file URL here so that if the file comes back, we will continue receiving notifications
-    [self invalidateCachedValues];
-    
-    completionHandler(nil);
-}
-#endif
-
 #pragma mark Helpers
 
 - (void)invalidateCachedValues;
 {
+    OBPRECONDITION([NSThread isMainThread]);
+    
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIAppearanceValuesWillChangeNotification object:self];
 
     [self recachePlistFromFile];
-    _cacheInvalidationCount ++;
+    _cacheInvalidationCount++;
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OUIAppearanceValuesDidChangeNotification object:self];
 }
@@ -155,33 +121,22 @@ void OUIAppearanceSetUserOverrideFolder(NSString *userOverrideFolder)
 - (void)beginPresentingUserPlistIfNecessary;
 {
 #if OUI_PERFORM_FILE_PRESENTATION
-    if (self.userPlistPresentationQueue == nil) {
+    // N.B. Note that if the user plist doesn't exist when we start presenting, we won't get any notification when it does appear, but we will get one for the first change to it after it does appear.
+    
+    if (_userPlistFilePresenter == nil) {
+        _userPlistFilePresenter = [[OUIAppearanceUserPlistFilePresenter alloc] initWithOwner:self];
+        [NSFileCoordinator addFilePresenter:_userPlistFilePresenter];
     }
-    
-    if (_flags.isPresentingUserPlist) {
-        OBASSERT(_userPlistPresentationQueue);
-        return;
-    }
-    
-    _flags.isPresentingUserPlist = YES;
-
-    self.userPlistPresentationQueue = [[NSOperationQueue alloc] init];
-    self.userPlistPresentationQueue.maxConcurrentOperationCount = 1;
-    
-    [NSFileCoordinator addFilePresenter:self];
 #endif
 }
 
 - (void)endPresentingUserPlistIfNecessary;
 {
 #if OUI_PERFORM_FILE_PRESENTATION
-    if (!_flags.isPresentingUserPlist) {
-        return;
+    if (_userPlistFilePresenter != nil) {
+        [NSFileCoordinator removeFilePresenter:_userPlistFilePresenter];
+        _userPlistFilePresenter = nil;
     }
-    
-    [NSFileCoordinator removeFilePresenter:self];
-    
-    _flags.isPresentingUserPlist = NO;
 #endif
 }
 
@@ -210,13 +165,10 @@ void OUIAppearanceSetUserOverrideFolder(NSString *userOverrideFolder)
 #if OUI_PERFORM_FILE_PRESENTATION
             __block NSData *userData = nil;
             OB_AUTORELEASING NSError *coordinatedReadError = nil;
-            
-            [[[NSFileCoordinator alloc] initWithFilePresenter:self] coordinateReadingItemAtURL:[self userPlistURL]
-                                                                                       options:0
-                                                                                         error:&coordinatedReadError
-                                                                                    byAccessor:^(NSURL *newURL) {
-                                                                                        userData = [NSData dataWithContentsOfFile:userPlistPath];
-                                                                                    }];
+            NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
+            [coordinator coordinateReadingItemAtURL:[self userPlistURL] options:0 error:&coordinatedReadError byAccessor:^(NSURL *newURL) {
+                userData = [NSData dataWithContentsOfFile:userPlistPath];
+            }];
 #else
             NSData *userData = [NSData dataWithContentsOfFile:userPlistPath];
 #endif
@@ -324,6 +276,16 @@ void OUIAppearanceSetUserOverrideFolder(NSString *userOverrideFolder)
     return [(NSNumber *)[self _objectOfClass:[NSNumber class] forPlistKeyPath:keyPath] integerValue];
 }
 
+- (float)floatForKeyPath:(NSString *)keyPath;
+{
+    return [(NSNumber *)[self _objectOfClass:[NSNumber class] forPlistKeyPath:keyPath] floatValue];
+}
+
+- (double)doubleForKeyPath:(NSString *)keyPath;
+{
+    return [(NSNumber *)[self _objectOfClass:[NSNumber class] forPlistKeyPath:keyPath] doubleValue];
+}
+
 - (CGFloat)CGFloatForKeyPath:(NSString *)keyPath;
 {
     return [(NSNumber *)[self _objectOfClass:[NSNumber class] forPlistKeyPath:keyPath] cgFloatValue];
@@ -369,6 +331,126 @@ void OUIAppearanceSetUserOverrideFolder(NSString *userOverrideFolder)
     
     return result;
 }
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+- (UIImage *)imageForKeyPath:(NSString *)keyPath;
+{
+    id value = [self _objectOfClass:[NSObject class] forPlistKeyPath:keyPath];
+    
+    // Not going to define unique exception format strings for every problem; just 'break' out to a common failure.
+    do {
+        if ([value isKindOfClass:[NSString class]]) {
+            return [UIImage imageNamed:value];
+        }
+        
+        if ([value isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *plist = value;
+            
+            NSString *name = plist[@"name"];
+            if (!name) {
+                break;
+            }
+            
+            NSBundle *bundle = nil;
+            NSString *bundleIdentifier = plist[@"bundle"];
+            if (bundleIdentifier) {
+                if (![bundleIdentifier isKindOfClass:[NSString class]]) {
+                    break;
+                }
+                if ([bundleIdentifier isEqual:@"self"]) {
+                    bundle = [NSBundle bundleForClass:[self class]];
+                } else if ([bundleIdentifier isEqual:@"main"]) {
+                    bundle = [NSBundle mainBundle];
+                } else {
+                    bundle = [NSBundle bundleWithIdentifier:bundleIdentifier];
+                }
+                if (!bundle) {
+                    // Bundle specified, but not found
+                    break;
+                }
+            }
+            
+            UIImage *image;
+            if (bundle) {
+                image = [UIImage imageNamed:name inBundle:bundle compatibleWithTraitCollection:nil];
+            } else {
+                image = [UIImage imageNamed:name];
+            }
+            if (!image) {
+                break;
+            }
+            
+            return image;
+        }
+    } while (0);
+    
+    @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Unexpected value for image at key path component '%@' in appearance '%@': %@", keyPath, NSStringFromClass([self class]), value] userInfo:nil];
+}
+
+#else // !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+- (NSImage *)imageForKeyPath:(NSString *)keyPath;
+{
+    id value = [self _objectOfClass:[NSObject class] forPlistKeyPath:keyPath];
+
+    // Not going to define unique exception format strings for every problem; just 'break' out to a common failure.
+    do {
+        if ([value isKindOfClass:[NSString class]]) {
+            return [NSImage imageNamed:value];
+        }
+        
+        if ([value isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *plist = value;
+            
+            NSString *name = plist[@"name"];
+            if (!name)
+                break;
+
+            NSBundle *bundle = nil;
+            NSString *bundleIdentifier = plist[@"bundle"];
+            if (bundleIdentifier) {
+                if (![bundleIdentifier isKindOfClass:[NSString class]])
+                    break;
+                if ([bundleIdentifier isEqual:@"self"])
+                    bundle = [NSBundle bundleForClass:[self class]];
+                else if ([bundleIdentifier isEqual:@"main"])
+                    bundle = [NSBundle mainBundle];
+                else
+                    bundle = [NSBundle bundleWithIdentifier:bundleIdentifier];
+                if (!bundle) {
+                    // Bundle specified, but not found
+                    break;
+                }
+            }
+            
+            NSImage *image;
+            if (bundle)
+                image = [bundle imageForResource:name];
+            else
+                image = [NSImage imageNamed:name];
+            if (!image)
+                break;
+            
+            id colorValue = plist[@"color"];
+            if (colorValue) {
+                OUI_SYSTEM_COLOR_CLASS *color = nil;
+                
+                if ([colorValue isKindOfClass:[NSString class]]) {
+                    color = [self colorForKeyPath:colorValue];
+                } else if ([colorValue isKindOfClass:[NSDictionary class]]) {
+                    color = [[OQColor colorFromPropertyListRepresentation:colorValue] toColor];
+                }
+                
+                if (!color)
+                    break;
+                
+                return [image imageByTintingWithColor:color];
+            }
+        }
+    } while (0);
+    
+    @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Unexpected value for image at key path component '%@' in appearance '%@': %@", keyPath, NSStringFromClass([self class]), value] userInfo:nil];
+}
+#endif
 
 #pragma mark - Dynamic accessors
 
@@ -490,6 +572,39 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
                 
                 return cachedColor;
             });
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+        } else if (valueClass == [UIImage class]) {
+            __block UIImage *cachedImage = nil;
+            __block NSUInteger localInvalidationCount = 0;
+            
+            *outImp = imp_implementationWithBlock(^(id self) {
+                NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    UIImage *image = [self imageForKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"imageForKeyPath:%@ --> %@", backingPropName, image);
+                    cachedImage = image;
+                    localInvalidationCount = globalInvalidationCount;
+                }
+                
+                return cachedImage;
+            });
+#else // !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+        } else if (valueClass == [NSImage class]) {
+            __block NSImage *cachedImage = nil;
+            __block NSUInteger localInvalidationCount = 0;
+            
+            *outImp = imp_implementationWithBlock(^(id self) {
+                NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+                if (localInvalidationCount < globalInvalidationCount) {
+                    NSImage *image = [self imageForKeyPath:backingPropName];
+                    DEBUG_DYNAMIC_GETTER(@"imageForKeyPath:%@ --> %@", backingPropName, image);
+                    cachedImage = image;
+                    localInvalidationCount = globalInvalidationCount;
+                }
+                
+                return cachedImage;
+            });
+#endif
         } else {
             __block id cachedObject = nil;
             __block NSUInteger localInvalidationCount = 0;
@@ -508,22 +623,39 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
         }
         
         free(className);
-    } else if (strcmp(type, @encode(CGFLOAT_TYPE)) == 0) {
-        returnType = @encode(CGFLOAT_TYPE);
+    } else if (strcmp(type, @encode(float)) == 0) {
+        returnType = @encode(float);
         
-        __block CGFloat cachedFloat = 0;
+        __block float cachedResult = 0;
         __block NSUInteger localInvalidationCount = 0;
         
         *outImp = imp_implementationWithBlock(^(id self) {
             NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
             if (localInvalidationCount < globalInvalidationCount) {
-                CGFloat val = [self CGFloatForKeyPath:backingPropName];
-                DEBUG_DYNAMIC_GETTER(@"CGFloatForKeyPath:%@ --> %f", backingPropName, val);
-                cachedFloat = val;
+                float val = [self floatForKeyPath:backingPropName];
+                DEBUG_DYNAMIC_GETTER(@"floatForKeyPath:%@ --> %f", backingPropName, val);
+                cachedResult = val;
                 localInvalidationCount = globalInvalidationCount;
             }
             
-            return cachedFloat;
+            return cachedResult;
+        });
+    } else if (strcmp(type, @encode(double)) == 0) {
+        returnType = @encode(double);
+        
+        __block double cachedResult = 0;
+        __block NSUInteger localInvalidationCount = 0;
+        
+        *outImp = imp_implementationWithBlock(^(id self) {
+            NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
+            if (localInvalidationCount < globalInvalidationCount) {
+                double val = [self doubleForKeyPath:backingPropName];
+                DEBUG_DYNAMIC_GETTER(@"doubleForKeyPath:%@ --> %f", backingPropName, val);
+                cachedResult = val;
+                localInvalidationCount = globalInvalidationCount;
+            }
+            
+            return cachedResult;
         });
     } else if (strcmp(type, @encode(BOOL)) == 0) {
         returnType = "c";
@@ -641,7 +773,9 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
 @end
 
 #pragma mark - Subclass Conveniences
+
 @implementation OUIAppearance (Subclasses)
+
 + (OUIAppearance *)appearanceForClass:(Class)cls;
 {
     OBASSERT([cls isSubclassOfClass:[OUIAppearance class]]);
@@ -663,6 +797,7 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
     
     return appearance;
 }
+
 @end
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -739,6 +874,10 @@ static void EnsureSystemColorsObserver(OUIAppearance *self)
 
 @implementation OUIAppearance (OmniUIAppearance)
 @dynamic emptyOverlayViewLabelMaxWidthRatio;
+@dynamic overlayInspectorWindowHeightFraction;
+@dynamic overlayInspectorTopSeparatorColor;
+@dynamic navigationBarTextFieldBackgroundImageInsets;
+@dynamic navigationBarTextFieldLineHeightMultiplier;
 @end
 
 @implementation UIColor (OUIAppearance)
@@ -870,3 +1009,69 @@ static void EnsureSystemColorsObserver(OUIAppearance *self)
 @end
 
 #endif
+
+#pragma mark -
+
+#if OUI_PERFORM_FILE_PRESENTATION
+
+@implementation OUIAppearanceUserPlistFilePresenter
+
+- (instancetype)initWithOwner:(OUIAppearance *)owner;
+{
+    self = [super init];
+    if (self == nil) {
+        return nil;
+    }
+    
+    _weak_owner = owner;
+    
+    _userPlistPresentationQueue = [[NSOperationQueue alloc] init];
+    _userPlistPresentationQueue.maxConcurrentOperationCount = 1;
+
+    return self;
+}
+
+- (NSURL *)presentedItemURL;
+{
+    return [_weak_owner userPlistURL];
+}
+
+- (NSOperationQueue *)presentedItemOperationQueue;
+{
+    OBPRECONDITION(_userPlistPresentationQueue != nil, @"Should have set up an operation queue in our intializer.");
+    return _userPlistPresentationQueue;
+}
+
+- (void)presentedItemDidChange;
+{
+    // This is called on the `_userPlistPresentationQueue` queue. Invalidate and recache back on the main queue.
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [_weak_owner invalidateCachedValues];
+    }];
+}
+
+- (void)presentedItemDidMoveToURL:(NSURL *)newURL;
+{
+    // We deliberately continue presenting the same file URL here so that if the file comes back, we will continue receiving notifications
+    // This is called on the `_userPlistPresentationQueue` queue. Invalidate and recache back on the main queue.
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [_weak_owner invalidateCachedValues];
+    }];
+}
+
+- (void)accommodatePresentedItemDeletionWithCompletionHandler:(void (^)(NSError *))completionHandler;
+{
+    // We deliberately continue presenting the same file URL here so that if the file comes back, we will continue receiving notifications
+    // This is called on the `_userPlistPresentationQueue` queue. Invalidate and recache back on the main queue.
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [_weak_owner invalidateCachedValues];
+    }];
+    
+    completionHandler(nil);
+}
+
+@end
+
+#endif // OUI_PERFORM_FILE_PRESENTATION

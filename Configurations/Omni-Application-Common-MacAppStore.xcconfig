@@ -4,8 +4,8 @@
 
 // Common Application settings for building for the Mac App Store
 
-// We currently use libcrypto to do receipt validation in Mac App Store builds. Also, link against the smaller subset of OmniSoftwareUpdate
-OMNI_STORE_OTHER_LDFLAGS = $(value) -lcrypto -framework OmniSystemInfo
+// We currently use libcrypto and IOKit to do receipt validation in Mac App Store builds. Also, link against the smaller subset of OmniSoftwareUpdate
+OMNI_STORE_OTHER_LDFLAGS = $(value) -lcrypto -framework IOKit -framework OmniSystemInfo
 
 OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX = .MacAppStore
 OMNI_STORE_IDENTIFIER_SUFFIX =  $(OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX)

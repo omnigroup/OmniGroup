@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 #import <OmniFileExchange/OFXDocumentStoreScope.h>
 #import <OmniFoundation/OFBinding.h>
 #import <OmniFoundation/OFUTI.h>
+#import <OmniUI/OUIRotationLock.h>
 #import <OmniUI/OUIShieldView.h>
 #import <OmniUI/OUIInteractionLock.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
@@ -46,6 +47,8 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 @property (nonatomic, strong) NSArray *usersLeftBarButtonItems;
 @property (nonatomic, strong) NSArray *usersRightBarButtonItems;
 
+@property (nonatomic, strong) OUIRotationLock *renamingRotationLock;
+
 @end
 
 @implementation OUIDocumentNavigationItem
@@ -71,6 +74,7 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
         _documentTitleView = [[OUIDocumentTitleView alloc] init];
         _documentTitleView.title = title;
         _documentTitleView.delegate = self;
+        _documentTitleView.hideTitle = NO;
         
         if ([fileItem.scope isKindOfClass:[OFXDocumentStoreScope class]]) {
             OFXDocumentStoreScope *scope = (OFXDocumentStoreScope *)fileItem.scope;
@@ -204,6 +208,7 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     OBPRECONDITION(textField == _documentTitleTextField);
     OBPRECONDITION(_hasAttemptedRename == NO);
     
+    [_document willEditDocumentTitle];
     textField.keyboardAppearance = [OUIAppController controller].defaultKeyboardAppearance;
 
     ODSFileItem *fileItem = _document.fileItem;
@@ -326,6 +331,10 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 {
     if (_renaming) {
         DEBUG_EDIT_MODE(@"Switching to rename mode.");
+        
+        // Prevent rotation while in rename mode.
+        self.renamingRotationLock = [OUIRotationLock rotationLock];
+        
         // Make sure we're prepared to switch into rename mode.
         OBASSERT(self.usersLeftBarButtonItems == nil);
         OBASSERT(self.usersRightBarButtonItems == nil);
@@ -354,6 +363,11 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
     }
     else {
         DEBUG_EDIT_MODE(@"Switching to non-rename mode.");
+        
+        // Allow rotation again.
+        [self.renamingRotationLock unlock];
+        self.renamingRotationLock = nil;
+        
         // Can't make these assertions becuase these items may have never been set.
         //        OBASSERT(self.usersLeftBarButtonItems);
         //        OBASSERT(self.usersRightBarButtonItems);

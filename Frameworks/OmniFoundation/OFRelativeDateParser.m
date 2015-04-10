@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -554,7 +554,14 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
 	    if ([dateAndTime count] == 2) 
 		timeString = [dateAndTime objectAtIndex:1];
 	}
-	DEBUG_DATE( @"contains @, dateString: %@, timeString: %@", dateString, timeString );
+
+        if (![timeString containsCharacterInSet:[NSCharacterSet decimalDigitCharacterSet]]) {
+            // No numerals found in the time; treat the @ sign as whitespace
+            dateString = [dateAndTime componentsJoinedByString:@" "];
+            timeString = nil;
+        }
+
+        DEBUG_DATE( @"contains @, dateString: %@, timeString: %@", dateString, timeString );
     } else {
 	DEBUG_DATE(@"-----------'%@' starting date:%@", string, startingDate);
 
@@ -657,6 +664,22 @@ static NSMutableDictionary *_englishSpecialCaseTimeNames;
     }
     
     if (timeString != nil) {
+        if (!date) {
+            // In case of a nil date, don't crash <bug:///112326> (Crasher: Crash in OFRelativeDateParser: [__NSCFCalendar components:fromDate:]: date cannot be nil), but just log instead.
+            NSLog(@"Unable to parse date from string \"%@\"", string);
+            NSLog(@"  startingDate %@", startingDate);
+            NSLog(@"  calendar %@", calendar);
+            NSLog(@"  shortFormat %@", shortFormat);
+            NSLog(@"  mediumFormat %@", mediumFormat);
+            NSLog(@"  longFormat %@", longFormat);
+            NSLog(@"  timeFormat %@", timeFormat);
+            NSLog(@"  useEndOfDuration %d", useEndOfDuration);
+            NSLog(@"  defaultTimeDateComponents %@", defaultTimeDateComponents);
+            if (outDate != NULL)
+                *outDate = nil;
+            return NO;
+        }
+        
 	date = [calendar dateFromComponents:[self _parseTimeString:timeString meridianString:meridianString withDate:date withTimeFormat:timeFormat calendar:calendar]];
         OBASSERT(date);
     } else {
@@ -861,11 +884,11 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
     if (!meridianString) {
         // The time and meridian might have been combined
         NSInteger letterIndex = [timeString rangeOfCharacterFromSet:[NSCharacterSet letterCharacterSet]].location;
-        if (letterIndex != NSNotFound) {
+        NSInteger digitIndex = [timeString rangeOfCharacterFromSet:[NSCharacterSet decimalDigitCharacterSet]].location;
+        if (letterIndex != NSNotFound && digitIndex != NSNotFound) {
             // Need to strip surrounding whitespace if we get here from the explicit '@' case with something like '@5 pm'
             if (letterIndex == 0) {
                 // 下午4:00
-                NSInteger digitIndex = [timeString rangeOfCharacterFromSet:[NSCharacterSet decimalDigitCharacterSet]].location;
                 meridianString = [[timeString substringToIndex:digitIndex] stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace];
                 timeString = [[timeString substringFromIndex:digitIndex] stringByCollapsingWhitespaceAndRemovingSurroundingWhitespace];
             } else {
@@ -1342,7 +1365,6 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 		[sortedKeyArray release];
 	    }
 	   	    
-	    NSString *name;
 	    // check for any modifier after we check the relative date names, as the relative date names can be phrases that we want to match with
 	    NSEnumerator *patternEnum = [_modifiers keyEnumerator];
 	    NSString *pattern;
@@ -1356,32 +1378,26 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 		}
 	    } 
 	    
-	    // test for month names
+	    // test for month names, but only match full months here (to avoid ambiguity with partial conflicts. i.e. mar could be Marzo or Martes in Spanish)
             if (month == -1) {
-                NSArray *monthArrays = [NSArray arrayWithObjects:_months, _shortmonths, _alternateShortmonths, nil];
-                NSUInteger i, numberOfMonthArrays = [monthArrays count];
-                
-                for (i = 0; i < numberOfMonthArrays; i++) {
-                    NSEnumerator *monthEnum = [[monthArrays objectAtIndex:i] objectEnumerator];
-                    while ((name = [monthEnum nextObject])) {
-                        NSString *match;
-                        NSUInteger savedScanLocation = [scanner scanLocation];
-                        if ([scanner scanString:name intoString:&match]) {
+                for (NSString *name in _months) {
+                    NSString *match;
+                    NSUInteger savedScanLocation = [scanner scanLocation];
+                    if ([scanner scanString:name intoString:&match]) {
 
-                            // don't consume a partial match
-                            if (![scanner isAtEnd]) {
-                                unichar ch = [[scanner string] characterAtIndex:[scanner scanLocation]];
-                                if ([[NSCharacterSet lowercaseLetterCharacterSet] characterIsMember:ch]) {
-                                    [scanner setScanLocation:savedScanLocation];
-                                    continue;
-                                }
+                        // don't consume a partial match
+                        if (![scanner isAtEnd]) {
+                            unichar ch = [[scanner string] characterAtIndex:[scanner scanLocation]];
+                            if ([[NSCharacterSet lowercaseLetterCharacterSet] characterIsMember:ch]) {
+                                [scanner setScanLocation:savedScanLocation];
+                                continue;
                             }
-
-                            month = [self _monthIndexForString:match];
-                            scanned = YES;
-                            DEBUG_DATE(@"matched name: %@ to match: %@", name, match);
-                            break;
                         }
+
+                        month = [self _monthIndexForString:match];
+                        scanned = YES;
+                        DEBUG_DATE(@"matched name: %@ to match: %@", name, match);
+                        break;
                     }
 
                     if (month != -1)
@@ -1500,7 +1516,7 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	}
 	[scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
 
-        // scan short month names after scanning full weekday names
+        // scan short month names after scanning weekday names
         if (month == -1) {
             for (NSString *name in _shortmonths) {
                 NSString *match;

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,12 @@
 #import <mach-o/arch.h>
 
 RCS_ID("$Id$");
+
+#if 0 && defined(DEBUG)
+#define DEBUG_INTERACTION_LOCK(format, ...) NSLog(@"INTERACTION LOCK: In %@." format, NSStringFromSelector(_cmd), ## __VA_ARGS__)
+#else
+#define DEBUG_INTERACTION_LOCK(format, ...)
+#endif
 
 static const NSTimeInterval kOUIInteractionLockStaleInterval = 10;
 
@@ -59,7 +65,9 @@ static NSTimer *ActiveLockWarningTimer = nil;
 
 + (instancetype)applicationLock;
 {
-    return [[self alloc] _initApplicationLock];
+    OUIInteractionLock *instance = [[self alloc] _initApplicationLock];
+    DEBUG_INTERACTION_LOCK(@"created %@", instance);
+    return instance;
 }
 
 // Don't want existing callers of this to build up. Always use the +applicationLock method for now so that it is easy to later add a +viewLock for tracking disabling interaction on views instead of the whole app.
@@ -87,6 +95,7 @@ static void _dumpImageInfo(void)
     
 - (void)dealloc;
 {
+    DEBUG_INTERACTION_LOCK(@"self: %@", self);
     if (_locked) {
         if (_numericBacktraceString) {
             NSLog(@"OUIInteractionLock not unlocked:\n%@", OFCopySymbolicBacktraceForNumericBacktrace(_numericBacktraceString));
@@ -129,6 +138,7 @@ static void _dumpImageInfo(void)
 
 - (void)unlock;
 {
+    DEBUG_INTERACTION_LOCK(@"self: %@", self);
     OBPRECONDITION([NSThread isMainThread], "UIKit isn't guaranteed to be thread safe");
     OBPRECONDITION(_locked);
     

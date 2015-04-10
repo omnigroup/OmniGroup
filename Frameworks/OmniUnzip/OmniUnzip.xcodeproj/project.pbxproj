@@ -91,9 +91,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
-		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		157113661863778F002F6107 /* ja.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ja.lproj; path = Localization/iOS/ja.lproj; sourceTree = "<group>"; };
 		15F7CC31185F9C7F00EFB846 /* de.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = de.lproj; path = Localization/iOS/de.lproj; sourceTree = "<group>"; };
 		15F7CC32185F9C7F00EFB846 /* es.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es.lproj; path = Localization/iOS/es.lproj; sourceTree = "<group>"; };
@@ -120,7 +120,7 @@
 		34E20FC2119314BE00ECA875 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		34E20FC3119314BE00ECA875 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		34E20FCA119314D200ECA875 /* libOmniUnzip.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniUnzip.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		4241822D0F44B55E0029B4DA /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
+		4241822D0F44B55E0029B4DA /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		424182420F44B7930029B4DA /* ChangeLogUnzip */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ChangeLogUnzip; sourceTree = "<group>"; };
 		424182430F44B7930029B4DA /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt.h; sourceTree = "<group>"; };
 		424182440F44B7930029B4DA /* ioapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ioapi.c; sourceTree = "<group>"; };
@@ -481,7 +481,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0630;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniUnzip" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -586,7 +586,6 @@
 					"$(value)",
 					"-DOMNI_BUILDING_FRAMEWORK",
 					"-DOMNI_BUNDLE_IDENTIFIER=@\\\"$(OMNI_BUNDLE_IDENTIFIER)\\\"",
-					"-DVERSIONMADEBY=0x0300",
 				);
 				PRODUCT_NAME = OmniUnzip;
 			};
@@ -602,10 +601,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
-				OTHER_CFLAGS = (
-					"$(value)",
-					"-DVERSIONMADEBY=0x0300",
-				);
+				OTHER_CFLAGS = "$(value)";
 				PRODUCT_NAME = OmniUnzip;
 			};
 			name = Release;
@@ -614,6 +610,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 424183BC0F44CF990029B4DA /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(value)",
+					NOCRYPT,
+					"VERSIONMADEBY=0x0300",
+				);
 			};
 			name = Debug;
 		};
@@ -621,6 +622,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 424183BD0F44CF990029B4DA /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(value)",
+					NOCRYPT,
+					"VERSIONMADEBY=0x0300",
+				);
 			};
 			name = Release;
 		};
@@ -630,6 +636,13 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DEBUG,
+					"DEBUG_$(USER)",
+					"$(OMNI_STORE_PREPROCESSOR_DEFINITIONS)",
+					NOCRYPT,
+					"VERSIONMADEBY=0x0300",
+				);
 				PRODUCT_NAME = OmniUnzip;
 			};
 			name = Debug;
@@ -640,6 +653,11 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					COVERAGE,
+					NOCRYPT,
+					"VERSIONMADEBY=0x0300",
+				);
 				PRODUCT_NAME = OmniUnzip;
 			};
 			name = Coverage;
@@ -650,6 +668,11 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(OMNI_STORE_PREPROCESSOR_DEFINITIONS)",
+					NOCRYPT,
+					"VERSIONMADEBY=0x0300",
+				);
 				PRODUCT_NAME = OmniUnzip;
 			};
 			name = Release;
@@ -658,6 +681,11 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 424183BB0F44CF990029B4DA /* Omni-Global-Coverage.xcconfig */;
 			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(value)",
+					NOCRYPT,
+					"VERSIONMADEBY=0x0300",
+				);
 			};
 			name = Coverage;
 		};
@@ -675,7 +703,6 @@
 					"$(value)",
 					"-DOMNI_BUILDING_FRAMEWORK",
 					"-DOMNI_BUNDLE_IDENTIFIER=@\\\"$(OMNI_BUNDLE_IDENTIFIER)\\\"",
-					"-DVERSIONMADEBY=0x0300",
 				);
 				PRODUCT_NAME = OmniUnzip;
 			};

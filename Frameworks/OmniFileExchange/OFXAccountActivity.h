@@ -15,6 +15,7 @@
 
 // Should only be called by OFXAgentActivity ideally
 - initWithRunningAccount:(OFXServerAccount *)account agent:(OFXAgent *)agent;
+- initWithAccount:(OFXServerAccount *)account agent:(OFXAgent *)agent; // for accounts that failed to start
 
 @property(nonatomic,readonly) OFXServerAccount *account;
 @property(nonatomic,readonly) OFXRegistrationTable *registrationTable;

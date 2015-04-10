@@ -71,8 +71,7 @@ RCS_ID("$Id$")
 @end
 
 
-static NSInteger OFNetStateNotifierDebug;
-
+static OFDeclareDebugLogLevel(OFNetStateNotifierDebug);
 #define DEBUG_NOTIFIER(level, format, ...) do { \
     if (OFNetStateNotifierDebug >= (level)) \
         NSLog(@"STATE NOTIFIER %@: " format, [self shortDescription], ## __VA_ARGS__); \
@@ -89,12 +88,6 @@ static NSInteger OFNetStateNotifierDebug;
     NSNetServiceBrowser *_browser;
     NSMapTable *_serviceToEntry;
     NSTimer *_updateStateTimer;
-}
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    OFInitializeDebugLogLevel(OFNetStateNotifierDebug);
 }
 
 @synthesize delegate = _weak_delegate;
@@ -119,7 +112,7 @@ static NSInteger OFNetStateNotifierDebug;
                                                     capacity:0];
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    BOOL inForeground = ([[UIApplication sharedApplication] applicationState] != UIApplicationStateBackground);
+    BOOL inForeground = ([OFSharedApplication() applicationState] != UIApplicationStateBackground);
 #else
     BOOL inForeground = YES;
 #endif

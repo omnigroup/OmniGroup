@@ -15,8 +15,6 @@
 
 #import <AppKit/NSWindowController.h>
 
-@class NSButton, NSForm, NSWindow, NSMatrix, NSPopUpButton, NSTextField, NSBox, NSView;
-
 #import <OmniAppKit/OAFindControllerTargetProtocol.h>
 
 @interface OAFindController : NSWindowController

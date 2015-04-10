@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,6 +36,10 @@ RCS_ID("$Id$");
     if (_dataSource != dataSource) {
         _dataSource = dataSource;
 
+        [self.buttons enumerateObjectsUsingBlock:^(UIButton *button, NSUInteger index, BOOL *stop) {
+            [button removeFromSuperview];
+        }];
+        
         self.buttons = nil;
         self.buttonConstraints = nil;
         
@@ -140,8 +144,12 @@ RCS_ID("$Id$");
     [[UIColor colorWithHue:0.0 saturation:0.0 brightness:0.8 alpha:1.0] setFill];
     CGRect bounds = self.bounds;
 
-    NSUInteger numberOfRows = self.numberOfRows;
     NSUInteger buttonHeight = [self buttonHeight];
+    if (buttonHeight <= 0) {
+        return;
+    }
+    
+    NSUInteger numberOfRows = self.numberOfRows;
     NSUInteger height = floor(CGRectGetHeight(self.frame));
     NSUInteger buttonHeightRemainder = height % buttonHeight;
     

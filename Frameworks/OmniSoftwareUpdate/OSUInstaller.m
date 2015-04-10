@@ -1,4 +1,4 @@
-// Copyright 2007-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,7 @@ static BOOL OSUInstallerHasReceivedApplicationWillTerminate;
 
 @interface OSUInstaller () {
   @private
-    id <OSUInstallerDelegate> _nonretained_delegate;
+    __weak id <OSUInstallerDelegate> _weak_delegate;
 
     NSString *_packagePath;             // The path to the downloaded package
     NSString *_installedVersionPath;    // The path to the installed copy we're replacing
@@ -116,13 +116,12 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         }
         
         SupportedPackageFormats = [supportedFormats copy];
-        [supportedFormats release];
     });
 
     return SupportedPackageFormats;
 }
 
-#define UPDATE_STATUS(status) [_nonretained_delegate setStatus:(status)]
+#define UPDATE_STATUS(status) [self.delegate setStatus:(status)]
 
 - (id)initWithPackagePath:(NSString *)newPackage
 {
@@ -142,25 +141,13 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 - (void)dealloc;
 {
     OBPRECONDITION(_terminationObserver == nil);
-
-    [_packagePath release];
-    [_installedVersionPath release];
-    [_installationDirectory release];
-    [_installationName release];
-    [_unpackedPath release];
-    
-    [_authorizationData release];
     
     [_connection invalidate];
-    [_connection release];
     
     [[NSNotificationCenter defaultCenter] removeObserver:_terminationObserver];
-    [_terminationObserver release];
-
-    [super dealloc];
 }
 
-@synthesize delegate = _nonretained_delegate;
+@synthesize delegate = _weak_delegate;
 @synthesize installationDirectory = _installationDirectory;
 
 - (NSString *)installedVersionPath;
@@ -171,7 +158,6 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 - (void)setInstalledVersionPath:(NSString *)path;
 {
     if (path != _installedVersionPath) {
-        [_installedVersionPath release];
         _installedVersionPath = [path copy];
     }
     
@@ -202,7 +188,8 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
                     // (Reveal the package in the Finder, close the progress window, and leave the application running).
                     //
                     // self is released in the _retry handler.
-                    [[self retain] _retry:NO context:NULL];
+                    OBStrongRetain(self);
+                    [self _retry:NO context:NULL];
                     return;
                 }
 
@@ -227,13 +214,13 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     }];
     
     // Avoid zombie -- stay alive until the work below is done.
-    [self retain];
+    OBStrongRetain(self);
 
     NSDictionary *installerArguments = [self _installerArguments];
     [remoteObjectProxy preflightUpdate:installerArguments reply:^(BOOL success, NSError *error, NSData *authorizationData) {
         if (!success) {
             [self _presentError:error];
-            [self release];
+            OBStrongRelease(self);
             return;
         } else {
             // Hold on to the authorization data that the service passed back to us.
@@ -264,7 +251,6 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
                     if (responseFlags == kCFUserNotificationOtherResponse) {
                         OSUSendFeedbackErrorRecovery *recovery = [[OSUSendFeedbackErrorRecovery alloc] initWithLocalizedRecoveryOption:nil object:nil];
                         [recovery attemptRecoveryFromError:error];
-                        [recovery release];
                     }
                     
                     _terminate(1);
@@ -344,17 +330,22 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         _connection = [[NSXPCConnection alloc] initWithServiceName:@"com.omnigroup.OmniSoftwareUpdate.OSUInstallerService"];
         _connection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(OSUInstallerService)];
 
+        __weak typeof(self) weakSelf = self;
         _connection.interruptionHandler = ^{
-            _connectionFlags.interrupted = YES;
-            [_connection invalidate];
-            [_connection release];
-            _connection = nil;
+            typeof(self) strongSelf = weakSelf;
+            if (strongSelf) {
+                strongSelf->_connectionFlags.interrupted = YES;
+                [strongSelf->_connection invalidate];
+                strongSelf->_connection = nil;
+            }
         };
 
         _connection.invalidationHandler = ^{
-            _connectionFlags.invalid = YES;
-            [_connection release];
-            _connection = nil;
+            typeof(self) strongSelf = weakSelf;
+            if (strongSelf) {
+                strongSelf->_connectionFlags.invalid = YES;
+                strongSelf->_connection = nil;
+            }
         };
         
         [_connection resume];
@@ -424,9 +415,6 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         localError = [error copy];
     }];
 
-    [localError autorelease];
-    [localResult autorelease];
-    
     if (localResult == nil && error != NULL) {
         *error = localError;
     }
@@ -458,7 +446,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         [panel setDirectoryURL:[NSURL fileURLWithPath:initialDirectoryPath]];
     }
     
-    handler = [[handler copy] autorelease];
+    handler = [handler copy];
     
     void (^localCompletionHandler)(NSInteger result) = ^(NSInteger result) {
         if (result == NSFileHandlingPanelOKButton) {
@@ -470,7 +458,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         }
     };
     
-    localCompletionHandler = [[localCompletionHandler copy] autorelease];
+    localCompletionHandler = [localCompletionHandler copy];
     
     if (parentWindow != nil) {
         [panel beginSheetModalForWindow:parentWindow completionHandler:^(NSInteger result) {
@@ -673,7 +661,6 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     _unpackedPath = [applicationPath copy];
     
     if ([NSString isEmptyString:_installationName]) {
-        [_installationName release];
         _installationName = [[_unpackedPath lastPathComponent] copy];
     }
     
@@ -730,14 +717,14 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     NSXPCConnection *connection = self.connection;
     id <OSUInstallerService> remoteObjectProxy = [connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
         installerSucceeded = NO;
-        installerError = [error retain];
+        installerError = error;
         hasReceivedResponseOrError = YES;
     }];
 
     NSDictionary *installerArguments = [self _installerArguments];
     [remoteObjectProxy installUpdate:installerArguments reply:^(BOOL success, NSError *error) {
         installerSucceeded = success;
-        installerError = [error retain];
+        installerError = error;
         hasReceivedResponseOrError = YES;
     }];
 
@@ -753,7 +740,6 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         *outError = installerError;
     }
     
-    [installerError autorelease];
     return installerSucceeded;
 }
 
@@ -799,24 +785,26 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 {
     OBPRECONDITION(error != nil);
     if (error == nil || [error causedByUserCancelling]) {
-        [self retain];
+        OBStrongRetain(self);
         [self _retry:NO context:NULL];
     } else {
-        id presenter = (_nonretained_delegate != nil ? (id)_nonretained_delegate : (id)[NSApplication sharedApplication]);
-        id delegate = [self retain]; // `self` is released in the _retry handler
+        OBStrongRetain(self); // `self` is released in the _retry handler
+        
+        id <OSUInstallerDelegate> delegate = self.delegate;
+        id presenter = (delegate != nil ? (id)delegate : (id)[NSApplication sharedApplication]);
 
         if ([error recoveryAttempter] == nil) {
             error = [OFMultipleOptionErrorRecovery errorRecoveryErrorWithError:error object:self options:[OSUSendFeedbackErrorRecovery class], [OFCancelErrorRecovery class], nil];
         }
 
-        [presenter presentError:error modalForWindow:nil delegate:delegate didPresentSelector:@selector(_retry:context:) contextInfo:NULL];
+        [presenter presentError:error modalForWindow:nil delegate:self didPresentSelector:@selector(_retry:context:) contextInfo:NULL];
     }
 }
 
 // This is used as the didPresent selector for error presentation / recovery
 - (void)_retry:(BOOL)recovered context:(void *)context
 {
-    [self autorelease];
+    OBAutorelease(self);
     
     if (recovered) {
         [self run];
@@ -826,7 +814,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             [[NSWorkspace sharedWorkspace] selectFile:_packagePath inFileViewerRootedAtPath:nil];
         }
         
-        [_nonretained_delegate close];
+        [self.delegate close];
     }
 }
 
@@ -929,14 +917,14 @@ static void _reportError(NSError *error, NSString *titleString, NSString *defaul
     CFURLRef soundURL = NULL;
     
     if ([[NSFileManager defaultManager] fileExistsAtPath:[applicationIconURL path]]) {
-        iconURL = (CFURLRef)applicationIconURL;
+        iconURL = (__bridge CFURLRef)applicationIconURL;
     }
 
-    CFStringRef title = (CFStringRef)titleString;
-    CFStringRef message = (CFStringRef)[error localizedDescription];
-    CFStringRef defaultButton = (CFStringRef)defaultButtonTitle;
-    CFStringRef alternateButton = (CFStringRef)alternateButtonTitle;
-    CFStringRef otherButton = (CFStringRef)otherButtonTitle;
+    CFStringRef title = (__bridge CFStringRef)titleString;
+    CFStringRef message = (__bridge CFStringRef)[error localizedDescription];
+    CFStringRef defaultButton = (__bridge CFStringRef)defaultButtonTitle;
+    CFStringRef alternateButton = (__bridge CFStringRef)alternateButtonTitle;
+    CFStringRef otherButton = (__bridge CFStringRef)otherButtonTitle;
 
     if (responseFlags != NULL) {
         *responseFlags = 0;
@@ -970,10 +958,25 @@ static id _reportStringForCapturedOutputData(NSData *data)
     return string;
 }
 
+static BOOL _makeInstallError(NSString *errorDetail, NSError **outError)
+{
+    if (outError != NULL) {
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - we downloaded an update, but there seems to be something wrong with the application it contained");
+        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The updated application is invalid (%@)", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason - we downloaded an update, but there's something obviously wrong with the updated application, like it doesn't have an Info.plist or whatever"), errorDetail];
+        
+        NSDictionary *userInfo = @{
+                                   NSLocalizedDescriptionKey : description,
+                                   NSLocalizedFailureReasonErrorKey : reason
+                                   };
+        *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToUpgrade userInfo:userInfo];
+    }
+    
+    return NO;
+}
+
 static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 {
     struct stat sbuf = {0};
-    NSString *errorDetail = nil;
 
     // Check a handful of things about an application before we try to install it, just to avoid installing a completely broken app.
     // As with _findApplicationInDirectory:error:, we want to avoid indirectly using Carbon APIs here.
@@ -985,8 +988,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     }
 
     if (!S_ISDIR(sbuf.st_mode)) {
-        errorDetail = @"App bundle is not a directory";
-        goto return_failure;
+        return _makeInstallError(@"App bundle is not a directory", outError);
     }
     
     NSString *contentsPath = [path stringByAppendingPathComponent:@"Contents"];
@@ -1005,8 +1007,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     if (![plist isKindOfClass:[NSDictionary class]] ||
         ![[plist objectForKey:(NSString *)kCFBundleIdentifierKey] isKindOfClass:[NSString class]] ||
         ![[plist objectForKey:(NSString *)kCFBundleExecutableKey] isKindOfClass:[NSString class]]) {
-        errorDetail = @"Info.plist does not contain necessary information";
-        goto return_failure;
+        return _makeInstallError(@"Info.plist does not contain necessary information", outError);
     }
     
     NSString *executableFilePath = [[contentsPath stringByAppendingPathComponent:@"MacOS"] stringByAppendingPathComponent:[plist objectForKey:(NSString *)kCFBundleExecutableKey]];
@@ -1016,25 +1017,9 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     }
     
     if (!S_ISREG(sbuf.st_mode) || !(sbuf.st_mode & S_IXUSR) || (sbuf.st_size < 1024)) {
-        errorDetail = [NSString stringWithFormat:@"Not an executable: %@", [plist objectForKey:(NSString *)kCFBundleExecutableKey]];
-        goto return_failure;
+        return _makeInstallError([NSString stringWithFormat:@"Not an executable: %@", [plist objectForKey:(NSString *)kCFBundleExecutableKey]], outError);
     }
     
     // We didn't see anything obviously wrong, so it's probably OK
     return YES;
-    
-    
-return_failure:
-    if (outError != NULL) {
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to install update", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description - we downloaded an update, but there seems to be something wrong with the application it contained");
-        NSString *reason = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The updated application is invalid (%@)", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason - we downloaded an update, but there's something obviously wrong with the updated application, like it doesn't have an Info.plist or whatever"), errorDetail];
-        
-        NSDictionary *userInfo = @{
-            NSLocalizedDescriptionKey : description,
-            NSLocalizedFailureReasonErrorKey : reason
-        };
-        *outError = [NSError errorWithDomain:OSUErrorDomain code:OSUUnableToUpgrade userInfo:userInfo];
-    }
-
-    return NO;
 }

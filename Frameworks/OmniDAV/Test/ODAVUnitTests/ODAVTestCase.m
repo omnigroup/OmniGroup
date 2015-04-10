@@ -1,4 +1,4 @@
-// Copyright 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2012-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,9 @@
 #import <netdb.h>
 
 RCS_ID("$Id$")
+
+NSString * const ODAVTestCaseRedirectSourceDirectoryName = @"redirect-src";
+NSString * const ODAVTestCaseRedirectDestinationDirectoryName = @"redirect-dst";
 
 @implementation ODAVTestCase
 {
@@ -56,6 +59,15 @@ static const NSUInteger UsernameCount = 100;
     [super tearDown];
 }
 
+- (BOOL)shouldUseRedirectingRemoteBaseURL;
+{
+    const char *env = getenv("ODAVRedirectAccountRemoteBaseURL");
+    if (env)
+        return YES;
+    
+    return NO;
+}
+
 - (NSURL *)accountRemoteBaseURL;
 {
     OBPRECONDITION(_username); // Only call after -setUp
@@ -72,7 +84,14 @@ static const NSUInteger UsernameCount = 100;
     if (!remoteBaseURL)
         [NSException raise:NSGenericException format:@"ODAVAccountRemoteBaseURL set to an invalid URL"];
     
-    return [remoteBaseURL URLByAppendingPathComponent:_username isDirectory:YES];
+    remoteBaseURL = [remoteBaseURL URLByAppendingPathComponent:_username isDirectory:YES];
+    
+    if (self.shouldUseRedirectingRemoteBaseURL) {
+        // Our Test/LocalWebDAVServer/StartServer script sets up each user to have this path redirect to redirect-dst
+        remoteBaseURL = [remoteBaseURL URLByAppendingPathComponent:ODAVTestCaseRedirectSourceDirectoryName isDirectory:YES];
+    }
+    
+    return remoteBaseURL;
 }
 
 - (NSURLCredential *)accountCredentialWithPersistence:(NSURLCredentialPersistence)persistence;

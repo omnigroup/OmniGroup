@@ -1,4 +1,4 @@
-// Copyright 1997-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -436,14 +436,6 @@ static void writeLE32(u_int32_t le32, OFDataBuffer *outputDataBuffer)
     OFDataBufferAppendByte(outputDataBuffer, (le32 & 0xFF000000) >> 24);
 }
 
-static u_int32_t unpackLE32(const u_int8_t *from)
-{
-    return ( (u_int32_t)from[0] ) |
-    ( (u_int32_t)from[1] << 8 ) |
-    ( (u_int32_t)from[2] << 16 ) |
-    ( (u_int32_t)from[3] << 24 );
-}
-
 static Boolean handleRFC1952MemberBody(OFDataBuffer *outputDataBuffer,
                                        CFDataRef data,
                                        NSRange sourceRange,
@@ -552,8 +544,8 @@ static Boolean handleRFC1952MemberBody(OFDataBuffer *outputDataBuffer,
         const u_int8_t *trailerStart;
         
         trailerStart = CFDataGetBytePtr(data) + sourceRange.location + sourceRange.length - 8;
-        storedCRC = unpackLE32(trailerStart);
-        storedLength = unpackLE32(trailerStart + 4);
+        storedCRC = OSReadLittleInt32(trailerStart, 0);
+        storedLength = OSReadLittleInt32(trailerStart, 4);
         
         if (dataCRC != storedCRC) {
             OFZlibError(compressing, [NSString stringWithFormat:@"CRC error: stored CRC (%08X) does not match computed CRC (%08lX)", storedCRC, dataCRC], 0, NULL, outError);

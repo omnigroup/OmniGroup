@@ -9,7 +9,7 @@ DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 
 // Use the latest iOS SDK with a specific deployment target
 SDKROOT = iphoneos
-IPHONEOS_DEPLOYMENT_TARGET = 8.0
+IPHONEOS_DEPLOYMENT_TARGET = 8.2
 
 GCC_THUMB_SUPPORT = NO
 

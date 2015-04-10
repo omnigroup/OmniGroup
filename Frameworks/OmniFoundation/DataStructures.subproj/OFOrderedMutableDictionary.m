@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,9 +20,19 @@ RCS_ID("$Id$");
 
 #pragma mark - API
 
+- (id<NSCopying>)keyAtIndex:(NSUInteger)index;
+{
+    return self.orderedKeys[index];
+}
+
+- (NSUInteger)indexOfKey:(id<NSCopying>)aKey;
+{
+    return [self.orderedKeys indexOfObject:aKey];
+}
+
 - (id)objectAtIndex:(NSUInteger)index;
 {
-    NSString *key = self.orderedKeys[index];
+    id<NSCopying> key = [self keyAtIndex:index];
     return [self objectForKey:key];
 }
 
@@ -37,7 +47,8 @@ RCS_ID("$Id$");
 
 - (void)setObject:(id)anObject index:(NSUInteger)index forKey:(id<NSCopying>)aKey;
 {
-    if (index >= self.orderedKeys.count)
+    // In an NSArray you can insertAtIndex:array.count to add to the end of the array. We want to let you do the same here, hence a strictly greater-than check:
+    if (index > self.orderedKeys.count)
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Index out of bounds" userInfo:nil];
     
     [self setObject:anObject forKey:aKey];
@@ -54,6 +65,13 @@ RCS_ID("$Id$");
 - (void)enumerateEntriesUsingBlock:(void (^)(NSUInteger index, id<NSCopying> key, id obj, BOOL *stop))blk;
 {
     [self.orderedKeys enumerateObjectsUsingBlock:^(id orderedKeysObject, NSUInteger orderedKeysIndex, BOOL *stop) {
+        blk(orderedKeysIndex, orderedKeysObject, self[orderedKeysIndex], stop);
+    }];
+}
+
+- (void)enumerateEntriesWithOptions:(NSEnumerationOptions)opts usingBlock:(void (^)(NSUInteger index, id<NSCopying> key, id obj, BOOL *stop))blk;
+{
+    [self.orderedKeys enumerateObjectsWithOptions:opts usingBlock:^(id orderedKeysObject, NSUInteger orderedKeysIndex, BOOL *stop) {
         blk(orderedKeysIndex, orderedKeysObject, self[orderedKeysIndex], stop);
     }];
 }
@@ -123,6 +141,11 @@ RCS_ID("$Id$");
 {
     // -[NSArray objectEnumerator] is documented to start at index 0 and work forwards
     return [self.orderedKeys objectEnumerator];
+}
+
+- (NSArray *)allKeys;
+{
+    return [[self.orderedKeys copy] autorelease];
 }
 
 #pragma mark - NSObject subclass

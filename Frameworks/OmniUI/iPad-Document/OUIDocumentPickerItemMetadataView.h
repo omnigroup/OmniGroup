@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,13 +13,13 @@
 @interface OUIDocumentPickerItemMetadataView : UIView
 + (UIColor *)defaultBackgroundColor;
 
-@property(nonatomic,copy) NSString *label;
 @property(nonatomic,copy) NSString *name;
 @property(nonatomic,strong) UIImage *nameBadgeImage;
 @property(nonatomic) BOOL showsImage;
 @property(nonatomic,copy) NSString *dateString;
 @property(nonatomic,assign) BOOL showsProgress;
 @property(nonatomic,assign) double progress;
+@property(nonatomic,assign) BOOL isSmallSize;
 
 // OUIDocumentRenameSession becomes the delegate of this while renaming
 @property(nonatomic,readonly) UITextField *nameTextField;

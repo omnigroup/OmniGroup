@@ -155,5 +155,16 @@
 		<key>a</key>
 		<integer>1</integer>
 	</dict>
+	<key>omniExplanotextColor</key>
+	<dict>
+		<key>h</key>
+		<real>0.667</real>
+		<key>s</key>
+		<real>0.053</real>
+		<key>b</key>
+		<real>0.373</real>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
 </dict>
 </plist>

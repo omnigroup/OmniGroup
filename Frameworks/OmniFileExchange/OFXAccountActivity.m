@@ -1,4 +1,4 @@
-// Copyright 2012-2013 The Omni Group. All rights reserved.
+// Copyright 2012-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,7 +43,7 @@ static unsigned OFXAccountActivityContext;
 
 @implementation OFXAccountActivity
 
-- initWithRunningAccount:(OFXServerAccount *)account agent:(OFXAgent *)agent;
+- initWithAccount:(OFXServerAccount *)account agent:(OFXAgent *)agent;
 {
     OBPRECONDITION([NSThread isMainThread], @"Do KVO and globals access on the main thread only");
     OBPRECONDITION(agent);
@@ -58,11 +58,25 @@ static unsigned OFXAccountActivityContext;
     [_account addObserver:self forKeyPath:OFValidateKeyPath(_account, isSyncInProgress) options:0 context:&OFXAccountActivityContext];
     [_account addObserver:self forKeyPath:OFValidateKeyPath(_account, lastError) options:0 context:&OFXAccountActivityContext];
     
+    // Make sure our initial state starts right (important for accounts that failed to start and have an error registered already)
+    [self _updateFromAccount];
+
+    return self;
+}
+
+- initWithRunningAccount:(OFXServerAccount *)account agent:(OFXAgent *)agent;
+{
+    if (!(self = [self initWithAccount:account agent:agent]))
+        return nil;
+    
     _registrationTable = [agent metadataItemRegistrationTableForAccount:account];
     OBASSERT(_registrationTable);
 
     [_registrationTable addObserver:self forKeyPath:OFValidateKeyPath(_registrationTable, values) options:0 context:&OFXAccountActivityContext];
     
+    // Might not get any KVO if there is nothing to sync.
+    _lastSyncDate = [NSDate date];
+
     return self;
 }
 
@@ -72,6 +86,7 @@ static unsigned OFXAccountActivityContext;
     
     [_account removeObserver:self forKeyPath:OFValidateKeyPath(_account, isSyncInProgress) context:&OFXAccountActivityContext];
     [_account removeObserver:self forKeyPath:OFValidateKeyPath(_account, lastError) context:&OFXAccountActivityContext];
+    
     [_registrationTable removeObserver:self forKeyPath:OFValidateKeyPath(_registrationTable, values)];
 }
 
@@ -86,7 +101,7 @@ static unsigned OFXAccountActivityContext;
         return;
     }
     
-    if (object == _registrationTable) {
+    if (_registrationTable && object == _registrationTable) {
         if (_updateTimer)
             return;
         
@@ -102,9 +117,7 @@ static unsigned OFXAccountActivityContext;
             _updateTimer = [NSTimer scheduledTimerWithTimeInterval:timeUntilNextUpdate target:self selector:@selector(_updateValues) userInfo:nil repeats:NO];
         }
     } else if (object == _account) {
-        self.isActive = _account.isSyncInProgress;
-        self.lastError = _account.lastError;
-        DEBUG_ACTIVITY(1, @"active:%d lastError:%@", self.isActive, self.lastError);
+        [self _updateFromAccount];
     }
 }
 
@@ -116,6 +129,13 @@ static unsigned OFXAccountActivityContext;
 }
 
 #pragma mark - Private
+
+- (void)_updateFromAccount;
+{
+    self.isActive = _account.isSyncInProgress;
+    self.lastError = _account.lastError;
+    DEBUG_ACTIVITY(1, @"active:%d lastError:%@", self.isActive, self.lastError);
+}
 
 - (void)_updateValues;
 {

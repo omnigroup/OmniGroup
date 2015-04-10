@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,8 @@ NSString * const ODSDocumentInteractionInboxFolderName = @"Inbox";
 BOOL ODSInInInbox(NSURL *url)
 {
     // Check to see if the URL directly points to the Inbox.
-    if (([[url lastPathComponent] caseInsensitiveCompare:ODSDocumentInteractionInboxFolderName] == NSOrderedSame)) {
+    NSString *lastPathComponent = [url lastPathComponent];
+    if (lastPathComponent != nil && ([lastPathComponent caseInsensitiveCompare:ODSDocumentInteractionInboxFolderName] == NSOrderedSame)) {
         return YES;
     }
     
@@ -24,7 +25,8 @@ BOOL ODSInInInbox(NSURL *url)
     NSURL *pathURL = [url URLByDeletingLastPathComponent]; // Remove the filename.
     NSString *lastPathComponentString = [pathURL lastPathComponent];
     
-    return ([lastPathComponentString caseInsensitiveCompare:ODSDocumentInteractionInboxFolderName] == NSOrderedSame);
+    BOOL isInInbox = (lastPathComponentString != nil && [lastPathComponentString caseInsensitiveCompare:ODSDocumentInteractionInboxFolderName] == NSOrderedSame);
+    return isInInbox;
 }
 
 BOOL ODSIsZipFileType(NSString *uti)

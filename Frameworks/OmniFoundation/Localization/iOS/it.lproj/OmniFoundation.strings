@@ -73,9 +73,14 @@
 /* error description */
 "Cannot create socket." = "Impossibile creare il socket.";
 
+/* alert title when clicking on a configuration value URL */
+"Change configuration?" = "Modificare la configurazione?";
+
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
+
+
 "Could not create directory" = "Impossibile creare la directory";
 
 /* time span formatter span */
@@ -97,7 +102,7 @@
 "Failed to create directory for lock file at \"%@\"." = "Creazione della directory per il documento di blocco in “%@” non riuscita.";
 
 /* error reason */
-"Failed to serialize lock information.  %@" = "Serializzazione delle informazioni di blocco non riuscita.  %@";
+"Failed to serialize lock information." = "Serializzazione delle informazioni di blocco non riuscita.";
 
 /* error reason */
 "Failed to write lock file.  %@" = "Scrittura del documento di blocco non riuscita.  %@";
@@ -144,6 +149,12 @@
 /* OFMLockfile recovery option */
 "Override Lock" = "Sostituisci blocco";
 
+/* alert message format when clicking on a configuration value URL */
+"Restore \"%@\" to its default value" = "Ripristinare il valore di default per \"%@\"";
+
+/* alert title when clicking on a configuration value URL */
+"Restore all internal configuration settings to defaults" = "Ripristinare i valori di default di tutte le impostazioni di configurazione interne";
+
 /* time span formatter span */
 "s" = "s";
 
@@ -152,6 +163,9 @@
 
 /* time span formatter span */
 "seconds" = "secondi";
+
+/* alert message format when clicking on a configuration value URL */
+"Set \"%@\" to \"%@\"" = "Impostare \"%1$@\" su \"%2$@\"";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per “%@” non sembra essere valido. Il sito potrebbe non essere attendibile. Connettere comunque?";
@@ -167,6 +181,9 @@
 
 /* server certificate untrusted */
 "The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Il certificato del server per “%@” è registrato da un server root non attendibile. Il sito potrebbe non essere attendibile. Connettere comunque?";
+
+/* alert message header when clicking on a configuration value URL */
+"This configuration link will make the following changes:" = "Questo link di configurazione apporterà le seguenti modifiche:";
 
 /* error reason */
 "This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Questo blocco è stato utilizzato da %1$@ utilizzando il computer “%2$@” su %3$@ alle %4$@.";
@@ -221,4 +238,3 @@
 
 /* zlib error reason */
 "zlib returned error code %d. %s." = "zlib ha restituito il codice errore %1$d. %2$s.";
-

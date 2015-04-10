@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,9 @@
 // $Id$
 
 #import <Availability.h>
+
+// Explicitly grab the TargetConditionals header so that when building iOS extensions, we can get the right value for TARGET_OS_IPHONE
+#import <TargetConditionals.h>
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
@@ -67,6 +70,8 @@ extern NSString * const OUIAppearanceAliasesKey;
 - (OUI_SYSTEM_COLOR_CLASS *)colorForKeyPath:(NSString *)keyPath;
     // value must be a dictionary suitable for +[NSColor(OAExtensions colorFromPropertyListRepresentation:]
 
+- (float)floatForKeyPath:(NSString *)keyPath;
+- (double)doubleForKeyPath:(NSString *)keyPath;
 - (CGFloat)CGFloatForKeyPath:(NSString *)keyPath;
 - (NSInteger)integerForKeyPath:(NSString *)keyPath;
 
@@ -77,6 +82,35 @@ extern NSString * const OUIAppearanceAliasesKey;
 
 - (CGSize)sizeForKeyPath:(NSString *)keyPath;
     // value must be a dictionary of the form {width: <number>, height: <number>} (missing keys are assumed to be 0)
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+/*!
+ If the value of the key path is a string, the main bundle will be searched for an image with that name.
+ Otherwise, the value at the key path can be a dictionary with the following entries:
+ 
+ name: the name to use, required
+ bundle: optional, one of...
+ "self" -- the bundle defining the OUIAppearance subclass
+ "main" -- the main bundle
+ other -- a bundle identifier
+ */
+- (UIImage *)imageForKeyPath:(NSString *)keyPath;
+#else // !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+/*!
+ If the value of the key path is a string, the main bundle will be searched for an image with that name.
+ Otherwise, the value at the key path can be a dictionary with the following entries:
+ 
+ name: the name to use, required
+ bundle: optional, one of...
+    "self" -- the bundle defining the OUIAppearance subclass
+    "main" -- the main bundle
+    other -- a bundle identifier
+ color: optional, one of...
+    string -- the name of another key path to use for the tint color, via -colorForKeyPath:.
+    dictionary -- a specific color to use, via +[NSColor(OAExtensions colorFromPropertyListRepresentation:]
+ */
+- (NSImage *)imageForKeyPath:(NSString *)keyPath;
+#endif
 
 /// Cause this appearance instance to invalidate all its internal caching and reread values from the on-disk plist definitions.
 - (void)invalidateCachedValues;
@@ -107,6 +141,10 @@ extern NSString * const OUIAppearanceAliasesKey;
 
 @interface OUIAppearance (OmniUIAppearance)
 @property (readonly) CGFloat emptyOverlayViewLabelMaxWidthRatio;
+@property (readonly) CGFloat overlayInspectorWindowHeightFraction;
+@property (readonly) UIColor *overlayInspectorTopSeparatorColor;
+@property (readonly) UIEdgeInsets navigationBarTextFieldBackgroundImageInsets;
+@property (readonly) CGFloat navigationBarTextFieldLineHeightMultiplier;
 @end
 
 @interface UIColor (OUIAppearance)
@@ -139,7 +177,6 @@ extern NSString * const OUIAppearanceAliasesKey;
 // Lifted up here so that OUIDocumentPreview and OUIAppearance (OmniUIInternal) can use it.
 typedef NS_ENUM(NSUInteger, OUIDocumentPreviewArea) {
     OUIDocumentPreviewAreaLarge, // Fill item, when in a scope
-    OUIDocumentPreviewAreaMedium, // Full item, when at the home screen
+    OUIDocumentPreviewAreaMedium, // Full item, currently only used in the OmniOutliner theme picker.
     OUIDocumentPreviewAreaSmall, // Inner folder item, when in a scope
-    OUIDocumentPreviewAreaTiny, // Inner folder item, when at the home screen.
 };

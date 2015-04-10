@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,7 +38,13 @@
 @property(nonatomic,readonly) NSString *lastEditedHost;
 
 @property(nonatomic,readonly) NSUInteger version;
-@property(nonatomic,readonly) NSNumber *inode;
+@property(nonatomic,readonly) NSNumber *inode; // Only if locally present
+@property(nonatomic,readonly) NSDate *fileModificationDate; // Only if locally present
+
+#if 0
+// A hash based on the file contents and internal file names (but not the intented or actual local path of the file).
+@property(nonatomic,readonly) NSString *contentsHash;
+#endif
 
 - (NSNumber *)hasSameContentsAsLocalDocumentAtURL:(NSURL *)localDocumentURL coordinator:(NSFileCoordinator *)coordinator withChanges:(BOOL)withChanges error:(NSError **)outError;
 - (BOOL)hasSameContentsAsSnapshot:(OFXFileSnapshot *)otherSnapshot;

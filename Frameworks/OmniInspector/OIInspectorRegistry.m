@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -62,6 +62,7 @@ static NSString *inspectorDefaultsVersion = nil;
 	unsigned int isInspectionQueued:1;
 	unsigned int isListeningForNotifications:1;
 	unsigned int isInvalidated:1;
+	unsigned int appIsTerminating:1;
     } registryFlags;
     
     NSMutableArray *inspectorControllers;
@@ -154,7 +155,7 @@ static NSString *inspectorDefaultsVersion = nil;
 #ifdef DEBUG_tom0
 #error The main window may know nothing about inspectors. For example, if the main window is a software update window, it should not be consulted. <bug:///99522> (Silent crash in software update)
 #endif
-    return [(NSObject *)[NSApp delegate] inspectorRegistryForWindow:[NSApp mainWindow]];
+    return [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:[[NSApplication sharedApplication] mainWindow]];
 }
 
 static NSMutableArray *hiddenGroups = nil;
@@ -236,19 +237,19 @@ static NSMutableArray *hiddenPanels = nil;
 
 + (void)updateInspectorForWindow:(NSWindow *)window;
 {
-    OIInspectorRegistry *inspectorRegistry = [(NSObject *)[NSApp delegate] inspectorRegistryForWindow:window];
-    [inspectorRegistry updateInspectorForWindow:[NSApp mainWindow]];
+    OIInspectorRegistry *inspectorRegistry = [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:window];
+    [inspectorRegistry updateInspectorForWindow:[[NSApplication sharedApplication] mainWindow]];
 }
 
 + (void)updateInspectionSetImmediatelyAndUnconditionallyForWindow:(NSWindow *)window;
 {
-    OIInspectorRegistry *inspectorRegistry = [(NSObject *)[NSApp delegate] inspectorRegistryForWindow:window];
+    OIInspectorRegistry *inspectorRegistry = [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:window];
     [inspectorRegistry updateInspectionSetImmediatelyAndUnconditionallyForWindow:window];
 }
 
 + (void)clearInspectionSetForWindow:(NSWindow *)window;
 {
-    OIInspectorRegistry *inspectorRegistry = [(NSObject *)[NSApp delegate] inspectorRegistryForWindow:window];
+    OIInspectorRegistry *inspectorRegistry = [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:window];
     [inspectorRegistry clearInspectionSet];
 }
 
@@ -818,7 +819,7 @@ static NSComparisonResult sortGroupByWindowZOrder(OIInspectorGroup *a, OIInspect
     NSWindow *window = [_makeWorkspaceTextField window];
     [window center];
     [window makeKeyAndOrderFront:self];
-    [NSApp runModalForWindow:window];
+    [[NSApplication sharedApplication] runModalForWindow:window];
 }
 
 - (IBAction)saveWorkspaceConfirmed:(id)sender;
@@ -858,7 +859,7 @@ static NSComparisonResult sortGroupByWindowZOrder(OIInspectorGroup *a, OIInspect
     [window setHidesOnDeactivate:YES];
     [window center];
     [window makeKeyAndOrderFront:self];
-//    [NSApp runModalForWindow:window];
+//    [[NSApplication sharedApplication] runModalForWindow:window];
 }
 
 static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
@@ -911,7 +912,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (IBAction)cancelWorkspacePanel:(id)sender;
 {
     [[(NSView *)sender window] orderOut:self];
-    [NSApp stopModal];
+    [[NSApplication sharedApplication] stopModal];
 }
 
 - (IBAction)overwriteWorkspace:(id)sender;
@@ -979,8 +980,8 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (IBAction)showWorkspacesHelp:(id)sender;
 {
-    OBASSERT([NSApp isKindOfClass:[OAApplication class]]);  // OAApplication provides -showHelpURL:, which allows some special URLs (like "anchor:blah"). It's not provided by NSApplication.
-    [(OAApplication *)NSApp showHelpURL:[[self class] _workspacesHelpURL]];
+    OBASSERT([[NSApplication sharedApplication] isKindOfClass:[OAApplication class]]);  // OAApplication provides -showHelpURL:, which allows some special URLs (like "anchor:blah"). It's not provided by NSApplication.
+    [[OAApplication sharedApplication] showHelpURL:[[self class] _workspacesHelpURL]];
 }
 
 // The shared inspector can be created before or after the dynamic menu placeholder awakes from nib.
@@ -1208,13 +1209,13 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     }
     
     // All the controllers are embedded - we can ask the app delegate what window they belong in
-    Class appDelegateClass = [[NSApp delegate] class];
+    Class appDelegateClass = [[[NSApplication sharedApplication] delegate] class];
     if (OBClassImplementingMethod(appDelegateClass, @selector(windowForInspectorRegistry:)) == [NSObject class]) {
         // The app delegate doesn't implement the appropriate method - fall back on legacy behavior and return the last window that asked for inspection
         return lastWindowAskedToInspect;
     }
     
-    return [(NSObject *)[NSApp delegate] windowForInspectorRegistry:self];
+    return [(NSObject *)[[NSApplication sharedApplication] delegate] windowForInspectorRegistry:self];
 }
 
 - (void)_getInspectedObjects;
@@ -1323,11 +1324,14 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (void)_applicationWillResignActive:(NSNotification *)notification;
 {
-    lastMainWindowBeforeAppSwitch = [NSApp mainWindow];
+    lastMainWindowBeforeAppSwitch = [[NSApplication sharedApplication] mainWindow];
 }
 
 - (void)_windowWillClose:(NSNotification *)note;
 {
+    if (registryFlags.appIsTerminating) {
+        return;
+    }
     NSWindow *window = [note object];
     if (window == lastWindowAskedToInspect) {
         if (!registryFlags.isInvalidated) // if we're closing this thing down, don't get a new inspection set in the middle of window teardown.
@@ -1349,12 +1353,14 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     if (!registryFlags.isListeningForNotifications) {
         NSNotificationCenter *defaultNotificationCenter = [NSNotificationCenter defaultCenter];
 
+        NSApplication *app = [NSApplication sharedApplication];
+        
 	// Since we bail on updating the UI if the window isn't visible, and since panels aren't visible when the app isn't active, we need to try again when the app activates
-	[defaultNotificationCenter addObserver:self selector:@selector(_applicationDidActivate:) name:NSApplicationDidBecomeActiveNotification object:NSApp];
+	[defaultNotificationCenter addObserver:self selector:@selector(_applicationDidActivate:) name:NSApplicationDidBecomeActiveNotification object:app];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_appWillTerminate:) name:NSApplicationWillTerminateNotification object:nil];
 
         // While the Inspector is visible, watch for any window to become main.  When that happens, determine if that window's delegate responds to the OAInspectableControllerProtocol, and act accordingly.
-        [defaultNotificationCenter addObserver:self selector:@selector(_applicationWillResignActive:) name:NSApplicationWillResignActiveNotification object:NSApp];
+        [defaultNotificationCenter addObserver:self selector:@selector(_applicationWillResignActive:) name:NSApplicationWillResignActiveNotification object:app];
         [defaultNotificationCenter addObserver:self selector:@selector(_inspectWindowNotification:) name:NSWindowDidBecomeMainNotification object:nil];
         [defaultNotificationCenter addObserver:self selector:@selector(_uninspectWindowNotification:) name:NSWindowDidResignMainNotification object:nil];
         
@@ -1390,6 +1396,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 {
     [self _saveConfigurations];
     [self defaultsDidChange];
+    registryFlags.appIsTerminating = YES;
 }
 
 - (void)_saveConfigurations;
@@ -1451,7 +1458,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (OIInspectorRegistry *)inspectorRegistryForWindow:(NSWindow *)window;
 {
     static dispatch_once_t onceToken;
-    if (self != (NSObject *)[NSApp delegate]) {
+    if (self != (NSObject *)[[NSApplication sharedApplication] delegate]) {
         dispatch_once(&onceToken, ^{
             NSLog(@"WARNING: You attempted to call %@ on an object that is not the application delegate or does not properly subclass the required inspector registry method. You should ensure you override %@ on your application delegate (without calling super) and call it only on that delegate. Only warning once.", NSStringFromSelector(_cmd), NSStringFromSelector(_cmd));
         });
@@ -1463,7 +1470,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (NSWindow *)windowForInspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
 {
     static dispatch_once_t onceToken;
-    if (self != (NSObject *)[NSApp delegate]) {
+    if (self != (NSObject *)[[NSApplication sharedApplication] delegate]) {
         dispatch_once(&onceToken, ^{
             NSLog(@"WARNING: You attempted to call %@ on an object that is not the application delegate or does not properly subclass the required inspector registry method. You should ensure you override %@ on your application delegate (without calling super) and call it only on that delegate. Only warning once.", NSStringFromSelector(_cmd), NSStringFromSelector(_cmd));
         });

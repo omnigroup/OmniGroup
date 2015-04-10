@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <OmniUI/UIView-OUIExtensions.h>
 #import "OUIDocumentParameters.h"
-
+#import "OUIDocumentPickerScrollView.h"
 RCS_ID("$Id$");
 
 @interface OUIDocumentNameTextField : UITextField
@@ -31,12 +31,16 @@ RCS_ID("$Id$");
 @end
 
 @interface OUIDocumentPickerItemMetadataView ()
+- (void)_updateLabelSizes;
+- (CGFloat)_nameLabelFontSize;
+- (CGFloat)_detailLabelFontSize;
+- (CGFloat)_nameHeight;
+- (CGFloat)_dateHeight;
 @end
 
 @implementation OUIDocumentPickerItemMetadataView
 {
     UIView *_topHairlineView;
-    UILabel *_nameLabel;
     CGFloat _nameLabelWidth;
     UILabel *_dateLabel;
     UIImageView *_nameBadgeImageView;
@@ -44,17 +48,18 @@ RCS_ID("$Id$");
     UIProgressView *_transferProgressView;
 }
 
-static CGFloat NameHeight;
-static CGFloat DateHeight;
+//static CGFloat NameHeight;
+//static CGFloat DateHeight;
 
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    // Calling -sizeThatFits: is too slow, so we make this assumption (which works out for now...)
-    NameHeight = ceil([[UIFont systemFontOfSize:kOUIDocumentPickerItemViewNameLabelFontSize] lineHeight]);
-    DateHeight = ceil([[UIFont systemFontOfSize:kOUIDocumentPickerItemViewNameLabelFontSize] lineHeight]);
-}
+//+ (void)initialize;
+//{
+//    OBINITIALIZE;
+//    
+//    // Calling -sizeThatFits: is too slow, so we make this assumption (which works out for now...)
+//    // not checking the isSmallItem method here, assuming large, but hopefully it'll adjust properly later.
+//    NameHeight = ceil([[UIFont systemFontOfSize:kOUIDocumentPickerItemViewNameLabelFontSize] lineHeight]);
+//    DateHeight = ceil([[UIFont systemFontOfSize:kOUIDocumentPickerItemViewNameLabelFontSize] lineHeight]);
+//}
 
 + (UIColor *)defaultBackgroundColor;
 {
@@ -76,18 +81,17 @@ static CGFloat DateHeight;
     _nameTextField = [[OUIDocumentNameTextField alloc] init];
     _nameTextField.textAlignment = NSTextAlignmentLeft;
     //_nameTextField.lineBreakMode = NSLineBreakByTruncatingTail;
-    _nameTextField.font = [UIFont systemFontOfSize:kOUIDocumentPickerItemViewNameLabelFontSize];
+    _nameTextField.font = [UIFont systemFontOfSize:[self _nameLabelFontSize]];
     _nameTextField.textColor = OQMakeUIColor(kOUIDocumentPickerItemViewNameLabelColor);
     _nameTextField.clearButtonMode = UITextFieldViewModeWhileEditing;
     _nameTextField.autocapitalizationType = UITextAutocapitalizationTypeWords;
     _nameTextField.spellCheckingType = UITextSpellCheckingTypeNo;
     _nameTextField.returnKeyType = UIReturnKeyDone;
-    [_nameTextField addTarget:self action:@selector(_nameTextFieldEditingUpdated:) forControlEvents:UIControlEventEditingDidBegin|UIControlEventEditingDidEnd|UIControlEventEditingDidEndOnExit];
     
     [self addSubview:_nameTextField];
     
     _dateLabel = [[UILabel alloc] init];
-    _dateLabel.font = [UIFont systemFontOfSize:kOUIDocumentPickerItemViewDetailLabelFontSize];
+    _dateLabel.font = [UIFont systemFontOfSize:[self _detailLabelFontSize]];
     _dateLabel.textColor = OQMakeUIColor(kOUIDocumentPickerItemViewDetailLabelColor);
     [self addSubview:_dateLabel];
     
@@ -103,33 +107,6 @@ static CGFloat DateHeight;
     return self;
 }
 
-- (NSString *)label;
-{
-    return _nameLabel.text;
-}
-- (void)setLabel:(NSString *)label;
-{
-    if ([NSString isEmptyString:label]) {
-        if (_nameLabel) {
-            [_nameLabel removeFromSuperview];
-            _nameLabel = nil;
-        }
-    } else {
-        if (!_nameLabel) {
-            _nameLabel = [[UILabel alloc] init];
-            _nameLabel.font = [UIFont systemFontOfSize:kOUIDocumentPickerItemViewNameLabelFontSize];
-            _nameLabel.textColor = OQMakeUIColor(kOUIDocumentPickerItemViewDetailLabelColor);
-            [self addSubview:_nameLabel];
-            [self _updateLabelHidden]; // Unlikely we'd change the label while editing, but why not...
-        }
-        if (OFNOTEQUAL(_nameLabel.text, label)) {
-            _nameLabel.text = label;
-            _nameLabelWidth = ceil([_nameLabel sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)].width);
-            
-            [self layoutSubviews];
-        }
-    }
-}
 
 - (NSString *)name;
 {
@@ -245,7 +222,7 @@ static CGFloat DateHeight;
 // Our callers only obey the height we specify, so we don't compute a width for our ideal layout (which is expensive).
 - (CGSize)sizeThatFits:(CGSize)size;
 {
-    return CGSizeMake(size.width, kOUIDocumentPickerItemViewNameToPreviewPadding + NameHeight + kOUIDocumentPickerItemViewNameToDatePadding + DateHeight + kOUIDocumentPickerItemViewNameToPreviewPadding);
+    return CGSizeMake(size.width, [self _nameToPreviewPadding] + [self _nameHeight] + kOUIDocumentPickerItemViewNameToDatePadding + [self _dateHeight] + [self _nameToPreviewPadding]);
 }
 
 - (void)layoutSubviews;
@@ -264,37 +241,41 @@ static CGFloat DateHeight;
         _transferProgressView.frame = progressFrame;
     }
 
+    CGFloat nameToPreviewPadding = [self _nameToPreviewPadding];
     // CGRectInset can return CGRectNull if the rect isn't big enough to inset (which can transiently happen when getting set up).
     {
-        CGRect inset = CGRectInset(bounds, kOUIDocumentPickerItemViewNameToPreviewPadding, kOUIDocumentPickerItemViewNameToPreviewPadding);
+        CGRect inset = CGRectInset(bounds, nameToPreviewPadding, nameToPreviewPadding);
         if (!CGRectIsNull(inset))
             bounds = inset;
     }
     
     CGFloat nameLeftEdge = CGRectGetMinX(bounds);
     
-    if (_nameLabel && !_nameLabel.hidden) {
-        CGSize nameLabelSize = CGSizeMake(_nameLabelWidth, NameHeight);
-        CGRect nameLabelRect = CGRectMake(CGRectGetMinX(bounds), CGRectGetMinY(bounds), ceil(nameLabelSize.width), NameHeight);
-        _nameLabel.frame = nameLabelRect;
-        
-        nameLeftEdge = CGRectGetMaxX(nameLabelRect) + 4;
-    }
+
+    // we don't want our words snugged way up on the left edge of the view, if the initial view inset doesn't create enough space, lets add a bit more. Effectively makes the left padding from the edge of the view at LEAST 4 points.
+    if (nameToPreviewPadding < 4)
+        nameLeftEdge += 4 - nameToPreviewPadding;
 
     // CGRectDivide can return CGRectNull if our bounds transiently aren't big enough to fit our subviews. So we do these calculations manually.
-    CGRect nameRect = CGRectMake(nameLeftEdge, CGRectGetMinY(bounds), CGRectGetMaxX(bounds) - nameLeftEdge, NameHeight);
-    CGRect dateRect = CGRectMake(CGRectGetMinX(bounds), CGRectGetMaxY(bounds) - DateHeight, CGRectGetWidth(bounds), DateHeight);
+    CGRect nameRect = CGRectMake(nameLeftEdge, CGRectGetMinY(bounds), CGRectGetMaxX(bounds) - nameLeftEdge, [self _nameHeight]);
+    CGRect dateRect = CGRectMake(nameLeftEdge, CGRectGetMaxY(bounds) - [self _dateHeight], CGRectGetWidth(bounds), [self _dateHeight]);
 
     OBASSERT(OUICheckValidFrame(nameRect));
     OBASSERT(OUICheckValidFrame(dateRect));
 
-    if (_nameBadgeImageView) {
+    if (_nameBadgeImageView && _nameBadgeImageView.image) {
         static const CGFloat kNameToBadgePadding = 4;
         CGSize imageSize = [_nameBadgeImageView sizeThatFits:bounds.size];
+
         CGFloat nameRightXEdge = CGRectGetMaxX(bounds) - (kNameToBadgePadding + imageSize.width);
         
         // Always position the image view correctly, as it might be in the middle of animating in or out despite the value of _showsImage
         CGRect imageRect = CGRectMake(nameRightXEdge + kNameToBadgePadding, floor(CGRectGetMidY(bounds) - imageSize.height/2), imageSize.width, imageSize.height);
+
+        if (self.isSmallSize) {
+            imageRect = CGRectInset(imageRect, 4, 4);
+        }
+
         _nameBadgeImageView.frame = imageRect;
         
         if (_showsImage)
@@ -305,19 +286,57 @@ static CGFloat DateHeight;
     _dateLabel.frame = dateRect;
 }
 
-#pragma mark - Private
-
-- (void)_nameTextFieldEditingUpdated:(id)sender;
+- (void)setIsSmallSize:(BOOL)isSmallSize;
 {
-    [self _updateLabelHidden];
+    _isSmallSize = isSmallSize;
+
+    [self _updateLabelSizes];
 }
 
-- (void)_updateLabelHidden;
+#pragma mark - Private
+
+
+- (void)_updateLabelSizes;
 {
-    BOOL hidden = [_nameTextField isFirstResponder];
-    if (hidden ^ _nameLabel.hidden)
-        [self setNeedsLayout];
-    _nameLabel.hidden = hidden;
+    _nameTextField.font = [UIFont systemFontOfSize:[self _nameLabelFontSize]];
+    _dateLabel.font = [UIFont systemFontOfSize:[self _detailLabelFontSize]];
+}
+
+- (CGFloat)_nameLabelFontSize;
+{
+    if (self.isSmallSize) {
+        return kOUIDocumentPickerItemViewNameLabelSmallFontSize;
+    } else {
+        return kOUIDocumentPickerItemViewNameLabelFontSize;
+    }
+}
+
+- (CGFloat)_detailLabelFontSize;
+{
+    if (self.isSmallSize) {
+        return kOUIDocumentPickerItemViewDetailLabelSmallFontSize;
+    } else {
+        return kOUIDocumentPickerItemViewDetailLabelFontSize;
+    }
+}
+
+- (CGFloat)_nameToPreviewPadding;
+{
+    if (self.isSmallSize) {
+        return kOUIDocumentPickerItemSmallViewNameToPreviewPadding;
+    } else {
+        return kOUIDocumentPickerItemViewNameToPreviewPadding;
+    }
+}
+
+- (CGFloat)_nameHeight;
+{
+    return MAX(ceil([[UIFont systemFontOfSize:[self _nameLabelFontSize]] lineHeight]), 16.0);
+}
+
+- (CGFloat)_dateHeight;
+{
+    return ceil([[UIFont systemFontOfSize:[self _detailLabelFontSize]] lineHeight]);
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2006, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,7 @@ static NSString * const OSULicenseTypeKey = @"targetLicenseType";
     if (![NSString isEmptyString:value])
         [urlPromptField setStringValue:value];
     
-    [NSApp beginSheet:[urlPromptField window] modalForWindow:window modalDelegate:self didEndSelector:@selector(urlSheetDidEnd:returnCode:contextInfo:) contextInfo:NULL];
+    [[NSApplication sharedApplication] beginSheet:[urlPromptField window] modalForWindow:window modalDelegate:self didEndSelector:@selector(urlSheetDidEnd:returnCode:contextInfo:) contextInfo:NULL];
 }
 
 // Target of the buttons on the URL prompt sheet
@@ -53,9 +53,9 @@ static NSString * const OSULicenseTypeKey = @"targetLicenseType";
         [[NSUserDefaults standardUserDefaults] setObject:value forKey:OSUInstallFromURLKey];
 
     if ([sender tag] == 0 && ![NSString isEmptyString:[urlPromptField stringValue]])
-        [NSApp endSheet:[urlPromptField window] returnCode:NSRunStoppedResponse];
+        [[NSApplication sharedApplication] endSheet:[urlPromptField window] returnCode:NSRunStoppedResponse];
     else
-        [NSApp endSheet:[urlPromptField window] returnCode:NSRunAbortedResponse];
+        [[NSApplication sharedApplication] endSheet:[urlPromptField window] returnCode:NSRunAbortedResponse];
 }
 
 - (IBAction)changeLicenseState:sender;
@@ -132,7 +132,7 @@ static NSString * const OSULicenseTypeKey = @"targetLicenseType";
         NSError *err = nil;
         OSUDownloadController *dl = [[OSUDownloadController alloc] initWithPackageURL:u item:nil error:&err];
         if (err)
-            [NSApp presentError:err modalForWindow:window];
+            [[NSApplication sharedApplication] presentError:err modalForWindow:window];
         (void)dl;
     }
 }

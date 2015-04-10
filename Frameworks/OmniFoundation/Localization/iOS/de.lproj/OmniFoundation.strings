@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "Die bzip2-Bibliothek gab beim Schreiben der Daten den Fehlercode %1$d zurück. %2$s.";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Cancel" = "Abbrechen";
 
 /* error recovery option */
@@ -73,9 +73,14 @@
 /* error description */
 "Cannot create socket." = "Socket kann nicht erstellt werden.";
 
+/* alert title when clicking on a configuration value URL */
+"Change configuration?" = "Konfiguration ändern?";
+
 /* Error message when mkdir() fails
    Error message when mkdir() will fail because there's a file in the way
    Error message when stat() fails when trying to create a directory tree */
+
+
 "Could not create directory" = "Verzeichnis konnte nicht erstellt werden";
 
 /* time span formatter span */
@@ -97,13 +102,13 @@
 "Failed to create directory for lock file at \"%@\"." = "Verzeichnis für Sperrdatei in „%@“ konnte nicht erstellt werden.";
 
 /* error reason */
-"Failed to serialize lock information.  %@" = "Sperrinformationen konnten nicht serialisiert werden. %@";
+"Failed to serialize lock information." = "Sperrinformationen konnten nicht serialisiert werden.";
 
 /* error reason */
 "Failed to write lock file.  %@" = "Sperrdatei konnte nicht geschrieben werden. %@";
 
 /* time span formatter span */
-"h" = "S.";
+"h" = "Std.";
 
 /* time span formatter span */
 "hour" = "Stunde";
@@ -117,7 +122,7 @@
 /* local bundle path readable string */
 "local configuration file" = "Lokale Konfigurationsdatei";
 
-/* time span formatter span */
+/* time span formatter span (minute) */
 "m" = "M.";
 
 /* time span formatter span */
@@ -126,7 +131,7 @@
 /* time span formatter span */
 "minutes" = "Minuten";
 
-/* time span formatter span */
+/* time span formatter span (month) */
 "mo" = "Mo";
 
 /* time span formatter span */
@@ -141,8 +146,14 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Kein gültiges Paket";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Override Lock" = "Sperre außer Kraft setzen";
+
+/* alert message format when clicking on a configuration value URL */
+"Restore \"%@\" to its default value" = "„%@“ auf den dazugehörigen Standardwert zurücksetzen";
+
+/* alert title when clicking on a configuration value URL */
+"Restore all internal configuration settings to defaults" = "Alle internen Konfigurationseinstellungen auf die Standardwerte zurücksetzen";
 
 /* time span formatter span */
 "s" = "s";
@@ -152,6 +163,9 @@
 
 /* time span formatter span */
 "seconds" = "Sekunden";
+
+/* alert message format when clicking on a configuration value URL */
+"Set \"%@\" to \"%@\"" = "Für „%1$@“ den Wert „%2$@“ festlegen";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Das Server-Zertifikat für „%@“ scheint nicht gültig zu sein. Eventuell ist die Site nicht vertrauenswürdig. Möchten Sie trotzdem verbinden?";
@@ -167,6 +181,9 @@
 
 /* server certificate untrusted */
 "The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "Das Server-Zertifikat für „%@“ wurde von einem nicht vertrauenswürdigen Root-Server signiert. Eventuell ist die Site nicht vertrauenswürdig. Möchten Sie trotzdem verbinden?";
+
+/* alert message header when clicking on a configuration value URL */
+"This configuration link will make the following changes:" = "Dieser Konfigurationslink führt die folgenden Änderungen aus:";
 
 /* error reason */
 "This lock was taken by %@ using the computer \"%@\" on %@ at %@." = "Diese Sperre wurde von %1$@ mit dem Computer „%2$@“ am %3$@ um %4$@ angewendet.";
@@ -220,5 +237,4 @@
 "zlib returned error code %d." = "Zlib gab den Fehlercode %d zurück.";
 
 /* zlib error reason */
-"zlib returned error code %d. %s." = "Zlib gab den Fehlercode %1$d. %2$s zurück.";
-
+"zlib returned error code %d. %s." = "Zlib gab den Fehlercode %1$d zurück. %2$s.";

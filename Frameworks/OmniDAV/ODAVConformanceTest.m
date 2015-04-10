@@ -1,4 +1,4 @@
-// Copyright 2008-2013 The Omni Group. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,7 @@
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFoundation/OFRandom.h>
 #import <OmniFoundation/NSData-OFCompression.h>
+#import <OmniFoundation/OFXMLIdentifier.h>
 
 static NSString * const rcs_id = @"$Id$";
 
@@ -67,12 +68,12 @@ static BOOL _ODAVConformanceError(NSError **outError, NSError *originalError, co
 #define DAV_mkdir(d) \
     error = nil; \
     NSURL *d = [_baseURL URLByAppendingPathComponent:@ #d isDirectory:YES]; \
-    ODAVRequire(d = [_connection synchronousMakeCollectionAtURL:d error:&error], @"Error creating directory \"" #d "\".");
+    ODAVRequire(d = [_connection synchronousMakeCollectionAtURL:d error:&error].URL, @"Error creating directory \"" #d "\".");
 
 #define DAV_mkdir_at(base, d) \
     error = nil; \
     NSURL *base ## _ ## d = [base URLByAppendingPathComponent:@ #d isDirectory:YES]; \
-    ODAVRequire(base ## _ ## d = [_connection synchronousMakeCollectionAtURL:base ## _ ## d error:&error], @"Error creating directory \" #d \" in %@.", base);
+    ODAVRequire(base ## _ ## d = [_connection synchronousMakeCollectionAtURL:base ## _ ## d error:&error].URL, @"Error creating directory \" #d \" in %@.", base);
 
 #define DAV_write_at(base, f, data) \
     error = nil; \
@@ -191,26 +192,63 @@ static BOOL _ODAVConformanceError(NSError **outError, NSError *originalError, co
     }
 }
 
+static BOOL retry(NSError **outError, BOOL (^op)(NSError **))
+{
+    NSUInteger triesLeft = 10;
+    
+    while (YES) {
+        __autoreleasing NSError *tryError;
+        if (op(&tryError))
+            return YES;
+        
+        if (![tryError causedByNetworkConnectionLost] || triesLeft == 0) {
+            if (outError)
+                *outError = tryError;
+            return NO;
+        }
+        
+        [tryError log:@"Network connection lost -- retrying"];
+        triesLeft--;
+    }
+}
+
 - (void)start;
 {
     [_operationQueue addOperationWithBlock:^{
         // We run each test twice, once with some spaces in the path and once without (since each case can hit different server bugs).
-        NSURL *mainTestDirectory = [_baseURL URLByAppendingPathComponent:@"OmniDAV-Conformance-Tests" isDirectory:YES];
+        NSString *testFolder = [NSString stringWithFormat:@"OmniDAV-Conformance-Tests-%@", OFXMLCreateID()]; // Users sometimes add two clients at the same time.
+        NSURL *mainTestDirectory = [_baseURL URLByAppendingPathComponent:testFolder isDirectory:YES];
         NSMutableArray *errors = [NSMutableArray new];
         __autoreleasing NSError *mainError;
 
+        // Users on high latency connections often get network connection lost errors. OmniPresence deals with these (though syncing may be slower obviously due to retried operations). We'll retry on network connection loss errors, up to a limit.
+        
         // If we've tested this server before, clean up the old stuff
-        if (![_connection synchronousDeleteURL:mainTestDirectory withETag:nil error:&mainError]) {
-            if (![mainError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
+        {
+            BOOL ok = retry(&mainError, ^BOOL(NSError **outError){
+                __autoreleasing NSError *deleteError;
+                if ([_connection synchronousDeleteURL:mainTestDirectory withETag:nil error:&deleteError])
+                    return YES;
+                if ([deleteError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND])
+                    return YES;
+                if (outError)
+                    *outError = deleteError;
+                return NO;
+                
+            });
+            if (!ok) {
                 [self _finishWithError:mainError];
                 return;
             }
-        }
-
-        mainError = nil;
-        if (![_connection synchronousMakeCollectionAtURL:mainTestDirectory error:&mainError]) {
-            [self _finishWithError:mainError];
-            return;
+            
+            mainError = nil;
+            ok = retry(&mainError, ^BOOL(NSError **outError){
+                return [_connection synchronousMakeCollectionAtURL:mainTestDirectory error:outError] != nil;
+            });
+            if (!ok) {
+                [self _finishWithError:mainError];
+                return;
+            }
         }
         
         [[self class] eachTest:^(SEL sel, ODAVConformanceTestImp imp, ODAVConformanceTestProgress progress) {
@@ -219,13 +257,23 @@ static BOOL _ODAVConformanceError(NSError **outError, NSError *originalError, co
                 
                 NSString *testName = [NSString stringWithFormat:@"for%@%@", NSStringFromSelector(sel), withSpace ? @" " : @"-"];
                 _baseURL = [mainTestDirectory URLByAppendingPathComponent:testName isDirectory:YES];
-                if (![_connection synchronousMakeCollectionAtURL:_baseURL error:&perTestError]) {
+                
+                BOOL ok;
+                ok = retry(&perTestError, ^BOOL(NSError **outError) {
+                    return [_connection synchronousMakeCollectionAtURL:_baseURL error:outError] != nil;
+                });
+                if (!ok) {
                     [errors addObject:perTestError];
                     return;
                 }
                 
                 perTestError = nil;
-                if (!imp(self, sel, &perTestError)) {
+                
+                ok = retry(&perTestError, ^BOOL(NSError **outError) {
+                    return imp(self, sel, outError);
+                });
+                
+                if (!ok) {
                     NSLog(@"Error encountered while running -%@ -- %@", NSStringFromSelector(sel), [perTestError toPropertyList]);
                     [errors addObject:perTestError];
                 }
@@ -743,7 +791,7 @@ static BOOL _ODAVConformanceError(NSError **outError, NSError *originalError, co
     ODAVRequire(dest, @"Copy of file should succeed");
 
     // Have to allow redirection -- we mostly want to make sure we don't get the original URL back.
-    ODAVRequire([[dest path] isEqual:[b path]], @"Move of file should return the correct destination URL.");
+    ODAVRequire([[dest path] isEqual:[b path]], @"Copy of file should return the correct destination URL.");
     
     return YES;
 }

@@ -30,4 +30,4 @@ IBC_FLATTEN_NIBS = NO
 OMNI_MAC_CODE_SIGN_IDENTITY = Mac Developer:
 
 // Temporary while getting OS X 10.10 builds working
-WARNING_CFLAGS = $(value) -Wno-error-deprecated-declarations -Wno-error-deprecated-implementations -Wno-error-unreachable-code -Wno-error-undeclared-selector
+WARNING_CFLAGS = $(value) -DNSApp=Use_NSApplication_sharedApplication -Wno-error-deprecated-declarations -Wno-error-deprecated-implementations -Wno-error-unreachable-code -Wno-error-undeclared-selector

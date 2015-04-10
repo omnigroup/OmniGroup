@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,8 @@
 #import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
 #import <OmniFoundation/OFBackgroundActivity.h>
+#import <OmniFoundation/OFFileEdit.h>
+#import <OmniFoundation/OFPreference.h>
 
 #import "OUIDocument-Internal.h"
 
@@ -26,6 +28,8 @@ RCS_ID("$Id$");
     ODSFileItem *_fileItemToOpenAfterCurrentPreviewUpdateFinishes; // We block user interaction while this is set.
     OFBackgroundActivity *_previewUpdatingBackgroundActivity;
 }
+
+OFDeclareDebugLogLevel(OUIDocumentPreviewGeneratorDebug)
 
 static NSUInteger disableCount = 0;
 static NSMutableArray *blocksWhileDisabled = nil;
@@ -69,17 +73,6 @@ static NSMutableArray *blocksWhileDisabled = nil;
         [_interactionLock unlock];
 }
 
-static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, ODSFileItem *fileItem, NSURL *fileURL, NSDate *date)
-{
-    if (![OUIDocumentPreview hasPreviewsForFileURL:fileURL date:date]) {
-        if (!self->_fileItemsNeedingUpdatedPreviews)
-            self->_fileItemsNeedingUpdatedPreviews = [[NSMutableSet alloc] init];
-        [self->_fileItemsNeedingUpdatedPreviews addObject:fileItem];
-        return YES;
-    }
-    return NO;
-}
-
 - (void)enqueuePreviewUpdateForFileItemsMissingPreviews:(id <NSFastEnumeration>)fileItems;
 {
     id <OUIDocumentPreviewGeneratorDelegate> delegate = _weak_delegate;
@@ -92,8 +85,16 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, ODSF
         if ([delegate previewGenerator:self isFileItemCurrentlyOpen:fileItem])
             continue; // Ignore this one. The process of closing a document will update its preview and once we become visible we'll check for other previews that need to be updated.
         
-        if (_addFileItemIfPreviewMissing(self, fileItem, fileItem.fileURL, fileItem.fileModificationDate))
+        OFFileEdit *fileEdit = fileItem.fileEdit;
+        if (fileEdit == nil)
+            continue; // Not downloaded
+        
+        if (![OUIDocumentPreview hasPreviewsForFileEdit:fileEdit]) {
+            if (!_fileItemsNeedingUpdatedPreviews)
+                _fileItemsNeedingUpdatedPreviews = [[NSMutableSet alloc] init];
+            [_fileItemsNeedingUpdatedPreviews addObject:fileItem];
             continue;
+        }
     }
     
     if (![delegate previewGeneratorHasOpenDocument:self]) // Start updating previews immediately if there is no open document. Otherwise, queue them until the document is closed
@@ -120,7 +121,7 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, ODSF
         return YES;
     }
     
-    DEBUG_PREVIEW_GENERATION(@"Delaying opening document at %@ until preview refresh finishes for %@", fileItem.fileURL, _currentPreviewUpdatingFileItem.fileURL);
+    DEBUG_PREVIEW_GENERATION(1, @"Delaying opening document at %@ until preview refresh finishes for %@", fileItem.fileURL, _currentPreviewUpdatingFileItem.fileURL);
     
     // Delay the open until after we've finished updating this preview
     _fileItemToOpenAfterCurrentPreviewUpdateFinishes = fileItem;
@@ -140,12 +141,12 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, ODSF
     // The process of closing a document will update its preview and once we become visible we'll check for other previews that need to be updated.
     id <OUIDocumentPreviewGeneratorDelegate> delegate = _weak_delegate;
     if ([delegate previewGenerator:self isFileItemCurrentlyOpen:fileItem]) {
-        DEBUG_PREVIEW_GENERATION(@"Document is open, ignoring change of %@.", fileItem.fileURL);
+        DEBUG_PREVIEW_GENERATION(2, @"Document is open, ignoring change of %@.", fileItem.fileURL);
         return;
     }
     
     if ([_fileItemsNeedingUpdatedPreviews member:fileItem] == nil) {
-        DEBUG_PREVIEW_GENERATION(@"Queueing preview update of %@", fileItem.fileURL);
+        DEBUG_PREVIEW_GENERATION(2, @"Queueing preview update of %@", fileItem.fileURL);
         if (!_fileItemsNeedingUpdatedPreviews)
             _fileItemsNeedingUpdatedPreviews = [[NSMutableSet alloc] init];
         [_fileItemsNeedingUpdatedPreviews addObject:fileItem];
@@ -153,7 +154,7 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, ODSF
         if (![delegate previewGeneratorHasOpenDocument:self]) { // Start updating previews immediately if there is no open document. Otherwise, queue them until the document is closed
             [self _continueUpdatingPreviewsOrOpenDocument];
         } else {
-            DEBUG_PREVIEW_GENERATION(@"Some document is open, not generating previews");
+            DEBUG_PREVIEW_GENERATION(2, @"Some document is open, not generating previews");
         }
     }
 }
@@ -166,16 +167,14 @@ static BOOL _addFileItemIfPreviewMissing(OUIDocumentPreviewGenerator *self, ODSF
 
 #pragma mark - Private
 
-static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, ODSFileItem *fileItem)
+static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileEdit *fileEdit)
 {
-    // Be careful to use the modification date we'd get otherwise for the current version. They should be the same, but...
-    NSURL *fileURL = fileItem.fileURL;
-    NSDate *date = fileItem.fileModificationDate;
+    NSURL *fileURL = fileEdit.originalFileURL;
     
     id <OUIDocumentPreviewGeneratorDelegate> delegate = self->_weak_delegate;
     
     if (![delegate previewGenerator:self shouldGeneratePreviewForURL:fileURL]) {
-        [OUIDocumentPreview writeEmptyPreviewsForFileURL:fileURL date:date];
+        [OUIDocumentPreview writeEmptyPreviewsForFileEdit:fileEdit];
         [self _finishedUpdatingPreview];
         return;
     }
@@ -192,27 +191,30 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, ODSFile
         NSLog(@"Error opening document at %@ to rebuild its preview: %@", fileURL, [error toPropertyList]);
     }
     
-    DEBUG_PREVIEW_GENERATION(@"Starting preview update of %@ / %@", [fileURL lastPathComponent], [date xmlString]);
+    DEBUG_PREVIEW_GENERATION(1, @"Starting preview update of %@ / %@", [fileURL lastPathComponent], [fileEdit.fileModificationDate xmlString]);
 
     // Let the document know that it is only going to be used to generate previews.
     document.forPreviewGeneration = YES;
     
     // Write blank previews before we start the opening process in case it crashes. Without this we could get into a state where launching the app would crash over and over. Now we should only crash once per bad document (still bad, but recoverable for the user). In addition to caching placeholder previews, this will write the empty marker preview files too.
     [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage) {
-        cacheImage(fileURL, date, NULL);
+        cacheImage(fileEdit, NULL);
     }];
     
     [document openWithCompletionHandler:^(BOOL success){
         OBASSERT([NSThread isMainThread]);
         
         if (success) {
+            OFFileEdit *fileEdit = document.fileItem.fileEdit;
+            OBASSERT(fileEdit);
+            
             [OUIDocumentPreviewGenerator _performOrQueueBlock:^{
-                [document _writePreviewsIfNeeded:NO /* have to pass NO since we just write bogus previews */ withCompletionHandler:^{
+                [document _writePreviewsIfNeeded:NO /* have to pass NO since we just wrote bogus previews */ fileEdit:fileEdit withCompletionHandler:^{
                     [OUIDocumentPreviewGenerator _performOrQueueBlock:^{
                         [document closeWithCompletionHandler:^(BOOL success){
                             [document didClose];
                             
-                            DEBUG_PREVIEW_GENERATION(@"Finished preview update of %@", fileURL);
+                            DEBUG_PREVIEW_GENERATION(1, @"Finished preview update of %@", fileURL);
                             
                             // Wait until the close is done to end our background task (in case we are being backgrounded, we don't want an open document alive that might point at a document the user might delete externally).
                             [self _finishedUpdatingPreview];
@@ -241,14 +243,14 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, ODSFile
     
     // If someone else happens to call after we've completed our background task, ignore it.
     if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateActive) {
-        DEBUG_PREVIEW_GENERATION(@"Ignoring preview generation while in the background.");
+        DEBUG_PREVIEW_GENERATION(2, @"Ignoring preview generation while in the background.");
         return;
     }
     
     // If the user tapped on a document while a preview was happening, we'll have delayed that action until the current preview update finishes (to avoid having two documents open at once and possibliy running out of memory).
     id <OUIDocumentPreviewGeneratorDelegate> delegate = _weak_delegate;
     if (_fileItemToOpenAfterCurrentPreviewUpdateFinishes) {
-        DEBUG_PREVIEW_GENERATION(@"Performing delayed open of document at %@", _fileItemToOpenAfterCurrentPreviewUpdateFinishes.fileURL);
+        DEBUG_PREVIEW_GENERATION(2, @"Performing delayed open of document at %@", _fileItemToOpenAfterCurrentPreviewUpdateFinishes.fileURL);
         
         ODSFileItem *fileItem = _fileItemToOpenAfterCurrentPreviewUpdateFinishes;
         _fileItemToOpenAfterCurrentPreviewUpdateFinishes = nil;
@@ -289,14 +291,16 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, ODSFile
         [_previewUpdatingBackgroundActivity finished];
         _previewUpdatingBackgroundActivity = nil;
     }
-    DEBUG_PREVIEW_GENERATION(@"beginning background task to generate preview");
+    DEBUG_PREVIEW_GENERATION(2, @"beginning background task to generate preview");
     _previewUpdatingBackgroundActivity = [OFBackgroundActivity backgroundActivityWithIdentifier:@"com.omnigroup.OmniUI.OUIDocumentPreviewGenerator.finish_preview"];
     
-    DEBUG_PREVIEW_GENERATION(@"Starting preview update for %@ at %@", _currentPreviewUpdatingFileItem.fileURL, [_currentPreviewUpdatingFileItem.fileModificationDate xmlString]);
+    DEBUG_PREVIEW_GENERATION(1, @"Starting preview update for %@ at %@", _currentPreviewUpdatingFileItem.fileURL, [_currentPreviewUpdatingFileItem.fileModificationDate xmlString]);
     
     // If there is user-interaction blocking work going on (moving items in the document picker, for example), try to stay out of the way of completion handlers that would resume user interaction.
     NSBlockOperation *previewOperation = [NSBlockOperation blockOperationWithBlock:^{
-        _writePreviewsForFileItem(self, _currentPreviewUpdatingFileItem);
+        OFFileEdit *fileEdit = _currentPreviewUpdatingFileItem.fileEdit;
+        OBASSERT(fileEdit);
+        _writePreviewsForFileItem(self, fileEdit);
     }];
     previewOperation.queuePriority = NSOperationQueuePriorityLow;
     [[NSOperationQueue mainQueue] addOperation:previewOperation];
@@ -315,7 +319,7 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, ODSFile
 
     // Do this after cleaning out our other ivars since we could get suspended
     if (_previewUpdatingBackgroundActivity != nil) {
-        DEBUG_PREVIEW_GENERATION(@"Preview update task finished!");
+        DEBUG_PREVIEW_GENERATION(2, @"Preview update task finished!");
         
         OFBackgroundActivity *activity = _previewUpdatingBackgroundActivity;
         _previewUpdatingBackgroundActivity = nil;

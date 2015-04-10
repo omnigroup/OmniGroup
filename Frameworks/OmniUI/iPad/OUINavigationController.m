@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -71,9 +71,15 @@ RCS_ID("$Id$")
         return;
     
     if (newAccessory) {
-        newAccessoryFrame.origin.x = floor((CGRectGetWidth(barFrame) - CGRectGetWidth(newAccessoryFrame)) / 2.0);
+        if ((newAccessory.autoresizingMask & UIViewAutoresizingFlexibleWidth) != 0) {
+            newAccessoryFrame.origin.x = 0.0;
+            newAccessoryFrame.size.width = _accessoryBar.frame.size.width;
+            newAccessory.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
+        } else {
+            newAccessoryFrame.origin.x = floor((CGRectGetWidth(barFrame) - CGRectGetWidth(newAccessoryFrame)) / 2.0);
+            newAccessory.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+        }
         newAccessoryFrame.origin.y = accessoryY;
-        newAccessory.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         newAccessory.alpha = 0.1f;
         
         CGRect newStartFrame = newAccessoryFrame;

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,8 @@
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
+#import <OmniFoundation/OFFileEdit.h>
+#import <OmniFoundation/OFFileMotionResult.h>
 #import <OmniFoundation/OFUTI.h>
 
 #import "ODSStore-Internal.h"
@@ -28,6 +30,9 @@ RCS_ID("$Id$");
 OBDEPRECATED_METHOD(-urlForNewDocumentInFolderNamed:baseName:fileType:); // folderURL
 OBDEPRECATED_METHOD(-addDocumentInFolderNamed:baseName:fromURL:option:completionHandler:); // folderURL
 OBDEPRECATED_METHOD(-copyCurrentlyUsedFileNamesInFolderNamed:ignoringFileURL:); // folderURL
+
+OBDEPRECATED_METHOD(-fileWithURL:andDate:willCopyToURL:);
+OBDEPRECATED_METHOD(-fileWithURL:andDate:finishedCopyToURL:andDate:successfully:);
 
 @interface ODSScope (/*Private*/)
 @property(nonatomic,copy) NSSet *fileItems; // redeclared so we can use -mutableSetValueForKey:
@@ -205,7 +210,7 @@ static NSString *_makeCanonicalPath(NSString *path)
     return folder;
 }
 
-- (ODSFileItem *)makeFileItemForURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileModificationDate:(NSDate *)fileModificationDate userModificationDate:(NSDate *)userModificationDate;
+- (ODSFileItem *)makeFileItemForURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileEdit:(OFFileEdit *)fileEdit userModificationDate:(NSDate *)userModificationDate;
 {
     ODSStore *documentStore = self.documentStore;
     if (!documentStore) {
@@ -234,7 +239,7 @@ static NSString *_makeCanonicalPath(NSString *path)
     }
 #endif
     
-    ODSFileItem *fileItem = [[fileItemClass alloc] initWithScope:self fileURL:fileURL isDirectory:isDirectory fileModificationDate:fileModificationDate userModificationDate:userModificationDate];
+    ODSFileItem *fileItem = [[fileItemClass alloc] initWithScope:self fileURL:fileURL isDirectory:isDirectory fileEdit:fileEdit userModificationDate:userModificationDate];
     
     // Shouldn't make file items for files we can't view.
     OBASSERT([documentStore canViewFileTypeWithIdentifier:fileItem.fileType]);
@@ -267,48 +272,47 @@ static NSString *_makeCanonicalPath(NSString *path)
 }
 
 // Helper that can be used for methods that create a file item and don't need/want to do a full scan.
-static ODSFileItem *_addItem(ODSScope *self, NSURL *createdURL)
+static ODSFileItem *_addItem(ODSScope *self, OFFileMotionResult *motionResult)
 {
     // As we modify our _fileItem set here and fire KVO, this should be on the main thread.
     OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(motionResult);
     
-    ODSFileItem *fileItem = [self fileItemWithURL:createdURL];
+    ODSFileItem *fileItem = [self fileItemWithURL:motionResult.fileURL];
     
-    __autoreleasing NSDate *fileModificationDate = nil;
-
     if (!fileItem || fileItem.isDownloaded) {
         // Either a newly appearing file, a regular local file, or a OmniPresence file that is already downloaded, so it exists on disk.
-        if (![createdURL getResourceValue:&fileModificationDate forKey:NSURLContentModificationDateKey error:NULL]) {
-            OBASSERT_NOT_REACHED("We just created it...");
-            fileModificationDate = fileItem.fileModificationDate; // keep the old date at least
-        }
+        OBASSERT(motionResult.fileEdit != nil);
     } else if (fileItem) {
-        // OmniPresence item that isn't downloaded. Only thing we can be doing here is renaming it. It won't have a file modification date here (since it isn't on disk)
-        OBASSERT(fileItem.fileModificationDate == nil);
+        // OmniPresence item that isn't downloaded. Only thing we can be doing here is renaming it. It won't have a file edit here (since it isn't on disk)
+        OBASSERT(fileItem.fileEdit == nil);
+        OBASSERT(motionResult.fileEdit == nil);
     }
     
     // If we are replacing an existing document, there may already be a file item (but it is probably marked for deletion). But we also want to be careful that if there was a scan completed and repopulated _fileItems that *did* capture this URL, we don't want make a new file item for the same URL.
     ODSFileItem *addedFileItem = nil;
+    OFFileEdit *fileEdit = motionResult.fileEdit;
     
-    if (fileItem)
-        fileItem.fileModificationDate = fileModificationDate;
-    else {
-        __autoreleasing NSNumber *isDirectory = nil;
-        __autoreleasing NSError *resourceError = nil;
-        if (![createdURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:&resourceError])
-            NSLog(@"Error getting directory key for %@: %@", createdURL, [resourceError toPropertyList]);
-
+    if (fileItem) {
+        // Might or might not be downloaded if we are moving an existing file item.
+        if (fileEdit)
+            fileItem.fileEdit = fileEdit;
+        else
+            OBASSERT(fileItem.fileEdit == nil);
+    } else {
         // This function is called for newly created items, so our content modification date is the same as the file system modification time (or close enough).
-        NSDate *userModificationDate = fileModificationDate;
+        OBASSERT(fileEdit);
         
-        addedFileItem = [self makeFileItemForURL:createdURL isDirectory:[isDirectory boolValue] fileModificationDate:fileModificationDate userModificationDate:userModificationDate];
+        NSDate *userModificationDate = fileEdit.fileModificationDate;
+        
+        addedFileItem = [self makeFileItemForURL:fileEdit.originalFileURL isDirectory:fileEdit.directory fileEdit:fileEdit userModificationDate:userModificationDate];
         if (!addedFileItem) {
             OBASSERT_NOT_REACHED("Some error in the delegate where we created a file of a type we don't display?");
         } else {
             fileItem = addedFileItem;
             
             // Start out with the right state when duplicating an item and otherwise set default metadata.
-            [self updateFileItem:fileItem withMetadata:nil fileModificationDate:fileModificationDate];
+            [self updateFileItem:fileItem withMetadata:nil fileEdit:fileEdit];
         }
     }
     
@@ -320,15 +324,15 @@ static ODSFileItem *_addItem(ODSScope *self, NSURL *createdURL)
     return fileItem;
 }
 
-static void _addItemAndNotifyHandler(ODSScope *self, NSURL *createdURL, NSError *error, void (^handler)(ODSFileItem *createdFileItem, NSError *error))
+static void _addItemAndNotifyHandler(ODSScope *self, OFFileMotionResult *motionResult, NSError *error, void (^handler)(ODSFileItem *createdFileItem, NSError *error))
 {
     // As we modify our _fileItem set here and fire KVO, this should be on the main thread.
     OBPRECONDITION([NSThread isMainThread]);
     
     // We just successfully wrote a new document; there is no need to do a full scan (though one may fire anyway if a metadata update starts due to a scope noticing the edit). Still, we want to get back to the UI as soon as possible by calling the completion handler w/o waiting for the scan.
     ODSFileItem *fileItem = nil;
-    if (createdURL)
-        fileItem = _addItem(self, createdURL);
+    if (motionResult)
+        fileItem = _addItem(self, motionResult);
     else
         OBASSERT(error);
     
@@ -346,13 +350,9 @@ static void _addItemAndNotifyHandler(ODSScope *self, NSURL *createdURL, NSError 
     OBPRECONDITION([NSOperationQueue currentQueue] == _actionOperationQueue);
     
     OBPRECONDITION(documentUTI);
-        
-    NSString *extension = CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)documentUTI, kUTTagClassFilenameExtension));
-    if (!extension)
-        OBRequestConcreteImplementation(self, _cmd); // UTI not registered in the Info.plist?
     
-    BOOL isPackage = UTTypeConformsTo((__bridge CFStringRef)documentUTI, kUTTypePackage);
-    OBASSERT_IF(!isPackage, !UTTypeConformsTo((__bridge CFStringRef)documentUTI, kUTTypeFolder), "Types should be declared as conforming to kUTTypePackage, not kUTTypeFolder");
+    BOOL isPackage;
+    NSString *extension = ODSPathExtensionForFileType(documentUTI, &isPackage);
     
     NSUInteger counter = 0;
     
@@ -361,8 +361,6 @@ static void _addItemAndNotifyHandler(ODSScope *self, NSURL *createdURL, NSError 
         OBASSERT(OFURLContainsURL(documentsURL, folderURL));
     } else
         folderURL = documentsURL;
-        
-    OBFinishPortingLater("Propagate error");
     
     NSString *availableFileName = [self _availableFileNameInFolderAtURL:folderURL withBaseName:baseName extension:extension counter:&counter];
     
@@ -377,8 +375,9 @@ static void _addItemAndNotifyHandler(ODSScope *self, NSURL *createdURL, NSError 
     handler = [handler copy];
     
     [self performAsynchronousFileAccessUsingBlock:^{
-        createDocument(^(NSURL *resultURL, NSError *errorOrNil){
-            _addItemAndNotifyHandler(self, resultURL, errorOrNil, handler);
+        createDocument(^(OFFileEdit *resultFileEdit, NSError *errorOrNil){
+            OFFileMotionResult *motionResult = [[OFFileMotionResult alloc] initWithFileEdit:resultFileEdit];
+            _addItemAndNotifyHandler(self, motionResult, errorOrNil, handler);
         });
     }];
 }
@@ -386,24 +385,30 @@ static void _addItemAndNotifyHandler(ODSScope *self, NSURL *createdURL, NSError 
 typedef NS_OPTIONS(NSUInteger, AddOptions) {
     AddByReplacing = (1<<0),
     AddByCreatingParentDirectories = (1<<1),
+    AddByMoving = (1<<2),
 };
 
-static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOptions options, NSError **outError)
+static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOptions options, NSError **outError)
 {
     OBPRECONDITION(![NSThread isMainThread]); // Were going to do file coordination which could deadlock with file presenters on the main thread
     OBASSERT_NOTNULL(outError); // We know we pass in a non-null pointer, so we can avoid the outError-NULL checks.
     
     // We might be able to do a coordinated read/write to duplicate documents. Since we need to sometimes move, let's just always do that. Since the source might have incoming sync writes or have presenters with outstanding writes, do a coordinated read while copying it into a temporary location. It is a bit annoying that we have two separate operations, but we should still get a consistent snapshot of the source at our destination location.
-    NSURL *temporaryURL;
-    {
+    NSURL *moveSourceURL;
+    BOOL moveSourceIsTemporaryCopy = NO;
+    if (options & AddByMoving) {
+        // We can move this URL directly.
+        moveSourceURL = fromURL;
+    } else {
         NSFileManager *manager = [NSFileManager defaultManager];
+
         NSString *temporaryPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[fromURL lastPathComponent]];
         temporaryPath = [manager uniqueFilenameFromName:temporaryPath allowOriginal:YES create:NO error:outError];
         if (!temporaryPath)
-            return NO;
+            return nil;
         
-        temporaryURL = [NSURL fileURLWithPath:temporaryPath];
-        DEBUG_STORE(@"Making copy of %@ at %@", fromURL, temporaryURL);
+        moveSourceURL = [NSURL fileURLWithPath:temporaryPath];
+        DEBUG_STORE(@"Making copy of %@ at %@", fromURL, moveSourceURL);
         
         NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
         __block BOOL success = NO;
@@ -411,12 +416,12 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
         
         __autoreleasing NSError *error = nil;
         [coordinator coordinateReadingItemAtURL:fromURL options:0
-                               writingItemAtURL:temporaryURL options:NSFileCoordinatorWritingForReplacing
+                               writingItemAtURL:moveSourceURL options:NSFileCoordinatorWritingForReplacing
                                           error:&error byAccessor:
          ^(NSURL *newReadingURL, NSURL *newWritingURL) {
              __autoreleasing NSError *copyError = nil;
              if (![manager copyItemAtURL:newReadingURL toURL:newWritingURL error:&copyError]) {
-                 NSLog(@"Error copying %@ to %@: %@", fromURL, temporaryURL, [copyError toPropertyList]);
+                 [copyError log:@"Error copying %@ to %@", newReadingURL, newWritingURL];
                  innerError = copyError;
                  return;
              }
@@ -430,56 +435,69 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
             if (innerError)
                 error = innerError;
             *outError = error;
-            return NO;
+            return nil;
         }
+        moveSourceIsTemporaryCopy = YES;
     }
     
     NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
-    __block BOOL success = NO;
+    __block OFFileEdit *fileEdit = nil;
     __block NSError *innerError = nil;
     __autoreleasing NSError *error = nil;
-    
-    [coordinator coordinateReadingItemAtURL:fromURL options:0
-                           writingItemAtURL:toURL options:NSFileCoordinatorWritingForReplacing
+
+    // If we are moving the original input, we require that it is not in any scope and doesn't need file coordination. So, we don't specify the source here as either being read/written since we should have the only reference to it.
+    [coordinator coordinateWritingItemAtURL:toURL options:NSFileCoordinatorWritingForReplacing
                                       error:&error byAccessor:
-     ^(NSURL *newReadingURL, NSURL *newWritingURL) {
+     ^(NSURL *newWritingURL) {
          NSFileManager *manager = [NSFileManager defaultManager];
          
+         BOOL replaced = NO;
+         
          if (options & AddByReplacing) {
-             __autoreleasing NSError *removeError = nil;
-             if (![manager removeItemAtURL:newWritingURL error:&removeError]) {
-                 if (![removeError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) {
-                     innerError = removeError;
-                     NSLog(@"Error removing %@: %@", toURL, [removeError toPropertyList]);
+             __autoreleasing NSError *replaceError = nil;
+             
+             replaced = [manager replaceItemAtURL:newWritingURL withItemAtURL:moveSourceURL backupItemName:nil options:0 resultingItemURL:NULL error:&replaceError];
+             if (!replaced) {
+                 if (![replaceError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) {
+                     innerError = replaceError;
+                     [replaceError log:@"Error replacing %@ with %@", toURL, newWritingURL];
                      return;
                  }
              }
          }
          
-         __autoreleasing NSError *moveError = nil;
-         if (![coordinator moveItemAtURL:temporaryURL toURL:toURL createIntermediateDirectories:(options & AddByCreatingParentDirectories) error:&moveError]) {
-             NSLog(@"Error moving %@ -> %@: %@", temporaryURL, toURL, [moveError toPropertyList]);
-             innerError = moveError;
-             return;
+         if (!replaced) {
+             __autoreleasing NSError *moveError = nil;
+             if (![coordinator moveItemAtURL:moveSourceURL toURL:toURL createIntermediateDirectories:(options & AddByCreatingParentDirectories) error:&moveError]) {
+                 NSLog(@"Error moving %@ -> %@: %@", moveSourceURL, toURL, [moveError toPropertyList]);
+                 innerError = moveError;
+                 return;
+             }
          }
          
-         success = YES;
+         __autoreleasing NSError *fileError = nil;
+         fileEdit = [[OFFileEdit alloc] initWithFileURL:newWritingURL error:&fileError];
+         if (!fileEdit) {
+             [fileError log:@"Cannot get file edit for %@", newWritingURL];
+             innerError = fileError;
+         }
      }];
     
     
-    if (!success) {
+    if (!fileEdit) {
         OBASSERT(error || innerError);
         if (innerError)
             error = innerError;
         *outError = error;
         
         // Clean up the temporary copy
-        [[NSFileManager defaultManager] removeItemAtURL:temporaryURL error:NULL];
+        if (moveSourceIsTemporaryCopy)
+            [[NSFileManager defaultManager] removeItemAtURL:moveSourceURL error:NULL];
         
-        return NO;
+        return nil;
     }
     
-    return YES;
+    return fileEdit;
 }
 
 - (void)addDocumentInFolder:(ODSFolderItem *)folderItem fromURL:(NSURL *)fromURL option:(ODSStoreAddOption)option completionHandler:(void (^)(ODSFileItem *duplicateFileItem, NSError *error))completionHandler;
@@ -487,19 +505,56 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
     [self addDocumentInFolder:folderItem baseName:nil fromURL:fromURL option:option completionHandler:completionHandler];
 }
 
-// Enqueues an operationon the scope's background serial action queue. The completion handler will be called with the resulting file item, nil file item and an error.
 - (void)addDocumentInFolder:(ODSFolderItem *)folderItem baseName:(NSString *)baseName fromURL:(NSURL *)fromURL option:(ODSStoreAddOption)option completionHandler:(void (^)(ODSFileItem *duplicateFileItem, NSError *error))completionHandler;
+{
+    // Infer the result file type from the incoming fromURL's type.
+    NSString *fileType = OFUTIForFileURLPreferringNative(fromURL, NULL);
+    [self addDocumentInFolder:folderItem baseName:baseName fileType:fileType fromURL:fromURL option:option completionHandler:completionHandler];
+}
+
+// Enqueues an operation on the scope's background serial action queue. The completion handler will be called with the resulting file item, nil file item and an error.
+- (void)addDocumentInFolder:(ODSFolderItem *)folderItem baseName:(NSString *)baseName fileType:(NSString *)fileType fromURL:(NSURL *)fromURL option:(ODSStoreAddOption)option completionHandler:(void (^)(ODSFileItem *duplicateFileItem, NSError *error))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]); // We'll invoke the completion handler on the main thread
     OBPRECONDITION(!folderItem || folderItem.scope == self);
+    OBPRECONDITION(fileType);
+    OBPRECONDITION(fromURL);
+    
     if (!folderItem)
         folderItem = _rootFolder;
     
+    NSURL *folderURL = [self _urlForFolder:folderItem]; // ODSItems are main-thread only, so switch to folderURL.
+    
+    if (!baseName)
+        baseName = [[fromURL lastPathComponent] stringByDeletingPathExtension];
+    
     // Don't copy in random files that the user tapped on in the WebDAV browser or that higher level UI didn't filter out.
-    BOOL canView = ([self.documentStore fileItemClassForURL:fromURL] != Nil);
-    NSString *fileType = OFUTIForFileURLPreferringNative(fromURL, NULL);
-    canView &= (fileType != nil) && [self.documentStore canViewFileTypeWithIdentifier:fileType];
+    BOOL canView;
+    NSString *extension;
+    BOOL isDirectory;
+    {
+        // We don't know where the file will end up, but this should be good enough to check if we've be able to view it.
+        BOOL fileTypeIsPackage;
+        extension = ODSPathExtensionForFileType(fileType, &fileTypeIsPackage);
+        
+        // fromURL should exist, so we can ask if it is a directory.
+        __autoreleasing NSError *attributError;
+        if (!OFGetBoolResourceValue(fromURL, NSURLIsDirectoryKey, &isDirectory, &attributError)) {
+            // OFGetBoolResourceValue already logs
+            isDirectory = [[fromURL absoluteString] hasSuffix:@"/"];
+        }
+        // Can't clone a directory to become a flat file -- the source URL and destination file type need to at least agree on package-ness.
+        // This currently spuriously fails for OmniGraffle since the .graffle file extension can be either a package or not. The input template is a flat-file .gtemplate, but we get passed in the com.omnigroup.omnigraffle.graffle-package (the caller just assumed when it should map flat-stencil to flat-graffle).
+        // OBASSERT(fileTypeIsPackage == isDirectory);
+        
+        NSURL *fakeDestinationURL = [folderURL URLByAppendingPathComponent:[baseName stringByAppendingPathExtension:extension]];
+
+        canView = ([self.documentStore fileItemClassForURL:fakeDestinationURL] != Nil);
+        canView &= (fileType != nil) && [self.documentStore canViewFileTypeWithIdentifier:fileType];
+    }
+    
     if (!canView) {
+        NSLog(@"Unable to add document: unsupported file type [%@] for document [%@]", fileType, fromURL);
         if (completionHandler) {
             __autoreleasing NSError *error = nil;
             NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to add document.", @"OmniDocumentStore", OMNI_BUNDLE, @"Error description when a file type is not recognized.");
@@ -516,10 +571,9 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
     if (!completionHandler)
         completionHandler = ^(ODSFileItem *duplicateFileItem, NSError *error){
             if (!duplicateFileItem)
-                NSLog(@"Error adding document from %@: %@", fromURL, [error toPropertyList]);
+                NSLog(@"Error adding document of type %@ from %@: %@", fileType, fromURL, [error toPropertyList]);
         };
     
-    NSURL *folderURL = [self _urlForFolder:folderItem]; // ODSItems are main-thread only, so switch to folderURL.
     
     completionHandler = [completionHandler copy]; // preserve scope
     
@@ -532,21 +586,13 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
     };
     callCompletaionHandlerOnMainQueue = [callCompletaionHandlerOnMainQueue copy];
     
-    // fromURL should exist, so we can ask if it is a directory.
-    __autoreleasing NSError *attributError;
-    BOOL isDirectory;
-    if (!OFGetBoolResourceValue(fromURL, NSURLIsDirectoryKey, &isDirectory, &attributError)) {
-        // OFGetBoolResourceValue already logs
-        isDirectory = [[fromURL absoluteString] hasSuffix:@"/"];
-    }
-    
     // We cannot decide on the destination URL w/o synchronizing with the action queue. In particular, if you try to duplicate "A" and "A 2", both operations could pick "A 3".
     [self performAsynchronousFileAccessUsingBlock:^{
         NSURL *toURL = nil;
-        NSString *toFileName = (baseName) ? [baseName stringByAppendingPathExtension:[[fromURL lastPathComponent] pathExtension]] : [fromURL lastPathComponent];
+        NSString *toFileName = [baseName stringByAppendingPathExtension:extension];
         AddOptions addOptions = 0;
         
-        if (option == ODSStoreAddNormally) {
+        if (option == ODSStoreAddByCopyingSourceToDestinationURL) {
             // Use the given file name.
             __autoreleasing NSError *urlError = nil;
             toURL = [self _urlForFolderAtURL:folderURL fileName:toFileName isDirectory:isDirectory error:&urlError];
@@ -555,7 +601,10 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
                 return;
             }
         }
-        else if (option == ODSStoreAddByRenaming) {
+        else if (option == ODSStoreAddByCopyingSourceToAvailableDestinationURL || option == ODSStoreAddByMovingTemporarySourceToAvailableDestinationURL) {
+            if (option == ODSStoreAddByMovingTemporarySourceToAvailableDestinationURL)
+                addOptions |= AddByMoving;
+            
             // Generate a new file name.
             __autoreleasing NSString *toBaseName = nil;
             NSUInteger counter;
@@ -570,7 +619,7 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
                 return;
             }
         }
-        else if (option == ODSStoreAddByReplacing) {
+        else if (option == ODSStoreAddByCopyingSourceToReplaceDestinationURL) {
             // Use the given file name, but ensure that it does not exist in the documents directory.
             __autoreleasing NSError *urlError = nil;
             toURL = [self _urlForFolderAtURL:folderURL fileName:toFileName isDirectory:isDirectory error:&urlError];
@@ -589,13 +638,14 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
         }
         
         __autoreleasing NSError *addError = nil;
-        BOOL success = _performAdd(self, fromURL, toURL, addOptions, &addError);
+        OFFileEdit *fileEdit = _performAdd(self, fromURL, toURL, addOptions, &addError);
         
-        NSError *strongError = success ? nil : addError;
+        NSError *strongError = fileEdit ? nil : addError;
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            if (success)
-                _addItemAndNotifyHandler(self, toURL, nil, completionHandler);
-            else
+            if (fileEdit) {
+                OFFileMotionResult *motionResult = [[OFFileMotionResult alloc] initWithFileEdit:fileEdit];
+                _addItemAndNotifyHandler(self, motionResult, nil, completionHandler);
+            } else
                 _addItemAndNotifyHandler(self, nil, strongError, completionHandler);
         }];
     }];
@@ -618,7 +668,7 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
 }
 
 - (void)_doMotion:(NSString *)motionType withItems:(NSSet *)items toFolder:(ODSFolderItem *)parentFolder ignoringFileItems:(NSSet *)ignoredFileItems status:(ODSScopeItemMotionStatus)status completionHandler:(void (^)(NSSet *finalItems))completionHandler
-           action:(BOOL (^)(ODSFileItem *item, NSURL *sourceURL, NSDate *sourceModificationDate, NSURL *destinationURL, NSError **outError))action;
+           action:(OFFileMotionResult *(^)(ODSFileItemMotion *itemMotion, NSURL *destinationURL, NSError **outError))action;
 {
     OBPRECONDITION(!parentFolder || parentFolder.scope == self);
     
@@ -640,7 +690,6 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
         [item _addMotions:motions toParentFolderURL:parentFolderURL isTopLevel:YES usedFolderNames:usedFolderNames ignoringFileItems:ignoredFileItems];
     }
     
-    
     if ([motions count] == 0) {
         // Everything handled by ignored items?
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
@@ -659,7 +708,10 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
         // We put this hear to capture scope, but we only add/read it on the main queue.
         NSMutableSet *createdFileItems = [NSMutableSet new];
         
-        NSMutableSet *usedFilenames = [self copyCurrentlyUsedFileNamesInFolderAtURL:parentFolderURL ignoringFileURL:nil];
+        NSMutableSet *usedFilenames = nil;
+        BOOL isDirectory;
+        if ([[NSFileManager defaultManager] fileExistsAtPath:parentFolderURL.path isDirectory:&isDirectory] && isDirectory)
+            usedFilenames = [self copyCurrentlyUsedFileNamesInFolderAtURL:parentFolderURL ignoringFileURL:nil];
         
         for (ODSFileItemMotion *motion in motions) {
             NSURL *sourceFileURL = motion.sourceFileURL;
@@ -681,25 +733,28 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
             }
             DEBUG_STORE(@"%@ %@ to %@", motionType, sourceFileURL, destinationFileURL);
             
+            NSError *strongError;
             __autoreleasing NSError *actionError = nil;
-            BOOL success = action(motion.fileItem, sourceFileURL, motion.sourceModificationDate, destinationFileURL, &actionError);
-            if (!success)
+            OFFileMotionResult *result = action(motion, destinationFileURL, &actionError);
+            if (!result) {
                 [actionError log:@"Error performing %@ of %@ to %@ in folder %@", motionType, sourceFileURL, destinationFileURL, parentFolderURL];
-            else {
+                strongError = actionError;
+            } else {
                 [usedFilenames addObject:[destinationFileURL lastPathComponent]];
             }
             
-            NSError *strongError = success ? nil : actionError;
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                if (success) {
-                    ODSFileItem *createdFileItem = _addItem(self, destinationFileURL);
+                if (result) {
+                    ODSFileItem *createdFileItem = _addItem(self, result);
+                    ODSFileItemEdit *createdFileItemEdit = [ODSFileItemEdit fileItemEditWithFileItem:createdFileItem];
+                    
                     [createdFileItems addObject:createdFileItem];
                     OBASSERT(createdFileItem);
                     if (status)
-                        status(motion.fileItem, createdFileItem, nil);
+                        status(motion, destinationFileURL, createdFileItemEdit, nil);
                 } else
                     if (status)
-                        status(motion.fileItem, nil, strongError);
+                        status(motion, destinationFileURL, nil, strongError);
             }];
         }
         
@@ -719,24 +774,31 @@ static BOOL _performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, AddOption
 
 - (void)copyItems:(NSSet *)items toFolder:(ODSFolderItem *)parentFolder status:(ODSScopeItemMotionStatus)status completionHandler:(void (^)(NSSet *finalItems))completionHandler;
 {
+    // We send our 'finished' message here instead of inside the action since this block gets the result file item and is already dispatched to the main queue.
+    status = [status copy];
+    ODSScopeItemMotionStatus copyStatus = ^(ODSFileItemMotion *sourceItemMotion, NSURL *destinationURL, ODSFileItemEdit *destinationEditOrNil, NSError *error){
+        OBASSERT([NSThread isMainThread]);
+        OBASSERT((destinationEditOrNil == nil) ^ (error == nil));
+        
+        // This percolates up to copy the preview
+        [self fileItemEdit:sourceItemMotion.originalItemEdit finishedCopyToURL:destinationURL withFileItemEdit:destinationEditOrNil];
+        
+        if (status)
+            status(sourceItemMotion, destinationURL, destinationEditOrNil, error);
+    };
     
-    [self _doMotion:@"COPY" withItems:items toFolder:parentFolder ignoringFileItems:nil status:status completionHandler:completionHandler
+    [self _doMotion:@"COPY" withItems:items toFolder:parentFolder ignoringFileItems:nil status:copyStatus completionHandler:completionHandler
              action:
-     ^BOOL(ODSFileItem *item, NSURL *sourceFileURL, NSDate *sourceModificationDate, NSURL *destinationFileURL, NSError **outError) {
+     ^OFFileMotionResult *(ODSFileItemMotion *sourceItemMotion, NSURL *destinationFileURL, NSError **outError) {
          [[NSOperationQueue mainQueue] addOperationWithBlock:^{
              // This percolates up to make the new location an alias for previews for the expected copy
-             [self fileWithURL:sourceFileURL andDate:sourceModificationDate willCopyToURL:destinationFileURL];
+             [self fileItemEdit:sourceItemMotion.originalItemEdit willCopyToURL:destinationFileURL];
          }];
 
-         BOOL success = _performAdd(self, sourceFileURL, destinationFileURL, AddByCreatingParentDirectories, outError);
-         
-         NSDate *destinationDate = success ? ODSModificationDateForFileURL([NSFileManager defaultManager], destinationFileURL) : nil;
-         
-         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-             // This percolates up to move the preview
-             [self fileWithURL:sourceFileURL andDate:sourceModificationDate finishedCopyToURL:destinationFileURL andDate:destinationDate successfully:success];
-         }];
-         return YES;
+         OFFileEdit *resultEdit = _performAdd(self, sourceItemMotion.sourceFileURL, destinationFileURL, AddByCreatingParentDirectories, outError);
+         if (!resultEdit)
+             return nil;
+         return [[OFFileMotionResult alloc] initWithFileEdit:resultEdit];
      }];
 }
 
@@ -800,8 +862,6 @@ static NSURL *_destinationURLForMove(NSURL *sourceURL, NSURL *destinationDirecto
     CFRelease(extension);
     
     NSURL *sourceURL = fileItem.fileURL;
-    NSDate *sourceModificationDate = fileItem.userModificationDate;
-    
     NSURL *destinationURL = _destinationURLForMove(sourceURL, containingDirectoryURL, destinationFileName);
     
     NSURL *sourceFolderURL = [sourceURL URLByDeletingLastPathComponent];
@@ -831,18 +891,22 @@ static NSURL *_destinationURLForMove(NSURL *sourceURL, NSURL *destinationDirecto
             }
         }
         
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            // This percolates up to prepare for the move of the preview (so that lookups work when they happen very early in response to file presenter notifications getting back to the main queue).
-            [self fileWithURL:sourceURL andDate:sourceModificationDate willMoveToURL:destinationURL];
-        }];
-
         [self updateFileItem:fileItem withBlock:^ void (void (^updateCompletionHandler)(BOOL success, NSURL *destinationURL, NSError *error)) {
             __autoreleasing NSError *moveError;
-            BOOL success = [self performMoveFromURL:sourceURL toURL:destinationURL filePresenter:filePresenter error:&moveError];
+            OFFileMotionResult *result = [self performMoveFromURL:sourceURL toURL:destinationURL filePresenter:filePresenter error:&moveError];
+            
+            NSError *strongError = result ? nil : moveError;
+            
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                // Make sure our file item knows it got moved w/o waiting for file presenter notifications so that the document picker's lookups can find the right file item for animations. This means that when doing coordinated file moves, we should try to avoid getting notified by passing a file presenter to the coordinator (either the OFXAccountAgent, or the ODSLocalDirectoryScope).
+                // Here since we are definitely renaming w/in the same folder, the scope can't have changed.
+                if (result) {
+                    [self completedMoveOfFileItem:fileItem toURL:destinationURL];
+                }
+            }];
 
-            NSError *strongError = moveError;
             if (updateCompletionHandler)
-                updateCompletionHandler(success, destinationURL, strongError);
+                updateCompletionHandler(result != nil, destinationURL, strongError);
         } completionHandler:completionHandler];
     }];
 }
@@ -946,8 +1010,6 @@ static NSString *_filenameForUserGivenFolderName(NSString *name)
 {
     completionHandler = [completionHandler copy];
 
-    OBFinishPortingLater("Rewrite this in terms of _doMotion:... or a method factored out of it");
-    
     /*
      Find an unused folder URL (might be racing with incoming sync'd changes. We don't scan inside the async block like we do for files since this can't be a document and if we lose the race we'll just bail.
      */
@@ -1082,7 +1144,7 @@ static ODSScope *_templateScope = nil;
         OBPRECONDITION([items all:^BOOL(ODSItem *item) { return item.scope == sourceScope; }], "All the items should be from the same scope");
         OBPRECONDITION(sourceScope == self || parentFolder.scope == self, "We should be involved in this move somehow, not an innocent bystander");
         
-        // We calculate this here since if we are moving items to the trash, the source items might have been invalidated and had their scope cleared by teh time we get to the status block.
+        // We calculate this here since if we are moving items to the trash, the source items might have been invalidated and had their scope cleared by the time we get to the status block.
         movingWithinSameScope = (sourceScope == self);
     }
     
@@ -1090,16 +1152,17 @@ static ODSScope *_templateScope = nil;
     __block NSMutableArray *errors = [NSMutableArray new];
 
     // For moves we pass back the original items (since they might be deleted or are otherwise likely out of view). Copies pass back the new items since they'll likely be duplicating but either way the originals should still be around.
-    ODSScopeItemMotionStatus status = ^(ODSFileItem *source, ODSFileItem *destination, NSError *errorOrNil){
+    ODSScopeItemMotionStatus status = ^(ODSFileItemMotion *sourceItemMotion, NSURL *destionationFileURL, ODSFileItemEdit *destinationEditOrNil, NSError *errorOrNil){
         OBASSERT([NSThread isMainThread]);
-        if (!destination) {
+        OBASSERT((destinationEditOrNil == nil) ^ (errorOrNil == nil));
+        if (!destinationEditOrNil) {
             [errors addObject:errorOrNil];
             return;
         }
         
-        [movedFileItems addObject:source];
+        [movedFileItems addObject:sourceItemMotion.fileItem];
         
-        OBASSERT_IF(movingWithinSameScope, source == destination, "The URL on the file item should have been updated soon enough that we found the existing item and updated its URL"); // -completedMoveOfFileItem:toURL: should have been called and our fast item creation path should have thus found the updated item.
+        OBASSERT_IF(movingWithinSameScope, sourceItemMotion.fileItem == destinationEditOrNil.fileItem, "The URL on the file item should have been updated soon enough that we found the existing item and updated its URL"); // -completedMoveOfFileItem:toURL: should have been called and our fast item creation path should have thus found the updated item.
     };
     
     void (^motionCompletion)(NSSet *createdItems) = ^(NSSet *createdItems){
@@ -1115,32 +1178,21 @@ static ODSScope *_templateScope = nil;
 
     [self _doMotion:@"MOVE" withItems:items toFolder:parentFolder ignoringFileItems:(NSSet *)ignoredFileItems status:status completionHandler:motionCompletion
              action:
-     ^BOOL(ODSFileItem *item, NSURL *sourceFileURL, NSDate *sourceModificationDate, NSURL *destinationFileURL, NSError **outError) {
+     ^OFFileMotionResult *(ODSFileItemMotion *sourceItemMotion, NSURL *destinationFileURL, NSError **outError) {
          OBASSERT(![NSThread isMainThread]);
          
-         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-             // This percolates up to prepare for the move of the preview (so that lookups work when they happen very early in response to file presenter notifications getting back to the main queue).
-             [self fileWithURL:sourceFileURL andDate:sourceModificationDate willMoveToURL:destinationFileURL];
-         }];
-         
-         if (![self performMoveFromURL:sourceFileURL toURL:destinationFileURL filePresenter:filePresenter error:outError]) {
-             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                 // This percolates up to move the preview
-                 [self fileWithURL:sourceFileURL andDate:sourceModificationDate finishedMoveToURL:destinationFileURL successfully:NO];
-             }];
-             return NO;
+         OFFileMotionResult *result = [self performMoveFromURL:sourceItemMotion.sourceFileURL toURL:destinationFileURL filePresenter:filePresenter error:outError];
+         if (!result) {
+             return nil;
          }
          
          [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-             // This percolates up to move the preview
-             [self fileWithURL:sourceFileURL andDate:sourceModificationDate finishedMoveToURL:destinationFileURL successfully:YES];
-             
              // Make sure our file item knows it got moved w/o waiting for file presenter notifications so that the document picker's lookups can find the right file item for animations. This means that when doing coordinated file moves, we should try to avoid getting notified by passing a file presenter to the coordinator (either the OFXAccountAgent, or the ODSLocalDirectoryScope).
              if (movingWithinSameScope) {
-                 [self completedMoveOfFileItem:item toURL:destinationFileURL];
+                 [self completedMoveOfFileItem:sourceItemMotion.fileItem toURL:destinationFileURL];
              }
          }];
-         return YES;
+         return result;
      }];
 }
 
@@ -1197,7 +1249,7 @@ static ODSScope *_templateScope = nil;
     }];
 }
 
-- (BOOL)performMoveFromURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL filePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
+- (OFFileMotionResult *)performMoveFromURL:(NSURL *)sourceURL toURL:(NSURL *)destinationURL filePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
 {
     OBPRECONDITION(![NSThread isMainThread]); // We should be on the action queue
     // OBPRECONDITION([self isFileInContainer:sourceURL]); // This is used to move files into scopes (moving from Local documents to OmniPresence, vice versa, and from scopes out to the Trash.
@@ -1214,11 +1266,35 @@ static ODSScope *_templateScope = nil;
     
     NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:filePresenter];
     
-    if ([coordinator moveItemAtURL:sourceURL toURL:destinationURL createIntermediateDirectories:YES error:&coordinatorError])
-        return YES;
+    __block OFFileEdit *resultFileEdit = nil;
+    __block NSError *fileEditError = nil;
+    
+    BOOL success = [coordinator moveItemAtURL:sourceURL toURL:destinationURL createIntermediateDirectories:YES error:&coordinatorError success:^(NSURL *resultURL) {
+        __autoreleasing NSError *error;
+        resultFileEdit = [[OFFileEdit alloc] initWithFileURL:resultURL error:&error];
+        if (!resultFileEdit) {
+            OBASSERT_NOT_REACHED("Success shouldn't have been called if the move was a success");
+            fileEditError = error;
+        }
+    }];
+
+    if (success) {
+        if (!resultFileEdit) {
+            // Again, this shouldn't happen, but just in case...
+            if (outError)
+                *outError = fileEditError;
+            return nil;
+        }
+
+        // The file coordinator might have given us a temporary URL. Make sure we are reporting the state that should have existed at the moment the coordinated move finished (though of course, by now, racing edits may have changed things).
+        resultFileEdit = [[OFFileEdit alloc] initWithFileURL:destinationURL fileModificationDate:resultFileEdit.fileModificationDate inode:resultFileEdit.inode isDirectory:resultFileEdit.directory];
+        
+        return [[OFFileMotionResult alloc] initWithFileEdit:resultFileEdit];
+    }
+    
     if (outError)
         *outError = coordinatorError;
-    return NO;
+    return nil;
 }
 
 - (void)completedMoveOfFileItem:(ODSFileItem *)fileItem toURL:(NSURL *)destinationURL;
@@ -1231,23 +1307,13 @@ static ODSScope *_templateScope = nil;
     //[self _updateItemTree];
 }
 
-- (void)fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date willMoveToURL:(NSURL *)newURL;
+- (void)fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
 {
-    [self.documentStore _fileWithURL:oldURL andDate:date willMoveToURL:newURL];
+    [self.documentStore _fileItemEdit:fileItemEdit willCopyToURL:newURL];
 }
-
-- (void)fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date finishedMoveToURL:(NSURL *)newURL successfully:(BOOL)successfully;
+- (void)fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
 {
-    [self.documentStore _fileWithURL:oldURL andDate:date finishedMoveToURL:newURL successfully:successfully];
-}
-
-- (void)fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date willCopyToURL:(NSURL *)newURL;
-{
-    [self.documentStore _fileWithURL:oldURL andDate:date willCopyToURL:newURL];
-}
-- (void)fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date finishedCopyToURL:(NSURL *)newURL andDate:(NSDate *)newDate successfully:(BOOL)successfully;
-{
-    [self.documentStore _fileWithURL:oldURL andDate:date finishedCopyToURL:newURL andDate:newDate successfully:successfully];
+    [self.documentStore _fileItemEdit:fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:destinationFileItemEditOrNil];
 }
 
 - (void)_fileItemContentsChanged:(ODSFileItem *)fileItem;
@@ -1256,7 +1322,7 @@ static ODSScope *_templateScope = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:ODSFileItemContentsChangedNotification object:self.documentStore userInfo:userInfo];
 }
 
-- (void)updateFileItem:(ODSFileItem *)fileItem withMetadata:(id)metadata fileModificationDate:(NSDate *)fileModificationDate;
+- (void)updateFileItem:(ODSFileItem *)fileItem withMetadata:(id)metadata fileEdit:(OFFileEdit *)fileEdit;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }
@@ -1308,21 +1374,6 @@ NSString *ODSScopeFindAvailableName(NSSet *usedFileNames, NSString *baseName, NS
             return candidateName;
         }
     }
-}
-
-NSDate *ODSModificationDateForFileURL(NSFileManager *fileManager, NSURL *fileURL)
-{
-    __autoreleasing NSError *attributesError = nil;
-    NSDate *modificationDate = nil;
-    NSDictionary *attributes = [fileManager attributesOfItemAtPath:[fileURL path]  error:&attributesError];
-    if (!attributes)
-        NSLog(@"Error getting attributes for %@ -- %@", [fileURL absoluteString], [attributesError toPropertyList]);
-    else
-        modificationDate = [attributes fileModificationDate];
-    if (!modificationDate)
-        modificationDate = [NSDate date]; // Default to now if we can't get the attributes or they are bogus for some reason.
-    
-    return modificationDate;
 }
 
 - (NSString *)_availableFileNameAvoidingUsedFileNames:(NSSet *)usedFilenames withBaseName:(NSString *)baseName extension:(NSString *)extension counter:(NSUInteger *)ioCounter;

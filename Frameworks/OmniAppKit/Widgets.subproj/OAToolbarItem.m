@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2007-2008, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,24 +39,9 @@ RCS_ID("$Id$");
         observingTintOverrideChanges = NO;
         [OFPreference removeObserver:self forPreference:TINT_PREFERENCE];
     }
-    [_optionKeyImage release];
-    [_optionKeyLabel release];
-    [_optionKeyToolTip release];
-    
-    [tintedImageStem release];
-    [tintedOptionImageStem release];
-    [tintedImageBundle release];
-
-    [super dealloc];
 }
 
 #pragma mark API
-
-@synthesize delegate = _nonretained_delegate;
-@synthesize optionKeyImage = _optionKeyImage;
-@synthesize optionKeyLabel = _optionKeyLabel;
-@synthesize optionKeyToolTip = _optionKeyToolTip;
-@synthesize optionKeyAction = _optionKeyAction;
 
 - (void)setUsesTintedImage:(NSString *)imageName inBundle:(NSBundle *)imageBundle;
 {
@@ -74,13 +59,10 @@ RCS_ID("$Id$");
     if (OFISEQUAL(imageName, tintedImageStem) && OFISEQUAL(alternateImageName, tintedOptionImageStem) && (imageBundle == tintedImageBundle))
         return;
     
-    [tintedImageStem autorelease];
     tintedImageStem = [imageName copy];
-    [tintedOptionImageStem autorelease];
     tintedOptionImageStem = [alternateImageName copy];
-    [tintedImageBundle release];
-    tintedImageBundle = [imageBundle retain];
-    
+    tintedImageBundle = imageBundle;
+
     [self _tintsDidChange:nil];
     if (!observingTintOverrideChanges) {
         observingTintOverrideChanges = YES;
@@ -93,8 +75,9 @@ RCS_ID("$Id$");
 - (void)validate;
 {
     [super validate];
-    if (_nonretained_delegate)
-        [self setEnabled:[_nonretained_delegate validateToolbarItem:self]];
+    if (self.delegate) {
+        self.enabled = [self.delegate validateToolbarItem:self];
+    }
 }
 
 // Called when the toolbar item is moved into the "overflow" menu (accessible via the double-chevron at the end of the toolbar) or toolbar is text-only.
@@ -105,7 +88,6 @@ RCS_ID("$Id$");
         NSImage *image = [[self image] copy];
         [image setSize:NSMakeSize(16,16)];
         [menuFormRepresentation setImage:image];
-        [image release];
     }
     
     return menuFormRepresentation;
@@ -116,12 +98,12 @@ RCS_ID("$Id$");
 - (id)copyWithZone:(NSZone *)zone;
 {
     OAToolbarItem *copy = [super copyWithZone:zone];
-    copy->_optionKeyImage = [_optionKeyImage retain];
+    copy->_optionKeyImage = [_optionKeyImage copy];
     copy->_optionKeyLabel = [_optionKeyLabel copy];
     copy->_optionKeyToolTip = [_optionKeyToolTip copy];
     copy->tintedImageStem = [tintedImageStem copy];
     copy->tintedOptionImageStem = [tintedOptionImageStem copy];
-    copy->tintedImageBundle = [tintedImageBundle retain];
+    copy->tintedImageBundle = [tintedImageBundle copy];
     return copy;
 }
 
@@ -151,26 +133,23 @@ RCS_ID("$Id$");
 
 - (void)_swapImage;
 {
-    NSImage *image = [[self image] retain];
+    NSImage *image = [self image];
     [self setImage:[self optionKeyImage]];
     [self setOptionKeyImage:image];
-    [image release];
 }
 
 - (void)_swapLabel;
 {
-    NSString *label = [[self label] retain];
+    NSString *label = [self label];
     [self setLabel:[self optionKeyLabel]];
     [self setOptionKeyLabel:label];
-    [label release];
 }
 
 - (void)_swapToolTip;
 {
-    NSString *toolTip = [[self toolTip] retain];
+    NSString *toolTip = [self toolTip];
     [self setToolTip:[self optionKeyToolTip]];
     [self setOptionKeyToolTip:toolTip];
-    [toolTip release];
 }
 
 - (void)_swapAction;

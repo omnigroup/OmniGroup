@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -428,6 +428,19 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
 
 #pragma mark - UIView subclass
 
+-(CGSize)sizeThatFits:(CGSize)size;
+{
+    if (_style == OUIInspectorTextWellStyleDefault) {
+        CGSize labelSize = [_labelLabel sizeThatFits:size];
+        return CGSizeMake(labelSize.width + 16, self._standaloneValueRect.size.height); // only interested in adjusting the length right now
+    } else {
+#ifdef DEBUG
+        NSLog(@"warning: not doing any calculations here!");
+#endif
+        return size;
+    }
+}
+
 - (CGRect)_standaloneValueRect;
 {
     OBPRECONDITION(_style == OUIInspectorTextWellStyleDefault);
@@ -742,8 +755,8 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     
     if (_customKeyboard != nil && ![_customKeyboard shouldUseTextEditor]) {
         _textChangedWhileEditingOnCustomKeyboard = NO;
-        [self becomeFirstResponder];
         [_customKeyboard editInspectorTextWell:self];
+        [self becomeFirstResponder];
         
         _focusIndicatorView = [[UIView alloc] init];
         _focusIndicatorView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.04f];
@@ -772,6 +785,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
         editor.inputAccessoryView = self.inputAccessoryView;
         
         editor.attributedText = [self _attributedStringForEditingString:_text];
+        [editor sizeToFit];
         
         [self addSubview:editor];
         

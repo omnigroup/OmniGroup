@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,19 +33,27 @@ static void (*original_removeAllActionsWithTarget)(id self, SEL _cmd, id target)
 
 - (void)replacement_removeAllActions;
 {
+    BOOL hadActions = [self canUndo] || [self canRedo];
+
     original_removeAllActions(self, _cmd);
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoManagerDidRemoveAllActionsNotification object:self];
+    if (hadActions) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoManagerDidRemoveAllActionsNotification object:self];
+    }
 }
 
 - (void)replacement_removeAllActionsWithTarget:(id)target;
 {
+    BOOL hadActions = [self canUndo] || [self canRedo];
+    
     original_removeAllActionsWithTarget(self, _cmd, target);
     
-    BOOL canUndo = [self canUndo];
-    BOOL canRedo = [self canRedo];
-    if (!canUndo && !canRedo) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoManagerDidRemoveAllActionsNotification object:self];
+    if (hadActions) {
+        BOOL canUndo = [self canUndo];
+        BOOL canRedo = [self canRedo];
+        if (!canUndo && !canRedo) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoManagerDidRemoveAllActionsNotification object:self];
+        }
     }
 }
 

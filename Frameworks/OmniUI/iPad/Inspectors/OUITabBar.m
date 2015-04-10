@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,6 +12,8 @@
 
 
 RCS_ID("$Id$");
+
+// CCC, 4/9/2015. audit colors, note that this is in OmniUI. Shared?
 
 static UIFont *_DefaultTabTitleFont;
 static UIFont *_DefaultSelectedTabTitleFont;

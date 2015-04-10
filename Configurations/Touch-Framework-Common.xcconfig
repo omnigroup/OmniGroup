@@ -12,7 +12,7 @@ FRAMEWORK_VERSION = A
 
 OTHER_CFLAGS = $(value) -DOMNI_BUILDING_FRAMEWORK -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\"
 
-// On iOS, frameworks have to get copied into the bundle for all builds.
+// On iOS, frameworks have to get copied into the bundle for all builds, but we need to do the install anyway to get the dSYM packaged (overridden in the Release version of this file)
 OMNI_FRAMEWORK_TARGET_PATH = $(CONFIGURATION_BUILD_DIR)
 DYLIB_INSTALL_NAME_BASE = @rpath
 SKIP_INSTALL = YES

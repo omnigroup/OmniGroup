@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,7 +36,7 @@ RCS_ID("$Id$")
     OBPRECONDITION(OFURLIsStandardized([temporaryLocalSnapshotURL URLByDeletingLastPathComponent])); // make sure the eventual path is standardized
     
 
-    DEBUG_TRANSFER(1, @"Making new snapshot at %@ by downloading metadata from %@", temporaryLocalSnapshotURL, remoteSnapshotURL);
+    DEBUG_TRANSFER(2, @"Making new snapshot at %@ by downloading metadata from %@", temporaryLocalSnapshotURL, remoteSnapshotURL);
         
     NSUInteger version;
     NSString *fileIdentifier = OFXFileItemIdentifierFromRemoteSnapshotURL(remoteSnapshotURL, &version, outError);
@@ -81,7 +81,7 @@ RCS_ID("$Id$")
         OBChainError(outError);
         return NO;
     }
-    DEBUG_TRANSFER(1, @"  Building local temporary snapshot at %@", temporaryLocalSnapshotURL);
+    DEBUG_TRANSFER(2, @"  Building local temporary snapshot at %@", temporaryLocalSnapshotURL);
     
     NSMutableDictionary *versionDictionary = [NSMutableDictionary new];
     versionDictionary[kOFXVersion_ArchiveVersionKey] = @(kOFXVersion_ArchiveVersion);
@@ -110,7 +110,7 @@ RCS_ID("$Id$")
     return YES;
 }
 
-- (BOOL)makeDownloadStructureAt:(NSURL *)temporaryDocumentURL error:(NSError **)outError withFileApplier:(void (^)(NSURL *fileURL, long long fileSize, NSString *hash))fileApplier;
+- (BOOL)makeDownloadStructureAt:(NSURL *)temporaryDocumentURL didCreateDirectoryOrLink:(BOOL *)outDidCreateDirectoryOrLink error:(NSError **)outError withFileApplier:(void (^)(NSURL *fileURL, long long fileSize, NSString *hash))fileApplier;
 {
     OBPRECONDITION([self _checkInvariants]);
     OBPRECONDITION(temporaryDocumentURL);
@@ -118,7 +118,13 @@ RCS_ID("$Id$")
         
     OFXFileSnapshotContentsActions *downloadActions = [OFXFileSnapshotContentsActions new];
     downloadActions[kOFXContents_FileTypeDirectory] = ^BOOL(NSURL *actionURL, NSDictionary *contents, NSError **actionError){
-        return [[NSFileManager defaultManager] createDirectoryAtURL:actionURL withIntermediateDirectories:NO attributes:nil error:actionError];
+        if (![[NSFileManager defaultManager] createDirectoryAtURL:actionURL withIntermediateDirectories:NO attributes:nil error:actionError])
+            return NO;
+        
+        // Either the root of our transfer, or a subdirectory, but make sure we note that we've created our temporary document URL.
+        if (outDidCreateDirectoryOrLink)
+            *outDidCreateDirectoryOrLink = YES;
+        return YES;
     };
     downloadActions[kOFXContents_FileTypeRegular] = ^BOOL(NSURL *actionURL, NSDictionary *contents, NSError **actionError){
         NSString *hash = contents[kOFXContents_FileHashKey];
@@ -128,7 +134,13 @@ RCS_ID("$Id$")
     };
     downloadActions[kOFXContents_FileTypeLink] = ^BOOL(NSURL *actionURL, NSDictionary *contents, NSError **actionError){
         NSString *destination = contents[kOFXContents_LinkDestinationKey];
-        return [[NSFileManager defaultManager] createSymbolicLinkAtPath:[[actionURL absoluteURL] path] withDestinationPath:destination error:actionError];
+        if (![[NSFileManager defaultManager] createSymbolicLinkAtPath:[[actionURL absoluteURL] path] withDestinationPath:destination error:actionError])
+            return NO;
+        
+        // Either the root of our transfer, or a link somewhere inside it, but make sure we note that we've created our temporary document URL.
+        if (outDidCreateDirectoryOrLink)
+            *outDidCreateDirectoryOrLink = YES;
+        return YES;
     };
     
     NSDictionary *contents = self.infoDictionary[kOFXInfo_ContentsKey];
@@ -168,7 +180,7 @@ RCS_ID("$Id$")
     versionDictionary[kOFXVersion_LocalState] = normal;
     versionDictionary[kOFXVersion_RemoteState] = normal;
     
-    if (![self _updateVersionDictionary:versionDictionary error:outError]) {
+    if (![self _updateVersionDictionary:versionDictionary reason:@"finished download" error:outError]) {
         OBChainError(outError);
         return NO;
     }

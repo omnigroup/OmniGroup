@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -146,8 +146,9 @@ OUIFontSelection *OUICollectFontSelection(OUIInspectorSlice *self, id <NSFastEnu
     for (id <OUIFontInspection> object in objects) {
         OAFontDescriptor *fontDescriptor = [object fontDescriptorForInspectorSlice:self];
         OBASSERT(fontDescriptor);
-        
-        if ([fontDescriptorSet member:fontDescriptor] == nil) {
+
+        // we're occasionally crashing attempting to add nil to the data sets below. I'm not sure how we're ever getting into this situation, and have no repro case, but this should guard against it.
+        if ([fontDescriptorSet member:fontDescriptor] == nil && fontDescriptor != nil) {
             [fontDescriptorSet addObject:fontDescriptor];
             [collectedFontDescriptors addObject:fontDescriptor];
         }

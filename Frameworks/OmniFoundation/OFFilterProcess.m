@@ -459,10 +459,16 @@ static void logdescriptors(const char *where)
     /* Set up the kevent filters */
     
     kevent_fd = kqueue();
+    if (kevent_fd < 0)
+        perror("kqueue");
     num_pending_changes = 0;
     
-    if (subprocStdinFd != -1)
+    if (subprocStdinFd != -1) {
+        // Handle broken pipes by returning EPIPE, not using SIGPIPE
+        if (fcntl(subprocStdinFd, F_SETNOSIGPIPE, 1))
+            perror("fcntl(F_SETNOSIGPIPE)");
         EV_SET(&(pending_changes[num_pending_changes++]), subprocStdinFd, EVFILT_WRITE, EV_ADD|EV_ENABLE, 0, 0, NULL);
+    }
     if (stdoutCopyBuf->fd != -1) {
         EV_SET(&(pending_changes[num_pending_changes++]), stdoutCopyBuf->fd, EVFILT_READ, EV_ADD|EV_ENABLE, 0, 0, NULL);
         stdoutCopyBuf->filterEnabled = YES;
@@ -489,7 +495,6 @@ static void logdescriptors(const char *where)
     return self;
 }
 
-// We could wrap the file descriptors in CFFileDescriptorRef with closeOnInvalidate, make the CF references and malloc blocks collectable.  But, that would add a bunch of cruft in the code and these instances are rare enough that having a -finalize here doesn't seem like a large problem.
 - (void)invalidate;
 {
     if (kevent_cfrunloop != NULL) {
@@ -559,6 +564,8 @@ static void logdescriptors(const char *where)
 
 - (void)scheduleInRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode;
 {
+    if (state != OFFilterProcess_Started)
+        return;
     
     /* Create the CFFileDescriptor and its corresponding CFRunLoopSource */
     if (kevent_cf == NULL) {
@@ -899,8 +906,14 @@ static void free_copyout(struct copy_out_state *into)
     if (timeoutType < 0) {
         /* Just send changes, don't ask for any events */
         if (num_pending_changes) {
-            nevents = kevent(kevent_fd, pending_changes, num_pending_changes, NULL, 0, &zeroTimeout);
-            assert(nevents <= 0); // since we passed zere length
+            
+            /* Set EV_RECEIPT on everything to inhibit the return of initial events. We do this instead of passing an empty result buffer so that we can detect errors in EV_ADD (otherwise, we just get an error return from kevent() and we don't know what it was associated with). */
+            for (int event_index = 0; event_index < num_pending_changes; event_index ++) {
+                pending_changes[event_index].flags |= EV_RECEIPT;
+            }
+            
+            nevents = kevent(kevent_fd, pending_changes, num_pending_changes, events, KBUFSIZE, &zeroTimeout);
+            OBASSERT(nevents == num_pending_changes);
             num_pending_changes = 0;
         } else
             nevents = 0;
@@ -920,7 +933,10 @@ static void free_copyout(struct copy_out_state *into)
             BOOL deleteThis = NO;
             // NSLog(@"%@ got %@", OBShortObjectDescription(self), OFDescribeKevent(ev));
             
-            if (ev->filter == EVFILT_PROC) {
+            if ((ev->flags & EV_ERROR) && ev->data == 0) {
+                /* "Success" return from EV_RECEIPT. We can just ignore these */
+                continue;
+            } else if (ev->filter == EVFILT_PROC) {
                 [self _waitpid];
                 deleteThis = YES;
             } else if ((int)ev->ident == subprocStdinFd) {

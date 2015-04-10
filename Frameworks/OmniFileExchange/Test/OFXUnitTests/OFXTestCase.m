@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,28 +42,6 @@ RCS_ID("$Id$")
     NSMutableDictionary *_agentByName;
 }
 
-+ (id)defaultTestSuite;
-{
-    XCTestSuite *suite = [super defaultTestSuite];
-    
-    const char *repeat = getenv("OFXRepeatTest");
-    if (repeat) {
-        // See if we have a test with this name; if so, repeat it a bunch of times.
-        NSString *repeatString = [[NSString alloc] initWithBytes:repeat length:strlen(repeat) encoding:NSUTF8StringEncoding];
-        
-        XCTest *test = [suite.tests first:^BOOL(XCTest *candidate) {
-            return [candidate.name isEqual:repeatString];
-        }];
-        
-        if (test) {
-            for (NSUInteger repeatIndex = 0; repeatIndex < 500; repeatIndex++)
-                [suite addTest:test];
-        }
-    }
-    
-    return suite;
-}
-
 + (void)initialize;
 {
     OBINITIALIZE;
@@ -81,7 +59,13 @@ RCS_ID("$Id$")
 
 - (NSString *)baseTemporaryDirectory;
 {
-    return [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFXTests"];
+    NSString *result = [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFXTests"];
+    const char *base = getenv("OFXTestBaseDirectory");
+    if (base) {
+        NSString *directoryName = [[NSString alloc] initWithBytes:base length:strlen(base) encoding:NSUTF8StringEncoding];
+        return [result stringByAppendingPathComponent:directoryName];
+    }
+    return result;
 }
 
 - (OFXTestServerAccountRegistry *)makeAccountRegistry:(NSString *)suffix;
@@ -281,7 +265,7 @@ static OFXAgent *_makeAgent(OFXTestCase *self, NSString *agentName)
 - (OFXAgent *)agentWithName:(NSString *)name;
 {
     if (![name isEqual:OFXTestFirstAgentName]) {
-        [self agentA]; // Have to make this one first... make sure it is done.
+        (void)[self agentA]; // Have to make this one first... make sure it is done.
     }
     
     OFXAgent *agent = _agentByName[name];
@@ -385,7 +369,7 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
     //NSLog(@"Creating base directory for test %@ at %@", [self name], [_remoteBaseURL absoluteString]);
 
     NSError *error;
-    NSURL *createdURL = [connection synchronousMakeCollectionAtURL:_remoteBaseURL error:&error];
+    NSURL *createdURL = [connection synchronousMakeCollectionAtURL:_remoteBaseURL error:&error].URL;
     if (!createdURL) {
         [error log:@"Error creating remote sync directory at %@", _remoteBaseURL];
         [NSException raise:NSGenericException format:@"Test can't continue"];
@@ -549,8 +533,6 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
 // Wait for up to 5 seconds before giving up.
 - (void)waitUntil:(BOOL (^)(void))finished;
 {
-    NSTimeInterval start = [NSDate timeIntervalSinceReferenceDate];
-    
     unsigned long waitSeconds = 20;
     const char *waitTime = getenv("OFXTestWaitTime");
     if (waitTime) {
@@ -559,12 +541,8 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
             waitSeconds = seconds;
     }
     
-    while (YES) {
-        if (finished())
-            return;
-        if ([NSDate timeIntervalSinceReferenceDate] - start > waitSeconds)
-            [self timedOut];
-        [self waitForSeconds:0.05];
+    if (!OFRunLoopRunUntil(waitSeconds, OFRunLoopRunTypePolling, finished)) {
+        [self timedOut];
     }
 }
 
@@ -574,7 +552,6 @@ static void _logAgentState(OFXAgent *agent)
         return;
     
     for (OFXServerAccount *account in agent.accountRegistry.validCloudSyncAccounts) {
-        NSLog(@"Agent state for %@ / %@", [agent shortDescription], [account shortDescription]);
     
         NSMutableArray *metadata = [NSMutableArray array];
         [metadata addObjectsFromSet:[agent metadataItemsForAccount:account]];
@@ -586,9 +563,10 @@ static void _logAgentState(OFXAgent *agent)
             return rc;
         }];
         
-        for (OFXFileMetadata *metadataItem in metadata) {
-            NSLog(@"  %@", [metadataItem debugDictionary]);
-        }
+        NSString *metadataString = [[metadata arrayByPerformingBlock:^(OFXFileMetadata *metadataItem){
+            return [[metadataItem debugDictionary] description];
+        }] componentsJoinedByString:@"\n"];
+        NSLog(@"Agent state for %@ / %@:\n%@", [agent shortDescription], [account shortDescription], metadataString);
     }
 }
 
@@ -653,6 +631,63 @@ static void _logAgentState(OFXAgent *agent)
 }
 
 // Currently assumes we are downloading all files
+
+- (BOOL)agentEditsAgree:(NSArray *)agents withFileCount:(NSUInteger)fileCount;
+{
+    return [self agentEditsAgree:agents waitingForTransfers:YES withFileCount:fileCount];
+}
+
+- (BOOL)agentEditsAgree:(NSArray *)agents waitingForTransfers:(BOOL)waitingForTransfers withFileCount:(NSUInteger)fileCount;
+{
+    if ([agents count] < 2) {
+        OBASSERT_NOT_REACHED("Not terribly useful");
+        return YES;
+    }
+    
+    OFXAgent *firstAgent = agents[0];
+    NSArray *otherAgents = [agents subarrayWithRange:NSMakeRange(1, [agents count] - 1)];
+    
+    NSDictionary *firstAgentFileIdentiferToEditIdentifer = [NSMutableDictionary new];
+    {
+        NSMutableDictionary *fileToEdit = [NSMutableDictionary dictionary];
+        
+        NSSet *metadataItems = [self metadataItemsForAgent:firstAgent];
+        if (fileCount != NSNotFound && fileCount != [metadataItems count])
+            return NO;
+        
+        for (OFXFileMetadata *metadata in metadataItems) {
+            if (!metadata.uploaded || metadata.uploading || !metadata.downloaded || metadata.downloading)
+                return NO;
+            
+            XCTAssertNil(fileToEdit[metadata.fileIdentifier], @"Should be no duplicate file identifiers");
+            fileToEdit[metadata.fileIdentifier] = metadata.editIdentifier;
+        }
+        
+        firstAgentFileIdentiferToEditIdentifer = [fileToEdit copy];
+    }
+    
+    for (OFXAgent *agent in otherAgents) {
+        NSMutableDictionary *fileToEdit = [firstAgentFileIdentiferToEditIdentifer mutableCopy];
+        
+        NSSet *metadataItems = [self metadataItemsForAgent:agent];
+        if ([metadataItems count] != [firstAgentFileIdentiferToEditIdentifer count])
+            return NO;
+        
+        for (OFXFileMetadata *metadata in metadataItems) {
+            if (!metadata.uploaded || metadata.uploading || !metadata.downloaded || metadata.downloading)
+                return NO;
+            
+            if (![fileToEdit[metadata.fileIdentifier] isEqual:metadata.editIdentifier])
+                return NO;
+            [fileToEdit removeObjectForKey:metadata.fileIdentifier];
+        }
+        
+        return [fileToEdit count] == 0;
+    }
+    
+    return YES;
+}
+
 - (void)waitForAgentsEditsToAgree;
 {
     [self waitForAgentsEditsToAgree:@[self.agentA, self.agentB]];
@@ -662,57 +697,10 @@ static void _logAgentState(OFXAgent *agent)
 {
     [self waitForAgentsEditsToAgree:agents withFileCount:NSNotFound];
 }
-
 - (void)waitForAgentsEditsToAgree:(NSArray *)agents withFileCount:(NSUInteger)fileCount;
 {
-    if ([agents count] < 2) {
-        OBASSERT_NOT_REACHED("Not terribly useful");
-        return;
-    }
-    
-    OFXAgent *firstAgent = agents[0];
-    NSArray *otherAgents = [agents subarrayWithRange:NSMakeRange(1, [agents count] - 1)];
-    
-    [self waitUntil:^BOOL{
-        NSDictionary *firstAgentFileIdentiferToEditIdentifer = [NSMutableDictionary new];
-        {
-            NSMutableDictionary *fileToEdit = [NSMutableDictionary dictionary];
-            
-            NSSet *metadataItems = [self metadataItemsForAgent:firstAgent];
-            if (fileCount != NSNotFound && fileCount != [metadataItems count])
-                return NO;
-            
-            for (OFXFileMetadata *metadata in metadataItems) {
-                if (!metadata.uploaded || metadata.uploading || !metadata.downloaded || metadata.downloading)
-                    return NO;
-                
-                XCTAssertNil(fileToEdit[metadata.fileIdentifier], @"Should be no duplicate file identifiers");
-                fileToEdit[metadata.fileIdentifier] = metadata.editIdentifier;
-            }
-            
-            firstAgentFileIdentiferToEditIdentifer = [fileToEdit copy];
-        }
-        
-        for (OFXAgent *agent in otherAgents) {
-            NSMutableDictionary *fileToEdit = [firstAgentFileIdentiferToEditIdentifer mutableCopy];
-
-            NSSet *metadataItems = [self metadataItemsForAgent:agent];
-            if ([metadataItems count] != [firstAgentFileIdentiferToEditIdentifer count])
-                return NO;
-
-            for (OFXFileMetadata *metadata in metadataItems) {
-                if (!metadata.uploaded || metadata.uploading || !metadata.downloaded || metadata.downloading)
-                    return NO;
-                
-                if (![fileToEdit[metadata.fileIdentifier] isEqual:metadata.editIdentifier])
-                    return NO;
-                [fileToEdit removeObjectForKey:metadata.fileIdentifier];
-            }
-            
-            return [fileToEdit count] == 0;
-        }
-        
-        return YES;
+    [self waitUntil:^{
+        return [self agentEditsAgree:agents withFileCount:fileCount];
     }];
 }
 
@@ -764,6 +752,42 @@ static void _logAgentState(OFXAgent *agent)
             OFDiffFiles(self, [metadata.fileURL path], [firstMetadata.fileURL path], nil/*filter*/);
         }
     }
+}
+
+- (BOOL)agent:(OFXAgent *)agent hasTextContentsByPath:(NSDictionary *)textContentsByPath;
+{
+    NSURL *localDocuments = [self singleAccountInAgent:agent].localDocumentsURL;
+    
+    __block BOOL ok = YES;
+    [textContentsByPath enumerateKeysAndObjectsUsingBlock:^(NSString *filename, NSString *expectedTextContents, BOOL *stop) {
+        NSString *actualTextContent = [[NSString alloc] initWithContentsOfURL:[localDocuments URLByAppendingPathComponent:filename] encoding:NSUTF8StringEncoding error:NULL];
+        if (![actualTextContent isEqual:expectedTextContents]) {
+            ok = NO;
+            *stop = YES;
+        }
+    }];
+    
+    return ok;
+}
+
+- (void)requireAgent:(OFXAgent *)agent toHaveTextContentsByPath:(NSDictionary *)textContentsByPath;
+{
+    NSURL *localDocuments = [self singleAccountInAgent:agent].localDocumentsURL;
+    
+    [textContentsByPath enumerateKeysAndObjectsUsingBlock:^(NSString *filename, NSString *expectedTextContents, BOOL *stop) {
+        NSString *actualTextContent = [[NSString alloc] initWithContentsOfURL:[localDocuments URLByAppendingPathComponent:filename] encoding:NSUTF8StringEncoding error:NULL];
+        XCTAssertEqualObjects(actualTextContent, expectedTextContents);
+    }];
+}
+
+- (void)requireAgent:(OFXAgent *)agent toHaveDataContentsByPath:(NSDictionary *)dataContentsByPath;
+{
+    NSURL *localDocuments = [self singleAccountInAgent:agent].localDocumentsURL;
+    
+    [dataContentsByPath enumerateKeysAndObjectsUsingBlock:^(NSString *filename, NSData *expectedDataContents, BOOL *stop) {
+        NSData *actualDataContent = [[NSData alloc] initWithContentsOfURL:[localDocuments URLByAppendingPathComponent:filename]];
+        XCTAssertEqualObjects(actualDataContent, expectedDataContents);
+    }];
 }
 
 - (NSDictionary *)_relativeIntendedPathToContentIdentifiersForAgent:(OFXAgent *)agent;

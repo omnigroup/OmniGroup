@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <OmniUI/OUIAppearance.h>
 
 @interface OmniUIDocumentAppearance : OUIAppearance
+
 @property (readonly) CGFloat documentPickerLocationRowHeight;
 @property (readonly) CGFloat documentPickerAddAccountRowHeight;
 
@@ -21,5 +22,8 @@
 
 @property (readonly) CGFloat documentOpeningAnimationDuration;
 @property (readonly) CGFloat documentClosingAnimationDuration;
+
+@property(nonatomic,readonly) NSTimeInterval documentSyncMinimumVisiblityFromActivityStartTimeInterval;
+@property(nonatomic,readonly) NSTimeInterval documentSyncMinimumVisiblityFromLastActivityTimeInterval;
 
 @end

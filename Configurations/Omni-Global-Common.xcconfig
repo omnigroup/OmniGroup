@@ -8,9 +8,9 @@
 // Also, define a few useful macros for making configuration-specific builds. We do NOT append OMNI_BUILD_IDENTIFIER_SUFFIX on OMNI_BUNDLE_IDENTIFIER here, but we would in the end application.
 // Note that the OMNI_BUILD_IDENTIFIER_SUFFIX and OMNI_BUILD_FILE_SUFFIX are declared in the individual specific configuration files Omni-Global-{Debug,Release,Coverage}.xcconfig, which seems to work fine.
 // Targets still need to use these in their configurations in their bundle identifier, product name and in the source where needed.
-OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64 -DOBJC_OLD_DISPATCH_PROTOTYPES=0 -DOMNI_BUILD_IDENTIFIER_SUFFIX=@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\" -DOMNI_BUILD_FILE_SUFFIX=@\"$(OMNI_BUILD_FILE_SUFFIX)\" -DNON_OMNI_BUILD_ENVIRONMENT
+OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64 -DOBJC_OLD_DISPATCH_PROTOTYPES=0 -DOMNI_BUILD_IDENTIFIER_SUFFIX=@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\" -DOMNI_BUILD_FILE_SUFFIX=@\"$(OMNI_BUILD_FILE_SUFFIX)\"
 
-// Keep precomps in the build dir so that switching branches/products doesn't confuse the precomp builds
+// Keep shared precompiled headers in our build area so we can clean them up. Without this, Xcode will put them in its own place and won't purge them reliably.
 SHARED_PRECOMPS_DIR = $(CONFIGURATION_BUILD_DIR)/SharedPrecompiledHeaders
 
 GCC_PREFIX_HEADER = $(PROJECT_NAME)_Prefix.h
@@ -27,6 +27,8 @@ GCC_FAST_OBJC_DISPATCH = YES
 GCC_GENERATE_DEBUGGING_SYMBOLS = YES
 GCC_C_LANGUAGE_STANDARD = gnu99
 GCC_ENABLE_OBJC_EXCEPTIONS = YES
+GCC_NO_COMMON_BLOCKS = YES
+
 
 //
 // Warnings

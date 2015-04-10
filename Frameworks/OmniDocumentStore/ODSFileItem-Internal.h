@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,19 +8,10 @@
 // $Id$
 
 #import <OmniDocumentStore/ODSFileItem.h>
+#import <OmniDocumentStore/ODSScope.h>
 
-@interface ODSFileItem (/*Internal*/)
-@end
-
-@interface ODSFileItemMotion : NSObject
-
+@interface ODSFileItemMotion ()
 - initWithFileItem:(ODSFileItem *)fileItem destinationFolderURL:(NSURL *)destinationFolderURL;
-
-@property(nonatomic,readonly) ODSFileItem *fileItem;
-@property(nonatomic,readonly) NSURL *sourceFileURL;
-@property(nonatomic,readonly) NSDate *sourceModificationDate;
-@property(nonatomic,readonly) NSURL *destinationFileURL;
-
 @end
 
 @interface ODSFileItemDeletion : NSObject

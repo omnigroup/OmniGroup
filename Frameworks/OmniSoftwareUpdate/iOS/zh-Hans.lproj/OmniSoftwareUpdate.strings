@@ -1,9 +1,6 @@
 /* Software update report format for number of cores in the CPU */
 "%@ cores" = "%@ 个核心";
 
-/* error description - the host from which we retrieve updates is unreachable */
-"%@ is not reachable." = "无法访问 %@。";
-
 /* Software update report entry string for multiple crashes */
 "%ld crashes" = "%ld 次崩溃";
 
@@ -19,9 +16,6 @@
 /* Software update report entry name for information about the runs of all versions of the app */
 "All versions" = "所有版本";
 
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "允许 %@ 定期报告有关硬件型号和 iOS 版本的信息?\n这样一来，我们就知道最需要支持哪些配置。可在以后通过 MUMBLE MUMBLE MUMBLE 在预置中更改回答。";
-
 /* Software update report entry name */
 "App ID" = "App ID";
 
@@ -30,9 +24,6 @@
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
 "Check operation failed." = "检查操作失败。";
-
-/* error text generated when software update is unable to retrieve the list of current software versions */
-"Could not contact %@." = "无法联系 %@。";
 
 /* Software update report entry name */
 "CPU" = "CPU";
@@ -44,9 +35,6 @@
    software update settings title */
 
 "Device Information" = "设备信息";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "不报告";
 
 /* error description */
 "Error fetching software update information." = "获取软件更新信息时出错。";
@@ -61,7 +49,7 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "帮助 Omni 团队确定要支持哪些设备和 iOS 版本";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "若选择共享该信息，将帮助我们随时了解应支持哪些设备和 iOS 版本。\n该信息完全保持匿名。";
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "如果选择共享该信息，您将帮助我们随时了解应该支持哪些设备和 iOS 版本。\n该信息完全保持匿名。";
 
 /* Software update report entry name */
 "iOS version" = "iOS 版本";
@@ -71,9 +59,6 @@
 
 /* Software update report entry name */
 "Memory" = "内存";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Omni 软件更新";
 
 /* Software update report entry string for a single crash */
 "One crash" = "一次崩溃";
@@ -101,14 +86,14 @@
 
 "Send Anonymous Data" = "发送匿名数据";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "发送报告";
-
 /* software update settings menu title */
 "Settings" = "设置";
 
 /* Software update report entry name */
 "Storage" = "存储";
+
+/* error reason */
+"The background software update service failed." = "后台软件更新服务失败。";
 
 /* error description */
 "The data returned from <%@> was not a valid XML document." = "“%@”返回的数据不是有效的 XML 文稿。";
@@ -125,6 +110,9 @@
 /* Software update report entry name for information about the runs of the current version of the app */
 "This version" = "该版本";
 
+/* error reason */
+"Timed out waiting for the software update service." = "等待软件更新服务超时。";
+
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "工具没有返回任何数据";
 
@@ -136,6 +124,3 @@
 
 /* error description */
 "Unable to parse response from the software update server." = "无法解析软件更新服务器的响应。";
-
-/* error text generated when software update is unable to retrieve the list of current software versions */
-"Your Internet connection might not be active, or there might be a problem somewhere along the network." = "Internet 连接可能未处于活动状态，或者网络某处可能存在问题。";

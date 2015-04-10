@@ -1,4 +1,4 @@
-// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,12 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
     
+#ifdef DEBUG
+void OBFixXcodeBustedArguments(int argc, char *argv[]);
+#endif
+
 #if defined(__GNUC__)
 #define NORETURN __attribute__ ((noreturn))
 #else
@@ -83,7 +88,12 @@ extern __unsafe_unretained id *OBCastMemoryBufferToUnsafeObjectArray(void *buffe
     static inline NSBundle *_OBBundleWithIdentifier(NSString *identifier)
     {
         OBPRECONDITION([identifier length] > 0); // Did you forget to set OMNI_BUNDLE_IDENTIFIER in your target?
-        NSBundle *bundle = [NSBundle bundleWithIdentifier:identifier];
+        NSBundle *bundle = nil;
+        if ([identifier isEqualToString:@"MAIN-BUNDLE"]) {
+            bundle = [NSBundle mainBundle];
+        } else {
+            bundle = [NSBundle bundleWithIdentifier:identifier];
+        }
         OBPOSTCONDITION(bundle); // Did you set it to the wrong thing?
         return bundle;
     }
@@ -130,20 +140,6 @@ extern NSString * const OBUnusedImplementation;
 #else
 #define OB_DEBUG_LOG_CALLER()
 #endif
-    
-enum OBBacktraceBufferType {
-    OBBacktraceBuffer_Unused = 0,      /* Indicates an unused slot */
-    OBBacktraceBuffer_Allocated = 1,   /* Allocated but not filled slot */
-    
-    /* Remaining integers represent different reasons for recording a backtrace */
-    OBBacktraceBuffer_OBAssertionFailure = 2,
-    OBBacktraceBuffer_NSAssertionFailure = 3,
-    OBBacktraceBuffer_NSException = 4,
-};
-void OBRecordBacktrace(const char *ctxt, unsigned int optype);
-/*.doc.
-  Records a backtrace for possible debugging use in the future. ctxt and optype are free for the caller to use for their own purposes, but optype must be greater than one.
-*/
     
 #undef NORETURN
 
@@ -363,8 +359,16 @@ __attribute__((visibility("hidden"))) const char *_OBGeometryAdjustedSignature(c
 // ptrdiff_t
 #define PRI_ptrdiff "td"
 
-/* CFIndex is always a signed long as far as I know */
-#define PRIdCFIndex "ld"
+// CFIndex's definition, from CFBase.h in OSX 10.10 and iOS 8.1, depends on __LLP64__
+#if __LLP64__
+#define PRI_CFIndex_LENGTH_MODIFIER "ll"
+#else
+#define PRI_CFIndex_LENGTH_MODIFIER "l"
+#endif
+    
+#define PRIdCFIndex PRI_CFIndex_LENGTH_MODIFIER "d"
+#define PRIxCFIndex PRI_CFIndex_LENGTH_MODIFIER "x"
+#define PRIXCFIndex PRI_CFIndex_LENGTH_MODIFIER "X"
     
 #if defined(__cplusplus)
 } // extern "C"

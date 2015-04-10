@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniBase/OBObject.h>
 #import <OmniFileExchange/OFXSyncSchedule.h>
 
-@class OFPreference;
+@class OFPreference, OFFileMotionResult;
 @class ODAVConnectionConfiguration;
 @class OFXServerAccountRegistry, OFXServerAccount, OFXRegistrationTable, OFXAccountClientParameters, OFXFileMetadata;
 
@@ -21,9 +21,6 @@
 + (OFXAccountClientParameters *)defaultClientParameters;
 
 + (ODAVConnectionConfiguration *)makeConnectionConfiguration;
-+ (BOOL)isCellularSyncEnabled;
-+ (void)setCellularSyncEnabled:(BOOL)cellularSyncEnabled;
-+ (OFPreference *)cellularSyncEnabledPreference;
 
 // Returns an agent configured for shared use in an app (using default account registry, info from the main bundle plist).
 - init;
@@ -48,6 +45,7 @@
 - (void)restoreSyncEnabledForAccount:(OFXServerAccount *)account;
 
 @property(readonly,nonatomic) NSSet *runningAccounts; // KVO observable. Updated after a OFXServerAccount is added to our OFXServerAccountRegistry, once syncing has actually started with that account. Until this point, -metadataItemRegistrationTableForAccount: is not valid.
+@property(readonly,nonatomic) NSSet *failedAccounts; // KVO observable. Updated after a OFXServerAccount is added to our OFXServerAccountRegistry, once syncing has been attempted and failed to start for some reason. Note that a running account can still have an error; this is for accounts that didn't even start up (missing local directory, etc).
 - (OFXRegistrationTable *)metadataItemRegistrationTableForAccount:(OFXServerAccount *)account; // Returns nil until the account agent is registered
 - (NSSet *)metadataItemsForAccount:(OFXServerAccount *)account; // Convenience wrapper
 
@@ -69,7 +67,7 @@
 - (void)deleteItemAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
 
 // Requests a rename of the file at the specified URL, which may be present on this client, but might only be known via metadata. If the file is present locally, file coordination will be used on a background queue to perform the rename. Otherwise, the rename will simply be marked in metadata and propagated to the server.
-- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(OFFileMotionResult *result, NSError *errorOrNil))completionHandler;
 
 // Mostly for tests, but something like this might come in handy elsewhere.
 - (void)countPendingTransfersForAccount:(OFXServerAccount *)serverAccount completionHandler:(void (^)(NSError *errorOrNil, NSUInteger count))completionHandler;

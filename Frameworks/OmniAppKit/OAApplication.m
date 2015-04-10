@@ -1,4 +1,4 @@
-// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,7 +25,6 @@
 #import "NSImage-OAExtensions.h"
 #import "OAAppKitQueueProcessor.h"
 #import "OAPreferenceController.h"
-#import "OASheetRequest.h"
 #import "OAWebPageViewer.h"
 
 RCS_ID("$Id$")
@@ -50,8 +49,6 @@ OBDEPRECATED_METHOD(-currentRunExceptionPanel)
 {
     NSTimeInterval lastEventTimeInterval;
     NSUInteger mouseButtonState;
-    NSMapTable *windowsForSheets;
-    NSMutableArray *sheetQueue;
 }
 
 + (void)initialize;
@@ -66,31 +63,18 @@ static NSImage *CautionIcon = nil;
 #pragma mark -
 #pragma mark NSApplication subclass
 
-+ (NSApplication *)sharedApplication;
++ (instancetype)sharedApplication;
 {
     static OAApplication *omniApplication = nil;
 
-    if (omniApplication)
+    if (omniApplication) {
+        OBASSERT([omniApplication isKindOfClass:self]);
         return omniApplication;
+    }
 
-    omniApplication = (id)[super sharedApplication];
+    omniApplication = OB_CHECKED_CAST(OAApplication, [super sharedApplication]);
     [self _setupOmniApplication];
     return omniApplication;
-}
-
-- (void)dealloc;
-{
-    [windowsForSheets release];
-    [sheetQueue release];
-    [super dealloc];
-}
-
-- (void)finishLaunching;
-{
-    windowsForSheets = NSCreateMapTable(NSObjectMapKeyCallBacks, NSObjectMapValueCallBacks, 0);
-    sheetQueue = [[NSMutableArray alloc] init];
-
-    [super finishLaunching];
 }
 
 // This is for the benefit of -miniaturizeWindows: below.
@@ -101,52 +85,6 @@ static NSArray *overrideWindows = nil;
         return overrideWindows;
     return [super windows];
 }
-
-// These are deprecated, but still called by the system frameworks, for example -[NSDocument runModalSavePanelForSaveOperation:delegate:didSaveSelector:contextInfo:]
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-implementations"
-- (void)beginSheet:(NSWindow *)sheet modalForWindow:(NSWindow *)docWindow modalDelegate:(id)modalDelegate didEndSelector:(SEL)didEndSelector contextInfo:(void *)contextInfo;
-{
-    if ([NSAllMapTableValues(windowsForSheets) indexOfObjectIdenticalTo:docWindow] != NSNotFound) {
-        // This window already has a sheet, we need to wait for it to finish
-        [sheetQueue addObject:[OASheetRequest sheetRequestWithSheet:sheet modalForWindow:docWindow modalDelegate:modalDelegate didEndSelector:didEndSelector contextInfo:contextInfo]];
-    } else {
-        if (docWindow != nil)
-            NSMapInsertKnownAbsent(windowsForSheets, sheet, docWindow);
-        [super beginSheet:sheet modalForWindow:docWindow modalDelegate:modalDelegate didEndSelector:didEndSelector contextInfo:contextInfo];
-    }
-}
-
-- (void)endSheet:(NSWindow *)sheet returnCode:(NSInteger)returnCode;
-{
-    OBASSERT_NOT_REACHED("Look for alternate API to call");
-
-    // Find the document window associated with the sheet we just ended
-    NSWindow *docWindow = [[(NSWindow *)NSMapGet(windowsForSheets, sheet) retain] autorelease];
-    NSMapRemove(windowsForSheets, sheet);
-    
-    // End this sheet
-    [super endSheet:sheet returnCode:returnCode]; // Note: This runs the event queue itself until the sheet finishes retracting
-
-    // See if we have another sheet queued for this document window
-    OASheetRequest *queuedSheet = nil;
-    NSUInteger requestIndex, requestCount = [sheetQueue count];
-    for (requestIndex = 0; requestIndex < requestCount; requestIndex++) {
-        OASheetRequest *request;
-
-        request = [sheetQueue objectAtIndex:requestIndex];
-        if ([request docWindow] == docWindow) {
-            queuedSheet = [request retain];
-            [sheetQueue removeObjectAtIndex:requestIndex];
-            break;
-        }
-    }
-
-    // Start the queued sheet
-    [queuedSheet beginSheet];
-    [queuedSheet release];
-}
-#pragma clang diagnostic pop
 
 #ifdef CustomScrollWheelHandling
 
@@ -351,7 +289,7 @@ static NSWindow *_documentWindowClaimingSheet(NSWindow *sheet)
 {
     // Apple has a private method -[NSWindow _documentWindow]. Since that's not available to us, we search all the app's windows, looking for one that claims the sheet in question.
     OBASSERT([sheet isSheet]); // Not actually dangerous, but I doubt it's ever even convenient to ask us about a window that isn't actually a sheet.
-    NSArray *windows = [NSApp windows];
+    NSArray *windows = [[NSApplication sharedApplication] windows];
     for (NSWindow *window in windows) {
         if ([window isSheet]) {
             continue;
@@ -648,14 +586,14 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
         [window setContentMaxSize:(NSSize) {.height = CGFLOAT_MAX, .width = maxWidth}];
         [window setContentSize:(NSSize) {.height = startingHeight, .width = startingWidth}];
         [window center];
-        
+
         NSURLRequest *request = [NSURLRequest requestWithURL:targetURL];
         [viewer loadRequest:request];
         return;
     }
 
     // OmniWeb displays its help in one of its browser windows
-    id applicationDelegate = [NSApp delegate];
+    id applicationDelegate = [[NSApplication sharedApplication] delegate];
     if ([applicationDelegate respondsToSelector:@selector(openAddressWithString:)]) {
         // We're presumably in OmniWeb, in which case we display our help internally
         NSString *omniwebHelpBaseURL = @"omniweb:/Help/";
@@ -838,9 +776,9 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 - (IBAction)cycleToNextMainWindow:(id)sender;
 {
-    NSWindow *mainWindow = [NSApp mainWindow];
+    NSWindow *mainWindow = [[NSApplication sharedApplication] mainWindow];
     
-    for (NSWindow *window in [NSApp orderedWindows]) {
+    for (NSWindow *window in [[NSApplication sharedApplication] orderedWindows]) {
         if (window != mainWindow && [window canBecomeMainWindow] && ![NSStringFromClass([window class]) isEqualToString:@"NSDrawerWindow"]) {
             [window makeKeyAndOrderFront:nil];
             [mainWindow orderBack:nil];
@@ -853,9 +791,9 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 - (IBAction)cycleToPreviousMainWindow:(id)sender;
 {
-    NSWindow *mainWindow = [NSApp mainWindow];
+    NSWindow *mainWindow = [[NSApplication sharedApplication] mainWindow];
     
-    for (NSWindow *window in [[NSApp orderedWindows] reverseObjectEnumerator]) {
+    for (NSWindow *window in [[[NSApplication sharedApplication] orderedWindows] reverseObjectEnumerator]) {
         if (window != mainWindow && [window canBecomeMainWindow] && ![NSStringFromClass([window class]) isEqualToString:@"NSDrawerWindow"]) {
             [window makeKeyAndOrderFront:nil];
             return;
@@ -1007,7 +945,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     // The "name" property maps to -displayName
     // Name lookups are supposed to be case-insensitive. We could prefer exact matches, but then 'every document whose name is "foo"' might return objects a first object that is different than 'document "foo"'...
     
-    for (OADocument *document in [NSApp orderedDocuments]) {
+    for (OADocument *document in [[NSApplication sharedApplication] orderedDocuments]) {
         if ([name localizedCaseInsensitiveCompare:document.displayName] == NSOrderedSame)
 	    return document;
     }
@@ -1156,6 +1094,21 @@ static id _selfIfValidElseNil(id self, SEL validateSelector, id sender)
 @end
 @implementation NSWindow (OATargetSelection)
 
+- (BOOL)_objectIsInResponderChainPriorToWindow:(id)obj;
+{
+    NSResponder *nomad = self.firstResponder;
+    while (nomad != nil) {
+        if (nomad == obj) {
+            return YES;
+        }
+        if (![nomad respondsToSelector:@selector(nextResponder)]) {
+            break;
+        }
+        nomad = nomad.nextResponder;
+    }
+    return NO;
+}
+
 - (BOOL)applyToResponderChain:(OAResponderChainApplier)applier;
 {
     if (![super applyToResponderChain:applier])
@@ -1165,7 +1118,17 @@ static id _selfIfValidElseNil(id self, SEL validateSelector, id sender)
     id delegate = (id)self.delegate;
     if (delegate)
         DEBUG_TARGET_SELECTION(@"---> checking NSWindow delegate ");
-    if (delegate && ![delegate applyToResponderChain:applier])
+
+    //PBS 4/3/15: if the window's delegate is also in the responder chain (between the window's first responder and the window itself), and the window's delegate responds to nextResponder with something other than nil, then we'll end up in an infinite loop. This happens specifically with the system's dictionary popover, which has a hierarchy like this: NSLayerCentricRemoteView - LULookupRemoteViewController - NSPopover - _NSPopoverWindow. _NSPopoverWindow's delegate is LULookupRemoteViewController.
+    BOOL shouldCheckDelegate = YES;
+    if ([delegate respondsToSelector:@selector(nextResponder)] && [delegate nextResponder]) {
+        shouldCheckDelegate = ![self _objectIsInResponderChainPriorToWindow:delegate];
+    }
+    if (!shouldCheckDelegate) {
+        DEBUG_TARGET_SELECTION(@"---> NOT checking NSWindow delegate because it appears in the responder chain before now and it has a nextResponder");
+    }
+
+    if (shouldCheckDelegate && delegate && ![delegate applyToResponderChain:applier])
         return NO;
     
     id windowController = self.windowController;

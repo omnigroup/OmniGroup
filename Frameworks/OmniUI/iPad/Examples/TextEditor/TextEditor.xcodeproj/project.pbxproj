@@ -28,6 +28,7 @@
 		345956AD1194982600ECB2B6 /* Samples in Resources */ = {isa = PBXBuildFile; fileRef = 345956AB1194982600ECB2B6 /* Samples */; };
 		345956BF119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png in Resources */ = {isa = PBXBuildFile; fileRef = 345956BE119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png */; };
 		3459571411949F6100ECB2B6 /* TextDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 3459571311949F6100ECB2B6 /* TextDocument.m */; };
+		345B1EFD1A717991005F8D6F /* Photos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 345B1EFC1A717990005F8D6F /* Photos.framework */; };
 		34717BEE11949466003360DE /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34717BED11949466003360DE /* CoreText.framework */; };
 		34717BF311949476003360DE /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34717BF211949476003360DE /* QuartzCore.framework */; };
 		34717BF911949485003360DE /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34717BF811949485003360DE /* MobileCoreServices.framework */; };
@@ -474,6 +475,7 @@
 		345956BE119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DocumentPreviewPlaceholder.png; sourceTree = "<group>"; };
 		3459571211949F6100ECB2B6 /* TextDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextDocument.h; sourceTree = "<group>"; };
 		3459571311949F6100ECB2B6 /* TextDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextDocument.m; sourceTree = "<group>"; };
+		345B1EFC1A717990005F8D6F /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = System/Library/Frameworks/Photos.framework; sourceTree = SDKROOT; };
 		346F552E1434EF1300D27428 /* TextEditor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = TextEditor.entitlements; path = ../TextEditor.entitlements; sourceTree = "<group>"; };
 		34717BED11949466003360DE /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		34717BF211949476003360DE /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -502,6 +504,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				345B1EFD1A717991005F8D6F /* Photos.framework in Frameworks */,
 				340933A919F6FF4600DFE846 /* CFNetwork.framework in Frameworks */,
 				34392B3319C37C5F00D08401 /* OmniQuartz.framework in Frameworks */,
 				348E8BFD19C105000048C99D /* OmniAppKit.framework in Frameworks */,
@@ -608,6 +611,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				345B1EFC1A717990005F8D6F /* Photos.framework */,
 				342721511194807400B39788 /* Omni */,
 				34392ABE19C37BDB00D08401 /* Apple */,
 			);
@@ -840,7 +844,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0630;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TextEditor" */;
 			compatibilityVersion = "Xcode 3.2";

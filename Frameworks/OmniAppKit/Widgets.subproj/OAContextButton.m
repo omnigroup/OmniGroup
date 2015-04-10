@@ -228,7 +228,7 @@ RCS_ID("$Id$");
     NSTimeInterval timestamp = [NSDate timeIntervalSinceReferenceDate];
     
     // If we post a matching up, the menu hides immediately.
-    [NSApp postEvent:[NSEvent mouseEventWithType:NSLeftMouseDown location:buttonMiddle modifierFlags:0 timestamp:timestamp windowNumber:[window windowNumber] context:[window graphicsContext] eventNumber:-1 clickCount:1 pressure:1.0] atStart:NO];
+    [[NSApplication sharedApplication] postEvent:[NSEvent mouseEventWithType:NSLeftMouseDown location:buttonMiddle modifierFlags:0 timestamp:timestamp windowNumber:[window windowNumber] context:[window graphicsContext] eventNumber:-1 clickCount:1 pressure:1.0] atStart:NO];
     
     return YES;
 }

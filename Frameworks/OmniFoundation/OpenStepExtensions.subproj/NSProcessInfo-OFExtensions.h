@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,5 +32,7 @@
     // If this process is running in an inherited sandbox, we'll try to grab the signing entitlements for the directly sandboxed parent.
     // This may not be possible if the parent process is no longer running.
     // rdar://problem/13255969 requests a direct way to inspect the effective signing entitlements for the current process.
+
+@property(nonatomic,readonly) NSString *codeSigningTeamIdentifier;
 
 @end

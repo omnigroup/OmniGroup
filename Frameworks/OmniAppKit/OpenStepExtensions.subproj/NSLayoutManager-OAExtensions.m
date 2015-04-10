@@ -1,4 +1,4 @@
-// Copyright 2006, 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,19 @@
 
 
 RCS_ID("$Id$");
+
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+@interface NSObject (Radar_19771353)
+@end
+@implementation NSObject (Radar_19771353)
+// 2015-02-09 13:52:56.113 RulerTest[43156:423665] -[_NSLayoutManagerRulerHelper defaultLineHeightForFont:]: unrecognized selector sent to instance 0x6080000a2a00
+- (CGFloat)defaultLineHeightForFont:(NSFont *)font;
+{
+    return ceil([font ascender] + fabs([font descender]) + [font leading]);
+}
+
+@end
+#endif
 
 @implementation NSLayoutManager (OAExtensions)
 

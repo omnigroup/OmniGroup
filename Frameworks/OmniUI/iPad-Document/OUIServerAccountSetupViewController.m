@@ -239,7 +239,8 @@ static void _commonInit(OUIServerAccountSetupViewController *self)
             [self.navigationController popToViewController:self animated:YES];
             
             if (![errorOrNil causedByUserCancelling]) {
-                [[OUIDocumentAppController controller] presentSyncError:errorOrNil inViewController:self.navigationController retryBlock:NULL];
+                // Passing a nil account so that this doesn't present an option to edit an account ... since we are already doing that.
+                [[OUIDocumentAppController controller] presentSyncError:errorOrNil forAccount:nil inViewController:self.navigationController retryBlock:NULL];
             }
         } else {
             [self finishWithError:errorOrNil];
@@ -636,6 +637,7 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
             [_account prepareForRemoval];
             if (self.finished)
                 self.finished(self, nil);
+            [self.navigationController popViewControllerAnimated:YES];
         }];
     }]];
     

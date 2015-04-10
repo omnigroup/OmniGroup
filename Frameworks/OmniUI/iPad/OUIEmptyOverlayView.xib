@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6206.8" systemVersion="13E28" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6249" systemVersion="14A389" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7026.1"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6243"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
@@ -11,10 +11,10 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="j5g-AW-1Ht">
-                    <rect key="frame" x="33" y="48" width="160" height="60"/>
+                    <rect key="frame" x="13" y="48" width="200" height="60"/>
                     <subviews>
-                        <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" horizontalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qPd-2j-cvw">
-                            <rect key="frame" x="0.0" y="28" width="160" height="32"/>
+                        <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" horizontalCompressionResistancePriority="751" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="qPd-2j-cvw">
+                            <rect key="frame" x="20" y="28" width="160" height="32"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                             <state key="normal" title="«Empty Button Label»">
                                 <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
@@ -24,7 +24,7 @@
                             </connections>
                         </button>
                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="750" verticalHuggingPriority="750" text="«Empty Message»" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LXt-tZ-jBn">
-                            <rect key="frame" x="14" y="0.0" width="132" height="20"/>
+                            <rect key="frame" x="34" y="0.0" width="132" height="19.5"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                             <nil key="highlightedColor"/>
@@ -33,15 +33,14 @@
                     <constraints>
                         <constraint firstItem="LXt-tZ-jBn" firstAttribute="leading" secondItem="j5g-AW-1Ht" secondAttribute="leading" priority="749" id="2Pa-kl-edS"/>
                         <constraint firstAttribute="centerX" secondItem="LXt-tZ-jBn" secondAttribute="centerX" id="3hh-fN-k2e"/>
-                        <constraint firstAttribute="width" relation="greaterThanOrEqual" secondItem="qPd-2j-cvw" secondAttribute="width" id="DHK-Zv-EgN"/>
                         <constraint firstAttribute="bottom" secondItem="qPd-2j-cvw" secondAttribute="bottom" id="GhJ-Cx-TKM"/>
                         <constraint firstAttribute="trailing" secondItem="LXt-tZ-jBn" secondAttribute="trailing" priority="748" id="SHP-2d-YbM"/>
-                        <constraint firstAttribute="trailing" secondItem="qPd-2j-cvw" secondAttribute="trailing" priority="748" id="T1D-5d-rp9"/>
+                        <constraint firstItem="qPd-2j-cvw" firstAttribute="leading" secondItem="j5g-AW-1Ht" secondAttribute="leading" constant="20" id="b9u-Mz-URJ"/>
+                        <constraint firstAttribute="trailing" secondItem="qPd-2j-cvw" secondAttribute="trailing" constant="20" id="gIA-wr-SPy"/>
                         <constraint firstAttribute="width" relation="greaterThanOrEqual" secondItem="LXt-tZ-jBn" secondAttribute="width" id="lDt-Tv-oAk"/>
                         <constraint firstAttribute="centerX" secondItem="qPd-2j-cvw" secondAttribute="centerX" id="mBK-yS-0z8"/>
                         <constraint firstItem="LXt-tZ-jBn" firstAttribute="top" secondItem="j5g-AW-1Ht" secondAttribute="top" id="oFC-3n-plA"/>
                         <constraint firstItem="qPd-2j-cvw" firstAttribute="top" secondItem="LXt-tZ-jBn" secondAttribute="bottom" constant="8" symbolic="YES" id="qMi-RT-4dq"/>
-                        <constraint firstItem="qPd-2j-cvw" firstAttribute="leading" secondItem="j5g-AW-1Ht" secondAttribute="leading" priority="749" id="xde-fw-7QG"/>
                     </constraints>
                 </view>
             </subviews>
@@ -61,9 +60,6 @@
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>
-        <simulatedScreenMetrics key="destination" type="retina4">
-            <size key="portraitSize" width="320" height="568"/>
-            <size key="landscapeSize" width="568" height="320"/>
-        </simulatedScreenMetrics>
+        <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
 </document>

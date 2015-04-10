@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,7 @@
 @class OUITextView, OUITextSelectionSpan;
 
 extern const CGFloat OUIScrollContext;
+extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 @protocol OUITextViewDelegate <UITextViewDelegate>
 @optional
@@ -68,7 +69,8 @@ extern const CGFloat OUIScrollContext;
 - (OUITextSelectionSpan *)firstNonEmptyInspectableTextSpan; // Nil if there is no selection or the selection length is zero.
 - (BOOL)isEmptyInspectableTextSpans:(NSArray *)spans;
 
-- (void)inspectSelectedTextFromBarButtonItem:(UIBarButtonItem *)barButtonItem;
+- (void)dismissInspectorImmediatelyIfVisible;
+- (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^)(OUIInspector *))setupBlock;
 
 - (void)selectAllShowingMenu:(BOOL)show;
 - (void)setSelectedTextRange:(UITextRange *)newRange showingMenu:(BOOL)show;

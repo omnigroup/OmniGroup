@@ -97,7 +97,7 @@ static const CGFloat iconBaseline = 36;
 
     while (1) {
 
-        NSEvent *nextEvent = [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
+        NSEvent *nextEvent = [[NSApplication sharedApplication] nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
 
         NSPoint nextEventLocation = [self convertPoint:[nextEvent locationInWindow] fromView:nil];
         mouseInBounds = NSMouseInRect(nextEventLocation, buttonRect, [self isFlipped]);

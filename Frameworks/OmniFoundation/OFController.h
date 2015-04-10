@@ -9,6 +9,8 @@
 
 #import <OmniFoundation/OFObject.h>
 
+#import <Foundation/NSUserNotification.h>
+
 @class OFInvocation, OFMessageQueue;
 @class NSBundle, NSException, NSExceptionHandler, NSLock, NSMutableArray, NSMutableSet, NSNotification;
 
@@ -27,11 +29,17 @@ typedef enum _OFControllerTerminateReply {
     OFControllerTerminateLater
 } OFControllerTerminateReply;
 
-@interface OFController : NSObject
+// Support for dispatching notifications to different subsystems. +[OFController sharedController] will be the delegate of the notification center.
+@protocol OFNotificationOwner <NSUserNotificationCenterDelegate>
+- (BOOL)ownsNotification:(NSUserNotification *)notification;
+@end
+
+@interface OFController : NSObject <NSUserNotificationCenterDelegate>
 
 + (NSBundle *)controllingBundle;
 
 + (instancetype)sharedController;
+- (void)becameSharedController NS_REQUIRES_SUPER;
 
 - (OFControllerStatus)status;
 
@@ -73,6 +81,15 @@ typedef enum _OFControllerTerminateReply {
 
 // NSExceptionHandler delegate
 - (BOOL)exceptionHandler:(NSExceptionHandler *)sender shouldLogException:(NSException *)exception mask:(NSUInteger)aMask;
+
+// Support for splitting out ownership of NSUserNotifications across different subsystems.
+- (void)addNotificationOwner:(__weak id <OFNotificationOwner>)notificationOwner;
+- (void)removeNotificationOwner:(__weak id <OFNotificationOwner>)notificationOwner;
+
+// OFController has concrete implementations of the following NSUserNotificationCenterDelegate methods. If you override these methods, be sure to call super's implementation.
+- (void)userNotificationCenter:(NSUserNotificationCenter *)center didDeliverNotification:(NSUserNotification *)notification NS_REQUIRES_SUPER;
+- (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification NS_REQUIRES_SUPER;
+- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification NS_REQUIRES_SUPER;
 
 @end
 

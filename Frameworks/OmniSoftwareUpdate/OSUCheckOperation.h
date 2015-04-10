@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,40 +31,9 @@ typedef enum {
 @property(nonatomic,readonly) OSUCheckOperationRunType runType;
 @property(nonatomic) BOOL initiatedByUser;
 
-@property(nonatomic,readonly,retain) NSDictionary *output; // KVO observable; will fire on the main thread
-@property(nonatomic,readonly,retain) NSError *error; // KVO observable; will fire on the main thread
+@property(nonatomic,readonly,strong) NSDictionary *output; // KVO observable; will fire on the main thread
+@property(nonatomic,readonly,strong) NSError *error; // KVO observable; will fire on the main thread
 
 @end
 
 extern NSString * const OSUCheckOperationCompletedNotification;
-
-extern NSDictionary *OSUPerformCheck(NSURL *url);
-
-#if !OB_ARC // Should convert this struct to an object
-typedef struct {
-    NSString *firstHopHost;
-    NSString *baseURLString;
-    NSString *appIdentifier;
-    NSString *appVersionString;
-    NSString *track;
-    BOOL includeHardwareInfo;
-    BOOL reportMode;
-    NSString *licenseType;
-    NSString *osuVersionString;
-} OSURunOperationParameters;
-
-extern NSDictionary *OSURunOperation(const OSURunOperationParameters *params, NSError **outError);
-#endif // !OB_ARC
-
-// Keys for 'query' mode results (reportMode == NO)
-#define OSUCheckResultsURLKey @"url"  // The URL that was actually fetched, as an NSString
-#define OSUCheckResultsDataKey @"data"  // The response from the server, NSData (XML)
-#define OSUCheckResultsErrorKey @"error" // Any error that occured, NSError
-#define OSUCheckResultsMIMETypeKey @"mime-type" // NSString
-#define OSUCheckResultsTextEncodingNameKey @"text-encoding" // NSString
-#define OSUCheckResultsHeadersKey @"headers" // Any HTTP headers, NSDictionary
-#define OSUCheckResultsStatusCodeKey @"status" // Any HTTP status, NSNumber
-
-// Keys for 'report' mode results
-#define OSUReportResultsURLKey @"url" // the URL that would have been queried
-#define OSUReportResultsInfoKey @"info" // the hardware info

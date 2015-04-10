@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,7 @@ extern NSString * const ODSFileItemInfoKey;
 + (NSString *)editingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 + (NSString *)exportingNameForFileURL:(NSURL *)fileURL fileType:(NSString *)fileType;
 
-- initWithScope:(ODSScope *)scope fileURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileModificationDate:(NSDate *)fileModificationDate userModificationDate:(NSDate *)userModificationDate;
+- initWithScope:(ODSScope *)scope fileURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileEdit:(OFFileEdit *)fileEdit userModificationDate:(NSDate *)userModificationDate;
 
 @property(readonly,nonatomic) NSURL *fileURL;
 @property(readonly,nonatomic) NSString *fileType;
@@ -38,7 +38,9 @@ extern NSString * const ODSFileItemInfoKey;
 @property(readonly,nonatomic) NSString *name;
 @property(readonly,nonatomic) NSString *exportingName;
 
-@property(copy,nonatomic) NSDate *fileModificationDate; // The modification date of the file on disk, not the user-edited metadata (which might be different for synchronized files).
+@property(copy,nonatomic) OFFileEdit *fileEdit; // Information about the last edited state of the file on disk; nil if not present.
+@property(readonly,nonatomic) NSDate *fileModificationDate; // Wrapper for fileEdit.fileModificationDate
+
 @property(copy,nonatomic) NSDate *userModificationDate;
 
 - (BOOL)requestDownload:(NSError **)outError;
@@ -47,5 +49,16 @@ extern NSString * const ODSFileItemInfoKey;
 @property(assign,nonatomic) BOOL draggingSource;
 
 - (NSComparisonResult)compare:(ODSFileItem *)otherItem;
+
+@end
+
+// A snapshot of the edit information about a file item at the time it was taken.
+@interface ODSFileItemEdit : NSObject
+
++ (instancetype)fileItemEditWithFileItem:(ODSFileItem *)fileItem;
+
+@property(nonatomic,readonly) ODSFileItem *fileItem;
+@property(nonatomic,readonly) OFFileEdit *originalFileEdit; // Might be nil for items that haven't been downloaded
+@property(nonatomic,readonly) NSURL *originalFileURL;
 
 @end

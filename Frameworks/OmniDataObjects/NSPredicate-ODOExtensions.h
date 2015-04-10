@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,3 +23,5 @@ extern NSPredicate *ODOKeyPathFalsePredicate(NSString *keyPath);
 extern NSPredicate *ODOMakeCompoundPredicate(NSCompoundPredicateType type, NSPredicate *firstPredicate, va_list args);
 extern NSPredicate *ODOAndPredicates(NSPredicate *firstPredicate, ...) NS_REQUIRES_NIL_TERMINATION;
 extern NSPredicate *ODOOrPredicates(NSPredicate *firstPredicate, ...) NS_REQUIRES_NIL_TERMINATION;
+
+extern BOOL ODOIsTruePredicate(NSPredicate *predicate);

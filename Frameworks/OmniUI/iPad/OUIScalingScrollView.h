@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,10 +12,10 @@
 
 @class OUIScalingScrollView;
 
-@protocol OUIScallingScrollViewDelegate <UIScrollViewDelegate>
+@protocol OUIScalingScrollViewDelegate <UIScrollViewDelegate>
 
 @required
-- (CGRect)scallingScrollViewContentViewFullScreenBounds:(OUIScalingScrollView *)scallingScrollView;
+- (CGRect)scalingScrollViewContentViewFullScreenBounds:(OUIScalingScrollView *)scalingScrollView;
 
 @end
 
@@ -23,13 +23,14 @@
 
 @property(nonatomic) OFExtent allowedEffectiveScaleExtent;
 @property(nonatomic) BOOL centerContent;
-@property(nonatomic) UIEdgeInsets extraEdgeInsets;
+@property(nonatomic) UIEdgeInsets minimumInsets;
+@property(nonatomic) CGFloat temporaryBottomInset;
 
-@property (nonatomic, assign) id<OUIScallingScrollViewDelegate> delegate;  // We'd like this to be weak, but the superclass declares it 'assign'.
+@property (nonatomic, assign) id<OUIScalingScrollViewDelegate> delegate;  // We'd like this to be weak, but the superclass declares it 'assign'.
 
-- (CGFloat)fullScreenScaleForCanvasSize:(CGSize)canvasSize;
+- (CGFloat)fullScreenScaleForUnscaledContentSize:(CGSize)unscaledContentSize;
 
-- (void)adjustScaleTo:(CGFloat)effectiveScale canvasSize:(CGSize)canvasSize;
+- (void)adjustScaleTo:(CGFloat)effectiveScale unscaledContentSize:(CGSize)unscaledContentSize;
 - (void)adjustContentInsetAnimated:(BOOL)animated;
 
 @end

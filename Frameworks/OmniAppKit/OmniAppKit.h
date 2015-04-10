@@ -72,6 +72,7 @@
 #import <OmniAppKit/OABoxSeparator.h>
 #import <OmniAppKit/OABrowserCell.h>
 #import <OmniAppKit/OACalendarView.h>
+#import <OmniAppKit/OAChangeConfigurationValue.h>
 #import <OmniAppKit/OAChasingArrowsProgressIndicator.h>
 #import <OmniAppKit/OACloseButtonOverlay.h>
 #import <OmniAppKit/OAColorPalette.h>

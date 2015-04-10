@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,10 +14,10 @@
 RCS_ID("$Id$");
 
 @interface OSUPrivacyAlertWindowController ()
-@property(nonatomic,retain) IBOutlet NSImageView *privacyNoticeAppIconImageView;
-@property(nonatomic,retain) IBOutlet NSTextField *privacyNoticeTitleTextField;
-@property(nonatomic,retain) IBOutlet NSTextField *privacyNoticeMessageTextField;
-@property(nonatomic,retain) IBOutlet NSButton    *enableHardwareCollectionButton;
+@property(nonatomic,strong) IBOutlet NSImageView *privacyNoticeAppIconImageView;
+@property(nonatomic,strong) IBOutlet NSTextField *privacyNoticeTitleTextField;
+@property(nonatomic,strong) IBOutlet NSTextField *privacyNoticeMessageTextField;
+@property(nonatomic,strong) IBOutlet NSButton    *enableHardwareCollectionButton;
 @end
 
 @implementation OSUPrivacyAlertWindowController
@@ -31,11 +31,6 @@ RCS_ID("$Id$");
     return self;
 }
 
-- (void)dealloc;
-{
-    // TODO: Leaking outlets, but this doesn't get run often...
-    [super dealloc];
-}
 
 - (OSUPrivacyNoticeResult)runHavingSeenPreviousVersion:(BOOL)hasSeenPreviousVersion;
 {
@@ -66,13 +61,13 @@ RCS_ID("$Id$");
     NSString *bundleName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
     [_privacyNoticeTitleTextField setStringValue:[NSString stringWithFormat:titleFormat, bundleName]];
     [_privacyNoticeMessageTextField setStringValue:[NSString stringWithFormat:[_privacyNoticeMessageTextField stringValue], bundleName]];
-    [_privacyNoticeAppIconImageView setImage:[NSApp applicationIconImage]];
+    [_privacyNoticeAppIconImageView setImage:[[NSApplication sharedApplication] applicationIconImage]];
 
     // Prepopulate the checkbox with your current setting.
     [_enableHardwareCollectionButton setState:[[OSUPreferences includeHardwareDetails] boolValue]];
     
     OBStrongRetain(self); // should be OK, but if we switch to having a non-modal sheet variant on a sheet, we will need to keep ourselves alive.
-    OSUPrivacyNoticeResult rc = (OSUPrivacyNoticeResult)[NSApp runModalForWindow:privacyNoticePanel];
+    OSUPrivacyNoticeResult rc = (OSUPrivacyNoticeResult)[[NSApplication sharedApplication] runModalForWindow:privacyNoticePanel];
     OBAutorelease(self);
     
     [privacyNoticePanel orderOut:nil];
@@ -113,12 +108,12 @@ RCS_ID("$Id$");
 
 - (IBAction)privacyNoticePanelOK:(id)sender;
 {
-    [NSApp stopModalWithCode:OSUPrivacyNoticeResultOK];
+    [[NSApplication sharedApplication] stopModalWithCode:OSUPrivacyNoticeResultOK];
 }
 
 - (IBAction)privacyNoticePanelShowPreferences:(id)sender;
 {
-    [NSApp stopModalWithCode:OSUPrivacyNoticeResultShowPreferences];
+    [[NSApplication sharedApplication] stopModalWithCode:OSUPrivacyNoticeResultShowPreferences];
 }
 
 @end

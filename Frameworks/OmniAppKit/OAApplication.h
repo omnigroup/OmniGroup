@@ -18,6 +18,8 @@
 
 @interface OAApplication : NSApplication
 
++ (instancetype)sharedApplication;
+
 - (NSWindow *)frontWindowForMouseLocation;
 
 - (NSTimeInterval)lastEventTimeInterval;

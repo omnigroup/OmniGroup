@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007, 2010, 2012-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,7 @@ RCS_ID("$Id$")
 - (BOOL)_shouldShow;
 - (id)_objectValue;
 - (id)_defaultObjectValue;
+- (void)_showOrHide;
 @end
 
 @implementation OADefaultSettingIndicatorButton
@@ -32,6 +33,7 @@ const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
 static NSString * const IndicatorImageStyleLED = @"led";
 #endif
 static NSString * const IndicatorImageStyleCircleX = @"circlex";
+static NSString * const IndicatorImageStyleYosemite = @"yosemite";
 
 + (void)initialize;
 {
@@ -40,20 +42,22 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
     NSString *imageStyle = [[NSUserDefaults standardUserDefaults] stringForKey:@"OADefaultSettingIndicatorStyle"];
     
     if ([imageStyle isEqualToString:IndicatorImageStyleCircleX]) {
-        ledOnImage = [[NSImage imageNamed:@"OADefaultSettingIndicatorCircleXOn" inBundle:OMNI_BUNDLE] retain];
-        ledOffImage = [[NSImage imageNamed:@"OADefaultSettingIndicatorCircleXOff" inBundle:OMNI_BUNDLE] retain];
-        
+        ledOnImage = [NSImage imageNamed:@"OADefaultSettingIndicatorCircleXOn" inBundle:OMNI_BUNDLE];
+        ledOffImage = [NSImage imageNamed:@"OADefaultSettingIndicatorCircleXOff" inBundle:OMNI_BUNDLE];
+    } else if ([imageStyle isEqualToString:IndicatorImageStyleYosemite]) {
+        ledOnImage = [NSImage imageNamed:@"OADefaultSettingIndicatorYosemiteOn" inBundle:OMNI_BUNDLE];
+        ledOffImage = [NSImage imageNamed:@"OADefaultSettingIndicatorYosemiteOff" inBundle:OMNI_BUNDLE];
     } else {
         OBASSERT((imageStyle == nil) || [imageStyle isEqualToString:IndicatorImageStyleLED]);   // Unspecified = the original LED mode
-        ledOnImage = [[NSImage imageNamed:@"OADefaultSettingIndicatorOn" inBundle:OMNI_BUNDLE] retain];
-        ledOffImage = [[NSImage imageNamed:@"OADefaultSettingIndicatorOff" inBundle:OMNI_BUNDLE] retain];
+        ledOnImage = [NSImage imageNamed:@"OADefaultSettingIndicatorOn" inBundle:OMNI_BUNDLE];
+        ledOffImage = [NSImage imageNamed:@"OADefaultSettingIndicatorOff" inBundle:OMNI_BUNDLE];
     }
 }
 
 + (OADefaultSettingIndicatorButton *)defaultSettingIndicatorWithIdentifier:(id)identifier forView:(NSView *)view delegate:(id)delegate;
 {
     NSSize buttonSize = [ledOnImage size];
-    OADefaultSettingIndicatorButton *indicator = [[[[self class] alloc] initWithFrame:NSMakeRect(0, 0, buttonSize.height, buttonSize.width)] autorelease];
+    OADefaultSettingIndicatorButton *indicator = [[[self class] alloc] initWithFrame:NSMakeRect(0, 0, buttonSize.height, buttonSize.width)];
     if (view != nil) {
         OBASSERT([view superview] != nil);
         [[view superview] addSubview:indicator];
@@ -79,9 +83,6 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
 - (void)dealloc;
 {
     delegate = nil;
-    [identifier release];
-    
-    [super dealloc];
 }
 
 // Actions
@@ -115,8 +116,7 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
 
 - (void)setIdentifier:(id)newIdentifier;
 {
-    [identifier release];
-    identifier = [newIdentifier retain];
+    identifier = newIdentifier;
     
     [self validate];
 }
@@ -137,6 +137,8 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
         [self setToolTip:[delegate toolTipForSettingIndicatorButton:self]];
     else
         [self setToolTip:nil];
+
+    [self _showOrHide];
 }
 
 - (void)setDisplaysEvenInDefaultState:(BOOL)displays;
@@ -146,6 +148,7 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
         return;
     _flags.displaysEvenInDefaultState = displays ? 1 : 0;
     [self setNeedsDisplay];
+    [self _showOrHide];
 }
 
 - (BOOL)displaysEvenInDefaultState;
@@ -160,8 +163,7 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
     if (view == snuggleUpToRightSideOfView)
         return;
     
-    [snuggleUpToRightSideOfView release];
-    snuggleUpToRightSideOfView = [view retain];
+    snuggleUpToRightSideOfView = view;
 }
 
 - (NSView *)snuggleUpToRightSideOfView;
@@ -201,8 +203,15 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
 
     CGFloat xEdge = NSMaxX(controlFrame);
     xEdge -= [snuggleUpToRightSideOfView alignmentRectInsets].right;
-    NSPoint origin = NSMakePoint((CGFloat)rint(xEdge + horizontalSpaceFromSnuggleView), (CGFloat)rint(NSMinY(controlFrame) + (NSHeight(controlFrame) - iconSize.height) / 2.0f));
     
+    NSPoint origin;
+    origin.x = rint(xEdge + horizontalSpaceFromSnuggleView);
+    origin.y = ceilf(NSMidY(controlFrame) - (iconSize.height / 2.0f));
+    
+    if ([self.snuggleUpToRightSideOfView isKindOfClass:[NSSegmentedControl class]]) {
+        origin.y -= 1.0f;
+    }
+
     [self setFrame:(NSRect){origin, iconSize}];
 }
 
@@ -275,5 +284,11 @@ static NSString * const IndicatorImageStyleCircleX = @"circlex";
     else
         return nil;
 }
+
+- (void)_showOrHide;
+{
+    self.hidden = ![self _shouldShow];
+}
+
 
 @end

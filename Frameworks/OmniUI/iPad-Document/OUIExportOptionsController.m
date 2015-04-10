@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,7 @@
 #import <OmniFoundation/OFUTI.h>
 #import <OmniUI/OUIAppController+InAppStore.h>
 #import <OmniUI/OUIBarButtonItem.h>
+#import <OmniUI/OUIInAppStoreViewController.h>
 #import <OmniUI/OUIOverlayView.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
@@ -25,6 +26,7 @@
 
 #import "OUIWebDAVSyncListController.h"
 #import "OUIExportOptionViewCell.h"
+#import "OUIExportOptionsCollectionViewLayout.h"
 
 RCS_ID("$Id$")
 
@@ -47,8 +49,10 @@ RCS_ID("$Id$")
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UILabel *exportDescriptionLabel;
 @property (weak, nonatomic) IBOutlet UILabel *exportDestinationLabel;
-@property (weak, nonatomic) IBOutlet UILabel *inAppPurchaseLabel;
 @property (weak, nonatomic) IBOutlet UIButton *inAppPurchaseButton;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *collectionViewTrailingConstraint;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *bottomViewsTrailingConstraint;
+@property (weak, nonatomic) IBOutlet UIView *bottomViewsContainerView;
 
 @property (nonatomic, strong) UIDocumentInteractionController *documentInteractionController;
 
@@ -67,7 +71,6 @@ RCS_ID("$Id$")
     CGRect _rectForExportOptionButtonChosen;
     
     BOOL _needsToCheckInAppPurchaseAvailability;
-    UIPopoverController *_activityPopoverController;
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
@@ -80,7 +83,7 @@ RCS_ID("$Id$")
     if (!(self = [super initWithNibName:nil bundle:nil]))
         return nil;
     
-    self.automaticallyAdjustsScrollViewInsets = NO;
+    self.automaticallyAdjustsScrollViewInsets = YES;
     _serverAccount = serverAccount;
     _exportType = exportType;
     
@@ -100,72 +103,24 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     [super viewDidLoad];
     
     self.view.backgroundColor = [UIColor colorWithWhite:0.94 alpha:1.0];
-    
+
+    // Need to constrain this manually because we're not in a storyboard and so don't have a for-real topLayoutGuide
+    [NSLayoutConstraint constraintWithItem:self.exportDescriptionLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.topLayoutGuide attribute:NSLayoutAttributeBottom multiplier:1.0 constant:20.0].active = YES;
+
     UIBarButtonItem *cancel = [[OUIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(_cancel:)];
     self.navigationItem.leftBarButtonItem = cancel;
     
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Choose Format", @"OmniUIDocument", OMNI_BUNDLE, @"export options title");
     
-    self.collectionView.backgroundColor = self.view.backgroundColor;
+    self.collectionView.backgroundColor = [UIColor whiteColor];
     [self.collectionView registerNib:[UINib nibWithNibName:@"OUIExportOptionViewCell" bundle:nil] forCellWithReuseIdentifier:exportOptionCellReuseIdentifier];
-    
-    OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+    if ([self.collectionView.collectionViewLayout isKindOfClass:[OUIExportOptionsCollectionViewLayout class]]) {
+        OUIExportOptionsCollectionViewLayout *layout =((OUIExportOptionsCollectionViewLayout *)(self.collectionView.collectionViewLayout));
+        layout.minimumInterItemSpacing = 0.0;
+    }
     
     _exportOptions = [[NSMutableArray alloc] init];
-    
-    ODSFileItem *fileItem = picker.singleSelectedFileItem;
-        
-    NSArray *exportTypes = [picker availableExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
-    for (NSString *exportType in exportTypes) {
-        
-        UIImage *iconImage = nil;
-        NSString *label = nil;
-        
-        
-        if (OFISNULL(exportType)) {
-            // NOTE: Adding the native type first with a null (instead of a its non-null actual type) is important for doing exports of documents exactly as they are instead of going through the exporter. Ideally both cases would be the same, but in OO/iPad the OO3 "export" path (as opposed to normal "save") has the ability to strip hidden columns, sort sorts, calculate summary values and so on for the benefit of the XSL-based exporters. If we want "export" to the OO file format to not perform these transformations, we'll need to add flags on the OOXSLPlugin to say whether the target wants them pre-applied or not.
-            NSURL *documentURL = fileItem.fileURL;
-            OBFinishPortingLater("<bug:///75843> (Add a UTI property to ODSFileItem)");
-            NSString *fileUTI = OFUTIForFileExtensionPreferringNative([documentURL pathExtension], nil); // NSString *fileUTI = [ODAVFileInfo UTIForURL:documentURL];
-            iconImage = [picker exportIconForUTI:fileUTI];
-            
-            label = [picker exportLabelForUTI:fileUTI];
-            if (label == nil) {
-                label = [[documentURL path] pathExtension];
-            }
-        }
-        else {
-            iconImage = [picker exportIconForUTI:exportType];
-            label = [picker exportLabelForUTI:exportType];
-        }
-        
-        OUIExportOption *option = [[OUIExportOption alloc] init];
-        option.image = iconImage;
-        option.label = label;
-        option.exportType = exportType;
-        
-        [_exportOptions addObject:option];
-    }
-
-    [_inAppPurchaseButton setTitle:NSLocalizedStringFromTableInBundle(@"Purchase Now", @"OmniUIDocument", OMNI_BUNDLE, @"purchase now button title") forState:UIControlStateNormal];
-
-    NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
-    if ([inAppPurchaseExportTypes count] > 0) {
-        OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
-        NSString *exportType = [inAppPurchaseExportTypes objectAtIndex:0];
-
-        NSString *label = [picker purchaseDescriptionForExportType:exportType];
-        _inAppPurchaseLabel.text = label;
-
-        [_inAppPurchaseButton setHidden:NO];
-        [_inAppPurchaseLabel setHidden:NO];
-    } else {
-        [_inAppPurchaseButton setHidden:YES];
-        [_inAppPurchaseLabel setHidden:YES];
-    }
-    
-    if (![_inAppPurchaseButton isHidden])
-        [_inAppPurchaseButton addTarget:self action:@selector(_performActionForInAppPurchaseExportOption:) forControlEvents:UIControlEventTouchUpInside];
+    [self _reloadExportTypes];
 }
 
 - (void)viewWillAppear:(BOOL)animated;
@@ -206,6 +161,38 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     _rectForExportOptionButtonChosen = CGRectZero;
 }
 
+-(void)updateViewConstraints;
+{
+    // This code manipulates the bottom of the collection view and the container view that contains the "buy pro" and "where are we uploading" views, so that only the relevant views show and the collection view eats as much vertical space as possible.
+    if (![_inAppPurchaseButton isHidden] && _exportDestinationLabel.text) {
+        [self.view removeConstraint:self.collectionViewTrailingConstraint];
+        self.collectionViewTrailingConstraint = [NSLayoutConstraint constraintWithItem:self.collectionView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.bottomViewsContainerView attribute:NSLayoutAttributeTop multiplier:1.0 constant:0];
+        [self.view addConstraint:self.collectionViewTrailingConstraint];
+        self.bottomViewsTrailingConstraint.constant = 0;
+        self.exportDestinationLabel.hidden = NO;
+    } else if (![_inAppPurchaseButton isHidden]) {
+        [self.view removeConstraint:self.collectionViewTrailingConstraint];
+        self.collectionViewTrailingConstraint = [NSLayoutConstraint constraintWithItem:self.collectionView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.bottomViewsContainerView attribute:NSLayoutAttributeTop multiplier:1.0 constant:0];
+        [self.view addConstraint:self.collectionViewTrailingConstraint];
+
+        self.bottomViewsTrailingConstraint.constant = -8; //the empty text label collapses down, so we only need to account for the extra 8 pts of padding between the label & button.
+        self.exportDestinationLabel.hidden = YES;
+    } else if (_exportDestinationLabel.text) {
+        [self.view removeConstraint:self.collectionViewTrailingConstraint];
+        self.collectionViewTrailingConstraint = [NSLayoutConstraint constraintWithItem:self.collectionView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.exportDestinationLabel attribute:NSLayoutAttributeTop multiplier:1.0 constant:-8.0]; // -8.0 to give the expected padding above the export destination label
+        [self.view addConstraint:self.collectionViewTrailingConstraint];
+        self.bottomViewsTrailingConstraint.constant = 0;
+        self.exportDestinationLabel.hidden = NO;
+    } else {
+        [self.view removeConstraint:self.collectionViewTrailingConstraint];
+        self.collectionViewTrailingConstraint = [NSLayoutConstraint constraintWithItem:self.collectionView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0];
+        [self.view addConstraint:self.collectionViewTrailingConstraint];
+
+    }
+
+    [super updateViewConstraints];
+}
+
 - (BOOL)shouldAutorotate;
 {
     return YES;
@@ -242,20 +229,10 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     
     OUIExportOptionViewCell *cell = (OUIExportOptionViewCell *)[collectionView dequeueReusableCellWithReuseIdentifier:exportOptionCellReuseIdentifier forIndexPath:indexPath];
 
-    [cell.button setImage:option.image forState:UIControlStateNormal];
-    [cell.button setTitle:option.label forState:UIControlStateNormal];
-    [cell.button addTarget:self action:@selector(_exportOptionButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    
-    return cell;
-}
+    [cell.imageView setImage:option.image];
+    [cell.label setText:option.label];
 
-- (void)_exportOptionButtonTapped:(id)sender;
-{
-    UICollectionViewCell *cell = [sender containingViewOfClass:[UICollectionViewCell class]];
-    OBASSERT(cell);
-    
-    NSIndexPath *cellIndexPath = [_collectionView indexPathForCell:cell];
-    [self collectionView:_collectionView didSelectItemAtIndexPath:cellIndexPath];
+    return cell;
 }
 
 #pragma mark - UICollectionViewDelegate
@@ -350,12 +327,10 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     if (didOpen == NO) {
         // Show Activity View Controller instead.
         UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[tempURL] applicationActivities:nil];
-    
-        if (!_activityPopoverController) {
-            _activityPopoverController = [[UIPopoverController alloc] initWithContentViewController:activityViewController];
-        }
-    
-        [[OUIDocumentAppController controller] presentPopover:_activityPopoverController fromRect:_rectForExportOptionButtonChosen inView:_collectionView permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+        activityViewController.modalPresentationStyle = UIModalPresentationPopover;
+        activityViewController.popoverPresentationController.sourceRect = _rectForExportOptionButtonChosen;
+        activityViewController.popoverPresentationController.sourceView = _collectionView;
+        [self presentViewController:activityViewController animated:YES completion:nil];
     }
 }
 
@@ -395,6 +370,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     if (shouldDisable) {
         OBASSERT_NULL(_fileConversionOverlayView)
         _fileConversionOverlayView = [[UIView alloc] initWithFrame:_collectionView.frame];
+        _fileConversionOverlayView.backgroundColor = [[UIColor whiteColor] colorWithAlphaComponent:0.75];
         [self.view addSubview:_fileConversionOverlayView];
         
         UIActivityIndicatorView *fileConversionActivityIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
@@ -497,6 +473,8 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 {
     _needsToCheckInAppPurchaseAvailability = YES;
     OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_reloadExportTypes:) name:OUIInAppStoreViewControllerUpgradeInstalledNotification object:nil];
+    
     if ([sender isKindOfClass:[OUIExportOption class]]) {
         OUIExportOption *option = (OUIExportOption *)sender;
         [picker purchaseExportType:option.exportType navigationController:self.navigationController];
@@ -509,6 +487,72 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     } else {
         OBASSERT_NOT_REACHED("unknown sender");
     }
+}
+
+- (void)_reloadExportTypes;
+{
+    
+    OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+    
+    ODSFileItem *fileItem = picker.singleSelectedFileItem;
+    
+    [_exportOptions removeAllObjects];
+    
+    NSArray *exportTypes = [picker availableExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
+    for (NSString *exportType in exportTypes) {
+        
+        UIImage *iconImage = nil;
+        NSString *label = nil;
+        
+        
+        if (OFISNULL(exportType)) {
+            // NOTE: Adding the native type first with a null (instead of a its non-null actual type) is important for doing exports of documents exactly as they are instead of going through the exporter. Ideally both cases would be the same, but in OO/iPad the OO3 "export" path (as opposed to normal "save") has the ability to strip hidden columns, sort sorts, calculate summary values and so on for the benefit of the XSL-based exporters. If we want "export" to the OO file format to not perform these transformations, we'll need to add flags on the OOXSLPlugin to say whether the target wants them pre-applied or not.
+            NSURL *documentURL = fileItem.fileURL;
+            OBFinishPortingLater("<bug:///75843> (Add a UTI property to ODSFileItem)");
+            NSString *fileUTI = OFUTIForFileExtensionPreferringNative([documentURL pathExtension], nil); // NSString *fileUTI = [ODAVFileInfo UTIForURL:documentURL];
+            iconImage = [picker exportIconForUTI:fileUTI];
+            
+            label = [picker exportLabelForUTI:fileUTI];
+            if (label == nil) {
+                label = [[documentURL path] pathExtension];
+            }
+        }
+        else {
+            iconImage = [picker exportIconForUTI:exportType];
+            label = [picker exportLabelForUTI:exportType];
+        }
+        
+        OUIExportOption *option = [[OUIExportOption alloc] init];
+        option.image = iconImage;
+        option.label = label;
+        option.exportType = exportType;
+        
+        [_exportOptions addObject:option];
+    }
+    
+    NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
+    if ([inAppPurchaseExportTypes count] > 0) {
+        OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
+        NSString *exportType = [inAppPurchaseExportTypes objectAtIndex:0];
+        
+        NSString *label = [picker purchaseDescriptionForExportType:exportType];
+        NSString *purchaseNowLocalized = NSLocalizedStringFromTableInBundle(@"Purchase Now.", @"OmniUIDocument", OMNI_BUNDLE, @"purchase now button title");
+        NSString *buttonTitle = [NSString stringWithFormat:@"%@ %@", label, purchaseNowLocalized];
+        [_inAppPurchaseButton setTitle:buttonTitle forState:UIControlStateNormal];
+        
+        [_inAppPurchaseButton setHidden:NO];
+    } else {
+        [_inAppPurchaseButton setHidden:YES];
+    }
+    
+    if (![_inAppPurchaseButton isHidden])
+        [_inAppPurchaseButton addTarget:self action:@selector(_performActionForInAppPurchaseExportOption:) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)_reloadExportTypes:(NSNotification *)notification;
+{
+    [self _reloadExportTypes];
+    [self.collectionView reloadData];
 }
 
 #pragma mark - UIDocumentInteractionControllerDelegate

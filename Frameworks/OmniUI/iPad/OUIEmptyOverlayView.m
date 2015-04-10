@@ -16,6 +16,7 @@ RCS_ID(")$Id$");
 
 @property (nonatomic, retain) IBOutlet UILabel *messageLabel;
 @property (nonatomic, retain) IBOutlet UIButton *button;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *buttonWidth;
 
 @end
 
@@ -53,6 +54,17 @@ RCS_ID(")$Id$");
     
     OBASSERT_NOTNULL(_button);
     [_button setTitle:buttonTitle forState:UIControlStateNormal];
+    _button.titleLabel.textAlignment = NSTextAlignmentCenter;
+    _button.tintColor = [UIColor blackColor];
+    self.buttonWidth = [NSLayoutConstraint constraintWithItem:_button
+                                                    attribute:NSLayoutAttributeWidth
+                                                    relatedBy:NSLayoutRelationEqual
+                                                       toItem:nil
+                                                    attribute:NSLayoutAttributeNotAnAttribute
+                                                   multiplier:1.0f
+                                                     constant:[self preferredLayoutWidth]];
+    [self addConstraint:self.buttonWidth];
+    
     
 #if 0 && defined(DEBUG_jake)
     self.backgroundColor = [[UIColor redColor] colorWithAlphaComponent:0.4];
@@ -63,10 +75,17 @@ RCS_ID(")$Id$");
     _action = action;
 }
 
+- (CGFloat)preferredLayoutWidth{
+    return self.bounds.size.width * [OUIAppearance appearance].emptyOverlayViewLabelMaxWidthRatio;
+}
+
 - (void)layoutSubviews;
 {
     // -layoutSubviews should be called after our superview has been laid out (and our own frame has therefore been determined and set).
-    _messageLabel.preferredMaxLayoutWidth = self.bounds.size.width * [OUIAppearance appearance].emptyOverlayViewLabelMaxWidthRatio;
+    _messageLabel.preferredMaxLayoutWidth = [self preferredLayoutWidth];
+    if (self.buttonWidth.constant != _messageLabel.preferredMaxLayoutWidth) {
+        self.buttonWidth.constant = _messageLabel.preferredMaxLayoutWidth;
+    }
     [super layoutSubviews];
 }
 

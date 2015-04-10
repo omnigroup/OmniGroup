@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -96,7 +96,9 @@ RCS_ID("$Id$");
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:reuseIdentifier];
     if (!cell) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:reuseIdentifier];
+        cell.textLabel.font = [UIFont systemFontOfSize:17.0];
         cell.textLabel.text = accountType.addAccountTitle;
+        cell.detailTextLabel.font = [UIFont systemFontOfSize:13.0];
         cell.detailTextLabel.text = accountType.addAccountDescription;
         cell.detailTextLabel.textColor = [UIColor omniNeutralDeemphasizedColor];
     }

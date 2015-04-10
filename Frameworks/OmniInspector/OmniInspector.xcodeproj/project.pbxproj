@@ -84,7 +84,7 @@
 		6C34FC2C08DA46430055F81A /* OITabbedInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC2A08DA46430055F81A /* OITabbedInspector.m */; };
 		6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC3A08DA47590055F81A /* OITabMatrix.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C34FC3D08DA47590055F81A /* OITabMatrix.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC3B08DA47590055F81A /* OITabMatrix.m */; };
-		6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC4908DA478D0055F81A /* OITabCell.h */; };
+		6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C34FC4908DA478D0055F81A /* OITabCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6C34FC4C08DA478D0055F81A /* OITabCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C34FC4A08DA478D0055F81A /* OITabCell.m */; };
 		8DC2EF530486A6940098B216 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C1666FE841158C02AAC07 /* InfoPlist.strings */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
@@ -109,14 +109,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
-		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		089C1667FE841158C02AAC07 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0A6C01C20CC046EF0014024A /* OIWorkspaceRestore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIWorkspaceRestore.png; sourceTree = "<group>"; };
 		0A6C01C30CC046EF0014024A /* OIWorkspaceStore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OIWorkspaceStore.png; sourceTree = "<group>"; };
 		0A6C028F0CC04ABB0014024A /* OIWorkspaceSnap.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = OIWorkspaceSnap.aiff; sourceTree = "<group>"; };
-		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		274EC2171774D89200E87888 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/OIInspectorWorkspacePanels.xib; sourceTree = "<group>"; };
+		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		32DBCF5E0370ADEE00C91783 /* OmniInspector_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniInspector_Prefix.h; sourceTree = "<group>"; };
 		346DEF3009992425008F5B5F /* OIInspectorTabController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorTabController.h; sourceTree = "<group>"; };
 		346DEF3109992425008F5B5F /* OIInspectorTabController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorTabController.m; sourceTree = "<group>"; };
@@ -202,6 +201,7 @@
 		34D2B80708D0E43500C74260 /* OmniInspector.order */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = OmniInspector.order; sourceTree = "<group>"; };
 		34E221EC0932A28300087E32 /* OIInspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspector.h; sourceTree = "<group>"; };
 		34E221ED0932A28300087E32 /* OIInspector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspector.m; sourceTree = "<group>"; };
+		426C40541A40A71400DEC1F2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OIInspectorWorkspacePanels.xib; sourceTree = "<group>"; };
 		4914964C0C9B39DF006E9EAB /* OITabLock.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = OITabLock.pdf; sourceTree = "<group>"; };
 		6C34FC2908DA46430055F81A /* OITabbedInspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OITabbedInspector.h; sourceTree = "<group>"; };
 		6C34FC2A08DA46430055F81A /* OITabbedInspector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OITabbedInspector.m; sourceTree = "<group>"; };
@@ -216,7 +216,7 @@
 		94D1DDD80B93701E0006D793 /* OIMatrix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIMatrix.h; sourceTree = "<group>"; };
 		94D1DDD90B93701E0006D793 /* OIMatrix.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIMatrix.m; sourceTree = "<group>"; };
 		A2AE8756095767D7003D8E00 /* InfoPlistKeys.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = InfoPlistKeys.rtf; sourceTree = "<group>"; };
-		A2BB54B20C973E8500274A08 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = /System/Library/Frameworks/QuartzCore.framework; sourceTree = "<absolute>"; };
+		A2BB54B20C973E8500274A08 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		A2F861280C960DAF00BE4827 /* OITabDepressionBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OITabDepressionBackground.png; sourceTree = "<group>"; };
 		A2F8617A0C961A4800BE4827 /* OIInspectorHeaderBackground.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OIInspectorHeaderBackground.h; sourceTree = "<group>"; };
 		A2F8617B0C961A4800BE4827 /* OIInspectorHeaderBackground.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OIInspectorHeaderBackground.m; sourceTree = "<group>"; };
@@ -481,9 +481,9 @@
 				34D2B7A908D0E17C00C74260 /* OAApplication-OIExtensions.h in Headers */,
 				34D2B7D008D0E32900C74260 /* OAToolbarWindowController-OIExtensions.h in Headers */,
 				346E4374151A95ED001C7496 /* OIInspectorController-Internal.h in Headers */,
+				6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */,
 				6C34FC2B08DA46430055F81A /* OITabbedInspector.h in Headers */,
 				6C34FC3C08DA47590055F81A /* OITabMatrix.h in Headers */,
-				6C34FC4B08DA478D0055F81A /* OITabCell.h in Headers */,
 				34E221EE0932A28400087E32 /* OIInspector.h in Headers */,
 				346DEF3209992425008F5B5F /* OIInspectorTabController.h in Headers */,
 				34BA7D6F0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h in Headers */,
@@ -525,7 +525,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0630;
 			};
 			buildConfigurationList = 34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -533,6 +533,7 @@
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 0867D691FE84028FC02AAC07 /* OmniInspector */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -658,7 +659,7 @@
 		274EC2161774D89200E87888 /* OIInspectorWorkspacePanels.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				274EC2171774D89200E87888 /* en */,
+				426C40541A40A71400DEC1F2 /* Base */,
 			);
 			name = OIInspectorWorkspacePanels.xib;
 			sourceTree = "<group>";
@@ -670,6 +671,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34B253D508D0D6BD00DD2070 /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
@@ -681,6 +683,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34B253D608D0D6BD00DD2070 /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
@@ -698,6 +701,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34B253D408D0D6BD00DD2070 /* Omni-Framework-Coverage.xcconfig */;
 			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
 				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;

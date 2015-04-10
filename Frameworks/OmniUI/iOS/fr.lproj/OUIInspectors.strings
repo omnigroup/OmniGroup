@@ -2,6 +2,7 @@
 "%@ points" = "%@ points";
 
 /* title format for color component slider */
+
 "<alpha title+value>" = "Opacité : %d %%";
 
 /* title format for color component slider */

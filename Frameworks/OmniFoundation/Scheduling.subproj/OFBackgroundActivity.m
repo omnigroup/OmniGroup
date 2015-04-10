@@ -16,14 +16,11 @@
 
 RCS_ID("$Id$")
 
-// Make sure to log if we hit a log call before this is loaded from preferences/environment
-static NSInteger OFBackgroundActivityDebug = NSIntegerMax;
-
+static OFDeclareDebugLogLevel(OFBackgroundActivityDebug);
 #define DEBUG_ACTIVITY(level, format, ...) do { \
     if (OFBackgroundActivityDebug >= (level)) \
         NSLog(@"BACKGROUND (%d) %@: " format, RunningActivityCount, [self shortDescription], ## __VA_ARGS__); \
     } while (0)
-
 
 static int32_t RunningActivityCount = 0;
 
@@ -36,13 +33,6 @@ static int32_t RunningActivityCount = 0;
 #else
     BOOL _suddenTerminationDisabled;
 #endif
-}
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    OFInitializeDebugLogLevel(OFBackgroundActivityDebug);
 }
 
 + (instancetype)backgroundActivityWithIdentifier:(NSString *)identifier;
@@ -58,7 +48,7 @@ static int32_t RunningActivityCount = 0;
     _identifier = [identifier copy];
     
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    _task = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+    _task = [OFSharedApplication() beginBackgroundTaskWithExpirationHandler:^{
         // The Mac side and the new API on NSProcessInfo doesn't have an expiration handler. Should we expose this on iOS?
         NSLog(@"OFBackgroundActivity %@ expired", _identifier);
     }];
@@ -80,12 +70,18 @@ static int32_t RunningActivityCount = 0;
 - (void)dealloc;
 {
     if (!_finished)
-        [self finished];
+        [self _finished];
     [_identifier release];
     [super dealloc];
 }
 
 - (void)finished;
+{
+    // This should only call -_finished, so that -finished can be marked NS_EXTENSION_UNAVAILABLE_IOS and we can still call it internally from -dealloc.
+    [self _finished];
+}
+
+- (void)_finished;
 {
     // We maintain our own state for this in case iOS returns UIBackgroundTaskInvalid when we ask it to give us a background task (which it will do if the app doesn't support backgrounding or possibly in other cases).
     OBPRECONDITION(_finished == NO, @"Called -finished twice?");
@@ -106,7 +102,7 @@ static int32_t RunningActivityCount = 0;
             DEBUG_ACTIVITY(1, @"finished");
 
             // Do this last since it might be the last thing we do...
-            [[UIApplication sharedApplication] endBackgroundTask:task];
+            [OFSharedApplication() endBackgroundTask:task];
         }];
     }
 #else

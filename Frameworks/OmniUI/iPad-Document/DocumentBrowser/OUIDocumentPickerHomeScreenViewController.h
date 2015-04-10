@@ -11,6 +11,7 @@
 
 @class OUIDocumentPicker;
 @class ODSScope;
+@class OFXServerAccount;
 
 @interface OUIDocumentPickerHomeScreenViewController : UITableViewController
 
@@ -23,6 +24,7 @@
 
 - (void)finishedLoading;
 - (void)selectCellForScope:(ODSScope *)scope;
+- (void)editSettingsForAccount:(OFXServerAccount *)account;
 
 // for subclasses
 - (NSArray *)additionalScopeItems;

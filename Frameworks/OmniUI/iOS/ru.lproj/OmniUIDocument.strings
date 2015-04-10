@@ -13,11 +13,17 @@
 /* megabytes */
 "%@ MB" = "%@ МБ";
 
+/* home screen detail label */
+"%d items" = "%d элементов";
+
 /* Main toolbar title for a multiple selected documents. */
 "%ld Documents Selected" = "Выбрано документов: %ld";
 
 /* Main toolbar title for a multiple selected items. */
 "%ld Items Selected" = "Выбрано элементов: %ld";
+
+/* home screen detail format -- count and item description */
+"%lu %@" = "%1$lu %2$@";
 
 /* Main toolbar title for a single selected document. */
 "1 Document Selected" = "Выбран 1 документ";
@@ -41,17 +47,20 @@
 "Actions" = "Действия";
 
 /* Cloud Setup button title to add a new account */
+
 "Add an Account" = "Добавить учетную запись";
 
 /* Cloud setup modal sheet title */
 "Add Cloud Account" = "Добавить облачную учетную запись";
 
-/* for WebDAV Both (Import and Export) account type */
-"Both" = "Оба";
-
 /* button title
    cancel button title
    Discard unsynced edits dialog: cancel button label */
+
+
+
+
+
 "Cancel" = "Отмена";
 
 /* item not fully downloaded error title */
@@ -66,17 +75,11 @@
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Выбрать шаблон";
 
+/* Cloud setup modal sheet title */
+"Choose Account Type" = "Выберите тип уч. записи";
+
 /* export options title */
 "Choose Format" = "Выберите формат";
-
-/* Cloud setup modal sheet title */
-"Cloud Setup" = "Настройка облака";
-
-/* App menu item title */
-"Cloud Setup..." = "Настройка облака…";
-
-/* Account setup toolbar button title to save account settings */
-"Connect" = "Подключить";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Связанные";
@@ -87,11 +90,23 @@
 /* Menu option in the document picker view */
 "Copy as Image" = "Копировать как изображение";
 
+/* moved aside custom sample document name */
+"CustomizedSampleDocumentName" = "%@ настроено";
+
+/* sort by date */
+"Date" = "Дата";
+
 /* Delete toolbar item accessibility label. */
 "Delete" = "Удалить";
 
+/* Server account setup confirmation action label format */
+"Delete \"%@\"" = "Удалить «%@»";
+
 /* delete button title */
 "Delete %ld Documents" = "Удалить документы: %ld";
+
+/* Server Account Setup button label */
+"Delete Account" = "Удалить уч. запись";
 
 /* delete button title */
 "Delete Document" = "Удалить документ";
@@ -108,9 +123,6 @@
 /* Toolbar button title for returning to list of documents. */
 "Documents <back button>" = "Документы";
 
-/* Done */
-"Done" = "Готово";
-
 /* Duplicate toolbar item accessibility label. */
 "Duplicate" = "Дублировать";
 
@@ -121,7 +133,10 @@
 "Duplicate %ld Items" = "Дублировать элементы: %ld";
 
 /* omni sync server setup help */
-"Easily sync Omni documents between devices. Signup is free!" = "Cинхронизация документов между устройствами. Бесплатная регистрация!";
+"Easily sync Omni documents between devices. Signup is free!" = "Бесплатная синхронизация через сервер Omni.";
+
+/* When displaying a sync error, this is the option to change the username and password. */
+"Edit Credentials" = "Изменить уч. данные";
 
 /* empty trash button title */
 "Empty Trash" = "Очистить корзину";
@@ -131,8 +146,9 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
+
+
 "Export" = "Экспорт";
 
 /* export action description */
@@ -141,23 +157,13 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Экспортировать в WebDAV";
 
-/* disabled for demo */
-"Feature not enabled for this demo" = "В демо-версии эта функция не работает";
-
 /* finished */
 "Finished" = "Завершено";
 
-/* Import section title */
+/* gear menu item
+   Import WebDAV server account list */
+
 "Import" = "Импорт";
-
-/* Import document title */
-"Import Document…" = "Импорт документа…";
-
-/* for WebDAV Import/Export account type */
-"Import/Export" = "Импорт/экспорт";
-
-/* Group label for Cloud Setup */
-"Import/Export Accounts" = "Импорт/экспорт учетной записи";
 
 /* Info item accessibility label */
 "Info" = "Инфо";
@@ -176,6 +182,7 @@
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
+
 "Move" = "Переместить";
 
 /* move to trash button title */
@@ -183,10 +190,10 @@
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
+
 "Move to Trash" = "В Корзину";
 
-/* Action sheet button title
-   Menu popover title */
+/* Share menu title */
 "Move to..." = "Переместить в…";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
@@ -210,6 +217,12 @@
 /* Server Account Setup label: nickname */
 "Nickname" = "Псевдоним";
 
+/* Export message for empty table view */
+"No accounts are configured for exporting." = "Уч. записи для экспорта не настроены.";
+
+/* Import message for empty table view */
+"No accounts are configured for importing." = "Уч. записи для импорта не настроены.";
+
 /* Not downloaded accessibility label. */
 "Not downloaded" = "Не загружено";
 
@@ -217,18 +230,9 @@
 "Not uploaded" = "Не отправлено";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
+
 "OK" = "ОК";
-
-/* for WebDAV OmniPresence edit field */
-"OmniPresence" = "OmniPresence";
-
-/* Group label for Cloud Setup */
-"OmniPresence Accounts" = "Учетные записи OmniPresence";
-
-/* omni sync server nickname help */
-"OmniPresence automatically keeps your documents up to date on all of your iPads and Macs." = "OmniPresence автоматически синхронизирует документы на всех ваших устройствах iPad и Mac.";
 
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "Конфигурация OmniPresence: %@";
@@ -238,6 +242,9 @@
 
 /* Server Account Setup label: password */
 "Password" = "Пароль";
+
+/* Photo Library permisssions error description. */
+"Photo Library permission denied." = "Отказано в правах на доступ к медиатеке.";
 
 /* Menu option in the document picker view */
 "Print" = "Печать";
@@ -272,6 +279,12 @@
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "Повторить синхронизацию";
 
+/* Account setup toolbar button title to save account settings */
+"Save" = "Сохранить";
+
+/* document picker button label */
+"Search" = "Поиск";
+
 /* edit button title for doc picker in non-edit mode */
 "Select" = "Выбрать";
 
@@ -292,6 +305,7 @@
 
 /* export options title
    Menu option in the document picker view */
+
 "Send via Mail" = "Отправить по эл. почте";
 
 /* email action description */
@@ -303,14 +317,11 @@
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "Создать новую учетную запись";
 
-/* sort by date */
-"Sort by date" = "Сортировать по дате";
-
-/* sort by title */
-"Sort by title" = "Сортировать по названию";
-
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "Синхронизировать сейчас";
+
+/* empty template picker button text */
+"Tap here to add a document without a template." = "Нажмите здесь, чтобы добавить документ без шаблона.";
 
 /* empty picker button text */
 "Tap here, or on the + in the toolbar, to add a document." = "Нажмите здесь или нажмите кнопку + на панели, чтобы добавить документ.";
@@ -333,6 +344,9 @@
 /* error description */
 "The zip archive must contain a single document." = "Zip-архив должен содержать один документ.";
 
+/* Photo Library permisssions error suggestion. */
+"This app does not have access to your Photo Library." = "Эта программа не имеет доступа к медиатеке.";
+
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Эта облачная учетная запись больше не существует.";
 
@@ -342,12 +356,11 @@
 /* item not fully downloaded error message */
 "This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Этот элемент нельзя экспортировать, так как он загружен не полностью. Коснитесь элемента и дождитесь полной загрузки, затем попробуйте снова.";
 
+/* sort by title */
+"Title" = "Название";
+
 /* error title */
 "Unable to open file." = "Не удается открыть файл.";
 
-/* Label for switch which controls whether cloud sync is allowed to use cellular data */
-"Use Cellular Data" = "Использовать сотовые данные";
-
 /* Account validation status string. */
 "Validating account..." = "Проверка учетной записи…";
-

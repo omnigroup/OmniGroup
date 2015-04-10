@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,8 @@
 #import <OmniDocumentStore/ODSScope-Subclass.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
-#import <OmniFoundation/OFFilePresenterEdits.h>
+#import <OmniFoundation/OFBindingPoint.h>
+#import <OmniFoundation/OFFileEdit.h>
 #import <OmniFoundation/OFUTI.h>
 
 #import "ODSFileItem-Internal.h"
@@ -29,6 +30,8 @@ RCS_ID("$Id$");
 #else
     #define DEBUG_FILE_ITEM(format, ...)
 #endif
+
+OBDEPRECATED_METHOD(-initWithScope:fileURL:isDirectory:fileModificationDate:userModificationDate:);
 
 NSString * const ODSFileItemFileURLBinding = @"fileURL";
 NSString * const ODSFileItemFileTypeBinding = @"fileType";
@@ -47,6 +50,7 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
 @implementation ODSFileItem
 {
     NSURL *_fileURL;
+    BOOL _isDirectory;
     
     // ivars for properties in the ODSItem protocol
     BOOL _hasDownloadQueued;
@@ -83,12 +87,12 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
     return [self displayNameForFileURL:fileURL fileType:fileType];
 }
 
-- initWithScope:(ODSScope *)scope fileURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileModificationDate:(NSDate *)fileModificationDate userModificationDate:(NSDate *)userModificationDate;
+- initWithScope:(ODSScope *)scope fileURL:(NSURL *)fileURL isDirectory:(BOOL)isDirectory fileEdit:(OFFileEdit *)fileEdit userModificationDate:(NSDate *)userModificationDate;
 {
     OBPRECONDITION(scope);
     OBPRECONDITION(fileURL);
     OBPRECONDITION([fileURL isFileURL]);
-    // OBPRECONDITION(fileModificationDate); // This can be nil for files that haven't been downloaded (since we don't publish stub files any more).
+    // OBPRECONDITION(fileEdit); // This is nil for files that haven't been downloaded (since we don't publish stub files any more).
     OBPRECONDITION(userModificationDate);
     OBPRECONDITION(scope.documentStore);
     OBPRECONDITION([scope isFileInContainer:fileURL]);
@@ -105,7 +109,11 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
         return nil;
     
     _fileURL = [fileURL copy];
-    _fileModificationDate = [fileModificationDate copy];
+    _isDirectory = isDirectory;
+    _fileEdit = [fileEdit copy];
+    
+    OBASSERT(!_fileEdit || _fileEdit.directory == _isDirectory); // Might not be downloaded, but if it is, these should agree.
+    
     _userModificationDate = [userModificationDate copy];
 
     // We might represent a file that isn't downloaded and not locally present, so we can't look up the directory-ness of the file ourselves.
@@ -146,8 +154,13 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
             [self willChangeValueForKey:ODSFileItemFileURLBinding];
             _fileURL = fileURL;
             [self didChangeValueForKey:ODSFileItemFileURLBinding];
-            NSString *uti = OFUTIForFileURLPreferringNative(_fileURL, NULL);
-            [self setFileType:uti];
+            
+            // OFUTIForFileURLPreferringNative() checks the filesystem, but this might be a not yet downloaded file item. We assume here that a rename doesn't change between flat file and directory.
+            OBASSERT(!_fileEdit || _fileEdit.directory == _isDirectory); // Might not be downloaded, but if it is, these should agree.
+            NSString *uti = OFUTIForFileExtensionPreferringNative([_fileURL pathExtension], @(_isDirectory));
+            OBASSERT(uti);
+            if (uti)
+                [self setFileType:uti];
         }
     }
 }
@@ -256,15 +269,21 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
     return ODSItemTypeFile;
 }
 
-- (void)setFileModificationDate:(NSDate *)fileModificationDate;
++ (NSSet *)keyPathsForValuesAffectingFileModificationDate;
+{
+    NSString *keyPath = OFKeyPathWithClass(ODSFileItem, fileEdit);
+    return [NSSet setWithObject:keyPath];
+}
+- (NSDate *)fileModificationDate;
+{
+    return _fileEdit.fileModificationDate;
+}
+
+- (void)setFileEdit:(OFFileEdit *)fileEdit;
 {
     OBPRECONDITION([NSThread isMainThread]); // Ensure we are only firing KVO on the main thread
-    //OBPRECONDITION(fileModificationDate); // can be nil if this represents a non-downloaded cloud item.
     
-    if (OFISEQUAL(_fileModificationDate, fileModificationDate))
-        return;
-    
-    _fileModificationDate = [fileModificationDate copy];
+    _fileEdit = [fileEdit copy];
 }
 
 - (BOOL)isReady;
@@ -381,16 +400,16 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
 #pragma mark - Private
 
 // Split out to make sure we only capture the variables we want and they are the non-__block versions so they get retained until the block executes
-static void _notifyDateAndFileType(ODSFileItem *self, NSDate *fileModificationDate, NSString *fileType)
+static void _notifyFileEditAndType(ODSFileItem *self, OFFileEdit *fileEdit, NSString *fileType)
 {
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         // -presentedItemDidChange can get called at the end of a rename operation (after -presentedItemDidMoveToURL:). Only send our notification if we "really" changed.
-        BOOL didChange = OFNOTEQUAL(self.fileModificationDate, fileModificationDate) || OFNOTEQUAL(self.fileType, fileType);
+        BOOL didChange = OFNOTEQUAL(self.fileEdit.uniqueEditIdentifier, fileEdit.uniqueEditIdentifier) || OFNOTEQUAL(self.fileType, fileType);
         if (!didChange)
             return;
         
         // Fire KVO on the main thread
-        self.fileModificationDate = fileModificationDate;
+        self.fileEdit = fileEdit;
         self.fileType = fileType;
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
@@ -423,36 +442,20 @@ static void _notifyDateAndFileType(ODSFileItem *self, NSDate *fileModificationDa
          First, there is Radar 10879451: Bad and random ordering of NSFilePresenter notifications. This means we can get a lone -presentedItemDidChange before the relinquish-to-writer wrapped presentedItemDidMoveToURL:. But, we have the old URL at this point. Doing a coordinated read on that URL blocks forever (see Radar 11076208: Coordinated reads started in response to -presentedItemDidChange can hang).
          */
                 
-        NSDate *modificationDate = nil;
-        NSString *fileType = nil;
-        
-        NSError *error = nil;
-        
         NSURL *fileURL = self.fileURL;
         
-        // We use the file modification date rather than a date embedded inside the file since the latter would cause duplicated documents to not sort to the front as a new document (until you modified them, at which point they'd go flying to the beginning).
-        __autoreleasing NSError *attributesError = nil;
-        NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[[fileURL absoluteURL] path]  error:&attributesError];
-        if (!attributes)
-            NSLog(@"Error getting attributes for %@ -- %@", [fileURL absoluteString], [attributesError toPropertyList]);
-        else
-            modificationDate = [attributes fileModificationDate];
-        if (!modificationDate)
-            modificationDate = [NSDate date]; // Default to now if we can't get the attributes or they are bogus for some reason.
-        
-        // Some file types may have the same extension but different UTIs based on whether they are a directory or not.
-        BOOL isDirectory = [[attributes objectForKey:NSFileType] isEqual:NSFileTypeDirectory];
-        
-        fileType = OFUTIForFileExtensionPreferringNative([fileURL pathExtension], [NSNumber numberWithBool:isDirectory]);
-        
-        if (!modificationDate) {
-            NSLog(@"Error performing coordinated read of modification date of %@: %@", [fileURL absoluteString], [error toPropertyList]);
-            modificationDate = [NSDate date]; // Default to now if we can't get the attributes or they are bogus for some reason.
+        __autoreleasing NSError *error = nil;
+        OFFileEdit *fileEdit = [[OFFileEdit alloc] initWithFileURL:fileURL error:&error];
+        if (!fileEdit) {
+            // Possibly have been deleted
+            [error log:@"Error getting file edit for %@", fileURL];
+        } else {
+            // Some file types may have the same extension but different UTIs based on whether they are a directory or not.
+            NSString *fileType = OFUTIForFileExtensionPreferringNative([fileURL pathExtension], [NSNumber numberWithBool:fileEdit.directory]);
+            
+            OBASSERT(![NSThread isMainThread]);
+            _notifyFileEditAndType(self, fileEdit, fileType);
         }
-        
-        OBASSERT(![NSThread isMainThread]);
-        
-        _notifyDateAndFileType(self, modificationDate, fileType);
     }];
 }
 
@@ -463,6 +466,7 @@ static void _notifyDateAndFileType(ODSFileItem *self, NSDate *fileModificationDa
 
 - initWithFileItem:(ODSFileItem *)fileItem destinationFolderURL:(NSURL *)destinationFolderURL;
 {
+    OBPRECONDITION(fileItem);
     OBPRECONDITION([NSThread isMainThread]); // The purpose of this class is to capture the state of the file item before going into the background and possibly racing with incoming renames
     
     if (!(self = [super init]))
@@ -470,12 +474,12 @@ static void _notifyDateAndFileType(ODSFileItem *self, NSDate *fileModificationDa
     
     _fileItem = fileItem;
     _sourceFileURL = fileItem.fileURL;
-    _sourceModificationDate = fileItem.userModificationDate;
+    _originalItemEdit = [ODSFileItemEdit fileItemEditWithFileItem:fileItem];
     
-    NSString *filename = [_sourceFileURL lastPathComponent];
+    NSString *filename = [fileItem.fileURL lastPathComponent];
     
     // The original URL might not be downloaded, so we can't get this via attribute lookups.
-    BOOL isDirectory = [[_sourceFileURL absoluteString] hasSuffix:@"/"];
+    BOOL isDirectory = [[fileItem.fileURL absoluteString] hasSuffix:@"/"];
     
     // If the caller is intending to rename the item on copy/move, the destinationFolderURL might be nil (the decision about the name will be decided on the background queue).
     _destinationFileURL = [destinationFolderURL URLByAppendingPathComponent:filename isDirectory:isDirectory];
@@ -485,7 +489,7 @@ static void _notifyDateAndFileType(ODSFileItem *self, NSDate *fileModificationDa
 
 - (NSString *)shortDescription;
 {
-    return [NSString stringWithFormat:@"%@ -> %@", _sourceFileURL, _destinationFileURL];
+    return [NSString stringWithFormat:@"%@ -> %@", self.sourceFileURL, _destinationFileURL];
 }
 
 @end
@@ -511,3 +515,28 @@ static void _notifyDateAndFileType(ODSFileItem *self, NSDate *fileModificationDa
 }
 
 @end
+
+@implementation ODSFileItemEdit
+
++ (instancetype)fileItemEditWithFileItem:(ODSFileItem *)fileItem;
+{
+    return [[self alloc] initWithFileItem:fileItem];
+}
+
+- (instancetype)initWithFileItem:(ODSFileItem *)fileItem;
+{
+    OBPRECONDITION([NSThread isMainThread], "ODSFileItem gets updated on the main thread and we are supposed to be a consistent snapshot");
+    OBPRECONDITION(fileItem);
+    
+    if (!(self = [super init]))
+        return nil;
+    
+    _fileItem = fileItem;
+    _originalFileEdit = fileItem.fileEdit; // Might be nil if we haven't been downloaded
+    _originalFileURL = fileItem.fileURL; // ... so we have to store the original file URL too.
+    
+    return self;
+}
+
+@end
+

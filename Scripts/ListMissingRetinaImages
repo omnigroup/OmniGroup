@@ -37,16 +37,38 @@ if ARGV.length == 0
     usage
 end
 
-retinaPattern = /(.*)@2x$/
-
 ARGV.each {|appPath|
-    STDERR.print "Checking for missing Retina images in #{appPath}...\n"
+    print "Checking for missing Retina images in #{appPath}...\n"
 
-    imageNames = {}
-    imageNames2x = []
+    # Sniff the path (assuming it is a bundle) and try to determine if it is a Mac bundle or iOS bundle. Configure the expected Retina-ness based on platform
+    # If a 3x image makes its way onto the Mac, we'll presumably report a weird error about "foo@3x@2x.png" not existing.
+    retinaPattern = /^([^@~]*)(@[23]x)?(~\w+)?$/
+    if File.exists?("#{appPath}/Info.plist")
+        retinaScales = ["", "@2x", "@3x"]
+        resourcePath = appPath
+    elsif File.exists?("#{appPath}/Contents/Info.plist")
+        retinaScales = ["", "@2x"]
+        resourcePath = "#{appPath}/Contents/Resources"
+    else
+        STDERR.print "Unable to determine the platform from the bundle format of #{appPath}\n"
+        exit(1)
+    end
+     
+    # Look for a configuration file that lists patterns to ignore.
+    configPath = "#{resourcePath}/ListMissingRetinaImagesConfig.txt"
+    if File.exists?(configPath)
+        File.read(configPath).each_line {|line|
+            next if line =~ /\w*#/
+            line.chomp!
+            $IgnorePatterns << Regexp.new(line)
+        }
+    end
+    
+    baseImagePaths = []
 
     appPath = Pathname.new(appPath).realpath
     
+    # Build a set of paths to base images (mapping already-Retina images to the same path)
     Find.find(appPath.to_s) {|f|
         next unless f =~ /\.(png|jpeg|jpg)$/
         next if $IgnorePatterns.detect {|pattern| pattern.match(f) }
@@ -54,27 +76,49 @@ ARGV.each {|appPath|
         base = File.basename(f, File.extname(f))
     
         match = retinaPattern.match(base)
-        if match
-            imageNames2x << match[1]
-        else
-            imageNames[base] = Pathname.new(f).relative_path_from(appPath).to_s
+        if !match
+            STDERR.print "Cannot match image path to pattern: #{base}"
+            next
         end
-    }
-
-    # Get rid of matches, reporting any 2x imagees that don't have a 1x original (uncommon)
-    imageNames2x.each {|n|
-        if imageNames[n]
-            imageNames.delete(n)
+        name = match[1]
+        scale = match[2]
+        platform = match[3]
+        
+        baseFilename = "#{name}#{platform}#{File.extname(f)}"
+        container = Pathname.new(File.dirname(f)).relative_path_from(appPath).to_s
+        
+        if container == "."
+            baseImagePath = baseFilename
         else
-            STDERR.print "Extra 2x image for #{n}\n"
+            baseImagePath = "#{container}/#{baseFilename}"
         end
+        baseImagePaths << baseImagePath
+        #STDERR.print "... #{baseImagePath}\n"
     }
-
-    # Report the lonely 1x variants in sorted order
-    if imageNames.size > 0
-        STDERR.print "Missing 2x images for...\n"
-        imageNames.values.sort.each {|n|
-            STDERR.print "\t#{n}\n"
+    
+    # Ideally we'll have some duplicates...
+    baseImagePaths.sort!
+    baseImagePaths.uniq!
+    
+    # Now check that all the variants are present.
+    baseImagePaths.each {|basePath|
+        container = File.dirname(basePath)
+        extension = File.extname(basePath)
+        basename = File.basename(basePath, extension)
+        
+        match = retinaPattern.match(basename)
+        fail "Already matched above!" unless match
+        name = match[1]
+        fail "Scale should have been removed from #{basename} on first pass" unless (match[2] == "" || match[2].nil?)
+        platform = match[3]
+        
+        
+        retinaScales.each {|scale|
+            variantRelativePath = "#{container}/#{name}#{scale}#{platform}#{extension}"
+            variantFullPath = "#{appPath}/#{variantRelativePath}"
+            if !File.exists?(variantFullPath)
+                print "MISSING #{variantRelativePath}\n"
+            end
         }
-    end
+    }
 }

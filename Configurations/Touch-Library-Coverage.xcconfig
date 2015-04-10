@@ -3,7 +3,6 @@
 // $Id$
 
 // Common settings for this target type and configuration
-#include "Omni-Global-Coverage.xcconfig"
 #include "Touch-Library-Common.xcconfig"
 
 // Common settings for Coverage configurations of Library targets

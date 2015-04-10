@@ -17,8 +17,14 @@
 @interface NSWindow (OAExtensions)
 
 + (NSArray *)windowsInZOrder;
-+ (void)beforeDisplayIfNeededPerformBlock:(void (^)(void))block;
-+ (void)performDisplayIfNeededBlocks;
+
+/// This block will be executed before -displayIfNeeded on *any* window.
++ (void)beforeAnyDisplayIfNeededPerformBlock:(void (^)(void))block;
+
+/// This block will be executed before -displayIfNeeded but only for this window.
+- (void)beforeDisplayIfNeededPerformBlock:(void (^)(void))block;
+
+- (void)performDisplayIfNeededBlocks;
 
 - (NSPoint)frameTopLeftPoint;
 

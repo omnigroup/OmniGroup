@@ -4,8 +4,3 @@
 
 // Common settings for Framework targets
 #include "Omni-Framework-Common.xcconfig"
-
-// Common settings for Debug configurations of Framework targets
-INSTALL_PATH = 
-SKIP_INSTALL = YES
-OMNI_FRAMEWORK_TARGET_PATH = $(CONFIGURATION_BUILD_DIR)

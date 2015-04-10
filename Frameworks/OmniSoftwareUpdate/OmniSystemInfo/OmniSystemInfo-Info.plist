@@ -27,7 +27,7 @@
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>OSU_VERSION_NUMBER</string>
+    <string>${FRAMEWORK_VERSION}</string>
     <key>OFRegistrations</key>
     <dict>
       <key>OAPreferenceController</key>

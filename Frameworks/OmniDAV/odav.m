@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -318,11 +318,11 @@ int main(int argc, char *argv[])
             }
             
             commandsRunning++;
-            [connection putData:sourceData toURL:destURL completionHandler:^(NSURL *resultURL, NSError *errorOrNil){
+            [connection putData:sourceData toURL:destURL completionHandler:^(ODAVURLResult *result, NSError *errorOrNil){
                 if (errorOrNil) {
                     [errorOrNil log:@"Error writing to %@", destURL];
                 } else {
-                    _log(@"File uploaded to %@", resultURL);
+                    _log(@"File uploaded to %@", result.URL);
                 }
                 OBASSERT([NSThread isMainThread]);
                 commandsRunning--;

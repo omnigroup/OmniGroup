@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,9 @@ typedef enum {
     const OFByte *currentPosition;
 }
 
-- initWithData:(NSData *)someData;
+- (instancetype)initWithData:(NSData *)someData;
+
+@property (nonatomic) NSStringEncoding stringEncoding;
 
 - (void)setByteOrder:(CFByteOrder)newByteOrder;
 - (CFByteOrder)byteOrder;

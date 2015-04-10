@@ -1,4 +1,4 @@
-// Copyright 2007-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,9 +12,9 @@
 @class NSXMLNode;
 @class OFVersionNumber;
 
-NSString * const OSUItemAvailableBinding;     // Depends on whether the user is running a late enough version of the OS
-NSString * const OSUItemSupersededBinding;    // Depends on whether a more recent item is also available in the list
-NSString * const OSUItemIgnoredBinding;       // Depends on whether the user has manually skipped this update
+extern NSString * const OSUItemAvailableBinding;     // Depends on whether the user is running a late enough version of the OS
+extern NSString * const OSUItemSupersededBinding;    // Depends on whether a more recent item is also available in the list
+extern NSString * const OSUItemIgnoredBinding;       // Depends on whether the user has manually skipped this update
 
 #define OSUAppcastXMLNamespace (@"http://www.omnigroup.com/namespace/omniappcast/v1")
 #define OSUAppcastTrackInfoNamespace (@"http://www.omnigroup.com/namespace/omniappcast/trackinfo-v1")

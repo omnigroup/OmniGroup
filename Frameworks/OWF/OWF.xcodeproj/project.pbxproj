@@ -584,7 +584,7 @@
 		00E52132FE8AB39F11C9CC38 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E52133FE8AB39F11C9CC38 /* OmniNetworking.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniNetworking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E52134FE8AB39F11C9CC38 /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		00E52135FE8AB39F11C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		00E52135FE8AB39F11C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		0108395EFF69ED4BC697A10E /* OWFWebPounder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWFWebPounder.m; sourceTree = "<group>"; };
 		01083960FF69EDCCC697A10E /* OWAnchorsProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWAnchorsProcessor.h; sourceTree = "<group>"; };
 		01083961FF69EDCCC697A10E /* OWAnchorsProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWAnchorsProcessor.m; sourceTree = "<group>"; };
@@ -630,7 +630,7 @@
 		43C22565FFADB6B0CD999A53 /* OWSimpleTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWSimpleTarget.h; sourceTree = "<group>"; };
 		43C22567FFADB727CD999A53 /* OWSimpleTarget.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWSimpleTarget.m; sourceTree = "<group>"; };
 		4A91C9F306134ED70097A149 /* HTTPDateTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPDateTests.m; sourceTree = "<group>"; };
-		4A94189A049CB4F600278BF7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = /System/Library/Frameworks/Security.framework; sourceTree = "<absolute>"; };
+		4A94189A049CB4F600278BF7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		4AA37F11066E49FC0097A149 /* OWFGetURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWFGetURL.m; sourceTree = "<group>"; };
 		4AA5357308B27DDC00F0872D /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AA5357408B27DDC00F0872D /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -716,8 +716,8 @@
 		A2F15E05053276E50097A146 /* OWProcessorCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWProcessorCache.m; sourceTree = "<group>"; };
 		B59C0A5405474D3C0097A10E /* OWSitePreference.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OWSitePreference.h; sourceTree = "<group>"; };
 		B59C0A5505474D3C0097A10E /* OWSitePreference.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWSitePreference.m; sourceTree = "<group>"; };
-		B6520A7A0152E76B0F97A14A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = /System/Library/Frameworks/SystemConfiguration.framework; sourceTree = "<absolute>"; };
-		B6827658012DF7920F97A14A /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
+		B6520A7A0152E76B0F97A14A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		B6827658012DF7920F97A14A /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		E2ED6D5F05C5C72D0097A12E /* BrowserIdentity.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; fileEncoding = 30; path = BrowserIdentity.plist; sourceTree = "<group>"; usesTabs = 1; };
 /* End PBXFileReference section */
 
@@ -1689,7 +1689,7 @@
 		00E52059FE8AB39F11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0630;
 			};
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
 			compatibilityVersion = "Xcode 3.2";

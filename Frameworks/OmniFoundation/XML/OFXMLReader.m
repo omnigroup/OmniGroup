@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -302,8 +302,6 @@ static void _errorHandler(void *userData, xmlErrorPtr error)
     [_errors release];
     [super dealloc];
 }
-
-@synthesize url = _url;
 
 - (OFXMLQName *)elementQName; // If on an elemenet, return it's name.  Otherwise, nil.
 {    

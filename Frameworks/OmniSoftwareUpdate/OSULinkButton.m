@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,13 +23,13 @@ RCS_ID("$Id$");
                                  NSForegroundColorAttributeName : [NSColor colorWithCalibratedHue:218.0/360.0 saturation:0.95 brightness:0.96 alpha:1.0],
                                  NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle)};
     
-    NSAttributedString *attributedTitle = [[[NSAttributedString alloc] initWithString:self.title attributes:attributes] autorelease];
+    NSAttributedString *attributedTitle = [[NSAttributedString alloc] initWithString:self.title attributes:attributes];
     self.attributedTitle = attributedTitle;
     
     attributes = @{NSFontAttributeName : font,
                    NSForegroundColorAttributeName : [NSColor colorWithCalibratedHue:218.0/360.0 saturation:0.95 brightness:0.80 alpha:1.0],
                    NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle)};
-    attributedTitle = [[[NSAttributedString alloc] initWithString:self.title attributes:attributes] autorelease];
+    attributedTitle = [[NSAttributedString alloc] initWithString:self.title attributes:attributes];
     self.attributedAlternateTitle = attributedTitle;
     
 }

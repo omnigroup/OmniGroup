@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1001,7 +1001,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 - (void)_displayErrorWithUserInfo:(NSDictionary *)errorUserInfo;
 {
     NSError *error = [[NSError alloc] initWithDomain:NSCocoaErrorDomain code:0 userInfo:errorUserInfo];
-    [NSApp presentError:error];
+    [[NSApplication sharedApplication] presentError:error];
     [error release];
 }
 

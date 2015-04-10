@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -143,24 +143,24 @@ RCS_ID("$Id$")
 {
     // Try to avoid redundant PROPFINDs in the common case -- assume remoteTemporaryDirectoryURL exists and fall back to a slower path if there is an error here.
     
-    __block NSURL *resultURL;
+    __block ODAVURLResult *result;
     __block NSError *resultError;
     
     OFXConnection *connection = self.connection;
     NSURL *temporaryRemoteSnapshotURL = self.temporaryRemoteSnapshotURL;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
-        [connection makeCollectionAtURL:temporaryRemoteSnapshotURL completionHandler:^(NSURL *createdURL, NSError *createError) {
-            if (createdURL) {
-                resultURL = createdURL; // Yay!
+        [connection makeCollectionAtURL:temporaryRemoteSnapshotURL completionHandler:^(ODAVURLResult *createResult, NSError *createError) {
+            if (createResult) {
+                result = createResult; // Yay!
                 done();
                 return;
             }
             
             // Try creating the whole directory path.
-            [connection makeCollectionAtURLIfMissing:temporaryRemoteSnapshotURL baseURL:connection.baseURL completionHandler:^(NSURL *createdURL, NSError *createError) {
-                if (createdURL)
-                    resultURL = createdURL; // Yay!
+            [connection makeCollectionAtURLIfMissing:temporaryRemoteSnapshotURL baseURL:connection.baseURL completionHandler:^(ODAVURLResult *createResult, NSError *createError) {
+                if (createResult)
+                    result = createResult; // Yay!
                 else
                     resultError = createError;
                 done();
@@ -168,11 +168,16 @@ RCS_ID("$Id$")
         }];
     });
     
+    // Remember the redirects we see in this initial MKCOL so that we don't get a redirect on our final MOVE.
+    if ([result.redirects count] > 0) {
+        [connection updateBaseURLWithRedirects:result.redirects];
+    }
+    
     // Remember the redirected URL
-    self.temporaryRemoteSnapshotURL = resultURL;
-    if (!resultURL && outError)
+    self.temporaryRemoteSnapshotURL = result.URL;
+    if (!result && outError)
         *outError = resultError;
-    return resultURL;
+    return result.URL;
 }
 
 - (void)_startWriteOperation;

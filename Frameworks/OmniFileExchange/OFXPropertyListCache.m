@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@
 
 RCS_ID("$Id$")
 
-static NSInteger OFXPropertyListCacheDebug = NSIntegerMax;
+static OFDeclareDebugLogLevel(OFXPropertyListCacheDebug);
 #define DEBUG_CACHE(level, format, ...) do { \
     if (OFXPropertyListCacheDebug >= (level)) \
         NSLog(@"PLIST CACHE %@: " format, [self shortDescription], ## __VA_ARGS__); \
@@ -65,6 +65,8 @@ static NSString * const   FileInfoLastModifiedDateKey = @"lastModifiedDate";
 
     NSString *ETag;
     GET_ENTRY(ETag, fileInfoPlist, FileInfoETagKey, NSString);
+    if ([NSString isEmptyString:ETag])
+        ETag = nil;
 
     NSDate *lastModifiedDate;
     GET_ENTRY(lastModifiedDate, fileInfoPlist, FileInfoLastModifiedDateKey, NSDate);
@@ -80,8 +82,9 @@ static NSString * const   FileInfoLastModifiedDateKey = @"lastModifiedDate";
 
 - (NSDictionary *)toPropertyList;
 {
+    NSString *ETag = _fileInfo.ETag;
     NSDictionary *fileInfoPlist = @{FileInfoSizeKey:@(_fileInfo.size),
-                                    FileInfoETagKey:_fileInfo.ETag,
+                                    FileInfoETagKey:ETag != nil ? ETag : @"",
                                     FileInfoLastModifiedDateKey:_fileInfo.lastModifiedDate};
     return @{ServerDateKey:_serverDate, FileInfoKey:fileInfoPlist, ContentsKey:_contents};
 }
@@ -95,13 +98,6 @@ static NSString * const   FileInfoLastModifiedDateKey = @"lastModifiedDate";
     NSURL *_remoteBaseDirectoryURL;
 
     NSMutableDictionary *_cacheEntryByKey;
-}
-
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    OFInitializeDebugLogLevel(OFXPropertyListCacheDebug);
 }
 
 - init;

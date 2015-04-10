@@ -52,12 +52,12 @@ static NSImage *resizerImage = nil;
     while (1) {
         NSPoint point, change;
         
-        event = [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:NO];
+        event = [[NSApplication sharedApplication] nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:NO];
 
         if ([event type] == NSLeftMouseUp)
             break;
            
-        [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
+        [[NSApplication sharedApplication] nextEventMatchingMask:NSLeftMouseDraggedMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
         point = [window convertPointToScreen:[event locationInWindow]];
         change.x = startingMouse.x - point.x;
         change.y = startingMouse.y - point.y;

@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@
 
 RCS_ID("$Id$")
 
-NSInteger OFXSnapshotDebug = INT_MAX;
+OFDeclareDebugLogLevel(OFXSnapshotDebug);
 #define DEBUG_SNAPSHOT(level, format, ...) do { \
     if (OFXSnapshotDebug >= (level)) \
         NSLog(@"SNAPSHOT %@: " format, [self shortDescription], ## __VA_ARGS__); \
@@ -254,13 +254,6 @@ static NSDictionary *_recordVersionContents(NSURL *localDocumentURL, NSFileCoord
     return [versionContents copy];
 }
 
-+ (void)initialize;
-{
-    OBINITIALIZE;
-    
-    OFInitializeDebugLogLevel(OFXSnapshotDebug);
-}
-
 - (instancetype)initWithExistingLocalSnapshotURL:(NSURL *)localSnapshotURL error:(NSError **)outError;
 {
     OBPRECONDITION(localSnapshotURL);
@@ -423,7 +416,7 @@ static NSString *ClientComputerName(void)
     infoDictionary[kOFXInfo_LastEditedByKey] = NSUserName();
     infoDictionary[kOFXInfo_LastEditedHostKey] = ClientComputerName();
     
-    if (![self _updateVersionDictionary:versionDictionary error:outError])
+    if (![self _updateVersionDictionary:versionDictionary reason:@"initialized" error:outError])
         return nil;
     if (![self _updateInfoDictionary:infoDictionary error:outError])
         return nil;
@@ -617,7 +610,8 @@ static void OFXIterateContentFiles(NSDictionary *contents, void (^action)(NSDict
 {
     OBPRECONDITION([self _checkInvariants]);
     
-    if (self.localState.missing)
+    OFXFileState *localState = self.localState;
+    if (localState.missing || localState.deleted)
         return nil; // not downloaded, so no file
     
     NSNumber *inode = _versionDictionary[kOFXVersion_ContentsKey][kOFXContents_FileInode];
@@ -625,6 +619,63 @@ static void OFXIterateContentFiles(NSDictionary *contents, void (^action)(NSDict
     
     return inode;
 }
+
+- (NSDate *)fileModificationDate;
+{
+    OBPRECONDITION([self _checkInvariants]);
+    
+    OFXFileState *localState = self.localState;
+    if (localState.missing || localState.deleted)
+        return nil; // not downloaded, so no file
+    
+    NSNumber *timeInterval = _versionDictionary[kOFXVersion_ContentsKey][kOFXContents_FileModificationTime];
+    OBASSERT([timeInterval isKindOfClass:[NSNumber class]]);
+    
+    return [NSDate dateWithTimeIntervalSinceReferenceDate:[timeInterval doubleValue]];
+}
+
+// Currently unused
+#if 0
+static void _appendContentDescription(NSMutableString *desc, NSDictionary *contents)
+{
+    NSString *type = contents[kOFXContents_FileTypeKey];
+    
+    if ([type isEqual:kOFXContents_FileTypeRegular]) {
+        [desc appendString:@"="];
+        [desc appendString:contents[kOFXContents_FileHashKey]];
+        return;
+    }
+    if ([type isEqual:kOFXContents_FileTypeDirectory]) {
+        [desc appendString:@"["];
+        
+        NSDictionary *children = contents[kOFXContents_DirectoryChildrenKey];
+        [children enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSDictionary *child, BOOL *stop) {
+            [desc appendString:name];
+            _appendContentDescription(desc, child);
+        }];
+        [desc appendString:@"]"];
+        return;
+    }
+    if ([type isEqual:kOFXContents_FileTypeLink]) {
+        [desc appendString:@"@"];
+        [desc appendString:contents[kOFXContents_LinkDestinationKey]];
+        return;
+    }
+    
+    OBASSERT_NOT_REACHED("Unknown file type %@", type);
+}
+
+@synthesize contentsHash = _contentsHash;
+- (NSString *)contentsHash;
+{
+    if (!_contentsHash) {
+        NSMutableString *contentDescription = [[NSMutableString alloc] init];
+        _appendContentDescription(contentDescription, _infoDictionary[kOFXInfo_ContentsKey]);
+        _contentsHash = OFXMLCreateIDFromData([[contentDescription dataUsingEncoding:NSUTF8StringEncoding] sha1Signature]);
+    }
+    return _contentsHash;
+}
+#endif
 
 // TODO: This could probably early out with a YES, since the top level file or directory will have a new inode.
 - (NSNumber *)hasSameContentsAsLocalDocumentAtURL:(NSURL *)localDocumentURL coordinator:(NSFileCoordinator *)coordinator withChanges:(BOOL)withChanges error:(NSError **)outError;
@@ -691,7 +742,7 @@ static BOOL RunningOnAccountQueue(void)
     return YES;
 }
 
-- (BOOL)_updateVersionDictionary:(NSDictionary *)versionDictionary error:(NSError **)outError;
+- (BOOL)_updateVersionDictionary:(NSDictionary *)versionDictionary reason:(NSString *)reason error:(NSError **)outError;
 {
     OBPRECONDITION(RunningOnAccountQueue());
     
@@ -713,7 +764,7 @@ static BOOL RunningOnAccountQueue(void)
     _versionDictionary = [versionDictionary copy];
     
     if (_infoDictionary) // Otherwise, still setting up
-        DEBUG_SNAPSHOT(1, @"Updated snapshot has state %@/%@", self.localState, self.remoteState);
+        DEBUG_SNAPSHOT(1, @"Updated snapshot with reason \"%@\", has state %@/%@", reason, self.localState, self.remoteState);
 
     return YES;
 }
@@ -730,7 +781,7 @@ static BOOL RunningOnAccountQueue(void)
     NSMutableDictionary *versionDictionary = [NSMutableDictionary dictionaryWithDictionary:_versionDictionary];
     versionDictionary[editsKey] = state.archiveString;
     
-    BOOL success = [self _updateVersionDictionary:versionDictionary error:outError];
+    BOOL success = [self _updateVersionDictionary:versionDictionary reason:@"mark edited" error:outError];
     OBINVARIANT([self _checkInvariants]);
     return success;
 }
@@ -761,7 +812,7 @@ static BOOL RunningOnAccountQueue(void)
     // If we were moved before, that no longer matters. This leaves the receiver with _localRelativePath set to the destination path, but its Info.plist pointing at the pre-move path. We could maybe flatten the move, or maybe reset _localRelativePath to the original value, but really no one should be looking at the path for delete files, so -localRelativePath asserts if we are deleted.
     [versionDictionary removeObjectForKey:kOFXVersion_RelativePath];
     
-    BOOL success = [self _updateVersionDictionary:versionDictionary error:outError];
+    BOOL success = [self _updateVersionDictionary:versionDictionary reason:@"locally deleted" error:outError];
     OBINVARIANT([self _checkInvariants]);
     return success;
 }
@@ -773,7 +824,7 @@ static BOOL RunningOnAccountQueue(void)
     NSMutableDictionary *versionDictionary = [NSMutableDictionary dictionaryWithDictionary:_versionDictionary];
     versionDictionary[kOFXVersion_RemoteState] = [[OFXFileState deleted] archiveString];
     
-    BOOL success = [self _updateVersionDictionary:versionDictionary error:outError];
+    BOOL success = [self _updateVersionDictionary:versionDictionary reason:@"remotely deleted" error:outError];
     OBINVARIANT([self _checkInvariants]);
     return success;
 }
@@ -797,7 +848,7 @@ static BOOL RunningOnAccountQueue(void)
             versionDictionary[kOFXVersion_LocalState] = localState.archiveString;
             [versionDictionary removeObjectForKey:kOFXVersion_RelativePath];
             
-            BOOL success = [self _updateVersionDictionary:versionDictionary error:outError];
+            BOOL success = [self _updateVersionDictionary:versionDictionary reason:@"undoing local automove" error:outError];
             
             OBINVARIANT([self _checkInvariants]);
             return success;
@@ -817,7 +868,7 @@ static BOOL RunningOnAccountQueue(void)
     versionDictionary[kOFXVersion_LocalState] = localState.archiveString;
     versionDictionary[kOFXVersion_RelativePath] = relativePath;
     
-    BOOL success = [self _updateVersionDictionary:versionDictionary error:outError];
+    BOOL success = [self _updateVersionDictionary:versionDictionary reason:@"local automove" error:outError];
     
     OBINVARIANT([self _checkInvariants]);
     return success;
@@ -862,7 +913,7 @@ static BOOL RunningOnAccountQueue(void)
         versionDictionary[kOFXVersion_LocalState] = localState.archiveString;
         versionDictionary[kOFXVersion_RelativePath] = relativePath;
         
-        success = [self _updateVersionDictionary:versionDictionary error:outError];
+        success = [self _updateVersionDictionary:versionDictionary reason:@"local move" error:outError];
     }
     
     OBINVARIANT([self _checkInvariants]);
@@ -881,7 +932,7 @@ static BOOL RunningOnAccountQueue(void)
     [versionDictionary removeObjectForKey:kOFXVersion_ContentsKey];
 
     
-    BOOL success = [self _updateVersionDictionary:versionDictionary error:outError];
+    BOOL success = [self _updateVersionDictionary:versionDictionary reason:@"gave up contents" error:outError];
     
     OBPOSTCONDITION(!success || self.localState.missing);
     OBINVARIANT([self _checkInvariants]);
@@ -905,7 +956,7 @@ static BOOL RunningOnAccountQueue(void)
     
     versionDictionary[kOFXVersion_ContentsKey] = versionContents;
     
-    BOOL success = [self _updateVersionDictionary:versionDictionary error:outError];
+    BOOL success = [self _updateVersionDictionary:versionDictionary reason:@"did publish" error:outError];
     OBINVARIANT([self _checkInvariants]);
     return success;
 }
@@ -923,7 +974,7 @@ static BOOL RunningOnAccountQueue(void)
         // We'll fail validation below and will error out (better than a nil value exception).
     }
     
-    BOOL success = [self _updateVersionDictionary:versionDictionary error:outError];
+    BOOL success = [self _updateVersionDictionary:versionDictionary reason:@"did take contents" error:outError];
     OBINVARIANT([self _checkInvariants]);
     return success;
 }
@@ -975,7 +1026,7 @@ static BOOL RunningOnAccountQueue(void)
     }
     
     // Write the results to our local snapshot as a new/updated Version.plist. If we die between here and writing this file, the next sync would produce either a duplicate upload (if this was a new file) or a self-conflict (both preferable to losing data of course).
-    if (![self _updateVersionDictionary:updatedVersionDictionary error:outError]) {
+    if (![self _updateVersionDictionary:updatedVersionDictionary reason:@"finished upload" error:outError]) {
         OBChainError(outError);
         OBPOSTCONDITION([self _checkInvariants]);
         return NO;

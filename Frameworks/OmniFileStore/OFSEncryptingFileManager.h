@@ -9,16 +9,15 @@
 
 #import <OmniFileStore/OFSFileManager.h>
 
-
-#define NSURLAuthenticationMethodOFSEncryptingFileManager @"OFSEncryptingFileManager"
+@class OFSDocumentKey;
 
 @interface OFSEncryptingFileManager : OFSFileManager <OFSConcreteFileManager>
 
-- initWithFileManager:(OFSFileManager <OFSConcreteFileManager> *)underlyingFileManager keyStore:(NSData *)finfo error:(NSError **)outError;
-- initWithFileManager:(OFSFileManager <OFSConcreteFileManager> *)underlyingFileManager error:(NSError **)outError NS_DESIGNATED_INITIALIZER ;
+- initWithFileManager:(OFSFileManager <OFSConcreteFileManager> *)underlyingFileManager keyStore:(OFSDocumentKey *)keyStore error:(NSError **)outError NS_DESIGNATED_INITIALIZER ;
 
-- (BOOL)resetKey:(NSError **)error;  // Sets the document key to a new, randomly generated value. This is only a useful operation when you're creating a new document--- any existing items will become inaccessible.
-- (NSData *)keyStoreForPassword:(NSString *)pass error:(NSError **)outError;  // Given a user's chosen password, return the key-management blob that should be passed to -initWithFileManager:keyStore:error: in order to produce an encrypting file manager with the same document key as this one.
+@property (readwrite, copy, nonatomic) NSString *maskedFileName;
+@property (readonly, nonatomic) OFSDocumentKey *keyStore;
 
 @end
+
 

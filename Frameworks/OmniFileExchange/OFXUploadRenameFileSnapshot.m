@@ -33,7 +33,7 @@ RCS_ID("$Id$")
     OBASSERT(oldVersion);
     versionDictionary[kOFXVersion_NumberKey] = @([oldVersion unsignedLongValue] + 1);
     
-    return [self _updateVersionDictionary:versionDictionary error:outError];
+    return [self _updateVersionDictionary:versionDictionary reason:@"init upload rename" error:outError];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,12 +43,13 @@ RCS_ID("$Id$");
                 if (![appDelegate addPurchasedProductToKeychain:productIdentifier])
                     continue;
 
+                [appDelegate didUnlockInAppPurchase:productIdentifier];
+
                 if (transaction.transactionState == SKPaymentTransactionStatePurchased)
                     [self.delegate storeObserver:self paymentQueue:queue successfullyPurchasedSKU:purchasedSKU];
                 else
                     [self.delegate storeObserver:self paymentQueue:queue successfullyRestoredSKU:purchasedSKU];
 
-                [appDelegate didUnlockInAppPurchase:productIdentifier];
                 [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 
                 break;

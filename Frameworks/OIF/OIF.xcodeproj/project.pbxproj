@@ -61,11 +61,11 @@
 		00E521EFFE8AB4D111C9CC38 /* OmniSourceLicense.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html; path = OmniSourceLicense.html; sourceTree = "<group>"; };
 		00E521F3FE8AB4D111C9CC38 /* OmniNetworking.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniNetworking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E521F4FE8AB4D111C9CC38 /* OmniAppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		00E521F5FE8AB4D111C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		00E521F5FE8AB4D111C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		00E521F6FE8AB4D111C9CC38 /* OWF.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OWF.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E521F7FE8AB4D111C9CC38 /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E521F8FE8AB4D111C9CC38 /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		00E521F9FE8AB4D111C9CC38 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		00E521F9FE8AB4D111C9CC38 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		2D87EE2A00837EFBC697A146 /* OICoreGraphicsImageRep.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OICoreGraphicsImageRep.h; sourceTree = "<group>"; };
 		2D87EE2B00837EFBC697A146 /* OICoreGraphicsImageRep.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = OICoreGraphicsImageRep.m; sourceTree = "<group>"; };
 		34BF1143003A1F49C697A14A /* NSImage-OIExtensions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = "NSImage-OIExtensions.h"; sourceTree = "<group>"; };
@@ -276,7 +276,7 @@
 		00E521CFFE8AB4D111C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0630;
 			};
 			buildConfigurationList = 4A1F65D308B37C9D007C9742 /* Build configuration list for PBXProject "OIF" */;
 			compatibilityVersion = "Xcode 3.2";

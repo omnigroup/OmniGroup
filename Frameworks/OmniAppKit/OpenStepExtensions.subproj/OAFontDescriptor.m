@@ -1,4 +1,4 @@
-// Copyright 2003-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -305,8 +305,12 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 {
     OBPRECONDITION(![NSString isEmptyString:name]);
     OBPRECONDITION(size > 0.0f);
-    
-    return [self initWithFontAttributes:@{(id)kCTFontNameAttribute : name, (id)kCTFontSizeAttribute : @(size)}];
+
+    OAFontDescriptorPlatformFont font = [OAPlatformFontClass fontWithName:name size:size];
+    if (font != nil)
+        return [self initWithFont:font];
+    else
+        return [self initWithFontAttributes:@{(id)kCTFontNameAttribute : name, (id)kCTFontSizeAttribute : @(size)}];
 }
 
 - initWithFont:(OAFontDescriptorPlatformFont)font;
@@ -578,16 +582,16 @@ static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matched
     NSDictionary *desiredTraits = desiredAttributes[(id)kCTFontTraitsAttribute];
     unsigned int desiredSymbolicTraits = [(NSNumber *)desiredTraits[(id)kCTFontSymbolicTrait] unsignedIntValue];
     CGFloat desiredWeight = [(NSNumber *)desiredTraits[(id)kCTFontWeightTrait] cgFloatValue];
-    
+
     BOOL wantBold = (desiredSymbolicTraits & kCTFontTraitBold) != 0
     || desiredWeight >= _fontManagerWeightToWeight(OAFontDescriptorBoldFontWeight())
     || [desiredFontName containsString:@"bold" options:NSCaseInsensitiveSearch];
-    
-    BOOL wantItalic = (desiredSymbolicTraits & kCTFontTraitItalic) != 0 || [desiredFontName containsString:@"italic" options:NSCaseInsensitiveSearch];
-    BOOL wantCondensed = (desiredSymbolicTraits & kCTFontCondensedTrait) != 0 || [desiredFontName containsString:@"condensed" options:NSCaseInsensitiveSearch];
-    BOOL wantExpanded = (desiredSymbolicTraits & kCTFontExpandedTrait) != 0 || [desiredFontName containsString:@"expanded" options:NSCaseInsensitiveSearch];
+
+    BOOL wantItalic = (desiredSymbolicTraits & kCTFontTraitItalic) != 0 || (desiredFontName ? [desiredFontName containsString:@"italic" options:NSCaseInsensitiveSearch] : [desiredFamilyName containsString:@"italic" options:NSCaseInsensitiveSearch]);
+    BOOL wantCondensed = (desiredSymbolicTraits & kCTFontCondensedTrait) != 0 || (desiredFontName ? [desiredFontName containsString:@"condensed" options:NSCaseInsensitiveSearch] : [desiredFamilyName containsString:@"condensed" options:NSCaseInsensitiveSearch]);
+    BOOL wantExpanded = (desiredSymbolicTraits & kCTFontExpandedTrait) != 0 || (desiredFontName ? [desiredFontName containsString:@"expanded" options:NSCaseInsensitiveSearch] : [desiredFamilyName containsString:@"expanded" options:NSCaseInsensitiveSearch]);
     // Expanded and condensed are mutually exclusive, but the style inheritance system might try to ask for such a font anyway.
-    
+
     for (id descriptorObj in matchedDescriptors) {
         CTFontDescriptorRef candidateDescriptor = (CTFontDescriptorRef)descriptorObj;
         
@@ -606,10 +610,12 @@ static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matched
         
         // Check boldness
         wantBold |= [candidateFontFamilyName hasPrefix:@"Hiragino"] && [desiredFontName containsString:@"W6" options:NSCaseInsensitiveSearch]; // special case for Hiragino Kaku Gothic, Hiragino Mincho, and Hiragino Sans whose weights aren't "heavy enough" to be considered bold, but whose bold attributes are set
-        
+
         BOOL newFontIsBold = (candidateSymbolicTraits & kCTFontTraitBold) != 0 || [candidateFontName containsString:@"bold" options:NSCaseInsensitiveSearch];
-        
-        if (wantBold != newFontIsBold) {
+        // We sometimes have a mismatch in the bold font attribute for the following font families. Zapfino also has the potential for a mismatch with italic.  We do not check for bold or for italic traits when trying to do a match for the following font families.
+        BOOL overRideAttributes = [candidateFontFamilyName hasPrefix:@"Arial Rounded"] || [candidateFontFamilyName hasPrefix:@"Bradley Hand"]|| [candidateFontFamilyName hasPrefix:@"Zapf Dingbats"] || [candidateFontFamilyName hasPrefix:@"Zapfino"] || [candidateFontFamilyName hasPrefix:@"DIN Alternate"] || [candidateFontFamilyName hasPrefix:@"DIN Condensed"];
+
+        if (!overRideAttributes && wantBold != newFontIsBold) {
             DEBUG_FONT_LOOKUP(@"Font '%@' boldness mismatch. %@", candidateFontName, wantBold ? @"Wanted bold." : @"Wanted not bold.");
             continue;
         }
@@ -617,7 +623,7 @@ static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matched
         // Check italicness
         BOOL newFontIsItalic = (candidateSymbolicTraits & kCTFontTraitItalic) != 0 || [candidateFontName containsString:@"italic" options:NSCaseInsensitiveSearch];
 
-        if (wantItalic != newFontIsItalic) {
+        if (!overRideAttributes && wantItalic != newFontIsItalic) {
             DEBUG_FONT_LOOKUP(@"Font '%@' italicness mismatch. %@", candidateFontName, wantItalic ? @"Wanted italic." : @"Wanted not italic.");
             continue;
         }
@@ -634,7 +640,7 @@ static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matched
                 DEBUG_FONT_LOOKUP(@"Font '%@' is condensed, but we're not looking for a condensed font.", candidateFontName);
                 continue;
             } else if (wantCondensed && wantExpanded) {
-                DEBUG_FONT_LOOKUP(@"Font '%@' is condensed, but since user wants both expanded and collapsed, we're falling back to neither.");
+                DEBUG_FONT_LOOKUP(@"Font '%@' is condensed, but since user wants both expanded and collapsed, we're falling back to neither.", candidateFontName);
                 continue;
             }
         }
@@ -667,7 +673,7 @@ static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matched
         }
         
         if (candidateHasCorrectExpandedOrCondensed && weightDifference < bestMatchWeightDifferenceRespectingExpandedOrCollapsed) {
-            DEBUG_FONT_LOOKUP(@"Font '%@' has correct expanded/condensed, and has weight %f, which is closer to goal weight %f than previous match of correct expanded/condensed");
+            DEBUG_FONT_LOOKUP(@"Font '%@' has correct expanded/condensed, and has weight %f, which is closer to goal weight %f than previous match of correct expanded/condensed", candidateFontName, candidateWeight, desiredWeight);
             bestMatchRespectingExpandedOrCondensed = candidateDescriptor;
             bestMatchWeightDifferenceRespectingExpandedOrCollapsed = weightDifference;
         }
@@ -716,7 +722,7 @@ static NSArray *_matchingDescriptorsForFontFamily(NSString *familyName)
     
     NSString *familyName = _attributes[(id)kCTFontFamilyNameAttribute];
     if (!familyName) {
-        OBASSERT_NOT_REACHED("We expect to always have a value for the family name attribute!");
+        // Fonts read from RTF will have a family name if a font is available.  Since it's not, I guess we'll substitute Helvetica.
         familyName = @"Helvetica"; // Try to limp along with a font family we assume exists on all platforms.
     }
     

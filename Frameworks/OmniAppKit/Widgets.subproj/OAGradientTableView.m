@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -59,7 +59,7 @@ static const CGFunctionCallbacks linearFunctionCallbacks = {0, &linearColorBlend
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
     if (flags.acceptsFirstMouse)
-        return [NSApp isActive];
+        return [[NSApplication sharedApplication] isActive];
         
     return [super acceptsFirstMouse:theEvent];
 }

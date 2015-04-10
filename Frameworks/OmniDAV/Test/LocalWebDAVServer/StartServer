@@ -45,6 +45,7 @@ function append_user {
     perl -pe "s|CONFIG_DIR|$CONFIG_DIR|g;" |
     perl -pe "s|DOC_DIR|$DOC_DIR|g;" >> "$CONFIG_DIR/httpd.conf"
     mkdir -p "$DOC_DIR/test$1"
+    mkdir -p "$DOC_DIR/test$1/redirect-dst"
 
     DIGEST=$(echo -n "test$1:$REALM:password" | /usr/bin/openssl dgst -md5)
     echo test$1:$REALM:$DIGEST >> "$CONFIG_DIR/user.passwd"

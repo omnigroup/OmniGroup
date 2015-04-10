@@ -1,4 +1,4 @@
-// Copyright 2001-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,7 +47,6 @@ RCS_ID("$Id$");
 {
     OSUSystemConfigurationController *configurationViewController = [[OSUSystemConfigurationController alloc] init];
     [configurationViewController runModalSheetInWindow:self.controlBox.window];
-    [configurationViewController release];
 }
 
 @end

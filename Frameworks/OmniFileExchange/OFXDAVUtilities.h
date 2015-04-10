@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,8 +8,9 @@
 // $Id$
 
 @class OFXConnection;
+@class ODAVMultipleFileInfoResult;
 
-extern NSArray *OFXFetchFileInfosEnsuringDirectoryExists(OFXConnection *connection, NSURL *directoryURL, NSDate **outServerDate, NSError **outError) OB_HIDDEN;
+extern ODAVMultipleFileInfoResult *OFXFetchFileInfosEnsuringDirectoryExists(OFXConnection *connection, NSURL *directoryURL, NSError **outError) OB_HIDDEN;
 
 extern void OFXWriteDataToURLAtomically(OFXConnection *connection, NSData *data, NSURL *destinationURL, NSURL *temporaryDirectoryURL, NSURL *accountBaseURL, BOOL overwrite, void (^completionHandler)(NSURL *url, NSError *errorOrNil)) OB_HIDDEN;
 

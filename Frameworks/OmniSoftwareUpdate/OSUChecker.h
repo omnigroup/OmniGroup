@@ -1,4 +1,4 @@
-// Copyright 2001-2008,2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,31 +33,6 @@ extern NSString * const OSULicenseTypeAppStore;
 #define OSUCheckerLicenseTypeBinding (@"licenseType")
 
 @interface OSUChecker : OFObject <OFNetReachabilityDelegate>
-{
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    NSTimer *_automaticUpdateTimer;
-#else
-    OFScheduledEvent *_automaticUpdateEvent;
-#endif
-    
-    id <OSUCheckerTarget> _checkTarget;
-    
-    NSString *_licenseType;
-    
-    struct {
-        unsigned int shouldCheckAutomatically: 1;
-        unsigned int initiateCheckOnLicenseTypeChange: 1;
-        unsigned int scheduleNextCheckOnLicenseTypeChange: 1;
-    } _flags;
-    
-    OFNetReachability *_netReachability;
-    
-    OSUCheckOperation *_currentCheckOperation;
-    
-    // Track info updates
-    NSURLConnection *_refreshingTrackInfo;
-    NSMutableData *_refreshingTrackData;    
-}
 
 + (OSUChecker *)sharedUpdateChecker;
 

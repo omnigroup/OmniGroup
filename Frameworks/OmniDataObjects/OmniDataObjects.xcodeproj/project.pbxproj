@@ -130,6 +130,8 @@
 		3EE8E50E1937FF1800616F0E /* ODOPredicate-SQL.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ECFF60D8F78BE007ADAC9 /* ODOPredicate-SQL.m */; };
 		3EE8E50F1937FF1800616F0E /* ODOPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ED05C0D8F7AD9007ADAC9 /* ODOPredicate.m */; };
 		3EE8E5101937FF1800616F0E /* ODOSQLStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400BAA10D8E23CE00390D08 /* ODOSQLStatement.m */; };
+		5F2461551ABB3FDC000540A0 /* ODOEditingContext-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		5F2461561ABB3FE1000540A0 /* ODOEditingContext-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FAA77AD193E6B440017D662 /* de.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 5FAA7791193E68F00017D662 /* de.lproj */; };
 		5FAA77AE193E6B440017D662 /* es.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 5FAA778F193E68F00017D662 /* es.lproj */; };
 		5FAA77AF193E6B440017D662 /* fr.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 5FAA778E193E68F00017D662 /* fr.lproj */; };
@@ -179,7 +181,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		32DBCF5E0370ADEE00C91783 /* OmniDataObjects_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDataObjects_Prefix.h; sourceTree = "<group>"; };
 		3400B6880D8C625700390D08 /* ODOObject-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = "ODOObject-Internal.h"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = "ODOEditingContext-Internal.h"; sourceTree = "<group>"; };
@@ -273,8 +275,8 @@
 		34A5E1360D89940F0006DF9F /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = "Omni-Tool-Release.xcconfig"; path = "../../Configurations/Omni-Tool-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		34A779E20D89D3EA0037DE8C /* xcd2odo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xcd2odo.m; sourceTree = "<group>"; };
 		34A779F00D89D5450037DE8C /* xcd2odo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xcd2odo; sourceTree = BUILT_PRODUCTS_DIR; };
-		34A77A190D89D6880037DE8C /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OmniFoundation.framework; path = ../../../Products/Debug/OmniFoundation.framework; sourceTree = SOURCE_ROOT; };
-		34B9CCE10D8B0599001A5AB1 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = /usr/lib/libsqlite3.dylib; sourceTree = "<absolute>"; };
+		34A77A190D89D6880037DE8C /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		34B9CCE10D8B0599001A5AB1 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		34B9CCF20D8B065C001A5AB1 /* Errors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Errors.m; sourceTree = "<group>"; };
 		34B9CDBD0D8B1893001A5AB1 /* ODODatabase-Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODODatabase-Internal.h"; sourceTree = "<group>"; };
 		34B9CDCE0D8B1954001A5AB1 /* ODOModel-SQL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOModel-SQL.h"; sourceTree = "<group>"; };
@@ -303,7 +305,7 @@
 		3EE8E4B41937FDA600616F0E /* libOmniDataObjects.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniDataObjects.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EE8E4B61937FDA600616F0E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		3EE8E4C41937FDA600616F0E /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		3EE8E4C71937FDA600616F0E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		3EE8E4C71937FDA600616F0E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		3EE8E4DA1937FDCB00616F0E /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		3EE8E4DB1937FDCB00616F0E /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		3EE8E4DC1937FDCB00616F0E /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -655,6 +657,7 @@
 				3441C4C019C8E67600A2FAAE /* ODOEditingContext-Internal.h in Headers */,
 				3441C4C419C8E68200A2FAAE /* ODOObject-Accessors.h in Headers */,
 				3EE8E4F21937FE3C00616F0E /* ODOEditingContext.h in Headers */,
+				5F2461561ABB3FE1000540A0 /* ODOEditingContext-Internal.h in Headers */,
 				3EE8E4F41937FE3C00616F0E /* ODOObject.h in Headers */,
 				3EE8E4F51937FE3C00616F0E /* ODOObjectID.h in Headers */,
 				3441C4B919C8E63C00A2FAAE /* ODOModel-SQL.h in Headers */,
@@ -697,6 +700,7 @@
 				3441C4BE19C8E66200A2FAAE /* ODOEntity-Internal.h in Headers */,
 				3400BAA20D8E23CE00390D08 /* ODOSQLStatement.h in Headers */,
 				348ECFF70D8F78BE007ADAC9 /* ODOPredicate-SQL.h in Headers */,
+				5F2461551ABB3FDC000540A0 /* ODOEditingContext-Internal.h in Headers */,
 				348ED05D0D8F7AD9007ADAC9 /* ODOPredicate.h in Headers */,
 				3441C4C319C8E67D00A2FAAE /* ODOObject-Internal.h in Headers */,
 				3477F3DC0DA29344001CF280 /* ODOFeatures.h in Headers */,
@@ -792,7 +796,8 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastTestingUpgradeCheck = 0600;
+				LastUpgradeCheck = 0630;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniDataObjects" */;
 			compatibilityVersion = "Xcode 3.2";

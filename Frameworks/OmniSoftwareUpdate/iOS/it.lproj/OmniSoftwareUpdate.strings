@@ -1,9 +1,6 @@
 /* Software update report format for number of cores in the CPU */
 "%@ cores" = "%@ core";
 
-/* error description - the host from which we retrieve updates is unreachable */
-"%@ is not reachable." = "%@ non raggiungibile.";
-
 /* Software update report entry string for multiple crashes */
 "%ld crashes" = "%ld blocchi";
 
@@ -19,9 +16,6 @@
 /* Software update report entry name for information about the runs of all versions of the app */
 "All versions" = "Tutte le versioni";
 
-/* OmniSoftwareUpdate privacy notice message format */
-"Allow %@ to periodically report information about your hardware model and iOS version?\nThis will allow us to know which configurations are the most important to support. You can change your answer later in preferences by MUMBLE MUMBLE MUMBLE." = "Consentire a %@ di segnalare periodicamente informazioni sul modello hardware e sulla versione di iOS?\nIn questo modo potremo conoscere le configurazioni più importanti da supportare. Puoi anche modificare la risposta in seguito nelle preferenze mediante BLA BLA BLA.";
-
 /* Software update report entry name */
 "App ID" = "ID app";
 
@@ -30,9 +24,6 @@
 
 /* error reason - tried to run a check operation to fetch software update information, but it exited with an error code */
 "Check operation failed." = "Controllo operazione non riuscito.";
-
-/* error text generated when software update is unable to retrieve the list of current software versions */
-"Could not contact %@." = "Impossibile contattare %@.";
 
 /* Software update report entry name */
 "CPU" = "CPU";
@@ -44,9 +35,6 @@
    software update settings title */
 
 "Device Information" = "Informazioni dispositivo";
-
-/* OmniSoftwareUpdate privacy notice button title */
-"Don't Report" = "Non segnalare";
 
 /* error description */
 "Error fetching software update information." = "Errore durante il recupero delle informazioni di aggiornamento software.";
@@ -61,7 +49,7 @@
 "Help The Omni Group decide which devices and iOS versions to support" = "Aiuta The Omni Group a decidere quali dispositivi e versioni di iOS supportare";
 
 /* Settings preferences detail text */
-"If you choose to share this information, you'll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Se scegli di condividere queste informazioni, ci aiuterai a stabilire quali dispositivi e versioni di iOS supportare nel software.\nQueste informazioni saranno conservate in forma del tutto anonima.";
+"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous." = "Se scegli di condividere queste informazioni, ci aiuterai a sapere quali dispositivi e versioni di iOS debbano essere supportati dal nostro software.\nTali informazioni saranno in forma del tutto anonima. ";
 
 /* Software update report entry name */
 "iOS version" = "Versione iOS";
@@ -71,9 +59,6 @@
 
 /* Software update report entry name */
 "Memory" = "Memoria";
-
-/* OmniSoftwareUpdate privacy notice alert title */
-"Omni Software Update" = "Aggiornamento Omni Software";
 
 /* Software update report entry string for a single crash */
 "One crash" = "Un blocco";
@@ -101,14 +86,14 @@
 
 "Send Anonymous Data" = "Invia dati anonimi";
 
-/* OmniSoftwareUpdate privacy notice button title */
-"Send Reports" = "Invia segnalazioni";
-
 /* software update settings menu title */
 "Settings" = "Impostazioni";
 
 /* Software update report entry name */
 "Storage" = "Spazio di archiviazione";
+
+/* error reason */
+"The background software update service failed." = "Errore del servizio di aggiornamento software in background.";
 
 /* error description */
 "The data returned from <%@> was not a valid XML document." = "I dati restituiti da <%@> non costituivano un documento XML valido.";
@@ -125,6 +110,9 @@
 /* Software update report entry name for information about the runs of the current version of the app */
 "This version" = "Questa versione";
 
+/* error reason */
+"Timed out waiting for the software update service." = "Tempo scaduto per l’attesa del servizio di aggiornamento software.";
+
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "Lo strumento non ha restituito dati";
 
@@ -136,6 +124,3 @@
 
 /* error description */
 "Unable to parse response from the software update server." = "Impossibile analizzare la risposta dal server di aggiornamento software.";
-
-/* error text generated when software update is unable to retrieve the list of current software versions */
-"Your Internet connection might not be active, or there might be a problem somewhere along the network." = "La connessione a Internet potrebbe non essere attiva o potrebbe esserci un problema in qualche punto della rete.";

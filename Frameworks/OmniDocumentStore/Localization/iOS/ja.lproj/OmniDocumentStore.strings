@@ -1,35 +1,35 @@
 /* Error description when renaming a file to a name that is already in use. */
-"\"%@\" is already taken." = "“%@” は既に取得済みです。";
+"\"%@\" is already taken." = "“%@” はすでに使用されています。";
 
 /* Error reason when a file type is not recognized. */
-"%@ does not recognize this kind of file." = "%@ この種類のファイルは認識できません。";
+"%@ does not recognize this kind of file." = "%@ はこのタイプのファイルを認識できません。";
 
 /* Error message when renaming a folder and there is already a folder with the requested name. */
-"Another folder already has the name \"%@\"." = "その名前 “%@” は別のフォルダで使用されています。";
+"Another folder already has the name \"%@\"." = "“%@” という名前の別のフォルダがすでに存在します。";
 
 /* Document store scope display name */
-"Built-in" = "ビルトイン";
+"Built-in" = "内蔵";
 
 /* Error message when renaming a folder and there is already a folder with the requested name. */
-"Cannot rename folder." = "フォルダの名称を変更できません。";
+"Cannot rename folder." = "フォルダの名前を変更できません。";
 
 /* Document store scope display name */
 "Local Documents" = "ローカル書類";
 
 /* Error suggestion when renaming a file to a name that is already in use. */
-"Please choose a different name." = "別の名前を選んでください。";
+"Please choose a different name." = "別の名前を選択してください。";
 
 /* time display format for today */
-"Today, %@ <day name>" = "今日, %@";
+"Today, %@ <day name>" = "今日、%@";
 
 /* Document store scope display name */
 "Trash" = "ゴミ箱";
 
 /* Error description when a file type is not recognized. */
-"Unable to add document." = "書類を追加できませんでした。";
+"Unable to add document." = "書類を追加できません。";
 
 /* title for new untitled folders */
 "Untitled Folder" = "名称未設定";
 
 /* time display format for yesterday */
-"Yesterday, %@ <day name>" = "昨日, %@";
+"Yesterday, %@ <day name>" = "昨日、%@";

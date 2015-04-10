@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,9 +13,9 @@
 #import <OmniUI/OUIUndoBarButtonItem.h>
 #import <OmniDocumentStore/ODSStoreDelegate.h>
 
-@class ODSFileItem, ODSScope;
+@class ODSFileItem, OFFileEdit, ODSFileItemEdit, ODSScope;
 @class OFXAgentActivity, OFXServerAccount;
-@class OUIDocument, OUIDocumentPicker, OUIDocumentPickerViewController, OUIBarButtonItem;
+@class OUIDocument, OUIDocumentPicker, OUIDocumentPickerViewController, OUIBarButtonItem, UIViewController;
 
 @interface OUIDocumentAppController : OUIAppController <OUIUndoBarButtonItemTarget, ODSStoreDelegate, ODSStoreDelegate>
 
@@ -25,8 +25,9 @@
 @property(nonatomic,retain) OUIDocumentPicker *documentPicker;
 
 @property(nonatomic,readonly) UIBarButtonItem *closeDocumentBarButtonItem;
-@property(nonatomic,readonly) OUIUndoBarButtonItem *undoBarButtonItem;
+@property(nonatomic,readonly) UIBarButtonItem *compactCloseDocumentBarButtonItem;
 @property(nonatomic,readonly) UIBarButtonItem *infoBarButtonItem;
+@property(nonatomic,readonly) UIBarButtonItem *uniqueInfoBarButtonItem; // This will be generated eachtime it is asked for
 
 @property(nonatomic,readonly) OFXAgentActivity *agentActivity;
 
@@ -50,6 +51,7 @@
 - (void)invalidateDocumentPreviews;
 
 // Sample documents
+- (NSInteger)builtInResourceVersion;
 - (NSString *)sampleDocumentsDirectoryTitle;
 - (NSURL *)sampleDocumentsDirectoryURL;
 - (NSPredicate *)sampleDocumentsFilterPredicate;
@@ -71,10 +73,8 @@
 
 // ODSStoreDelegate methods we implement
 - (void)documentStore:(ODSStore *)store addedFileItems:(NSSet *)addedFileItems;
-- (void)documentStore:(ODSStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)oldDate willMoveToURL:(NSURL *)newURL;
-- (void)documentStore:(ODSStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)date finishedMoveToURL:(NSURL *)newURL successfully:(BOOL)successfully;
-- (void)documentStore:(ODSStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)oldDate willCopyToURL:(NSURL *)newURL;
-- (void)documentStore:(ODSStore *)store fileWithURL:(NSURL *)oldURL andDate:(NSDate *)oldDate finishedCopyToURL:(NSURL *)newURL andDate:(NSDate *)newDate successfully:(BOOL)successfully;
+- (void)documentStore:(ODSStore *)store fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
+- (void)documentStore:(ODSStore *)store fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
 - (ODSFileItem *)documentStore:(ODSStore *)store preferredFileItemForNextAutomaticDownload:(NSSet *)fileItems;
 
 // OUIDocumentPickerDelegate methods we implement
@@ -88,18 +88,18 @@
 - (NSArray *)toolbarItemsForDocument:(OUIDocument *)document;
 - (void)showInspectorFromBarButtonItem:(UIBarButtonItem *)item;
 - (void)mainThreadFinishedLoadingDocument:(OUIDocument *)document;  // For handling any loading that can't be done in a thread
-
+- (BOOL)shouldOpenOnlineHelpOnFirstLaunch; //defaults YES, implemented this way so you can special-case demo builds.
 // Optional ODSStoreDelegate that we implement
 - (NSArray *)documentStoreEditableDocumentTypes:(ODSStore *)store;
 
 // Helpful dialogs
-- (void)presentSyncError:(NSError *)syncError inViewController:(UIViewController *)viewController retryBlock:(void (^)(void))retryBlock;
+- (void)presentSyncError:(NSError *)syncError forAccount:(OFXServerAccount *)account inViewController:(UIViewController *)viewController retryBlock:(void (^)(void))retryBlock;
 - (void)warnAboutDiscardingUnsyncedEditsInAccount:(OFXServerAccount *)account withCancelAction:(void (^)(void))cancelAction discardAction:(void (^)(void))discardAction;
 
 // document state
-+ (NSDictionary *)documentStateForURL:(NSURL *)documentURL;
-+ (void)setDocumentState:(NSDictionary *)documentState forURL:(NSURL *)documentURL;
-+ (void)moveDocumentStateFromURL:(NSURL *)fromDocumentURL toURL:(NSURL *)toDocumentURL deleteOriginal:(BOOL)deleteOriginal;
++ (NSDictionary *)documentStateForFileEdit:(OFFileEdit *)fileEdit;
++ (void)setDocumentState:(NSDictionary *)documentState forFileEdit:(OFFileEdit *)fileEdit;
++ (void)copyDocumentStateFromFileEdit:(OFFileEdit *)fromFileEdit toFileEdit:(OFFileEdit *)toFileEdit;
 
 @end
 

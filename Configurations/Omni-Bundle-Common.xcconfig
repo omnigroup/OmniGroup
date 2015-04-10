@@ -5,6 +5,9 @@
 // Common settings for all Mac targets
 #include "Target-Mac-Common.xcconfig"
 
+// App extensions need to know the bundle identifier of their parent app
+#include "Omni-Application-Common-Store.xcconfig"
+
 // Common settings for Bundle targets
 DYLIB_CURRENT_VERSION = 1
 DYLIB_COMPATIBILITY_VERSION = 1

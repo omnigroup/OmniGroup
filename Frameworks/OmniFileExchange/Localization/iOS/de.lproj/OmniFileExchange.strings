@@ -4,6 +4,9 @@
 /* Conflict file format */
 "%@ (conflict from %@)" = "%1$@ (Konflikt von %2$@)";
 
+/* Conflict last edit file format */
+"%@ on %@" = "%1$@ auf %2$@";
+
 /* Conflict file regular expression */
 "^(.*) \\(conflict( [0-9+])? from .*\\)$" = "^(.*) \\(Konflikt( [0-9+])? von .*\\)$";
 
@@ -18,6 +21,9 @@
 
 /* Add server account type */
 "Add WebDAV Server" = "WebDAV-Server hinzufügen";
+
+/* error description */
+"Another account is syncing to this folder already." = "Ein anderer Account synchronisiert bereits mit diesem Ordner.";
 
 /* error reason */
 "Cannot locate synchronized documents folder." = "Synchronisierter Dokumentordner kann nicht gefunden werden.";
@@ -50,7 +56,7 @@
 "Documents" = "Dokumente";
 
 /* Add server account description */
-"Easily sync Omni documents. Signup is free!" = "Synchronisieren Sie Omni-Dokumente mühelos. Die Anmeldung ist kostenlos.";
+"Easily sync Omni documents. Signup is free!" = "Omni-Dokumente leicht synchronisieren; kostenl. Anmeldung";
 
 /* Server account export title format */
 "Export to \"%@\"" = "Exportieren nach „%@“";
@@ -72,6 +78,7 @@
 
 /* Server account type
    Set up server account title */
+
 "Omni Sync Server" = "Omni Sync Server";
 
 /* account validation error suggestion */
@@ -116,6 +123,12 @@
 /* error reason */
 "This app requires OmniPresence format %@, but the cloud account is using format %@. Please upgrade the cloud account." = "Diese App erfordert das OmniPresence-Format %1$@, aber der Cloud-Account verwendet das Format %2$@. Führen Sie für den Cloud-Account ein Upgrade durch.";
 
+/* Error reason */
+"This OmniPresence folder contains another OmniPresence synced folder." = "Dieser OmniPresence-Ordner enthält einen weiteren Ordner, der mit OmniPresence synchronisiert wird.";
+
+/* Error description when syncing will be disabled due to too many recent errors */
+"Too many file transfers encountered errors recently." = "Während der letzten Dateiübertragungen traten zu viele Fehler auf.";
+
 /* error description */
 "Unable to create temporary items in the proposed location." = "Temporäre Objekte können am vorgeschlagenen Ort nicht erstellt werden.";
 
@@ -135,7 +148,7 @@
 "Unable to verify login credentials at this time." = "Die Anmeldeinformationen können zurzeit nicht überprüft werden.";
 
 /* Add server account description */
-"Use your own WebDAV space." = "Verwenden Sie Ihren eigenen WebDAV-Speicher.";
+"Use your own WebDAV space." = "Eigenen WebDAV-Speicher verwenden";
 
 /* Account validation step description */
 "Validating Account..." = "Account überprüfen …";
@@ -145,4 +158,3 @@
 
 /* Set up server account title */
 "WebDAV Server" = "WebDAV-Server";
-

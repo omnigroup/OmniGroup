@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,10 +9,12 @@
 
 #import <OmniUIDocument/OUIDocument.h>
 
-OB_HIDDEN NSString * const OUIDocumentPreviewsUpdatedForFileItemNotification;
+@class OFFileEdit;
+
+OB_HIDDEN extern NSString * const OUIDocumentPreviewsUpdatedForFileItemNotification;
 
 @interface OUIDocument (/*Internal*/)
 - (void)_willBeRenamedLocally;
-- (void)_writePreviewsIfNeeded:(BOOL)onlyIfNeeded withCompletionHandler:(void (^)(void))completionHandler;
+- (void)_writePreviewsIfNeeded:(BOOL)onlyIfNeeded fileEdit:(OFFileEdit *)fileEdit withCompletionHandler:(void (^)(void))completionHandler;
 - (void)_manualSync:(id)sender;
 @end

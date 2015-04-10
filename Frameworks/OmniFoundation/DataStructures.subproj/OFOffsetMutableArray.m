@@ -1,4 +1,4 @@
-// Copyright 2012-2013 The Omni Group. All rights reserved.
+// Copyright 2012-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,9 +19,6 @@ RCS_ID("$Id$");
 @end
 
 @implementation OFOffsetMutableArray
-
-@synthesize offset = _offset;
-@synthesize backingArray = _backingArray;
 
 - (NSMutableArray *)unadjustedArray;
 {

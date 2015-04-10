@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -519,20 +519,11 @@ NSString *OFURLAnalogousRewrite(NSURL *oldSourceURL, NSString *oldDestination, N
 
 #pragma mark - Scanning
 
-static NSInteger OFPackageDebug = NSIntegerMax;
-
-static void initialize(void) __attribute__((constructor));
-static void initialize(void)
-{
-    OFInitializeDebugLogLevel(OFPackageDebug);
-}
-
+static OFDeclareDebugLogLevel(OFPackageDebug);
 #define DEBUG_PACKAGE(level, format, ...) do { \
     if (OFPackageDebug >= (level)) \
         NSLog(@"PACKAGE: " format, ## __VA_ARGS__); \
     } while (0)
-
-
 
 BOOL OFShouldIgnoreURLDuringScan(NSURL *fileURL)
 {
@@ -581,7 +572,8 @@ static BOOL OFURLIsStillBeingCreatedOrHasGoneMissing(NSURL *fileURL)
 void OFScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
                      OFScanDirectoryFilter filterBlock,
                      OFScanPathExtensionIsPackage pathExtensionIsPackage,
-                     OFScanDirectoryItemHandler itemHandler)
+                     OFScanDirectoryItemHandler itemHandler,
+                     OFScanErrorHandler errorHandler)
 {
     OBASSERT(![NSThread isMainThread]);
     
@@ -599,8 +591,11 @@ void OFScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
         
         __autoreleasing NSError *contentsError = nil;
         NSArray *fileURLs = [fileManager contentsOfDirectoryAtURL:scanDirectoryURL includingPropertiesForKeys:[NSArray arrayWithObject:NSURLIsDirectoryKey] options:0 error:&contentsError];
-        if (!fileURLs)
+        if (!fileURLs) {
             NSLog(@"Unable to scan documents in %@: %@", scanDirectoryURL, [contentsError toPropertyList]);
+            if (errorHandler && !errorHandler(scanDirectoryURL, contentsError))
+                return;
+        }
         
         for (__strong NSURL *fileURL in fileURLs) {
             // Built-in filter
@@ -610,8 +605,11 @@ void OFScanDirectory(NSURL *directoryURL, BOOL shouldRecurse,
             // We do NOT use UTIs for determining if a folder is a file package (meaning we should treat it as a document). We might not have UTIs registered in this app for all the document types that might be present (a newer app version might have placed something in the container that an older version doesn't understand, and Launch Service might go insane and not even correctly report the UTIs in our Info.plist). Instead, we get passed a block that determines whether a directory is a package. OmniPresence clients register containers by path extension, which other clients see and then start treating as packages. For the case where we explicitly want a folder, we have OFDirectoryPathExtension. If a user makes a folder "2013.foo", we'll silently name it "2013.foo.folder" and will hide that path extension. This helps avoid worries that "foo" might someday become a package extension by some as-yet invented app. Obviously, this isn't totally impervious to screw-ups, but our frameworks will do their best to ignore the UTI database for this path extension and always treat it as a folder.
             __autoreleasing NSNumber *isDirectoryValue = nil;
             __autoreleasing NSError *resourceError = nil;
-            if (![fileURL getResourceValue:&isDirectoryValue forKey:NSURLIsDirectoryKey error:&resourceError])
+            if (![fileURL getResourceValue:&isDirectoryValue forKey:NSURLIsDirectoryKey error:&resourceError]) {
                 NSLog(@"Unable to determine if %@ is a directory: %@", fileURL, [resourceError toPropertyList]);
+                if (errorHandler && !errorHandler(fileURL, resourceError))
+                    return;
+            }
             
             // NSFileManager hands back non-standardized URLs even if the input is standardized.
             OBASSERT(isDirectoryValue);

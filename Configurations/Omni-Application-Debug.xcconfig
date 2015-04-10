@@ -4,6 +4,3 @@
 
 // Common settings for Application targets
 #include "Omni-Application-Common.xcconfig"
-
-// Common settings for Debug configurations of Application targets
-LD_RUNPATH_SEARCH_PATHS = $(value) @executable_path/../../..

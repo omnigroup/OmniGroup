@@ -84,9 +84,10 @@ RCS_ID("$Id$");
     NSLog(@"Script command %@ resulted in error %@", self, [error toPropertyList]);
 #endif
 
-    // NSError returns NSUInteger, but AppleScript wants int.
-    NSUInteger code = [error code];
+    // NSError returns NSInteger, but AppleScript wants int.
+    NSInteger code = [error code];
     OBASSERT(code <= INT_MAX);
+    OBASSERT(code >= INT_MIN);
     
     [self setScriptErrorNumber:(int)code];
     [self setScriptErrorString:[error localizedDescription]];

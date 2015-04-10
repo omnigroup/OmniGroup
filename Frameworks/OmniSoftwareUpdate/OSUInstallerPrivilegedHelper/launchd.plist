@@ -9,7 +9,5 @@
         <key>${PRODUCT_NAME}</key>
         <true/>
     </dict>
-    <key>${PRODUCT_NAME}.ProtocolVersion</key>
-    <string>OSUInstallerPrivilegedHelperVersion</string>
 </dict>
 </plist>

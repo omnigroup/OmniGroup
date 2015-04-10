@@ -1,4 +1,4 @@
-// Copyright 2007-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -173,7 +173,6 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     OBASSERT(CurrentDownloadController == nil);
     if (CurrentDownloadController != nil) {
         _FillOutDownloadInProgressError(outError);
-        [self release];
         return nil;
     }
 
@@ -181,8 +180,8 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     
     _rememberInKeychain = NO;
     _packageURL = [packageURL copy];
-    _request = [[NSURLRequest requestWithURL:packageURL] retain];
-    _item = [item retain];
+    _request = [NSURLRequest requestWithURL:packageURL];
+    _item = item;
     _showCautionText = NO;
 
     [self setInstallationDirectory:[OSUInstaller suggestAnotherInstallationDirectory:nil trySelf:YES]];
@@ -225,37 +224,6 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     OBASSERT(_challenge == nil);
     OBASSERT(_request == nil);
     OBASSERT(CurrentDownloadController != self); // cleared in _cancel
-
-    [_bottomView release];
-    [_plainStatusView release];
-    [_credentialsView release];
-    [_progressView release];
-    [_installBasicView release];
-    [_installOptionsNoteView release];
-    [_installWarningView release];
-    [_installButtonsView release];
-    [_installViewMessageText release];
-    [_installViewCautionImageView release];
-    [_installViewCautionText release];
-    [_installViewInstallButton release];
-
-    [_packageURL release];
-    [_item release];
-    
-    [_status release];
-
-    [_userName release];
-    [_password release];
-
-    [_suggestedDestinationFile release];
-    [_destinationFile release];
-
-    [_installationDirectory release];
-    [_installationDirectoryNote release];
-    
-    [_installer release];
-
-    [super dealloc];
 }
 
 #pragma mark -
@@ -325,7 +293,6 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     
     NSURLCredential *credential = [[NSURLCredential alloc] initWithUser:_userName password:_password persistence:(_rememberInKeychain ? NSURLCredentialPersistencePermanent : NSURLCredentialPersistenceForSession)];
     [[_challenge sender] useCredential:credential forAuthenticationChallenge:_challenge];
-    [credential release];
 
     // Switch views so that if we get another credential failure, the user sees that we *tried* to use what they gave us, but failed again.
     [self _setDisplayedView:_progressView];
@@ -350,7 +317,6 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         installer.installationDirectory = _installationDirectory;
     
     self.installer = installer;
-    [installer autorelease];
     
     [self _setDisplayedView:_plainStatusView];
     [installer run];
@@ -364,7 +330,6 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 - (void)setStatus:(NSString *)status
 {
     if (status != _status) {
-        [_status release];
         _status = [status copy];
 
         [[self window] displayIfNeeded];
@@ -405,7 +370,6 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     if (OFISEQUAL(_installationDirectory, installationDirectory))
         return;
     
-    [_installationDirectory release];
     _installationDirectory = [installationDirectory copy];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -439,7 +403,6 @@ static void _FillOutDownloadInProgressError(NSError **outError)
             [icon setSize:(NSSize){fontSize, fontSize}];
             [infix replaceCharactersInRange:(NSRange){0, 0} withString:[NSString stringWithCharacter:0x00A0]]; // non-breaking space
             [infix replaceCharactersInRange:(NSRange){0, 0} withAttributedString:[NSAttributedString attributedStringWithImage:icon]];
-            [icon release];
         }
         
         [infix addAttribute:NSFontAttributeName value:[NSFont systemFontOfSize:fontSize] range:(NSRange){0, [infix length]}];
@@ -447,10 +410,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         NSMutableAttributedString *message = [[NSMutableAttributedString alloc] initWithString:noteTemplate attributes:[NSDictionary dictionaryWithObject:[NSFont messageFontOfSize:fontSize] forKey:NSFontAttributeName]];
         [message replaceCharactersInRange:[noteTemplate rangeOfString:@"@"] withAttributedString:infix];
         
-        [infix release];
-        
         self.installationDirectoryNote = message;
-        [message release];
     } else {
         self.installationDirectoryNote = nil;
     }
@@ -492,8 +452,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     NSURLCredential *proposed = [challenge proposedCredential];
     DEBUG_DOWNLOAD(@"proposed = %@", proposed);
     
-    [_challenge autorelease];
-    _challenge = [challenge retain];
+    _challenge = challenge;
 
     if ([challenge previousFailureCount] == 0 && (proposed != nil) && ![NSString isEmptyString:[proposed user]] && ![NSString isEmptyString:[proposed password]]) {
         // Try the proposed credentials, if any, the first time around.  I've gotten a non-nil proposal with a null user name on 10.4 before.
@@ -505,7 +464,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     [self setStatus:nil];
     [self _setDisplayedView:_credentialsView];
     [self showWindow:nil];
-    [NSApp requestUserAttention:NSInformationalRequest]; // Let the user know they need to interact with us (else the server will timeout waiting for authentication).
+    [[NSApplication sharedApplication] requestUserAttention:NSInformationalRequest]; // Let the user know they need to interact with us (else the server will timeout waiting for authentication).
 }
 
 - (void)download:(NSURLDownload *)download didCancelAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
@@ -587,7 +546,6 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 {
     DEBUG_DOWNLOAD(@"didCreateDestination %@", path);
     
-    [_destinationFile autorelease];
     _destinationFile = [path copy];
     
     // Quarantine the file. Later, after we verify its checksum, we can remove the quarantine.
@@ -629,8 +587,8 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     
     [self setStatus:NSLocalizedStringFromTableInBundle(@"Ready to Install", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Download status - Done downloading, about to prompt the user to let us reinstall and restart the app")];
     
-    if (![NSApp isActive])
-        [NSApp requestUserAttention:NSInformationalRequest];
+    if (![[NSApplication sharedApplication] isActive])
+        [[NSApplication sharedApplication] requestUserAttention:NSInformationalRequest];
     else
         [self showWindow:nil];
     
@@ -826,7 +784,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
 
     // Animate if there was anything to do.
     if ([animations count] > 0) {
-        NSViewAnimation *animation = [[[NSViewAnimation alloc] initWithViewAnimations:animations] autorelease];
+        NSViewAnimation *animation = [[NSViewAnimation alloc] initWithViewAnimations:animations];
         NSTimeInterval duration = [window isVisible] ? 0.1 : 0.0;
         [animation setDuration:duration];
         [animation setAnimationBlockingMode:NSAnimationBlocking];
@@ -851,12 +809,11 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     OBPRECONDITION(CurrentDownloadController == self || CurrentDownloadController == nil);
     
     if (CurrentDownloadController == self) {
-        [CurrentDownloadController autorelease]; // We own the reference from +beginWithPackageURL:item:error:
+        OBRetainAutorelease(self); // Don't get deallocated immediately
         CurrentDownloadController = nil;
     }
     
     [[_challenge sender] cancelAuthenticationChallenge:_challenge];
-    [_challenge release];
     _challenge = nil;
     
     if (!_didFinishOrFail) {
@@ -868,10 +825,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
             [[NSFileManager defaultManager] removeItemAtPath:_destinationFile error:NULL];
     }
     
-    [_request release];
     _request = nil;
-    
-    [_download release];
     _download = nil;
 }
 

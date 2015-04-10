@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,7 @@
 #import <OmniFoundation/OFExtent.h>
 #import <OmniFoundation/OFBacktrace.h>
 #import <OmniUI/OUIDragGestureRecognizer.h>
+#import <OmniUI/OUIKeyboardNotifier.h>
 
 #import "OUIParameters.h"
 
@@ -41,6 +42,11 @@ static void _replacement_setContentOffsetAnimated(UIScrollView *self, SEL _cmd, 
 {
     OBASSERT(checkValue(contentOffset.x));
     OBASSERT(checkValue(contentOffset.y));
+#if 0 && defined(DEBUG_shannon)
+    if (contentOffset.x == 0) {
+        
+    }
+#endif
     _original_setContentOffsetAnimated(self, _cmd, contentOffset, animated);
 }
 
@@ -48,6 +54,11 @@ static void _replacement_setContentOffset(UIScrollView *self, SEL _cmd, CGPoint 
 {
     OBASSERT(checkValue(contentOffset.x));
     OBASSERT(checkValue(contentOffset.y));
+#if 0 && defined(DEBUG_shannon)
+    if (contentOffset.x == 0) {
+        
+    }
+#endif
     _original_setContentOffset(self, _cmd, contentOffset);
 }
 
@@ -155,6 +166,80 @@ static CGRect _nonautoscrollBounds(UIScrollView *self, NSUInteger allowedDirecti
 - (BOOL)shouldAutoscrollWithRecognizer:(UIGestureRecognizer *)recognizer;
 {
     return [self shouldAutoscrollWithRecognizer:recognizer allowedDirections:(OUIAutoscrollDirectionLeft|OUIAutoscrollDirectionRight|OUIAutoscrollDirectionUp|OUIAutoscrollDirectionDown)];
+}
+
+- (void)scrollRectToVisibleAboveLastKnownKeyboard:(CGRect)rect animated:(BOOL)animated completion:(void (^)(BOOL))completion;
+{
+    OUIKeyboardNotifier *sharedNotifier = [OUIKeyboardNotifier sharedNotifier];
+    CGFloat yPointOfKeyboardTop = [sharedNotifier getMinYOfLastKnownKeyboardInView:self.superview];
+    CGFloat yOffset = [self minOffsetToScrollRectToVisible:rect aboveMinY:yPointOfKeyboardTop];
+    UIEdgeInsets workableInsets = self.contentInset;
+    if (workableInsets.bottom < [sharedNotifier lastKnownKeyboardHeight]) {
+        workableInsets.bottom = [sharedNotifier lastKnownKeyboardHeight];
+    }
+    if (yOffset > self.contentOffset.y) {
+        CGPoint necessaryOffset = CGPointMake(self.contentOffset.x, yOffset);
+        if (animated) {
+            UIViewAnimationOptions options = (sharedNotifier.lastAnimationCurve << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
+            [UIView animateWithDuration:sharedNotifier.lastAnimationDuration
+                                  delay:0.0f
+                                options:options
+                             animations:^{
+                                 [self setContentInset:workableInsets];
+                                  [self setContentOffset:necessaryOffset];
+                             } completion:completion];
+        }
+        else {
+            [self setContentInset:workableInsets];
+            [self setContentOffset:necessaryOffset animated:NO];
+            if (completion) {
+                completion(YES);
+            }
+        }
+    }else{
+        if (completion) {
+            completion(YES);            
+        }
+    }
+}
+
+- (void)adjustForKeyboardHidingWithPreferedFinalBottomContentInset:(CGFloat)bottomInset animated:(BOOL)animated;
+{
+    OUIKeyboardNotifier *sharedNotifier = [OUIKeyboardNotifier sharedNotifier];
+    UIEdgeInsets finalInsets = UIEdgeInsetsMake(self.contentInset.top, self.contentInset.left, bottomInset, self.contentInset.right);
+    if (animated) {
+        UIViewAnimationOptions options = (sharedNotifier.lastAnimationCurve << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
+        [UIView animateWithDuration:sharedNotifier.lastAnimationDuration
+                              delay:0.0f
+                            options:options
+                         animations:^{
+                             [self setContentInset:finalInsets];
+                         } completion:nil];
+    }
+    else {
+        [self setContentInset:finalInsets];
+    }
+}
+
+- (void)animateAlongsideKeyboardHiding:(void (^)())animations;
+{
+    if (animations){
+        OUIKeyboardNotifier *sharedNotifier = [OUIKeyboardNotifier sharedNotifier];
+        UIViewAnimationOptions options = (sharedNotifier.lastAnimationCurve << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
+        [UIView animateWithDuration:sharedNotifier.lastAnimationDuration
+                              delay:0.0f
+                            options:options
+                         animations:^{
+                             animations();
+                         } completion:nil];
+    }
+}
+
+- (CGFloat)minOffsetToScrollRectToVisible:(CGRect)rect aboveMinY:(CGFloat)minY;
+{
+    CGFloat truncatedHeight = minY - self.frame.origin.y;
+    CGFloat yOffset = CGRectGetMaxY(rect) - truncatedHeight;
+    return yOffset;
 }
 
 static CGFloat stepSize(CGFloat a, CGFloat b)

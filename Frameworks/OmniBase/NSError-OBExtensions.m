@@ -1,4 +1,4 @@
-// Copyright 2005-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -133,7 +133,6 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
     return [self hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] || [self hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError];
 }
 
-
 - (BOOL)causedByUnreachableHost;
 {
     NSError *urlError = [self underlyingErrorWithDomain:NSURLErrorDomain];
@@ -152,6 +151,11 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
         default:
             return NO;
     }
+}
+
+- (BOOL)causedByNetworkConnectionLost;
+{
+    return [self hasUnderlyingErrorDomain:(NSString *)kCFErrorDomainCFNetwork code:kCFURLErrorNetworkConnectionLost] || [self hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorNetworkConnectionLost];
 }
 
 - initWithPropertyList:(NSDictionary *)propertyList;

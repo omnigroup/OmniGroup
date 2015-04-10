@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -60,6 +60,11 @@ static inline CGRect OFRectFromCenterAndPoint(CGPoint center, CGPoint corner)
 static inline CGRect OFRectFromCenterAndSize(CGPoint center, CGSize size) {
     return CGRectMake(center.x - (size.width/2), center.y - (size.height/2),
                       size.width, size.height);
+}
+
+static inline CGPoint OFRectCenterPoint(CGRect rect)
+{
+    return CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
 }
 
 extern CGFloat OFSquaredDistanceToFitRectInRect(CGRect sourceRect, CGRect destinationRect);

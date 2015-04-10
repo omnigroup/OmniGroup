@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,15 +9,6 @@
 
 RCS_ID("$Id$");
 
-@interface OFBindingPoint () {
-  @private
-    id _object;
-    NSString *_keyPath;
-}
-
-@end
-
-#pragma mark -
 
 @implementation OFBindingPoint
 
@@ -38,9 +29,6 @@ RCS_ID("$Id$");
     [_keyPath release];
     [super dealloc];
 }
-
-@synthesize object = _object;
-@synthesize keyPath = _keyPath;
 
 - (BOOL)isEqual:(id)object;
 {

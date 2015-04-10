@@ -378,8 +378,6 @@ static NSString * const OFNetStateRegistrationGroupTerminator = @" ";
 
 - (void)invalidate;
 {
-    OBFinishPortingLater("Nothing yet");
-
 #if 0
     OBPRECONDITION(_service);
     

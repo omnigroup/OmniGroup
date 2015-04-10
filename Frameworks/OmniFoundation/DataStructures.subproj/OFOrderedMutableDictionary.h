@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,9 @@
 
 @interface OFOrderedMutableDictionary : NSMutableDictionary
 
+- (id<NSCopying>)keyAtIndex:(NSUInteger)index;
+- (NSUInteger)indexOfKey:(id<NSCopying>)aKey;
+
 - (id)objectAtIndex:(NSUInteger)index;
 - (id)objectAtIndexedSubscript:(NSUInteger)index;
 
@@ -20,5 +23,7 @@
 - (void)sortUsingComparator:(NSComparator)cmptr;
 
 - (void)enumerateEntriesUsingBlock:(void (^)(NSUInteger index, id<NSCopying> key, id obj, BOOL *stop))blk;
+
+- (void)enumerateEntriesWithOptions:(NSEnumerationOptions)opts usingBlock:(void (^)(NSUInteger index, id<NSCopying> key, id obj, BOOL *stop))blk;
 
 @end

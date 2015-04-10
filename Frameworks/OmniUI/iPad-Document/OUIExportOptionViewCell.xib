@@ -1,39 +1,55 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="4514" systemVersion="13B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="6254" systemVersion="14B25" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3747"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="exportOptionCell" id="RA3-Kl-fcI" customClass="OUIExportOptionViewCell">
-            <rect key="frame" x="0.0" y="0.0" width="128" height="168"/>
+            <rect key="frame" x="0.0" y="0.0" width="128" height="136"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                <rect key="frame" x="0.0" y="0.0" width="128" height="168"/>
+                <rect key="frame" x="0.0" y="0.0" width="128" height="136"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="top" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="clW-Ty-t6b">
-                        <rect key="frame" x="0.0" y="0.0" width="128" height="168"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                        <state key="normal" title="Button">
-                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                        </state>
-                    </button>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="qIx-zT-5as">
+                        <rect key="frame" x="0.0" y="0.0" width="128" height="96"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="128" id="37v-uN-uJa"/>
+                            <constraint firstAttribute="height" constant="96" id="qMo-2t-RIY"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="middleTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsLetterSpacingToFitWidth="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jkr-39-BZg">
+                        <rect key="frame" x="3" y="96" width="122" height="20"/>
+                        <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                        <color key="textColor" red="0.19607843137254902" green="0.22352941176470587" blue="0.29019607843137252" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                        <color key="shadowColor" white="1" alpha="0.5" colorSpace="calibratedWhite"/>
+                    </label>
                 </subviews>
                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
             </view>
             <constraints>
-                <constraint firstItem="clW-Ty-t6b" firstAttribute="top" secondItem="RA3-Kl-fcI" secondAttribute="top" id="JER-8N-NaM"/>
-                <constraint firstAttribute="bottom" secondItem="clW-Ty-t6b" secondAttribute="bottom" id="PMZ-2o-sIE"/>
-                <constraint firstAttribute="trailing" secondItem="clW-Ty-t6b" secondAttribute="trailing" id="fqX-Ri-SlM"/>
-                <constraint firstItem="clW-Ty-t6b" firstAttribute="leading" secondItem="RA3-Kl-fcI" secondAttribute="leading" id="xg4-mr-omx"/>
+                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="jkr-39-BZg" secondAttribute="bottom" id="09k-zB-Iey"/>
+                <constraint firstItem="qIx-zT-5as" firstAttribute="top" secondItem="RA3-Kl-fcI" secondAttribute="top" id="8AZ-uI-kNk"/>
+                <constraint firstItem="jkr-39-BZg" firstAttribute="leading" secondItem="RA3-Kl-fcI" secondAttribute="leading" constant="3" id="9xt-AX-1Hw"/>
+                <constraint firstAttribute="trailing" secondItem="qIx-zT-5as" secondAttribute="trailing" id="J8O-o1-JfX"/>
+                <constraint firstAttribute="trailing" secondItem="jkr-39-BZg" secondAttribute="trailing" constant="3" id="a6A-9a-hBW"/>
+                <constraint firstItem="qIx-zT-5as" firstAttribute="leading" secondItem="RA3-Kl-fcI" secondAttribute="leading" id="jZL-hv-7LI"/>
+                <constraint firstItem="jkr-39-BZg" firstAttribute="top" secondItem="qIx-zT-5as" secondAttribute="bottom" id="ugM-yf-8ZZ"/>
             </constraints>
-            <size key="customSize" width="128" height="148"/>
+            <size key="customSize" width="128" height="119"/>
             <connections>
-                <outlet property="button" destination="clW-Ty-t6b" id="f8n-RV-NHy"/>
+                <outlet property="imageView" destination="qIx-zT-5as" id="Lpb-Xc-3rE"/>
+                <outlet property="label" destination="jkr-39-BZg" id="SSG-2t-Aw2"/>
             </connections>
+            <point key="canvasLocation" x="-45" y="113"/>
         </collectionViewCell>
     </objects>
+    <simulatedMetricsContainer key="defaultSimulatedMetrics">
+        <simulatedStatusBarMetrics key="statusBar"/>
+        <simulatedOrientationMetrics key="orientation"/>
+        <simulatedScreenMetrics key="destination" type="retina4"/>
+    </simulatedMetricsContainer>
 </document>

@@ -1,26 +1,15 @@
-/* In App Store pricing option format */
-"%@ %@" = "%1$@ %2$@";
-
 /* OUITabBar N of M accessibility value */
 "%@ of %@" = "%1$@ van %2$@";
 
-/* title for successful in app purchase */
-"%@ Purchased" = "%@ aangeschaft";
-
 /* Default title for the About menu item */
+
 "About %@" = "Over %@";
 
 /* No purchases found message format */
 "All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Alle aankopen voor uw huidige App Store-account zijn hersteld, maar %@ was geen van die aankopen.";
 
-/* Web view nagivation button for going back in history. */
-"Back" = "Terug";
-
 /* Bold button accessibility label */
 "Bold" = "Vet";
-
-/* Disabled 'Buy' button title string */
-"Buy" = "Koop";
 
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
 "Buy %@" = "Koop %@";
@@ -28,6 +17,7 @@
 /* button title
    cancel button title
    toolbar item title */
+
 
 
 "Cancel" = "Annuleer";
@@ -40,6 +30,9 @@
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "De voorkeur '%1$@' is gewijzigd van '%2$@' naar '%3$@'";
+
+/* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
+"Check for Free Upgrade" = "Controleer op gratis upgrade";
 
 /* Certificate trust alert button title */
 "Continue" = "Ga door";
@@ -58,11 +51,11 @@
 /* toolbar item title */
 "Edit" = "Wijzig";
 
+/* Title explaining that user is eligible for discounted upgrade */
+"Eligible for free upgrade" = "Komt in aanmerking voor gratis upgrade";
+
 /* In app Buy button error title */
 "Error" = "Fout";
-
-/* Alert title for error loading product information */
-"Error Loading Store" = "Fout bij het laden van winkel";
 
 /* disabled for demo */
 "Feature not enabled for this demo" = "Functie niet ingeschakeld voor deze demo";
@@ -97,8 +90,8 @@
 /* Web view error opening URL title. */
 "Link could not be opened. Please check Safari restrictions in Settings." = "Koppeling kan niet worden geopend. Controleer de Safari-beperkingen in Instellingen.";
 
-/* Buy button title while app store is loading */
-"Loading" = "Laden";
+/* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
+"More Info" = "Meer info";
 
 /* empty value cell placeholder */
 "None" = "Geen";
@@ -123,9 +116,6 @@
 /* alert title */
 "Preference changed" = "Voorkeur gewijzigd";
 
-/* title for successful in app purchase */
-"Purchase %@" = "Koop %@";
-
 /* Purchase failed alert title */
 "Purchase Failed" = "Aankoop mislukt";
 
@@ -149,6 +139,9 @@
 /* Restore failed alert title */
 "Restore Failed" = "Herstel mislukt";
 
+/* 'Restore Purchases' button title string */
+"Restore Purchases" = "Herstel aankopen";
+
 /* Right Text Align button accessibility label. */
 "Right text align" = "Tekst rechts uitlijnen";
 
@@ -159,10 +152,13 @@
 "Strike Through" = "Doorhalen";
 
 /* Alert description for error loading product information */
-"There was an error loading information from the App Store" = "Er is een fout opgetreden bij het laden van informatie van de App Store";
+"This device might not be connected to the Internet." = "Dit apparaat wordt mogelijk niet verbonden met internet.";
 
 /* Certificate trust alert button title */
 "Trust Always" = "Vertrouw altijd";
+
+/* Alert title for error loading product information */
+"Unable to reach App Store" = "Kan de App Store niet bereiken";
 
 /* Underline button accessibility label */
 "Underline" = "Onderstreping";
@@ -172,9 +168,6 @@
 
 /* placeholder text */
 "username" = "gebruikersnaam";
-
-/* in app purchase verify button title */
-"Verify" = "Controleer";
 
 /* alert message */
 "You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "U hebt op een koppeling getikt die de volgende voorkeuren zal wijzigen:\n\n“%@”\n\nWilt u deze wijzigingen accepteren?";

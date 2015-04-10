@@ -22,7 +22,7 @@
 
 RCS_ID("$Id$")
 
-static NSInteger OFXAccountInfoDebug = INT_MAX;
+static OFDeclareDebugLogLevel(OFXAccountInfoDebug);
 #define DEBUG_CLIENT(level, format, ...) do { \
     if (OFXAccountInfoDebug >= (level)) \
         NSLog(@"ACCT INFO %@: " format, [self shortDescription], ## __VA_ARGS__); \
@@ -53,7 +53,6 @@ static OFVersionNumber *MinimumCompatibleAccountVersionNumber;
 {
     OBINITIALIZE;
     
-    OFInitializeDebugLogLevel(OFXAccountInfoDebug);
     MinimumCompatibleAccountVersionNumber = [[OFVersionNumber alloc] initWithVersionString:@"2"];
 }
 
@@ -119,8 +118,9 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
         }
     }
 
-    NSURL *infoURL = [_remoteAccountURL URLByAppendingPathComponent:OFXInfoFileName];
-
+    // _remoteAccountURL is our cannonical URL, but we might be redirected
+    NSURL *infoURL = [connection suggestRedirectedURLForURL:[_remoteAccountURL URLByAppendingPathComponent:OFXInfoFileName]];
+    
     if (!infoDictionary) {
         // There doesn't seem to be a remote file -- create it.
         infoDictionary = [self _makeInfoDictionary];
@@ -245,6 +245,10 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
     if (!_ourClient || -[_ourClient.fileInfo.lastModifiedDate timeIntervalSinceDate:serverDate] > _clientParameters.writeInterval) {
         // We use the same 'domain' for all our sync accounts -- this just controls the host id.
         NSURL *clientURL = [_remoteAccountURL URLByAppendingPathComponent:[ourClientIdentifier stringByAppendingPathExtension:OFXClientPathExtension]];
+        
+        // _remoteAccountURL is our cannonical URL, but we might be redirected
+        clientURL = [connection suggestRedirectedURLForURL:clientURL];
+        
         OFXSyncClient *updatedClient = [[OFXSyncClient alloc] initWithURL:clientURL previousClient:_ourClient parameters:_clientParameters error:outError];
         if (!updatedClient) {
             OBChainError(outError);

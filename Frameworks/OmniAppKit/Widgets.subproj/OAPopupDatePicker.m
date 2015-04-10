@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -51,8 +51,9 @@ RCS_ID("$Id$");
     BOOL _startedWithNilDate;
     
     IBOutlet OADatePicker *datePicker;
-    IBOutlet NSDatePicker *timePicker;
 }
+
+@property (nonatomic, retain) IBOutlet NSDatePicker *timePicker;
 
 - (void)_configureTimePickerFromFormatter:(NSFormatter *)formatter;
     // Show or hide the time picker as needed based on the time style from the given formatter
@@ -159,21 +160,15 @@ static NSSize calendarImageSize;
     [_boundObjectKeyPath release];
     [_control release];
     [_datePickerOriginalValue release];
-    [timePicker release];
+    [_timePicker release];
     
     [super dealloc];
-}
-
-- (void)awakeFromNib;
-{
-    // This might get removedFromSuperview.
-    [timePicker retain];
 }
 
 - (void)setCalendar:(NSCalendar *)calendar;
 {
     [datePicker setCalendar:calendar];
-    [timePicker setCalendar:calendar];
+    [self.timePicker setCalendar:calendar];
 }
 
 - (void)startPickingDateWithTitle:(NSString *)title forControl:(NSControl *)aControl dateUpdateSelector:(SEL)dateUpdateSelector defaultDate:(NSDate *)defaultDate;
@@ -306,7 +301,7 @@ static NSSize calendarImageSize;
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowWillCloseNotification object:parentWindow];
     
     NSString *closeReason = OAPopupDatePickerCloseReasonStandard;
-    NSEvent *currentEvent = [NSApp currentEvent];
+    NSEvent *currentEvent = [[NSApplication sharedApplication] currentEvent];
     
     BOOL isCancel = [currentEvent isUserCancel];
     unichar character = (([currentEvent type] == NSKeyDown) && ([[currentEvent characters] length] == 1)) ? [[currentEvent characters] characterAtIndex:0] : 0;
@@ -342,7 +337,7 @@ static NSSize calendarImageSize;
         [_boundObject datePicker:self willUnbindFromKeyPath:_boundObjectKeyPath];
     
     [datePicker unbind:NSValueBinding];
-    [timePicker unbind:NSValueBinding];
+    [self.timePicker unbind:NSValueBinding];
     
     [_boundObject release];
     _boundObject = nil;
@@ -369,16 +364,16 @@ static NSSize calendarImageSize;
     // we want to display the time for all custom date formatters.
     BOOL isCustomDateFormatter = ([formatter isKindOfClass:[NSDateFormatter class]] && [(NSDateFormatter *)formatter dateStyle] == kCFDateFormatterNoStyle && [(NSDateFormatter *)formatter timeStyle] == kCFDateFormatterNoStyle);
     if ([formatter isKindOfClass:[NSDateFormatter class]] && (!isCustomDateFormatter) && [(NSDateFormatter *)formatter timeStyle] == kCFDateFormatterNoStyle) {
-        if ([timePicker superview]) {
+        if ([self.timePicker superview]) {
             NSRect frame = popupWindow.frame;
-            frame.size.height -= NSHeight([timePicker frame]);
-            [timePicker removeFromSuperview];
+            frame.size.height -= NSHeight([self.timePicker frame]);
+            [self.timePicker removeFromSuperview];
             [popupWindow setFrame:frame display:YES];
         }
-    } else if (![timePicker superview]) {
-        [[popupWindow contentView] addSubview:timePicker];
+    } else if (![self.timePicker superview]) {
+        [[popupWindow contentView] addSubview:self.timePicker];
         NSRect frame = popupWindow.frame;
-        frame.size.height += NSHeight([timePicker frame]);
+        frame.size.height += NSHeight([self.timePicker frame]);
         [popupWindow setFrame:frame display:YES];
     }
 }
@@ -413,7 +408,7 @@ static NSSize calendarImageSize;
     [datePicker setTarget:self];
     [datePicker setAction:@selector(datePickerAction:)];
     
-    [timePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:@{ NSAllowsEditingMultipleValuesSelectionBindingOption : @YES }];
+    [self.timePicker bind:NSValueBinding toObject:self withKeyPath:@"datePickerObjectValue" options:@{ NSAllowsEditingMultipleValuesSelectionBindingOption : @YES }];
     
     [self setDatePickerObjectValue:_datePickerObjectValue];
     [datePicker setClicked:NO];
@@ -543,7 +538,7 @@ static NSSize calendarImageSize;
     // It looks like this code would never fire since it should have been using NSKeyDown instead of NSKeyDownMask
     // <bug:///104045> (Unassigned: 10.10: OAPopupDatePickerWindow -resignKeyWindow has bad test of event type)
 #if 0
-    if ([[NSApp currentEvent] type] == NSKeyDownMask) {
+    if ([[[NSApplication sharedApplication] currentEvent] type] == NSKeyDownMask) {
         // <bug://bugs/57041> (Enter/Return should commit edits on the split task window)
         [parentWindow makeKeyAndOrderFront:nil];
     }
@@ -566,7 +561,7 @@ static NSSize calendarImageSize;
 
 - (void)mouseDown:(NSEvent *)theEvent;
 {
-    [NSApp preventWindowOrdering];
+    [[NSApplication sharedApplication] preventWindowOrdering];
     [super mouseDown:theEvent];
 }
 

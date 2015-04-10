@@ -1,4 +1,4 @@
-// Copyright 2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,22 +12,13 @@
 
 #import <OmniUI/OUIInAppStoreObserver.h>
 
-@class SKProduct;
-
+/*!
+ @discussion Currently, this view controller only supports products that contain exactly 2 IAPs. In practice, this view controller is only useful for a Standard to Pro upgrade purchase where the IAPs are 'Full Price Pro' and 'Discounted/Free Pro'.
+ */
 @interface OUIInAppStoreViewController : UIViewController <SKProductsRequestDelegate, OUIInAppStoreObserverDelegate>
 
-@property (nonatomic, strong) IBOutlet UIWebView *featureWebView;
-@property (nonatomic, strong) IBOutlet UISegmentedControl *pricingOptionsSegmentedControl;
-@property (nonatomic, strong) IBOutlet UILabel *pricingOptionDescriptionLabel;
-@property (nonatomic, strong) IBOutlet UIActivityIndicatorView *spinner;
-@property (nonatomic, strong) IBOutlet UIButton *buyButton;
-@property (nonatomic, strong) IBOutlet UIButton *restoreButton;
+- (instancetype)initWithProductIdentifier:(NSString *)aProductID NS_DESIGNATED_INITIALIZER;
 
-- (id)initWithProductIdentifier:(NSString *)aProductID;
-
-- (IBAction)updateSelectedPricingOption:(id)sender;
-- (IBAction)purchase:(id)sender;
-- (IBAction)restore:(id)sender;
-- (IBAction)done:(id)sender;
+#define OUIInAppStoreViewControllerUpgradeInstalledNotification @"OUIInAppStoreViewControllerUpgradeInstalled"
 
 @end

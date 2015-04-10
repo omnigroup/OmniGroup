@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -32,6 +32,7 @@ RCS_ID("$Id$");
         return nil;
     
     _showsDividersBetweenOptions = YES;
+    _alwaysShowsNavigationBar = NO;
     self.modalPresentationStyle = UIModalPresentationPopover;
     
     return self;
@@ -87,7 +88,7 @@ RCS_ID("$Id$");
     navItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(cancelButton:)];
     navItem.title = self.title;
     
-    [topMenu view]; // So we can ask it its preferred content size
+    (void)[topMenu view]; // So we can ask it its preferred content size
     
     return topMenu;
 }
@@ -130,10 +131,15 @@ RCS_ID("$Id$");
     
     if (!_isShowingAsPopover)
         return;
-    
-    NSArray *viewControllers = navigationController.viewControllers;
-    BOOL atTopLevel = viewControllers.count > 0 && viewController == viewControllers[0];
-    navigationController.navigationBarHidden = atTopLevel;
+
+
+    if (self.alwaysShowsNavigationBar) {
+        navigationController.navigationBarHidden = NO;
+    } else {
+        NSArray *viewControllers = navigationController.viewControllers;
+        BOOL atTopLevel = viewControllers.count > 0 && viewController == viewControllers[0];
+        navigationController.navigationBarHidden = atTopLevel;
+    }
     
     navigationController.preferredContentSize = viewController.preferredContentSize;
     self.preferredContentSize = navigationController.preferredContentSize;
@@ -148,9 +154,6 @@ RCS_ID("$Id$");
 
 - (UIViewController *)presentationController:(UIPresentationController *)controller viewControllerForAdaptivePresentationStyle:(UIModalPresentationStyle)style;
 {
-    OBPRECONDITION(controller.presentedViewController == _menuNavigationController);
-    OBPRECONDITION(_isShowingAsPopover, "At some point we transitioned to an adaptive presentation without getting notified");
-    
     _isShowingAsPopover = NO;
     _menuNavigationController.navigationBarHidden = NO;
     return self;
@@ -158,9 +161,6 @@ RCS_ID("$Id$");
 
 - (void)prepareForPopoverPresentation:(UIPopoverPresentationController *)popoverPresentationController;
 {
-    OBPRECONDITION(popoverPresentationController.presentedViewController == _menuNavigationController);
-    OBPRECONDITION(!_isShowingAsPopover, "At some point we transitioned to being a popover without getting notified");
-    
     _isShowingAsPopover = YES;
     BOOL atTopLevel = _menuNavigationController.viewControllers.count < 2;
     _menuNavigationController.navigationBarHidden = atTopLevel;

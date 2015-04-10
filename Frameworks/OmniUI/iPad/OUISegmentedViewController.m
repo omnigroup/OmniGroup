@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -96,8 +96,8 @@ RCS_ID("$Id$")
     _selectedViewController = selectedViewController;
     _selectedViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
     
-    // Move in new view controller/view.
-    [_selectedViewController willMoveToParentViewController:self];
+    // Move in new view controller/view. addChildViewController: automatically calls the childs willMoveToParentViewController: passing in the new parent. We shouldn't call that directly while adding the child VC.
+//    [_selectedViewController willMoveToParentViewController:self];
     [self addChildViewController:_selectedViewController];
 
     [self.view addSubview:_selectedViewController.view];
@@ -148,12 +148,6 @@ RCS_ID("$Id$")
     self.selectedViewController = viewControllerToSelect;
 }
 
-- (CGSize)preferredContentSize;
-{
-    // Each time a UIAlertController styled as an action sheet is displayed inside of the OUISegmentedViewController and is dismissed, the OUISegmentedViewController shrinks a little bit. Hardcoding a size is the only way I could find to fix this.
-    return CGSizeMake(320.0, 460.0);
-}
-
 #pragma mark - Private API
 - (void)_setupSegmentedControl;
 {
@@ -171,8 +165,8 @@ RCS_ID("$Id$")
     [self.segmentedControl addTarget:self action:@selector(_segmentValueChanged:) forControlEvents:UIControlEventValueChanged];
     
     self.navigationItem.titleView = self.segmentedControl;
-    if (self.rightBarButtonItem) {
-        self.navigationItem.rightBarButtonItem = self.rightBarButtonItem;
+    if (self.leftBarButtonItem) {
+        self.navigationItem.leftBarButtonItem = self.leftBarButtonItem;
     }
     [self.navigationBar pushNavigationItem:self.navigationItem animated:NO];
 }
@@ -192,24 +186,14 @@ RCS_ID("$Id$")
     [self dismissViewControllerAnimated:YES completion:NULL];
 }
 
-- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection;
+- (void)setShouldShowDismissButton:(BOOL)shouldShow;
 {
-    if (self.presentationController.presentedViewController != self) {
-        return;
+    if (shouldShow) {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_dismiss:)];
     }
-    
-    if ((self.presentingViewController.traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact && self.modalPresentationStyle == UIModalPresentationPopover) || self.modalPresentationStyle == UIModalPresentationFullScreen) {
-        OBASSERT(self.navigationItem.leftBarButtonItem == nil || self.navigationItem.leftBarButtonItem.action == @selector(_dismiss:));
-        if (self.navigationItem.leftBarButtonItem == nil) {
-            self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_dismiss:)];
-        }
-    } else {
-        if (self.navigationItem.leftBarButtonItem) {
-            OBASSERT(self.navigationItem.leftBarButtonItem.action == @selector(_dismiss:));
-            self.navigationItem.leftBarButtonItem = nil;
-        }
+    else {
+        self.navigationItem.rightBarButtonItem = nil;
     }
-    
 }
 
 #pragma mark - UINavigationBarDelegate

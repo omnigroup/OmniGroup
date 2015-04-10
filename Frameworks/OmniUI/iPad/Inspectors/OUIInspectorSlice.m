@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -238,7 +238,7 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 - (UIView *)sliceBackgroundView;
 {
     if (!self.isViewLoaded) {
-        [self view]; // The background view normally gets loaded when the content view does, so if that's not loaded yet, do so now.
+        (void)[self view]; // The background view normally gets loaded when the content view does, so if that's not loaded yet, do so now.
     }
     OBASSERT(_sliceBackgroundView != self.view);
     return _sliceBackgroundView;
@@ -309,7 +309,7 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 
 - (CGFloat)paddingToInspectorBottom;
 {
-    CGFloat padding = 55 - _borderOffsetFromEdge(self._viewForVerticalPaddingCalculations, CGRectMaxYEdge);
+    CGFloat padding = 30 - _borderOffsetFromEdge(self._viewForVerticalPaddingCalculations, CGRectMaxYEdge);
     if (self.includesInspectorSliceGroupSpacerOnBottom) {
         padding -= [[self class] paddingBetweenSliceGroups];
     }

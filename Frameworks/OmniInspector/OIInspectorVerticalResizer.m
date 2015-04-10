@@ -40,11 +40,11 @@ RCS_ID("$Id$")
     CGFloat verticalSpaceTakenNotBySuperview = startingWindowHeight - NSHeight([[self superview] frame]);
     
     while (1) {
-        event = [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:NO];
+        event = [[NSApplication sharedApplication] nextEventMatchingMask:NSLeftMouseDraggedMask|NSLeftMouseUpMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:NO];
         if ([event type] == NSLeftMouseUp)
             break;
            
-        [NSApp nextEventMatchingMask:NSLeftMouseDraggedMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
+        [[NSApplication sharedApplication] nextEventMatchingMask:NSLeftMouseDraggedMask untilDate:[NSDate distantFuture] inMode:NSEventTrackingRunLoopMode dequeue:YES];
         CGFloat change = startingMouseY - [window convertPointToScreen:[event locationInWindow]].y;
         windowFrame.size.height = MAX(minimumSuperviewHeight + verticalSpaceTakenNotBySuperview, startingWindowHeight + change);
         windowFrame.origin.y = startingWindowTop - windowFrame.size.height;

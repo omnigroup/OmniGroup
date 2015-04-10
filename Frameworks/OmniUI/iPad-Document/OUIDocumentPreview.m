@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,12 +10,15 @@
 #import <ImageIO/CGImageSource.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <OmniDocumentStore/ODSFileItem.h>
+#import <OmniDocumentStore/ODSLocalDirectoryScope.h>
 #import <OmniFoundation/NSData-OFEncoding.h>
 #import <OmniFoundation/NSData-OFSignature.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
 #import <OmniFoundation/NSString-OFReplacement.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFCFCallbacks.h>
+#import <OmniFoundation/OFFileEdit.h>
+#import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFUTI.h>
 #import <OmniQuartz/OQDrawing.h>
 #import <OmniUI/OUIDrawing.h>
@@ -24,13 +27,11 @@
 
 RCS_ID("$Id$");
 
-#if 0 && defined(DEBUG)
-    #define DEBUG_PREVIEW_CACHE_DEFINED 1
-    #define DEBUG_PREVIEW_CACHE(format, ...) NSLog(@"PREVIEW: " format, ## __VA_ARGS__)
-#else
-    #define DEBUG_PREVIEW_CACHE_DEFINED 0
-    #define DEBUG_PREVIEW_CACHE(format, ...)
-#endif
+static OFDeclareDebugLogLevel(OUIDocumentPreviewDebug)
+#define DEBUG_PREVIEW(level, format, ...) do { \
+    if (OUIDocumentPreviewDebug >= (level)) \
+        NSLog(@"PREVIEW: " format, ## __VA_ARGS__); \
+    } while (0)
 
 @interface OUIDocumentPreview ()
 @property(nonatomic,readwrite) CGImageRef image; // Always set if we are loaded (set to a placeholder if there is no real preview)
@@ -42,13 +43,11 @@ static NSString *AreaNames[] = {
     [OUIDocumentPreviewAreaLarge] = @"large",
     [OUIDocumentPreviewAreaMedium] = @"medium",
     [OUIDocumentPreviewAreaSmall] = @"small",
-    [OUIDocumentPreviewAreaTiny] = @"tiny",
 };
 static NSString *AreaCacheSuffix[] = {
     [OUIDocumentPreviewAreaLarge] = @"L",
     [OUIDocumentPreviewAreaMedium] = @"M",
     [OUIDocumentPreviewAreaSmall] = @"S",
-    [OUIDocumentPreviewAreaTiny] = @"T",
 };
 
 @implementation OUIDocumentPreview
@@ -117,7 +116,7 @@ static NSURL *_normalizeURL(NSURL *url)
 static NSURL *_previewURLWithFilename(NSString *filename)
 {
     NSURL *previewURL = [[[OUIDocumentPreview _previewDirectoryURL] URLByAppendingPathComponent:filename isDirectory:NO] absoluteURL];
-    //DEBUG_PREVIEW_CACHE(@"fileURL %@ -> previewURL %@", fileURL, previewURL);
+    DEBUG_PREVIEW(2, @"filename %@ -> previewURL %@", filename, previewURL);
     
     // The normalization is too slow to do here, but we shouldn't need to since +_previewDirectoryURL returns a normalized base URL and nothing we append should mess it up.
     OBPOSTCONDITION([previewURL isEqual:_normalizeURL(previewURL)]);
@@ -162,12 +161,12 @@ static CGImageRef _loadImageFromURL(NSURL *imageURL)
     return image;
 }
 
-static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFileItem *fileItem, OUIDocumentPreviewArea area)
+static void _populatePreview(Class self, NSSet *existingPreviewFileNames, OFFileEdit *fileEdit, OUIDocumentPreviewArea area)
 {
-    NSURL *fileURL = fileItem.fileURL;
-    NSDate *date = fileItem.fileModificationDate;
-        
-    NSString *previewFilename = [self _filenameForPreviewOfFileURL:fileURL date:date withArea:area];
+    OBPRECONDITION(fileEdit);
+    
+    NSString *previewFilename = [self _filenameForPreviewOfFileWithEditIdentifier:fileEdit.uniqueEditIdentifier withArea:area];
+    
     OUIDocumentPreview *preview = [PreviewFileNameToPreview objectForKey:previewFilename];
     if (preview)
         return;
@@ -192,38 +191,46 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
     if (!PreviewFileNameToPreview)
         PreviewFileNameToPreview = [[NSMutableDictionary alloc] init];
     
-    preview = [[self alloc] _initWithFileURL:fileURL date:date area:area previewURL:previewURL exists:exists empty:empty];
+    preview = [[self alloc] _initWithFileURL:fileEdit.originalFileURL fileEdit:fileEdit area:area previewURL:previewURL exists:exists empty:empty];
     [PreviewFileNameToPreview setObject:preview forKey:[previewURL lastPathComponent]];
-    DEBUG_PREVIEW_CACHE(@"Populated preview %@=%p (exists:%d, empty:%d) for %@ %@ area:%lu", [previewURL lastPathComponent], preview, exists, empty, fileURL, [date xmlString], area);
+    DEBUG_PREVIEW(1, @"Populated preview %@=%p (exists:%d, empty:%d) for %@ area:%lu", [previewURL lastPathComponent], preview, exists, empty, [fileEdit shortDescription], area);
 }
 
 + (void)populateCacheForFileItems:(id <NSFastEnumeration>)fileItems completionHandler:(void (^)(void))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
 
-    DEBUG_PREVIEW_CACHE(@"Queuing cache population request");
+    DEBUG_PREVIEW(1, @"Queuing cache population request");
 
     if (!fileItems)
         return;
     
     completionHandler = [completionHandler copy]; // capture scope
 
-    DEBUG_PREVIEW_CACHE(@"Queuing cache population operation, fileItems = %@", fileItems);
-    
-    dispatch_async(PreviewCacheOperationQueue, ^{
-        DEBUG_PREVIEW_CACHE(@"Performing cache population request");
+    DEBUG_PREVIEW(1, @"Queuing cache population operation, fileItems = %@", fileItems);
 
-        [self _populateCacheWithFileItems:fileItems];
+    // Capture snapshots before leaving the main thread
+    NSMutableArray *fileEdits = [NSMutableArray array];
+    for (ODSFileItem *fileItem in fileItems) {
+        OFFileEdit *fileEdit = fileItem.fileEdit;
+        if (fileEdit)
+            [fileEdits addObject:fileEdit];
+    }
+
+    dispatch_async(PreviewCacheOperationQueue, ^{
+        DEBUG_PREVIEW(1, @"Performing cache population request");
+
+        [self _populateCacheWithFileEdits:fileEdits];
                 
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{            
-            DEBUG_PREVIEW_CACHE(@"Finishing cache population request");
+            DEBUG_PREVIEW(1, @"Finishing cache population request");
             if (completionHandler)
                 completionHandler();
         }];
     });
 }
 
-+ (void)_populateCacheWithFileItems:(id <NSFastEnumeration>)fileItems;
++ (void)_populateCacheWithFileEdits:(id <NSFastEnumeration>)fileEdits;
 {
     // dispatch_get_current_queue() is deprecated, sadly.
     // OBPRECONDITION(dispatch_get_current_queue() == PreviewCacheOperationQueue);
@@ -248,11 +255,10 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
         existingPreviewFileNames = [previewFileNames copy];
     }
     
-    for (ODSFileItem *fileItem in fileItems) {
-        _populatePreview(self, existingPreviewFileNames, fileItem, OUIDocumentPreviewAreaLarge);
-        _populatePreview(self, existingPreviewFileNames, fileItem, OUIDocumentPreviewAreaMedium);
-        _populatePreview(self, existingPreviewFileNames, fileItem, OUIDocumentPreviewAreaSmall);
-        _populatePreview(self, existingPreviewFileNames, fileItem, OUIDocumentPreviewAreaTiny);
+    for (OFFileEdit *fileEdit in fileEdits) {
+        _populatePreview(self, existingPreviewFileNames, fileEdit, OUIDocumentPreviewAreaLarge);
+        _populatePreview(self, existingPreviewFileNames, fileEdit, OUIDocumentPreviewAreaMedium);
+        _populatePreview(self, existingPreviewFileNames, fileEdit, OUIDocumentPreviewAreaSmall);
     }
 }
 
@@ -270,23 +276,17 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
         }];
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-#if DEBUG_PREVIEW_CACHE_DEFINED
             __block NSUInteger keptPreviews = 0;
             __block NSUInteger discardedPreviews = 0;
-#endif
             
             for (OUIDocumentPreview *preview in previews) {
                 if ([preview _discardPreviewIfHidden]) {
-#if DEBUG_PREVIEW_CACHE_DEFINED
                     discardedPreviews++;
-#endif
                 }
-#if DEBUG_PREVIEW_CACHE_DEFINED
                 if (preview->_image)
                     keptPreviews++;
-#endif
             }
-            DEBUG_PREVIEW_CACHE(@"Cleaned up %ld hidden previews, kept %ld", discardedPreviews, keptPreviews);
+            DEBUG_PREVIEW(1, @"Cleaned up %ld hidden previews, kept %ld", discardedPreviews, keptPreviews);
         }];
         
     });
@@ -297,7 +297,7 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    DEBUG_PREVIEW_CACHE(@"Flushing preview cache");
+    DEBUG_PREVIEW(1, @"Flushing preview cache");
 
     // Make sure image saving/loading has finished -- this doesn't dispatch back to the main queue
     [PreviewCacheReadWriteQueue waitUntilAllOperationsAreFinished];
@@ -352,6 +352,7 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
 #ifdef OMNI_ASSERTIONS_ON
         {
             // If the incomming image is not nil, we should either have nothing in our cache, or should have some form of placeholder. We shouldn't be replacing valid previews (those should get a new date and thus a new cache key).
+            OBASSERT(PreviewFileNameToPreview, "Looking up previews while the cache isn't loaded.");
             OUIDocumentPreview *existingPreview = [PreviewFileNameToPreview objectForKey:previewFilename];
             OBASSERT_IF(preview.exists,
                         (existingPreview == nil || // nothing in the cache
@@ -371,11 +372,12 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
     });
 }
 
-+ (void)_cachePreviewImage:(CGImageRef)fullImage fileURL:(NSURL *)fileURL date:(NSDate *)date area:(OUIDocumentPreviewArea)area andWriteImages:(BOOL)writeImages;
++ (void)_cachePreviewImage:(CGImageRef)fullImage fileEdit:(OFFileEdit *)fileEdit area:(OUIDocumentPreviewArea)area andWriteImages:(BOOL)writeImages;
 {
-    OBASSERT([NSThread isMainThread]);
+    OBPRECONDITION(fileEdit);
+    OBPRECONDITION([NSThread isMainThread]); // Actually -- now that we take an immutable ODSFileItem snapshot as input, we might be able to run on a background queue.
     
-    NSURL *previewURL = [self fileURLForPreviewOfFileURL:fileURL date:date withArea:area];
+    NSURL *previewURL = [self fileURLForPreviewOfFileEdit:fileEdit withArea:area];
     NSString *previewFilename = [previewURL lastPathComponent];
     
     // Do scaling, JPEG compression, and file writing on a background queue. If there is an error writing the image, this means we will cache the passed in version which won't have been written, though.
@@ -384,8 +386,8 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
     
     // Allow caching negative results for when there is an error generating previews (maybe the document couldn't be read, for example).
     // Avoid reloading the image state from disk (and the I/O probably won't be finished).
-    OUIDocumentPreview *preview = [[OUIDocumentPreview alloc] _initWithFileURL:fileURL date:date area:area previewURL:previewURL exists:YES empty:(fullImage == NULL)];
-    DEBUG_PREVIEW_CACHE(@"Generated preview %@=%p for %@ %@ area:%lu", [previewURL lastPathComponent], preview, fileURL, [date xmlString], area);
+    OUIDocumentPreview *preview = [[OUIDocumentPreview alloc] _initWithFileURL:fileEdit.originalFileURL fileEdit:fileEdit area:area previewURL:previewURL exists:YES empty:(fullImage == NULL)];
+    DEBUG_PREVIEW(1, @"Generated preview %@=%p for %@ %@ area:%lu", [previewURL lastPathComponent], preview, fileEdit.originalFileURL, fileEdit.uniqueEditIdentifier, area);
 
     [PreviewCacheReadWriteQueue addOperationWithBlock:^{
         NSData *jpgData = nil;
@@ -402,7 +404,7 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
             CFRelease(fullImage);
         
             preview.image = scaledImage;
-            DEBUG_PREVIEW_CACHE(@"  yielded generated image to preview");
+            DEBUG_PREVIEW(1, @"  yielded generated image to preview");
             
             [self _registerPreview:preview withFilename:previewFilename];
 
@@ -420,6 +422,7 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
                 jpgData = [NSData data];
             
             __autoreleasing NSError *writeError = nil;
+            DEBUG_PREVIEW(1, @"  writing JPG data of length %ld", [jpgData length]);
             if (![jpgData writeToURL:previewURL options:NSDataWritingAtomic error:&writeError]) {
                 NSLog(@"Error writing preview to %@: %@", previewURL, [writeError toPropertyList]);
             }
@@ -432,11 +435,10 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
     OBPRECONDITION(cachePreviews);
     OBPRECONDITION([NSThread isMainThread]);
     
-    cachePreviews(^(NSURL *fileURL, NSDate *date, CGImageRef image){
-        [self _cachePreviewImage:image fileURL:fileURL date:date area:OUIDocumentPreviewAreaLarge andWriteImages:writeImages];
-        [self _cachePreviewImage:image fileURL:fileURL date:date area:OUIDocumentPreviewAreaMedium andWriteImages:writeImages];
-        [self _cachePreviewImage:image fileURL:fileURL date:date area:OUIDocumentPreviewAreaSmall andWriteImages:writeImages];
-        [self _cachePreviewImage:image fileURL:fileURL date:date area:OUIDocumentPreviewAreaTiny andWriteImages:writeImages];
+    cachePreviews(^(OFFileEdit *fileEdit, CGImageRef image){
+        [self _cachePreviewImage:image fileEdit:fileEdit area:OUIDocumentPreviewAreaLarge andWriteImages:writeImages];
+        [self _cachePreviewImage:image fileEdit:fileEdit area:OUIDocumentPreviewAreaMedium andWriteImages:writeImages];
+        [self _cachePreviewImage:image fileEdit:fileEdit area:OUIDocumentPreviewAreaSmall andWriteImages:writeImages];
     });
 }
 
@@ -475,9 +477,10 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
     }
 }
 
-+ (BOOL)hasPreviewsForFileURL:(NSURL *)fileURL date:(NSDate *)date;
++ (BOOL)hasPreviewsForFileEdit:(OFFileEdit *)fileEdit;
 {
     OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(fileEdit);
     
     __block BOOL hasPreviews = NO;
     
@@ -488,28 +491,15 @@ static void _populatePreview(Class self, NSSet *existingPreviewFileNames, ODSFil
         }
         
         BOOL (^checkArea)(OUIDocumentPreviewArea area) = ^(OUIDocumentPreviewArea area){
-            NSString *previewFilename = [self _filenameForPreviewOfFileURL:fileURL date:date withArea:area];
+            NSString *previewFilename = [self _filenameForPreviewOfFileWithEditIdentifier:fileEdit.uniqueEditIdentifier withArea:area];
             OUIDocumentPreview *preview = [PreviewFileNameToPreview objectForKey:previewFilename];
             return preview.exists;
         };
         
-        hasPreviews = checkArea(OUIDocumentPreviewAreaLarge) && checkArea(OUIDocumentPreviewAreaMedium) && checkArea(OUIDocumentPreviewAreaSmall) && checkArea(OUIDocumentPreviewAreaTiny);
+        hasPreviews = checkArea(OUIDocumentPreviewAreaLarge) && checkArea(OUIDocumentPreviewAreaMedium) && checkArea(OUIDocumentPreviewAreaSmall);
     });
     
     return hasPreviews;
-}
-
-static void _removeUsedPreviewFileURLs(Class self, NSMutableSet *unusedPreviewFilenames, NSURL *fileURL, NSDate *date)
-{
-    void (^removeForArea)(OUIDocumentPreviewArea area) = ^(OUIDocumentPreviewArea area){
-        NSString *previewFilename;
-        if ((previewFilename = [self _filenameForPreviewOfFileURL:fileURL date:date withArea:area]))
-            [unusedPreviewFilenames removeObject:previewFilename];
-    };
-    removeForArea(OUIDocumentPreviewAreaLarge);
-    removeForArea(OUIDocumentPreviewAreaMedium);
-    removeForArea(OUIDocumentPreviewAreaSmall);
-    removeForArea(OUIDocumentPreviewAreaTiny);
 }
 
 + (void)deletePreviewsNotUsedByFileItems:(id <NSFastEnumeration>)fileItems;
@@ -529,10 +519,21 @@ static void _removeUsedPreviewFileURLs(Class self, NSMutableSet *unusedPreviewFi
         [unusedPreviewFilenames addObject:[existingPreviewURL lastPathComponent]];
     }
     
-    for (ODSFileItem *fileItem in fileItems)
-        _removeUsedPreviewFileURLs(self, unusedPreviewFilenames, fileItem.fileURL, fileItem.fileModificationDate);
+    for (ODSFileItem *fileItem in fileItems) {
+        void (^removeForArea)(OUIDocumentPreviewArea area) = ^(OUIDocumentPreviewArea area){
+            OFFileEdit *fileEdit = fileItem.fileEdit;
+            if (fileEdit) {
+                NSString *previewFilename;
+                if ((previewFilename = [self _filenameForPreviewOfFileWithEditIdentifier:fileEdit.uniqueEditIdentifier withArea:area]))
+                    [unusedPreviewFilenames removeObject:previewFilename];
+            }
+        };
+        removeForArea(OUIDocumentPreviewAreaLarge);
+        removeForArea(OUIDocumentPreviewAreaMedium);
+        removeForArea(OUIDocumentPreviewAreaSmall);
+    }
     
-    DEBUG_PREVIEW_CACHE(@"Removing unused previews: %@", unusedPreviewFilenames);
+    DEBUG_PREVIEW(1, @"Removing unused previews: %@", unusedPreviewFilenames);
     
     for (NSString *previewFilename in unusedPreviewFilenames) {
         __autoreleasing NSError *removeError = nil;
@@ -542,9 +543,48 @@ static void _removeUsedPreviewFileURLs(Class self, NSMutableSet *unusedPreviewFi
     }
 }
 
-static NSString *relevantPathForURL(NSURL *fileURL)
+static NSString *attemptCacheKeyForFileURLWithPossibleContainer(NSURL *fileURL, NSURL *containerURL, NSString *prefix)
 {
-    // We use the full URL here so that we can build previews for documents with the same name. For example, conflict versions will likely have the same path component and possibly the same date (since the date resolution on the iPad is low). Even if we did use the last path component, we would have to use the whole thing (for Foo.oo3 and Foo.opml).
+    if (!OFURLContainsURL(containerURL, fileURL))
+        return nil;
+    
+    NSString *relativePath = OFFileURLRelativePath(containerURL, fileURL);
+    OBASSERT(![NSString isEmptyString:relativePath]);
+    return [NSString stringWithFormat:@"%@/%@", prefix, relativePath];
+}
+
+static NSString *cacheKeyForFileURL(NSURL *fileURL)
+{
+    // We used to use the full URL here as an easy way to deal with files with the same relative path between two different containers or (even folders). But in iOS 8, each time the application is updated, the base container URL changes (it seems). This would cause document previews to be regenerated when not needed. Instead, we want to include enough of the prefix that we have a unique scope prefix for the file, as well as the document's relative path within the scope.
+    // Use something that doesn't look like a path component for the prefix so that we don't trick ourselves into thinking it really is.
+    
+    NSString *cacheKey;
+    
+    if ((cacheKey = attemptCacheKeyForFileURLWithPossibleContainer(fileURL, [ODSLocalDirectoryScope userDocumentsDirectoryURL], @"DOC")))
+        return cacheKey;
+    
+    if ((cacheKey = attemptCacheKeyForFileURLWithPossibleContainer(fileURL, [ODSLocalDirectoryScope trashDirectoryURL], @"TRASH")))
+        return cacheKey;
+
+    // Document templates, for example.
+    if ((cacheKey = attemptCacheKeyForFileURLWithPossibleContainer(fileURL, [[NSBundle mainBundle] bundleURL], @"APP")))
+        return cacheKey;
+
+    static dispatch_once_t onceToken;
+    static NSURL *applicationSupportDirectoryURL = nil;
+    dispatch_once(&onceToken, ^{
+        __autoreleasing NSError *error;
+        applicationSupportDirectoryURL = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
+        if (!applicationSupportDirectoryURL)
+            [error log:@"Unable to locate application support directory."];
+    });
+
+    if ((cacheKey = attemptCacheKeyForFileURLWithPossibleContainer(fileURL, applicationSupportDirectoryURL, @"APP_SUPPORT")))
+        return cacheKey;
+
+    // Fall through to the old approach of using the full URL.
+    OBASSERT_NOT_REACHED("Unknown container for file at %@", fileURL);
+    
     // Normalization is too slow to do here, but we can get both /private/mobile and /var/private/mobile.
     NSString *urlString = [fileURL absoluteString];
     static NSString * const BadVarMobilePrefix = @"file://localhost/private/var/mobile/";
@@ -562,49 +602,31 @@ static NSString *relevantPathForURL(NSURL *fileURL)
     return urlString;
 }
 
-+ (NSString *)_filenameForPreviewOfFileURL:(NSURL *)fileURL date:(NSDate *)date withArea:(OUIDocumentPreviewArea)area;
++ (NSString *)_filenameForPreviewOfFileWithEditIdentifier:(NSString *)fileEditIdentifier withArea:(OUIDocumentPreviewArea)area;
 {
-    NSString *urlString = relevantPathForURL(fileURL);
-    
-    // Make sure we got all the transformations needed
-    // _normalizeURL() doesn't work on files that don't exist (and this is called after a file has moved).
-    //OBASSERT([urlString isEqual:[[_normalizeURL(fileURL) absoluteString] stringByRemovingSuffix:@"/"]]);
-    
-    NSString *fileName = [[[urlString dataUsingEncoding:NSUTF8StringEncoding] sha1Signature] unadornedLowercaseHexString];
-    
-    // Unique it by date and size/area
-    NSString *dateString = [date xmlString];
-    fileName = [fileName stringByAppendingFormat:@"-%@-%@", dateString, AreaNames[area]];
-    
-    fileName = [fileName stringByAppendingPathExtension:@"jpg"];
-    
-    return fileName;
+    return [[NSString stringWithFormat:@"%@-%@", fileEditIdentifier, AreaNames[area]] stringByAppendingPathExtension:@"jpg"];
 }
 
-+ (NSURL *)fileURLForPreviewOfFileURL:(NSURL *)fileURL date:(NSDate *)date withArea:(OUIDocumentPreviewArea)area;
++ (NSURL *)fileURLForPreviewOfFileEdit:(OFFileEdit *)fileEdit withArea:(OUIDocumentPreviewArea)area;
 {
-    OBPRECONDITION(fileURL);
-    OBPRECONDITION(date);
+    OBPRECONDITION(fileEdit);
 
-    return _previewURLWithFilename([self _filenameForPreviewOfFileURL:fileURL date:date withArea:area]);
+    NSString *filename = [self _filenameForPreviewOfFileWithEditIdentifier:fileEdit.uniqueEditIdentifier withArea:area];
+    return _previewURLWithFilename(filename);
 }
 
-+ (void)writeEmptyPreviewForFileURL:(NSURL *)fileURL date:(NSDate *)date withArea:(OUIDocumentPreviewArea)area;
++ (void)writeEmptyPreviewsForFileEdit:(OFFileEdit *)fileEdit;
 {
-    NSURL *previewURL = [OUIDocumentPreview fileURLForPreviewOfFileURL:fileURL date:date withArea:area];
-    __autoreleasing NSError *error = nil;
-    if (![[NSData data] writeToURL:previewURL options:0 error:&error])
-        NSLog(@"Error writing empty data for preview to %@: %@", previewURL, [error toPropertyList]);
+    for (OUIDocumentPreviewArea area = OUIDocumentPreviewAreaLarge; area <= OUIDocumentPreviewAreaSmall; area++) {
+        NSURL *previewURL = [OUIDocumentPreview fileURLForPreviewOfFileEdit:fileEdit withArea:area];
+        __autoreleasing NSError *error = nil;
+        if (![[NSData data] writeToURL:previewURL options:0 error:&error])
+            NSLog(@"Error writing empty data for preview to %@: %@", previewURL, [error toPropertyList]);
+    }
 }
 
-+ (void)writeEmptyPreviewsForFileURL:(NSURL *)fileURL date:(NSDate *)date;
-{
-    for (OUIDocumentPreviewArea area = OUIDocumentPreviewAreaLarge; area <= OUIDocumentPreviewAreaTiny; area++)
-        [self writeEmptyPreviewForFileURL:fileURL date:date withArea:area];
-}
-
-static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, NSURL *fileURL, OUIDocumentPreviewArea area, NSURL *previewURL) CF_RETURNS_RETAINED;
-static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, NSURL *fileURL, OUIDocumentPreviewArea area, NSURL *previewURL)
+static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, NSURL *fileURL, OUIDocumentPreviewArea area) CF_RETURNS_RETAINED;
+static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, NSURL *fileURL, OUIDocumentPreviewArea area)
 {
     NSString *placeholderImageName = [documentClass placeholderPreviewImageNameForFileURL:fileURL area:area];
     if (!placeholderImageName) {
@@ -663,9 +685,11 @@ static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, 
                         CGContextDrawImage(ctx, targetImageRect, previewImage);
                     }
                     
+#ifdef DEBUG
                     UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
                     [UIImageJPEGRepresentation(img, 1) writeToFile:@"/tmp/badged.jpg" atomically:YES];
-                    
+#endif
+
                     badgedImage = [UIGraphicsGetImageFromCurrentImageContext() CGImage];
                 }
                 UIGraphicsEndImageContext();
@@ -674,9 +698,9 @@ static CGImageRef _copyPlaceholderPreviewImage(Class self, Class documentClass, 
                     BadgedPlaceholderPreviewImageCache = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &OFNSObjectDictionaryKeyCallbacks, &CFTypeDictionaryValueCallbacks);
                 
                 CFDictionarySetValue(BadgedPlaceholderPreviewImageCache, (__bridge const void *)(cacheKey), badgedImage);
-                DEBUG_PREVIEW_CACHE(@"Built badged placeholder preview image %@ with \"%@\" for %@", badgedImage, cacheKey, previewURL);
+                DEBUG_PREVIEW(1, @"Built badged placeholder preview image %@ with \"%@\"", badgedImage, cacheKey);
             } else {
-                DEBUG_PREVIEW_CACHE(@"Using previously generated badged placeholder preview image with \"%@\" for %@", cacheKey, previewURL);
+                DEBUG_PREVIEW(1, @"Using previously generated badged placeholder preview image with \"%@\"", cacheKey);
             }
         }
     
@@ -743,9 +767,6 @@ static NSString *_placeholderStringForFileType(NSString *fileType)
         case OUIDocumentPreviewAreaSmall:
             areaString = @"Small";
             break;
-        case OUIDocumentPreviewAreaTiny:
-            areaString = @"Tiny";
-            break;
         default:
             OBASSERT_NOT_REACHED("Unknown area");
             return nil;
@@ -759,51 +780,73 @@ static NSString *_placeholderStringForFileType(NSString *fileType)
 }
 
 
-+ (OUIDocumentPreview *)makePreviewForDocumentClass:(Class)documentClass fileURL:(NSURL *)fileURL date:(NSDate *)date withArea:(OUIDocumentPreviewArea)area;
++ (OUIDocumentPreview *)makePreviewForDocumentClass:(Class)documentClass fileItem:(ODSFileItem *)fileItem withArea:(OUIDocumentPreviewArea)area;
 {
     OBPRECONDITION([NSThread isMainThread]); // We might update PreviewImageByURL for placeholders (could fork just the cache update to the main thread if needed).
 
     __block OUIDocumentPreview *preview = nil;
     
+    // Since file items are only updated on the main thread and since we do a dispatch sync here, we don't need to extract the state from the file item. But, we will anyway so that the API is written for it.
+    OFFileEdit *fileEdit = fileItem.fileEdit; // Might be nil, if this file isn't downloaded.
+    NSURL *fileURL = fileItem.fileURL;
+    if (!fileEdit) {
+        // Not downloaded, so use a placeholder preview.
+        return [[self alloc] _initWithFileURL:fileURL fileEdit:nil area:area previewURL:nil exists:NO empty:YES];
+    }
+    
     dispatch_sync(PreviewCacheOperationQueue, ^{
-        NSString *previewFilename = [self _filenameForPreviewOfFileURL:fileURL date:date withArea:area];
+        OBASSERT(PreviewFileNameToPreview, "Looking up previews before the cache is loaded?");
+
+        NSString *previewFilename = [self _filenameForPreviewOfFileWithEditIdentifier:fileEdit.uniqueEditIdentifier withArea:area];
         preview = [PreviewFileNameToPreview objectForKey:previewFilename];
         
         if (!preview && PreviewDestinationPathToSourcePreview) {
             // Check our aliases for in-flight moves and copies. We register preview aliases on URL only since we don't know what the date will be for copied files when we see them.
-            NSString *destinationKey = [relevantPathForURL(fileURL) stringByAppendingFormat:@"-%@", AreaCacheSuffix[area]];
+            NSString *destinationKey = [cacheKeyForFileURL(fileEdit.originalFileURL) stringByAppendingFormat:@"-%@", AreaCacheSuffix[area]];
             preview = PreviewDestinationPathToSourcePreview[destinationKey];
             if (preview)
-                DEBUG_PREVIEW_CACHE(@"Looked up by alias %@ -> %@", destinationKey, preview);
+                DEBUG_PREVIEW(1, @"Looked up by alias %@ -> %@", destinationKey, preview);
         }
         
         if (!preview) {
             // This can happen when adding a new document from iTunes -- there may be an in flight async registration of the preview that hasn't finished yet. Just make up a placeholder.
             NSURL *previewURL = _previewURLWithFilename(previewFilename);
-            preview = [[self alloc] _initWithFileURL:fileURL date:date area:area previewURL:previewURL exists:NO empty:YES];
+            
+            preview = [[self alloc] _initWithFileURL:fileURL fileEdit:fileEdit area:area previewURL:previewURL exists:NO empty:YES];
         }
     });
 
     return preview;
 }
 
-+ (void)addAliasFromFileWithURL:(NSURL *)fromFileURL withDate:(NSDate *)date toFileWithURL:(NSURL *)toFileURL;
++ (void)addAliasFromFileItemEdit:(ODSFileItemEdit *)fromFileItemEdit toFileWithURL:(NSURL *)toFileURL;
 {
-    fromFileURL = _normalizeURL(fromFileURL);
-    toFileURL = _normalizeURL(toFileURL);
+    OBPRECONDITION([NSThread isMainThread], "File items are updated on the main thread, so make sure we aren't racing with it");
     
+    OFFileEdit *fileEdit = fromFileItemEdit.originalFileEdit;
+    if (!fileEdit) {
+        OBASSERT_NOT_REACHED("Can't make an alias from a non-downloaded file.");
+        return;
+    }
+    
+    NSString *fromEditIdentifier = fileEdit.uniqueEditIdentifier;
+    toFileURL = _normalizeURL(toFileURL);
+
     dispatch_sync(PreviewCacheOperationQueue, ^{
         if (!PreviewDestinationPathToSourcePreview)
             PreviewDestinationPathToSourcePreview = [NSMutableDictionary new];
         
         void (^op)(OUIDocumentPreviewArea area) = ^(OUIDocumentPreviewArea area){
-            NSString *destinationKey = [relevantPathForURL(toFileURL) stringByAppendingFormat:@"-%@", AreaCacheSuffix[area]];
+
+            NSString *destinationKey = [cacheKeyForFileURL(toFileURL) stringByAppendingFormat:@"-%@", AreaCacheSuffix[area]];
             OBASSERT(PreviewDestinationPathToSourcePreview[destinationKey] == nil);
             
-            NSString *previewFilename = [self _filenameForPreviewOfFileURL:fromFileURL date:date withArea:area];
+            NSString *previewFilename = [self _filenameForPreviewOfFileWithEditIdentifier:fromEditIdentifier withArea:area];
+            
+            OBASSERT(PreviewFileNameToPreview, "Looking up previews while the cache isn't loaded.");
             OUIDocumentPreview *preview = [PreviewFileNameToPreview objectForKey:previewFilename];
             if (preview) {
-                DEBUG_PREVIEW_CACHE(@"Adding alias %@ -> %@", destinationKey, [preview shortDescription]);
+                DEBUG_PREVIEW(1, @"Adding alias %@ -> %@", destinationKey, [preview shortDescription]);
                 PreviewDestinationPathToSourcePreview[destinationKey] = preview;
             }
         };
@@ -811,47 +854,47 @@ static NSString *_placeholderStringForFileType(NSString *fileType)
         op(OUIDocumentPreviewAreaLarge);
         op(OUIDocumentPreviewAreaMedium);
         op(OUIDocumentPreviewAreaSmall);
-        op(OUIDocumentPreviewAreaTiny);
     });
 }
 
-+ (void)removeAliasFromFileWithURL:(NSURL *)fromFileURL withDate:(NSDate *)date toFileWithURL:(NSURL *)toFileURL;
++ (void)removeAliasFromFileItemEdit:(ODSFileItemEdit *)fromFileItemEdit toFileWithURL:(NSURL *)toFileURL;
 {
+    OBPRECONDITION([NSThread isMainThread], "File items are updated on the main thread, so make sure we aren't racing with it");
+
 #ifdef OMNI_ASSERTIONS_ON
-    fromFileURL = _normalizeURL(fromFileURL);
+    NSString *fromFileEditIdentifier = fromFileItemEdit.originalFileEdit.uniqueEditIdentifier;
 #endif
     toFileURL = _normalizeURL(toFileURL);
 
     dispatch_sync(PreviewCacheOperationQueue, ^{
         void (^op)(OUIDocumentPreviewArea area) = ^(OUIDocumentPreviewArea area){
-            NSString *destinationKey = [relevantPathForURL(toFileURL) stringByAppendingFormat:@"-%@", AreaCacheSuffix[area]];
+            NSString *destinationKey = [cacheKeyForFileURL(toFileURL) stringByAppendingFormat:@"-%@", AreaCacheSuffix[area]];
 #ifdef OMNI_ASSERTIONS_ON
             OUIDocumentPreview *preview = PreviewDestinationPathToSourcePreview[destinationKey];
             OBASSERT(preview);
-            OBASSERT_IF(preview, OFURLEqualsURL(preview.fileURL, fromFileURL));
-            OBASSERT_IF(preview, [preview.date isEqual:date]);
+            OBASSERT_IF(preview, [preview.fileEditIdentifier isEqual:fromFileEditIdentifier]);
             OBASSERT_IF(preview, preview.area == area);
 #endif
-            DEBUG_PREVIEW_CACHE(@"Removing alias %@ -> %@", destinationKey, PreviewDestinationPathToSourcePreview[destinationKey]);
+            DEBUG_PREVIEW(1, @"Removing alias %@ -> %@", destinationKey, PreviewDestinationPathToSourcePreview[destinationKey]);
             [PreviewDestinationPathToSourcePreview removeObjectForKey:destinationKey];
         };
         
         op(OUIDocumentPreviewAreaLarge);
         op(OUIDocumentPreviewAreaMedium);
         op(OUIDocumentPreviewAreaSmall);
-        op(OUIDocumentPreviewAreaTiny);
     });
 }
 
-static void _copyPreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, NSURL *targetFileURL, NSDate *targetDate, OUIDocumentPreviewArea area)
+static void _copyPreview(Class self, OFFileEdit *sourceFileEdit, OFFileEdit *targetFileEdit, OUIDocumentPreviewArea area)
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    NSURL *sourcePreviewFileURL = [self fileURLForPreviewOfFileURL:sourceFileURL date:sourceDate withArea:area];
-    NSURL *targetPreviewFileURL = [self fileURLForPreviewOfFileURL:targetFileURL date:targetDate withArea:area];
+    NSURL *sourcePreviewFileURL = [self fileURLForPreviewOfFileEdit:sourceFileEdit withArea:area];
+    NSURL *targetPreviewFileURL = [self fileURLForPreviewOfFileEdit:targetFileEdit withArea:area];
     
-    DEBUG_PREVIEW_CACHE(@"copying preview %@ -> %@", sourcePreviewFileURL, targetPreviewFileURL);
+    DEBUG_PREVIEW(1, @"copying preview %@ -> %@", sourcePreviewFileURL, targetPreviewFileURL);
     
+    OBASSERT(PreviewFileNameToPreview, "Looking up previews while the cache isn't loaded.");
     OUIDocumentPreview *sourcePreview = [PreviewFileNameToPreview objectForKey:[sourcePreviewFileURL lastPathComponent]];
     // Need to check for nil here becuase of this bug. <bug:///98537> (Wrong date is bing used to generate preview filename)
     if (!sourcePreview || (sourcePreview->_type != OUIDocumentPreviewTypeRegular)) // -type asserts we've loaded the file, but we might not have loaded all the preview sizes. We just want to copy whatever is on disk.
@@ -868,7 +911,7 @@ static void _copyPreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     }
     
     // Register the new preview if the source had it loaded (most likely since the user is operating on it).
-    OUIDocumentPreview *targetPreview = [[OUIDocumentPreview alloc] _initWithFileURL:targetFileURL date:targetDate area:area previewURL:targetPreviewFileURL];
+    OUIDocumentPreview *targetPreview = [[OUIDocumentPreview alloc] _initWithFileURL:targetFileEdit.originalFileURL fileEdit:targetFileEdit area:area previewURL:targetPreviewFileURL];
     
     if (sourcePreview->_image) // Don't force loading; just do it if already loaded
         targetPreview.image = sourcePreview->_image;
@@ -878,65 +921,17 @@ static void _copyPreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     [PreviewFileNameToPreview setObject:targetPreview forKey:[targetPreviewFileURL lastPathComponent]];
 }
 
-+ (void)cachePreviewImagesForFileURL:(NSURL *)targetFileURL date:(NSDate *)targetDate
-            byDuplicatingFromFileURL:(NSURL *)sourceFileURL date:(NSDate *)sourceDate;
++ (void)cachePreviewImagesForFileEdit:(OFFileEdit *)targetFileEdit
+            byDuplicatingFromFileEdit:(OFFileEdit *)sourceFileEdit;
 {
-    DEBUG_PREVIEW_CACHE(@"copying preview %@ / %@ -> %@ / %@", [sourceDate xmlString], sourceFileURL, targetFileURL, [targetDate xmlString]);
+    DEBUG_PREVIEW(1, @"copying preview %@ / %@ -> %@ / %@",
+                  [sourceFileEdit.fileModificationDate xmlString], sourceFileEdit.originalFileURL,
+                  [targetFileEdit.fileModificationDate xmlString], targetFileEdit.originalFileURL);
 
-    targetFileURL = _normalizeURL(targetFileURL);
-    sourceFileURL = _normalizeURL(sourceFileURL);
-    
     dispatch_sync(PreviewCacheOperationQueue, ^{
-        _copyPreview(self, sourceFileURL, sourceDate, targetFileURL, targetDate, OUIDocumentPreviewAreaLarge);
-        _copyPreview(self, sourceFileURL, sourceDate, targetFileURL, targetDate, OUIDocumentPreviewAreaMedium);
-        _copyPreview(self, sourceFileURL, sourceDate, targetFileURL, targetDate, OUIDocumentPreviewAreaSmall);
-        _copyPreview(self, sourceFileURL, sourceDate, targetFileURL, targetDate, OUIDocumentPreviewAreaTiny);
-    });
-}
-
-static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, NSURL *targetFileURL, NSDate *targetDate, OUIDocumentPreviewArea area)
-{
-    NSURL *sourcePreviewFileURL = [self fileURLForPreviewOfFileURL:sourceFileURL date:sourceDate withArea:area];
-    NSURL *targetPreviewFileURL = [self fileURLForPreviewOfFileURL:targetFileURL date:targetDate withArea:area];
-    
-    DEBUG_PREVIEW_CACHE(@"moving preview from %@ %@ -- %@", sourceFileURL, [sourceDate xmlString], sourcePreviewFileURL);
-    DEBUG_PREVIEW_CACHE(@"  to %@ %@ -- %@", targetFileURL, [targetDate xmlString], targetPreviewFileURL);
-    
-    // Move the file (if any)
-    __autoreleasing NSError *moveError = nil;
-    if (![[NSFileManager defaultManager] moveItemAtURL:sourcePreviewFileURL toURL:targetPreviewFileURL error:&moveError]) {
-        if (![moveError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) // Preview not written yet? Maybe we have a rename of a file racing with writing a generated preview for the first name?
-            NSLog(@"Error moving preview from %@ to %@: %@", sourcePreviewFileURL, targetPreviewFileURL, [moveError toPropertyList]);
-    }
-    
-    // Move the preview in the cache
-    NSString *sourcePreviewFilename = [sourcePreviewFileURL lastPathComponent];
-    NSString *targetPreviewFilename = [targetPreviewFileURL lastPathComponent];
-    
-    OUIDocumentPreview *preview = [PreviewFileNameToPreview objectForKey:sourcePreviewFilename];
-    if (preview) {
-        if (!PreviewFileNameToPreview)
-            PreviewFileNameToPreview = [[NSMutableDictionary alloc] init];
-        
-        [PreviewFileNameToPreview setObject:preview forKey:targetPreviewFilename];
-        [PreviewFileNameToPreview removeObjectForKey:sourcePreviewFilename];
-        
-        [preview _didMoveToFileURL:targetFileURL date:targetDate previewURL:targetPreviewFileURL];
-        
-        DEBUG_PREVIEW_CACHE(@"  moved preview %p from key %@ to %@", preview, sourcePreviewFilename, targetPreviewFilename);
-    }
-}
-
-+ (void)updateCacheAfterFileURL:(NSURL *)sourceFileURL withDate:(NSDate *)sourceDate didMoveToURL:(NSURL *)targetFileURL;
-{
-    sourceFileURL = _normalizeURL(sourceFileURL);
-    targetFileURL = _normalizeURL(targetFileURL);
-    
-    dispatch_sync(PreviewCacheOperationQueue, ^{
-        _movePreview(self, sourceFileURL, sourceDate, targetFileURL, sourceDate, OUIDocumentPreviewAreaLarge);
-        _movePreview(self, sourceFileURL, sourceDate, targetFileURL, sourceDate, OUIDocumentPreviewAreaMedium);
-        _movePreview(self, sourceFileURL, sourceDate, targetFileURL, sourceDate, OUIDocumentPreviewAreaSmall);
-        _movePreview(self, sourceFileURL, sourceDate, targetFileURL, sourceDate, OUIDocumentPreviewAreaTiny);
+        _copyPreview(self, sourceFileEdit, targetFileEdit, OUIDocumentPreviewAreaLarge);
+        _copyPreview(self, sourceFileEdit, targetFileEdit, OUIDocumentPreviewAreaMedium);
+        _copyPreview(self, sourceFileEdit, targetFileEdit, OUIDocumentPreviewAreaSmall);
     });
 }
 
@@ -947,10 +942,8 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
             return 100;
         case OUIDocumentPreviewAreaSmall:
             return 60;
-        case OUIDocumentPreviewAreaTiny:
-            return 28;
         default:
-            OBASSERT_NOT_REACHED("Unknonw preview area");
+            OBASSERT_NOT_REACHED("Unknown preview area");
             // fall through
         case OUIDocumentPreviewAreaLarge:
             return 220;
@@ -963,17 +956,18 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     return [[UIScreen mainScreen] scale];
 }
 
-- _initWithFileURL:(NSURL *)fileURL date:(NSDate *)date area:(OUIDocumentPreviewArea)area previewURL:(NSURL *)previewURL exists:(BOOL)exists empty:(BOOL)empty;
+- _initWithFileURL:(NSURL *)fileURL fileEdit:(OFFileEdit *)fileEdit area:(OUIDocumentPreviewArea)area previewURL:(NSURL *)previewURL exists:(BOOL)exists empty:(BOOL)empty;
 {
-    OBPRECONDITION(fileURL);
-    OBPRECONDITION(date || !exists); // Might represent a non-downloaded cloud item.
-    OBPRECONDITION(previewURL);
+    OBPRECONDITION(fileURL); // Needed for placeholders to get the proper image
+    OBPRECONDITION(!fileEdit || OFURLEqualsURL(fileURL, fileEdit.originalFileURL));
+    OBPRECONDITION(fileEdit || !exists);
+    OBPRECONDITION(previewURL || !exists);
     
     if (!(self = [super init]))
         return nil;
     
-    _fileURL = fileURL;
-    _date = [date copy];
+    _fileURL = [fileURL copy]; // Needed in case this is a placeholder and fileEdit is nil
+    _fileEdit = fileEdit;
     _area = area;
     _previewURL = previewURL;
     _exists = exists;
@@ -982,7 +976,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     return self;
 }
 
-- _initWithFileURL:(NSURL *)fileURL date:(NSDate *)date area:(OUIDocumentPreviewArea)area previewURL:(NSURL *)previewURL;
+- _initWithFileURL:(NSURL *)fileURL fileEdit:(OFFileEdit *)fileEdit area:(OUIDocumentPreviewArea)area previewURL:(NSURL *)previewURL;
 {
     // We look these up immediately so that +hasPreviewsForFileURL:date: can check our properties
     // Don't ask the URL via getResourceValue:forKey:error: since that can return a cached value. We might have just written the image during preview generation after previously having looked up the empty placeholder that is written prior to preview generation.
@@ -991,8 +985,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     __autoreleasing NSError *attributesError = nil;
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[[previewURL absoluteURL] path] error:&attributesError];
     if (!attributes) {
-        if ([attributesError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT] ||
-            [attributesError hasUnderlyingErrorDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError]) {
+        if ([attributesError causedByMissingFile]) {
             // No preview generated yet
         } else {
             NSLog(@"Error getting attributes of preview image %@: %@", previewURL, [attributesError toPropertyList]);
@@ -1001,7 +994,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     }
     BOOL empty = ([attributes fileSize] == 0);
     
-    return [self _initWithFileURL:fileURL date:date area:area previewURL:previewURL exists:exists empty:empty];
+    return [self _initWithFileURL:fileURL fileEdit:fileEdit area:area previewURL:previewURL exists:exists empty:empty];
 }
 
 - (void)dealloc;
@@ -1027,6 +1020,15 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
         [_loadOperation waitUntilFinished];
         OBASSERT(_image);
     }
+}
+
+- (NSString *)fileEditIdentifier;
+{
+    return _fileEdit.uniqueEditIdentifier;
+}
+- (NSDate *)date;
+{
+    return _fileEdit.fileModificationDate;
 }
 
 @synthesize type = _type;
@@ -1070,7 +1072,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     if (_exists && !_empty) {
         _image = _loadImageFromURL(_previewURL); // Returns +1 CF
         if (_image) {
-            DEBUG_PREVIEW_CACHE(@"Loaded existing preview for %@ %@ %lu -- %@", _fileURL, [_date xmlString], _area, _previewURL);
+            DEBUG_PREVIEW(1, @"Loaded existing preview for %@ %lu -- %@", [_fileEdit shortDescription], _area, _previewURL);
             _type = OUIDocumentPreviewTypeRegular;
             return;
         }
@@ -1082,17 +1084,17 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     if (_empty) {
         // There is a zero length file or was an error reading the image
         _type = OUIDocumentPreviewTypeEmpty;
-        _image = _copyPlaceholderPreviewImage([self class], documentClass, _fileURL, _area, _previewURL); // returns +1 CF
+        _image = _copyPlaceholderPreviewImage([self class], documentClass, _fileURL, _area); // returns +1 CF
         if (_image) {
-            DEBUG_PREVIEW_CACHE(@"Caching badged placeholder for empty %@ %@ %lu -- %@", _fileURL, [_date xmlString], _area, _previewURL);
+            DEBUG_PREVIEW(1, @"Caching badged placeholder for empty %@ %lu", [_fileEdit shortDescription], _area);
             return;
         }
         // fall through to create a placeholder
     }
     
     _type = OUIDocumentPreviewTypePlaceholder;
-    _image = _copyPlaceholderPreviewImage([self class], documentClass, _fileURL, _area, _previewURL); // returns +1 CF
-    DEBUG_PREVIEW_CACHE(@"Caching badged placeholder for missing %@ %@ %lu -- %@", _fileURL, [_date xmlString], _area, _previewURL);
+    _image = _copyPlaceholderPreviewImage([self class], documentClass, _fileURL, _area); // returns +1 CF
+    DEBUG_PREVIEW(1, @"Caching badged placeholder for missing %@ %lu", [_fileEdit shortDescription], _area);
     
     OBPOSTCONDITION(_image);
 }
@@ -1107,7 +1109,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     if (_loadOperation)
         return;
     
-    DEBUG_PREVIEW_CACHE("Start loading image");
+    DEBUG_PREVIEW(1, "Start loading image");
 
     _loadOperation = [NSBlockOperation blockOperationWithBlock:^{
         [self _loadPreview];
@@ -1130,14 +1132,14 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     // There might be a preview load in flight; we don't attempt to synchronize with it, but we do make a minimal attempt to stop it (might scrolling quickly). If the operation *does* load an image for us, the next call to -startLoadingPreview will just do nothing (our memory use will be higher than it should, though, so we may want to sign up for memory warnings to purge extra images).
     if (_loadOperation) {
         if (![_loadOperation isFinished] && ![_loadOperation isCancelled]) {
-            DEBUG_PREVIEW_CACHE("Cancelling image load operation");
+            DEBUG_PREVIEW(1, "Cancelling image load operation");
             [_loadOperation cancel];
         }
         _loadOperation = nil;
     }
     
     if (_image) {
-        DEBUG_PREVIEW_CACHE("Discarding loaded image");
+        DEBUG_PREVIEW(1, "Discarding loaded image");
 
         // TODO: We race with the final retain as this is assigned? Do the retain into a local, barrier, and then assign to the property?
         CFRelease(_image);
@@ -1151,7 +1153,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
         [self startLoadingPreview];
     }
     _displayCount++;
-    //DEBUG_PREVIEW_CACHE("Increment display count %p, now %ld", self, _displayCount);
+    DEBUG_PREVIEW(2, "Increment display count %p, now %ld", self, _displayCount);
 }
 
 - (void)decrementDisplayCount;
@@ -1163,7 +1165,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
         if (_displayCount == 0)
             [self discardLoadedPreview];
     }
-    //DEBUG_PREVIEW_CACHE("Decrement display count %p, now %ld", self, _displayCount);
+    DEBUG_PREVIEW(2, "Decrement display count %p, now %ld", self, _displayCount);
 }
 
 - (BOOL)_discardPreviewIfHidden;
@@ -1192,7 +1194,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
         return;
     }
     
-    DEBUG_PREVIEW_CACHE(@"Drawing scaled preview %@ -> %@", NSStringFromCGSize(CGSizeMake(width, height)), NSStringFromCGRect(rect));
+    DEBUG_PREVIEW(1, @"Drawing scaled preview %@ -> %@", NSStringFromCGSize(CGSizeMake(width, height)), NSStringFromCGRect(rect));
     
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     CGContextSaveGState(ctx);
@@ -1230,7 +1232,7 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
             break;
     }
     
-    return [NSString stringWithFormat:@"<%@:%p item:%@ date:%@ image:%p area:%ld type:%@>", NSStringFromClass([self class]), self, [_fileURL absoluteString], [_date xmlString], _image, _area, typeString];
+    return [NSString stringWithFormat:@"<%@:%p item:%@ date:%@ image:%p area:%ld type:%@>", NSStringFromClass([self class]), self, [_fileURL absoluteString], [_fileEdit.fileModificationDate xmlString], _image, _area, typeString];
 }
 
 #pragma mark - Private
@@ -1282,20 +1284,6 @@ static void _movePreview(Class self, NSURL *sourceFileURL, NSDate *sourceDate, N
     });
     
     return previewDirectoryURL;
-}
-
-- (void)_didMoveToFileURL:(NSURL *)fileURL date:(NSDate *)date previewURL:(NSURL *)previewURL;
-{
-    OBPRECONDITION(fileURL);
-    OBPRECONDITION(date);
-    OBPRECONDITION(previewURL);
-    OBPRECONDITION([[[self class] fileURLForPreviewOfFileURL:fileURL date:date withArea:_area] isEqual:previewURL]);
-
-    _fileURL = [[fileURL absoluteURL] copy];
-    
-    _date = date;
-    
-    _previewURL = [[previewURL absoluteURL] copy];
 }
 
 @end

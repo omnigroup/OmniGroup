@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,10 +11,14 @@
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileExchange/OFXAgent.h>
 #import <OmniFileExchange/OFXServerAccount.h>
+#import <OmniFileExchange/OFXFileMetadata.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
+#import <OmniFoundation/OFFileMotionResult.h>
 
 #import "OFXAccountAgent-Internal.h"
+#import "OFXAccountClientParameters.h"
+#import "OFXConnection.h"
 #import "OFXContainerDocumentIndex.h"
 #import "OFXContainerScan.h"
 #import "OFXContentIdentifier.h"
@@ -124,6 +128,8 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
     _account = accountAgent.account;
     OBASSERT([_account.localDocumentsURL checkResourceIsReachableAndReturnError:NULL]);
 
+    _clientParameters = accountAgent.clientParameters;
+    
     _identifier = [[identifier lowercaseString] copy];
     _metadataRegistrationTable = metadataRegistrationTable;
     
@@ -181,7 +187,7 @@ tryAgain:
     OBPRECONDITION([NSThread isMainThread] == NO); // We operate on a background queue managed by our agent
 
     // Our locally stored snapshots were scanned while starting up.
-    NSURL *remoteContainerDirectory = self.remoteContainerDirectory;
+    NSURL *remoteContainerDirectory = [connection suggestRedirectedURLForURL:self.remoteContainerDirectory];
 
     // Since the timestamp resolution on the server is limited, to avoid a race between an reader and writer, we have to sync this container if it has been modified at the same time or more recently than the last server time we did a full sync. Since the server time should move forward, our timestamp will step forward on each try (and so as long as the writer stops poking the container, we'll stop doing extra PROPFINDs).
     // If we have an unknown remote edit, go ahead and make sure we clear that.
@@ -213,7 +219,7 @@ tryAgain:
     {
         NSMutableSet *documentIdentifiersNowMissingOnServer = [_documentIndex copyRegisteredFileItemIdentifiers];
         
-        [self _enumerateDocumentFileInfos:fileInfos with:^(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo){
+        [self _enumerateDocumentFileInfos:fileInfos collectStaleFileInfoVersions:nil applier:^(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo){
             [documentIdentifiersNowMissingOnServer removeObject:fileIdentifier];
         }];
         
@@ -246,7 +252,10 @@ tryAgain:
     
     __block BOOL tryAgain = NO;
     __block BOOL needsDownload = NO;
-    [self _enumerateDocumentFileInfos:fileInfos with:^(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo){
+    
+    NSMutableArray *staleFileInfoVersions = [[NSMutableArray alloc] init];
+    
+    [self _enumerateDocumentFileInfos:fileInfos collectStaleFileInfoVersions:staleFileInfoVersions applier:^(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo){
         OFXFileItem *fileItem = [_documentIndex fileItemWithIdentifier:fileIdentifier];
         if (fileItem) {
             if (fileItem.version == fileVersion) {
@@ -328,6 +337,14 @@ tryAgain:
     }
     
     [self _updatePublishedFileVersions];
+    
+    // If there are stall versions of files, clean them up. If there are multiple old versions for a single file, we don't delete them in any particular order (since we have version N around to keep these superseded). If a full delete of a file and all its versions is going on concurrently, they'll get deleted oldest-first (so some of the delete attempts there may get 404) and they'll delete the newest version last (which we don't do at all). So, there should be no race between these activities.
+    if (_clientParameters.deleteStaleFileVersionsWhenSyncing) {
+        for (ODAVFileInfo *fileInfo in staleFileInfoVersions) {
+            TRACE_SIGNAL(OFXContainerAgent.delete_stale_version_during_sync);
+            [connection deleteURL:fileInfo.originalURL withETag:nil completionHandler:nil];
+        }
+    }
     
     OBPOSTCONDITION([self _checkInvariants]); // checks the queue too
 
@@ -451,7 +468,6 @@ tryAgain:
         DEBUG_TRANSFER(2, @"  Requesting transfers again in %f seconds.", nextRetryInterval);
 
         // Jump to the main thread so that our request lives on it's runloop and will survive
-        OBFinishPortingLater("OFAfterDelayPerformBlock already does this queue bouncing for us");
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             OFAfterDelayPerformBlock(nextRetryInterval, ^{
                 [queue addOperationWithBlock:^{
@@ -483,7 +499,7 @@ tryAgain:
     if (!connection)
         return nil;
     
-    DEBUG_SYNC(1, @"Preparing upload of %@", fileItem);
+    DEBUG_SYNC(1, @"Preparing upload of %@, connection baseURL %@", fileItem, connection.baseURL);
         
     __autoreleasing NSError *error;
     OFXFileSnapshotTransfer *transfer = [fileItem prepareUploadTransferWithConnection:connection error:&error];
@@ -522,7 +538,7 @@ tryAgain:
                     if ([error causedByMissingFile]) {
                         // Race between uploading and a local deletion. We should have a scan queued now or soon that will set fileItem.hasBeenLocallyDeleted.
                     } else
-                        NSLog(@"Error checking for changes in contents for %@: %@", fileItem.localDocumentURL, [error toPropertyList]);
+                        NSLog(@"At end of transfer, error checking for changes in contents for %@: %@", fileItem.localDocumentURL, [error toPropertyList]);
                 } else {
                     if ([same boolValue] == NO) {
                         __autoreleasing NSError *error;
@@ -558,13 +574,14 @@ tryAgain:
     
     if (fileItem.hasBeenLocallyDeleted) {
         // Download requested and then locally deleted before download could start
+        TRACE_SIGNAL(OFXContainerAgent.reject_download_while_uploading);
         OBUserCancelledError(outError);
         return nil;
     }
 
     if (fileItem.isDownloading) {
         // If this is getting called because we've decided that we want to get the contents, and the current download is just for metadata, our re-download in the 'done' block below will be OK. But, if this is getting called because a sync noticed *another* remote edit while we are still downloading the document, we'd lose the edit. We need to catch this case.
-        OBFinishPortingLater("Handle multiple quick remote edits");
+        TRACE_SIGNAL(OFXContainerAgent.reject_download_while_downloading);
         OBUserCancelledError(outError);
         return nil;
     }
@@ -798,7 +815,7 @@ tryAgain:
             if ([error causedByMissingFile]) {
                 DEBUG_SCAN(2, @"   ... file missing at %@, must rescan", fileURL);
                 NSString *reason = [NSString stringWithFormat:@"Local file at %@ has been removed or renamed.", fileURL];
-                OFXError(outError, OFXLocalAccountDirectoryModifiedWhileScanning, @"Local account directory has been modified since scan began.", reason);
+                OFXError(outError, OFXLocalAccountDirectoryPossiblyModifiedWhileScanning, @"Local account directory has been modified since scan began.", reason);
             } else {
                 NSLog(@"Error getting inode for URL %@: %@", fileURL, [error toPropertyList]);
                 
@@ -859,14 +876,12 @@ tryAgain:
                 __autoreleasing NSError *error;
                 NSNumber *same = [fileItem hasSameContentsAsLocalDocumentAtURL:fileURL error:&error];
                 if (!same) {
-                    if ([error causedByMissingFile]) {
-                        DEBUG_SCAN(2, @"   ... file missing at %@, must rescan", fileURL);
-                        NSString *reason = [NSString stringWithFormat:@"Local file at %@ has been removed or renamed.", fileURL];
-                        OFXError(outError, OFXLocalAccountDirectoryModifiedWhileScanning, @"Local account directory has been modified since scan began.", reason);
-                        return NO;
-                    } else {
-                        NSLog(@"Error checking for changes in contents for %@: %@", fileURL, [error toPropertyList]);
-                    }
+                    // The file might have been renamed or deleted and we need to rescan. Or, there might be a sandbox-induced permission error, in which case we should hopefully pause on the next rescan due to the error.
+                    [error log:@"While scanning, error checking for changes in contents for %@", fileURL];
+
+                    NSString *reason = [NSString stringWithFormat:@"Error checking for changes in local file at %@.", fileURL];
+                    OFXError(outError, OFXLocalAccountDirectoryPossiblyModifiedWhileScanning, @"Local account directory may been modified since scan began.", reason);
+                    return NO;
                 } else {
                     if ([same boolValue] == NO && !fileItem.localState.edited) {
                         __autoreleasing NSError *error;
@@ -1014,7 +1029,8 @@ tryAgain:
     OBPOSTCONDITION([self _checkInvariants]);
 }
 
-- (void)_operateOnFileAtURL:(NSURL *)fileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler withAction:(void (^)(OFXFileItem *))fileAction;
+// Either the error handler is called (for preflight problems), or the action, but not both.
+- (void)_operateOnFileAtURL:(NSURL *)fileURL errorHandler:(void (^)(NSError *error))errorHandler withAction:(void (^)(OFXFileItem *))fileAction;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
     
@@ -1024,8 +1040,8 @@ tryAgain:
     if (!fileItem) {
         __autoreleasing NSError *error;
         OFXError(&error, OFXNoFileForURL, @"No file has the specified URL.", nil);
-        if (completionHandler)
-            completionHandler(error);
+        if (errorHandler)
+            errorHandler(error);
         return;
     }
     
@@ -1037,7 +1053,7 @@ tryAgain:
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 
     completionHandler = [completionHandler copy];
-    [self _operateOnFileAtURL:fileURL completionHandler:completionHandler withAction:^(OFXFileItem *fileItem){
+    [self _operateOnFileAtURL:fileURL errorHandler:completionHandler withAction:^(OFXFileItem *fileItem){
         [fileItem setContentsRequested];
         
         OFXAccountAgent *accountAgent = _weak_accountAgent;
@@ -1062,7 +1078,7 @@ tryAgain:
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 
     completionHandler = [completionHandler copy];
-    [self _operateOnFileAtURL:fileURL completionHandler:completionHandler withAction:^(OFXFileItem *fileItem){
+    [self _operateOnFileAtURL:fileURL errorHandler:completionHandler withAction:^(OFXFileItem *fileItem){
         if (fileItem.localState.missing) {
             // No local file to delete; just tweak the metadata.
             TRACE_SIGNAL(OFXContainerAgent.delete_item.metadata);
@@ -1089,29 +1105,53 @@ tryAgain:
     }];
 }
 
-- (BOOL)_performMoveFromURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL error:(NSError **)outError;
+- (OFFileMotionResult *)_performMoveFromURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL error:(NSError **)outError;
 {
-    // NOTE: Case-only renames are busticated for file presenter notifications (see screed in -[NSFileCoordinator(OFExtensions) moveItemAtURL:toURL:createIntermediateDirectories:error:]). So, we have to pass a file presenter to the coordinator and will notify ourselves about the rename, at least for that one presenter). If there are multiple presenters, some of them are screwed.
+    // NOTE: Case-only renames send a different sequence of file presenter messages, *not* including -presentedSubitemAtURL:didMoveToURL:. See screed in -[NSFileCoordinator(OFExtensions) moveItemAtURL:toURL:createIntermediateDirectories:error:]). So, we have to pass a file presenter to the coordinator and will notify ourselves about the rename, at least for that one presenter). If there are multiple presenters, some of them are screwed.
     id <NSFilePresenter> filePresenter = _weak_filePresenter;
     OBASSERT(filePresenter);
     
     TRACE_SIGNAL(OFXContainerAgent.move_item.file_coordination);
     
     __autoreleasing NSError *moveError;
+    __block OFFileEdit *resultFileEdit = nil;
+    __block NSError *fileEditError = nil;
+
     NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:filePresenter];
-    if ([coordinator moveItemAtURL:originalFileURL toURL:updatedFileURL createIntermediateDirectories:YES error:&moveError])
-        return YES;
+    BOOL success = [coordinator moveItemAtURL:originalFileURL toURL:updatedFileURL createIntermediateDirectories:YES error:&moveError success:^(NSURL *resultURL) {
+        __autoreleasing NSError *error;
+        resultFileEdit = [[OFFileEdit alloc] initWithFileURL:resultURL error:&error];
+        if (!resultFileEdit) {
+            OBASSERT_NOT_REACHED("Success shouldn't have been called if the move was a success");
+            fileEditError = error;
+            [fileEditError log:@"Error making file edit when moving %@ to %@", originalFileURL, updatedFileURL];
+        }
+    }];
     
+    if (success) {
+        if (!resultFileEdit) {
+            // Again, this shouldn't happen, but just in case...
+            if (outError)
+                *outError = fileEditError;
+            return nil;
+        }
+        
+        // The file coordinator might have given us a temporary URL. Make sure we are reporting the state that should have existed at the moment the coordinated move finished (though of course, by now, racing edits may have changed things).
+        resultFileEdit = [[OFFileEdit alloc] initWithFileURL:updatedFileURL fileModificationDate:resultFileEdit.fileModificationDate inode:resultFileEdit.inode isDirectory:resultFileEdit.directory];
+        
+        return [[OFFileMotionResult alloc] initWithFileEdit:resultFileEdit];
+    }
+
     // Maybe hit in http://rt.omnigroup.com/Ticket/Display.html?id=886781 and http://rt.omnigroup.com/Ticket/Display.html?id=886777
     // Definitely hit in http://rt.omnigroup.com/Ticket/Attachment/14329504/8130862/
     // Presumably we've downloaded conflict resolution done on another machine, but there have been multiple conflicts or conflicting resolutions. Punt instead of OBFinishPorting, and we'll hopefully retry on the next sync when we have more info.
     [moveError log:@"Error moving %@ to %@", originalFileURL, updatedFileURL];
     if (outError)
         *outError = moveError;
-    return NO;
+    return nil;
 }
 
-- (BOOL)_moveFileItem:(OFXFileItem *)fileItem fromURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL byUser:(BOOL)byUser error:(NSError **)outError;
+- (OFFileMotionResult *)_moveFileItem:(OFXFileItem *)fileItem fromURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL byUser:(BOOL)byUser error:(NSError **)outError;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
     OBASSERT(OFISEQUAL(originalFileURL, fileItem.localDocumentURL));
@@ -1122,35 +1162,45 @@ tryAgain:
         // No local file to move; just tweak the metadata.
         TRACE_SIGNAL(OFXContainerAgent.move_item.metadata);
         [self fileItemMoved:fileItem fromURL:originalFileURL toURL:updatedFileURL byUser:byUser];
-        return YES;
+        
+        return [[OFFileMotionResult alloc] initWithPromisedFileURL:updatedFileURL];
     } else {
-        // This can happen when we are called from -_finalizeConflictNamesForFilesIntendingToBeAtRelativePaths:.
-        BOOL success;
+        OFFileMotionResult *result;
         if (OFURLEqualsURL(originalFileURL, updatedFileURL)) {
+            // This can happen when we are called from -_finalizeConflictNamesForFilesIntendingToBeAtRelativePaths:.
+            OBFinishPortingLater("... actually not sure this can be hit any more."); // Tested fixing conflicts between two non-missing files and this is called with the two 'conflict' names.
             OBASSERT(fileItem.localState.autoMoved);
-            success = YES;
+            
+            OFXFileMetadata *metadata = [fileItem _makeMetadata]; // A bit heavy handed way to get the info we need, but this path should be pretty rare.
+            OFFileEdit *fileEdit = [[OFFileEdit alloc] initWithFileURL:updatedFileURL fileModificationDate:metadata.fileModificationDate inode:[metadata.inode unsignedIntegerValue] isDirectory:metadata.directory];
+            result = [[OFFileMotionResult alloc] initWithFileEdit:fileEdit];
         } else {
-            success = [self _performMoveFromURL:originalFileURL toURL:updatedFileURL error:outError];
+            result = [self _performMoveFromURL:originalFileURL toURL:updatedFileURL error:outError];
         }
-        if (success) {
+        if (result) {
             OFXNoteContentMoved(self, originalFileURL, updatedFileURL);
             [self fileItemMoved:fileItem fromURL:originalFileURL toURL:updatedFileURL byUser:byUser];
         }
-        return success;
+        return result;
     }
 }
 
-- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(NSError *errorOrNil))completionHandler;
+- (void)moveItemAtURL:(NSURL *)originalFileURL toURL:(NSURL *)updatedFileURL completionHandler:(void (^)(OFFileMotionResult *result, NSError *errorOrNil))completionHandler;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 
     completionHandler = [completionHandler copy];
-    [self _operateOnFileAtURL:originalFileURL completionHandler:completionHandler withAction:^(OFXFileItem *fileItem){
+    [self _operateOnFileAtURL:originalFileURL errorHandler:^(NSError *error){
+        OBASSERT([NSThread isMainThread]);
+        if (completionHandler)
+            completionHandler(nil, error);
+    } withAction:^(OFXFileItem *fileItem){
         __autoreleasing NSError *moveError;
-        if (![self _moveFileItem:fileItem fromURL:originalFileURL toURL:updatedFileURL byUser:YES error:&moveError])
-            completionHandler(moveError);
+        OFFileMotionResult *moveResult = [self _moveFileItem:fileItem fromURL:originalFileURL toURL:updatedFileURL byUser:YES error:&moveError];
+        if (!moveResult)
+            completionHandler(nil, moveError);
         else
-            completionHandler(nil);
+            completionHandler(moveResult, nil);
     }];
 }
 
@@ -1168,10 +1218,9 @@ tryAgain:
 
 - (NSString *)_localRelativePathForFileURL:(NSURL *)fileURL;
 {
-    // TODO: This can spuriously fail if an external source moves the file since this tries to standardize the URL, which might fail if it doesn't exist. Really, we should only be accessing the filesystem under file coordination.
+    // We shouldn't need to standardize the URL here since the localDocumentsURL should already be standardized. Also, we aren't acting under file coordination here, so we shouldn't look at the filesystem (which standardization does).
     NSURL *localDocumentsURL = _account.localDocumentsURL;
-    OBASSERT(OFURLContainsURL(localDocumentsURL, fileURL));
-    
+
     return OFFileURLRelativePath(localDocumentsURL, fileURL);
 }
 
@@ -1285,9 +1334,14 @@ tryAgain:
 - (void)_fileItemNeedsMetadataUpdated:(OFXFileItem *)fileItem;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
-
+    
     if (fileItem.localState.deleted && (fileItem.remoteState.missing || fileItem.remoteState.deleted)) {
         // This was never uploaded, or has been deleted remotely too, so the "delete" transfer isn't going to actually do any network work (which is why we delay clearing the metadata -- so we can show the number of delete operations that need to be performed). Also, if we generate metadata here, we'll hit assertions.
+        DEBUG_METADATA(1, @"Needs to remove metadata for never-uploaded %@", [fileItem shortDescription]);
+        [self _fileItemNeedsMetadataRemoved:fileItem];
+    } else if (fileItem.localState.missing && fileItem.remoteState.deleted) {
+        // This got deleted while we were downloading it for the first time.
+        DEBUG_METADATA(1, @"Needs to remove metadata for never-downloaded %@", [fileItem shortDescription]);
         [self _fileItemNeedsMetadataRemoved:fileItem];
     } else {
         DEBUG_METADATA(1, @"Needs to update metadata for %@", [fileItem shortDescription]);
@@ -1353,8 +1407,10 @@ tryAgain:
     for (OFXFileItem *fileItem in removals)
         [removeIdentifiers addObject:fileItem.identifier];
     NSMutableDictionary *addItems = [[NSMutableDictionary alloc] init];
-    for (OFXFileItem *fileItem in updates)
-        addItems[fileItem.identifier] = [fileItem _makeMetadata];
+    for (OFXFileItem *fileItem in updates) {
+        OFXFileMetadata *metadata = [fileItem _makeMetadata];
+        addItems[fileItem.identifier] = metadata;
+    }
 
     [_metadataRegistrationTable removeObjectsWithKeys:removeIdentifiers setObjectsWithDictionary:addItems];
     
@@ -1496,12 +1552,11 @@ tryAgain:
     }
 }
 
-- (void)_enumerateDocumentFileInfos:(id <NSFastEnumeration>)fileInfos with:(void (^)(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo))applier;
+- (void)_enumerateDocumentFileInfos:(id <NSFastEnumeration>)fileInfos collectStaleFileInfoVersions:(NSMutableArray *)staleFileInfos applier:(void (^)(NSString *fileIdentifier, NSUInteger fileVersion, ODAVFileInfo *fileInfo))applier;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 
     NSMutableDictionary *fileIdentifierToLatestFileInfo = [NSMutableDictionary new];
-    
     
     for (ODAVFileInfo *fileInfo in fileInfos) {
         if (!fileInfo.isDirectory) {
@@ -1520,25 +1575,23 @@ tryAgain:
         }
         
         ODAVFileInfo *otherFileInfo = fileIdentifierToLatestFileInfo[identifier];
-        BOOL newer = YES;
-        
         if (otherFileInfo) {
-            OBFinishPortingLater("Add superseded items to an array to remove");
-
             // This should be fairly rare, so we just re-parse the version
             NSUInteger otherVersion;
             if (!OFXFileItemIdentifierFromRemoteSnapshotURL(otherFileInfo.originalURL, &otherVersion, NULL)) {
                 OBASSERT_NOT_REACHED("We just parsed this!");
-            } else if (version < otherVersion)
-                newer = NO;
-            else
+            } else if (version < otherVersion) {
+                // This version we just found is older and superseded
+                [staleFileInfos addObject:fileInfo];
+            } else {
+                // This version is newer and the one we had before is superseded
                 OBASSERT(version > otherVersion, "Versions should not be equal");
-        }
-        
-        if (newer)
+                [staleFileInfos addObject:otherFileInfo];
+                fileIdentifierToLatestFileInfo[identifier] = fileInfo;
+            }
+        } else {
             fileIdentifierToLatestFileInfo[identifier] = fileInfo;
-        else
-            OBFinishPortingLater("Add superseded items to an array to remove");
+        }
     }
     
     [fileIdentifierToLatestFileInfo enumerateKeysAndObjectsUsingBlock:^(NSString *existingIdentifier, ODAVFileInfo *fileInfo, BOOL *stop) {

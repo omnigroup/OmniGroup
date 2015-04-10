@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,8 +38,8 @@ RCS_ID("$Id$")
         return nil;
     
     _fileIdentifier = [fileIdentifier copy];
-    _remoteContainerURL = [remoteContainerURL copy];
-    _remoteTemporaryDirectoryURL = [remoteTemporaryDirectoryURL copy];
+    _remoteContainerURL = [[connection suggestRedirectedURLForURL:remoteContainerURL] copy];
+    _remoteTemporaryDirectoryURL = [[connection suggestRedirectedURLForURL:remoteTemporaryDirectoryURL] copy];
     
     // Remember the original remote state (which could change once we get off this queue if this operation and a container's PROPFIND are racing).
     _currentSnapshotRemoteState = currentSnapshot.remoteState;
@@ -65,11 +65,10 @@ RCS_ID("$Id$")
             NSCAssert(_fileIdentifier, @"If _fileIdentifier is nil, we could delete all files in the container"); // should throw
             abort(); // ... but just in case
         }
-        
-        OBFinishPortingLater("Need to write tests that actually generate multiple versions to delete");
+
+        // Tests of deleting multiple document versions have to manufature situations where we actually *have* multiple versions to delete.
         NSArray *fileInfos = OFXFetchDocumentFileInfos(connection, _remoteContainerURL, _fileIdentifier, &error);
         if ([fileInfos count] > 1) {
-            OBASSERT_NOT_REACHED("We don't have any way of hitting this in normal operations, so this code is untested and needs to be.");
             fileInfos = [fileInfos sortedArrayUsingComparator:^NSComparisonResult(ODAVFileInfo *fileInfo1, ODAVFileInfo *fileInfo2) {
                 return OFXCompareFileInfoByVersion(fileInfo1, fileInfo2);
             }];
@@ -94,11 +93,14 @@ RCS_ID("$Id$")
             
             NSURL *temporaryURL = [_remoteTemporaryDirectoryURL URLByAppendingPathComponent:OFXMLCreateID() isDirectory:YES];
 
+            // Use any redirect discovered during our PROPFIND.
+            temporaryURL = [connection suggestRedirectedURLForURL:temporaryURL];
+            
             __block NSError *resultError;
             
             ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done) {
-                [connection moveURL:fileVersionInfo.originalURL toMissingURL:temporaryURL completionHandler:^(NSURL *movedURL, NSError *moveError) {
-                    if (!movedURL) {
+                [connection moveURL:fileVersionInfo.originalURL toMissingURL:temporaryURL completionHandler:^(ODAVURLResult *moveResult, NSError *moveError) {
+                    if (!moveResult) {
                         if ([moveError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
                             // Delete/delete conflict? Guess it is gone either way!
                         } else
@@ -107,7 +109,7 @@ RCS_ID("$Id$")
                         return;
                     }
                     
-                    [connection deleteURL:movedURL withETag:nil completionHandler:^(NSError *deleteError) {
+                    [connection deleteURL:moveResult.URL withETag:nil completionHandler:^(NSError *deleteError) {
                         if (deleteError) {
                             if ([deleteError hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
                                 // Seems very  unlikely, but maybe we are racing against another client cleaning out trash from the temporary directory?
@@ -119,8 +121,12 @@ RCS_ID("$Id$")
                 }];
             });
             
-            [self finished:resultError];
+            if (resultError) {
+                [self finished:resultError];
+                return;
+            }
             
+            TRACE_APPEND(OFXFileSnapshotDeleteTransfer.deleted_urls, fileVersionInfo.originalURL);
         }
     }
 

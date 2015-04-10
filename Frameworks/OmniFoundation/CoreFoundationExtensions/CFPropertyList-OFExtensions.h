@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,7 +21,7 @@ static inline NSData *OFCreateNSDataFromPropertyList(id plist, CFPropertyListFor
     CFErrorRef cfError = NULL;
     CFDataRef data = CFPropertyListCreateData(kCFAllocatorDefault, (OB_BRIDGE CFPropertyListRef)plist, format, 0/*options*/, &cfError);
     if (data)
-        return (OB_BRIDGE NSData *)data;
+        return (OB_BRIDGE_TRANSFER NSData *)data;
 
     if (outError) {
         *outError = OB_AUTORELEASE((OB_BRIDGE NSError *)cfError);

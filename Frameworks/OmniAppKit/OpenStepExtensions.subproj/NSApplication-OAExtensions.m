@@ -24,7 +24,7 @@ RCS_ID("$Id$")
     NSString *mode;
     
     if (!(mode = [[NSRunLoop currentRunLoop] currentMode]))
-        // NSApp crashes on nil modes in DP4
+        // NSApplication crashes on nil modes in DP4
         mode = NSDefaultRunLoopMode;
 
     // We get system-defined events quite frequently, so ignore them.
@@ -35,7 +35,7 @@ RCS_ID("$Id$")
 {
     // Post a user defined event to wake up the event loop (which then will automatically close the top level undo groups if necessary, etc.)
     NSEvent *event = [NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint modifierFlags:0 timestamp:[NSDate timeIntervalSinceReferenceDate] windowNumber:0 context:NULL subtype:-1 data1:0 data2:0];
-    [NSApp postEvent:event atStart:NO];
+    [[NSApplication sharedApplication] postEvent:event atStart:NO];
 }
 
 - (void)flushTopLevelAutoreleasePool;

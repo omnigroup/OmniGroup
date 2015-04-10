@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,6 +23,7 @@
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUIChangePreferenceURLCommand.h>
 #import <OmniUI/OUIDebugURLCommand.h>
+#import <OmniUI/OUIKeyboardNotifier.h>
 #import <OmniUI/OUIPurchaseURLCommand.h>
 #import <OmniUI/OUIMenuController.h>
 #import <OmniUI/OUIMenuOption.h>
@@ -137,6 +138,9 @@ static void __iOS7B5CleanConsoleOutput(void)
     [[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
     [OFBundleRegistry registerKnownBundles];
     [OFPreference class];
+    
+    // Ensure that OUIKeyboardNotifier instantiates the shared notifier before the keyboard is shown for the first time, otherwise `lastKnownKeyboardHeight` and `keyboardVisible` may be incorrect.
+    [OUIKeyboardNotifier sharedNotifier];
     
     OUIShouldLogPerformanceMetrics = [[NSUserDefaults standardUserDefaults] boolForKey:@"LogPerformanceMetrics"];
 
@@ -614,9 +618,24 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     OBRequestConcreteImplementation(self, _cmd);
 }
 
+NSString *const OUIAboutScreenBindingsDictionaryVersionStringKey = @"versionString";
+NSString *const OUIAboutScreenBindingsDictionaryCopyrightStringKey = @"copyrightString";
+NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackAddress";
+
 - (NSDictionary *)aboutScreenBindingsDictionary;
 {
-    return nil;
+    // N.B.: specifically using mainBundle here rather than OMNI_BUNDLE because OmniUI will (hopefully) eventually become a framework.
+    
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *versionString = infoDictionary[@"CFBundleShortVersionString"];
+    NSString *copyrightString = infoDictionary[@"NSHumanReadableCopyright"];
+    NSString *feedbackAddress = infoDictionary[@"OUIFeedbackAddress"];
+    
+    return @{
+             OUIAboutScreenBindingsDictionaryVersionStringKey : versionString,
+             OUIAboutScreenBindingsDictionaryCopyrightStringKey : copyrightString,
+             OUIAboutScreenBindingsDictionaryFeedbackAddressKey : feedbackAddress,
+    };
 }
 
 - (UIBarButtonItem *)newAppMenuBarButtonItem;
@@ -637,6 +656,9 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
 #pragma mark App menu actions
 - (void)_showAppMenu:(id)sender;
 {
+    if ([self.window.rootViewController presentedViewController]) {
+        return;
+    }
     if (!_appMenuController)
         _appMenuController = [[OUIMenuController alloc] init];
     

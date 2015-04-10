@@ -1,92 +1,91 @@
-/* modifier, used for scanning user input */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "-" = "-";
 
-/* modifier, used for scanning user input */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "+" = "+";
 
-/* modifier, used for scanning user input */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "~" = "~";
 
-/* one-letter abbreviation for day or days, used for scanning user input */
+/* one-letter abbreviation for day or days, used for scanning user input. Do NOT add whitespace */
 "d" = "T.";
 
-/* day, singular, used for scanning user input */
+/* day, singular, used for scanning user input. Do NOT add whitespace */
 "day" = "Tag";
 
-/* days, plural, used for scanning user input */
+/* days, plural, used for scanning user input. Do NOT add whitespace */
 "days" = "Tage";
 
-/* one-letter abbreviation for hour or hours, for scanning user input
-   one-letter abbreviation for hour or hours, used for scanning user input */
+/* one-letter abbreviation for hour or hours, used for scanning user input. Do NOT add whitespace */
 "h" = "S.";
 
-/* hour, singular, used for scanning user input */
+/* hour, singular, used for scanning user input. Do NOT add whitespace */
 "hour" = "Stunde";
 
-/* hours, plural, used for scanning user input */
+/* hours, plural, used for scanning user input. Do NOT add whitespace */
 "hours" = "Stunden";
 
-/* modifier, used for scanning user input */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "last" = "letzte/n/s";
 
-/* last month, used for scanning user input */
+/* last month, used for scanning user input. Do NOT add whitespace */
 "last month" = "letzten Monat";
 
-/* time, used for scanning user input */
+/* time, used for scanning user input. Do NOT add whitespace */
 "last week" = "letzte Woche";
 
-/* last year, used for scanning user input */
+/* last year, used for scanning user input. Do NOT add whitespace */
 "last year" = "letztes Jahr";
 
-/* one-letter abbreviation for month or months, used for scanning user input */
+/* one-letter abbreviation for month or months, used for scanning user input. Do NOT add whitespace */
 "m" = "M.";
 
-/* month, singular, used for scanning user input */
+/* month, singular, used for scanning user input. Do NOT add whitespace */
 "month" = "Monat";
 
-/* months, plural, used for scanning user input */
+/* months, plural, used for scanning user input. Do NOT add whitespace */
 "months" = "Monate";
 
-/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input */
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input. Do NOT add whitespace */
 "next" = "nächste/n/s";
 
-/* next month, used for scanning user input */
+/* next month, used for scanning user input. Do NOT add whitespace */
 "next month" = "nächsten Monat";
 
-/* time, used for scanning user input */
+/* time, used for scanning user input. Do NOT add whitespace */
 "next week" = "nächste Woche";
 
-/* next year, used for scanning user input */
+/* next year, used for scanning user input. Do NOT add whitespace */
 "next year" = "nächstes Jahr";
 
-/* noon, used for scanning user input */
+/* noon, used for scanning user input. Do NOT add whitespace */
 "noon" = "mittags";
 
-/* now, used for scanning user input */
+/* now, used for scanning user input. Do NOT add whitespace */
 "now" = "jetzt";
 
-/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input */
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input. Do NOT add whitespace */
 "this" = "diese/n/s";
 
-/* this month, used for scanning user input */
+/* this month, used for scanning user input. Do NOT add whitespace */
 "this month" = "diesen Monat";
 
-/* time, used for scanning user input */
+/* time, used for scanning user input. Do NOT add whitespace */
 "this week" = "diese Woche";
 
-/* this year, used for scanning user input */
+/* this year, used for scanning user input. Do NOT add whitespace */
 "this year" = "dieses Jahr";
 
-/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input */
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "tod" = "heute";
 
-/* today, used for scanning user input */
+/* today, used for scanning user input. Do NOT add whitespace */
 "today" = "heute";
 
 /* Today */
 "Today" = "Heute";
 
-/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input */
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "tom" = "morg.";
 
 /* tomorrow */
@@ -95,33 +94,32 @@
 /* Tomorrow */
 "Tomorrow" = "Morgen";
 
-/* tonight, used for scanning user input */
+/* tonight, used for scanning user input. Do NOT add whitespace */
 "tonight" = "heute Abend";
 
-/* one-letter abbreviation for week or weeks, used for scanning user input */
+/* one-letter abbreviation for week or weeks, used for scanning user input. Do NOT add whitespace */
 "w" = "W.";
 
-/* week, singular, used for scanning user input */
+/* week, singular, used for scanning user input. Do NOT add whitespace */
 "week" = "Woche";
 
-/* weeks, plural, used for scanning user input */
+/* weeks, plural, used for scanning user input. Do NOT add whitespace */
 "weeks" = "Wochen";
 
-/* one-letter abbreviation for year or years, used for scanning user input */
+/* one-letter abbreviation for year or years, used for scanning user input. Do NOT add whitespace */
 "y" = "J.";
 
-/* year, singular, used for scanning user input */
+/* year, singular, used for scanning user input. Do NOT add whitespace */
 "year" = "Jahr";
 
-/* years, plural, used for scanning user input */
+/* years, plural, used for scanning user input. Do NOT add whitespace */
 "years" = "Jahre";
 
-/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input */
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "yes" = "gest";
 
-/* yesterday, used for scanning user input */
+/* yesterday, used for scanning user input. Do NOT add whitespace */
 "yesterday" = "gestern";
 
 /* Yesterday */
 "Yesterday" = "Gestern";
-

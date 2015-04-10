@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,7 @@ enum {
     OFXServerAccountLocationNotFound,
     
     OFXLocalAccountDocumentsDirectoryMissing,
+    OFXLocalAccountDocumentsInsideAnotherAccount,
     OFXCannotResolveLocalDocumentsURL,
     OFXUnableToLockAccount,
     OFXAgentNotStarted,
@@ -32,7 +33,7 @@ enum {
     OFXCloudScanFailed,
     OFXAccountScanFailed,
     OFXLocalAccountDirectoryNotUsable,
-    OFXLocalAccountDirectoryModifiedWhileScanning,
+    OFXLocalAccountDirectoryPossiblyModifiedWhileScanning,
     OFXAccountUnableToStoreClientInfo,
     OFXAccountUnableToCreateContainer,
     OFXAccountUnableToRecordFileContents,

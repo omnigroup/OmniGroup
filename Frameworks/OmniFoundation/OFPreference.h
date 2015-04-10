@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,6 +41,8 @@ extern NSString * const OFPreferenceObjectValueBinding;
 - (id) defaultObjectValue;
 - (BOOL) hasNonDefaultValue;
 - (void) restoreDefaultValue;
+
+- (BOOL) hasPersistentValue;
 
 - (id)objectValue;
 - (NSString *)stringValue;
@@ -101,13 +103,53 @@ extern NSString * const OFPreferenceObjectValueBinding;
 - (BOOL)synchronize;
 @end
 
+/*
+ Internal configuration value support.
+ 
+ These configuration values are defined in code and not intended to be changed by users typically, so we don't register them in plists like we do for user defaults. See also the OmniAppKit function OAHandleChangeConfigurationValueURL() for running a confirmation alert.
+ */
+
 #import <Foundation/NSDate.h>
 
-// Helper for initializing debug log level globals
-extern void _OFInitializeDebugLogLevel(NSInteger *outLevel, NSString *name);
-#define OFInitializeDebugLogLevel(name) _OFInitializeDebugLogLevel(&name, @#name)
+@interface OFConfigurationValue : NSObject
 
-// Helper for initializing time interval globals
-extern void _OFInitializeTimeInterval(NSTimeInterval *outInterval, NSString *name, NSTimeInterval default_value, NSTimeInterval min_value, NSTimeInterval max_value);
-#define OFInitializeTimeInterval(name, default_value, min_value, max_value) _OFInitializeTimeInterval(&name, @#name, (default_value), (min_value), (max_value))
++ (NSArray *)configurationValues;
++ (void)restoreAllConfigurationValuesToDefaults;
 
++ (void)setConfigurationValuesURLScheme:(NSString *)scheme;
++ (NSURL *)URLForConfigurationValues:(NSArray *)configurationValues;
+
+@property(nonatomic,readonly) NSString *key;
+@property(nonatomic,readonly) const char *objcType;
+
+@property(nonatomic,readonly) double currentValue; // KVO observable, but probably only OAChangeConfigurationValuesWindowController should observe (really this whole class is not for general use).
+@property(nonatomic,readonly) double defaultValue;
+@property(nonatomic,readonly) double minimumValue;
+@property(nonatomic,readonly) double maximumValue;
+
+@property(nonatomic,readonly) BOOL hasNonDefaultValue;
+- (void)restoreDefaultValue;
+- (void)setValueFromString:(NSString *)stringValue;
+- (void)setValueFromDouble:(double)value;
+
+@end
+
+extern void _OFRegisterIntegerConfigurationValue(NSInteger *outLevel, NSString *name, double defaultValue, double minimumValue, double maximumValue);
+extern void _OFRegisterTimeIntervalConfigurationValue(NSTimeInterval *outLevel, NSString *name, double defaultValue, double minimumValue, double maximumValue);
+#define _OFDeclareConfigurationValue_(kind, name, counter, defaultValue, minimumValue, maximumValue) \
+NS ## kind name = defaultValue;  \
+static void _InitializeConfigurationValue ## counter(void) __attribute__((constructor)); \
+static void _InitializeConfigurationValue ## counter(void) { \
+  _OFRegister ## kind ## ConfigurationValue(&name, @#name, defaultValue, minimumValue, maximumValue); \
+}
+#define _OFDeclareConfigurationValue(kind, name, counter, defaultValue, minimumValue, maximumValue) _OFDeclareConfigurationValue_(kind, name, counter, defaultValue, minimumValue, maximumValue)
+
+// If you want your log level/time interval variable to be static, you can insert 'static' before using these macros.
+#define OFDeclareDebugLogLevel(name) _OFDeclareConfigurationValue(Integer, name, __COUNTER__, 0, 0, 10)
+#define OFDeclareTimeInterval(name, default_value, min_value, max_value) _OFDeclareConfigurationValue(TimeInterval, name, __COUNTER__, (default_value), (min_value), (max_value))
+
+// Handle URLs of the form "scheme:///change-configuration-value?name=level. We ignore the scheme each app will have their own scheme.
+typedef void (^OFConfigurationValueChangeConfirmationCallback)(BOOL confirmed, NSError *confirmError);
+typedef void (^OFConfigurationValueChangeConfirmation)(NSString *title, NSString *message, OFConfigurationValueChangeConfirmationCallback callback);
+extern NSString * const OFChangeConfigurationValueURLPath;
+extern BOOL OFHandleChangeConfigurationValueURL(NSURL *url, NSError **outError, OFConfigurationValueChangeConfirmation confirm);

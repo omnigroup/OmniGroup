@@ -172,7 +172,7 @@ typedef struct _TransitionUserInfo {
     }
     
     NSTimeInterval duration = 0.3;
-    if ([[NSApp currentEvent] modifierFlags] & NSShiftKeyMask)
+    if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSShiftKeyMask)
 	duration = 2.0f;
     
     TransitionUserInfo info;

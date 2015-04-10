@@ -252,6 +252,13 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return [NSArray arrayWithArray:filteredArray];
 }
 
+- (NSArray *)arrayByReplacingObjectAtIndex:(NSUInteger)index withObject:(id)anObject;
+{
+    NSMutableArray *updatedArray = [NSMutableArray arrayWithArray:self];
+    updatedArray[index] = anObject;
+    return [NSArray arrayWithArray:updatedArray];
+}
+
 - (NSDictionary *)indexBySelector:(SEL)aSelector;
 {
     return [self indexBySelector:aSelector withObject:nil];

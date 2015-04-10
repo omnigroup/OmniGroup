@@ -3,7 +3,6 @@
 // $Id$
 
 // Common settings for this target type and configuration
-#include "Omni-Global-Release.xcconfig"
 #include "Touch-Library-Common.xcconfig"
 
 // Common settings for Release configurations of Library targets

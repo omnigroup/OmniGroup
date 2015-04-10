@@ -1,7 +1,8 @@
 /* font size label format string in points */
-"%@ points" = "%@ Punkte";
+"%@ points" = "%@ Punkt";
 
 /* title format for color component slider */
+
 "<alpha title+value>" = "Deckkraft: %d%%";
 
 /* title format for color component slider */
@@ -66,4 +67,3 @@
 
 /* Inspector title */
 "Text Style" = "Textstil";
-
