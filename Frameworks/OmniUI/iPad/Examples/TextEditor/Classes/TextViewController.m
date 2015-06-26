@@ -20,6 +20,7 @@
 
 #import "AppController.h"
 #import "TextDocument.h"
+#import "TextView.h"
 
 RCS_ID("$Id$");
 
@@ -31,6 +32,10 @@ RCS_ID("$Id$");
     TextDocument *_nonretained_document;
     OUIDocumentNavigationItem *_documentNavigationItem;
 
+    OUIScalingTextStorage *_scalingTextStorage;
+    NSLayoutManager *_layoutManager;
+    NSTextContainer *_textContainer;
+    
     BOOL _receivedDocumentDidClose;
 }
 
@@ -46,11 +51,25 @@ RCS_ID("$Id$");
 
 - init;
 {
-    return [super initWithNibName:@"TextViewController" bundle:nil];
+    return [super initWithNibName:nil bundle:nil];
 }
 
 - (void)dealloc;
 {
+    OUITextView *textView = self.textView;
+    textView.delegate = nil;
+    
+    NSUInteger containerIndex = [[_layoutManager textContainers] indexOfObjectIdenticalTo:_textContainer];
+    if (containerIndex != NSNotFound) {
+        [_layoutManager removeTextContainerAtIndex:containerIndex];
+    }
+    
+    [_scalingTextStorage removeLayoutManager:_layoutManager];
+    
+    [_scalingTextStorage release];
+    [_textContainer release];
+    [_layoutManager release];
+    
     [_documentNavigationItem release];
     [super dealloc];
 }
@@ -108,6 +127,31 @@ RCS_ID("$Id$");
     return _documentNavigationItem;
 }
 
+- (void)loadView;
+{
+    OBASSERT(_nonretained_document);
+    
+    NSTextStorage *underlyingTextStorage = [[NSTextStorage alloc] initWithAttributedString:_nonretained_document.text];
+    _scalingTextStorage = [[OUIScalingTextStorage alloc] initWithUnderlyingTextStorage:underlyingTextStorage scale:_scale];
+    [underlyingTextStorage release];
+    
+    _layoutManager = [[NSLayoutManager alloc] init];
+    [_scalingTextStorage addLayoutManager:_layoutManager];
+    
+    _textContainer = [[NSTextContainer alloc] initWithSize:CGSizeZero];
+    _textContainer.widthTracksTextView = YES;
+    _textContainer.heightTracksTextView = NO;
+    [_layoutManager addTextContainer:_textContainer];
+    
+    TextView *textView = [[TextView alloc] initWithFrame:CGRectZero textContainer:_textContainer];
+    textView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+    textView.delegate = self;
+    
+    self.view = textView;
+    
+    [textView release];
+}
+
 - (void)viewDidLoad;
 {
     [super viewDidLoad];
@@ -138,15 +182,6 @@ RCS_ID("$Id$");
         self.view.layer.borderColor = [[UIColor blueColor] CGColor];
         self.view.layer.borderWidth = 2;
 #endif
-        
-        OBASSERT(_nonretained_document);
-        
-        NSTextStorage *textStorage = [[NSTextStorage alloc] initWithAttributedString:_nonretained_document.text];
-        OUIScalingTextStorage *scalingTextStorage = [[OUIScalingTextStorage alloc] initWithUnderlyingTextStorage:textStorage scale:_scale];
-        [textStorage release];
-        
-        [self.textView replaceTextStorage:scalingTextStorage];
-        [scalingTextStorage release];
         
         [self _scrollTextSelectionToVisibleWithAnimation:NO];
     });

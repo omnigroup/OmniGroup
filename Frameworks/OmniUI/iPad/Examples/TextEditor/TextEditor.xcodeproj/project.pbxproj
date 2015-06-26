@@ -45,7 +45,6 @@
 		34CDFE8512691F12005B04A7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CDFE8412691F12005B04A7 /* Security.framework */; };
 		34CDFE8712691F12005B04A7 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CDFE8612691F12005B04A7 /* SystemConfiguration.framework */; };
 		34D98FB11194AAE60029EFE3 /* TextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D98FB01194AAE60029EFE3 /* TextViewController.m */; };
-		34D990071194AB820029EFE3 /* TextViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 34D990061194AB820029EFE3 /* TextViewController.xib */; };
 		94B47F811713786500D4EB70 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94B47F801713786500D4EB70 /* StoreKit.framework */; };
 		A260A7E21280C1AC004743FA /* libOmniUnzip.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A260A7CE1280C170004743FA /* libOmniUnzip.a */; };
 /* End PBXBuildFile section */
@@ -501,7 +500,6 @@
 		34CDFE8612691F12005B04A7 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		34D98FAF1194AAE60029EFE3 /* TextViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextViewController.h; sourceTree = "<group>"; };
 		34D98FB01194AAE60029EFE3 /* TextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextViewController.m; sourceTree = "<group>"; };
-		34D990061194AB820029EFE3 /* TextViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextViewController.xib; sourceTree = "<group>"; };
 		34FFD89411DE4062002AA535 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = /Developer/Library/Frameworks/SenTestingKit.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* TextEditor-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TextEditor-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		94B47F801713786500D4EB70 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
@@ -610,7 +608,6 @@
 			children = (
 				346F552E1434EF1300D27428 /* TextEditor.entitlements */,
 				345956AB1194982600ECB2B6 /* Samples */,
-				34D990061194AB820029EFE3 /* TextViewController.xib */,
 				345956BE119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png */,
 				8D1107310486CEB800E47090 /* TextEditor-Info.plist */,
 			);
@@ -1226,7 +1223,6 @@
 				345956AD1194982600ECB2B6 /* Samples in Resources */,
 				345956BF119499EC00ECB2B6 /* DocumentPreviewPlaceholder.png in Resources */,
 				34A503B21788EAF1000EF349 /* DocumentContentsZoomInspectorSlice.xib in Resources */,
-				34D990071194AB820029EFE3 /* TextViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
