@@ -7,6 +7,9 @@
 /* gigabytes */
 "%@ GB" = "%@ GB";
 
+/* doc picker multiple items accessibility value */
+"%@ items" = "%@ 項目";
+
 /* kilobytes */
 "%@ KB" = "%@ KB";
 
@@ -28,11 +31,14 @@
 /* Main toolbar title for a single selected document. */
 "1 Document Selected" = "1 個の書類を選択";
 
+/* doc picker single item accessibility value */
+"1 item" = "1 項目";
+
 /* Main toolbar title for a single selected folder. */
 "1 Item Selected" = "1 個の項目を選択";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "“%@” という名前の書類はすでに存在します。置き換えますか？この操作は元に戻せません。";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "%@” という名前の書類はすでに存在します。置き換えますか？この操作は元に戻せません。";
 
 /* Error reason for a document operation failing due to a missing file. */
 "A file is missing or has been deleted." = "ファイルがないか、削除されています。";
@@ -46,20 +52,16 @@
 /* Menu option in the document picker view */
 "Actions" = "アクション";
 
-/* Cloud Setup button title to add a new account
-   Cloud Setup button title to convert an existing account */
+/* Cloud Setup button title to add a new account */
 
 "Add an Account" = "アカウントを追加";
 
-/* home screen button label */
+/* Cloud setup modal sheet title */
 "Add Cloud Account" = "クラウドアカウントを追加";
 
 /* button title
    cancel button title
-   delete confirmation cancel button
-   Discard unsynced edits dialog: cancel button label
-   Server account setup confirmation cancellation label
-   title for alert option cancel */
+   Discard unsynced edits dialog: cancel button label */
 
 
 
@@ -74,7 +76,7 @@
 "Cannot Export Item" = "項目を書き出せません";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "“%@” をメールで送信するためのフォーマットを選択してください:";
+"Choose a format for emailing \"%@\":" = "“%@” をメールで送信するためのフォーマットを選択してください：";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "テンプレートを選択";
@@ -84,6 +86,9 @@
 
 /* export options title */
 "Choose Format" = "フォーマットを選択";
+
+/* doc picker custom accessibility action name */
+"Clear name field" = "名前フィールドを消去";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "接続しました";
@@ -142,38 +147,58 @@
 /* When displaying a sync error, this is the option to change the username and password. */
 "Edit Credentials" = "資格情報を編集";
 
+/* doc picker custom accessibility action name */
+"Edit name" = "名前を編集";
+
 /* empty trash button title */
 "Empty Trash" = "ゴミ箱を空にする";
 
 /* webdav help */
-"Enter the location of your WebDAV space." = "WebDAV の場所を入力します。";
+"Enter the location of your WebDAV space." = "WebDAV の場所を入力してください。";
 
 /* export button title
    export options title
-   Export toolbar item accessibility label. */
+   Export toolbar item accessibility label.
+   Menu option in the document picker view */
 
 
 "Export" = "書き出し";
 
+/* export to description */
+"Export \"%@\" as:" = "“%@” を次の名前で書き出す：";
+
 /* export action description */
-"Export \"%@\" to %@ as:" = "%1$@ を次の名前で %2$@ に書き出す:";
+"Export \"%@\" to %@ as:" = "%1$@ を次の名前で %2$@ に書き出す：";
 
 /* Menu option in the document picker view */
 "Export to WebDAV" = "WebDAV に書き出す";
 
+/* Menu option in the document picker view */
+"Export to…" = "書き出し先...";
+
 /* finished */
 "Finished" = "完了";
 
-/* gear menu item
-   import sheet title */
+/* doc picker folder type accessibility value */
+"Folder" = "フォルダ";
 
+/* Import section title */
 "Import" = "読み込み";
+
+/* gear menu item */
+"Import from WebDAV" = "WebDAV から読み込む";
+
+/* gear menu item */
+"Import from…" = "読み込み元...";
 
 /* Info item accessibility label */
 "Info" = "情報";
 
 /* error title */
 "Invalid Zip Archive" = "無効な Zip アーカイブ";
+
+/* doc picker title label editing accessibility value */
+"Is editing" = "編集中";
 
 /* Message format for alert informing user that the document has been reloaded with cloud edits from another device */
 "Last edited on %@." = "最後の編集は %@ で行われました。";
@@ -183,6 +208,9 @@
 
 /* top level doc picker title */
 "Locations" = "場所";
+
+/* modified date accessibility value */
+"Modified %@" = "変更日 %@";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -197,8 +225,9 @@
 
 "Move to Trash" = "ゴミ箱に移動";
 
-/* Share menu title */
-"Move to..." = "移動…";
+/* Action sheet button title
+   Menu popover title */
+"Move to..." = "移動...";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
 "Moved out of folder %@." = "%@ フォルダから移動しました。";
@@ -227,6 +256,9 @@
 /* Import message for empty table view */
 "No accounts are configured for importing." = "読み込み用に構成されたアカウントはありません。";
 
+/* doc picker no items accessibility value */
+"No items" = "項目なし";
+
 /* Not downloaded accessibility label. */
 "Not downloaded" = "ダウンロードされていません";
 
@@ -234,12 +266,16 @@
 "Not uploaded" = "アップロードされていません";
 
 /* button title
-   When displaying a sync error, this is the option to ignore the error. */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert */
 
 "OK" = "OK";
 
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "OmniPresence の構成： %@";
+
+/* gear menu item */
+"Open from…" = "開く...";
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "このファイルを別のデバイス上で開き、そこで OmniPresence を構成してください。";
@@ -252,6 +288,9 @@
 
 /* Menu option in the document picker view */
 "Print" = "プリント";
+
+/* purchase now button title */
+"Purchase Now." = "今すぐ購入。";
 
 /* rename button title */
 "Rename" = "名称変更";
@@ -266,7 +305,7 @@
 "Renamed to %@." = "名称が %@ に変更されました。";
 
 /* replace button title */
-"Replace" = "置き換え";
+"Replace" = "置き換える";
 
 /* replace document title */
 "Replace document?" = "書類を置き換えますか？";
@@ -278,13 +317,16 @@
 "Restore Sample Documents" = "サンプル書類を復元";
 
 /* Share menu title */
-"Restore to..." = "復元先…";
+"Restore to..." = "復元先...";
 
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "同期を再試行";
 
 /* Account setup toolbar button title to save account settings */
 "Save" = "保存";
+
+/* document picker compact title view accessibility hint */
+"Scroll down to show sort and filter controls" = "並べ替えとフィルタのコントロールを表示するには下方向へスクロール";
 
 /* document picker button label */
 "Search" = "検索";
@@ -296,7 +338,7 @@
 "Select a Document" = "書類を選択";
 
 /* send to app description */
-"Send \"%@\" to app as:" = "“%@” を次の名前でアプリに送信:";
+"Send \"%@\" to app as:" = "“%@” を次の名前でアプリに送信：";
 
 /* Omni Sync Server send settings button title */
 "Send Settings via Email" = "設定をメールで送信";
@@ -321,6 +363,9 @@
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "新規アカウントにサインアップ";
 
+/* sort by accessibility label */
+"Sort by %@" = "%@で並べ替え";
+
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "今すぐ同期";
 
@@ -328,7 +373,7 @@
 "Tap here to add a document without a template." = "テンプレートなしで書類を追加するにはここをタップ。";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "ここをタップするか、ツールバーの「+」をタップして書類を追加します。";
+"Tap here, or on the + in the toolbar, to add a document." = "書類を追加するには、ここをタップするか、ツールバーの「+」をタップしてください。";
 
 /* file name label for template filte types */
 "Template:" = "テンプレート：";
@@ -337,16 +382,16 @@
 "The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@” には、まだクラウドと同期されていない %2$ld 個の編集済み書類があります。 これらの編集内容を破棄しますか？";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@” には、まだクラウドと同期されていない 1 個の編集済み書類があります。 これらの編集内容を破棄しますか？";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@” には、まだクラウドと同期されていない 1 個の編集済み書類があります。 これらの編集内容を破棄しますか？";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@” には、まだクラウドと同期されていない編集済みの書類がある可能性があります。 ローカルで行われた編集内容をすべて破棄しますか？";
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%1$@” には、まだクラウドと同期されていない編集済みの書類がある可能性があります。 ローカルで行われた編集内容をすべて破棄しますか？";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "操作を完了できませんでした。";
 
 /* error description */
-"The zip archive must contain a single document." = "zip アーカイブは単一の書類を含んでいる必要があります。";
+"The zip archive must contain a single document." = "zip アーカイブには単一の書類が含まれている必要があります。";
 
 /* Photo Library permisssions error suggestion. */
 "This app does not have access to your Photo Library." = "このアプリにはフォトライブラリへのアクセス権がありません。";
@@ -367,4 +412,4 @@
 "Unable to open file." = "ファイルを開けません。";
 
 /* Account validation status string. */
-"Validating account..." = "アカウントを検証中…";
+"Validating account..." = "アカウントを検証中...";

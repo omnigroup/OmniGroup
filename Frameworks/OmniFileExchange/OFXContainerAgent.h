@@ -9,9 +9,9 @@
 
 #import <Foundation/NSObject.h>
 
-@class ODAVFileInfo;
+@class ODAVConnection, ODAVFileInfo;
 @class OFFileMotionResult;
-@class OFXConnection, OFXFileItem, OFXAccountAgent, OFXServerAccount, OFXFileSnapshotTransfer, OFXRegistrationTable, OFXContainerScan, OFXAccountClientParameters;
+@class OFXFileItem, OFXAccountAgent, OFXServerAccount, OFXFileSnapshotTransfer, OFXRegistrationTable, OFXContainerScan, OFXAccountClientParameters;
 
 @protocol NSFilePresenter;
 
@@ -64,7 +64,7 @@ typedef NS_ENUM(NSUInteger, OFXFileItemTransferKind) {
 - (void)start;
 - (void)stop;
 
-- (BOOL)syncIfChanged:(ODAVFileInfo *)containerFileInfo serverDate:(NSDate *)serverDate connection:(OFXConnection *)connection error:(NSError **)outError;
+- (BOOL)syncIfChanged:(ODAVFileInfo *)containerFileInfo serverDate:(NSDate *)serverDate connection:(ODAVConnection *)connection error:(NSError **)outError;
 
 - (void)collectNeededFileTransfers:(void (^)(OFXFileItem *fileItem, OFXFileItemTransferKind kind))addTransfer;
 - (OFXFileSnapshotTransfer *)prepareUploadTransferForFileItem:(OFXFileItem *)fileItem error:(NSError **)outError;

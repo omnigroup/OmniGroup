@@ -19,8 +19,10 @@
 #import <OmniFoundation/OFXMLDocument.h>
 #import <OmniFoundation/OFXMLElement.h>
 #import <OmniFoundation/OFXMLString.h>
+#import <OmniBase/OmniBase.h>
 
 #import "ODAVOperation-Internal.h"
+#import "ODAVConnection-Subclass.h"
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniFoundation/NSProcessInfo-OFExtensions.h>
@@ -36,12 +38,6 @@ RCS_ID("$Id$")
 
 OFDeclareDebugLogLevel(ODAVConnectionDebug);
 OFDeclareDebugLogLevel(ODAVConnectionTaskDebug)
-static OFDeclareDebugLogLevel(ODAVConnectionSessionDebug);
-
-#define DEBUG_SESSION(level, format, ...) do { \
-    if (ODAVConnectionSessionDebug >= (level)) \
-        NSLog(@"DAV SESSION %@: " format, [self shortDescription], ## __VA_ARGS__); \
-} while (0)
 
 #define COMPLETE_AND_RETURN(...) do { \
     if (completionHandler) \
@@ -54,6 +50,8 @@ static OFDeclareDebugLogLevel(ODAVConnectionSessionDebug);
 @implementation ODAVSingleFileInfoResult
 @end
 @implementation ODAVURLResult
+@end
+@implementation ODAVURLAndDataResult
 @end
 
 @implementation ODAVConnectionConfiguration
@@ -147,28 +145,13 @@ static NSString *StandardUserAgentString;
 
 @end
 
-@interface ODAVConnection ()
-#if ODAV_NSURLSESSION
-    <NSURLSessionDataDelegate>
-#endif
+@interface ODAVConnection (Subclass) <ODAVConnectionSubclass>
 @end
 
 @implementation ODAVConnection
 {
-#if ODAV_NSURLSESSION
-    NSURLSession *_session;
-    NSOperationQueue *_delegateQueue;
-    
-    // Accessed both on the delegate queue and on calling queues that are making new requests, so access to this needs to be serialized.
-    NSMutableDictionary *_locked_runningOperationByTask;
-#else
-    ODAVConnectionConfiguration *_configuration;
-    
-    // Accessed both on the delegate queue and on calling queues that are making new requests, so access to this needs to be serialized.
-    NSMapTable *_locked_runningOperationByConnection;
-
-    NSOperationQueue *_delegateQueue;
-#endif
+    NSArray *_redirects;
+    NSURL *_redirectedBaseURL;
 }
 
 + (void)initialize;
@@ -187,70 +170,62 @@ static NSString *StandardUserAgentString;
 
 - init;
 {
-#if ODAV_NSURLSESSION
-    return [self initWithSessionConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
-#else
-    ODAVConnectionConfiguration *configuration = [ODAVConnectionConfiguration new];
-    configuration.allowsCellularAccess = YES;
-    
-    return [self initWithSessionConfiguration:configuration];
-#endif
+    OBRejectUnusedImplementation(self, _cmd);
 }
 
-- initWithSessionConfiguration:(ODAV_NSURLSESSIONCONFIGURATION_CLASS *)configuration;
+- initWithSessionConfiguration:(ODAVConnectionConfiguration *)configuration baseURL:(NSURL *)baseURL;
 {
+    OBPRECONDITION(baseURL);
+    
+    if ([self class] == [ODAVConnection class]) {
+        NSString *className = [[OFPreference preferenceForKey:@"ODAVConnectionClass"] stringValue];
+        OBASSERT(![NSString isEmptyString:className]);
+        
+        Class cls = NSClassFromString(className);
+        assert(OBClassIsSubclassOfClass(cls, [ODAVConnection class]));
+        assert(cls != [ODAVConnection class]);
+        assert([cls conformsToProtocol:@protocol(ODAVConnectionSubclass)]);
+        
+        return [[cls alloc] initWithSessionConfiguration:configuration baseURL:baseURL];
+    }
+    
     if (!(self = [super init]))
         return nil;
 
-#if ODAV_NSURLSESSION
-#error If we go back to this, we will still want our configuration class, but have it be a wrapper around the NSURL version (so we can keep the user agent property).
-    // configuration.identifier -- set this for background operations
+    if (!configuration)
+        configuration = [ODAVConnectionConfiguration new];
     
-    // The request we are given will already have values -- would these override, or are these just for the convenience methods that make requests?
-    //configuration.requestCachePolicy = NSURLRequestUseProtocolCachePolicy;
-    //configuration.timeoutIntervalForRequest = 300;
-    
-    //configuration = ...
-    //configuration.URLCredentialStorage = ...
-    //configuration.URLCache = ...
-
-    /*
-     We create a private serial queue for the NSURLSession delegate callbacks. ODAVOperations will receive their internal updates on that queue and then when they fire *their* callbacks, they do it on the queue the initial operation was requested on, or on an explicit queue if -startWithCallbackQueue: was used.
-     
-     A better scheme might be to have each operation have a serial queue for its notifications and then we can have a concurrent queue for incoming messages, but that would assume that NSURLSession ensures that task-based delegate callbacks are invoked in order. Hopefully none of our delegate callbacks take long enough that it will matter.
-     */
-    
-    _locked_runningOperationByTask = [[NSMutableDictionary alloc] init];
-    DEBUG_TASK(1, @"Starting connection");
-    
-    _delegateQueue = [[NSOperationQueue alloc] init];
-    _delegateQueue.maxConcurrentOperationCount = 1;
-    _delegateQueue.name = [NSString stringWithFormat:@"com.omnigroup.OmniDAV.connection_session_delegate for %p", self];
-    
-    _session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:_delegateQueue];
-#else
     _configuration = configuration;
-    
-    _locked_runningOperationByConnection = [NSMapTable strongToStrongObjectsMapTable];
-    DEBUG_TASK(1, @"Starting connection");
+    _originalBaseURL = [baseURL copy];
 
-    _delegateQueue = [[NSOperationQueue alloc] init];
-    _delegateQueue.maxConcurrentOperationCount = 1;
-    _delegateQueue.name = [NSString stringWithFormat:@"com.omnigroup.OmniDAV.connection_delegate for %p", self];
-#endif
-    
     return self;
 }
 
-- (void)dealloc;
+- (NSURL *)baseURL;
 {
-#if ODAV_NSURLSESSION
-    OBFinishPortingLater("Should we let tasks finish or cancel them -- maybe make our caller specify which");
-    [_session finishTasksAndInvalidate];
-    [_delegateQueue waitUntilAllOperationsAreFinished];
-#else
-    [_delegateQueue waitUntilAllOperationsAreFinished];
-#endif
+    if (_redirectedBaseURL)
+        return _redirectedBaseURL;
+    return _originalBaseURL;
+}
+
+- (void)updateBaseURLWithRedirects:(NSArray *)redirects;
+{
+    if (_redirects) {
+        _redirects = [_redirects arrayByAddingObjectsFromArray:redirects];
+    } else {
+        _redirects = [redirects copy];
+    }
+    
+    // We could maybe keep the previous redirected URL if we had one, but presumably that led to getting another redirection.
+    _redirectedBaseURL = [self suggestRedirectedURLForURL:self.baseURL];
+}
+
+- (NSURL *)suggestRedirectedURLForURL:(NSURL *)url;
+{
+    NSURL *redirectedURL = [ODAVRedirect suggestAlternateURLForURL:url withRedirects:_redirects];
+    if (redirectedURL)
+        return redirectedURL;
+    return url;
 }
 
 - (void)deleteURL:(NSURL *)url withETag:(NSString *)ETag completionHandler:(ODAVConnectionBasicCompletionHandler)completionHandler;
@@ -797,6 +772,19 @@ static NSString *ODAVDepthName(ODAVDepth depth)
     return operation;
 }
 
+- (void)postData:(NSData *)data toURL:(NSURL *)url completionHandler:(ODAVConnectionURLAndDataCompletionHandler)completionHandler;
+{
+    completionHandler = [completionHandler copy];
+    
+    NSMutableURLRequest *request = [self _requestForURL:url];
+    [request setHTTPMethod:@"POST"];
+    [request setHTTPBody:data];
+    
+    [self _runRequestExpectingResultData:request completionHandler:^(ODAVURLAndDataResult *result, NSError *errorOrNil) {
+        COMPLETE_AND_RETURN(result, errorOrNil);
+    }];
+}
+
 // PUT is not atomic, so if you want an atomic replace, you should write to a temporary URL and the MOVE it into place.
 - (void)putData:(NSData *)data toURL:(NSURL *)url completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
 {
@@ -1040,382 +1028,210 @@ static void OFSAddIfPredicateForURLAndLockToken(NSMutableURLRequest *request, NS
     }];
 }
 
-#if ODAV_NSURLSESSION
+#pragma mark - Private
 
-#pragma mark - NSURLSessionDelegate
-
-- (void)URLSession:(NSURLSession *)session didBecomeInvalidWithError:(NSError *)error;
+- (NSMutableURLRequest *)_requestForURL:(NSURL *)url;
 {
-    DEBUG_SESSION(1, "didBecomeInvalidWithError:%@", error);
+    static const NSURLRequestCachePolicy DefaultCachePolicy = NSURLRequestUseProtocolCachePolicy;
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:DefaultCachePolicy timeoutInterval:[self _timeoutForURL:url]];
     
-    OBFinishPorting;
+    NSString *userAgent = [NSString isEmptyString:_userAgent] ? [_configuration userAgent] : _userAgent;
+    OBASSERT(![NSString isEmptyString:userAgent]);
+    
+    [request setValue:userAgent forHTTPHeaderField:@"User-Agent"];
+
+    if (_operationReason != nil)
+        [request setValue:_operationReason forHTTPHeaderField:@"X-Caused-By"];
+
+    // On iOS, this will be overridden by the user preference in Settings.app
+    request.allowsCellularAccess = YES;
+    
+    return request;
 }
 
+- (NSTimeInterval)_timeoutForURL:(NSURL *)url;
+{
+    static const NSTimeInterval DefaultTimeoutInterval = 300.0;
+    
+    return DefaultTimeoutInterval;
+}
+
+- (void)_runRequest:(NSURLRequest *)request completionHandler:(void (^)(ODAVOperation *operation))completionHandler;
+{
+    NSTimeInterval start = 0;
+    if (ODAVConnectionDebug > 1)
+        start = [NSDate timeIntervalSinceReferenceDate];
+    
+    completionHandler = [completionHandler copy];
+    ODAVOperation *operation = [self _makeOperationForRequest:request];
+    
+    operation.didFinish = ^(ODAVOperation *op, NSError *error) {
+        OBINVARIANT(error == op.error);
+        if (ODAVConnectionDebug > 1) {
+            static NSTimeInterval totalWait = 0;
+            NSTimeInterval operationWait = [NSDate timeIntervalSinceReferenceDate] - start;
+            totalWait += operationWait;
+            NSLog(@"  ... network: %gs (total %g)", operationWait, totalWait);
+        }
+        COMPLETE_AND_RETURN(op);
+    };
+
+    [operation startWithCallbackQueue:[NSOperationQueue currentQueue]];
+}
+
+- (NSURL *)_resultLocationForOperation:(ODAVOperation *)operation request:(NSURLRequest *)request;
+{
+    NSURL *resultLocation = nil;
+    
+    // If the response specified a Location header, use that (this will be set to the the Destination for COPY/MOVE, possibly already redirected).
+    NSString *resultLocationString = [operation valueForResponseHeader:@"Location"];
+    if (![NSString isEmptyString:resultLocationString]) {
+        // See note below about Apache sending back unencoded URIs in the Location header.
+        resultLocation = [NSURL URLWithString:resultLocationString];
+    }
+    if (resultLocation) {
+        NSString *requestScheme = [request.URL.scheme lowercaseString];
+        NSString *resultScheme = [resultLocation.scheme lowercaseString];
+        if ([requestScheme isEqualToString:@"https"] && ![resultScheme isEqualToString:@"https"]) {
+            // Work around a behavior in some servers where after doing a PUT with an https URI, will return an http URI in the Location of the response.
+            // This can result in one of 2 undesirable behaviors:
+            //  - it downgrades the connection to http, and surprisingly sends data in the clear
+            //  - it fails on subsequent operations because the server doesn't actually support DAV over http
+            // If the location would downgrade the connection, ignore it, falling back to the Destination header or request URI
+            // See <bug:///90927>
+            resultLocation = nil;
+            DEBUG_DAV(2, @"Ignoring Location header in the response since it would downgrade the connection to http. Ignored value: %@", resultLocation);
+        }
+        
+        if ([[resultLocation host] isEqualToString:@"localhost"] && ![[[request URL] host] isEqualToString:@"localhost"]) {
+            // Work around a bug in OS X Server's WebDAV hosting on 10.8.3 where the proxying server passes back Location headers which are unreachable from the outside world rather than rewriting them into its own namespace.  (It doesn't ever make sense to redirect a WebDAV request to localhost from somewhere other than localhost.)  Hopefully the Location headers in question are always predictable!  Fixes <bug:///87276> (Syncs after initial sync fail on 10.8.3 WebDAV server (error -1004, kCFURLErrorCannotConnectToHost)).
+            // We'll fall back to using the Destination header we specified, but we could also try to take the path from the result URL and tack it onto the scheme/host/port from the original.
+            resultLocation = nil;
+        }
+    }
+    
+    // This fails so often on stock Apache that I'm turning it off.
+    // Apache 2.4.3 doesn't properly URI encode the Location header <See https://issues.apache.org/bugzilla/show_bug.cgi?id=54611> (though our patched version does), but hopefully the location we *asked* to move it to will be valid. Note this won't help for PUT <https://issues.apache.org/bugzilla/show_bug.cgi?id=54367> since it doesn't have a destination header. But in this case we'll fall through and use the original URI.
+    // OBASSERT(resultLocation, @"Location header couldn't be parsed as a URL, %@", resultLocationString);
+    
+    // If we couldn't parse the Location header, try the Destination header (for COPY/MOVE).
+    if (!resultLocation) {
+        NSString *destinationHeader = [request valueForHTTPHeaderField:@"Destination"];
+        if (![NSString isEmptyString:destinationHeader]) {
+            // Skip the protocol downgrade checks that we performed on the Location value.
+            // We built the Destination header and grab it back out of the request headers here, so the server shouldn’t be able to muck it up.
+            resultLocation = [NSURL URLWithString:destinationHeader];
+        }
+    }
+    
+    if (!resultLocation) {
+        // Otherwise use the original URL (for MKCOL, for example), looking up any redirection that happened on it.
+        resultLocation = request.URL;
+        
+        NSArray *redirects = operation.redirects;
+        if ([redirects count]) {
+            ODAVRedirect *lastRedirect = [redirects lastObject];
+            NSURL *lastLocation = lastRedirect.to;
+            if (![lastLocation isEqual:resultLocation])
+                resultLocation = lastLocation;
+        }
+    }
+    
+    return resultLocation;
+}
+
+- (void)_runRequestExpectingResultData:(NSURLRequest *)request completionHandler:(ODAVConnectionURLAndDataCompletionHandler)completionHandler;
+{
+    completionHandler = [completionHandler copy];
+    
+    [self _runRequest:request completionHandler:^(ODAVOperation *operation) {
+        if (operation.error)
+            COMPLETE_AND_RETURN(nil, operation.error);
+        
+        ODAVURLAndDataResult *result = [ODAVURLAndDataResult new];
+        result.URL = [self _resultLocationForOperation:operation request:request];
+        result.responseData = operation.resultData;
+        result.redirects = operation.redirects;
+        COMPLETE_AND_RETURN(result, nil);
+    }];
+}
+
+- (void)_runRequestExpectingEmptyResultData:(NSURLRequest *)request completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
+{
+    completionHandler = [completionHandler copy];
+    
+    [self _runRequest:request completionHandler:^(ODAVOperation *operation) {
+        if (operation.error)
+            COMPLETE_AND_RETURN(nil, operation.error);
+
+        NSData *responseData = operation.resultData;
+        
+        if (ODAVConnectionDebug > 1 && [responseData length] > 0) {
+            NSString *xmlString = [NSString stringWithData:responseData encoding:NSUTF8StringEncoding];
+            NSLog(@"Unused response data: %@", xmlString);
+            // still, we didn't get an error code, so let it pass
+        }
+        
+        ODAVURLResult *result = [ODAVURLResult new];
+        result.URL = [self _resultLocationForOperation:operation request:request];
+        result.redirects = operation.redirects;
+        COMPLETE_AND_RETURN(result, nil);
+    }];
+}
+
+typedef void (^ODAVConnectionDocumentCompletionHandler)(OFXMLDocument *document, ODAVOperation *op, NSError *errorOrNil);
+
+- (void)_runRequestExpectingDocument:(NSURLRequest *)request completionHandler:(ODAVConnectionDocumentCompletionHandler)completionHandler;
+{
+    completionHandler = [completionHandler copy];
+    
+    [self _runRequest:request completionHandler:^(ODAVOperation *operation) {
+        NSData *responseData = operation.resultData;
+        if (operation.error)
+            COMPLETE_AND_RETURN(nil, operation, operation.error);
+        
+        OFXMLDocument *doc = nil;
+        NSError *documentError = nil;
+        NSTimeInterval start = 0;
+        @autoreleasepool {
+            // It was found and we got data back.  Parse the response.
+            DEBUG_DAV(2, @"xmlString: %@", [NSString stringWithData:responseData encoding:NSUTF8StringEncoding]);
+            
+            if (ODAVConnectionDebug > 1)
+                start = [NSDate timeIntervalSinceReferenceDate];
+            
+            __autoreleasing NSError *error = nil;
+            doc = [[OFXMLDocument alloc] initWithData:responseData whitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior] error:&error];
+            if (!doc)
+                documentError = error; // strongify this to live past the pool
+        }
+        
+        if (ODAVConnectionDebug > 1) {
+            static NSTimeInterval totalWait = 0;
+            NSTimeInterval operationWait = [NSDate timeIntervalSinceReferenceDate] - start;
+            totalWait += operationWait;
+            NSLog(@"  ... xml: %gs (total %g)", operationWait, totalWait);
+        }
+
+        if (!doc) {
+            NSLog(@"Unable to decode XML from WebDAV response: %@", [documentError toPropertyList]);
+            COMPLETE_AND_RETURN(nil, nil, documentError);
+        } else
+            COMPLETE_AND_RETURN(doc, operation, nil);
+    }];
+}
+
+
+#pragma mark - Internal API for subclasses
+
+// This should NEVER message the 'sender' of the challenge, though the NSURLConnection-based subclass will do that via the completion handler.
 - (void)_handleChallenge:(NSURLAuthenticationChallenge *)challenge
-               operation:(ODAVOperation *)operation
- completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler;
+               operation:(nullable ODAVOperation *)operation
+       completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler;
 {
-    OBPRECONDITION([challenge sender] == nil, "We should be calling the completion handler with a disposition");
-    
-    DEBUG_DAV(3, @"%@: will send request for authentication challenge %@", [self shortDescription], challenge);
-    
-    NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
-    NSString *challengeMethod = [protectionSpace authenticationMethod];
-    if (ODAVConnectionDebug > 2) {
-        NSLog(@"protection space %@ realm:%@ secure:%d proxy:%d host:%@ port:%ld proxyType:%@ protocol:%@ method:%@",
-              protectionSpace,
-              [protectionSpace realm],
-              [protectionSpace receivesCredentialSecurely],
-              [protectionSpace isProxy],
-              [protectionSpace host],
-              [protectionSpace port],
-              [protectionSpace proxyType],
-              [protectionSpace protocol],
-              [protectionSpace authenticationMethod]);
-        
-        NSLog(@"proposed credential %@", [challenge proposedCredential]);
-        NSLog(@"previous failure count %ld", [challenge previousFailureCount]);
-        NSLog(@"failure response %@", [challenge failureResponse]);
-        NSLog(@"error %@", [[challenge error] toPropertyList]);
-    }
-    
-    // The +[NSURLCredentialStorage sharedCredentialStorage] doesn't have the .Mac password it in, sadly.
-    //    NSURLCredentialStorage *storage = [NSURLCredentialStorage sharedCredentialStorage];
-    //    NSLog(@"all credentials = %@", [storage allCredentials]);
-    
-    NSURLCredential *credential = nil;
-    
-    if ([challengeMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
-        OBASSERT(operation == nil, "We original got the per-session callback for server trust. Has this changed?");
-        
-        SecTrustRef trustRef;
-        if ((trustRef = [protectionSpace serverTrust]) != NULL) {
-            SecTrustResultType evaluationResult = kSecTrustResultOtherError;
-            OSStatus oserr = SecTrustEvaluate(trustRef, &evaluationResult); // NB: May block for long periods (eg OCSP verification, etc)
-            if (ODAVConnectionDebug > 2) {
-                NSString *result; // TODO: Use OFSummarizeTrustResult() instead.
-                if (oserr != noErr) {
-                    result = [NSString stringWithFormat:@"error %ld", (long)oserr];
-                } else {
-                    result = [NSString stringWithFormat:@"condition %d", (int)evaluationResult];
-                }
-                NSLog(@"%@: SecTrustEvaluate returns %@", [self shortDescription], result);
-            }
-            if (oserr == noErr && evaluationResult == kSecTrustResultRecoverableTrustFailure) {
-                // The situation we're interested in is "recoverable failure": this indicates that the evaluation failed, but might succeed if we prod it a little.
-                BOOL hasTrust = OFHasTrustForChallenge(challenge);
-                if (!hasTrust) {
-                    // Our caller may choose to pop up UI or it might choose to immediately mark the certificate as trusted.
-                    if (_validateCertificateForChallenge)
-                        _validateCertificateForChallenge(challenge);
-                    hasTrust = OFHasTrustForChallenge(challenge);
-                }
-                
-                if (hasTrust) {
-                    credential = [NSURLCredential credentialForTrust:trustRef];
-                    DEBUG_DAV(3, @"credential = %@", credential);
-                    //[[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
-                    if (completionHandler)
-                        completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
-                    return;
-                } else {
-                    // The delegate didn't opt to immediately mark the certificate trusted. It is presumably giving up or prompting the user and will retry the operation later.
-                    // We'd prefer to cancel here, but if we do, we deadlock (in the NSOperationQueue-based scheduling).
-                    //[[challenge sender] cancelAuthenticationChallenge:challenge];
-                    if (completionHandler)
-                        completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
-                    
-                    // These doesn't block the operation if, during this process, we've connected to the host, but the host has changed certificates since then.
-                    //[[challenge sender] performDefaultHandlingForAuthenticationChallenge:challenge];
-                    
-                    //[[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
-                    
-                    // This doesn't block the operation
-                    //[[challenge sender] rejectProtectionSpaceAndContinueWithChallenge:challenge];
-                    
-                    //[[challenge sender] useCredential:nil forAuthenticationChallenge:challenge];
-                    
-                    return;
-                }
-            }
-        }
-        
-        // If we "continue without credential", NSURLConnection will consult certificate trust roots and per-cert trust overrides in the normal way. If we cancel the "challenge", NSURLConnection will drop the connection, even if it would have succeeded without our meddling (that is, we can force failure as well as forcing success).
-        
-        if (completionHandler)
-            completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
-        //[[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
-        return;
-    }
-    
-    OBASSERT(operation != nil, "We originally got the per-task delegate method for credential challenges -- has this changed?");
-    
-    if (_findCredentialsForChallenge)
-        credential = _findCredentialsForChallenge(challenge);
-    
-    DEBUG_DAV(3, @"credential = %@", credential);
-    
-    if (credential) {
-        if (completionHandler)
-            completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
-        //[[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
-    } else {
-        [operation _credentialsNotFoundForChallenge:challenge];
-        
-        if (completionHandler)
-            completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
-        
-        // We'd prefer to cancel here, but if we do, we deadlock (in the NSOperationQueue-based scheduling).
-        //[[challenge sender] cancelAuthenticationChallenge:challenge];
-        //[[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
-    }
-}
-
-- (void)URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
- completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler;
-{
-    DEBUG_SESSION(1, "didReceiveChallenge:%@", challenge);
-
-    [self _handleChallenge:challenge operation:nil completionHandler:completionHandler];
-}
-
-#pragma mark - NSURLSessionTaskDelegate
-
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
-willPerformHTTPRedirection:(NSHTTPURLResponse *)response
-        newRequest:(NSURLRequest *)request
- completionHandler:(void (^)(NSURLRequest *))completionHandler;
-{
-    DEBUG_SESSION(1, "task:%@ willPerformHTTPRedirection:%@ newRequest:%@", task, response, request);
-    
-    OBFinishPorting; // try hooking up to sync.omnigroup.com to get redirects, or configure some redirects in local server
-#if 0
-    if (OFSFileManagerDebug > 2) {
-        NSLog(@"%@: will send request %@, redirect response %@", [self shortDescription], request, redirectResponse);
-        NSLog(@"request URL: %@", [request URL]);
-        NSLog(@"request headers: %@", [request allHTTPHeaderFields]);
-        NSLog(@"redirect URL: %@", [redirectResponse URL]);
-        NSLog(@"redirect headers: %@", [(id)redirectResponse allHeaderFields]);
-    }
-    
-    NSURLRequest *continuation = nil;
-    
-    // Some WebDAV servers (the one builtin in Mac OS X Server, but not the one in .Mac) will redirect "/xyz" to "/xyz/" if we PROPFIND something that is a directory.  But, the re-sent request will be a GET instead of a PROPFIND.  This, in turn, will cause us to get back HTML instead of the expected XML.
-    // (This is what HTTP specifies as correct behavior for everything except GET and HEAD, mostly for security reasons: see RFC2616 section 10.3.)
-    // Likewise, if we MOVE /a/ to /b/ we've seen redirects to the non-slash version.  In particular, when using the LAN-local apache and picking local in the simulator on an incompatible database conflict.  When we try to put the new resource into place, it redirects.
-    // The above is arguably a bug in Apache.
-    /*
-     RFC4918 section [5.2], "Collection Resources", says in part:
-     There is a standing convention that when a collection is referred to by its name without a trailing slash, the server may handle the request as if the trailing slash were present. In this case, it should return a Content-Location header in the response, pointing to the URL ending with the "/". For example, if a client invokes a method on http://example.com/blah (no trailing slash), the server may respond as if the operation were invoked on http://example.com/blah/ (trailing slash), and should return a Content-Location header with the value http://example.com/blah/. Wherever a server produces a URL referring to a collection, the server should include the trailing slash. In general, clients should use the trailing slash form of collection names. If clients do not use the trailing slash form the client needs to be prepared to see a redirect response. Clients will find the DAV:resourcetype property more reliable than the URL to find out if a resource is a collection.
-     */
-    if (redirectResponse) {
-        NSString *method = [_request HTTPMethod];
-        if ([method isEqualToString:@"PROPFIND"] || [method isEqualToString:@"MKCOL"] || [method isEqualToString:@"DELETE"]) {
-            // PROPFIND is a GET-like request, so when we redirect, keep the method.
-            // Duplicate the original request, including any DAV headers and body content, but put in the redirected URL.
-            // MKCOL is not a 'safe' method, but for our purposes it can be considered redirectable.
-            OBPRECONDITION([_request valueForHTTPHeaderField:@"If"] == nil); // TODO: May need to rewrite the URL here too.
-            NSMutableURLRequest *redirect = [_request mutableCopy];
-            [redirect setURL:[request URL]];
-            continuation = redirect;
-        } else if ([method isEqualToString:@"GET"]) {
-            // The NSURLConnection machinery handles GETs the way we want already.
-            continuation = request;
-        } else if ([method isEqualToString:@"MOVE"]) {
-            // MOVE is a bit dubious. If the source URL gets rewritten by the server, do we know that the destination URL we're sending is still what it should be?
-            // In theory, since we just use MOVE to implement atomic writes, we shouldn't get redirects on MOVE, as long as we paid attention to the response to the PUT or MKCOL request used to create the resource we're MOVEing.
-            // Exception: When replacing a remote database with the local version, if the user-entered URL incurs a redirect (e.g. http->https), we will still get a redirect on MOVE when moving the old database aside before replacing it with the new one.  TODO: Figure out how to avoid this.
-            // OBASSERT_NOT_REACHED("In theory, we shouldn't get redirected on MOVE?");
-            
-            // Try to rewrite the destination URL analogously to the source URL.
-            NSString *rewrote = OFURLAnalogousRewrite([_request URL], [_request valueForHTTPHeaderField:@"Destination"], [request URL]);
-            if (rewrote) {
-#ifdef OMNI_ASSERTIONS_ON
-                NSLog(@"%@: Suboptimal redirect %@ -> %@ (destination %@ -> %@)", [self shortDescription], [redirectResponse URL], [request URL], [_request valueForHTTPHeaderField:@"Destination"], rewrote);
-#endif
-                NSMutableURLRequest *redirect = [_request mutableCopy];
-                [redirect setURL:[request URL]];
-                [redirect setValue:rewrote forHTTPHeaderField:@"Destination"];
-                continuation = redirect;
-            } else {
-                // We don't have enough information to figure out what the redirected request should be.
-                continuation = nil;
-            }
-        } else if ([method isEqualToString:@"PUT"]) {
-            // We really should never get a redirect on PUT anymore when working on our remote databases: we always use an up-to-date base URL derived from an earlier PROPFIND on our .ofocus collection.
-            // The one exception is when uploading an .ics file, which goes directly into the directory specified by the user and therefore might hit an initial redirect, esp. for the http->https redirect case.
-            // OBASSERT_NOT_REACHED("In theory, we shouldn't get redirected on PUT?");
-            
-#ifdef OMNI_ASSERTIONS_ON
-            NSLog(@"%@: Suboptimal redirect %@ -> %@", [self shortDescription], [redirectResponse URL], [request URL]);
-#endif
-            
-            NSMutableURLRequest *redirect = [_request mutableCopy];
-            [redirect setURL:[request URL]];
-            continuation = redirect;
-        } else {
-            OBASSERT_NOT_REACHED("Anything else get redirected that needs this treatment?");
-            continuation = request;
-        }
-        
-        if (continuation && redirectResponse) {
-            NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)redirectResponse;
-            OFSAddRedirectEntry(_redirects,
-                                [NSString stringWithFormat:@"%u", (unsigned)[httpResponse statusCode]],
-                                [redirectResponse URL], [continuation URL], [httpResponse allHeaderFields]);
-        }
-        
-    } else {
-        // We're probably sending the initial request, here.
-        // (Note that 10.4 doesn't seem to call us for the initial request; 10.6 does. Not sure when this changed.)
-        continuation = request;
-    }
-    
-    return continuation;
-#endif
-}
-
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
-didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
- completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler;
-{
-    DEBUG_SESSION(1, "task:%@ didReceiveChallenge:%@", task, challenge);
-
-    OBPRECONDITION([challenge sender] == nil, "We should be calling the completion handler with a disposition");
-    
-    // We seem to get the server trust challenge directed to the per-session method -URLSession:didReceiveChallenge:completionHandler:, but then the actual login credentials come through here. For now, we direct them to the same method.
-    
-    ODAVOperation *operation = [self _operationForTask:task];
-    [self _handleChallenge:challenge operation:operation completionHandler:completionHandler];
-}
-
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
-didCompleteWithError:(NSError *)error;
-{
-    DEBUG_SESSION(1, "task:%@ didCompleteWithError:%@", task, error);
-
-    /*
-     Radar 14557123: NSURLSession can send -URLSession:task:didCompleteWithError: twice for a task.
-     Cancelling a task and its normal completion can race and we can end up with two completion notifications.
-     */
-    
-    ODAVOperation *op = [self _operationForTask:task isCompleting:YES];
-    [op _didCompleteWithError:error];
-    
-    @synchronized(self) {
-        DEBUG_TASK(1, @"Removing operation %@ for task %@", op, task);
-        [_locked_runningOperationByTask removeObjectForKey:task];
-    }
-}
-
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task
-   didSendBodyData:(int64_t)bytesSent
-    totalBytesSent:(int64_t)totalBytesSent
-totalBytesExpectedToSend:(int64_t)totalBytesExpectedToSend;
-{
-    DEBUG_SESSION(1, "task:%@ didSendBodyData:%qd totalBytesSent:%qd totalBytesExpectedToSend:%qd", task, bytesSent, totalBytesSent, totalBytesExpectedToSend);
-
-    [[self _operationForTask:task] _didSendBodyData:bytesSent totalBytesSent:totalBytesSent totalBytesExpectedToSend:totalBytesSent];
-}
-
-#pragma mark - NSURLSessionDataDelegate
-
-- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask
-didReceiveResponse:(NSURLResponse *)response
- completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))completionHandler;
-{
-    DEBUG_SESSION(1, "task:%@ didReceiveResponse:%@", dataTask, response);
-
-    [[self _operationForTask:dataTask] _didReceiveResponse:response];
-    
-    OBFinishPortingLater("OmniDAV should have a means to do file member GETs as downloads to temporary files (NSURLSessionResponseBecomeDownload)");
-    if (completionHandler)
-        completionHandler(NSURLSessionResponseAllow);
-}
-
-- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask
-    didReceiveData:(NSData *)data;
-{
-    DEBUG_SESSION(1, "dataTask:%@ didReceiveData:<%@ length=%ld>", dataTask, [data class], [data length]);
-
-    [[self _operationForTask:dataTask] _didReceiveData:data];
-}
-
-- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask
- willCacheResponse:(NSCachedURLResponse *)proposedResponse
- completionHandler:(void (^)(NSCachedURLResponse *cachedResponse))completionHandler;
-{
-    DEBUG_SESSION(1, @"dataTask:%@ willCacheResponse:%@", dataTask, proposedResponse);
-    
-    if (completionHandler)
-        completionHandler(nil); // Don't cache DAV stuff if asked to.
-}
-
-#pragma mark - NSURLConnectionDelegate
-
-#if 0 // As far as I can tell, this never gets called (maybe since we implement -connection:willSendRequestForAuthenticationChallenge:.
-- (BOOL)connectionShouldUseCredentialStorage:(NSURLConnection *)connection;
-{
-    OFSFileManager *fileManager = _weak_fileManager;
-    OBASSERT(fileManager, "File manager deallocated before operations finished");
-    
-    id <OFSFileManagerDelegate> delegate = fileManager.delegate;
-    if ([delegate respondsToSelector:@selector(fileManagerShouldUseCredentialStorage:)])
-        return [delegate fileManagerShouldUseCredentialStorage:fileManager];
-    else
-        return YES;
-}
-#endif
-
-#else
-
-#pragma mark - NSURLConnectionDelegate
-
-#define MaximumRetries (5)
-
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error;
-{
-    ODAVOperation *op = [self _operationForConnection:connection andRemove:YES];
-    
-    DEBUG_DAV(3, @"did fail with error %@", error);
-    
-    if ([error hasUnderlyingErrorDomain:(NSString *)kCFErrorDomainCFNetwork code:kCFURLErrorNetworkConnectionLost]) {
-        if (!op.retryable || op.didReceiveBytes || op.didReceiveData || op.didSendBytes) {
-            // Retry will need to be handled at a higher level since we might have sent/gotten some bytes and these blocks might have reported some progress already. But if we only have a 'did finish', we can just start over (assuming this is a repeatable operation like a GET/PROPFIND). If this is a PUT/POST or other mutating command, we can't know here whether the operation actually happened on the server.
-        } else  if (op.retryIndex < MaximumRetries) {
-            // Try again -- server shut down the remote side of a HTTP 1.1 connection, maybe?
-            ODAVOperation *retry = [self _makeOperationForRequest:op.request];
-            
-            retry.didFinish = op.didFinish;
-            retry.retryIndex = op.retryIndex + 1;
-            
-            DEBUG_DAV(2, @"connection lost; retrying with new op: %@", OBShortObjectDescription(retry));
-
-            [retry startWithCallbackQueue:op.callbackQueue];
-            return;
-        }
-    }
-    
-    [op _didCompleteWithError:error];
-}
-
-#if 0 // As far as I can tell, this never gets called (maybe since we implement -connection:willSendRequestForAuthenticationChallenge:.
-- (BOOL)connectionShouldUseCredentialStorage:(NSURLConnection *)connection;
-{
-    OFSFileManager *fileManager = _weak_fileManager;
-    OBASSERT(fileManager, "File manager deallocated before operations finished");
-    
-    id <OFSFileManagerDelegate> delegate = fileManager.delegate;
-    if ([delegate respondsToSelector:@selector(fileManagerShouldUseCredentialStorage:)])
-        return [delegate fileManagerShouldUseCredentialStorage:fileManager];
-    else
-        return YES;
-}
-#endif
-
-- (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge;
-{
-    OBASSERT([challenge sender], "NSURLConnection-based challenged need the old 'sender' calls.");
+    OBPRECONDITION(challenge);
+    OBPRECONDITION(operation || [challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]); // See commentary below where `operation` is used
+    OBPRECONDITION(completionHandler);
     
     DEBUG_DAV(3, @"will send request for authentication challenge %@", challenge);
     
@@ -1472,7 +1288,7 @@ didReceiveResponse:(NSURLResponse *)response
                 if (hasTrust) {
                     credential = [NSURLCredential credentialForTrust:trustRef];
                     DEBUG_DAV(3, @"credential = %@", credential);
-                    [[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
+                    completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
                     return;
                 } else {
                     // The delegate didn't opt to immediately mark the certificate trusted. It is presumably giving up or prompting the user and will retry the operation later.
@@ -1481,7 +1297,7 @@ didReceiveResponse:(NSURLResponse *)response
                     
                     // These doesn't block the operation if, during this process, we've connected to the host, but the host has changed certificates since then.
                     //[[challenge sender] performDefaultHandlingForAuthenticationChallenge:challenge];
-                    [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
+                    completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
                     
                     // This doesn't block the operation
                     //[[challenge sender] rejectProtectionSpaceAndContinueWithChallenge:challenge];
@@ -1494,8 +1310,7 @@ didReceiveResponse:(NSURLResponse *)response
         }
         
         // If we "continue without credential", NSURLConnection will consult certificate trust roots and per-cert trust overrides in the normal way. If we cancel the "challenge", NSURLConnection will drop the connection, even if it would have succeeded without our meddling (that is, we can force failure as well as forcing success).
-        
-        [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
+        completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
         return;
     }
     
@@ -1505,284 +1320,17 @@ didReceiveResponse:(NSURLResponse *)response
     DEBUG_DAV(3, @"credential = %@", credential);
     
     if (credential) {
-        [[challenge sender] useCredential:credential forAuthenticationChallenge:challenge];
+        completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
     } else {
-        [[self _operationForConnection:connection] _credentialsNotFoundForChallenge:challenge];
+        // In the NSURLSession case, we get passed nil for the operation when we are getting a certificate challenge (it has both a whole-session and per-task challenge method and the per-task one is called for login credentials, while the per-session is called for certificate challenges). We are past the certificate challenge here, so we only need the operation in this case.
+        // We could maybe split this into two methods do express the nullability of `operation` more cleanly.
+        OBASSERT(operation); // ... or we'll lose the error info
+        [operation _credentialsNotFoundForChallenge:challenge];
         
         // We'd prefer to cancel here, but if we do, we deadlock (in the NSOperationQueue-based scheduling).
         //[[challenge sender] cancelAuthenticationChallenge:challenge];
-        [[challenge sender] continueWithoutCredentialForAuthenticationChallenge:challenge];
+        completionHandler(NSURLSessionAuthChallengeUseCredential, nil);
     }
-}
-
-#pragma mark - NSURLConnectionDataDelegate
-
-- (NSURLRequest *)connection:(NSURLConnection *)connection willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse;
-{
-    return [[self _operationForConnection:connection] _willSendRequest:request redirectResponse:redirectResponse];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response;
-{
-    [[self _operationForConnection:connection] _didReceiveResponse:response];
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data;
-{
-    [[self _operationForConnection:connection] _didReceiveData:data];
-}
-
-- (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite;
-{
-    [[self _operationForConnection:connection] _didSendBodyData:bytesWritten totalBytesSent:totalBytesWritten totalBytesExpectedToSend:totalBytesExpectedToWrite];
-}
-
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection;
-{
-    [[self _operationForConnection:connection andRemove:YES] _didCompleteWithError:nil];
-}
-
-- (NSCachedURLResponse *)connection:(NSURLConnection *)connection willCacheResponse:(NSCachedURLResponse *)cachedResponse;
-{
-    DEBUG_DAV(2, @"will cache response %@", cachedResponse);
-    return nil; // Don't cache DAV stuff if asked to.
-}
-
-#endif // ODAV_NSURLSESSION
-
-#pragma mark - Private
-
-- (NSMutableURLRequest *)_requestForURL:(NSURL *)url;
-{
-    static const NSURLRequestCachePolicy DefaultCachePolicy = NSURLRequestUseProtocolCachePolicy;
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:DefaultCachePolicy timeoutInterval:[self _timeoutForURL:url]];
-    
-    NSString *userAgent = [NSString isEmptyString:_userAgent] ? [_configuration userAgent] : _userAgent;
-    OBASSERT(![NSString isEmptyString:userAgent]);
-    
-    [request setValue:userAgent forHTTPHeaderField:@"User-Agent"];
-    
-#if ODAV_NSURLSESSION
-    request.allowsCellularAccess = _session.configuration.allowsCellularAccess;
-#else
-    request.allowsCellularAccess = _configuration.allowsCellularAccess;
-#endif
-    
-    return request;
-}
-
-- (NSTimeInterval)_timeoutForURL:(NSURL *)url;
-{
-    static const NSTimeInterval DefaultTimeoutInterval = 300.0;
-    
-    return DefaultTimeoutInterval;
-}
-
-#if ODAV_NSURLSESSION
-- (ODAVOperation *)_operationForTask:(NSURLSessionTask *)task;
-{
-    return [self _operationForTask:task isCompleting:NO];
-}
-
-- (ODAVOperation *)_operationForTask:(NSURLSessionTask *)task isCompleting:(BOOL)isCompleting;
-{
-    ODAVOperation *operation;
-    @synchronized(self) {
-        operation = _locked_runningOperationByTask[task];
-        DEBUG_TASK(2, @"Found operation %@ for task %@", operation, task);
-    }
-    OBASSERT(isCompleting || operation); // Allow the operation to not be found if we are completing. See note about Radar 14557123.
-    return operation;
-}
-#else
-- (ODAVOperation *)_operationForConnection:(NSURLConnection *)connection;
-{
-    return [self _operationForConnection:connection andRemove:NO];
-}
-
-- (ODAVOperation *)_operationForConnection:(NSURLConnection *)connection andRemove:(BOOL)removeOperation;
-{
-    ODAVOperation *operation;
-    @synchronized(self) {
-        operation = [_locked_runningOperationByConnection objectForKey:connection];
-        DEBUG_TASK(2, @"Found operation %@ for connection %@", operation, connection);
-        
-        if (removeOperation) {
-            [_locked_runningOperationByConnection removeObjectForKey:connection];
-        }
-    }
-    OBASSERT(operation);
-    return operation;
-}
-#endif
-
-- (ODAVOperation *)_makeOperationForRequest:(NSURLRequest *)request;
-{
-#if ODAV_NSURLSESSION
-    NSURLSessionDataTask *task = [_session dataTaskWithRequest:request];
-    ODAVOperation *operation = [[ODAVOperation alloc] initWithRequest:request task:task];
-
-    @synchronized(self) {
-        _locked_runningOperationByTask[operation.task] = operation;
-        DEBUG_TASK(1, @"Added operation %@ for task %@", operation, operation.task);
-    }
-#else
-    NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self startImmediately:NO];
-    [connection setDelegateQueue:_delegateQueue];
-    
-    ODAVOperation *operation = [[ODAVOperation alloc] initWithRequest:request connection:connection];
-
-    @synchronized(self) {
-        [_locked_runningOperationByConnection setObject:operation forKey:operation.connection];
-        DEBUG_TASK(1, @"Added operation %@ for connection %@", operation, operation.connection);
-    }
-#endif
-    
-    return operation;
-}
-
-- (void)_runRequest:(NSURLRequest *)request completionHandler:(void (^)(ODAVOperation *operation))completionHandler;
-{
-    NSTimeInterval start = 0;
-    if (ODAVConnectionDebug > 1)
-        start = [NSDate timeIntervalSinceReferenceDate];
-    
-    completionHandler = [completionHandler copy];
-    ODAVOperation *operation = [self _makeOperationForRequest:request];
-    
-    operation.didFinish = ^(ODAVOperation *op, NSError *error) {
-        OBINVARIANT(error == op.error);
-        if (ODAVConnectionDebug > 1) {
-            static NSTimeInterval totalWait = 0;
-            NSTimeInterval operationWait = [NSDate timeIntervalSinceReferenceDate] - start;
-            totalWait += operationWait;
-            NSLog(@"  ... network: %gs (total %g)", operationWait, totalWait);
-        }
-        COMPLETE_AND_RETURN(op);
-    };
-
-    [operation startWithCallbackQueue:[NSOperationQueue currentQueue]];
-}
-
-- (void)_runRequestExpectingEmptyResultData:(NSURLRequest *)request completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
-{
-    completionHandler = [completionHandler copy];
-    
-    [self _runRequest:request completionHandler:^(ODAVOperation *operation) {
-        if (operation.error)
-            COMPLETE_AND_RETURN(nil, operation.error);
-
-        NSData *responseData = operation.resultData;
-        
-        if (ODAVConnectionDebug > 1 && [responseData length] > 0) {
-            NSString *xmlString = [NSString stringWithData:responseData encoding:NSUTF8StringEncoding];
-            NSLog(@"Unused response data: %@", xmlString);
-            // still, we didn't get an error code, so let it pass
-        }
-        
-        NSURL *resultLocation = nil;
-        
-        // If the response specified a Location header, use that (this will be set to the the Destination for COPY/MOVE, possibly already redirected).
-        NSString *resultLocationString = [operation valueForResponseHeader:@"Location"];
-        if (![NSString isEmptyString:resultLocationString]) {
-            // See note below about Apache sending back unencoded URIs in the Location header.
-            resultLocation = [NSURL URLWithString:resultLocationString];
-        }
-        if (resultLocation) {
-            NSString *requestScheme = [request.URL.scheme lowercaseString];
-            NSString *resultScheme = [resultLocation.scheme lowercaseString];
-            if ([requestScheme isEqualToString:@"https"] && ![resultScheme isEqualToString:@"https"]) {
-                // Work around a behavior in some servers where after doing a PUT with an https URI, will return an http URI in the Location of the response.
-                // This can result in one of 2 undesirable behaviors:
-                //  - it downgrades the connection to http, and surprisingly sends data in the clear
-                //  - it fails on subsequent operations because the server doesn't actually support DAV over http
-                // If the location would downgrade the connection, ignore it, falling back to the Destination header or request URI
-                // See <bug:///90927>
-                resultLocation = nil;
-                DEBUG_DAV(2, @"Ignoring Location header in the response since it would downgrade the connection to http. Ignored value: %@", resultLocation);
-            }
-
-            if ([[resultLocation host] isEqualToString:@"localhost"] && ![[[request URL] host] isEqualToString:@"localhost"]) {
-                // Work around a bug in OS X Server's WebDAV hosting on 10.8.3 where the proxying server passes back Location headers which are unreachable from the outside world rather than rewriting them into its own namespace.  (It doesn't ever make sense to redirect a WebDAV request to localhost from somewhere other than localhost.)  Hopefully the Location headers in question are always predictable!  Fixes <bug:///87276> (Syncs after initial sync fail on 10.8.3 WebDAV server (error -1004, kCFURLErrorCannotConnectToHost)).
-                // We'll fall back to using the Destination header we specified, but we could also try to take the path from the result URL and tack it onto the scheme/host/port from the original.
-                resultLocation = nil;
-            }
-        }
-        
-        // This fails so often on stock Apache that I'm turning it off.
-        // Apache 2.4.3 doesn't properly URI encode the Location header <See https://issues.apache.org/bugzilla/show_bug.cgi?id=54611> (though our patched version does), but hopefully the location we *asked* to move it to will be valid. Note this won't help for PUT <https://issues.apache.org/bugzilla/show_bug.cgi?id=54367> since it doesn't have a destination header. But in this case we'll fall through and use the original URI.
-        // OBASSERT(resultLocation, @"Location header couldn't be parsed as a URL, %@", resultLocationString);
-        
-        // If we couldn't parse the Location header, try the Destination header (for COPY/MOVE).
-        if (!resultLocation) {
-            NSString *destinationHeader = [request valueForHTTPHeaderField:@"Destination"];
-            if (![NSString isEmptyString:destinationHeader]) {
-                // Skip the protocol downgrade checks that we performed on the Location value.
-                // We built the Destination header and grab it back out of the request headers here, so the server shouldn’t be able to muck it up.
-                resultLocation = [NSURL URLWithString:destinationHeader];
-            }
-        }
-
-        if (!resultLocation) {
-            // Otherwise use the original URL (for MKCOL, for example), looking up any redirection that happened on it.
-            resultLocation = request.URL;
-        
-            NSArray *redirects = operation.redirects;
-            if ([redirects count]) {
-                ODAVRedirect *lastRedirect = [redirects lastObject];
-                NSURL *lastLocation = lastRedirect.to;
-                if (![lastLocation isEqual:resultLocation])
-                    resultLocation = lastLocation;
-            }
-        }
-        
-        ODAVURLResult *result = [ODAVURLResult new];
-        result.URL = resultLocation;
-        result.redirects = operation.redirects;
-        COMPLETE_AND_RETURN(result, nil);
-    }];
-}
-
-typedef void (^ODAVConnectionDocumentCompletionHandler)(OFXMLDocument *document, ODAVOperation *op, NSError *errorOrNil);
-
-- (void)_runRequestExpectingDocument:(NSURLRequest *)request completionHandler:(ODAVConnectionDocumentCompletionHandler)completionHandler;
-{
-    completionHandler = [completionHandler copy];
-    
-    [self _runRequest:request completionHandler:^(ODAVOperation *operation) {
-        NSData *responseData = operation.resultData;
-        if (operation.error)
-            COMPLETE_AND_RETURN(nil, operation, operation.error);
-        
-        OFXMLDocument *doc = nil;
-        NSError *documentError = nil;
-        NSTimeInterval start = 0;
-        @autoreleasepool {
-            // It was found and we got data back.  Parse the response.
-            DEBUG_DAV(2, @"xmlString: %@", [NSString stringWithData:responseData encoding:NSUTF8StringEncoding]);
-            
-            if (ODAVConnectionDebug > 1)
-                start = [NSDate timeIntervalSinceReferenceDate];
-            
-            __autoreleasing NSError *error = nil;
-            doc = [[OFXMLDocument alloc] initWithData:responseData whitespaceBehavior:[OFXMLWhitespaceBehavior ignoreWhitespaceBehavior] error:&error];
-            if (!doc)
-                documentError = error; // strongify this to live past the pool
-        }
-        
-        if (ODAVConnectionDebug > 1) {
-            static NSTimeInterval totalWait = 0;
-            NSTimeInterval operationWait = [NSDate timeIntervalSinceReferenceDate] - start;
-            totalWait += operationWait;
-            NSLog(@"  ... xml: %gs (total %g)", operationWait, totalWait);
-        }
-
-        if (!doc) {
-            NSLog(@"Unable to decode XML from WebDAV response: %@", [documentError toPropertyList]);
-            COMPLETE_AND_RETURN(nil, nil, documentError);
-        } else
-            COMPLETE_AND_RETURN(doc, operation, nil);
-    }];
 }
 
 @end

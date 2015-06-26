@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,8 @@
 
 #import <Foundation/NSObject.h>
 
-@class OFXAccountClientParameters, OFXConnection;
-@class ODAVFileInfo;
+@class OFXAccountClientParameters;
+@class ODAVConnection, ODAVFileInfo;
 
 @interface OFXAccountInfo : NSObject
 
@@ -18,7 +18,7 @@
 
 @property(nonatomic,readonly) NSURL *remoteAccountURL;
 
-- (BOOL)updateWithConnection:(OFXConnection *)connection accountFileInfo:(ODAVFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos remoteTemporaryDirectoryFileInfo:(ODAVFileInfo *)remoteTemporaryDirectoryFileInfo serverDate:(NSDate *)serverDate error:(NSError **)outError;
+- (BOOL)updateWithConnection:(ODAVConnection *)connection accountFileInfo:(ODAVFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos remoteTemporaryDirectoryFileInfo:(ODAVFileInfo *)remoteTemporaryDirectoryFileInfo serverDate:(NSDate *)serverDate error:(NSError **)outError;
 
 @property(nonatomic,readonly) NSString *groupIdentifier;
 

@@ -36,6 +36,8 @@
 		348969ED179DA650007978EC /* ODSFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 348969C3179D9C90007978EC /* ODSFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34C1BBFE179DCF710095744C /* ODSErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C1BBFD179DCF710095744C /* ODSErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34C1BC00179DCF890095744C /* ODSErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C1BBFF179DCF890095744C /* ODSErrors.m */; };
+		4A1A466A1AE860A200A23C29 /* ODSExternalScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A1A46681AE860A200A23C29 /* ODSExternalScope.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A1A466B1AE860A200A23C29 /* ODSExternalScope.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1A46691AE860A200A23C29 /* ODSExternalScope.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -137,6 +139,8 @@
 		348969E1179D9FD4007978EC /* ODSUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODSUtilities.m; sourceTree = SOURCE_ROOT; };
 		34C1BBFD179DCF710095744C /* ODSErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODSErrors.h; sourceTree = SOURCE_ROOT; };
 		34C1BBFF179DCF890095744C /* ODSErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODSErrors.m; sourceTree = SOURCE_ROOT; };
+		4A1A46681AE860A200A23C29 /* ODSExternalScope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODSExternalScope.h; sourceTree = SOURCE_ROOT; };
+		4A1A46691AE860A200A23C29 /* ODSExternalScope.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODSExternalScope.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -284,6 +288,8 @@
 		348969DD179D9CE9007978EC /* Scopes */ = {
 			isa = PBXGroup;
 			children = (
+				4A1A46681AE860A200A23C29 /* ODSExternalScope.h */,
+				4A1A46691AE860A200A23C29 /* ODSExternalScope.m */,
 				348969CA179D9C90007978EC /* ODSLocalDirectoryScope.h */,
 				348969CB179D9C90007978EC /* ODSLocalDirectoryScope.m */,
 				348969CC179D9C90007978EC /* ODSScope-Internal.h */,
@@ -330,6 +336,7 @@
 				348969EA179DA1C5007978EC /* ODSUtilities.h in Headers */,
 				348969E8179DA1B7007978EC /* ODSLocalDirectoryScope.h in Headers */,
 				348969E9179DA1B7007978EC /* ODSScope.h in Headers */,
+				4A1A466A1AE860A200A23C29 /* ODSExternalScope.h in Headers */,
 				348969E7179DA1B0007978EC /* ODSStore.h in Headers */,
 				348969E5179DA1A3007978EC /* ODSFileItem.h in Headers */,
 				348969E6179DA1A3007978EC /* ODSFolderItem.h in Headers */,
@@ -367,7 +374,7 @@
 		3489691D179D99DD007978EC /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "The Omni Group";
 			};
 			buildConfigurationList = 34896920179D99DD007978EC /* Build configuration list for PBXProject "OmniDocumentStore" */;
@@ -418,6 +425,7 @@
 				348969D7179D9C90007978EC /* ODSFolderItem.m in Sources */,
 				348969D5179D9C90007978EC /* ODSFileItem.m in Sources */,
 				348969DB179D9C90007978EC /* ODSStore.m in Sources */,
+				4A1A466B1AE860A200A23C29 /* ODSExternalScope.m in Sources */,
 				348969DA179D9C90007978EC /* ODSScope.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

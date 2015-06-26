@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,8 +11,8 @@
 
 #import "OFXFileState.h"
 
-@class ODAVFileInfo;
-@class OFXConnection, OFXContainerAgent, OFXFileSnapshotTransfer, OFXFileState, OFXRecentError, OFXRegistrationTable;
+@class ODAVConnection, ODAVFileInfo;
+@class OFXContainerAgent, OFXFileSnapshotTransfer, OFXFileState, OFXRecentError, OFXRegistrationTable;
 @protocol NSFilePresenter;
 
 typedef NS_ENUM(NSUInteger, OFXFileItemMoveSource) {
@@ -29,7 +29,7 @@ typedef NS_ENUM(NSUInteger, OFXFileItemMoveSource) {
 
 - (id)initWithNewLocalDocumentURL:(NSURL *)localDocumentURL container:(OFXContainerAgent *)container error:(NSError **)outError;
 - (id)initWithNewLocalDocumentURL:(NSURL *)localDocumentURL asConflictGeneratedFromFileItem:(OFXFileItem *)originalItem coordinator:(NSFileCoordinator *)coordinator container:(OFXContainerAgent *)container error:(NSError **)outError;
-- (id)initWithNewRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL container:(OFXContainerAgent *)container filePresenter:(id <NSFilePresenter>)filePresenter connection:(OFXConnection *)connection error:(NSError **)outError;
+- (id)initWithNewRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL container:(OFXContainerAgent *)container filePresenter:(id <NSFilePresenter>)filePresenter connection:(ODAVConnection *)connection error:(NSError **)outError;
 - (id)initWithExistingLocalSnapshotURL:(NSURL *)localSnapshotURL container:(OFXContainerAgent *)container filePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
 
 @property(nonatomic,readonly,weak) OFXContainerAgent *container;
@@ -71,9 +71,9 @@ typedef NS_ENUM(NSUInteger, OFXFileItemMoveSource) {
 
 - (NSNumber *)hasSameContentsAsLocalDocumentAtURL:(NSURL *)localDocumentURL error:(NSError **)outError;
 
-- (OFXFileSnapshotTransfer *)prepareUploadTransferWithConnection:(OFXConnection *)connection error:(NSError **)outError;
-- (OFXFileSnapshotTransfer *)prepareDownloadTransferWithConnection:(OFXConnection *)connection filePresenter:(id <NSFilePresenter>)filePresenter;
-- (OFXFileSnapshotTransfer *)prepareDeleteTransferWithConnection:(OFXConnection *)connection filePresenter:(id <NSFilePresenter>)filePresenter;
+- (OFXFileSnapshotTransfer *)prepareUploadTransferWithConnection:(ODAVConnection *)connection error:(NSError **)outError;
+- (OFXFileSnapshotTransfer *)prepareDownloadTransferWithConnection:(ODAVConnection *)connection filePresenter:(id <NSFilePresenter>)filePresenter;
+- (OFXFileSnapshotTransfer *)prepareDeleteTransferWithConnection:(ODAVConnection *)connection filePresenter:(id <NSFilePresenter>)filePresenter;
 
 - (BOOL)handleIncomingDeleteWithFilePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
 

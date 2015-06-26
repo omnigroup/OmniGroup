@@ -25,6 +25,7 @@ extern NSInteger OFSFileManagerDebug;
 @property(nonatomic,readonly) NSURL *baseURL;
 @property(nonatomic,weak,readonly) id <OFSFileManagerDelegate> delegate;
 @property(nonatomic,readonly) NSString *locationDescription;
+@property(nonatomic,copy) NSString *operationReason;
 
 - (void)invalidate;
 

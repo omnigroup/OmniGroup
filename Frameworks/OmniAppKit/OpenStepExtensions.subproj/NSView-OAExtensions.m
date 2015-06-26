@@ -42,6 +42,84 @@ static void (*original_setFrameSize)(id self, SEL _cmd, NSSize newSize);
 
 #endif
 
+#if 1 && defined(DEBUG_bungi) && defined(OMNI_ASSERTIONS_ON)
+
+// Log attempts to modify the view hierarchy while drawing, possibly related to <bug:///116473> (Crasher: Crash on launch +[NSGraphicsContext restoreGraphicsState] (in AppKit))
+
+static NSCountedSet *ViewsBeingDrawn = nil;
+
+static void (*original_didAddSubview)(NSView *self, SEL _cmd, NSView *subview) = NULL;
+static void (*original_willRemoveSubview)(NSView *self, SEL _cmd, NSView *subview) = NULL;
+static void (*original_lockFocus)(NSView *self, SEL _cmd) = NULL;
+static void (*original_unlockFocus)(NSView *self, SEL _cmd) = NULL;
+
+static BOOL isDrawing(NSView *view)
+{
+    return [ViewsBeingDrawn countForObject:view] > 0;
+}
+
+static void replacement_didAddSubview(NSView *self, SEL _cmd, NSView *subview)
+{
+    OBPRECONDITION(ViewsBeingDrawn);
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(!isDrawing(self));
+    
+    [subview applyToViewTree:^(NSView *treeView){
+        OBPRECONDITION(!isDrawing(treeView));
+    }];
+
+    original_didAddSubview(self, _cmd, subview);
+}
+
+static void replacement_willRemoveSubview(NSView *self, SEL _cmd, NSView *subview)
+{
+    OBPRECONDITION(ViewsBeingDrawn);
+    OBPRECONDITION([NSThread isMainThread]);
+
+    OBPRECONDITION([NSThread isMainThread]);
+    OBPRECONDITION(!isDrawing(self));
+    
+    [subview applyToViewTree:^(NSView *treeView){
+        OBPRECONDITION(!isDrawing(treeView));
+    }];
+
+    original_willRemoveSubview(self, _cmd, subview);
+}
+
+static void replacement_lockFocus(NSView *self, SEL _cmd)
+{
+    OBPRECONDITION(ViewsBeingDrawn);
+    OBPRECONDITION([NSThread isMainThread]);
+
+    [ViewsBeingDrawn addObject:self];
+    
+    original_lockFocus(self, _cmd);
+}
+
+static void replacement_unlockFocus(NSView *self, SEL _cmd)
+{
+    OBPRECONDITION(ViewsBeingDrawn);
+    OBPRECONDITION([NSThread isMainThread]);
+
+    [ViewsBeingDrawn removeObject:self];
+
+    original_unlockFocus(self, _cmd);
+}
+
++ (void)performPosing;
+{
+    OBASSERT(ViewsBeingDrawn == nil);
+    
+    ViewsBeingDrawn = [[NSCountedSet alloc] init];
+    
+    original_didAddSubview = (typeof(original_didAddSubview))OBReplaceMethodImplementation(self, @selector(didAddSubview:), (IMP)replacement_didAddSubview);
+    original_willRemoveSubview = (typeof(original_willRemoveSubview))OBReplaceMethodImplementation(self, @selector(willRemoveSubview:), (IMP)replacement_willRemoveSubview);
+    original_lockFocus = (typeof(original_lockFocus))OBReplaceMethodImplementation(self, @selector(lockFocus), (IMP)replacement_lockFocus);
+    original_unlockFocus = (typeof(original_unlockFocus))OBReplaceMethodImplementation(self, @selector(unlockFocus), (IMP)replacement_unlockFocus);
+}
+
+#endif
+
 - (BOOL)isDescendantOfFirstResponder;
 {
     NSResponder *firstResponder = [[self window] firstResponder];
@@ -716,6 +794,13 @@ static inline NSAffineTransformStruct computeTransformFromExamples(NSPoint origi
 {
     [constraints addObject:EQUAL_CONSTRAINT(NSLayoutAttributeTop)];
     [constraints addObject:EQUAL_CONSTRAINT(NSLayoutAttributeBottom)];
+}
+
+- (void)applyToViewTree:(void (^)(NSView *view))applier;
+{
+    applier(self);
+    for (NSView *view in self.subviews)
+        [view applyToViewTree:applier];
 }
 
 // Debugging

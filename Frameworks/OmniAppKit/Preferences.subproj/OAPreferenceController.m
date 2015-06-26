@@ -547,12 +547,12 @@ static NSString *windowFrameSaveName = @"Preferences";
     } else if ([itemIdentifier isEqualToString:@"OAPreferencesNext"]) {
         [newItem setAction:@selector(showNextClient:)];
         [newItem setLabel:NSLocalizedStringFromTableInBundle(@"Next", @"OmniAppKit", [OAPreferenceController bundle], "preferences panel button")];
-        [newItem setImage:[NSImage imageNamed:@"OAPreferencesNextButton" inBundle:OMNI_BUNDLE]];
+        [newItem setImage:[NSImage imageNamed:NSImageNameGoRightTemplate]];
         [newItem setEnabled:NO]; // the first time these get added, we'll be coming up in "show all" mode, so they'll immediately diable anyway...
     } else if ([itemIdentifier isEqualToString:@"OAPreferencesPrevious"]) {
         [newItem setAction:@selector(showPreviousClient:)];
         [newItem setLabel:NSLocalizedStringFromTableInBundle(@"Previous", @"OmniAppKit", [OAPreferenceController bundle], "preferences panel button")];
-        [newItem setImage:[NSImage imageNamed:@"OAPreferencesPreviousButton" inBundle:OMNI_BUNDLE]];
+        [newItem setImage:[NSImage imageNamed:NSImageNameGoLeftTemplate]];
         [newItem setEnabled:NO]; // ... so we disable them now to prevent visible flickering.
     } else { // it's for a preference client
         if ([self clientRecordWithIdentifier:itemIdentifier] == nil)

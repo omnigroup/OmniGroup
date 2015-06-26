@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0630"
+   LastUpgradeVersion = "0700"
    version = "1.8">
    <BuildAction
       parallelizeBuildables = "NO"
@@ -98,9 +98,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34D06C53125D202500CA3963"
-               BuildableName = "libOmniDAV.a"
-               BlueprintName = "OmniDAVTouch"
+               BlueprintIdentifier = "34D621AE1B38807700DCE250"
+               BuildableName = "OmniDAV.framework"
+               BlueprintName = "OmniDAV-iOS"
                ReferencedContainer = "container:../Frameworks/OmniDAV/OmniDAV.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -164,7 +164,7 @@
    </BuildAction>
    <TestAction
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       buildConfiguration = "Debug">
       <Testables>
@@ -178,6 +178,8 @@
             ReferencedContainer = "container:../Frameworks/OmniUI/iPad/Examples/TextEditor/TextEditor.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <AdditionalOptions>
+      </AdditionalOptions>
    </TestAction>
    <LaunchAction
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
@@ -190,6 +192,7 @@
       enablesOpenGLESFrameCapture = "YES"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">

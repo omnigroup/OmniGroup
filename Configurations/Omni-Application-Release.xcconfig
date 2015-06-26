@@ -8,3 +8,6 @@
 
 // Common settings for Release configurations of Application targets
 SKIP_INSTALL = NO
+
+// If main() gets stripped, dtrace cannot launch our applications.
+STRIPFLAGS = $(value) $(OMNI_STRIPFLAGS)

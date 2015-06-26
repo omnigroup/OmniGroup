@@ -49,8 +49,6 @@ RCS_ID("$Id$");
     UIBarButtonItem *_possiblyTappedButtonItem;
     
     OUIMenuController *_appMenuController;
-    
-    OUIActionSheet *_possiblyVisibleActionSheet;
 }
 
 BOOL OUIShouldLogPerformanceMetrics = NO;
@@ -371,11 +369,6 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     // Treat a print sheet the same way as a popover and dismiss it when presenting something else. Sure would be nice if UIPrintInteractionController was a subclass of UIPopoverController as would make sense... 
     [[UIPrintInteractionController sharedPrintController] dismissAnimated:animated];
     
-    // If _possiblyVisibleActionSheet is not nil, then we have a visable actionSheet. Dismiss it.
-    if (_possiblyVisibleActionSheet) {
-        [self dismissActionSheetAndPopover:YES];
-    }
-    
     if (!_dismissVisiblePopoverInFavorOfPopover(self, popover, animated))
         return NO;
     
@@ -394,11 +387,6 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     // Treat a print sheet the same way as a popover and dismiss it when presenting something else. Sure would be nice if UIPrintInteractionController was a subclass of UIPopoverController as would make sense...
     [[UIPrintInteractionController sharedPrintController] dismissAnimated:animated];
 
-    // If _possiblyVisibleActionSheet is not nil, then we have a visable actionSheet. Dismiss it.
-    if (_possiblyVisibleActionSheet) {
-        [self dismissActionSheetAndPopover:YES];
-    }
-    
     if (!_dismissVisiblePopoverInFavorOfPopover(self, popover, animated))
         return NO;
     
@@ -457,68 +445,6 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
 }
 
-- (BOOL)hasVisibleActionSheet;
-{
-    return _possiblyVisibleActionSheet.visible;
-}
-
-// Action Sheet Helpers
-- (void)showActionSheet:(OUIActionSheet *)actionSheet fromSender:(id)sender animated:(BOOL)animated;
-{
-    // Test to see if the user is trying to show the same actionSheet that is already visible. If so, dismiss it and return.
-    if (_possiblyVisibleActionSheet &&
-        [actionSheet.identifier isEqualToString:_possiblyVisibleActionSheet.identifier]) {
-        [self dismissActionSheetAndPopover:YES];
-        return;
-    }
-
-    [self dismissActionSheetAndPopover:YES];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self 
-                                             selector:@selector(actionSheetDidDismiss:)
-                                                 name:OUIActionSheetDidDismissNotification
-                                               object:actionSheet];
-    
-    if ([sender isKindOfClass:[UIView class]])
-        [actionSheet showFromRect:[sender frame] inView:[sender superview] animated:animated];
-    else {
-        OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]);
-        [actionSheet showFromBarButtonItem:sender animated:animated];
-    }
-    
-    _possiblyVisibleActionSheet = actionSheet;
-}
-
-- (BOOL)dismissActionSheetAndPopover:(BOOL)animated;
-{
-    BOOL didDismiss = NO;
-    
-    if ([self hasVisiblePopover]) {
-        [self dismissPopover:_possiblyVisiblePopoverController animated:animated];
-        didDismiss = YES;
-    }
-    
-    if ([self hasVisibleActionSheet]) {
-        [_possiblyVisibleActionSheet dismissWithClickedButtonIndex:_possiblyVisibleActionSheet.cancelButtonIndex animated:animated];
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIActionSheetDidDismissNotification object:_possiblyVisibleActionSheet];
-        didDismiss = YES;
-    }
-    
-    return didDismiss;
-}
-
-- (void)actionSheetDidDismiss:(NSNotification *)notification;
-{
-    OUIActionSheet *actionSheet = (OUIActionSheet *)notification.object;
-    
-    // The user could be switching between action sheets. When it's dismissed with animation, we may have already reassigned _nonretaind_actionSheet. So we don't always want to set it to nil. If the user is actually just dismissing it, the _possiblyVisibleActionSheet should still match actionSheet, so we're good to set it to nil.
-    if (actionSheet == _possiblyVisibleActionSheet) {
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:OUIActionSheetDidDismissNotification object:_possiblyVisibleActionSheet];
-
-        _possiblyVisibleActionSheet = nil;
-    }
-}
-
 - (BOOL)isRunningRetailDemo;
 {
     return [[OFPreference preferenceForKey:@"IPadRetailDemo"] boolValue];
@@ -547,18 +473,14 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     // May need to allow the app delegate to provide this conditionally later (OmniFocus has a retail build, for example)
     NSString *feedbackAddress = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIFeedbackAddress"];
     OBASSERT(feedbackAddress);
-    if (!feedbackAddress)
+    if (feedbackAddress == nil)
         return;
     
     UIViewController *viewControllerToPresentFrom = self.window.rootViewController;
-    OBASSERT(viewControllerToPresentFrom);
-    if (!viewControllerToPresentFrom)
-        return;
+    while (viewControllerToPresentFrom.presentedViewController != nil)
+        viewControllerToPresentFrom = viewControllerToPresentFrom.presentedViewController;
 
-    // If the caller left up a different modal view controller, our attempt to show another modal view controller would just log a warning and do nothing.
-    BOOL allowInAppCompose = (viewControllerToPresentFrom.presentedViewController == nil);
-
-    BOOL useComposeView = allowInAppCompose && [MFMailComposeViewController canSendMail];
+    BOOL useComposeView = viewControllerToPresentFrom != nil && [MFMailComposeViewController canSendMail];
     if (!useComposeView) {
         NSString *urlString = [NSString stringWithFormat:@"mailto:%@?subject=%@", feedbackAddress,
                                [NSString encodeURLString:subject asQuery:NO leaveSlashes:NO leaveColons:NO]];
@@ -654,6 +576,14 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 }
 
 #pragma mark App menu actions
+- (void)dismissAppMenuIfVisible:(UINavigationController *)navigationController;
+{
+    if (navigationController.presentedViewController != nil && navigationController.presentedViewController == _appMenuController) {
+        [navigationController dismissViewControllerAnimated:NO completion:^{
+        }];
+    }
+}
+
 - (void)_showAppMenu:(id)sender;
 {
     if ([self.window.rootViewController presentedViewController]) {
@@ -866,7 +796,9 @@ static UIImage *menuImage(NSString *name)
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error;
 {
-    [controller.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [controller.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    }];
 }
 
 @end

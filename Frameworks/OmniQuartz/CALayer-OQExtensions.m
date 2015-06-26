@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -728,6 +728,20 @@ static void _writeString(NSString *str)
                 CGContextSetStrokeColorWithColor(ctx, borderColor);
                 CGContextStrokePath(ctx);
             }
+        }
+        
+        if ([self isKindOfClass:[CAGradientLayer class]]) {
+            CAGradientLayer *gradientLayer = (CAGradientLayer *)self;
+            OBASSERT(gradientLayer.locations == nil); // UNDONE: not handling custom locations for the gradient colors
+
+            CGContextSaveGState(ctx);
+            CGGradientRef gradient = CGGradientCreateWithColors(NULL, (CFArrayRef)gradientLayer.colors, NULL);
+            CGPoint gradientStart = CGPointMake(CGRectGetMinX(localBounds) + gradientLayer.startPoint.x * CGRectGetWidth(localBounds), CGRectGetMinY(localBounds) + gradientLayer.startPoint.y * CGRectGetHeight(localBounds));
+            CGPoint gradientEnd = CGPointMake(CGRectGetMinX(localBounds) + gradientLayer.endPoint.x * CGRectGetWidth(localBounds), CGRectGetMinY(localBounds) + gradientLayer.endPoint.y * CGRectGetHeight(localBounds));
+            CGContextClipToRect(ctx, localBounds);
+            CGContextDrawLinearGradient(ctx, gradient, gradientStart, gradientEnd, kCGGradientDrawsBeforeStartLocation|kCGGradientDrawsAfterEndLocation);
+            CGGradientRelease(gradient);
+            CGContextRestoreGState(ctx);
         }
         
         NSArray *sublayers = self.sublayers;

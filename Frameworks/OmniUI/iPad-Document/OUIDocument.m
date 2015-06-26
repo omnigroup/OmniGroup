@@ -460,6 +460,36 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     [super updateChangeCountWithToken:originalToken forSaveOperation:saveOperation];
 }
 
+- (void)_autoresolveConflicts;
+{
+    NSURL *url = self.fileURL;
+    NSFileVersion *currentVersion = [NSFileVersion currentVersionOfItemAtURL:url];
+    NSArray *otherVersions = [NSFileVersion otherVersionsOfItemAtURL:url];
+    if (otherVersions.count == 0)
+        return;
+
+    DEBUG_DOCUMENT(@"Auto-resolving document conflict on open");
+    NSFileVersion *latestVersion = currentVersion;
+    for (NSFileVersion *otherVersion in otherVersions) {
+        if ([otherVersion.modificationDate isAfterDate:latestVersion.modificationDate]) {
+            latestVersion = otherVersion;
+        }
+    }
+
+    DEBUG_DOCUMENT(@"Using latest version (%@ at %@)", latestVersion.localizedNameOfSavingComputer, latestVersion.modificationDate);
+    if (latestVersion != currentVersion) {
+        DEBUG_DOCUMENT(@"Replacing current version (%@ at %@) with (%@ at %@)", currentVersion.localizedNameOfSavingComputer, currentVersion.modificationDate, latestVersion.localizedNameOfSavingComputer, latestVersion.modificationDate);
+        [latestVersion replaceItemAtURL:url options:0 error:nil];
+    }
+
+    [NSFileVersion removeOtherVersionsOfItemAtURL:url error:nil];
+    NSArray *conflictVersions = [NSFileVersion unresolvedConflictVersionsOfItemAtURL:url];
+    for (NSFileVersion *conflictVersion in conflictVersions) {
+        DEBUG_DOCUMENT(@"Resolving conflict with version (%@ at %@)", conflictVersion.localizedNameOfSavingComputer, conflictVersion.modificationDate);
+        conflictVersion.resolved = YES;
+    }
+}
+
 - (void)openWithCompletionHandler:(void (^)(BOOL success))completionHandler;
 {
     OBPRECONDITION(self.documentState & UIDocumentStateClosed);
@@ -473,7 +503,9 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         //OBASSERT(_fileItem.isDownloaded); // Might be opening the auto-nominated conflict winner during a revert
     }
 #endif
-    
+
+    [self _autoresolveConflicts];
+
     [super openWithCompletionHandler:^(BOOL success){
         DEBUG_DOCUMENT(@"%@ %@ success %d", [self shortDescription], NSStringFromSelector(_cmd), success);
         
@@ -659,7 +691,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         return;
     }
     
-    OBASSERT(!ODSInInInbox(url));
+    OBASSERT(!ODSIsInInbox(url));
     
     @synchronized(self) {
         OBASSERT(_lastWrittenFileEdit == nil);
@@ -679,12 +711,12 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     completionHandler = [completionHandler copy];
 
     BOOL isChangingFileType = !OFISEQUAL(self.fileType, self.savingFileType);
-    BOOL ensureUniqueName = ((saveOperation != UIDocumentSaveForOverwriting) && isChangingFileType);
+    BOOL ensureUniqueName = isChangingFileType;
     ODSFileItem *fileItem = nil;
     if (ensureUniqueName) {
         fileItem = self.fileItem;
         OBASSERT(fileItem, "If we are converting file types, we assume the original file existed (this is not a new unsaved document)");
-        url = [_documentScope urlForNewDocumentInFolder:fileItem.parentFolder baseName:fileItem.name fileType:self.savingFileType];
+        url = [_documentScope urlForNewDocumentInFolder:fileItem.parentFolder baseName:[fileItem.name stringByDeletingPathExtension] fileType:self.savingFileType];
     }
     
     BOOL shouldRemoveCachedResourceValue = ((saveOperation == UIDocumentSaveForOverwriting) && isChangingFileType);
@@ -881,8 +913,6 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         return;
     }
 
-    OBASSERT((self.documentState & UIDocumentStateInConflict) == 0, "Since we no longer use iCloud and we don't have a way to make our own conflict NSFileVersions, we don't expect to ever see this flag");
-    
     _rebuildingViewControllerState = [self willRebuildViewController];
 
     // Incoming edit from the cloud, most likely. We should have been asked to save already via the coordinated write (might produce a conflict). Still, lets abort editing.
@@ -921,27 +951,6 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
             [self didRebuildViewController:state];
             
             [self updateViewControllerToPresent];
-            
-            OBFinishPortingLater("Removing OUIMainViewController - Clean this up now that we don't use NSFileVersion and can't get conflicts this way");
-            if (self.documentState & UIDocumentStateInConflict) {
-                // We are getting reloaded from the auto-nominated file version. OUIDocumentAppController will seen be running the conflict resolution sheet, so the user already knows something is going on and we shouldn't annoy them here.
-                DEBUG_DOCUMENT(@"Document is now in conflict.");
-            } else {
-#ifdef DEBUG_UPDATE
-                NSFileVersion *currentVersion = [NSFileVersion currentVersionOfItemAtURL:self.fileURL];
-
-                NSString *message;
-                if (currentVersion.localizedNameOfSavingComputer != nil) {
-                    NSString *messageFormat = NSLocalizedStringFromTableInBundle(@"Last edited on %@.", @"OmniUIDocument", OMNI_BUNDLE, @"Message format for alert informing user that the document has been reloaded with cloud edits from another device");
-                    message = [NSString stringWithFormat:messageFormat, currentVersion.localizedNameOfSavingComputer];
-                    message = [message stringByAppendingFormat:@"\n%@", [ODSFileItem displayStringForDate:currentVersion.modificationDate]];
-                } else {
-                    message = [ODSFileItem displayStringForDate:currentVersion.modificationDate];
-                }
-
-                [self _queueUpdateAlertWithMessage:message];
-#endif
-            }
         }
     }];
 }

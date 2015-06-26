@@ -7,10 +7,9 @@
 
 #import "OFXDAVUtilities.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniFileExchange/OFXErrors.h>
-
-#import "OFXConnection.h"
 
 RCS_ID("$Id$")
 
@@ -18,7 +17,7 @@ RCS_ID("$Id$")
  In several places we want to get the fileInfos at a directory *and* ensure we have a server date. We also want to be sure the directory exists so that our server date is valid and so that following operations can write to the directory. Finally, we may be racing against other clients (usually in the tests).
  */
 
-ODAVMultipleFileInfoResult *OFXFetchFileInfosEnsuringDirectoryExists(OFXConnection *connection, NSURL *originalDirectoryURL, NSError **outError)
+ODAVMultipleFileInfoResult *OFXFetchFileInfosEnsuringDirectoryExists(ODAVConnection *connection, NSURL *originalDirectoryURL, NSError **outError)
 {
     __block NSURL *directoryURL = originalDirectoryURL;
     __block ODAVMultipleFileInfoResult *resultProperties;
@@ -95,7 +94,7 @@ static BOOL _parentDirectoryMightBeMissing(NSError *error)
     [error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_INTERNAL_SERVER_ERROR]; // Apache returns 500 when moving a collection and the destination parent directory doesn't exist. Sigh.
 }
 
-void OFXWriteDataToURLAtomically(OFXConnection *connection, NSData *data, NSURL *destinationURL, NSURL *temporaryDirectoryURL, NSURL *accountBaseURL, BOOL overwrite, void (^completionHandler)(NSURL *url, NSError *errorOrNil))
+void OFXWriteDataToURLAtomically(ODAVConnection *connection, NSData *data, NSURL *destinationURL, NSURL *temporaryDirectoryURL, NSURL *accountBaseURL, BOOL overwrite, void (^completionHandler)(NSURL *url, NSError *errorOrNil))
 {
     OBPRECONDITION(connection);
     OBPRECONDITION(data);
@@ -169,7 +168,7 @@ void OFXWriteDataToURLAtomically(OFXConnection *connection, NSData *data, NSURL 
     
 }
 
-NSURL *OFXMoveURLToMissingURLCreatingContainerIfNeeded(OFXConnection *connection, NSURL *sourceURL, NSURL *destinationURL, NSError **outError)
+NSURL *OFXMoveURLToMissingURLCreatingContainerIfNeeded(ODAVConnection *connection, NSURL *sourceURL, NSURL *destinationURL, NSError **outError)
 {
     __block NSURL *resultURL;
     __block NSError *resultError;

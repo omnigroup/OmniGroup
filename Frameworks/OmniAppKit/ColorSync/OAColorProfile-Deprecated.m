@@ -1,4 +1,4 @@
-// Copyright 2008 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,7 @@ RCS_ID("$Id$");
 
 - (BOOL)_rawProfileIsBuiltIn:(CMProfileRef)rawProfile;
 {
+#if OA_USE_COLOR_MANAGER
     UInt32 locationSize;
     CMError err = NCMGetProfileLocation(rawProfile, NULL, &locationSize);
     if (err != noErr)
@@ -48,6 +49,9 @@ RCS_ID("$Id$");
     
     free(profileLocation);
     return isBuiltIn;
+#else
+    OBFinishPorting;
+#endif
 }
 
 @end

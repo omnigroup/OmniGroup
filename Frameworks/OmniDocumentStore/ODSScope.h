@@ -79,6 +79,8 @@ typedef void (^ODSScopeItemMotionStatus)(ODSFileItemMotion *itemMotion, NSURL *d
 
 // When moving documents between scopes, the current scope must be asked if this is OK first. The on-disk representation may out of date or otherwise not ready to be moved.
 - (BOOL)prepareToRelinquishItem:(ODSItem *)item error:(NSError **)outError;
+- (void)finishRelinquishingMovedItems:(NSSet *)movedItems;
+
 - (void)takeItems:(NSSet *)items toFolder:(ODSFolderItem *)folderItem ignoringFileItems:(NSSet *)ignoredFileItems completionHandler:(void (^)(NSSet *movedFileItems, NSArray *errorsOrNil))completionHandler;
 
 // Moving within a single scope
@@ -96,6 +98,9 @@ typedef void (^ODSScopeItemMotionStatus)(ODSFileItemMotion *itemMotion, NSURL *d
 + (ODSScope *)templateScope;
 + (void)setTemplateScope:(ODSScope *)templateScope;
 
+@property (nonatomic, readonly) BOOL canRenameDocuments;
+@property (nonatomic, readonly) BOOL canCreateFolders;
+@property (nonatomic, readonly) BOOL isExternal;
 
 - (NSComparisonResult)compareDocumentScope:(ODSScope *)otherScope;
 - (NSInteger)documentScopeGroupRank;

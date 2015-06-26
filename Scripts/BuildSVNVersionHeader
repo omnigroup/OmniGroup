@@ -15,6 +15,7 @@ Usage () {
     echo >&2 "  Options:"
     echo >&2 "    --help                - show the usage"
     echo >&2 "    --build-versions-txt  - build Versions.txt"
+    echo >&2 "    --golang              - build svnversion.go"
     echo >&2 "    --force               - force rebuild of SVNVersion.h"
     exit 1
 }
@@ -26,6 +27,8 @@ fi
 
 FORCE_REBUILD=
 GENERATE_VERSIONS_TXT=NO
+GOLANG=NO
+: ${SVN:=svn}
 
 while [ $# -gt 0 ]
 do
@@ -39,6 +42,9 @@ do
             ;;
         --build-versions-txt)
             GENERATE_VERSIONS_TXT=YES
+            ;;
+        --golang)
+            GOLANG=YES
             ;;
         --force)
             FORCE_REBUILD=YES
@@ -59,22 +65,31 @@ if [ $# -ne 1 ]; then
 fi
 BUILD_DIR="$1"
 
-BUILD_DATE=`TZ=UTC date +"%Y-%m-%dT%H:%M:%S.000Z"`
-REBUILD=YES
+OUTPUT_HEADER="$BUILD_DIR/include/SVNVersion.h"
+OUTPUT_VERSIONS_TXT="$BUILD_DIR/Versions.txt"
+OUTPUT_SVNVERSION_GO="$BUILD_DIR/svnversion.go"
 
-SVNURL=`svn info --xml . | xpath '/info/entry/url/text()' 2>& /dev/null`
+# Don't do the work to rebuild the header/Versions.txt (or check if they need rebuilding) by default. In particular, the `svn info` command takes a little while and slows down incremental builds.
+REBUILD=$FORCE_REBUILD
+if [ ! -f "$OUTPUT_HEADER" ]; then
+    REBUILD="YES"
+elif [ "$GENERATE_VERSIONS_TXT" = "YES" -a \! -f "$OUTPUT_VERSIONS_TXT" ]; then
+    REBUILD="YES"
+elif [ "$GOLANG" = "YES" -a \! -f "$OUTPUT_SVNVERSION_GO" ]; then
+    REBUILD="YES"
+fi
+if [ -z "$REBUILD" ]; then
+    exit
+fi
+
+BUILD_DATE=`TZ=UTC date +"%Y-%m-%dT%H:%M:%S.000Z"`
+
+SVNURL=`$SVN info --xml . | xpath '/info/entry/url/text()' 2>& /dev/null`
 if [ "$SVNURL" != "" ]; then
     if [ -n "${OMNI_VERSIONS-}" -a -f "${OMNI_VERSIONS-}" ]; then
         SVNREVISION=$(awk '/Revision: / {print $2}' $OMNI_VERSIONS)
     else
-        SVNREVISION=`svn info --xml . | xpath 'string(/info/entry/@revision)' 2>& /dev/null`
-        CACHED_REVISION=""
-        if [ -f "$BUILD_DIR/include/SVNVersion.h" ]; then
-            CACHED_REVISION=`awk -v IFS=' ' '/^#define SVNREVISION / {print $3}' "$BUILD_DIR/include/SVNVersion.h"`
-        fi
-        if [ "$CACHED_REVISION" = "$SVNREVISION" ]; then
-            REBUILD=$FORCE_REBUILD
-        fi
+        SVNREVISION=`$SVN info --xml . | xpath 'string(/info/entry/@revision)' 2>& /dev/null`
     fi
 else
     SVNURL="not svn"
@@ -83,24 +98,22 @@ fi
 
 mkdir -p "$BUILD_DIR/include"
 
-if [ "$REBUILD" = "YES" ]; then
-    (
-        echo -n "#define SVNVERSION @\""
-        echo -n $SVNURL
-        echo -n "@"
-        echo -n $SVNREVISION
-        echo "\""
-    
-        echo "#define SVNREVISION $SVNREVISION"
-        echo "#define SVNURL $SVNURL"
-        echo "#define BUILD_DATE @\"$BUILD_DATE\""
-    ) > "$BUILD_DIR/include/SVNVersion.h"
-fi
+(
+    echo -n "#define SVNVERSION @\""
+    echo -n $SVNURL
+    echo -n "@"
+    echo -n $SVNREVISION
+    echo "\""
+
+    echo "#define SVNREVISION $SVNREVISION"
+    echo "#define SVNURL $SVNURL"
+    echo "#define BUILD_DATE @\"$BUILD_DATE\""
+) > "$OUTPUT_HEADER"
 
 if [ "$GENERATE_VERSIONS_TXT" = "YES" ]; then
     mkdir -p "$BUILD_DIR"
     if [ -n "${OMNI_VERSIONS-}" -a -f "${OMNI_VERSIONS-}" ]; then
-        cp -p "$OMNI_VERSIONS" "$BUILD_DIR/Versions.txt"
+        cp -p "$OMNI_VERSIONS" "$OUTPUT_VERSIONS_TXT"
     else
         (
             echo "Build details:"
@@ -110,6 +123,23 @@ if [ "$GENERATE_VERSIONS_TXT" = "YES" ]; then
             echo "Builder: $USER"
             echo "Host:" `hostname`
             echo "Revision: $SVNREVISION"
-        ) > "$BUILD_DIR/Versions.txt"
+        ) > "$OUTPUT_VERSIONS_TXT"
     fi
+fi
+
+if [ "$GOLANG" = "YES" ]; then
+    mkdir -p "$BUILD_DIR"
+    (
+        echo "package svnversion"
+        echo ""
+        echo "import ("
+        echo "	\"time\""
+        echo ")"
+        echo ""
+        echo "const SVNVersion int = $SVNREVISION"
+        echo "const SVNURL string = \"$SVNURL\""
+        echo "var BuildDate time.Time = time.Unix(`date +\"%s\"`, 0)"
+        echo "const BuildHost string = \"`hostname`\""
+        echo "const BuildUser string = \"$USER\""
+    ) > "$OUTPUT_SVNVERSION_GO"
 fi

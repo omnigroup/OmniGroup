@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -124,34 +124,34 @@ static void OWProxyServerDynamicStoreCallBack(SCDynamicStoreRef store, CFArrayRe
 
     // Build a new proxy settings dictionary
     newProxySettingsDictionary = [[NSMutableDictionary alloc] init];
-    if ([dictionary boolForKey:kSCPropNetProxiesFTPEnable defaultValue:NO]) {
+    if ([dictionary boolForKey:(NSString *)kSCPropNetProxiesFTPEnable defaultValue:NO]) {
         OWURL *proxyURL;
 
-        proxyURL = [self _proxyURLWithHost:[dictionary objectForKey:kSCPropNetProxiesFTPProxy] port:[dictionary intForKey:kSCPropNetProxiesFTPPort defaultValue:80]];
+        proxyURL = [self _proxyURLWithHost:[dictionary objectForKey:(NSString *)kSCPropNetProxiesFTPProxy] port:[dictionary intForKey:(NSString *)kSCPropNetProxiesFTPPort defaultValue:80]];
         [newProxySettingsDictionary setObject:proxyURL forKey:@"ftp"];
     }
-    if ([dictionary objectForKey:kSCPropNetProxiesFTPPassive] != nil) {
-        [newProxySettingsDictionary setBoolValue:[dictionary boolForKey:kSCPropNetProxiesFTPPassive defaultValue:YES] forKey:OWProxiesFTPPassiveModeKey];
+    if ([dictionary objectForKey:(NSString *)kSCPropNetProxiesFTPPassive] != nil) {
+        [newProxySettingsDictionary setBoolValue:[dictionary boolForKey:(NSString *)kSCPropNetProxiesFTPPassive defaultValue:YES] forKey:OWProxiesFTPPassiveModeKey];
     }
-    if ([dictionary boolForKey:kSCPropNetProxiesGopherEnable defaultValue:NO]) {
+    if ([dictionary boolForKey:(NSString *)kSCPropNetProxiesGopherEnable defaultValue:NO]) {
         OWURL *proxyURL;
 
-        proxyURL = [self _proxyURLWithHost:[dictionary objectForKey:kSCPropNetProxiesGopherProxy] port:[dictionary intForKey:kSCPropNetProxiesGopherPort defaultValue:80]];
+        proxyURL = [self _proxyURLWithHost:[dictionary objectForKey:(NSString *)kSCPropNetProxiesGopherProxy] port:[dictionary intForKey:(NSString *)kSCPropNetProxiesGopherPort defaultValue:80]];
         [newProxySettingsDictionary setObject:proxyURL forKey:@"gopher"];
     }
-    if ([dictionary boolForKey:kSCPropNetProxiesHTTPEnable defaultValue:NO]) {
+    if ([dictionary boolForKey:(NSString *)kSCPropNetProxiesHTTPEnable defaultValue:NO]) {
         OWURL *proxyURL;
 
-        proxyURL = [self _proxyURLWithHost:[dictionary objectForKey:kSCPropNetProxiesHTTPProxy] port:[dictionary intForKey:kSCPropNetProxiesHTTPPort defaultValue:80]];
+        proxyURL = [self _proxyURLWithHost:[dictionary objectForKey:(NSString *)kSCPropNetProxiesHTTPProxy] port:[dictionary intForKey:(NSString *)kSCPropNetProxiesHTTPPort defaultValue:80]];
         [newProxySettingsDictionary setObject:proxyURL forKey:@"http"];
     }
-    if ([dictionary boolForKey:kSCPropNetProxiesHTTPSEnable defaultValue:NO]) {
+    if ([dictionary boolForKey:(NSString *)kSCPropNetProxiesHTTPSEnable defaultValue:NO]) {
         OWURL *proxyURL;
 
-        proxyURL = [self _proxyURLWithHost:[dictionary objectForKey:kSCPropNetProxiesHTTPSProxy] port:[dictionary intForKey:kSCPropNetProxiesHTTPSPort defaultValue:80]];
+        proxyURL = [self _proxyURLWithHost:[dictionary objectForKey:(NSString *)kSCPropNetProxiesHTTPSProxy] port:[dictionary intForKey:(NSString *)kSCPropNetProxiesHTTPSPort defaultValue:80]];
         [newProxySettingsDictionary setObject:proxyURL forKey:@"https"];
     }
-    exceptionsList = [dictionary objectForKey:kSCPropNetProxiesExceptionsList];
+    exceptionsList = [dictionary objectForKey:(NSString *)kSCPropNetProxiesExceptionsList];
     if (exceptionsList)
         [newProxySettingsDictionary setObject:exceptionsList forKey:OWProxiesExceptionsListKey];
 

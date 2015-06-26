@@ -349,6 +349,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
     NSMutableDictionary *attributes = [OAFontDescriptor _attributesDictionaryForFamily:family size:size weight:fontManagerWeight italic:isItalic condensed:isCondensed fixedPitch:isFixedPitch];
     
     // Try just the basic attributes to see if that resolves to the font we want.
+    // <bug:///118208> (Unassigned: Record specific font name in attributes when members of a font family have the same attributes)
     OAFontDescriptor *basic = [[[self class] alloc] initWithFontAttributes:attributes];
     if (OFISEQUAL(basic.font, font)) {
         [self release];
@@ -359,6 +360,7 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
         attributes[(NSString *)kCTFontNameAttribute] = name;
         
         self = [self initWithFontAttributes:attributes];
+        OBASSERT(OFISEQUAL(self.font, font));
     }
     [family release];
     [name release];
@@ -564,6 +566,7 @@ static OAFontDescriptorPlatformFont _copyFont(CTFontDescriptorRef fontDesc, CGFl
 }
 
 // May return NULL if no descriptors match the desired attributes
+static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matchedDescriptors, NSDictionary *desiredAttributes) CF_RETURNS_RETAINED;
 static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matchedDescriptors, NSDictionary *desiredAttributes)
 {
     // Hello there! If you want to know how this big complicated pile of logic is supposed to work, please see <bug:///109028> (Reference: How we resolve font attributes to a font, and how we fallback on unsatisfiable requests).
@@ -582,7 +585,8 @@ static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matched
     NSDictionary *desiredTraits = desiredAttributes[(id)kCTFontTraitsAttribute];
     unsigned int desiredSymbolicTraits = [(NSNumber *)desiredTraits[(id)kCTFontSymbolicTrait] unsignedIntValue];
     CGFloat desiredWeight = [(NSNumber *)desiredTraits[(id)kCTFontWeightTrait] cgFloatValue];
-
+    BOOL hasDesiredWeight = desiredTraits[(id)kCTFontWeightTrait] != nil;
+    
     BOOL wantBold = (desiredSymbolicTraits & kCTFontTraitBold) != 0
     || desiredWeight >= _fontManagerWeightToWeight(OAFontDescriptorBoldFontWeight())
     || [desiredFontName containsString:@"bold" options:NSCaseInsensitiveSearch];
@@ -613,9 +617,10 @@ static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matched
 
         BOOL newFontIsBold = (candidateSymbolicTraits & kCTFontTraitBold) != 0 || [candidateFontName containsString:@"bold" options:NSCaseInsensitiveSearch];
         // We sometimes have a mismatch in the bold font attribute for the following font families. Zapfino also has the potential for a mismatch with italic.  We do not check for bold or for italic traits when trying to do a match for the following font families.
-        BOOL overRideAttributes = [candidateFontFamilyName hasPrefix:@"Arial Rounded"] || [candidateFontFamilyName hasPrefix:@"Bradley Hand"]|| [candidateFontFamilyName hasPrefix:@"Zapf Dingbats"] || [candidateFontFamilyName hasPrefix:@"Zapfino"] || [candidateFontFamilyName hasPrefix:@"DIN Alternate"] || [candidateFontFamilyName hasPrefix:@"DIN Condensed"];
+        BOOL overRideAttributes = [candidateFontFamilyName hasPrefix:@"Arial Rounded"] || [candidateFontFamilyName hasPrefix:@"Bradley Hand"]|| [candidateFontFamilyName hasPrefix:@"Zapf Dingbats"] || [candidateFontFamilyName hasPrefix:@"Zapfino"] || [candidateFontFamilyName hasPrefix:@"DIN Alternate"] || [candidateFontFamilyName hasPrefix:@"DIN Condensed"] || [candidateFontFamilyName hasPrefix:@"Party LET"] || [candidateFontFamilyName hasPrefix:@"Savoye LET"];
 
-        if (!overRideAttributes && wantBold != newFontIsBold) {
+        // Don't skip out on bold flag differences if we requested a by-weight match. Our closest weight match might be bold or it might not.
+        if (!overRideAttributes && !hasDesiredWeight && wantBold != newFontIsBold) {
             DEBUG_FONT_LOOKUP(@"Font '%@' boldness mismatch. %@", candidateFontName, wantBold ? @"Wanted bold." : @"Wanted not bold.");
             continue;
         }
@@ -650,7 +655,7 @@ static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matched
         BOOL newFontIsExpanded = (candidateSymbolicTraits & kCTFontExpandedTrait) != 0 || [desiredFontName containsString:@"expanded" options:NSCaseInsensitiveSearch];
         
         if (newFontIsExpanded) {
-            if (!wantExpanded) {
+            if (!wantExpanded && ![candidateFontFamilyName hasPrefix:@"Bradley Hand"]) { // Bradley Hand changed to indicate itself as expanded in 8.3, but we don't round-trip it well. this is a similar situation as the pile of fonts excluded by the overRideAttributes flag above.
                 DEBUG_FONT_LOOKUP(@"Font '%@' is expanded, but we're not looking for an expanded font.", candidateFontName);
                 continue;
             } else if (wantCondensed && wantExpanded) {
@@ -680,9 +685,12 @@ static CTFontDescriptorRef _bestMatchingDescriptorForAttributes(NSArray *matched
     }
     
     if (bestMatchRespectingExpandedOrCondensed)
-        return bestMatchRespectingExpandedOrCondensed;
-    else
-        return bestMatchByWeightOnly;
+        return CFRetain(bestMatchRespectingExpandedOrCondensed);
+
+    if (bestMatchByWeightOnly)
+        return CFRetain(bestMatchByWeightOnly);
+    
+    return NULL;
 }
 
 static NSArray *_matchingDescriptorsForFontFamily(NSString *familyName)
@@ -720,19 +728,28 @@ static NSArray *_matchingDescriptorsForFontFamily(NSString *familyName)
         [fallbackAttributesDictionary retain];
     });
     
+    CGFloat size = [[_attributes objectForKey:(id)kCTFontSizeAttribute] cgFloatValue]; // can be zero; the font system interprets this as "default size", which is 12pt.
+    
+    // We we want a specific font, try that first. This is important for cases where multiple fonts in the family have the same attributes (Apple Braile, GujaratiMT, etc.).
+    CTFontDescriptorRef bestDescriptor;
+    NSString *fontName = _attributes[(id)kCTFontNameAttribute];
+    if (fontName) {
+        bestDescriptor = CTFontDescriptorCreateWithNameAndSize((CFStringRef)fontName, size);
+        if (bestDescriptor)
+            goto matchSucceeded;
+    }
+    
     NSString *familyName = _attributes[(id)kCTFontFamilyNameAttribute];
     if (!familyName) {
         // Fonts read from RTF will have a family name if a font is available.  Since it's not, I guess we'll substitute Helvetica.
         familyName = @"Helvetica"; // Try to limp along with a font family we assume exists on all platforms.
     }
     
-    CGFloat size = [[_attributes objectForKey:(id)kCTFontSizeAttribute] cgFloatValue]; // can be zero; the font system interprets this as "default size", which is 12pt.
-    
     NSArray *familyDescriptors = _matchingDescriptorsForFontFamily(familyName);
 
     DEBUG_FONT_LOOKUP(@"-----------------------------------------------------------------------------");
     DEBUG_FONT_LOOKUP(@"Using unadulterated attributes: %@", _attributes);
-    CTFontDescriptorRef bestDescriptor = _bestMatchingDescriptorForAttributes(familyDescriptors, _attributes);
+    bestDescriptor = _bestMatchingDescriptorForAttributes(familyDescriptors, _attributes);
     if (bestDescriptor)
         goto matchSucceeded;
 
@@ -809,6 +826,7 @@ static NSArray *_matchingDescriptorsForFontFamily(NSString *familyName)
 matchSucceeded:
     DEBUG_FONT_LOOKUP(@"Matched to descriptor: %@", bestDescriptor);
     _font = _copyFont(bestDescriptor, size);
+    CFRelease(bestDescriptor);
     OBASSERT_NOTNULL(_font);
     
 done:

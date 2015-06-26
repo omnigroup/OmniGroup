@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -191,7 +191,7 @@ NSString *OFXMLIDFromString(NSString *str)
 
 - (NSMutableDictionary *)copyIdentifierToObjectMapping;
 {
-    return [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary *)_idToObject];
+    return (OB_BRIDGE_TRANSFER NSMutableDictionary *)CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, _idToObject);
 }
 
 #ifdef OMNI_ASSERTIONS_ON

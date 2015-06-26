@@ -11,14 +11,14 @@
     <string/>
     <key>OUIDocumentPickerSortKey</key>
     <string>date</string>
-
     <key>OUIDocumentPickerShouldCrashBasedOnFileName</key>
     <false/>
     <key>OUIDocumentPickerUseTestCode</key>
     <false/>
-    
+    <key>OUIExternalDocuments</key>
+    <array/>
     <key>OUIMainWindowClass</key>
     <string/>
-    
+
 </dict>
 </plist>

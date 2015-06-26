@@ -9,6 +9,7 @@
 
 #import <OmniUI/NSUndoManager-OUIExtensions.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIUndoBarButtonMenuAppearanceDelegate.h>
 #import <OmniUI/OUIUndoButton.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/OUIMenuController.h>
@@ -124,6 +125,16 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     return _commonInit(self);
 }
 
+- initWithUndoMenuAppearanceDelegate:(id <OUIUndoBarButtonMenuAppearanceDelegate>)appearanceDelegate;
+{
+    if (!(self = [super init]))
+        return nil;
+    
+    _weak_appearanceDelegate = appearanceDelegate;
+    
+    return _commonInit(self);
+}
+
 - (void)dealloc;
 {
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
@@ -169,6 +180,38 @@ static id _commonInit(OUIUndoBarButtonItem *self)
         [_undoButton setTitle:NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title") forState:UIControlStateNormal];
         [_undoButton sizeToFit];
     }
+}
+
+#pragma mark - Appearance
+
+- (void)appearanceDidChange;
+{
+    if (self.appearanceDelegate != nil) {
+        
+        if (_menuController != nil) {
+            _menuController.popoverPresentationController.backgroundColor = [self.appearanceDelegate undoBarButtonMenuPopoverBackgroundColor];
+            _menuController.menuBackgroundColor = [self.appearanceDelegate undoBarButtonMenuBackgroundColor];
+            _menuController.menuOptionBackgroundColor = [self.appearanceDelegate undoBarButtonMenuOptionBackgroundColor];
+            _menuController.menuOptionSelectionColor = [self.appearanceDelegate undoBarButtonMenuOptionSelectionColor];
+        }
+    }
+}
+
+@synthesize appearanceDelegate = _weak_appearanceDelegate;
+- (void)setAppearanceDelegate:(id<OUIUndoBarButtonMenuAppearanceDelegate>)appearanceDelegate;
+{
+    if (appearanceDelegate == _weak_appearanceDelegate) {
+        return;
+    }
+    
+    _weak_appearanceDelegate = appearanceDelegate;
+    [self appearanceDidChange];
+}
+
+#pragma mark - Accessibility
+- (NSString *)accessibilityLabel
+{
+    return NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title");
 }
 
 #pragma mark -
@@ -257,6 +300,9 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     
     // Setup Popover Presentation Controller - This must be done each time becase when the popover is dismissed the current popoverPresentationController is released and a new one is created next time.
     _menuController.popoverPresentationController.barButtonItem = self;
+
+    // give the appearanceDelegate, if present, an opportunity to alter the appearance each time
+    [self appearanceDidChange];
     
     return _menuController;
 }

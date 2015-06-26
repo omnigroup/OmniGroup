@@ -7,10 +7,10 @@
 
 #import "OFXFileSnapshotDeleteTransfer.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFileInfo.h>
 
-#import "OFXConnection.h"
 #import "OFXFileState.h"
 #import "OFXFileSnapshot.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
@@ -26,7 +26,7 @@ RCS_ID("$Id$")
     NSURL *_remoteTemporaryDirectoryURL;
 }
 
-- (id)initWithConnection:(OFXConnection *)connection fileIdentifier:(NSString *)fileIdentifier snapshot:(OFXFileSnapshot *)currentSnapshot remoteContainerURL:(NSURL *)remoteContainerURL remoteTemporaryDirectoryURL:(NSURL *)remoteTemporaryDirectoryURL;
+- (id)initWithConnection:(ODAVConnection *)connection fileIdentifier:(NSString *)fileIdentifier snapshot:(OFXFileSnapshot *)currentSnapshot remoteContainerURL:(NSURL *)remoteContainerURL remoteTemporaryDirectoryURL:(NSURL *)remoteTemporaryDirectoryURL;
 {
     OBPRECONDITION(![NSString isEmptyString:fileIdentifier]);
     OBPRECONDITION(currentSnapshot);
@@ -58,7 +58,7 @@ RCS_ID("$Id$")
         // This is a delete that is just cleaning up a local snapshot. The document never got fully uploaded to the server or was remotely deleted too.
     } else {
         TRACE_SIGNAL(OFXFileSnapshotDeleteTransfer.remote_delete_attempted);
-        OFXConnection *connection = self.connection;
+        ODAVConnection *connection = self.connection;
         __autoreleasing NSError *error;
 
         if (_fileIdentifier == nil) {

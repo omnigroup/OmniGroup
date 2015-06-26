@@ -61,6 +61,9 @@
 		34EE20EE14F035E700722491 /* OBErrorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 34EE20ED14F035E700722491 /* OBErrorTests.m */; };
 		34EE20EF14F037C000722491 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A33D42808A0191B003A3FA5 /* OmniBase.framework */; };
 		34EF25371A64881A00C0073A /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34EF25361A64881A00C0073A /* CFNetwork.framework */; };
+		34F507451AF2807C00F7E580 /* OBPatchThrow.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1E43B8881AF18C4100E084EA /* OBPatchThrow.mm */; };
+		34F507461AF2808000F7E580 /* OBPatchTrap.m in Sources */ = {isa = PBXBuildFile; fileRef = A27426271293799F00674569 /* OBPatchTrap.m */; };
+		34F507471AF2821300F7E580 /* OBPatchTrap.h in Headers */ = {isa = PBXBuildFile; fileRef = A27426261293799F00674569 /* OBPatchTrap.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D40808A0191B003A3FA5 /* assertions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C23FE8AAE2511C9CC38 /* assertions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D40A08A0191B003A3FA5 /* macros.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C25FE8AAE2511C9CC38 /* macros.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A33D40C08A0191B003A3FA5 /* NSData-OBObjectCompatibility.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C27FE8AAE2511C9CC38 /* NSData-OBObjectCompatibility.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -246,6 +249,7 @@
 		00E51C3EFE8AAE2511C9CC38 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		07AA829000D177F4C697A14A /* NSException-OBExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSException-OBExtensions.h"; sourceTree = "<group>"; };
 		07AA829100D177F4C697A14A /* NSException-OBExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSException-OBExtensions.m"; sourceTree = "<group>"; };
+		1E43B8881AF18C4100E084EA /* OBPatchThrow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OBPatchThrow.mm; sourceTree = "<group>"; };
 		34172BA3119C88DB00F7FD6A /* OBRuntimeCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBRuntimeCheck.h; sourceTree = "<group>"; };
 		34172BA4119C88DB00F7FD6A /* OBRuntimeCheck.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBRuntimeCheck.m; sourceTree = "<group>"; };
 		34354D151190BFC700FE1BEB /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
@@ -428,6 +432,7 @@
 				34172BA4119C88DB00F7FD6A /* OBRuntimeCheck.m */,
 				A27426261293799F00674569 /* OBPatchTrap.h */,
 				A27426271293799F00674569 /* OBPatchTrap.m */,
+				1E43B8881AF18C4100E084EA /* OBPatchThrow.mm */,
 				00E51C2BFE8AAE2511C9CC38 /* OBUtilities.h */,
 				00E51C32FE8AAE2511C9CC38 /* OBUtilities.m */,
 				3483FAE2192CFE140072D3FE /* OBUtilities-NonARC.m */,
@@ -627,6 +632,7 @@
 				4A33D41008A0191B003A3FA5 /* OBPostLoader.h in Headers */,
 				34571D281AB1E9310072E0F0 /* OBBacktraceBuffer.h in Headers */,
 				4A33D41108A0191B003A3FA5 /* OBUtilities.h in Headers */,
+				34F507471AF2821300F7E580 /* OBPatchTrap.h in Headers */,
 				4A33D41208A0191B003A3FA5 /* OmniBase.h in Headers */,
 				4A33D41308A0191B003A3FA5 /* rcsid.h in Headers */,
 				4A33D41408A0191B003A3FA5 /* system.h in Headers */,
@@ -709,7 +715,6 @@
 				34EE20CC14F0354300722491 /* Sources */,
 				34EE20CD14F0354300722491 /* Frameworks */,
 				34EE20CE14F0354300722491 /* Resources */,
-				34EE20CF14F0354300722491 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -756,7 +761,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 				TargetAttributes = {
 					34637CCB194F448F009B51C5 = {
 						CreatedOnToolsVersion = 6.0;
@@ -823,22 +828,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		34EE20CF14F0354300722491 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$PROJECT_DIR\"/../../Scripts/OmniRunUnitTests\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		34637CC7194F448F009B51C5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -892,10 +881,12 @@
 				4DA2E35117A064420073144A /* OBLogger.m in Sources */,
 				4A33D41A08A0191B003A3FA5 /* OBObject.m in Sources */,
 				344E670A1845535E00BEFCE3 /* OBExpectedDeallocation.m in Sources */,
+				34F507451AF2807C00F7E580 /* OBPatchThrow.mm in Sources */,
 				4A33D41B08A0191B003A3FA5 /* OBPostLoader.m in Sources */,
 				4A33D41C08A0191B003A3FA5 /* assertions.m in Sources */,
 				4A33D41D08A0191B003A3FA5 /* OBUtilities.m in Sources */,
 				4A33D41E08A0191B003A3FA5 /* NSException-OBExtensions.m in Sources */,
+				34F507461AF2808000F7E580 /* OBPatchTrap.m in Sources */,
 				347049760CFB6612007025F7 /* NSError-OBExtensions.m in Sources */,
 				A2581A630E2D36DD001ABDA6 /* OBBacktraceBuffer.m in Sources */,
 				3483FAE3192CFE140072D3FE /* OBUtilities-NonARC.m in Sources */,

@@ -10,11 +10,12 @@
 #import <Foundation/NSObject.h>
 #import <OmniDAV/ODAVFeatures.h>
 
-@class ODAVMultipleFileInfoResult, ODAVSingleFileInfoResult, ODAVFileInfo, ODAVOperation, ODAVURLResult;
+@class ODAVMultipleFileInfoResult, ODAVSingleFileInfoResult, ODAVFileInfo, ODAVOperation, ODAVURLResult, ODAVURLAndDataResult;
 
 typedef void (^ODAVConnectionBasicCompletionHandler)(NSError *errorOrNil);
 typedef void (^ODAVConnectionOperationCompletionHandler)(ODAVOperation *op);
 typedef void (^ODAVConnectionURLCompletionHandler)(ODAVURLResult *result, NSError *errorOrNil);
+typedef void (^ODAVConnectionURLAndDataCompletionHandler)(ODAVURLAndDataResult *result, NSError *errorOrNil);
 typedef void (^ODAVConnectionStringCompletionHandler)(NSString *resultString, NSError *errorOrNil);
 typedef void (^ODAVConnectionMultipleFileInfoCompletionHandler)(ODAVMultipleFileInfoResult *properties, NSError *errorOrNil);
 typedef void (^ODAVConnectionSingleFileInfoCompletionHandler)(ODAVSingleFileInfoResult *properties, NSError *errorOrNil);
@@ -25,24 +26,32 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
     ODAVDepthInfinite, // Not always supported by servers
 };
 
-#if !ODAV_NSURLSESSION
-// Stand-in until we use NSURLSessionConfiguration
 @interface ODAVConnectionConfiguration : NSObject
 
 + (NSString *)userAgentStringByAddingComponents:(NSArray *)components;
 
-@property(nonatomic) BOOL allowsCellularAccess;
 @property(nonatomic,copy) NSString *userAgent;
 
+@property(nonatomic) BOOL HTTPShouldUsePipelining;
+
 @end
-#endif
 
 @interface ODAVConnection : NSObject
 
-- initWithSessionConfiguration:(ODAV_NSURLSESSIONCONFIGURATION_CLASS *)configuration;
+- (instancetype)init NS_UNAVAILABLE;
+- initWithSessionConfiguration:(ODAVConnectionConfiguration *)configuration baseURL:(NSURL *)baseURL NS_DESIGNATED_INITIALIZER;
+
+@property(nonatomic,readonly) ODAVConnectionConfiguration *configuration;
+
+@property(nonatomic,readonly) NSURL *originalBaseURL;
+@property(nonatomic,readonly) NSURL *baseURL; // Possibly redirected
+
+- (void)updateBaseURLWithRedirects:(NSArray *)redirects;
+- (NSURL *)suggestRedirectedURLForURL:(NSURL *)url;
 
 // Completely override the user agent string, otherwise the configuration's userAgent will be used.
 @property(nonatomic,copy) NSString *userAgent;
+@property(nonatomic,copy) NSString *operationReason;
 
 // NOTE: These get called on a private queue, not the queue the connection was created on or the queue the operations were created or started on
 @property(nonatomic,copy) void (^validateCertificateForChallenge)(NSURLAuthenticationChallenge *challenge);
@@ -61,6 +70,8 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 
 - (void)getContentsOfURL:(NSURL *)url ETag:(NSString *)ETag completionHandler:(ODAVConnectionOperationCompletionHandler)completionHandler;
 - (ODAVOperation *)asynchronousGetContentsOfURL:(NSURL *)url; // Returns an unstarted operation
+
+- (void)postData:(NSData *)data toURL:(NSURL *)url completionHandler:(ODAVConnectionURLAndDataCompletionHandler)completionHandler;
 
 - (void)putData:(NSData *)data toURL:(NSURL *)url completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;
 - (ODAVOperation *)asynchronousPutData:(NSData *)data toURL:(NSURL *)url; // Returns an unstarted operation
@@ -93,6 +104,12 @@ typedef NS_ENUM(NSUInteger, ODAVDepth) {
 
 @interface ODAVURLResult : NSObject
 @property(nonatomic,copy) NSURL *URL;
+@property(nonatomic,copy) NSArray *redirects;
+@end
+
+@interface ODAVURLAndDataResult : NSObject
+@property(nonatomic,copy) NSURL *URL;
+@property(nonatomic,copy) NSData *responseData;
 @property(nonatomic,copy) NSArray *redirects;
 @end
 

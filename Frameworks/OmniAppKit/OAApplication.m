@@ -527,26 +527,6 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
     return launchModifierFlags;
 }
 
-- (void)scheduleModalPanelForTarget:(id)modalController selector:(SEL)modalSelector userInfo:(id)userInfo;
-{
-    OBPRECONDITION(modalController != nil);
-    OBPRECONDITION([modalController respondsToSelector:modalSelector]);
-    
-    // Create an invocation out of this request
-    NSMethodSignature *modalSignature = [modalController methodSignatureForSelector:modalSelector];
-    if (modalSignature == nil)
-        return;
-    NSInvocation *modalInvocation = [NSInvocation invocationWithMethodSignature:modalSignature];
-    [modalInvocation setTarget:modalController];
-    [modalInvocation setSelector:modalSelector];
-    
-    // Pass userInfo if modalSelector takes it
-    if ([modalSignature numberOfArguments] > 2) // self, _cmd
-        [modalInvocation setArgument:&userInfo atIndex:2];
-
-    [self _scheduleModalPanelWithInvocation:modalInvocation];
-}
-
 // Prefix the URL string with "anchor:" if the string is the name of an anchor in the help files. Prefix it with "search:" to search for the string in the help book.
 - (void)showHelpURL:(NSString *)helpURLString;
 {
@@ -971,29 +951,6 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 - (void)processMouseButtonsChangedEvent:(NSEvent *)event;
 {
     mouseButtonState = [event data2];
-}
-
-- (void)_scheduleModalPanelWithInvocation:(NSInvocation *)modalInvocation;
-{
-    OBPRECONDITION(modalInvocation != nil);
-    
-    NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
-    if ([[runLoop currentMode] isEqualToString:NSModalPanelRunLoopMode]) {
-        NSTimer *timer = [NSTimer timerWithTimeInterval:0.0 target:self selector:@selector(_rescheduleModalPanel:) userInfo:modalInvocation repeats:NO];
-        [runLoop addTimer:timer forMode:NSDefaultRunLoopMode];
-    } else {
-        [modalInvocation invoke];
-    }
-}
-
-- (void)_rescheduleModalPanel:(NSTimer *)timer;
-{
-    OBPRECONDITION(timer != nil);
-    
-    NSInvocation *invocation = [timer userInfo];
-    OBASSERT(invocation != nil);
-    
-    [self _scheduleModalPanelWithInvocation:invocation];
 }
 
 @end

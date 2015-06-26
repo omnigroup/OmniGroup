@@ -179,14 +179,17 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileE
         return;
     }
 
-    Class cls = [delegate previewGenerator:self documentClassForFileURL:fileURL];
-    if (!cls)
+    Class documentClass = [delegate previewGenerator:self documentClassForFileURL:fileURL];
+    if (documentClass == nil) {
+        [OUIDocumentPreview writeEmptyPreviewsForFileEdit:fileEdit];
+        [self _finishedUpdatingPreview];
         return;
+    }
 
-    OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
+    OBASSERT(OBClassIsSubclassOfClass(documentClass, [OUIDocument class]));
 
     __autoreleasing NSError *error = nil;
-    OUIDocument *document = [[cls alloc] initWithExistingFileItem:self->_currentPreviewUpdatingFileItem error:&error];
+    OUIDocument *document = [[documentClass alloc] initWithExistingFileItem:self->_currentPreviewUpdatingFileItem error:&error];
     if (!document) {
         NSLog(@"Error opening document at %@ to rebuild its preview: %@", fileURL, [error toPropertyList]);
     }

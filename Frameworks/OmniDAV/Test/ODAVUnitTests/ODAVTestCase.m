@@ -102,5 +102,11 @@ static const NSUInteger UsernameCount = 100;
     return [[NSURLCredential alloc] initWithUser:_username password:_password persistence:persistence];
 }
 
+- (BOOL)shouldAddTrustForCertificateChallenge:(NSURLAuthenticationChallenge *)challenge;
+{
+    // Trust all certificates for these tests.
+    return YES;
+}
+
 @end
 

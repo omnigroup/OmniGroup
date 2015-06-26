@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -37,5 +37,7 @@
 
 // The scrollview containing the slices. This is just self.view here, but can be overridden in subclasses if there needs to be more view hierarchy.
 - (UIView *)contentView;
+
+- (void)updateContentInsetsForKeyboard;
 
 @end

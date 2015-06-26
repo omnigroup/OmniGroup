@@ -31,12 +31,14 @@ enum {
 };
 
 /* Adding a UIView containing a UILabel with constraints results in 'Auto Layout still required after executing -layoutSubviews. UITableView's implementation of -layoutSubviews needs to call super.' */
-@interface OSUPreferencesTableViewLabel : UIView
+
+@interface OSUPreferencesTableViewLabel ()
 
 - initWithText:(NSString *)text paddingOnTop:(BOOL)paddingOnTop;
 @property(nonatomic) CGFloat tableViewWidth;
 @property(nonatomic) CGFloat tableViewSeparatorInset;
 @property(nonatomic) NSTextAlignment textAlignment;
+
 @end
 
 @implementation OSUPreferencesTableViewLabel
@@ -106,10 +108,21 @@ enum {
     [self setNeedsLayout]; // Not that this does any good since UITableView doesn't lay out in response to header/footer view changes.
 }
 
+- (UIColor *)textColor;
+{
+    return _label.textColor;
+}
+
+- (void)setTextColor:(UIColor *)textColor;
+{
+    _label.textColor = textColor;
+}
+
 - (NSTextAlignment)textAlignment;
 {
     return _label.textAlignment;
 }
+
 - (void)setTextAlignment:(NSTextAlignment)textAlignment;
 {
     _label.textAlignment = textAlignment;
@@ -148,7 +161,7 @@ enum {
 
 + (NSString *)localizedLongDescription;
 {
-    return NSLocalizedStringFromTableInBundle(@"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\nThis information is kept entirely anonymous.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Settings preferences detail text");
+    return NSLocalizedStringFromTableInBundle(@"If you choose to share this information, you’ll be helping keep us informed of which devices and iOS versions our software should support.\n\nThis information is kept entirely anonymous.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"Settings preferences detail text");
 }
 
 // Convenience to run w/o a parent navigation controller.

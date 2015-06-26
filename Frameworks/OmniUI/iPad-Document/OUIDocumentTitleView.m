@@ -49,6 +49,8 @@ static void _commonInit(OUIDocumentTitleView *self)
     [self->_documentTitleButton setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
     [self->_documentTitleButton addTarget:self action:@selector(_documentTitleButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     self->_documentTitleButton.hidden = YES;
+    self->_documentTitleButton.accessibilityHint = NSLocalizedStringFromTableInBundle(@"Edits the document's title.", @"OmniUIDocument", OMNI_BUNDLE, @"title view edit button item accessibility hint.");
+    
     [self addSubview:self->_documentTitleButton];
     
     self->_titleColor = [UIColor blackColor];

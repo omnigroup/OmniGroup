@@ -7,6 +7,7 @@
 
 #import "OFXAccountAgent-Internal.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFeatures.h>
 #import <OmniDAV/ODAVFileInfo.h>
@@ -19,7 +20,6 @@
 
 #import "OFXAccountInfo.h"
 #import "OFXAgent-Internal.h"
-#import "OFXConnection.h"
 #import "OFXContainerAgent-Internal.h"
 #import "OFXContainerScan.h"
 #import "OFXDAVUtilities.h"
@@ -750,7 +750,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
         _recentRedirects = nil;
     }
     
-    OFXConnection *connection = [self _makeConnection];
+    ODAVConnection *connection = [self _makeConnection];
     if (!connection) {
         OBASSERT_NOT_REACHED("Our -_makeConnection currently always succeeds");
         return;
@@ -863,7 +863,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     }
 }
 
-- (NSArray *)_upateInfoAndCollectContainerIdentifiersWithConnection:(OFXConnection *)connection serverDate:(NSDate **)outServerDate error:(NSError **)outError;
+- (NSArray *)_upateInfoAndCollectContainerIdentifiersWithConnection:(ODAVConnection *)connection serverDate:(NSDate **)outServerDate error:(NSError **)outError;
 {
     // We store the main Info.plist, client files and containers in a flat hierarchy in the remote account. This allows us to do a single PROPFIND to see everything that has changed.
     ODAVMultipleFileInfoResult *result = OFXFetchFileInfosEnsuringDirectoryExists(connection, [self _remoteSyncDirectory], outError);
@@ -1387,11 +1387,11 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
 
 #pragma mark - Internal
 
-- (OFXConnection *)_makeConnection;
+- (ODAVConnection *)_makeConnection;
 {
     ODAVConnectionConfiguration *configuration = [OFXAgent makeConnectionConfiguration];
     
-    OFXConnection *connection = [[OFXConnection alloc] initWithSessionConfiguration:configuration baseURL:self.remoteBaseDirectory];
+    ODAVConnection *connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration baseURL:self.remoteBaseDirectory];
 
     connection.userAgent = _debugName;
     

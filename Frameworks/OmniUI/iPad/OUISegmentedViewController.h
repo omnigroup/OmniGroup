@@ -21,7 +21,9 @@
  */
 @property (nonatomic, strong) UIBarButtonItem *leftBarButtonItem;
 
+- (CGFloat)topLayoutLength;
 - (void)setShouldShowDismissButton:(BOOL)shouldShow;
+- (void)temporarilyHideDismissButton:(BOOL)hide;
 
 @end
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2011,2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -235,6 +235,44 @@ static NSString *methodsWithPrefix(Class cls, char prefix)
     }
     
     return result;
+}
+
++ (NSArray *)subclasses;
+{
+    __unsafe_unretained Class *classes = NULL;
+    int classCount = 0;
+    int returnedClassCount;
+    
+    while (YES) {
+        returnedClassCount = objc_getClassList(classes, classCount);
+        if (returnedClassCount == classCount)
+            break;
+        classCount = returnedClassCount;
+        classes = (__unsafe_unretained Class *)reallocf(classes, sizeof(*classes) * classCount);
+    }
+
+    NSMutableArray *results = [NSMutableArray array];
+    
+    for (int classIndex = 0; classIndex < classCount; classIndex++) {
+        // Can't assume the classes are subclasses of NSObject, so calling NSObject methods won't work.
+        Class cls = classes[classIndex];
+        if (cls == self)
+            continue;
+        
+        Class ancestor = cls;
+        while (ancestor) {
+            if (ancestor == self) {
+                [results addObject:cls];
+                break;
+            }
+            ancestor = class_getSuperclass(ancestor);
+        }
+    }
+    
+    if (classes)
+        free(classes);
+    
+    return results;
 }
 
 #endif

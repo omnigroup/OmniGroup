@@ -819,6 +819,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     return self;
 #else
     OBFinishPortingLater("color profiles are disabled");
+    [self release];
     return nil;
 #endif
 }

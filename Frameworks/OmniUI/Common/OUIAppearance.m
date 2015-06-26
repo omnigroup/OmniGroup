@@ -613,7 +613,7 @@ static void MakeImpForProperty(Class implementationCls, NSString *backingPropNam
                 NSUInteger globalInvalidationCount = ((OUIAppearance *)self)->_cacheInvalidationCount;
                 if (localInvalidationCount < globalInvalidationCount) {
                     id object = [self _objectOfClass:valueClass forPlistKeyPath:backingPropName];
-                    DEBUG_DYNAMIC_GETTER(@"_objectOfClass:%@ forPlistKeyPath:%@ --> %@", NSStringFromClass(cls), backingPropName, object);
+                    DEBUG_DYNAMIC_GETTER(@"_objectOfClass:%@ forPlistKeyPath:%@ --> %@", NSStringFromClass(valueClass), backingPropName, object);
                     cachedObject = object;
                     localInvalidationCount = globalInvalidationCount;
                 }
@@ -897,96 +897,6 @@ static void EnsureSystemColorsObserver(OUIAppearance *self)
     }); \
     return color; \
 } while(0);
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniRedColor
-+ (UIColor *)omniRedColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniRedColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniOrangeColor
-+ (UIColor *)omniOrangeColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniOrangeColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniYellowColor
-+ (UIColor *)omniYellowColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniYellowColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniGreenColor
-+ (UIColor *)omniGreenColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniGreenColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniTealColor
-+ (UIColor *)omniTealColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniTealColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniBlueColor
-+ (UIColor *)omniBlueColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniBlueColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniPurpleColor
-+ (UIColor *)omniPurpleColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniPurpleColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniGraphiteColor
-+ (UIColor *)omniGraphiteColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniGraphiteColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniCremaColor
-+ (UIColor *)omniCremaColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniCremaColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniAlternateRedColor
-+ (UIColor *)omniAlternateRedColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniAlternateRedColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniAlternateYellowColor
-+ (UIColor *)omniAlternateYellowColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniAlternateYellowColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniNeutralDeemphasizedColor
-+ (UIColor *)omniNeutralDeemphasizedColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniNeutralDeemphasizedColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniNeutralPlaceholderColor
-+ (UIColor *)omniNeutralPlaceholderColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniNeutralPlaceholderColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniNeutralLightweightColor
-+ (UIColor *)omniNeutralLightweightColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniNeutralLightweightColor;
-}
-
-/// Soft-deprecated. Use [OUIAppearanceColors appearance].omniDeleteColor
-+ (UIColor *)omniDeleteColor;
-{
-    return [OUIAppearanceDefaultColors appearance].omniDeleteColor;
-}
 
 - (BOOL)isLightColor;
 {

@@ -11,6 +11,18 @@
 
 RCS_ID("$Id$");
 
+@interface OUISpecialURLCommand () {
+  @private
+    UIWindow *_window;
+    UIViewController *_viewController;
+}
+
+- (UIWindow *)_createTemporaryWindowForAlertPresentation;
+
+@end
+
+#pragma mark -
+
 @implementation OUIAppController (OUISpecialURLHandling)
 
 + (NSMutableDictionary *)commandClassesBySpecialURLPath;
@@ -48,6 +60,16 @@ RCS_ID("$Id$");
         return NO;
     }
     
+    if (sourceController == nil) {
+        // Perhaps we are early enough in the startup process that we haven't created our main window yeet.
+        UIWindow *window = [command _createTemporaryWindowForAlertPresentation];
+        if (window == nil || window.rootViewController == nil) {
+            return NO;
+        }
+        
+        sourceController = window.rootViewController;
+    }
+    
     command.viewControllerForPresentation = sourceController;
     
     if ([command skipsConfirmation]) {
@@ -56,7 +78,11 @@ RCS_ID("$Id$");
     }
     
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:[command confirmationMessage] preferredStyle:alertStyle];
-    [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") style:UIAlertActionStyleCancel handler:nil]];
+    [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title") style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        OUIAppController *controller = [OUIAppController controller];
+        controller.shouldPostponeLaunchActions = NO;
+    }]];
+     
     [alertController addAction:[UIAlertAction actionWithTitle:[command confirmButtonTitle] style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
         [command invoke];
     }]];
@@ -93,13 +119,12 @@ RCS_ID("$Id$");
     OBPRECONDITION([self isSpecialURL:url]);
     
     UIViewController *viewControllerForSpecialURLHandlingPresentation = [self viewControllerForSpecialURLHandlingPresentation];
-    if (viewControllerForSpecialURLHandlingPresentation == nil)
-        return NO;
-    
     return [[self class] invokeSpecialURL:url confirmingIfNeededWithStyle:UIAlertControllerStyleAlert fromViewController:viewControllerForSpecialURLHandlingPresentation];
 }
 
 @end
+
+#pragma mark -
 
 @implementation OUISpecialURLCommand
 
@@ -110,6 +135,21 @@ RCS_ID("$Id$");
     }
     _url = [url copy];
     return self;
+}
+
+// Must override superclass designated initializers since we declared our own.
+- (instancetype)init;
+{
+    OBRejectUnusedImplementation(self, _cmd);
+    return [self initWithURL:nil];
+}
+
+- (void)dealloc;
+{
+    _window.hidden = YES;
+    _window = nil;
+
+    _viewController = nil;
 }
 
 - (NSString *)commandDescription;
@@ -137,6 +177,19 @@ RCS_ID("$Id$");
 - (void)invoke;
 {
     OBRequestConcreteImplementation(self, _cmd);
+}
+
+- (UIWindow *)_createTemporaryWindowForAlertPresentation;
+{
+    _viewController = [[UIViewController alloc] init];
+    _viewController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"OUICrashAlertBackground"]];
+    
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    _window = [[UIWindow alloc] initWithFrame:screenRect];
+    _window.rootViewController = _viewController;
+    [_window makeKeyAndVisible];
+    
+    return _window;
 }
 
 @end

@@ -7,9 +7,8 @@
 
 #import "OFXFileSnapshotTransfer.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVErrors.h>
-
-#import "OFXConnection.h"
 
 RCS_ID("$Id$")
 
@@ -25,7 +24,7 @@ RCS_ID("$Id$")
     OBRejectUnusedImplementation(self, _cmd);
 }
 
-- initWithConnection:(OFXConnection *)connection;
+- initWithConnection:(ODAVConnection *)connection;
 {
     OBPRECONDITION(connection);
     OBPRECONDITION(connection.validateCertificateForChallenge); // We aren't going to fill in these details -- we expect the caller to have done so
@@ -85,6 +84,12 @@ static BOOL _shouldLogError(NSError *error)
     if ([error causedByUserCancelling])
         return NO;
     
+    // -causedByUserCancelling doesn't check this case since it might be non-user action.
+    if ([error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorCancelled])
+        return (OFXSyncDebug > 0);
+    if ([error hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorUserCancelledAuthentication])
+        return (OFXSyncDebug > 0);
+
     if ([error hasUnderlyingErrorDomain:OFXErrorDomain code:OFXFileUpdatedWhileDeleting])
         // Delete vs. edit conflict will deal with this. Log them if the debug level is elevated, but not as a normal matter of course.
         return (OFXSyncDebug > 0);

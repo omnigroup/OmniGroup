@@ -32,7 +32,7 @@
 		3441C4BD19C8E65700A2FAAE /* ODOInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 344E7E861042FD6700C55C19 /* ODOInternal.h */; };
 		3441C4BE19C8E66200A2FAAE /* ODOEntity-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34905A160D8A3261001E6B6B /* ODOEntity-Internal.h */; };
 		3441C4BF19C8E66800A2FAAE /* ODOModel-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B9CDCE0D8B1954001A5AB1 /* ODOModel-SQL.h */; };
-		3441C4C019C8E67600A2FAAE /* ODOEditingContext-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */; };
+		3441C4C019C8E67600A2FAAE /* ODOEditingContext-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		3441C4C119C8E67600A2FAAE /* ODOEditingContext-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */; };
 		3441C4C219C8E67D00A2FAAE /* ODOObject-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B6880D8C625700390D08 /* ODOObject-Internal.h */; };
 		3441C4C319C8E67D00A2FAAE /* ODOObject-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B6880D8C625700390D08 /* ODOObject-Internal.h */; };
@@ -130,8 +130,6 @@
 		3EE8E50E1937FF1800616F0E /* ODOPredicate-SQL.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ECFF60D8F78BE007ADAC9 /* ODOPredicate-SQL.m */; };
 		3EE8E50F1937FF1800616F0E /* ODOPredicate.m in Sources */ = {isa = PBXBuildFile; fileRef = 348ED05C0D8F7AD9007ADAC9 /* ODOPredicate.m */; };
 		3EE8E5101937FF1800616F0E /* ODOSQLStatement.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400BAA10D8E23CE00390D08 /* ODOSQLStatement.m */; };
-		5F2461551ABB3FDC000540A0 /* ODOEditingContext-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		5F2461561ABB3FE1000540A0 /* ODOEditingContext-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FAA77AD193E6B440017D662 /* de.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 5FAA7791193E68F00017D662 /* de.lproj */; };
 		5FAA77AE193E6B440017D662 /* es.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 5FAA778F193E68F00017D662 /* es.lproj */; };
 		5FAA77AF193E6B440017D662 /* fr.lproj in Copy Resources */ = {isa = PBXBuildFile; fileRef = 5FAA778E193E68F00017D662 /* fr.lproj */; };
@@ -657,7 +655,6 @@
 				3441C4C019C8E67600A2FAAE /* ODOEditingContext-Internal.h in Headers */,
 				3441C4C419C8E68200A2FAAE /* ODOObject-Accessors.h in Headers */,
 				3EE8E4F21937FE3C00616F0E /* ODOEditingContext.h in Headers */,
-				5F2461561ABB3FE1000540A0 /* ODOEditingContext-Internal.h in Headers */,
 				3EE8E4F41937FE3C00616F0E /* ODOObject.h in Headers */,
 				3EE8E4F51937FE3C00616F0E /* ODOObjectID.h in Headers */,
 				3441C4B919C8E63C00A2FAAE /* ODOModel-SQL.h in Headers */,
@@ -700,7 +697,6 @@
 				3441C4BE19C8E66200A2FAAE /* ODOEntity-Internal.h in Headers */,
 				3400BAA20D8E23CE00390D08 /* ODOSQLStatement.h in Headers */,
 				348ECFF70D8F78BE007ADAC9 /* ODOPredicate-SQL.h in Headers */,
-				5F2461551ABB3FDC000540A0 /* ODOEditingContext-Internal.h in Headers */,
 				348ED05D0D8F7AD9007ADAC9 /* ODOPredicate.h in Headers */,
 				3441C4C319C8E67D00A2FAAE /* ODOObject-Internal.h in Headers */,
 				3477F3DC0DA29344001CF280 /* ODOFeatures.h in Headers */,
@@ -721,7 +717,6 @@
 				34F4CD350EA926AB0075D4B2 /* Generate Model */,
 				340D5DB10DAACED300BF27F8 /* Sources */,
 				340D5DB20DAACED300BF27F8 /* Frameworks */,
-				340D5DB30DAACED300BF27F8 /* Run Tests */,
 			);
 			buildRules = (
 			);
@@ -797,7 +792,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 			};
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "OmniDataObjects" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -838,20 +833,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		340D5DB30DAACED300BF27F8 /* Run Tests */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Tests";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$PROJECT_DIR\"/../../Scripts/OmniRunUnitTests\n";
-		};
 		3441C4B719C8DF9B00A2FAAE /* Generate Accessors */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -867,6 +848,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "./ODOObject-GenerateAccessors.rb\n";
+			showEnvVarsInLog = 0;
 		};
 		348EE2C10EAE3BC100C6998E /* Generate Accessors */ = {
 			isa = PBXShellScriptBuildPhase;

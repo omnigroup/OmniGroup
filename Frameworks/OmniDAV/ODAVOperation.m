@@ -28,6 +28,9 @@ NSString * const ODAVContentTypeHeader = @"Content-Type";
 
 @implementation ODAVOperation
 {
+    void (^_start)(void);
+    void (^_cancel)(void);
+    
     // For PUT operations
     long long _bodyBytesSent;
     long long _expectedBytesToWrite;
@@ -53,6 +56,7 @@ static BOOL _isRead(ODAVOperation *self)
         return YES;
     
     OBASSERT([method isEqualToString:@"PUT"] ||
+             [method isEqualToString:@"POST"] ||
              [method isEqualToString:@"MKCOL"] ||
              [method isEqualToString:@"DELETE"] ||
              [method isEqualToString:@"MOVE"] ||
@@ -83,20 +87,13 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 }
 
 - initWithRequest:(NSURLRequest *)request
-#if ODAV_NSURLSESSION
-             task:(NSURLSessionDataTask *)task
-#else
-       connection:(NSURLConnection *)connection
-#endif
-;
+            start:(void (^)(void))start
+           cancel:(void (^)(void))cancel;
 {
     OBPRECONDITION([[[request URL] scheme] isEqualToString:@"http"] || [[[request URL] scheme] isEqualToString:@"https"]); // We want a NSHTTPURLResponse
     OBPRECONDITION([[request HTTPMethod] isEqualToString:[[request HTTPMethod] uppercaseString]]);
-#if ODAV_NSURLSESSION
-    OBPRECONDITION(task);
-#else
-    OBPRECONDITION(connection);
-#endif
+    OBPRECONDITION(start);
+    OBPRECONDITION(cancel);
     
     if (!(self = [super init]))
         return nil;
@@ -111,12 +108,9 @@ static OFCharacterSet *TokenDelimiterSet = nil;
         
         _expectedBytesToWrite = [body length];
     }
-    
-#if ODAV_NSURLSESSION
-    _task = task;
-#else
-    _connection = connection;
-#endif
+
+    _start = [start copy];
+    _cancel = [cancel copy];
 
     return self;
 }
@@ -124,13 +118,8 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 - (void)dealloc;
 {
     if (!_finished) {
-#if ODAV_NSURLSESSION
-        DEBUG_TASK(1, @"cancelling task %@ in -dealloc", _task);
-        [_task cancel];
-#else
-        DEBUG_TASK(1, @"cancelling connection %@ in -dealloc", _connection);
-        [_connection cancel];
-#endif
+        if (_cancel)
+            _cancel();
     }
 }
 
@@ -288,11 +277,7 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 
 - (void)startWithCallbackQueue:(NSOperationQueue *)queue;
 {
-#if ODAV_NSURLSESSION
-    OBPRECONDITION(_task);
-#else
-    OBPRECONDITION(_connection);
-#endif
+    OBPRECONDITION(_start);
     OBPRECONDITION(_didFinish); // What is the purpose of an async operation that we don't track the end of?
     OBPRECONDITION(_response == nil);
     
@@ -305,24 +290,16 @@ static OFCharacterSet *TokenDelimiterSet = nil;
     else
         _callbackQueue = [NSOperationQueue currentQueue];
     
-#if ODAV_NSURLSESSION
-    [_task resume];
-#else
-    [_connection start]; // We do NOT call -setDelegateQueue: here since the ODAVConnection does this with its internal queue. The queue passed here is for our callbacks.
-#endif
+    _start();
 }
 
 - (void)cancel;
 {
-#if ODAV_NSURLSESSION
-    DEBUG_TASK(1, @"cancelling task %@", _task);
-    [_task cancel];
-    _task = nil;
-#else
-    DEBUG_TASK(1, @"cancelling connection %@", _connection);
-    [_connection cancel];
-    _connection = nil;
-#endif
+    if (_cancel) {
+        _cancel();
+        _cancel = nil;
+    }
+    _start = nil;
 }
 
 #pragma mark - NSCopying
@@ -383,7 +360,15 @@ static OFCharacterSet *TokenDelimiterSet = nil;
 
 - (void)_didReceiveResponse:(NSURLResponse *)response;
 {
-    OBPRECONDITION(_response == nil);
+#ifdef OMNI_ASSERTIONS_ON
+    // We'll already have a _response set for credential errors, via -_credentialsNotFoundForChallenge:.
+    if (_response) {
+        OBASSERT([_response statusCode] == ODAV_HTTP_UNAUTHORIZED);
+        OBASSERT([(NSHTTPURLResponse *)response statusCode] == [_response statusCode]);
+        
+        // In the past we fell through, discarding the old response and keeping the new one. We'll keep doing that, but the two responses should be nearly identical.
+    }
+#endif
     
     _response = nil;
     

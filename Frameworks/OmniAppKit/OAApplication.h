@@ -1,4 +1,4 @@
-// Copyright 1997-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,13 +26,6 @@
 - (BOOL)mouseButtonIsDownAtIndex:(unsigned int)mouseButtonIndex;
 - (BOOL)scrollWheelButtonIsDown;
 - (NSUInteger)launchModifierFlags;
-
-- (void)scheduleModalPanelForTarget:(id)modalController selector:(SEL)modalSelector userInfo:(id)userInfo;
-    // This method ensures that a modal panel is never presented while another modal panel is already being shown.  It accomplishes this by ensuring that modalSelector is never called on modalController while the runloop mode is NSModalPanelRunLoopMode.
-    // You cannot rely on -scheduleModalPanelForTarget:selector: to block; if there is already a modal panel on screen, then a timer is scheduled on the runloop for NSDefaultRunLoopMode and this method returns immediately.
-    // modalController is the controller object which will present the modal panel.
-    // modalSelector is the selector which presents said panel.
-    // userInfo is an optional object which can be passed to modalController's modalSelector method.
     
 // Show a specific Help page in an appropriate viewer.
 - (void)showHelpURL:(NSString *)helpURL;

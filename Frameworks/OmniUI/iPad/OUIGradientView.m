@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,7 +19,7 @@ RCS_ID("$Id$");
     return kOUIShadowEdgeThickness;
 }
 
-+ (OUIGradientView *)horizontalShadow:(BOOL)bottomToTop;
++ (OUIGradientView *)horizontalShadow:(BOOL)bottomToTop NS_RETURNS_RETAINED;
 {
     OUIGradientView *instance = [[self alloc] init];
     
@@ -33,7 +33,7 @@ RCS_ID("$Id$");
     return instance;
 }
 
-+ (OUIGradientView *)verticalShadow:(BOOL)leftToRight;
++ (OUIGradientView *)verticalShadow:(BOOL)leftToRight NS_RETURNS_RETAINED;
 {
     OUIGradientView *instance = [[self alloc] init];
     

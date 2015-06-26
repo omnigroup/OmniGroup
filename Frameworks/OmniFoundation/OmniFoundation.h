@@ -194,7 +194,6 @@
     #import <OmniFoundation/NSDecimalNumber-OFExtensions.h>
     #import <OmniFoundation/NSException-OFExtensions.h>
     #import <OmniFoundation/NSFileManager-OFExtensions.h>
-    #import <OmniFoundation/NSHost-OFExtensions.h>
     #import <OmniFoundation/NSMutableData-OFExtensions.h>
     #import <OmniFoundation/NSNotificationCenter-OFExtensions.h>
     #import <OmniFoundation/NSNotificationQueue-OFExtensions.h>

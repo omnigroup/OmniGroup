@@ -7,11 +7,10 @@
 //
 // $Id$
 
-@class OFXConnection;
-@class ODAVMultipleFileInfoResult;
+@class ODAVConnection, ODAVMultipleFileInfoResult;
 
-extern ODAVMultipleFileInfoResult *OFXFetchFileInfosEnsuringDirectoryExists(OFXConnection *connection, NSURL *directoryURL, NSError **outError) OB_HIDDEN;
+extern ODAVMultipleFileInfoResult *OFXFetchFileInfosEnsuringDirectoryExists(ODAVConnection *connection, NSURL *directoryURL, NSError **outError) OB_HIDDEN;
 
-extern void OFXWriteDataToURLAtomically(OFXConnection *connection, NSData *data, NSURL *destinationURL, NSURL *temporaryDirectoryURL, NSURL *accountBaseURL, BOOL overwrite, void (^completionHandler)(NSURL *url, NSError *errorOrNil)) OB_HIDDEN;
+extern void OFXWriteDataToURLAtomically(ODAVConnection *connection, NSData *data, NSURL *destinationURL, NSURL *temporaryDirectoryURL, NSURL *accountBaseURL, BOOL overwrite, void (^completionHandler)(NSURL *url, NSError *errorOrNil)) OB_HIDDEN;
 
-extern NSURL *OFXMoveURLToMissingURLCreatingContainerIfNeeded(OFXConnection *connection, NSURL *sourceURL, NSURL *destinationURL, NSError **outError) OB_HIDDEN;
+extern NSURL *OFXMoveURLToMissingURLCreatingContainerIfNeeded(ODAVConnection *connection, NSURL *sourceURL, NSURL *destinationURL, NSError **outError) OB_HIDDEN;

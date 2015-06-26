@@ -1,4 +1,4 @@
-// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OBPatchTrap.h"
+
 #import <OmniBase/rcsid.h>
 
 #import <dlfcn.h>
@@ -14,7 +15,6 @@
 #include <mach/mach_port.h>
 #include <libkern/OSCacheControl.h>
 
-#ifdef DEBUG
 
 RCS_ID("$Id$")
 
@@ -65,6 +65,13 @@ BOOL OBPatchCode(void *address, size_t size, const void *newvalue)
     
     return YES;
 }
+
+#ifdef DEBUG
+
+@interface NSObject (ForwardDeclaration)
+- (NSRect)frame;
+- (NSRect)bounds;
+@end
 
 BOOL OBPatchStretToNil(void (*callme)(void *, id, SEL, ...))
 {

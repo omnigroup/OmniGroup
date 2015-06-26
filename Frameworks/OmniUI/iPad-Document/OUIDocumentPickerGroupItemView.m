@@ -143,4 +143,29 @@ static unsigned GroupItemContext;
     [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
+#pragma mark - Accessibility
+- (NSString *)accessibilityValue
+{
+    NSString *folderType = NSLocalizedStringFromTableInBundle(@"Folder", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker folder type accessibility value");
+    NSString *countString = [self _accessibilityItemCount];
+    NSString *superAXValue = [super accessibilityValue];
+    
+    return [NSString stringWithFormat:@"%@, %@, %@", folderType, countString, superAXValue];
+}
+
+- (NSString *)_accessibilityItemCount
+{
+    NSInteger count = [[self previewedItems] count];
+    if (count == 0) {
+        return NSLocalizedStringFromTableInBundle(@"No items", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker no items accessibility value");
+    }
+    
+    
+    if (count > 1) {
+        NSString *format = NSLocalizedStringFromTableInBundle(@"%@ items", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker multiple items accessibility value");
+        return [NSString stringWithFormat:format, @(count)];
+    }
+    
+    return NSLocalizedStringFromTableInBundle(@"1 item", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker single item accessibility value");
+}
 @end

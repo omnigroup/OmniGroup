@@ -662,7 +662,7 @@ OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet *packag
     OFScanPathExtensionIsPackage isPackage = ^BOOL(NSString *pathExtension){
         pathExtension = [pathExtension lowercaseString];
         
-        // Our UTTypeConformsTo() of local types below would hopefully catch this, but it might not since it uses depends on LaunchServices registration. Thus, it will only catch types that LaunchServices really knows about (whereas we fill in _localPackagePathExtensions by inspecting our UTI definitions directly).
+        // Our OFTypeConformsTo() of local types below would hopefully catch this, but it might not since it uses depends on LaunchServices registration. Thus, it will only catch types that LaunchServices really knows about (whereas we fill in _localPackagePathExtensions by inspecting our UTI definitions directly).
         if ([packageExtensions member:pathExtension])
             return YES;
         
@@ -673,7 +673,7 @@ OFScanPathExtensionIsPackage OFIsPackageWithKnownPackageExtensions(NSSet *packag
         __block BOOL foundPackage = NO;
         OFUTIEnumerateKnownTypesForTagPreferringNative((NSString *)kUTTagClassFilenameExtension, pathExtension, nil/*conformingToUTIOrNil*/, ^(NSString *typeIdentifier, BOOL *stop){
             // We check conformance here rather than passing in kUTTypePackage to OFUTIEnumerateKnownTypesForTagPreferringNative. The underlying UTTypeCreateAllIdentifiersForTag will *generate* a dynamic type that conforms to what we pass in instead of just returning an empty array.
-            if (UTTypeConformsTo((__bridge CFStringRef)typeIdentifier, kUTTypePackage)) {
+            if (OFTypeConformsTo(typeIdentifier, kUTTypePackage)) {
                 foundPackage = YES;
                 *stop = YES;
             }

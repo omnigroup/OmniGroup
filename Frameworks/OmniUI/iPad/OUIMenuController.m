@@ -55,6 +55,48 @@ RCS_ID("$Id$");
         self.view.tintColor = _tintColor;
 }
 
+- (void)setMenuBackgroundColor:(UIColor *)menuBackgroundColor;
+{
+    if (OFISEQUAL(_menuBackgroundColor, menuBackgroundColor))
+        return;
+    
+    _menuBackgroundColor = [menuBackgroundColor copy];
+    
+    if (self.isViewLoaded) {
+        UIViewController *viewController = [_menuNavigationController.viewControllers firstObject];
+        UITableView *tableView = OB_CHECKED_CAST(UITableView, viewController.view);
+        tableView.backgroundColor = menuBackgroundColor;
+    }
+}
+
+- (void)setMenuOptionBackgroundColor:(UIColor *)menuOptionBackgroundColor;
+{
+    if (OFISEQUAL(_menuOptionBackgroundColor, menuOptionBackgroundColor))
+        return;
+    
+    _menuOptionBackgroundColor = [menuOptionBackgroundColor copy];
+    
+    if (self.isViewLoaded) {
+        UIViewController *viewController = [_menuNavigationController.viewControllers firstObject];
+        UITableView *tableView = OB_CHECKED_CAST(UITableView, viewController.view);
+        [tableView reloadData];
+    }
+}
+
+- (void)setMenuOptionSelectionColor:(UIColor *)menuOptionSelectionColor;
+{
+    if (OFISEQUAL(_menuOptionSelectionColor, menuOptionSelectionColor))
+        return;
+    
+    _menuOptionSelectionColor = [menuOptionSelectionColor copy];
+    
+    if (self.isViewLoaded) {
+        UIViewController *viewController = [_menuNavigationController.viewControllers firstObject];
+        UITableView *tableView = OB_CHECKED_CAST(UITableView, viewController.view);
+        [tableView reloadData];
+    }
+}
+
 - (void)viewDidLoad;
 {
     self.view.tintColor = _tintColor;

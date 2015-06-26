@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,23 @@ RCS_ID("$Id$");
 CFMutableArrayRef OFCreateNonOwnedPointerArray(void)
 {
     return CFArrayCreateMutable(kCFAllocatorDefault, 0, &OFNonOwnedPointerArrayCallbacks);
+}
+
+Boolean OFCFArrayIsSortedAscendingUsingComparator(CFArrayRef self, NSComparator comparator)
+{
+    CFIndex valueIndex, valueCount = CFArrayGetCount(self);
+    if (valueCount < 2)
+        return true;
+    
+    id value1, value2 = (id)CFArrayGetValueAtIndex(self, 0);
+    for (valueIndex = 1; valueIndex < valueCount; valueIndex++) {
+        value1 = value2;
+        value2 = (id)CFArrayGetValueAtIndex(self, valueIndex);
+        if (comparator(value1, value2) > 0)
+            return false;
+    }
+    
+    return true;
 }
 
 Boolean OFCFArrayIsSortedAscendingUsingFunction(CFArrayRef self, CFComparatorFunction comparator, void *context)

@@ -14,6 +14,12 @@ RCS_ID("$Id$")
 
 - (CGRect)visibleRectOfContainedView:(UIView*)view;
 {
+    if (!view || !self.view) {
+        return CGRectZero;
+    }
+    if (CGRectEqualToRect(self.view.bounds, CGRectZero) || CGRectEqualToRect(view.bounds, CGRectZero)) {
+        return CGRectZero;
+    }
     OBASSERT(view.window == self.view.window, @"trying to compute visible rect of a view that is not in this navigation controller's window");
 
     // toplayout guide is only giving height of status bar, so we can't rely on that

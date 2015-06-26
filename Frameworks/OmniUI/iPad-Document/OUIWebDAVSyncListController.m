@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,9 +39,8 @@ RCS_ID("$Id$");
     
     self.navigationItem.title = serverAccount.displayName;
     ODAVConnectionConfiguration *configuration = [[ODAVConnectionConfiguration alloc] init];
-    configuration.allowsCellularAccess = YES; // Import/export is a specific user action, so let go through.
     
-    _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration];
+    _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration baseURL:serverAccount.remoteBaseURL];
     
     __weak OUIWebDAVSyncListController *weakSelf = self;
     _connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,8 @@
 
 #import <UIKit/UITextView.h>
 
+@protocol OUINoteTextViewAppearanceDelegate;
+
 @interface OUINoteTextView : UITextView
 
 @property (nonatomic, copy) NSString *placeholder;
@@ -17,6 +19,18 @@
 
 @property (nonatomic) BOOL drawsBorder;
 
+/// If set, called to get various appearance properties. If nil, default values are used
+@property (nonatomic, weak) id <OUINoteTextViewAppearanceDelegate> appearanceDelegate;
+
+- (void)appearanceDidChange;
+
+@end
+
+@protocol OUINoteTextViewAppearanceDelegate <NSObject>
+- (UIColor *)textColorForTextView:(OUINoteTextView *)textView;
+- (UIColor *)placeholderTextColorForTextView:(OUINoteTextView *)textView;
+- (UIColor *)borderColorForTextView:(OUINoteTextView *)textView;
+- (UIKeyboardAppearance)keyboardAppearanceForTextView:(OUINoteTextView *)textView;
 @end
 
 #pragma mark -

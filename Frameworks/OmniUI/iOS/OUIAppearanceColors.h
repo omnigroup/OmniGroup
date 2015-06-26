@@ -9,7 +9,7 @@
 
 #import <OmniUI/OUIAppearance.h>
 
-@interface OUIAppearanceColors : OUIAppearance
+@protocol OUIAppearanceColors <NSObject>
 
 @property (nonatomic, readonly) UIColor *omniRedColor;
 @property (nonatomic, readonly) UIColor *omniOrangeColor;
@@ -34,10 +34,8 @@
 
 @end
 
-// Stub class to get correct plist lookup via +[OUIAppearanceColors appearance].
-@interface OUIAppearanceDefaultColors : OUIAppearanceColors
+@interface OUIAppearanceDefaultColors : OUIAppearance <OUIAppearanceColors>
 @end
 
-// Stub class to get correct plist lookup via +[OUIAppearanceColors appearance].
-@interface OUIAppearanceDarkColors : OUIAppearanceColors
+@interface OUIAppearanceDarkColors : OUIAppearance <OUIAppearanceColors>
 @end

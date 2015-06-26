@@ -110,7 +110,7 @@ static NSDictionary *_OSURunTimeUpdateStatisticsScope(NSDictionary *oldScope, NS
     // Run time
     if (startClockTimeNumber) {
         unsigned startClockTime = [startClockTimeNumber doubleValue];
-        OBASSERT(startClockTime < currentClockTime);
+        OBASSERT(startClockTime <= currentClockTime);
         if (startClockTime < currentClockTime) {
             NSNumber *totalRunTimeNumber = [oldScope objectForKey:OSUTotalRunTimeKey];
 

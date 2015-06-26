@@ -48,7 +48,7 @@
 		34B2549808D0DE8900DD2070 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34B2549508D0DE8900DD2070 /* OmniBase.framework */; };
 		34B2549908D0DE8900DD2070 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34B2549608D0DE8900DD2070 /* OmniFoundation.framework */; };
 		34B443AB09F595BE008956F6 /* Tabbed.xib in Resources */ = {isa = PBXBuildFile; fileRef = 34B443AA09F595BE008956F6 /* Tabbed.xib */; };
-		34BA7D6F0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BA7D6D0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h */; };
+		34BA7D6F0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BA7D6D0A6D904000E029F8 /* OIButtonMatrixBackgroundView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34BA7D700A6D904000E029F8 /* OIButtonMatrixBackgroundView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34BA7D6E0A6D904000E029F8 /* OIButtonMatrixBackgroundView.m */; };
 		34C4FA900D19B3BE0009E860 /* OIInspectorSection.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C4FA8E0D19B3BE0009E860 /* OIInspectorSection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34C4FA910D19B3BE0009E860 /* OIInspectorSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4FA8F0D19B3BE0009E860 /* OIInspectorSection.m */; };
@@ -525,7 +525,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 			};
 			buildConfigurationList = 34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -609,6 +609,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "../../Scripts/BuildStringsFromTarget OmniInspector\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 

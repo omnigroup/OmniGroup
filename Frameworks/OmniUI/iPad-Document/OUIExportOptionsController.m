@@ -44,7 +44,7 @@ RCS_ID("$Id$")
 @end
 
 #pragma mark - OUIExportOptionsController
-@interface OUIExportOptionsController () <UICollectionViewDataSource, UICollectionViewDelegate> //<OFSFileManagerDelegate>
+@interface OUIExportOptionsController () <UICollectionViewDataSource, UICollectionViewDelegate, UIDocumentPickerDelegate> //<OFSFileManagerDelegate>
 
 @property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
 @property (weak, nonatomic) IBOutlet UILabel *exportDescriptionLabel;
@@ -133,27 +133,36 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     NSString *docName = fileItem.name;
     
     NSString *actionDescription = nil;
-    if (_exportType == OUIExportOptionsEmail) {
-        self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"export options title");
-        
-        _exportDestinationLabel.text = nil;
-        
-        actionDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choose a format for emailing \"%@\":", @"OmniUIDocument", OMNI_BUNDLE, @"email action description"), docName, nil];
-    }
-    else if (_exportType == OUIExportOptionsSendToApp) {
-        _exportDestinationLabel.text = nil;
-        
-        actionDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Send \"%@\" to app as:", @"OmniUIDocument", OMNI_BUNDLE, @"send to app description"), docName, nil];
-    }
-    else if (_exportType == OUIExportOptionsExport) {
-        if (OFISEQUAL(_serverAccount.type.identifier, OFXiTunesLocalDocumentsServerAccountTypeIdentifier)) {
+    switch (_exportType) {
+        case OUIExportOptionsNone:
+            OBASSERT_NOT_REACHED("We don't present a controller if we're not exporting");
+            break;
+
+        case OUIExportOptionsEmail:
+            self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"export options title");
             _exportDestinationLabel.text = nil;
-        } else {
-            NSString *addressString = [_serverAccount.remoteBaseURL absoluteString];
-            _exportDestinationLabel.text = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Server address: %@", @"OmniUIDocument", OMNI_BUNDLE, @"email action description"), addressString, nil];
-        }
-                
-        actionDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Export \"%@\" to %@ as:", @"OmniUIDocument", OMNI_BUNDLE, @"export action description"), docName, _serverAccount.displayName, nil];
+            actionDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choose a format for emailing \"%@\":", @"OmniUIDocument", OMNI_BUNDLE, @"email action description"), docName, nil];
+            break;
+
+        case OUIExportOptionsSendToApp:
+            _exportDestinationLabel.text = nil;
+            actionDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Send \"%@\" to app as:", @"OmniUIDocument", OMNI_BUNDLE, @"send to app description"), docName, nil];
+            break;
+
+        case OUIExportOptionsSendToService:
+            _exportDestinationLabel.text = nil;
+            actionDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Export \"%@\" as:", @"OmniUIDocument", OMNI_BUNDLE, @"export to description"), docName, nil];
+            break;
+
+        case OUIExportOptionsExport:
+            if (OFISEQUAL(_serverAccount.type.identifier, OFXiTunesLocalDocumentsServerAccountTypeIdentifier)) {
+                _exportDestinationLabel.text = nil;
+            } else {
+                NSString *addressString = [_serverAccount.remoteBaseURL absoluteString];
+                _exportDestinationLabel.text = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Server address: %@", @"OmniUIDocument", OMNI_BUNDLE, @"email action description"), addressString, nil];
+            }
+            actionDescription = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Export \"%@\" to %@ as:", @"OmniUIDocument", OMNI_BUNDLE, @"export action description"), docName, _serverAccount.displayName, nil];
+            break;
     }
     
     _exportDescriptionLabel.text = actionDescription;
@@ -273,17 +282,35 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 {
     OBPRECONDITION([NSThread isMainThread]);
     
-    if (_exportType != OUIExportOptionsSendToApp) {
-        [self exportFileWrapper:fileWrapper];
-        return;
+    switch (_exportType) {
+        case OUIExportOptionsNone:
+            OBASSERT_NOT_REACHED("We shouldn't have built a file wrapper if we're not exporting");
+            break;
+        case OUIExportOptionsExport:
+            [self exportFileWrapper:fileWrapper];
+            break;
+        case OUIExportOptionsEmail:
+            OBASSERT_NOT_REACHED("The email option takes another path: -_performActionForExportOption: calls -_foreground_emailExportOfType: directly");
+            break;
+        case OUIExportOptionsSendToApp:
+            [self _foreground_exportSendToAppWithFileWrapper:fileWrapper];
+            break;
+        case OUIExportOptionsSendToService:
+            [self _foreground_exportSendToServiceWithFileWrapper:fileWrapper];
+            break;
     }
+}
+
+- (NSURL *)_tempURLForExportedFileWrapper:(NSFileWrapper *)fileWrapper shouldZipDirectories:(BOOL)shouldZipDirectories;
+{
+    OBPRECONDITION([NSThread isMainThread]);
     
     // Write to temp folder (need URL of file on disk to pass off to Doc Interaction.)
     NSString *temporaryDirectory = NSTemporaryDirectory();
     NSString *tempPath = [temporaryDirectory stringByAppendingPathComponent:[fileWrapper preferredFilename]];
     NSURL *tempURL = nil;
     
-    if ([fileWrapper isDirectory]) {
+    if (shouldZipDirectories && [fileWrapper isDirectory]) {
         // We need to zip this mother up!
         NSString *tempZipPath = [tempPath stringByAppendingPathExtension:@"zip"];
         
@@ -291,7 +318,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
             __autoreleasing NSError *error = nil;
             if (![OUZipArchive createZipFile:tempZipPath fromFileWrappers:[NSArray arrayWithObject:fileWrapper] error:&error]) {
                 OUI_PRESENT_ERROR(error);
-                return;
+                return nil;
             }
         }
 
@@ -307,18 +334,25 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
         if ([fileManager fileExistsAtPath:[tempURL path]]) {
             if (![fileManager removeItemAtURL:tempURL error:&error]) {
                 OUI_PRESENT_ERROR(error);
-                return;
+                return nil;
             }
         }
         
         // Write to temp dir.
         if (![fileWrapper writeToURL:tempURL options:0 originalContentsURL:nil error:&error]) {
             OUI_PRESENT_ERROR(error);
-            return;
+            return nil;
         }
     }
-    
+    return tempURL;
+}
+
+- (void)_foreground_exportSendToAppWithFileWrapper:(NSFileWrapper *)fileWrapper;
+{
+    NSURL *tempURL = [self _tempURLForExportedFileWrapper:fileWrapper shouldZipDirectories:YES];
     [self _foreground_enableInterfaceAfterExportConversion];
+    if (tempURL == nil)
+        return;
     
     // By now we have written the project out to a temp dir. Time to handoff to Doc Interaction.
     self.documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:tempURL];
@@ -332,6 +366,18 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
         activityViewController.popoverPresentationController.sourceView = _collectionView;
         [self presentViewController:activityViewController animated:YES completion:nil];
     }
+}
+
+- (void)_foreground_exportSendToServiceWithFileWrapper:(NSFileWrapper *)fileWrapper;
+{
+    NSURL *tempURL = [self _tempURLForExportedFileWrapper:fileWrapper shouldZipDirectories:NO];
+    [self _foreground_enableInterfaceAfterExportConversion];
+    if (tempURL == nil)
+        return;
+    
+    UIDocumentPickerViewController *pickerViewController = [[UIDocumentPickerViewController alloc] initWithURL:tempURL inMode:UIDocumentPickerModeExportToService];
+    pickerViewController.delegate = self;
+    [self presentViewController:pickerViewController animated:YES completion:nil];
 }
 
 - (void)_foreground_exportDocumentOfType:(NSString *)fileType;
@@ -461,11 +507,14 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 {
     NSString *exportType = option.exportType;
     
-    if (_exportType == OUIExportOptionsEmail) {
-        [self _foreground_disableInterfaceForExportConversion];
-        [self _foreground_emailExportOfType:exportType];
-    } else {
-        [self _beginBackgroundExportDocumentOfType:exportType];
+    switch (_exportType) {
+        case OUIExportOptionsEmail:
+            [self _foreground_disableInterfaceForExportConversion];
+            [self _foreground_emailExportOfType:exportType];
+            break;
+        default:
+            [self _beginBackgroundExportDocumentOfType:exportType];
+            break;
     }
 }
 
@@ -558,6 +607,18 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 #pragma mark - UIDocumentInteractionControllerDelegate
 
 - (void)documentInteractionController:(UIDocumentInteractionController *)controller willBeginSendingToApplication:(NSString *)application;
+{
+    [self dismissViewControllerAnimated:NO completion:nil];
+}
+
+#pragma mark - UIDocumentPickerDelegate
+
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url;
+{
+    [self dismissViewControllerAnimated:NO completion:nil];
+}
+
+- (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller;
 {
     [self dismissViewControllerAnimated:NO completion:nil];
 }

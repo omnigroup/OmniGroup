@@ -25,16 +25,14 @@
     
     __weak ODAVConcreteTestCase *weakSelf = self;
     
-    _connection = [[ODAVConnection alloc] init];
+    _connection = [[ODAVConnection alloc] initWithSessionConfiguration:[ODAVConnectionConfiguration new] baseURL:remoteBaseURL];
     _connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
-        // Trust all certificates for these tests.
-        OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
+        if ([weakSelf shouldAddTrustForCertificateChallenge:challenge])
+            OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);
     };
     _connection.findCredentialsForChallenge = ^NSURLCredential *(NSURLAuthenticationChallenge *challenge){
         if ([challenge previousFailureCount] <= 2) {
-            NSURLCredential *credential = [weakSelf accountCredentialWithPersistence:NSURLCredentialPersistenceForSession];
-            OBASSERT(credential);
-            return credential;
+            return [weakSelf accountCredentialWithPersistence:NSURLCredentialPersistenceForSession];
         }
         return nil;
     };
@@ -50,16 +48,17 @@
     __autoreleasing NSError *error;
     if (![_connection synchronousDeleteURL:testDirectory withETag:nil error:&error]) {
         if (![error hasUnderlyingErrorDomain:ODAVHTTPErrorDomain code:ODAV_HTTP_NOT_FOUND]) {
-            [error log:@"Error removing base URL %@", testDirectory];
-            [NSException raise:NSGenericException format:@"Test can't continue"];
+            // Allow subclasses to override this, but we'll still bail in case our throwing version isn't called.
+            [self handleSetUpError:error message:[NSString stringWithFormat:@"Error removing base URL %@", testDirectory]];
+            return;
         }
     }
     
     error = nil;
     ODAVURLResult *createResult = [_connection synchronousMakeCollectionAtURL:testDirectory error:&error];
     if (!createResult) {
-        [error log:@"Error creating base URL %@", testDirectory];
-        [NSException raise:NSGenericException format:@"Test can't continue"];
+        [self handleSetUpError:error message:[NSString stringWithFormat:@"Error creating base URL %@", testDirectory]];
+        return;
     }
     NSURL *createdDirectory = createResult.URL;
     
@@ -76,6 +75,12 @@
     _connection = nil;
     
     [super tearDown];
+}
+
+- (void)handleSetUpError:(NSError *)error message:(NSString *)message;
+{
+    [error log:@"%@", message];
+    [NSException raise:NSGenericException format:@"Test can't continue"];
 }
 
 @end

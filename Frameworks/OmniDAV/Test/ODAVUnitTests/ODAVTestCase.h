@@ -15,6 +15,7 @@
 @property(nonatomic,readonly) NSURL *accountRemoteBaseURL;
 
 - (NSURLCredential *)accountCredentialWithPersistence:(NSURLCredentialPersistence)persistence;
+- (BOOL)shouldAddTrustForCertificateChallenge:(NSURLAuthenticationChallenge *)challenge;
 
 @end
 

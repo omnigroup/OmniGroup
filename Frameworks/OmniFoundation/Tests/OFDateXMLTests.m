@@ -178,6 +178,11 @@ static void _checkFraction(OFDateXMLTestCase *self, SEL _cmd, NSString *str, NST
 
 - (void)testThreadSafety;
 {
+    if (![[self class] shouldRunSlowUnitTests]) {
+        NSLog(@"*** SKIPPING slow test [%@ %@]", [self class], NSStringFromSelector(_cmd));
+        return;
+    }
+
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     queue.name = self.name;
     

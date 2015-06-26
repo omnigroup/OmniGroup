@@ -784,21 +784,29 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 - (void)_presentError:(NSError *)error;
 {
     OBPRECONDITION(error != nil);
-    if (error == nil || [error causedByUserCancelling]) {
-        OBStrongRetain(self);
-        [self _retry:NO context:NULL];
-    } else {
-        OBStrongRetain(self); // `self` is released in the _retry handler
-        
-        id <OSUInstallerDelegate> delegate = self.delegate;
-        id presenter = (delegate != nil ? (id)delegate : (id)[NSApplication sharedApplication]);
-
-        if ([error recoveryAttempter] == nil) {
-            error = [OFMultipleOptionErrorRecovery errorRecoveryErrorWithError:error object:self options:[OSUSendFeedbackErrorRecovery class], [OFCancelErrorRecovery class], nil];
+    
+    // This can get called from XPC background queues.
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        if (error == nil || [error causedByUserCancelling]) {
+            OBStrongRetain(self);
+            [self _retry:NO context:NULL];
+        } else {
+            OBStrongRetain(self); // `self` is released in the _retry handler
+            
+            id <OSUInstallerDelegate> delegate = self.delegate;
+            id presenter = (delegate != nil ? (id)delegate : (id)[NSApplication sharedApplication]);
+            
+            NSError *errorToPresent = error;
+            if ([error recoveryAttempter] == nil) {
+                errorToPresent = [OFMultipleOptionErrorRecovery errorRecoveryErrorWithError:error object:self options:[OSUSendFeedbackErrorRecovery class], [OFCancelErrorRecovery class], nil];
+            }
+            
+            // This yields a modal alert, but in 10.11 produces a warning. The -presentError: variant doesn't have a recovered/context handler, though.
+            NSWindow *window = nil;
+            
+            [presenter presentError:errorToPresent modalForWindow:window delegate:self didPresentSelector:@selector(_retry:context:) contextInfo:NULL];
         }
-
-        [presenter presentError:error modalForWindow:nil delegate:self didPresentSelector:@selector(_retry:context:) contextInfo:NULL];
-    }
+    }];
 }
 
 // This is used as the didPresent selector for error presentation / recovery

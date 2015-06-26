@@ -50,11 +50,8 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
     }
     
     ODAVConnectionConfiguration *configuration = [[ODAVConnectionConfiguration alloc] init];
-    if ([delegate respondsToSelector:@selector(fileManagerShouldAllowCellularAccess:)]) {
-        configuration.allowsCellularAccess = [delegate fileManagerShouldAllowCellularAccess:self];
-    }
     
-    _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration];
+    _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration baseURL:baseURL];
     
     // Bridge the delegate methods we do have to blocks on the connection. Make sure to avoid strong references back from the connection to us or our delegate (which we assume owns us).
     if ([delegate respondsToSelector:@selector(fileManager:findCredentialsForChallenge:)]) {
@@ -127,6 +124,7 @@ OBDEPRECATED_METHOD(+DAVFileManager:validateCertificateForChallenge:);
 {
     OBPRECONDITION(url);
 
+    _connection.operationReason = self.operationReason;
     ODAVMultipleFileInfoResult *results = [_connection synchronousDirectoryContentsAtURL:url withETag:ETag error:outError];
     if (!results)
         return nil;

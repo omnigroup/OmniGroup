@@ -1,11 +1,11 @@
 /* Error description when renaming a file to a name that is already in use. */
-"\"%@\" is already taken." = "“%@” è già in uso.";
+"\"%@\" is already taken." = "\"%@\" è già utilizzato.";
 
 /* Error reason when a file type is not recognized. */
-"%@ does not recognize this kind of file." = "%@ non riconosce questo tipo di documento.";
+"%@ does not recognize this kind of file." = "%@ non riconosce questo tipo di file.";
 
 /* Error message when renaming a folder and there is already a folder with the requested name. */
-"Another folder already has the name \"%@\"." = "Un'altra cartella è già denominata “%@”.";
+"Another folder already has the name \"%@\"." = "Esiste già una cartella denominata \"%@\".";
 
 /* Document store scope display name */
 "Built-in" = "Integrato";
@@ -33,4 +33,3 @@
 
 /* time display format for yesterday */
 "Yesterday, %@ <day name>" = "Ieri, %@";
-

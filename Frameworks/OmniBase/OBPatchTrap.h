@@ -1,4 +1,4 @@
-// Copyright 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,10 +9,11 @@
 
 #import <objc/objc.h>
 
-/* This whole file is #ifdef DEBUG because you really shouldn't be putting this kind of stuff into shipping code */
-#ifdef DEBUG
+/* Most of this file is #ifdef DEBUG because you really shouldn't be putting this kind of stuff into shipping code */
 
 /* This is a set of utilities for trapping code paths that we don't want to ever be followed.
+ 
+ OBPatchCxxThrow() works around Radar 20746379 (libdispatch loses important information needed to fix crashes due to unhandled C++ exceptions). This is enabled in shipping code since we want to be able to fix these crashes that are otherwise nearly impossible to track down w/o reproducible steps from a user.
  
  OBPatchStretToNil() will patch the portion of objc_msgSend_stret() which handles a nil receiver. If the arg is NULL, an illegal operation trap will be inserted. Otherwise the arg is called to handle the message. OBLogStretToNil can be used to log the event and the place it was called from.
  
@@ -20,8 +21,13 @@
  
 */
 
-BOOL OBPatchCode(void *address, size_t size, const void *newvalue);
+extern BOOL OBPatchCode(void *address, size_t size, const void *newvalue);
+
+extern BOOL OBPatchCxxThrow(void);
+
+#ifdef DEBUG
+
 extern BOOL OBPatchStretToNil(void (*callme)(void *, id, SEL, ...));
-void OBLogStretToNil(void *hidden_structptr_arg, id rcvr_always_nil, SEL _cmd, ...);
+extern void OBLogStretToNil(void *hidden_structptr_arg, id rcvr_always_nil, SEL _cmd, ...);
 
 #endif

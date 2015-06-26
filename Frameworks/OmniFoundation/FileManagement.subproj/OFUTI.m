@@ -1,4 +1,4 @@
-// Copyright 2011-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -281,7 +281,7 @@ void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString
 }
 
 // This hides a bunch of __bridge usages and shortens up code checking for multiple types. We could explicitly list the first type to start and use it as the va_start() argument, but then we'd need to check it specifically.
-BOOL OFTypeConformsToOneOfTypes(NSString *type, ...)
+BOOL _OFTypeConformsToOneOfTypes(NSString *type, ...)
 {
     va_list args;
     va_start(args, type);

@@ -173,7 +173,7 @@
 		34DBCD0E190709E100968086 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 			};
 			buildConfigurationList = 34DBCD11190709E100968086 /* Build configuration list for PBXProject "SVNVersion" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -207,6 +207,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# $CONFIGURATION_BUILD_DIR expands differently for Mac and iOS, so we build both ways so that the app depending on us can pick one or both.\n../../Scripts/BuildSVNVersionHeader --build-versions-txt \"$CONFIGURATION_BUILD_DIR\"\n";
+			showEnvVarsInLog = 0;
 		};
 		3440204619072E1E0002120F /* Build SVNVersion.h */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -221,6 +222,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# $CONFIGURATION_BUILD_DIR expands differently for Mac and iOS, so we build both ways so that the app depending on us can pick one or both.\n../../Scripts/BuildSVNVersionHeader --build-versions-txt \"$CONFIGURATION_BUILD_DIR\"\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 

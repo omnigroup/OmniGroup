@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,11 +33,11 @@ NSString * const OAInfoTemplateImageName = @"OAInfoTemplate";
 #ifdef DEBUG
 
 // Photoshop likes to save files with non-integral DPI.  This can cause hard to find bugs later on, so lets just find out about this right away.
-static id (*original_initWithContentsOfFile)(id self, SEL _cmd, NSString *fileName);
-static id (*original_initByReferencingFile)(id self, SEL _cmd, NSString *fileName);
+static id (*original_initWithContentsOfFile)(id __attribute((ns_consumed)) self, SEL _cmd, NSString *fileName);
+static id (*original_initByReferencingFile)(id __attribute((ns_consumed)) self, SEL _cmd, NSString *fileName);
 #ifdef DEBUG_NONINTEGRAL_IMAGE_SIZE
-static id (*original_initWithSize)(id self, SEL _cmd, NSSize size);
-static id (*original_setSize)(id self, SEL _cmd, NSSize size);
+static id (*original_initWithSize)(id __attribute((ns_consumed)) self, SEL _cmd, NSSize size);
+static id (*original_setSize)(id __attribute((ns_consumed)) self, SEL _cmd, NSSize size);
 #endif
 
 + (void)performPosing;
@@ -115,20 +115,29 @@ static id (*original_setSize)(id self, SEL _cmd, NSSize size);
 
 + (NSImage *)imageNamed:(NSString *)imageName inBundle:(NSBundle *)bundle;
 {
+    OBPRECONDITION([NSThread isMainThread]);
     OBPRECONDITION(![NSString isEmptyString:imageName]);
     
     // If we get asked for an image in the app wrapper (or unspecified bundle, which we take to mean the app wrapper), just let +imageNamed: do its thing.
     if ((bundle == nil) || (bundle == [NSBundle mainBundle])) {
         return [self imageNamed:imageName];
     }
-    
-    // Use a bundle-specific name to check for an already-cached copy of the requested image, so that we won't trigger a search of / return an image from the app wrapper.
+
+    // +imageForResource: is documented to not cache. We used to use the +imageNamed: cache by setting our cache key as the name of the image so that future lookups would work. But, this makes xib loading unable to find the image. <bug:///86682> (Unassigned: Could not find image named 'OACautionIcon')
+    static NSCache *imageCache;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        imageCache = [[NSCache alloc] init];
+        imageCache.name = @"com.omnigroup.OmniAppKit.imageNamed_inBundle";
+    });
+
     NSString *imageNameInCache = [NSString stringWithFormat:@"%@.%@", [bundle bundleIdentifier], imageName];
-    NSImage *image = [NSImage imageNamed:imageNameInCache];
+    NSImage *image = [imageCache objectForKey:imageNameInCache];
     if (![image isValid]) {
         // If we didn't find the image in the cache, actually try to load it from the bundle (using the original, unmangled name, which is the actual name of the resource), then name it, using our bundle-specific mangled name so that it will be cached without conflicting with any identically-named images in the app wrapper (or in other bundles).
         image = [bundle imageForResource:imageName];
-        [image setName:imageNameInCache];
+        if (image)
+            [imageCache setObject:image forKey:imageNameInCache];
     }
     return image;
 }
@@ -445,9 +454,9 @@ static NSDictionary *titleFontAttributes;
 
 - (void)pasteboard:(NSPasteboard *)aPasteboard provideDataForType:(NSString *)wanted
 {
-    if (UTTypeConformsTo((__bridge CFStringRef)wanted, (CFStringRef)NSPasteboardTypePNG))
+    if (OFTypeConformsTo(wanted, NSPasteboardTypePNG))
         [aPasteboard setData:[self pngData] forType:wanted];
-    else if (UTTypeConformsTo((__bridge CFStringRef)wanted, (CFStringRef)NSPasteboardTypeTIFF))
+    else if (OFTypeConformsTo(wanted, NSPasteboardTypeTIFF))
         [aPasteboard setData:[self TIFFRepresentation] forType:wanted];
 }
 
@@ -533,15 +542,6 @@ static NSDictionary *titleFontAttributes;
         uint32 biClrUsed;
         uint32 biClrImportant;
     } BITMAPINFOHEADER;
-
-
-    typedef struct {
-        unsigned char rgbBlue;
-        unsigned char rgbGreen;
-        unsigned char rgbRed;
-        unsigned char rgbReserved;
-    } RGBQUAD;
-
 
     NSBitmapImageRep *bitmapImageRep = (id)[self imageRepOfClass:[NSBitmapImageRep class]];
     if (bitmapImageRep == nil || backgroundColor != nil) {
@@ -637,7 +637,7 @@ static NSDictionary *titleFontAttributes;
 {
     NSBitmapImageRep *bitmapImageRep = (id)[self imageRepOfClass:[NSBitmapImageRep class]];
     if (bitmapImageRep != nil) {
-        NSData *pngData = [bitmapImageRep representationUsingType:NSPNGFileType properties:nil];
+        NSData *pngData = [bitmapImageRep representationUsingType:NSPNGFileType properties:@{}];
         if (pngData != nil) // On Yosemite, this can fail with "ImageIO: PNG gamma value does not match sRGB"
             return pngData;
     }
@@ -869,7 +869,7 @@ static void setupTintTable(void)
 - (void)dealloc;
 {
     if (_tintObserver != nil)
-        [[NSNotificationCenter defaultCenter] removeObserver:_tintObserver name:NSControlTintDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] removeObserver:_tintObserver];
 }
 
 - (void)_subscribeToTintNotifications;

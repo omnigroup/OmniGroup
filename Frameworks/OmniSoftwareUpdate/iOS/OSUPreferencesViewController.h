@@ -23,3 +23,11 @@
 + (OUIMenuOption *)menuOption;
 
 @end
+
+#pragma mark -
+
+@interface OSUPreferencesTableViewLabel : UIView
+
+@property (nonatomic, copy) UIColor *textColor;
+
+@end

@@ -1,4 +1,4 @@
-// Copyright 1997-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,6 +36,7 @@
 
 - (NSUInteger)indexOfObject: (id) anObject inArraySortedUsingSelector: (SEL) selector;
 - (NSUInteger)indexOfObjectIdenticalTo: (id) anObject inArraySortedUsingSelector: (SEL) selector;
+- (BOOL)isSortedUsingComparator:(NSComparator)comparator;
 - (BOOL) isSortedUsingSelector:(SEL)selector;
 - (BOOL) isSortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;
 

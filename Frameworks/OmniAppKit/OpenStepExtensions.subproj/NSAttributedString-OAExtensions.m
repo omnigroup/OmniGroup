@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2009, 2011-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -458,7 +458,7 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 - (NSData *)rtf;
 {
-    return [self RTFFromRange:NSMakeRange(0, [self length]) documentAttributes:nil];
+    return [self RTFFromRange:NSMakeRange(0, [self length]) documentAttributes:@{}];
 }
 #endif
 

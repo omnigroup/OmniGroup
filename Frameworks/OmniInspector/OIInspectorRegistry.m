@@ -852,8 +852,9 @@ static NSComparisonResult sortGroupByWindowZOrder(OIInspectorGroup *a, OIInspect
     
     [_editWorkspaceTable reloadData];
     [_editWorkspaceTable deselectAll:nil];
-    [_deleteWorkspaceButton setEnabled:([_editWorkspaceTable numberOfSelectedRows] > 0)];
-    [self tableViewSelectionDidChange:nil];  // updates the store and restore buttons
+
+    [self _updateEnabledStateForSelectionChange];
+
     NSPanel *window = (NSPanel *)[_editWorkspaceTable window];
     [window setFloatingPanel:YES];
     [window setHidesOnDeactivate:YES];
@@ -1115,6 +1116,11 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification;
 {
+    [self _updateEnabledStateForSelectionChange];
+}
+
+- (void)_updateEnabledStateForSelectionChange;
+{
     [_deleteWorkspaceButton setEnabled:([_editWorkspaceTable numberOfSelectedRows] > 0)];
     [_overwriteWorkspaceButton setEnabled:([_editWorkspaceTable numberOfSelectedRows] == 1)];
     [_restoreWorkspaceButton setEnabled:([_editWorkspaceTable numberOfSelectedRows] == 1)];
@@ -1194,18 +1200,18 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 {
     NSArray *controllers = self.controllers;
     BOOL hasFloating = NO;
-    OBASSERT([controllers count] > 0);
-    if ([controllers count] == 0)
-        return nil;
-    
-    for (OIInspectorController *controller in controllers) {
-        if (controller.interfaceType == OIInspectorInterfaceTypeFloating) {
-            hasFloating = YES;
+
+    // In Graffle, if the inspectors are all embedded, there will be 0 controllers
+    if ([controllers count]) {
+        for (OIInspectorController *controller in controllers) {
+            if (controller.interfaceType == OIInspectorInterfaceTypeFloating) {
+                hasFloating = YES;
+            }
         }
-    }
-    
-    if (hasFloating) {
-        return lastWindowAskedToInspect;
+        
+        if (hasFloating) {
+            return lastWindowAskedToInspect;
+        }
     }
     
     // All the controllers are embedded - we can ask the app delegate what window they belong in

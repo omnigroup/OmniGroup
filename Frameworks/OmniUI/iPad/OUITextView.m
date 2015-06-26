@@ -54,6 +54,13 @@ NSString * const OUITextViewInsertionPointDidChangeNotification = @"OUITextViewI
     OUITextViewSelectedTextHighlightView *_selectedTextHighlightView;
 }
 
+static OUITextView *_activeFirstResponderTextView = nil;
+
++ (OUITextView *)activeFirstResponderTextView;
+{
+    return _activeFirstResponderTextView;
+}
+
 #pragma mark Debugging helpers
 
 const OUIEnumName OUITextDirectionEnumNames[] = {
@@ -426,10 +433,9 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
     NSArray *runs = [self _configureInspector];
     if (setupBlock != NULL)
         setupBlock(_textInspector);
-    [_textInspector inspectObjects:runs withViewController:viewController fromBarButtonItem:barButtonItem];
 
-    _selectedTextHighlightView = [[OUITextViewSelectedTextHighlightView alloc] initWithFrame:self.bounds];
-    [self addSubview:_selectedTextHighlightView];
+    [_textInspector inspectObjects:runs withViewController:viewController fromBarButtonItem:barButtonItem];
+    self.alwaysHighlightSelectedText = YES;
 }
 
 - (void)selectAllShowingMenu:(BOOL)show;
@@ -891,6 +897,8 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     if (![super becomeFirstResponder])
         return NO;
 
+    _activeFirstResponderTextView = self;
+
     NSArray *menuItems = nil;
     id <OUITextViewDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(textViewCustomMenuItems:)])
@@ -898,10 +906,39 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
 
     [UIMenuController sharedMenuController].menuItems = menuItems;
 
-    [_selectedTextHighlightView removeFromSuperview];
-    _selectedTextHighlightView = nil;
+    self.alwaysHighlightSelectedText = NO;
 
     return YES;
+}
+
+- (BOOL)resignFirstResponder;
+{
+    if (![super resignFirstResponder])
+        return NO;
+
+    OBASSERT(_activeFirstResponderTextView == self);
+    _activeFirstResponderTextView = nil;
+
+    return YES;
+}
+
+- (BOOL)alwaysHighlightSelectedText;
+{
+    return (_selectedTextHighlightView != nil);
+}
+
+- (void)setAlwaysHighlightSelectedText:(BOOL)shouldAlwaysHighlight;
+{
+    if (self.alwaysHighlightSelectedText == shouldAlwaysHighlight)
+        return;
+
+    if (shouldAlwaysHighlight) {
+        _selectedTextHighlightView = [[OUITextViewSelectedTextHighlightView alloc] initWithFrame:self.bounds];
+        [self addSubview:_selectedTextHighlightView];
+    } else {
+        [_selectedTextHighlightView removeFromSuperview];
+        _selectedTextHighlightView = nil;
+    }
 }
 
 static NSArray *_readableTypes(void)
@@ -1261,7 +1298,7 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
         NSMutableAttributedString *result = [NSMutableAttributedString new];
         _enumerateBestDataForTypes(pasteboard, _readableTypes(), ^(NSData *data){
             __autoreleasing NSError *error = nil;
-            NSAttributedString *attributedString = [[NSAttributedString alloc] initWithData:data options:nil documentAttributes:NULL error:&error];
+            NSAttributedString *attributedString = [[NSAttributedString alloc] initWithData:data options:@{} documentAttributes:NULL error:&error];
             if (!attributedString)
                 [error log:@"Error reading pasteboard item"];
             else {
@@ -1324,8 +1361,7 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
 
 - (void)inspectorDidDismiss:(OUIInspector *)inspector;
 {
-    [_selectedTextHighlightView removeFromSuperview];
-    _selectedTextHighlightView = nil;
+    self.alwaysHighlightSelectedText = NO;
 
     [self becomeFirstResponder];
     

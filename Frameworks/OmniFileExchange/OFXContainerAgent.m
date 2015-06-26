@@ -7,6 +7,7 @@
 
 #import "OFXContainerAgent-Internal.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileExchange/OFXAgent.h>
@@ -18,7 +19,6 @@
 
 #import "OFXAccountAgent-Internal.h"
 #import "OFXAccountClientParameters.h"
-#import "OFXConnection.h"
 #import "OFXContainerDocumentIndex.h"
 #import "OFXContainerScan.h"
 #import "OFXContentIdentifier.h"
@@ -175,7 +175,7 @@ static NSString * const OFXNoPathExtensionContainerIdentifier = @"no.extension";
     _documentIndex = nil;
 }
 
-- (BOOL)syncIfChanged:(ODAVFileInfo *)containerFileInfo serverDate:(NSDate *)serverDate connection:(OFXConnection *)connection error:(NSError **)outError;
+- (BOOL)syncIfChanged:(ODAVFileInfo *)containerFileInfo serverDate:(NSDate *)serverDate connection:(ODAVConnection *)connection error:(NSError **)outError;
 {
     NSUInteger retries = 0;
     
@@ -495,7 +495,7 @@ tryAgain:
     }
     OBASSERT(fileItem.remoteState.missing || fileItem.localState.edited || fileItem.localState.userMoved);
 
-    OFXConnection *connection = [self _makeConnection];
+    ODAVConnection *connection = [self _makeConnection];
     if (!connection)
         return nil;
     
@@ -591,7 +591,7 @@ tryAgain:
         return nil;
     }
     
-    OFXConnection *connection = [self _makeConnection];
+    ODAVConnection *connection = [self _makeConnection];
     if (!connection)
         return nil;
     
@@ -682,7 +682,7 @@ tryAgain:
         return nil;
     }
     
-    OFXConnection *connection = [self _makeConnection];
+    ODAVConnection *connection = [self _makeConnection];
     if (!connection)
         return nil;
     
@@ -1502,7 +1502,7 @@ tryAgain:
     return fileItem;
 }
 
-- (OFXConnection *)_makeConnection;
+- (ODAVConnection *)_makeConnection;
 {
     OBPRECONDITION([self _runningOnAccountAgentQueue]);
 

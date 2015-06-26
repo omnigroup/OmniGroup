@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007-2012, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,6 +16,12 @@ NSError *OFXMLCreateError(xmlErrorPtr error)
     // When parsing WebDAV results, we get a hojillion complaints that 'DAV:' is not a valid URI.  Nothing we can do about this as that's what Apache sends.  Sorry!
     if (error->domain == XML_FROM_PARSER && error->code == XML_WAR_NS_URI)
         return nil;
+    
+#ifdef DEBUG_bungi
+    // Go's WebDAV (experimental) can end up re-defining 'xmlns="DAV:"'. It would be nice to check if the two values are the same...n
+    if (error->domain == XML_FROM_PARSER && error->code == XML_ERR_ATTRIBUTE_REDEFINED && (error->str1 && strcmp(error->str1, "xmlns") == 0))
+        return nil;
+#endif
     
     // libxml2 has its own notion of domain/code -- put those in the user info.
     NSMutableDictionary *userInfo = [[NSMutableDictionary alloc] initWithObjectsAndKeys:

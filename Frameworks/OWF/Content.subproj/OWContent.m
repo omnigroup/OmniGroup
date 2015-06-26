@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2007, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -331,7 +331,7 @@ static void Thingy(id mememe, SEL wheee)
     // Note that the concreteContent's content type overrides any content type derived from the metadata; this is necessary for things like error responses and HEAD responses.
 
     if (concreteContent && [concreteContent respondsToSelector:@selector(contentType)])
-        contentType = [(id)concreteContent contentType];
+        contentType = [(OWContent *)concreteContent contentType];
     else
         contentType = [[self fullContentType] contentType];
     if (contentType == nil)

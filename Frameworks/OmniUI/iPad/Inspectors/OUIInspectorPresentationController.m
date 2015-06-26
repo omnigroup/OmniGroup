@@ -86,7 +86,7 @@ RCS_ID("$Id$")
     _initialDisplayRect = CGRectZero;
 }
 
-- (void)presentedViewNowNeedsFullHeight:(BOOL)needsFullHeight withAnimationDuration:(CGFloat)duration options:(UIViewAnimationOptions)options{
+- (void)presentedViewNowNeedsFullHeight:(BOOL)needsFullHeight withAnimationDuration:(CGFloat)duration options:(UIViewAnimationOptions)options completion:(void (^)())completion{
     if (CGRectEqualToRect(_initialDisplayRect, CGRectZero)) {
         _initialDisplayRect = [self frameOfPresentedViewInContainerView];
     }
@@ -98,7 +98,11 @@ RCS_ID("$Id$")
                              CGRect fullScreenFrame = [self presentedView].window.frame;
                              [self presentedView].frame = fullScreenFrame;
                          }
-                         completion:nil];
+                         completion:^(BOOL finished) {
+                             if (completion) {
+                                 completion();
+                             }
+                         }];
     } else {
         [UIView animateWithDuration:duration
                               delay:0.0
@@ -106,7 +110,11 @@ RCS_ID("$Id$")
                          animations:^{
                              [self presentedView].frame = _initialDisplayRect;
                          }
-                         completion:nil];
+                         completion:^(BOOL finished) {
+                             if (completion) {
+                                 completion();
+                             }
+                         }];
     }
 }
 

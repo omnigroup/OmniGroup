@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,7 +30,7 @@ RCS_ID("$Id$")
         return NO;
     NSDictionary *attributes = [NSDictionary dictionaryWithObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
     NSMutableAttributedString *attributedString = [[[NSMutableAttributedString alloc] initWithString:@" " attributes:attributes] autorelease];
-    return [self setData:[attributedString RTFFromRange:NSMakeRange(0,[attributedString length]) documentAttributes:nil] forType:type];
+    return [self setData:[attributedString RTFFromRange:NSMakeRange(0,[attributedString length]) documentAttributes:@{}] forType:type];
 }
 
 @end

@@ -137,7 +137,7 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
 {
     __block BOOL success = NO;
     NSFileCoordinatorReadingOptions options = withChanges ? 0 : NSFileCoordinatorReadingWithoutChanges;
-    [self prepareForReadingItemsAtURLs:readingURLs options:options writingItemsAtURLs:nil options:0 error:outError byAccessor:^(void (^completionHandler)(void)){
+    [self prepareForReadingItemsAtURLs:readingURLs options:options writingItemsAtURLs:@[] options:0 error:outError byAccessor:^(void (^completionHandler)(void)){
         success = accessor(outError);
         completionHandler();
     }];
@@ -148,7 +148,7 @@ static BOOL _ensureParentDirectory(NSURL *url, NSError **outError)
 {
     __block BOOL success = NO;
     NSFileCoordinatorWritingOptions options = withChanges ? NSFileCoordinatorWritingForMerging : 0;
-    [self prepareForReadingItemsAtURLs:nil options:0 writingItemsAtURLs:writingURLs options:options error:outError byAccessor:^(void (^completionHandler)(void)){
+    [self prepareForReadingItemsAtURLs:@[] options:0 writingItemsAtURLs:writingURLs options:options error:outError byAccessor:^(void (^completionHandler)(void)){
         success = accessor(outError);
         completionHandler();
     }];

@@ -211,11 +211,11 @@ RCS_ID("$Id$");
             OFXMLBufferAppendString(xml, (__bridge CFStringRef)_versionString);
             OFXMLBufferAppendUTF8CString(xml, "\" encoding=\"");
             
-            // Convert the encoding name to lowercase for compatibility with an older version of OFXMLDocument (regression tests...)
-            CFStringRef encodingName = (CFStringRef)[(NSString *)CFStringConvertEncodingToIANACharSetName(_stringEncoding) lowercaseString];
+            // XML spec wants uppercase names, but we should match case insensitively.
+            CFStringRef encodingName = (CFStringRef)[(NSString *)CFStringConvertEncodingToIANACharSetName(_stringEncoding) uppercaseString];
             if (!encodingName) {
                 OBASSERT_NOT_REACHED("No encoding name found");
-                encodingName = CFSTR("utf-8");
+                encodingName = CFSTR("UTF-8");
             }
             OFXMLBufferAppendString(xml, encodingName);
             

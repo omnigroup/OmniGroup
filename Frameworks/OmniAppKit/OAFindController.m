@@ -191,8 +191,9 @@ RCS_ID("$Id$")
     }
 
     if (subview) {
-        [subview setFrameOrigin:NSMakePoint((CGFloat)floor(([_additionalControlsBox frame].size.width - [subview frame].size.width) / 2), 0)];
         [_additionalControlsBox addSubview:subview];
+        NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem:_additionalControlsBox attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:subview attribute:NSLayoutAttributeCenterX multiplier:1.0 constant:0.0];
+        constraint.active = YES;
     }
     [_replaceTextField setNextKeyView:nextKeyView];
 }
@@ -200,6 +201,11 @@ RCS_ID("$Id$")
 // Updating the selection popup...
 
 - (void)controlTextDidEndEditing:(NSNotification *)aNotification
+{
+    [self _updateCaptureGroupsPopUp];
+}
+
+- (void)_updateCaptureGroupsPopUp;
 {
     NSString *subexpressionFormatString = NSLocalizedStringFromTableInBundle(@"Subexpression #%d", @"OmniAppKit", [OAFindController bundle], "Contents of popup in regular expression find options");
     
@@ -335,11 +341,7 @@ RCS_ID("$Id$")
     [_replaceAndFindButton setEnabled:replaceSelectionEnabled];
     [_replaceAllButton setEnabled:[target respondsToSelector:@selector(replaceAllOfPattern:)]];
     
-    if ([target respondsToSelector:@selector(replaceAllOfPatternInCurrentSelection:)]) {
-        if ([_replaceInSelectionCheckbox superview] == nil)
-            [[self.window contentView] addSubview:_replaceInSelectionCheckbox];
-    } else if ([_replaceInSelectionCheckbox superview] != nil)
-        [_replaceInSelectionCheckbox removeFromSuperview];
+    _replaceInSelectionCheckbox.hidden = ![target respondsToSelector:@selector(replaceAllOfPatternInCurrentSelection:)];
 }
 
 #pragma mark - NSWindowController subclass
@@ -369,7 +371,7 @@ RCS_ID("$Id$")
     if ([[_findTypeMatrix selectedCell] tag] == 0) {
         pattern = [[OAFindPattern alloc] initWithString:findString ignoreCase:[_ignoreCaseButton state] wholeWord:[_wholeWordButton state] backwards:backwardsFlag];
     } else {
-        [self controlTextDidEndEditing:nil]; // make sure the _captureGroupPopUp is set correctly
+        [self _updateCaptureGroupsPopUp];
         NSInteger captureGroup = [_captureGroupPopUp indexOfSelectedItem] - 1;
         pattern = [[OARegExFindPattern alloc] initWithPattern:findString selectedCaptureGroup:captureGroup backwards:backwardsFlag];
     }

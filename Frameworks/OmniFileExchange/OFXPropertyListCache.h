@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,8 +9,7 @@
 
 #import <Foundation/NSObject.h>
 
-@class ODAVFileInfo;
-@class OFXConnection;
+@class ODAVConnection, ODAVFileInfo;
 
 @interface OFXPropertyListCacheEntry : NSObject
 @property(nonatomic,readonly,strong) NSDate *serverDate;
@@ -22,12 +21,12 @@
 
 - initWithCacheFileURL:(NSURL *)fileURL remoteTemporaryDirectoryURL:(NSURL *)remoteTemporaryDirectoryURL remoteBaseDirectoryURL:(NSURL *)remoteBaseDirectoryURL;
 
-- (OFXPropertyListCacheEntry *)cacheEntryWithFileInfo:(ODAVFileInfo *)fileInfo serverDate:(NSDate *)serverDate connection:(OFXConnection *)connection error:(NSError **)outError;
-- (NSDictionary *)propertyListWithFileInfo:(ODAVFileInfo *)fileInfo serverDate:(NSDate *)serverDate connection:(OFXConnection *)connection error:(NSError **)outError;
+- (OFXPropertyListCacheEntry *)cacheEntryWithFileInfo:(ODAVFileInfo *)fileInfo serverDate:(NSDate *)serverDate connection:(ODAVConnection *)connection error:(NSError **)outError;
+- (NSDictionary *)propertyListWithFileInfo:(ODAVFileInfo *)fileInfo serverDate:(NSDate *)serverDate connection:(ODAVConnection *)connection error:(NSError **)outError;
 
-- (OFXPropertyListCacheEntry *)writePropertyList:(NSDictionary *)plist toURL:(NSURL *)url overwrite:(BOOL)overwrite connection:(OFXConnection *)connection error:(NSError **)outError;
+- (OFXPropertyListCacheEntry *)writePropertyList:(NSDictionary *)plist toURL:(NSURL *)url overwrite:(BOOL)overwrite connection:(ODAVConnection *)connection error:(NSError **)outError;
 
-- (BOOL)removePropertyListWithFileInfo:(ODAVFileInfo *)fileInfo connection:(OFXConnection *)connection error:(NSError **)outError;
+- (BOOL)removePropertyListWithFileInfo:(ODAVFileInfo *)fileInfo connection:(ODAVConnection *)connection error:(NSError **)outError;
 
 // Removes cache entries that are *not* present in the given file infos (deleted by other clients).
 - (void)pruneCacheKeepingEntriesForFileInfos:(NSArray *)fileInfos;

@@ -291,6 +291,8 @@ RCS_ID("$Id$");
 {
     if (_isTrash)
         return 999;
+    else if (_isTemplate)
+        return 998;
     else
         return -1;
 }

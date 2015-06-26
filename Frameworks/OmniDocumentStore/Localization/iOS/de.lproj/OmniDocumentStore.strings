@@ -2,7 +2,7 @@
 "\"%@\" is already taken." = "„%@“ ist bereits vergeben.";
 
 /* Error reason when a file type is not recognized. */
-"%@ does not recognize this kind of file." = "%@ erkennt diesen Dateityp nicht.";
+"%@ does not recognize this kind of file." = "%@ erkennt diese Dateiart nicht.";
 
 /* Error message when renaming a folder and there is already a folder with the requested name. */
 "Another folder already has the name \"%@\"." = "Ein anderer Ordner hat bereits den Namen „%@“.";
@@ -33,4 +33,3 @@
 
 /* time display format for yesterday */
 "Yesterday, %@ <day name>" = "Gestern, %@";
-

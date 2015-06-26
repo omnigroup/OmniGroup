@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2011,2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import <OmniBase/OBExpectedDeallocation.h>
 
+#import <Foundation/Foundation.h>
 #import <OmniBase/assertions.h>
 #import <OmniBase/rcsid.h>
 #import <OmniBase/OBUtilities.h>
@@ -37,6 +38,7 @@ RCS_ID("$Id$")
     Class _originalClass;
     CFAbsoluteTime _originalTime;
     NSArray *_backtraceFrames;
+    BOOL _hasWarned;
 }
 
 static dispatch_queue_t WarningQueue;
@@ -58,7 +60,6 @@ static NSTimer *WarningTimer = nil;
     
     _object = object;
     _originalClass = [object class];
-    _originalTime = CFAbsoluteTimeGetCurrent();
     
     {
         // Could move this whole thing to OmniFoundation to use the utilities in OFBacktrace.m, but it doesn't have the exact code I want here.
@@ -88,6 +89,10 @@ static NSTimer *WarningTimer = nil;
                 [[NSRunLoop currentRunLoop] addTimer:WarningTimer forMode:NSRunLoopCommonModes];
             });
         }
+
+        // Don't start the clock until we actually make it onto the serial queue, in case it gets backed up with lots of objects.
+        _originalTime = CFAbsoluteTimeGetCurrent();
+
         CFArrayAppendValue(PendingDeallocations, (__bridge void *)self);
     });
 
@@ -99,18 +104,42 @@ static NSTimer *WarningTimer = nil;
     void *unsafeSelf = (__bridge void *)self; // Avoid retain by block.
     
     // Capture the info we will need later in the block
-#if DEBUG_EXPECTED_DEALLOCATIONS
     void *object = (__bridge void *)_object;
     Class originalClass = _originalClass;
+    CFAbsoluteTime deallocTime = CFAbsoluteTimeGetCurrent();
+    CFAbsoluteTime originalTime = _originalTime;
+    
+#ifdef OMNI_ASSERTIONS_ON
+    BOOL hasWarned = _hasWarned;
 #endif
     
     dispatch_async(WarningQueue, ^{
-        CFIndex warningIndex = CFArrayGetFirstIndexOfValue(PendingDeallocations, CFRangeMake(0, CFArrayGetCount(PendingDeallocations)), unsafeSelf);
+        CFIndex warningCount = CFArrayGetCount(PendingDeallocations);
+        CFIndex warningIndex = CFArrayGetFirstIndexOfValue(PendingDeallocations, CFRangeMake(0, warningCount), unsafeSelf);
         
+        LOG(@"Actual <%@:%p>", NSStringFromClass(originalClass), object);
+
         // Might have logged and purged the warning already
-        if (warningIndex != kCFNotFound) {
-            LOG(@"Actual <%@:%p>", NSStringFromClass(originalClass), object);
-            CFArrayRemoveValueAtIndex(PendingDeallocations, warningIndex);
+        if (warningIndex == kCFNotFound) {
+            OBASSERT_NOT_REACHED("Dealloc is the only place that instances are removed...");
+        } else {
+            // Order isn't important, so move the last object to this slot. If there is only one entry, this still works.
+            const void *lastValue = CFArrayGetValueAtIndex(PendingDeallocations, warningCount - 1);
+            CFArraySetValueAtIndex(PendingDeallocations, warningIndex, lastValue);
+            CFArrayRemoveValueAtIndex(PendingDeallocations, warningCount - 1);
+            warningCount--;
+            
+            if (hasWarned) {
+                NSUInteger warnedCount = 0;
+                for (warningIndex = 0; warningIndex < warningCount; warningIndex++) {
+                    __unsafe_unretained _OBExpectedDeallocation *other = (__unsafe_unretained _OBExpectedDeallocation *)CFArrayGetValueAtIndex(PendingDeallocations, warningIndex);
+                    if (other->_hasWarned)
+                        warnedCount++;
+                }
+                
+                NSLog(@"Eventually did deallocate <%@:%p> after %.2fs (%lu left)", NSStringFromClass(originalClass), object, deallocTime - originalTime, warnedCount);
+            }
+            
         }
     });
 }
@@ -296,20 +325,26 @@ static float kExpectedWarningTimeout = 3.0;
         CFIndex warningIndex = 0, warningCount = CFArrayGetCount(PendingDeallocations);
         while (warningIndex < warningCount) {
             __unsafe_unretained _OBExpectedDeallocation *warning = (__bridge _OBExpectedDeallocation *)CFArrayGetValueAtIndex(PendingDeallocations, warningIndex);
-            if (currentTime - warning->_originalTime > kExpectedWarningTimeout) {
-                OBInvokeAssertionFailureHandler("DEALLOC", "", __FILE__, __LINE__, @"*** Expected deallocation of <%@:%p> from:\n\t%@", NSStringFromClass(warning->_originalClass), warning->_object, [warning->_backtraceFrames componentsJoinedByString:@"\t"]);
+            
+            CFTimeInterval elapsedTime = currentTime - warning->_originalTime;
+            if (!warning->_hasWarned && elapsedTime > kExpectedWarningTimeout) {
+                OBInvokeAssertionFailureHandler("DEALLOC", "", __FILE__, __LINE__, @"*** Expected deallocation of <%@:%p> %.2fs ago from:\n\t%@", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime, [warning->_backtraceFrames componentsJoinedByString:@"\t"]);
 
 #ifdef DEBUG_bungi
                 _searchAllRegionsForPointer((__bridge const void *)warning->_object);
 #else
                 (void)(_searchAllRegionsForPointer);
 #endif
-                
-                CFArrayRemoveValueAtIndex(PendingDeallocations, warningIndex);
-                warningCount--;
+                // We leave the object in the array so that we can have a running count of the number of expected deallocations that haven't happened.
+                warning->_hasWarned = YES;
             } else {
                 warningIndex++;
             }
+        }
+        
+        CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
+        if (endTime - currentTime > 1) {
+            NSLog(@"Took %f seconds to process deallocation warnings.", endTime - currentTime);
         }
         
         if (warningCount > 0) {

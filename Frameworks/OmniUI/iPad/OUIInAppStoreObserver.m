@@ -18,6 +18,7 @@ RCS_ID("$Id$");
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions
 {
     OUIAppController *appDelegate = [OUIAppController controller];
+    
     NSArray *productIdentifiers = [appDelegate inAppPurchaseIdentifiers];
     NSMutableDictionary *productIdentifierForSKU = [NSMutableDictionary dictionary];
     for (NSString *productIdentifier in productIdentifiers) {
@@ -26,6 +27,8 @@ RCS_ID("$Id$");
             productIdentifierForSKU[pricingOptionSKU] = productIdentifier;
         }
     }
+    
+    id <OUIInAppStoreObserverDelegate> myDelegate = self.delegate; // Strong reference to our delegate for the duration of this method
 
     NSMutableArray *failedTransactions = [NSMutableArray array];
     
@@ -46,9 +49,9 @@ RCS_ID("$Id$");
                 [appDelegate didUnlockInAppPurchase:productIdentifier];
 
                 if (transaction.transactionState == SKPaymentTransactionStatePurchased)
-                    [self.delegate storeObserver:self paymentQueue:queue successfullyPurchasedSKU:purchasedSKU];
+                    [myDelegate storeObserver:self paymentQueue:queue successfullyPurchasedSKU:purchasedSKU];
                 else
-                    [self.delegate storeObserver:self paymentQueue:queue successfullyRestoredSKU:purchasedSKU];
+                    [myDelegate storeObserver:self paymentQueue:queue successfullyRestoredSKU:purchasedSKU];
 
                 [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 
@@ -67,7 +70,7 @@ RCS_ID("$Id$");
     }
     
     if (failedTransactions.count)
-        [self.delegate storeObserver:self paymentQueue:queue transactionsFailed:failedTransactions];
+        [myDelegate storeObserver:self paymentQueue:queue transactionsFailed:failedTransactions];
 }
 
 - (void)paymentQueueRestoreCompletedTransactionsFinished:(SKPaymentQueue *)queue;

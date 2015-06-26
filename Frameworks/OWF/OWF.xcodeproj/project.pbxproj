@@ -33,7 +33,7 @@
 		4A5027610944C16E0035E67F /* OWSitePreference.h in Headers */ = {isa = PBXBuildFile; fileRef = B59C0A5405474D3C0097A10E /* OWSitePreference.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A50276E0944C3390035E67F /* OWFTPListingProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = A23D75A404DF27750097A146 /* OWFTPListingProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA5358408B27DE600F0872D /* OWF.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E5205DFE8AB39F11C9CC38 /* OWF.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA5358508B27DE600F0872D /* FrameworkDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E5205CFE8AB39F11C9CC38 /* FrameworkDefines.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
+		4AA5358508B27DE600F0872D /* FrameworkDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E5205CFE8AB39F11C9CC38 /* FrameworkDefines.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
 		4AA5358608B27DE600F0872D /* OWCacheControlSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AED1FE206495D3C0097A149 /* OWCacheControlSettings.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA5358708B27DE600F0872D /* OWCacheSearch.h in Headers */ = {isa = PBXBuildFile; fileRef = A2A2F5BF05F65C210097A146 /* OWCacheSearch.h */; };
 		4AA5358808B27DE600F0872D /* OWContentCacheGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = A2C3608E054DE2280097A146 /* OWContentCacheGroup.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -86,13 +86,13 @@
 		4AA535B908B27DE600F0872D /* OWURLFileProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520CFFE8AB39F11C9CC38 /* OWURLFileProcessor.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4AA535BA08B27DE600F0872D /* OWUnknownDataStreamProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520CEFE8AB39F11C9CC38 /* OWUnknownDataStreamProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA535BD08B27DE600F0872D /* OWFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E4FE8AB39F11C9CC38 /* OWFTPProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA535BE08B27DE600F0872D /* OWFTPSession.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E5FE8AB39F11C9CC38 /* OWFTPSession.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
+		4AA535BE08B27DE600F0872D /* OWFTPSession.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E5FE8AB39F11C9CC38 /* OWFTPSession.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
 		4AA535C008B27DE600F0872D /* OWMacOSPeterLewisFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E6FE8AB39F11C9CC38 /* OWMacOSPeterLewisFTPProcessor.h */; settings = {ATTRIBUTES = (); }; };
 		4AA535C108B27DE600F0872D /* OWUnixFTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520E7FE8AB39F11C9CC38 /* OWUnixFTPProcessor.h */; settings = {ATTRIBUTES = (); }; };
-		4AA535C208B27DE600F0872D /* NSDate-OWExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520F6FE8AB39F11C9CC38 /* NSDate-OWExtensions.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
+		4AA535C208B27DE600F0872D /* NSDate-OWExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520F6FE8AB39F11C9CC38 /* NSDate-OWExtensions.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
 		4AA535C308B27DE600F0872D /* OWAuthSchemeHTTPBasic.h in Headers */ = {isa = PBXBuildFile; fileRef = 0343449E001D106CC697A146 /* OWAuthSchemeHTTPBasic.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		4AA535C408B27DE600F0872D /* OWAuthSchemeHTTPDigest.h in Headers */ = {isa = PBXBuildFile; fileRef = 4278DE7D0039AFDDC697A146 /* OWAuthSchemeHTTPDigest.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		4AA535C508B27DE600F0872D /* OWCookie.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520F9FE8AB39F11C9CC38 /* OWCookie.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
+		4AA535C508B27DE600F0872D /* OWCookie.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520F9FE8AB39F11C9CC38 /* OWCookie.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
 		4AA535C608B27DE600F0872D /* OWCookieDomain.h in Headers */ = {isa = PBXBuildFile; fileRef = 28106326FF018682C697A12F /* OWCookieDomain.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA535C708B27DE600F0872D /* OWCookiePath.h in Headers */ = {isa = PBXBuildFile; fileRef = 2810632DFF02D5AAC697A12F /* OWCookiePath.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA535C808B27DE600F0872D /* OWHTTPProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E520FAFE8AB39F11C9CC38 /* OWHTTPProcessor.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1689,7 +1689,7 @@
 		00E52059FE8AB39F11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 			};
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
 			compatibilityVersion = "Xcode 3.2";

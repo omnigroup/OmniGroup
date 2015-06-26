@@ -1,4 +1,4 @@
-// Copyright 2009-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -654,6 +654,13 @@ static void fakeSetXmlSecIdAttributeType(xmlDoc *doc, xmlXPathContext *ctxt)
     return result;
 }
 
+// Override the superclass designated initializer to fail
+- (instancetype)init;
+{
+    // Since we set -initWithElement:inDocument: to be the designated initializer, our subclass -init is considered to be a convenience. This will get rejected due to the NULL values
+    return [self initWithElement:NULL inDocument:NULL];
+}
+
 /*" Designated initializer. sig must be a Signature node in the provided document tree. "*/
 - initWithElement:(xmlNode *)sig inDocument:(xmlDoc *)doc
 {
@@ -884,15 +891,16 @@ struct algorithmParameter {
 #define MACALG1(cssmType)          /* */
 #endif
     
-#if defined(MAC_OS_X_VERSION_10_7) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    // Xcode 7 corrected the type of the values for kSecAttrKeyType to be 'const CFStringRef' instead of 'const CFTypeRef'.
+#if defined(MAC_OS_X_VERSION_10_11) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
+    const CFStringRef   *secKeytype;        /* kSecAttrKeyTypeFoo */
+#else
     const CFTypeRef     *secKeytype;        /* kSecAttrKeyTypeFoo */
+#endif
+    
     const CFStringRef   *secDigestType;     /* kSecDigestFoo */
 #define PKCALG2(keytype, digtype) & kSecAttrKeyType ## keytype, & kSecDigest ## digtype,
 #define MACALG2(digtype)          NULL, & kSecDigest ## digtype,
-#else
-#define PKCALG2(keytype, digtype) /* */
-#define MACALG2(digtype)          /* */
-#endif
     unsigned short       secDigestLength;   /* Length of digest. Use is undocumented except in headers; assuming it's the digest output size in bits, to distinguish the SHA2 family hashes. */
     
     short                fixedWidthSig;     /* 0 if unneeded; >0 for DSA-like algos with a known sig order; <0 for cases where we need to retrieve order with key */

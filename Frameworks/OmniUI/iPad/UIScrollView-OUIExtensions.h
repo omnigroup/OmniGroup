@@ -20,6 +20,7 @@ typedef enum {
 
 @property(nonatomic,readonly) NSTimeInterval autoscrollTimerInterval;
 
+- (UIEdgeInsets)nonAutoScrollInsets:(NSUInteger)allowedDirections;
 - (BOOL)shouldAutoscrollWithRecognizer:(UIGestureRecognizer *)recognizer allowedDirections:(NSUInteger)allowedDirections;
 - (BOOL)shouldAutoscrollWithRecognizer:(UIGestureRecognizer *)recognizer;
 

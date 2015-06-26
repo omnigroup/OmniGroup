@@ -8,7 +8,7 @@
 "%@ on %@" = "%2$@上の%1$@";
 
 /* Conflict file regular expression */
-"^(.*) \\(conflict( [0-9+])? from .*\\)$" = "^(.*) \\(.* からの競合( [0-9+])?\\)$";
+"^(.*) \\(conflict( [0-9+])? from .*\\)$" = "^(.*) \\(conflict( [0-9+])? from .*\\)$";
 
 /* account credentials missing suggestion */
 "Account is missing login credentials." = "アカウントにログイン資格情報がありません。";
@@ -151,7 +151,7 @@
 "Use your own WebDAV space." = "WebDAV の場所を使用します。";
 
 /* Account validation step description */
-"Validating Account..." = "アカウントを検証中…";
+"Validating Account..." = "アカウントを検証中...";
 
 /* Server account type */
 "WebDAV" = "WebDAV";

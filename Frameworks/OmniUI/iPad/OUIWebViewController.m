@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -85,7 +85,14 @@ RCS_ID("$Id$")
 
 - (void)loadData:(NSData *)data ofType:(NSString *)mimeType;
 {
-    [(UIWebView *)self.view loadData:data MIMEType:mimeType textEncodingName:@"utf-8" baseURL:nil];
+    UIWebView *webView = OB_CHECKED_CAST(UIWebView, self.view);
+    NSURL *baseURL = [NSURL URLWithString:@"x-invalid:"];
+    
+    if (data == nil) {
+        data = [NSData data];
+    }
+    
+    [webView loadData:data MIMEType:mimeType textEncodingName:@"utf-8" baseURL:baseURL];
 }
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error;
@@ -138,7 +145,7 @@ RCS_ID("$Id$")
         }
 
         // Special URL
-        if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:nil handleOpenURL:requestURL]) {
+        if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:[UIApplication sharedApplication] handleOpenURL:requestURL]) {
             return NO; // Don't load this in the WebView
         }
     }

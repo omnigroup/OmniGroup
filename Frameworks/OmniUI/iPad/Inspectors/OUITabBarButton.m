@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,6 +8,8 @@
 #import "OUITabBarButton.h"
 
 RCS_ID("$Id$");
+
+#import <OmniUI/OUITabBarAppearanceDelegate.h>
 
 @interface OUITabBarButton () {
   @private
@@ -63,30 +65,51 @@ RCS_ID("$Id$");
 
 - (void)OUITabBarButton_commonInit;
 {
-    [self updateTitleColors];
+    [self appearanceDidChange];
 }
 
 - (void)setSelected:(BOOL)selected;
 {
     [super setSelected:selected];
+    [self updateImageViewTintColors];
     [self setNeedsLayout];
 }
 
 - (void)tintColorDidChange;
 {
     [super tintColorDidChange];
-    [self updateTitleColors];
+    [self appearanceDidChange];
+}
+
+- (void)updateImageViewTintColors;
+{
+    UIColor *tintColor = nil;
+    if (self.appearanceDelegate != nil && self.selected) {
+        tintColor = [self.appearanceDelegate selectedTabTintColor];
+    }
+
+    self.imageView.tintColor = tintColor;
 }
 
 - (void)updateTitleColors;
 {
+    UIColor *selectedTitleColor;
+    UIColor *disabledTitleColor;
+    if (self.appearanceDelegate != nil) {
+        selectedTitleColor = self.appearanceDelegate.selectedTabTintColor;
+        disabledTitleColor = self.appearanceDelegate.disabledTabTintColor;
+    } else {
+        selectedTitleColor = [UIColor blackColor];
+        disabledTitleColor = [UIColor lightGrayColor];
+    }
+    
     [self setTitleColor:self.tintColor forState:UIControlStateNormal];
     [self setTitleColor:[self.tintColor colorWithAlphaComponent:0.2] forState:UIControlStateHighlighted];
 
-    [self setTitleColor:[UIColor blackColor] forState:UIControlStateSelected];
-    [self setTitleColor:[UIColor blackColor] forState:(UIControlStateSelected | UIControlStateHighlighted)];
+    [self setTitleColor:selectedTitleColor forState:UIControlStateSelected];
+    [self setTitleColor:selectedTitleColor forState:(UIControlStateSelected | UIControlStateHighlighted)];
 
-    [self setTitleColor:[UIColor lightGrayColor] forState:UIControlStateDisabled];
+    [self setTitleColor:disabledTitleColor forState:UIControlStateDisabled];
 }
 
 - (CGRect)titleRectForContentRect:(CGRect)contentRect;
@@ -130,5 +153,31 @@ RCS_ID("$Id$");
     CGSize imageSize = [[self imageForState:UIControlStateNormal] size];
     return CGRectGetWidth([self bounds]) - imageSize.width - 18.0;
 }
+
+#pragma mark Appearance
+
+- (void)appearanceDidChange;
+{
+    [self updateTitleColors];
+    [self updateImageViewTintColors];
+}
+
+@synthesize appearanceDelegate = _weak_appearanceDelegate;
+
+- (id <OUITabBarAppearanceDelegate>)appearanceDelegate;
+{
+    return _weak_appearanceDelegate;
+}
+
+- (void)setAppearanceDelegate:(id<OUITabBarAppearanceDelegate>)appearanceDelegate;
+{
+    if (appearanceDelegate == _weak_appearanceDelegate) {
+        return;
+    }
+    
+    _weak_appearanceDelegate = appearanceDelegate;
+    [self appearanceDidChange];
+}
+
 
 @end

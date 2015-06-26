@@ -16,6 +16,7 @@ enum OBBacktraceBufferType {
     OBBacktraceBuffer_NSAssertionFailure = 3,
     OBBacktraceBuffer_NSException = 4,
     OBBacktraceBuffer_Generic = 5,
+    OBBacktraceBuffer_CxxException = 6,
 };
 
 extern void OBRecordBacktrace(const char *ctxt, unsigned int optype);

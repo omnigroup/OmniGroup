@@ -11,12 +11,11 @@
 
 @class NSString, NSMutableDictionary;
 
-// This is linked by both OmniSoftwareUpdate and OmniCrashCatcher.
-BOOL OSURunTimeHasHandledApplicationTermination(void) OB_HIDDEN;
+extern BOOL OSURunTimeHasHandledApplicationTermination(void) OB_HIDDEN;
 
-void OSURunTimeApplicationActivated(NSString *appIdentifier, NSString *bundleVersion) OB_HIDDEN;
-void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleVersion, BOOL crashed) OB_HIDDEN;
+extern void OSURunTimeApplicationActivated(NSString *appIdentifier, NSString *bundleVersion) OB_HIDDEN;
+extern void OSURunTimeApplicationDeactivated(NSString *appIdentifier, NSString *bundleVersion, BOOL crashed); // NOT hidden since OmniCrashCatcherReports uses it.
 
-void OSURunTimeAddStatisticsToInfo(NSString *appIdentifier, NSMutableDictionary *info) OB_HIDDEN;
+extern void OSURunTimeAddStatisticsToInfo(NSString *appIdentifier, NSMutableDictionary *info) OB_HIDDEN;
 
 extern NSString * const OSULastSuccessfulCheckDateKey;

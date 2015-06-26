@@ -346,10 +346,10 @@ RCS_ID("$Id$")
     NSMutableArray *pinnedIdentifiers = [NSMutableArray array];
 
     for (NSCell *cell in selectedCells) {
-        OIInspectorTabController *tab = [cell representedObject];
-        [selectedIdentifiers addObject:[tab identifier]];
+        NSString *identifier = [cell representedObject];
+        [selectedIdentifiers addObject:identifier];
         if ([pinnedCellsSet member:cell]) {
-            [pinnedIdentifiers addObject:[tab identifier]];
+            [pinnedIdentifiers addObject:identifier];
         }
     }
     [self setSelectedTabIdentifiers:selectedIdentifiers pinnedTabIdentifiers:pinnedIdentifiers];
@@ -636,13 +636,13 @@ RCS_ID("$Id$")
     [buttonMatrix renewRows:1 columns:tabIndex];
     [buttonMatrix sizeToCells];
     [buttonMatrix deselectAllCells];
-
+    
     while (tabIndex--) {
-	OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
-	NSButtonCell *cell = [buttonMatrix cellAtRow:0 column:tabIndex];
+        OIInspectorTabController *tab = [_tabControllers objectAtIndex:tabIndex];
+        NSButtonCell *cell = [buttonMatrix cellAtRow:0 column:tabIndex];
         [cell setImage:[tab image]];
-	[cell setRepresentedObject:tab];
-	
+        [cell setRepresentedObject:[tab identifier]];
+        
         if ([tab isVisible])
             [buttonMatrix setSelectionFrom:tabIndex to:tabIndex anchor:tabIndex highlight:YES];
     }

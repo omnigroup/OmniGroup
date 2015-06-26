@@ -4,8 +4,7 @@
 
 // Common Application settings for building for the Omni Store
 
-// Link against OmniSoftwareUpdate for Omni Store builds
-OMNI_STORE_OTHER_LDFLAGS = $(value) -framework OmniSoftwareUpdate 
+OMNI_STORE_OTHER_LDFLAGS = $(value) $(OMNI_SOFTWARE_UPDATE_LDFLAGS) 
 
 OMNI_STORE_BUNDLE_IDENTIFIER_SUFFIX = $(OMNI_OMNISTORE_BUNDLE_IDENTIFIER_SUFFIX)
 OMNI_OMNISTORE_BUNDLE_IDENTIFIER_SUFFIX = 

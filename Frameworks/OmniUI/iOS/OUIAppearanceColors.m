@@ -9,10 +9,7 @@
 
 RCS_ID("$Id$")
 
-@implementation OUIAppearanceColors
-
-// TODO: override to switch returned class based on global theme?
-// + (instancetype)appearance;
+@implementation OUIAppearanceDefaultColors
 
 @dynamic omniRedColor;
 @dynamic omniOrangeColor;
@@ -37,10 +34,27 @@ RCS_ID("$Id$")
 
 @end
 
-// Stub class to get correct plist lookup via +[OUIAppearanceColors appearance].
-@implementation OUIAppearanceDefaultColors : OUIAppearanceColors
-@end
+@implementation OUIAppearanceDarkColors
 
-// Stub class to get correct plist lookup via +[OUIAppearanceColors appearance].
-@implementation OUIAppearanceDarkColors : OUIAppearanceColors
+@dynamic omniRedColor;
+@dynamic omniOrangeColor;
+@dynamic omniYellowColor;
+@dynamic omniGreenColor;
+@dynamic omniTealColor;
+@dynamic omniBlueColor;
+@dynamic omniPurpleColor;
+@dynamic omniGraphiteColor;
+@dynamic omniCremaColor;
+
+@dynamic omniAlternateRedColor;
+@dynamic omniAlternateYellowColor;
+
+@dynamic omniNeutralDeemphasizedColor;
+@dynamic omniNeutralPlaceholderColor;
+@dynamic omniNeutralLightweightColor;
+
+@dynamic omniDeleteColor;
+
+@dynamic omniExplanotextColor;
+
 @end

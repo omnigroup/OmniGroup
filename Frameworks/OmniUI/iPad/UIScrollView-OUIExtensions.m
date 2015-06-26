@@ -140,14 +140,20 @@ static NSUInteger _adjustAllowedDirections(UIScrollView *self, UIGestureRecogniz
     return allowedDirections;
 }
 
-static CGRect _nonautoscrollBounds(UIScrollView *self, NSUInteger allowedDirections)
+- (UIEdgeInsets)nonAutoScrollInsets:(NSUInteger)allowedDirections;
 {
     UIEdgeInsets insets;
     insets.left = (allowedDirections & OUIAutoscrollDirectionLeft) ? kOUIAutoscrollBorderWidth : 0;
     insets.right = (allowedDirections & OUIAutoscrollDirectionRight) ? kOUIAutoscrollBorderWidth : 0;
     insets.top = (allowedDirections & OUIAutoscrollDirectionUp) ? kOUIAutoscrollBorderWidth : 0;
     insets.bottom = (allowedDirections & OUIAutoscrollDirectionDown) ? kOUIAutoscrollBorderWidth : 0;
-    
+
+    return insets;
+}
+
+static CGRect _nonautoscrollBounds(UIScrollView *self, NSUInteger allowedDirections)
+{
+    UIEdgeInsets insets = [self nonAutoScrollInsets:allowedDirections];
     return UIEdgeInsetsInsetRect(self.bounds, insets);
 }
 

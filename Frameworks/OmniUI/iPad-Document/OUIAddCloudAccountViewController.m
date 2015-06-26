@@ -11,6 +11,7 @@
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
 #import <OmniUI/OUIAppearance.h>
+#import <OmniUI/OUIAppearanceColors.h>
 
 #import "OUIServerAccountSetupViewController.h"
 #import "OUIDocumentAppController-Internal.h"
@@ -100,7 +101,7 @@ RCS_ID("$Id$");
         cell.textLabel.text = accountType.addAccountTitle;
         cell.detailTextLabel.font = [UIFont systemFontOfSize:13.0];
         cell.detailTextLabel.text = accountType.addAccountDescription;
-        cell.detailTextLabel.textColor = [UIColor omniNeutralDeemphasizedColor];
+        cell.detailTextLabel.textColor = [OUIAppearanceDefaultColors appearance].omniNeutralDeemphasizedColor;
     }
     
     return cell;

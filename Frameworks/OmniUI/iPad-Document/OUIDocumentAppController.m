@@ -13,9 +13,11 @@
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniDocumentStore/ODSErrors.h>
+#import <OmniDocumentStore/ODSExternalScope.h>
 #import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniDocumentStore/ODSFolderItem.h>
 #import <OmniDocumentStore/ODSLocalDirectoryScope.h>
+#import <OmniDocumentStore/ODSScope-Subclass.h>
 #import <OmniDocumentStore/ODSStore.h>
 #import <OmniDocumentStore/ODSUtilities.h>
 #import <OmniFileExchange/OmniFileExchange.h>
@@ -58,9 +60,10 @@
 #import "OUIImportExportAccountListViewController.h"
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentAppController-Internal.h"
-#import "OUIDocumentPicker-Internal.h"
+#import "OUIDocumentExternalScopeManager.h"
 #import "OUIDocumentInbox.h"
 #import "OUIDocumentParameters.h"
+#import "OUIDocumentPicker-Internal.h"
 #import "OUIDocumentPickerViewController-Internal.h"
 #import "OUIDocumentPickerItemView-Internal.h"
 #import "OUIRestoreSampleDocumentListController.h"
@@ -96,7 +99,7 @@ static OFDeclareDebugLogLevel(OUIBackgroundFetchDebug);
 
 static OFDeclareTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
 
-@interface OUIDocumentAppController (/*Private*/) <OUIDocumentPreviewGeneratorDelegate, OUIDocumentPickerDelegate, OUIWebViewControllerDelegate>
+@interface OUIDocumentAppController (/*Private*/) <OUIDocumentPreviewGeneratorDelegate, OUIDocumentPickerDelegate, OUIWebViewControllerDelegate, UIDocumentPickerDelegate>
 
 @property(nonatomic,copy) NSArray *launchAction;
 
@@ -104,7 +107,8 @@ static OFDeclareTimeInterval(OUIBackgroundFetchTimeout, 15, 5, 600);
 @property (nonatomic, strong) NSArray *rightItems;
 
 @property (nonatomic, weak) OUIWebViewController *webViewController;
-@property(nonatomic,readonly) UIBarButtonItem *editButtonItem;
+@property (nonatomic,readonly) UIBarButtonItem *editButtonItem;
+@property (nonatomic, strong) void (^externalPickerCompletionBlock)(NSURL *);
 
 @end
 
@@ -129,6 +133,7 @@ static unsigned SyncAgentRunningAccountsContext;
     
     ODSStore *_documentStore;
     ODSLocalDirectoryScope *_localScope;
+    OUIDocumentExternalScopeManager *_externalScopeManager;
     OUIDocumentPreviewGenerator *_previewGenerator;
     BOOL _previewGeneratorForegrounded;
     
@@ -322,12 +327,15 @@ static unsigned SyncAgentRunningAccountsContext;
     OBPRECONDITION(document == _document);
     OBPRECONDITION(_snapshotForDocumentRebuilding != nil);
     
-    [UIView transitionFromView:_snapshotForDocumentRebuilding toView:nil duration:kOUIDocumentPickerRevertAnimationDuration options:UIViewAnimationOptionTransitionCrossDissolve completion:^(BOOL finished) {
-        if (finished) {
-            self.window.userInteractionEnabled = YES;
-            _snapshotForDocumentRebuilding = nil;
-        }
-    }];
+    [UIView transitionWithView:_snapshotForDocumentRebuilding duration:kOUIDocumentPickerRevertAnimationDuration options:0
+                    animations:^{
+                        _snapshotForDocumentRebuilding.alpha = 0;
+                    }
+                    completion:^(BOOL finished) {
+                        self.window.userInteractionEnabled = YES;
+                        [_snapshotForDocumentRebuilding removeFromSuperview];
+                        _snapshotForDocumentRebuilding = nil;
+                    }];
 }
 
 - (OUIDocument *)document;
@@ -442,6 +450,8 @@ static unsigned SyncAgentRunningAccountsContext;
 
 - (void)openDocument:(ODSFileItem *)fileItem;
 {
+    [_documentPicker navigateToContainerForItem:fileItem animated:NO];
+    [_documentPicker.selectedScopeViewController _applicationWillOpenDocument];
     [self openDocument:fileItem fileItemToRevealFrom:fileItem];
 }
 
@@ -586,12 +596,11 @@ static unsigned SyncAgentRunningAccountsContext;
 
 - (NSURL *)URLForSampleDocumentNamed:(NSString *)name ofType:(NSString *)fileType;
 {
-    CFStringRef extension = UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, kUTTagClassFilenameExtension);
+    NSString *extension = OFPreferredPathExtensionForUTI(fileType);
     if (!extension)
         OBRequestConcreteImplementation(self, _cmd); // UTI not registered in the Info.plist?
     
-    NSString *fileName = [name stringByAppendingPathExtension:(__bridge NSString *)extension];
-    CFRelease(extension);
+    NSString *fileName = [name stringByAppendingPathExtension:extension];
     
     return [[self sampleDocumentsDirectoryURL] URLByAppendingPathComponent:fileName];
 }
@@ -678,26 +687,43 @@ static unsigned SyncAgentRunningAccountsContext;
     return [super defaultFirstResponder];
 }
 
+- (void)importFromExternalContainer:(id)sender;
+{
+    UIDocumentPickerViewController *pickerViewController = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:[self _expandedTypesFromPrimaryTypes:[self _viewableFileTypes]] inMode:UIDocumentPickerModeImport];
+    [self _presentExternalDocumentPicker:pickerViewController completionBlock:^(NSURL *url) {
+        [_externalScopeManager importExternalDocumentFromURL:url];
+    }];
+}
+
+- (void)linkDocumentFromExternalContainer:(id)sender;
+{
+    UIDocumentPickerViewController *pickerViewController = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:[self _expandedTypesFromPrimaryTypes:[self editableFileTypes]] inMode:UIDocumentPickerModeOpen];
+    [self _presentExternalDocumentPicker:pickerViewController completionBlock:^(NSURL *url) {
+        [_externalScopeManager linkExternalDocumentFromURL:url];
+    }];
+}
+
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position;
 {
     NSMutableArray *options = [NSMutableArray arrayWithArray:[super additionalAppMenuOptionsAtPosition:position]];
     
     // Add ways to get more documents only if we are in a valid scope, for now.
     OUIDocumentPickerViewController *scopeViewController = _documentPicker.selectedScopeViewController;
-    if (scopeViewController && scopeViewController.canAddDocuments) {
+    if (scopeViewController != nil && scopeViewController.canAddDocuments && !scopeViewController.selectedScope.isExternal) {
         switch (position) {
             case OUIAppMenuOptionPositionAfterReleaseNotes:
             {
-                UIImage *image = [[UIImage imageNamed:@"OUIMenuItemRestoreSampleDocuments.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+                UIImage *image = [[UIImage imageNamed:@"OUIMenuItemRestoreSampleDocuments"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
                 [options addObject:[OUIMenuOption optionWithFirstResponderSelector:@selector(restoreSampleDocuments:) title:[[OUIDocumentAppController controller] sampleDocumentsDirectoryTitle] image:image]];
                 break;
             }
+
             case OUIAppMenuOptionPositionAtEnd:
             {
-                
-                // Import Options
-                UIImage *image = [[UIImage imageNamed:@"OUIMenuItemImport.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-                OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:image action:^{
+                UIImage *importImage = [[UIImage imageNamed:@"OUIMenuItemImport"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+
+                // Import from WebDAV
+                OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage action:^{
                     OUIImportExportAccountListViewController *accountList = [[OUIImportExportAccountListViewController alloc] initForExporting:NO];
                     accountList.title = NSLocalizedStringFromTableInBundle(@"Import", @"OmniUIDocument", OMNI_BUNDLE, @"import sheet title");
                     UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:accountList];
@@ -719,14 +745,19 @@ static unsigned SyncAgentRunningAccountsContext;
                     [self.window.rootViewController presentViewController:navigationController animated:YES completion:nil];
                 }];
                 [options addObject:importOption];
-            }
+
+                // Import from external container via document picker
+                [options addObject:[OUIMenuOption optionWithFirstResponderSelector:@selector(importFromExternalContainer:) title:NSLocalizedStringFromTableInBundle(@"Copy from…", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage]];
+
                 break;
+            }
+
             default:
                 OBASSERT_NOT_REACHED("Unknown possition");
                 break;
         }
     }
-    
+
     return options;
 }
 
@@ -756,10 +787,26 @@ static unsigned SyncAgentRunningAccountsContext;
 
 #pragma mark - API
 
+- (NSArray *)_expandedTypesFromPrimaryTypes:(NSArray *)primaryTypes;
+{
+    NSMutableArray *expandedTypes = [NSMutableArray array];
+    [expandedTypes addObjectsFromArray:primaryTypes];
+    for (NSString *primaryType in primaryTypes) {
+        NSArray *fileExtensions = CFBridgingRelease(UTTypeCopyAllTagsWithClass((__bridge CFStringRef)primaryType, kUTTagClassFilenameExtension));
+        for (NSString *fileExtension in fileExtensions) {
+            NSString *expandedType = (NSString *)CFBridgingRelease(UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtension, NULL));
+            if (expandedType != nil && ![expandedTypes containsObject:expandedType]) {
+                [expandedTypes addObject:expandedType];
+            }
+        }
+    }
+    return expandedTypes;
+}
+
 - (NSArray *)editableFileTypes;
 {
     if (!_editableFileTypes) {
-        NSMutableArray *types = [NSMutableArray array];
+        NSMutableArray *editableFileTypes = [NSMutableArray array];
         
         NSArray *documentTypes = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDocumentTypes"];
         for (NSDictionary *documentType in documentTypes) {
@@ -768,23 +815,23 @@ static unsigned SyncAgentRunningAccountsContext;
             if ([role isEqualToString:@"Editor"]) {
                 NSArray *contentTypes = [documentType objectForKey:@"LSItemContentTypes"];
                 for (NSString *contentType in contentTypes)
-                    [types addObject:[contentType lowercaseString]];
+                    [editableFileTypes addObject:[contentType lowercaseString]];
             }
         }
-        
-        _editableFileTypes = [types copy];
+
+        _editableFileTypes = [editableFileTypes copy];
     }
     
     return _editableFileTypes;
 }
 
-- (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
+- (NSArray *)_viewableFileTypes;
 {
-    OBPRECONDITION(!uti || [uti isEqualToString:[uti lowercaseString]]); // our cache uses lowercase keys.
-    
-    if (uti == nil)
-        return NO;
-    
+    return [[[self _roleByFileType] keyEnumerator] allObjects];
+}
+
+- (NSDictionary *)_roleByFileType;
+{
     dispatch_once(&_roleByFileTypeOnce, ^{
         // Make a fast index of all our declared UTIs
         NSMutableDictionary *contentTypeRoles = [[NSMutableDictionary alloc] init];
@@ -801,11 +848,19 @@ static unsigned SyncAgentRunningAccountsContext;
         
         _roleByFileType = [contentTypeRoles copy];
     });
-    OBASSERT(_roleByFileType);
+    OBPOSTCONDITION(_roleByFileType != nil);
+    return _roleByFileType;
+}
+
+- (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
+{
+    OBPRECONDITION(!uti || [uti isEqualToString:[uti lowercaseString]]); // our cache uses lowercase keys.
     
+    if (uti == nil)
+        return NO;
     
-    for (NSString *candidateUTI in _roleByFileType) {
-        if (UTTypeConformsTo((__bridge CFStringRef)uti, (__bridge CFStringRef)candidateUTI))
+    for (NSString *candidateUTI in [self _roleByFileType]) {
+        if (OFTypeConformsTo(uti, candidateUTI))
             return YES;
     }
     
@@ -1302,6 +1357,7 @@ static unsigned SyncAgentRunningAccountsContext;
             
             _localScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[ODSLocalDirectoryScope userDocumentsDirectoryURL] scopeType:ODSLocalDirectoryScopeNormal documentStore:_documentStore];
             [_documentStore addScope:_localScope];
+            _externalScopeManager = [[OUIDocumentExternalScopeManager alloc] initWithDocumentStore:_documentStore];
             ODSScope *trashScope = [[ODSLocalDirectoryScope alloc] initWithDirectoryURL:[ODSLocalDirectoryScope trashDirectoryURL] scopeType:ODSLocalDirectoryScopeTrash documentStore:_documentStore];
             [_documentStore addScope:trashScope];
             
@@ -1459,7 +1515,7 @@ static unsigned SyncAgentRunningAccountsContext;
 - (BOOL)_loadOmniPresenceConfigFileFromURL:(NSURL *)url;
 {
     NSDictionary *config = [[NSDictionary alloc] initWithContentsOfURL:url];
-    if (ODSInInInbox(url)) {
+    if (ODSIsInInbox(url)) {
         // Now that we've finished reading this config file, we don't need to leave it lying around
         __autoreleasing NSError *deleteError = nil;
         if (![[NSFileManager defaultManager] removeItemAtURL:url error:&deleteError])
@@ -1550,7 +1606,6 @@ static unsigned SyncAgentRunningAccountsContext;
         
         // Only attempt to open handle as an Inbox item if the URL is a file URL.
         if (url.isFileURL) {
-            [_documentPicker.selectedScopeViewController _applicationWillOpenDocument];
             _isOpeningURL = YES;
             
             // Have to wait for the document store to awake again (if we were backgrounded), initiated by -applicationWillEnterForeground:. <bug:///79297> (Bad animation closing file opened from another app)
@@ -1559,7 +1614,7 @@ static unsigned SyncAgentRunningAccountsContext;
                 OBASSERT(_documentStore);
                 
                 void (^scanAction)(void) = ^{
-                    if (ODSInInInbox(url)) {
+                    if (ODSIsInInbox(url)) {
                         OBASSERT(_localScope);
                         
                         [OUIDocumentInbox cloneInboxItem:url toScope:_localScope completionHandler:^(ODSFileItem *newFileItem, NSError *errorOrNil) {
@@ -1814,6 +1869,27 @@ static unsigned SyncAgentRunningAccountsContext;
 - (Class)previewGenerator:(OUIDocumentPreviewGenerator *)previewGenerator documentClassForFileURL:(NSURL *)fileURL;
 {
     return [self documentClassForURL:fileURL];
+}
+
+#pragma mark - UIDocumentPickerDelegate
+
+- (void)_presentExternalDocumentPicker:(UIDocumentPickerViewController *)externalDocumentPicker completionBlock:(void (^)(NSURL *))externalPickerCompletionBlock;
+{
+    _externalPickerCompletionBlock = [externalPickerCompletionBlock copy];
+    externalDocumentPicker.delegate = self;
+    [self.window.rootViewController presentViewController:externalDocumentPicker animated:YES completion:nil];
+}
+
+- (void)documentPicker:(UIDocumentPickerViewController *)controller didPickDocumentAtURL:(NSURL *)url;
+{
+    _externalPickerCompletionBlock(url);
+    [self.window.rootViewController dismissViewControllerAnimated:NO completion:nil];
+}
+
+- (void)documentPickerWasCancelled:(UIDocumentPickerViewController *)controller;
+{
+    _externalPickerCompletionBlock(nil);
+    [self.window.rootViewController dismissViewControllerAnimated:NO completion:nil];
 }
 
 #pragma mark - OUIWebViewControllerDelegate
@@ -2139,8 +2215,6 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     OB_UNUSED_VALUE(state);
     
     DEBUG_DOCUMENT(@"State changed to %ld", state);
-
-    OBASSERT((state & UIDocumentStateInConflict) == 0, "We no longer use iCloud and we have no way of making conflict versions, so we don't expect to see the conflict state");
 }
 
 static void _updatePreviewForFileItem(OUIDocumentAppController *self, NSNotification *note)

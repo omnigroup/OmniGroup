@@ -82,7 +82,7 @@ do { \
                                                                   error:&error];
     OBShouldNotError(doc != nil);
     
-    SAVE_AND_COMPARE(@"<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n"
+    SAVE_AND_COMPARE(@"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
                      @"<!DOCTYPE root-element PUBLIC \"-//omnigroup.com//XML Document Test//EN\" \"root-element.dtd\">\n"
                      @"<root-element/>\n");
     
@@ -109,7 +109,7 @@ do { \
     }
     [doc popElement];
 
-    SAVE_AND_COMPARE(@"<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n"
+    SAVE_AND_COMPARE(@"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
                      @"<!DOCTYPE root-element PUBLIC \"-//omnigroup.com//XML Document Test//EN\" \"root-element.dtd\">\n"
                      @"<root-element>\n"
                      @"  <child name=\"value\">\n"
@@ -149,7 +149,7 @@ do { \
     }
     [doc popElement];
 
-    SAVE_AND_COMPARE(@"<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n"
+    SAVE_AND_COMPARE(@"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
                      @"<!DOCTYPE root-element PUBLIC \"-//omnigroup.com//XML Document Test//EN\" \"root-element.dtd\">\n"
                      @"<root-element>\n"
                      @"  <child name=\"value\">\n"
@@ -424,7 +424,7 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
 - (void)testRoundTripProcessingInstructions;
 {
     NSString *inputString =
-    @"<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n"
+    @"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
     @"<?my-pi foozle?>\n"
     @"<?empty-pi?>\n"
     @"<root-element/>\n";
@@ -445,7 +445,7 @@ static OFXMLWhitespaceBehavior *_OOXMLWhitespaceBehavior(void)
 - (void)testCDATAMerging;
 {
     NSString *inputString =
-    @"<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>\n"
+    @"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
     @"<?my-pi foozle?>\n"
     @"<?empty-pi?>\n"
     @"<root-element>foo<![CDATA[<wonga>]]>blegga</root-element>\n";

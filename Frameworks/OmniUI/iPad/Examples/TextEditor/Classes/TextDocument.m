@@ -167,7 +167,7 @@ static void _writePreview(Class self, OFFileEdit *fileEdit, UIViewController *vi
 - (BOOL)readFromURL:(NSURL *)url error:(NSError **)outError;
 {
     __autoreleasing NSDictionary *documentAttributes = nil;
-    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithFileURL:url options:nil documentAttributes:&documentAttributes error:outError];
+    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithFileURL:url options:@{} documentAttributes:&documentAttributes error:outError];
     if (!attributedString)
         return NO;
     

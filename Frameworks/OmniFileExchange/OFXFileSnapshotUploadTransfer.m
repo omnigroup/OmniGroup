@@ -7,14 +7,14 @@
 
 #import "OFXFileSnapshotUploadTransfer.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import "OFXFileSnapshot.h"
-#import "OFXConnection.h"
 
 RCS_ID("$Id$")
 
 @implementation OFXFileSnapshotUploadTransfer
 
-- (id)initWithConnection:(OFXConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory;
+- (id)initWithConnection:(ODAVConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory;
 {
     OBPRECONDITION(currentSnapshot, "Should always have a starting snapshot, but it might be locally created on the first upload");
     OBPRECONDITION(remoteTemporaryDirectory);

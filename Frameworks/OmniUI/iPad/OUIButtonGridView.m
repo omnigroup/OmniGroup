@@ -141,7 +141,12 @@ RCS_ID("$Id$");
 {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     
-    [[UIColor colorWithHue:0.0 saturation:0.0 brightness:0.8 alpha:1.0] setFill];
+    if (self.buttonSeparatorStrokeColor != nil) {
+        [self.buttonSeparatorStrokeColor setFill];
+    } else {
+        [[UIColor colorWithHue:0.0 saturation:0.0 brightness:0.8 alpha:1.0] setFill];
+    }
+
     CGRect bounds = self.bounds;
 
     NSUInteger buttonHeight = [self buttonHeight];

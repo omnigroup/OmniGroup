@@ -76,15 +76,15 @@ static NSString * const Attribute1 = @"1";
     [_textStorage beginEditing];
     [_textStorage replaceCharactersInRange:NSMakeRange(0,0) withString:@"1"];
 
-    XCTAssertTrue([_textStorage editedMask] == NSTextStorageEditedCharacters);
-    XCTAssertTrue([_textStorage changeInLength] == 1);
+    XCTAssertEqual([_textStorage editedMask], NSTextStorageEditedCharacters);
+    XCTAssertEqual([_textStorage changeInLength], 1L);
     XCTAssertTrue(NSEqualRanges([_textStorage editedRange], NSMakeRange(0, 1)));
-    XCTAssertTrue(_processEditingCalls == 0);
+    XCTAssertEqual(_processEditingCalls, 0);
     
     [_textStorage endEditing];
     
     // The -endEditing should have done it.
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
     OAAssertNoPendingTextStorageEdits(_textStorage);
 }
 
@@ -94,13 +94,13 @@ static NSString * const Attribute1 = @"1";
     [_textStorage beginEditing];
 
     [_textStorage replaceCharactersInRange:NSMakeRange(0,0) withString:@"1"];
-    XCTAssertTrue(_processEditingCalls == 0);
+    XCTAssertEqual(_processEditingCalls, 0);
 
     [_textStorage endEditing];
-    XCTAssertTrue(_processEditingCalls == 0); // ... wait for it ...
+    XCTAssertEqual(_processEditingCalls, 0); // ... wait for it ...
 
     [_textStorage endEditing];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
     OAAssertNoPendingTextStorageEdits(_textStorage);
 }
 
@@ -109,74 +109,79 @@ static NSString * const Attribute1 = @"1";
 - (void)testUnwrappedReplaceCharactersInRangeWithString;
 {
     [_textStorage replaceCharactersInRange:NSMakeRange(0,0) withString:@"1"];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
 }
 
 - (void)testUnwrappedSetAttributesRange;
 {
     NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:@"value", @"name", nil];
     [_textStorage setAttributes:attributes range:NSMakeRange(0, 1)];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
 }
 
 - (void)testUnwrappedMutableString;
 {
     // Documentation claims that changes to this string will be tracked!
     [[_textStorage mutableString] appendString:@"y"];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
 }
 
 - (void)testUnwrappedAddAttributeValueRange;
 {
     [_textStorage addAttribute:@"x" value:@"y" range:NSMakeRange(0, 1)];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
 }
 
 - (void)testUnwrappedAddAttributesRange;
 {
     NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:@"value", @"name", nil];
     [_textStorage addAttributes:attributes range:NSMakeRange(0, 1)];
-    XCTAssertTrue(_processEditingCalls == 1);
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+    // Radar 21551117: -[NSTextStorage addAttributes:range:] incorrectly sends two NSTextStorageDidProcessEditingNotification notifications
+    XCTAssertEqual(_processEditingCalls, 2);
+#else
+    XCTAssertEqual(_processEditingCalls, 1);
+#endif
 }
 
 - (void)testUnwrappedRemoveAttributeRange;
 {
     [_textStorage removeAttribute:Attribute1 range:NSMakeRange(0, 1)];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
 }
 
 - (void)testUnwrappedReplaceCharactersInRangeWithAttributedString;
 {
     NSAttributedString *prepend = [[[NSAttributedString alloc] initWithString:@"b" attributes:nil] autorelease];
     [_textStorage replaceCharactersInRange:NSMakeRange(0, 0) withAttributedString:prepend];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
 }
 
 - (void)testUnwrappedInsertAttributedStringAtIndex;
 {
     NSAttributedString *prepend = [[[NSAttributedString alloc] initWithString:@"b" attributes:nil] autorelease];
     [_textStorage insertAttributedString:prepend atIndex:0];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
 }
 
 - (void)testUnwrappedAppendAttributedString;
 {
     NSAttributedString *append = [[[NSAttributedString alloc] initWithString:@"b" attributes:nil] autorelease];
     [_textStorage appendAttributedString:append];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
 }
 
 - (void)testUnwrappedDeleteCharactersInRange;
 {
     [_textStorage deleteCharactersInRange:NSMakeRange(0, 1)];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
 }
 
 - (void)testUnwrappedSetAttributedString;
 {
     NSAttributedString *set = [[[NSAttributedString alloc] initWithString:@"b" attributes:nil] autorelease];
     [_textStorage setAttributedString:set];
-    XCTAssertTrue(_processEditingCalls == 1);
+    XCTAssertEqual(_processEditingCalls, 1);
 }
 
 @end

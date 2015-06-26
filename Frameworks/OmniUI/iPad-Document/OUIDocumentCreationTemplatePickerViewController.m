@@ -161,8 +161,9 @@ RCS_ID("$Id$");
         }
 
         [self _beginIgnoringDocumentsDirectoryUpdates]; // prevent the possibility of the newly created document showing up in the template chooser.  This will only happen if you are creating a new template.
-        [self newDocumentWithTemplateFileItem:fileItem documentType:self.type];
-        // do not call _endIgnoringDocumentsDirectoryUpdates.  Otherwise we will get updates before we animate away opening the document.  We will not be returning to this view controller so this should not be an issue.
+        [self newDocumentWithTemplateFileItem:fileItem documentType:self.type completion:^{
+            [self _endIgnoringDocumentsDirectoryUpdates];
+        }];
     }
 }
 

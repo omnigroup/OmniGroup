@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,29 +17,8 @@
 extern NSString * const OAFavoriteCharsetsDefaultsKey;
 
 @interface OAHierarchicalPopUpController : NSObject
-{
-    id <NSObject> nonretainedTarget;
-    SEL anAction;
-    
-    NSArray *structure;
-    NSMutableDictionary *representedObjects;
-    
-    /* Pull-down buttons secretly store their title as the first menu item, so we have to keep that around. */
-    NSMenuItem *pulldownButtonTitleItem;
-    id pulldownLastSelection;  /* temporarily holds last selected object for a pulldown or submenu */
-    
-    /* Managing the "recent selections" portion of the menu */
-    NSString *recentSelectionsDefaultKey;  /* non-nil to store selections in defaults db */
-    NSArray *recentSelectionsHeading;      /* menu tuple to insert ahead of any recent sel'ns */
-    unsigned int recentSelectionsMaxCount; /* max nr. of items in the recent stuff section */
-    NSMutableArray *recentSelections;      /* LRU-ordered list of recent selections */
-    
-    /* Exactly one of these should be non-nil, depending on whether our hierarchical menu is attached to a popup button or is a submenu */
-    IBOutlet NSPopUpButton *theButton;
-    NSMenu *theTopMenu;
-}
 
-
+@property (nonatomic, retain) IBOutlet NSPopUpButton *theButton;
 
 /* NB The controller must be set up in a particular order. After -awakeFromnib, first -setRecentSelectionsHeading:..., then -setMenuStructure:, finally -setSelectedObject:.
 

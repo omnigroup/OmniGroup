@@ -13,7 +13,6 @@
 #import <OmniDAV/ODAVOperation.h>
 #import <OmniFoundation/OFPreference.h>
 
-#import "OFXConnection.h"
 #import "OFXDAVUtilities.h"
 
 RCS_ID("$Id$")
@@ -165,13 +164,13 @@ static NSString *_cacheKeyForFileInfo(ODAVFileInfo *fileInfo)
     return self;
 }
 
-- (NSDictionary *)propertyListWithFileInfo:(ODAVFileInfo *)fileInfo serverDate:(NSDate *)serverDate connection:(OFXConnection *)connection error:(NSError **)outError;
+- (NSDictionary *)propertyListWithFileInfo:(ODAVFileInfo *)fileInfo serverDate:(NSDate *)serverDate connection:(ODAVConnection *)connection error:(NSError **)outError;
 {
     OFXPropertyListCacheEntry *cacheEntry = [self cacheEntryWithFileInfo:fileInfo serverDate:serverDate connection:connection error:outError];
     return cacheEntry.contents;
 }
 
-- (OFXPropertyListCacheEntry *)cacheEntryWithFileInfo:(ODAVFileInfo *)fileInfo serverDate:(NSDate *)serverDate connection:(OFXConnection *)connection error:(NSError **)outError;
+- (OFXPropertyListCacheEntry *)cacheEntryWithFileInfo:(ODAVFileInfo *)fileInfo serverDate:(NSDate *)serverDate connection:(ODAVConnection *)connection error:(NSError **)outError;
 {
     OBPRECONDITION(fileInfo);
     OBPRECONDITION(serverDate);
@@ -238,7 +237,7 @@ static NSString *_cacheKeyForFileInfo(ODAVFileInfo *fileInfo)
     return cacheEntry;
 }
 
-- (OFXPropertyListCacheEntry *)writePropertyList:(NSDictionary *)plist toURL:(NSURL *)url overwrite:(BOOL)overwrite connection:(OFXConnection *)connection error:(NSError **)outError;
+- (OFXPropertyListCacheEntry *)writePropertyList:(NSDictionary *)plist toURL:(NSURL *)url overwrite:(BOOL)overwrite connection:(ODAVConnection *)connection error:(NSError **)outError;
 {
     __autoreleasing NSError *plistError;
     NSData *plistData = [NSPropertyListSerialization dataWithPropertyList:plist format:NSPropertyListXMLFormat_v1_0 options:0 error:&plistError];
@@ -304,7 +303,7 @@ static NSString *_cacheKeyForFileInfo(ODAVFileInfo *fileInfo)
     return cacheEntry;
 }
 
-- (BOOL)removePropertyListWithFileInfo:(ODAVFileInfo *)fileInfo connection:(OFXConnection *)connection error:(NSError **)outError;
+- (BOOL)removePropertyListWithFileInfo:(ODAVFileInfo *)fileInfo connection:(ODAVConnection *)connection error:(NSError **)outError;
 {
     __block NSError *removeError;
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done) {

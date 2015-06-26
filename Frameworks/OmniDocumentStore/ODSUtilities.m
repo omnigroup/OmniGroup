@@ -13,7 +13,7 @@ RCS_ID("$Id$")
 
 NSString * const ODSDocumentInteractionInboxFolderName = @"Inbox";
 
-BOOL ODSInInInbox(NSURL *url)
+BOOL ODSIsInInbox(NSURL *url)
 {
     // Check to see if the URL directly points to the Inbox.
     NSString *lastPathComponent = [url lastPathComponent];
@@ -33,16 +33,16 @@ BOOL ODSIsZipFileType(NSString *uti)
 {
     // Check both of the semi-documented system UTIs for zip (in case one goes away or something else weird happens).
     // Also check for a temporary hack UTI we had, in case the local LaunchServices database hasn't recovered.
-    return UTTypeConformsTo((__bridge CFStringRef)uti, CFSTR("com.pkware.zip-archive")) ||
-    UTTypeConformsTo((__bridge CFStringRef)uti, CFSTR("public.zip-archive")) ||
-    UTTypeConformsTo((__bridge CFStringRef)uti, CFSTR("com.omnigroup.zip"));
+    return OFTypeConformsTo(uti, CFSTR("com.pkware.zip-archive")) ||
+    OFTypeConformsTo(uti, CFSTR("public.zip-archive")) ||
+    OFTypeConformsTo(uti, CFSTR("com.omnigroup.zip"));
 }
 
 OFScanDirectoryFilter ODSScanDirectoryExcludeInboxItemsFilter(void)
 {
     return [^BOOL(NSURL *fileURL){
         // We never want to acknowledge files in the inbox directly. Instead they'll be dealt with when they're handed to us via document interaction and moved.
-        return ODSInInInbox(fileURL) == NO;
+        return ODSIsInInbox(fileURL) == NO;
     } copy];
 };
 

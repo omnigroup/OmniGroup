@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,5 +30,6 @@ extern NSString *const OUINumericFieldTableCellValueKey;
 // Exposed for adjusting font, color, etc. Should generally manipulate values using labelText and value properties
 @property (retain, nonatomic) IBOutlet UILabel *label;
 @property (retain, nonatomic) IBOutlet UITextField *valueTextField;
+@property (retain, nonatomic, readonly) IBOutlet UILabel *editingUnitsLabel;
 
 @end

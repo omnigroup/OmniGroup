@@ -2,6 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:../Tools/ValidateLocalizedFormatStrings/ValidateLocalizedFormatStrings.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Tools/SVNVersion/SVNVersion.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:../Tools/FixStringsFile/FixStringsFile.xcodeproj">
    </FileRef>
    <FileRef
@@ -45,6 +51,9 @@
    </FileRef>
    <FileRef
       location = "group:../Frameworks/OmniUI/iPad/OmniUI.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:../Frameworks/OmniUI/iPad-Document/OmniUIDocument.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:../Frameworks/OmniUnzip/OmniUnzip.xcodeproj">

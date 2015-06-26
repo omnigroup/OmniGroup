@@ -60,17 +60,6 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-+ (BOOL)isOperatingSystemiOS80OrLater; // iOS 8.0
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemLaterThanVersionString(@"8.0");
-    });
-    
-    return isLater;
-}
-
 + (BOOL)isOperatingSystemiOS90OrLater; // iOS 9.0
 {
     static BOOL isLater;
@@ -84,12 +73,12 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
 
 #else
 
-+ (BOOL)isOperatingSystemYosemiteOrLater; // 10.10
++ (BOOL)isOperatingSystemElCapitanOrLater; // 10.11
 {
     static BOOL isLater;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemLaterThanVersionString(@"10.10");
+        isLater = isOperatingSystemLaterThanVersionString(@"10.11");
     });
 
     return isLater;

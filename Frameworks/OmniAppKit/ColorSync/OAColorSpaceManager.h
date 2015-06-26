@@ -1,12 +1,13 @@
+// Copyright 2015 Omni Development, Inc. All rights reserved.
 //
-//  OAColorSpaceManager.h
-//  OmniAppKit
+// This software may only be used and reproduced according to the
+// terms in the file OmniSourceLicense.html, which should be
+// distributed with this project and can also be found at
+// <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 //
-//  Created by Kevin Steele on 4/7/15.
-//
-//
+// $Id$
 
-#import <Foundation/Foundation.h>
+#import <Foundation/NSObject.h>
 
 @interface OAColorSpaceHelper : NSObject
 @property (readwrite, nonatomic, retain) NSString *sha1;

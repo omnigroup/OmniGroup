@@ -174,9 +174,11 @@ RCS_ID("$Id$")
     
     ODSScope *scope = item.scope;
     if (!scope || ![_documentStore.scopes containsObject:scope]) {
-        [topLevelNavController popToRootViewControllerAnimated:animated];
         return;
-    } else if (topLevelNavController.viewControllers.count > 1 && ![topLevelNavController.viewControllers.lastObject isKindOfClass:[OUIDocumentCreationTemplatePickerViewController class]] && [[(OUIDocumentPickerViewController *)topLevelNavController.viewControllers.lastObject filteredItems] containsObject:item]) {
+    } else if (topLevelNavController.viewControllers.count > 1
+               && ![topLevelNavController.viewControllers.lastObject isKindOfClass:[OUIDocumentCreationTemplatePickerViewController class]]
+               && [topLevelNavController.viewControllers.lastObject respondsToSelector:@selector(filteredItems)]
+               && [[(OUIDocumentPickerViewController *)topLevelNavController.viewControllers.lastObject filteredItems] containsObject:item]) {
         return;
     } else {
         ODSFolderItem *folder = [scope folderItemContainingItem:item];
@@ -193,8 +195,20 @@ RCS_ID("$Id$")
 {
     [self _endEditingMode];
     
+    // dismiss any modals
+    [self dismissViewControllerAnimated:NO completion:nil];
+    // make sure that the OUIDocumentPickerHomeScreenViewController is at the root of the navigation stack
+    UIViewController *topController = self.topLevelNavigationController.topViewController;
+    UINavigationController *actualNavController;
+    if ([topController isKindOfClass:[OUIDocumentPickerAdaptableContainerViewController class]]) {
+        OUIDocumentPickerAdaptableContainerViewController *adaptableContainerViewController = OB_CHECKED_CAST(OUIDocumentPickerAdaptableContainerViewController, self.topLevelNavigationController.topViewController);
+        actualNavController = OB_CHECKED_CAST(UINavigationController, adaptableContainerViewController.wrappedViewController);
+    } else {
+        actualNavController = self.topLevelNavigationController;
+    }
+    [actualNavController popToRootViewControllerAnimated:NO];
+
     OUIDocumentPickerViewController *picker = [[OUIDocumentPickerViewController alloc] initWithDocumentPicker:self scope:scope];
-    [self.topLevelNavigationController popToRootViewControllerAnimated:NO];
     [self.topLevelNavigationController pushViewController:picker animated:animated];
 }
 
@@ -295,8 +309,12 @@ RCS_ID("$Id$")
         
         [topLevelNavController setViewControllers:topLevelNavStack];
         [container pushViewControllersForTransitionToRegularSizeClass:innerNavStack];
+        // fix the autoresizingMask for some reason it was set to UIViewAutoresizingFlexibleRightMargin	| UIViewAutoresizingFlexibleBottomMargin.
+        if (container.view.autoresizingMask != UIViewAutoresizingNone) {
+            container.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        }
     }
-    
+
     _isSetUpForCompact = traitCollectionIsCompact;
 }
 

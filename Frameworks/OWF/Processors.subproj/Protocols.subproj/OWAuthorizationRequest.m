@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -799,7 +799,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
             authType = kSecAttrAuthenticationTypeHTTPDigest;
     }
 
-    keychainSearch[(id)kSecClass] = kSecClassInternetPassword;
+    keychainSearch[(id)kSecClass] = (NSString *)kSecClassInternetPassword;
     keychainSearch[(id)kSecAttrServer] = parsedHostname;
     if (parsedPortnumber > 0 && parsedPortnumber != defaultPortnumber)
         keychainSearch[(id)kSecAttrPort] = @(parsedPortnumber);
@@ -811,13 +811,13 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
     switch (type) {
         case OWAuth_HTTP:
         case OWAuth_HTTP_Proxy:
-            keychainSearch[(id)kSecAttrProtocol] = kSecAttrProtocolHTTP;
+            keychainSearch[(id)kSecAttrProtocol] = (NSString *)kSecAttrProtocolHTTP;
             break;
         case OWAuth_FTP:
-            keychainSearch[(id)kSecAttrProtocol] = kSecAttrProtocolFTP;
+            keychainSearch[(id)kSecAttrProtocol] = (NSString *)kSecAttrProtocolFTP;
             break;
         case OWAuth_NNTP:
-            keychainSearch[(id)kSecAttrProtocol] = kSecAttrProtocolNNTP;
+            keychainSearch[(id)kSecAttrProtocol] = (NSString *)kSecAttrProtocolNNTP;
             break;
     }
 
@@ -855,7 +855,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
                     notSavedString = (NSString *)CFStringCreateWithCString(NULL, "Passwords\\312not\\312saved", kCFStringEncodingNonLossyASCII);
                 }
 
-                if ([[keychainEntry objectForKey:kSecAttrAccount] isEqualToString:notSavedString]) {
+                if ([[keychainEntry objectForKey:(NSString *)kSecAttrAccount] isEqualToString:notSavedString]) {
                     acceptable = NO;
                 }
                 
@@ -865,12 +865,12 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
             
                 // If we've loosened our search critera (eg to accept items with no realm), discard items which do specify a realm which isn't the one we're looking for.
                 if (acceptable &&
-                    realm != nil && [keychainEntry objectForKey:kSecAttrSecurityDomain] != nil &&
-                    !OFISEQUAL(realm, [keychainEntry objectForKey:kSecAttrSecurityDomain]))
+                    realm != nil && [keychainEntry objectForKey:(NSString *)kSecAttrSecurityDomain] != nil &&
+                    !OFISEQUAL(realm, [keychainEntry objectForKey:(NSString *)kSecAttrSecurityDomain]))
                     acceptable = NO;
 
-                if (acceptable && [keychainEntry objectForKey:kSecAttrPort] != nil) {
-                    unsigned int itemPortnum = [[keychainEntry objectForKey:kSecAttrPort] unsignedIntValue];
+                if (acceptable && [keychainEntry objectForKey:(NSString *)kSecAttrPort] != nil) {
+                    unsigned int itemPortnum = [[keychainEntry objectForKey:(NSString *)kSecAttrPort] unsignedIntValue];
                     if (itemPortnum != parsedPortnumber && !(parsedPortnumber == 0 && itemPortnum == defaultPortnumber))
                         acceptable = NO;
                 }
@@ -884,7 +884,7 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
                     keychainStatus = OWKCExtractKeyData(item, &itemData);
                     if (keychainStatus == noErr) {
                         // TODO: maybe the password credentials should actually be storing NSDatas? Neither W3C nor Apple seems to have given much thought to what encoding passwords are in, or whether they're conceptually char-arrays vs. octet-arrays, or what.
-                        OWAuthorizationCredential *newCredential = [self _credentialForUsername:[keychainEntry objectForKey:kSecAttrAccount] password:[NSString stringWithData:itemData encoding:NSUTF8StringEncoding] challenge:useParameters];
+                        OWAuthorizationCredential *newCredential = [self _credentialForUsername:[keychainEntry objectForKey:(NSString *)kSecAttrAccount] password:[NSString stringWithData:itemData encoding:NSUTF8StringEncoding] challenge:useParameters];
                         [newCredential setKeychainTag:keychainEntry];
                         foundAnything = [[self class] cacheCredentialIfAbsent:newCredential];
                     } else if (keychainStatus == userCanceledErr) {
@@ -918,11 +918,11 @@ static BOOL credentialMatchesHTTPChallenge(OWAuthorizationCredential *credential
             tryAgain = NO;
         } else {
             // Loosen the search criteria if we've been unsuccessful. Not all attributes are settable (or visible) in Apple's keychain app, so we check to see if ignoring those will get us a matching item. But we loosen the search gradually, so that we'll use a closer match if possible.
-            if ([keychainSearch objectForKey:kSecAttrAuthenticationType] != nil) {
-                [keychainSearch removeObjectForKey:kSecAttrAuthenticationType];
+            if ([keychainSearch objectForKey:(NSString *)kSecAttrAuthenticationType] != nil) {
+                [keychainSearch removeObjectForKey:(NSString *)kSecAttrAuthenticationType];
                 tryAgain = YES;
-            } else if ([keychainSearch objectForKey:kSecAttrSecurityDomain] != nil) {
-                [keychainSearch removeObjectForKey:kSecAttrSecurityDomain];
+            } else if ([keychainSearch objectForKey:(NSString *)kSecAttrSecurityDomain] != nil) {
+                [keychainSearch removeObjectForKey:(NSString *)kSecAttrSecurityDomain];
                 tryAgain = YES;
             } else {
                 tryAgain = NO;

@@ -7,11 +7,11 @@
 
 #import "OFXDownloadFileSnapshot.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniDAV/ODAVOperation.h>
 #import <OmniFoundation/CFPropertyList-OFExtensions.h>
 
-#import "OFXConnection.h"
 #import "OFXFileSnapshotContentsActions.h"
 #import "OFXFileSnapshot-Internal.h"
 #import "OFXFileState.h"
@@ -28,7 +28,7 @@ RCS_ID("$Id$")
 }
 
 // Downloads the info about the snapshot from the server and writes it to a local snapshot, which is expected to be in a temporary location.
-+ (BOOL)writeSnapshotToTemporaryURL:(NSURL *)temporaryLocalSnapshotURL byFetchingMetadataOfRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL fileIdentifier:(NSString **)outFileIdentifier connection:(OFXConnection *)connection error:(NSError **)outError;
++ (BOOL)writeSnapshotToTemporaryURL:(NSURL *)temporaryLocalSnapshotURL byFetchingMetadataOfRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL fileIdentifier:(NSString **)outFileIdentifier connection:(ODAVConnection *)connection error:(NSError **)outError;
 {
     OBPRECONDITION(temporaryLocalSnapshotURL);
     OBPRECONDITION(connection);

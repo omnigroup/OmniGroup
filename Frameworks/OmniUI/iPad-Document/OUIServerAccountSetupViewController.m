@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -731,7 +731,7 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
     header.font = [UIFont systemFontOfSize:14];
     header.backgroundColor = [UIColor clearColor];
     header.opaque = NO;
-    header.textColor = [UIColor omniNeutralDeemphasizedColor];
+    header.textColor = [OUIAppearanceDefaultColors appearance].omniNeutralDeemphasizedColor;
     header.numberOfLines = 0 /* no limit */;
     
     return header;

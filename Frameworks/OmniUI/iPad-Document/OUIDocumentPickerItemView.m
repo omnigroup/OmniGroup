@@ -9,6 +9,7 @@
 
 #import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniDocumentStore/ODSFolderItem.h>
+#import <OmniFoundation/NSMutableArray-OFExtensions.h>
 #import <OmniFoundation/OFBinding.h>
 #import <OmniFoundation/OFRandom.h>
 #import <OmniUIDocument/OUIDocumentPreview.h>
@@ -29,6 +30,7 @@ NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDoc
 
 @interface OUIDocumentPickerItemView (/*Private*/)
 - (void)_loadOrDeferLoadingPreviewsForViewsStartingAtIndex:(NSUInteger)index;
+@property (nonatomic, strong) NSArray *cachedCustomAccessibilityActions;
 @end
 
 @interface OUIDocumentPickerPreviewViewContainer : UIView
@@ -100,6 +102,7 @@ NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDoc
     BOOL _deleting;
     BOOL _selected;
     BOOL _deferLoadingPreviews;
+    BOOL _containerIsSelecting;
 }
 
 static id _commonInit(OUIDocumentPickerItemView *self)
@@ -126,12 +129,8 @@ static id _commonInit(OUIDocumentPickerItemView *self)
 
     [self _updateRasterizesLayer];
     
+    [self _setupAccessibilityActions];
     return self;
-}
-
-- (NSString *)accessibilityLabel;
-{
-    return self.item.name;
 }
 
 - (id)initWithFrame:(CGRect)frame;
@@ -274,12 +273,8 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 {
-    if (self.isReadOnly) {
-        _metadataView.userInteractionEnabled = NO;
-        return;
-    }
-    // We don't want to allow renaming in the case that our container is in Edit mode (selecting files and folders).
-    _metadataView.userInteractionEnabled = !editing;
+    _containerIsSelecting = editing;
+    [self _updateMetadataInteraction];
 }
 
 @synthesize shrunken = _shrunken;
@@ -421,6 +416,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     // Don't keep the preview around unless the picker view wants us to display (or speculatively display) something.
     [self discardCurrentPreviews];
 
+    [self _updateMetadataInteraction];
     [self _nameChanged];
     [self _selectedChanged];
     [self _dateChanged];
@@ -620,6 +616,98 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
+#pragma mark - Accessibility
+- (NSString *)accessibilityLabel;
+{
+    // so clients can use the setter to override the default label, if needed.
+    NSString *label = [super accessibilityLabel];
+    if (label) return label;
+    
+    // return the text field value so VO will speak the latest value regardless of editing state.
+    
+    return _metadataView.nameTextField.text;
+}
+
+- (NSString *)accessibilityValue
+{
+    if (_isEditingName) {
+        return NSLocalizedStringFromTableInBundle(@"Is editing", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker title label editing accessibility value");
+    }
+    
+    ODSItem *fileItem = (ODSItem *)self.item;
+    OBASSERT(!fileItem || [fileItem isKindOfClass:[ODSItem class]]);
+    
+    NSMutableArray *value = [[NSMutableArray alloc] init];
+    
+    // Badge Status
+    NSString *badgeStatus = nil;
+    if (fileItem.isDownloaded == NO) {
+        badgeStatus = NSLocalizedStringFromTableInBundle(@"Not downloaded", @"OmniUIDocument", OMNI_BUNDLE, @"Not downloaded accessibility label.");
+    }
+    else if (fileItem.isUploaded == NO) {
+        badgeStatus = NSLocalizedStringFromTableInBundle(@"Not uploaded", @"OmniUIDocument", OMNI_BUNDLE, @"Not uploaded accessibility label.");
+    }
+    
+    if (badgeStatus) {
+        [value addObjectIgnoringNil:badgeStatus];
+    }
+    
+    // Modification Date
+    NSString *displayDateString = [ODSItem displayStringForDate:fileItem.userModificationDate];
+    // avoid reading the modification date on things without a date.
+    if (displayDateString) {
+        NSString *modifiedDate = NSLocalizedStringFromTableInBundle(@"Modified %@", @"OmniUIDocument", OMNI_BUNDLE, @"modified date accessibility value");
+        modifiedDate = [NSString stringWithFormat:modifiedDate, displayDateString];
+        [value addObjectIgnoringNil:modifiedDate];
+    }
+   
+    return [value componentsJoinedByString:@", "];
+}
+
+- (UIAccessibilityTraits)accessibilityTraits;
+{
+    ODSItem *fileItem = (ODSItem *)self.item;
+    OBASSERT(!fileItem || [fileItem isKindOfClass:[ODSItem class]]);
+    
+    if (fileItem.selected) {
+        return UIAccessibilityTraitSelected;
+    }
+    
+    return UIAccessibilityTraitNone;
+}
+
+- (NSArray *)accessibilityCustomActions
+{
+    // return the correct editing action based on the nameTextFields editing state.
+    if (! _isEditingName) {
+        return @[[self.cachedCustomAccessibilityActions firstObject]];
+    }
+    
+    return @[[self.cachedCustomAccessibilityActions lastObject]];
+}
+
+- (void)_setupAccessibilityActions
+{
+    NSString *editNameString = NSLocalizedStringFromTableInBundle(@"Edit name", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker custom accessibility action name");
+    UIAccessibilityCustomAction *editName = [[UIAccessibilityCustomAction alloc] initWithName:editNameString target:self selector:@selector(_accessibilityHandleNameEditAction:)];
+    
+    NSString *clearNameString = NSLocalizedStringFromTableInBundle(@"Clear name field", @"OmniUIDocument", OMNI_BUNDLE, @"doc picker custom accessibility action name");
+    UIAccessibilityCustomAction *clearName = [[UIAccessibilityCustomAction alloc] initWithName:clearNameString target:self selector:@selector(_accessibilityHandleNameEditAction:)];
+    
+    _cachedCustomAccessibilityActions = @[editName, clearName];
+}
+
+- (BOOL)_accessibilityHandleNameEditAction:(UIAccessibilityCustomAction *)action;
+{
+    if (! _isEditingName) {
+        [self startRenaming];
+    } else {
+        _metadataView.nameTextField.text = nil;
+    }
+    
+    return YES;
+}
+
 #pragma mark - Private
 
 - (void)_updateRasterizesLayer;
@@ -757,6 +845,17 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     
     self.showsProgress = showProgress;
     self.progress = percent;
+}
+
+- (void)_updateMetadataInteraction;
+{
+    if (self.isReadOnly || _item.scope == nil || ![_item.scope canRenameDocuments]) {
+        _metadataView.userInteractionEnabled = NO;
+        return;
+    }
+
+    // We don't want to allow renaming in the case that our container is in Edit mode (selecting files and folders).
+    _metadataView.userInteractionEnabled = !_containerIsSelecting;
 }
 
 - (CGFloat)_borderWidth;

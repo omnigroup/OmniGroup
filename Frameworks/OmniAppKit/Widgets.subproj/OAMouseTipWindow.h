@@ -1,4 +1,4 @@
-// Copyright 2002-2006, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,6 +40,7 @@ typedef enum {
 
 + (void)showMouseTipWithTitle:(NSString *)aTitle;
 + (void)showMouseTipWithTitle:(NSString *)aTitle activeRect:(NSRect)activeRect edge:(NSRectEdge)onEdge delay:(CGFloat)delay;
++ (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle;
 + (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle activeRect:(NSRect)activeRect maxWidth:(CGFloat)maxWidth edge:(NSRectEdge)onEdge delay:(CGFloat)delay;
 + (void)hideMouseTip;
 

@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,8 @@
 - (NSToolbarSizeMode)updatingSizeMode;
 - (BOOL)updatingVisible;
 
+@property (nonatomic, readonly) NSWindow *window; // Asks delegate. This is for toolbar items that are text-only and need to validate based on firstResponder.
+
 @end
 
 @protocol OAToolbarDelegate <NSToolbarDelegate>
@@ -36,4 +38,7 @@
 - (void)toolbar:(OAToolbar *)aToolbar willSetSizeMode:(NSToolbarSizeMode)sizeMode;
 - (void)toolbar:(OAToolbar *)aToolbar didSetSizeMode:(NSToolbarSizeMode)sizeMode;
 - (BOOL)toolbar:(OAToolbar *)aToolbar shouldSelectToolbarItemWithIdentifier:(NSString *)itemIdentifier;
+
+@property (nonatomic, readonly) NSWindow *window;
+
 @end

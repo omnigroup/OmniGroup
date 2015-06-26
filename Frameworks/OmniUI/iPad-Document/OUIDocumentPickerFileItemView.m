@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -56,49 +56,6 @@ static id _commonInit(OUIDocumentPickerFileItemView *self)
     // We might be a dragging view (in which case we aren't the source view itself).
     
     [self _downloadRequestedChanged];
-}
-
-#pragma mark - Accessibility
-- (NSString *)accessibilityLabel;
-{
-    ODSFileItem *fileItem = (ODSFileItem *)self.item;
-    OBASSERT(!fileItem || [fileItem isKindOfClass:[ODSFileItem class]]);
-    
-    // Accessibilit label should read: Name, Badge Status (if any), Modification Date, iCloud Exclusion (if any)
-    
-    // Name
-    NSMutableString *label = [NSMutableString stringWithFormat:@"%@.", fileItem.name];
-    
-    // Badge Status
-    NSString *badgeStatus = nil;
-    if (fileItem.isDownloaded == NO) {
-        badgeStatus = NSLocalizedStringFromTableInBundle(@"Not downloaded", @"OmniUIDocument", OMNI_BUNDLE, @"Not downloaded accessibility label.");
-    }
-    else if (fileItem.isUploaded == NO) {
-        badgeStatus = NSLocalizedStringFromTableInBundle(@"Not uploaded", @"OmniUIDocument", OMNI_BUNDLE, @"Not uploaded accessibility label.");
-    }
-    
-    if (badgeStatus) {
-        [label appendFormat:@" %@.", badgeStatus];
-    }
-    
-    
-    // Modification Date
-    [label appendFormat:@" %@.", [ODSItem displayStringForDate:fileItem.userModificationDate]];
-    
-    return label;
-}
-
-- (UIAccessibilityTraits)accessibilityTraits;
-{
-    ODSFileItem *fileItem = (ODSFileItem *)self.item;
-    OBASSERT(!fileItem || [fileItem isKindOfClass:[ODSFileItem class]]);
-
-    if (fileItem.selected) {
-        return UIAccessibilityTraitSelected;
-    }
-    
-    return UIAccessibilityTraitNone;
 }
 
 #pragma mark -

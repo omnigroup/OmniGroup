@@ -7,10 +7,10 @@
 
 #import "OFXFileSnapshotUploadContentsTransfer.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniDAV/ODAVOperation.h>
 
-#import "OFXConnection.h"
 #import "OFXUploadContentsFileSnapshot.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
 #import "OFXFileState.h"
@@ -33,7 +33,7 @@ RCS_ID("$Id$")
     long long _totalBytesWritten;
 }
 
-- (id)initWithConnection:(OFXConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
+- (id)initWithConnection:(ODAVConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot forUploadingVersionOfDocumentAtURL:(NSURL *)localDocumentURL localRelativePath:(NSString *)localRelativePath remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory error:(NSError **)outError;
 {    
     if (!(self = [super initWithConnection:connection currentSnapshot:currentSnapshot remoteTemporaryDirectory:remoteTemporaryDirectory]))
         return nil;
@@ -146,7 +146,7 @@ RCS_ID("$Id$")
     __block ODAVURLResult *result;
     __block NSError *resultError;
     
-    OFXConnection *connection = self.connection;
+    ODAVConnection *connection = self.connection;
     NSURL *temporaryRemoteSnapshotURL = self.temporaryRemoteSnapshotURL;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){

@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -45,7 +45,13 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
     }
     return fontNames;
 #else
+    // Some "special" fonts start with '.' and can't be looked up by normal means (CTFontDescriptorCreateMatchingFontDescriptors with the family name set will return nil). We could presumably look them up by specific font name, but then this isn't much of a test, so just skip any such fonts.
+    
     NSArray *result = [[NSFontManager sharedFontManager] availableFonts];
+    result = [result select:^BOOL(NSString *fontName) {
+        return [fontName hasPrefix:@"."] == NO;
+    }];
+    
     return result;
 #endif
 }
@@ -87,6 +93,17 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 {
     XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"Helvetica");
+    CheckFontSize(attributesFromFoundFont, 12UL);
+}
+
+- (void)_assertIsHelvetica12LightAttributes:(NSDictionary *)attributesFromFoundFont;
+{
+    XCTAssert(attributesFromFoundFont);
+    // lightness is absorbed into the font name, eek
+    {
+        CheckFontName(attributesFromFoundFont, @"Helvetica-Light");
+        XCTAssertNil(attributesFromFoundFont[(id)kCTFontTraitsAttribute][(id)kCTFontSymbolicTrait], @"Expect no symbolic trait to be set");
+    }
     CheckFontSize(attributesFromFoundFont, 12UL);
 }
 
@@ -186,7 +203,7 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
 {
     OAFontDescriptor *descriptor = [[_helvetica12 newFontDescriptorWithWeight:1] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
-    [self _assertIsHelvetica12Attributes:attributesFromFoundFont];
+    [self _assertIsHelvetica12LightAttributes:attributesFromFoundFont];
 }
 
 
@@ -195,13 +212,9 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
     OAFontDescriptor *descriptor = [[_helvetica12 newFontDescriptorWithWeight:8] autorelease];
     NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
     
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    [self _assertIsHelvetica12Attributes:attributesFromFoundFont];
-#else
     XCTAssertNotNil(attributesFromFoundFont);
     CheckFontName(attributesFromFoundFont, @"Helvetica-Bold"); // No semi-bold installed on the Mac by default
     CheckFontSize(attributesFromFoundFont, 12UL);
-#endif
 }
 
 - (void)testHelveticaItalic;
@@ -265,6 +278,15 @@ static NSDictionary *_fontAttributesFromOAFontDescriptor(OAFontDescriptor *fontD
     CheckFontName(attributesFromFoundFont, @"Zapfino");
     CGFloat expected = 35.8;
     XCTAssertEqualWithAccuracy([(NSNumber *)(attributesFromFoundFont[(id)kCTFontSizeAttribute]) cgFloatValue], (CGFloat)expected, 0.05, @"Expected %lf", expected);
+}
+
+- (void)testBradleyHand; //this is interesting because in iOS 8.3 they seem to have added the "expanded" attribute to Bradley Hand, and that was preventing it from round-tripping
+{
+    OAFontDescriptor *descriptor = [[[OAFontDescriptor alloc] initWithFamily:@"Bradley Hand" size:20] autorelease];
+    NSDictionary *attributesFromFoundFont = _fontAttributesFromOAFontDescriptor(descriptor);
+    XCTAssertNotNil(attributesFromFoundFont);
+    CheckFontName(attributesFromFoundFont, @"BradleyHandITCTT-Bold");
+    CheckFontSize(attributesFromFoundFont, 20UL);
 }
 
 - (void)testCromulentFont;

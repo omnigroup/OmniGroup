@@ -18,13 +18,14 @@ require 'xcodeproj'
 $prog = File.basename(__FILE__)
 def usage
   msg = <<EOS
-usage: #{$prog} [--attribute attr1,attr2] target ext1,ext2 foo.xcodeproj
+usage: #{$prog} [--no-cache] [--attribute attr1,attr2] target ext1,ext2 foo.xcodeproj
 EOS
   STDERR.print msg
   exit 1
 end
 
 $RequiredAttributes = []
+$NoCache = false
 
 GetoptLong.new(
   [ "--attribute", "-A", GetoptLong::REQUIRED_ARGUMENT ]
@@ -32,6 +33,8 @@ GetoptLong.new(
   case opt
   when "--attribute"
     $RequiredAttributes << arg
+  when "--no-cache"
+    $NoCache = true
   else
     usage()
   end
@@ -40,7 +43,25 @@ end
 usage unless ARGV.length == 3
 $TargetName = ARGV[0]
 $Extensions = ARGV[1].split(",").map {|e| ".#{e}"} # We take 'h', but File.extname returns '.h'
-$Project = Xcode::Project.new(ARGV[2])
+$ProjectPath = ARGV[2]
+
+$CachePath = nil
+unless $NoCache
+  cache_dir = ENV["PROJECT_DERIVED_FILE_DIR"]
+  if cache_dir.nil?
+    STDERR.print "Unable to cache results since PROJECT_DERIVED_FILE_DIR is unset\n"
+  else
+    cache_dir = "#{cache_dir}/#{File.basename($0)}"
+    project_stat = File.stat($ProjectPath + "/project.pbxproj")
+    $CachePath = "#{cache_dir}/#{File.basename($ProjectPath, ".xcodeproj")}-#{project_stat.ino}-#{$TargetName}-#{$Extensions.join(',')}-#{$RequiredAttributes.join(',')}"
+    if File.exist?($CachePath) && File.mtime($CachePath) >= project_stat.mtime
+      print File.read($CachePath)
+      exit
+    end
+  end
+end
+
+$Project = Xcode::Project.new($ProjectPath)
 
 
 $MatchingFiles = []
@@ -69,4 +90,13 @@ $Project.targets.each {|target|
 
 $MatchingFiles.sort!
 $MatchingFiles.uniq!
-$MatchingFiles.each {|f| print f }
+
+result = $MatchingFiles.join("") # These are already newline terminated
+if $CachePath
+  require 'fileutils'
+  FileUtils.mkdir_p(File.dirname($CachePath))
+  File.open($CachePath, "w") {|f|
+    f << result
+  }
+end
+print result

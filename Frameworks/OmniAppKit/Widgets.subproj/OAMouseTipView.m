@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2008, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -267,7 +267,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
         
         NSRange foo;
         NSDictionary *dictionary = [contents attributesAtIndex:charIndex effectiveRange:&foo];
-        NSMutableParagraphStyle *paragraphStyle = [dictionary objectForKey:@"NSParagraphStyle"];
+        NSParagraphStyle *paragraphStyle = [dictionary objectForKey:NSParagraphStyleAttributeName];
         
         if (paragraphStyle && [paragraphStyle alignment] == NSCenterTextAlignment) {
             maxLineWidth = MAX(maxLineWidth, lineFrag.size.width);

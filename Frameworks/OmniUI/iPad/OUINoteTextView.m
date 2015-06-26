@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,6 +9,7 @@
 #import <OmniFoundation/NSData-OFEncoding.h>
 
 #import <OmniUI/OUIAppearance.h>
+#import <OmniUI/OUIAppearanceColors.h>
 #import <OmniUI/OUINoteTextView.h>
 
 RCS_ID("$Id$");
@@ -25,6 +26,7 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     CGFloat _placeholderTopMargin;
     BOOL _drawsBorder;
     BOOL _observingEditingNotifications;
+    __weak id <OUINoteTextViewAppearanceDelegate> _weak_appearanceDelegate;
 }
 
 @end
@@ -63,12 +65,13 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     _detectsLinks = ALLOW_LINK_DETECTION;
     
     self.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-    self.textColor = [UIColor omniNeutralDeemphasizedColor];
     
     self.contentMode = UIViewContentModeRedraw;
     self.editable = NO;
     self.dataDetectorTypes = UIDataDetectorTypeAll;
     self.alwaysBounceVertical = YES;
+    
+    [self appearanceDidChange];
 }
 
 - (void)dealloc
@@ -115,7 +118,6 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     if (drawsBorder != _drawsBorder) {
         _drawsBorder = drawsBorder;
         if (_drawsBorder) {
-            self.layer.borderColor = [[UIColor lightGrayColor] CGColor];
             self.layer.borderWidth = 1.0;
             self.layer.cornerRadius = 10;
             self.opaque = NO;
@@ -141,7 +143,7 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
         NSString *placeholder = self.placeholder;
         NSDictionary *attributes = @{
             NSFontAttributeName: placeholderFont,
-            NSForegroundColorAttributeName: [UIColor omniNeutralPlaceholderColor],
+            NSForegroundColorAttributeName: [self _placeholderTextColor],
         };
 
         CGSize size = self.bounds.size;
@@ -209,10 +211,10 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
 {
     // TODO: Report radar.
     // -[UITextView setText:] is calling -setAttributedText: with attributes in the original string, preserving autodetected links.
-    // This is undesirable, so we build an attributed string here with only the font attribute and call -setAttributedText directly.
+    // This is undesirable, so we build an attributed string here with only the font and color attribute and call -setAttributedText directly.
     
     if (text != nil) {
-        NSDictionary *textAttributes = @{ NSFontAttributeName: self.font };
+        NSDictionary *textAttributes = @{ NSFontAttributeName: self.font, NSForegroundColorAttributeName: self.textColor ?: [self _textColor] };
         NSAttributedString *attributedText = [[NSAttributedString alloc] initWithString:text attributes:textAttributes];
         [self setAttributedText:attributedText];
     } else {
@@ -298,6 +300,34 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     }
 }
 
+#pragma mark Public
+
+@synthesize appearanceDelegate = _weak_appearanceDelegate;
+
+- (void)setAppearanceDelegate:(id<OUINoteTextViewAppearanceDelegate>)appearanceDelegate;
+{
+    if (appearanceDelegate == _weak_appearanceDelegate) {
+        return;
+    }
+    
+    _weak_appearanceDelegate = appearanceDelegate;
+    [self appearanceDidChange];
+}
+
+- (void)appearanceDidChange;
+{
+    if (self.appearanceDelegate != nil) {
+        self.layer.borderColor = [self.appearanceDelegate borderColorForTextView:self].CGColor;
+        self.keyboardAppearance = [self.appearanceDelegate keyboardAppearanceForTextView:self];
+        [self reloadInputViews];
+    } else {
+        self.layer.borderColor = [[UIColor lightGrayColor] CGColor];
+    }
+    
+    self.textColor = [self _textColor];
+    [self setNeedsDisplay];
+}
+
 #pragma mark Private
 
 - (BOOL)_shouldDrawPlaceholder;
@@ -307,63 +337,83 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
 
 - (void)_becomeEditableWithTouches:(NSSet *)touches makeFirstResponder:(BOOL)makeFirstResponder;
 {
-    if (![self isEditable]) {
-        OBASSERT([touches count] == 1); // Otherwise, we are using a random one
+    if ([self isEditable])
+        return;
 
-        NSLayoutManager *layoutManager = self.layoutManager;
-        NSTextContainer *textContainer = self.textContainer;
-        
-        // UITextView used to remove the link attributes when setting `dataDetectorTypes` to `UIDataDetectorTypeNone`.
-        // It no longer does this, so we do it here. We don't want live links when editing. Leaving them live exposes underlying user interaction bugs in UITextView where the link range is extended inappropriately.
-        NSTextStorage *textStorage = self.textStorage;
-        [textStorage removeAttribute:NSLinkAttributeName range:NSMakeRange(0, textStorage.length)];
-        [layoutManager ensureLayoutForCharacterRange:NSMakeRange(0, textStorage.length)];
+    OBASSERT([touches count] == 1); // Otherwise, we are using a random one
 
-        // Offset the touch for the text container insert
-        CGPoint point = [[touches anyObject] locationInView:self];
-        UIEdgeInsets textContainerInset = self.textContainerInset;
-        point.y -= textContainerInset.top;
-        point.x -= textContainerInset.left;
-        
-        NSString *text = self.text;
-        NSUInteger characterIndex = [layoutManager characterIndexForPoint:point inTextContainer:textContainer fractionOfDistanceBetweenInsertionPoints:NULL];
-        NSRange lineRange = [text lineRangeForRange:NSMakeRange(characterIndex, 0)];
-        
-        // Replicate UITextView's behavior where it puts the insertion point before/after the word clicked in.
-        // We choose the nearest end based on character distance, not pixel distance.
-        
-        __block BOOL didSetSelectedRange = NO;
-        NSStringEnumerationOptions options = (NSStringEnumerationByWords | NSStringEnumerationLocalized);
-        [text enumerateSubstringsInRange:lineRange options:options usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
-            if (NSLocationInRange(characterIndex, enclosingRange)) {
-                *stop = YES;
-                if (characterIndex - enclosingRange.location < NSMaxRange(enclosingRange) - characterIndex) {
-                    self.selectedRange = NSMakeRange(substringRange.location, 0);
-                    didSetSelectedRange = YES;
-                } else {
-                    if (NSMaxRange(enclosingRange) < text.length) {
-                        unichar character = [text characterAtIndex:NSMaxRange(enclosingRange)];
-                        if ([[NSCharacterSet newlineCharacterSet] characterIsMember:character]) {
-                            enclosingRange.length -= 1;
-                        }
-                    }
-                    self.selectedRange = NSMakeRange(NSMaxRange(enclosingRange), 0);
-                    didSetSelectedRange = YES;
+    NSLayoutManager *layoutManager = self.layoutManager;
+    NSTextContainer *textContainer = self.textContainer;
+    NSTextStorage *textStorage = self.textStorage;
+
+    // Offset the touch for the text container insert
+    CGPoint point = [[touches anyObject] locationInView:self];
+    UIEdgeInsets textContainerInset = self.textContainerInset;
+    point.y -= textContainerInset.top;
+    point.x -= textContainerInset.left;
+
+    NSString *text = self.text;
+    NSUInteger characterIndex = [layoutManager characterIndexForPoint:point inTextContainer:textContainer fractionOfDistanceBetweenInsertionPoints:NULL];
+
+    if (characterIndex < text.length) {
+        NSURL *link = [textStorage attribute:NSLinkAttributeName atIndex:characterIndex effectiveRange:NULL];
+        if (link != nil) {
+            // Looks like there's a link here. Was the link itself tapped, or does it just contain the nearest character?
+            NSUInteger glyphIndex = [layoutManager glyphIndexForPoint:point inTextContainer:textContainer];
+            CGRect boundingRect = [layoutManager boundingRectForGlyphRange:NSMakeRange(glyphIndex, 1) inTextContainer:textContainer];
+            if (CGRectContainsPoint(boundingRect, point)) {
+                // The link was tapped, so let's try to open it
+                UIApplication *sharedApplication = [UIApplication sharedApplication];
+                if ([sharedApplication canOpenURL:link]) {
+                    [sharedApplication openURL:link];
+                    return;
                 }
             }
-        }];
-        
-        // If we didn't set the selected range above, we probably clicked on an empty line
-        if (!didSetSelectedRange) {
-            self.selectedRange = NSMakeRange(characterIndex, 0);
         }
+    }
 
-        self.editable = YES;
-        self.dataDetectorTypes = UIDataDetectorTypeNone;
+    self.editable = YES;
+    self.dataDetectorTypes = UIDataDetectorTypeNone;
 
-        if (makeFirstResponder) {
-            [self becomeFirstResponder];
+    // UITextView used to remove the link attributes when setting `dataDetectorTypes` to `UIDataDetectorTypeNone`.
+    // It no longer does this, so we do it here. We don't want live links when editing. Leaving them live exposes underlying user interaction bugs in UITextView where the link range is extended inappropriately.
+    [textStorage removeAttribute:NSLinkAttributeName range:NSMakeRange(0, textStorage.length)];
+    NSDictionary *textAttributes = @{ NSFontAttributeName: self.font, NSForegroundColorAttributeName: self.textColor ?: [self _textColor] };
+    [textStorage addAttributes:textAttributes range:NSMakeRange(0, textStorage.length)];
+    [layoutManager ensureLayoutForCharacterRange:NSMakeRange(0, textStorage.length)];
+
+    // Replicate UITextView's behavior where it puts the insertion point before/after the word clicked in.
+    // We choose the nearest end based on character distance, not pixel distance.
+
+    __block BOOL didSetSelectedRange = NO;
+    NSStringEnumerationOptions options = (NSStringEnumerationByWords | NSStringEnumerationLocalized);
+    NSRange lineRange = [text lineRangeForRange:NSMakeRange(characterIndex, 0)];
+    [text enumerateSubstringsInRange:lineRange options:options usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
+        if (NSLocationInRange(characterIndex, enclosingRange)) {
+            *stop = YES;
+            if (characterIndex - enclosingRange.location < NSMaxRange(enclosingRange) - characterIndex) {
+                self.selectedRange = NSMakeRange(substringRange.location, 0);
+                didSetSelectedRange = YES;
+            } else {
+                if (NSMaxRange(enclosingRange) < text.length) {
+                    unichar character = [text characterAtIndex:NSMaxRange(enclosingRange)];
+                    if ([[NSCharacterSet newlineCharacterSet] characterIsMember:character]) {
+                        enclosingRange.length -= 1;
+                    }
+                }
+                self.selectedRange = NSMakeRange(NSMaxRange(enclosingRange), 0);
+                didSetSelectedRange = YES;
+            }
         }
+    }];
+
+    // If we didn't set the selected range above, we probably clicked on an empty line
+    if (!didSetSelectedRange) {
+        self.selectedRange = NSMakeRange(characterIndex, 0);
+    }
+
+    if (makeFirstResponder) {
+        [self becomeFirstResponder];
     }
 }
 
@@ -386,6 +436,24 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
 - (void)_OUINoteTextView_textDidEndEditing:(NSNotification *)notificaton;
 {
     [self setNeedsDisplay];
+}
+
+- (UIColor *)_textColor;
+{
+    if (self.appearanceDelegate != nil) {
+        return [self.appearanceDelegate textColorForTextView:self];
+    } else {
+        return [OUIAppearanceDefaultColors appearance].omniNeutralDeemphasizedColor;
+    }
+}
+
+- (UIColor *)_placeholderTextColor;
+{
+    if (self.appearanceDelegate != nil) {
+        return [self.appearanceDelegate placeholderTextColorForTextView:self];
+    } else {
+        return [OUIAppearanceDefaultColors appearance].omniNeutralPlaceholderColor;
+    }
 }
 
 @end

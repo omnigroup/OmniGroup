@@ -1,4 +1,4 @@
-// Copyright 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -97,8 +97,11 @@ RCS_ID("$Id$")
     backdropView.alpha = [self _initialBackdropOpacity:transitionContext];
     
     self.topSnapshot = [transitionView resizableSnapshotViewFromRect:[transitionView convertRect:topRect fromView:containerView] afterScreenUpdates:waitForScreenUpdates withCapInsets:UIEdgeInsetsZero];
-    self.bottomSnapshot = [transitionView resizableSnapshotViewFromRect:[transitionView convertRect:bottomRect fromView:containerView] afterScreenUpdates:waitForScreenUpdates withCapInsets:UIEdgeInsetsZero];
+    self.topSnapshot.backgroundColor = self.snapshotBackgroundColor;
     
+    self.bottomSnapshot = [transitionView resizableSnapshotViewFromRect:[transitionView convertRect:bottomRect fromView:containerView] afterScreenUpdates:waitForScreenUpdates withCapInsets:UIEdgeInsetsZero];
+    self.bottomSnapshot.backgroundColor = self.snapshotBackgroundColor;
+
     UIView *topShadowView = [self _shadowViewWithFrame:_topSnapshot.frame];
     UIView *bottomShadowView = [self _shadowViewWithFrame:_bottomSnapshot.frame];
     
@@ -207,28 +210,48 @@ RCS_ID("$Id$")
     shadowView.opaque = YES;
     shadowView.backgroundColor = [UIColor whiteColor];
     shadowView.layer.shadowOffset = CGSizeZero;
-    shadowView.layer.shadowOpacity = 0.2;
+    shadowView.layer.shadowOpacity = self.shadowOpacity;
     shadowView.alpha = (self.operation == UINavigationControllerOperationPop) ? 0.0 : 1.0;
     return shadowView;
 }
 
-- (CGFloat)_initialBackdropOpacity:(id<UIViewControllerContextTransitioning>)transitionContext;
+- (CGFloat)_initialBackdropOpacity:(id< UIViewControllerContextTransitioning>)transitionContext;
 {
     switch (self.operation) {
-        case UINavigationControllerOperationPush: return 0.09f;
+        case UINavigationControllerOperationPush: return self.backdropOpacity;
         case UINavigationControllerOperationPop: return 0.0f;
         default: OBASSERT_NOT_REACHED("Unexpected navigation operation"); return 1.0f;
     }
 }
 
-- (CGFloat)_finalBackdropOpacity:(id<UIViewControllerContextTransitioning>)transitionContext;
+- (CGFloat)_finalBackdropOpacity:(id <UIViewControllerContextTransitioning>)transitionContext;
 {
     switch (self.operation) {
         case UINavigationControllerOperationPush: return 0.0f;
-        case UINavigationControllerOperationPop: return 0.09f;
+        case UINavigationControllerOperationPop: return self.backdropOpacity;
         default: OBASSERT_NOT_REACHED("Unexpected navigation operation"); return 1.0f;
     }
 }
 
+@end
+
+#pragma mark -
+
+@implementation OUIVerticalSplitTransition (Subclass)
+
+- (UIColor *)snapshotBackgroundColor;
+{
+    return [UIColor whiteColor];
+}
+
+- (CGFloat)backdropOpacity;
+{
+    return 0.09f;
+}
+
+- (CGFloat)shadowOpacity;
+{
+    return 0.2f;
+}
 
 @end

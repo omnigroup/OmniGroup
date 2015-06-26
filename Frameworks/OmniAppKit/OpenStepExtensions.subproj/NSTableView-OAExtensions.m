@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,7 +110,14 @@ static NSIndexSet *OATableViewRowsInCurrentDrag = nil;
                 [cell setObjectValue:objectValue];
                 if ([cell respondsToSelector:@selector(setDrawsBackground:)])
                     [(NSTextFieldCell *)cell setDrawsBackground:0];
+
+                // It isn't clear what the correct value for the view argument is here since we aren't drawing ourselves, but drawing into an image.
+                // Really, though, the right solution might be to remove this override entirely.
+                // <bug:///117839> (Unassigned: Fix disabled 'nonnull' warning in NSTableView(OAExtensions) row dragging override)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
                 [cell drawWithFrame:cellRect inView:nil];
+#pragma clang diagnostic pop
             }
         }
     }

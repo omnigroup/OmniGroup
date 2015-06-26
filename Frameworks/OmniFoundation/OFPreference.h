@@ -20,8 +20,10 @@ extern NSString * const OFPreferenceObjectValueBinding;
 
 // API
 
-+ (OFPreference *) preferenceForKey: (NSString *) key;
-+ (OFPreference *) preferenceForKey: (NSString *) key enumeration: (OFEnumNameTable *)enumeration;
++ (BOOL)hasPreferenceForKey:(NSString *)key;
++ (OFPreference *)preferenceForKey:(NSString *)key;
++ (OFPreference *)preferenceForKey:(NSString *)key enumeration:(OFEnumNameTable *)enumeration;
++ (OFPreference *)preferenceForKey:(NSString *)key defaultValue:(id)value;
 
 + (NSSet *)registeredKeys;
 + (void)recacheRegisteredKeys;

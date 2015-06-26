@@ -737,6 +737,8 @@ static BOOL RunningOnAccountQueue(void)
     }
     
     _infoDictionary = [infoDictionary copy];
+    OBASSERT(_infoDictionary);
+    
     DEBUG_CONTENT(1, @"Updated snapshot has content \"%@\"", OFXLookupDisplayNameForContentIdentifier(self.currentContentIdentifier));
 
     return YES;
@@ -1045,6 +1047,12 @@ static BOOL RunningOnAccountQueue(void)
 
 - (NSString *)shortDescription;
 {
+    if (!_infoDictionary) {
+        // This can happen when debug logging is enabled and we are reporting errors during initializing a snapshot (so its dicts aren't set up).
+        OBASSERT(!_versionDictionary);
+        return [NSString stringWithFormat:@"<%@:%p %@ UNINITIALIZED>", NSStringFromClass([self class]), self, _localSnapshotURL];
+    }
+    
     return [NSString stringWithFormat:@"<%@:%p %@ %@/%@ version:%lu>", NSStringFromClass([self class]), self, _localSnapshotURL, self.localState, self.remoteState, self.version];
 }
 

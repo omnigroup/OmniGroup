@@ -1,4 +1,4 @@
-// Copyright 2011-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,6 +14,12 @@
 #import <CoreServices/CoreServices.h>
 #endif
 
+// ARC doesn't like casting a CFStringRef to CFStringRef with __bridge. Use this overloadable function to allow passing CFStringRef or NSString * to these helpers.
+static inline CFStringRef __attribute__((overloadable)) _OFAsCFString(CFStringRef str) { return str; }
+static inline CFStringRef __attribute__((overloadable)) _OFAsCFString(NSString *str) { return (OB_BRIDGE CFStringRef)str; }
+static inline NSString * __attribute__((overloadable)) _OFAsNSString(CFStringRef str) { return (OB_BRIDGE NSString *)str; }
+static inline NSString * __attribute__((overloadable)) _OFAsNSString(NSString *str) { return str; }
+
 // A path extension that denotes something that is definitely a folder and not a package. This allows OmniPresence iOS clients to make folders with dots in the name w/o worrying whether the thing after the last dot might be a path extension for some file format unknown to that app at that time (though OmniPresence does communitate package types to the iOS clients). This is the same path extension that iWork for iOS uses in its iCloud folder support, so it should be relatively safe to assume that some one won't come along and write an app that claims it is a package. Even so, we'll do our best to always treat things with this path extension as plain folders.
 extern NSString * const OFDirectoryPathExtension;
 
@@ -27,15 +33,16 @@ extern NSString *OFUTIForFileExtensionPreferringNative(NSString *extension, NSNu
 // Returns a uniform type identifier for the given tag class and value. If multiple identifiers are defined for the same tag value, this function prefers types that are registered by the running executable's main bundle. Optionally, returned types can be restricted to those conforming to the identifier named by the conformingToUTIOrNull parameter.
 extern NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tag, CFStringRef conformingToUTIOrNull);
 
+// Hide the bridging and return an autoreleased NSString
+#define OFPreferredPathExtensionForUTI(uti) ((NSString *)CFBridgingRelease(UTTypeCopyPreferredTagWithClass(_OFAsCFString(uti), kUTTagClassFilenameExtension)))
+
+
 // Enumerates all known uniform type identifiers that match the provided tag. Native types (types defined in the main bundle's Info.plist) are enumerated first--exported types before imported types--followed by types declared by the system, and finally types defined by third-party bundles. Optionally, enumeration can be restricted to those types conforming to the identifier named by the conformingToUTIOrNil parameter.
 typedef void (^OFUTIEnumerator)(NSString *typeIdentifier, BOOL *stop);
 extern void OFUTIEnumerateKnownTypesForTagPreferringNative(NSString *tagClass, NSString *tagValue, NSString *conformingToUTIOrNil, OFUTIEnumerator enumerator);
 
-// ARC doesn't like casting a CFStringRef to CFStringRef with __bridge. Use this overloadable function to allow passing CFStringRef or NSString * to these helpers.
-static inline CFStringRef __attribute__((overloadable)) _OFAsTypeString(CFStringRef str) { return str; }
-static inline CFStringRef __attribute__((overloadable)) _OFAsTypeString(NSString *str) { return (OB_BRIDGE CFStringRef)str; }
+#define OFTypeConformsTo(type, conformsToType) UTTypeConformsTo(_OFAsCFString(type), _OFAsCFString(conformsToType))
+#define OFTypeEqual(type, otherType) UTTypeEqual(_OFAsCFString(type), _OFAsCFString(otherType))
 
-#define OFTypeConformsTo(type, conformsToType) UTTypeConformsTo(_OFAsTypeString(type), _OFAsTypeString(conformsToType))
-#define OFTypeEqual(type, otherType) UTTypeEqual(_OFAsTypeString(type), _OFAsTypeString(otherType))
-
-extern BOOL OFTypeConformsToOneOfTypes(NSString *type, ...) NS_REQUIRES_NIL_TERMINATION;
+extern BOOL _OFTypeConformsToOneOfTypes(NSString *type, ...) NS_REQUIRES_NIL_TERMINATION;
+#define OFTypeConformsToOneOfTypes(type, ...) _OFTypeConformsToOneOfTypes(_OFAsNSString(type), ## __VA_ARGS__)

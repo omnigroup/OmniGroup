@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -311,7 +311,7 @@ static BOOL displayIfNeededBlocksInProgress = NO;
 
 - (void)_stopVisualizingConstraintsMenuAction:(id)sender;
 {
-    [self visualizeConstraints:nil];
+    [self visualizeConstraints:@[]];
 }
 
 - (void)_pickSuperviewMenuAction:(id)sender;

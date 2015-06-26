@@ -342,7 +342,7 @@ static BOOL _removeBaseDirectory(OFXTestCase *self, ODAVConnection *connection, 
 
     _remoteBaseURL = [accountRemoteBaseURL URLByAppendingPathComponent:_remoteDirectoryName isDirectory:YES];
     
-    ODAVConnection *connection = [[ODAVConnection alloc] init];
+    ODAVConnection *connection = [[ODAVConnection alloc] initWithSessionConfiguration:[ODAVConnectionConfiguration new] baseURL:_remoteBaseURL];
     connection.validateCertificateForChallenge = ^(NSURLAuthenticationChallenge *challenge){
         // Trust all certificates for these tests.
         OFAddTrustForChallenge(challenge, OFCertificateTrustDurationSession);

@@ -33,6 +33,22 @@
     #define OB_AUTORELEASE(x) [(x) autorelease]
 #endif
 
+// Useful in cases where you'd previously take/return 'id' to avoid having to cast to a specific subclass.
+#if defined(__has_feature) && __has_feature(objc_kindof)
+    #define OB_KINDOF(cls) __kindof cls *
+#else
+    #define OB_KINDOF(cls) id
+#endif
+
+// Generics to go after collection types like "NSArray OB_GENERIC1(NSString *)" or "NSArray OB_KINDOF(Foo)"
+#if defined(__has_feature) && __has_feature(objc_generics)
+    #define OB_GENERIC1(t) <t>
+    #define OB_GENERIC2(t1,t2) <t1,t2>
+#else
+    #define OB_GENERIC1(t)
+    #define OB_GENERIC2(t1,t2)
+#endif
+
 #if !defined(SWAP)
 #define SWAP(A, B) do { __typeof__(A) __temp = (A); (A) = (B); (B) = __temp;} while(0)
 #endif

@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import "OFXAccountInfo.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniDAV/ODAVOperation.h>
@@ -14,7 +15,6 @@
 #import <OmniFileExchange/OFXAccountClientParameters.h>
 #import <OmniBase/macros.h>
 
-#import "OFXConnection.h"
 #import "OFXDAVUtilities.h"
 #import "OFXPropertyListCache.h"
 #import "OFXSyncClient.h"
@@ -103,7 +103,7 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
     return [serverDateNow timeIntervalSinceReferenceDate] - [fileInfo.lastModifiedDate timeIntervalSinceReferenceDate];
 }
 
-- (BOOL)_updateAccountInfo:(ODAVFileInfo *)accountFileInfo serverDate:(NSDate *)serverDate withConnection:(OFXConnection *)connection error:(NSError **)outError;
+- (BOOL)_updateAccountInfo:(ODAVFileInfo *)accountFileInfo serverDate:(NSDate *)serverDate withConnection:(ODAVConnection *)connection error:(NSError **)outError;
 {
     __block NSDictionary *infoDictionary;
     
@@ -196,7 +196,7 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
     return YES;
 }
 
-- (BOOL)updateWithConnection:(OFXConnection *)connection accountFileInfo:(ODAVFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos remoteTemporaryDirectoryFileInfo:(ODAVFileInfo *)remoteTemporaryDirectoryFileInfo serverDate:(NSDate *)serverDate error:(NSError **)outError;
+- (BOOL)updateWithConnection:(ODAVConnection *)connection accountFileInfo:(ODAVFileInfo *)accountFileInfo clientFileInfos:(NSArray *)clientFileInfos remoteTemporaryDirectoryFileInfo:(ODAVFileInfo *)remoteTemporaryDirectoryFileInfo serverDate:(NSDate *)serverDate error:(NSError **)outError;
 {
     if (![self _updateAccountInfo:accountFileInfo serverDate:serverDate withConnection:connection error:outError])
         return NO;
@@ -307,7 +307,7 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
                                                      serverDate:(NSDate *)serverDate
                                             ourClientIdentifier:(NSString *)ourClientIdentifier
                                                   staleInterval:(NSTimeInterval)staleInterval
-                                                     connection:(OFXConnection *)connection;
+                                                     connection:(ODAVConnection *)connection;
 {
     NSMutableDictionary *resultClientByIdentifier = [NSMutableDictionary new];
 

@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,8 +15,8 @@
 @protocol OFSFileManagerDelegate <NSObject>
 @optional
 
-// Determines the the value of NSURLRequest.allowsCellularAccess
-- (BOOL)fileManagerShouldAllowCellularAccess:(OFSFileManager *)manager;
+// No longer called -- this is managed by user preferences in Settings.app on iOS.
+- (BOOL)fileManagerShouldAllowCellularAccess:(OFSFileManager *)manager OB_DEPRECATED_ATTRIBUTE;
 
 // Invoked from our -[NSURLConnectionDelegate connectionShouldUseCredentialStorage:] implementation, which isn't called any more (especially since we've moved from NSURLConnection to NSURLSession), so this is never called either
 - (BOOL)fileManagerShouldUseCredentialStorage:(OFSFileManager *)manager;

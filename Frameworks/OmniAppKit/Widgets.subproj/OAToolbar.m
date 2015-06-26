@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -103,6 +103,14 @@ RCS_ID("$Id$");
     OBPRECONDITION(!ident || [[delegate toolbarAllowedItemIdentifiers:self] containsObject:ident]);
     
     [super setSelectedItemIdentifier:ident];
+}
+
+- (NSWindow *)window;
+{
+    if ([self.delegate respondsToSelector:@selector(window)]) {
+        return ((id<OAToolbarDelegate>)(self.delegate)).window;
+    }
+    return nil;
 }
 
 

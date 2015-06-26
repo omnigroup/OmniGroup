@@ -148,28 +148,7 @@ extern NSString * const OUIAppearanceAliasesKey;
 @end
 
 @interface UIColor (OUIAppearance)
-
-+ (UIColor *)omniRedColor;
-+ (UIColor *)omniOrangeColor;
-+ (UIColor *)omniYellowColor;
-+ (UIColor *)omniGreenColor;
-+ (UIColor *)omniTealColor;
-+ (UIColor *)omniBlueColor;
-+ (UIColor *)omniPurpleColor;
-+ (UIColor *)omniGraphiteColor;
-+ (UIColor *)omniCremaColor;
-
-+ (UIColor *)omniAlternateRedColor;
-+ (UIColor *)omniAlternateYellowColor;
-
-+ (UIColor *)omniNeutralDeemphasizedColor;
-+ (UIColor *)omniNeutralPlaceholderColor;
-+ (UIColor *)omniNeutralLightweightColor;
-
-+ (UIColor *)omniDeleteColor;
-
 - (BOOL)isLightColor;
-
 @end
 
 #endif

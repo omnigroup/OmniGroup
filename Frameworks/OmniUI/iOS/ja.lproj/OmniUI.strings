@@ -12,7 +12,7 @@
 "Bold" = "ボールド";
 
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
-"Buy %@" = "購入（%@）";
+"Buy %@" = "%@ を購入";
 
 /* button title
    cancel button title
@@ -100,10 +100,7 @@
 "Note" = "メモ";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert
-   OK button label
-   Web view error opening URL cancel button. */
+   OK button label */
 
 
 
@@ -120,7 +117,7 @@
 "Purchase Failed" = "購入に失敗";
 
 /* Buy button thank you message */
-"Purchased. Thank you!" = "お買い上げいただき、ありがとうございます！";
+"Purchased. Thank you!" = "ご購入ありがとうございます！";
 
 /* Purchasing is disabled alert title */
 "Purchasing is Disabled" = "購入機能が無効";

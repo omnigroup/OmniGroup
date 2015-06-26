@@ -41,11 +41,6 @@ RCS_ID("$Id$");
     ODSStore *documentStore = scope.documentStore;
     
     [scope performAsynchronousFileAccessUsingBlock:^{
-        if (!ODSInInInbox(inboxURL)) {
-            finishedBlock(nil, nil);
-            return;
-        }
-        
         __autoreleasing NSError *error = nil;
         NSString *uti = OFUTIForFileURLPreferringNative(inboxURL, &error);
         if (!uti) {

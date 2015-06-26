@@ -58,11 +58,9 @@ RCS_ID("$Id$")
     
     _state = NSLocalizedStringFromTableInBundle(@"Validating Account...", @"OmniFileExchange", OMNI_BUNDLE, @"Account validation step description");
     
-    // We could leave this as is (set from +[OFXAgent isCellularSyncEnabled]) here, but the user doesn't even see the "Use Cellular Data" switch until they've validated an account.
     ODAVConnectionConfiguration *configuration = [OFXAgent makeConnectionConfiguration];
-    configuration.allowsCellularAccess = YES;
 
-    _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration];
+    _connection = [[ODAVConnection alloc] initWithSessionConfiguration:configuration baseURL:account.remoteBaseURL];
     
     __weak OFXDAVServerAccountValidator *weakSelf = self;
     

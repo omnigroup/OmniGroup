@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE outline PUBLIC "-//omnigroup.com//DTD OUTLINE 3.0//EN" "xmloutline-v3.dtd">
 <outline xmlns="http://www.omnigroup.com/namespace/OmniOutliner/v3" version="1.0">
   <attachments/>
@@ -27,7 +27,9 @@
   <root background-color="#ffffff">
     <item>
       <values>
-        <rich-text><p/></rich-text>
+        <rich-text>
+          <p/>
+        </rich-text>
       </values>
     </item>
   </root>

@@ -302,12 +302,25 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, i
 
 #pragma mark API
 
-+ (OFPreference *) preferenceForKey: (NSString *) key;
++ (BOOL)hasPreferenceForKey:(NSString *)key;
+{
+    BOOL hasPreferenceForKey = NO;
+
+    [preferencesLock lock];
+
+    hasPreferenceForKey = ([preferencesByKey objectForKey: key] != nil);
+
+    [preferencesLock unlock];
+
+    return hasPreferenceForKey;
+}
+
++ (OFPreference *)preferenceForKey:(NSString *)key;
 {
     return [self preferenceForKey:key enumeration:nil];
 }
 
-+ (OFPreference *) preferenceForKey: (NSString *) key enumeration: (OFEnumNameTable *)enumeration;
++ (OFPreference *)preferenceForKey:(NSString *)key enumeration:(OFEnumNameTable *)enumeration;
 {
     OFPreference *preference;
     
@@ -331,6 +344,13 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, i
     }
     
     return [preference autorelease];
+}
+
++ (OFPreference *)preferenceForKey:(NSString *)key defaultValue:(id)value;
+{
+    [[NSUserDefaults standardUserDefaults] registerDefaults:@{key: value}];
+    [self recacheRegisteredKeys];
+    return [self preferenceForKey:key];
 }
 
 - (NSString *) key;

@@ -32,4 +32,9 @@ static id _commonInit(OUIUndoButton *self)
     return _commonInit(self);
 }
 
+#pragma mark - Accessibility
+- (NSString *)accessibilityLabel
+{
+    return NSLocalizedStringFromTableInBundle(@"Undo", @"OmniUI", OMNI_BUNDLE, @"Undo button title");
+}
 @end

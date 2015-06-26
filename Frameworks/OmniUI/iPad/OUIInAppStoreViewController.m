@@ -94,6 +94,18 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     return self;
 }
 
+// Must override superclass designated initializers since we declared our own.
+- (nonnull instancetype)initWithCoder:(nonnull NSCoder *)aDecoder;
+{
+    OBRejectUnusedImplementation(self, _cmd);
+    return [self initWithProductIdentifier:nil];
+}
+- (nonnull instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil;
+{
+    OBRejectUnusedImplementation(self, _cmd);
+    return [self initWithProductIdentifier:nil];
+}
+
 - (void)viewDidLoad;
 {
     [super viewDidLoad];

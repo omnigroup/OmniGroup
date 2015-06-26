@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,10 +7,10 @@
 
 #import "OFXFileSnapshotUploadRenameTransfer.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 
-#import "OFXConnection.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
 #import "OFXFileState.h"
 #import "OFXUploadRenameFileSnapshot.h"
@@ -24,12 +24,12 @@ RCS_ID("$Id$")
     OFXUploadRenameFileSnapshot *_uploadingSnapshot;
 }
 
-- (id)initWithConnection:(OFXConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory;
+- (id)initWithConnection:(ODAVConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory;
 {
     OBRejectUnusedImplementation(self, _cmd);
 }
 
-- (id)initWithConnection:(OFXConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory currentRemoteSnapshotURL:(NSURL *)currentRemoteSnapshotURL error:(NSError **)outError;
+- (id)initWithConnection:(ODAVConnection *)connection currentSnapshot:(OFXFileSnapshot *)currentSnapshot remoteTemporaryDirectory:(NSURL *)remoteTemporaryDirectory currentRemoteSnapshotURL:(NSURL *)currentRemoteSnapshotURL error:(NSError **)outError;
 {
     OBPRECONDITION(currentSnapshot.localState.missing, "Should use the 'contents' upload transfer instead");
     OBPRECONDITION(currentSnapshot.localState.userMoved, "Only for renames");
@@ -68,7 +68,7 @@ RCS_ID("$Id$")
     
     DEBUG_TRANSFER(1, @"Preparing remote rename by doing COPY of %@ -> %@", _currentRemoteSnapshotURL, self.temporaryRemoteSnapshotURL);
 
-    OFXConnection *connection = self.connection;
+    ODAVConnection *connection = self.connection;
 
     __block NSError *error;
     __block NSURL *temporaryRemoteSnapshotURL = [connection suggestRedirectedURLForURL:self.temporaryRemoteSnapshotURL];

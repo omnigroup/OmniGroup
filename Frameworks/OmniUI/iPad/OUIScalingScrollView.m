@@ -58,6 +58,10 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 
 - (CGFloat)fullScreenScaleForUnscaledContentSize:(CGSize)unscaledContentSize;
 {
+    if (unscaledContentSize.width == 0 || unscaledContentSize.height == 0) {
+        return 1;
+    }
+    
     CGRect scrollBounds = [self.delegate scalingScrollViewContentViewFullScreenBounds:self];
 
     CGFloat fitXScale = CGRectGetWidth(scrollBounds) / unscaledContentSize.width;
@@ -70,7 +74,7 @@ static OUIScalingView *_scalingView(OUIScalingScrollView *self)
 - (void)adjustScaleTo:(CGFloat)effectiveScale unscaledContentSize:(CGSize)unscaledContentSize;
 {
     OUIScalingView *view = _scalingView(self);
-    if (!view)
+    if (!view || view.scaleEnabled == NO)
         return;
     
     view.scale = effectiveScale;

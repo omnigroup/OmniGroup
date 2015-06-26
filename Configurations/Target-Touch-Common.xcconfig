@@ -7,9 +7,13 @@
 // We were setting this for all build types on iPhone/iPad. Necessary, or only do it for Debug like on the Mac?
 DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 
-// Use the latest iOS SDK with a specific deployment target
-SDKROOT = iphoneos
-IPHONEOS_DEPLOYMENT_TARGET = 8.2
+// Use the latest iOS SDK with a specific deployment target. Setting this as a separate variable lets us pass OMNI_SDKROOT=iphonesimulator to xcodebuild. Using the -sdk flag on Xcode build will make it try to build Mac helper tools used during the build (FixStringsFile, etc) for iOS.
+// This also means that if you want a specific version rather than latest, you can't define it in your project (since that will break simulator builds). So, instead add OMNI_SDK_VERSION=8.3 or whatever.
+OMNI_SDK_VERSION =
+OMNI_SDKROOT = iphoneos
+SDKROOT = $(OMNI_SDKROOT)$(OMNI_SDK_VERSION)
+
+IPHONEOS_DEPLOYMENT_TARGET = 8.3
 
 GCC_THUMB_SUPPORT = NO
 
@@ -23,4 +27,4 @@ CODE_SIGN_IDENTITY = iPhone Developer
 STRINGS_FILE_OUTPUT_ENCODING[sdk=iphonesimulator*] = UTF-8
 
 // Temporary while getting iOS 8 builds working
-WARNING_CFLAGS = $(value) -Wno-error-deprecated-declarations -Wno-error-deprecated-implementations -Wno-error-unreachable-code -Wno-error-undeclared-selector
+WARNING_CFLAGS = $(value) -Wno-error-deprecated-declarations -Wno-error-deprecated-implementations -Wno-error-unreachable-code -Wno-error-nonnull -Wno-error-objc-designated-initializers

@@ -15,22 +15,34 @@ RCS_ID("$Id$")
 
 NSString * const OAFavoriteCharsetsDefaultsKey = @"FavoriteCharsets";
 
-@interface OAHierarchicalPopUpController (Private)
-
 static NSComparisonResult menuTupleComparison(id left, id right, void *userData);
 
-- (void)_updateRecentSelections:newSelection;
-- (void)_submenuAction:sender;
-- (void)_topmenuAction:sender;
-- (void)_buildMenusForStructure:(NSArray *)menuStructure into:(NSMenu *)menu copyToplevelItems:(NSMutableArray *)toplevelItems toplevel:(BOOL)atTopLevel;
-- (void)_writeDefaults;
-- (void)_readDefaults;
-
-@end
-
-
 @implementation OAHierarchicalPopUpController
-/*" OAHierarchicalPopUpController manages a NSPopUpButton with a hierarchical menu structure, that is, one with submenus. It manages creating the tree of NSMenu objects, adding selected items to the top level of the menu (so that the NSPopUpButton will correctly show them as selected), and optionally saving the most recently selected items to the defaults database. 
+{
+    id <NSObject> nonretainedTarget;
+    SEL anAction;
+    
+    NSArray *structure;
+    NSMutableDictionary *representedObjects;
+    
+    /* Pull-down buttons secretly store their title as the first menu item, so we have to keep that around. */
+    NSMenuItem *pulldownButtonTitleItem;
+    id pulldownLastSelection;  /* temporarily holds last selected object for a pulldown or submenu */
+    
+    /* Managing the "recent selections" portion of the menu */
+    NSString *recentSelectionsDefaultKey;  /* non-nil to store selections in defaults db */
+    NSArray *recentSelectionsHeading;      /* menu tuple to insert ahead of any recent sel'ns */
+    unsigned int recentSelectionsMaxCount; /* max nr. of items in the recent stuff section */
+    NSMutableArray *recentSelections;      /* LRU-ordered list of recent selections */
+    
+    /* Exactly one of these should be non-nil, depending on whether our hierarchical menu is attached to a popup button or is a submenu */
+    NSPopUpButton *theButton;
+    NSMenu *theTopMenu;
+}
+
+@synthesize theButton = theButton;
+
+/*" OAHierarchicalPopUpController manages a NSPopUpButton with a hierarchical menu structure, that is, one with submenus. It manages creating the tree of NSMenu objects, adding selected items to the top level of the menu (so that the NSPopUpButton will correctly show them as selected), and optionally saving the most recently selected items to the defaults database.
 
 OAHierarchicalPopUpController should be instantiated in a NIB file, with its theButton outlet connected to the relevant NSPopUpButton. The user of the popup will need to initialize the button before it is used by calling -setRecentSelectionsHeading:count:defaultKey:, -setMenuStructure:, and -setSelectedObject:.
 "*/
@@ -348,9 +360,7 @@ key, if non-nil, indicates that the recent selections should be stored in the de
     return [menuStructure autorelease];
 }
 
-@end
-
-@implementation OAHierarchicalPopUpController (Private)
+#pragma mark - OAHierarchicalPopUpController (Private)
 
 static NSComparisonResult menuTupleComparison(id left_, id right_, void *userData)
 {

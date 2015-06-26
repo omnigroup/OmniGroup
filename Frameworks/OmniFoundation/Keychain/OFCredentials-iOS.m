@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -236,8 +236,8 @@ BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
 
     // Split the entry into a query and attributes to update.
     NSMutableDictionary *query = [[entry mutableCopy] autorelease];
-    [query removeObjectForKey:kSecAttrAccount];
-    [query removeObjectForKey:kSecValueData];
+    [query removeObjectForKey:(id)kSecAttrAccount];
+    [query removeObjectForKey:(id)kSecValueData];
     
     NSDictionary *attributes = @{(id)kSecAttrAccount:entry[(id)kSecAttrAccount], (id)kSecValueData:entry[(id)kSecValueData]};
     

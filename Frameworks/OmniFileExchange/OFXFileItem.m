@@ -7,6 +7,7 @@
 
 #import "OFXFileItem-Internal.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVErrors.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileExchange/OFXRegistrationTable.h>
@@ -17,7 +18,6 @@
 #import <OmniFoundation/OFXMLIdentifier.h>
 
 #import "OFXAccountClientParameters.h"
-#import "OFXConnection.h"
 #import "OFXContainerAgent-Internal.h"
 #import "OFXContentIdentifier.h"
 #import "OFXDAVUtilities.h"
@@ -125,7 +125,7 @@ NSString *OFXFileItemIdentifierFromRemoteSnapshotURL(NSURL *remoteSnapshotURL, N
 }
 
 
-NSArray *OFXFetchDocumentFileInfos(OFXConnection *connection, NSURL *containerURL, NSString *identifier, NSError **outError)
+NSArray *OFXFetchDocumentFileInfos(ODAVConnection *connection, NSURL *containerURL, NSString *identifier, NSError **outError)
 {
     __autoreleasing NSError *error;
     ODAVMultipleFileInfoResult *result = OFXFetchFileInfosEnsuringDirectoryExists(connection, containerURL, &error);
@@ -210,7 +210,7 @@ static NSString *_makeRemoteSnapshotDirectoryName(OFXFileItem *fileItem, OFXFile
     return _makeRemoteSnapshotDirectoryNameWithVersion(fileItem, snapshot.version);
 }
 
-static NSURL *_remoteContainerDirectory(OFXContainerAgent *containerAgent, OFXConnection *connection)
+static NSURL *_remoteContainerDirectory(OFXContainerAgent *containerAgent, ODAVConnection *connection)
 {
     OBPRECONDITION(containerAgent);
     OBPRECONDITION(connection);
@@ -223,7 +223,7 @@ static NSURL *_remoteContainerDirectory(OFXContainerAgent *containerAgent, OFXCo
     return [connection suggestRedirectedURLForURL:remoteContainerDirectory];
 }
 
-static NSURL *_makeRemoteSnapshotURLWithVersion(OFXContainerAgent *containerAgent, OFXConnection *connection, OFXFileItem *fileItem, NSUInteger fileVersion)
+static NSURL *_makeRemoteSnapshotURLWithVersion(OFXContainerAgent *containerAgent, ODAVConnection *connection, OFXFileItem *fileItem, NSUInteger fileVersion)
 {
     OBPRECONDITION(containerAgent);
     OBPRECONDITION(fileVersion != OFXFileItemUnknownVersion);
@@ -233,7 +233,7 @@ static NSURL *_makeRemoteSnapshotURLWithVersion(OFXContainerAgent *containerAgen
     return [_remoteContainerDirectory(containerAgent, connection) URLByAppendingPathComponent:directoryName isDirectory:YES];
 }
 
-static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXConnection *connection, OFXFileItem *fileItem, OFXFileSnapshot *snapshot)
+static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConnection *connection, OFXFileItem *fileItem, OFXFileSnapshot *snapshot)
 {
     OBPRECONDITION(containerAgent);
 
@@ -329,7 +329,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXConne
 }
 
 // Used when a new item has appeared in the remote container
-- (id)initWithNewRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL container:(OFXContainerAgent *)container filePresenter:(id <NSFilePresenter>)filePresenter connection:(OFXConnection *)connection error:(NSError **)outError;
+- (id)initWithNewRemoteSnapshotAtURL:(NSURL *)remoteSnapshotURL container:(OFXContainerAgent *)container filePresenter:(id <NSFilePresenter>)filePresenter connection:(ODAVConnection *)connection error:(NSError **)outError;
 {
     // We're going to use file coordination and don't want deadlock
     OBPRECONDITION(![NSThread isMainThread]);
@@ -635,7 +635,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXConne
 }
 
 // Snapshots the current state of the local document, uploads it to the server, replaces the previous local snapshot, and updates the {Info,Version}.plist on the receiver.
-- (OFXFileSnapshotTransfer *)prepareUploadTransferWithConnection:(OFXConnection *)connection error:(NSError **)outError;
+- (OFXFileSnapshotTransfer *)prepareUploadTransferWithConnection:(ODAVConnection *)connection error:(NSError **)outError;
 {
     OBPRECONDITION([self _checkInvariants]);
     OBPRECONDITION(_currentTransfer == nil, "Shouldn't start an upload while still doing another transfer");
@@ -878,7 +878,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXConne
 }
 
 // Downloads the metadata from the remote snapshot (which is expected to have changed), and possibly the contents. If the contents are downloaded, this will unpack it into the proper structure and update the local published document.
-- (OFXFileSnapshotTransfer *)prepareDownloadTransferWithConnection:(OFXConnection *)connection filePresenter:(id <NSFilePresenter>)filePresenter;
+- (OFXFileSnapshotTransfer *)prepareDownloadTransferWithConnection:(ODAVConnection *)connection filePresenter:(id <NSFilePresenter>)filePresenter;
 {
     OBPRECONDITION([self _checkInvariants]);
     OBPRECONDITION(_snapshot); // should at least have a placeholder
@@ -1003,7 +1003,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXConne
 
         NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:filePresenter];
         __block BOOL success = NO;
-        [coordinator prepareForReadingItemsAtURLs:nil options:0 /* provoke save since we are maybe about to write to the file */
+        [coordinator prepareForReadingItemsAtURLs:@[] options:0 /* provoke save since we are maybe about to write to the file */
                                writingItemsAtURLs:writingURLs options:NSFileCoordinatorWritingForMerging /* there is no "I might not write option" so other presenters are going to get a relinquish no matter what */
                                             error:outError byAccessor:
          ^(void (^completionHandler)(void)){
@@ -1248,7 +1248,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, OFXConne
     return NO;
 }
 
-- (OFXFileSnapshotTransfer *)prepareDeleteTransferWithConnection:(OFXConnection *)connection filePresenter:(id <NSFilePresenter>)filePresenter;
+- (OFXFileSnapshotTransfer *)prepareDeleteTransferWithConnection:(ODAVConnection *)connection filePresenter:(id <NSFilePresenter>)filePresenter;
 {
     OBPRECONDITION([self _checkInvariants]);
     OBPRECONDITION(_snapshot);

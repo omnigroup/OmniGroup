@@ -9,7 +9,10 @@
 
 RCS_ID("$Id$")
 
-@interface OUISegmentedViewController () <UINavigationBarDelegate, UINavigationControllerDelegate>
+@interface OUISegmentedViewController () <UINavigationBarDelegate, UINavigationControllerDelegate>{
+    BOOL _tempHidingDismissButton;
+    BOOL _shouldShowDismissButton;
+}
 
 @property (nonatomic, strong) UINavigationBar *navigationBar;
 @property (nonatomic, strong) UISegmentedControl *segmentedControl;
@@ -57,6 +60,11 @@ RCS_ID("$Id$")
 }
 
 #pragma mark - Public API
+
+- (CGFloat)topLayoutLength;{
+    return CGRectGetMaxY(self.navigationBar.frame);
+}
+
 - (void)setViewControllers:(NSArray *)viewControllers;
 {
     OBPRECONDITION(viewControllers && [viewControllers count] > 0);
@@ -82,6 +90,7 @@ RCS_ID("$Id$")
     // Remove currently selected view controller.
     if (_selectedViewController) {
         [_selectedViewController willMoveToParentViewController:nil];
+        [_selectedViewController beginAppearanceTransition:NO animated:NO];  // we used to try to only send appearance transitions if we were "on screen".  But that dropped some on the floor when this controller is in a splitview sidebar.  So now we send them always.  Which sometimes results in child view controllers getting doubled appearance messages.  So we deal with that.
         
         if ([_selectedViewController isKindOfClass:[UINavigationController class]]) {
             UINavigationController *selectedNavigationController = (UINavigationController *)_selectedViewController;
@@ -90,6 +99,8 @@ RCS_ID("$Id$")
         [_selectedViewController.view removeFromSuperview];
         
         [_selectedViewController removeFromParentViewController];
+        [_selectedViewController endAppearanceTransition];
+        
         _selectedViewController = nil;
     }
     
@@ -98,6 +109,7 @@ RCS_ID("$Id$")
     
     // Move in new view controller/view. addChildViewController: automatically calls the childs willMoveToParentViewController: passing in the new parent. We shouldn't call that directly while adding the child VC.
 //    [_selectedViewController willMoveToParentViewController:self];
+    [_selectedViewController beginAppearanceTransition:YES animated:NO];
     [self addChildViewController:_selectedViewController];
 
     [self.view addSubview:_selectedViewController.view];
@@ -128,6 +140,7 @@ RCS_ID("$Id$")
     }
     
     [_selectedViewController didMoveToParentViewController:self];
+    [_selectedViewController endAppearanceTransition];
     
     // Ensure that the segmented control is showing the correctly selected segment.
     // Make sure to use the _selectedIndex ivar directly here because the setter will end up calling into this method and we don't want to create an infinite loop.
@@ -188,12 +201,19 @@ RCS_ID("$Id$")
 
 - (void)setShouldShowDismissButton:(BOOL)shouldShow;
 {
-    if (shouldShow) {
+    _shouldShowDismissButton = shouldShow;
+    if (_shouldShowDismissButton && !_tempHidingDismissButton) {
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(_dismiss:)];
     }
     else {
         self.navigationItem.rightBarButtonItem = nil;
     }
+}
+
+- (void)temporarilyHideDismissButton:(BOOL)hide;
+{
+    _tempHidingDismissButton = hide;
+    [self setShouldShowDismissButton:_shouldShowDismissButton];
 }
 
 #pragma mark - UINavigationBarDelegate
@@ -224,7 +244,11 @@ RCS_ID("$Id$")
     }
 }
 
+#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
+- (UIInterfaceOrientationMask)navigationControllerSupportedInterfaceOrientations:(UINavigationController *)navigationController;
+#else
 - (NSUInteger)navigationControllerSupportedInterfaceOrientations:(UINavigationController *)navigationController;
+#endif
 {
     if ([self.originalNavDelegate respondsToSelector:@selector(navigationControllerSupportedInterfaceOrientations:)]) {
         return [self.originalNavDelegate navigationControllerSupportedInterfaceOrientations:navigationController];

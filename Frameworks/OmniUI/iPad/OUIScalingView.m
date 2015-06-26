@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,6 +25,7 @@ static id _commonInit(OUIScalingView *self)
 {
     self.layer.needsDisplayOnBoundsChange = YES;
     self->_scale = 1;
+    self->_scaleEnabled = YES;
     return self;
 }
 
@@ -45,6 +46,10 @@ static id _commonInit(OUIScalingView *self)
 // If this view is within a OUIScalingScrollView, then this property should be considered read-only and the scale should be adjusted via its methods.
 - (void)setScale:(CGFloat)scale;
 {
+    if (self.scaleEnabled == NO) {
+        return;
+    }
+    
     OBPRECONDITION(scale > 0);
     if (_scale == scale)
         return;

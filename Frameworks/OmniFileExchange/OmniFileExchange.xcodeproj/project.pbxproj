@@ -29,10 +29,6 @@
 		340135D116DC1B9B00BCC654 /* OFXUploadRenameFileSnapshot.m in Sources */ = {isa = PBXBuildFile; fileRef = 340135CD16DC1B9B00BCC654 /* OFXUploadRenameFileSnapshot.m */; };
 		3402E0AB164C138A00FB8EB4 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = 3402E0AA164C138A00FB8EB4 /* Fixtures */; };
 		34066C831922C253008AC3DB /* OFNetStateMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 34066C821922C253008AC3DB /* OFNetStateMock.m */; };
-		340ECC9117A1882400CABA13 /* OFXConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 340ECC8F17A1882400CABA13 /* OFXConnection.h */; };
-		340ECC9217A1882400CABA13 /* OFXConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = 340ECC8F17A1882400CABA13 /* OFXConnection.h */; };
-		340ECC9317A1882400CABA13 /* OFXConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 340ECC9017A1882400CABA13 /* OFXConnection.m */; };
-		340ECC9417A1882400CABA13 /* OFXConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 340ECC9017A1882400CABA13 /* OFXConnection.m */; };
 		34119021170CB816008332E5 /* OFXContentIdentifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 34119020170CB816008332E5 /* OFXContentIdentifier.h */; };
 		34119022170CB816008332E5 /* OFXContentIdentifier.h in Headers */ = {isa = PBXBuildFile; fileRef = 34119020170CB816008332E5 /* OFXContentIdentifier.h */; };
 		34119024170CB84C008332E5 /* OFXContentIdentifier.m in Sources */ = {isa = PBXBuildFile; fileRef = 34119023170CB84C008332E5 /* OFXContentIdentifier.m */; };
@@ -255,13 +251,6 @@
 			remoteGlobalIDString = 8DC2EF5B0486A6940098B216;
 			remoteInfo = OmniDAV;
 		};
-		2787A6371991F292008D3495 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2787A62D1991F292008D3495 /* OmniDAV.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 34D06C54125D202500CA3963;
-			remoteInfo = OmniDAVTouch;
-		};
 		2787A6391991F292008D3495 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2787A62D1991F292008D3495 /* OmniDAV.xcodeproj */;
@@ -283,13 +272,6 @@
 			remoteGlobalIDString = 340490AC15E53DDC0044F67F;
 			remoteInfo = ODAVUnitTestsTouch;
 		};
-		2787A63F1991F29F008D3495 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2787A62D1991F292008D3495 /* OmniDAV.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 34D06C53125D202500CA3963;
-			remoteInfo = OmniDAVTouch;
-		};
 		2787A6451991F363008D3495 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2787A6411991F363008D3495 /* OmniDocumentStore.xcodeproj */;
@@ -310,6 +292,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 34AFACE1164B0E70009E39AB;
 			remoteInfo = OmniFileExchange;
+		};
+		347A67A91B38B5F800354BDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2787A62D1991F292008D3495 /* OmniDAV.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34D621AE1B38807700DCE250;
+			remoteInfo = "OmniDAV-iOS";
+		};
+		347A67B11B38B5F900354BDD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2787A62D1991F292008D3495 /* OmniDAV.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34D621AF1B38807700DCE250;
+			remoteInfo = "OmniDAV-iOS";
 		};
 		34824B091742E5B200253D52 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -380,8 +376,6 @@
 		3402E0AA164C138A00FB8EB4 /* Fixtures */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fixtures; sourceTree = "<group>"; };
 		34066C811922C253008AC3DB /* OFNetStateMock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OFNetStateMock.h; path = ../../../OmniFoundation/Tests/OFNetStateMock.h; sourceTree = "<group>"; };
 		34066C821922C253008AC3DB /* OFNetStateMock.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OFNetStateMock.m; path = ../../../OmniFoundation/Tests/OFNetStateMock.m; sourceTree = "<group>"; };
-		340ECC8F17A1882400CABA13 /* OFXConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXConnection.h; sourceTree = SOURCE_ROOT; };
-		340ECC9017A1882400CABA13 /* OFXConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXConnection.m; sourceTree = SOURCE_ROOT; };
 		34119020170CB816008332E5 /* OFXContentIdentifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXContentIdentifier.h; sourceTree = SOURCE_ROOT; };
 		34119023170CB84C008332E5 /* OFXContentIdentifier.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXContentIdentifier.m; sourceTree = SOURCE_ROOT; };
 		3413484C1A1E5CB400A03EEC /* OFXRedirectTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXRedirectTestCase.m; sourceTree = "<group>"; };
@@ -626,10 +620,10 @@
 			isa = PBXGroup;
 			children = (
 				2787A6361991F292008D3495 /* OmniDAV.framework */,
-				2787A6381991F292008D3495 /* libOmniDAV.a */,
-				2787A63A1991F292008D3495 /* odav */,
 				2787A63C1991F292008D3495 /* ODAVUnitTests.xctest */,
+				347A67B21B38B5F900354BDD /* OmniDAV.framework */,
 				2787A63E1991F292008D3495 /* libODAVUnitTestsTouch.a */,
+				2787A63A1991F292008D3495 /* odav */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -825,8 +819,6 @@
 				3452DE9716C5A3F900C83DB5 /* OFXRegistrationTable.m */,
 				346A4D9C17035F9800AD048A /* OFXDAVUtilities.h */,
 				346A4D9D17035F9800AD048A /* OFXDAVUtilities.m */,
-				340ECC8F17A1882400CABA13 /* OFXConnection.h */,
-				340ECC9017A1882400CABA13 /* OFXConnection.m */,
 				349E084617B0CEE100495835 /* OFXPropertyListCache.h */,
 				349E084717B0CEE100495835 /* OFXPropertyListCache.m */,
 				3422A9B617F4A9D200ACA42E /* OFXPersistentPropertyList.h */,
@@ -1015,7 +1007,6 @@
 				34FF45FD17B19F0B00E6AFCA /* OFXSyncClient.h in Headers */,
 				34FF8D0916A759390089ED25 /* OFXFileSnapshotContentsActions.h in Headers */,
 				34FF8D0F16A86FDB0089ED25 /* OFXDownloadFileSnapshot.h in Headers */,
-				340ECC9117A1882400CABA13 /* OFXConnection.h in Headers */,
 				3441607316B07DBF00E917F5 /* OFXServerAccountValidator.h in Headers */,
 				34A847DC16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.h in Headers */,
 				347601B416C4741D00675597 /* OFXFileSnapshotDeleteTransfer.h in Headers */,
@@ -1076,7 +1067,6 @@
 				34FF45FE17B19F0B00E6AFCA /* OFXSyncClient.h in Headers */,
 				34FF8D0A16A759390089ED25 /* OFXFileSnapshotContentsActions.h in Headers */,
 				34FF8D1016A86FDB0089ED25 /* OFXDownloadFileSnapshot.h in Headers */,
-				340ECC9217A1882400CABA13 /* OFXConnection.h in Headers */,
 				3441607416B07DBF00E917F5 /* OFXServerAccountValidator.h in Headers */,
 				34A847DD16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.h in Headers */,
 				347601B516C4741D00675597 /* OFXFileSnapshotDeleteTransfer.h in Headers */,
@@ -1153,7 +1143,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				2787A6401991F29F008D3495 /* PBXTargetDependency */,
+				347A67AA1B38B5F800354BDD /* PBXTargetDependency */,
 				2787A6481991F36D008D3495 /* PBXTargetDependency */,
 			);
 			name = OmniFileExchangeTouch;
@@ -1168,7 +1158,6 @@
 				34AFADA3164B1401009E39AB /* Sources */,
 				34AFADA4164B1401009E39AB /* Frameworks */,
 				34AFADA5164B1401009E39AB /* Resources */,
-				34AFADA6164B1401009E39AB /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -1186,7 +1175,7 @@
 		34AFACD8164B0E70009E39AB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "The Omni Group";
 			};
 			buildConfigurationList = 34AFACDB164B0E70009E39AB /* Build configuration list for PBXProject "OmniFileExchange" */;
@@ -1231,13 +1220,6 @@
 			remoteRef = 2787A6351991F292008D3495 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		2787A6381991F292008D3495 /* libOmniDAV.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniDAV.a;
-			remoteRef = 2787A6371991F292008D3495 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		2787A63A1991F292008D3495 /* odav */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
@@ -1264,6 +1246,13 @@
 			fileType = archive.ar;
 			path = libOmniDocumentStore.a;
 			remoteRef = 2787A6451991F363008D3495 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		347A67B21B38B5F900354BDD /* OmniDAV.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniDAV.framework;
+			remoteRef = 347A67B11B38B5F900354BDD /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34824B0A1742E5B200253D52 /* OmniCommandLine.framework */ = {
@@ -1295,19 +1284,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		34AFADA6164B1401009E39AB /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"$PROJECT_DIR\"/../../Scripts/OmniRunUnitTests\n";
-		};
 		34BAF4C1164B9554001BC4B0 /* Build String Files */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1321,6 +1297,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "../../Scripts/BuildStringsFromTarget OmniFileExchange\n";
+			showEnvVarsInLog = 0;
 		};
 		34BAF4C2164B958B001BC4B0 /* Build String Files */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1335,6 +1312,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "../../Scripts/BuildStringsFromTarget OmniFileExchange\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1381,7 +1359,6 @@
 				347601C216C4841E00675597 /* OFXFileItemTransfers.m in Sources */,
 				3452DE9A16C5A3F900C83DB5 /* OFXRegistrationTable.m in Sources */,
 				349E084A17B0CEE100495835 /* OFXPropertyListCache.m in Sources */,
-				340ECC9317A1882400CABA13 /* OFXConnection.m in Sources */,
 				340135BA16DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.m in Sources */,
 				340135C616DBEABC00BCC654 /* OFXFileSnapshotUploadRenameTransfer.m in Sources */,
 				340135D016DC1B9B00BCC654 /* OFXUploadRenameFileSnapshot.m in Sources */,
@@ -1430,7 +1407,6 @@
 				347601C316C4841E00675597 /* OFXFileItemTransfers.m in Sources */,
 				3452DE9B16C5A3F900C83DB5 /* OFXRegistrationTable.m in Sources */,
 				349E084B17B0CEE100495835 /* OFXPropertyListCache.m in Sources */,
-				340ECC9417A1882400CABA13 /* OFXConnection.m in Sources */,
 				340135BB16DBD6B300BCC654 /* OFXFileSnapshotUploadTransfer.m in Sources */,
 				340135C716DBEABC00BCC654 /* OFXFileSnapshotUploadRenameTransfer.m in Sources */,
 				340135D116DC1B9B00BCC654 /* OFXUploadRenameFileSnapshot.m in Sources */,
@@ -1471,11 +1447,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		2787A6401991F29F008D3495 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = OmniDAVTouch;
-			targetProxy = 2787A63F1991F29F008D3495 /* PBXContainerItemProxy */;
-		};
 		2787A6481991F36D008D3495 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = OmniDocumentStore;
@@ -1485,6 +1456,11 @@
 			isa = PBXTargetDependency;
 			target = 34AFACE1164B0E70009E39AB /* OmniFileExchange */;
 			targetProxy = 347797AF17EA28F3005E6DC6 /* PBXContainerItemProxy */;
+		};
+		347A67AA1B38B5F800354BDD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "OmniDAV-iOS";
+			targetProxy = 347A67A91B38B5F800354BDD /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

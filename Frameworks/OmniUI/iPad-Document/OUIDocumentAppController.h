@@ -81,6 +81,9 @@
 - (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(ODSFileItem *)fileItem;
 - (void)documentPicker:(OUIDocumentPicker *)picker openCreatedFileItem:(ODSFileItem *)fileItem;
 
+// API for linking to external documents
+- (void)linkDocumentFromExternalContainer:(id)sender;
+
 // Subclass responsibility
 - (UIImage *)documentPickerBackgroundImage;
 - (Class)documentClassForURL:(NSURL *)url;

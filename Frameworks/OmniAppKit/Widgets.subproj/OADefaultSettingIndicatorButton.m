@@ -25,38 +25,21 @@ RCS_ID("$Id$")
 
 @implementation OADefaultSettingIndicatorButton
 
-static NSImage *ledOnImage = nil;
-static NSImage *ledOffImage = nil;
+static NSImage *OnImage = nil;
+static NSImage *OffImage = nil;
 const static CGFloat horizontalSpaceFromSnuggleView = 2.0f;
-
-#ifdef OMNI_ASSERTIONS_ON
-static NSString * const IndicatorImageStyleLED = @"led";
-#endif
-static NSString * const IndicatorImageStyleCircleX = @"circlex";
-static NSString * const IndicatorImageStyleYosemite = @"yosemite";
 
 + (void)initialize;
 {
     OBINITIALIZE;
     
-    NSString *imageStyle = [[NSUserDefaults standardUserDefaults] stringForKey:@"OADefaultSettingIndicatorStyle"];
-    
-    if ([imageStyle isEqualToString:IndicatorImageStyleCircleX]) {
-        ledOnImage = [NSImage imageNamed:@"OADefaultSettingIndicatorCircleXOn" inBundle:OMNI_BUNDLE];
-        ledOffImage = [NSImage imageNamed:@"OADefaultSettingIndicatorCircleXOff" inBundle:OMNI_BUNDLE];
-    } else if ([imageStyle isEqualToString:IndicatorImageStyleYosemite]) {
-        ledOnImage = [NSImage imageNamed:@"OADefaultSettingIndicatorYosemiteOn" inBundle:OMNI_BUNDLE];
-        ledOffImage = [NSImage imageNamed:@"OADefaultSettingIndicatorYosemiteOff" inBundle:OMNI_BUNDLE];
-    } else {
-        OBASSERT((imageStyle == nil) || [imageStyle isEqualToString:IndicatorImageStyleLED]);   // Unspecified = the original LED mode
-        ledOnImage = [NSImage imageNamed:@"OADefaultSettingIndicatorOn" inBundle:OMNI_BUNDLE];
-        ledOffImage = [NSImage imageNamed:@"OADefaultSettingIndicatorOff" inBundle:OMNI_BUNDLE];
-    }
+    OnImage = [NSImage imageNamed:@"OADefaultSettingIndicatorOn" inBundle:OMNI_BUNDLE];
+    OffImage = [NSImage imageNamed:@"OADefaultSettingIndicatorOff" inBundle:OMNI_BUNDLE];
 }
 
 + (OADefaultSettingIndicatorButton *)defaultSettingIndicatorWithIdentifier:(id)identifier forView:(NSView *)view delegate:(id)delegate;
 {
-    NSSize buttonSize = [ledOnImage size];
+    NSSize buttonSize = [OnImage size];
     OADefaultSettingIndicatorButton *indicator = [[[self class] alloc] initWithFrame:NSMakeRect(0, 0, buttonSize.height, buttonSize.width)];
     if (view != nil) {
         OBASSERT([view superview] != nil);
@@ -182,7 +165,7 @@ static NSString * const IndicatorImageStyleYosemite = @"yosemite";
     if (snuggleUpToRightSideOfView == nil)
         return;
     
-    NSSize iconSize = [ledOnImage size];
+    NSSize iconSize = [OnImage size];
     
     if ([snuggleUpToRightSideOfView isKindOfClass:[NSControl class]]) {
         NSControl *snuggleUpToRightSideOfControl = (id)snuggleUpToRightSideOfView;
@@ -257,8 +240,8 @@ static NSString * const IndicatorImageStyleYosemite = @"yosemite";
     [[self cell] setType:NSImageCellType];
     [[self cell] setBordered:NO];
     [self setImagePosition:NSImageOnly];
-    [self setImage:ledOffImage];
-    [self setAlternateImage:ledOnImage];
+    [self setImage:OffImage];
+    [self setAlternateImage:OnImage];
     [self setDisplaysEvenInDefaultState:NO];
     [self setTarget:self];
     [self setAction:@selector(resetDefaultValue:)];

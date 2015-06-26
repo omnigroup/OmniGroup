@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2009, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -21,6 +21,9 @@ extern NSString * const OAInfoTemplateImageName;
 
 @class /* Foundation     */ NSMutableSet;
 @class /* OmniFoundation */ OFEnumNameTable;
+
+#define OARequireImageNamed(name) ({NSImage *image = [NSImage imageNamed:name]; OBASSERT(image, @"Image \"%@\" is missing!", name); image;})
+#define OARequireImageNamedInBundle(name,bundle) ({NSImage *image = [NSImage imageNamed:name inBundle:bundle]; OBASSERT(image, @"Image \"%@\" is missing from bundle %@", name, bungle); image;})
 
 @interface NSImage (OAExtensions)
 

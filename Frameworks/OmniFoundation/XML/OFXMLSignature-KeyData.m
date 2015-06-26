@@ -435,10 +435,13 @@ SecKeyRef OFXMLSigCopyKeyFromEllipticKeyValue(xmlNode *keyvalue, int *outOrder, 
 
 static NSData *getNamedCurve(const xmlChar *curveName, int *log2_p_out, NSError **outError)
 {
-    for(const struct OFNamedCurveInfo *cursor = _OFEllipticCurveInfoTable; cursor->urn; cursor++) {
-        if (xmlStrcmp(curveName, (xmlChar *)(cursor->urn)) == 0) {
-            *log2_p_out = cursor->generatorSize;
-            return [NSData dataWithBytesNoCopy:(void *)(cursor->derOid) length:(cursor->derOidLength) freeWhenDone:NO];
+    if (strncmp((const char *)curveName, "urn:oid:", 8) == 0) {
+        const xmlChar *curveOIDString = curveName + 8;
+        for(const struct OFNamedCurveInfo *cursor = _OFEllipticCurveInfoTable; cursor->urn; cursor++) {
+            if (xmlStrcmp(curveOIDString, (xmlChar *)(cursor->urn)) == 0) {
+                *log2_p_out = cursor->generatorSize;
+                return [NSData dataWithBytesNoCopy:(void *)(cursor->derOid) length:(cursor->derOidLength) freeWhenDone:NO];
+            }
         }
     }
 

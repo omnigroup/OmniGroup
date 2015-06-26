@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -127,17 +127,9 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
 
 + (void)showMouseTipWithTitle:(NSString *)aTitle;
 {
-    if (![enableTipsWhileResizingPreference boolValue])
-        return;
-    
-    NSPoint springPoint = [NSEvent mouseLocation];
-    
-    springPoint.x += OFFSET_FROM_MOUSE_LOCATION + TEXT_X_INSET;
-    springPoint.y += OFFSET_FROM_MOUSE_LOCATION + TEXT_Y_INSET;
-    
     OAMouseTipWindow *instance = sharedMouseTipInstance();
     NSAttributedString *attributedTitle = [[NSAttributedString alloc] initWithString:aTitle attributes:[instance textAttributes]];
-    [instance showMouseTipWithAttributedTitle:attributedTitle springPoint:springPoint hotSpot:(NSPoint){0,0} maxWidth:0 delay:0];
+    [self showMouseTipWithAttributedTitle:attributedTitle];
     [attributedTitle release];
 }
 
@@ -148,6 +140,21 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
     [self showMouseTipWithAttributedTitle:title activeRect:activeRect maxWidth:0.0f edge:onEdge delay:delay];
     [title release];
 }
+
++ (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle;
+{
+    if (![enableTipsWhileResizingPreference boolValue])
+        return;
+    
+    NSPoint springPoint = [NSEvent mouseLocation];
+    
+    springPoint.x += OFFSET_FROM_MOUSE_LOCATION + TEXT_X_INSET;
+    springPoint.y += OFFSET_FROM_MOUSE_LOCATION + TEXT_Y_INSET;
+    
+    OAMouseTipWindow *instance = sharedMouseTipInstance();
+    [instance showMouseTipWithAttributedTitle:aTitle springPoint:springPoint hotSpot:(NSPoint){0,0} maxWidth:0 delay:0];
+}
+
 
 + (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle activeRect:(NSRect)activeRect maxWidth:(CGFloat)maxWidth edge:(NSRectEdge)onEdge delay:(CGFloat)delay;
 {

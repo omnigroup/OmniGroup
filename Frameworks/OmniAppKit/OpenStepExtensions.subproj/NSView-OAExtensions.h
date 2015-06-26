@@ -89,6 +89,9 @@
 - (void)appendConstraintsToArray:(NSMutableArray *)constraints toHaveSameHorizontalExtentAsView:(NSView *)view;
 - (void)appendConstraintsToArray:(NSMutableArray *)constraints toHaveSameVerticalExtentAsView:(NSView *)view;
 
+//
+- (void)applyToViewTree:(void (^)(NSView *view))applier; // Must not modify the view hierarchy
+
 // Debugging
 - (void)logViewHierarchy;
 - (void)logConstraintsInvolvingView;

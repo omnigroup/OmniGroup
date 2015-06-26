@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -54,6 +54,7 @@
 - (void)clearSelection:(BOOL)shouldEndEditing;
 @property(nonatomic,readonly) ODSFileItem *singleSelectedFileItem;
 
+- (void)addDocumentFromURL:(NSURL *)url completionHandler:(void (^)(void))completionHandler;
 - (void)addDocumentFromURL:(NSURL *)url;
 - (void)addSampleDocumentFromURL:(NSURL *)url;
 - (void)exportedDocumentToURL:(NSURL *)url;
@@ -77,7 +78,7 @@
 - (void)scrollItemsToVisible:(id <NSFastEnumeration>)items animated:(BOOL)animated completion:(void (^)(void))completion;
 
 - (IBAction)newDocument:(id)sender;
-- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type;
+- (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem documentType:(ODSDocumentType)type completion:(void (^)(void))completion;
 - (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem;
 - (IBAction)duplicateDocument:(id)sender;
 - (IBAction)deleteDocument:(id)sender;

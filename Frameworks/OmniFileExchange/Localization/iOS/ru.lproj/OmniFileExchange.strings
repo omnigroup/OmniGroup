@@ -17,19 +17,19 @@
 "Account not configured" = "Учетная запись не настроена";
 
 /* Add server account title */
-"Add Omni Sync Server Account" = "Добавить учетную запись сервера Omni Sync";
+"Add Omni Sync Server Account" = "Добавить уч. запись Omni Sync";
 
 /* Add server account type */
 "Add WebDAV Server" = "Добавить сервер WebDAV";
 
 /* error description */
-"Another account is syncing to this folder already." = "С этой папкой уже синхронизируется другая уч. запись.";
+"Another account is syncing to this folder already." = "С этой папкой уже синхронизируется другая учетная запись.";
 
 /* error reason */
 "Cannot locate synchronized documents folder." = "Не удается найти папку синхронизированных документов.";
 
 /* Error description */
-"Cannot move document." = "не удается переместить документ.";
+"Cannot move document." = "Не удается переместить документ.";
 
 /* Error description */
 "Cannot start account agent." = "Не удалось запустить агент учетных записей.";
@@ -97,7 +97,7 @@
 "Sync failed: cloud account needs to be upgraded." = "Сбой синхронизации: необходимо обновить облачную учетную запись.";
 
 /* error description */
-"Sync failed: OmniPresence upgrade required." = "Сбой синхронизации: необходимо обновить OmniPresence.";
+"Sync failed: OmniPresence upgrade required." = "Сбой синхронизации: Необходимо обновить OmniPresence.";
 
 /* error description */
 "Sync failed: unable to update device registration." = "Сбой синхронизации: не удается обновить регистрацию устройства.";
@@ -148,7 +148,7 @@
 "Unable to verify login credentials at this time." = "Не удалось проверить учетные данные входа.";
 
 /* Add server account description */
-"Use your own WebDAV space." = "Синхронизация через собственный сервер WebDAV.";
+"Use your own WebDAV space." = "Собственный сервер WebDAV.";
 
 /* Account validation step description */
 "Validating Account..." = "Проверка учетной записи…";

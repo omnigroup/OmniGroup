@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -569,6 +569,23 @@ static OFXFileMetadata *_fileWithIdentifier(OFXConflictTestCase *self, NSSet *me
         
         [self movePath:@"c.txt" toPath:@"b.txt" ofAccount:accountA];
         [self waitForSeconds:1];
+    }
+    
+    // Wait for all the uploads to finish. We don't know how long this will take, so just make sure we keep making progress.
+    __block NSUInteger remaining = NSUIntegerMax;
+    while (remaining > 0) {
+        [self waitUntil:^BOOL{
+            NSUInteger notUploaded = 0;
+            for (OFXFileMetadata *metadata in [agentA metadataItemsForAccount:accountA]) {
+                if (!metadata.uploaded)
+                    notUploaded++;
+            }
+            if (notUploaded < remaining) {
+                remaining = notUploaded;
+                return YES;
+            }
+            return NO;
+        }];
     }
     
     // Wait for both sides to be idle

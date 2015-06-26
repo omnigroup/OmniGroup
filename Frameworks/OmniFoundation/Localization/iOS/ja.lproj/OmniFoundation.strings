@@ -108,7 +108,7 @@
 "Failed to write lock file.  %@" = "ロックされたファイルの書き込みに失敗しました。%@";
 
 /* time span formatter span */
-"h" = "時間";
+"h" = "時";
 
 /* time span formatter span */
 "hour" = "時";
@@ -123,7 +123,7 @@
 "local configuration file" = "ローカル設定ファイル";
 
 /* time span formatter span */
-"m" = "分間";
+"m" = "分";
 
 /* time span formatter span */
 "minute" = "分";
@@ -168,19 +168,19 @@
 "Set \"%@\" to \"%@\"" = "“%1$@” を “%2$@” に設定します";
 
 /* server certificate rejected */
-"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバの証明書が無効のようです。このサイトの信用性には問題があります。それでも接続しますか？";
+"The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバーの証明書が無効のようです。このサイトの信用性には問題があります。それでも接続しますか？";
 
 /* server certificate out of date */
-"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@” に対するサーバの証明書の日付が無効です。有効期限が切れたか、まだ有効ではない可能性があります。それでも接続しますか？";
+"The server certificate for \"%@\" has an invalid date. It may be expired, or not yet active. Would you like to connect anyway?" = "“%@” に対するサーバーの証明書の日付が無効です。有効期限が切れたか、まだ有効ではない可能性があります。それでも接続しますか？";
 
 /* server certificate has unknown root */
-"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバの証明書にはいずれのルートサーバからも署名がありません。このサイトの信用性には問題があります。それでも接続しますか？";
+"The server certificate for \"%@\" is not signed by any root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバーの証明書にはいずれのルートサーバーからも署名がありません。このサイトの信用性には問題があります。それでも接続しますか？";
 
 /* server certificate not yet valid */
-"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバの証明書がまだ有効になっていません。このサイトの信用性には問題があります。それでも接続しますか？";
+"The server certificate for \"%@\" is not yet valid. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバーの証明書がまだ有効になっていません。このサイトの信用性には問題があります。それでも接続しますか？";
 
 /* server certificate untrusted */
-"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバの証明書には信頼されていないルートサーバからの署名があります。このサイトの信用性には問題があります。それでも接続しますか？";
+"The server certificate for \"%@\" is signed by an untrusted root server. This site may not be trustworthy. Would you like to connect anyway?" = "“%@” に対するサーバーの証明書には信頼されていないルートサーバーからの署名があります。このサイトの信用性には問題があります。それでも接続しますか？";
 
 /* alert message header when clicking on a configuration value URL */
 "This configuration link will make the following changes:" = "この構成リンクにより、以下の変更が行われます：";

@@ -354,6 +354,14 @@ static void *OAResizingTitleBarButtonObservingWindowContext;
     NSWindow *window = self.window;
     
     BOOL shouldHideButton = ([window styleMask] & NSFullScreenWindowMask) ? YES : NO;
+
+    // <bug:///117855> (Bug: 10.11: Trial period badge in toolbar doesn't truncate properly in narrow split screen)
+    // Layout when in split-screen isn't working -- apparently there's no NSWindowDocumentVersionsButton and +[NSWindow minFrameWidthWithTitle:styleMask:] just always returns 4.0.
+    // So the best bet is to hide when in split-screen, as we already do when in fullscreen.
+    // However, we don't have an API for detecting when we're in split-screen. This is a hack which could stop working any day.
+    if (!shouldHideButton && [NSStringFromClass([window class]) isEqualToString:@"NSToolbarFullScreenWindow"]) {
+        shouldHideButton = YES;
+    }
     if (shouldHideButton && self.isHidden) {
         // no need to do any more work
         return;

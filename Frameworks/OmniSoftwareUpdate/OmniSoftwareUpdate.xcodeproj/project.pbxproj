@@ -52,7 +52,7 @@
 		3446926B186284E200FBDD73 /* OSUPrivacyAlertWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34469267186284E200FBDD73 /* OSUPrivacyAlertWindowController.m */; };
 		344692791862855400FBDD73 /* OSUPrivacyAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 344692771862855400FBDD73 /* OSUPrivacyAlert.xib */; };
 		3446927A1862855400FBDD73 /* OSUPrivacyAlert.xib in Resources */ = {isa = PBXBuildFile; fileRef = 344692771862855400FBDD73 /* OSUPrivacyAlert.xib */; };
-		3456AED20C1201300066F5F4 /* OSURunTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 3456AED00C1201300066F5F4 /* OSURunTime.h */; };
+		3456AED20C1201300066F5F4 /* OSURunTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 3456AED00C1201300066F5F4 /* OSURunTime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3456AED30C1201300066F5F4 /* OSURunTime.m in Sources */ = {isa = PBXBuildFile; fileRef = 3456AED10C1201300066F5F4 /* OSURunTime.m */; };
 		34591B870A751FAD00BA6CCA /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34591B860A751FAD00BA6CCA /* WebKit.framework */; };
 		346F34C10C627E4600AAEE4D /* OSUInstaller.h in Headers */ = {isa = PBXBuildFile; fileRef = 346F34BF0C627E4600AAEE4D /* OSUInstaller.h */; };
@@ -88,6 +88,9 @@
 		34972BBD1AC1C77D00D2DC2D /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34E6552B0C95C85D0005A12E /* Security.framework */; };
 		34972BC81AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 34972BC71AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h */; };
 		34972BC91AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 34972BC71AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h */; };
+		34A00BEF1B20DC740095B511 /* OSUReportKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A00BEE1B20DC740095B511 /* OSUReportKeys.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34A00BF01B20DC740095B511 /* OSUReportKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A00BEE1B20DC740095B511 /* OSUReportKeys.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34A00BF11B20DC740095B511 /* OSUReportKeys.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A00BEE1B20DC740095B511 /* OSUReportKeys.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A2E0E2184F91B9009E0D9F /* OSUController.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2E0DE184F91B9009E0D9F /* OSUController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A2E0E3184F91B9009E0D9F /* OSUController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A2E0DF184F91B9009E0D9F /* OSUController.m */; };
 		34A2E0E8184F9363009E0D9F /* OSUPreferences-Items.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A2E0E6184F9363009E0D9F /* OSUPreferences-Items.h */; };
@@ -110,9 +113,9 @@
 		34A5F551184E554A00E8BA9A /* OSUErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34EDDEC80C6127FD009E2E27 /* OSUErrors.h */; };
 		34A5F552184E555100E8BA9A /* OSUChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 34821EFE0634074F0097A113 /* OSUChecker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A5F553184E555400E8BA9A /* OSUCheckOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3416044A0C6913CC002839DF /* OSUCheckOperation.h */; };
-		34A5F554184E555900E8BA9A /* OSUHardwareInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F3002212639C1B0044AB52 /* OSUHardwareInfo.h */; };
+		34A5F554184E555900E8BA9A /* OSUHardwareInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F3002212639C1B0044AB52 /* OSUHardwareInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A5F555184E555C00E8BA9A /* OSUOpenGLExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F3003512639CBD0044AB52 /* OSUOpenGLExtensions.h */; };
-		34A5F556184E556000E8BA9A /* OSURunTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 3456AED00C1201300066F5F4 /* OSURunTime.h */; };
+		34A5F556184E556000E8BA9A /* OSURunTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 3456AED00C1201300066F5F4 /* OSURunTime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34A5F557184E558200E8BA9A /* OSUPreferences.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D5FE6F1264F09D00FDFEBB /* OSUPreferences.h */; };
 		34A5F558184E559E00E8BA9A /* OSUCheckerTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3409FDF712664BD600BA898D /* OSUCheckerTarget.h */; };
 		34A5F55A184E62E500E8BA9A /* OSUFeatures.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A5F559184E62E500E8BA9A /* OSUFeatures.h */; };
@@ -158,8 +161,8 @@
 		34F2A19A1A3106AB00B2E8BD /* OSUProbe.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F2A1951A3106AB00B2E8BD /* OSUProbe.m */; };
 		34F2A19B1A3106AB00B2E8BD /* OSUProbe.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F2A1951A3106AB00B2E8BD /* OSUProbe.m */; };
 		34F30007126394AF0044AB52 /* OSUHardwareInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416017B0C67E838002839DF /* OSUHardwareInfo.m */; };
-		34F3002312639C1B0044AB52 /* OSUHardwareInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F3002212639C1B0044AB52 /* OSUHardwareInfo.h */; };
-		34F3002412639C1B0044AB52 /* OSUHardwareInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F3002212639C1B0044AB52 /* OSUHardwareInfo.h */; };
+		34F3002312639C1B0044AB52 /* OSUHardwareInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F3002212639C1B0044AB52 /* OSUHardwareInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34F3002412639C1B0044AB52 /* OSUHardwareInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F3002212639C1B0044AB52 /* OSUHardwareInfo.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34F3003612639CBD0044AB52 /* OSUOpenGLExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F3003512639CBD0044AB52 /* OSUOpenGLExtensions.h */; };
 		34F3003712639CBD0044AB52 /* OSUOpenGLExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34F3003512639CBD0044AB52 /* OSUOpenGLExtensions.h */; };
 		34F300711263A6850044AB52 /* OSUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F300701263A6850044AB52 /* OSUErrors.m */; };
@@ -551,6 +554,7 @@
 		348D92E81AB798A40093AD35 /* OSUCheckService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OSUCheckService.m; sourceTree = "<group>"; };
 		348D92EA1AB798A40093AD35 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		34972BC71AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSULookupCredentialProtocol.h; sourceTree = "<group>"; };
+		34A00BEE1B20DC740095B511 /* OSUReportKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUReportKeys.h; sourceTree = "<group>"; };
 		34A2E0DE184F91B9009E0D9F /* OSUController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUController.h; sourceTree = "<group>"; };
 		34A2E0DF184F91B9009E0D9F /* OSUController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUController.m; sourceTree = "<group>"; };
 		34A2E0E6184F9363009E0D9F /* OSUPreferences-Items.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OSUPreferences-Items.h"; sourceTree = "<group>"; };
@@ -987,6 +991,7 @@
 				34972BC71AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h */,
 				348D92E71AB798A40093AD35 /* OSUCheckService.h */,
 				348D92E81AB798A40093AD35 /* OSUCheckService.m */,
+				34A00BEE1B20DC740095B511 /* OSUReportKeys.h */,
 				3479A39D1AB8D8D20077BB01 /* OSURunOperation.h */,
 				3479A39E1AB8D8D20077BB01 /* OSURunOperation.m */,
 				348D92EA1AB798A40093AD35 /* main.m */,
@@ -1249,6 +1254,7 @@
 				34A5F554184E555900E8BA9A /* OSUHardwareInfo.h in Headers */,
 				34CEC66818565B530030515C /* OSULinkButton.h in Headers */,
 				34A5F567184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.h in Headers */,
+				34A00BF11B20DC740095B511 /* OSUReportKeys.h in Headers */,
 				34A5F551184E554A00E8BA9A /* OSUErrors.h in Headers */,
 				3433C1FB1A12BB920021318A /* OSUSettings.h in Headers */,
 				34A5F558184E559E00E8BA9A /* OSUCheckerTarget.h in Headers */,
@@ -1271,6 +1277,7 @@
 			files = (
 				3479A39F1AB8D8D20077BB01 /* OSURunOperation.h in Headers */,
 				34F3002412639C1B0044AB52 /* OSUHardwareInfo.h in Headers */,
+				34A00BF01B20DC740095B511 /* OSUReportKeys.h in Headers */,
 				34F3003712639CBD0044AB52 /* OSUOpenGLExtensions.h in Headers */,
 				3433C1FA1A12BB920021318A /* OSUSettings.h in Headers */,
 				34A2E0E2184F91B9009E0D9F /* OSUController.h in Headers */,
@@ -1307,6 +1314,7 @@
 				346F34C10C627E4600AAEE4D /* OSUInstaller.h in Headers */,
 				6ACC21370C67DC7B001633C1 /* OSUAvailableUpdateController.h in Headers */,
 				3416044C0C6913CC002839DF /* OSUCheckOperation.h in Headers */,
+				34A00BEF1B20DC740095B511 /* OSUReportKeys.h in Headers */,
 				341605EC0C693324002839DF /* OSUItem.h in Headers */,
 				341607700C6A27AA002839DF /* OSUFlippedView.h in Headers */,
 				6AC963510C6A756600256B9C /* OSUThinBorderView.h in Headers */,
@@ -1520,7 +1528,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0700;
 				TargetAttributes = {
 					3489E8BF1AD56BA10039E24D = {
 						CreatedOnToolsVersion = 6.2;
@@ -1728,6 +1736,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "../../Scripts/BuildStringsFromTarget OmniSoftwareUpdate OmniSystemInfo\n";
+			showEnvVarsInLog = 0;
 		};
 		34F300041263948A0044AB52 /* Build Strings */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1742,6 +1751,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "../../Scripts/BuildStringsFromTarget OmniSoftwareUpdate\n";
+			showEnvVarsInLog = 0;
 		};
 		5F234E8016E91545000E2C0E /* Preprocess plists */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1755,7 +1765,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd OSUInstallerPrivilegedHelper\nexport OTHER_PREPROCESSOR_DEFINITIONS=\"$INFOPLIST_PREPROCESSOR_DEFINITIONS\"\n../../../Scripts/PreprocessFiles --strip-xml-comments Info.plist -o $TEMP_DIR/Preprocessed-Info.plist\n../../../Scripts/PreprocessFiles --strip-xml-comments launchd.plist -o $TEMP_DIR/Preprocessed-launchd.plist\n";
+			shellScript = "cd OSUInstallerPrivilegedHelper\nexport OTHER_PREPROCESSOR_DEFINITIONS=\"$INFOPLIST_PREPROCESSOR_DEFINITIONS\"\n\n# Speed incremental builds by not touching the plists if the input hasn't changed (causing relinking of this tool, causing re-copying in the framework, causing re-signing of the framework, etc.) This does mean that if build settings change (which can be expanded in the result) then you'll need to do a clean build. This is rare, though, compared to incremental builds that don't change settings.\n\nif [ ! -f \"$TEMP_DIR/Preprocessed-Info.plist\" -o Info.plist -nt \"$TEMP_DIR/Preprocessed-Info.plist\" ]; then\n    ../../../Scripts/PreprocessFiles --strip-xml-comments Info.plist -o \"$TEMP_DIR/Preprocessed-Info.plist\"\nfi\n\nif [ ! -f \"$TEMP_DIR/Preprocessed-launchd.plist\" -o launchd.plist -nt \"$TEMP_DIR/Preprocessed-launchd.plist\" ]; then\n    ../../../Scripts/PreprocessFiles --strip-xml-comments launchd.plist -o \"$TEMP_DIR/Preprocessed-launchd.plist\"\nfi\n";
+			showEnvVarsInLog = 0;
 		};
 		A24A971B1249A32A005C98E1 /* Copy trust root */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1787,6 +1798,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "../../Scripts/BuildStringsFromTarget OmniSoftwareUpdate OmniSystemInfo OSUInstallerRights\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2603,30 +2615,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1B08AB00D00059F5BD /* Omni-Tool-Debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREFIX_HEADER = "OSUInstallerPrivilegedHelper/OSUInstaller-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,
@@ -2642,7 +2631,6 @@
 					Common/OSUInstaller.sh,
 				);
 				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier).$(OSUInstallerPrivilegedHelperVersion)";
-				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -2650,23 +2638,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1C08AB00D00059F5BD /* Omni-Tool-Release.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_PREFIX_HEADER = "OSUInstallerPrivilegedHelper/OSUInstaller-Prefix.pch";
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,
@@ -2682,7 +2654,6 @@
 					Common/OSUInstaller.sh,
 				);
 				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier).$(OSUInstallerPrivilegedHelperVersion)";
-				SDKROOT = macosx;
 			};
 			name = Release;
 		};
@@ -2690,23 +2661,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1A08AB00D00059F5BD /* Omni-Tool-Coverage.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_PREFIX_HEADER = "OSUInstallerPrivilegedHelper/OSUInstaller-Prefix.pch";
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,
@@ -2722,7 +2677,6 @@
 					Common/OSUInstaller.sh,
 				);
 				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier).$(OSUInstallerPrivilegedHelperVersion)";
-				SDKROOT = macosx;
 			};
 			name = Coverage;
 		};

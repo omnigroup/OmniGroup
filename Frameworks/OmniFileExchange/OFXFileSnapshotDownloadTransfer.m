@@ -7,11 +7,11 @@
 
 #import "OFXFileSnapshotDownloadTransfer.h"
 
+#import <OmniDAV/ODAVConnection.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniDAV/ODAVOperation.h>
 #import <OmniFoundation/NSFileManager-OFTemporaryPath.h>
 
-#import "OFXConnection.h"
 #import "OFXDownloadFileSnapshot.h"
 #import "OFXFileState.h"
 #import "OFXFileSnapshotRemoteEncoding.h"
@@ -36,7 +36,7 @@ RCS_ID("$Id$")
     long long _totalBytesRead;
 }
 
-- initWithConnection:(OFXConnection *)connection remoteSnapshotURL:(NSURL *)remoteSnapshotURL localTemporaryDocumentContentsURL:(NSURL *)localTemporaryDocumentContentsURL currentSnapshot:(OFXFileSnapshot *)currentSnapshot;
+- initWithConnection:(ODAVConnection *)connection remoteSnapshotURL:(NSURL *)remoteSnapshotURL localTemporaryDocumentContentsURL:(NSURL *)localTemporaryDocumentContentsURL currentSnapshot:(OFXFileSnapshot *)currentSnapshot;
 {
     OBPRECONDITION(currentSnapshot, "should at least be a metadata stub");
     OBPRECONDITION(remoteSnapshotURL);
@@ -56,7 +56,7 @@ RCS_ID("$Id$")
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == self.operationQueue);
 
-    OFXConnection *connection = self.connection;
+    ODAVConnection *connection = self.connection;
     
     __autoreleasing NSError *error;
     

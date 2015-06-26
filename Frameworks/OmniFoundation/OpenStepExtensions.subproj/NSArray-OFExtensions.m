@@ -1,4 +1,4 @@
-// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -179,6 +179,11 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
         OBASSERT(obj1 == anObject, "This is the implementation we cached");
         return implementation(obj1, selector, obj2);
     }];
+}
+
+- (BOOL)isSortedUsingComparator:(NSComparator)comparator;
+{
+    return OFCFArrayIsSortedAscendingUsingComparator((CFArrayRef)self, comparator);
 }
 
 - (BOOL)isSortedUsingFunction:(NSComparisonResult (*)(id, id, void *))comparator context:(void *)context;

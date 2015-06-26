@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -136,13 +136,17 @@ static NSFont *smallSystemFont;
 
 - (void)zoomFromSender:(NSMenuItem *)sender;
 {
-    CGFloat newZoomFactor;
+    NSInteger tag;
 
     // This hack is needed under 4.2.  Maybe Rhapsody is better.
-    if ([sender isKindOfClass:[NSMatrix class]])
-        sender = [(NSMatrix *)sender selectedCell];
+    if ([sender isKindOfClass:[NSMatrix class]]) {
+        OBASSERT_NOT_REACHED("Should get the menu, not the internal NSMatrix (if there even is one still)");
+        tag = [[(NSMatrix *)sender selectedCell] tag];
+    } else {
+        tag = [sender tag];
+    }
 
-    newZoomFactor = (CGFloat)([sender tag] / 100.0);
+    CGFloat newZoomFactor = (CGFloat)(tag / 100.0);
     [self zoomToScale:newZoomFactor];
 }
 

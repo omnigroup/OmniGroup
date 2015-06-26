@@ -7,13 +7,12 @@
 
 #import <OmniUI/OUITabBar.h>
 
+#import <OmniUI/OUITabBarAppearanceDelegate.h>
 #import <OmniUI/UIFont-OUIExtensions.h>
+
 #import "OUITabBarButton.h"
 
-
 RCS_ID("$Id$");
-
-// CCC, 4/9/2015. audit colors, note that this is in OmniUI. Shared?
 
 static UIFont *_DefaultTabTitleFont;
 static UIFont *_DefaultSelectedTabTitleFont;
@@ -28,6 +27,8 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     UIFont *_selectedTabTitleFont;
     NSUInteger _selectedTabIndex;
     UIView *_footerView;
+    CGGradientRef _horizontalSeparatorGradient;
+    CGGradientRef _verticalSeparatorGradient;
 }
 
 @property (nonatomic, strong) NSMutableArray *tabImages;
@@ -135,6 +136,11 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     self.selectedVerticalTabTitleFont = [[self class] defaultSelectedVerticalTabTitleFont];
 }
 
+- (void)dealloc;
+{
+    [self _invalidateGradients];
+}
+
 - (BOOL)usesVerticalLayout;
 {
     return _usesVerticalLayout;
@@ -212,10 +218,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     self.tabImages[index] = image ?: [NSNull null];
     if (self.tabButtons != nil) {
         OBASSERT(index < [self.tabButtons count]);
-        [self.tabButtons[index] setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
-                                forState:UIControlStateNormal];
-        [self.tabButtons[index] setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
-                                forState:UIControlStateSelected];
+        [self.tabButtons[index] setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
     }
 }
 
@@ -246,17 +249,15 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
         
         OBASSERT([self.tabImages count] == [self.tabTitles count]);
         [self.tabTitles enumerateObjectsUsingBlock:^(NSString *title, NSUInteger index, BOOL *stop) {
-            UIButton *button = (_usesVerticalLayout ? [OUITabBarButton verticalTabBarButton] : [OUITabBarButton tabBarButton]);
+            OUITabBarButton *button = (_usesVerticalLayout ? [OUITabBarButton verticalTabBarButton] : [OUITabBarButton tabBarButton]);
+            button.appearanceDelegate = self.appearanceDelegate;
             
             [button setTitle:title forState:UIControlStateNormal];
             [button addTarget:self action:@selector(selectTab:) forControlEvents:UIControlEventTouchUpInside];
             
             UIImage *image = self.tabImages[index];
             if (![image isNull]) {
-                [button setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
-                        forState:UIControlStateNormal];
-                [button setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal]
-                        forState:UIControlStateSelected];
+                [button setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
             }
             
             // UISegmentedControl subelements are read out as "1 of 3" using VoiceOver.
@@ -363,7 +364,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
 
             CGContextDrawLinearGradient(context, [self verticalTabEdgeGradient], startPoint, endPoint, 0);
 
-            [[self separatorColor] set];
+            [[self verticalTabSeparatorColor] set];
             CGContextMoveToPoint(context, CGRectGetMaxX(bounds) - halfPixel, CGRectGetMinY(bounds));
             CGContextAddLineToPoint(context, CGRectGetMaxX(bounds) - halfPixel, CGRectGetMaxY(bounds));
             CGContextSetLineWidth(context, 1.0 / self.contentScaleFactor);
@@ -374,7 +375,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
         // Button separators
         CGContextSaveGState(context);
         {
-            [[self separatorColor] set];
+            [[self verticalTabSeparatorColor] set];
             [_tabButtons enumerateObjectsUsingBlock:^(OUITabBarButton *button, NSUInteger index, BOOL *stop) {
                 CGRect buttonFrame = button.frame;
                 
@@ -438,6 +439,38 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 
+#pragma mark Appearance
+
+- (void)appearanceDidChange;
+{
+    [self _invalidateGradients];
+    for (OUITabBarButton *button in self.tabButtons) {
+        [button appearanceDidChange];
+    }
+    [self setNeedsDisplay];
+}
+
+@synthesize appearanceDelegate = _weak_appearanceDelegate;
+
+- (id <OUITabBarAppearanceDelegate>)appearanceDelegate;
+{
+    return _weak_appearanceDelegate;
+}
+
+- (void)setAppearanceDelegate:(id<OUITabBarAppearanceDelegate>)appearanceDelegate;
+{
+    if (appearanceDelegate == _weak_appearanceDelegate) {
+        return;
+    }
+    
+    _weak_appearanceDelegate = appearanceDelegate;
+    for (OUITabBarButton *button in self.tabButtons) {
+        button.appearanceDelegate = appearanceDelegate;
+    }
+
+    [self appearanceDidChange];
+}
+
 #pragma mark Private
 
 - (void)invalidateTabButtons;
@@ -474,43 +507,78 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     }
 }
 
-- (UIColor *)separatorColor;
+- (UIColor *)verticalTabSeparatorColor;
 {
+    if (self.appearanceDelegate != nil) {
+        return self.appearanceDelegate.verticalTabSeparatorColor;
+    }
+    
     return [UIColor colorWithWhite:0.90 alpha:1.00];
+}
+
+- (void)_invalidateGradients
+{
+    if (_horizontalSeparatorGradient != NULL) {
+        CGGradientRelease(_horizontalSeparatorGradient);
+        _horizontalSeparatorGradient = NULL;
+    }
+    
+    if (_verticalSeparatorGradient != NULL) {
+        CGGradientRelease(_verticalSeparatorGradient);
+        _verticalSeparatorGradient = NULL;
+    }
 }
 
 - (CGGradientRef)gradientForSeparatorBetweenHorizontalTabs;
 {
-    static CGGradientRef separatorGradient = NULL;
-    if (separatorGradient != NULL)
-        return separatorGradient;
+    if (_horizontalSeparatorGradient != NULL) {
+        return _horizontalSeparatorGradient;
+    }
+   
+    UIColor *gradientStartColor;
+    UIColor *gradientEndColor;
+    if (self.appearanceDelegate != nil) {
+        gradientStartColor = self.appearanceDelegate.horizontalTabBottomStrokeColor;
+        gradientEndColor = self.appearanceDelegate.horizontalTabSeparatorTopColor;
+    } else {
+        gradientStartColor = [UIColor colorWithWhite:0.80 alpha:1.0];
+        gradientEndColor = [UIColor colorWithWhite:0.96 alpha:1.0];
+    }
     
-    CGFloat components[] = {0.80, 1.0, 0.96, 1.0};
-    CGFloat locations[] = {0.0, 1.0};
-    CGColorSpaceRef space = CGColorSpaceCreateDeviceGray();
+    NSArray *colors = @[(id)gradientStartColor.CGColor, (id)gradientEndColor.CGColor];
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     
-    separatorGradient = CGGradientCreateWithColorComponents(space, components, locations, sizeof(locations) / sizeof(CGFloat));
+    _horizontalSeparatorGradient = CGGradientCreateWithColors(colorSpace, (CFArrayRef)colors, NULL);
     
-    CGColorSpaceRelease(space);
+    CGColorSpaceRelease(colorSpace);
     
-    return separatorGradient;
+    return _horizontalSeparatorGradient;
 }
 
 - (CGGradientRef)verticalTabEdgeGradient;
 {
-    static CGGradientRef separatorGradient = NULL;
-    if (separatorGradient != NULL)
-        return separatorGradient;
+    if (_verticalSeparatorGradient != NULL) {
+        return _verticalSeparatorGradient;
+    }
     
-    CGFloat components[] = {0.96, 0.0, 0.96, 1.0};
-    CGFloat locations[] = {0.0, 1.0};
-    CGColorSpaceRef space = CGColorSpaceCreateDeviceGray();
+    UIColor *gradientStartColor;
+    UIColor *gradientEndColor;
+    if (self.appearanceDelegate != nil) {
+        gradientStartColor = self.appearanceDelegate.verticalTabRightEdgeFadeToColor;
+        gradientEndColor = self.appearanceDelegate.verticalTabRightEdgeColor;
+    } else {
+        gradientStartColor = [UIColor colorWithWhite:0.96 alpha:0.0];
+        gradientEndColor = [UIColor colorWithWhite:0.96 alpha:1.0];
+    }
     
-    separatorGradient = CGGradientCreateWithColorComponents(space, components, locations, sizeof(locations) / sizeof(CGFloat));
+    NSArray *colors = @[(id)gradientStartColor.CGColor, (id)gradientEndColor.CGColor];
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     
-    CGColorSpaceRelease(space);
+    _verticalSeparatorGradient = CGGradientCreateWithColors(colorSpace, (CFArrayRef)colors, NULL);
     
-    return separatorGradient;
+    CGColorSpaceRelease(colorSpace);
+    
+    return _verticalSeparatorGradient;
 }
 
 @end

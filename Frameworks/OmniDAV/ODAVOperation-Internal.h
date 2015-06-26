@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,21 +12,11 @@
 @interface ODAVOperation ()
 
 - initWithRequest:(NSURLRequest *)request
-#if ODAV_NSURLSESSION
-             task:(NSURLSessionDataTask *)task
-#else
-       connection:(NSURLConnection *)connection
-#endif
-    ;
+            start:(void (^)(void))start
+           cancel:(void (^)(void))cancel;
 
 @property(nonatomic,readonly) NSURLRequest *request;
 @property(nonatomic,readonly) NSOperationQueue *callbackQueue;
-
-#if ODAV_NSURLSESSION
-@property(nonatomic,readonly) NSURLSessionTask *task;
-#else
-@property(nonatomic,readonly) NSURLConnection *connection;
-#endif
 
 //@property(nonatomic,copy) void (^validateCertificateForChallenge)(ODAVOperation *op, NSURLAuthenticationChallenge *challenge);
 //@property(nonatomic,copy) NSURLCredential *(^findCredentialsForChallenge)(ODAVOperation *op, NSURLAuthenticationChallenge *challenge);

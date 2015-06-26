@@ -83,12 +83,11 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
             OBASSERT(_documentTitleView.syncAccountActivity != nil);
         }
         
-        _documentTitleView.titleCanBeTapped = YES;
+        _documentTitleView.titleCanBeTapped = fileItem.scope.canRenameDocuments;
         self.title = title;
         
         self.titleView = _documentTitleView;
 
-        ODSFileItem *fileItem = document.fileItem;
         _fileNameBinding = [[OFBinding alloc] initWithSourceObject:fileItem sourceKeyPath:OFValidateKeyPath(fileItem, name) destinationObject:self destinationKeyPath:OFValidateKeyPath(self, title)]; // value already propagated by designated initializer
         
         _documentTitleTextField = [[UITextField alloc] initWithFrame:CGRectMake(0.0f, 0.0f, 200.0f, 31.0f)];
@@ -105,6 +104,8 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
         _documentTitleTextField.clearButtonMode = UITextFieldViewModeNever;
         UIImage *clearButtonImage = [[UIImage imageNamed:@"OUITextField-ClearButton"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         UIButton *customClearButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        customClearButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Clear Title", @"OmniUIDocument", OMNI_BUNDLE, @"title view clear button accessibility label.");
+        
         customClearButton.frame = (CGRect){
             .size.width = 31.0f,
             .size.height = 31.0f
@@ -319,7 +320,7 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 
 - (void)documentTitleView:(OUIDocumentTitleView *)documentTitleView titleTapped:(id)sender;
 {
-    [[OUIAppController controller] dismissActionSheetAndPopover:NO];
+    [[OUIAppController controller] dismissPopoverAnimated:NO];
     
     _renaming = YES;
     [self _updateItemsForRenaming];

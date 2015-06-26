@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,6 @@
 
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniUI/OUIFeatures.h>
-#import <OmniUI/OUIActionSheet.h>
 
 @class UIBarButtonItem;
 
@@ -48,12 +47,6 @@
 
 - (void)forgetPossiblyVisiblePopoverIfAlreadyHidden;
 
-// Action Sheet Helpers
-- (void)showActionSheet:(OUIActionSheet *)actionSheet fromSender:(id)sender animated:(BOOL)animated;
-
-// Return YES if something was dismissed
-- (BOOL)dismissActionSheetAndPopover:(BOOL)animated;
-
 // UIApplicationDelegate methods that we implement
 - (void)applicationWillTerminate:(UIApplication *)application;
 - (void)applicationDidEnterBackground:(UIApplication *)application;
@@ -74,6 +67,8 @@
 @property(nonatomic,readonly) NSString *fullReleaseString;
 
 // App menu support
+- (void)dismissAppMenuIfVisible:(UINavigationController *)navigationController;
+
 typedef NS_ENUM(NSInteger, OUIAppMenuOptionPosition) {
     OUIAppMenuOptionPositionAfterReleaseNotes,
     OUIAppMenuOptionPositionAtEnd

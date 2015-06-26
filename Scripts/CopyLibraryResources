@@ -116,7 +116,7 @@ StaticLibraryResourceDirectories.each {|dirname|
       }
       
       if (is_excluded)
-        STDERR.print "  skipping excluded item #{source}"
+        #STDERR.print "  skipping excluded item #{source}\n"
         next
       end
       

@@ -454,12 +454,17 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
             UIView *sliceView = slice.view;
             if (sliceView.superview == nil) {
                 sliceView.alpha = newSliceInitialAlpha;
+                
+                [slice beginAppearanceTransition:YES animated:NO];
+                
                 [view addSubview:sliceView];
                 UIView *sliceBackgroundView = slice.sliceBackgroundView;
                 OBASSERT(sliceBackgroundView.superview == nil); // If a slice has a background view, the background view needs to be added to and removed from our view at the same time as the slice's content view.
                 if (sliceBackgroundView != nil) {
                     [view insertSubview:sliceBackgroundView belowSubview:sliceView];
                 }
+                
+                [slice endAppearanceTransition];
             }
         }
     }
@@ -485,14 +490,21 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         }
     };
     
+    BOOL shouldAnimate = [UIView areAnimationsEnabled] && [_slices count] > 0;
+    
     void (^completionHandler)(BOOL finished) = ^(BOOL finished){
         for (OUIInspectorSlice *slice in toBeOrphanedSlices) {
             if ([slice isViewLoaded] && slice.view.superview == view) {
+                
+                [slice beginAppearanceTransition:NO animated:shouldAnimate];
+                
                 [slice.view removeFromSuperview]; // Only remove it if it is loaded and wasn't stolen by an embedding inspector (OmniGraffle).
                 UIView *sliceBackgroundView = slice.sliceBackgroundView;
                 if (sliceBackgroundView != nil) {
                     [sliceBackgroundView removeFromSuperview];
                 }
+                
+                [slice endAppearanceTransition];
             }
             [slice removeFromParentViewController];
         }
@@ -506,8 +518,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         _isAnimating = NO;
         DEBUG_ANIM(@"Animation completed");
     };
-    
-    BOOL shouldAnimate = [UIView areAnimationsEnabled] && [_slices count] > 0;
     
     if (shouldAnimate) {
         UIViewAnimationOptions options = UIViewAnimationOptionTransitionNone |UIViewAnimationOptionAllowAnimatedContent;
@@ -659,11 +669,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     view.slices = _slices;
     
     self.view = view;
-
-    // It would be nice if we could just observe first responder changes, but there is no API for that.
-    // We could probably swizzling UIResponder, and send out notifications ourselves. For now, just do it the duplicative way for the three common cases.
-    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(_stackedSlicesInspectorPane_keyboardWillChangeFrame:) name:OUIKeyboardNotifierKeyboardWillChangeFrameNotification object:[OUIKeyboardNotifier sharedNotifier]];
 }
 
 - (void)viewWillAppear:(BOOL)animated;
@@ -685,8 +690,14 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 #pragma mark -
 #pragma mark Keyboard Interaction
 
-- (void)_stackedSlicesInspectorPane_keyboardWillChangeFrame:(NSNotification *)note;
+- (void)updateContentInsetsForKeyboard
 {
+    OBASSERT(self.isViewLoaded);
+    
+    if (self.view.window == nil) {
+        return;
+    }
+    
     // We want to add bottom content inset ONLY if we're not being presented as popover.
     UIPresentationController *inspectorPresentationController = self.navigationController.presentationController;
     UITraitCollection *presentingTraitCollection = inspectorPresentationController.presentingViewController.traitCollection;
