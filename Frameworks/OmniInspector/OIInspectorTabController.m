@@ -1,19 +1,18 @@
-// Copyright 2006-2007, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OIInspectorTabController.h"
+#import <OmniInspector/OIInspectorTabController.h>
 
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniAppKit/OmniAppKit.h>
-
-#import "OITabbedInspector.h"
-#import "OIInspectorRegistry.h"
+#import <OmniInspector/OITabbedInspector.h>
+#import <OmniInspector/OIInspectorRegistry.h>
 
 RCS_ID("$Id$");
 
@@ -68,11 +67,6 @@ RCS_ID("$Id$");
     
     _visibilityState = [_inspector defaultVisibilityState];
 
-    /* Inspectors may implement either -shouldBeDimmed, which requires the inspection set to be updated using -inspectObjects:, or they may implement -shouldBeDimmedForObjects:, which does not require -inspectObjects: to be called. */
-    _flags.respondsTo_shouldBeDimmedForObjects = [_inspector respondsToSelector:@selector(shouldBeDimmedForObjects:)]? 1 : 0;
-    _flags.respondsTo_shouldBeDimmed = [_inspector respondsToSelector:@selector(shouldBeDimmed)]? 1 : 0;
-    OBINVARIANT(!(_flags.respondsTo_shouldBeDimmedForObjects && _flags.respondsTo_shouldBeDimmed));
-    
     return self;
 }
 
@@ -140,18 +134,6 @@ RCS_ID("$Id$");
 - (BOOL)hasLoadedView;
 {
     return _flags.hasLoadedView;
-}
-
-- (BOOL)shouldBeDimmed;
-{
-    if (_flags.respondsTo_shouldBeDimmedForObjects)
-        return [_inspector shouldBeDimmedForObjects:_currentlyInspectedObjects];
-    else if (_flags.respondsTo_shouldBeDimmed) {
-        if (_flags.needsInspectObjects)
-            [_inspector inspectObjects:_currentlyInspectedObjects];
-        return [_inspector shouldBeDimmed];
-    } else
-        return [_currentlyInspectedObjects count] == 0;
 }
 
 - (void)inspectObjects:(BOOL)inspectNothing;

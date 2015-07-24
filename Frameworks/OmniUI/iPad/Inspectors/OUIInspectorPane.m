@@ -11,6 +11,8 @@
 #import <OmniUI/OUIInspector.h>
 #import <OmniBase/OmniBase.h>
 
+#import "OUICustomSubclass.h"
+
 RCS_ID("$Id$");
 
 // OUIInspectorPane
@@ -21,6 +23,30 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     __weak OUIInspector *_weak_inspector; // the main inspector
     __weak OUIInspectorSlice *_weak_parentSlice; // our parent slice if any
     NSArray *_inspectedObjects;
+}
+
++ (NSString *)nibName;
+{
+    // OUIAllocateViewController means we might get 'MyCustomFooInspectorSlice' for 'OUIFooInspectorSlice'. View controller's should be created so often that this would be too slow. One question is whether UINib is uniqued, though, since otherwise we perform extra I/O.
+    return OUICustomClassOriginalClassName(self);
+}
+
++ (NSBundle *)nibBundle;
+{
+    // OUIAllocateViewController means we might get 'MyCustomFooInspectorSlice' for 'OUIFooInspectorSlice'. View controller's should be created so often that this would be too slow. One question is whether UINib is uniqued, though, since otherwise we perform extra I/O.
+    Class cls = NSClassFromString(OUICustomClassOriginalClassName(self));
+    assert(cls);
+    return [NSBundle bundleForClass:cls];
+}
+
++ (id)allocWithZone:(NSZone *)zone;
+{
+    OUIAllocateCustomClass;
+}
+
+- init;
+{
+    return [self initWithNibName:[[self class] nibName] bundle:[[self class] nibBundle]];
 }
 
 - (BOOL)inInspector;

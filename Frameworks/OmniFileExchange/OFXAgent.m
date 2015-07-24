@@ -216,7 +216,7 @@ BOOL OFXShouldSyncAllPathExtensions(NSSet *pathExtensions)
                         isPackage = YES;
                 }
                 
-                OBASSERT((isFile?1:0) + (isFolder?1:0) + (isPackage?1:0) == 1, "Should be a file, folder, or package");
+                OBASSERT((isFile?1:0) + (isFolder?1:0) + (isPackage?1:0) == 1, "Should be a file, folder, or package"); // TODO: This can fail when a file has a UTI that isn't registered on the current system (i.e., UTTypeIsDeclared() returns NO). How should we handle that?
                 OB_UNUSED_VALUE(isFile);
                 OB_UNUSED_VALUE(isFolder);
                 

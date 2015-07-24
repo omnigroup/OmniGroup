@@ -290,7 +290,7 @@ static void _commonInit(OUIServerAccountSetupViewController *self)
     OBFinishPortingLater("This isn't reliable -- it works in the WebDAV case, but not OSS, for whatever reason (likely because our UITableView isn't in the window yet");
     [_tableView layoutIfNeeded];
     
-#ifdef DEBUG_bungi
+#if 0 && defined(DEBUG_bungi)
     // Speedy account creation
     if (_account == nil) {
         CELL_AT(ServerAccountAddressSection, 0).editableValueCell.valueField.text = @"https://crispix.local:8001/test";

@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,10 @@
 
 @interface OUIExportOptionsController : UIViewController <UIDocumentInteractionControllerDelegate>
 
-- (id)initWithServerAccount:(OFXServerAccount *)serverAccount exportType:(OUIExportOptionsType)exportType;
+- (id)initWithServerAccount:(OFXServerAccount *)serverAccount exportType:(OUIExportOptionsType)exportType NS_DESIGNATED_INITIALIZER;
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (id)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 
 - (void)exportFileWrapper:(NSFileWrapper *)fileWrapper;
 

@@ -9,6 +9,7 @@
 
 #import <Foundation/Foundation.h>
 #import <OmniBase/rcsid.h>
+#import <OmniBase/assertions.h>
 
 RCS_ID("$Id$")
 
@@ -103,6 +104,8 @@ void OSUInstallerSetUpAuthorizationRights(void)
         }
         
         if (right != NULL) {
+            // Xcode 7.0b4. Radar 21947220: AuthorizationRightGet() has incorrect annotation for returned reference count on rightDefinition parameter
+            OBAnalyzerNotReached();
             CFRelease(right);
         }
     }

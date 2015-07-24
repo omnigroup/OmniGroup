@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,11 +14,11 @@
 @class OFEnumNameTable; // OmniFoundation
 @class OIInspectorRegistry;
 
-typedef enum {
+typedef NS_ENUM(NSUInteger, OIVisibilityState) {
     OIHiddenVisibilityState,
     OIVisibleVisibilityState,
     OIPinnedVisibilityState
-} OIVisibilityState;
+};
 
 typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
     OIInspectorInterfaceTypeFloating = 0, // default, window-based floating inspectors
@@ -49,6 +49,7 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 - (NSString *)inspectorTabImageName;
 
 - (NSString *)displayName;
+- (CGFloat)defaultHeaderHeight;
 - (CGFloat)additionalHeaderHeight;
 
 - (NSUInteger)defaultOrderingWithinGroup;
@@ -73,6 +74,9 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 /// The interface type that this inspector would prefer the app to use. (Inspectors should support all interface types, but can have a weak preference for a certain type if that type suits its intended use better.)
 - (OIInspectorInterfaceType)preferredInterfaceType;
 
+@property (readonly) BOOL wantsHeader;
+@property (readonly) BOOL isCollapsible;
+
 @end
 
 @protocol OIConcreteInspector
@@ -85,10 +89,6 @@ typedef NS_ENUM(NSUInteger, OIInspectorInterfaceType) {
 
 @class OITabbedInspector;
 @interface NSObject (OITabbedInspectorOptional)
-// Tabbed inspectors receive an -inspectObjects: with nil when they are hidden.  If the inspector wants its tab dimmed when there is a non-empty array that *would* be inspected if it were visible, then this method allows it to do that.  The default is for tabs to be dimmed when there are zero objects they could inspect, if visible.
-- (BOOL)shouldBeDimmedForObjects:(NSArray *)objects;
-- (BOOL)shouldBeDimmed;
-
 - (void)setContainingTabbedInspector:(OITabbedInspector *)containingTabbedInspector;
 @end
 

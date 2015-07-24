@@ -27,7 +27,7 @@ RCS_ID("$Id$");
 {
     static UIImage *_backgroundImage = nil;
     if (!_backgroundImage) {
-        UIImage *image = [UIImage imageNamed:@"OUIOverlayBackground.png"];
+        UIImage *image = [UIImage imageNamed:@"OUIOverlayBackground.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
         _backgroundImage = [image stretchableImageWithLeftCapWidth:7 topCapHeight:7];
     }
     return _backgroundImage;

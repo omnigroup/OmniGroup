@@ -1091,14 +1091,16 @@ static ODSScope *_trashScope = nil;
     assert(trashScope != nil);
 
     __block BOOL success = NO;
+    __block NSURL *resultingURL = nil;
     [trashScope _performSynchronousFileAccessUsingBlock:^{
         NSMutableSet *usedFilenames = [trashScope _copyCurrentlyUsedFileNamesInFolderAtURL:nil];
-        NSURL *newURL = [trashScope _moveURL:url avoidingFileNames:usedFilenames usingCoordinator:NO error:outError];
-        if (outResultingURL != NULL)
-            *outResultingURL = newURL;
-        success = newURL != nil;
+        resultingURL = [trashScope _moveURL:url avoidingFileNames:usedFilenames usingCoordinator:NO error:outError];
+        success = (resultingURL != nil);
     }];
 
+    if (outResultingURL != NULL && resultingURL != nil)
+        *outResultingURL = resultingURL;
+    
     return success;
 }
 

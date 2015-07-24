@@ -219,4 +219,3 @@
 
 /* error reason */
 "Wrong root element namespace.  Was expecting '%@' but found '%@'." = "Неверное пространство имен корневого элемента.  Ожидалось «%1$@», получено «%2$@».";
-

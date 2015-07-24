@@ -18,14 +18,29 @@
 		3431F2D611A1B52E00539F52 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3431F2D511A1B52E00539F52 /* libsqlite3.dylib */; };
 		3431F2D811A1B52E00539F52 /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3431F2D711A1B52E00539F52 /* libxml2.dylib */; };
 		3431F2DA11A1B52E00539F52 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3431F2D911A1B52E00539F52 /* libz.dylib */; };
+		344841F21B62F18900C423C9 /* OmniDataObjects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34019FC91B62F167003A5BE4 /* OmniDataObjects.framework */; };
+		344841F31B62F19400C423C9 /* OmniDataObjects.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 34019FC91B62F167003A5BE4 /* OmniDataObjects.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		34CAE7F219C11D660077998F /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34D94E1711A1AE8100A9ACC1 /* OmniBase.framework */; };
 		34CAE7F419C11D780077998F /* OmniBase.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 34CAE7C919C11D3E0077998F /* OmniBase.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		34CAE7F519C11D7F0077998F /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CAE7E319C11D3E0077998F /* OmniFoundation.framework */; };
 		34CAE7F619C11D820077998F /* OmniFoundation.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 34CAE7E319C11D3E0077998F /* OmniFoundation.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		34D94F1111A1B2F500A9ACC1 /* libOmniDataObjects.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 34D94E5F11A1AE9B00A9ACC1 /* libOmniDataObjects.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		34019FC81B62F167003A5BE4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34D94E4D11A1AE9B00A9ACC1 /* OmniDataObjects.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 34019F651B62ECB4003A5BE4;
+			remoteInfo = "OmniDataObjects-iOS";
+		};
+		344841DA1B62F18000C423C9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34D94E4D11A1AE9B00A9ACC1 /* OmniDataObjects.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 34019F641B62ECB4003A5BE4;
+			remoteInfo = "OmniDataObjects-iOS";
+		};
 		34CAE7C619C11D3E0077998F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34D94E1011A1AE8100A9ACC1 /* OmniBase.xcodeproj */;
@@ -208,27 +223,6 @@
 			remoteGlobalIDString = 340D5DB50DAACED300BF27F8;
 			remoteInfo = ODOTests;
 		};
-		34D94E5C11A1AE9B00A9ACC1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34D94E4D11A1AE9B00A9ACC1 /* OmniDataObjects.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 340D21970E5DF69D0049EBA0;
-			remoteInfo = ODOPerf;
-		};
-		34D94E5E11A1AE9B00A9ACC1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34D94E4D11A1AE9B00A9ACC1 /* OmniDataObjects.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 34D94D4111A1AD3800A9ACC1;
-			remoteInfo = OmniDataObjectsTouch;
-		};
-		34D94E6611A1AF3000A9ACC1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 34D94E4D11A1AE9B00A9ACC1 /* OmniDataObjects.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 34D94D4011A1AD3800A9ACC1;
-			remoteInfo = OmniDataObjectsTouch;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -238,6 +232,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				344841F31B62F19400C423C9 /* OmniDataObjects.framework in Copy Frameworks */,
 				34CAE7F419C11D780077998F /* OmniBase.framework in Copy Frameworks */,
 				34CAE7F619C11D820077998F /* OmniFoundation.framework in Copy Frameworks */,
 			);
@@ -264,37 +259,29 @@
 		3431F2D911A1B52E00539F52 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		34CAE7F719C11E170077998F /* FixStringsFile.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FixStringsFile.xcodeproj; path = ../../../../../Tools/FixStringsFile/FixStringsFile.xcodeproj; sourceTree = "<group>"; };
 		34D94DB211A1AE5800A9ACC1 /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
-		34D94DB311A1AE5800A9ACC1 /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34D94DB411A1AE5800A9ACC1 /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D94DB511A1AE5800A9ACC1 /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
 		34D94DB611A1AE5800A9ACC1 /* Omni-Bundle-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
-		34D94DB711A1AE5800A9ACC1 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34D94DB811A1AE5800A9ACC1 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D94DB911A1AE5800A9ACC1 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
 		34D94DBA11A1AE5800A9ACC1 /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Common.xcconfig"; sourceTree = "<group>"; };
-		34D94DBB11A1AE5800A9ACC1 /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34D94DBC11A1AE5800A9ACC1 /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D94DBD11A1AE5800A9ACC1 /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		34D94DBE11A1AE5800A9ACC1 /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
-		34D94DBF11A1AE5800A9ACC1 /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34D94DC011A1AE5800A9ACC1 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D94DC111A1AE5800A9ACC1 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
 		34D94DC211A1AE5800A9ACC1 /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
-		34D94DC311A1AE5800A9ACC1 /* Omni-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34D94DC411A1AE5800A9ACC1 /* Omni-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D94DC511A1AE5800A9ACC1 /* Omni-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		34D94DC611A1AE5800A9ACC1 /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
-		34D94DC711A1AE5800A9ACC1 /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34D94DC811A1AE5800A9ACC1 /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D94DC911A1AE5800A9ACC1 /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
 		34D94DCA11A1AE5800A9ACC1 /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
 		34D94DCB11A1AE5800A9ACC1 /* Target-Touch-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Touch-Common.xcconfig"; sourceTree = "<group>"; };
 		34D94DCC11A1AE5800A9ACC1 /* Touch-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Common.xcconfig"; sourceTree = "<group>"; };
-		34D94DCD11A1AE5800A9ACC1 /* Touch-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34D94DCE11A1AE5800A9ACC1 /* Touch-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D94DCF11A1AE5800A9ACC1 /* Touch-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Release.xcconfig"; sourceTree = "<group>"; };
 		34D94DD011A1AE5800A9ACC1 /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
-		34D94DD111A1AE5800A9ACC1 /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34D94DD211A1AE5800A9ACC1 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		34D94DD311A1AE5800A9ACC1 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		34D94E1011A1AE8100A9ACC1 /* OmniBase.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniBase.xcodeproj; path = ../../../../OmniBase/OmniBase.xcodeproj; sourceTree = SOURCE_ROOT; };
@@ -308,12 +295,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				344841F21B62F18900C423C9 /* OmniDataObjects.framework in Frameworks */,
 				34CAE7F219C11D660077998F /* OmniBase.framework in Frameworks */,
 				34CAE7F519C11D7F0077998F /* OmniFoundation.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */,
-				34D94F1111A1B2F500A9ACC1 /* libOmniDataObjects.a in Frameworks */,
 				3431F2D611A1B52E00539F52 /* libsqlite3.dylib in Frameworks */,
 				3431F2D811A1B52E00539F52 /* libxml2.dylib in Frameworks */,
 				3431F2DA11A1B52E00539F52 /* libz.dylib in Frameworks */,
@@ -392,37 +379,29 @@
 			isa = PBXGroup;
 			children = (
 				34D94DB211A1AE5800A9ACC1 /* Omni-Application-Common.xcconfig */,
-				34D94DB311A1AE5800A9ACC1 /* Omni-Application-Coverage.xcconfig */,
 				34D94DB411A1AE5800A9ACC1 /* Omni-Application-Debug.xcconfig */,
 				34D94DB511A1AE5800A9ACC1 /* Omni-Application-Release.xcconfig */,
 				34D94DB611A1AE5800A9ACC1 /* Omni-Bundle-Common.xcconfig */,
-				34D94DB711A1AE5800A9ACC1 /* Omni-Bundle-Coverage.xcconfig */,
 				34D94DB811A1AE5800A9ACC1 /* Omni-Bundle-Debug.xcconfig */,
 				34D94DB911A1AE5800A9ACC1 /* Omni-Bundle-Release.xcconfig */,
 				34D94DBA11A1AE5800A9ACC1 /* Omni-Framework-Common.xcconfig */,
-				34D94DBB11A1AE5800A9ACC1 /* Omni-Framework-Coverage.xcconfig */,
 				34D94DBC11A1AE5800A9ACC1 /* Omni-Framework-Debug.xcconfig */,
 				34D94DBD11A1AE5800A9ACC1 /* Omni-Framework-Release.xcconfig */,
 				34D94DBE11A1AE5800A9ACC1 /* Omni-Global-Common.xcconfig */,
-				34D94DBF11A1AE5800A9ACC1 /* Omni-Global-Coverage.xcconfig */,
 				34D94DC011A1AE5800A9ACC1 /* Omni-Global-Debug.xcconfig */,
 				34D94DC111A1AE5800A9ACC1 /* Omni-Global-Release.xcconfig */,
 				34D94DC211A1AE5800A9ACC1 /* Omni-Library-Common.xcconfig */,
-				34D94DC311A1AE5800A9ACC1 /* Omni-Library-Coverage.xcconfig */,
 				34D94DC411A1AE5800A9ACC1 /* Omni-Library-Debug.xcconfig */,
 				34D94DC511A1AE5800A9ACC1 /* Omni-Library-Release.xcconfig */,
 				34D94DC611A1AE5800A9ACC1 /* Omni-Tool-Common.xcconfig */,
-				34D94DC711A1AE5800A9ACC1 /* Omni-Tool-Coverage.xcconfig */,
 				34D94DC811A1AE5800A9ACC1 /* Omni-Tool-Debug.xcconfig */,
 				34D94DC911A1AE5800A9ACC1 /* Omni-Tool-Release.xcconfig */,
 				34D94DCA11A1AE5800A9ACC1 /* Target-Mac-Common.xcconfig */,
 				34D94DCB11A1AE5800A9ACC1 /* Target-Touch-Common.xcconfig */,
 				34D94DCC11A1AE5800A9ACC1 /* Touch-Application-Common.xcconfig */,
-				34D94DCD11A1AE5800A9ACC1 /* Touch-Application-Coverage.xcconfig */,
 				34D94DCE11A1AE5800A9ACC1 /* Touch-Application-Debug.xcconfig */,
 				34D94DCF11A1AE5800A9ACC1 /* Touch-Application-Release.xcconfig */,
 				34D94DD011A1AE5800A9ACC1 /* Touch-Library-Common.xcconfig */,
-				34D94DD111A1AE5800A9ACC1 /* Touch-Library-Coverage.xcconfig */,
 				34D94DD211A1AE5800A9ACC1 /* Touch-Library-Debug.xcconfig */,
 				34D94DD311A1AE5800A9ACC1 /* Touch-Library-Release.xcconfig */,
 			);
@@ -486,10 +465,9 @@
 			isa = PBXGroup;
 			children = (
 				34D94E5711A1AE9B00A9ACC1 /* OmniDataObjects.framework */,
+				34019FC91B62F167003A5BE4 /* OmniDataObjects.framework */,
 				34D94E5911A1AE9B00A9ACC1 /* xcd2odo */,
 				34D94E5B11A1AE9B00A9ACC1 /* ODOTests.xctest */,
-				34D94E5D11A1AE9B00A9ACC1 /* ODOPerf */,
-				34D94E5F11A1AE9B00A9ACC1 /* libOmniDataObjects.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -513,7 +491,7 @@
 				34CAE7FE19C11E250077998F /* PBXTargetDependency */,
 				34CAE7EF19C11D540077998F /* PBXTargetDependency */,
 				34CAE7F119C11D540077998F /* PBXTargetDependency */,
-				34D94E6711A1AF3000A9ACC1 /* PBXTargetDependency */,
+				344841DB1B62F18000C423C9 /* PBXTargetDependency */,
 			);
 			name = SampleApp;
 			productName = SampleApp;
@@ -526,7 +504,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0700;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "SampleApp" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -567,6 +545,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		34019FC91B62F167003A5BE4 /* OmniDataObjects.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniDataObjects.framework;
+			remoteRef = 34019FC81B62F167003A5BE4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		34CAE7C719C11D3E0077998F /* OBUnitTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
@@ -728,20 +713,6 @@
 			remoteRef = 34D94E5A11A1AE9B00A9ACC1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		34D94E5D11A1AE9B00A9ACC1 /* ODOPerf */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = ODOPerf;
-			remoteRef = 34D94E5C11A1AE9B00A9ACC1 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34D94E5F11A1AE9B00A9ACC1 /* libOmniDataObjects.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOmniDataObjects.a;
-			remoteRef = 34D94E5E11A1AE9B00A9ACC1 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -787,6 +758,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		344841DB1B62F18000C423C9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "OmniDataObjects-iOS";
+			targetProxy = 344841DA1B62F18000C423C9 /* PBXContainerItemProxy */;
+		};
 		34CAE7EF19C11D540077998F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = "OmniBase-iOS";
@@ -801,11 +777,6 @@
 			isa = PBXTargetDependency;
 			name = FixStringsFile;
 			targetProxy = 34CAE7FD19C11E250077998F /* PBXContainerItemProxy */;
-		};
-		34D94E6711A1AF3000A9ACC1 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = OmniDataObjectsTouch;
-			targetProxy = 34D94E6611A1AF3000A9ACC1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

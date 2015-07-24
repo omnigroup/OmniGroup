@@ -21,19 +21,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4A293E2808B0044800100C11 /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4A293E2908B0044800100C11 /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		4A293E2A08B0044800100C11 /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
-		4A293E2B08B0044800100C11 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4A293E2C08B0044800100C11 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		4A293E2D08B0044800100C11 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
-		4A293E2E08B0044800100C11 /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4A293E2F08B0044800100C11 /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		4A293E3008B0044800100C11 /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
-		4A293E3108B0044800100C11 /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4A293E3208B0044800100C11 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
 		4A293E3308B0044800100C11 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
-		4A293E3408B0044800100C11 /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4A293E3508B0044800100C11 /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		4A293E3608B0044800100C11 /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
 		4A4092900D7DEFBD0038AAAF /* OmniSourceLicense.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = OmniSourceLicense.html; sourceTree = "<group>"; };
@@ -70,19 +65,14 @@
 		4A293E2708B0044800100C11 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
-				4A293E2808B0044800100C11 /* Omni-Application-Coverage.xcconfig */,
 				4A293E2908B0044800100C11 /* Omni-Application-Debug.xcconfig */,
 				4A293E2A08B0044800100C11 /* Omni-Application-Release.xcconfig */,
-				4A293E2B08B0044800100C11 /* Omni-Bundle-Coverage.xcconfig */,
 				4A293E2C08B0044800100C11 /* Omni-Bundle-Debug.xcconfig */,
 				4A293E2D08B0044800100C11 /* Omni-Bundle-Release.xcconfig */,
-				4A293E2E08B0044800100C11 /* Omni-Framework-Coverage.xcconfig */,
 				4A293E2F08B0044800100C11 /* Omni-Framework-Debug.xcconfig */,
 				4A293E3008B0044800100C11 /* Omni-Framework-Release.xcconfig */,
-				4A293E3108B0044800100C11 /* Omni-Global-Coverage.xcconfig */,
 				4A293E3208B0044800100C11 /* Omni-Global-Debug.xcconfig */,
 				4A293E3308B0044800100C11 /* Omni-Global-Release.xcconfig */,
-				4A293E3408B0044800100C11 /* Omni-Tool-Coverage.xcconfig */,
 				4A293E3508B0044800100C11 /* Omni-Tool-Debug.xcconfig */,
 				4A293E3608B0044800100C11 /* Omni-Tool-Release.xcconfig */,
 			);
@@ -244,17 +234,6 @@
 			};
 			name = Release;
 		};
-		4AB9E6E108BBA137002A253E /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A293E2E08B0044800100C11 /* Omni-Framework-Coverage.xcconfig */;
-			buildSettings = {
-				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_PREFIX_HEADER = "";
-				INFOPLIST_FILE = "OmniSQLite-Info.plist";
-				PRODUCT_NAME = OmniSQLite;
-			};
-			name = Coverage;
-		};
 		4AECC82008B00400004B92BF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A293E3208B0044800100C11 /* Omni-Global-Debug.xcconfig */;
@@ -269,13 +248,6 @@
 			};
 			name = Release;
 		};
-		4AECC82208B00400004B92BF /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A293E3108B0044800100C11 /* Omni-Global-Coverage.xcconfig */;
-			buildSettings = {
-			};
-			name = Coverage;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -284,7 +256,6 @@
 			buildConfigurations = (
 				4AB9E6DF08BBA137002A253E /* Debug */,
 				4AB9E6E008BBA137002A253E /* Release */,
-				4AB9E6E108BBA137002A253E /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -294,7 +265,6 @@
 			buildConfigurations = (
 				4AECC82008B00400004B92BF /* Debug */,
 				4AECC82108B00400004B92BF /* Release */,
-				4AECC82208B00400004B92BF /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

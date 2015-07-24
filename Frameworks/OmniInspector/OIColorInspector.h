@@ -1,4 +1,4 @@
-// Copyright 2002-2006 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,8 +7,6 @@
 //
 // $Id$
 
-#import <Foundation/NSObject.h>
-#import <Foundation/NSGeometry.h>
 #import <AppKit/NSColorPanel.h>
 
 @interface NSColorPanel (OIExtensions)

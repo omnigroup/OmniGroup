@@ -86,7 +86,14 @@ if [ ! -z "$CHFLAGS" ]; then
 fi
 
 # Remove quarantine
-xattr -r -d com.apple.quarantine "$DEST"
+xattr_succeeded=0
+for xattr in /usr/bin/xattr*; do
+    if $xattr -r -d com.apple.quarantine "$DEST"; then;
+        xattr_succeeded=1
+        break
+    fi
+done
+test $xattr_succeeded -eq 1
 
 echo "Installer script was successful."
 /bin/ls -leo@d "$DEST" || true

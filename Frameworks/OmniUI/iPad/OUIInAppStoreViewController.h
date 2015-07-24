@@ -17,7 +17,9 @@
  */
 @interface OUIInAppStoreViewController : UIViewController <SKProductsRequestDelegate, OUIInAppStoreObserverDelegate>
 
-- (instancetype)initWithProductIdentifier:(NSString *)aProductID NS_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithProductIdentifier:(nonnull NSString *)aProductID NS_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(nonnull NSCoder *)aDecoder NS_UNAVAILABLE;
 
 #define OUIInAppStoreViewControllerUpgradeInstalledNotification @"OUIInAppStoreViewControllerUpgradeInstalled"
 

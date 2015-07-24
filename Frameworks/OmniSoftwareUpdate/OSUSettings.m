@@ -35,7 +35,8 @@ static void _OSUSettingInitialize(void)
     dispatch_once(&onceToken, ^{
         // We have no good way of checking these entitlements on iOS, but still need them.
 #if (!defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE) && defined(OMNI_ASSERTIONS_ON)
-        if ([[NSProcessInfo processInfo] isSandboxed]) {
+        // OmniGroupCrashCatcher links OmniSoftwareUpdate and inherits the containing app's sandbox settings. But, the signing entitlements we get back in this case don't list the parent entitlements. The parent app launching should have checked this (though I suppose it could be crashing since it didn't have the entitlement).
+        if ([[NSProcessInfo processInfo] isSandboxed] && ![[[NSProcessInfo processInfo] processName] isEqual:@"OmniGroupCrashCatcher"]) {
             NSDictionary *entitlements = [[NSProcessInfo processInfo] codeSigningEntitlements];
             id value = [entitlements objectForKey:@"com.apple.security.temporary-exception.shared-preference.read-only"];
             if (value == nil)

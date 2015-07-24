@@ -8,7 +8,7 @@
 // $Id$
 
 @class NSFileWrapper;
-@class OUIDocumentPicker, OUIDocumentPickerHomeScreenViewController, OUIDocumentPickerFilter, ODSItem, ODSFileItem, OFXServerAccount;
+@class OUIDocumentPicker, OUIDocumentPickerHomeScreenViewController, OUIDocumentPickerFilter, ODSItem, ODSFileItem, ODSScope, OFXServerAccount;
 
 #import <OmniUIDocument/OUIExportOptionsType.h>
 #import <OmniUIDocument/OUIDocumentPickerItemView.h>
@@ -25,6 +25,7 @@
 
 // Filter
 - (NSArray *)documentPickerAvailableFilters:(OUIDocumentPicker *)picker; // array of OUIDocumentPickerFilter
+- (NSPredicate *)documentPickerAvailableUTTypesPredicate:(OUIDocumentPicker *)picker; //expects a string of the fileType
 
 // Open
 - (void)documentPicker:(OUIDocumentPicker *)picker openTappedFileItem:(ODSFileItem *)fileItem;
@@ -47,6 +48,9 @@
 
 // name label for item
 - (NSString *)documentPicker:(OUIDocumentPicker *)picker nameLabelForItem:(ODSItem *)item;
+
+// Conversion
+- (void)documentPicker:(OUIDocumentPicker *)picker saveNewFileIfAppropriateFromFile:(NSURL *)fileURL completionHandler:(void (^)(BOOL success, ODSFileItem *savedItem, ODSScope *currentScope))completionBlock;
 
 // Export
 - (NSArray *)documentPicker:(OUIDocumentPicker *)picker availableExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType;

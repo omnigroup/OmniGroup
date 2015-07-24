@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -104,21 +104,21 @@ RCS_ID("$Id$");
     _fontAttributeSegmentedControl.sizesSegmentsToFit = YES;
     _fontAttributeSegmentedControl.allowsMultipleSelection = YES;
     
-    _boldFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Bold.png"];
+    _boldFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImage:[UIImage imageNamed:@"OUIFontStyle-Bold.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
     [_boldFontAttributeButton addTarget:self action:@selector(_toggleBold:)];
     _boldFontAttributeButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Bold", @"OmniUI", OMNI_BUNDLE, @"Bold button accessibility label");
     
     
-    _italicFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Italic.png"];
+    _italicFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImage:[UIImage imageNamed:@"OUIFontStyle-Italic.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
     [_italicFontAttributeButton addTarget:self action:@selector(_toggleItalic:)];
     _italicFontAttributeButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Italic", @"OmniUI", OMNI_BUNDLE, @"Italic button accessibility label");
     
-    _underlineFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Underline.png"];
+    _underlineFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImage:[UIImage imageNamed:@"OUIFontStyle-Underline.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
     [_underlineFontAttributeButton addTarget:self action:@selector(_toggleUnderline:)];
     _underlineFontAttributeButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Underline", @"OmniUI", OMNI_BUNDLE, @"Underline button accessibility label");
     
     if (_showStrikethrough) {
-        _strikethroughFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImageNamed:@"OUIFontStyle-Strikethrough.png"];
+        _strikethroughFontAttributeButton = [_fontAttributeSegmentedControl addSegmentWithImage:[UIImage imageNamed:@"OUIFontStyle-Strikethrough.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
         [_strikethroughFontAttributeButton addTarget:self action:@selector(_toggleStrikethrough:)];
         _strikethroughFontAttributeButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Strike Through", @"OmniUI", OMNI_BUNDLE, @"Strike Through button accessibility label");
     }

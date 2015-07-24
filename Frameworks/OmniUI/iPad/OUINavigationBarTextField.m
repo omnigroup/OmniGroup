@@ -18,7 +18,7 @@ static void _commonInit(OUINavigationBarTextField *self)
     static UIImage *resizableImage;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        UIImage *background = [UIImage imageNamed:@"OUINavigationBarTextFieldBackground"];
+        UIImage *background = [UIImage imageNamed:@"OUINavigationBarTextFieldBackground" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
         resizableImage = [background resizableImageWithCapInsets:[[OUIAppearance appearance] navigationBarTextFieldBackgroundImageInsets]];
     });
     

@@ -30,6 +30,9 @@
     <string>${FRAMEWORK_VERSION}</string>
     <key>OFRegistrations</key>
     <dict>
+<!--
+#if defined(OMNI_BUILDING_FOR_MAC)
+-->        
       <key>OAPreferenceController</key>
       <dict>
         <key>OSUPreferenceClient</key>
@@ -59,11 +62,26 @@
           <string>Automatic Software Update</string>
         </dict>
       </dict>
+<!--
+#elif defined(OMNI_BUILDING_FOR_IOS)
+#else
+#error Unknown platform
+#endif
+-->        
     </dict>
+<!--
+#if defined(OMNI_BUILDING_FOR_MAC)
+-->        
     <key>OFRequiredSoftwareVersions</key>
     <dict>
       <key>OmniAppKit</key>
       <string>2004A</string>
     </dict>
+<!--
+#elif defined(OMNI_BUILDING_FOR_IOS)
+#else
+#error Unknown platform
+#endif
+-->        
   </dict>
 </plist>

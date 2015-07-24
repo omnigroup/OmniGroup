@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -153,13 +153,12 @@ void OUISetShadowOnLabel(UILabel *label, OUIShadowType type)
 
 void OUIDrawTransparentColorBackground(CGContextRef ctx, CGRect rect, CGSize phase)
 {
-    OUIDrawPatternBackground(ctx, @"OUITransparencyCheckerboardBackground-24", rect, phase);
+    OUIDrawPatternBackground(ctx, [UIImage imageNamed:@"OUITransparencyCheckerboardBackground-24" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil], rect, phase);
 }
 
-void OUIDrawPatternBackground(CGContextRef ctx, NSString *imageName, CGRect rect, CGSize phase)
+void OUIDrawPatternBackground(CGContextRef ctx, UIImage *patternImage, CGRect rect, CGSize phase)
 {
-    UIImage *patternImage = [UIImage imageNamed:imageName];
-    OBASSERT(patternImage);
+    OBPRECONDITION(patternImage);
 
     UIColor *patternColor = [UIColor colorWithPatternImage:patternImage];
     

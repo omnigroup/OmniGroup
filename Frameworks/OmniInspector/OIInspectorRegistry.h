@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,7 +12,7 @@
 
 @class NSArray, NSMutableArray, NSMutableDictionary, NSSet, NSPredicate;
 @class NSButton, NSTableView, NSTextField, NSWindow, NSWindowController, NSMenu, NSMenuItem;
-@class OIInspectionSet, OIInspectorGroup;
+@class OIInspectionSet, OIInspectorGroup, OIWorkspace;
 
 @class OIInspector, OIInspectorController;
 
@@ -20,15 +20,16 @@
 
 @interface OIInspectorRegistry : NSObject <OAWindowCascadeDataSource>
 
-// API
-+ (void)setInspectorDefaultsVersion:(NSString *)versionString;
 + (void)registerAdditionalPanel:(NSWindowController *)additionalController;
 + (OIInspectorRegistry *)inspectorRegistryForMainWindow;
++ (OIInspectorRegistry *)inspectorRegistryCurrentDocumentWindow;
 + (BOOL)allowsEmptyInspectorList;
+
 - (void)tabShowHidePanels;
 - (BOOL)showAllInspectors;
 - (BOOL)hideAllInspectors;
 - (void)toggleAllInspectors;
+- (OIInspectorController *)controllerWithInspector:(OIInspector *)inspector;
 
 - (id)initWithDefaultInspectorControllerClass:(Class)controllerClass;
 - (void)invalidate;
@@ -45,10 +46,11 @@
 @property(readonly) Class defaultInspectorControllerClass;
 
 /// Creates a new OIInspectorController for the given OIInspector. This method is here so that it can be overridden by app-specific subclasses of OIInspectorRegistry. If the inspector already has a controller registered in this registry, this method will still create a new controller and return it, duplicating the inspector in the registry; it will never return an existing controller.
-- (OIInspectorController *)controllerWithInspector:(OIInspector *)inspector;
 
 /// Finds an existing OIInspectorController for the given OIInspector's identifier. This method will never create a new controller, and returns nil if the identifier is not associated with an existing controller's inspector.
 - (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
+
+- (void)revealEmbeddedInspectorFromMenuItem:(id)sender;
 
 /// Return all the OIInspectorController instances registered with this registry.
 - (NSArray *)controllers;
@@ -64,14 +66,12 @@
 
 - (void)configurationsChanged;
 
-@property(nonatomic,readonly) NSMutableDictionary *workspaceDefaults;
-- (void)resetWorkspaceDefaults;
-
-@property(nonatomic,readonly) NSMutableArray *workspaces;
-- (void)defaultsDidChange;
 @property(nonatomic,strong) IBOutlet NSTableView *editWorkspaceTable;
 
-@property(nonatomic,strong) NSMutableArray *existingGroups;
+@property(nonatomic,readonly) NSArray *existingGroups;
+- (void)addExistingGroup:(OIInspectorGroup *)group;
+- (void)removeExistingGroup:(OIInspectorGroup *)group;
+
 - (void)clearAllGroups;
 - (NSArray *)groups;
 - (NSUInteger)groupCount;

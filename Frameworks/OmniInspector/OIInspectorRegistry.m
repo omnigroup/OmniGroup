@@ -5,27 +5,28 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OIInspectorRegistry.h"
+#import <OmniInspector/OIInspectorRegistry.h>
 
-#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
-#import <OmniBase/OmniBase.h>
-#import <OmniFoundation/OmniFoundation.h>
+#import <Foundation/Foundation.h>
 #import <OmniAppKit/NSBundle-OAExtensions.h>
+#import <OmniAppKit/NSDocument-OAExtensions.h>
 #import <OmniAppKit/NSWindow-OAExtensions.h>
 #import <OmniAppKit/OAApplication.h>
-#import <OmniAppKit/OAWindowCascade.h>
 #import <OmniAppKit/OAVersion.h>
+#import <OmniAppKit/OAWindowCascade.h>
+#import <OmniBase/OmniBase.h>
+#import <OmniFoundation/OmniFoundation.h>
+#import <OmniInspector/OIInspectableControllerProtocol.h>
+#import <OmniInspector/OIInspectionSet.h>
+#import <OmniInspector/OIInspector.h>
+#import <OmniInspector/OIInspectorController.h>
+#import <OmniInspector/OIInspectorHeaderView.h>
+#import <OmniInspector/OIInspectorTabController.h>
+#import <OmniInspector/OITabbedInspector.h>
+#import <OmniInspector/OIWorkspace.h>
 
-#import "OIInspectableControllerProtocol.h"
-#import "OIInspectionSet.h"
-#import "OIInspector.h"
-#import "OIInspectorController.h"
 #import "OIInspectorGroup-Internal.h"
-#import "OITabbedInspector.h"
-
-
-#import "OIInspectionSet.h"
 
 RCS_ID("$Id$");
 
@@ -46,7 +47,6 @@ NSString * const OIInspectionSetChangedNotification = @"OIInspectionSetChangedNo
 NSString * const OIWorkspacesHelpURLKey = @"OIWorkspacesHelpURL";
 
 static NSMutableArray *additionalPanels = nil;
-static NSString *inspectorDefaultsVersion = nil;
 
 @implementation OIInspectorRegistry
 {
@@ -66,6 +66,7 @@ static NSString *inspectorDefaultsVersion = nil;
     } registryFlags;
     
     NSMutableArray *inspectorControllers;
+    NSMutableDictionary *inspectorControllersById;
     float inspectorWidth;
     NSString *_currentInspectionIdentifier;
     
@@ -90,11 +91,6 @@ static NSString *inspectorDefaultsVersion = nil;
         registryFlags.isListeningForNotifications = NO;
         [[NSNotificationCenter defaultCenter] removeObserver:self];
     }
-}
-
-+ (void)setInspectorDefaultsVersion:(NSString *)versionString;
-{
-    inspectorDefaultsVersion = versionString;
 }
 
 - (OIInspectorController *)controllerWithInspector:(OIInspector *)inspector;
@@ -150,12 +146,16 @@ static NSString *inspectorDefaultsVersion = nil;
     return NO;
 }
 
++ (OIInspectorRegistry *)inspectorRegistryCurrentDocumentWindow;
+{
+    NSDocumentController *sharedDocumentController = [NSDocumentController sharedDocumentController];
+    NSDocument *currentDocument = sharedDocumentController.currentDocument;
+    return [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:currentDocument.frontWindowController.window];
+}
+
 + (OIInspectorRegistry *)inspectorRegistryForMainWindow;
 {
-#ifdef DEBUG_tom0
-#error The main window may know nothing about inspectors. For example, if the main window is a software update window, it should not be consulted. <bug:///99522> (Silent crash in software update)
-#endif
-    return [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:[[NSApplication sharedApplication] mainWindow]];
+    return [self inspectorRegistryCurrentDocumentWindow];
 }
 
 static NSMutableArray *hiddenGroups = nil;
@@ -190,7 +190,9 @@ static NSMutableArray *hiddenPanels = nil;
         [hiddenPanels makeObjectsPerformSelector:@selector(orderFront:) withObject:self];
         hiddenPanels = nil;
     } else {
-        [self.existingGroups makeObjectsPerformSelector:@selector(showGroup)];
+        for (OIInspectorGroup *group in self.existingGroups) {
+            [group showGroup];
+        }
         
         for (NSWindowController *controller in additionalPanels)
             [[controller window] orderFront:self];
@@ -235,6 +237,28 @@ static NSMutableArray *hiddenPanels = nil;
         [self hideAllInspectors];
 }
 
+// Method currently set up to assume one controller for a tabbed inspector
+- (void)revealEmbeddedInspectorFromMenuItem:(id)sender;
+{
+    NSMenuItem *menuItem = OB_CHECKED_CAST(NSMenuItem, sender);
+    NSString *identifier = [menuItem representedObject];
+    for (OIInspectorController *controller in self.controllers) {
+        OBASSERT([[controller inspector] isKindOfClass:[OITabbedInspector class]]);
+        OITabbedInspector *inspector = OB_CHECKED_CAST(OITabbedInspector, [controller inspector]);
+        [inspector switchToInspectorWithIdentifier:identifier];
+    }
+}
+
+// Let's be honest. I don't know how this is gonna work. This whole method is a note to self. --TAB
++ (void)revealEmbeddedInspectorInFloatingWindow:(id)sender;
+{
+    NSMenuItem *menuItem = OB_CHECKED_CAST(NSMenuItem, sender);
+    NSString *identifier = [menuItem representedObject];
+    OIInspectorRegistry *floatingRegistry = [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:nil];
+    
+    NSLog(@"identifier = %@, registry = %@", identifier, floatingRegistry);
+}
+
 + (void)updateInspectorForWindow:(NSWindow *)window;
 {
     OIInspectorRegistry *inspectorRegistry = [(NSObject *)[[NSApplication sharedApplication] delegate] inspectorRegistryForWindow:window];
@@ -271,12 +295,7 @@ static NSMutableArray *hiddenPanels = nil;
 
 - (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
 {
-    OFForEachInArray(inspectorControllers, OIInspectorController *, anInspector, {
-        if ([[anInspector identifier] isEqualToString:anIdentifier])
-            return anInspector;
-    });
-    
-    return nil;
+    return [inspectorControllersById objectForKey:anIdentifier];
 }
 
 - (NSArray *)controllers;
@@ -336,22 +355,6 @@ static NSMutableArray *hiddenPanels = nil;
 
 // Init
 
-- (NSString *)inspectorPreference;
-{
-    if (inspectorDefaultsVersion)
-        return [@"Inspector" stringByAppendingString:inspectorDefaultsVersion];
-    else
-        return @"Inspector";
-}
-
-- (NSString *)inspectorWorkspacesPreference;
-{
-    if (inspectorDefaultsVersion)
-        return [@"InspectorWorkspaces" stringByAppendingString:inspectorDefaultsVersion];
-    else
-        return @"InspectorWorkspaces";
-}
-
 - (id)initWithDefaultInspectorControllerClass:(Class)controllerClass;
 {
     self = [super init];
@@ -366,15 +369,9 @@ static NSMutableArray *hiddenPanels = nil;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidFinishRestoringWindowsNotification:) name:NSApplicationDidFinishRestoringWindowsNotification object:nil];
     
     inspectorControllers = [[NSMutableArray alloc] init];
-
-    _workspaceDefaults = [[[NSUserDefaults standardUserDefaults] objectForKey:[self inspectorPreference]] mutableCopy];
-    if (!_workspaceDefaults)
-        _workspaceDefaults = [[NSMutableDictionary alloc] init];
-    _workspaces = [[[NSUserDefaults standardUserDefaults] objectForKey:[self inspectorWorkspacesPreference]] mutableCopy];
-    if (!_workspaces)
-        _workspaces = [[NSMutableArray alloc] init];
-
-    _existingGroups = [[NSMutableArray alloc] init];
+    inspectorControllersById = [[NSMutableDictionary alloc] init];
+    
+    _existingGroups = [[NSArray alloc] init];
     
     // All the inspectors in the app will have exactly the same width.  Schemes were the inspectors change size based on which ones are expanded are really annoying since you have to allocate width on your screen for the placement of the inspectors for the worst case width anyway.  Also, it requires a bunch of crazy code which is fragile.
     inspectorWidth = 200.0f;
@@ -474,25 +471,8 @@ static NSMutableArray *hiddenPanels = nil;
     return inspectionSet;
 }
 
-- (void)resetWorkspaceDefaults;
-{
-    _workspaceDefaults = nil;
-    [self defaultsDidChange];
-}
-
-- (void)defaultsDidChange;
-{
-    if (_workspaceDefaults) {
-        [[NSUserDefaults standardUserDefaults] setObject:[_workspaceDefaults copy] forKey:[self inspectorPreference]];
-    } else {
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:[self inspectorPreference]];
-        _workspaceDefaults = [[[NSUserDefaults standardUserDefaults] objectForKey:[self inspectorPreference]] mutableCopy];
-        if (!_workspaceDefaults)
-            _workspaceDefaults = [[NSMutableDictionary alloc] init];
-    }
-}
-
 #pragma mark - Inspector group maintentance
+
 - (void)saveExistingGroups;
 {
     NSMutableArray *identifiers = [NSMutableArray array];
@@ -504,8 +484,10 @@ static NSMutableArray *hiddenPanels = nil;
             [identifiers addObject:identifier];
     }
     
-    [[[OIInspectorRegistry inspectorRegistryForMainWindow] workspaceDefaults] setObject:identifiers forKey:@"_groups"];
-    [[OIInspectorRegistry inspectorRegistryForMainWindow] defaultsDidChange];
+    [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
+        [dictionary setObject:identifiers forKey:@"_groups"];
+    }];
+    [OIWorkspace.sharedWorkspace save];
 }
 
 
@@ -534,8 +516,8 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
 - (void)restoreInspectorGroupsWithInspectors:(NSArray *)inspectorList;
 {
     @autoreleasepool {
-        NSArray *groups = [[[[OIInspectorRegistry inspectorRegistryForMainWindow] workspaceDefaults] objectForKey:@"_groups"] copy];
-        NSMutableDictionary *inspectorById = [NSMutableDictionary dictionary];
+        NSArray *groups = [[OIWorkspace.sharedWorkspace objectForKey:@"_groups"] copy];
+        NSMutableDictionary *inspectorById = [inspectorControllersById mutableCopy];
         
         // Obsolete name of a method, make sure nobody's trying to override it
         OBASSERT_NOT_IMPLEMENTED(self, _adjustTopLeftDefaultPositioningPoint:);
@@ -551,7 +533,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
         for (NSString *identifier in groups) {
             OIInspectorGroup *group = [[OIInspectorGroup alloc] init];
             group.inspectorRegistry = self;
-            [self.existingGroups addObject:group];
+            [self addExistingGroup:group];
             [group restoreFromIdentifier:identifier withInspectors:inspectorById];
         }
         
@@ -572,7 +554,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
             if (group == nil) {
                 group = [[OIInspectorGroup alloc] init];
                 group.inspectorRegistry = self;
-                [self.existingGroups addObject:group];
+                [self addExistingGroup:group];
                 [inspectorGroupsByNumber setObject:group forKey:groupKey];
             }
             [group addInspector:controller];
@@ -649,33 +631,48 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
     }
 }
 
-- (void)clearAllGroups;
+- (void)addExistingGroup:(OIInspectorGroup *)group;
 {
-    [self.existingGroups makeObjectsPerformSelector:@selector(clear)];
-    [self.existingGroups removeAllObjects];
+    OBPRECONDITION(_existingGroups);
+    OBPRECONDITION([_existingGroups indexOfObjectIdenticalTo:group] == NSNotFound);
+    
+    _existingGroups = [_existingGroups arrayByAddingObject:group];
 }
 
-static NSComparisonResult sortGroupByWindowZOrder(OIInspectorGroup *a, OIInspectorGroup *b, void *zOrder)
+- (void)removeExistingGroup:(OIInspectorGroup *)group;
 {
-    OIInspectorController *inspectorA = [[a inspectors] objectAtIndex:0];
-    OIInspectorController *inspectorB = [[b inspectors] objectAtIndex:0];
+    OBPRECONDITION(_existingGroups);
+    OBPRECONDITION([_existingGroups indexOfObjectIdenticalTo:group] != NSNotFound);
     
-    NSUInteger aOrder = [(OB_BRIDGE NSArray *)zOrder indexOfObject:[inspectorA window]];
-    NSUInteger bOrder = [(OB_BRIDGE NSArray *)zOrder indexOfObject:[inspectorB window]];
-    
-    // opposite order as in original zOrder array
-    if (aOrder > bOrder)
-        return NSOrderedAscending;
-    else if (aOrder < bOrder)
-        return NSOrderedDescending;
-    else
-        return NSOrderedSame;
+    _existingGroups = [_existingGroups arrayByRemovingObjectIdenticalTo:group];
+}
+
+- (void)clearAllGroups;
+{
+    for (OIInspectorGroup *group in self.existingGroups)
+        [group clear];
+    _existingGroups = [NSArray array];
 }
 
 - (NSArray *)groups;
 {
-    [self.existingGroups sortUsingFunction:sortGroupByWindowZOrder context:(__bridge void *)([NSWindow windowsInZOrder])];
-    return self.existingGroups;
+    NSArray *zOrder = [NSWindow windowsInZOrder];
+    
+    return [_existingGroups sortedArrayUsingComparator:^NSComparisonResult(OIInspectorGroup *groupA, OIInspectorGroup *groupB) {
+        OIInspectorController *inspectorA = [[groupA inspectors] objectAtIndex:0];
+        OIInspectorController *inspectorB = [[groupB inspectors] objectAtIndex:0];
+        
+        NSUInteger aOrder = [zOrder indexOfObject:[inspectorA window]];
+        NSUInteger bOrder = [zOrder indexOfObject:[inspectorB window]];
+        
+        // opposite order as in original zOrder array
+        if (aOrder > bOrder)
+            return NSOrderedAscending;
+        else if (aOrder < bOrder)
+            return NSOrderedDescending;
+        else
+            return NSOrderedSame;
+    }];
 }
 
 - (NSUInteger)groupCount;
@@ -685,13 +682,9 @@ static NSComparisonResult sortGroupByWindowZOrder(OIInspectorGroup *a, OIInspect
 
 - (NSArray *)visibleGroups;
 {
-    NSMutableArray *visibleGroups = [NSMutableArray array];
-    
-    for (OIInspectorGroup *group in self.existingGroups)
-        if ([group isVisible])
-            [visibleGroups addObject:group];
-    
-    return visibleGroups;
+    return [self.existingGroups select:^BOOL(OIInspectorGroup *group) {
+        return group.isVisible;
+    }];
 }
 
 /*"
@@ -712,13 +705,24 @@ static NSComparisonResult sortGroupByWindowZOrder(OIInspectorGroup *a, OIInspect
 
 - (void)forceAllGroupsToCheckScreenGeometry;
 {
-    [self.existingGroups makeObjectsPerformSelector:@selector(screensDidChange:) withObject:nil];
+    for (OIInspectorGroup *group in self.existingGroups) {
+        [group screensDidChange:nil];
+    }
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 {
-//    if ([item action] == @selector(editWorkspace:))
-//        return [_workspaces count] > 0;
+    if ([item action] == @selector(revealEmbeddedInspectorFromMenuItem:)) {
+        NSString *identifier = [item representedObject];
+        for (OIInspectorController *controller in self.controllers) {
+            OBASSERT([[controller inspector] isKindOfClass:[OITabbedInspector class]]);
+            OITabbedInspector *tabbedInspector = OB_CHECKED_CAST(OITabbedInspector, [controller inspector]);
+            OIInspectorTabController *inspectorTab = [tabbedInspector tabWithIdentifier:identifier];
+            [item setState:[inspectorTab isVisible] ? NSOnState : NSOffState];
+            return YES;
+        }
+    }
+
     return YES;
 }
 
@@ -734,12 +738,13 @@ static NSComparisonResult sortGroupByWindowZOrder(OIInspectorGroup *a, OIInspect
             [workspaceMenu removeItemAtIndex:3];
     }
 
-    if ([_workspaces count]) {
+    NSArray *sharedWorkspaces = [OIWorkspace sharedWorkspaces];
+    if ([sharedWorkspaces count]) {
         unichar functionChar = NSF2FunctionKey, lastFunctionChar = NSF8FunctionKey;
         
         [workspaceMenu addItem:[NSMenuItem separatorItem]];
         
-        for (NSString *title in _workspaces) {
+        for (NSString *title in sharedWorkspaces) {
             NSString *key = @"";
             
             if (functionChar <= lastFunctionChar) {
@@ -787,22 +792,21 @@ static NSComparisonResult sortGroupByWindowZOrder(OIInspectorGroup *a, OIInspect
 - (IBAction)addWorkspace:(id)sender;
 {
     NSString *name = NSLocalizedStringFromTableInBundle(@"Untitled", @"OmniInspector", [OIInspectorRegistry bundle], @"Save Workspace default title");
-    if ([_workspaces containsObject:name]) {
+    NSArray *sharedWorkspaces = [OIWorkspace sharedWorkspaces];
+    if ([sharedWorkspaces containsObject:name]) {
         NSString *withNumber;
         int index = 1;
         do {
             withNumber = [NSString stringWithFormat:@"%@ %d", name, index++];
-        } while ([_workspaces containsObject:withNumber]);
+        } while ([sharedWorkspaces containsObject:withNumber]);
         name = withNumber;
     }
     
     NSString *path = [[OIInspectorRegistry bundle] pathForResource:@"OIWorkspaceSnap" ofType:@"aiff"];
     NSSound *sound = [[NSSound alloc] initWithContentsOfFile:path byReference:YES];
     [sound play];
-    [_workspaces addObject:name];
-    [[NSUserDefaults standardUserDefaults] setObject:_workspaces forKey:[self inspectorWorkspacesPreference]];
     [self _saveConfigurations];
-    [[NSUserDefaults standardUserDefaults] setObject:[_workspaceDefaults copy] forKey:[NSString stringWithFormat:@"%@-%@", [self inspectorWorkspacesPreference], name]];
+    [OIWorkspace.sharedWorkspace saveAs:name];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     [self _buildWorkspacesInMenu];
@@ -826,20 +830,19 @@ static NSComparisonResult sortGroupByWindowZOrder(OIInspectorGroup *a, OIInspect
 {
     NSString *name = [_makeWorkspaceTextField stringValue];
 
-    if ([_workspaces containsObject:name]) {
+    NSArray *sharedWorkspaces = [OIWorkspace sharedWorkspaces];
+    if ([sharedWorkspaces containsObject:name]) {
         NSString *withNumber;
         int index = 1;
         
         do {
             withNumber = [NSString stringWithFormat:@"%@-%d", name, index++];
-        } while ([_workspaces containsObject:withNumber]);
+        } while ([sharedWorkspaces containsObject:withNumber]);
         name = withNumber;
     }
 
-    [_workspaces addObject:name];
-    [[NSUserDefaults standardUserDefaults] setObject:_workspaces forKey:[self inspectorWorkspacesPreference]];
     [self _saveConfigurations];
-    [[NSUserDefaults standardUserDefaults] setObject:[_workspaceDefaults copy] forKey:[NSString stringWithFormat:@"%@-%@", [self inspectorWorkspacesPreference], name]];
+    [OIWorkspace.sharedWorkspace saveAs:name];
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     [self _buildWorkspacesInMenu];
@@ -874,13 +877,9 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 {
     [[_editWorkspaceTable window] endEditingFor:nil];
     
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    
     OFForEachIndexReverse([_editWorkspaceTable selectedRowIndexes], row) {
-        [defaults removeObjectForKey:[NSString stringWithFormat:@"%@-%@", [self inspectorWorkspacesPreference], [_workspaces objectAtIndex:row]]];
-        [_workspaces removeObjectAtIndex:row];
+        [OIWorkspace removeWorkspaceWithName:[[OIWorkspace sharedWorkspaces] objectAtIndex:row]];
     }
-    [defaults setObject:_workspaces forKey:[self inspectorWorkspacesPreference]];
     [_editWorkspaceTable reloadData];
     [self _buildWorkspacesInMenu];
 }
@@ -896,7 +895,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     
     NSIndexSet *selectedRows = [_editWorkspaceTable selectedRowIndexes];
     if ([selectedRows count] == 1) {
-	NSString *workspaceName = [_workspaces objectAtIndex:[selectedRows firstIndex]];
+	NSString *workspaceName = [OIWorkspace.sharedWorkspaces objectAtIndex:[selectedRows firstIndex]];
 	[deleteAlert setMessageText:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Delete workspace '%@'?", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace warning - single selection"), workspaceName]];
     } else {
 	[deleteAlert setMessageText:NSLocalizedStringFromTableInBundle(@"Delete selected workspaces?", @"OmniInspector", [OIInspectorRegistry bundle], @"delete workspace warning - multiple selection")];
@@ -925,9 +924,9 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
         return;
     }
     
-    NSString *name = [_workspaces objectAtIndex:row];
+    NSString *name = [OIWorkspace.sharedWorkspaces objectAtIndex:row];
     [self _saveConfigurations];
-    [[NSUserDefaults standardUserDefaults] setObject:[_workspaceDefaults copy] forKey:[NSString stringWithFormat:@"%@-%@", [self inspectorWorkspacesPreference], name]];
+    [OIWorkspace.sharedWorkspace saveAs:name];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -939,16 +938,15 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
         NSBeep();
         return;
     }
-        
-    NSString *name = [_workspaces objectAtIndex:row];
-    NSDictionary *newSettings = [[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@-%@", [self inspectorWorkspacesPreference], name]];
-    if (newSettings == nil)
-        return;
     
     [hiddenGroups removeAllObjects];
     [self clearAllGroups];
-    [_workspaceDefaults setDictionary:newSettings];
-    [self defaultsDidChange];
+    
+    NSArray *sharedWorkspaces = OIWorkspace.sharedWorkspaces;
+    NSString *name = [sharedWorkspaces objectAtIndex:row];
+    [OIWorkspace.sharedWorkspace loadFrom:name];
+    [OIWorkspace.sharedWorkspace save];
+    
     [self restoreInspectorGroups];
     [self _loadConfigurations];
     [[_editWorkspaceTable window] makeKeyWindow];
@@ -956,25 +954,22 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (IBAction)switchToWorkspace:(id)sender;
 {
-    NSDictionary *newSettings = [[NSUserDefaults standardUserDefaults] objectForKey:[NSString stringWithFormat:@"%@-%@", [self inspectorWorkspacesPreference], [sender representedObject]]];
-    
-    if (newSettings == nil)
-        return;
-    
     [hiddenGroups removeAllObjects];
     [self clearAllGroups];
-    [_workspaceDefaults setDictionary:newSettings];
-    [self defaultsDidChange];
+    
+    [OIWorkspace.sharedWorkspace loadFrom:[sender representedObject]];
+    [OIWorkspace.sharedWorkspace save];
+    
     [self restoreInspectorGroups];
     [self queueSelectorOnce:@selector(_loadConfigurations)];
 }
 
 - (IBAction)switchToDefault:(id)sender;
 {
-    _workspaceDefaults = nil;
+    [OIWorkspace.sharedWorkspace reset];
     [hiddenGroups removeAllObjects];
     [self clearAllGroups];
-    [self defaultsDidChange];
+    [OIWorkspace.sharedWorkspace save];
     [self restoreInspectorGroups];
     [self queueSelectorOnce:@selector(_loadConfigurations)];    
 }
@@ -1011,13 +1006,15 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView;
 {
-    return [_workspaces count];
+    NSArray *sharedWorkspaces = OIWorkspace.sharedWorkspaces;
+    return [sharedWorkspaces count];
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 {
+    NSArray *sharedWorkspaces = OIWorkspace.sharedWorkspaces;
     if ([[aTableColumn identifier] isEqualToString:@"Name"]) {
-        return [_workspaces objectAtIndex:rowIndex];
+        return [sharedWorkspaces objectAtIndex:rowIndex];
     } else {
         NSInteger fKey = rowIndex + 2;
         
@@ -1028,30 +1025,26 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     }
 }
 
-- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)newName forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex;
 {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSString *oldName = [_workspaces objectAtIndex:rowIndex];
-    NSString *oldDefault = [NSString stringWithFormat:@"%@-%@", [self inspectorWorkspacesPreference], oldName];
+    NSArray *sharedWorkspaces = OIWorkspace.sharedWorkspaces;
+    NSString *oldName = [sharedWorkspaces objectAtIndex:rowIndex];
 
-    NSUInteger i, count = [_workspaces count];
+    NSUInteger i, count = [sharedWorkspaces count];
     for (i = 0; i < count; i++) {
         if (rowIndex >= 0 && i == (NSUInteger)rowIndex)
             continue;
-        if ([anObject isEqualToString:[_workspaces objectAtIndex:i]]) {
-            anObject = [anObject stringByAppendingString:@" "];
+        if ([newName isEqualToString:[sharedWorkspaces objectAtIndex:i]]) {
+            newName = [newName stringByAppendingString:@" "];
             i = 0;
         }
     }
-    NSString *newDefault = [NSString stringWithFormat:@"%@-%@", [self inspectorWorkspacesPreference], anObject];
-    if (![newDefault isEqualToString:oldDefault]) {
-        [defaults setObject:[defaults objectForKey:oldDefault] forKey:newDefault];
-        [defaults removeObjectForKey:oldDefault];
-        [_workspaces replaceObjectAtIndex:rowIndex withObject:anObject];
-
-        [[NSUserDefaults standardUserDefaults] setObject:_workspaces forKey:[self inspectorWorkspacesPreference]];
+    
+    if (![(NSString *)newName isEqualToString:oldName]) {
+        [OIWorkspace renameWorkspaceWithName:oldName toName:newName];
+    
         [self _saveConfigurations];
-
+        
         [self _buildWorkspacesInMenu];
     }
 }
@@ -1060,18 +1053,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 {
     NSArray *names = [[info draggingPasteboard] propertyListForType:OIWorkspaceOrderPboardType];
 
-    for (NSString *name in names) {
-        NSUInteger workspaceIndex = [_workspaces indexOfObject:name];
-        if (workspaceIndex == NSNotFound) {
-            OBASSERT_NOT_REACHED("Possible to hit this?");
-            continue;
-        }
-        if (row >= 0 && workspaceIndex < (NSUInteger)row)
-            row--;
-        [_workspaces removeObjectAtIndex:workspaceIndex];
-    }
-    [_workspaces insertObjectsFromArray:names atIndex:row];
-    [[NSUserDefaults standardUserDefaults] setObject:_workspaces forKey:[self inspectorWorkspacesPreference]];
+    [OIWorkspace moveWorkspacesWithNames:names toIndex:row];
     [tableView reloadData];
     [self _buildWorkspacesInMenu];
     return YES;
@@ -1087,12 +1069,13 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 
 - (BOOL)tableView:(NSTableView *)tableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard;
 {
-    if ([_workspaces count] <= 1)
+    NSArray *sharedWorkspaces = OIWorkspace.sharedWorkspaces;
+    if ([sharedWorkspaces count] <= 1)
         return NO;
     
     NSMutableArray *names = [NSMutableArray array];
     OFForEachIndex(rowIndexes, row) {
-        [names addObject:[_workspaces objectAtIndex:row]];
+        [names addObject:[sharedWorkspaces objectAtIndex:row]];
     }
 
     [pboard declareTypes:[NSArray arrayWithObject:OIWorkspaceOrderPboardType] owner:nil];
@@ -1170,6 +1153,8 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     OBPRECONDITION(inspector);
     OIInspectorController *controller = [self controllerWithInspector:inspector];    
     [inspectorControllers addObject:controller];
+    [inspectorControllersById setObject:controller forKey:controller.identifier];
+    
     return controller;
 }
 
@@ -1393,7 +1378,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (void)_inspectorConfigurationsChanged:(NSTimer *)theTimer;
 {
     [self _saveConfigurations];
-    [self defaultsDidChange];
+    [OIWorkspace.sharedWorkspace save];
     [[NSProcessInfo processInfo] enableSuddenTermination];
     configurationsChangedTimer = nil;
 }
@@ -1401,8 +1386,12 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (void)_appWillTerminate:(NSNotification *)notification
 {
     [self _saveConfigurations];
-    [self defaultsDidChange];
+    [OIWorkspace.sharedWorkspace save];
     registryFlags.appIsTerminating = YES;
+}
+
++ (void)_appWillTerminate:(NSNotification *)notification;
+{
 }
 
 - (void)_saveConfigurations;
@@ -1413,13 +1402,15 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
         if ([[controller inspector] respondsToSelector:@selector(configuration)])
             [config setObject:[[controller inspector] configuration] forKey:[controller identifier]];
 
-    [_workspaceDefaults setObject:config forKey:@"_Configurations"];
+    [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
+        [dictionary setObject:config forKey:@"_Configurations"];
+    }];
     [self saveExistingGroups];
 }
 
 - (void)_loadConfigurations;
 {
-    NSDictionary *config = [_workspaceDefaults objectForKey:@"_Configurations"];
+    NSDictionary *config = [OIWorkspace.sharedWorkspace objectForKey:@"_Configurations"];
     
     for (OIInspectorController *controller in inspectorControllers)
         if ([[controller inspector] respondsToSelector:@selector(loadConfiguration:)])
@@ -1446,7 +1437,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 @end
 
 
-#import "OIInspectorWindow.h"
+#import <OmniInspector/OIInspectorWindow.h>
 
 @implementation NSView (OIInspectorExtensions)
 

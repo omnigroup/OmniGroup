@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -337,12 +337,12 @@ static CGGradientRef HighlightedButtonGradient = NULL;
 
 + (UIImage *)navigationArrowImage;
 {
-    return [UIImage imageNamed:@"OUINavigationArrow.png"];
+    return [UIImage imageNamed:@"OUINavigationArrow.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 + (UIImage *)navigationArrowImageHighlighted;
 {
-    return [UIImage imageNamed:@"OUINavigationArrow-White.png"];
+    return [UIImage imageNamed:@"OUINavigationArrow-White.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
 
 static id _commonInit(OUIInspectorWell *self)

@@ -1,4 +1,4 @@
-// Copyright 2003-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,6 +28,13 @@
 #define OQ_PLATFORM_COLOR_CLASS NSColor
 #endif
 @class OQ_PLATFORM_COLOR_CLASS;
+
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#define OQ_PLATFORM_IMAGE_CLASS UIImage
+#else
+#define OQ_PLATFORM_IMAGE_CLASS NSImage
+#endif
+@class OQ_PLATFORM_IMAGE_CLASS;
 
 typedef struct {
     CGFloat r, g, b, a;
@@ -108,6 +115,7 @@ extern OQLinearRGBA OQHSVToRGB(OSHSV c);
 
 + (OQColor *)colorWithCGColor:(CGColorRef)cgColor;
 + (OQColor *)colorWithPlatformColor:(OQ_PLATFORM_COLOR_CLASS *)color;
++ (OQColor *)colorWithPatternImageData:(NSData *)imageData;
 
 + (OQColor *)colorFromRGBAString:(NSString *)rgbaString;
 - (NSString *)rgbaString;

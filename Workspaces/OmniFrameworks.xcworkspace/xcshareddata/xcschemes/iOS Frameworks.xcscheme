@@ -112,9 +112,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3EE8E4B31937FDA600616F0E"
-               BuildableName = "libOmniDataObjects.a"
-               BlueprintName = "OmniDataObjectsTouch"
+               BlueprintIdentifier = "34019F641B62ECB4003A5BE4"
+               BuildableName = "OmniDataObjects.framework"
+               BlueprintName = "OmniDataObjects-iOS"
                ReferencedContainer = "container:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -154,6 +154,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "344F78B51B56F98A003BB98D"
+               BuildableName = "OmniDocumentStore.framework"
+               BlueprintName = "OmniDocumentStore-iOS"
+               ReferencedContainer = "container:../Frameworks/OmniDocumentStore/OmniDocumentStore.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "340490AB15E53DDC0044F67F"
                BuildableName = "libODAVUnitTestsTouch.a"
                BlueprintName = "ODAVUnitTestsTouch"
@@ -168,9 +182,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34AFAD28164B0EC8009E39AB"
-               BuildableName = "libOmniFileExchange.a"
-               BlueprintName = "OmniFileExchangeTouch"
+               BlueprintIdentifier = "343682781B58284500BC25E6"
+               BuildableName = "OmniFileExchange.framework"
+               BlueprintName = "OmniFileExchange-iOS"
                ReferencedContainer = "container:../Frameworks/OmniFileExchange/OmniFileExchange.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -182,24 +196,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34D06C53125D202500CA3963"
-               BuildableName = "libOmniFileStore.a"
-               BlueprintName = "OmniFileStoreTouch"
+               BlueprintIdentifier = "3474D9871B5EF23E0084B8AE"
+               BuildableName = "OmniFileStore.framework"
+               BlueprintName = "OmniFileStore-iOS"
                ReferencedContainer = "container:../Frameworks/OmniFileStore/OmniFileStore.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34896924179D99DD007978EC"
-               BuildableName = "libOmniDocumentStore.a"
-               BlueprintName = "OmniDocumentStore"
-               ReferencedContainer = "container:../Frameworks/OmniDocumentStore/OmniDocumentStore.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -252,9 +252,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2AAC07D0554694100DB518D"
-               BuildableName = "libOmniUI.a"
-               BlueprintName = "OmniUITouch"
+               BlueprintIdentifier = "348A79BA1B5849C70082D55D"
+               BuildableName = "OmniUI.framework"
+               BlueprintName = "OmniUI-iOS"
                ReferencedContainer = "container:../Frameworks/OmniUI/iPad/OmniUI.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -266,9 +266,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "342F48C0167799AC007C5FFB"
-               BuildableName = "libOmniUIDocument.a"
-               BlueprintName = "OmniUIDocument"
+               BlueprintIdentifier = "3458EF301B5D6ED0000011A6"
+               BuildableName = "OmniUIDocument.framework"
+               BlueprintName = "OmniUIDocument-iOS"
                ReferencedContainer = "container:../Frameworks/OmniUI/iPad-Document/OmniUIDocument.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -280,19 +280,33 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34F3FFE5126394210044AB52"
-               BuildableName = "libOmniSoftwareUpdate.a"
-               BlueprintName = "OmniSoftwareUpdateTouch"
+               BlueprintIdentifier = "348A78671B583C390082D55D"
+               BuildableName = "OmniSoftwareUpdate.framework"
+               BlueprintName = "OmniSoftwareUpdate-iOS"
                ReferencedContainer = "container:../Frameworks/OmniSoftwareUpdate/OmniSoftwareUpdate.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "343BD2D71B62F35D002D09C6"
+               BuildableName = "ODOTests-iOS.xctest"
+               BlueprintName = "ODOTests-iOS"
+               ReferencedContainer = "container:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      buildConfiguration = "Debug">
+      shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
             skipped = "NO">
@@ -324,6 +338,16 @@
                ReferencedContainer = "container:../Frameworks/OmniFoundation/OmniFoundation.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "343BD2D71B62F35D002D09C6"
+               BuildableName = "ODOTests-iOS.xctest"
+               BlueprintName = "ODOTests-iOS"
+               ReferencedContainer = "container:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
@@ -338,11 +362,11 @@
       </AdditionalOptions>
    </TestAction>
    <LaunchAction
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Debug"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
@@ -360,10 +384,10 @@
       </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
+      buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Release"
       debugDocumentVersioning = "YES">
       <MacroExpansion>
          <BuildableReference

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -93,7 +93,15 @@ static NSArray *_parseKeyCommands(NSDictionary *commands)
     CategoriesToKeyCommands = [NSMutableDictionary new];
     
     // Each file should have the structure { category = ( list of commands ); }
-    NSArray *keyCommandsFileURLs = [[NSBundle mainBundle] URLsForResourcesWithExtension:@"keycommands" subdirectory:nil];
+    NSMutableArray *bundles = [[NSBundle allFrameworks] mutableCopy]; // On iOS 8 and iOS 9, +allFrameworks includes +mainBundle.
+    if ([bundles containsObject:[NSBundle mainBundle]] == NO)
+        [bundles addObject:[NSBundle mainBundle]]; // but let's be safe in case they fix the bug.
+    
+    NSMutableArray *keyCommandsFileURLs = [NSMutableArray array];
+    for (NSBundle *bundle in bundles) {
+        [keyCommandsFileURLs addObjectsFromArray:[bundle URLsForResourcesWithExtension:@"keycommands" subdirectory:nil]];
+    }
+    
     for (NSURL *keyCommandFileURL in keyCommandsFileURLs) {
         __autoreleasing NSError *error = nil;
         

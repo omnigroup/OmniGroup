@@ -434,11 +434,16 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         CMCloseProfile(cmykProfile);
     if (grayProfile)
         CMCloseProfile(grayProfile);
+    [super dealloc];
 #else
     OBFinishPorting;
-#endif
-    
+    // rdar:///21697606: Unreachable code fails with missing super call error
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
+    // OBFinishPorting aborts, so the dealloc call here is unreachable; however, clang warns that we're missing a call to [super dealloc] if we remove it.
     [super dealloc];
+#pragma clang diagnostic pop
+#endif
 }
 
 - (id)copyWithZone:(NSZone *)zone;

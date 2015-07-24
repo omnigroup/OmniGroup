@@ -7,18 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1571136718637798002F6107 /* ja.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 157113661863778F002F6107 /* ja.lproj */; };
-		15F7CC3A185F9CB700EFB846 /* de.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC31185F9C7F00EFB846 /* de.lproj */; };
-		15F7CC3B185F9CB700EFB846 /* es.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC32185F9C7F00EFB846 /* es.lproj */; };
-		15F7CC3C185F9CB700EFB846 /* fr.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC33185F9C7F00EFB846 /* fr.lproj */; };
-		15F7CC3D185F9CB700EFB846 /* it.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC34185F9C7F00EFB846 /* it.lproj */; };
-		15F7CC3E185F9CB700EFB846 /* nl.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC35185F9C7F00EFB846 /* nl.lproj */; };
-		15F7CC3F185F9CB700EFB846 /* ru.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC36185F9C7F00EFB846 /* ru.lproj */; };
-		15F7CC40185F9CB700EFB846 /* zh-Hans.lproj in CopyFiles */ = {isa = PBXBuildFile; fileRef = 15F7CC37185F9C7F00EFB846 /* zh-Hans.lproj */; };
 		1EB3A6F419C0D6F200C25E1B /* OUUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EB3A6F219C0D6F200C25E1B /* OUUtilities.h */; };
-		1EB3A6F519C0D6F200C25E1B /* OUUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 1EB3A6F219C0D6F200C25E1B /* OUUtilities.h */; };
 		1EB3A6F619C0D6F200C25E1B /* OUUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EB3A6F319C0D6F200C25E1B /* OUUtilities.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		1EB3A6F719C0D6F200C25E1B /* OUUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 1EB3A6F319C0D6F200C25E1B /* OUUtilities.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		344F383C1B19280E00E75A5F /* ja.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 157113661863778F002F6107 /* ja.lproj */; };
 		344F383D1B19280E00E75A5F /* de.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15F7CC31185F9C7F00EFB846 /* de.lproj */; };
 		344F383E1B19280E00E75A5F /* es.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 15F7CC32185F9C7F00EFB846 /* es.lproj */; };
@@ -62,30 +52,6 @@
 		34800E591B19255A0008DC9E /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 424183550F44C9940029B4DA /* OmniBase.framework */; };
 		34800E5A1B1925640008DC9E /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 424182A20F44BBD70029B4DA /* OmniFoundation.framework */; };
 		34800E5C1B1925760008DC9E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34800E5B1B1925760008DC9E /* UIKit.framework */; };
-		34E20FCE1193151200ECA875 /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 424182440F44B7930029B4DA /* ioapi.c */; };
-		34E20FCF1193151300ECA875 /* ioapi.h in Headers */ = {isa = PBXBuildFile; fileRef = 424182450F44B7930029B4DA /* ioapi.h */; };
-		34E20FD01193151A00ECA875 /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 4241824D0F44B7930029B4DA /* unzip.c */; };
-		34E20FD11193151A00ECA875 /* unzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 4241824E0F44B7930029B4DA /* unzip.h */; };
-		34E20FD21193151B00ECA875 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = 4241824F0F44B7930029B4DA /* zip.c */; };
-		34E20FD31193151B00ECA875 /* zip.h in Headers */ = {isa = PBXBuildFile; fileRef = 424182500F44B7930029B4DA /* zip.h */; };
-		34E20FD41193152100ECA875 /* OUErrors.h in Headers */ = {isa = PBXBuildFile; fileRef = 4241834B0F44C9390029B4DA /* OUErrors.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34E20FD51193152100ECA875 /* OUErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 4241834C0F44C9390029B4DA /* OUErrors.m */; };
-		34E20FD61193152500ECA875 /* OUUnzipArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = 424182820F44BAE00029B4DA /* OUUnzipArchive.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34E20FD71193152500ECA875 /* OUUnzipArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = 424182830F44BAE00029B4DA /* OUUnzipArchive.m */; };
-		34E20FD81193152900ECA875 /* OUUnzipEntry.h in Headers */ = {isa = PBXBuildFile; fileRef = 424182840F44BAE00029B4DA /* OUUnzipEntry.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34E20FD91193152900ECA875 /* OUUnzipEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 424182850F44BAE00029B4DA /* OUUnzipEntry.m */; };
-		34E20FDA1193152C00ECA875 /* OUZipArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = 4241828A0F44BAF00029B4DA /* OUZipArchive.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34E20FDB1193152D00ECA875 /* OUZipArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = 4241828B0F44BAF00029B4DA /* OUZipArchive.m */; };
-		34E20FDC1193152F00ECA875 /* OUZipDirectoryMember.h in Headers */ = {isa = PBXBuildFile; fileRef = 4241828C0F44BAF00029B4DA /* OUZipDirectoryMember.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34E20FDD1193152F00ECA875 /* OUZipDirectoryMember.m in Sources */ = {isa = PBXBuildFile; fileRef = 4241828D0F44BAF00029B4DA /* OUZipDirectoryMember.m */; };
-		34E20FDE1193153300ECA875 /* OUZipFileMember.h in Headers */ = {isa = PBXBuildFile; fileRef = 4241828E0F44BAF00029B4DA /* OUZipFileMember.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34E20FDF1193153300ECA875 /* OUZipFileMember.m in Sources */ = {isa = PBXBuildFile; fileRef = 4241828F0F44BAF00029B4DA /* OUZipFileMember.m */; };
-		34E20FE01193153900ECA875 /* OUZipLinkMember.h in Headers */ = {isa = PBXBuildFile; fileRef = 424182900F44BAF00029B4DA /* OUZipLinkMember.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34E20FE11193153900ECA875 /* OUZipLinkMember.m in Sources */ = {isa = PBXBuildFile; fileRef = 424182910F44BAF00029B4DA /* OUZipLinkMember.m */; };
-		34E20FE21193153C00ECA875 /* OUZipMember.h in Headers */ = {isa = PBXBuildFile; fileRef = 424182920F44BAF00029B4DA /* OUZipMember.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34E20FE31193153D00ECA875 /* OUZipMember.m in Sources */ = {isa = PBXBuildFile; fileRef = 424182930F44BAF00029B4DA /* OUZipMember.m */; };
-		34E20FE41193153F00ECA875 /* OUZipRawFileMember.h in Headers */ = {isa = PBXBuildFile; fileRef = 424182940F44BAF00029B4DA /* OUZipRawFileMember.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34E20FE51193154000ECA875 /* OUZipRawFileMember.m in Sources */ = {isa = PBXBuildFile; fileRef = 424182950F44BAF00029B4DA /* OUZipRawFileMember.m */; };
 		4241822E0F44B55E0029B4DA /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4241822D0F44B55E0029B4DA /* libz.dylib */; };
 		424182530F44B7930029B4DA /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 424182440F44B7930029B4DA /* ioapi.c */; };
 		4241825C0F44B7930029B4DA /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 4241824D0F44B7930029B4DA /* unzip.c */; };
@@ -112,26 +78,6 @@
 		424183560F44C9940029B4DA /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 424183550F44C9940029B4DA /* OmniBase.framework */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		15F7CC39185F9CAE00EFB846 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "Resources/$(PRODUCT_NAME)";
-			dstSubfolderSpec = 16;
-			files = (
-				15F7CC3A185F9CB700EFB846 /* de.lproj in CopyFiles */,
-				15F7CC3B185F9CB700EFB846 /* es.lproj in CopyFiles */,
-				15F7CC3C185F9CB700EFB846 /* fr.lproj in CopyFiles */,
-				15F7CC3D185F9CB700EFB846 /* it.lproj in CopyFiles */,
-				1571136718637798002F6107 /* ja.lproj in CopyFiles */,
-				15F7CC3E185F9CB700EFB846 /* nl.lproj in CopyFiles */,
-				15F7CC3F185F9CB700EFB846 /* ru.lproj in CopyFiles */,
-				15F7CC40185F9CB700EFB846 /* zh-Hans.lproj in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -160,29 +106,23 @@
 		34800E351B1923870008DC9E /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		34800E361B1923870008DC9E /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		34800E371B1923870008DC9E /* Touch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
-		34800E381B1923870008DC9E /* Touch-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34800E391B1923870008DC9E /* Touch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		34800E3A1B1923870008DC9E /* Touch-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
 		34800E3B1B1923870008DC9E /* Touch-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Common.xcconfig"; sourceTree = "<group>"; };
-		34800E3C1B1923870008DC9E /* Touch-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34800E3D1B1923870008DC9E /* Touch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		34800E3E1B1923870008DC9E /* Touch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		34800E5B1B1925760008DC9E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		34C63DEE10DA9C69004889BB /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
-		34C63DEF10DA9C69004889BB /* Omni-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34C63DF010DA9C69004889BB /* Omni-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		34C63DF110DA9C69004889BB /* Omni-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		34E20FBA119314BE00ECA875 /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
 		34E20FBB119314BE00ECA875 /* Target-Touch-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Touch-Common.xcconfig"; sourceTree = "<group>"; };
 		34E20FBC119314BE00ECA875 /* Touch-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Common.xcconfig"; sourceTree = "<group>"; };
-		34E20FBD119314BE00ECA875 /* Touch-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34E20FBE119314BE00ECA875 /* Touch-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		34E20FBF119314BE00ECA875 /* Touch-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Release.xcconfig"; sourceTree = "<group>"; };
 		34E20FC0119314BE00ECA875 /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
-		34E20FC1119314BE00ECA875 /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34E20FC2119314BE00ECA875 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		34E20FC3119314BE00ECA875 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
-		34E20FCA119314D200ECA875 /* libOmniUnzip.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOmniUnzip.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		4241822D0F44B55E0029B4DA /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		424182420F44B7930029B4DA /* ChangeLogUnzip */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ChangeLogUnzip; sourceTree = "<group>"; };
 		424182430F44B7930029B4DA /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt.h; sourceTree = "<group>"; };
@@ -220,23 +160,18 @@
 		4241834C0F44C9390029B4DA /* OUErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUErrors.m; sourceTree = "<group>"; };
 		424183550F44C9940029B4DA /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		424183AB0F44CF990029B4DA /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
-		424183AC0F44CF990029B4DA /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		424183AD0F44CF990029B4DA /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		424183AE0F44CF990029B4DA /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
 		424183AF0F44CF990029B4DA /* Omni-Bundle-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
-		424183B00F44CF990029B4DA /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		424183B10F44CF990029B4DA /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		424183B20F44CF990029B4DA /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
 		424183B30F44CF990029B4DA /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Common.xcconfig"; sourceTree = "<group>"; };
-		424183B40F44CF990029B4DA /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
 		424183B50F44CF990029B4DA /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		424183B60F44CF990029B4DA /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		424183BA0F44CF990029B4DA /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
-		424183BB0F44CF990029B4DA /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
 		424183BC0F44CF990029B4DA /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
 		424183BD0F44CF990029B4DA /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
 		424183BE0F44CF990029B4DA /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
-		424183BF0F44CF990029B4DA /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
 		424183C00F44CF990029B4DA /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		424183C10F44CF990029B4DA /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
 		8DC2EF5A0486A6940098B216 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -252,13 +187,6 @@
 				34800E581B1925360008DC9E /* libz.dylib in Frameworks */,
 				34800E591B19255A0008DC9E /* OmniBase.framework in Frameworks */,
 				34800E5A1B1925640008DC9E /* OmniFoundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		34E20FC8119314D200ECA875 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,7 +208,6 @@
 			isa = PBXGroup;
 			children = (
 				8DC2EF5B0486A6940098B216 /* OmniUnzip.framework */,
-				34E20FCA119314D200ECA875 /* libOmniUnzip.a */,
 				34800E121B19233E0008DC9E /* OmniUnzip.framework */,
 			);
 			name = Products;
@@ -437,15 +364,12 @@
 				34800E301B1923870008DC9E /* Omni-Application-Common-OmniStore.xcconfig */,
 				34800E311B1923870008DC9E /* Omni-Application-Common-OmniStore.xcconfig */,
 				424183AB0F44CF990029B4DA /* Omni-Application-Common.xcconfig */,
-				424183AC0F44CF990029B4DA /* Omni-Application-Coverage.xcconfig */,
 				424183AD0F44CF990029B4DA /* Omni-Application-Debug.xcconfig */,
 				424183AE0F44CF990029B4DA /* Omni-Application-Release.xcconfig */,
 				424183AF0F44CF990029B4DA /* Omni-Bundle-Common.xcconfig */,
-				424183B00F44CF990029B4DA /* Omni-Bundle-Coverage.xcconfig */,
 				424183B10F44CF990029B4DA /* Omni-Bundle-Debug.xcconfig */,
 				424183B20F44CF990029B4DA /* Omni-Bundle-Release.xcconfig */,
 				424183B30F44CF990029B4DA /* Omni-Framework-Common.xcconfig */,
-				424183B40F44CF990029B4DA /* Omni-Framework-Coverage.xcconfig */,
 				424183B50F44CF990029B4DA /* Omni-Framework-Debug.xcconfig */,
 				424183B60F44CF990029B4DA /* Omni-Framework-Release.xcconfig */,
 				34800E321B1923870008DC9E /* Omni-Global-Common-AppStore.xcconfig */,
@@ -454,33 +378,26 @@
 				34800E351B1923870008DC9E /* Omni-Global-Common-OmniStore.xcconfig */,
 				34800E361B1923870008DC9E /* Omni-Global-Common-OmniStore.xcconfig */,
 				424183BA0F44CF990029B4DA /* Omni-Global-Common.xcconfig */,
-				424183BB0F44CF990029B4DA /* Omni-Global-Coverage.xcconfig */,
 				424183BC0F44CF990029B4DA /* Omni-Global-Debug.xcconfig */,
 				424183BD0F44CF990029B4DA /* Omni-Global-Release.xcconfig */,
 				34C63DEE10DA9C69004889BB /* Omni-Library-Common.xcconfig */,
-				34C63DEF10DA9C69004889BB /* Omni-Library-Coverage.xcconfig */,
 				34C63DF010DA9C69004889BB /* Omni-Library-Debug.xcconfig */,
 				34C63DF110DA9C69004889BB /* Omni-Library-Release.xcconfig */,
 				424183BE0F44CF990029B4DA /* Omni-Tool-Common.xcconfig */,
-				424183BF0F44CF990029B4DA /* Omni-Tool-Coverage.xcconfig */,
 				424183C00F44CF990029B4DA /* Omni-Tool-Debug.xcconfig */,
 				424183C10F44CF990029B4DA /* Omni-Tool-Release.xcconfig */,
 				34E20FBA119314BE00ECA875 /* Target-Mac-Common.xcconfig */,
 				34E20FBB119314BE00ECA875 /* Target-Touch-Common.xcconfig */,
 				34E20FBC119314BE00ECA875 /* Touch-Application-Common.xcconfig */,
-				34E20FBD119314BE00ECA875 /* Touch-Application-Coverage.xcconfig */,
 				34E20FBE119314BE00ECA875 /* Touch-Application-Debug.xcconfig */,
 				34E20FBF119314BE00ECA875 /* Touch-Application-Release.xcconfig */,
 				34800E371B1923870008DC9E /* Touch-Bundle-Common.xcconfig */,
-				34800E381B1923870008DC9E /* Touch-Bundle-Coverage.xcconfig */,
 				34800E391B1923870008DC9E /* Touch-Bundle-Debug.xcconfig */,
 				34800E3A1B1923870008DC9E /* Touch-Bundle-Release.xcconfig */,
 				34800E3B1B1923870008DC9E /* Touch-Framework-Common.xcconfig */,
-				34800E3C1B1923870008DC9E /* Touch-Framework-Coverage.xcconfig */,
 				34800E3D1B1923870008DC9E /* Touch-Framework-Debug.xcconfig */,
 				34800E3E1B1923870008DC9E /* Touch-Framework-Release.xcconfig */,
 				34E20FC0119314BE00ECA875 /* Touch-Library-Common.xcconfig */,
-				34E20FC1119314BE00ECA875 /* Touch-Library-Coverage.xcconfig */,
 				34E20FC2119314BE00ECA875 /* Touch-Library-Debug.xcconfig */,
 				34E20FC3119314BE00ECA875 /* Touch-Library-Release.xcconfig */,
 			);
@@ -505,26 +422,6 @@
 				34800E4E1B1924D00008DC9E /* OUZipFileMember.h in Headers */,
 				34800E461B1924C10008DC9E /* OUUnzipArchive.h in Headers */,
 				34800E411B1924980008DC9E /* OUUtilities.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		34E20FC6119314D200ECA875 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				34E20FCF1193151300ECA875 /* ioapi.h in Headers */,
-				34E20FD11193151A00ECA875 /* unzip.h in Headers */,
-				34E20FD31193151B00ECA875 /* zip.h in Headers */,
-				34E20FD41193152100ECA875 /* OUErrors.h in Headers */,
-				34E20FD61193152500ECA875 /* OUUnzipArchive.h in Headers */,
-				34E20FD81193152900ECA875 /* OUUnzipEntry.h in Headers */,
-				1EB3A6F519C0D6F200C25E1B /* OUUtilities.h in Headers */,
-				34E20FDA1193152C00ECA875 /* OUZipArchive.h in Headers */,
-				34E20FDC1193152F00ECA875 /* OUZipDirectoryMember.h in Headers */,
-				34E20FDE1193153300ECA875 /* OUZipFileMember.h in Headers */,
-				34E20FE01193153900ECA875 /* OUZipLinkMember.h in Headers */,
-				34E20FE21193153C00ECA875 /* OUZipMember.h in Headers */,
-				34E20FE41193153F00ECA875 /* OUZipRawFileMember.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -566,25 +463,6 @@
 			productName = "OmniUnzip-iOS";
 			productReference = 34800E121B19233E0008DC9E /* OmniUnzip.framework */;
 			productType = "com.apple.product-type.framework";
-		};
-		34E20FC9119314D200ECA875 /* OmniUnzipTouch */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 34E20FEE1193158500ECA875 /* Build configuration list for PBXNativeTarget "OmniUnzipTouch" */;
-			buildPhases = (
-				34E20FC6119314D200ECA875 /* Headers */,
-				341FE0331193170F003F4192 /* Build Strings */,
-				15F7CC39185F9CAE00EFB846 /* CopyFiles */,
-				34E20FC7119314D200ECA875 /* Sources */,
-				34E20FC8119314D200ECA875 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = OmniUnzipTouch;
-			productName = OmniUnzipTouch;
-			productReference = 34E20FCA119314D200ECA875 /* libOmniUnzip.a */;
-			productType = "com.apple.product-type.library.static";
 		};
 		8DC2EF4F0486A6940098B216 /* OmniUnzip */ = {
 			isa = PBXNativeTarget;
@@ -632,7 +510,6 @@
 			projectRoot = "";
 			targets = (
 				8DC2EF4F0486A6940098B216 /* OmniUnzip */,
-				34E20FC9119314D200ECA875 /* OmniUnzipTouch */,
 				34800E111B19233E0008DC9E /* OmniUnzip-iOS */,
 			);
 		};
@@ -672,21 +549,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		341FE0331193170F003F4192 /* Build Strings */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Build Strings";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "../../Scripts/BuildStringsFromTarget OmniUnzip\n";
-			showEnvVarsInLog = 0;
-		};
 		344F383A1B19273300E75A5F /* Build Strings */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -737,26 +599,6 @@
 				34800E4F1B1924D00008DC9E /* OUZipFileMember.m in Sources */,
 				34800E531B1924D00008DC9E /* OUZipMember.m in Sources */,
 				34800E551B1924D00008DC9E /* OUZipRawFileMember.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		34E20FC7119314D200ECA875 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				34E20FCE1193151200ECA875 /* ioapi.c in Sources */,
-				34E20FD01193151A00ECA875 /* unzip.c in Sources */,
-				34E20FD21193151B00ECA875 /* zip.c in Sources */,
-				34E20FD51193152100ECA875 /* OUErrors.m in Sources */,
-				34E20FD71193152500ECA875 /* OUUnzipArchive.m in Sources */,
-				34E20FD91193152900ECA875 /* OUUnzipEntry.m in Sources */,
-				34E20FDB1193152D00ECA875 /* OUZipArchive.m in Sources */,
-				34E20FDD1193152F00ECA875 /* OUZipDirectoryMember.m in Sources */,
-				1EB3A6F719C0D6F200C25E1B /* OUUtilities.m in Sources */,
-				34E20FDF1193153300ECA875 /* OUZipFileMember.m in Sources */,
-				34E20FE11193153900ECA875 /* OUZipLinkMember.m in Sources */,
-				34E20FE31193153D00ECA875 /* OUZipMember.m in Sources */,
-				34E20FE51193154000ECA875 /* OUZipRawFileMember.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -849,20 +691,6 @@
 			};
 			name = Debug;
 		};
-		34800E261B19233E0008DC9E /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34800E3C1B1923870008DC9E /* Touch-Framework-Coverage.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
-				GCC_WARN_SHADOW = YES;
-				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_PREPROCESS = YES;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
-				PRODUCT_NAME = OmniUnzip;
-			};
-			name = Coverage;
-		};
 		34800E271B19233E0008DC9E /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34800E3E1B1923870008DC9E /* Touch-Framework-Release.xcconfig */;
@@ -877,62 +705,6 @@
 			};
 			name = Release;
 		};
-		34E20FCB119314D200ECA875 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34E20FC2119314BE00ECA875 /* Touch-Library-Debug.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
-				PRODUCT_NAME = OmniUnzip;
-			};
-			name = Debug;
-		};
-		34E20FCC119314D200ECA875 /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34E20FC1119314BE00ECA875 /* Touch-Library-Coverage.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
-				PRODUCT_NAME = OmniUnzip;
-			};
-			name = Coverage;
-		};
-		34E20FCD119314D200ECA875 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34E20FC3119314BE00ECA875 /* Touch-Library-Release.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
-				PRODUCT_NAME = OmniUnzip;
-			};
-			name = Release;
-		};
-		34F1F1FA0FC60AD800FC6968 /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 424183BB0F44CF990029B4DA /* Omni-Global-Coverage.xcconfig */;
-			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(value)",
-					NOCRYPT,
-					"VERSIONMADEBY=0x0300",
-				);
-			};
-			name = Coverage;
-		};
-		34F1F1FB0FC60AD800FC6968 /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 424183B40F44CF990029B4DA /* Omni-Framework-Coverage.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
-				GCC_WARN_SHADOW = YES;
-				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_PREPROCESS = YES;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
-				PRODUCT_NAME = OmniUnzip;
-			};
-			name = Coverage;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -940,7 +712,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB91AE08733DA50010E9CD /* Debug */,
-				34F1F1FB0FC60AD800FC6968 /* Coverage */,
 				1DEB91AF08733DA50010E9CD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -950,7 +721,6 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB91B208733DA50010E9CD /* Debug */,
-				34F1F1FA0FC60AD800FC6968 /* Coverage */,
 				1DEB91B308733DA50010E9CD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -960,18 +730,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				34800E251B19233E0008DC9E /* Debug */,
-				34800E261B19233E0008DC9E /* Coverage */,
 				34800E271B19233E0008DC9E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		34E20FEE1193158500ECA875 /* Build configuration list for PBXNativeTarget "OmniUnzipTouch" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				34E20FCB119314D200ECA875 /* Debug */,
-				34E20FCC119314D200ECA875 /* Coverage */,
-				34E20FCD119314D200ECA875 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

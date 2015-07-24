@@ -1,21 +1,21 @@
-// Copyright 2005-2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OIInspector.h"
-
-#import "OITabbedInspector.h"
-#import "OIInspectorRegistry.h"
+#import <OmniInspector/OIInspector.h>
 
 #import <AppKit/AppKit.h>
-#import <OmniBase/OmniBase.h>
 #import <OmniAppKit/NSImage-OAExtensions.h>
 #import <OmniAppKit/NSTextField-OAExtensions.h>
-#import <OmniFoundation/OmniFoundation.h>
+#import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFEnumNameTable-OFFlagMask.h>
+#import <OmniFoundation/OmniFoundation.h>
+#import <OmniInspector/OIInspectorHeaderView.h>
+#import <OmniInspector/OIInspectorRegistry.h>
+#import <OmniInspector/OITabbedInspector.h>
 
 RCS_ID("$Id$");
 
@@ -36,6 +36,9 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     NSImage  *_image;
     NSUInteger _defaultOrderingWithinGroup;
     OIInspectorInterfaceType _preferredInterfaceType;
+    
+    BOOL wantsHeader;
+    BOOL isCollapsible;
 }
 
 + (void)initialize;
@@ -199,6 +202,13 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         _preferredInterfaceType = OIInspectorInterfaceTypeFloating;
     }
     
+    wantsHeader =  YES;
+    if ([dict objectForKey:@"wantsHeader"])
+        wantsHeader = [dict boolForKey:@"wantsHeader"];
+    isCollapsible = YES;
+    if ([dict objectForKey:@"isCollapsible"])
+        isCollapsible = [dict boolForKey:@"isCollapsible"];
+    
     return self;
 }
 
@@ -290,6 +300,11 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
     return 0;
 }
 
+- (CGFloat)defaultHeaderHeight;
+{
+    return OIInspectorStartingHeaderButtonHeight;
+}
+
 - (CGFloat)additionalHeaderHeight;
 {
     return 0.0f;
@@ -372,6 +387,16 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 - (OIInspectorInterfaceType)preferredInterfaceType;
 {
     return _preferredInterfaceType;
+}
+
+- (BOOL)wantsHeader
+{
+    return wantsHeader;
+}
+
+- (BOOL)isCollapsible
+{
+    return isCollapsible;
 }
 
 #pragma mark -

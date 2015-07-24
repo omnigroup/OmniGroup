@@ -14,13 +14,16 @@
 require 'pathname'
 require 'rexml/document'
 
+require 'xcode'
 require 'xcodeproj'
 
 gem_path = Pathname.new(File.dirname(__FILE__) + "/plist-3.1.0/lib").realpath.to_s
 $: << gem_path
 require 'plist'
 
+
 module Xcode
+
   module Workspace
   end
   
@@ -118,15 +121,18 @@ module Xcode
   end
   
   class Workspace::Workspace
-    attr_reader :path, :root
+    attr_reader :path, :checkout_location, :root
     attr_reader :autocreate_schemes
     
-    def initialize(path)
-      @path = Pathname.new(path).realpath.to_s
-      fail "#{path} is not a directory\n" unless File.directory?(@path)
+    # The path is the nominal location, while @checkout_location is the real path on disk (possibly a cache)
+    def initialize(path, options = {})
+      @checkout_location = Pathname.new(Xcode::checkout_location(path)).realpath.to_s
+      fail "#{path} is not a directory\n" unless File.directory?(@checkout_location)
+      
+      @path = Xcode::real_relative_path(path) # Allow missing path here since we might have a different checkout location
 
-      xml_file = path + "/contents.xcworkspacedata"
-      fail "no contents.xcworkspacedata file in #{path}\n" unless File.exist?(xml_file)
+      xml_file = @checkout_location + "/contents.xcworkspacedata"
+      fail "no contents.xcworkspacedata file in #{@checkout_location}\n" unless File.exist?(xml_file)
       
       doc = REXML::Document.new(File.read(xml_file))
       fail "Unable to read '#{xml_file}'\n" if (doc.nil? || doc.root.nil?)
@@ -136,7 +142,7 @@ module Xcode
       @root = Xcode::Workspace::Group.from_xml(self, doc.root)
       
       @autocreate_schemes = true
-      settings_path = @path + "/xcshareddata/WorkspaceSettings.xcsettings"
+      settings_path = @checkout_location + "/xcshareddata/WorkspaceSettings.xcsettings"
       if File.exist?(settings_path)
         settings = Plist::parse_xml(`plutil -convert xml1 -o - "#{settings_path}"`)
 
@@ -194,12 +200,12 @@ module Xcode
         add_dir_ref(ref_by_dir, project_path, project_path)
 
         #STDERR.print "project_path = #{project_path}\n"
-        if !File.exist?(project_path)
+        project = Xcode::Project.from_path(project_path)
+        if !project
             STDERR.print "--- Skipping missing #{project_path} (maybe excluded during autobuild)\n"
             next
         end
-        
-        project = Xcode::Project.new(project_path)
+
         project.each_item {|item|
           fullpath = project.resolvepath(item.identifier, false)
           #STDERR.print "item #{item} #{item.identifier} #{item.dict} #{fullpath}\n"

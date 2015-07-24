@@ -11,6 +11,7 @@
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
+#import <OmniFoundation/NSObject-OFExtensions.h>
 #import <OmniBase/OmniBase.h>
 
 #import "OSUPreferences.h"
@@ -316,13 +317,27 @@ static NSError *OSUTransformCheckServiceError(NSError *error, NSString *hostname
     id <OSULookupCredential> lookupCredential = nil;
     __block NSDictionary *dict = nil;
     __block NSError *strongError = nil;
+    __block BOOL hasReceivedResponseOrError = NO;
 
     OSURunOperation(params, runtimeStatsAndProbes, lookupCredential, ^(NSDictionary *runResult, NSError *runError){
         if (runResult)
             dict = runResult;
         else
             strongError = runError;
+        hasReceivedResponseOrError = YES;
     });
+    
+    BOOL done = OFRunLoopRunUntil(60.0/*timeout*/, OFRunLoopRunTypePolling, ^BOOL{
+        return hasReceivedResponseOrError;
+    });
+    if (done == NO) {
+        OBASSERT_NULL(dict);
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Error fetching software update information.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Timed out waiting for the software update service.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
+        NSString *suggestion = NSLocalizedStringFromTableInBundle(@"Please try again later or contact us to let us know this is broken.", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"error reason");
+        strongError = [NSError errorWithDomain:OSUErrorDomain code:OSUCheckServiceTimedOut userInfo:@{NSLocalizedDescriptionKey:description, NSLocalizedFailureReasonErrorKey:reason, NSLocalizedRecoverySuggestionErrorKey:suggestion}];
+    }
+
     if (strongError)
         error = strongError;
 #endif
@@ -345,7 +360,7 @@ static NSError *OSUTransformCheckServiceError(NSError *error, NSString *hostname
         self.output = nil;
         self.error = object;
     } else {
-        OBASSERT([object isKindOfClass:[NSDictionary class]]);
+        OBASSERT([object isKindOfClass:[NSDictionary class]], @"Got object of class %@", [object class]);
         self.output = object;
         self.error = nil;
     }

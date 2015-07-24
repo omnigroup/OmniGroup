@@ -17,9 +17,37 @@
 
 RCS_ID("$Id$");
 
+@interface _OUITiledScalingViewDrawRequestDebugView : UIView
+@end
+
+@implementation _OUITiledScalingViewDrawRequestDebugView
+{
+    NSTimer *_removeTimer;
+}
+
+- (void)dealloc;
+{
+    [_removeTimer invalidate];
+}
+
+- (void)didMoveToSuperview;
+{
+    [super didMoveToSuperview];
+    
+    _removeTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(_removeTimerFired:) userInfo:nil repeats:NO];
+}
+
+- (void)_removeTimerFired:(NSTimer *)timer;
+{
+    [self removeFromSuperview];
+}
+
+@end
+
 @implementation OUITiledScalingView
 {
     NSMutableArray *_tiles;
+    NSMutableArray *_drawRequestDebugViews;
 }
 
 static id _commonInit(OUITiledScalingView *self)
@@ -34,7 +62,7 @@ static id _commonInit(OUITiledScalingView *self)
     self->_tiles = [[NSMutableArray alloc] init];
 
     // Checkerboard pattern for areas that don't have tiles generated yet.
-    UIImage *patternImage = [UIImage imageNamed:@"OUIScalingViewBackgroundPattern.png"];
+    UIImage *patternImage = [UIImage imageNamed:@"OUIScalingViewBackgroundPattern.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     OBASSERT_NOTNULL(patternImage);
     self.layer.backgroundColor = [[UIColor colorWithPatternImage:patternImage] CGColor];
     
@@ -70,6 +98,21 @@ static id _commonInit(OUITiledScalingView *self)
             [tile setNeedsDisplayInRect:[tile convertRect:tileRect fromView:self]];
         }
     }
+    
+    // Show the requested rects briefly
+    if (OUIScalingTileViewDebugDrawing > 0) {
+        if (!_drawRequestDebugViews)
+            _drawRequestDebugViews = [[NSMutableArray alloc] init];
+        
+        [UIView performWithoutAnimation:^{
+            _OUITiledScalingViewDrawRequestDebugView *debugView = [[_OUITiledScalingViewDrawRequestDebugView alloc] initWithFrame:rect];
+            debugView.layer.zPosition = 100;
+            debugView.backgroundColor = [UIColor colorWithRed:0.2 green:0.2 blue:1.0 alpha:0.1];
+            debugView.layer.borderColor = [[UIColor blueColor] CGColor];
+            debugView.layer.borderWidth = 1;
+            [self addSubview:debugView];
+        }];
+    }
 }
 
 // TODO: -setFrame: -- if our resizing just adds/removes content and the origin is the same, we could only dirty some of the tiles.
@@ -90,7 +133,7 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
 {
     CGRect bounds = self.bounds;
     if (bounds.size.width == CGFLOAT_MAX) {
-        DEBUG_TILE_LAYOUT(@"wow, the bounds of this view cannot be correct (%@) - bailing", NSStringFromCGRect(bounds));
+        DEBUG_TILE_LAYOUT(1, @"wow, the bounds of this view cannot be correct (%@) - bailing", NSStringFromCGRect(bounds));
         return;
     }
     
@@ -101,7 +144,7 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
     OBASSERT([scrollView isKindOfClass:[OUIScalingScrollView class]]);
     CGRect visibleRect = CGRectIntersection([scrollView convertRect:scrollView.bounds toView:self], bounds);
     
-    DEBUG_TILE_LAYOUT(@"Tiling visible %@ with bounds %@", NSStringFromCGRect(visibleRect), NSStringFromCGRect(bounds));
+    DEBUG_TILE_LAYOUT(1, @"Tiling visible %@ with bounds %@", NSStringFromCGRect(visibleRect), NSStringFromCGRect(bounds));
     if (visibleRect.size.width <= 0 || visibleRect.size.height <= 0)
         return;
     
@@ -112,11 +155,11 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
     // Base the number of tiles off our visible area, but their offsets to our bounds origin.
     CGFloat tileStartX = kTileSize * floor((CGRectGetMinX(visibleRect) - CGRectGetMinX(bounds)) / kTileSize);
     CGFloat tileStartY = kTileSize * floor((CGRectGetMinY(visibleRect) - CGRectGetMinY(bounds)) / kTileSize);
-    DEBUG_TILE_LAYOUT(@"  First tile starts at %f, %f", tileStartX, tileStartY);
+    DEBUG_TILE_LAYOUT(1, @"  First tile starts at %f, %f", tileStartX, tileStartY);
     
     NSUInteger tilesWide = (NSUInteger)ceil((CGRectGetMaxX(visibleRect) - tileStartX) / kTileSize);
     NSUInteger tilesHigh = (NSUInteger)ceil((CGRectGetMaxY(visibleRect) - tileStartY) / kTileSize);
-    DEBUG_TILE_LAYOUT(@"  Using %lu x %lu tiles", tilesWide, (unsigned long)tilesHigh);
+    DEBUG_TILE_LAYOUT(1, @"  Using %lu x %lu tiles", tilesWide, (unsigned long)tilesHigh);
     
     
     NSMutableArray *neededRects = nil;
@@ -129,14 +172,14 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
             CGRect tileFrame = CGRectMake(tileStartX + tileIndexX * kTileSize, tileStartY + tileIndexY * kTileSize, kTileSize, kTileSize);
             tileFrame = CGRectIntersection(tileFrame, bounds);
             
-            DEBUG_TILE_LAYOUT(@"  Tile frame %@", NSStringFromCGRect(tileFrame));
+            DEBUG_TILE_LAYOUT(1, @"  Tile frame %@", NSStringFromCGRect(tileFrame));
             
             // Keep existing tiles that match what we need.
             OUIScalingViewTile *existingTile = nil;
             for (OUIScalingViewTile *candidate in availableTiles) {
                 if (CGRectEqualToRect(candidate.frame, tileFrame)) {
                     existingTile = candidate;
-                    DEBUG_TILE_LAYOUT(@"    exists as %@", [existingTile shortDescription]);
+                    DEBUG_TILE_LAYOUT(1, @"    exists as %@", [existingTile shortDescription]);
                     break;
                 }
             }
@@ -148,14 +191,14 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
                 if (!neededRects)
                     neededRects = [[NSMutableArray alloc] init];
                 [neededRects addObject:[NSValue valueWithCGRect:tileFrame]];
-                DEBUG_TILE_LAYOUT(@"    queued needed tile rect");
+                DEBUG_TILE_LAYOUT(1, @"    queued needed tile rect");
             }
         }
     }
     
     // Now that all the existing tiles that can be reused have been, make new tiles.    
     if (neededRects) {
-        DEBUG_TILE_LAYOUT(@"  Need new %lu tiles", (unsigned long)[neededRects count]);
+        DEBUG_TILE_LAYOUT(1, @"  Need new %lu tiles", (unsigned long)[neededRects count]);
         
         // If we are rotating, we don't want to use tiles with existing content. Otherwise, they'll fly across the screen, looking weird.
         // Do allow reuse of hidden tiles here, though, so that multiple rotations don't build up more and more tiles.
@@ -174,13 +217,13 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
             if (tile) {
                 tile.hidden = NO; // might have been unused before
                 [availableTiles removeLastObject]; // Still retained by _tiles.
-                DEBUG_TILE_LAYOUT(@"    Repurposed tile %@ for rect %@", [tile shortDescription], NSStringFromCGRect(tileFrame));
+                DEBUG_TILE_LAYOUT(1, @"    Repurposed tile %@ for rect %@", [tile shortDescription], NSStringFromCGRect(tileFrame));
             } else {
                 tile = [[OUIScalingViewTile alloc] init];
                 [tiles addObject:tile];
                 [self addSubview:tile];
                 
-                DEBUG_TILE_LAYOUT(@"    Created new tile %@ for rect %@", [tile shortDescription], NSStringFromCGRect(tileFrame));
+                DEBUG_TILE_LAYOUT(1, @"    Created new tile %@ for rect %@", [tile shortDescription], NSStringFromCGRect(tileFrame));
             }
             
             tile.frame = tileFrame;
@@ -189,7 +232,7 @@ static void OUITileViewWithRegularSquareTiles(OUITiledScalingView *self, NSMutab
     
     // Finally, hide any remaining tiles that didn't get reused.
     for (OUIScalingViewTile *tile in availableTiles) {
-        DEBUG_TILE_LAYOUT(@"  Hiding unused tile %@", [tile shortDescription]);
+        DEBUG_TILE_LAYOUT(1, @"  Hiding unused tile %@", [tile shortDescription]);
         tile.hidden = YES;
     }
 }

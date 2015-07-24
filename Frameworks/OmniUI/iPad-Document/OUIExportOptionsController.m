@@ -75,12 +75,17 @@ RCS_ID("$Id$")
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
-    return [super initWithNibName:@"OUIExportOptions" bundle:OMNI_BUNDLE];
+    OBRejectUnusedImplementation(self, _cmd);
+}
+
+- (id)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+{
+    OBRejectUnusedImplementation(self, _cmd);
 }
 
 - (id)initWithServerAccount:(OFXServerAccount *)serverAccount exportType:(OUIExportOptionsType)exportType;
 {
-    if (!(self = [super initWithNibName:nil bundle:nil]))
+    if (!(self = [super initWithNibName:@"OUIExportOptions" bundle:OMNI_BUNDLE]))
         return nil;
     
     self.automaticallyAdjustsScrollViewInsets = YES;
@@ -113,7 +118,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     self.navigationItem.title = NSLocalizedStringFromTableInBundle(@"Choose Format", @"OmniUIDocument", OMNI_BUNDLE, @"export options title");
     
     self.collectionView.backgroundColor = [UIColor whiteColor];
-    [self.collectionView registerNib:[UINib nibWithNibName:@"OUIExportOptionViewCell" bundle:nil] forCellWithReuseIdentifier:exportOptionCellReuseIdentifier];
+    [self.collectionView registerNib:[UINib nibWithNibName:@"OUIExportOptionViewCell" bundle:OMNI_BUNDLE] forCellWithReuseIdentifier:exportOptionCellReuseIdentifier];
     if ([self.collectionView.collectionViewLayout isKindOfClass:[OUIExportOptionsCollectionViewLayout class]]) {
         OUIExportOptionsCollectionViewLayout *layout =((OUIExportOptionsCollectionViewLayout *)(self.collectionView.collectionViewLayout));
         layout.minimumInterItemSpacing = 0.0;
@@ -384,15 +389,15 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 {
     OBPRECONDITION([NSThread isMainThread]);
     @autoreleasepool {
-        OUIDocumentPickerViewController *documentPicker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
-        ODSFileItem *fileItem = documentPicker.singleSelectedFileItem;
+        OUIDocumentPickerViewController *documentPickerController = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+        ODSFileItem *fileItem = documentPickerController.singleSelectedFileItem;
         if (!fileItem) {
             OBASSERT_NOT_REACHED("no selected document");
             [self _foreground_enableInterfaceAfterExportConversion];
             return;
         }
         
-        [documentPicker exportFileWrapperOfType:fileType forFileItem:fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
+        [documentPickerController exportFileWrapperOfType:fileType forFileItem:fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
             // Need to make sure all of this happens on the main thread.
             main_async(^{
                 if (fileWrapper == nil) {
@@ -401,6 +406,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
                 } else {
                     [self _foreground_exportFileWrapper:fileWrapper];
                 }
+                [documentPickerController clearSelection:YES];
             });
         }];
     }

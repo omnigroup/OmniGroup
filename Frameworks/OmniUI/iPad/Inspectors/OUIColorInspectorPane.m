@@ -175,12 +175,12 @@ RCS_ID("$Id$");
     OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)self.parentSlice;
     OBASSERT(slice);
     if (slice.allowsNone)
-        [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorNoneSegment.png" representedObject:_noneColorPicker];
+        [_colorTypeSegmentedControl addSegmentWithImage:[UIImage imageNamed:@"OUIColorInspectorNoneSegment.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] representedObject:_noneColorPicker];
 
-    [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorPaletteSegment.png" representedObject:_paletteColorPicker];
-    [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorHSVSegment.png" representedObject:_hsvColorPicker];
-    [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorRGBSegment.png" representedObject:_rgbColorPicker];
-    [_colorTypeSegmentedControl addSegmentWithImageNamed:@"OUIColorInspectorGraySegment.png" representedObject:_grayColorPicker];
+    [_colorTypeSegmentedControl addSegmentWithImage:[UIImage imageNamed:@"OUIColorInspectorPaletteSegment.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] representedObject:_paletteColorPicker];
+    [_colorTypeSegmentedControl addSegmentWithImage:[UIImage imageNamed:@"OUIColorInspectorHSVSegment.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] representedObject:_hsvColorPicker];
+    [_colorTypeSegmentedControl addSegmentWithImage:[UIImage imageNamed:@"OUIColorInspectorRGBSegment.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] representedObject:_rgbColorPicker];
+    [_colorTypeSegmentedControl addSegmentWithImage:[UIImage imageNamed:@"OUIColorInspectorGraySegment.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] representedObject:_grayColorPicker];
     
     _colorTypeSegmentedControl.selectedSegment = [_colorTypeSegmentedControl segmentAtIndex:_colorTypeIndex];
     [self _setSelectedColorTypeIndex:_colorTypeIndex];

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,7 +18,7 @@ RCS_ID("$Id$");
 {
     _touchesInside = YES;
     
-    _highlightView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarButtonFauxHighlight.png"]];
+    _highlightView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarButtonFauxHighlight.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
     CGRect imageRect = [self bounds];
     imageRect.origin.x = floor(CGRectGetMidX(imageRect));
     imageRect.origin.y = floor(CGRectGetMidY(imageRect));

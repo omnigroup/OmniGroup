@@ -824,10 +824,10 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 {
     UIImage *statusImage = nil;
     if (_item.isDownloaded == NO) {
-        statusImage = [UIImage imageNamed:@"OUIDocumentStatusNotDownloaded.png"];
+        statusImage = [UIImage imageNamed:@"OUIDocumentStatusNotDownloaded" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
         OBASSERT(statusImage);
     } else if (_item.isUploaded == NO) {
-        statusImage = [UIImage imageNamed:@"OUIDocumentStatusNotUploaded.png"];
+        statusImage = [UIImage imageNamed:@"OUIDocumentStatusNotUploaded" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
         OBASSERT(statusImage);
     }
     self.statusImage = statusImage;

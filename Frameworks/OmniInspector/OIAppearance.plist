@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>InspectorNoteTextInset</key>
+	<dict>
+		<key>width</key>
+		<integer>0</integer>
+		<key>height</key>
+		<integer>2</integer>
+	</dict>
+	<key>InspectorSidebarWidth</key>
+	<integer>280</integer>
+	<key>InspectorBackgroundColor</key>
+	<dict>
+		<key>w</key>
+		<real>0.96</real>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
+	<key>InspectorHeaderSeparatorTopPadding</key>
+	<integer>5</integer>
+	<key>InspectorHeaderContentHeight</key>
+	<integer>24</integer>
+	<key>InspectorSnoozeButtonLabelBaselineAdjustment</key>
+	<integer>5</integer>
+</dict>
+</plist>

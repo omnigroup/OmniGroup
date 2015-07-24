@@ -197,7 +197,6 @@ void OQAppendRoundedRectWithMask_c(CFTypeRef ctxtOrPath, CGRect rect, CGFloat ra
         if (penUp && !( mask & edgeAfterCorner[corner] )) {
             continue;
         }
-        OBAnalyzerNotReached(); // <http://llvm.org/bugs/show_bug.cgi?id=12856>: This combination of array access and structs boggles clang-sa's mind. It's fixed in ToT clang. <bug:///80329> (Remove OBAnalyzerNotReached from OQAppendRoundedRectWithMask_c)
         int cornum = corner % 4;
         CGFloat px = points[cornum].x;
         CGFloat py = points[cornum].y;
@@ -402,9 +401,9 @@ CGImageRef OQCreateImageWithSize(CGImageRef image, CGSize size, CGInterpolationQ
     CGContextRef ctx = CGBitmapContextCreate(NULL, size.width, size.height, CGImageGetBitsPerComponent(image), bytesPerPixel*size.width, colorSpace, (CGBitmapInfo)CGImageGetAlphaInfo(image));
     if (!ctx) {
         // Fall back to something that CGBitmapContext actually understands
-        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-        ctx = CGBitmapContextCreate(NULL, size.width, size.height, 8/*bitsPerComponent*/, 4*size.width, colorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedFirst);
-        CGColorSpaceRelease(colorSpace);
+        CGColorSpaceRef fallbackColorSpace = CGColorSpaceCreateDeviceRGB();
+        ctx = CGBitmapContextCreate(NULL, size.width, size.height, 8/*bitsPerComponent*/, 4*size.width, fallbackColorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedFirst);
+        CGColorSpaceRelease(fallbackColorSpace);
     }
 
     CGContextSetInterpolationQuality(ctx, interpolationQuality);

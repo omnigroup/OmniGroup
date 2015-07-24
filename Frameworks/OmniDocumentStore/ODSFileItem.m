@@ -199,6 +199,11 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
     return [[self.fileURL path] lastPathComponent];
 }
 
+- (NSData *)dataForWritingToExternalStorage
+{
+    return [self emailData];
+}
+
 - (NSString *)editingName;
 {
     OBPRECONDITION([NSThread isMainThread]);

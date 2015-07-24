@@ -632,19 +632,14 @@
 		4A91C9F306134ED70097A149 /* HTTPDateTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPDateTests.m; sourceTree = "<group>"; };
 		4A94189A049CB4F600278BF7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		4AA37F11066E49FC0097A149 /* OWFGetURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OWFGetURL.m; sourceTree = "<group>"; };
-		4AA5357308B27DDC00F0872D /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AA5357408B27DDC00F0872D /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AA5357508B27DDC00F0872D /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
-		4AA5357608B27DDC00F0872D /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AA5357708B27DDC00F0872D /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AA5357808B27DDC00F0872D /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
-		4AA5357908B27DDC00F0872D /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AA5357A08B27DDC00F0872D /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AA5357B08B27DDC00F0872D /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
-		4AA5357C08B27DDC00F0872D /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AA5357D08B27DDC00F0872D /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AA5357E08B27DDC00F0872D /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
-		4AA5357F08B27DDC00F0872D /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AA5358008B27DDC00F0872D /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AA5358108B27DDC00F0872D /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
 		4AA5364308B27DE600F0872D /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -1251,19 +1246,14 @@
 		4AA5357208B27DDC00F0872D /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
-				4AA5357308B27DDC00F0872D /* Omni-Application-Coverage.xcconfig */,
 				4AA5357408B27DDC00F0872D /* Omni-Application-Debug.xcconfig */,
 				4AA5357508B27DDC00F0872D /* Omni-Application-Release.xcconfig */,
-				4AA5357608B27DDC00F0872D /* Omni-Bundle-Coverage.xcconfig */,
 				4AA5357708B27DDC00F0872D /* Omni-Bundle-Debug.xcconfig */,
 				4AA5357808B27DDC00F0872D /* Omni-Bundle-Release.xcconfig */,
-				4AA5357908B27DDC00F0872D /* Omni-Framework-Coverage.xcconfig */,
 				4AA5357A08B27DDC00F0872D /* Omni-Framework-Debug.xcconfig */,
 				4AA5357B08B27DDC00F0872D /* Omni-Framework-Release.xcconfig */,
-				4AA5357C08B27DDC00F0872D /* Omni-Global-Coverage.xcconfig */,
 				4AA5357D08B27DDC00F0872D /* Omni-Global-Debug.xcconfig */,
 				4AA5357E08B27DDC00F0872D /* Omni-Global-Release.xcconfig */,
-				4AA5357F08B27DDC00F0872D /* Omni-Tool-Coverage.xcconfig */,
 				4AA5358008B27DDC00F0872D /* Omni-Tool-Debug.xcconfig */,
 				4AA5358108B27DDC00F0872D /* Omni-Tool-Release.xcconfig */,
 			);
@@ -2135,13 +2125,6 @@
 			};
 			name = Release;
 		};
-		4AA5356C08B27DCF00F0872D /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AA5357C08B27DDC00F0872D /* Omni-Global-Coverage.xcconfig */;
-			buildSettings = {
-			};
-			name = Coverage;
-		};
 		4AA5364008B27DE600F0872D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5357A08B27DDC00F0872D /* Omni-Framework-Debug.xcconfig */;
@@ -2159,15 +2142,6 @@
 				PRODUCT_NAME = OWF;
 			};
 			name = Release;
-		};
-		4AA5364208B27DE600F0872D /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AA5357908B27DDC00F0872D /* Omni-Framework-Coverage.xcconfig */;
-			buildSettings = {
-				INFOPLIST_FILE = Info.plist;
-				PRODUCT_NAME = OWF;
-			};
-			name = Coverage;
 		};
 		4AA5364B08B27DE600F0872D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -2215,22 +2189,6 @@
 			};
 			name = Release;
 		};
-		4AA5364D08B27DE600F0872D /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = Tests;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-			};
-			name = Coverage;
-		};
 		4AA5366308B27DE600F0872D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5358008B27DDC00F0872D /* Omni-Tool-Debug.xcconfig */;
@@ -2246,14 +2204,6 @@
 				PRODUCT_NAME = OWFWebPounder;
 			};
 			name = Release;
-		};
-		4AA5366508B27DE600F0872D /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AA5357F08B27DDC00F0872D /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				PRODUCT_NAME = OWFWebPounder;
-			};
-			name = Coverage;
 		};
 		4AA5367F08B27DE600F0872D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -2283,20 +2233,6 @@
 			};
 			name = Release;
 		};
-		4AA5368108B27DE600F0872D /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AA5357608B27DDC00F0872D /* Omni-Bundle-Coverage.xcconfig */;
-			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(value)",
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-				);
-				INFOPLIST_FILE = "Info-OWFUnitTests.plist";
-				PRODUCT_NAME = OWF;
-				WRAPPER_EXTENSION = xctest;
-			};
-			name = Coverage;
-		};
 		4AA5369808B27DE600F0872D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5357708B27DDC00F0872D /* Omni-Bundle-Debug.xcconfig */;
@@ -2317,16 +2253,6 @@
 			};
 			name = Release;
 		};
-		4AA5369A08B27DE600F0872D /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AA5357608B27DDC00F0872D /* Omni-Bundle-Coverage.xcconfig */;
-			buildSettings = {
-				INFOPLIST_FILE = "Info-OWDiskCache.plist";
-				PRODUCT_NAME = OWDiskCache;
-				WRAPPER_EXTENSION = plugin;
-			};
-			name = Coverage;
-		};
 		4AA536AE08B27DE600F0872D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5358008B27DDC00F0872D /* Omni-Tool-Debug.xcconfig */;
@@ -2342,14 +2268,6 @@
 				PRODUCT_NAME = owxtool;
 			};
 			name = Release;
-		};
-		4AA536B008B27DE600F0872D /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AA5357F08B27DDC00F0872D /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				PRODUCT_NAME = owxtool;
-			};
-			name = Coverage;
 		};
 		4AA536C508B27DE600F0872D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -2367,14 +2285,6 @@
 			};
 			name = Release;
 		};
-		4AA536C708B27DE600F0872D /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AA5357F08B27DDC00F0872D /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				PRODUCT_NAME = OWFGetURL;
-			};
-			name = Coverage;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2383,7 +2293,6 @@
 			buildConfigurations = (
 				4AA5356A08B27DCF00F0872D /* Debug */,
 				4AA5356B08B27DCF00F0872D /* Release */,
-				4AA5356C08B27DCF00F0872D /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -2393,7 +2302,6 @@
 			buildConfigurations = (
 				4AA5364008B27DE600F0872D /* Debug */,
 				4AA5364108B27DE600F0872D /* Release */,
-				4AA5364208B27DE600F0872D /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -2403,7 +2311,6 @@
 			buildConfigurations = (
 				4AA5364B08B27DE600F0872D /* Debug */,
 				4AA5364C08B27DE600F0872D /* Release */,
-				4AA5364D08B27DE600F0872D /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -2413,7 +2320,6 @@
 			buildConfigurations = (
 				4AA5366308B27DE600F0872D /* Debug */,
 				4AA5366408B27DE600F0872D /* Release */,
-				4AA5366508B27DE600F0872D /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -2423,7 +2329,6 @@
 			buildConfigurations = (
 				4AA5367F08B27DE600F0872D /* Debug */,
 				4AA5368008B27DE600F0872D /* Release */,
-				4AA5368108B27DE600F0872D /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -2433,7 +2338,6 @@
 			buildConfigurations = (
 				4AA5369808B27DE600F0872D /* Debug */,
 				4AA5369908B27DE600F0872D /* Release */,
-				4AA5369A08B27DE600F0872D /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -2443,7 +2347,6 @@
 			buildConfigurations = (
 				4AA536AE08B27DE600F0872D /* Debug */,
 				4AA536AF08B27DE600F0872D /* Release */,
-				4AA536B008B27DE600F0872D /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -2453,7 +2356,6 @@
 			buildConfigurations = (
 				4AA536C508B27DE600F0872D /* Debug */,
 				4AA536C608B27DE600F0872D /* Release */,
-				4AA536C708B27DE600F0872D /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

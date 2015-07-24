@@ -7,12 +7,11 @@
 
 #import "OUIDocumentOpenAnimator.h"
 
+#import <OmniUIDocument/OmniUIDocumentAppearance.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerViewController.h>
 #import <OmniUIDocument/OUIDocumentPickerFileItemView.h>
 #import <OmniDocumentStore/ODSFileItem.h>
-
-#import "OmniUIDocumentAppearance.h"
 
 RCS_ID("$Id$")
 

@@ -84,9 +84,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34E20FC9119314D200ECA875"
-               BuildableName = "libOmniUnzip.a"
-               BlueprintName = "OmniUnzipTouch"
+               BlueprintIdentifier = "34800E111B19233E0008DC9E"
+               BuildableName = "OmniUnzip.framework"
+               BlueprintName = "OmniUnzip-iOS"
                ReferencedContainer = "container:../Frameworks/OmniUnzip/OmniUnzip.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -112,9 +112,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34896924179D99DD007978EC"
-               BuildableName = "libOmniDocumentStore.a"
-               BlueprintName = "OmniDocumentStore"
+               BlueprintIdentifier = "344F78B51B56F98A003BB98D"
+               BuildableName = "OmniDocumentStore.framework"
+               BlueprintName = "OmniDocumentStore-iOS"
                ReferencedContainer = "container:../Frameworks/OmniDocumentStore/OmniDocumentStore.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -126,9 +126,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34AFAD28164B0EC8009E39AB"
-               BuildableName = "libOmniFileExchange.a"
-               BlueprintName = "OmniFileExchangeTouch"
+               BlueprintIdentifier = "343682781B58284500BC25E6"
+               BuildableName = "OmniFileExchange.framework"
+               BlueprintName = "OmniFileExchange-iOS"
                ReferencedContainer = "container:../Frameworks/OmniFileExchange/OmniFileExchange.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -140,9 +140,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2AAC07D0554694100DB518D"
-               BuildableName = "libOmniUI.a"
-               BlueprintName = "OmniUITouch"
+               BlueprintIdentifier = "348A79BA1B5849C70082D55D"
+               BuildableName = "OmniUI.framework"
+               BlueprintName = "OmniUI-iOS"
                ReferencedContainer = "container:../Frameworks/OmniUI/iPad/OmniUI.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -163,10 +163,10 @@
       </BuildActionEntries>
    </BuildAction>
    <TestAction
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      buildConfiguration = "Debug">
+      shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
       <MacroExpansion>
@@ -182,14 +182,14 @@
       </AdditionalOptions>
    </TestAction>
    <LaunchAction
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      buildConfiguration = "Debug"
       displayScaleIsEnabled = "NO"
       displayScale = "1.00"
+      enablesOpenGLESFrameCapture = "YES"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Debug"
-      enablesOpenGLESFrameCapture = "YES"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
@@ -210,10 +210,10 @@
    <ProfileAction
       displayScaleIsEnabled = "NO"
       displayScale = "1.00"
+      buildConfiguration = "Release"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Release"
       debugDocumentVersioning = "YES">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">

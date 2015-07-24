@@ -460,40 +460,6 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     return NO;
 }
 
-- (BOOL)isPatternSimilarToColorPattern:(NSColor *)color;
-{
-    NSImage *patternImage = [self patternImage];  
-    if (!patternImage)
-        return NO;
-    
-    [patternImage lockFocus];
-    NSBitmapImageRep *firstPatternBitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:NSMakeRect(0, 0,  [patternImage size].width, [patternImage size].height)] autorelease];
-    [patternImage unlockFocus];
-    
-    patternImage = [color patternImage];
-    if (!patternImage)
-        return NO;
-    
-    [patternImage lockFocus];
-    NSBitmapImageRep *secondPatternBitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:NSMakeRect(0, 0,  [patternImage size].width, [patternImage size].height)] autorelease];
-    [patternImage unlockFocus];
-    
-    if ([firstPatternBitmapImageRep pixelsWide] != [secondPatternBitmapImageRep pixelsWide] || [firstPatternBitmapImageRep pixelsHigh] != [secondPatternBitmapImageRep pixelsHigh])
-        return NO;
-    
-    for (NSInteger widthIndex = 0; widthIndex < [firstPatternBitmapImageRep pixelsWide]; widthIndex++) {
-        for (NSInteger heightIndex = 0; heightIndex < [firstPatternBitmapImageRep pixelsHigh]; heightIndex++) {
-            NSColor *firstPatternColor = [firstPatternBitmapImageRep colorAtX:widthIndex y:heightIndex];
-            NSColor *secondPatternColor = [secondPatternBitmapImageRep colorAtX:widthIndex y:heightIndex];
-            
-            if (![firstPatternColor isSimilarToColor:secondPatternColor])
-                return NO;
-        }
-    }  
-    
-    return YES;
-}
-
 - (NSData *)patternImagePNGData;
 {
     NSString *colorSpace = [self colorSpaceName];

@@ -1,4 +1,4 @@
-// Copyright 1997-2007, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,18 +7,24 @@
 //
 // $Id$
 
-#import "OAApplication-OIExtensions.h"
-#import "OAToolbarWindowController-OIExtensions.h"
-#import "OIInspectableControllerProtocol.h"
-#import "OIInspectionSet.h"
-#import "OIInspector.h"
-#import "OIInspectorController.h"
-#import "OIInspectorGroup.h"
-#import "OIInspectorHeaderView.h"
-#import "OIInspectorRegistry.h"
-#import "OIInspectorSection.h"
-#import "OIInspectorTabController.h"
-#import "OIMatrix.h"
-#import "OISectionedInspector.h"
-#import "OITabMatrix.h"
-#import "OITabbedInspector.h"
+#import <OmniInspector/OAApplication-OIExtensions.h>
+#import <OmniInspector/OAToolbarWindowController-OIExtensions.h>
+#import <OmniInspector/OIButtonMatrixBackgroundView.h>
+#import <OmniInspector/OIInspectableControllerProtocol.h>
+#import <OmniInspector/OIInspectionSet.h>
+#import <OmniInspector/OIInspector.h>
+#import <OmniInspector/OIInspectorController.h>
+#import <OmniInspector/OIInspectorGroup.h>
+#import <OmniInspector/OIInspectorHeaderView.h>
+#import <OmniInspector/OIInspectorRegistry.h>
+#import <OmniInspector/OIInspectorSection.h>
+#import <OmniInspector/OIInspectorTabController.h>
+#import <OmniInspector/OIInspectorWindow.h>
+#import <OmniInspector/OIMatrix.h>
+#import <OmniInspector/OIScrollingTabbedInspector.h>
+#import <OmniInspector/OISectionedInspector.h>
+#import <OmniInspector/OIStackedSlicesInspector.h>
+#import <OmniInspector/OITabCell.h>
+#import <OmniInspector/OITabMatrix.h>
+#import <OmniInspector/OITabbedInspector.h>
+#import <OmniInspector/OIWorkspace.h>

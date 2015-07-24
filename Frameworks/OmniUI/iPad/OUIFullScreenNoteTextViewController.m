@@ -1,4 +1,4 @@
-// Copyright 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,17 +15,12 @@ RCS_ID("$Id$")
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    self = [super initWithNibName:@"OUIFullScreenNoteTextView" bundle:OMNI_BUNDLE];
     if (self) {
         self.modalPresentationStyle = UIModalPresentationFullScreen;
         self.selectedRange = NSMakeRange(NSNotFound, 0);
     }
     return self;
-}
-
-- (NSString *)nibName;
-{
-    return @"OUIFullScreenNoteTextView";
 }
 
 - (void)viewDidLoad

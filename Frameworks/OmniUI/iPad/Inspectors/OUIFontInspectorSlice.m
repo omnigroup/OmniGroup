@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,7 @@
 
 #import <OmniUI/OUIFontInspectorSlice.h>
 
+#import <OmniUI/OUIImages.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorTextWell.h>
 #import <OmniUI/OUIInspectorStepperButton.h>
@@ -81,6 +82,10 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
+    // should usually get these from -[OUIInspectorSlice init] and custom class support.
+    OBPRECONDITION(nibNameOrNil);
+    OBPRECONDITION(nibBundleOrNil);
+    
     if (!(self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
         return nil;
     
@@ -296,10 +301,10 @@ static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontIns
     [_fontFamilyTextWell setNavigationTarget:self action:@selector(_showFontFamilies:)];
     [(UIImageView *)_fontFamilyTextWell.rightView setHighlightedImage:[OUIInspectorWell navigationArrowImageHighlighted]];
     
-    _fontSizeDecreaseStepperButton.image = [UIImage imageNamed:@"OUIStepperMinus"];
+    _fontSizeDecreaseStepperButton.image = OUIStepperMinusImage();
     _fontSizeDecreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font smaller", @"OUIInspectors", OMNI_BUNDLE, @"Decrement font size button accessibility label");
     [_fontSizeDecreaseStepperButton addTarget:self action:@selector(stepperTouchesEnded:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside| UIControlEventTouchCancel];
-    _fontSizeIncreaseStepperButton.image = [UIImage imageNamed:@"OUIStepperPlus"];
+    _fontSizeIncreaseStepperButton.image = OUIStepperPlusImage();
     _fontSizeIncreaseStepperButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Font bigger", @"OUIInspectors", OMNI_BUNDLE, @"Increment font size button accessibility label");
     [_fontSizeIncreaseStepperButton addTarget:self action:@selector(stepperTouchesEnded:) forControlEvents:UIControlEventTouchUpInside | UIControlEventTouchUpOutside| UIControlEventTouchCancel];
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,28 +24,28 @@ RCS_ID("$Id$");
 
 static UIImage *_navigationArrowImage(void)
 {
-    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchNavigationArrow"];
+    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchNavigationArrow" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     OBASSERT(image);
     return image;
 }
 
 static UIImage *_translucentBackgroundImage(void)
 {
-    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchTranslucentBackground"];
+    UIImage *image = [UIImage imageNamed:@"OUIColorSwatchTranslucentBackground" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     OBASSERT(image);
     return image;
 }
 
 static UIImage *_selectedImage(void)
 {
-    UIImage *image = [UIImage imageNamed:@"OUIColorInspectorSelected"];
+    UIImage *image = [UIImage imageNamed:@"OUIColorInspectorSelected" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     OBASSERT(image);
     return image;
 }
 
 static UIImage *_colorPickerImage(void)
 {
-    UIImage *image = [UIImage imageNamed:@"OUIColorPickerSwatch"];
+    UIImage *image = [UIImage imageNamed:@"OUIColorPickerSwatch" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     OBASSERT(image);
     return image;
 }

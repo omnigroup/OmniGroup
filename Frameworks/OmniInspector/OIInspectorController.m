@@ -5,44 +5,33 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OIInspectorController.h"
+#import <OmniInspector/OIInspectorController.h>
 
 #import <AppKit/AppKit.h>
-#import <OmniFoundation/OmniFoundation.h>
-#import <OmniBase/OmniBase.h>
-
-#import "OIInspector.h"
-#import "OIInspectorGroup.h"
-#import "OIInspectorHeaderView.h"
-#import "OIInspectorHeaderBackground.h"
-#import "OIInspectorRegistry.h"
-#import "OIInspectorResizer.h"
-#import "OIInspectorWindow.h"
-
 #import <OmniAppKit/NSImage-OAExtensions.h>
 #import <OmniAppKit/NSString-OAExtensions.h>
-
+#import <OmniBase/OmniBase.h>
+#import <OmniFoundation/OmniFoundation.h>
+#import <OmniInspector/OIInspector.h>
+#import <OmniInspector/OIInspectorGroup.h>
+#import <OmniInspector/OIInspectorHeaderView.h>
+#import <OmniInspector/OIInspectorRegistry.h>
+#import <OmniInspector/OIInspectorWindow.h>
+#import <OmniInspector/OIWorkspace.h>
 #include <sys/sysctl.h>
+
+#import "OIInspectorController-Internal.h"
+#import "OIInspectorHeaderBackground.h"
+#import "OIInspectorResizer.h"
+
 
 RCS_ID("$Id$");
 
 NSString * const OIInspectorControllerDidChangeExpandednessNotification = @"OIInspectorControllerDidChangeExpandedness";
 
-@interface OIInspectorController (/*Private*/) <OIInspectorHeaderViewDelegateProtocol>
+@interface OIInspectorController () <OIInspectorHeaderViewDelegateProtocol>
 
-@property (nonatomic, assign) OIInspectorInterfaceType interfaceType;
 @property (nonatomic, strong) NSView *embeddedContainerView;
-
-- (void)_buildHeadingView;
-- (void)_buildWindow;
-
-- (NSView *)_inspectorView;
-- (void)_setFloatingExpandedness:(BOOL)expanded updateInspector:(BOOL)updateInspector withNewTopLeftPoint:(NSPoint)topLeftPoint animate:(BOOL)animate;
-- (void)_setEmbeddedExpandedness:(BOOL)expanded updateInspector:(BOOL)updateInspector;
-- (void)_postExpandednessChangedNotification;
-- (void)_saveInspectorHeight;
-
-- (BOOL)_groupCanBeginResizingOperation;
 
 @end
 
@@ -60,6 +49,18 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 }
 
 @implementation OIInspectorController
+{
+    NSArray *currentlyInspectedObjects;
+    OIInspector *inspector;
+    OIInspectorWindow *window;
+    OIInspectorHeaderView *headingButton;
+    OIInspectorHeaderBackground *headingBackground;
+    OIInspectorResizer *resizerView;
+    NSView *controlsView;
+    BOOL loadedInspectorView, isBottommostInGroup, collapseOnTakeNewPosition, heightSizable, forceResizeWidget;
+    CGFloat _minimumHeight;
+    NSPoint newPosition;
+}
 
 // Init and dealloc
 
@@ -69,7 +70,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         return nil;
 
     inspector = anInspector;
-    isExpanded = NO;
+    _isExpanded = !anInspector.isCollapsible;
     self.interfaceType = anInspector.preferredInterfaceType;
     
     if ([inspector respondsToSelector:@selector(setInspectorController:)])
@@ -79,6 +80,8 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 }
 
 // API
+
+@synthesize group = _weak_group;
 
 - (void)setGroup:(OIInspectorGroup *)aGroup;
 {
@@ -104,13 +107,11 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     return headingButton;
 }
 
-- (BOOL)isExpanded;
-{
-    return isExpanded;
-}
-
 - (void)setExpanded:(BOOL)newState withNewTopLeftPoint:(NSPoint)topLeftPoint;
 {
+    if (!self.inspector.isCollapsible)
+        return;
+    
     switch (self.interfaceType) {
         case OIInspectorInterfaceTypeFloating:
             [self _setFloatingExpandedness:newState updateInspector:YES withNewTopLeftPoint:topLeftPoint animate:NO];
@@ -130,7 +131,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 {
     if ([item action] == @selector(toggleVisibleAction:)) {
-        [item setState:isExpanded && [_weak_group isVisible]];
+        [item setState:_isExpanded && [_weak_group isVisible]];
     }
     return YES;
 }
@@ -153,7 +154,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         [self loadInterface]; // Load the UI and thus 'headingButton'
         [self headerViewDidToggleExpandedness:headingButton];
     } else {
-        if (!isExpanded) {
+        if (!_isExpanded) {
             [self loadInterface]; // Load the UI and thus 'headingButton'
             [self headerViewDidToggleExpandedness:headingButton];
         }
@@ -173,7 +174,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (void)showInspector;
 {
-    if (![_weak_group isVisible] || !isExpanded)
+    if (![_weak_group isVisible] || !_isExpanded)
         [self toggleDisplay];
     else
         [_weak_group orderFrontGroup]; 
@@ -190,7 +191,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         return;
     
     isBottommostInGroup = isBottom;
-    if (window && !isExpanded) {
+    if (window && !_isExpanded) {
         NSRect windowFrame = [window frame];
         NSRect headingFrame;
         
@@ -204,10 +205,10 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 {
     switch (self.interfaceType) {
         case OIInspectorInterfaceTypeFloating:
-            [self _setFloatingExpandedness:!isExpanded updateInspector:YES withNewTopLeftPoint:topLeftPoint animate:animate];
+            [self _setFloatingExpandedness:!_isExpanded updateInspector:YES withNewTopLeftPoint:topLeftPoint animate:animate];
             break;
         case OIInspectorInterfaceTypeEmbedded:
-            [self _setEmbeddedExpandedness:!isExpanded updateInspector:YES];
+            [self _setEmbeddedExpandedness:!_isExpanded updateInspector:YES];
             break;
     }
 }
@@ -218,18 +219,18 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         case OIInspectorInterfaceTypeFloating:
         {
             NSRect windowFrame = [window frame];
-            [self _setFloatingExpandedness:isExpanded
+            [self _setFloatingExpandedness:_isExpanded
                            updateInspector:NO
                        withNewTopLeftPoint:NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame))
                                    animate:allowAnimation];
         }
             break;
         case OIInspectorInterfaceTypeEmbedded:
-            [self _setEmbeddedExpandedness:isExpanded updateInspector:NO];
+            [self _setEmbeddedExpandedness:_isExpanded updateInspector:NO];
             break;
     }
     
-    if (isExpanded && resizerView != nil)
+    if (_isExpanded && resizerView != nil)
         [self queueSelectorOnce:@selector(_saveInspectorHeight)];
 }
 
@@ -282,9 +283,9 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeFloating);
     
     if (window) {
-        BOOL shouldBeExpandedBeforeDisplay = [[self.inspectorRegistry workspaceDefaults] objectForKey:[self identifier]] != nil;
-        if (shouldBeExpandedBeforeDisplay != isExpanded) {
-            /* Expanding might cause our inspector to load its interface and lay itself out, thus informing us of the resize and reentering this method. So don't assume that isExpanded is false because we set it that way in init.
+        BOOL shouldBeExpandedBeforeDisplay = [OIWorkspace.sharedWorkspace objectForKey:[self identifier]] != nil;
+        if (shouldBeExpandedBeforeDisplay != _isExpanded) {
+            /* Expanding might cause our inspector to load its interface and lay itself out, thus informing us of the resize and reentering this method. So don't assume that _isExpanded is false because we set it that way in init.
              
              Stack trace (r170537):
              
@@ -334,7 +335,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     if (self.interfaceType == OIInspectorInterfaceTypeFloating && ![_weak_group isVisible])
         return;
     
-    if (!isExpanded)
+    if (!_isExpanded)
         return;
 
     NSArray *list = nil;
@@ -425,7 +426,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 - (IBAction)toggleVisibleAction:(id)sender;
 {
     BOOL didExpand = NO;
-    if (!isExpanded) {
+    if (!_isExpanded) {
         [self toggleDisplay];
         didExpand = YES;
     }
@@ -445,6 +446,11 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (void)populateContainerView;
 {
+    if (!inspector.wantsHeader && !inspector.isCollapsible) {
+        [[self containerView] addSubview:[self _inspectorView]];
+        return;
+    }
+    
     [self _buildHeadingView];
     
     if (!self.isExpanded && self.interfaceType == OIInspectorInterfaceTypeFloating) {
@@ -470,11 +476,12 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 - (void)_buildHeadingView;
 {
     OBPRECONDITION(headingButton == nil);
-    
+
     headingButton = [[[self headingButtonClass] alloc] initWithFrame:NSMakeRect(0.0f, OIInspectorSpaceBetweenButtons,
                                                                             [self.inspectorRegistry inspectorWidth],
-                                                                            OIInspectorStartingHeaderButtonHeight)];
+                                                                            inspector.defaultHeaderHeight)];
     [headingButton setTitle:[inspector displayName]];
+    headingButton.titleContentHeight = OIInspectorStartingHeaderButtonHeight;
 
     NSImage *image = [inspector image];
     if (image)
@@ -490,18 +497,18 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     [headingButton setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
 }
 
-- (void)_buildWindow;
+- (OIInspectorWindow *)buildWindow;
 {
-    window = [[OIInspectorWindow alloc] initWithContentRect:NSMakeRect(500.0f, 300.0f, NSWidth([headingButton frame]), OIInspectorStartingHeaderButtonHeight + OIInspectorSpaceBetweenButtons) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
-    [window setDelegate:self];
-    [window setBecomesKeyOnlyIfNeeded:YES];
+    return [[OIInspectorWindow alloc] initWithContentRect:NSMakeRect(500.0f, 300.0f, NSWidth([headingButton frame]), inspector.defaultHeaderHeight + OIInspectorSpaceBetweenButtons) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
 }
 
 - (NSView *)containerView;
 {
     if (self.interfaceType == OIInspectorInterfaceTypeFloating) {
         if (window == nil) {
-            [self _buildWindow];
+            window = [self buildWindow];
+            [window setDelegate:self];
+            [window setBecomesKeyOnlyIfNeeded:YES];
         }
         
         return [window contentView];
@@ -532,7 +539,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
             _minimumHeight = [inspectorView frame].size.height;
         }
         
-        NSString *savedHeightString = [[self.inspectorRegistry workspaceDefaults] objectForKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
+        NSString *savedHeightString = [OIWorkspace.sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
 
 	NSSize size = [inspectorView frame].size;
 	OBASSERT(size.width <= [self.inspectorRegistry inspectorWidth]); // OK to make inspectors wider, but probably indicates a problem if the nib is wider than the global inspector width
@@ -556,14 +563,14 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     NSView *view = [self _inspectorView];
     BOOL hadVisibleInspectors = [self.inspectorRegistry hasVisibleInspector];
 
-    isExpanded = expanded;
-    isSettingExpansion = YES;
+    _isExpanded = expanded;
+    _isSettingExpansion = YES;
     [_weak_group setScreenChangesEnabled:NO];
-    [headingButton setExpanded:isExpanded];
+    [headingButton setExpanded:_isExpanded];
 
     CGFloat additionalHeaderHeight;
     
-    if (isExpanded) {
+    if (_isExpanded) {
 
         if (updateInspector) {
             // If no inspectors were previously visible, the inspector registry's selection set may not be up-to-date, so tell it to update
@@ -604,7 +611,9 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
             [[self containerView] addSubview:resizerView];
         }
         [view setAutoresizingMask:NSViewHeightSizable | NSViewMinXMargin | NSViewMaxXMargin];
-        [[self.inspectorRegistry workspaceDefaults] setObject:@"YES" forKey:[self identifier]];
+        [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
+            [dictionary setObject:@"YES" forKey:[self identifier]];
+        }];
     } else {
 	[window makeFirstResponder:window];
 
@@ -628,7 +637,9 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         if (updateInspector)
             [self inspectNothing];
         
-        [[self.inspectorRegistry workspaceDefaults] removeObjectForKey:[self identifier]];
+        [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
+            [dictionary removeObjectForKey:[self identifier]];
+        }];
     }
     
     NSRect headingFrame;
@@ -646,7 +657,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     [self.inspectorRegistry configurationsChanged];
     
     [_weak_group setScreenChangesEnabled:YES];
-    isSettingExpansion = NO;
+    _isSettingExpansion = NO;
     
     [self _postExpandednessChangedNotification];
 }
@@ -656,11 +667,11 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     OBFinishPortingLater("Add back animated argument?");
     OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeEmbedded);
     
-    if (expanded == isExpanded)
+    if (expanded == _isExpanded)
         return;
     BOOL hadVisibleInspector = [self.inspectorRegistry hasVisibleInspector];
-    isExpanded = expanded;
-    [headingButton setExpanded:isExpanded];
+    _isExpanded = expanded;
+    [headingButton setExpanded:_isExpanded];
 
     if (updateInspector) {
         if (!hadVisibleInspector) {
@@ -705,7 +716,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (void)_postExpandednessChangedNotification;
 {
-    NSDictionary *userInfo = @{ @"isExpanded" : @(isExpanded) };
+    NSDictionary *userInfo = @{ @"isExpanded" : @(_isExpanded) };
     NSNotification *notification = [[NSNotification alloc] initWithName:OIInspectorControllerDidChangeExpandednessNotification
                                                                   object:self
                                                                 userInfo:userInfo];
@@ -714,11 +725,13 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (void)_saveInspectorHeight;
 {
-    OIInspectorRegistry *registry = self.inspectorRegistry;
     NSSize size = [[self _inspectorView] frame].size;
 
-    [[registry workspaceDefaults] setObject:[NSNumber numberWithCGFloat:size.height] forKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
-    [registry defaultsDidChange];
+    [OIWorkspace.sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
+        [dictionary setObject:[NSNumber numberWithCGFloat:size.height] forKey:[NSString stringWithFormat:@"%@-Height", [self identifier]]];
+    }];
+
+    [OIWorkspace.sharedWorkspace save];
 }
 
 - (BOOL)_groupCanBeginResizingOperation;
@@ -811,40 +824,46 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
     NSRect newContentRect = [window contentRectForFrameRect:toRect];
     
-    if (isExpanded && !isSettingExpansion) {
+    if (_isExpanded && !_isSettingExpansion) {
         if ([inspector respondsToSelector:@selector(inspectorMinimumHeight)])
             _minimumHeight = [inspector inspectorMinimumHeight];
 
         if (NSHeight(newContentRect) < _minimumHeight)
             newContentRect.size.height = _minimumHeight;
     }
-    if (isExpanded && forceResizeWidget) {
-        newContentRect.size.height -= OIInspectorStartingHeaderButtonHeight;
+    if (_isExpanded && forceResizeWidget) {
+        CGFloat neededHeight = headingButton ? headingButton.heightNeededWhenExpanded : OIInspectorStartingHeaderButtonHeight;
+        newContentRect.size.height -= neededHeight;
         newContentRect.size.height = [inspector inspectorWillResizeToHeight:newContentRect.size.height];
-        newContentRect.size.height += OIInspectorStartingHeaderButtonHeight;
+        newContentRect.size.height += neededHeight;
     }
 
     newContentRect.size.width = [self.inspectorRegistry inspectorWidth];
     
     toRect = [window frameRectForContentRect:newContentRect];
     
-    if (isExpanded && !isSettingExpansion && !forceResizeWidget && !heightSizable) {
+    if (_isExpanded && !_isSettingExpansion && !forceResizeWidget && !heightSizable) {
         toRect.origin.y += NSHeight(fromRect) - NSHeight(toRect);
         toRect.size.height = NSHeight(fromRect);
     }
     
     if (_weak_group != nil) {
-        result = [_weak_group inspector:self willResizeToFrame:toRect isSettingExpansion:isSettingExpansion];
+        result = [_weak_group inspector:self willResizeToFrame:toRect isSettingExpansion:_isSettingExpansion];
 	OBASSERT(result.size.width == toRect.size.width); // Not allowed to width-size inspectors ever!
     } else
         result = toRect;
     
-    if (isExpanded && !isSettingExpansion && resizerView != nil)
+    if (_isExpanded && !_isSettingExpansion && resizerView != nil)
         [self queueSelectorOnce:@selector(_saveInspectorHeight)];
     return result;
 }
 
 #pragma mark OIInspectorHeaderViewDelegateProtocol
+
+- (BOOL)headerViewShouldDisplayExpandButton:(OIInspectorHeaderView *)view
+{
+    return inspector.isCollapsible;
+}
 
 - (BOOL)headerViewShouldDisplayCloseButton:(OIInspectorHeaderView *)view;
 {

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -64,7 +64,7 @@ static NSData *someData;
         someData = [buf copy];
         [pool release];
 
-        NSLog(@"Test data: %d bytes", [someData length]);
+        NSLog(@"Test data: %lu bytes", [someData length]);
     }
 }
 
@@ -133,7 +133,7 @@ static NSData *someData;
 - (void)readerThread:(NSMutableDictionary *)info
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    int newCondition;
+    NSInteger newCondition;
 
     NS_DURING {
         [self performSelector:NSSelectorFromString([info objectForKey:@"action"]) withObject:info];
@@ -151,26 +151,22 @@ static NSData *someData;
 
 - (void)verifyResults
 {
-    int procIndex;
+    NSUInteger procIndex;
 
     [runningProcs lockWhenCondition:0];
     [runningProcs unlock];
 
     for(procIndex = 0; procIndex < [readerStates count]; procIndex ++) {
         NSDictionary *info = [readerStates objectAtIndex:procIndex];
-        NSString *procDesc = [NSString stringWithFormat:@"Thread %d", procIndex];
+        NSString *procDesc = [NSString stringWithFormat:@"Thread %lu", procIndex];
 
         if ([info objectForKey:@"done"]) {
-            shouldBeEqual1([info objectForKey:@"exception"], nil, procDesc);
-            shouldBeEqual1([info objectForKey:@"data"], inputData, procDesc);
+            XCTAssertNil([info objectForKey:@"exception"], @"%@", procDesc);
+            XCTAssertEqual([info objectForKey:@"data"], inputData, @"%@", procDesc);
         } else if ([info objectForKey:@"exception"]) {
-            [self failWithException:[NSException failureInRaise:[info objectForKey:@"action"]
-                                                      exception:[info objectForKey:@"exception"]
-                                                         inFile:[NSString stringWithCString:__FILE__]
-                                                         atLine:__LINE__
-                                                withDescription:(procDesc)]];
+            XCTFail(@"Exception %@", info);
         } else {
-            fail1(([NSString stringWithFormat:@"Proc %d has bad state: %@", procIndex, [info description]]));
+            XCTFail(@"Proc %lu has bad state: %@", procIndex, [info description]);
         }
     }
 
@@ -185,9 +181,9 @@ static NSData *someData;
     [info setObject:buf forKey:@"data"];
     [buf autorelease];
     while (![cursor isAtEOF]) {
-        unsigned staccato = random() % 256;
-        unsigned avail = [dataStream bufferedDataLength] - [cursor currentOffset];
-        NSData *piece = [cursor readBytes: MAX(MIN(avail, staccato), 1)];
+        NSUInteger staccato = random() % 256;
+        NSUInteger avail = [dataStream bufferedDataLength] - [cursor currentOffset];
+        NSData *piece = [cursor readBytes: MAX(MIN(avail, staccato), 1UL)];
         [buf appendData:piece];
     }
 }
@@ -260,9 +256,9 @@ static NSData *someData;
 
     writePos = 0;
     while (writePos < [inputData length]) {
-        unsigned staccato = random() % 256;
-        unsigned fl2 = random() & 0xF;
-        unsigned bufAvail;
+        NSUInteger staccato = random() % 256;
+        NSUInteger fl2 = random() & 0xF;
+        NSUInteger bufAvail;
         char *bufptr;
         
         if (staccato > 128)

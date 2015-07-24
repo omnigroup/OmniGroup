@@ -219,4 +219,3 @@
 
 /* error reason */
 "Wrong root element namespace.  Was expecting '%@' but found '%@'." = "根元素名称空间错误。应该是“%1$@”，但却找到“%2$@”。";
-

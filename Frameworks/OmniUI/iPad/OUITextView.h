@@ -54,6 +54,8 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 
 @property(nonatomic,readonly) CGFloat firstLineAscent;
 
+@property(nonatomic) BOOL keepContextualMenuHidden;
+
 - (NSDictionary *)typingAttributesWithAllAttributes; // allow subclasses to ensure that the typing attributes contain the extra attributes which are sometimes stripped out by the runtime.
 - (void)ensureLayout;
 

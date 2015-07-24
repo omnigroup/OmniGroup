@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -200,7 +200,7 @@ RCS_ID("$Id$");
                 break;
             case OUILoupeOverlayCircle:
             {
-                loupeFrameImage = [UIImage imageNamed:@"OUITextSelectionOverlay.png"];
+                loupeFrameImage = [UIImage imageNamed:@"OUITextSelectionOverlay.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
                 CGSize loupeImageSize = [loupeFrameImage size];
 
                 CGMutablePathRef ring = CGPathCreateMutable();
@@ -217,11 +217,11 @@ RCS_ID("$Id$");
             }
             case OUILoupeOverlayRectangle:
             {
-                UIImage *plainImage = [UIImage imageNamed:@"OUIRectangularOverlayFrame.png"];
+                UIImage *plainImage = [UIImage imageNamed:@"OUIRectangularOverlayFrame.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
                 loupeFrameImage = [plainImage stretchableImageWithLeftCapWidth:RectLoupeSideCapWidth
                                                                    topCapHeight:RectLoupeTopCapHeight];
                 if (!loupeTabImage)
-                    loupeTabImage = [UIImage imageNamed:@"OUIRectangularOverlayArrow.png"];
+                    loupeTabImage = [UIImage imageNamed:@"OUIRectangularOverlayArrow.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
                 CGSize loupeImageSize;
                 loupeImageSize = [plainImage size];
                 loupeImageSize.width = 207;

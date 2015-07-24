@@ -1374,9 +1374,6 @@ NSString * const ODOEditingContextDidResetNotification = @"ODOEditingContextDidR
             // Notify our processed objects.  If they make changes during this, they'll go into the recent changes.  The objects themselves must not call -processPendingChanges while we are looping.  We might be able to lift this restriction, but if we don't make a copy of the sets being iterated here, then we'd end up with them mutating a set we are enumerating.  On the other hand, if we do make a copy and they mutate the set, we'd lose track of the fact that there were recent changes and those objects wouldn't get a -willSave!  So, we set a flag here and assert that it isn't set in -processPendingChanges.
             _isSendingWillSave = YES;
             {
-                NSDictionary *userInfo = [_createChangeSetNotificationUserInfo(_processedInsertedObjects, _processedUpdatedObjects, _processedDeletedObjects) autorelease];
-                [[NSNotificationCenter defaultCenter] postNotificationName:ODOEditingContextWillSaveNotification object:self userInfo:userInfo];
-                
                 [_processedInsertedObjects makeObjectsPerformSelector:@selector(willInsert)];
                 [_processedUpdatedObjects makeObjectsPerformSelector:@selector(willUpdate)];
                 [_processedDeletedObjects makeObjectsPerformSelector:@selector(willDelete)]; // OmniFocusModel, in particular OFMProjectInfo's metadata support, wants to be notified when a delete is saved, as opposed to happening in memory (-prepareForDeletion)
@@ -1400,6 +1397,22 @@ NSString * const ODOEditingContextDidResetNotification = @"ODOEditingContextDidR
                 return NO;
             }
         }
+        
+        // Send a final, context-wide will save.
+        
+        _isSendingWillSave = YES;
+        {
+            NSDictionary *userInfo = _createChangeSetNotificationUserInfo(_processedInsertedObjects, _processedUpdatedObjects, _processedDeletedObjects);
+            NSNotification *notification = [NSNotification notificationWithName:ODOEditingContextWillSaveNotification object:self userInfo:userInfo];
+            [[NSNotificationCenter defaultCenter] postNotification:notification];
+            [userInfo release];
+        }
+        _isSendingWillSave = NO;
+        
+        // Modifying the context during ODOEditingContextWillSaveNotification is disallowed
+        BOOL hasEdits = [self processPendingChanges];
+        assert(!hasEdits);
+
     } @catch (NSException *exc) {
         _isSendingWillSave = NO;
         

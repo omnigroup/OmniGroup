@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,6 +15,9 @@
 
 @property (nonatomic, strong) NSArray *passthroughViews;
 @property (nonatomic, weak) id<OUIShieldViewDelegate> delegate;
+
+/// Setting this flag to YES will always return nil from -hitTest:... to forward the event up the stream. Before that, we check to see if the hit fell within us and if so, we send the -shieldViewWasTouched: delegate message. Setting this flag also makes the passthroughViews array irrelevant.
+@property (nonatomic, assign) BOOL shouldForwardAllEvents;
 
 + (OUIShieldView *)shieldViewWithView:(UIView *)view;
 

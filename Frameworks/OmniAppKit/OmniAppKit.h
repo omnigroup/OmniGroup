@@ -112,7 +112,6 @@
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniAppKit/OARegExFindPattern.h>
 #import <OmniAppKit/OAResizingByteFormatter.h>
-#import <OmniAppKit/OAResizingTitleBarButton.h>
 #import <OmniAppKit/OAScriptToolbarHelper.h>
 #import <OmniAppKit/OAScrollView.h>
 #import <OmniAppKit/OASearchField.h>

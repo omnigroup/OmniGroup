@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,6 +20,8 @@ RCS_ID("$Id$");
     NSMutableAttributedString *_backingStore;
     BOOL _isEditingUnderlyingTextStorage;
     NSInteger _fixAttributesNestingLevel;
+    NSDictionary *_lastUsedAttributes;
+    BOOL _useLastUsedAttributes;
 }
 
 static void _scaleAttributes(NSMutableDictionary *scaledAttributes, NSDictionary *originalAttributes, CGFloat scale)
@@ -147,6 +149,14 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
 
 - (void)replaceCharactersInRange:(NSRange)range withString:(NSString *)str;
 {
+    // if we are deleting text, save attributes here to use later in fixAttributes so we don't lose font size
+    _useLastUsedAttributes = NO;
+    if (str.length == 0 && range.length > 0) {
+        _lastUsedAttributes = [_underlyingTextStorage attributesAtIndex:range.location effectiveRange:NULL];
+    } else if (_underlyingTextStorage.length == 0) {
+        _useLastUsedAttributes = YES;
+    }
+    
     // This gets called by UITextView while editing.
     [_backingStore replaceCharactersInRange:range withString:str];
     [self edited:NSTextStorageEditedCharacters range:range changeInLength:[str length] - range.length];
@@ -174,12 +184,12 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
     if (_fixAttributesNestingLevel > 0)
         return;
     
-    // Ignore the incoming size, but do allow changes in weight, italic, etc (so that UITextView's cmd-b/cmd-i support works when allowsEditingTextAttributes is set to YES).
+    // Ignore the incoming size (unless all text was deleted), but do allow changes in weight, italic, etc (so that UITextView's cmd-b/cmd-i support works when allowsEditingTextAttributes is set to YES).
     UIFont *requestedFont = attributes[NSFontAttributeName];
     
     OBASSERT(_isEditingUnderlyingTextStorage == NO);
     _isEditingUnderlyingTextStorage = YES;
-    NSMutableDictionary *attributesToSetOnUnderlyingTextStorage = [[NSMutableDictionary alloc] initWithDictionary:attributes];
+    __block NSMutableDictionary *attributesToSetOnUnderlyingTextStorage = [[NSMutableDictionary alloc] initWithDictionary:attributes];
     [_underlyingTextStorage enumerateAttributesInRange:attributeRange options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary *originalUnderlyingAttributes, NSRange underlyingRange, BOOL *stop) {
         // If we are being told to set a font descriptor, then use it (for example, if the typing attributes have been changed to be a different font size and text is inserted).
         OAFontDescriptor *underlyingFontDescriptor = attributes[OAFontDescriptorAttributeName];
@@ -201,11 +211,17 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
         }
         
         UIFont *underlyingFont = originalUnderlyingAttributes[NSFontAttributeName];
+        if (_useLastUsedAttributes && _lastUsedAttributes[NSFontAttributeName]) {
+            underlyingFont = _lastUsedAttributes[NSFontAttributeName];
+        }
         if (underlyingFont) {
             if (requestedFont) {
                 OBASSERT(OUIFontIsDynamicType(underlyingFont) == NO);
                 UIFont *updatedFont = [requestedFont fontWithSize:[underlyingFont pointSize]];
                 attributesToSetOnUnderlyingTextStorage[NSFontAttributeName] = updatedFont;
+            } else if (_useLastUsedAttributes){
+                OBASSERT(OUIFontIsDynamicType(underlyingFont) == NO);
+                attributesToSetOnUnderlyingTextStorage[NSFontAttributeName] = _lastUsedAttributes[NSFontAttributeName];
             } else {
                 [attributesToSetOnUnderlyingTextStorage removeObjectForKey:NSFontAttributeName];
             }

@@ -1,23 +1,27 @@
-// Copyright 2005-2007, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OITabMatrix.h"
+#import <OmniInspector/OITabMatrix.h>
 
 #import <OmniAppKit/OmniAppKit.h>
-#import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>
-
-#import "OITabCell.h"
-#import "OIInspector.h"
-#import "OIInspectorTabController.h"
+#import <OmniFoundation/OmniFoundation.h>
+#import <OmniInspector/OIInspector.h>
+#import <OmniInspector/OIInspectorTabController.h>
+#import <OmniInspector/OITabCell.h>
 
 RCS_ID("$Id$");
 
 @implementation OITabMatrix
+{
+    NSArray *oldSelection;
+    
+    OITabMatrixHighlightStyle highlightStyle;
+}
 
 static NSImage *plasticDepression;
 static CGFloat depressionLeftMargin, depressionRightMargin;
@@ -161,7 +165,7 @@ static void initializeDepressionImages(void)
 {
     NSArray *tabCells = [self cells];
     NSUInteger cellCount = [tabCells count];
-    
+
     if (highlightStyle == OITabMatrixDepressionHighlightStyle) {
         NSUInteger cellIndex;
         for (cellIndex=0; cellIndex<cellCount; cellIndex++) {
@@ -201,6 +205,7 @@ static void initializeDepressionImages(void)
             if ([[tabCells objectAtIndex:cellIndex] drawState]) {
                 NSRect rect = [self cellFrameAtRow:0 column:cellIndex];
                 rect.size.height -= 2;
+                rect.origin.y += 2;
                 rect = NSInsetRect(rect, 1, 0);
                 NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRectangle:rect byRoundingCorners:OFRectCornerMinXMaxY|OFRectCornerMaxXMaxY withRadius:4];
                 [path fill];

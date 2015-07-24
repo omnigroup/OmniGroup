@@ -9,14 +9,15 @@
 #
 # $Id$
 
+require 'pathname'
+
 # Very minimal class for getting informtion out of an Xcode xcodeproj file
 
 gem_path = Pathname.new(File.dirname(__FILE__) + "/plist-3.1.0/lib").realpath.to_s
 $: << gem_path
 require 'plist'
 
-module Xcode
-end
+require 'xcode'
 
 class Xcode::Object
   attr_reader :project, :identifier, :dict
@@ -265,15 +266,27 @@ end
 # Many of the methods here pre-date the Target class
 module Xcode
   class Project < Xcode::Object
-    attr_reader :path, :project, :root
+    attr_reader :path, :checkout_location, :project, :root
     attr_reader :targets
     
-    def initialize(path)
-      @path = Pathname.new(path).realpath.to_s
-      fail "#{path} is not a directory\n" unless File.directory?(@path)
+    # nil if the path doesn't exist and there is no checkout_location for it either
+    def self.from_path(path)
+      if File.exist?(path) || File.exist?(Xcode::checkout_location(path))
+        self.new(path)
+      else
+        nil
+      end
+    end
+    
+    # The path is the nominal location, while @checkout_location is the real path on disk (possibly a cache)
+    def initialize(path, options = {})
+      @checkout_location = Pathname.new(Xcode::checkout_location(path)).realpath.to_s
+      fail "#{path} is not a directory\n" unless File.directory?(@checkout_location)
 
-      plist_file = path + "/project.pbxproj"
-      fail "no project file in #{path}\n" unless File.exist?(plist_file)
+      @path = Xcode::real_relative_path(path) # Allow missing path here since we might have a different checkout location
+
+      plist_file = @checkout_location + "/project.pbxproj"
+      fail "no project file in #{@checkout_location}\n" unless File.exist?(plist_file)
       @project = Plist::parse_xml(`plutil -convert xml1 -o - "#{plist_file}"`)
         
       @objects = {}

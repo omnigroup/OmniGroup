@@ -218,6 +218,10 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
         [itemViews addObject:itemView];
 
         [itemView addTarget:self action:@selector(_itemViewTapped:) forControlEvents:UIControlEventTouchUpInside];
+        if (![self.delegate respondsToSelector:@selector(documentPickerScrollViewShouldMultiselect:)] || [self.delegate documentPickerScrollViewShouldMultiselect:self])
+        {
+            [itemView addGestureRecognizer:[[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(_itemViewLongpressed:)]];
+        }
         
         itemView.hidden = YES;
         [self addSubview:itemView];
@@ -1135,6 +1139,18 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
     OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
         
     [self.delegate documentPickerScrollView:self itemViewTapped:itemView];
+}
+
+- (void)_itemViewLongpressed:(UIGestureRecognizer*)gesture
+{
+    if (gesture.state == UIGestureRecognizerStateBegan) {        
+        OUIDocumentPickerItemView *itemView = OB_CHECKED_CAST(OUIDocumentPickerItemView, gesture.view);
+        
+        // should be one of ours, not some other temporary animating item view
+        OBASSERT([_fileItemViews containsObjectIdenticalTo:itemView] ^ [_groupItemViews containsObjectIdenticalTo:itemView]);
+        
+        [self.delegate documentPickerScrollView:self itemViewLongpressed:itemView];
+    }
 }
 
 // The size of the document prevew grid in items. That is, if gridSize.width = 4, then 4 items will be shown across the width.

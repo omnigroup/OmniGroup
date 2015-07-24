@@ -340,7 +340,6 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
     
     _isZooming = NO;
     
-//    [_scalingView(self) setShadowEdgeViewVisibility:NO];
 //    [UIView beginAnimations:@"scrollViewDidEndZooming animation" context:NULL];
 //    {
 //        [UIView setAnimationDelegate:self];
@@ -355,7 +354,6 @@ static OUIScalingView *_scalingView(OUIScalingViewController *self)
 
 - (void)zoomAdjustmentAnimationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;
 {
-    [_scalingView(self) setShadowEdgeViewVisibility:YES];
 }
 
 @end

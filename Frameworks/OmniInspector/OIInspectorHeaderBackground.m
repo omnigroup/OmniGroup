@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -6,10 +6,10 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import "OIInspectorHeaderBackground.h"
-#import "OIInspectorHeaderView.h"
 
 #import <OmniAppKit/OmniAppKit.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniInspector/OIInspectorHeaderView.h>
 
 RCS_ID("$Id$")
 
@@ -17,15 +17,15 @@ RCS_ID("$Id$")
 
 - (void)setHeaderView:(OIInspectorHeaderView *)header
 {
-    if (windowHeader != header) {
-        windowHeader = header;
+    if (_headerView != header) {
+        _headerView = header;
         [self setNeedsDisplay:YES];
     }
 }
 
 - (BOOL)isFlipped;
 {
-    return [windowHeader isFlipped];
+    return [_headerView isFlipped];
 }
 
 - (BOOL)isOpaque
@@ -35,8 +35,8 @@ RCS_ID("$Id$")
 
 - (void)drawRect:(NSRect)rect
 {
-    if (windowHeader)
-        [windowHeader drawBackgroundImageForBounds:[self bounds] inRect:rect];
+    if (_headerView)
+        [_headerView drawBackgroundImageForBounds:[self bounds] inRect:rect];
     else {
         // Fallback; not actually used
         [[NSColor redColor] set];

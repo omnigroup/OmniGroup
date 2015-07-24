@@ -7,9 +7,11 @@
 
 #import <OmniUIDocument/OUIDocumentPickerItemMetadataView.h>
 
+#import <OmniUIDocument/OUIDocumentPickerScrollView.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+
 #import "OUIDocumentParameters.h"
-#import "OUIDocumentPickerScrollView.h"
+
 RCS_ID("$Id$");
 
 @interface OUIDocumentNameTextField : UITextField

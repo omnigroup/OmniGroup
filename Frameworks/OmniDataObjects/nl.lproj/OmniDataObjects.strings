@@ -219,4 +219,3 @@
 
 /* error reason */
 "Wrong root element namespace.  Was expecting '%@' but found '%@'." = "Onjuiste naamruimte rootelement. '%1$@' verwacht, maar '%2$@' gevonden.";
-

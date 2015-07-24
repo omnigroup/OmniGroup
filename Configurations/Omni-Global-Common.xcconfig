@@ -6,7 +6,7 @@
 
 // NS_BUILD_32_LIKE_64 makes CG and NS geometry types be the same. Mostly doesn't matter on iPhone, but this also makes NSInteger types be defined based on 'long' consistently, which avoids conflicting warnings from clang + llvm 2.7 about printf format checking
 // Also, define a few useful macros for making configuration-specific builds. We do NOT append OMNI_BUILD_IDENTIFIER_SUFFIX on OMNI_BUNDLE_IDENTIFIER here, but we would in the end application.
-// Note that the OMNI_BUILD_IDENTIFIER_SUFFIX and OMNI_BUILD_FILE_SUFFIX are declared in the individual specific configuration files Omni-Global-{Debug,Release,Coverage}.xcconfig, which seems to work fine.
+// Note that the OMNI_BUILD_IDENTIFIER_SUFFIX and OMNI_BUILD_FILE_SUFFIX are declared in the individual specific configuration files Omni-Global-{Debug,Release}.xcconfig, which seems to work fine.
 // Targets still need to use these in their configurations in their bundle identifier, product name and in the source where needed.
 OTHER_CFLAGS = $(value) -DNS_BUILD_32_LIKE_64 -DOBJC_OLD_DISPATCH_PROTOTYPES=0 -DOMNI_BUILD_IDENTIFIER_SUFFIX=@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\" -DOMNI_BUILD_FILE_SUFFIX=@\"$(OMNI_BUILD_FILE_SUFFIX)\"
 
@@ -64,7 +64,7 @@ GCC_WARN_MISSING_PARENTHESES = YES
 //GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS
 GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES
 GCC_WARN_ABOUT_MISSING_NEWLINE = YES
-WARNING_CFLAGS = $(value) -Wall -Wno-#warnings -Wno-trigraphs -Winit-self -Wno-objc-designated-initializers
+WARNING_CFLAGS = $(value) -Wall -Wno-#warnings -Wno-trigraphs -Winit-self
 //GCC_WARN_ABOUT_POINTER_SIGNEDNESS
 GCC_WARN_SIGN_COMPARE = YES
 //CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES
@@ -135,7 +135,7 @@ DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 GCC_DEBUGGING_SYMBOLS = full
 
 // When preprocessing Info.plist files, look for include files (such as SVNVersion.h) in $CONFIGURATION_BUILD_DIR/include. OmniGroup/Tools/SVNVersion builds SVNVersion.h for both iOS and Mac build directories so that we reference the 'rigth' on here.
-INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -C -I"$(CONFIGURATION_BUILD_DIR)/include"
+INFOPLIST_OTHER_PREPROCESSOR_FLAGS = $(value) -C -I"$(CONFIGURATION_BUILD_DIR)/include"
 INFOPLIST_PREPROCESS = YES
 
 // Make sure we look for the built SVNVersions.h in the right spot

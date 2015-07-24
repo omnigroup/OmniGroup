@@ -1,4 +1,4 @@
-// Copyright 2007, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,11 +7,7 @@
 //
 // $Id$
 
-#import "OIInspector.h"
-
-//@class NSAttributedString, NSMutableArray; // Foundation
-//@class NSMatrix; // AppKit
-//@class OIInspectorController;
+#import <OmniInspector/OIInspector.h>
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet and IBAction
 

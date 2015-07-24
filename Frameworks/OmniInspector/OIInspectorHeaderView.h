@@ -1,4 +1,4 @@
-// Copyright 2002-2007, 2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,24 +9,25 @@
 
 #import <AppKit/NSControl.h>
 
+#define OIInspectorStartingHeaderButtonWidth (256.0f)
+#define OIInspectorStartingHeaderButtonHeight (16.0f)
+
 @protocol OIInspectorHeaderViewDelegateProtocol;
 
 @interface OIInspectorHeaderView : NSView
-{
-    NSString *title;
-    NSImage *image;
-    NSString *keyEquivalent;
-    NSObject <OIInspectorHeaderViewDelegateProtocol> *delegate;
-    BOOL isExpanded, isClicking, isDragging, clickingClose, overClose;
-}
 
-- (void)setTitle:(NSString *)aTitle;
-- (void)setImage:(NSImage *)anImage;
-- (void)setKeyEquivalent:(NSString *)anEquivalent;
-- (void)setExpanded:(BOOL)newState;
-- (void)setDelegate:(NSObject <OIInspectorHeaderViewDelegateProtocol> *)aDelegate;
+@property(nonatomic,copy) NSString *title;
+@property(nonatomic,strong) NSImage *image;
+@property(nonatomic,copy) NSString *keyEquivalent;
+@property(nonatomic) BOOL expanded;
+
+@property(nonatomic,weak) NSObject <OIInspectorHeaderViewDelegateProtocol> *delegate;
 
 - (void)drawBackgroundImageForBounds:(NSRect)backgroundBounds inRect:(NSRect)dirtyRect;
+
+@property (nonatomic) CGFloat titleContentHeight;
+@property (nonatomic,readonly) CGFloat heightNeededWhenExpanded;
+@property (nonatomic,strong) NSView *accessoryView;
 
 @end
 
@@ -43,6 +44,7 @@
 - (NSRect)headerView:(OIInspectorHeaderView *)view willDragWindowToFrame:(NSRect)aFrame onScreen:(NSScreen *)aScreen;
 - (void)headerViewDidEndDragging:(OIInspectorHeaderView *)view toFrame:(NSRect)aFrame;
 
+- (BOOL)headerViewShouldDisplayExpandButton:(OIInspectorHeaderView *)view;
 - (void)headerViewDidToggleExpandedness:(OIInspectorHeaderView *)view;
 
 @end

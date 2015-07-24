@@ -206,7 +206,6 @@ static void _DrawButtonBorder(CGContextRef ctx, CGRect lineRect)
 
 - (NSUInteger)buttonHeight;
 {
-    OBPRECONDITION(self.numberOfRows > 0);
     if (self.numberOfRows == 0) {
         return 0;
     }

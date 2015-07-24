@@ -189,7 +189,7 @@ static unsigned SyncAgentRunningAccountsContext;
 - (UIBarButtonItem *)compactCloseDocumentBarButtonItem;
 {
     if (!_compactCloseDocumentBarButtonItem) {
-        _compactCloseDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarDocumentClose"]
+        _compactCloseDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarDocumentClose" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]
                                                                        style:UIBarButtonItemStylePlain target:self action:@selector(closeDocument:)];
     }
     return _compactCloseDocumentBarButtonItem;
@@ -713,14 +713,14 @@ static unsigned SyncAgentRunningAccountsContext;
         switch (position) {
             case OUIAppMenuOptionPositionAfterReleaseNotes:
             {
-                UIImage *image = [[UIImage imageNamed:@"OUIMenuItemRestoreSampleDocuments"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+                UIImage *image = [[UIImage imageNamed:@"OUIMenuItemRestoreSampleDocuments" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
                 [options addObject:[OUIMenuOption optionWithFirstResponderSelector:@selector(restoreSampleDocuments:) title:[[OUIDocumentAppController controller] sampleDocumentsDirectoryTitle] image:image]];
                 break;
             }
 
             case OUIAppMenuOptionPositionAtEnd:
             {
-                UIImage *importImage = [[UIImage imageNamed:@"OUIMenuItemImport"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+                UIImage *importImage = [[UIImage imageNamed:@"OUIMenuItemImport" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 
                 // Import from WebDAV
                 OUIMenuOption *importOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy from WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage action:^{
@@ -1801,7 +1801,16 @@ static unsigned SyncAgentRunningAccountsContext;
         if ([crashType isEqual:@"crash-report"]) {
             NSData *reportData = [[PLCrashReporter sharedReporter] generateLiveReport];
             PLCrashReport *report = [[PLCrashReport alloc] initWithData:reportData error:NULL];
-            NSLog(@"report:\n%@", [PLCrashReportTextFormatter stringValueForCrashReport:report withTextFormat:PLCrashReportTextFormatiOS]);
+            
+            NSString *reportText = [PLCrashReportTextFormatter stringValueForCrashReport:report withTextFormat:PLCrashReportTextFormatiOS];
+            NSURL *reportURL = [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:@"crash-report.txt"];
+            
+            __autoreleasing NSError *error = nil;
+            if (![reportText writeToURL:reportURL atomically:NO encoding:NSUTF8StringEncoding error:&error]) {
+                [error log:@"Error writing report to %@", reportURL];
+                
+            }
+            
             return;
         }
 #endif

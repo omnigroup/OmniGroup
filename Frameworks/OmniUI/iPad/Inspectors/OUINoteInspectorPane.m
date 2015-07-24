@@ -128,7 +128,7 @@ static const CGFloat EnterFullScreenButtonScrollingActiveAlpha = 0.4;
 
 - (IBAction)enterFullScreen:(id)sender;
 {
-    OUIFullScreenNoteTextViewController *controller = [[OUIFullScreenNoteTextViewController alloc] initWithNibName:nil bundle:nil];
+    OUIFullScreenNoteTextViewController *controller = [[OUIFullScreenNoteTextViewController alloc] init];
     
     controller.text = self.textView.text;
     controller.selectedRange = self.textView.selectedRange;

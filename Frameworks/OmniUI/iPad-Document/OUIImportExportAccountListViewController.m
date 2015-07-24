@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -132,7 +132,7 @@ static NSString *const AddAccountReuseIdentifier = @"addAccount";
                 cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:AccountCellReuseIdentifier];
                 
                 cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Add an Account", @"OmniUIDocument", OMNI_BUNDLE, @"Cloud Setup button title to convert an existing account");;
-                cell.imageView.image = [UIImage imageNamed:@"OUIGreenPlusButton.png"];
+                cell.imageView.image = [UIImage imageNamed:@"OUIGreenPlusButton" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
             }
 
             return cell;

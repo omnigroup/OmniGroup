@@ -31,7 +31,7 @@ NSString *const OUINumericFieldTableCellValueKey = @"value";
 
 + (instancetype)numericFieldTableCell;
 {
-    NSArray *topLevelObjects = [[UINib nibWithNibName:NSStringFromClass([OUINumericFieldTableCell class]) bundle:nil] instantiateWithOwner:nil options:nil];
+    NSArray *topLevelObjects = [[UINib nibWithNibName:NSStringFromClass([OUINumericFieldTableCell class]) bundle:OMNI_BUNDLE] instantiateWithOwner:nil options:nil];
     OBASSERT(topLevelObjects != nil);
     OBASSERT(topLevelObjects.count == 1);
     OBASSERT([topLevelObjects.lastObject isKindOfClass:[OUINumericFieldTableCell class]]);

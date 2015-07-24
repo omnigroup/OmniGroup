@@ -57,7 +57,7 @@ RCS_ID("$Id$");
     NSArray *encodedParameters = [_parameterString componentsSeparatedByString:@":"];
     NSMutableArray *decodedParameters = [NSMutableArray array];
     for (NSString *encodedParameter in encodedParameters) {
-        NSString *decodedParameter = [encodedParameter stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        NSString *decodedParameter = [encodedParameter stringByRemovingPercentEncoding];
         [decodedParameters addObject:decodedParameter];
     }
     return decodedParameters;

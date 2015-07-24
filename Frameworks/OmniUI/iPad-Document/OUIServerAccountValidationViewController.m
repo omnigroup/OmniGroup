@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -133,7 +133,7 @@ RCS_ID("$Id$")
     _successView.transform = CGAffineTransformMakeScale(0.75, 0.75);
     
     _successLabel.text = NSLocalizedStringFromTableInBundle(@"Connected", @"OmniUIDocument", OMNI_BUNDLE, @"Success label when connecting to an OmniPresence or WebDAV server account");
-    _successImageView.image = [UIImage imageNamed:@"OUIServerAccountValidationSuccess.png"];
+    _successImageView.image = [UIImage imageNamed:@"OUIServerAccountValidationSuccess" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 
     UINavigationItem *navigationItem = self.navigationItem;
 

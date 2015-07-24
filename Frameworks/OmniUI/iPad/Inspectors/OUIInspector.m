@@ -163,6 +163,7 @@ const NSTimeInterval OUICrossFadeDuration = 0.2;
 
 NSString * const OUIInspectorWillBeginChangingInspectedObjectsNotification = @"OUIInspectorWillBeginChangingInspectedObjectsNotification";
 NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUIInspectorDidEndChangingInspectedObjectsNotification";
+NSString * const OUIInspectorPopoverDidDismissNotification = @"OUIInspectorPopoverDidDismissNotification";
 
 @implementation OUIInspector
 {
@@ -181,7 +182,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 + (UIBarButtonItem *)inspectorBarButtonItemWithTarget:(id)target action:(SEL)action;
 {
-    UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png"];
+    UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     OBASSERT(image);
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action];
     return item;
@@ -189,7 +190,7 @@ NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification = @"OUII
 
 + (UIBarButtonItem *)inspectorOUIBarButtonItemWithTarget:(id)target action:(SEL)action;
 {
-    UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png"];
+    UIImage *image = [UIImage imageNamed:@"OUIToolbarInfo.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     OBASSERT(image);
     UIBarButtonItem *item = [[OUIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action];
     return item;
@@ -661,6 +662,10 @@ static void _configureContentSize(OUIInspector *self, UIViewController *vc, CGFl
     [self _setShowDoneButton:YES];
     
     return nil;
+}
+
+- (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController{
+    [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorPopoverDidDismissNotification object:popoverPresentationController];
 }
 
 #pragma mark -

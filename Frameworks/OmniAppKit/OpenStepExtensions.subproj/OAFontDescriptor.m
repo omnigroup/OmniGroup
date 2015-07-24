@@ -360,7 +360,31 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
         attributes[(NSString *)kCTFontNameAttribute] = name;
         
         self = [self initWithFontAttributes:attributes];
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
         OBASSERT(OFISEQUAL(self.font, font));
+#else
+#ifdef OMNI_ASSERTIONS_ON
+        if (!OFISEQUAL(self.font, font)) {
+
+            // <bug:///118944> (Bug: Frequent assertion failures 'OFISEQUAL(self.font, font)' in OAFontDescriptor.m:363)
+            // Sometimes we get fonts that differ just by the spc attribute, which appears to be related to the line height.
+            // ".HelveticaNeueDeskInterface-Regular 11.00 pt. P [] (0x600001445700) fobj=0x6080011f0c00, spc=3.11"
+            // ".HelveticaNeueDeskInterface-Regular 11.00 pt. P [] (0x60800105b900) fobj=0x6000001ea200, spc=3.41"
+            // In one case, the private _defaultLineHeight is 0, and in the other it’s 13.0.
+            // These can be compared via -[NSLayoutManager defaultLineHeightForFont:], which will return 13.0 in both cases.
+
+            if (!OFISEQUAL(family, self.family) || !OFISEQUAL(name, self.fontName) || size != self.font.pointSize || isItalic != self.italic || isCondensed != self.condensed || isFixedPitch != self.fixedPitch || fontManagerWeight != self.weight) {
+                OBASSERT_NOT_REACHED("The incoming font is not equal to self.font.");
+            }
+
+            NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
+            if ([layoutManager defaultLineHeightForFont:self.font] != [layoutManager defaultLineHeightForFont:font]) {
+                OBASSERT_NOT_REACHED("The incoming font does not have the same default line height as self.font.");
+            }
+            [layoutManager release];
+        }
+#endif
+#endif
     }
     [family release];
     [name release];

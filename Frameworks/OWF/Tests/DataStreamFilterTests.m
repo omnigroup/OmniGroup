@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,7 +39,7 @@ static NSDictionary *smalldata, *bigdata;
 
 // Test cases
 
-- (void)testReadAll:(NSData *)inp bp:(unsigned)writeSome after:(unsigned)readSome giving:(NSData *)outp coder:(OWContentType *)coder
+- (void)testReadAll:(NSData *)inp bp:(NSUInteger)writeSome after:(NSUInteger)readSome giving:(NSData *)outp coder:(OWContentType *)coder
 {
     OWDataStream *ds;
     OWDataStreamCursor *reader;
@@ -64,7 +64,7 @@ static NSDictionary *smalldata, *bigdata;
     [ds release];
     ds = nil;
 
-    XCTAssertTrue(reader != nil);
+    XCTAssertNotNil(reader);
 
     [reader retain];
     [pool release];
@@ -84,7 +84,7 @@ static NSDictionary *smalldata, *bigdata;
 
     rest = [reader readAllData];
 
-    shouldBeEqual1(outp, [some dataByAppendingData:rest], ([NSString stringWithFormat:@"coder=%@, writeBreak=%d, readBreak=%d", coder, writeSome, readSome]));
+    XCTAssertEqual(outp, [some dataByAppendingData:rest], @"coder=%@, writeBreak=%ld, readBreak=%ld", coder, writeSome, readSome);
     [pool release];
 }
 

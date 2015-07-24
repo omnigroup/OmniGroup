@@ -1,4 +1,4 @@
-// Copyright 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -138,21 +138,7 @@ static NSData *_dictionaryDataGetter(void *container, NSString *key)
     if (!patternData)
         patternData = getters.data(container, @"tiff");
     if ([patternData isKindOfClass:[NSData class]]) {
-        // <bug://bugs/60462> (Deal with pattern color archive/unarchive in OQColor on iPad)
-        OBFinishPortingLater("Warning: unable to unarchive pattern colors on iOS, falling back to white");
-#if 0
-        NSBitmapImageRep *bitmapImageRep = (id)[NSBitmapImageRep imageRepWithData:patternData];
-        NSSize imageSize = [bitmapImageRep size];
-        if (bitmapImageRep == nil || NSEqualSizes(imageSize, NSZeroSize)) {
-            NSLog(@"Warning, could not rebuild pattern color from image rep %@, data %@", bitmapImageRep, patternData);
-        } else {
-            NSImage *patternImage = [[NSImage alloc] initWithSize:imageSize];
-            [patternImage addRepresentation:bitmapImageRep];
-            return [NSColor colorWithPatternImage:[patternImage autorelease]];
-        }
-#endif
-        
-        // fall through
+        return [self colorWithPatternImageData:patternData];
     }
     
 #ifdef DEBUG

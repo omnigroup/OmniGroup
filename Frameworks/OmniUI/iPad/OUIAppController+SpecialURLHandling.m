@@ -182,7 +182,7 @@ RCS_ID("$Id$");
 - (UIWindow *)_createTemporaryWindowForAlertPresentation;
 {
     _viewController = [[UIViewController alloc] init];
-    _viewController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"OUICrashAlertBackground"]];
+    _viewController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"OUICrashAlertBackground" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
     
     CGRect screenRect = [[UIScreen mainScreen] bounds];
     _window = [[UIWindow alloc] initWithFrame:screenRect];

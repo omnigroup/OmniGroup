@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,3 +26,15 @@ do { \
     } \
     XCTAssertFalse(hadError, @"%@", (id)CFSTR(#expr)); \
 } while (0);
+
+#define OBAssertMemEqual(buf1, buf2, buflen, ...)                       \
+    ({                                                                  \
+        const void *ptr1=(buf1);                                        \
+        const void *ptr2=(buf2);                                        \
+        size_t buflens=(buflen);                                        \
+        if (memcmp(ptr1, ptr2, buflens) != 0) {                         \
+            NSString *msg = [NSString stringWithFormat:@"memcmp(%s, %s, %lu) failed", #buf1, #buf2, (unsigned long)buflens]; \
+            _XCTRegisterFailure(self, msg, __VA_ARGS__);                \
+        }                                                               \
+    })
+

@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -218,16 +218,12 @@ RCS_ID("$Id$")
 }
 
 // Make sure we go bycopy or byref as appropriate
-- (id) replacementObjectForPortCoder: (NSPortCoder *) encoder;
+- (id)replacementObjectForPortCoder:(NSPortCoder *)encoder;
 {
-    // -[NSPortCoder connection] was deprecated in 10.7. I don't know that we use this any more (sending stuff across DO) and I'm not going to spend the time right now to fix this.
-    OBFinishPorting;
-#if 0
     if ([encoder isByref])
-        return [NSDistantObject proxyWithLocal: self connection: [encoder connection]];
+        return [super replacementObjectForPortCoder:encoder]; // NSObject returns an NSDistantObject by default
     else
-        return self;
-#endif
+        return self; // But if we're bycopy, we want to encode/decode our object directly rather than a proxy
 }
 
 //

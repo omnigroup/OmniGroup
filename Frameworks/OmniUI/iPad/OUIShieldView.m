@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,18 +24,31 @@ RCS_ID("$Id$");
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event;
 {
-    UIView *hitView = nil;
-    
-    // Check passthrough views.
-    for (UIView *passthrough in self.passthroughViews) {
-        hitView = [passthrough hitTest:[self convertPoint:point toView:passthrough] withEvent:event];
-        if (hitView) {
-            return hitView;
+    if (self.shouldForwardAllEvents) {
+        if ([super hitTest:point withEvent:event]) {
+            // Someplace inside of me did get hit. Let the delegate know, but return nil;
+            if (_delegate && [_delegate respondsToSelector:@selector(shieldViewWasTouched:)]) {
+                [_delegate shieldViewWasTouched:self];
+            }
         }
-    }
         
-    // Check super.
-    return [super hitTest:point withEvent:event];
+        // If we're forwarding all events, we don't care about the passthrough views below. Just return nil and let the event be forwarded.
+        return nil;
+    }
+    else {
+        UIView *hitView = nil;
+        
+        // Check passthrough views.
+        for (UIView *passthrough in self.passthroughViews) {
+            hitView = [passthrough hitTest:[self convertPoint:point toView:passthrough] withEvent:event];
+            if (hitView) {
+                return hitView;
+            }
+        }
+        
+        // Check super.
+        return [super hitTest:point withEvent:event];
+    }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;

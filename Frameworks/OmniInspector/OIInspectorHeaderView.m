@@ -1,11 +1,11 @@
-// Copyright 2002-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OIInspectorHeaderView.h"
+#import <OmniInspector/OIInspectorHeaderView.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -14,18 +14,24 @@
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniFoundation/OmniFoundation.h>
 #import <OmniBase/OmniBase.h>
-#import "OIInspectorGroup.h"
-#import "OIInspectorRegistry.h"
-#import "OITabbedInspector.h"  // For OITabbedInspectorUnifiedLookDefaultsKey
+#import <OmniInspector/OIInspectorGroup.h>
+#import <OmniInspector/OIInspectorRegistry.h>
+#import <OmniInspector/OITabbedInspector.h>  // For OITabbedInspectorUnifiedLookDefaultsKey
+
 RCS_ID("$Id$")
 
 
-@interface OIInspectorHeaderView (/*Private*/)
-- (BOOL)_allowToggleExpandedness;
-@end
-
-
 @implementation OIInspectorHeaderView
+{
+    BOOL isClicking, isDragging, clickingClose, overClose;
+}
+
+@synthesize delegate = _weak_delegate;
+
+typedef enum {
+    OIInspectorHeaderImageHeightNormal, OIInspectorHeaderImageHeightTall, OIInspectorHeaderImageHeightCount,
+} OIInspectorHeaderImageHeight;
+static NSString *OIInspectorHeaderImageHeightNames[OIInspectorHeaderImageHeightCount] = {@"", @"Tall"};
 
 typedef enum {
     OIInspectorNotKey = 0, OIInspectorIsKey = 1, OIInspectorKeyStatusCount,
@@ -48,7 +54,7 @@ typedef enum {
 } OIInspectorCloseButtonState;
 static NSString *OIInspectorCloseButtonStateNames[OIInspectorCloseButtonStateCount] = {@"-Normal", @"-Rollover", @"-Pressed"};
 
-static NSImage *_headerImages[OIInspectorKeyStatusCount][OIInspectorHeaderImageStateCount];
+static NSImage *_headerImages[OIInspectorHeaderImageHeightCount][OIInspectorKeyStatusCount][OIInspectorHeaderImageStateCount];
 
 static NSImage *_expandedImage, *_collapsedImage;
 
@@ -65,13 +71,16 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     OBINITIALIZE;
 
     {
-        OIInspectorKeyStatus keyStatusIndex;
-        for (keyStatusIndex = 0; keyStatusIndex < OIInspectorKeyStatusCount; keyStatusIndex++) {
-            OIInspectorHeaderImageState stateIndex;
-            for (stateIndex = 0; stateIndex < OIInspectorHeaderImageStateCount; stateIndex++) {
-                NSString *imageName = [NSString stringWithFormat:@"OITitlebar%@%@", OIInspectorHeaderImageKeyStatusNames[keyStatusIndex], OIInspectorHeaderImageStateNames[stateIndex]];
-                _headerImages[keyStatusIndex][stateIndex] = [NSImage imageNamed:imageName inBundle:[OIInspectorHeaderView bundle]];
-		OBASSERT(_headerImages[keyStatusIndex][stateIndex]);
+        OIInspectorHeaderImageHeight heightIndex;
+        for (heightIndex = 0; heightIndex < OIInspectorHeaderImageHeightCount; heightIndex++) {
+            OIInspectorKeyStatus keyStatusIndex;
+            for (keyStatusIndex = 0; keyStatusIndex < OIInspectorKeyStatusCount; keyStatusIndex++) {
+                OIInspectorHeaderImageState stateIndex;
+                for (stateIndex = 0; stateIndex < OIInspectorHeaderImageStateCount; stateIndex++) {
+                    NSString *imageName = [NSString stringWithFormat:@"OI%@Titlebar%@%@", OIInspectorHeaderImageHeightNames[heightIndex], OIInspectorHeaderImageKeyStatusNames[keyStatusIndex], OIInspectorHeaderImageStateNames[stateIndex]];
+                    _headerImages[heightIndex][keyStatusIndex][stateIndex] = [NSImage imageNamed:imageName inBundle:[OIInspectorHeaderView bundle]];
+                    OBASSERT(_headerImages[heightIndex][keyStatusIndex][stateIndex]);
+                }
             }
         }
     }
@@ -105,44 +114,43 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 
 - (void)setTitle:(NSString *)aTitle;
 {
-    if (title != aTitle) {
-        title = aTitle;
-        [self setNeedsDisplay:YES];
-    }
+    if (OFISEQUAL(_title, aTitle))
+        return;
+    _title = [aTitle copy];
+    [self setNeedsDisplay:YES];
 }
 
 #define IMAGE_SIZE (13.0f)
 
 - (void)setImage:(NSImage *)anImage;
 {
-    if (image != anImage) {
-        // If the image is PDF, we don't want to uses it's native size (which might be too big).
-        [anImage setSize:NSMakeSize(IMAGE_SIZE, IMAGE_SIZE)];
-        
-        image = anImage;
-        [self setNeedsDisplay:YES];
-    }
+    if (_image == anImage)
+        return;
+
+    // If the image is PDF, we don't want to uses it's native size (which might be too big).
+    [anImage setSize:NSMakeSize(IMAGE_SIZE, IMAGE_SIZE)];
+    _image = anImage;
+    [self setNeedsDisplay:YES];
 }
 
 - (void)setKeyEquivalent:(NSString *)anEquivalent;
 {
-    if (keyEquivalent != anEquivalent) {
-        keyEquivalent = anEquivalent;
-        [self setNeedsDisplay:YES];
-    }
+    if (OFISEQUAL(_keyEquivalent, anEquivalent))
+        return;
+    [self setNeedsDisplay:YES];
 }
 
 - (void)setExpanded:(BOOL)newState;
 {
-    if (isExpanded != newState) {
-        isExpanded = newState;
-        [self setNeedsDisplay:YES];
-    }
+    if (_expanded == newState)
+        return;
+    _expanded = newState;
+    [self setNeedsDisplay:YES];
 }
 
 - (void)setDelegate:(NSObject <OIInspectorHeaderViewDelegateProtocol> *)aDelegate;
 {
-    delegate = aDelegate;
+    _weak_delegate = aDelegate;
 }
 
 // NSView subclass
@@ -159,9 +167,12 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 
 - (void)resetCursorRects;
 {
+    NSObject <OIInspectorHeaderViewDelegateProtocol> *delegate = _weak_delegate;
+    
     if ([delegate headerViewShouldDisplayCloseButton:self]) {
-        NSRect bounds = self.bounds;
-        NSRect closeRect = NSMakeRect(NSMinX(bounds) + 6.0f, NSMaxY(bounds)-1.0f - 14.0f, 14.0f, 14.0f);    
+        NSRect bounds = [self titleContentBounds];
+        CGFloat yAdjustment = NSHeight(bounds) - OIInspectorStartingHeaderButtonHeight;
+        NSRect closeRect = NSMakeRect(NSMinX(bounds) + 6.0f, NSMinY(bounds) + 1.0f + yAdjustment, 14.0f, 14.0f);
         [self addTrackingRect:closeRect owner:self userData:NULL assumeInside:NO];
     }
 }
@@ -183,8 +194,20 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     [self setNeedsDisplay:YES];
 }
 
+- (CGRect)titleContentBounds;
+{
+    NSRect bounds = self.bounds;
+
+    if (self.accessoryView) {
+        bounds.size = CGSizeMake(NSWidth(bounds), self.titleContentHeight);
+    }
+
+    return bounds;
+}
+
 - (void)drawBackgroundImageForBounds:(NSRect)backgroundBounds inRect:(NSRect)dirtyRect;
 {
+    OIInspectorHeaderImageHeight heightIndex = NSHeight(self.bounds) == OIInspectorStartingHeaderButtonHeight ? OIInspectorHeaderImageHeightNormal : OIInspectorHeaderImageHeightTall;
     OIInspectorKeyStatus keyStatus = (OIInspectorKeyStatus)[[self window] isKeyWindow];
     OIInspectorHeaderImageState state = isClicking && [self _allowToggleExpandedness] && !overClose ? OIInspectorHeaderImageStatePressed : OIInspectorHeaderImageStateNormal;
     
@@ -205,7 +228,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     }
 #endif
     
-    NSImage *backgroundImage = _headerImages[keyStatus][state];
+    NSImage *backgroundImage = _headerImages[heightIndex][keyStatus][state];
     
     // Kludge: Don't stretch the bottom 1px of the header image, because it's a hairline instead of a gradient. Might want to do this a different way.
     NSSize gradientSize = [backgroundImage size];
@@ -225,10 +248,12 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
 
 - (void)drawRect:(NSRect)aRect;
 {
-    BOOL drawAll = isExpanded || !omitTextAndStateWhenCollapsed;
+    NSObject <OIInspectorHeaderViewDelegateProtocol> *delegate = _weak_delegate;
+
+    BOOL drawAll = _expanded || !omitTextAndStateWhenCollapsed;
     OIInspectorHeaderImageTint imageTint = ([NSColor currentControlTint] == NSBlueControlTint) ? OIInspectorHeaderImageTintBlue : OIInspectorHeaderImageTintGraphite;
     
-    NSRect bounds = self.bounds;
+    NSRect bounds = [self titleContentBounds];
     CGFloat nextElementX = NSMinX(bounds) + 6.0f;
     if ([delegate headerViewShouldDisplayCloseButton:self]) {
         NSImage *closeImage = _closeButtonImages[imageTint][clickingClose ? OIInspectorCloseButtonStatePressed : (overClose ? OIInspectorCloseButtonStateRollover : OIInspectorCloseButtonStateNormal)];
@@ -239,7 +264,7 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     nextElementX += 20.0f;
     
     if (drawAll && [self _allowToggleExpandedness]) {
-        NSImage *disclosureImage = isExpanded ? _expandedImage : _collapsedImage;
+        NSImage *disclosureImage = _expanded ? _expandedImage : _collapsedImage;
         NSRect disclosureImageRect = NSMakeRect(nextElementX, rint(NSMidY(bounds) - [disclosureImage size].height / 2.0f) - 1, disclosureImage.size.width, disclosureImage.size.height);
 
         [disclosureImage drawFlippedInRect:disclosureImageRect operation:NSCompositeSourceOver];
@@ -250,36 +275,50 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
         nextElementX += 20.0f;
     }
     
-    if (image != nil) {
+    if (_image != nil) {
         NSGraphicsContext *currentContext = [NSGraphicsContext currentContext];
         CGContextRef cgContext = [currentContext graphicsPort];
 
         CGContextSaveGState(cgContext);
         CGContextTranslateCTM(cgContext, nextElementX, NSMaxY(bounds)-2.0f);
         CGContextScaleCTM(cgContext, 1.0f, -1.0f);
-        [image drawAtPoint:NSZeroPoint fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
+        [_image drawAtPoint:NSZeroPoint fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0f];
         CGContextRestoreGState(cgContext);
-        
-        nextElementX += 20.0f;
     }
     
     CGFloat keyEquivalentWidth;
-    if ([NSString isEmptyString:keyEquivalent])
+    if ([NSString isEmptyString:_keyEquivalent])
         keyEquivalentWidth = 0.0f;
     else
-        keyEquivalentWidth = [keyEquivalent sizeWithAttributes:_keyEquivalentAttributes].width + 5.0f;
+        keyEquivalentWidth = [_keyEquivalent sizeWithAttributes:_keyEquivalentAttributes].width + 5.0f;
     
     if (drawAll) {
-        NSRect rect = NSMakeRect(nextElementX, NSMinY(bounds), NSMaxX(bounds) - nextElementX - 5.0f - keyEquivalentWidth, NSHeight(bounds));
-        if ([title isKindOfClass:[NSAttributedString class]]) {
-            [(NSAttributedString *)title drawInRectangle:rect alignment:NSLeftTextAlignment verticallyCentered:YES];
+        NSRect windowRect = self.window.frame;
+        NSRect rect = NSMakeRect(NSMinX(bounds), NSMinY(bounds), NSWidth(windowRect), NSHeight(bounds));
+        if ([_title isKindOfClass:[NSAttributedString class]]) {
+            [(NSAttributedString *)_title drawInRectangle:rect alignment:NSCenterTextAlignment verticallyCentered:YES];
         } else {
-            NSAttributedString *attr = [[NSAttributedString alloc] initWithString:title attributes:_textAttributes];
-            [attr drawInRectangle:rect alignment:NSLeftTextAlignment verticallyCentered:YES];
+            NSAttributedString *attr = [[NSAttributedString alloc] initWithString:_title attributes:_textAttributes];
+            [attr drawInRectangle:rect alignment:NSCenterTextAlignment verticallyCentered:YES];
         }
     }
 
-    [keyEquivalent drawAtPoint:NSMakePoint(NSMaxX(bounds) - keyEquivalentWidth, NSMinY(bounds) + 1.0f) withAttributes:_keyEquivalentAttributes];
+    [_keyEquivalent drawAtPoint:NSMakePoint(NSMaxX(bounds) - keyEquivalentWidth, NSMinY(bounds) + 1.0f) withAttributes:_keyEquivalentAttributes];
+}
+
+- (CGFloat)heightNeededWhenExpanded;
+{
+    CGFloat height = self.titleContentHeight;
+    if (self.accessoryView) {
+        height += NSHeight(self.accessoryView.frame);
+    }
+    return height;
+}
+
+- (void)setAccessoryView:(NSView *)accessoryView;
+{
+    _accessoryView = accessoryView;
+    [self addSubview:accessoryView];
 }
 
 - (void)mouseDown:(NSEvent *)theEvent;
@@ -290,13 +329,15 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     NSSize windowOriginOffset = NSMakeSize(click.x - windowFrame.origin.x, click.y - windowFrame.origin.y);
     NSRect hysterisisRect = NSMakeRect(click.x - 3.0f, click.y - 3.0f, 6.0f, 6.0f);
     NSRect bounds = self.bounds;
-    NSRect closeRect = NSMakeRect(NSMinX(bounds) + 6.0f, NSMaxY(bounds)-1.0f - 14.0f, 14.0f, 14.0f);
+    NSRect closeRect = NSMakeRect(NSMinX(bounds) + 6.0f, NSMaxY(bounds)-1.0f - (14.0f + NSHeight(self.accessoryView.frame)), 14.0f, 14.0f);
     NSPoint newTopLeft = NSMakePoint(NSMinX(windowFrame), NSMaxY(windowFrame));
     CGFloat dragWindowHeight = 0.0f;
     BOOL isInOriginalFrame = NSPointInRect([self convertPoint:[theEvent locationInWindow] fromView:nil], [self bounds]);  // don't collapse if the mousedown is not within the header frame (as when this is called from tab area)
     
     click = [self convertPoint:[theEvent locationInWindow] fromView:nil];
     
+    NSObject <OIInspectorHeaderViewDelegateProtocol> *delegate = _weak_delegate;
+
     isDragging = NO;
     isClicking = YES;
     overClose = clickingClose = [delegate headerViewShouldDisplayCloseButton:self] && NSMouseInRect(click, closeRect, NO);
@@ -364,12 +405,15 @@ static NSGradient *unifiedGradientKey, *unifiedGradientNonKey;
     [self display];
 }
 
-
-#pragma mark -
-#pragma mark Private
+#pragma mark - Private
 
 - (BOOL)_allowToggleExpandedness;
 {
+    NSObject <OIInspectorHeaderViewDelegateProtocol> *delegate = _weak_delegate;
+
+    if ([delegate respondsToSelector:@selector(headerViewShouldDisplayExpandButton:)])
+        return [delegate headerViewShouldDisplayExpandButton:self];
+    
     return ![[OIInspectorRegistry inspectorRegistryForMainWindow] hasSingleInspector];
 }
 

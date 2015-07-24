@@ -1066,8 +1066,31 @@ static id _selfIfValidElseNil(id self, SEL validateSelector, id sender)
     return NO;
 }
 
+- (BOOL)_appearsInResponderChainAfterResponder:(NSResponder *)responder
+{
+    NSResponder *nomad = responder;
+    while (nomad) {
+        if (nomad == self) {
+            return YES;
+        }
+        nomad = nomad.nextResponder;
+    }
+    return NO;
+}
+
+- (BOOL)_isInResponderChainLoop
+{
+    return [self _appearsInResponderChainAfterResponder:self.nextResponder];
+}
+
 - (BOOL)applyToResponderChain:(OAResponderChainApplier)applier;
 {
+    // <bug:///116560> (Crasher: Crash [needs repro]: OATargetSelection loop)
+    // At this writing (26 June 2015) this is the second-most-common crash in OmniOutliner. Unfortunately we don't have a reproducible case (though it seems to happen — sometimes — when looking up a word).
+    if ([self _isInResponderChainLoop]) {
+        DEBUG_TARGET_SELECTION(@"---> NOT applying to NSWindow because of a responder chain loop");
+       return NO;
+    }
     if (![super applyToResponderChain:applier])
         return NO;
     
@@ -1080,9 +1103,14 @@ static id _selfIfValidElseNil(id self, SEL validateSelector, id sender)
     BOOL shouldCheckDelegate = YES;
     if ([delegate respondsToSelector:@selector(nextResponder)] && [delegate nextResponder]) {
         shouldCheckDelegate = ![self _objectIsInResponderChainPriorToWindow:delegate];
-    }
-    if (!shouldCheckDelegate) {
-        DEBUG_TARGET_SELECTION(@"---> NOT checking NSWindow delegate because it appears in the responder chain before now and it has a nextResponder");
+        if (!shouldCheckDelegate) {
+            DEBUG_TARGET_SELECTION(@"---> NOT checking NSWindow delegate because it appears in the responder chain before now and it has a nextResponder");
+        } else {
+            shouldCheckDelegate = ![self _appearsInResponderChainAfterResponder:delegate];
+            if (!shouldCheckDelegate) {
+                DEBUG_TARGET_SELECTION(@"---> NOT checking NSWindow delegate because of a responder chain loop");
+            }
+        }
     }
 
     if (shouldCheckDelegate && delegate && ![delegate applyToResponderChain:applier])

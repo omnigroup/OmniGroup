@@ -22,7 +22,10 @@ RCS_ID("$Id$")
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    OBPRECONDITION(nibNameOrNil == nil);
+    OBPRECONDITION(nibBundleOrNil == nil);
+    
+    self = [super initWithNibName:@"OUIAboutThisAppViewController" bundle:OMNI_BUNDLE];
     if (self == nil)
         return nil;
     

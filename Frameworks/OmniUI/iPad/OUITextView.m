@@ -1040,6 +1040,10 @@ static BOOL _canReadFromTypes(UIPasteboard *pasteboard, NSArray *types)
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
 {
+    if (self.keepContextualMenuHidden) {
+        return NO;
+    }
+    
     // We want to provide extendable copy/paste support.
     if (action == @selector(paste:) || action == @selector(pasteTogglingPreserveStyle:)) {
         id <OUITextViewDelegate> delegate = self.delegate;

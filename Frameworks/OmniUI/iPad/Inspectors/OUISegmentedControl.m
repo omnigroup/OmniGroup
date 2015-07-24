@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -55,6 +55,8 @@ static id _commonInit(OUISegmentedControl *self)
 
 - (OUISegmentedControlButton *)addSegmentWithImage:(UIImage *)image representedObject:(id)representedObject;
 {
+    OBPRECONDITION(image);
+    
     OUISegmentedControlButton *segment = [OUISegmentedControlButton buttonWithType:UIButtonTypeCustom];
     if (self.segmentFont != nil)
         segment.titleLabel.font = self.segmentFont;
@@ -68,14 +70,9 @@ static id _commonInit(OUISegmentedControl *self)
     return segment;
 }
 
-- (OUISegmentedControlButton *)addSegmentWithImageNamed:(NSString *)imageName representedObject:(id)representedObject;
+- (OUISegmentedControlButton *)addSegmentWithImage:(UIImage *)image;
 {
-    return [self addSegmentWithImage:[UIImage imageNamed:imageName] representedObject:representedObject];
-}
-
-- (OUISegmentedControlButton *)addSegmentWithImageNamed:(NSString *)imageName;
-{
-    return [self addSegmentWithImageNamed:imageName representedObject:nil];
+    return [self addSegmentWithImage:image representedObject:nil];
 }
 
 - (OUISegmentedControlButton *)addSegmentWithText:(NSString *)text representedObject:(id)representedObject;

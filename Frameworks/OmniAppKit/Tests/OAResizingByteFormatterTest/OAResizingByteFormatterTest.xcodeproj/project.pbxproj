@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 42;
+	objectVersion = 45;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,21 +17,6 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXBuildStyle section */
-		4A9504CCFFE6A4B311CA0CBA /* Debug */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-			};
-			name = Debug;
-		};
-		4A9504CDFFE6A4B311CA0CBA /* Release */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-			};
-			name = Release;
-		};
-/* End PBXBuildStyle section */
-
 /* Begin PBXFileReference section */
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -40,29 +25,24 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		32CA4F630368D1EE00C91783 /* OAResizingByteFormatterTest_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAResizingByteFormatterTest_Prefix.h; sourceTree = "<group>"; };
-		348A55890A06698F00B9BEFB /* OmniAppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OmniAppKit.framework; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		348A558A0A06698F00B9BEFB /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OmniBase.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		348A558B0A06698F00B9BEFB /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OmniFoundation.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		348A55890A06698F00B9BEFB /* OmniAppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		348A558A0A06698F00B9BEFB /* OmniBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		348A558B0A06698F00B9BEFB /* OmniFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniFoundation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		348A55C70A0669BD00B9BEFB /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Application-Common.xcconfig"; path = "../../../../Configurations/Omni-Application-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
-		348A55C80A0669BD00B9BEFB /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Application-Coverage.xcconfig"; path = "../../../../Configurations/Omni-Application-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55C90A0669BD00B9BEFB /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Application-Debug.xcconfig"; path = "../../../../Configurations/Omni-Application-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55CA0A0669BD00B9BEFB /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Application-Release.xcconfig"; path = "../../../../Configurations/Omni-Application-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55CB0A0669BD00B9BEFB /* Omni-Bundle-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Bundle-Common.xcconfig"; path = "../../../../Configurations/Omni-Bundle-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
-		348A55CC0A0669BD00B9BEFB /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Bundle-Coverage.xcconfig"; path = "../../../../Configurations/Omni-Bundle-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55CD0A0669BD00B9BEFB /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Bundle-Debug.xcconfig"; path = "../../../../Configurations/Omni-Bundle-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55CE0A0669BD00B9BEFB /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Bundle-Release.xcconfig"; path = "../../../../Configurations/Omni-Bundle-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55CF0A0669BD00B9BEFB /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Common.xcconfig"; path = "../../../../Configurations/Omni-Framework-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
-		348A55D00A0669BD00B9BEFB /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Coverage.xcconfig"; path = "../../../../Configurations/Omni-Framework-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55D10A0669BD00B9BEFB /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Debug.xcconfig"; path = "../../../../Configurations/Omni-Framework-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55D20A0669BD00B9BEFB /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Framework-Release.xcconfig"; path = "../../../../Configurations/Omni-Framework-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55D30A0669BD00B9BEFB /* Omni-Global-Common-10.3.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Global-Common-10.3.xcconfig"; path = "../../../../Configurations/Omni-Global-Common-10.3.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55D40A0669BD00B9BEFB /* Omni-Global-Common-10.4.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Global-Common-10.4.xcconfig"; path = "../../../../Configurations/Omni-Global-Common-10.4.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55D50A0669BD00B9BEFB /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Global-Common.xcconfig"; path = "../../../../Configurations/Omni-Global-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
-		348A55D60A0669BD00B9BEFB /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Global-Coverage.xcconfig"; path = "../../../../Configurations/Omni-Global-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55D70A0669BD00B9BEFB /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Global-Debug.xcconfig"; path = "../../../../Configurations/Omni-Global-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55D80A0669BD00B9BEFB /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Global-Release.xcconfig"; path = "../../../../Configurations/Omni-Global-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55D90A0669BD00B9BEFB /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Tool-Common.xcconfig"; path = "../../../../Configurations/Omni-Tool-Common.xcconfig"; sourceTree = SOURCE_ROOT; };
-		348A55DA0A0669BD00B9BEFB /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Tool-Coverage.xcconfig"; path = "../../../../Configurations/Omni-Tool-Coverage.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55DB0A0669BD00B9BEFB /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Tool-Debug.xcconfig"; path = "../../../../Configurations/Omni-Tool-Debug.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55DC0A0669BD00B9BEFB /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; name = "Omni-Tool-Release.xcconfig"; path = "../../../../Configurations/Omni-Tool-Release.xcconfig"; sourceTree = SOURCE_ROOT; };
 		348A55E30A066A2C00B9BEFB /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
@@ -168,25 +148,20 @@
 			isa = PBXGroup;
 			children = (
 				348A55C70A0669BD00B9BEFB /* Omni-Application-Common.xcconfig */,
-				348A55C80A0669BD00B9BEFB /* Omni-Application-Coverage.xcconfig */,
 				348A55C90A0669BD00B9BEFB /* Omni-Application-Debug.xcconfig */,
 				348A55CA0A0669BD00B9BEFB /* Omni-Application-Release.xcconfig */,
 				348A55CB0A0669BD00B9BEFB /* Omni-Bundle-Common.xcconfig */,
-				348A55CC0A0669BD00B9BEFB /* Omni-Bundle-Coverage.xcconfig */,
 				348A55CD0A0669BD00B9BEFB /* Omni-Bundle-Debug.xcconfig */,
 				348A55CE0A0669BD00B9BEFB /* Omni-Bundle-Release.xcconfig */,
 				348A55CF0A0669BD00B9BEFB /* Omni-Framework-Common.xcconfig */,
-				348A55D00A0669BD00B9BEFB /* Omni-Framework-Coverage.xcconfig */,
 				348A55D10A0669BD00B9BEFB /* Omni-Framework-Debug.xcconfig */,
 				348A55D20A0669BD00B9BEFB /* Omni-Framework-Release.xcconfig */,
 				348A55D30A0669BD00B9BEFB /* Omni-Global-Common-10.3.xcconfig */,
 				348A55D40A0669BD00B9BEFB /* Omni-Global-Common-10.4.xcconfig */,
 				348A55D50A0669BD00B9BEFB /* Omni-Global-Common.xcconfig */,
-				348A55D60A0669BD00B9BEFB /* Omni-Global-Coverage.xcconfig */,
 				348A55D70A0669BD00B9BEFB /* Omni-Global-Debug.xcconfig */,
 				348A55D80A0669BD00B9BEFB /* Omni-Global-Release.xcconfig */,
 				348A55D90A0669BD00B9BEFB /* Omni-Tool-Common.xcconfig */,
-				348A55DA0A0669BD00B9BEFB /* Omni-Tool-Coverage.xcconfig */,
 				348A55DB0A0669BD00B9BEFB /* Omni-Tool-Debug.xcconfig */,
 				348A55DC0A0669BD00B9BEFB /* Omni-Tool-Release.xcconfig */,
 			);
@@ -207,8 +182,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-			};
 			dependencies = (
 			);
 			name = OAResizingByteFormatterTest;
@@ -222,16 +195,18 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "OAResizingByteFormatterTest" */;
-			buildSettings = {
+			attributes = {
 			};
-			buildStyles = (
-				4A9504CCFFE6A4B311CA0CBA /* Debug */,
-				4A9504CDFFE6A4B311CA0CBA /* Release */,
-			);
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "OAResizingByteFormatterTest" */;
+			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* OAResizingByteFormatterTest */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* OAResizingByteFormatterTest */,
 			);

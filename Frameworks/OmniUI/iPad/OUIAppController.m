@@ -516,6 +516,11 @@ static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPop
     return menuImage(@"OUIMenuItemSettings.png");
 }
 
+- (UIImage *)inAppPurchasesMenuImage;
+{
+    return menuImage(@"OUIMenuItemPurchases.png");
+}
+
 #pragma mark - App menu support
 
 - (NSString *)feedbackMenuTitle;
@@ -564,10 +569,9 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 {
     NSString *imageName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"OUIAppMenuImage"];
     if ([NSString isEmptyString:imageName])
-        imageName = @"OUIAppMenu.png";
+        imageName = @"OUIAppMenu";
     
     UIImage *appMenuImage = menuImage(imageName);
-    OBASSERT(appMenuImage);
     UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithImage:appMenuImage style:UIBarButtonItemStylePlain target:self action:@selector(_showAppMenu:)];
     
     item.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Help and Settings", @"OmniUI", OMNI_BUNDLE, @"Help and Settings toolbar item accessibility label.");
@@ -669,7 +673,12 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 
 static UIImage *menuImage(NSString *name)
 {
-    return [[UIImage imageNamed:name] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImage *image = [[UIImage imageNamed:name inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    if (!image)
+        image = [UIImage imageNamed:name];
+    
+    OBASSERT(image);
+    return image;
 }
 
 - (NSArray *)_appMenuTopOptions;
@@ -715,7 +724,7 @@ static UIImage *menuImage(NSString *name)
         if ([NSString isEmptyString:purchaseTitle])
             continue;
         
-        option = [[OUIMenuOption alloc] initWithTitle:purchaseTitle image:menuImage(@"OUIMenuItemPurchases.png") action:^{
+        option = [[OUIMenuOption alloc] initWithTitle:purchaseTitle image:self.inAppPurchasesMenuImage action:^{
             [[OUIAppController controller] showInAppPurchases:productIdentifier viewController:self.window.rootViewController];
         }];
         [options addObject:option];

@@ -48,11 +48,18 @@ RCS_ID("$Id$")
 {
     [_transientFileItems addObject:fileItem];
     [self setFileItems:_transientFileItems itemMoved:NO];
-    if (_itemsDidChangeBlock != NULL)
-        _itemsDidChangeBlock(_transientFileItems);
 }
 
 #pragma mark - ODSScope subclass
+
+- (void)setFileItems:(NSSet *)fileItems itemMoved:(BOOL)itemMoved;
+{
+    if (fileItems != _transientFileItems)
+        _transientFileItems.set = fileItems;
+    [super setFileItems:fileItems itemMoved:itemMoved];
+    if (_itemsDidChangeBlock != NULL)
+        _itemsDidChangeBlock(_transientFileItems);
+}
 
 - (BOOL)isFileInContainer:(NSURL *)fileURL;
 {
@@ -97,6 +104,14 @@ RCS_ID("$Id$")
         }];
     };
     processNextItem();
+}
+
+#pragma mark - Subclass-only APIs
+
+- (void)completedMoveOfFileItem:(ODSFileItem *)fileItem toURL:(NSURL *)destinationURL;
+{
+    [super completedMoveOfFileItem:fileItem toURL:destinationURL];
+    [self setFileItems:_transientFileItems itemMoved:YES];
 }
 
 - (NSMutableSet *)copyCurrentlyUsedFileNamesInFolderAtURL:(NSURL *)folderURL ignoringFileURL:(NSURL *)fileURLToIgnore;
@@ -196,9 +211,8 @@ RCS_ID("$Id$")
             [deletedItems addObject:item];
         }
     }
+
     [self setFileItems:_transientFileItems itemMoved:NO];
-    if (_itemsDidChangeBlock != NULL)
-        _itemsDidChangeBlock(_transientFileItems);
 
     if (completionHandler != NULL)
         completionHandler(deletedItems, errorsOrNil);

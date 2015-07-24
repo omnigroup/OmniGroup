@@ -11,6 +11,7 @@
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIUndoBarButtonMenuAppearanceDelegate.h>
 #import <OmniUI/OUIUndoButton.h>
+#import <OmniUI/UIPopoverPresentationController-OUIExtensions.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/OUIMenuController.h>
 #import "OUIParameters.h"
@@ -172,7 +173,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 - (void)updateButtonForCompact:(BOOL)isCompact;
 {
     if (isCompact) {
-        [_undoButton setImage:[UIImage imageNamed:@"OUIToolbarUndo"] forState:UIControlStateNormal];
+        [_undoButton setImage:[UIImage imageNamed:@"OUIToolbarUndo" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] forState:UIControlStateNormal];
         [_undoButton setTitle:nil forState:UIControlStateNormal];
         [_undoButton sizeToFit];
     } else {
@@ -412,12 +413,12 @@ static BOOL DidDismissAnyMenus;
     }
     else {
         // we can use our popover
+        UINavigationController *navigationController = [self isKindOfClass:[UINavigationController class]] ? (UINavigationController *)self : self.navigationController;
         OUIMenuController *menuController = [barButtonItem _menuControllerForRegularMenuPresentation];
+        [menuController.popoverPresentationController addManagedBarButtonItemsFromNavigationController:navigationController];
+        
         [[NSNotificationCenter defaultCenter] postNotificationName:OUIUndoPopoverWillShowNotification object:barButtonItem];
-        [self presentViewController:menuController animated:YES completion:^{
-            // The menu controller "helpfully" adds passthrough views for us at presentation time – clear them out afterwards
-            menuController.popoverPresentationController.passthroughViews = @[];
-        }];
+        [self presentViewController:menuController animated:YES completion:NULL];
     }
 }
 

@@ -34,6 +34,8 @@ extern NSString * const ODSFileItemInfoKey;
 @property(readonly) NSData *emailData; // packages cannot currently be emailed, so this allows subclasses to return a different content for email
 @property(readonly) NSString *emailFilename;
 
+@property(readonly) NSData *dataForWritingToExternalStorage;  // should be flat file marked as always flat file so desktop doesn't inflate it on edit
+
 @property(readonly,nonatomic) NSString *editingName;
 @property(readonly,nonatomic) NSString *name;
 @property(readonly,nonatomic) NSString *exportingName;

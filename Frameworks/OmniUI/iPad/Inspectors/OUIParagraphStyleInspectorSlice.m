@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -110,19 +110,19 @@ RCS_ID("$Id$");
     
     OUISegmentedControlButton *button;
         
-    button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentLeft.png"];
+    button = [alignBar addSegmentWithImage:[UIImage imageNamed:@"OUIParagraphAlignmentLeft.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
     [button setTag:NSTextAlignmentLeft];
     button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Left text align", @"OmniUI", OMNI_BUNDLE, @"Left Text Align button accessibility label.");
     
-    button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentCenter.png"];
+    button = [alignBar addSegmentWithImage:[UIImage imageNamed:@"OUIParagraphAlignmentCenter.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
     [button setTag:NSTextAlignmentCenter];
     button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Center text align", @"OmniUI", OMNI_BUNDLE, @"Center Text Align button accessibility label.");
 
-    button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentRight.png"];
+    button = [alignBar addSegmentWithImage:[UIImage imageNamed:@"OUIParagraphAlignmentRight.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
     [button setTag:NSTextAlignmentRight];
     button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Right text align", @"OmniUI", OMNI_BUNDLE, @"Right Text Align button accessibility label.");
 
-    button = [alignBar addSegmentWithImageNamed:@"OUIParagraphAlignmentJustified.png"];
+    button = [alignBar addSegmentWithImage:[UIImage imageNamed:@"OUIParagraphAlignmentJustified.png" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]];
     [button setTag:NSTextAlignmentJustified];
     button.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Justified text align", @"OmniUI", OMNI_BUNDLE, @"Justified Text Align button accessibility label.");
 

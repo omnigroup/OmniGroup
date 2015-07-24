@@ -27,7 +27,6 @@
 // If 'manager' is nil, we use the old behavior of fully archiving colors with unknown colorspaces.
 
 - (BOOL)isSimilarToColor:(NSColor *)color;
-- (BOOL)isPatternSimilarToColorPattern:(NSColor *)color;
 - (NSData *)patternImagePNGData;
 
 - (NSString *)similarColorNameFromColorLists;

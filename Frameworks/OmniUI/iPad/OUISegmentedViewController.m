@@ -5,6 +5,8 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
+//ContentInsets
+
 #import <OmniUI/OUISegmentedViewController.h>
 
 RCS_ID("$Id$")
@@ -24,15 +26,6 @@ RCS_ID("$Id$")
 @end
 
 @implementation OUISegmentedViewController
-
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
 
 - (void)awakeFromNib;
 {

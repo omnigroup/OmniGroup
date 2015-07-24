@@ -16,6 +16,8 @@
 #import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
 #import <OmniFoundation/OFBackgroundActivity.h>
 #import <OmniFoundation/OFFileEdit.h>
+#import <OmniFoundation/OFPreference.h>
+#import <OmniFoundation/OFRelativeDateFormatter.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIAlert.h>
 #import <OmniUIDocument/OUIDocumentPreview.h>
@@ -24,6 +26,7 @@
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUI/OUIUndoIndicator.h>
 #import <OmniUI/UIView-OUIExtensions.h>
+#import <OmniUI/OUIShieldView.h>
 
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentAppController-Internal.h"
@@ -49,6 +52,11 @@ NSString * const OUIDocumentPreviewsUpdatedForFileItemNotification = @"OUIDocume
 static int32_t OUIDocumentInstanceCount = 0;
 #endif
 
+@interface OUIDocument () <OUIShieldViewDelegate>
+@property (nonatomic, readwrite, copy) NSString *lastQueuedUpdateMessage;
+@property (nonatomic, strong) OUIShieldView *shieldView;
+@end
+
 @implementation OUIDocument
 {
     ODSScope *_documentScope;
@@ -67,7 +75,6 @@ static int32_t OUIDocumentInstanceCount = 0;
     NSUInteger _requestedViewStateChangeCount; // Used to augment the normal autosave.
     NSUInteger _savedViewStateChangeCount;
     
-    OUIAlert *_updateAlert;
     CFAbsoluteTime _lastLocalRenameTime;
     
     BOOL _accommodatingDeletion;
@@ -178,8 +185,7 @@ static int32_t OUIDocumentInstanceCount = 0;
     int32_t count = OSAtomicDecrement32Barrier(&OUIDocumentInstanceCount);
     DEBUG_DOCUMENT(@"DEALLOC %p (count %d)", self, count);
 #endif
-    
-    OBASSERT(_updateAlert == nil);
+    OBASSERT(_lastQueuedUpdateMessage == nil);
     OBASSERT(_accommodatingDeletion == NO);
     OBASSERT(_originalURLPriorToAccomodatingDeletion == nil);
     OBASSERT(_afterCloseRelinquishToWriter == nil);
@@ -476,6 +482,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         }
     }
 
+    // TODO: When you use NSFileVersionReplacingByMoving you remove a version of the file, and should do it as part of a coordinated write to the file. The advice about this for +addVersionOfItemAtURL:withContentsOfURL:options:error: applies here too. When you use it to promote a version to a separate file you actually write to two files, and should do it as part of a coordinated write to two files, using -[NSFileCoordinator coordinateWritingItemAtURL:options:writingItemAtURL:options:error:byAccessor:], most likely using NSFileCoordinatorWritingForReplacing for the file you're promoting the version to.
     DEBUG_DOCUMENT(@"Using latest version (%@ at %@)", latestVersion.localizedNameOfSavingComputer, latestVersion.modificationDate);
     if (latestVersion != currentVersion) {
         DEBUG_DOCUMENT(@"Replacing current version (%@ at %@) with (%@ at %@)", currentVersion.localizedNameOfSavingComputer, currentVersion.modificationDate, latestVersion.localizedNameOfSavingComputer, latestVersion.modificationDate);
@@ -492,7 +499,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
 - (void)openWithCompletionHandler:(void (^)(BOOL success))completionHandler;
 {
-    OBPRECONDITION(self.documentState & UIDocumentStateClosed);
+    OBPRECONDITION(self.documentState & (UIDocumentStateClosed|UIDocumentStateEditingDisabled)); // Revert just has UIDocumentStateEditingDisabled set.
     
     DEBUG_DOCUMENT(@"%@ %@", [self shortDescription], NSStringFromSelector(_cmd));
 
@@ -526,9 +533,13 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
             _documentViewController.document = self;
             
             // Don't provoke loading of views before they are configured for preview generation (also our view controller will never be presented).
-            if (!self.forPreviewGeneration)
+            if (!self.forPreviewGeneration) {
                 [self updateViewControllerToPresent];
-            
+                
+                NSString *lastEditedMessage = [self _lastEditedMessage];
+                [self _queueUpdateMessage:lastEditedMessage];
+            }
+
             // clear out any undo actions created during init
             [self.undoManager removeAllActions];
             
@@ -548,8 +559,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     DEBUG_DOCUMENT(@"%@ %@", [self shortDescription], NSStringFromSelector(_cmd));
 
     // Make sure to break retain cycles, if this is up.
-    [_updateAlert dismissWithClickedButtonIndex:0 animated:NO];
-    _updateAlert = nil;
+    [self dismissUpdateMessage];
     
     // We save the view state on close, even if there is no saving (since the user might not have edited anything).
     __block NSDictionary *viewState = nil;
@@ -711,12 +721,16 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     completionHandler = [completionHandler copy];
 
     BOOL isChangingFileType = !OFISEQUAL(self.fileType, self.savingFileType);
-    BOOL ensureUniqueName = isChangingFileType;
+    BOOL ensureUniqueName = isChangingFileType && _documentScope != nil;
     ODSFileItem *fileItem = nil;
     if (ensureUniqueName) {
         fileItem = self.fileItem;
         OBASSERT(fileItem, "If we are converting file types, we assume the original file existed (this is not a new unsaved document)");
         url = [_documentScope urlForNewDocumentInFolder:fileItem.parentFolder baseName:[fileItem.name stringByDeletingPathExtension] fileType:self.savingFileType];
+        if ([url.pathExtension isEqualToString:fileItem.fileURL.pathExtension]) {
+            // this should mean that no rename is necessary.  we should overwrite this file with the same name instead of using the unnecessary unique name we just generated (e.g. we are changing from a flat .graffle to a package .graffle)
+            url = fileItem.fileURL;
+        }
     }
     
     BOOL shouldRemoveCachedResourceValue = ((saveOperation == UIDocumentSaveForOverwriting) && isChangingFileType);
@@ -742,7 +756,9 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
             
             self.fileItem.fileEdit = _lastWrittenFileEdit;
             _lastWrittenFileEdit = nil;
-            
+
+            [self _recordLastEdit];
+
             if (shouldRemoveCachedResourceValue) {
                 OBASSERT(url);
                 
@@ -764,7 +780,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         }];
     };
 
-    if (ensureUniqueName && _documentScope) {
+    if (ensureUniqueName) {
         OBASSERT(fileItem);
         // this ensures that our fileItem gets its URL updated to match.
         [_documentScope updateFileItem:fileItem withBlock:saveBlock completionHandler:nil];
@@ -789,13 +805,9 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         [self.defaultFirstResponder becomeFirstResponder]; // Likely the document view controller itself
         
         // If we had a previous alert up, discard it. Do this after returning from our current context to avoid the "wait_fences: failed to receive reply: 10004003".
-        if (_updateAlert) {
-            OUIAlert *updateAlert = _updateAlert;
-            _updateAlert = nil;
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [updateAlert cancelAnimated:YES];
-            }];
-        }
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [self dismissUpdateMessage];
+        }];
     });
     
     if (!_hasDisabledUserInteraction && !self.forPreviewGeneration) {
@@ -821,8 +833,9 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
     // Show any alert that was queued and display deferred since we were still in the middle of -relinquishPresentedItemToWriter:.
     // It might be better to set our own flag in a subclass implementation of -relinquishPresentedItemToWriter:, but this should be the same effect.
-    if (_updateAlert)
-        [_updateAlert show];
+    if (self.lastQueuedUpdateMessage != nil) {
+        [self displayLastQueuedUpdateMessage];
+    }
     
     if (_accommodatingDeletion) {
         // This will happen at the end of the relinquish-to-writer block that wraps the deletion accomodation, if the user has tapped on "Keep" when asked what to do about the incoming delete. Our file will be off in the dead zone.
@@ -857,7 +870,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
             // This can happen (currently) if you delete a file in iTunes and then attempt to open it in the app (since iTunes/iOS don't do file coordination right). The error text in this case is pretty poor. The Cocoa error just has "The operation couldn't be completed. (Cocoa error 260.)". The underlying POSIX error does say something about the file being missing, but it seems bad to assume it will continue to do so (or that we'll have such an underlying error).
             NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:
                                       NSLocalizedStringFromTableInBundle(@"The operation couldn't be completed.", @"OmniUIDocument", OMNI_BUNDLE, @"Error description for a document operation failing due to a missing file."), NSLocalizedDescriptionKey,
-                                      NSLocalizedStringFromTableInBundle(@"A file is missing or has been deleted.", @"OmniUIDocument", OMNI_BUNDLE, @"Error reason for a document operation failing due to a missing file."), NSLocalizedFailureReasonErrorKey,
+                                      NSLocalizedStringFromTableInBundle(@"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again.", @"OmniUIDocument", OMNI_BUNDLE, @"Error reason for a document operation failing due to a missing file."), NSLocalizedFailureReasonErrorKey,
                                       error, NSUnderlyingErrorKey,
                                       nil];
             error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileNoSuchFileError userInfo:userInfo];
@@ -951,6 +964,9 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
             [self didRebuildViewController:state];
             
             [self updateViewControllerToPresent];
+
+            NSString *lastEditedMessage = [self _lastEditedMessage];
+            [self _queueUpdateMessage:lastEditedMessage];
         }
     }];
 }
@@ -1076,11 +1092,10 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     [super presentedItemDidMoveToURL:newURL];
     OBASSERT([self.fileURL isEqual:newURL]);
 
-#ifdef DEBUG_UPDATE
     if (_accommodatingDeletion)
         return; // Don't pop up an alert about moving into the dead zone.
     
-    NSString *renameMessage = nil;
+    NSString *updateMessage = nil;
         
     // TODO: Test changing file extension? Maybe have 'type changed' variant?
     // TODO: Test incoming delete. We should not alert if we got closed
@@ -1089,25 +1104,97 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
         
         NSString *displayName = [[self.fileItem class] displayNameForFileURL:newURL fileType:self.fileType];
         OBFinishPortingLater("Can't ask the file item for its editing name. Need a class method of some sort.");
-        renameMessage = [NSString stringWithFormat:messageFormat, displayName];
+        updateMessage = [NSString stringWithFormat:messageFormat, displayName];
     } else {
-        OBFinishPortingLater("Deal with folders again somehow");
-        //NSString *folder1 = ODSFolderNameForFileURL(_originalURLPriorToPresentedItemDidMoveToURL);
-        //NSString *folder2 = ODSFolderNameForFileURL(newURL);
-        NSString *folder1 = nil;
-        NSString *folder2 = nil;
-
-        if (folder1 && !folder2) {
-            NSString *messageFormat = NSLocalizedStringFromTableInBundle(@"Moved out of folder %@.", @"OmniUIDocument", OMNI_BUNDLE, @"Message format for alert informing user that the document has been moved out of a folder to the top level");
-            renameMessage = [NSString stringWithFormat:messageFormat, folder1];
-        } else if (folder2) {
-            NSString *messageFormat = NSLocalizedStringFromTableInBundle(@"Moved to folder %@.", @"OmniUIDocument", OMNI_BUNDLE, @"Message format for alert informing user that the document has been moved to a folder");
-            renameMessage = [NSString stringWithFormat:messageFormat, folder2];
-        }
+        // The code above handles both renames and deletions. If we get althey way to here, we will assume a move has happend. Unfortunately, there is no way to know where the standard 'Shared Documents' part of the path ends and the user created/visible path begins. Because of this, we can't provide any relevant folder/path information. For now, we'll just let the user know that the document was moved.
+        updateMessage = NSLocalizedStringFromTableInBundle(@"Document moved.", @"OmniUIDocument", OMNI_BUNDLE, @"Message letting the user know that their document was moved from one folder to another.");
+        
     }
     
-    [self _queueUpdateAlertWithMessage:renameMessage];
-#endif
+    [self _queueUpdateMessage:updateMessage];
+}
+
+- (NSString *)_persistentPathForFile;
+{
+    ODSFileItem *fileItem = self.fileItem;
+    ODSScope *scope = fileItem.scope;
+    NSString *scopeIdentifier = scope.identifier;
+    NSString *scopeRelativePath;
+    if (scope.isExternal) {
+        scopeRelativePath = [fileItem.fileURL path];
+    } else {
+        NSURL *scopeRootURL = scope.documentsURL;
+        scopeRelativePath = OFFileURLRelativePath(scopeRootURL, fileItem.fileURL);
+    }
+    return [NSString stringWithFormat:@"%@/%@", scopeIdentifier, scopeRelativePath];
+}
+
+static OFPreference *LastEditsPreference;
+
+- (NSMutableDictionary *)_lastEditsDictionary;
+{
+    static NSMutableDictionary *lastEdits;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        LastEditsPreference = [OFPreference preferenceForKey:@"OUIDocumentLastEdits" defaultValue:@{}];
+        lastEdits = [[LastEditsPreference dictionaryValue] mutableCopy];
+        OBASSERT([lastEdits isKindOfClass:[NSMutableDictionary class]]);
+    });
+    OBPOSTCONDITION([lastEdits isKindOfClass:[NSMutableDictionary class]]);
+    return lastEdits;
+}
+
+- (NSDate *)_lastRecordedEditDate;
+{
+    NSMutableDictionary *lastEdits = [self _lastEditsDictionary];
+    return [lastEdits objectForKey:[self _persistentPathForFile]];
+}
+
+- (void)_recordLastEdit;
+{
+    NSMutableDictionary *lastEdits = [self _lastEditsDictionary];
+    [lastEdits setObject:self.fileModificationDate forKey:[self _persistentPathForFile]];
+    [LastEditsPreference setDictionaryValue:lastEdits];
+}
+
+- (nullable NSString *)_lastEditedMessage;
+{
+    NSDate *lastRecordedEditDate = [self _lastRecordedEditDate];
+    NSURL *url = self.fileURL;
+    NSString *editDateString;
+    NSDate *editDate;
+    NSURL *securedURL = nil;
+    if ([url startAccessingSecurityScopedResource])
+        securedURL = url;
+    BOOL foundEditDate = [url getResourceValue:&editDate forKey:NSURLContentModificationDateKey error:NULL];
+    [securedURL stopAccessingSecurityScopedResource];
+    if (!foundEditDate) {
+        return nil; // We don't know when this URL was last modified, so let's skip it
+    }
+
+    static OFRelativeDateFormatter *relativeDateFormatter;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        relativeDateFormatter = [[OFRelativeDateFormatter alloc] init];
+        [relativeDateFormatter setFormatterBehavior:NSDateFormatterBehavior10_4];
+        OBASSERT([relativeDateFormatter formatterBehavior] == NSDateFormatterBehavior10_4);
+        [relativeDateFormatter setDateStyle:NSDateFormatterShortStyle];
+        [relativeDateFormatter setTimeStyle:NSDateFormatterShortStyle];
+        [relativeDateFormatter setUseRelativeDayNames:YES];
+    });
+
+    editDateString = [relativeDateFormatter stringForObjectValue:editDate];
+    NSString *lastEditFormat;
+    if (lastRecordedEditDate == nil) {
+        lastEditFormat = NSLocalizedStringFromTableInBundle(@"Last edit: %@", @"OmniUIDocument", OMNI_BUNDLE, @"Notice for the user about the last edit to a document (unknown device)");
+    } else if (OFISEQUAL(lastRecordedEditDate, editDate)) {
+        lastEditFormat = NSLocalizedStringFromTableInBundle(@"Last edit: %@ on this device", @"OmniUIDocument", OMNI_BUNDLE, @"Notice for the user about the last edit to a document (this device)");
+    } else {
+        lastEditFormat = NSLocalizedStringFromTableInBundle(@"Last edit: %@ on another device", @"OmniUIDocument", OMNI_BUNDLE, @"Notice for the user about the last edit to a document (another device)");
+    }
+    
+    NSString *lastEditMessage = [NSString stringWithFormat:lastEditFormat, editDateString];
+    return lastEditMessage;
 }
 
 #pragma mark -
@@ -1348,39 +1435,76 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     [self finishUndoGroup];
 }
 
-#ifdef DEBUG_UPDATE
-- (void)_queueUpdateAlertWithMessage:(NSString *)message;
+/// Queues any type of 'update' message to be displayed. (Ex. last updated date/time or if the documet is moved/renamed.)
+- (void)_queueUpdateMessage:(NSString *)message;
 {
     OBPRECONDITION(![NSString isEmptyString:message]);
     OBPRECONDITION(!_accommodatingDeletion);
     
-    if (self.forPreviewGeneration) {
-        // We aren't a user-visible open document
+    if (message == nil || self.forPreviewGeneration) {
+        // No point in doing any of thise if we don't acutally have a message to show or if we aren't a user-visible open document
+        return;
+    }
+    
+    
+    if ([self shouldShowUpdateMessage] == NO) {
         return;
     }
     
     // See commentary in -_willBeRenamedLocally about this hack.
     if (CFAbsoluteTimeGetCurrent() - _lastLocalRenameTime < 5) {
-        NSLog(@"skip -- too soon");
         return;
     }
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         // Cancel any current alert.
-        
-        [_updateAlert dismissWithClickedButtonIndex:0 animated:YES];
-        
-        _updateAlert = [[OUIAlert alloc] initWithTitle:[self alertTitleForIncomingEdit] message:message cancelButtonTitle:@"OK" cancelAction:^{
-            // Home button pressed, for example.
-            _updateAlert = nil;
-        }];
+        self.lastQueuedUpdateMessage = nil;
+        [self dismissUpdateMessage];
 
-        // Only show the alert if we aren't in the middle of -relinquishPresentedItemToWriter:. We'll try again in -enableEditing
-        if (self.editingDisabled == NO)
-            [_updateAlert show];
+        // Queue up new message.
+        self.lastQueuedUpdateMessage = message;
+        
+        // Only displays new message if we aren't in the middle of -relinquishPresentedItemToWriter:. We'll try again in -enableEditing
+        if (self.editingDisabled == NO) {
+            [self displayLastQueuedUpdateMessage];
+        }
     }];
 }
-#endif
+
+- (BOOL)shouldShowUpdateMessage;
+{
+    return NO;
+}
+
+- (void)displayLastQueuedUpdateMessage NS_REQUIRES_SUPER;
+{
+    OBASSERT([NSThread isMainThread]);
+    OBASSERT(self.lastQueuedUpdateMessage != nil);
+    
+    OBASSERT(self.viewControllerToPresent.isViewLoaded);
+    OBASSERT(self.shieldView == nil);
+    
+    self.shieldView = [OUIShieldView shieldViewWithView:self.viewControllerToPresent.view];
+    self.shieldView.delegate = self;
+    self.shieldView.shouldForwardAllEvents = YES;
+    [self.viewControllerToPresent.view addSubview:self.shieldView];
+}
+
+- (void)dismissUpdateMessage NS_REQUIRES_SUPER;
+{
+    OBASSERT([NSThread isMainThread]);
+    
+    self.lastQueuedUpdateMessage = nil;
+    
+    [self.shieldView removeFromSuperview];
+    self.shieldView = nil;
+}
+
+#pragma mark OUIShieldViewDelegate
+- (void)shieldViewWasTouched:(OUIShieldView *)shieldView;
+{
+    [self dismissUpdateMessage];
+}
 
 @end
 

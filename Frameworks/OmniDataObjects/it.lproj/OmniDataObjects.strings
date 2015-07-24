@@ -219,4 +219,3 @@
 
 /* error reason */
 "Wrong root element namespace.  Was expecting '%@' but found '%@'." = "Namespace dell'elemento root sbagliato. Era atteso '%1$@', ma è stato rilevato '%2$@'.";
-

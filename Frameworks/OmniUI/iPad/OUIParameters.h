@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,11 +38,6 @@
 // OUIInspectorBackgroundView
 #define kOUIInspectorBackgroundTopColor ((OQLinearRGBA){255.0/255.0, 255.0/255.0, 255.0/255.0, 1.0})
 #define kOUIInspectorBackgroundBottomColor ((OQLinearRGBA){255.0/255.0, 255.0/255.0, 255.0/255.0, 1.0})
-
-// OUIInspectorOptionWheel
-#define kOUIInspectorOptionWheelEdgeGradientGray (0.53)
-#define kOUIInspectorOptionWheelMiddleGradientGray (1.0)
-#define kOUIInspectorOptionWheelGradientPower (2.5)
 
 // OUIMenuController
 #define kOUIMenuControllerBackgroundOpacity (0.98) // We can lower this quite a bit except on Retina iPad 3. The popover doesn't blur its background on this hardware.

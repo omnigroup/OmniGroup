@@ -28,7 +28,10 @@ RCS_ID("$Id$")
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 {
-    if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil])) {
+    OBPRECONDITION(nibNameOrNil == nil);
+    OBPRECONDITION(nibBundleOrNil == nil);
+    
+    if ((self = [super initWithNibName:@"OUIDocumentPickerAdaptableContainerViewController" bundle:OMNI_BUNDLE])) {
         self.definesPresentationContext = YES;
         self.providesPresentationContextTransitionStyle = YES;
     }

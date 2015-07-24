@@ -5,42 +5,32 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OIInspectorGroup.h"
+#import <OmniInspector/OIInspectorGroup.h>
 
 #import <AppKit/AppKit.h>
+#import <OmniAppKit/OAColorWell.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
-#import <OmniAppKit/OAColorWell.h>
+#import <OmniInspector/OIInspector.h>
+#import <OmniInspector/OIInspectorHeaderView.h>
+#import <OmniInspector/OIWorkspace.h>
 
 #import "OIInspectorController-Internal.h"
-#import "OIInspector.h"
 
 RCS_ID("$Id$");
 
-@interface OIInspectorGroup (/*Private*/)
-- (void)_showGroup;
-- (void)_hideGroup;
-- (void)disconnectWindows;
-- (void)connectWindows;
-- (NSPoint)topLeftPoint;
-- (NSRect)firstFrame;
-- (void)screensDidChange:(NSNotification *)notification;
-- (BOOL)_frame:(NSRect)frame1 overlapsHorizontallyEnoughToConnectToFrame:(NSRect)frame2;
-- (BOOL)willConnectToBottomOfGroup:(OIInspectorGroup *)otherGroup withFrame:(NSRect)aFrame;
-- (BOOL)willConnectToTopOfGroup:(OIInspectorGroup *)otherGroup withFrame:(NSRect)aFrame;
-- (void)connectToBottomOfGroup:(OIInspectorGroup *)otherGroup;
-- (BOOL)willInsertInGroup:(OIInspectorGroup *)otherGroup withFrame:(NSRect)aRect index:(NSUInteger *)anIndex position:(CGFloat *)aPosition;
-- (BOOL)insertGroup:(OIInspectorGroup *)otherGroup withFrame:(NSRect)aFrame;
-- (void)saveInspectorOrder;
-- (void)restoreFromIdentifier:(NSString *)identifier withInspectors:(NSMutableDictionary *)inspectors;
-- (void)setInitialBottommostInspector;
-- (NSRect)calculateForInspector:(OIInspectorController *)aController willResizeToFrame:(NSRect)aFrame moveOthers:(BOOL)moveOthers;
-- (void)controllerWindowDidResize:(NSNotification *)notification;
-- (CGFloat)yPositionOfGroupBelowWithSingleHeight:(CGFloat)singleControllerHeight;
-+ (void)updateMenuForControllers:(NSArray *)controllers;
-@end
-
 @implementation OIInspectorGroup
+{
+    NSMutableArray *_inspectors;
+    OIInspectorController *_resizingInspector;
+    struct {
+        unsigned int	ignoreResizing:1;
+        unsigned int	isSettingExpansion:1;
+        unsigned int	isShowing:1;
+        unsigned int	screenChangesEnabled:1;
+        unsigned int	hasPositionedWindows:1;
+    } _inspectorGroupFlags;
+}
 
 #define CONNECTION_DISTANCE_SQUARED 225.0
 #define CONNECTION_VERTICAL_DISTANCE	(5.0)
@@ -200,7 +190,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 #endif
     OIInspectorGroup *newGroup = [[OIInspectorGroup alloc] init];
     newGroup.inspectorRegistry = self.inspectorRegistry;
-    [self.inspectorRegistry.existingGroups addObject:newGroup];
+    [self.inspectorRegistry addExistingGroup:newGroup];
     
     NSUInteger inspectorCount = [_inspectors count];
     
@@ -297,14 +287,18 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 - (CGFloat)singlePaneExpandedMaxHeight;
 {
     CGFloat result = 0.0f;
-    
+    CGFloat totalHeight = OIInspectorStartingHeaderButtonHeight;
+
     for (OIInspectorController *inspector in _inspectors) {
         CGFloat inspectorDesired = [inspector desiredHeightWhenExpanded];
-        
+        if (inspector.headingButton) {
+            totalHeight = inspector.headingButton.heightNeededWhenExpanded;
+        }
+
         if (inspectorDesired > result)
             result = inspectorDesired;
     }
-    return (result + (CGFloat)OIInspectorStartingHeaderButtonHeight * ([_inspectors count] - 1));
+    return (result + totalHeight * ([_inspectors count] - 1));
 }
 
 - (BOOL)ignoreResizing;
@@ -537,25 +531,28 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 
     _inspectorGroupFlags.isShowing = YES;
 
+    OIInspectorRegistry *inspectorRegistry = [OIInspectorRegistry inspectorRegistryForMainWindow];
     // Remember whether there were previously any visible inspectors
-    BOOL hadVisibleInspector = [[OIInspectorRegistry inspectorRegistryForMainWindow] hasVisibleInspector];
+    BOOL hadVisibleInspector = [inspectorRegistry hasVisibleInspector];
     
     // Position windows if we haven't already
     if (!_inspectorGroupFlags.hasPositionedWindows) {
         _inspectorGroupFlags.hasPositionedWindows = YES;
         
-        NSDictionary *defaults = [[OIInspectorRegistry inspectorRegistryForMainWindow] workspaceDefaults];
+        OIWorkspace *sharedWorkspace = OIWorkspace.sharedWorkspace;
         for (index = 0; index < count; index++) {
             OIInspectorController *controller = [_inspectors objectAtIndex:index];
             NSString *identifier = [controller identifier];
 
             [controller loadInterface];
-            NSWindow *window = [controller window];
-            OBASSERT(window);
-            if (!index) {
-                NSString *position = [defaults objectForKey:[NSString stringWithFormat:@"%@-Position", identifier]];
-                if (position)
-                    [window setFrameTopLeftPoint:NSPointFromString(position)];
+            if (controller.interfaceType == OIInspectorInterfaceTypeFloating) {
+                NSWindow *window = [controller window];
+                OBASSERT(window);
+                if (!index) {
+                    NSString *position = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Position", identifier]];
+                    if (position)
+                        [window setFrameTopLeftPoint:NSPointFromString(position)];
+                }
             }
         }
     }
@@ -583,7 +580,14 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     [self connectWindows];
     _inspectorGroupFlags.isShowing = NO;
 
-    [[OIInspectorRegistry inspectorRegistryForMainWindow] configurationsChanged];
+    [inspectorRegistry configurationsChanged];
+}
+
+#pragma mark - Ugly API
+
+- (void)_setHasPositionedWindows;
+{
+    _inspectorGroupFlags.hasPositionedWindows = YES;
 }
 
 #pragma mark - Private
@@ -718,7 +722,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
         [otherGroup addInspector:inspector];
     
     [_inspectors removeAllObjects];
-    [self.inspectorRegistry.existingGroups removeObject:self];
+    [self.inspectorRegistry removeExistingGroup:self];
     [otherGroup connectWindows];
 }
 
@@ -766,7 +770,7 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     [otherGroup disconnectWindows];
     
     OBRetainAutorelease(otherGroup); // remove below could be the last reference
-    [self.inspectorRegistry.existingGroups removeObject:otherGroup];
+    [self.inspectorRegistry removeExistingGroup:otherGroup];
     
     count = [_inspectors count];
     insertions = [otherGroup inspectors];
@@ -788,25 +792,27 @@ static BOOL useASeparateMenuForWorkspaces = NO;
 - (void)saveInspectorOrder;
 {
     NSArray *identifiers = [_inspectors valueForKey:@"identifier"];
-    NSMutableDictionary *defaults = [[OIInspectorRegistry inspectorRegistryForMainWindow] workspaceDefaults];
-    [defaults setObject:identifiers forKey:[NSString stringWithFormat:@"%@-Order", [self identifier]]];
-    
-    // Don't call -topLeftPoint when we don't have a window (i.e., we have never been shown).  Instead, just use whatever is in the plist already.  Otherwise, we'll send -frame to a nil window!
-    if ([self hasFirstFrame])
-	[defaults setObject:NSStringFromPoint([self topLeftPoint]) forKey:[NSString stringWithFormat:@"%@-Position", [self identifier]]];
-    
-    NSString *visibleKey = [NSString stringWithFormat:@"%@-Visible", [self identifier]];
-    if ([self isVisible])
-        [defaults setObject:@"YES" forKey:visibleKey];
-    else
-        [defaults removeObjectForKey:visibleKey];
+    OIWorkspace *sharedWorkspace = OIWorkspace.sharedWorkspace;
+    [sharedWorkspace updateInspectorsWithBlock:^(NSMutableDictionary *dictionary) {
+        [dictionary setObject:identifiers forKey:[NSString stringWithFormat:@"%@-Order", [self identifier]]];
+        
+        // Don't call -topLeftPoint when we don't have a window (i.e., we have never been shown).  Instead, just use whatever is in the plist already.  Otherwise, we'll send -frame to a nil window!
+        if ([self hasFirstFrame])
+            [dictionary setObject:NSStringFromPoint([self topLeftPoint]) forKey:[NSString stringWithFormat:@"%@-Position", [self identifier]]];
+        
+        NSString *visibleKey = [NSString stringWithFormat:@"%@-Visible", [self identifier]];
+        if ([self isVisible])
+            [dictionary setObject:@"YES" forKey:visibleKey];
+        else
+            [dictionary removeObjectForKey:visibleKey];
+    }];
 }
 
 - (void)restoreFromIdentifier:(NSString *)identifier withInspectors:(NSMutableDictionary *)inspectorsById;
 {
-    NSDictionary *defaults = [[OIInspectorRegistry inspectorRegistryForMainWindow] workspaceDefaults];
-    NSArray *identifiers = [defaults objectForKey:[NSString stringWithFormat:@"%@-Order", identifier]];
-    BOOL willBeVisible = [defaults objectForKey:[NSString stringWithFormat:@"%@-Visible", identifier]] != nil;
+    OIWorkspace *sharedWorkspace = OIWorkspace.sharedWorkspace;
+    NSArray *identifiers = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Order", identifier]];
+    BOOL willBeVisible = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Visible", identifier]] != nil;
     
     NSUInteger index, count = [identifiers count];
     for (index = 0; index < count; index++) {
@@ -826,14 +832,14 @@ static BOOL useASeparateMenuForWorkspaces = NO;
         [inspectorsById removeObjectForKey:identifier];
         [self addInspector:controller];
         if (!index) {
-            NSString *position = [defaults objectForKey:[NSString stringWithFormat:@"%@-Position", identifier]];
+            NSString *position = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Position", identifier]];
             if (position)
                 [window setFrameTopLeftPoint:NSPointFromString(position)];
         }
     }
     if (![_inspectors count]) {
         OBRetainAutorelease(self); // don't deallocate ourselves here if we get removed.
-        [self.inspectorRegistry.existingGroups removeObject:self];
+        [self.inspectorRegistry removeExistingGroup:self];
         return;
     }
     
@@ -983,7 +989,9 @@ static NSComparisonResult sortByGroupAndDisplayOrder(OIInspectorController *a, O
         [dynamicMenu insertItem:item atIndex:itemIndex++];
         
     } else if (![[OIInspectorRegistry inspectorRegistryForMainWindow] hasSingleInspector]) {   // If we just have one inspector, don't offer an option to reset the inspectors
-        [dynamicMenu insertItem:[[OIInspectorRegistry inspectorRegistryForMainWindow] resetPanelsItem] atIndex:itemIndex++];
+        NSMenuItem *resetInspectorsMenuItem = [[OIInspectorRegistry inspectorRegistryForMainWindow] resetPanelsItem];
+        if (resetInspectorsMenuItem)
+            [dynamicMenu insertItem:resetInspectorsMenuItem atIndex:itemIndex++];
     }
     
     // If there are menu items above us in the menu, insert a separator item between them and the inspector menu items we're about to insert
@@ -1005,7 +1013,7 @@ static NSComparisonResult sortByGroupAndDisplayOrder(OIInspectorController *a, O
             lastGroupIdentifier = NSNotFound;
         } 
 
-        NSArray *items = [[controller inspector] menuItemsForTarget:controller action:@selector(toggleVisibleAction:)];
+        NSArray *items = [[controller inspector] menuItemsForTarget:[OIInspectorRegistry class] action:@selector(revealEmbeddedInspectorFromMenuItem:)];
         
         NSUInteger controllerItemCount = [items count], controllerItemIndex;
         for (controllerItemIndex = 0; controllerItemIndex < controllerItemCount; controllerItemIndex ++) {

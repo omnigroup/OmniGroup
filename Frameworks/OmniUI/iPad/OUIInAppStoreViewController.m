@@ -80,9 +80,9 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
 
 @implementation OUIInAppStoreViewController
 
-- (instancetype)initWithProductIdentifier:(NSString *)aProductID;
+- (nonnull instancetype)initWithProductIdentifier:(nonnull NSString *)aProductID;
 {
-    self = [super initWithNibName:nil bundle:nil];
+    self = [super initWithNibName:nil bundle:OMNI_BUNDLE];
     if (self) {
         OBASSERT([[[OUIAppController controller] inAppPurchaseIdentifiers] containsObject:aProductID]);
         
@@ -95,15 +95,13 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
 }
 
 // Must override superclass designated initializers since we declared our own.
-- (nonnull instancetype)initWithCoder:(nonnull NSCoder *)aDecoder;
+- (nullable instancetype)initWithCoder:(nonnull NSCoder *)aDecoder;
 {
     OBRejectUnusedImplementation(self, _cmd);
-    return [self initWithProductIdentifier:nil];
 }
 - (nonnull instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil;
 {
     OBRejectUnusedImplementation(self, _cmd);
-    return [self initWithProductIdentifier:nil];
 }
 
 - (void)viewDidLoad;
@@ -128,7 +126,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self.priceCheckButton setTitle:NSLocalizedStringFromTableInBundle(@"Check for Free Upgrade", @"OmniUI", OMNI_BUNDLE, @"Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade.")
                            forState:UIControlStateNormal];
     
-    self.checkmarkImageView.image = [[UIImage imageNamed:@"OUITableViewItemSelection-Selected"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    self.checkmarkImageView.image = [[UIImage imageNamed:@"OUITableViewItemSelection-Selected" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     self.checkmarkImageView.tintColor = [OUIAppearanceDefaultColors appearance].omniExplanotextColor;
     
     CGFloat captionLabelFontSize = [[OUIInAppStoreViewControllerAppearance appearance] floatForKeyPath:@"CaptionLabelFontSize"];

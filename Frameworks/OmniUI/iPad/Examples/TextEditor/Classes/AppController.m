@@ -56,6 +56,20 @@ RCS_ID("$Id$")
     [textView inspectSelectedTextWithViewController:viewController fromBarButtonItem:item withSetupBlock:NULL]; // TODO: Use the setup block to scroll the selection to be visible while the inspector is up
 }
 
+#pragma mark - OUIAppController
+
+- (NSString *)aboutMenuTitle;
+{
+    return nil; // Hides the 'About' item in the gear menu
+}
+
+#pragma mark - OUIAppController (InAppStore)
+
+- (NSArray *)inAppPurchaseIdentifiers;
+{
+    return @[];
+}
+
 #pragma mark - ODSStoreDelegate
 
 - (NSString *)documentStoreDocumentTypeForNewFiles:(ODSStore *)store;

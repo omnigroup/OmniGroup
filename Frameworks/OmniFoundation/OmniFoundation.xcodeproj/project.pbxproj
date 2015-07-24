@@ -1504,18 +1504,15 @@
 		344D08C11190D48A00264D89 /* Omni-Framework-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Common.xcconfig"; sourceTree = "<group>"; };
 		344D08C21190D48A00264D89 /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
 		344D08C31190D48A00264D89 /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
-		344D08C41190D48A00264D89 /* Omni-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		344D08C51190D48A00264D89 /* Omni-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		344D08C61190D48A00264D89 /* Omni-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		344D08C71190D48A00264D89 /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
 		344D08C81190D48A00264D89 /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
 		344D08C91190D48A00264D89 /* Target-Touch-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Touch-Common.xcconfig"; sourceTree = "<group>"; };
 		344D08CA1190D48A00264D89 /* Touch-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Common.xcconfig"; sourceTree = "<group>"; };
-		344D08CB1190D48A00264D89 /* Touch-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		344D08CC1190D48A00264D89 /* Touch-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		344D08CD1190D48A00264D89 /* Touch-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Release.xcconfig"; sourceTree = "<group>"; };
 		344D08CE1190D48A00264D89 /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
-		344D08CF1190D48A00264D89 /* Touch-Library-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Coverage.xcconfig"; sourceTree = "<group>"; };
 		344D08D01190D48A00264D89 /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		344D08D11190D48A00264D89 /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
 		344D0A891190DB4700264D89 /* OFErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFErrors.m; sourceTree = "<group>"; };
@@ -1687,11 +1684,9 @@
 		34F16B3D194F6C6100AD9C4D /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		34F16B3E194F6C6100AD9C4D /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
 		34F16B3F194F6C6100AD9C4D /* Touch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
-		34F16B40194F6C6100AD9C4D /* Touch-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34F16B41194F6C6100AD9C4D /* Touch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		34F16B42194F6C6100AD9C4D /* Touch-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
 		34F16B43194F6C6100AD9C4D /* Touch-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Common.xcconfig"; sourceTree = "<group>"; };
-		34F16B44194F6C6100AD9C4D /* Touch-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
 		34F16B45194F6C6100AD9C4D /* Touch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		34F16B46194F6C6100AD9C4D /* Touch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		34F1CADB066244350097A113 /* OFXMLIdentifierRegistryObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXMLIdentifierRegistryObject.h; sourceTree = "<group>"; };
@@ -1738,19 +1733,14 @@
 		4A4E07A608AA72B10098FF0F /* OFClobberDetectionTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFClobberDetectionTest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A4E07CF08AA72B10098FF0F /* OFUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OFUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A4E07DF08AA72B10098FF0F /* OFMainThreadLockTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OFMainThreadLockTest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4A4E080608AA73400098FF0F /* Omni-Application-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4A4E080708AA73400098FF0F /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
 		4A4E080808AA73400098FF0F /* Omni-Application-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Release.xcconfig"; sourceTree = "<group>"; };
-		4A4E080908AA73400098FF0F /* Omni-Framework-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4A4E080A08AA73400098FF0F /* Omni-Framework-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
 		4A4E080B08AA73400098FF0F /* Omni-Framework-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Framework-Release.xcconfig"; sourceTree = "<group>"; };
-		4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Debug.xcconfig"; sourceTree = "<group>"; };
 		4A4E080E08AA73400098FF0F /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
-		4AB8F38708AD0CA100DBB061 /* Omni-Bundle-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AB8F38808AD0CA100DBB061 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AB8F38908AD0CA100DBB061 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
-		4AB8F38A08AD0CA100DBB061 /* Omni-Global-Coverage.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Coverage.xcconfig"; sourceTree = "<group>"; };
 		4AB8F38B08AD0CA100DBB061 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AB8F38C08AD0CA100DBB061 /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
 		4AF8309606A637B400964FAA /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -3026,15 +3016,12 @@
 				34F16B38194F6C6100AD9C4D /* Omni-Application-Common-OmniStore.xcconfig */,
 				344D08BF1190D48A00264D89 /* Omni-Application-Common.xcconfig */,
 				34F16B39194F6C6100AD9C4D /* Omni-Application-Common-OmniStore.xcconfig */,
-				4A4E080608AA73400098FF0F /* Omni-Application-Coverage.xcconfig */,
 				4A4E080708AA73400098FF0F /* Omni-Application-Debug.xcconfig */,
 				4A4E080808AA73400098FF0F /* Omni-Application-Release.xcconfig */,
 				344D08C01190D48A00264D89 /* Omni-Bundle-Common.xcconfig */,
-				4AB8F38708AD0CA100DBB061 /* Omni-Bundle-Coverage.xcconfig */,
 				4AB8F38808AD0CA100DBB061 /* Omni-Bundle-Debug.xcconfig */,
 				4AB8F38908AD0CA100DBB061 /* Omni-Bundle-Release.xcconfig */,
 				344D08C11190D48A00264D89 /* Omni-Framework-Common.xcconfig */,
-				4A4E080908AA73400098FF0F /* Omni-Framework-Coverage.xcconfig */,
 				4A4E080A08AA73400098FF0F /* Omni-Framework-Debug.xcconfig */,
 				4A4E080B08AA73400098FF0F /* Omni-Framework-Release.xcconfig */,
 				34F16B3A194F6C6100AD9C4D /* Omni-Global-Common-AppStore.xcconfig */,
@@ -3043,33 +3030,26 @@
 				34F16B3D194F6C6100AD9C4D /* Omni-Global-Common-OmniStore.xcconfig */,
 				34F16B3E194F6C6100AD9C4D /* Omni-Global-Common-OmniStore.xcconfig */,
 				344D08C21190D48A00264D89 /* Omni-Global-Common.xcconfig */,
-				4AB8F38A08AD0CA100DBB061 /* Omni-Global-Coverage.xcconfig */,
 				4AB8F38B08AD0CA100DBB061 /* Omni-Global-Debug.xcconfig */,
 				4AB8F38C08AD0CA100DBB061 /* Omni-Global-Release.xcconfig */,
 				344D08C31190D48A00264D89 /* Omni-Library-Common.xcconfig */,
-				344D08C41190D48A00264D89 /* Omni-Library-Coverage.xcconfig */,
 				344D08C51190D48A00264D89 /* Omni-Library-Debug.xcconfig */,
 				344D08C61190D48A00264D89 /* Omni-Library-Release.xcconfig */,
 				344D08C71190D48A00264D89 /* Omni-Tool-Common.xcconfig */,
-				4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */,
 				4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */,
 				4A4E080E08AA73400098FF0F /* Omni-Tool-Release.xcconfig */,
 				344D08C81190D48A00264D89 /* Target-Mac-Common.xcconfig */,
 				344D08C91190D48A00264D89 /* Target-Touch-Common.xcconfig */,
 				344D08CA1190D48A00264D89 /* Touch-Application-Common.xcconfig */,
-				344D08CB1190D48A00264D89 /* Touch-Application-Coverage.xcconfig */,
 				344D08CC1190D48A00264D89 /* Touch-Application-Debug.xcconfig */,
 				344D08CD1190D48A00264D89 /* Touch-Application-Release.xcconfig */,
 				34F16B3F194F6C6100AD9C4D /* Touch-Bundle-Common.xcconfig */,
-				34F16B40194F6C6100AD9C4D /* Touch-Bundle-Coverage.xcconfig */,
 				34F16B41194F6C6100AD9C4D /* Touch-Bundle-Debug.xcconfig */,
 				34F16B42194F6C6100AD9C4D /* Touch-Bundle-Release.xcconfig */,
 				34F16B43194F6C6100AD9C4D /* Touch-Framework-Common.xcconfig */,
-				34F16B44194F6C6100AD9C4D /* Touch-Framework-Coverage.xcconfig */,
 				34F16B45194F6C6100AD9C4D /* Touch-Framework-Debug.xcconfig */,
 				34F16B46194F6C6100AD9C4D /* Touch-Framework-Release.xcconfig */,
 				344D08CE1190D48A00264D89 /* Touch-Library-Common.xcconfig */,
-				344D08CF1190D48A00264D89 /* Touch-Library-Coverage.xcconfig */,
 				344D08D01190D48A00264D89 /* Touch-Library-Debug.xcconfig */,
 				344D08D11190D48A00264D89 /* Touch-Library-Release.xcconfig */,
 			);
@@ -4795,20 +4775,6 @@
 			};
 			name = Release;
 		};
-		3426920517C578F800B1372F /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 344D08CB1190D48A00264D89 /* Touch-Application-Coverage.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				GCC_PREFIX_HEADER = "Tests/OFNetStateNotifier/OFNetStateNotifier-Prefix.pch";
-				INFOPLIST_FILE = "Tests/OFNetStateNotifier/OFNetStateNotifier-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Coverage;
-		};
 		343B36361034F6900006290A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */;
@@ -4824,14 +4790,6 @@
 				PRODUCT_NAME = OFRandomRepeatTest;
 			};
 			name = Release;
-		};
-		343B36381034F6900006290A /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				PRODUCT_NAME = OFRandomRepeatTest;
-			};
-			name = Coverage;
 		};
 		344D562D17BD47110049F9E5 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -4855,17 +4813,6 @@
 			};
 			name = Release;
 		};
-		344D562F17BD47110049F9E5 /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Tests/OFNetStateNotifierTest/OFNetStateNotifierTest-Prefix.pch";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Coverage;
-		};
 		345069130D747ED4004B40C2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */;
@@ -4881,14 +4828,6 @@
 				PRODUCT_NAME = OFCrashOnExceptionTest;
 			};
 			name = Release;
-		};
-		345069150D747ED4004B40C2 /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				PRODUCT_NAME = OFCrashOnExceptionTest;
-			};
-			name = Coverage;
 		};
 		349E025E1649AE5400E466F5 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -4912,17 +4851,6 @@
 			};
 			name = Release;
 		};
-		349E02601649AE5400E466F5 /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = NO;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Tests/OFXMLParsingTest/OFXMLParsingTest-Prefix.pch";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Coverage;
-		};
 		34B2F6451718853A000E45DF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */;
@@ -4944,17 +4872,6 @@
 				VALID_ARCHS = "x86_64 i386";
 			};
 			name = Release;
-		};
-		34B2F6471718853A000E45DF /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "Tests/OFXMLIdHash/OFXMLIdHash-Prefix.pch";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				VALID_ARCHS = "x86_64 i386";
-			};
-			name = Coverage;
 		};
 		34F16B2D194F6C3300AD9C4D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -4985,21 +4902,6 @@
 				PRODUCT_NAME = OmniFoundation;
 			};
 			name = Release;
-		};
-		34F16B2F194F6C3300AD9C4D /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34F16B43194F6C6100AD9C4D /* Touch-Framework-Common.xcconfig */;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFoundation;
-				OTHER_LDFLAGS = (
-					"$(value)",
-					"$(BZ2_LDFLAGS)",
-				);
-				PRODUCT_NAME = OmniFoundation;
-			};
-			name = Coverage;
 		};
 		34F16B30194F6C3300AD9C4D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -5032,22 +4934,6 @@
 				PRODUCT_NAME = OFUnitTests;
 			};
 			name = Release;
-		};
-		34F16B32194F6C3300AD9C4D /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34F16B40194F6C6100AD9C4D /* Touch-Bundle-Coverage.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
-					"$(inherited)",
-				);
-				GCC_PREFIX_HEADER = "";
-				INFOPLIST_FILE = "Info-OFUnitTests.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFoundation.UnitTests;
-				PRODUCT_NAME = OFUnitTests;
-			};
-			name = Coverage;
 		};
 		4A4E074F08AA72B10098FF0F /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -5090,27 +4976,6 @@
 				);
 			};
 			name = Release;
-		};
-		4A4E075108AA72B10098FF0F /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A4E080908AA73400098FF0F /* Omni-Framework-Coverage.xcconfig */;
-			buildSettings = {
-				APPLICATION_EXTENSION_API_ONLY = YES;
-				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFoundation;
-				OTHER_LDFLAGS = (
-					"$(value)",
-					"$(BZ2_LDFLAGS)",
-				);
-				PRODUCT_NAME = OmniFoundation;
-				SECTORDER_FLAGS = (
-					"-sectorder",
-					__TEXT,
-					__text,
-					"$(PRODUCT_NAME).order",
-				);
-			};
-			name = Coverage;
 		};
 		4A4E076208AA72B10098FF0F /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -5163,31 +5028,6 @@
 			};
 			name = Release;
 		};
-		4A4E076408AA72B10098FF0F /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = "";
-				GCC_OPTIMIZATION_LEVEL = 0;
-				HEADER_SEARCH_PATHS = "";
-				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "$(value) -O0";
-				OTHER_CFLAGS = (
-					"-fprofile-arcs",
-					"-ftest-coverage",
-				);
-				OTHER_LDFLAGS = "";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = Tests;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-			};
-			name = Coverage;
-		};
 		4A4E077108AA72B10098FF0F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */;
@@ -5203,14 +5043,6 @@
 				PRODUCT_NAME = OFSimpleLockTest;
 			};
 			name = Release;
-		};
-		4A4E077308AA72B10098FF0F /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				PRODUCT_NAME = OFSimpleLockTest;
-			};
-			name = Coverage;
 		};
 		4A4E079308AA72B10098FF0F /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -5228,14 +5060,6 @@
 			};
 			name = Release;
 		};
-		4A4E079508AA72B10098FF0F /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				PRODUCT_NAME = OFDedicatedThreadSchedulerTest;
-			};
-			name = Coverage;
-		};
 		4A4E07A308AA72B10098FF0F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */;
@@ -5251,14 +5075,6 @@
 				PRODUCT_NAME = OFClobberDetectionTest;
 			};
 			name = Release;
-		};
-		4A4E07A508AA72B10098FF0F /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				PRODUCT_NAME = OFClobberDetectionTest;
-			};
-			name = Coverage;
 		};
 		4A4E07CB08AA72B10098FF0F /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -5297,24 +5113,6 @@
 			};
 			name = Release;
 		};
-		4A4E07CD08AA72B10098FF0F /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AB8F38708AD0CA100DBB061 /* Omni-Bundle-Coverage.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_ARC = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(value)",
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-				);
-				GCC_PREFIX_HEADER = "";
-				INFOPLIST_FILE = "Info-OFUnitTests.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(DEVELOPER_FRAMEWORKS_DIR)";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFoundation.UnitTests;
-				OTHER_LDFLAGS = "-lxml2";
-				PRODUCT_NAME = OFUnitTests;
-			};
-			name = Coverage;
-		};
 		4A4E07DC08AA72B10098FF0F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A4E080D08AA73400098FF0F /* Omni-Tool-Debug.xcconfig */;
@@ -5330,14 +5128,6 @@
 				PRODUCT_NAME = OFMainThreadLockTest;
 			};
 			name = Release;
-		};
-		4A4E07DE08AA72B10098FF0F /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4A4E080C08AA73400098FF0F /* Omni-Tool-Coverage.xcconfig */;
-			buildSettings = {
-				PRODUCT_NAME = OFMainThreadLockTest;
-			};
-			name = Coverage;
 		};
 		4AD1C16508A9803A00C087FE /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -5363,18 +5153,6 @@
 			};
 			name = Release;
 		};
-		4AD1C16708A9803A00C087FE /* Coverage */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4AB8F38A08AD0CA100DBB061 /* Omni-Global-Coverage.xcconfig */;
-			buildSettings = {
-				GCC_WARN_SHADOW = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(value)",
-					/usr/include/libxml2,
-				);
-			};
-			name = Coverage;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -5383,7 +5161,6 @@
 			buildConfigurations = (
 				3426920317C578F800B1372F /* Debug */,
 				3426920417C578F800B1372F /* Release */,
-				3426920517C578F800B1372F /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5393,7 +5170,6 @@
 			buildConfigurations = (
 				343B36361034F6900006290A /* Debug */,
 				343B36371034F6900006290A /* Release */,
-				343B36381034F6900006290A /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5403,7 +5179,6 @@
 			buildConfigurations = (
 				344D562D17BD47110049F9E5 /* Debug */,
 				344D562E17BD47110049F9E5 /* Release */,
-				344D562F17BD47110049F9E5 /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5413,7 +5188,6 @@
 			buildConfigurations = (
 				345069130D747ED4004B40C2 /* Debug */,
 				345069140D747ED4004B40C2 /* Release */,
-				345069150D747ED4004B40C2 /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5423,7 +5197,6 @@
 			buildConfigurations = (
 				349E025E1649AE5400E466F5 /* Debug */,
 				349E025F1649AE5400E466F5 /* Release */,
-				349E02601649AE5400E466F5 /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5433,7 +5206,6 @@
 			buildConfigurations = (
 				34B2F6451718853A000E45DF /* Debug */,
 				34B2F6461718853A000E45DF /* Release */,
-				34B2F6471718853A000E45DF /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5443,7 +5215,6 @@
 			buildConfigurations = (
 				34F16B2D194F6C3300AD9C4D /* Debug */,
 				34F16B2E194F6C3300AD9C4D /* Release */,
-				34F16B2F194F6C3300AD9C4D /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5453,7 +5224,6 @@
 			buildConfigurations = (
 				34F16B30194F6C3300AD9C4D /* Debug */,
 				34F16B31194F6C3300AD9C4D /* Release */,
-				34F16B32194F6C3300AD9C4D /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5463,7 +5233,6 @@
 			buildConfigurations = (
 				4A4E074F08AA72B10098FF0F /* Debug */,
 				4A4E075008AA72B10098FF0F /* Release */,
-				4A4E075108AA72B10098FF0F /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5473,7 +5242,6 @@
 			buildConfigurations = (
 				4A4E076208AA72B10098FF0F /* Debug */,
 				4A4E076308AA72B10098FF0F /* Release */,
-				4A4E076408AA72B10098FF0F /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5483,7 +5251,6 @@
 			buildConfigurations = (
 				4A4E077108AA72B10098FF0F /* Debug */,
 				4A4E077208AA72B10098FF0F /* Release */,
-				4A4E077308AA72B10098FF0F /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5493,7 +5260,6 @@
 			buildConfigurations = (
 				4A4E079308AA72B10098FF0F /* Debug */,
 				4A4E079408AA72B10098FF0F /* Release */,
-				4A4E079508AA72B10098FF0F /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5503,7 +5269,6 @@
 			buildConfigurations = (
 				4A4E07A308AA72B10098FF0F /* Debug */,
 				4A4E07A408AA72B10098FF0F /* Release */,
-				4A4E07A508AA72B10098FF0F /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5513,7 +5278,6 @@
 			buildConfigurations = (
 				4A4E07CB08AA72B10098FF0F /* Debug */,
 				4A4E07CC08AA72B10098FF0F /* Release */,
-				4A4E07CD08AA72B10098FF0F /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5523,7 +5287,6 @@
 			buildConfigurations = (
 				4A4E07DC08AA72B10098FF0F /* Debug */,
 				4A4E07DD08AA72B10098FF0F /* Release */,
-				4A4E07DE08AA72B10098FF0F /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -5533,7 +5296,6 @@
 			buildConfigurations = (
 				4AD1C16508A9803A00C087FE /* Debug */,
 				4AD1C16608A9803A00C087FE /* Release */,
-				4AD1C16708A9803A00C087FE /* Coverage */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

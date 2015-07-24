@@ -22,6 +22,7 @@ extern const NSTimeInterval OUICrossFadeDuration;
 
 extern NSString * const OUIInspectorWillBeginChangingInspectedObjectsNotification;
 extern NSString * const OUIInspectorDidEndChangingInspectedObjectsNotification;
+extern NSString * const OUIInspectorPopoverDidDismissNotification;
 
 @interface OUIInspector : NSObject
 

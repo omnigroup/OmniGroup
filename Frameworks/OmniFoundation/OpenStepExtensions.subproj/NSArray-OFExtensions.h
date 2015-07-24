@@ -45,8 +45,10 @@
 
 - (NSArray *)numberedArrayDescribedBySelector:(SEL)aSelector;
 - (NSArray *)arrayByInsertingObject:(id)anObject atIndex:(NSUInteger)index;
+- (NSArray *)arrayByInsertingObjectsFromArray:(NSArray *)objects atIndex:(NSUInteger)index;
 - (NSArray *)arrayByRemovingObject:(id)anObject;
 - (NSArray *)arrayByRemovingObjectIdenticalTo:(id)anObject;
+- (NSArray *)arrayByRemovingObjectAtIndex:(NSUInteger)index;
 - (NSArray *)arrayByReplacingObjectAtIndex:(NSUInteger)index withObject:(id)anObject;
 - (NSDictionary *)indexBySelector:(SEL)aSelector;
 - (NSDictionary *)indexBySelector:(SEL)aSelector withObject:(id)argument;

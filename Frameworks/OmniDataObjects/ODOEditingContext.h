@@ -1,4 +1,4 @@
-// Copyright 2008-2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -89,7 +89,7 @@
 extern NSString * const ODOEditingContextObjectsWillBeDeletedNotification;
 
 extern NSString * const ODOEditingContextObjectsDidChangeNotification;    
-extern NSString * const ODOEditingContextWillSaveNotification;
+extern NSString * const ODOEditingContextWillSaveNotification; // Receivers of the notification should not make any changes to the context
 extern NSString * const ODOEditingContextDidSaveNotification;
 extern NSString * const ODOInsertedObjectsKey;
 extern NSString * const ODOUpdatedObjectsKey; // All the updated objects

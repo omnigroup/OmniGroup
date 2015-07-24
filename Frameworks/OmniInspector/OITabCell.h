@@ -1,4 +1,4 @@
-// Copyright 2005-2007, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,18 +15,13 @@ extern NSString *TabTitleDidChangeNotification;
 {
     BOOL duringMouseDown;
     NSInteger oldState;
-    BOOL dimmed;
     BOOL isPinned;
-    NSImage *grayscaleImage;
-    NSImage *dimmedImage;
     NSImageCell *_imageCell;
 }
 
 - (BOOL)duringMouseDown;
 - (void)saveState;
 - (void)clearState;
-- (void)setDimmed:(BOOL)value;
-- (BOOL)dimmed;
 - (BOOL)isPinned;
 - (void)setIsPinned:(BOOL)newValue;
 - (BOOL)drawState;

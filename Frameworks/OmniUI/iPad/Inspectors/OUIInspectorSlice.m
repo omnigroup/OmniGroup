@@ -101,6 +101,14 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     return OUICustomClassOriginalClassName(self);
 }
 
++ (NSBundle *)nibBundle;
+{
+    // OUIAllocateViewController means we might get 'MyCustomFooInspectorSlice' for 'OUIFooInspectorSlice'. View controller's should be created so often that this would be too slow. One question is whether UINib is uniqued, though, since otherwise we perform extra I/O.
+    Class cls = NSClassFromString(OUICustomClassOriginalClassName(self));
+    assert(cls);
+    return [NSBundle bundleForClass:cls];
+}
+
 + (id)allocWithZone:(NSZone *)zone;
 {
     OUIAllocateCustomClass;
@@ -108,7 +116,7 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 
 - init;
 {
-    return [self initWithNibName:[[self class] nibName] bundle:[NSBundle mainBundle]];
+    return [self initWithNibName:[[self class] nibName] bundle:[[self class] nibBundle]];
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;

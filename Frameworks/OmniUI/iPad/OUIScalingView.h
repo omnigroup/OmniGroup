@@ -46,8 +46,4 @@
 
 - (NSData *)pdfData;
 
-@property (assign, nonatomic) BOOL wantsShadowEdges;  // Set to YES if you want shadows on the edges
-- (void)updateShadowEdgeViews;
-- (void)setShadowEdgeViewVisibility:(BOOL)visible;
-
 @end

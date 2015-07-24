@@ -13,9 +13,12 @@
 #import <OmniDocumentStore/ODSStore.h>
 #import <OmniDocumentStore/ODSUtilities.h>
 #import <OmniFoundation/OFUTI.h>
+#import <OmniUIDocument/OUIDocumentAppController.h>
+#import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIErrors.h>
 #import <OmniUnzip/OUUnzipArchive.h>
 #import <OmniUnzip/OUUnzipEntry.h>
+
 
 @implementation OUIDocumentInbox
 
@@ -119,10 +122,27 @@ RCS_ID("$Id$");
                 }
             }
         }
-        
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-            [scope addDocumentInFolder:scope.rootFolder fromURL:itemToMoveURL option:ODSStoreAddByCopyingSourceToAvailableDestinationURL completionHandler:finishedBlock];
-        }];
+
+        BOOL shouldConvert = NO;
+        OUIDocumentPicker *docPicker = [OUIDocumentAppController controller].documentPicker;
+
+        if ([docPicker.delegate respondsToSelector:@selector(documentPickerAvailableUTTypesPredicate:)] && [docPicker.delegate respondsToSelector:@selector(documentPicker:saveNewFileIfAppropriateFromFile:completionHandler:)]) {
+            if (![[docPicker.delegate documentPickerAvailableUTTypesPredicate:docPicker] evaluateWithObject:OFUTIForFileExtensionPreferringNative([itemToMoveURL pathExtension], @(NO))]) {
+                shouldConvert = YES;
+            }
+
+            if (shouldConvert) { // convert files we claim to view, but do not display in our doc-picker?
+                [docPicker.delegate documentPicker:docPicker saveNewFileIfAppropriateFromFile:itemToMoveURL completionHandler:^(BOOL success, ODSFileItem *savedItem, ODSScope *currentScope) {
+                    [docPicker.documentStore moveItems:[NSSet setWithObject:savedItem] fromScope:currentScope toScope:scope inFolder:scope.rootFolder completionHandler:^(NSSet *movedFileItems, NSArray *errorsOrNil) {
+
+                    }];
+                }];
+            }
+        } else {
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [scope addDocumentInFolder:scope.rootFolder fromURL:itemToMoveURL option:ODSStoreAddByCopyingSourceToAvailableDestinationURL completionHandler:finishedBlock];
+            }];
+        }
     }];
 }
 

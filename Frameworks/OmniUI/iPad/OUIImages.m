@@ -1,4 +1,4 @@
-// Copyright 2010,2013 The Omni Group.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,10 +29,19 @@ UIImage *OUITableViewItemSelectionImage(UIControlState state)
             break;
     }
     
-    UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImage *image = [[UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     OBASSERT(image);
     OBASSERT(state == UIControlStateNormal || CGSizeEqualToSize([image size], [OUITableViewItemSelectionImage(UIControlStateNormal) size]));
              
     return image;
 }
 
+UIImage *OUIStepperMinusImage(void)
+{
+    return [UIImage imageNamed:@"OUIStepperMinus" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}
+
+UIImage *OUIStepperPlusImage(void)
+{
+    return [UIImage imageNamed:@"OUIStepperPlus" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}

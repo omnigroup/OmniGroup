@@ -63,6 +63,7 @@
 #import <OmniUIDocument/OUIDocumentPickerItemMetadataView.h>
 #import <OmniUIDocument/OUIDocumentPickerScrollView.h>
 #import <OmniUIDocument/OUIDocumentPreview.h>
+#import <OmniUIDocument/OUIDocumentTitleView.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 #import <OmniUIDocument/OUIErrors.h>
 #import <OmniUIDocument/OUIToolbarTitleButton.h>
@@ -76,7 +77,6 @@
 #import "OUIDocumentPicker-Internal.h"
 #import "OUIDocumentPickerViewController-Internal.h"
 #import "OUIDocumentRenameSession.h"
-#import "OUIDocumentTitleView.h"
 #import "OUIExportOptionsController.h"
 #import "OUIDocumentAppController-Internal.h"
 #import "OUIImportExportAccountListViewController.h"
@@ -562,8 +562,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
             NSURL *templateURL = templateFileItem.fileURL;
             [coordinator readItemAtURL:templateURL withChanges:YES error:&error byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
                 NSURL *securedURL = nil;
-                if (![templateURL startAccessingSecurityScopedResource])
-                    securedURL = templateURL;
+                if ([newURL startAccessingSecurityScopedResource])
+                    securedURL = newURL;
                 document = [[cls alloc] initWithContentsOfTemplateAtURL:newURL toBeSavedToURL:temporaryURL error:outError];
                 [securedURL stopAccessingSecurityScopedResource];
                 return (document != nil);
@@ -1095,6 +1095,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     static dispatch_once_t imageUTIMapdispatchOnceToken;
     dispatch_once(&imageUTIMapdispatchOnceToken, ^{
         NSArray *imageUTINormaliedMappings = [NSArray arrayWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"OUIDocumentImageUTIMap" withExtension:@"plist"]];
+        assert(imageUTINormaliedMappings); // will need updating when OmniUI-Internal becomes a framework
         
         NSMutableDictionary *mutableImageUTIMap = [NSMutableDictionary dictionary];
         for (NSDictionary *imageUTINormalizedMapping in imageUTINormaliedMappings) {
@@ -1124,7 +1125,10 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
             break;
     }
     
-    UIImage *resultImage = [UIImage imageNamed:imageName];
+    UIImage *resultImage = [UIImage imageNamed:imageName]; // Allow main bundle to override?
+    if (!resultImage)
+        resultImage = [UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+    
     OBASSERT_NOTNULL(resultImage);
     
     return resultImage;
@@ -1278,7 +1282,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     // Move submenu
     if (willAddNewFolder && [moveOptions count] > 0) {
         topLevelMenuTitle = NSLocalizedStringFromTableInBundle(@"Move", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view");
-        [topLevelMenuOptions addObject:[[OUIMenuOption alloc] initWithTitle:moveMenuTitle image:[UIImage imageNamed:@"OUIMenuItemMoveToScope"]
+        [topLevelMenuOptions addObject:[[OUIMenuOption alloc] initWithTitle:moveMenuTitle image:[UIImage imageNamed:@"OUIMenuItemMoveToScope" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil]
                                                                     options:moveOptions destructive:NO action:nil]];
     } else {
         topLevelMenuTitle = moveMenuTitle;
@@ -1288,7 +1292,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     // New folder
     OUIMenuOption *newFolderOption = nil;
     if (willAddNewFolder) {
-        newFolderOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"New folder", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet title for making a new folder from the selected documents") image:[UIImage imageNamed:@"OUIMenuItemNewFolder"] action:^{
+        newFolderOption = [OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"New folder", @"OmniUIDocument", OMNI_BUNDLE, @"Action sheet title for making a new folder from the selected documents") image:[UIImage imageNamed:@"OUIMenuItemNewFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
             [self _makeFolderFromSelectedDocuments];
         }];
         [topLevelMenuOptions addObject:newFolderOption];
@@ -1359,7 +1363,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         if ([MFMailComposeViewController canSendMail]) {
             // All email options should go here (within the test for whether we can send email)
             // more than one option? Display the 'export options sheet'
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToMail"] action:^{
+            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToMail" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
                 if (availableExportTypes.count > 0)
                     [self emailDocumentChoice:self];
                 else
@@ -1368,36 +1372,36 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         }
         
         if (canExport) {
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV"] action:^{
+            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
                 [self exportDocument:self];
             }]];
 
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to…", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV"] action:^{
+            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to…", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
                 [self exportDocumentToService:self];
             }]];
         }
         
         if (canUseOpenIn) {
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to App", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToApp"] action:^{
+            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to App", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToApp" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
                 [self sendToApp:self];
             }]];
         }
         
         if (availableImageExportTypes.count > 0) {
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy as Image", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemCopyAsImage"] action:^{
+            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy as Image", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemCopyAsImage" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
                 [self copyAsImage:self];
             }]];
         }
         
         if (canSendToCameraRoll) {
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Photos", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToPhotos"] action:^{
+            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Photos", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToPhotos" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
                 [self sendToCameraRoll:self];
             }]];
         }
         
         if (canPrint) {
             NSString *printTitle = [self printTitle];
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:printTitle image:[UIImage imageNamed:@"OUIMenuItemPrint"] action:^{
+            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:printTitle image:[UIImage imageNamed:@"OUIMenuItemPrint" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
                 [self printDocument:self];
             }]];
         }
@@ -1439,7 +1443,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     if (candidateParentFolder == candidateParentFolder.scope.rootFolder)
         return;
     
-    UIImage *folderImage = [UIImage imageNamed:@"OUIMenuItemFolder.png"];
+    UIImage *folderImage = [UIImage imageNamed:@"OUIMenuItemFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     
     OUIMenuOption *option;
     if (candidateParentFolder == currentFolder) {
@@ -2412,13 +2416,22 @@ static void _setItemSelectedAndBounceView(OUIDocumentPickerViewController *self,
     }
 }
 
+-(void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewLongpressed:(OUIDocumentPickerItemView *)itemView
+{
+    // go into edit mode, select this item.
+    _setItemSelectedAndBounceView(self, itemView, YES);
+    
+    // We do this last since it updates the toolbar items, including the selection count.
+    [self setEditing:YES animated:YES];
+}
+
 static UIImage *ImageForScope(ODSScope *scope) {
     if ([scope isKindOfClass:[ODSLocalDirectoryScope class]]) {
-        return [UIImage imageNamed:@"OUIMenuItemLocalScope"];
+        return [UIImage imageNamed:@"OUIMenuItemLocalScope" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     } else if ([scope isKindOfClass:[OFXDocumentStoreScope class]]) {
-        return [UIImage imageNamed:@"OUIMenuItemPresenceScope"];
+        return [UIImage imageNamed:@"OUIMenuItemPresenceScope" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     } else if ([scope isKindOfClass:[ODSExternalScope class]]) {
-        return [UIImage imageNamed:@"OUIMenuItemExternalScope"];
+        return [UIImage imageNamed:@"OUIMenuItemExternalScope" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     } else {
         OBASSERT_NOT_REACHED("Unknown scope type %@", scope);
         return nil;
@@ -2438,7 +2451,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     // Don't allow moving items to the folder the are already in, or the subtrees defined by the possibly moving selection
     ODSFolderItem *currentFolder = _folderItem;
     NSSet *selectedFolders = self.selectedFolders;
-    
+
     NSString *menuTitle;
     if (currentScope.isTrash)
         menuTitle = NSLocalizedStringFromTableInBundle(@"Restore to...", @"OmniUIDocument", OMNI_BUNDLE, @"Share menu title");
@@ -2447,6 +2460,9 @@ static UIImage *ImageForScope(ODSScope *scope) {
     
     for (ODSScope *scope in destinationScopes) {
         NSMutableArray *folderOptions = [NSMutableArray array];
+        if (scope.isExternal && selectedFolders.count != 0)
+            continue; // Don't offer to move a folder to an external scope
+
         [self _addMoveToFolderOptions:folderOptions candidateParentFolder:scope.rootFolder currentFolder:currentFolder excludedTreeFolders:selectedFolders];
         
         void (^moveToScopeRootAction)(void) = ^{
@@ -2744,13 +2760,13 @@ static UIImage *ImageForScope(ODSScope *scope) {
     if (editing) {
         if (!_exportBarButtonItem) {
             // We keep pointers to a few toolbar items that we need to update enabledness on.
-            _exportBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIDocumentExport.png"] style:UIBarButtonItemStylePlain target:self action:@selector(export:)];
+            _exportBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIDocumentExport" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(export:)];
             _exportBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Export", @"OmniUIDocument", OMNI_BUNDLE, @"Export toolbar item accessibility label.");
             
-            _moveBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIMenuItemFolder"] style:UIBarButtonItemStylePlain target:self action:@selector(move:)];
+            _moveBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIMenuItemFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(move:)];
             _moveBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Move", @"OmniUIDocument", OMNI_BUNDLE, @"Move toolbar item accessibility label.");
 
-            _duplicateDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIDocumentDuplicate.png"] style:UIBarButtonItemStylePlain target:self action:@selector(duplicateDocument:)];
+            _duplicateDocumentBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIDocumentDuplicate" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(duplicateDocument:)];
             _duplicateDocumentBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Duplicate", @"OmniUIDocument", OMNI_BUNDLE, @"Duplicate toolbar item accessibility label.");
         }
         
@@ -2767,7 +2783,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
             deleteLabel = NSLocalizedStringFromTableInBundle(@"Move to Trash", @"OmniUIDocument", OMNI_BUNDLE, @"Move to Trash toolbar item accessibility label.");
             deleteImageName = @"OUIDocumentDelete";
         }
-        UIImage *deleteButtonImage = [UIImage imageNamed:deleteImageName];
+        UIImage *deleteButtonImage = [UIImage imageNamed:deleteImageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
         _deleteBarButtonItem = [[UIBarButtonItem alloc] initWithImage:deleteButtonImage style:UIBarButtonItemStylePlain target:self action:@selector(deleteDocument:)];
         _deleteBarButtonItem.accessibilityLabel = deleteLabel;
 
@@ -2840,11 +2856,11 @@ static UIImage *ImageForScope(ODSScope *scope) {
         
         if ((_documentStore.documentTypeForNewFiles != nil) && !self.selectedScope.isTrash && [_documentStore.scopes containsObjectIdenticalTo:_documentScope]) {
             if (self.selectedScope.isExternal) {
-                OUIBarButtonItem *linkItem = [[OUIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarAddDocument.png"] style:UIBarButtonItemStylePlain target:[OUIDocumentAppController controller] action:@selector(linkDocumentFromExternalContainer:)];
+                OUIBarButtonItem *linkItem = [[OUIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarAddDocument" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:[OUIDocumentAppController controller] action:@selector(linkDocumentFromExternalContainer:)];
                 linkItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Link External Document", @"OmniUIDocument", OMNI_BUNDLE, @"Link External Document toolbar item accessibility label.");
                 [rightItems addObject:linkItem];
             } else {
-                OUIBarButtonItem *addItem = [[OUIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarAddDocument.png"] style:UIBarButtonItemStylePlain target:self action:@selector(newDocument:)];
+                OUIBarButtonItem *addItem = [[OUIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIToolbarAddDocument" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(newDocument:)];
                 addItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"New Document", @"OmniUIDocument", OMNI_BUNDLE, @"New Document toolbar item accessibility label.");
                 [rightItems addObject:addItem];
             }

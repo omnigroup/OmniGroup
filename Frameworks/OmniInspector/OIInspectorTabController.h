@@ -1,4 +1,4 @@
-// Copyright 2006-2007, 2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,8 +8,9 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
-#import "OIInspector.h"
-#import "OIInspectorRegistry.h"
+
+#import <OmniInspector/OIInspector.h>
+#import <OmniInspector/OIInspectorRegistry.h>
 
 @class NSArray, NSBundle; // Foundation
 @class NSBox, NSImage, NSMenuItem, NSView; // AppKit
@@ -24,8 +25,6 @@
     struct {
         unsigned hasLoadedView: 1;
         unsigned needsInspectObjects: 1;
-        unsigned respondsTo_shouldBeDimmedForObjects: 1;
-        unsigned respondsTo_shouldBeDimmed: 1;
     } _flags;
     OIVisibilityState _visibilityState;
 }
@@ -43,7 +42,6 @@
 - (OIVisibilityState)visibilityState;
 - (void)setVisibilityState:(OIVisibilityState)newValue;
 - (BOOL)hasLoadedView;
-- (BOOL)shouldBeDimmed;
 
 - (void)inspectObjects:(BOOL)inspectNothing;
 

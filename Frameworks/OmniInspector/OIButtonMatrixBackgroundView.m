@@ -5,12 +5,12 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OIButtonMatrixBackgroundView.h"
-#import "OIInspectorController.h"
-#import "OIInspectorHeaderView.h"
+#import <OmniInspector/OIButtonMatrixBackgroundView.h>
 
 #import <AppKit/AppKit.h>
 #import <OmniBase/OmniBase.h>
+#import <OmniInspector/OIInspectorController.h>
+#import <OmniInspector/OIInspectorHeaderView.h>
 
 RCS_ID("$Id$");
 
@@ -50,11 +50,12 @@ RCS_ID("$Id$");
 
 - (void)mouseDown:(NSEvent *)theEvent;
 {
-    NSWindow *window = [self window];
-   OIInspectorHeaderView *windowHeader = [(OIInspectorController *)[window delegate] headingButton];
-    if (windowHeader)
-        [windowHeader mouseDown:theEvent];
-    return;
+    id windowDelegate = [[self window] delegate];
+    if ([windowDelegate isKindOfClass:[OIInspectorController class]]) {
+        OIInspectorHeaderView *windowHeader = [(OIInspectorController *)windowDelegate headingButton];
+        if (windowHeader)
+            [windowHeader mouseDown:theEvent];
+    }
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,9 +108,9 @@ RCS_ID("$Id$");
         OBASSERT(icon);
     }
     if (isFolder) {
-        icon = [UIImage imageNamed:@"OUIFolder.png"];
+        icon = [UIImage imageNamed:@"OUIFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     } else if (!icon) {
-        icon = [UIImage imageNamed:@"OUIDocument.png"];
+        icon = [UIImage imageNamed:@"OUIDocument" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
     }
     
     cell.imageView.image = icon;

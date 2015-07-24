@@ -140,7 +140,11 @@ RCS_ID("$Id$");
 
 - (void)ensureSelectedFilterMatchesFileItem:(ODSFileItem *)fileItem;
 {
-    // nothing to do here.
+    if (self.navigationController.viewControllers.count > 1) {
+        [self.navigationController popViewControllerAnimated:NO];
+        OUIDocumentPickerViewController *scopeViewController = OB_CHECKED_CAST(OUIDocumentPickerViewController, self.navigationController.topViewController);
+        [scopeViewController ensureSelectedFilterMatchesFileItem:fileItem];
+    }
 }
 
 #pragma mark -
@@ -165,6 +169,11 @@ RCS_ID("$Id$");
             [self _endIgnoringDocumentsDirectoryUpdates];
         }];
     }
+}
+
+- (BOOL)documentPickerScrollViewShouldMultiselect:(OUIDocumentPickerScrollView *)scrollView
+{
+    return NO;
 }
 
 @end

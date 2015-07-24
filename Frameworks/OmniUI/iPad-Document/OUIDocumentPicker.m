@@ -171,24 +171,25 @@ RCS_ID("$Id$")
 - (void)navigateToContainerForItem:(ODSItem *)item animated:(BOOL)animated;
 {
     UINavigationController *topLevelNavController = self.topLevelNavigationController;
-    
-    ODSScope *scope = item.scope;
-    if (!scope || ![_documentStore.scopes containsObject:scope]) {
-        return;
-    } else if (topLevelNavController.viewControllers.count > 1
-               && ![topLevelNavController.viewControllers.lastObject isKindOfClass:[OUIDocumentCreationTemplatePickerViewController class]]
-               && [topLevelNavController.viewControllers.lastObject respondsToSelector:@selector(filteredItems)]
-               && [[(OUIDocumentPickerViewController *)topLevelNavController.viewControllers.lastObject filteredItems] containsObject:item]) {
-        return;
-    } else {
-        ODSFolderItem *folder = [scope folderItemContainingItem:item];
-        if (folder)
-            [self navigateToFolder:folder animated:animated];
-        else {
-            OBASSERT([scope.rootFolder.childItems containsObject:item], @"Item %@ is contained by scope %@ but isn't at the root or in any descendant folders", item, scope);
-            [self navigateToScope:scope animated:animated];
+    [topLevelNavController dismissViewControllerAnimated:NO completion:^{       
+        ODSScope *scope = item.scope;
+        if (!scope || ![_documentStore.scopes containsObject:scope]) {
+            return;
+        } else if (topLevelNavController.viewControllers.count > 1
+                   && ![topLevelNavController.viewControllers.lastObject isKindOfClass:[OUIDocumentCreationTemplatePickerViewController class]]
+                   && [topLevelNavController.viewControllers.lastObject respondsToSelector:@selector(filteredItems)]
+                   && [[(OUIDocumentPickerViewController *)topLevelNavController.viewControllers.lastObject filteredItems] containsObject:item]) {
+            return;
+        } else {
+            ODSFolderItem *folder = [scope folderItemContainingItem:item];
+            if (folder)
+                [self navigateToFolder:folder animated:animated];
+            else {
+                OBASSERT([scope.rootFolder.childItems containsObject:item], @"Item %@ is contained by scope %@ but isn't at the root or in any descendant folders", item, scope);
+                [self navigateToScope:scope animated:animated];
+            }
         }
-    }
+    }];
 }
 
 - (void)navigateToScope:(ODSScope *)scope animated:(BOOL)animated;

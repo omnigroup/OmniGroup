@@ -7,11 +7,12 @@
 //
 // $Id$
 
-#import "OIInspector.h"
+#import <OmniInspector/OIInspector.h>
 
 @class NSAttributedString, NSMutableArray; // Foundation
 @class NSMatrix; // AppKit
 @class OIInspectorController;
+@class OIInspectorTabController;
 @class OITabMatrix;
 
 #import <AppKit/NSNibDeclarations.h> // For IBOutlet and IBAction
@@ -30,6 +31,7 @@
 }
 
 @property (nonatomic, readonly) BOOL placesButtonsInTitlebar; // @"placesButtonInTitlebar" in plist
+@property (nonatomic,readonly) BOOL placesButtonsInHeaderView; // @"placesButtonsInHeaderView" in plist
 @property (nonatomic, readonly) OITabMatrix *buttonMatrix;
 
 // API
@@ -44,13 +46,12 @@
 - (NSArray *)pinnedTabIdentifiers;
 - (void)setSelectedTabIdentifiers:(NSArray *)selectedIdentifiers pinnedTabIdentifiers:(NSArray *)pinnedIdentifiers;
 
-- (void)updateDimmedForTabWithIdentifier:(NSString *)tabIdentifier;
-
+- (OIInspectorTabController *)tabWithIdentifier:(NSString *)identifier;
 - (OIInspector *)inspectorWithIdentifier:(NSString *)tabIdentifier;
+- (void)switchToInspectorWithIdentifier:(NSString *)tabIdentifier;
 
 // Actions
 - (IBAction)selectInspector:(id)sender;
-- (IBAction)switchToInspector:(id)sender;
 
 // for subclasses
 - (BOOL)shouldHideTabWithIdentifier:(NSString *)identifier;

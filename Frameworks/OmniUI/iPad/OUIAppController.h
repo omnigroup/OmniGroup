@@ -90,6 +90,7 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString *)body;
 
 @property(nonatomic,readonly) UIImage *settingsMenuImage;
+@property(nonatomic,readonly) UIImage *inAppPurchasesMenuImage;
 
 @end
 

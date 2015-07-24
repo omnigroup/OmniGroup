@@ -323,7 +323,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     OSUChecker *checker = [self sharedUpdateChecker];
     [checker setTarget:target];
     
-    // On iOS/MAS we currently ignore the results and don't care what track we are on. OSUItem isn't part of the OmniSystemInfo/OmniSoftwareUpdateTouch subset (and would need work to avoid using NSXMLDocument on iOS).
+    // On iOS/MAS we currently ignore the results and don't care what track we are on. OSUItem isn't part of the OmniSystemInfo/OmniSoftwareUpdate-iOS subset (and would need work to avoid using NSXMLDocument on iOS).
 #if OSU_FULL
     {
         /* Add our release track to the list of release tracks the user might be interested in seeing (unless it's already there, which is the common case of course) */

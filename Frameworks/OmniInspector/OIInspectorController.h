@@ -1,4 +1,4 @@
-// Copyright 2002-2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,14 +12,11 @@
 #import <OmniInspector/OIInspectorWindow.h>
 #import <OmniInspector/OIInspector.h> // for OIInspectorInterfaceType
 
-@class NSArray;
-@class NSWindow, NSView, NSMenuItem;
-@class OIInspectorHeaderView, OIInspectorResizer, OIInspectorGroup, OIInspectorHeaderBackground, OIInspectorRegistry;
+@class NSWindow, NSView;
+@class OIInspectorHeaderView, OIInspectorGroup, OIInspectorRegistry, OIInspectorWindow;
 
 #import <Foundation/NSGeometry.h> // for NSSize, NSPoint
 
-#define OIInspectorStartingHeaderButtonWidth (256.0f)
-#define OIInspectorStartingHeaderButtonHeight (16.0f)
 #define OIInspectorSpaceBetweenButtons (0.0f)
 
 #define OIInspectorColumnSpacing (1.0f)
@@ -27,29 +24,20 @@
 extern NSString * const OIInspectorControllerDidChangeExpandednessNotification;
 
 @interface OIInspectorController : NSObject <OIInspectorWindowDelegate>
-{
-    NSArray *currentlyInspectedObjects;
-    OIInspector *inspector;
-    __weak OIInspectorGroup *_weak_group;
-    OIInspectorWindow *window;
-    OIInspectorHeaderView *headingButton;
-    OIInspectorHeaderBackground *headingBackground;
-    OIInspectorResizer *resizerView;
-    NSView *controlsView;
-    BOOL loadedInspectorView, isExpanded, isSettingExpansion, isBottommostInGroup, collapseOnTakeNewPosition, heightSizable, forceResizeWidget;
-    CGFloat _minimumHeight;
-    NSPoint newPosition;
-}
 
 // API
 
 - (id)initWithInspector:(OIInspector *)anInspector;
 
-@property (nonatomic, readonly) OIInspectorInterfaceType interfaceType;
+@property (nonatomic, assign) OIInspectorInterfaceType interfaceType;
 @property (nonatomic, weak) OIInspectorRegistry *inspectorRegistry;
 
-- (void)setGroup:(OIInspectorGroup *)aGroup;
+@property(nonatomic,weak) OIInspectorGroup *group;
+
 - (OIInspector *)inspector;
+
+- (OIInspectorWindow *)buildWindow; // Subclasses can make their own window
+
 /// This is the window directly managed by the controller for floating inspectors; it is not necessarily the same as the containerView's window. Notably, for embedded inspectors, -window will return nil, and calling -window on the -containerView will return the window in which the inspector view is embedded.
 - (NSWindow *)window;
 /**
@@ -60,7 +48,8 @@ extern NSString * const OIInspectorControllerDidChangeExpandednessNotification;
 - (NSView *)containerView;
 - (OIInspectorHeaderView *)headingButton;
 
-- (BOOL)isExpanded;
+@property(nonatomic,readonly) BOOL isExpanded;
+@property(nonatomic,readonly) BOOL isSettingExpansion;
 - (void)setExpanded:(BOOL)newState withNewTopLeftPoint:(NSPoint)topLeftPoint;
 - (NSString *)identifier;
 - (CGFloat)headingHeight;

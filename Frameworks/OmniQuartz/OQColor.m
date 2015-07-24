@@ -1,4 +1,4 @@
-// Copyright 2003-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,8 +22,10 @@
 
 #if USE_UIKIT
 #import <UIKit/UIColor.h>
+#import <UIKit/UIImage.h>
 #else
 #import <AppKit/NSColor.h>
+#import <AppKit/NSImage.h>
 #import <OmniAppKit/NSColor-OAExtensions.h>
 #import <OmniAppKit/NSUserDefaults-OAExtensions.h>
 #endif
@@ -857,7 +859,8 @@ static OQColor *OSWhiteColorCreate(CGFloat white, CGFloat alpha)
 
 - (OQColor *)blendedColorWithFraction:(CGFloat)fraction ofColor:(OQColor *)otherColor;
 {
-    OBRequestConcreteImplementation(self, _cmd);
+    OBFinishPortingLater("Blend OSWhiteColor with any color returns nil.");
+    return nil;
 }
 
 - (OQColor *)colorWithAlphaComponent:(CGFloat)fraction;
@@ -1039,10 +1042,29 @@ static OQColor *_colorWithCGColorRef(CGColorRef cgColor)
         return [OSWhiteColorCreate(white, alpha) autorelease];
     }
     
+    // copied from OGVisioCommonDefines.h
+    if ([[color colorSpaceName] isEqualToString:NSCustomColorSpace]) {   // OQColor does not support NSCustomColorSpace, converting to another colorspace will probably not work; lets give it our best shot with RGB
+        OQ_PLATFORM_COLOR_CLASS *convertedColor = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+        convertedColor = [OQ_PLATFORM_COLOR_CLASS colorWithDeviceRed:[color redComponent] green:[color greenComponent] blue:[color blueComponent] alpha:[color alphaComponent]];
+        return [OQColor colorWithPlatformColor:[color colorUsingColorSpaceName:NSCalibratedRGBColorSpace]];
+    }
+    
     OBASSERT_NOT_REACHED("Unknown color space");
     return [OQColor blackColor];
 }
 #endif
+
+
++ (OQColor *)colorWithPatternImageData:(NSData *)imageData
+{
+#if USE_UIKIT
+    UIImage *image = [UIImage imageWithData:imageData];
+    return [OQColor colorWithPlatformColor:[UIColor colorWithPatternImage:image]];
+#else
+    NSImage *image = [[[NSImage alloc] initWithData:imageData] autorelease];
+    return [OQColor colorWithPlatformColor:[NSColor colorWithPatternImage:image]];
+#endif
+}
 
 // Always returns RGBA. This code is adapted from OmniAppKit so that the preferences are compatible.
 static BOOL parseRGBAString(NSString *value, OQLinearRGBA *rgba)
@@ -1246,6 +1268,17 @@ static void OQColorInitPlatformColor(OQColor *self)
     if ([self colorSpace] != [otherColor colorSpace])
         return NO;
     return [self isEqualToColorInSameColorSpace:otherColor];
+}
+
+- (BOOL)isSimilarToColor:(OQColor *)color;
+{
+    if (color == self)
+        return YES;
+    
+    if ([self alphaComponent] != [color alphaComponent])
+        return NO;
+    
+    return [self isEqualToColorInSameColorSpace:color];
 }
 
 - (NSUInteger)hash;

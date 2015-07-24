@@ -56,20 +56,6 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34AFADA7164B1401009E39AB"
-               BuildableName = "OFXUnitTests.xctest"
-               BlueprintName = "OFXUnitTests"
-               ReferencedContainer = "container:../Frameworks/OmniFileExchange/OmniFileExchange.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "4AA1E7FA08AA764600E2FF6B"
                BuildableName = "OAUnitTests.xctest"
                BlueprintName = "OAUnitTests"
@@ -104,6 +90,34 @@
                ReferencedContainer = "container:../Frameworks/OmniNetworking/OmniNetworking.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4AA5366808B27DE600F0872D"
+               BuildableName = "OWF.xctest"
+               BlueprintName = "OWFUnitTests"
+               ReferencedContainer = "container:../Frameworks/OWF/OWF.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34AFADA7164B1401009E39AB"
+               BuildableName = "OFXUnitTests.xctest"
+               BlueprintName = "OFXUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniFileExchange/OmniFileExchange.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -133,16 +147,6 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "34AFADA7164B1401009E39AB"
-               BuildableName = "OFXUnitTests.xctest"
-               BlueprintName = "OFXUnitTests"
-               ReferencedContainer = "container:../Frameworks/OmniFileExchange/OmniFileExchange.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
@@ -160,6 +164,36 @@
                BuildableName = "ODOTests.xctest"
                BlueprintName = "ODOTests"
                ReferencedContainer = "container:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4AFE72AA08A02E9D00ED9F2D"
+               BuildableName = "ONUnitTests.xctest"
+               BlueprintName = "ONUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniNetworking/OmniNetworking.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "349F978E15DEA87B00D7677C"
+               BuildableName = "ODAVUnitTests.xctest"
+               BlueprintName = "ODAVUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniDAV/OmniDAV.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "34AFADA7164B1401009E39AB"
+               BuildableName = "OFXUnitTests.xctest"
+               BlueprintName = "OFXUnitTests"
+               ReferencedContainer = "container:../Frameworks/OmniFileExchange/OmniFileExchange.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

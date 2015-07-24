@@ -69,9 +69,13 @@ RCS_ID("$Id$")
 
 - (ODAVOperation *)_makeOperationForRequest:(NSURLRequest *)request;
 {
+    // This whole class is unused by default now, in favor of the NSURLSession-based peer
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:self startImmediately:NO];
     [connection setDelegateQueue:_delegateQueue];
-    
+#pragma clang diagnostic pop
+
     ODAVOperation *operation = [[ODAVOperation alloc] initWithRequest:request
                                                                 start:^{
                                                                     DEBUG_TASK(1, @"starting connection %@", connection);

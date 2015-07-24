@@ -235,6 +235,16 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
+- (NSArray *)arrayByInsertingObjectsFromArray:(NSArray *)objects atIndex:(NSUInteger)index;
+{
+    if ([objects count] == 0)
+        return [[self copy] autorelease];
+    
+    NSMutableArray *result = [[self mutableCopy] autorelease];
+    [result replaceObjectsInRange:NSMakeRange(index, 0) withObjectsFromArray:objects];
+    return result;
+}
+
 - (NSArray *)arrayByRemovingObject:(id)anObject;
 {    
     if (![self containsObject:anObject])
@@ -255,6 +265,13 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     [filteredArray removeObjectIdenticalTo:anObject];
 
     return [NSArray arrayWithArray:filteredArray];
+}
+
+- (NSArray *)arrayByRemovingObjectAtIndex:(NSUInteger)index;
+{
+    NSMutableArray *updated = [[self mutableCopy] autorelease];
+    [updated removeObjectAtIndex:index];
+    return updated;
 }
 
 - (NSArray *)arrayByReplacingObjectAtIndex:(NSUInteger)index withObject:(id)anObject;

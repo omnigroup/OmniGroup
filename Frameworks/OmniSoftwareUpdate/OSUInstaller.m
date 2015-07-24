@@ -261,8 +261,12 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             };
             
             if (self.terminationObserver == nil)
-                self.terminationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSApplicationWillTerminateNotification object:nil queue:nil usingBlock:willTerminate];
-            [[NSApplication sharedApplication] terminate:self];
+                self.terminationObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSApplicationWillTerminateNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:willTerminate];
+            
+            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                [[NSProcessInfo processInfo] disableSuddenTermination];
+                [[NSApplication sharedApplication] terminate:self];
+            }];
         }
     }];
 }

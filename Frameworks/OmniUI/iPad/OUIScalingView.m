@@ -17,9 +17,6 @@
 RCS_ID("$Id$");
 
 @implementation OUIScalingView
-{
-    NSArray *_shadowEdgeViews;
-}
 
 static id _commonInit(OUIScalingView *self)
 {
@@ -208,31 +205,6 @@ static id _commonInit(OUIScalingView *self)
     return data;
 }
 
-- (void)updateShadowEdgeViews;
-{
-    if (!self.wantsShadowEdges)
-        return;
-    
-    if (!_shadowEdgeViews)
-        _shadowEdgeViews = [OUIViewAddShadowEdges(self) copy];
-    OUIViewLayoutShadowEdges(self, _shadowEdgeViews, YES/*flipped*/);
-}
-
-- (void)setShadowEdgeViewVisibility:(BOOL)visible;
-{
-    if (!self.wantsShadowEdges)
-        return;
-    
-    if (visible) {
-        for (UIView *view in _shadowEdgeViews) {
-            [self addSubview:view];
-        }
-    }
-    else {
-        [_shadowEdgeViews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-    }
-}
-
 #pragma mark UIView subclass
 
 - (void)drawRect:(CGRect)rect;
@@ -244,13 +216,6 @@ static id _commonInit(OUIScalingView *self)
         [self drawScaledContent:rect];
     }
     CGContextRestoreGState(ctx);
-}
-
-- (void)layoutSubviews;
-{
-    if (self.wantsShadowEdges) {
-        [self updateShadowEdgeViews];
-    }
 }
 
 @end

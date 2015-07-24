@@ -1,26 +1,24 @@
-// Copyright 2007, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2007-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OISectionedInspector.h"
+#import <OmniInspector/OISectionedInspector.h>
 
 #import <AppKit/AppKit.h>
+#import <OmniAppKit/OmniAppKit.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OmniFoundation.h>
-#import <OmniAppKit/OmniAppKit.h>
-
+#import <OmniInspector/OIButtonMatrixBackgroundView.h>
+#import <OmniInspector/OIInspectorController.h>
+#import <OmniInspector/OIInspectorRegistry.h>
+#import <OmniInspector/OIInspectorSection.h>
+#import <OmniInspector/OIInspectorTabController.h>
+#import <OmniInspector/OITabMatrix.h>
 #import <OmniInspector/OITabbedInspector.h>
-
-#import "OIInspectorController.h"
-#import "OIInspectorRegistry.h"
-#import "OIInspectorSection.h"
-#import "OIInspectorTabController.h"
-#import "OITabCell.h"
-#import "OITabMatrix.h"
-#import "OIButtonMatrixBackgroundView.h"
+#import <OmniInspector/OITabCell.h>
 
 RCS_ID("$Id$")
 
@@ -162,10 +160,6 @@ RCS_ID("$Id$")
     
     if  (!isVisible) {
         [item setState:NSOffState];
-    } else if ([item action] == @selector(switchToInspector:)) {
-	// one of our tabs
-	OIInspectorTabController *tab = [item representedObject];
-	[item setState:[tab isVisible] ? NSOnState : NSOffState];
     }
     return YES;
 }

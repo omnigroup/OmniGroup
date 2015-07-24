@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,17 +7,16 @@
 //
 // $Id$
 
-#if 0 && defined(DEBUG_bungi)
-    #define DEBUG_TILE_LAYOUT(format, ...) NSLog(@"TILE: " format, ## __VA_ARGS__)
-#else
-    #define DEBUG_TILE_LAYOUT(format, ...)
-#endif
+#import <OmniFoundation/OFPreference.h>
 
-#if 0 && defined(DEBUG_bungi)
-    #define DEBUG_TILE_DRAW(format, ...) NSLog(@"TILE: " format, ## __VA_ARGS__)
-#else
-    #define DEBUG_TILE_DRAW(format, ...)
-#endif
+extern NSInteger OUIScalingTileViewDebugLayout;
+#define DEBUG_TILE_LAYOUT(level, format, ...) do { \
+    if (OUIScalingTileViewDebugLayout >= (level)) \
+        NSLog(@"TILE LAYOUT %@: " format, [self shortDescription], ## __VA_ARGS__); \
+} while (0)
 
-
-
+extern NSInteger OUIScalingTileViewDebugDrawing;
+#define DEBUG_TILE_DRAW(level, format, ...) do { \
+    if (OUIScalingTileViewDebugDrawing >= (level)) \
+        NSLog(@"TILE DRAW %@: " format, [self shortDescription], ## __VA_ARGS__); \
+} while (0)
