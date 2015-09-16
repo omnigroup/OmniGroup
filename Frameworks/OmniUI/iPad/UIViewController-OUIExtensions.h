@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,6 +42,10 @@ typedef enum {
 #if defined(DEBUG)
 /// Returns a list of this view controller and all its children recursively, one per line, indented to show hierarchy. Analogous to -[UIView recursiveDescription].
 - (NSString *)recursiveDescription;
+#endif
+
+#ifdef DEBUG
+- (void)expectDeallocationOfControllerTreeSoon;
 #endif
 
 @end

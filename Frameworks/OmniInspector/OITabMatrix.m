@@ -23,30 +23,10 @@ RCS_ID("$Id$");
     OITabMatrixHighlightStyle highlightStyle;
 }
 
-static NSImage *plasticDepression;
-static CGFloat depressionLeftMargin, depressionRightMargin;
-static void initializeDepressionImages(void)
-{
-    if (plasticDepression != nil)
-        return;
-    
-    plasticDepression = [NSImage imageNamed:@"OITabDepressionBackground" inBundle:OMNI_BUNDLE];
-    NSSize sizes = [plasticDepression size];
-    
-    NSInteger pix = (NSInteger)sizes.width;
-    if (pix%2 == 1) {
-        depressionLeftMargin = depressionRightMargin = ( pix - 1 ) / 2;
-    } else {
-        depressionLeftMargin = depressionRightMargin = ( pix - 2 ) / 2;
-    }
-}
-
 - (void)setTabMatrixHighlightStyle:(enum OITabMatrixHighlightStyle)newHighlightStyle;
 {
     if (newHighlightStyle != highlightStyle) {
         highlightStyle = newHighlightStyle;
-        if (highlightStyle == OITabMatrixDepressionHighlightStyle)
-            initializeDepressionImages();
         [self setNeedsDisplay];
     }
 }
@@ -166,39 +146,7 @@ static void initializeDepressionImages(void)
     NSArray *tabCells = [self cells];
     NSUInteger cellCount = [tabCells count];
 
-    if (highlightStyle == OITabMatrixDepressionHighlightStyle) {
-        NSUInteger cellIndex;
-        for (cellIndex=0; cellIndex<cellCount; cellIndex++) {
-            if (![[tabCells objectAtIndex:cellIndex] drawState])
-                continue;
-            
-            /* Find a contiguous span of selected cells */
-            NSRect contiguousFrameRect = [self cellFrameAtRow:0 column:cellIndex];
-            while (cellIndex+1 < cellCount && [[tabCells objectAtIndex:cellIndex+1] drawState]) {
-                cellIndex ++;
-                contiguousFrameRect = NSUnionRect(contiguousFrameRect, [self cellFrameAtRow:0 column:cellIndex]);
-            }
-            
-            /* Draw the three-part gradient behind the selected cells */
-            NSRect stretchRect = contiguousFrameRect;
-            NSSize imageSize = [plasticDepression size];
-            stretchRect.origin.x += depressionLeftMargin;
-            stretchRect.size.width -= depressionLeftMargin + depressionRightMargin;
-            CGFloat fraction = 0.7f;
-            [plasticDepression drawFlippedInRect:stretchRect
-                                        fromRect:(NSRect){{depressionLeftMargin, 0}, {imageSize.width-depressionLeftMargin-depressionRightMargin, imageSize.height}}
-                                       operation:NSCompositePlusDarker
-                                        fraction:fraction];
-            [plasticDepression drawFlippedInRect:(NSRect){{NSMinX(contiguousFrameRect), contiguousFrameRect.origin.y}, {depressionLeftMargin, contiguousFrameRect.size.height}}
-                                        fromRect:(NSRect){{0, 0}, {depressionLeftMargin, imageSize.height}}
-                                       operation:NSCompositePlusDarker
-                                        fraction:fraction];
-            [plasticDepression drawFlippedInRect:(NSRect){{NSMaxX(contiguousFrameRect)-depressionRightMargin, contiguousFrameRect.origin.y}, {depressionRightMargin, contiguousFrameRect.size.height}}
-                                        fromRect:(NSRect){{imageSize.width-depressionRightMargin, 0}, {depressionRightMargin, imageSize.height}}
-                                       operation:NSCompositePlusDarker
-                                        fraction:fraction];
-        }
-    } else if (highlightStyle == OITabMatrixYosemiteHighlightStyle) {
+    if (highlightStyle == OITabMatrixYosemiteHighlightStyle) {
         NSUInteger cellIndex;
         [[NSColor colorWithCalibratedWhite:0 alpha:0.07f] set];
         for(cellIndex=0; cellIndex<cellCount; cellIndex++) {

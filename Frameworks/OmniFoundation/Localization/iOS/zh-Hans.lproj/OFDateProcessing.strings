@@ -8,7 +8,7 @@
 "~" = "~";
 
 /* one-letter abbreviation for day or days, used for scanning user input */
-"d" = "天";
+"d" = "d";
 
 /* day, singular, used for scanning user input */
 "day" = "天";
@@ -18,7 +18,7 @@
 
 /* one-letter abbreviation for hour or hours, for scanning user input
    one-letter abbreviation for hour or hours, used for scanning user input */
-"h" = "小时";
+"h" = "h";
 
 /* hour, singular, used for scanning user input */
 "hour" = "小时";
@@ -99,7 +99,7 @@
 "tonight" = "今晚";
 
 /* one-letter abbreviation for week or weeks, used for scanning user input */
-"w" = "周";
+"w" = "w";
 
 /* week, singular, used for scanning user input */
 "week" = "周";
@@ -108,7 +108,7 @@
 "weeks" = "周";
 
 /* one-letter abbreviation for year or years, used for scanning user input */
-"y" = "年";
+"y" = "y";
 
 /* year, singular, used for scanning user input */
 "year" = "年";

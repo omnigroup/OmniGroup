@@ -55,7 +55,7 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark OUIColorSwatchPicker target
 
-- (void)changeColor:(id <OUIColorValue>)colorValue;
+- (void)changeColor:(id <OUIColorValue>)colorValue NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     id target = _weak_target;
     

@@ -154,6 +154,13 @@
 			remoteGlobalIDString = 34F16B24194F6C3200AD9C4D;
 			remoteInfo = "OFUnitTests-iOS";
 		};
+		503D71901B66FA9400EF5899 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34824B101742E74B00253D52 /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5FE81E171B62AE980056756C;
+			remoteInfo = "OmniBase-watchOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -323,6 +330,7 @@
 				34824B211742E74C00253D52 /* OBUnitTests.xctest */,
 				34825EF419509B150026EABC /* OmniBase.framework */,
 				34825EF619509B150026EABC /* OBUnitTests.xctest */,
+				503D71911B66FA9400EF5899 /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -552,6 +560,13 @@
 			fileType = wrapper.cfbundle;
 			path = OFUnitTests.xctest;
 			remoteRef = 34825F0A19509B150026EABC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		503D71911B66FA9400EF5899 /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 503D71901B66FA9400EF5899 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

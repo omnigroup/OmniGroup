@@ -1,3 +1,6 @@
+/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
+" (Copy)" = " （复制）";
+
 /* bytes */
 "%@ B" = "%@ B";
 
@@ -43,9 +46,6 @@
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "已存在名称为“%@”的附件。是否要予以替换？此操作无法撤销。";
 
-/* Error reason for a document operation failing due to a missing file. */
-"A file is missing or has been deleted." = "缺少文件或文件已删除。";
-
 /* Omni Sync Server account info button title */
 "Account Info" = "帐户信息";
 
@@ -55,7 +55,8 @@
 /* Menu option in the document picker view */
 "Actions" = "操作";
 
-/* Cloud Setup button title to add a new account */
+/* Cloud Setup button title to add a new account
+   Cloud Setup button title to convert an existing account */
 
 "Add an Account" = "添加帐户";
 
@@ -64,7 +65,10 @@
 
 /* button title
    cancel button title
-   Discard unsynced edits dialog: cancel button label */
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 
 
@@ -95,6 +99,9 @@
 
 /* title view clear button accessibility label. */
 "Clear Title" = "清除标题";
+
+/* Cloud Storage Providers preference nvigation bar title */
+"Cloud Storage Providers" = "云存储供应商";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "已连接";
@@ -138,11 +145,14 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "放弃未同步的编辑？";
 
+/* Message letting the user know that their document was moved from one folder to another. */
+"Document moved." = "文档已移动。";
+
 /* Title for alert informing user that the document has been reloaded with edits from another device */
 "Document Updated" = "文稿已更新";
 
 /* Toolbar button title for returning to list of documents. */
-"Documents <back button>" = "文稿";
+"Documents <back button>" = "文档";
 
 /* Duplicate toolbar item accessibility label. */
 "Duplicate" = "复制";
@@ -173,8 +183,7 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
 
 
 "Export" = "输出";
@@ -197,7 +206,7 @@
 /* doc picker folder type accessibility value */
 "Folder" = "文件夹";
 
-/* Import section title */
+/* import sheet title */
 "Import" = "输入";
 
 /* Info item accessibility label */
@@ -230,6 +239,9 @@
 /* modified date accessibility value */
 "Modified %@" = "已修改 %@";
 
+/* Cloud Storage Providers more information button title */
+"More Info…" = "更多信息...";
+
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
 
@@ -243,15 +255,8 @@
 
 "Move to Trash" = "移至废纸篓";
 
-/* Action sheet button title
-   Menu popover title */
+/* Share menu title */
 "Move to..." = "移至…";
-
-/* Message format for alert informing user that the document has been moved out of a folder to the top level */
-"Moved out of folder %@." = "已移出文件夹 %@。";
-
-/* Message format for alert informing user that the document has been moved to a folder */
-"Moved to folder %@." = "已移至文件夹 %@。";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "我的文稿";
@@ -284,8 +289,7 @@
 "Not uploaded" = "未上传";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
 
 "OK" = "好";
 
@@ -429,6 +433,9 @@
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "此云帐户不再存在。";
 
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "此文档不可访问。文件可能被删除、重命名或者通过 iTune 或外部文档提供者移动。请尝试再次删除文件并添加文件。";
+
 /* item not fully downloaded error message */
 "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "此项目未完全下载，因而无法复制。再次尝试前，请轻按项目并等待下载。";
 
@@ -438,8 +445,14 @@
 /* sort by title */
 "Title" = "标题";
 
+/* Cloud Storage Providers preference informational description */
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "打开云存储供应商即可访问存储在云服务（如 iCould Drive 或 Dropbox）中的文档。我们正在引入访问云存储供应商作为 BETA 实施；启用此服务时要特别小心。请参阅文档中的“在云上工作”以了解更多信息。";
+
 /* error title */
 "Unable to open file." = "无法打开文件。";
+
+/* Cloud Storage Providers preference settings screen title */
+"Use Cloud Storage Providers" = "使用云存储供应商";
 
 /* Account validation status string. */
 "Validating account..." = "正在验证帐户…";

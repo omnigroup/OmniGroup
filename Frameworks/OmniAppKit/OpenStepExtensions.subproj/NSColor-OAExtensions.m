@@ -460,6 +460,40 @@ static void _dictionaryDataAdder(id container, NSString *key, NSData *data)
     return NO;
 }
 
+- (BOOL)isPatternSimilarToColorPattern:(NSColor *)color;
+{
+    NSImage *patternImage = [self patternImage];  
+    if (!patternImage)
+        return NO;
+    
+    [patternImage lockFocus];
+    NSBitmapImageRep *firstPatternBitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:NSMakeRect(0, 0,  [patternImage size].width, [patternImage size].height)] autorelease];
+    [patternImage unlockFocus];
+    
+    patternImage = [color patternImage];
+    if (!patternImage)
+        return NO;
+    
+    [patternImage lockFocus];
+    NSBitmapImageRep *secondPatternBitmapImageRep = [[[NSBitmapImageRep alloc] initWithFocusedViewRect:NSMakeRect(0, 0,  [patternImage size].width, [patternImage size].height)] autorelease];
+    [patternImage unlockFocus];
+    
+    if ([firstPatternBitmapImageRep pixelsWide] != [secondPatternBitmapImageRep pixelsWide] || [firstPatternBitmapImageRep pixelsHigh] != [secondPatternBitmapImageRep pixelsHigh])
+        return NO;
+    
+    for (NSInteger widthIndex = 0; widthIndex < [firstPatternBitmapImageRep pixelsWide]; widthIndex++) {
+        for (NSInteger heightIndex = 0; heightIndex < [firstPatternBitmapImageRep pixelsHigh]; heightIndex++) {
+            NSColor *firstPatternColor = [firstPatternBitmapImageRep colorAtX:widthIndex y:heightIndex];
+            NSColor *secondPatternColor = [secondPatternBitmapImageRep colorAtX:widthIndex y:heightIndex];
+            
+            if (![firstPatternColor isSimilarToColor:secondPatternColor])
+                return NO;
+        }
+    }  
+    
+    return YES;
+}
+
 - (NSData *)patternImagePNGData;
 {
     NSString *colorSpace = [self colorSpaceName];
@@ -481,7 +515,22 @@ static OANamedColorEntry *_addColorsFromList(OANamedColorEntry *colorEntries, NS
     if (colorList == nil)
 	return colorEntries;
 
-    NSArray *allColorKeys = [colorList allKeys];
+    // -allKeys lazily decodes the color list and can throw if the user has a corrupt color list.
+    // See <bug:///120632> where one of the problems leading up to the crashes was an exception with this message, from two different users
+    // Reason: *** -[NSKeyedUnarchiver initForReadingWithData:]: incomprehensible archive (0x31, 0x31, 0xa, 0x30, 0x20, 0x30, 0x2e, 0x30)
+
+    NSArray *allColorKeys = nil;
+    @try {
+        allColorKeys = [colorList allKeys];
+    } @catch(NSException *exc) {
+        NSLog(@"Exception raised while trying to use color list: %@", exc);
+        @try {
+            NSLog(@"Color list located at %@", [colorList valueForKey:@"fileName"]);
+        } @catch(NSException *){
+            // Ignore ...
+        }
+    }
+
     NSUInteger colorIndex, colorCount = [allColorKeys count];
     
     // Make room for the extra entries

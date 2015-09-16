@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <UIKit/UIControl.h>
 
 @class UILabel;
-@class OQColor;
+@class OAColor;
 @class OUIColorComponentSliderKnobLayer;
 
 @interface OUIColorComponentSlider : UIControl
@@ -22,7 +22,7 @@
 @property(nonatomic) BOOL representsAlpha;
 @property(nonatomic) BOOL needsShading; // gets a gradient otherwise
 
-@property(strong,nonatomic) OQColor *color;
+@property(strong,nonatomic) OAColor *color;
 @property(nonatomic) CGFloat value;
 
 @property(nonatomic) CGFloat leftLuma;

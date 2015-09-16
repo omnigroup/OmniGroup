@@ -13,3 +13,4 @@ extern UIImage *OUITableViewItemSelectionImage(UIControlState state);
 
 extern UIImage *OUIStepperMinusImage(void);
 extern UIImage *OUIStepperPlusImage(void);
+extern UIImage *OUIToolbarUndoImage(void);

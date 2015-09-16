@@ -9,13 +9,13 @@
 "<blue title+value>" = "Bleu : %d";
 
 /* title format for color component slider */
-"<brightness title+value>" = "Brillance : %d %%";
+"<brightness title+value>" = "Luminosité : %d %%";
 
 /* title format for color component slider */
 "<green title+value>" = "Vert : %d";
 
 /* title format for color component slider */
-"<hue title+value>" = "Teinte : %d°";
+"<hue title+value>" = "Teinte : %d °";
 
 /* title format for color component slider */
 "<red title+value>" = "Rouge : %d";

@@ -6,7 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIInspectorPresentationController.h>
-#import <OmniUI/OUIAppearance.h>
+#import <OmniAppKit/OAAppearance.h>
 
 RCS_ID("$Id$")
 
@@ -50,7 +50,7 @@ RCS_ID("$Id$")
         _topLine.frame = topLineFrame;
     } else {
         _topLine = [[UIView alloc] initWithFrame:topLineFrame];
-        _topLine.backgroundColor = [[OUIAppearance appearance] overlayInspectorTopSeparatorColor];
+        _topLine.backgroundColor = [[OAAppearance appearance] overlayInspectorTopSeparatorColor];
         [self addSubview:_topLine];
     }
     
@@ -116,6 +116,16 @@ RCS_ID("$Id$")
                              }
                          }];
     }
+}
+
+- (void)updateFrameForPresentingViewTransitionToSize:(CGSize)newSize{
+    
+    CGRect newFrame = self.presentedView.frame;
+    newFrame.size.width = newSize.width;
+    newFrame.size.height = fmin(self.presentedView.frame.size.height, newSize.height * [[OAAppearance appearance] overlayInspectorWindowHeightFraction]);
+    newFrame.size.height = fmin(newFrame.size.height, [[OAAppearance appearance] overlayInspectorWindowMaxHeight]);
+    newFrame.origin.y = newSize.height - newFrame.size.height;
+    [self presentedView].frame = newFrame;
 }
 
 - (void)_setTintAdjustmentMode:(UIViewTintAdjustmentMode)mode forView:(UIView *)view;
@@ -187,7 +197,7 @@ RCS_ID("$Id$")
 {
     CGRect containerBounds = self.containerView.bounds;
     CGRect inspectorAndLineFrame;
-    CGRectDivide(containerBounds, &inspectorAndLineFrame, &(CGRect){/*don't care*/}, containerBounds.size.height * [[OUIAppearance appearance] overlayInspectorWindowHeightFraction], CGRectMaxYEdge);
+    CGRectDivide(containerBounds, &inspectorAndLineFrame, &(CGRect){/*don't care*/}, fmin(containerBounds.size.height * [[OAAppearance appearance] overlayInspectorWindowHeightFraction], [[OAAppearance appearance] overlayInspectorWindowMaxHeight]), CGRectMaxYEdge);
     return inspectorAndLineFrame;
 }
 

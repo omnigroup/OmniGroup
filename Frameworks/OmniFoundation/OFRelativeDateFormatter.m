@@ -152,14 +152,53 @@ dateString = [super stringForObjectValue:obj]; \
 
 - (BOOL)getObjectValue:(out id *)obj forString:(NSString *)string errorDescription:(out NSString **)error;
 {
+    // <bug:///101301> (Performance: Customers report ~1 second delays switch view modes [performance, slow, tab, perspective])
+    // This was getting called during layout with Apple's text measurement string. No need to bother to try to parse it, which saves calling OFRelativeDateParser (which is relatively expensive).
+    static NSString *appleLayoutString = @"Wj";
+    if ([appleLayoutString isEqualToString:string]) {
+        return NO;
+    }
+
+    // <bug:///101301> (Performance: Customers report ~1 second delays switch view modes [performance, slow, tab, perspective])
+    // This happens when updating inspector text fields with @"". This case reports success but a nil *obj.
+    if (string && [string isEqualToString:@""]) {
+        *obj = nil;
+        return YES;
+    }
+
     NSError *relativeError = nil;
     NSDate *date = nil;
     
     BOOL success = [[OFRelativeDateParser sharedParser] getDateValue:&date forString:string fromStartingDate:_referenceDate useEndOfDuration:_useEndOfDuration defaultTimeDateComponents:_defaultTimeDateComponents calendar:[self calendar] withCustomFormat:self.dateFormat error:&relativeError];
 
-    if (success)
+    if (success) {
         *obj = date;
-    
+    }
+
+#ifdef DEBUG
+    if (!success) {
+
+        // In case Apple's layout string changes, or we run into some other frequently-failing string we can test for, log failing cases when a certain count is reached.
+        if (!string) {
+            string = @"";
+        }
+
+        static NSCountedSet *failingCases = nil;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            failingCases = [NSCountedSet new];
+        });
+
+        [failingCases addObject:string];
+        NSInteger failureCount = [failingCases countForObject:string];
+
+        static NSInteger failureCountThatTriggersLog = 25;
+        if (failureCount == failureCountThatTriggersLog) {
+            NSLog(@"-[OFRelativeDateFormatter getObjectValue:forString:errorDescription:] failed %@ times with the string: %@", @(failureCount), string);
+        }
+    }
+#endif
+
     return success;
  }
 

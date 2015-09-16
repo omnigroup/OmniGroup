@@ -128,9 +128,12 @@ extern void _OBFinishPortingLater(const char *header, const char *function, cons
 } while(0)
 
 extern BOOL OBIsBeingDebugged(void);
+    
+#if !defined(TARGET_OS_WATCH) || !TARGET_OS_WATCH
 extern void _OBStopInDebugger(const char *file, unsigned int line, const char *function, const char *message);
 #define OBStopInDebugger(message) _OBStopInDebugger(__FILE__, __LINE__, __PRETTY_FUNCTION__, (message))
 #define OBStepThroughAndVerify() _OBStopInDebugger(__FILE__, __LINE__, __PRETTY_FUNCTION__, "Step through and verify.")
+#endif
     
 extern NSString * const OBAbstractImplementation;
 extern NSString * const OBUnusedImplementation;

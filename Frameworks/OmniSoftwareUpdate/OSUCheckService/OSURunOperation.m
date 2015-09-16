@@ -70,18 +70,17 @@ static NSURL *OSUMakeCheckURL(NSString *baseURLString, NSString *appIdentifier, 
     [info enumerateKeysAndObjectsUsingBlock:^(NSString *keyString, NSString *valueString, BOOL *stop) {
         OBASSERT([keyString isEqualToString:@"v"] == NO, "We use this as our encoding version above");
         OBASSERT([keyString isEqualToString:@"end"] == NO, "We use this as a terminator below");
-        
-        NSString *escapedKey = CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)keyString, NULL, NULL, kCFStringEncodingUTF8));
+
+        NSString *escapedKey = [keyString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
         NSString *escapedValue;
         
         if (isGLExtensionsKey(keyString)) {
             NSString *compactedValue = OSUCopyCompactedOpenGLExtensionsList(valueString);
-            escapedValue = CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)compactedValue, NULL, NULL, kCFStringEncodingUTF8));
+            escapedValue = [compactedValue stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
         } else {
-            escapedValue = CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)valueString, NULL, NULL, kCFStringEncodingUTF8));
+            escapedValue = [valueString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
         }
-        
-        
+
         [queryString appendString:@";"];
         [queryString appendString:escapedKey];
         [queryString appendString:@"="];

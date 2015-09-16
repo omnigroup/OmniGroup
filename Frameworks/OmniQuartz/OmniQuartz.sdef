@@ -5,7 +5,7 @@
     
     <!-- This gets merged into OmniStyle currently, so this suite never appears in the app's sdef and the 4CCs used here are 'OS' prefixed. But, since the code for generating these is in OmniQuartz, we'll put the sdef here too -->
 		<record-type name="generic color" code="OSco">
-      <cocoa class="OQColor"/>
+      <cocoa class="OAColor"/>
       
       <!-- This doesn't seem to matter. In some cases, it seems like Cocoa Scripting will use this to build a selector -scripting<Name>Descriptor, but with this record-type, it uses the type alternatives in the containing property for the values of 'Name', so we get asked about -scriptingColorDescriptor, -scriptingTextDescriptor, etc. no matter what.
       <type type="color"/>

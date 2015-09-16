@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,9 +7,9 @@
 //
 // $Id$
 
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+#if (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || (defined(TARGET_OS_WATCH) && TARGET_OS_WATCH)
 
-// On the iPhone OS, don't record RCS ids in object code: executable size matters.
+// On the iPhone OS or watchOS, don't record RCS ids in object code: executable size matters.
 
 #define RCS_ID(rcsIdString) ;
 #define NAMED_RCS_ID(name, rcsIdString) ;

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="8164.2" systemVersion="15A235d" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="gbe-yX-QMw">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8135.1"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <scenes>
+        <!--Document Provider Preferences View Controller-->
+        <scene sceneID="H4o-lb-K6A">
+            <objects>
+                <tableViewController storyboardIdentifier="OUIDocumentProviderPreferencesViewController" id="gbe-yX-QMw" customClass="OUIDocumentProviderPreferencesViewController" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" allowsSelection="NO" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="64Z-IH-9bv">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <animations/>
+                        <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="calibratedRGB"/>
+                        <sections>
+                            <tableViewSection id="3ns-1J-qem">
+                                <string key="footerTitle">Turning on Cloud Storage Providers gives OmniOutliner access to outlines stored on the cloud services, such as iCloud Drive or DropBox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation.</string>
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="cJB-K9-mQX">
+                                        <rect key="frame" x="0.0" y="35" width="600" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="cJB-K9-mQX" id="sG1-RQ-IlT">
+                                            <rect key="frame" x="0.0" y="0.0" width="600" height="43"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SWITCH_LABEL_SET_IN_CODE" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sUR-BK-gUo">
+                                                    <rect key="frame" x="8" y="11" width="527" height="21"/>
+                                                    <animations/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Cy6-05-ecC">
+                                                    <rect key="frame" x="543" y="6" width="51" height="31"/>
+                                                    <animations/>
+                                                    <connections>
+                                                        <action selector="shouldEnableDocumentProvidersSwitchValueChanged:" destination="gbe-yX-QMw" eventType="valueChanged" id="UM8-o4-I9h"/>
+                                                    </connections>
+                                                </switch>
+                                            </subviews>
+                                            <animations/>
+                                            <constraints>
+                                                <constraint firstItem="Cy6-05-ecC" firstAttribute="leading" secondItem="sUR-BK-gUo" secondAttribute="trailing" constant="8" id="Hto-Wo-GRM"/>
+                                                <constraint firstItem="Cy6-05-ecC" firstAttribute="trailing" secondItem="sG1-RQ-IlT" secondAttribute="trailingMargin" id="Nju-zN-udN"/>
+                                                <constraint firstItem="sUR-BK-gUo" firstAttribute="leading" secondItem="sG1-RQ-IlT" secondAttribute="leadingMargin" id="QA8-VD-Aae"/>
+                                                <constraint firstItem="Cy6-05-ecC" firstAttribute="centerY" secondItem="sG1-RQ-IlT" secondAttribute="centerY" id="Zbg-2V-l7T"/>
+                                                <constraint firstItem="sUR-BK-gUo" firstAttribute="centerY" secondItem="sG1-RQ-IlT" secondAttribute="centerY" id="sq1-Vb-j67"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <animations/>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                            <tableViewSection id="2g5-uY-lKR">
+                                <cells>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="jk9-DV-3JC">
+                                        <rect key="frame" x="0.0" y="210" width="600" height="44"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="jk9-DV-3JC" id="a8t-ha-gi7">
+                                            <rect key="frame" x="0.0" y="0.0" width="600" height="43"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pbc-9x-lGO">
+                                                    <rect key="frame" x="8" y="7" width="584" height="30"/>
+                                                    <animations/>
+                                                    <state key="normal" title="MORE_INFO_BUTTON_SET_IN_CODE"/>
+                                                    <connections>
+                                                        <action selector="moreInfoButtonTapped:" destination="gbe-yX-QMw" eventType="touchUpInside" id="Zm7-Tn-R85"/>
+                                                    </connections>
+                                                </button>
+                                            </subviews>
+                                            <animations/>
+                                            <constraints>
+                                                <constraint firstItem="Pbc-9x-lGO" firstAttribute="leading" secondItem="a8t-ha-gi7" secondAttribute="leadingMargin" id="WYK-bn-LlY"/>
+                                                <constraint firstItem="Pbc-9x-lGO" firstAttribute="centerY" secondItem="a8t-ha-gi7" secondAttribute="centerY" id="jt4-Sn-4VU"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="Pbc-9x-lGO" secondAttribute="trailing" id="nOp-f7-eWL"/>
+                                            </constraints>
+                                        </tableViewCellContentView>
+                                        <animations/>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                        </sections>
+                        <connections>
+                            <outlet property="dataSource" destination="gbe-yX-QMw" id="h0W-OI-qCa"/>
+                            <outlet property="delegate" destination="gbe-yX-QMw" id="cK8-o1-5fO"/>
+                        </connections>
+                    </tableView>
+                    <connections>
+                        <outlet property="moreInfoButton" destination="Pbc-9x-lGO" id="nVP-zS-yh8"/>
+                        <outlet property="shouldEnableDocumentProviderSwitchLabel" destination="sUR-BK-gUo" id="IBX-wb-eWf"/>
+                        <outlet property="shouldEnableDocumentProvidersSwitch" destination="Cy6-05-ecC" id="wpI-WK-bAa"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="0Pz-AV-yXi" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1124" y="541"/>
+        </scene>
+    </scenes>
+</document>

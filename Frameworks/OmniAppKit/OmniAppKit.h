@@ -14,6 +14,9 @@
 #import <OmniAppKit/NSAttributedString-OAExtensions.h>
 #import <OmniAppKit/NSFileWrapper-OAExtensions.h>
 #import <OmniAppKit/NSLayoutManager-OAExtensions.h>
+#import <OmniAppKit/OAAppearance.h>
+#import <OmniAppKit/OAColor.h>
+#import <OmniAppKit/OAColor-Archiving.h>
 #import <OmniAppKit/OAFindPattern.h>
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniAppKit/OAParagraphStyle.h>
@@ -21,6 +24,10 @@
 #import <OmniAppKit/OATextAttachmentCell.h>
 #import <OmniAppKit/OATextAttributes.h>
 #import <OmniAppKit/OATextStorage.h>
+
+#if defined(TARGET_OS_IPHONE)  && TARGET_OS_IPHONE
+#import <OmniAppKit/OAAppearanceColors.h>
+#endif
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 #import <OmniAppKit/NSAlert-OAExtensions.h>

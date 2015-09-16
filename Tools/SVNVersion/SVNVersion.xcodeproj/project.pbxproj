@@ -36,10 +36,22 @@
 			);
 			dependencies = (
 				3440204819072E300002120F /* PBXTargetDependency */,
+				5F3D704A1B66B6D400FF7D64 /* PBXTargetDependency */,
 				3440204A19072E300002120F /* PBXTargetDependency */,
 			);
 			name = SVNVersion;
 			productName = SVNVersion;
+		};
+		5F3D70441B66B6B000FF7D64 /* SVNVersion-watchOS-Only */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 5F3D70461B66B6B000FF7D64 /* Build configuration list for PBXAggregateTarget "SVNVersion-watchOS-Only" */;
+			buildPhases = (
+				5F3D70451B66B6B000FF7D64 /* Build SVNVersion.h */,
+			);
+			dependencies = (
+			);
+			name = "SVNVersion-watchOS-Only";
+			productName = "SVNVersion-iOS-Only";
 		};
 /* End PBXAggregateTarget section */
 
@@ -57,6 +69,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 3440204119072DB60002120F;
 			remoteInfo = "SVNVersion-Mac-Only";
+		};
+		5F3D70491B66B6D400FF7D64 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34DBCD0E190709E100968086 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5F3D70441B66B6B000FF7D64;
+			remoteInfo = "SVNVersion-watchOS-Only";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -97,6 +116,16 @@
 		3440203919072D900002120F /* Touch-Library-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		3440203B19072D900002120F /* Touch-Library-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		3440203C19072D900002120F /* Touch-Library-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		5F7FA9D91B66B73B00011605 /* Target-Watch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Watch-Common.xcconfig"; sourceTree = "<group>"; };
+		5F7FA9DA1B66B74300011605 /* Watch-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		5F7FA9DB1B66B74300011605 /* Watch-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		5F7FA9DC1B66B74300011605 /* Watch-Application-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		5F7FA9DD1B66B74300011605 /* Watch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		5F7FA9DE1B66B74300011605 /* Watch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		5F7FA9DF1B66B74300011605 /* Watch-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		5F7FA9E01B66B74300011605 /* Watch-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		5F7FA9E11B66B74300011605 /* Watch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		5F7FA9E21B66B74300011605 /* Watch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -133,12 +162,22 @@
 				3440203219072D900002120F /* Omni-Tool-Release.xcconfig */,
 				3440203319072D900002120F /* Target-Mac-Common.xcconfig */,
 				3440203419072D900002120F /* Target-Touch-Common.xcconfig */,
+				5F7FA9D91B66B73B00011605 /* Target-Watch-Common.xcconfig */,
 				3440203519072D900002120F /* Touch-Application-Common.xcconfig */,
 				3440203719072D900002120F /* Touch-Application-Debug.xcconfig */,
 				3440203819072D900002120F /* Touch-Application-Release.xcconfig */,
 				3440203919072D900002120F /* Touch-Library-Common.xcconfig */,
 				3440203B19072D900002120F /* Touch-Library-Debug.xcconfig */,
 				3440203C19072D900002120F /* Touch-Library-Release.xcconfig */,
+				5F7FA9DA1B66B74300011605 /* Watch-Application-Common.xcconfig */,
+				5F7FA9DB1B66B74300011605 /* Watch-Application-Debug.xcconfig */,
+				5F7FA9DC1B66B74300011605 /* Watch-Application-Release.xcconfig */,
+				5F7FA9DD1B66B74300011605 /* Watch-Bundle-Common.xcconfig */,
+				5F7FA9DE1B66B74300011605 /* Watch-Bundle-Debug.xcconfig */,
+				5F7FA9DF1B66B74300011605 /* Watch-Bundle-Release.xcconfig */,
+				5F7FA9E01B66B74300011605 /* Watch-Framework-Common.xcconfig */,
+				5F7FA9E11B66B74300011605 /* Watch-Framework-Debug.xcconfig */,
+				5F7FA9E21B66B74300011605 /* Watch-Framework-Release.xcconfig */,
 			);
 			name = Configurations;
 			path = ../../Configurations;
@@ -172,6 +211,7 @@
 			targets = (
 				34DBCD14190709F400968086 /* SVNVersion */,
 				3440203D19072DAD0002120F /* SVNVersion-iOS-Only */,
+				5F3D70441B66B6B000FF7D64 /* SVNVersion-watchOS-Only */,
 				3440204119072DB60002120F /* SVNVersion-Mac-Only */,
 			);
 		};
@@ -208,6 +248,21 @@
 			shellScript = "# $CONFIGURATION_BUILD_DIR expands differently for Mac and iOS, so we build both ways so that the app depending on us can pick one or both.\n../../Scripts/BuildSVNVersionHeader --build-versions-txt \"$CONFIGURATION_BUILD_DIR\"\n";
 			showEnvVarsInLog = 0;
 		};
+		5F3D70451B66B6B000FF7D64 /* Build SVNVersion.h */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Build SVNVersion.h";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# $CONFIGURATION_BUILD_DIR expands differently for Mac and iOS, so we build both ways so that the app depending on us can pick one or both.\n\nif xcodebuild -sdk watchos -version 2>/dev/null >/dev/null; then\n  ../../Scripts/BuildSVNVersionHeader --build-versions-txt \"$CONFIGURATION_BUILD_DIR\"\nelse\n  echo \"*** No watchos SDK; not building SVNVersion.h for that SDK ***\"\nfi\n\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -220,6 +275,11 @@
 			isa = PBXTargetDependency;
 			target = 3440204119072DB60002120F /* SVNVersion-Mac-Only */;
 			targetProxy = 3440204919072E300002120F /* PBXContainerItemProxy */;
+		};
+		5F3D704A1B66B6D400FF7D64 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5F3D70441B66B6B000FF7D64 /* SVNVersion-watchOS-Only */;
+			targetProxy = 5F3D70491B66B6D400FF7D64 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -286,6 +346,24 @@
 			};
 			name = Release;
 		};
+		5F3D70471B66B6B000FF7D64 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5F7FA9D91B66B73B00011605 /* Target-Watch-Common.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+			};
+			name = Debug;
+		};
+		5F3D70481B66B6B000FF7D64 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5F7FA9D91B66B73B00011605 /* Target-Watch-Common.xcconfig */;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -321,6 +399,15 @@
 			buildConfigurations = (
 				34DBCD16190709F400968086 /* Debug */,
 				34DBCD17190709F400968086 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5F3D70461B66B6B000FF7D64 /* Build configuration list for PBXAggregateTarget "SVNVersion-watchOS-Only" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5F3D70471B66B6B000FF7D64 /* Debug */,
+				5F3D70481B66B6B000FF7D64 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

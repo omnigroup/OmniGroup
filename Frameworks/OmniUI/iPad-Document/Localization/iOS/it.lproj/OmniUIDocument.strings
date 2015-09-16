@@ -1,3 +1,6 @@
+/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
+" (Copy)" = " (Copia)";
+
 /* bytes */
 "%@ B" = "%@ B";
 
@@ -43,9 +46,6 @@
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Esiste già un documento denominato \"%@\". Sostituirlo? L'operazione non potrà essere annullata.";
 
-/* Error reason for a document operation failing due to a missing file. */
-"A file is missing or has been deleted." = "Un documento manca o è stato eliminato.";
-
 /* Omni Sync Server account info button title */
 "Account Info" = "Info account";
 
@@ -55,7 +55,8 @@
 /* Menu option in the document picker view */
 "Actions" = "Azioni";
 
-/* Cloud Setup button title to add a new account */
+/* Cloud Setup button title to add a new account
+   Cloud Setup button title to convert an existing account */
 
 "Add an Account" = "Aggiungi un account";
 
@@ -64,7 +65,10 @@
 
 /* button title
    cancel button title
-   Discard unsynced edits dialog: cancel button label */
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 
 
@@ -95,6 +99,9 @@
 
 /* title view clear button accessibility label. */
 "Clear Title" = "Cancella titolo";
+
+/* Cloud Storage Providers preference nvigation bar title */
+"Cloud Storage Providers" = "Provider di archiviazione cloud";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Connesso";
@@ -138,6 +145,9 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "Ignorare le modifiche non sincronizzate?";
 
+/* Message letting the user know that their document was moved from one folder to another. */
+"Document moved." = "Documento spostato.";
+
 /* Title for alert informing user that the document has been reloaded with edits from another device */
 "Document Updated" = "Documento aggiornato";
 
@@ -173,8 +183,7 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
 
 
 "Export" = "Esporta";
@@ -197,7 +206,7 @@
 /* doc picker folder type accessibility value */
 "Folder" = "Cartella";
 
-/* Import section title */
+/* import sheet title */
 "Import" = "Importa";
 
 /* Info item accessibility label */
@@ -230,6 +239,9 @@
 /* modified date accessibility value */
 "Modified %@" = "Modificato il %@";
 
+/* Cloud Storage Providers more information button title */
+"More Info…" = "Altre informazioni...";
+
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
 
@@ -243,15 +255,8 @@
 
 "Move to Trash" = "Sposta nel cestino";
 
-/* Action sheet button title
-   Menu popover title */
-"Move to..." = "Sposta in...";
-
-/* Message format for alert informing user that the document has been moved out of a folder to the top level */
-"Moved out of folder %@." = "Spostato dalla cartella %@.";
-
-/* Message format for alert informing user that the document has been moved to a folder */
-"Moved to folder %@." = "Spostato nella cartella %@.";
+/* Share menu title */
+"Move to..." = "Sposta in…";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Documento personale";
@@ -284,8 +289,7 @@
 "Not uploaded" = "Non caricato";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
 
 "OK" = "OK";
 
@@ -350,7 +354,7 @@
 "Retry Sync" = "Ritenta sincronizzazione";
 
 /* Account setup toolbar button title to save account settings */
-"Save" = "Registra";
+"Save" = "Salva";
 
 /* document picker compact title view accessibility hint */
 "Scroll down to show sort and filter controls" = "Scorri verso il basso per mostrare i controlli di ordinamento e filtro";
@@ -429,6 +433,9 @@
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Questo account cloud non esiste più.";
 
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Il documento non è accessibile. Il file potrebbe essere stato eliminato, rinominato o spostato tramite iTunes o un provider di documenti esterno. Prova a rimuovere e a riaggiungere il file.";
+
 /* item not fully downloaded error message */
 "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Impossibile duplicare l'elemento perché non è stato completamente scaricato. Tocca l'elemento e attendi che venga scaricato prima di riprovare.";
 
@@ -438,8 +445,14 @@
 /* sort by title */
 "Title" = "Titolo";
 
+/* Cloud Storage Providers preference informational description */
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Attivando Provider di archiviazione cloud ottieni l'accesso ai documenti archiviati sui servizi cloud, come iCloud Drive o Dropbox. Stiamo presentando l'accesso a Provider di archiviazione cloud come implementazione BETA; presta la massima attenzione se attivi questo servizio. Per ulteriori informazioni, vedi \"Uso del cloud\" nella documentazione.";
+
 /* error title */
 "Unable to open file." = "Impossibile aprire il documento.";
+
+/* Cloud Storage Providers preference settings screen title */
+"Use Cloud Storage Providers" = "Usa provider di archiviazione cloud";
 
 /* Account validation status string. */
 "Validating account..." = "Convalido account…";

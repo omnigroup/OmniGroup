@@ -55,6 +55,9 @@ RCS_ID("$Id$");
 
 - (void)testWriteAndReadCredential;
 {
+    // Without this, our build servers need to have xctest allowed to access the entries from previous runs. Make sure we are the process that creates the entry.
+    XCTAssertTrue(OFDeleteCredentialsForServiceIdentifier(_serviceIdentifier, NULL));
+
     NSString *password = OFXMLCreateID();
     XCTAssertTrue(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password, NULL));
     NSURLCredential *credential = OFReadCredentialsForServiceIdentifier(_serviceIdentifier, NULL);
@@ -66,7 +69,10 @@ RCS_ID("$Id$");
 {
     NSString *password1 = OFXMLCreateID();
     __autoreleasing NSError *error = nil;
-    
+
+    // Without this, our build servers need to have xctest allowed to access the entries from previous runs. Make sure we are the process that creates the entry.
+    XCTAssertTrue(OFDeleteCredentialsForServiceIdentifier(_serviceIdentifier, NULL));
+
     OBShouldNotError(OFWriteCredentialsForServiceIdentifier(_serviceIdentifier, @"user", password1, &error));
     
     NSURLCredential *credential1;

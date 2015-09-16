@@ -48,6 +48,8 @@ RCS_ID("$Id$");
     return userVisibleOperatingSystemVersionNumber;
 }
 
+static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString) __attribute__((unused)); // Can end up being unused when we require the latest version available of a platform's OS.
+
 static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
     // NOTE: Don't expose this directly! Instead, declare a new method (such as +isOperatingSystemLionOrLater) which caches its result (and which will give us nice warnings to find later when we decide to retire support for pre-Lion).
     // This implementation is meant to be called during initialization, not repeatedly, since this allocates and discards an instance.
@@ -60,16 +62,7 @@ static BOOL isOperatingSystemLaterThanVersionString(NSString *versionString)
 
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-+ (BOOL)isOperatingSystemiOS90OrLater; // iOS 9.0
-{
-    static BOOL isLater;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        isLater = isOperatingSystemLaterThanVersionString(@"9.0");
-    });
-    
-    return isLater;
-}
+// We require iOS 9.0 currently
 
 #else
 

@@ -58,6 +58,8 @@
 				<false/>
 				<key>RelativeDateFormatterDateFormatStyle</key>
 				<string>short</string>
+				<key>OFHTTPStateMachineLogLevel</key>
+				<false/>
 			</dict>
 		</dict>
 	</dict>

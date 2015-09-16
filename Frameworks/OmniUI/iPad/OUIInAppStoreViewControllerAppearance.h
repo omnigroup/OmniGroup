@@ -7,8 +7,8 @@
 //
 // $Id$
 
-#import <OmniUI/OUIAppearance.h>
+#import <OmniAppKit/OAAppearance.h>
 
-@interface OUIInAppStoreViewControllerAppearance : OUIAppearance
+@interface OUIInAppStoreViewControllerAppearance : OAAppearance
 
 @end

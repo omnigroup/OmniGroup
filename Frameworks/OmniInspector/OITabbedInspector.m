@@ -95,7 +95,6 @@ RCS_ID("$Id$")
 #ifdef OITabbedInspectorUnifiedLookDefaultsKey
     if ([[NSUserDefaults standardUserDefaults] boolForKey:OITabbedInspectorUnifiedLookDefaultsKey]) {
         [buttonMatrixBackground setBackgroundColor:nil];
-        [(OITabMatrix *)buttonMatrix setTabMatrixHighlightStyle:OITabMatrixDepressionHighlightStyle];
     } else
 #endif
     {
@@ -170,15 +169,7 @@ RCS_ID("$Id$")
     NSDictionary *textAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont systemFontOfSize:[NSFont labelFontSize]], NSFontAttributeName, nil];
     NSMutableAttributedString *windowTitleAttributedstring = [[NSMutableAttributedString alloc] init];
     [windowTitleAttributedstring replaceCharactersInRange:NSMakeRange(0, [[windowTitleAttributedstring string] length]) withString:windowTitle];
-    if (duringMouseDown) {
-        NSUInteger partial = [prefix length];
-        [windowTitleAttributedstring setAttributes:textAttributes range:NSMakeRange(0, partial)];
-        // NSFont's +systemFontOfSize: does not have an italic variant.  So I'm just using Helvetica.  Using +userFontOfSize: is not a good option because the userFont can be changed for other reasons by apps.
-        NSDictionary *italicAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[[NSFontManager sharedFontManager] convertFont:[[NSFontManager sharedFontManager] convertFont:[NSFont systemFontOfSize:[NSFont labelFontSize]] toFamily:@"Helvetica"] toHaveTrait:NSItalicFontMask], NSFontAttributeName, nil];
-        [windowTitleAttributedstring setAttributes:italicAttributes range:NSMakeRange(partial, [[windowTitleAttributedstring string] length] - partial)];
-    } else {
-        [windowTitleAttributedstring setAttributes:textAttributes range:NSMakeRange(0, [[windowTitleAttributedstring string] length])];
-    }
+    [windowTitleAttributedstring setAttributes:textAttributes range:NSMakeRange(0, [[windowTitleAttributedstring string] length])];
     
     return windowTitleAttributedstring;
 }
@@ -330,21 +321,6 @@ RCS_ID("$Id$")
     }
 
     return height;
-}
-
-- (CGFloat)additionalHeaderHeight;
-{
-    CGFloat extraHeightBecauseTheDividerIsNotThere = 0;
-#ifdef OITabbedInspectorUnifiedLookDefaultsKey
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:OITabbedInspectorUnifiedLookDefaultsKey]) {
-        extraHeightBecauseTheDividerIsNotThere = 1;
-    }
-#endif
-    
-    if ([buttonMatrix tabMatrixHighlightStyle] == OITabMatrixDepressionHighlightStyle)
-        return [buttonMatrix frame].size.height + extraHeightBecauseTheDividerIsNotThere;
-    else
-        return 0;
 }
 
 - (void)switchToInspectorWithIdentifier:(NSString *)tabIdentifier;

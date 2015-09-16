@@ -19,6 +19,7 @@
 
 #import "ODSScope-Internal.h"
 #import "ODSFileItem-Internal.h"
+#import "ODSStore-Internal.h"
 
 RCS_ID("$Id$");
 
@@ -154,6 +155,10 @@ RCS_ID("$Id$");
         }];
     }
     DEBUG_STORE(@"Deletions %@", [deletions valueForKey:@"shortDescription"]);
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [self.documentStore _willRemoveFileItems:items];
+    }];
     
     [self performAsynchronousFileAccessUsingBlock:^{
         // Passing nil for the presenter so that we get our normal deletion notification via file coordination.

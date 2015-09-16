@@ -295,7 +295,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "343BD2D71B62F35D002D09C6"
-               BuildableName = "ODOTests-iOS.xctest"
+               BuildableName = "ODOTests.xctest"
                BlueprintName = "ODOTests-iOS"
                ReferencedContainer = "container:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
             </BuildableReference>
@@ -343,7 +343,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "343BD2D71B62F35D002D09C6"
-               BuildableName = "ODOTests-iOS.xctest"
+               BuildableName = "ODOTests.xctest"
                BlueprintName = "ODOTests-iOS"
                ReferencedContainer = "container:../Frameworks/OmniDataObjects/OmniDataObjects.xcodeproj">
             </BuildableReference>

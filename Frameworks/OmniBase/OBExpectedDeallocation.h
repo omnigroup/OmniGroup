@@ -1,4 +1,4 @@
-// Copyright 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,11 @@
 
 #ifdef DEBUG
     extern void OBExpectDeallocation(id object);
+
+    // Return a possible reason the object it wasn't deallocated. The object will still be logged, but more briefly.
+    typedef NSString * (^OBExpectedDeallocationPossibleFailureReason)(id object);
+    extern void OBExpectDeallocationWithPossibleFailureReason(id object, OBExpectedDeallocationPossibleFailureReason possibleFailureReason);
 #else
     #define OBExpectDeallocation(object)
+    #define OBExpectDeallocationWithPossibleFailureReason(object, possibleFailureReason)
 #endif

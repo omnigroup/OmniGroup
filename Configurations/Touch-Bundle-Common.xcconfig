@@ -5,11 +5,15 @@
 // Common settings for all iOS targets
 #include "Target-Touch-Common.xcconfig"
 
+// Bundles don't support bitcode (ld: -bundle and -bitcode_bundle (Xcode setting ENABLE_BITCODE=YES) cannot be used together)
+ENABLE_BITCODE = NO
+
 // Common settings for Bundle targets
 DYLIB_CURRENT_VERSION = 1
 DYLIB_COMPATIBILITY_VERSION = 1
 
-OTHER_CFLAGS = $(value) -DOMNI_BUILDING_BUNDLE -DOMNI_BUNDLE_IDENTIFIER=@\"$(OMNI_BUNDLE_IDENTIFIER)\"
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_BUNDLE OMNI_BUNDLE_IDENTIFIER="@\"$(OMNI_BUNDLE_IDENTIFIER)\""
+OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_BUNDLE
 
 LD_RUNPATH_SEARCH_PATHS = $(value) @executable_path/Frameworks
 OTHER_LDFLAGS = $(value) -ObjC

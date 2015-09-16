@@ -548,7 +548,7 @@ static unsigned ScopeContext;
 
 - (void)_flushAfterInitialDocumentScanActions;
 {
-    if (![self _allScopesHaveFinishedInitialScan])
+    if (![self _allScopesHaveFinishedInitialScan] || [self.scopes count] == 0) // there's no legitimate way to have no scopes, so we must just not have them set up yet.
         return;
     
     if (_afterInitialDocumentScanActions) {
@@ -569,6 +569,15 @@ static unsigned ScopeContext;
     }];
 }
 
+- (void)_fileItem:(ODSFileItem *)fileItem willMoveToURL:(NSURL *)newURL;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+    
+    id <ODSStoreDelegate> delegate = _weak_delegate;
+    if ([delegate respondsToSelector:@selector(documentStore:fileItem:willMoveToURL:)])
+        [delegate documentStore:self fileItem:fileItem willMoveToURL:newURL];
+}
+
 - (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
 {
     OBPRECONDITION([NSThread isMainThread]);
@@ -585,6 +594,18 @@ static unsigned ScopeContext;
     id <ODSStoreDelegate> delegate = _weak_delegate;
     if ([delegate respondsToSelector:@selector(documentStore:fileItemEdit:finishedCopyToURL:withFileItemEdit:)])
         [delegate documentStore:self fileItemEdit:fileItemEdit finishedCopyToURL:destinationURL withFileItemEdit:destinationFileItemEditOrNil];
+}
+
+- (void)_willRemoveFileItems:(NSSet *)fileItems;
+{
+    OBPRECONDITION([NSThread isMainThread]);
+
+    id <ODSStoreDelegate> delegate = _weak_delegate;
+
+    if ([delegate respondsToSelector:@selector(documentStore:willRemoveFileItemAtURL:)]) {
+        for (ODSFileItem *item in fileItems)
+            [delegate documentStore:self willRemoveFileItemAtURL:item.fileURL];
+    }
 }
 
 @end

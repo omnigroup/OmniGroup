@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,23 +7,23 @@
 
 #import <OmniUI/OUIAbstractColorInspectorSlice.h>
 
+#import <OmniAppKit/OAColor.h>
 #import <OmniUI/OUIColorInspectorPane.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorSelectionValue.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
-#import <OmniQuartz/OQColor.h>
 
 RCS_ID("$Id$");
 
 @implementation OUIAbstractColorInspectorSlice
 
-- (OQColor *)colorForObject:(id)object;
+- (OAColor *)colorForObject:(id)object;
 {
     OBRequestConcreteImplementation(self, _cmd);
     return nil;
 }
 
-- (void)setColor:(OQColor *)color forObject:(id)object;
+- (void)setColor:(OAColor *)color forObject:(id)object;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }
@@ -48,7 +48,7 @@ RCS_ID("$Id$");
     
     // Find a single color, obeying color spaces, that all the objects have.
     [self eachAppropriateObjectForInspection:^(id object){
-        OQColor *objectColor = [self colorForObject:object];
+        OAColor *objectColor = [self colorForObject:object];
         if (objectColor)
             [colors addObject:objectColor];
     }];
@@ -56,7 +56,7 @@ RCS_ID("$Id$");
     OUIInspectorSelectionValue *selectionValue = [[OUIInspectorSelectionValue alloc] initWithValues:colors];
     
     // Compare the two colors in RGBA space, but keep the old single color's color space. This allow us to map to RGBA for text (where we store the RGBA in a CGColorRef for CoreText's benefit) but not lose the color space in our color picking UI, mapping all HSV colors with S or V of zero to black or white (and losing the H component).  See <bug://bugs/59912> (Hue slider jumps around)
-    if (OFNOTEQUAL([selectionValue.firstValue colorUsingColorSpace:OQColorSpaceRGB], [_selectionValue.firstValue colorUsingColorSpace:OQColorSpaceRGB]))
+    if (OFNOTEQUAL([selectionValue.firstValue colorUsingColorSpace:OAColorSpaceRGB], [_selectionValue.firstValue colorUsingColorSpace:OAColorSpaceRGB]))
         _selectionValue = selectionValue; // take reference from above
     
     // Don't check off swatches as selected unless there is only one color selected. Otherwise, we could have the main swatch list have one checkmark when there is really another selected color that just isn't in the list being shown.
@@ -72,7 +72,7 @@ RCS_ID("$Id$");
 
 @synthesize selectionValue = _selectionValue;
 
-- (void)handleColorChange:(OQColor *)color;
+- (void)handleColorChange:(OAColor *)color;
 {
     NSArray *appropriateObjects = self.appropriateObjectsForInspection;
     [self.inspector beginChangeGroup];
@@ -88,7 +88,7 @@ RCS_ID("$Id$");
     OBPRECONDITION([sender conformsToProtocol:@protocol(OUIColorValue)]);
     id <OUIColorValue> colorValue = sender;
     
-    OQColor *color = colorValue.color;
+    OAColor *color = colorValue.color;
     
     //NSLog(@"setting color %@, continuous %d", [colorValue.color shortDescription], colorValue.isContinuousColorChange);
     

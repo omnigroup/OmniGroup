@@ -257,7 +257,7 @@ RCS_ID("$Id$");
 #if TARGET_IPHONE_SIMULATOR
     _family = UIDeviceHardwareFamily_iPhoneSimulator;
 #else
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"(.*?)(\\d+),(\\d+)" options:0 error:&error];
     if (regex != nil) {
         NSTextCheckingResult *match = [regex firstMatchInString:platformString options:0 range:NSMakeRange(0, platformString.length)];

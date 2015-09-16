@@ -13,9 +13,13 @@ OMNI_SDK_VERSION =
 OMNI_SDKROOT = iphoneos
 SDKROOT = $(OMNI_SDKROOT)$(OMNI_SDK_VERSION)
 
-IPHONEOS_DEPLOYMENT_TARGET = 8.3
-
+IPHONEOS_DEPLOYMENT_TARGET = 9.0
+ENABLE_BITCODE = YES
+STRIP_BITCODE_FROM_COPIED_FILES = NO
 GCC_THUMB_SUPPORT = NO
+
+// Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.
+SKIP_INSTALL = YES
 
 // Unlike gcc and llvm-gcc, clang emits ObjC runtime info for class extensions conforming to protocols. Also, clang has more warning checks than gcc.
 GCC_VERSION = com.apple.compilers.llvm.clang.1_0
@@ -30,4 +34,4 @@ STRINGS_FILE_OUTPUT_ENCODING[sdk=iphonesimulator*] = UTF-8
 WARNING_CFLAGS = $(value) -Wno-error-deprecated-declarations -Wno-error-deprecated-implementations -Wno-error-unreachable-code -Wno-error-nonnull -Wno-error-objc-designated-initializers
 
 // For Info.plists in frameworks that are shared between Mac/iOS targets
-INFOPLIST_OTHER_PREPROCESSOR_FLAGS = $(value) -DOMNI_BUILDING_FOR_IOS
+OMNI_TARGET_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_IOS

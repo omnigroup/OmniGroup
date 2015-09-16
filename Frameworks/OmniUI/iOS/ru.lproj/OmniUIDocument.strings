@@ -99,7 +99,7 @@
 "Clear Title" = "Очистить заголовок";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
-"Connected" = "Связанные";
+"Connected" = "Подключено";
 
 /* webdav connecting label */
 "Connecting" = "Подключение";

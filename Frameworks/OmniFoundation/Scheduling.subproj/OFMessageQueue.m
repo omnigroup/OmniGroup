@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -256,6 +256,9 @@ static BOOL OFMessageQueueDebug = NO;
 
     if (OFMessageQueueDebug)
 	NSLog(@"[%@ addQueueEntry:%@]", [self shortDescription], [aQueueEntry shortDescription]);
+
+    // Log a backtrace buffer for the enqueue site of the delayed invocation (we also log one when it is invoked, so we can match up which one crashed and where it came from).
+    OBRecordBacktraceWithContext(sel_getName(aQueueEntry.selector), OBBacktraceBuffer_PerformSelector, aQueueEntry);
 
     [queueLock lock];
 

@@ -168,7 +168,6 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
 {
     [super viewDidAppear:animated];
     [[OUIDocumentPickerViewController scopePreference] setStringValue:@""];
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:NO];
     [self _updateEditButton];
 }
 
@@ -207,11 +206,22 @@ static void *ScopeOrderingObservationContext = &ScopeOrderingObservationContext;
     [self.documentPicker enableAppMenuBarButtonItem:!editing];
 }
 
+- (void)willTransitionToTraitCollection:(UITraitCollection *)newCollection withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator;
+{
+    [super willTransitionToTraitCollection:newCollection withTransitionCoordinator:coordinator];
+    
+    // Dismiss any presented view controller if presented as a popover
+    if (self.presentedViewController.popoverPresentationController != nil) {
+        [self.presentedViewController dismissViewControllerAnimated:YES completion:^{
+            [self setEditing:NO animated:YES];
+        }];
+    }
+
+}
+
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator NS_AVAILABLE_IOS(8_0);
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-
-    [[OUIAppController controller] dismissAppMenuIfVisible:self.navigationController];
 }
 
 #pragma mark - API
@@ -585,7 +595,7 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
         OBPRECONDITION(indexPath.section == EditModeSection);
         OBPRECONDITION(indexPath.row == AddCloudAccountRow);
         
-        if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlert]) {
+        if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlertFromViewController:self]) {
             // Early out if we are currently in retail demo mode.
             return;
         }

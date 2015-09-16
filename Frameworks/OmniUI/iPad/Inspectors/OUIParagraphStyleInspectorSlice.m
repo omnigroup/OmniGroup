@@ -104,7 +104,7 @@ RCS_ID("$Id$");
     OBPRECONDITION(alignmentControl == nil);
     
     // We'll be resized by the stack view
-    OUISegmentedControl *alignBar = [[OUISegmentedControl alloc] initWithFrame:(CGRect){{0,0}, {OUIInspectorContentWidth, [OUISegmentedControl buttonHeight]}}];
+    OUISegmentedControl *alignBar = [[OUISegmentedControl alloc] initWithFrame:(CGRect){{0,0}, {[OUIInspector defaultInspectorContentWidth], [OUISegmentedControl buttonHeight]}}];
     alignBar.sizesSegmentsToFit = YES;
     alignBar.allowsEmptySelection = YES;
     

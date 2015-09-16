@@ -17,10 +17,11 @@ enum OBBacktraceBufferType {
     OBBacktraceBuffer_NSException = 4,
     OBBacktraceBuffer_Generic = 5,
     OBBacktraceBuffer_CxxException = 6,
+    OBBacktraceBuffer_PerformSelector = 7,
 };
 
-extern void OBRecordBacktrace(const char *ctxt, unsigned int optype);
+extern void OBRecordBacktrace(const char *message, unsigned int optype);
+extern void OBRecordBacktraceWithContext(const char *message, unsigned int optype, const void *context);
 /*.doc.
- Records a backtrace for possible debugging use in the future. ctxt and optype are free for the caller to use for their own purposes, but optype must be greater than one.
+ Records a backtrace for possible debugging use in the future. The input message must be a constant string. The optype must be greater than one. The context pointer is not examined at all, but just stored. This allows matching up call sites where delayed operations are enqueued with where they are performed in a crash report.
  */
-

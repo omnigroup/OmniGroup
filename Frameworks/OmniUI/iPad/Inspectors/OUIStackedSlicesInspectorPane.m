@@ -30,6 +30,7 @@ RCS_ID("$Id$");
     #define DEBUG_ANIM(format, ...)
 #endif
 
+NSString *OUIStackedSlicesInspectorContentViewDidChangeFrameNotification = @"OUIStackedSlicesInspectorContentViewDidChangeFrame";
 
 static CGFloat _setSliceSizes(UIScrollView *self, NSArray *_slices, NSSet *slicesToPostponeFrameSetting)
 {
@@ -201,7 +202,11 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     
     _slices = [slices copy];
     
-    [self setNeedsLayout];
+}
+
+- (void)setFrame:(CGRect)frame{
+    [super setFrame:frame];
+    [[NSNotificationCenter defaultCenter] postNotificationName:OUIInspectorDidEndChangingInspectedObjectsNotification object:self];
 }
 
 - (void)layoutSubviews;
@@ -234,6 +239,9 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 @interface OUIStackedSlicesInspectorPane ()
 
 @property(nonatomic,copy) NSArray *slices;
+@property(nonatomic, readonly) BOOL needsSliceLayout;
+@property(nonatomic) BOOL maintainHeirarchyOnNextSliceLayout;
+@property(nonatomic, strong) NSSet *oldSlicesForMaintainingHierarchy;
 
 @end
 
@@ -241,7 +249,8 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 {
     NSArray *_slices;
     id <OUIScrollNotifier> _scrollNotifier;
-    BOOL _isAnimating;
+    BOOL _initialLayoutHasBeenDone;
+    CGSize _lastLayoutSize;
 }
 
 + (instancetype)stackedSlicesPaneWithAvailableSlices:(OUIInspectorSlice *)slice, ...;
@@ -401,31 +410,50 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 }
 
 @synthesize slices = _slices;
-- (void)setSlices:(NSArray *)slices maintainViewHierarchy:(BOOL)maintainHierachy;
+
+- (void)setNeedsSliceLayout
+{
+    _needsSliceLayout = YES;
+    if (_initialLayoutHasBeenDone) {
+        [self.view setNeedsLayout];
+        [self.contentView setNeedsLayout];
+    }
+}
+
+- (void)setSlices:(NSArray *)slices maintainViewHierarchy:(BOOL)maintainHierarchy;
+{
+    if ([slices isEqualToArray:self.slices]) {
+        return;  // otherwise, we get fooled into never adding the slices to the view
+    }
+    if (!self.oldSlicesForMaintainingHierarchy) {  // this will get cleared out when the change is actually commited to the view hierarchy.  if it hasn't been cleared yet, the current _slices aren't really our current slices so we don't want to remember them as our old slices.
+        self.oldSlicesForMaintainingHierarchy = [NSSet setWithArray:self.slices];
+    }
+    _slices = slices;
+    [self setNeedsSliceLayout];
+    self.maintainHeirarchyOnNextSliceLayout = maintainHierarchy;
+    
+    for (OUIInspectorSlice *slice in slices) {
+        slice.containingPane = self;
+    }
+}
+
+- (void)layoutSlicesMaintainingViewHeirarchy:(BOOL)maintainHierarchy
 {
     DEBUG_ANIM(@"In setSlices on thread %@", [NSThread currentThread]);
     // TODO: Might want an 'animate' variant later. 
-    if (OFISEQUAL(_slices, slices))
+    if (OFISEQUAL([NSSet setWithArray:self.slices], self.oldSlicesForMaintainingHierarchy))
         return;
     
     OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
     
-    // Terrible hack to delay change until previous animation completes
-    if (_isAnimating) {
-        // This can happen when doing a sync in OmniPlan's Project:Sync inspector, where we add a slice to display status when the sync starts, then remove the slice when the sync completes (which can easily happen before the animation completes).
-        [self performSelector:@selector(setSlices:) withObject:slices afterDelay:0];
-        return;
-    }
-    
     // Establish view and view controller containment
-    NSSet *oldSlices = [NSSet setWithArray:_slices];
-    NSSet *newSlices = [NSSet setWithArray:slices];
+    NSSet *oldSlices = self.oldSlicesForMaintainingHierarchy;
+    self.oldSlicesForMaintainingHierarchy = nil;
+    NSSet *newSlices = [NSSet setWithArray:self.slices];
     NSMutableSet *toBeOrphanedSlices = [NSMutableSet setWithSet:oldSlices];
     [toBeOrphanedSlices minusSet:newSlices];
     NSMutableSet *toBeAdoptedSlices = [NSMutableSet setWithSet:newSlices];
     [toBeAdoptedSlices minusSet:oldSlices];
-
-    _slices = [[NSArray alloc] initWithArray:slices];
     
     // Tell the slices what position they are in - this impacts how they draw
     OUIInspectorSlice *previousSlice = nil;
@@ -439,7 +467,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     }
     currentSlice.groupPosition = [OUIStackedSlicesInspectorPane _sliceGroupPositionForSlice:currentSlice precededBySlice:previousSlice followedBySlice:nil]; // The loop above doesn't process the last slice, just leaves us in a position to process it.
 
-    if (maintainHierachy) {
+    if (maintainHierarchy) {
         for (OUIInspectorSlice *slice in toBeOrphanedSlices) {
             [slice willMoveToParentViewController:nil];
         }
@@ -448,7 +476,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     // Don't completely zero the alphas, or some slices will expect to be skipped when setting slice sizes.
     CGFloat newSliceInitialAlpha = [oldSlices count] > 0 ? 0.01 : 1.0; // Don't fade in on first display.
     for (OUIInspectorSlice *slice in toBeAdoptedSlices) {
-        if (maintainHierachy) {
+        if (maintainHierarchy) {
             [self addChildViewController:slice];
             // Add this once up front, but only if an embedding inspector hasn't stolen it from us (OmniGraffle). Not pretty, but that's how it is right now.
             UIView *sliceView = slice.view;
@@ -509,7 +537,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
             [slice removeFromParentViewController];
         }
         
-        if (maintainHierachy) {
+        if (maintainHierarchy) {
             for (OUIInspectorSlice *slice in toBeAdoptedSlices) {
                 [slice didMoveToParentViewController:self];
             }
@@ -526,6 +554,9 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
         animationHandler();
         completionHandler(NO);
     }
+    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
+    
+    [self setNeedsSliceLayout];
 }
 
 - (void)setSlices:(NSArray *)slices;
@@ -536,7 +567,9 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 - (void)sliceSizeChanged:(OUIInspectorSlice *)slice;
 {
     // TODO: It seems like we should be able to animate the resizing to avoid jumpy transitions.
-    [self.contentView setNeedsLayout];
+    if (_initialLayoutHasBeenDone) {
+        [self.contentView setNeedsLayout];
+    }
 }
 
 - (void)updateSlices;
@@ -649,7 +682,16 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 
 - (void)loadView;
 {
-    OUIStackedSlicesInspectorPaneContentView *view = [[OUIStackedSlicesInspectorPaneContentView alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 16)];
+    OUIStackedSlicesInspectorPaneContentView *view = [[OUIStackedSlicesInspectorPaneContentView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], self.inspector.mainPane.preferredContentSize.height)];
+    _lastLayoutSize = view.frame.size;
+    [[NSNotificationCenter defaultCenter] addObserverForName:OUIStackedSlicesInspectorContentViewDidChangeFrameNotification
+                                                      object:nil
+                                                       queue:[NSOperationQueue mainQueue]
+                                                  usingBlock:^(NSNotification * _Nonnull note) {
+                                                      if ([self _viewSizeHasChangedSinceLastLayout]) {
+                                                          [self.view setNeedsLayout];
+                                                      }
+                                                  }];
     
     if (!_scrollNotifier)
         _scrollNotifier = [[OUIMinimalScrollNotifierImplementation alloc] init];
@@ -675,14 +717,39 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 {
     // Sadly, UINavigationController calls -navigationController:willShowViewController:animated: (which we use to provoke -inspectorWillShow:) BEFORE -viewWillAppear: when pushing but AFTER when popping. So, we have to update our list of child view controllers here too to avoid assertions in our life cycle checking. We don't want to send slices -viewWillAppear: and then drop them w/o ever sending -viewDidAppear: and the will/did disappear.
     [self updateSlices];
+    
+    // The last time we were on screen, we may have been dismissed because the keyboard showed.  We would have gotten the message that the keyboard was showing, and changed our bottom content inset to deal with that, but not gotten the message that the keyboard dismissed and so not have reset our bottom inset to 0.
+    UIScrollView *scrollview = (UIScrollView*)self.contentView;
+    UIEdgeInsets defaultInsets = scrollview.contentInset;
+    defaultInsets.bottom = 0;
+    scrollview.contentInset = defaultInsets;
 
     [super viewWillAppear:animated];
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    if (self.needsSliceLayout || [self _viewSizeHasChangedSinceLastLayout]) {
+        [self layoutSlicesMaintainingViewHeirarchy:self.maintainHeirarchyOnNextSliceLayout];
+        _needsSliceLayout = NO;
+        self.maintainHeirarchyOnNextSliceLayout = NO;
+    }
+    _initialLayoutHasBeenDone = YES;
+    _lastLayoutSize = self.view.frame.size;
+}
+
+- (BOOL)_viewSizeHasChangedSinceLastLayout{
+    if (!CGSizeEqualToSize(self.view.frame.size, _lastLayoutSize)) {
+        return YES;
+    } else {
+        return NO;
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated;
 {
     [super viewDidAppear:animated];
-    
     OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
     [view flashScrollIndicators];
 }

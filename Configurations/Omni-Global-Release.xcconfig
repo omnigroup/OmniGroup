@@ -6,13 +6,8 @@
 #include "Omni-Global-Common.xcconfig"
 
 // Common settings for Release configurations
-DEPLOYMENT_LOCATION = YES
 DSTROOT = /
-INSTALL_PATH = $(OMNI_INSTALLED_PRODUCTS)
-
-// Always strip our products (we save DWARF dSYM files to decode crash reports)
-STRIP_INSTALLED_PRODUCT = YES
-COPY_PHASE_STRIP = YES
+// INSTALL_PATH = $(OMNI_INSTALLED_PRODUCTS)
 
 // Support for build suffixes (see the use in Omni-Global-Common.xcconfig)
 OMNI_BUILD_FILE_SUFFIX=

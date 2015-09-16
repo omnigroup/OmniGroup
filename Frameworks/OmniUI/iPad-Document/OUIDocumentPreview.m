@@ -78,8 +78,6 @@ static const CFDictionaryValueCallBacks CFTypeDictionaryValueCallbacks = {
     .equal = OFCFTypeIsEqual
 };
 
-static CFStringRef kOUIDocumentPreviewTypeEmptyMarker = CFSTR("kOUIDocumentPreviewTypeEmptyMarker");
-
 + (void)initialize;
 {
     OBINITIALIZE;

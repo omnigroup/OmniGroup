@@ -153,10 +153,14 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
     }
 }
 
+#if !defined(TARGET_OS_WATCH) || !TARGET_OS_WATCH
+
 - (BOOL)causedByNetworkConnectionLost;
 {
     return [self hasUnderlyingErrorDomain:(NSString *)kCFErrorDomainCFNetwork code:kCFURLErrorNetworkConnectionLost] || [self hasUnderlyingErrorDomain:NSURLErrorDomain code:NSURLErrorNetworkConnectionLost];
 }
+
+#endif
 
 - initWithPropertyList:(NSDictionary *)propertyList;
 {

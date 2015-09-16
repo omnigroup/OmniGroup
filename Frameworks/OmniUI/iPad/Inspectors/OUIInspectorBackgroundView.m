@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import <OmniFoundation/OFExtent.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 #import "OUIParameters.h"
 #import <OmniUI/OUIInspector.h>

@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,13 +53,20 @@ RCS_ID("$Id$")
 
 - (OFRegularExpressionMatch *)matchInScanner:(OFStringScanner *)stringScanner;
 {
+    return [self matchInScanner:stringScanner advanceScanner:YES];
+}
+
+- (OFRegularExpressionMatch *)matchInScanner:(OFStringScanner *)stringScanner advanceScanner:(BOOL)advanceScanner;
+{
     OFRegularExpressionMatch *match = [self of_firstMatchInString:stringScanner.string range:stringScanner.remainingRange];
     if (!match)
         return nil;
-    
-    // Advance the scanner past the match
-    stringScanner.scanLocation = NSMaxRange(match.matchRange);
-    
+
+    if (advanceScanner) {
+        // Advance the scanner past the match
+        stringScanner.scanLocation = NSMaxRange(match.matchRange);
+    }
+
     return match;
 }
 

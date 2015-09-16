@@ -199,7 +199,7 @@ RCS_ID("$Id$")
 - (void)cleanupTemporaryFiles;
 {
     for (NSString *path in @[self.scriptPath, self.stdoutPath, self.stderrPath]) {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         if (![[NSFileManager defaultManager] removeItemAtPath:path error:&error]) {
             NSLog(@"Error cleaning up temporary file at path: %@ - %@", path, error);
         }

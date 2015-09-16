@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,7 +16,7 @@
  \param view indicator will be centered on this view
  \param disable
  */
-+ (OUIHoldOnesHorsesIndicator *)holdOnesHorsesIndicatorForView:(UIView *)view shouldDisableAllInteraction:(BOOL)disable;
++ (OUIHoldOnesHorsesIndicator *)holdOnesHorsesIndicatorForView:(UIView *)view shouldDisableAllInteraction:(BOOL)disable NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions");
 
 /**
  \brief creates _and activates_ a waiting indicator
@@ -25,13 +25,13 @@
  \param drawShadingView whether to hide view behind a translucent shading view while spinning
  \param disable
 */
-+ (OUIHoldOnesHorsesIndicator *)holdOnesHorsesIndicatorForView:(UIView *)view withColor:(UIColor *)color drawShadingView:(BOOL)drawShadingView shouldDisableAllInteraction:(BOOL)disable;
++ (OUIHoldOnesHorsesIndicator *)holdOnesHorsesIndicatorForView:(UIView *)view withColor:(UIColor *)color drawShadingView:(BOOL)drawShadingView shouldDisableAllInteraction:(BOOL)disable NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions");
 
-- (id)initForView:(UIView *)view shouldDisableAllInteraction:(BOOL)disable;
+- (id)initForView:(UIView *)view shouldDisableAllInteraction:(BOOL)disable NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions");
 
 @property (nonatomic, strong) UIColor *color;
 @property (nonatomic) BOOL shouldDrawShadingView;
 
-- (void)activate; // adds the waiting indicator to the given view, appearing after a short delay; ends user interaction if requested
-- (void)deactivateImmediately:(BOOL)immediately withCompletionHandler:(void(^)())handler; // removes the waiting indicator and resumes user interaction, then calls the completion handler. If immediately == NO, then ensures that spinner has been displayed for some minimum time, or not at all, before clearing it.
+- (void)activate NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions"); // adds the waiting indicator to the given view, appearing after a short delay; ends user interaction if requested
+- (void)deactivateImmediately:(BOOL)immediately withCompletionHandler:(void(^)())handler NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions"); // removes the waiting indicator and resumes user interaction, then calls the completion handler. If immediately == NO, then ensures that spinner has been displayed for some minimum time, or not at all, before clearing it.
 @end

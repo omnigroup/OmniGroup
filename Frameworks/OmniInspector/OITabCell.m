@@ -9,6 +9,7 @@
 
 #import <OmniBase/OmniBase.h>
 #import <OmniAppKit/OmniAppKit.h>
+#import <OmniInspector/OIAppearance.h>
 
 RCS_ID("$Id$");
 
@@ -118,11 +119,11 @@ NSString *TabTitleDidChangeNotification = @"TabTitleDidChange";
         imageRect.origin.y = cellFrame.origin.y + rint((cellFrame.size.height - [image size].height)/2);
     }
     if ([self state]) {
-        [[[self image] imageByTintingWithColor:[NSColor colorWithCalibratedRed:47/255.f green:131/255.f blue:251/255.f alpha:1]] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositeSourceOver fraction:1];
+        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabOnStateTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositeSourceOver fraction:1];
     } else if ([self isHighlighted]) {
-        [[[self image] imageByTintingWithColor:[NSColor colorWithCalibratedRed:25/255.f green:65/255.f blue:149/255.f alpha:1]] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositeSourceOver fraction:1];
+        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabHighlightedTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositeSourceOver fraction:1];
     } else {
-        [[self image] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositeSourceOver fraction:1];
+        [[[self image] imageByTintingWithColor:[OIAppearance appearance].InspectorTabNormalTintColor] drawFlippedInRect:imageRect fromRect:NSMakeRect(0,0,imageRect.size.width,imageRect.size.height) operation:NSCompositeSourceOver fraction:1];
     }
 }
 

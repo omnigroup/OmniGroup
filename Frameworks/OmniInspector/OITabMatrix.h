@@ -11,7 +11,6 @@
 
 typedef NS_ENUM(NSUInteger, OITabMatrixHighlightStyle) {
     OITabMatrixCellsHighlightStyle,
-    OITabMatrixDepressionHighlightStyle,
     OITabMatrixYosemiteHighlightStyle
 };
 

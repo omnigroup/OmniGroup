@@ -30,6 +30,8 @@
 - (NSArray *)appropriateSlices:(NSArray *)availableSlices forInspectedObjects:(NSArray *)inspectedObjects;  // Called from appropriateSlicesForInspectedObjects to allow subclasses the chance to use a subset of objects/slices
 
 // The default implementation just sets the value of the slices property.  OG will want to instead call setSlices:newSlices maintainViewHierarchy:NO.
+
+- (void)setNeedsSliceLayout;
 - (void)updateSlices;
 
 - (BOOL)inspectorPaneOfClassHasAlreadyBeenPresented:(Class)paneClass;
@@ -40,4 +42,5 @@
 
 - (void)updateContentInsetsForKeyboard;
 
+@property (nonatomic, assign) BOOL isAnimating;
 @end

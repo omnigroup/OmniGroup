@@ -41,6 +41,10 @@ RCS_ID("$Id$")
 
     // Read our sub-inspectors from the plist
     for (NSDictionary *slicePlist in [dict objectForKey:@"slices"]) {
+        NSString *identifier = [slicePlist objectForKey:@"identifier"];
+        if ([self shouldHideSliceWithIdentifier:identifier]) // OP uses this to hide non-Pro slices
+            continue;
+        
         OIInspector *inspector = [OIInspector newInspectorWithDictionary:slicePlist inspectorRegistry:inspectorRegistry bundle:sourceBundle];
         
         if (!inspector) {
@@ -81,8 +85,6 @@ RCS_ID("$Id$")
     [self.view.superview addConstraint:[NSLayoutConstraint constraintWithItem:self.view attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
 
     [self.view.superview addConstraint:[NSLayoutConstraint constraintWithItem:self.view attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
-
-    [self updateInspectorVisibility];
 }
 
 - (OIInspector *)inspectorWithIdentifier:(NSString *)identifier;
@@ -95,6 +97,10 @@ RCS_ID("$Id$")
     return nil;
 }
 
+- (BOOL)shouldHideSliceWithIdentifier:(NSString *)identifier;
+{
+    return NO;
+}
 
 #pragma mark -
 #pragma mark OIConcreteInspector protocol
@@ -125,17 +131,31 @@ RCS_ID("$Id$")
     
     self.inspectorViewsByIdentifier = [OFMutableBijection bijection];
     //    self.equalLabelWidthsConstraintManager = [[OFIEqualityConstraintManager alloc] initWithContainer:self attribute:NSLayoutAttributeWidth];
-    
+
+    NSSet *inspectorIdentifiers = [_sliceControllers setByPerformingBlock:^id(OIInspectorController *controller) {
+        return controller.identifier;
+    }];
+    BOOL foundFirstInspector = NO;
+
     for (OIAutoLayoutInspectorController *inspectorController in _sliceControllers) {
-        [inspectorController loadInterface];
-        
-        [inspectorController setExpanded:YES withNewTopLeftPoint:NSZeroPoint]; // top left point should be ignored for embedded inspectors
-        
+        NSStackViewVisibilityPriority newPriority = [inspectorIdentifiers containsObject:[inspectorController identifier]] ? NSStackViewVisibilityPriorityMustHold : NSStackViewVisibilityPriorityNotVisible;
+
+        if (newPriority == NSStackViewVisibilityPriorityMustHold && !foundFirstInspector) {
+            inspectorController.drawsHeaderSeparator = NO;
+            foundFirstInspector = YES;
+        } else {
+            inspectorController.drawsHeaderSeparator = YES;
+        }
+
         NSView *inspectorContainerView = [inspectorController containerView];
         NSString *identifier = [inspectorController identifier];
         
+        [inspectorController loadInterface];
+        [inspectorController setExpanded:YES withNewTopLeftPoint:NSZeroPoint]; // top left point should be ignored for embedded inspectors
+        
         [inspectorContainerView setTranslatesAutoresizingMaskIntoConstraints:NO];
         [self.containerStackView addView:inspectorContainerView inGravity:NSStackViewGravityTop];
+        [self.containerStackView setVisibilityPriority:newPriority forView:inspectorContainerView];
         [inspectorContainerView addConstraint:[NSLayoutConstraint constraintWithItem:inspectorContainerView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:inspectorController.headerView attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
         [inspectorContainerView addConstraint:[NSLayoutConstraint constraintWithItem:inspectorContainerView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:[[inspectorController inspector] view] attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
         [inspectorContainerView addConstraint:[NSLayoutConstraint constraintWithItem:inspectorContainerView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationGreaterThanOrEqual toItem:inspectorController.headerView attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
@@ -144,10 +164,6 @@ RCS_ID("$Id$")
         
         [self.inspectorViewsByIdentifier setObject:inspectorContainerView forKey:identifier];
         [self _addInspectorWidthConstraintForIdentifier:identifier];
-        
-        //        OIInspector *inspector = [inspectorController inspector];
-        //        if ([inspector conformsToProtocol:@protocol(OFIInspectorLabeledContentLayout)])
-        //            [self.equalLabelWidthsConstraintManager addViews:[(id<OFIInspectorLabeledContentLayout>)inspector labelsRequiringEqualWidthConstraints]];
     }
     
     [self.view setNeedsUpdateConstraints:YES];
@@ -163,39 +179,6 @@ RCS_ID("$Id$")
     //    _equalLabelWidthsConstraintManager = nil;
     //
     //    _noSelectionLabel = nil;
-}
-
-- (void)updateInspectorVisibility;
-{
-    //    OBPRECONDITION(self.inspectorViewsByIdentifier != nil);
-    
-    NSSet *inspectorIdentifiers = [_sliceControllers setByPerformingBlock:^id(OIInspectorController *controller) {
-        return controller.identifier;
-    }];
-    
-    BOOL foundFirstInspector = NO;
-    
-    for (OIAutoLayoutInspectorController *inspectorController in _sliceControllers) {
-        NSString *identifier = [inspectorController identifier];
-        NSView *inspectorView = self.inspectorViewsByIdentifier[identifier];
-        OBASSERT(inspectorView != nil);
-        if (inspectorView == nil)
-            continue;
-        
-        NSStackViewVisibilityPriority newPriority = [inspectorIdentifiers containsObject:[inspectorController identifier]] ? NSStackViewVisibilityPriorityMustHold : NSStackViewVisibilityPriorityNotVisible;
-        [self.containerStackView setVisibilityPriority:newPriority forView:inspectorView];
-        
-        if (newPriority == NSStackViewVisibilityPriorityMustHold && !foundFirstInspector) {
-            inspectorController.drawsHeaderSeparator = NO;
-            foundFirstInspector = YES;
-        } else {
-            inspectorController.drawsHeaderSeparator = YES;
-        }
-        
-        [self.view setNeedsUpdateConstraints:YES];
-    }
-    
-    //    [self.noSelectionLabel setHidden:foundFirstInspector];
 }
 
 #pragma mark - NSView subclass

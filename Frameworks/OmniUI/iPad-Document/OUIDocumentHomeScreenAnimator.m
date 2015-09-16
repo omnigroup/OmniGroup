@@ -102,6 +102,9 @@ static CGAffineTransform shrinkAndTranslateTransform(CGRect cellFrameInTransitio
         fromView.transform = CGAffineTransformIdentity;
         [fromView removeFromSuperview];
         [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
+        [UIView performWithoutAnimation:^{
+            fromView.alpha = 1.0f;
+        }];
     }];
 }
 

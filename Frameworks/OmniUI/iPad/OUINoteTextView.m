@@ -8,8 +8,8 @@
 
 #import <OmniFoundation/NSData-OFEncoding.h>
 
-#import <OmniUI/OUIAppearance.h>
-#import <OmniUI/OUIAppearanceColors.h>
+#import <OmniAppKit/OAAppearance.h>
+#import <OmniAppKit/OAAppearanceColors.h>
 #import <OmniUI/OUINoteTextView.h>
 
 RCS_ID("$Id$");
@@ -252,7 +252,7 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     return result;
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     [super touchesEnded:touches withEvent:event];
     
@@ -335,7 +335,7 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     return (![self isFirstResponder] && ![self hasText] && _drawsPlaceholder && ![NSString isEmptyString:_placeholder]);
 }
 
-- (void)_becomeEditableWithTouches:(NSSet *)touches makeFirstResponder:(BOOL)makeFirstResponder;
+- (void)_becomeEditableWithTouches:(NSSet *)touches makeFirstResponder:(BOOL)makeFirstResponder NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     if ([self isEditable])
         return;
@@ -362,12 +362,12 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
             NSUInteger glyphIndex = [layoutManager glyphIndexForPoint:point inTextContainer:textContainer];
             CGRect boundingRect = [layoutManager boundingRectForGlyphRange:NSMakeRange(glyphIndex, 1) inTextContainer:textContainer];
             if (CGRectContainsPoint(boundingRect, point)) {
-                // The link was tapped, so let's try to open it
-                UIApplication *sharedApplication = [UIApplication sharedApplication];
-                if ([sharedApplication canOpenURL:link]) {
-                    [sharedApplication openURL:link];
-                    return;
-                }
+                // The link was tapped, so let's try to open it.
+                // On iOS 9, however, we can't ask whether we can open it (using -canOpenURL:) ahead of time – we can't possibly whitelist every scheme that someone could type into a note text view.
+                // Therefore, we just call -openURL: and pass off the link. If it fails, iOS should present an alert explaining the problem.
+                
+                [[UIApplication sharedApplication] openURL:link];
+                return;
             }
         }
     }
@@ -443,7 +443,7 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     if (self.appearanceDelegate != nil) {
         return [self.appearanceDelegate textColorForTextView:self];
     } else {
-        return [OUIAppearanceDefaultColors appearance].omniNeutralDeemphasizedColor;
+        return [OAAppearanceDefaultColors appearance].omniNeutralDeemphasizedColor;
     }
 }
 
@@ -452,7 +452,7 @@ CGFloat OUINoteTextViewPlacholderTopMarginAutomatic = -1000;
     if (self.appearanceDelegate != nil) {
         return [self.appearanceDelegate placeholderTextColorForTextView:self];
     } else {
-        return [OUIAppearanceDefaultColors appearance].omniNeutralPlaceholderColor;
+        return [OAAppearanceDefaultColors appearance].omniNeutralPlaceholderColor;
     }
 }
 

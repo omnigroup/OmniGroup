@@ -261,6 +261,8 @@ BOOL OADebugTargetSelection = NO;
 
 - (BOOL)sendAction:(SEL)theAction to:(id)theTarget from:(id)sender;
 {
+    OBRecordBacktrace(sel_getName(theAction), OBBacktraceBuffer_PerformSelector);
+
     if (OATargetSelection) {
         // The normal NSApplication version, sadly, uses internal target lookup for the nil case. It should really call -targetForAction:to:from:.
         if (!theTarget)

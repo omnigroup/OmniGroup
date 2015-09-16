@@ -1,4 +1,4 @@
-// Copyright 2014 The Omni Group. All rights reserved.
+// Copyright 2014-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -57,8 +57,13 @@ RCS_ID("$Id$");
         }
         id updatedValue = [preferences valueForKey:key];
         NSLog(@"... %@: %@ (%@) -> %@ (%@)", key, oldValue, [oldValue class], updatedValue, [updatedValue class]);
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Preference changed", @"OmniUI", OMNI_BUNDLE, @"alert title") message:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Changed the '%@' preference from '%@' to '%@'", @"OmniUI", OMNI_BUNDLE, @"alert message"), key, oldValue, updatedValue] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
-        [alert show];
+
+         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:NSLocalizedStringFromTableInBundle(@"Preference changed", @"OmniUI", OMNI_BUNDLE, @"alert title") message:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Changed the '%@' preference from '%@' to '%@'", @"OmniUI", OMNI_BUNDLE, @"alert message"), key, oldValue, updatedValue] preferredStyle:UIAlertControllerStyleAlert];
+
+         [alertController addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:NULL]];
+
+         [[[[UIApplication sharedApplication] delegate] window].rootViewController presentViewController:alertController animated:YES completion:NULL];
+
     }
 }
 

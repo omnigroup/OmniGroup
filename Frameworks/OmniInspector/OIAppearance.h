@@ -7,16 +7,21 @@
 //
 // $Id$
 
-#import <OmniUI/OUIAppearance.h>
+#import <OmniAppKit/OAAppearance.h>
 
-@interface OIAppearance : OUIAppearance
+@interface OIAppearance : OAAppearance
 
 // Inspector
 @property (readonly) CGFloat InspectorSidebarWidth;
 @property (readonly) CGFloat InspectorHeaderContentHeight;
 @property (readonly) CGFloat InspectorHeaderSeparatorTopPadding;
+@property (readonly) CGFloat InspectorHeaderSeparatorHeight;
+@property (readonly) NSColor *InspectorHeaderSeparatorColor;
 @property (readonly) CGFloat InspectorSnoozeButtonCornerRounding;
 @property (readonly) NSSize InspectorNoteTextInset;
 @property (readonly) NSColor *InspectorBackgroundColor;
+@property (readonly) NSColor *InspectorTabOnStateTintColor;
+@property (readonly) NSColor *InspectorTabHighlightedTintColor;
+@property (readonly) NSColor *InspectorTabNormalTintColor;
 
 @end

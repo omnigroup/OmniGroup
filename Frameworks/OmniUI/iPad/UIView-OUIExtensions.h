@@ -53,6 +53,10 @@ typedef OUIViewVisitorResult(^OUIViewVisitorBlock)(UIView *view);
 
 @property(readonly,nonatomic) UIEdgeInsets borderEdgeInsets;
 
+#ifdef DEBUG
+- (void)expectDeallocationOfViewTreeSoon;
+#endif
+
 @end
 
 #ifdef DEBUG // Uses private API

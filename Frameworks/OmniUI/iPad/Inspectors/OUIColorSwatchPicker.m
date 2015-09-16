@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import "OUIColorSwatch.h"
 #import <OmniUI/OUIInspectorSlice.h> // -showDetails:
 
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 RCS_ID("$Id$");
 
@@ -22,7 +22,7 @@ NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey = @"OUIColorS
 @implementation OUIColorSwatchPicker
 {
     NSMutableArray *_colors;
-    OQColor *_swatchSelectionColor;
+    OAColor *_swatchSelectionColor;
     
     NSMutableArray *_colorSwatches;
     UIButton *_navigationButton;
@@ -62,7 +62,7 @@ static id _commonInit(OUIColorSwatchPicker *self)
         NSMutableArray *colors = [NSMutableArray array];
         OBASSERT(colorPalette);
         for (NSString *colorString in colorPalette) {
-            OQColor *color = [OQColor colorFromRGBAString:colorString];
+            OAColor *color = [OAColor colorFromRGBAString:colorString];
             if (color)
                 [colors addObject:color];
         }
@@ -82,14 +82,14 @@ static id _commonInit(OUIColorSwatchPicker *self)
     [self setNeedsLayout];
 }
 
-- (OQColor *)color;
+- (OAColor *)color;
 {
     if ([_colors count] > 0)
         return [_colors objectAtIndex:0];
     return nil;
 }
 
-- (void)setColor:(OQColor *)color;
+- (void)setColor:(OAColor *)color;
 {
     // empty array if color is nil...
     self.colors = [NSArray arrayWithObjects:color, nil];
@@ -153,15 +153,15 @@ static id _commonInit(OUIColorSwatchPicker *self)
 }
 
 // Compare in RGBA space so we don't have red selected in the HSV picker and then not selected in swatches
-static BOOL _colorsMatch(OQColor *color1, OQColor *color2)
+static BOOL _colorsMatch(OAColor *color1, OAColor *color2)
 {
     if (color1 == color2)
         return YES; // handle the nil case
     
-    return [[color1 colorUsingColorSpace:OQColorSpaceRGB] isEqual:[color2 colorUsingColorSpace:OQColorSpaceRGB]];
+    return [[color1 colorUsingColorSpace:OAColorSpaceRGB] isEqual:[color2 colorUsingColorSpace:OAColorSpaceRGB]];
 }
 
-- (BOOL)hasMatchForColor:(OQColor *)color;
+- (BOOL)hasMatchForColor:(OAColor *)color;
 {
     for (OUIColorSwatch *swatch in _colorSwatches)
         if (_colorsMatch(swatch.color, color))
@@ -169,7 +169,7 @@ static BOOL _colorsMatch(OQColor *color1, OQColor *color2)
     return NO;
 }
 
-- (void)setSwatchSelectionColor:(OQColor *)color;
+- (void)setSwatchSelectionColor:(OAColor *)color;
 {
     if (OFISEQUAL(_swatchSelectionColor, color))
         return;
@@ -188,7 +188,7 @@ static BOOL _colorsMatch(OQColor *color1, OQColor *color2)
     return NO;
 }
 
-- (void)addColor:(OQColor *)color replacingRecentlyAdded:(BOOL)replacingRecentlyAdded;
+- (void)addColor:(OAColor *)color replacingRecentlyAdded:(BOOL)replacingRecentlyAdded;
 {
     //NSLog(@"_swatchSelectionColor = %@", _swatchSelectionColor);
     //NSLog(@"adding %@ to %@", color, [_colors arrayByPerformingSelector:@selector(shortDescription)]);
@@ -223,7 +223,7 @@ static void _configureSwatchView(OUIColorSwatchPicker *self, UIView *swatchView,
     offset->x = CGRectGetMaxX(swatchFrame) + kSwatchSpacing;
 }
 
-static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CGPoint *offset, CGSize size)
+static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OAColor *color, CGPoint *offset, CGSize size)
 {
     OUIColorSwatch *swatch = [(OUIColorSwatch *)[OUIColorSwatch alloc] initWithColor:color];
     
@@ -234,7 +234,7 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
     return swatch;
 }
 
-- (void)_swatchTouchUp:(OUIColorSwatch *)swatch;
+- (void)_swatchTouchUp:(OUIColorSwatch *)swatch NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     id target = _weak_target;
     
@@ -276,7 +276,7 @@ static OUIColorSwatch *_newSwatch(OUIColorSwatchPicker *self, OQColor *color, CG
     }
     
     for (colorIndex = 0; colorIndex < colorCount; colorIndex++) {
-        OQColor *color = [_colors objectAtIndex:colorIndex];
+        OAColor *color = [_colors objectAtIndex:colorIndex];
         
         if (_showsSingleSwatch)
             swatchSize = bounds.size; // Take up the whole area

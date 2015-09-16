@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <UIKit/UIScrollView.h>
 
-@class OQColor;
+@class OAColor;
 
 // A few built-in palette preference keys (in OmniUI.defaults)
 extern NSString * const OUIColorSwatchPickerTextBackgroundPalettePreferenceKey;
@@ -20,7 +20,7 @@ extern NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey;
 @property(copy,nonatomic) NSString *palettePreferenceKey;
 
 @property(copy,nonatomic) NSArray *colors;
-@property(strong,nonatomic) OQColor *color; // Simple cover for 'colors' when using a single color
+@property(strong,nonatomic) OAColor *color; // Simple cover for 'colors' when using a single color
 
 @property(weak,nonatomic) id target; // We'll send -changeColor: (or to changeDetails: if showsSingleSwatch or if tap is on navigation swatch) to this when swatches are tapped
 
@@ -31,9 +31,9 @@ extern NSString * const OUIColorSwatchPickerTextColorPalettePreferenceKey;
 
 - (void)sizeHeightToFit;
 
-- (BOOL)hasMatchForColor:(OQColor *)color;
-- (void)setSwatchSelectionColor:(OQColor *)color;
+- (BOOL)hasMatchForColor:(OAColor *)color;
+- (void)setSwatchSelectionColor:(OAColor *)color;
 @property(readonly) BOOL hasSelectedSwatch;
-- (void)addColor:(OQColor *)color replacingRecentlyAdded:(BOOL)replacingRecentlyAdded;
+- (void)addColor:(OAColor *)color replacingRecentlyAdded:(BOOL)replacingRecentlyAdded;
 
 @end

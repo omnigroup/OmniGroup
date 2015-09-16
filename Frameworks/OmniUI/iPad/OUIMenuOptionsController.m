@@ -9,7 +9,7 @@
 
 RCS_ID("$Id$");
 
-#import <OmniUI/OUIAppearance.h>
+#import <OmniAppKit/OAAppearance.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/OUIInspectorWell.h>
 #import <OmniUI/OUIMenuController.h>
@@ -19,7 +19,7 @@ RCS_ID("$Id$");
 #import <UIKit/UITableView.h>
 
 #import "OUIParameters.h"
-#import <OmniUI/OUIAppearanceColors.h>
+#import <OmniAppKit/OAAppearanceColors.h>
 
 @interface OUIMenuOptionTableViewCell : UITableViewCell
 @property (nonatomic) BOOL showsFullwidthSeparator;
@@ -48,7 +48,7 @@ RCS_ID("$Id$");
             _fullwidthSeparator.frame = separatorFrame;
         } else {
             _fullwidthSeparator = [[UIView alloc] initWithFrame:separatorFrame];
-            _fullwidthSeparator.backgroundColor = [[OUIAppearanceDefaultColors appearance] omniNeutralPlaceholderColor];
+            _fullwidthSeparator.backgroundColor = [[OAAppearanceDefaultColors appearance] omniNeutralPlaceholderColor];
             _fullwidthSeparator.translatesAutoresizingMaskIntoConstraints = YES;
             _fullwidthSeparator.autoresizingMask = UIViewAutoresizingNone;
         }
@@ -175,14 +175,11 @@ RCS_ID("$Id$");
     self.preferredContentSize = (CGSize){.width = preferredWidth, .height = ((UITableView *)self.view).contentSize.height};
 }
 
-- (void)viewWillAppear:(BOOL)animated;
+- (void)willMoveToParentViewController:(UIViewController *)parent
 {
-    [super viewWillAppear:animated];
-    
-    [UIView performWithoutAnimation:^{
-        [self _updatePreferredContentSizeFromOptions];
-        [self.view layoutIfNeeded];
-    }];
+    //When we move to our parent view controller, its view encompasses the whole screen because that is the default size. So, starting in iOS9, when we move to the parent, we also inherit that size. If we calculate our preferred content size *after* moving, our calculation that relies on our table view staying at its initial size is wrong. Calculating before the move makes our preferred content size calculation correct, and everything resizes properly.
+    [self _updatePreferredContentSizeFromOptions];
+    [super willMoveToParentViewController:parent];
 }
 
 - (void)viewDidAppear:(BOOL)animated;
@@ -256,7 +253,7 @@ RCS_ID("$Id$");
     
     OBASSERT_IF(option.destructive, option.action, "Cannot have a disabled destructive action");
     if (option.destructive) {
-        UIColor *omniDeleteColor = [[OUIAppearanceDefaultColors appearance] omniDeleteColor];
+        UIColor *omniDeleteColor = [[OAAppearanceDefaultColors appearance] omniDeleteColor];
         label.textColor = omniDeleteColor;
         cell.imageView.tintColor = omniDeleteColor;
     }

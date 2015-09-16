@@ -54,27 +54,37 @@ RCS_ID("$Id$")
 
 #pragma mark - Public API
 
+- (void)oui_invalidate;
+{
+    self.viewControllers = @[];
+
+    [self.navigationBar popNavigationItemAnimated:NO];
+    [self.navigationBar removeFromSuperview];
+    self.navigationBar = nil;
+
+    self.view = nil;
+}
+
 - (CGFloat)topLayoutLength;{
     return CGRectGetMaxY(self.navigationBar.frame);
 }
 
 - (void)setViewControllers:(NSArray *)viewControllers;
 {
-    OBPRECONDITION(viewControllers && [viewControllers count] > 0);
-    
     if (_viewControllers == viewControllers) {
         return;
     }
     
     _viewControllers = [viewControllers copy];
     self.selectedViewController = [_viewControllers firstObject];
-    
-    [self _setupSegmentedControl];
+
+    if (_viewControllers)
+        [self _setupSegmentedControl];
 }
 
 - (void)setSelectedViewController:(UIViewController *)selectedViewController;
 {
-    OBPRECONDITION([_viewControllers containsObject:selectedViewController]);
+    OBPRECONDITION(!selectedViewController || [_viewControllers containsObject:selectedViewController]);
     
     if (_selectedViewController == selectedViewController) {
         return;
@@ -98,47 +108,53 @@ RCS_ID("$Id$")
     }
     
     _selectedViewController = selectedViewController;
-    _selectedViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
-    
-    // Move in new view controller/view. addChildViewController: automatically calls the childs willMoveToParentViewController: passing in the new parent. We shouldn't call that directly while adding the child VC.
-//    [_selectedViewController willMoveToParentViewController:self];
-    [_selectedViewController beginAppearanceTransition:YES animated:NO];
-    [self addChildViewController:_selectedViewController];
 
-    [self.view addSubview:_selectedViewController.view];
-    
-    // Add constraints
-    NSDictionary *views = @{ @"navigationBar" : _navigationBar, @"childView" : _selectedViewController.view };
-    
-    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[childView]|"
-                                                                      options:0
-                                                                      metrics:nil
-                                                                        views:views]];
+    if (_selectedViewController) {
+        _selectedViewController.view.translatesAutoresizingMaskIntoConstraints = NO;
 
-    if ([_selectedViewController isKindOfClass:[UINavigationController class]]) {
-        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[navigationBar][childView]|"
+        // Move in new view controller/view. addChildViewController: automatically calls the childs willMoveToParentViewController: passing in the new parent. We shouldn't call that directly while adding the child VC.
+        //    [_selectedViewController willMoveToParentViewController:self];
+        [_selectedViewController beginAppearanceTransition:YES animated:NO];
+        [self addChildViewController:_selectedViewController];
+
+        [self.view addSubview:_selectedViewController.view];
+    
+        // Add constraints
+        NSDictionary *views = @{ @"navigationBar" : _navigationBar, @"childView" : _selectedViewController.view };
+    
+        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[childView]|"
                                                                           options:0
                                                                           metrics:nil
                                                                             views:views]];
-        UINavigationController *selectedNavigationController = (UINavigationController *)_selectedViewController;
-        self.originalNavDelegate = selectedNavigationController.delegate;
-        selectedNavigationController.delegate = self;
+
+        if ([_selectedViewController isKindOfClass:[UINavigationController class]]) {
+            [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[navigationBar][childView]|"
+                                                                              options:0
+                                                                              metrics:nil
+                                                                                views:views]];
+            UINavigationController *selectedNavigationController = (UINavigationController *)_selectedViewController;
+            self.originalNavDelegate = selectedNavigationController.delegate;
+            selectedNavigationController.delegate = self;
         
-    }
-    else {
-        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[childView]|"
-                                                                          options:0
-                                                                          metrics:nil
-                                                                            views:views]];
-    }
+        }
+        else {
+            [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[childView]|"
+                                                                              options:0
+                                                                              metrics:nil
+                                                                                views:views]];
+        }
     
-    [_selectedViewController didMoveToParentViewController:self];
-    [_selectedViewController endAppearanceTransition];
+        [_selectedViewController didMoveToParentViewController:self];
+        [_selectedViewController endAppearanceTransition];
     
-    // Ensure that the segmented control is showing the correctly selected segment.
-    // Make sure to use the _selectedIndex ivar directly here because the setter will end up calling into this method and we don't want to create an infinite loop.
-    _selectedIndex = [self.viewControllers indexOfObject:_selectedViewController];
-    self.segmentedControl.selectedSegmentIndex = _selectedIndex;
+        // Ensure that the segmented control is showing the correctly selected segment.
+        // Make sure to use the _selectedIndex ivar directly here because the setter will end up calling into this method and we don't want to create an infinite loop.
+        _selectedIndex = [self.viewControllers indexOfObject:_selectedViewController];
+        self.segmentedControl.selectedSegmentIndex = _selectedIndex;
+    } else {
+        _selectedIndex = NSNotFound;
+    }
+
     [self.view bringSubviewToFront:self.navigationBar];
 }
 

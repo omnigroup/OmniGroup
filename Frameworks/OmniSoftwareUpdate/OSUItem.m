@@ -556,7 +556,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     
     // _downloadSize of 0 indicates we don't know the size.
     if (_downloadSize != 0) {
-        NSError *err = nil;
+        __autoreleasing NSError *err = nil;
         NSDictionary *attrs = [fm attributesOfItemAtPath:path error:&err];
         if (!attrs) {
             NSLog(@"Can't check file: %@", err);
@@ -573,7 +573,7 @@ static NSNumber *ignoredFontNeedsObliquity = nil;
     }
     
     if (_checksums) {
-        NSError *fileError = nil;
+        __autoreleasing NSError *fileError = nil;
         NSData *fileData = [[NSData alloc] initWithContentsOfFile:path options:NSDataReadingMapped error:&fileError];
         if (!fileData) {
             return [fileError localizedDescription];

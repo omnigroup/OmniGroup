@@ -221,7 +221,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     __autoreleasing NSError *error = nil;
     OUIWebDAVSyncListController *syncListController = [[OUIWebDAVSyncListController alloc] initWithServerAccount:_serverAccount exporting:YES error:&error];
     if (!syncListController) {
-        OUI_PRESENT_ERROR(error);
+        OUI_PRESENT_ERROR_FROM(error, self);
         return;
     }
     
@@ -322,7 +322,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
         @autoreleasepool {
             __autoreleasing NSError *error = nil;
             if (![OUZipArchive createZipFile:tempZipPath fromFileWrappers:[NSArray arrayWithObject:fileWrapper] error:&error]) {
-                OUI_PRESENT_ERROR(error);
+                OUI_PRESENT_ERROR_FROM(error, self);
                 return nil;
             }
         }
@@ -338,14 +338,14 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
         // If the temp file exists, we delete it.
         if ([fileManager fileExistsAtPath:[tempURL path]]) {
             if (![fileManager removeItemAtURL:tempURL error:&error]) {
-                OUI_PRESENT_ERROR(error);
+                OUI_PRESENT_ERROR_FROM(error, self);
                 return nil;
             }
         }
         
         // Write to temp dir.
         if (![fileWrapper writeToURL:tempURL options:0 originalContentsURL:nil error:&error]) {
-            OUI_PRESENT_ERROR(error);
+            OUI_PRESENT_ERROR_FROM(error, self);
             return nil;
         }
     }
@@ -401,12 +401,11 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
             // Need to make sure all of this happens on the main thread.
             main_async(^{
                 if (fileWrapper == nil) {
-                    OUI_PRESENT_ERROR(error);
+                    OUI_PRESENT_ERROR_FROM(error, self);
                     [self _foreground_enableInterfaceAfterExportConversion];
                 } else {
                     [self _foreground_exportFileWrapper:fileWrapper];
                 }
-                [documentPickerController clearSelection:YES];
             });
         }];
     }
@@ -499,7 +498,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
         
         [documentPicker exportFileWrapperOfType:exportType forFileItem:fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
             if (fileWrapper == nil) {
-                OUI_PRESENT_ERROR(error);
+                OUI_PRESENT_ERROR_FROM(error, self);
                 [self _foreground_enableInterfaceAfterExportConversion];
             }
             else {
@@ -614,6 +613,10 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 
 - (void)documentInteractionController:(UIDocumentInteractionController *)controller willBeginSendingToApplication:(NSString *)application;
 {
+    OUIDocumentPickerViewController *documentPickerController = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+    main_async(^{
+        [documentPickerController clearSelection:YES];
+    });
     [self dismissViewControllerAnimated:NO completion:nil];
 }
 

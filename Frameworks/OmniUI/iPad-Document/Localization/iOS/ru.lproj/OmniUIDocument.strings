@@ -1,3 +1,6 @@
+/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
+" (Copy)" = " (Копировать)";
+
 /* bytes */
 "%@ B" = "%@ Б";
 
@@ -43,9 +46,6 @@
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Документ с именем «%@» уже существует. Заменить? Это действие нельзя отменить.";
 
-/* Error reason for a document operation failing due to a missing file. */
-"A file is missing or has been deleted." = "Файл отсутствует или удален.";
-
 /* Omni Sync Server account info button title */
 "Account Info" = "Сведения учетной записи";
 
@@ -65,8 +65,10 @@
 
 /* button title
    cancel button title
+   delete confirmation cancel button
    Discard unsynced edits dialog: cancel button label
-   Server account setup confirmation cancellation label */
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 
 
@@ -98,8 +100,11 @@
 /* title view clear button accessibility label. */
 "Clear Title" = "Очистить заголовок";
 
+/* Cloud Storage Providers preference nvigation bar title */
+"Cloud Storage Providers" = "Облачные службы";
+
 /* Success label when connecting to an OmniPresence or WebDAV server account */
-"Connected" = "Связанные";
+"Connected" = "Подключено";
 
 /* webdav connecting label */
 "Connecting" = "Подключение";
@@ -139,6 +144,9 @@
 
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "Отменить несинхронизированные правки?";
+
+/* Message letting the user know that their document was moved from one folder to another. */
+"Document moved." = "Документ перемещен.";
 
 /* Title for alert informing user that the document has been reloaded with edits from another device */
 "Document Updated" = "Документ обновлен";
@@ -198,8 +206,7 @@
 /* doc picker folder type accessibility value */
 "Folder" = "Папка";
 
-/* gear menu item
-   import sheet title */
+/* import sheet title */
 "Import" = "Импорт";
 
 /* Info item accessibility label */
@@ -227,10 +234,13 @@
 "Location" = "Место";
 
 /* top level doc picker title */
-"Locations" = "Размещения";
+"Locations" = "Места";
 
 /* modified date accessibility value */
 "Modified %@" = "Изменено %@";
+
+/* Cloud Storage Providers more information button title */
+"More Info…" = "Дополнительно...";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -247,12 +257,6 @@
 
 /* Share menu title */
 "Move to..." = "Переместить в…";
-
-/* Message format for alert informing user that the document has been moved out of a folder to the top level */
-"Moved out of folder %@." = "Перемещено из папки %@.";
-
-/* Message format for alert informing user that the document has been moved to a folder */
-"Moved to folder %@." = "Перемещено в папку %@.";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Мой документ";
@@ -429,6 +433,9 @@
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Эта облачная учетная запись больше не существует.";
 
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Этот документ недоступен. Возможно, файл был удален, переименован или перемещен с помощью iTunes или поставщика внешнего документа. Попробуйте удалить файл и добавить его снова.";
+
 /* item not fully downloaded error message */
 "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Этот элемент нельзя дублировать, так как он загружен не полностью. Перед повторением попытки коснитесь элемента и дождитесь его загрузки.";
 
@@ -438,8 +445,14 @@
 /* sort by title */
 "Title" = "Заголовок";
 
+/* Cloud Storage Providers preference informational description */
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Включение облачных служб предоставляет доступ к документам, хранящимся в облачных службах, таких как iCloud Drive или Dropbox. Функция доступа к облачным хранилищам является бета-версией; используйте ее с осторожностью. Дополнительные сведения см. в разделе «Использование облачных служб» в документации.";
+
 /* error title */
 "Unable to open file." = "Не удается открыть файл.";
+
+/* Cloud Storage Providers preference settings screen title */
+"Use Cloud Storage Providers" = "Использовать облачные службы";
 
 /* Account validation status string. */
 "Validating account..." = "Проверка учетной записи…";

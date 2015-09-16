@@ -90,7 +90,7 @@ static unsigned GroupItemContext;
     
     if (!(CGSizeEqualToSize(bounds.size, _lastKnownBoundsSize))) {
         NSMutableArray *subviewsToRemove = [[NSMutableArray alloc] init];
-        for (UIView *subview in self.subviews) {
+        for (UIView *subview in contentView.subviews) {
             if ([subview isKindOfClass:[OUIDocumentPreviewView class]])
                 [subviewsToRemove addObject:subview];
         }

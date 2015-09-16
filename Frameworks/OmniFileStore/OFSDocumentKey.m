@@ -119,15 +119,17 @@ static BOOL derive(uint8_t derivedKey[kCCKeySizeAES128], NSString *password, NSD
     return YES;
 }
 
-static BOOL retrieveFromKeychain(NSDictionary *docInfo, uint8_t *localKey, size_t localKeyLength, BOOL allowUI, NSError **outError)
+#if TARGET_OS_IPHONE
+static BOOL retrieveFromKeychain(NSDictionary *docInfo, uint8_t *localKey, size_t localKeyLength, CFStringRef allowUI, NSError **outError)
 {
     NSData *itemref = [docInfo objectForKey:KeychainPersistentIdentifier];
     if (!itemref || ![itemref isKindOfClass:[NSData class]])
         return unsupportedError(outError, NSStringFromClass([itemref class]));
     
-    const void *keys[4] = { kSecValuePersistentRef, kSecClass, kSecReturnData, kSecUseNoAuthenticationUI };
-    const void *vals[4] = { (__bridge const void *)itemref, kSecClassKey, kCFBooleanTrue, kCFBooleanTrue };
-    CFDictionaryRef query = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, allowUI? 3 : 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    const void *keys[4] = { kSecValuePersistentRef, kSecClass, kSecReturnData, kSecUseAuthenticationUI };
+    const void *vals[4] = { (__bridge const void *)itemref, kSecClassKey, kCFBooleanTrue, allowUI };
+    
+    CFDictionaryRef query = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     CFTypeRef result = NULL;
     OSStatus oserr = SecItemCopyMatching(query, &result);
     CFRelease(query);
@@ -158,6 +160,7 @@ static BOOL retrieveFromKeychain(NSDictionary *docInfo, uint8_t *localKey, size_
     
     return YES;
 }
+#endif
 
 static BOOL deriveFromPassword(NSDictionary *docInfo, NSString *password, uint8_t *localKey, size_t localKeyLength, NSError **outError)
 {
@@ -280,10 +283,12 @@ static BOOL deriveFromPassword(NSDictionary *docInfo, NSString *password, uint8_
         return deriveFromPassword(method, password, _key, sizeof(_key), outError);
     }
     
+#if TARGET_OS_IPHONE
     method = [derivations objectForKey:KeyDerivationAppleKeychain];
     if (method) {
-        return retrieveFromKeychain(method, _key, sizeof(_key), YES, outError);
+        return retrieveFromKeychain(method, _key, sizeof(_key), kSecUseAuthenticationUIAllow, outError);
     }
+#endif
     
     /* Unknown derivation/storage method */
     return unsupportedError(outError, @"methods");
@@ -492,7 +497,7 @@ static dispatch_once_t calibrateRoundsOnce;
         return nil;
     }
     
-    /* Note that RFC3394-style key wrapping does effectively include a check field --- if we pass an incorrect wrapping key, or the wrapped key is bogus or something, it should fail. (I haven't tested Apple's implementation of this though.) */
+    /* Note that RFC3394-style key wrapping does effectively include a check field --- if we pass an incorrect wrapping key, or the wrapped key is bogus or something, it should fail. */
     
     return result;
 }

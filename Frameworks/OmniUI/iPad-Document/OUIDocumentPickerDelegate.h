@@ -25,6 +25,7 @@
 
 // Filter
 - (NSArray *)documentPickerAvailableFilters:(OUIDocumentPicker *)picker; // array of OUIDocumentPickerFilter
+- (BOOL)documentPickerShouldOpenButNotDisplayUTType:(NSString *)fileType;
 - (NSPredicate *)documentPickerAvailableUTTypesPredicate:(OUIDocumentPicker *)picker; //expects a string of the fileType
 
 // Open

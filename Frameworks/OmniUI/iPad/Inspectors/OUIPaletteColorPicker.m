@@ -39,7 +39,7 @@ RCS_ID("$Id$");
 
 - (OUIColorPickerFidelity)fidelityForSelectionValue:(OUIInspectorSelectionValue *)selectionValue;
 {
-    OQColor *color = selectionValue.firstValue;
+    OAColor *color = selectionValue.firstValue;
 
     // The palette color picker can exactly match 'no color' by not selecting any chits.
     if (!color)
@@ -65,7 +65,7 @@ RCS_ID("$Id$");
 - (void)scrollToSelectionValueAnimated:(BOOL)animated;
 {
     // Don't check every color, just the most important one.
-    OQColor *color = self.selectionValue.firstValue;
+    OAColor *color = self.selectionValue.firstValue;
     
     // Note the location of the first matching view, so we can scroll to it.
     CGRect rectToScrollTo = CGRectNull;
@@ -123,7 +123,7 @@ RCS_ID("$Id$");
     UIScrollView *view = (UIScrollView *)self.view;
     
     // Don't select every color, just the most important one.
-    OQColor *singleSelectedColor = self.selectionValue.firstValue;
+    OAColor *singleSelectedColor = self.selectionValue.firstValue;
     
     CGRect viewBounds = view.bounds;
     viewBounds.size.width = 320;

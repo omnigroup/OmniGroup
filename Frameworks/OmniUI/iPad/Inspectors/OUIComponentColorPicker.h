@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,13 +9,13 @@
 
 #import <OmniUI/OUIColorPicker.h>
 #import <OmniUI/OUIColorValue.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 /*
  A color picker that uses one or more floating point components to build its color.
  */
 
-typedef OQLinearRGBA (*OUIComponentColorPickerConvertToRGB)(const CGFloat *input);
+typedef OALinearRGBA (*OUIComponentColorPickerConvertToRGB)(const CGFloat *input);
                                                     
 @interface OUIComponentColorPicker : OUIColorPicker <OUIColorValue>
 {
@@ -24,10 +24,10 @@ typedef OQLinearRGBA (*OUIComponentColorPickerConvertToRGB)(const CGFloat *input
 }
 
 // Required subclass methods
-- (OQColorSpace)colorSpace;
+- (OAColorSpace)colorSpace;
 - (NSArray *)makeComponentSliders;
-- (void)extractComponents:(CGFloat *)components fromColor:(OQColor *)color; // The count of the result of -makeComponentSliders determines the size of 'components'.
-- (OQColor *)makeColorWithComponents:(const CGFloat *)components;
+- (void)extractComponents:(CGFloat *)components fromColor:(OAColor *)color; // The count of the result of -makeComponentSliders determines the size of 'components'.
+- (OAColor *)makeColorWithComponents:(const CGFloat *)components;
 - (OUIComponentColorPickerConvertToRGB)rgbaComponentConverter;
 
 @end

@@ -57,7 +57,7 @@ mkdir "$TMP_OUTPUT"
 # Gather the source files and the project file that defined them into a list, which we'll use for early-out
 echo "$PROJECT_FILE_PATH"/project.pbxproj  > "$LOCALIZABLE_FILE_LIST"-tmp
 source_files=()
-$SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" c,m "$PROJECT_FILE_PATH" | while read f; do
+$SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" c,m,swift "$PROJECT_FILE_PATH" | while read f; do
    source_files+=($f)
    echo "$f" >> "$LOCALIZABLE_FILE_LIST"-tmp
 done

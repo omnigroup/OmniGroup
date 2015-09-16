@@ -1,4 +1,4 @@
-// Copyright 2006-2014 The Omni Group. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,7 @@
 
 @class NSAttributedString, NSColor, NSFont;
 
-extern const CGFloat OAMakeImageAsWideAsNeededToAvoidWrapping;
+extern const CGFloat OQMakeImageAsWideAsNeededToAvoidWrapping;
 
 @interface CIImage (OQExtensions)
 + (CIImage *)imageWithAttributedString:(NSAttributedString *)attributedString maxWidth:(CGFloat)width targetContext:(CGContextRef)targetContext backgroundColor:(NSColor *)backgroundColor;

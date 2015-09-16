@@ -8,6 +8,7 @@
 #import <OmniUIDocument/OUIDocumentAppController.h>
 
 #import <MobileCoreServices/MobileCoreServices.h>
+#import <CoreSpotlight/CoreSpotlight.h>
 #import <OmniAppKit/OAFontDescriptor.h>
 #import <OmniBase/OmniBase.h>
 #import <OmniDAV/ODAVErrors.h>
@@ -35,7 +36,6 @@
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFUTI.h>
 #import <OmniUI/OUIActivityIndicator.h>
-#import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIAppController+SpecialURLHandling.h>
 #import <OmniUI/OUIBarButtonItem.h>
 #import <OmniUI/OUICertificateTrustAlert.h>
@@ -53,6 +53,7 @@
 #import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniUIDocument/OUIDocumentPreviewGenerator.h>
 #import <OmniUIDocument/OUIDocumentPreviewView.h>
+#import <OmniUIDocument/OUIDocumentProviderPreferencesViewController.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 #import <OmniUIDocument/OUIToolbarTitleButton.h>
 //#import <CrashReporter/CrashReporter.h>
@@ -71,6 +72,7 @@
 #import "OUIDocumentOpenAnimator.h"
 #import "OUIWebDAVSyncListController.h"
 #import "OUILaunchViewController.h"
+#import <OmniFoundation/OFBackgroundActivity.h>
 
 RCS_ID("$Id$");
 
@@ -139,6 +141,7 @@ static unsigned SyncAgentRunningAccountsContext;
     
     UIView *_snapshotForDocumentRebuilding;
     NSURL *_specialURLToHandle;
+    OFBackgroundActivity *_backgroundFlushActivity;
 }
 
 + (void)initialize;
@@ -236,10 +239,6 @@ static unsigned SyncAgentRunningAccountsContext;
     
     completionHandler = [completionHandler copy]; // capture scope
     
-    // The inspector would animate closed and raise an exception, having detected it was getting deallocated while still visible (but animating away).
-    // This must happen before ending editing below; otherwise the -endEditing: call will look at the popover for the editor and won't go up to any editor in the main view.
-    [self dismissPopoverAnimated:NO];
-    
     OUIWithoutAnimating(^{
         [_window endEditing:YES];
         [_window layoutIfNeeded];
@@ -272,7 +271,7 @@ static unsigned SyncAgentRunningAccountsContext;
     [closingDocumentIndicatorView startAnimating];
 
     OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
-    [_documentPicker navigateToContainerForItem:_document.fileItem animated:NO];
+    [_documentPicker navigateToContainerForItem:_document.fileItem dismissingAnyOpenDocument:NO animated:NO];
     
     OBStrongRetain(_document);
     [_document closeWithCompletionHandler:^(BOOL success){
@@ -398,15 +397,12 @@ static unsigned SyncAgentRunningAccountsContext;
         __autoreleasing NSError *error = nil;
         OUIDocument *document = [[cls alloc] initWithExistingFileItem:fileItem error:&error];
         if (!document) {
-            OUI_PRESENT_ERROR(error);
+            OUI_PRESENT_ERROR_FROM(error, self.window.rootViewController);
             onFail();
             return;
         }
 
         OUIInteractionLock *lock = [OUIInteractionLock applicationLock];
-
-        // Dismiss any popovers that may be presented.
-        [self dismissPopoverAnimated:YES];
 
         [document openWithCompletionHandler:^(BOOL success){
             if (!success) {
@@ -437,10 +433,16 @@ static unsigned SyncAgentRunningAccountsContext;
 
         [_document closeWithCompletionHandler:^(BOOL success) {
             [self _setDocument:nil];
-            [self.documentPicker dismissViewControllerAnimated:NO completion:^{
+            UINavigationController *topLevelNavController = self.documentPicker.topLevelNavigationController;
+            if ([topLevelNavController presentedViewController]) {
+                [topLevelNavController dismissViewControllerAnimated:NO completion:^{
+                    doOpen();
+                    [lock unlock];
+                }];
+            } else {
                 doOpen();
                 [lock unlock];
-            }];
+            }
         }];
     } else {
         // Just open immediately
@@ -450,7 +452,7 @@ static unsigned SyncAgentRunningAccountsContext;
 
 - (void)openDocument:(ODSFileItem *)fileItem;
 {
-    [_documentPicker navigateToContainerForItem:fileItem animated:NO];
+    [_documentPicker navigateToContainerForItem:fileItem dismissingAnyOpenDocument:YES animated:NO];
     [_documentPicker.selectedScopeViewController _applicationWillOpenDocument];
     [self openDocument:fileItem fileItemToRevealFrom:fileItem];
 }
@@ -731,10 +733,10 @@ static unsigned SyncAgentRunningAccountsContext;
                         if (!account) {
                             [navigationController dismissViewControllerAnimated:YES completion:nil];
                         } else {
-                            NSError *error;
+                            __autoreleasing NSError *error;
                             OUIWebDAVSyncListController *webDavList = [[OUIWebDAVSyncListController alloc] initWithServerAccount:account exporting:NO error:&error];
                             if (!webDavList)
-                                OUI_PRESENT_ERROR(error);
+                                OUI_PRESENT_ERROR_FROM(error, navigationController);
                             else {
                                 [navigationController pushViewController:webDavList animated:YES];
                             }
@@ -746,8 +748,10 @@ static unsigned SyncAgentRunningAccountsContext;
                 }];
                 [options addObject:importOption];
 
-                // Import from external container via document picker
-                [options addObject:[OUIMenuOption optionWithFirstResponderSelector:@selector(importFromExternalContainer:) title:NSLocalizedStringFromTableInBundle(@"Copy from…", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage]];
+                if ([[OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference] boolValue] == YES) {
+                    // Import from external container via document picker
+                    [options addObject:[OUIMenuOption optionWithFirstResponderSelector:@selector(importFromExternalContainer:) title:NSLocalizedStringFromTableInBundle(@"Copy from…", @"OmniUIDocument", OMNI_BUNDLE, @"gear menu item") image:importImage]];
+                }
 
                 break;
             }
@@ -920,7 +924,7 @@ static unsigned SyncAgentRunningAccountsContext;
             if (retryBlock)
                 retryBlock();
         };
-        [certAlert show];
+        [certAlert showFromViewController:viewController];
         return;
     }
     
@@ -959,10 +963,13 @@ static unsigned SyncAgentRunningAccountsContext;
 
     NSString *message = [messages componentsJoinedByString:@"\n"];
 
-    OUIAlert *alert = [[OUIAlert alloc] initWithTitle:[displayError localizedDescription] message:message cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to ignore the error.") cancelAction:NULL];
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[displayError localizedDescription] message:message preferredStyle:UIAlertControllerStyleAlert];
+
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to ignore the error.") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}];
+    [alertController addAction:okAction];
 
     if (account != nil) {
-        [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Edit Credentials", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to change the username and password.") action:^{
+        UIAlertAction *editAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Edit Credentials", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to change the username and password.") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {
 
             void (^editCredentials)(void) = ^{
                 [self.documentPicker editSettingsForAccount:account];
@@ -979,19 +986,24 @@ static unsigned SyncAgentRunningAccountsContext;
             } else
                 editCredentials();
         }];
+        [alertController addAction:editAction];
     }
 
-    if (retryBlock != NULL)
-        [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Retry Sync", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to retry syncing.") action:retryBlock];
+    if (retryBlock != NULL) {
+        UIAlertAction *retryAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Retry Sync", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to retry syncing.") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {
+            retryBlock();
+        }];
+        [alertController addAction:retryAction];
+    }
 
     if ([MFMailComposeViewController canSendMail] && ODAVShouldOfferToReportError(syncError)) {
-        [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Report Error", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to report the error.") action:^{
+        UIAlertAction *reportAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Report Error", @"OmniUIDocument", OMNI_BUNDLE, @"When displaying a sync error, this is the option to report the error.") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {
             NSString *body = [NSString stringWithFormat:@"\n%@\n\n%@\n", [[OUIAppController controller] fullReleaseString], [syncError toPropertyList]];
             [[OUIAppController controller] sendFeedbackWithSubject:@"Sync failure" body:body];
         }];
+        [alertController addAction:reportAction];
     }
-
-    [alert show];
+    [viewController presentViewController:alertController animated:YES completion:^{}];
 }
 
 - (void)warnAboutDiscardingUnsyncedEditsInAccount:(OFXServerAccount *)account withCancelAction:(void (^)(void))cancelAction discardAction:(void (^)(void))discardAction;
@@ -1016,11 +1028,20 @@ static unsigned SyncAgentRunningAccountsContext;
                 message = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?", @"OmniUIDocument", OMNI_BUNDLE, @"Discard unsynced edits dialog: message format"), account.displayName, count];
             else
                 message = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?", @"OmniUIDocument", OMNI_BUNDLE, @"Discard unsynced edits dialog: message format"), account.displayName, count];
-            OUIAlert *alert = [[OUIAlert alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Discard unsynced edits?", @"OmniUIDocument", OMNI_BUNDLE, @"Lose unsynced changes warning: title") message:message cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUIDocument", OMNI_BUNDLE, @"Discard unsynced edits dialog: cancel button label") cancelAction:cancelAction];
 
-            [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Discard Edits", @"OmniUIDocument", OMNI_BUNDLE, @"Discard unsynced edits dialog: discard button label") action:discardAction];
-            
-            [alert show];
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:NSLocalizedStringFromTableInBundle(@"Discard unsynced edits?", @"OmniUIDocument", OMNI_BUNDLE, @"Lose unsynced changes warning: title") message:message preferredStyle:UIAlertControllerStyleAlert];
+
+            UIAlertAction *cancelAlertAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUIDocument", OMNI_BUNDLE, @"Discard unsynced edits dialog: cancel button label") style:UIAlertActionStyleCancel handler:^(UIAlertAction * __nonnull action) {
+                cancelAction();
+            }];
+            [alertController addAction:cancelAlertAction];
+
+            UIAlertAction *discardAlertAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Discard Edits", @"OmniUIDocument", OMNI_BUNDLE, @"Discard unsynced edits dialog: discard button label")  style:UIAlertActionStyleDestructive handler:^(UIAlertAction * __nonnull action) {
+                discardAction();
+            }];
+            [alertController addAction:discardAlertAction];
+
+            [self.window.rootViewController presentViewController:alertController animated:YES completion:^{}];
         }
     }];
 }
@@ -1033,6 +1054,11 @@ static unsigned SyncAgentRunningAccountsContext;
 #pragma mark - Subclass responsibility
 
 - (UIImage *)documentPickerBackgroundImage;
+{
+    return nil;
+}
+
+- (NSURL *)documentProviderMoreInfoURL;
 {
     return nil;
 }
@@ -1295,6 +1321,35 @@ static unsigned SyncAgentRunningAccountsContext;
     return availableWidth;
 }
 
+- (BOOL)application:(UIApplication * __nonnull)application continueUserActivity:(NSUserActivity * __nonnull)userActivity restorationHandler:(void (^ __nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
+{
+    NSString *uniqueID = userActivity.userInfo[CSSearchableItemActivityIdentifier];
+    if (uniqueID) {
+        self.searchResultsURL = [[self class] fileURLForSpotlightID:uniqueID];
+        void (^afterScanAction)(void) = ^(void){
+            ODSFileItem *launchFileItem = [_documentStore fileItemWithURL:self.searchResultsURL];
+            if (launchFileItem != nil && (!_document || _document.fileItem != launchFileItem)) {
+                if (_document) {
+                    [self closeDocumentWithCompletionHandler:^{
+                        [self _setDocument:nil];    // in -closeDocumentWithCompletionHandler:, this block will get called before _setDocument:nil gets called. That messes with -openDocument: so setting the document to nil first
+                        [self openDocument:launchFileItem];
+                    }];
+                } else {
+                    [self openDocument:launchFileItem];
+                }
+            }
+        };
+        void (^launchAction)(void) = ^(void){
+            [_documentStore addAfterInitialDocumentScanAction:afterScanAction];
+        };
+        [self addLaunchAction:launchAction];
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
 {
     // UIKit throws an exception if UIBackgroundModes contains 'fetch' but the application delegate doesn't implement -application:performFetchWithCompletionHandler:. We want to be more flexible to allow apps to use our document picker w/o having to support background fetch.
@@ -1302,6 +1357,8 @@ static unsigned SyncAgentRunningAccountsContext;
                 [self respondsToSelector:@selector(application:performFetchWithCompletionHandler:)]);
     
     NSURL *launchOptionsURL = [launchOptions objectForKey:UIApplicationLaunchOptionsURLKey];
+    if (!launchOptionsURL)
+        launchOptionsURL = self.searchResultsURL;
     
     // If we are getting launched into the background, try to stay alive until our document picker is ready to view (otherwise the snapshot in the app launcher will be bogus).
     OFBackgroundActivity *activity = nil;
@@ -1380,6 +1437,8 @@ static unsigned SyncAgentRunningAccountsContext;
                 OBASSERT(strongSelf);
                 if (!strongSelf)
                     return;
+                
+                [strongSelf _updateCoreSpotlightIndex];
                 
                 [strongSelf _delayedFinishLaunchingAllowCopyingSampleDocuments:YES
                                                         openingDocumentWithURL:launchOptionsURL
@@ -1619,14 +1678,14 @@ static unsigned SyncAgentRunningAccountsContext;
                         
                         [OUIDocumentInbox cloneInboxItem:url toScope:_localScope completionHandler:^(ODSFileItem *newFileItem, NSError *errorOrNil) {
                             __autoreleasing NSError *deleteInboxError = nil;
-                            if (![OUIDocumentInbox deleteInbox:&deleteInboxError]) {
-                                NSLog(@"Failed to delete the inbox: %@", [deleteInboxError toPropertyList]);
+                            if (![OUIDocumentInbox coordinatedRemoveItemAtURL:url error:&deleteInboxError]) {
+                                NSLog(@"Failed to delete the inbox item with error: %@", [deleteInboxError toPropertyList]);
                             }
                             
                             main_async(^{
                                 if (!newFileItem) {
                                     // Display Error and return.
-                                    OUI_PRESENT_ERROR(errorOrNil);
+                                    OUI_PRESENT_ERROR_FROM(errorOrNil, self.window.rootViewController);
                                     return;
                                 }
                                 
@@ -1672,6 +1731,8 @@ static unsigned SyncAgentRunningAccountsContext;
 
 - (void)applicationWillEnterForeground:(UIApplication *)application;
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:OUISystemIsSnapshottingNotification object:nil];
+    [self destroyCurrentSnapshotTimer];
     DEBUG_LAUNCH(1, @"Will enter foreground");
 
     if (_syncAgent && _syncAgentForegrounded == NO) {
@@ -1683,10 +1744,16 @@ static unsigned SyncAgentRunningAccountsContext;
         OBASSERT(_previewGenerator);
         _previewGeneratorForegrounded = YES;
         // Make sure we find the existing previews before we check if there are documents that need previews updated
-        [OUIDocumentPreview populateCacheForFileItems:_documentStore.mergedFileItems completionHandler:^{
-            [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:_documentStore.mergedFileItems];
-        }];
+        [self initializePreviewCache];
     }
+}
+
+- (void)initializePreviewCache;
+{
+    [OUIDocumentPreview populateCacheForFileItems:_documentStore.mergedFileItems completionHandler:^{
+        [_previewGenerator enqueuePreviewUpdateForFileItemsMissingPreviews:_documentStore.mergedFileItems];
+    }];
+    
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application;
@@ -1715,8 +1782,17 @@ static unsigned SyncAgentRunningAccountsContext;
         
         // Clean up unused previews
         [OUIDocumentPreview deletePreviewsNotUsedByFileItems:mergedFileItems];
-        [OUIDocumentPreview flushPreviewImageCache];
     }
+    
+    
+    //Register to observe the ViewDidLayoutSubviewsNotification, which we post in the -didLayoutSubviews method of the DocumentPickerViewController.
+    //-didLayoutSubviews gets called during Apple's snapshots. Each time it is called while we are backgrounded, we assume they are taking another snapshot,
+    //so we reset the countdown to clearing the cache (since the cache is used in generating the views they are snapshotting).
+    _backgroundFlushActivity = [OFBackgroundActivity backgroundActivityWithIdentifier: @"com.omnigroup.OmniUI.OUIDocumentAppController.delayedCacheClearing"];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willWaitForSnapshots) name:OUISystemIsSnapshottingNotification object: nil];
+    
+    //Need to actually kick off the timer, since the system may not take the snapshots that end up causing the notification to post, and we do want to clear the cache eventually.
+    [self willWaitForSnapshots];
     
     [super applicationDidEnterBackground:application];
 }
@@ -1755,6 +1831,21 @@ static unsigned SyncAgentRunningAccountsContext;
     }];
 }
 
+- (void)documentStore:(ODSStore *)store fileItem:(ODSFileItem *)fileItem willMoveToURL:(NSURL *)newURL;
+{
+    NSString *uniqueID = [[self class] spotlightIDForFileURL:fileItem.fileURL];
+    if (uniqueID) {
+        NSMutableDictionary *dict = [[self class] _spotlightToFileURL];
+        [dict setObject:[[self class] _savedPathForFileURL:newURL] forKey:uniqueID];
+        [[NSUserDefaults standardUserDefaults] setObject:dict forKey:@"SpotlightToFileURLPathMapping"];
+        
+        if (![[fileItem.fileURL.path lastPathComponent] isEqualToString:[newURL.path lastPathComponent]]) {
+            // title has changed, regenerate spotlight info
+            [_previewGenerator fileItemNeedsPreviewUpdate:fileItem];
+        }
+    }
+}
+
 - (void)documentStore:(ODSStore *)store fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
 {
     // Let the preview system know that if anyone comes asking for the new item, it should return the existing preview.
@@ -1768,6 +1859,104 @@ static unsigned SyncAgentRunningAccountsContext;
     if (destinationFileItemEditOrNil) {
         [[self class] copyDocumentStateFromFileEdit:fileItemEdit.originalFileEdit toFileEdit:destinationFileItemEditOrNil.originalFileEdit];
         [OUIDocumentPreview cachePreviewImagesForFileEdit:destinationFileItemEditOrNil.originalFileEdit byDuplicatingFromFileEdit:fileItemEdit.originalFileEdit];
+    }
+}
+
+- (void)documentStore:(ODSStore *)store willRemoveFileItemAtURL:(NSURL *)destinationURL;
+{
+    NSString *uniqueID = [[self class] spotlightIDForFileURL:destinationURL];
+    if (uniqueID) {
+        [[CSSearchableIndex defaultSearchableIndex] deleteSearchableItemsWithIdentifiers:@[uniqueID] completionHandler: ^(NSError * __nullable error) {
+            if (error)
+                NSLog(@"Error deleting searchable item %@: %@", uniqueID, error);
+        }];
+        
+        NSMutableDictionary *dict = [[self class] _spotlightToFileURL];
+        [dict removeObjectForKey:uniqueID];
+        [[NSUserDefaults standardUserDefaults] setObject:dict forKey:@"SpotlightToFileURLPathMapping"];
+    }
+}
+
+static NSMutableDictionary *spotlightToFileURL;
+
++ (NSMutableDictionary *)_spotlightToFileURL;
+{
+    if (!spotlightToFileURL) {
+        NSDictionary *dictionary = [[NSUserDefaults standardUserDefaults] objectForKey:@"SpotlightToFileURLPathMapping"];
+        if (dictionary)
+            spotlightToFileURL = [dictionary mutableCopy];
+        else
+            spotlightToFileURL = [[NSMutableDictionary alloc] init];
+    }
+    return spotlightToFileURL;
+}
+
+
++ (void)registerSpotlightID:(NSString *)uniqueID forDocumentFileURL:(NSURL *)fileURL;
+{
+    NSMutableDictionary *dict = [self _spotlightToFileURL];
+    [dict setObject:[self _savedPathForFileURL:fileURL] forKey:uniqueID];
+    [[NSUserDefaults standardUserDefaults] setObject:dict forKey:@"SpotlightToFileURLPathMapping"];
+}
+
++ (NSString *)spotlightIDForFileURL:(NSURL *)fileURL;
+{
+    NSString *path = [self _savedPathForFileURL:fileURL];
+    NSArray *keys = [[self _spotlightToFileURL] allKeysForObject:path];
+    return [keys lastObject];
+}
+
++ (NSURL *)fileURLForSpotlightID:(NSString *)uniqueID;
+{
+    return [self _fileURLForSavedPath:[[self _spotlightToFileURL] objectForKey:uniqueID]];
+}
+
++ (NSString *)_savedPathForFileURL:(NSURL *)fileURL;
+{
+    NSString *path = fileURL.path;
+    NSString *home = NSHomeDirectory();
+    if ([path hasPrefix:home]) // doing this replacement because container id (i.e. part of NSHomeDirectory()) changes on each software update
+        path = [@"HOME-" stringByAppendingString:[path stringByRemovingPrefix:home]];
+    return path;
+}
+
++ (NSURL *)_fileURLForSavedPath:(NSString *)path;
+{
+    if (!path)
+        return nil;
+    
+    if ([path hasPrefix:@"HOME-"])
+        path = [NSHomeDirectory() stringByAppendingPathComponent:[path stringByRemovingPrefix:@"HOME-"]];
+    return [NSURL fileURLWithPath:path];
+}
+
+- (void)_updateCoreSpotlightIndex;
+{
+    NSMutableDictionary *dict = [[self class] _spotlightToFileURL];
+    
+    // make mapping
+    NSMutableDictionary *fileURLToSpotlight = [NSMutableDictionary dictionary];
+    for (NSString *uniqueID in dict)
+        [fileURLToSpotlight setObject:uniqueID forKey:[dict objectForKey:uniqueID]];
+
+    // remove ids for files which still exist
+    for (ODSFileItem *item in _documentStore.mergedFileItems) {
+        [fileURLToSpotlight removeObjectForKey:[[self class] _savedPathForFileURL:item.fileURL]];
+    }
+    
+    // whatever is left in mapping are missing indexed files
+    NSMutableArray *missingIDs = [NSMutableArray array];
+    for (NSString *savedPath in fileURLToSpotlight) {
+        NSString *uniqueID = [fileURLToSpotlight objectForKey:savedPath];
+        [missingIDs addObject:uniqueID];
+        [dict removeObjectForKey:uniqueID];
+    }
+    if (missingIDs.count) {
+        [[CSSearchableIndex defaultSearchableIndex] deleteSearchableItemsWithIdentifiers:missingIDs completionHandler: ^(NSError * __nullable error) {
+            if (error)
+                NSLog(@"Error deleting searchable items: %@", error);
+        }];
+        [[NSUserDefaults standardUserDefaults] setObject:dict forKey:@"SpotlightToFileURLPathMapping"];
     }
 }
 
@@ -1788,6 +1977,9 @@ static unsigned SyncAgentRunningAccountsContext;
     BOOL crashBasedOnFilename = [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIDocumentPickerShouldCrashBasedOnFileName"];
 #endif
     if (crashBasedOnFilename) {
+        OBRecordBacktrace("crashing intentionally", OBBacktraceBuffer_Generic);
+        OBRecordBacktraceWithContext("crashing intentionally w/context", OBBacktraceBuffer_Generic, (__bridge void *)self);
+
         NSString *crashType = [[fileItem.fileURL lastPathComponent] stringByDeletingPathExtension];
         if ([crashType isEqual:@"crash-abort"])
             abort();
@@ -2086,7 +2278,7 @@ static NSString * const OUINextLaunchActionDefaultsKey = @"OUINextLaunchAction";
     [self _setDocument:document];
     _isOpeningURL = NO;
     
-    UIViewController *presentFromViewController = _documentPicker.selectedScopeViewController;
+    UIViewController *presentFromViewController = _documentPicker;
     if (!presentFromViewController)
         presentFromViewController = _documentPicker;
     UIViewController <OUIDocumentViewController> *documentViewController = _document.documentViewController;
@@ -2249,6 +2441,14 @@ static void _updatePreviewForFileItem(OUIDocumentAppController *self, NSNotifica
 - (void)_showInspector:(id)sender;
 {
     [self showInspectorFromBarButtonItem:_infoBarButtonItem];
+}
+
+#pragma mark -Snapshots
+
+- (void)didFinishWaitingForSnapshots;
+{
+    [OUIDocumentPreview flushPreviewImageCache];
+    [_backgroundFlushActivity finished];
 }
 
 @end

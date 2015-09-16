@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,7 +52,7 @@ RCS_ID("$Id$")
 
 - (void)loadView;
 {
-    _segment = [[OUISegmentedControl alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 46)];
+    _segment = [[OUISegmentedControl alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 46)];
     
     _segment.sizesSegmentsToFit = YES;
     _segment.allowsMultipleSelection = NO;

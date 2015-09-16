@@ -100,7 +100,7 @@ RCS_ID("$Id$")
                     // We already posted an alert, don't pass back the certificate failure error here.
                     [strongSelf _finishedAddingAccount:nil withError:[NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil]];
                 };
-                [certAlert show];
+                [certAlert showFromViewController:weakSelf];
             } else {
                 [strongSelf _finishedAddingAccount:nil withError:errorOrNil];
             }

@@ -30,7 +30,7 @@ RCS_ID("$Id$");
     
     _segments = [self makeAvailableSegments];
     
-    _titleTabBar = [[OUITabBar alloc] initWithFrame:CGRectMake(0,0,OUIInspectorContentWidth,30)];
+    _titleTabBar = [[OUITabBar alloc] initWithFrame:CGRectMake(0,0,[OUIInspector defaultInspectorContentWidth],30)];
     _titleTabBar.tabTitles = [_segments valueForKey:@"title"];
     [_titleTabBar addTarget:self action:@selector(_changeSegment:) forControlEvents:UIControlEventValueChanged];
     
@@ -53,6 +53,7 @@ RCS_ID("$Id$");
     [self.titleTabBar setSelectedTabIndex:[_segments indexOfObject:segment]];
     self.availableSlices = segment.slices;
     [self setToolbarItems:_toolbarItemsForSegment(_selectedSegment) animated:NO];
+    [self.view setNeedsLayout];
 }
 
 - (NSArray *)makeAvailableSegments; // For subclasses
@@ -106,14 +107,14 @@ static NSArray *_toolbarItemsForSegment(OUIInspectorSegment *segment)
     [super loadView];
     _contentView = self.view;
     
-    UIScrollView *container = [[UIScrollView alloc] initWithFrame:CGRectMake(0,0, OUIInspectorContentWidth, 50.0)];
+    UIScrollView *container = [[UIScrollView alloc] initWithFrame:CGRectMake(0,0, [OUIInspector defaultInspectorContentWidth], 50.0)];
     container.autoresizesSubviews = YES;
     container.scrollEnabled = NO;
     container.backgroundColor = [OUIInspector backgroundColor];
     
     CGRect newFrame = CGRectInset(_titleTabBar.frame, 0.0, -VERTICAL_SPACING_AROUND_TABS);
     newFrame.origin.y = 0.0;
-    newFrame.size.width = OUIInspectorContentWidth;
+    newFrame.size.width = [OUIInspector defaultInspectorContentWidth];
     
     OUIInspectorBackgroundView *tabBackground = [[OUIInspectorBackgroundView alloc] initWithFrame:newFrame];
     tabBackground.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin|UIViewAutoresizingFlexibleWidth;

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="7706" systemVersion="14F27" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="OSUPrivacyAlertWindowController">
+            <connections>
+                <outlet property="enableHardwareCollectionButton" destination="53" id="54"/>
+                <outlet property="privacyNoticeAppIconImageView" destination="29" id="48"/>
+                <outlet property="privacyNoticeMessageTextField" destination="44" id="52"/>
+                <outlet property="privacyNoticeTitleTextField" destination="43" id="51"/>
+                <outlet property="window" destination="10" id="x5X-ao-Guu"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="10" userLabel="Privacy Notice" customClass="NSPanel">
+            <windowStyleMask key="styleMask" titled="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="1074" y="952" width="458" height="251"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
+            <value key="minSize" type="size" width="400" height="200"/>
+            <view key="contentView" id="7">
+                <rect key="frame" x="0.0" y="0.0" width="458" height="251"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2">
+                        <rect key="frame" x="203" y="13" width="151" height="32"/>
+                        <buttonCell key="cell" type="push" title="Open Preferences" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="56">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="privacyNoticePanelShowPreferences:" target="-2" id="49"/>
+                            <outlet property="nextKeyView" destination="12" id="42"/>
+                        </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="12">
+                        <rect key="frame" x="354" y="13" width="90" height="32"/>
+                        <constraints>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="78" id="84"/>
+                        </constraints>
+                        <buttonCell key="cell" type="push" title="OK" bezelStyle="rounded" alignment="center" borderStyle="border" inset="2" id="57">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+DQ
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="privacyNoticePanelOK:" target="-2" id="50"/>
+                            <outlet property="nextKeyView" destination="7" id="64"/>
+                        </connections>
+                    </button>
+                    <imageView translatesAutoresizingMaskIntoConstraints="NO" id="29">
+                        <rect key="frame" x="24" y="172" width="64" height="64"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="64" id="66"/>
+                            <constraint firstAttribute="height" constant="64" id="67"/>
+                        </constraints>
+                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="axesIndependently" image="NSApplicationIcon" id="58"/>
+                    </imageView>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="43">
+                        <rect key="frame" x="106" y="171" width="334" height="65"/>
+                        <constraints>
+                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="65" id="86"/>
+                            <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="330" id="87"/>
+                        </constraints>
+                        <textFieldCell key="cell" alignment="left" title="%@ has the ability to automatically use your Internet connection (when active) to check for new and updated versions of itself." id="59">
+                            <font key="font" metaFont="systemBold"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="44">
+                        <rect key="frame" x="106" y="93" width="334" height="70"/>
+                        <textFieldCell key="cell" selectable="YES" alignment="left" id="60">
+                            <font key="font" metaFont="smallSystem"/>
+                            <string key="title">If you choose to send us your system information, you encourage better support for your system configuration in our future releases. This is entirely voluntary and anonymous. We promise never to use your information for nefarious purposes. Please click Open Preferences to learn more.</string>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <button translatesAutoresizingMaskIntoConstraints="NO" id="53">
+                        <rect key="frame" x="105" y="58" width="312" height="18"/>
+                        <buttonCell key="cell" type="check" title="Include system information when checking for updates" bezelStyle="regularSquare" imagePosition="left" alignment="left" controlSize="small" inset="2" id="61">
+                            <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                            <font key="font" metaFont="smallSystem"/>
+                        </buttonCell>
+                        <connections>
+                            <outlet property="nextKeyView" destination="2" id="63"/>
+                        </connections>
+                    </button>
+                </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="12" secondAttribute="trailing" constant="20" symbolic="YES" id="70"/>
+                    <constraint firstItem="44" firstAttribute="top" secondItem="43" secondAttribute="bottom" constant="8" symbolic="YES" id="71"/>
+                    <constraint firstAttribute="bottom" secondItem="2" secondAttribute="bottom" constant="20" symbolic="YES" id="72"/>
+                    <constraint firstItem="44" firstAttribute="leading" secondItem="53" secondAttribute="leading" id="74"/>
+                    <constraint firstItem="29" firstAttribute="leading" secondItem="7" secondAttribute="leading" constant="24" id="78"/>
+                    <constraint firstItem="2" firstAttribute="top" secondItem="53" secondAttribute="bottom" constant="20" symbolic="YES" id="80"/>
+                    <constraint firstAttribute="bottom" secondItem="12" secondAttribute="bottom" constant="20" symbolic="YES" id="81"/>
+                    <constraint firstAttribute="trailing" secondItem="44" secondAttribute="trailing" constant="20" symbolic="YES" id="83"/>
+                    <constraint firstItem="12" firstAttribute="leading" secondItem="2" secondAttribute="trailing" constant="12" symbolic="YES" id="85"/>
+                    <constraint firstItem="29" firstAttribute="top" secondItem="43" secondAttribute="top" id="93"/>
+                    <constraint firstItem="29" firstAttribute="top" secondItem="7" secondAttribute="top" constant="15" id="94"/>
+                    <constraint firstItem="53" firstAttribute="top" secondItem="44" secondAttribute="bottom" constant="20" id="95"/>
+                    <constraint firstItem="2" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="7" secondAttribute="leading" constant="20" symbolic="YES" id="8QZ-hw-6mO"/>
+                    <constraint firstItem="44" firstAttribute="leading" secondItem="43" secondAttribute="leading" id="Hbv-hh-oOQ"/>
+                    <constraint firstItem="43" firstAttribute="leading" secondItem="29" secondAttribute="trailing" constant="20" id="bof-28-UU6"/>
+                    <constraint firstAttribute="trailing" secondItem="43" secondAttribute="trailing" constant="20" symbolic="YES" id="rpt-jN-cwe"/>
+                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="53" secondAttribute="trailing" constant="20" symbolic="YES" id="tDX-WV-JlS"/>
+                </constraints>
+                <connections>
+                    <outlet property="nextKeyView" destination="53" id="62"/>
+                </connections>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="23"/>
+                <outlet property="initialFirstResponder" destination="12" id="39"/>
+            </connections>
+        </window>
+    </objects>
+    <resources>
+        <image name="NSApplicationIcon" width="128" height="128"/>
+    </resources>
+</document>

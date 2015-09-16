@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <UIKit/UITableView.h>
 #import <OmniFoundation/OFExtent.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 @interface UITableView (OUIExtensions)
 @property(readonly,nonatomic) UIEdgeInsets borderEdgeInsets; // Overridden from UIView(OUIExtensions)
@@ -41,14 +41,14 @@ extern void OUITableViewCellShowSelection(UITableViewCell *tableViewCell, OUITab
 
 // For cases where you want to set the cell to show no selecton/highlight color of its own and control it yourself.
 typedef struct {
-    OSHSV normal;
-    OSHSV selected;
-    OSHSV highlighted;
+    OAHSV normal;
+    OAHSV selected;
+    OAHSV highlighted;
 } OUITableViewCellBackgroundColors;
 extern const OUITableViewCellBackgroundColors OUITableViewCellDefaultBackgroundColors;
 
-extern OQColor *OUITableViewCellBackgroundColorForControlState(const OUITableViewCellBackgroundColors *colors, UIControlState state);
-extern OQColor *OUITableViewCellBackgroundColorForCurrentState(const OUITableViewCellBackgroundColors *colors, UITableViewCell *cell);
+extern OAColor *OUITableViewCellBackgroundColorForControlState(const OUITableViewCellBackgroundColors *colors, UIControlState state);
+extern OAColor *OUITableViewCellBackgroundColorForCurrentState(const OUITableViewCellBackgroundColors *colors, UITableViewCell *cell);
 
 // For use when embedding a table view in another scroll view. The containing scroll view should be the scrolling agent, not this table view. Assumes the table view has current contents.
 extern void OUITableViewAdjustHeightToFitContents(UITableView *tableView);

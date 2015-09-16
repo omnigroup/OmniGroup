@@ -626,6 +626,15 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
         // Bringing up security options for print-to-pdf in a sandboxed app causes a harmless failure. <bug:///87161>
         if (selector == @selector(sendEvent:) && [NSStringFromClass([object class]) isEqualToString:@"NSAccessoryWindow"])
             crash = NO;
+
+        // XPC services (like the 'define' service) sometimes time out:
+        // Object: <NSXPCSharedListener:0x7fff7a5e67a8>
+        // Selector: connectionForListenerNamed:fromServiceNamed:
+        // File: /SourceCache/ViewBridge/ViewBridge-99/NSXPCSharedListener.m
+        // Line: 394
+        // Description: NSXPCSharedListener unable to create endpoint for listener named com.apple.view-bridge
+        if (selector == @selector(connectionForListenerNamed:fromServiceNamed:) && (!object || [NSStringFromClass([object class]) isEqualToString:@"NSXPCSharedListener"]))
+            crash = NO;
 #pragma clang diagnostic pop
         
         if (crash)

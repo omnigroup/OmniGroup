@@ -12,16 +12,9 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniInspector/OIInspectorRegistry.h>
 
-#import "OIInspectorResizer.h"
-
 RCS_ID("$Id$");
 
 @implementation OIInspectorWindow
-{
-    struct {
-        unsigned int isBeingResizedByResizer:1;
-    } _inspectorWindowFlags;
-}
 
 - (id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag;
 {
@@ -58,11 +51,10 @@ RCS_ID("$Id$");
     OBASSERT([delegate conformsToProtocol:@protocol(OIInspectorWindowDelegate)]);
     
     if (currentFrame.size.height != newFrame.size.height || currentFrame.size.width != newFrame.size.width)
-        newFrame = [delegate windowWillResizeFromFrame:currentFrame toFrame:newFrame];	// Note that if we're being resized by the OAResizer, windowWillResizeFromFrame:toFrame: gets called multiple times, whereas windowDidFinishResizing only gets called when the OAResizer is completely done resizing us
+        newFrame = [delegate windowWillResizeFromFrame:currentFrame toFrame:newFrame];
     [super setFrame:newFrame display:display animate:animate];
-    // Only tell our delegate that we're finished resizing if we're not in the midst of being resized by our resizer control.
-    if (!_inspectorWindowFlags.isBeingResizedByResizer)
-        [delegate windowDidFinishResizing:self];
+
+    [delegate windowDidFinishResizing:self];
 }
 
 - (void)recalculateKeyViewLoop;
@@ -70,30 +62,6 @@ RCS_ID("$Id$");
     // for some reason, this is called when the window is loaded despite the autorecalculatesKeyViewLoop
     if ([self autorecalculatesKeyViewLoop])
 	[super recalculateKeyViewLoop];
-}
-
-#pragma mark Notifications
-
-- (void)resizerWillBeginResizing:(OIInspectorResizer *)resizer;
-{
-    OBASSERT(_inspectorWindowFlags.isBeingResizedByResizer == NO);
-    _inspectorWindowFlags.isBeingResizedByResizer = YES;
-    
-    id <OIInspectorWindowDelegate> delegate = (id)[self delegate];
-    OBASSERT([delegate conformsToProtocol:@protocol(OIInspectorWindowDelegate)]);
-
-    [delegate windowWillBeginResizing:self];
-}
-
-- (void)resizerDidFinishResizing:(OIInspectorResizer *)resizer;
-{
-    OBASSERT(_inspectorWindowFlags.isBeingResizedByResizer == YES);
-    
-    id <OIInspectorWindowDelegate> delegate = (id)[self delegate];
-    OBASSERT([delegate conformsToProtocol:@protocol(OIInspectorWindowDelegate)]);
-
-    [delegate windowDidFinishResizing:self];
-    _inspectorWindowFlags.isBeingResizedByResizer = NO;
 }
 
 @end

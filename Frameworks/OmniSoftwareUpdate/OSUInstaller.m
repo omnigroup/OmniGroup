@@ -175,7 +175,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 
     // Extract the update
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     if (![self extract:&error]) {
         if ([[error domain] isEqualToString:OSUErrorDomain] && [error code] == OSUBadInstallationDirectory && !_hasAskedForInstallLocation) {
             if ([self chooseInstallationDirectory:nil]) {
@@ -232,7 +232,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
                 [[NSNotificationCenter defaultCenter] removeObserver:_terminationObserver];
                 self.terminationObserver = nil;
                 
-                NSError *error = nil;
+                __autoreleasing NSError *error = nil;
                 if (![self installAndRelaunch:YES error:&error]) {
                     // We are already in the termination sequence here.
                     // We cannot run a modal panel, or recover from an error. The best we can do is report it and terminate.
@@ -304,7 +304,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     
     // The install portion is done; we can torch the downloaded package now.  Put it in the trash instead of deleting it forever, if possible.
     // We downloaded the package, so we should be able to trash it (if the volume has a trash can), or delete it, without concern for permission issues.
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     NSURL *packageURL = [NSURL fileURLWithPath:_packagePath];
     if (![[NSFileManager defaultManager] trashItemAtURL:packageURL resultingItemURL:NULL error:&error]) {
         // The error will be NSCocoaErrorDomain/NSFeatureUnsupportedError if the volume doesn't have a trash can.
@@ -390,7 +390,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 
 - (BOOL)chooseInstallationDirectory:(NSString *)lastAttemptedPath;
 {
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     NSString *chosenDirectory = [[self class] suggestAnotherInstallationDirectory:lastAttemptedPath trySelf:NO];
     
     if (chosenDirectory == nil && ![NSString isEmptyString:lastAttemptedPath]) {
@@ -637,7 +637,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     [extract setObject:[NSArray arrayWithObjects:@"xf", untarPath, expander /* may be nil, therefore must be last */, nil] forKey:OFFilterProcessArgumentsKey];
     [extract setObject:temporaryPath forKey:OFFilterProcessWorkingDirectoryPathKey];
     
-    NSData *errData = nil;
+    __autoreleasing NSData *errData = nil;
     
     if (![OFFilterProcess runWithParameters:extract inMode:NSModalPanelRunLoopMode standardOutput:&errData standardError:&errData error:outError]) {
         if (outError != NULL) {
@@ -823,7 +823,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     } else {
         // Reveal the downloaded package on failure.
         if (_packagePath != nil && [[NSFileManager defaultManager] fileExistsAtPath:_packagePath]) {
-            [[NSWorkspace sharedWorkspace] selectFile:_packagePath inFileViewerRootedAtPath:nil];
+            [[NSWorkspace sharedWorkspace] selectFile:_packagePath inFileViewerRootedAtPath:[_packagePath stringByDeletingLastPathComponent]];
         }
         
         [self.delegate close];

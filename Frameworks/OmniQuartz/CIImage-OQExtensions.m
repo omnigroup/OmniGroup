@@ -1,4 +1,4 @@
-// Copyright 2006-2012 The Omni Group. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,7 +14,7 @@
 
 RCS_ID("$Id$");
 
-const CGFloat OAMakeImageAsWideAsNeededToAvoidWrapping = -1.0f;
+const CGFloat OQMakeImageAsWideAsNeededToAvoidWrapping = -1.0f;
 
 @implementation CIImage (OQExtensions)
 
@@ -30,7 +30,7 @@ const CGFloat OAMakeImageAsWideAsNeededToAvoidWrapping = -1.0f;
 	NSLayoutManager *layoutManager = [[[NSLayoutManager alloc] init] autorelease];
 	[layoutManager setBackgroundLayoutEnabled:NO];
 	
-	CGFloat containerWidth = (width == OAMakeImageAsWideAsNeededToAvoidWrapping) ? 1e9f : width;
+	CGFloat containerWidth = (width == OQMakeImageAsWideAsNeededToAvoidWrapping) ? 1e9f : width;
 	NSTextContainer *textContainer = [[[NSTextContainer alloc] initWithContainerSize:NSMakeSize(containerWidth, 1e9f)] autorelease];
 	[textContainer setLineFragmentPadding:0.0f];
 	[layoutManager addTextContainer:textContainer];

@@ -8,7 +8,8 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
-#import <OmniUI/OUIAppearance.h> // OUIDocumentPreviewArea
+#import <OmniAppKit/OAAppearance.h> // OUIDocumentPreviewArea
+#import <OmniUI/OUIDocumentPreviewArea.h>
 
 @class ODSFileItem, OFFileEdit, ODSFileItemEdit;
 

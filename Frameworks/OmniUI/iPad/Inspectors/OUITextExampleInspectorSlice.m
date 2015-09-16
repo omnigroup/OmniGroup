@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniUI/OUIParameters.h>
 #import <OmniUI/OUIInspector.h>
 #import <OmniAppKit/OATextAttributes.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 #import <OmniUI/OUITextSelectionSpan.h>
 #import <OmniUI/OUITextView.h>
 
@@ -31,7 +31,7 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
 
 - (void)loadView;
 {
-    CGRect frame = CGRectMake(0, 0, OUIInspectorContentWidth, kOUIInspectorWellHeight); // The height will be preserved, but the rest will be munged by the stacking.
+    CGRect frame = CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], kOUIInspectorWellHeight); // The height will be preserved, but the rest will be munged by the stacking.
     
     self.view = [[OUIInspectorTextExampleView alloc] initWithFrame:frame];
 }
@@ -89,16 +89,16 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
     }
     
     UIColor *backgroundColorValue = [attributedString attribute:NSBackgroundColorAttributeName atIndex:0 effectiveRange:NULL];
-    OQColor *backgroundColor;
+    OAColor *backgroundColor;
     if (backgroundColorValue) {
-        backgroundColor = [OQColor colorWithPlatformColor:backgroundColorValue];
+        backgroundColor = [OAColor colorWithPlatformColor:backgroundColorValue];
 
         NSMutableAttributedString *noBackgroundAttributedString = [attributedString mutableCopy];
         [noBackgroundAttributedString removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0, stringLength)];
         
         attributedString = noBackgroundAttributedString;
     } else {
-        backgroundColor = [OQColor clearColor];
+        backgroundColor = [OAColor clearColor];
     }
     
     OUIInspectorTextExampleView *view = (OUIInspectorTextExampleView *)self.view;

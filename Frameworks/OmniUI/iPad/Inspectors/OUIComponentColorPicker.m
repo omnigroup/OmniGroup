@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,7 @@ RCS_ID("$Id$");
 @implementation OUIComponentColorPicker
 
 // Required subclass methods
-- (OQColorSpace)colorSpace;
+- (OAColorSpace)colorSpace;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }
@@ -29,12 +29,12 @@ RCS_ID("$Id$");
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (void)extractComponents:(CGFloat *)components fromColor:(OQColor *)color;
+- (void)extractComponents:(CGFloat *)components fromColor:(OAColor *)color;
 {
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-- (OQColor *)makeColorWithComponents:(const CGFloat *)components;
+- (OAColor *)makeColorWithComponents:(const CGFloat *)components;
 {
     OBRequestConcreteImplementation(self, _cmd);
     return nil;
@@ -51,13 +51,13 @@ RCS_ID("$Id$");
 
 - (OUIColorPickerFidelity)fidelityForSelectionValue:(OUIInspectorSelectionValue *)selectionValue;
 {
-    OQColor *color = selectionValue.firstValue;
+    OAColor *color = selectionValue.firstValue;
     if (!color)
         // Slider-based color pickers can't represent "no color"
         return OUIColorPickerFidelityZero;
         
-    OQColorSpace colorSpace = [color colorSpace];
-    if (colorSpace == OQColorSpacePattern || colorSpace == OQColorSpaceNamed) {
+    OAColorSpace colorSpace = [color colorSpace];
+    if (colorSpace == OAColorSpacePattern || colorSpace == OAColorSpaceNamed) {
         OBASSERT_NOT_REACHED("We don't yet have pattern/named color pickers, if ever");
         return OUIColorPickerFidelityZero;
     }
@@ -87,7 +87,7 @@ RCS_ID("$Id$");
 {
     UIScrollView *view = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
     view.alwaysBounceVertical = YES;
-    view.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+    view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     CGRect bounds = view.bounds;
     
     OBASSERT(_componentSliders == nil);
@@ -128,7 +128,7 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark OUIColorValue
 
-- (OQColor *)color;
+- (OAColor *)color;
 {
     return self.selectionValue.firstValue;
 }
@@ -170,7 +170,7 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
     BackgroundShadingInfo *info = _info;
     
     info->components[info->shadingComponentIndex] = *in;
-    OQLinearRGBA rgba = info->convertToRGB(info->components);
+    OALinearRGBA rgba = info->convertToRGB(info->components);
     
     out[0] = rgba.r;
     out[1] = rgba.g;
@@ -183,7 +183,7 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
 - (void)_updateSliderValuesFromColor;
 {
     // The sliders need something to base edits on, so we need to give them a color even if there is multiple selection.
-    OQColor *color = self.selectionValue.firstValue;
+    OAColor *color = self.selectionValue.firstValue;
     NSUInteger componentCount = [_componentSliders count];
     if (!color || !componentCount)
         return;
@@ -218,9 +218,9 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
             
             // Build our luma values. We can muck with this slot since it will be interpolated by the shading build anyway.
             info->components[componentIndex] = 0;
-            slider.leftLuma = OQGetRGBAColorLuma(info->convertToRGB(info->components));
+            slider.leftLuma = OAGetRGBAColorLuma(info->convertToRGB(info->components));
             info->components[componentIndex] = 1;
-            slider.rightLuma = OQGetRGBAColorLuma(info->convertToRGB(info->components));
+            slider.rightLuma = OAGetRGBAColorLuma(info->convertToRGB(info->components));
             
             if ([slider representsAlpha]) {
                 // don't force the channel to be opaque
@@ -251,9 +251,9 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
 
             // Build our luma values. We can muck with this slot since it will be interpolated by the shading build anyway.
             tmpComponents[componentIndex] = 0;
-            slider.leftLuma = OQGetRGBAColorLuma(convertToRGB(tmpComponents));
+            slider.leftLuma = OAGetRGBAColorLuma(convertToRGB(tmpComponents));
             tmpComponents[componentIndex] = 1;
-            slider.rightLuma = OQGetRGBAColorLuma(convertToRGB(tmpComponents));
+            slider.rightLuma = OAGetRGBAColorLuma(convertToRGB(tmpComponents));
 
             if ([slider representsAlpha]) {
                 // don't force the channel to be opaque
@@ -263,7 +263,7 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
                 tmpComponents[alphaIndex] = 1; // ignore the current alpha and make this slider opaque
             }
 
-            OQLinearRGBA ends[2];
+            OALinearRGBA ends[2];
             tmpComponents[componentIndex] = 0;
             ends[0] = convertToRGB(tmpComponents);
             
@@ -285,10 +285,10 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
     free(components);
 }
 
-- (void)_componentSliderValueChanged:(OUIColorComponentSlider *)slider;
+- (void)_componentSliderValueChanged:(OUIColorComponentSlider *)slider NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     // The sliders need something to base edits on, so we need to give them a color even if there is multiple selection.
-    OQColor *color = self.selectionValue.firstValue;
+    OAColor *color = self.selectionValue.firstValue;
     NSUInteger componentCount = [_componentSliders count];
     if (!color || !componentCount)
         return;
@@ -302,7 +302,7 @@ static void _backgroundShadingEvaluate(void *_info, const CGFloat *in, CGFloat *
     components[componentIndex] = slider.value;
     
     // Store the color in ourselves since we are the <OUIColorValue> being sent
-    OQColor *updatedColor = [self makeColorWithComponents:components];
+    OAColor *updatedColor = [self makeColorWithComponents:components];
     self.selectionValue = [[OUIInspectorSelectionValue alloc] initWithValue:updatedColor];
     free(components);
     

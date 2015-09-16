@@ -11,6 +11,8 @@
 
 @interface OUISegmentedViewController : UIViewController
 
+- (void)oui_invalidate;
+
 @property (nonatomic, copy) NSArray *viewControllers;
 
 @property(nonatomic, assign) UIViewController *selectedViewController;

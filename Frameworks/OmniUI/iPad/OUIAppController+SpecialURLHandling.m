@@ -45,7 +45,7 @@ RCS_ID("$Id$");
     [[self commandClassesBySpecialURLPath] setObject:cls forKey:specialURLPath];
 }
 
-+ (BOOL)invokeSpecialURL:(NSURL *)url confirmingIfNeededWithStyle:(UIAlertControllerStyle)alertStyle fromViewController:(UIViewController *)sourceController;
++ (BOOL)invokeSpecialURL:(NSURL *)url confirmingIfNeededWithStyle:(UIAlertControllerStyle)alertStyle fromViewController:(UIViewController *)sourceController NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 {
     OBPRECONDITION(url != nil);
     OBPRECONDITION(sourceController != nil);
@@ -138,7 +138,7 @@ RCS_ID("$Id$");
 }
 
 // Must override superclass designated initializers since we declared our own.
-- (instancetype)init;
+- (instancetype)init NS_EXTENSION_UNAVAILABLE_IOS("Special URL handling is not available in extensions");
 {
     OBRejectUnusedImplementation(self, _cmd);
     return [self initWithURL:nil];

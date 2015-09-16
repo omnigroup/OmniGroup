@@ -28,6 +28,7 @@
 		348ADCA219C11482003AEF77 /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34ED74341199B7110023E017 /* OmniBase.framework */; };
 		348ADCA319C11487003AEF77 /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348ADC8C19C113C2003AEF77 /* OmniFoundation.framework */; };
 		348ADCA419C1148A003AEF77 /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 348ADC6B19C113C2003AEF77 /* OmniAppKit.framework */; };
+		349413261B66B7DD001FA03A /* Box.m in Sources */ = {isa = PBXBuildFile; fileRef = 349413251B66B7DD001FA03A /* Box.m */; };
 		34BF040319C11514009C28B0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34BF040219C11514009C28B0 /* StoreKit.framework */; };
 		34CDFE9B12691FA3005B04A7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CDFE9A12691FA3005B04A7 /* Security.framework */; };
 		34CDFE9D12691FA3005B04A7 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34CDFE9C12691FA3005B04A7 /* SystemConfiguration.framework */; };
@@ -149,6 +150,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 34C12AFB194FF90F005CB70B;
 			remoteInfo = "OmniAppKit-iOS";
+		};
+		349412F61B66B26A001FA03A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34ED742A1199B7110023E017 /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5FE81E171B62AE980056756C;
+			remoteInfo = "OmniBase-watchOS";
 		};
 		34B8F3B919C116F100ECF31F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -321,6 +329,34 @@
 		34915C78116FE3E4005EA90E /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
 		34915C7A116FE3E4005EA90E /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
 		34915C7B116FE3E4005EA90E /* Omni-Global-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Release.xcconfig"; sourceTree = "<group>"; };
+		349413071B66B27D001FA03A /* Omni-Application-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
+		349413081B66B27D001FA03A /* Omni-Application-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
+		349413091B66B27D001FA03A /* Omni-Application-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
+		3494130A1B66B27D001FA03A /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
+		3494130B1B66B27D001FA03A /* Omni-Application-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
+		3494130C1B66B27D001FA03A /* Omni-Global-Common-AppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-AppStore.xcconfig"; sourceTree = "<group>"; };
+		3494130D1B66B27D001FA03A /* Omni-Global-Common-MacAppStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStore.xcconfig"; sourceTree = "<group>"; };
+		3494130E1B66B27D001FA03A /* Omni-Global-Common-MacAppStorePro.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-MacAppStorePro.xcconfig"; sourceTree = "<group>"; };
+		3494130F1B66B27D001FA03A /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
+		349413101B66B27D001FA03A /* Omni-Global-Common-OmniStore.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common-OmniStore.xcconfig"; sourceTree = "<group>"; };
+		349413111B66B27D001FA03A /* Target-Watch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Watch-Common.xcconfig"; sourceTree = "<group>"; };
+		349413121B66B27D001FA03A /* Touch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		349413131B66B27D001FA03A /* Touch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		349413141B66B27D001FA03A /* Touch-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		349413151B66B27D001FA03A /* Touch-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		349413161B66B27D001FA03A /* Touch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		349413171B66B27D001FA03A /* Touch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		349413181B66B27D001FA03A /* Watch-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		349413191B66B27D001FA03A /* Watch-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		3494131A1B66B27D001FA03A /* Watch-Application-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		3494131B1B66B27D001FA03A /* Watch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		3494131C1B66B27D001FA03A /* Watch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		3494131D1B66B27D001FA03A /* Watch-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		3494131E1B66B27D001FA03A /* Watch-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		3494131F1B66B27D001FA03A /* Watch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		349413201B66B27D001FA03A /* Watch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		349413241B66B7DD001FA03A /* Box.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box.h; sourceTree = "<group>"; };
+		349413251B66B7DD001FA03A /* Box.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Box.m; sourceTree = "<group>"; };
 		34B8F3B519C116F000ECF31F /* FixStringsFile.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FixStringsFile.xcodeproj; path = Tools/FixStringsFile/FixStringsFile.xcodeproj; sourceTree = "<group>"; };
 		34BF040219C11514009C28B0 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		34CDFE9A12691FA3005B04A7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -392,6 +428,8 @@
 				28D7ACF70DDB3853001CB0EB /* ScalingScrollViewViewController.m */,
 				34404B44116FEC6800865DB8 /* ScalingView.h */,
 				34404B45116FEC6800865DB8 /* ScalingView.m */,
+				349413241B66B7DD001FA03A /* Box.h */,
+				349413251B66B7DD001FA03A /* Box.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -481,15 +519,25 @@
 		34915C73116FE3E4005EA90E /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
+				349413071B66B27D001FA03A /* Omni-Application-Common-AppStore.xcconfig */,
+				349413081B66B27D001FA03A /* Omni-Application-Common-MacAppStore.xcconfig */,
+				349413091B66B27D001FA03A /* Omni-Application-Common-MacAppStorePro.xcconfig */,
+				3494130A1B66B27D001FA03A /* Omni-Application-Common-OmniStore.xcconfig */,
 				34915C74116FE3E4005EA90E /* Omni-Application-Common.xcconfig */,
 				34915C76116FE3E4005EA90E /* Omni-Application-Debug.xcconfig */,
 				34915C77116FE3E4005EA90E /* Omni-Application-Release.xcconfig */,
+				3494130B1B66B27D001FA03A /* Omni-Application-Common-OmniStore.xcconfig */,
 				34ED740C1199B6C80023E017 /* Omni-Bundle-Common.xcconfig */,
 				34ED740E1199B6C80023E017 /* Omni-Bundle-Debug.xcconfig */,
 				34ED740F1199B6C80023E017 /* Omni-Bundle-Release.xcconfig */,
 				34ED74101199B6C80023E017 /* Omni-Framework-Common.xcconfig */,
 				34ED74121199B6C80023E017 /* Omni-Framework-Debug.xcconfig */,
 				34ED74131199B6C80023E017 /* Omni-Framework-Release.xcconfig */,
+				3494130C1B66B27D001FA03A /* Omni-Global-Common-AppStore.xcconfig */,
+				3494130D1B66B27D001FA03A /* Omni-Global-Common-MacAppStore.xcconfig */,
+				3494130E1B66B27D001FA03A /* Omni-Global-Common-MacAppStorePro.xcconfig */,
+				3494130F1B66B27D001FA03A /* Omni-Global-Common-OmniStore.xcconfig */,
+				349413101B66B27D001FA03A /* Omni-Global-Common-OmniStore.xcconfig */,
 				34915C78116FE3E4005EA90E /* Omni-Global-Common.xcconfig */,
 				34915C7A116FE3E4005EA90E /* Omni-Global-Debug.xcconfig */,
 				34915C7B116FE3E4005EA90E /* Omni-Global-Release.xcconfig */,
@@ -501,12 +549,28 @@
 				34ED741B1199B6C80023E017 /* Omni-Tool-Release.xcconfig */,
 				34ED741C1199B6C80023E017 /* Target-Mac-Common.xcconfig */,
 				34ED741D1199B6C80023E017 /* Target-Touch-Common.xcconfig */,
+				349413111B66B27D001FA03A /* Target-Watch-Common.xcconfig */,
 				34ED741E1199B6C80023E017 /* Touch-Application-Common.xcconfig */,
 				34ED74201199B6C80023E017 /* Touch-Application-Debug.xcconfig */,
 				34ED74211199B6C80023E017 /* Touch-Application-Release.xcconfig */,
+				349413121B66B27D001FA03A /* Touch-Bundle-Common.xcconfig */,
+				349413131B66B27D001FA03A /* Touch-Bundle-Debug.xcconfig */,
+				349413141B66B27D001FA03A /* Touch-Bundle-Release.xcconfig */,
+				349413151B66B27D001FA03A /* Touch-Framework-Common.xcconfig */,
+				349413161B66B27D001FA03A /* Touch-Framework-Debug.xcconfig */,
+				349413171B66B27D001FA03A /* Touch-Framework-Release.xcconfig */,
 				34ED74221199B6C80023E017 /* Touch-Library-Common.xcconfig */,
 				34ED74241199B6C80023E017 /* Touch-Library-Debug.xcconfig */,
 				34ED74251199B6C80023E017 /* Touch-Library-Release.xcconfig */,
+				349413181B66B27D001FA03A /* Watch-Application-Common.xcconfig */,
+				349413191B66B27D001FA03A /* Watch-Application-Debug.xcconfig */,
+				3494131A1B66B27D001FA03A /* Watch-Application-Release.xcconfig */,
+				3494131B1B66B27D001FA03A /* Watch-Bundle-Common.xcconfig */,
+				3494131C1B66B27D001FA03A /* Watch-Bundle-Debug.xcconfig */,
+				3494131D1B66B27D001FA03A /* Watch-Bundle-Release.xcconfig */,
+				3494131E1B66B27D001FA03A /* Watch-Framework-Common.xcconfig */,
+				3494131F1B66B27D001FA03A /* Watch-Framework-Debug.xcconfig */,
+				349413201B66B27D001FA03A /* Watch-Framework-Release.xcconfig */,
 			);
 			path = Configurations;
 			sourceTree = "<group>";
@@ -527,6 +591,7 @@
 				348ADC7519C113C2003AEF77 /* OBUnitTests.xctest */,
 				348ADC7719C113C2003AEF77 /* OmniBase.framework */,
 				348ADC7919C113C2003AEF77 /* OBUnitTests.xctest */,
+				349412F71B66B26A001FA03A /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -615,7 +680,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0700;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "ScalingScrollView" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -745,6 +810,13 @@
 			fileType = wrapper.application;
 			path = OFNetStateNotifier.app;
 			remoteRef = 348ADC9519C113C2003AEF77 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		349412F71B66B26A001FA03A /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 349412F61B66B26A001FA03A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34B8F3BA19C116F100ECF31F /* FixStringsFile */ = {
@@ -896,6 +968,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				349413261B66B7DD001FA03A /* Box.m in Sources */,
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* ScalingScrollViewAppDelegate.m in Sources */,
 				28D7ACF80DDB3853001CB0EB /* ScalingScrollViewViewController.m in Sources */,
@@ -943,6 +1016,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34ED74201199B6C80023E017 /* Touch-Application-Debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = ScalingScrollView_Prefix.pch;
 				HEADER_SEARCH_PATHS = (
 					$PROJECT_DERIVED_FILE_DIR,
@@ -961,6 +1035,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 34ED74211199B6C80023E017 /* Touch-Application-Release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = ScalingScrollView_Prefix.pch;
 				INFOPLIST_FILE = "ScalingScrollView-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

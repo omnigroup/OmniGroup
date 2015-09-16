@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 
 #import <OmniUI/OUITextColorAttributeInspectorSlice.h>
 
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 #import <OmniUI/OUITextSelectionSpan.h>
 #import <OmniUI/OUITextView.h>
 
@@ -29,7 +29,7 @@ RCS_ID("$Id$")
 
 #pragma mark - OUIAbstractColorInspectorSlice subclass
 
-- (OQColor *)colorForObject:(id)object;
+- (OAColor *)colorForObject:(id)object;
 {
     OBPRECONDITION([object isKindOfClass:[OUITextSelectionSpan class]]);
     OUITextSelectionSpan *span = object;
@@ -38,10 +38,10 @@ RCS_ID("$Id$")
     if (!backgroundColor)
         return nil;
     
-    return [OQColor colorWithPlatformColor:backgroundColor];
+    return [OAColor colorWithPlatformColor:backgroundColor];
 }
 
-- (void)setColor:(OQColor *)color forObject:(id)object;
+- (void)setColor:(OAColor *)color forObject:(id)object;
 {
     OBPRECONDITION([object isKindOfClass:[OUITextSelectionSpan class]]);
     OUITextSelectionSpan *span = object;

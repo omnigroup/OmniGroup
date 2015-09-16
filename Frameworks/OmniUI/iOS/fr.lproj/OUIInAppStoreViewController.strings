@@ -1,8 +1,8 @@
-/* Class = "IBUIButton"; normalTitle = "Button"; ObjectID = "0AU-4E-ijm"; */
+/* Class = "UIButton"; normalTitle = "Button"; ObjectID = "0AU-4E-ijm"; */
 "0AU-4E-ijm.normalTitle" = "Button";
 
-/* Class = "IBUILabel"; text = "Label"; ObjectID = "m7m-fF-i3z"; */
-"m7m-fF-i3z.text" = "Label";
+/* Class = "UILabel"; text = "Label"; ObjectID = "m7m-fF-i3z"; */
+"m7m-fF-i3z.text" = "Étiquette";
 
-/* Class = "IBUILabel"; text = "Text text text text text text text text text text text text text text text text text text text text text text"; ObjectID = "nqI-a5-9l1"; */
+/* Class = "UILabel"; text = "Text text text text text text text text text text text text text text text text text text text text text text"; ObjectID = "nqI-a5-9l1"; */
 "nqI-a5-9l1.text" = "Text text text text text text text text text text text text text text text text text text text text text text";

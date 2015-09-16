@@ -44,6 +44,7 @@ extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 @property(nonatomic,readonly) BOOL isShowingTitleLabel;
 
 - (CGFloat)contentOffsetYToHideTopControls;
+- (CGFloat)contentOffsetYToHideCompactTitleBehindNavBar;
 - (CGFloat)contentOffsetYForTopControlsFullAlpha;
 - (CGFloat)contentOffsetYToShowTopControls;
 

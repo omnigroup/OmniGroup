@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -153,9 +153,9 @@ static id _commonInit(OUISegmentedControlButton *self)
 {
     UIColor *color = self.tintColor;
     if (!self.enabled) {
-        OQColor *strokeOQColor = [OQColor colorWithPlatformColor:color];
-        OQColor *white = [OQColor colorWithPlatformColor:[UIColor whiteColor]];
-        OQColor *blended = [strokeOQColor blendedColorWithFraction:0.5 ofColor:white];
+        OAColor *strokeOAColor = [OAColor colorWithPlatformColor:color];
+        OAColor *white = [OAColor colorWithPlatformColor:[UIColor whiteColor]];
+        OAColor *blended = [strokeOAColor blendedColorWithFraction:0.5 ofColor:white];
         color = [blended toColor];
     }
     return color;

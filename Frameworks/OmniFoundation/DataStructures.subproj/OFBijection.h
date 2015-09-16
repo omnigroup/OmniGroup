@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,11 +16,13 @@
 + (instancetype)bijectionWithObject:(id)anObject forKey:(id)aKey;
 + (instancetype)bijectionWithObjects:(NSArray *)objects forKeys:(NSArray *)keys;
 + (instancetype)bijectionWithObjectsAndKeys:(id)anObject, ... NS_REQUIRES_NIL_TERMINATION;
++ (instancetype)bijectionWithDictionary:(NSDictionary *)dictionary;
 
 - (id)init;
 - (id)initWithObject:(id)anObject forKey:(id)aKey;
 - (id)initWithObjects:(NSArray *)objects forKeys:(NSArray *)keys; // designated initializer
 - (id)initWithObjectsAndKeys:(id)anObject, ... NS_REQUIRES_NIL_TERMINATION;
+- (id)initWithDictionary:(NSDictionary *)dictionary;
 
 - (NSUInteger)count;
 - (id)objectForKey:(id)aKey;

@@ -607,7 +607,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     if (connection == _refreshingTrackInfo) {
         _refreshingTrackInfo = nil;
         
-        NSError *xmlError = nil;
+        __autoreleasing NSError *xmlError = nil;
         NSXMLDocument *document = [[NSXMLDocument alloc] initWithData:_refreshingTrackData options:NSXMLNodeOptionsNone error:&xmlError];
         _refreshingTrackData = nil;
         
@@ -808,7 +808,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     
     // The fetch subprocess has completed.
     NSDictionary *output = _currentCheckOperation.output;
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     if (!output) {
         error = _currentCheckOperation.error;
         OBASSERT(error);
@@ -967,7 +967,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
     NSMutableArray *items = [NSMutableArray array];
     NSUInteger nodeIndex = [nodes count];
     while (nodeIndex--) {
-        NSError *itemError = nil;
+        __autoreleasing NSError *itemError = nil;
         OSUItem *item = [[OSUItem alloc] initWithRSSElement:[nodes objectAtIndex:nodeIndex] error:&itemError];
         if (!item) {
             ITEM_DEBUG(@"Unable to interpret node %@ as a software update: %@", [nodes objectAtIndex:nodeIndex], itemError);

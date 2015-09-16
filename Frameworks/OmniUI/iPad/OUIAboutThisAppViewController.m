@@ -8,8 +8,8 @@
 #import "OUIAboutThisAppViewController.h"
 
 #import <MessageUI/MessageUI.h>
-#import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniFoundation/OFVersionNumber.h>
 
 RCS_ID("$Id$")
 
@@ -81,7 +81,7 @@ RCS_ID("$Id$")
     if (_javascriptBindingsDictionary == nil)
         return @"";
 
-    NSError *jsonError = nil;
+    __autoreleasing NSError *jsonError = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:_javascriptBindingsDictionary options:0 error:&jsonError];
     assert(jsonData != nil);
 
@@ -92,7 +92,7 @@ RCS_ID("$Id$")
 
 #pragma mark - UIWebViewDelegate protocol
 
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType;
+- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     NSURL *requestURL = [request URL];
     
@@ -106,7 +106,7 @@ RCS_ID("$Id$")
         // Mailto link
         OUIAppController *appController = [OUIAppController controller];
 	if ([scheme isEqualToString:@"mailto"]) {
-            if (![appController showFeatureDisabledForRetailDemoAlert]) {
+        if (![appController showFeatureDisabledForRetailDemoAlertFromViewController:self]) {
                 MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
                 controller.mailComposeDelegate = self;
                 [controller setToRecipients:[NSArray arrayWithObject:[requestURL resourceSpecifier]]];
@@ -130,9 +130,12 @@ RCS_ID("$Id$")
             if ([[UIApplication sharedApplication] openURL:requestURL] == NO) {
                 NSString *alertTitle = NSLocalizedStringFromTableInBundle(@"Link could not be opened. Please check Safari restrictions in Settings.", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL title.");
                 
-                OUIAlert *alert = [[OUIAlert alloc] initWithTitle:alertTitle message:nil cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL cancel button.") cancelAction:NULL];
-                
-                [alert show];
+                UIAlertController *alertController = [UIAlertController alertControllerWithTitle:alertTitle message:nil preferredStyle:UIAlertControllerStyleAlert];
+
+                UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL cancel button.") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}];
+                [alertController addAction:okAction];
+
+                [self presentViewController:alertController animated:YES completion:^{}];
             }
             
             // The above call to -openURL can return no if Safari is off due to restriction. We still don't want to handle the URL.
@@ -142,7 +145,8 @@ RCS_ID("$Id$")
         // Special URL
         if ([OUIAppController canHandleURLScheme:scheme]) {
             UIApplication *sharedApplication = [UIApplication sharedApplication];
-            if ([[sharedApplication delegate] application:sharedApplication handleOpenURL:requestURL]) {
+            
+            if ([[sharedApplication delegate] application:sharedApplication openURL:requestURL options:@{UIApplicationOpenURLOptionsOpenInPlaceKey : @(NO), UIApplicationOpenURLOptionsSourceApplicationKey : [[NSBundle mainBundle] bundleIdentifier]}]) {
                 return NO; // Don't load this in the WebView
             }
         }

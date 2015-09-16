@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -47,7 +47,7 @@ RCS_ID("$Id$");
     OBPRECONDITION([sender conformsToProtocol:@protocol(OUIColorValue)]);
     id <OUIColorValue> colorValue = sender;
     
-    OQColor *color = colorValue.color;
+    OAColor *color = colorValue.color;
     
     [super changeColor:sender];
     

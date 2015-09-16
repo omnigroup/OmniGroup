@@ -113,7 +113,12 @@ static SecKeyRef copyKeyRefFromEncodedKey(SecExternalFormat keyFormat, const cha
 	.keyAttributes = NULL, /* See below for rant */
     };
     
+    // <bug:///119436> (Unassigned: Update use of Security API to avoid implicit enum cast warnings)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wenum-conversion"
     err = SecItemImport((__bridge CFDataRef)keyBytes, NULL, &keyFormat, &itemType, kSecKeyImportOnlyOne, &keyParams, NULL, &importedItems);
+#pragma clang diagnostic pop
+
     if (err != noErr) {
         errInfo = [NSMutableDictionary dictionary];
         [errInfo setObject:[NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:[NSDictionary dictionaryWithObject:@"SecItemImport" forKey:@"function"]]forKey:NSUnderlyingErrorKey];

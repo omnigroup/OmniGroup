@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>OAAppearanceAliases</key>
+	<dict>
+		<key>LeafAlias</key>
+		<string>TopLevelFloat</string>
+	</dict>
+	<key>TopLevelFloat</key>
+	<real>1</real>
+	<key>Nested</key>
+	<dict>
+		<key>OAAppearanceAliases</key>
+		<dict>
+			<key>LeafAlias</key>
+			<string>Nested.Float</string>
+			<key>ContainerAlias</key>
+			<string>Nested</string>
+		</dict>
+		<key>Float</key>
+		<real>1</real>
+	</dict>
+	<key>Color</key>
+	<dict>
+		<key>r</key>
+		<real>0.42</real>
+		<key>g</key>
+		<real>0.42</real>
+		<key>b</key>
+		<real>0.42</real>
+		<key>a</key>
+		<real>1</real>
+	</dict>
+	<key>EdgeInsets</key>
+	<dict>
+		<key>top</key>
+		<real>42</real>
+		<key>left</key>
+		<real>42</real>
+		<key>right</key>
+		<real>42</real>
+		<key>bottom</key>
+		<real>42</real>
+	</dict>
+	<key>OverriddenFloat</key>
+	<real>-1.0</real>
+</dict>
+</plist>

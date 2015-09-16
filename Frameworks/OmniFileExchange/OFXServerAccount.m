@@ -228,7 +228,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
     NSURL *url = [NSURL URLWithString:webdavString];
 
     if (url == nil)
-        url = [NSURL URLWithString:[webdavString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        url = [NSURL URLWithString:[webdavString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
 
     OFCreateRegularExpression(reasonableHostnameRegularExpression, @"^[-_$A-Za-z0-9]+\\.[-_$A-Za-z0-9]+");
 

@@ -15,14 +15,13 @@
 #import <OmniFoundation/NSRegularExpression-OFExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFCredentials.h>
-#import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIEditableLabeledTableViewCell.h>
 #import <OmniUI/OUIEditableLabeledValueCell.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
-#import <OmniUI/OUIAppearance.h>
+#import <OmniAppKit/OAAppearance.h>
 #import <OmniUI/OUIKeyboardNotifier.h>
-#import <OmniUI/OUIAppearanceColors.h>
+#import <OmniAppKit/OAAppearanceColors.h>
 
 #import "OUIServerAccountValidationViewController.h"
 
@@ -193,14 +192,14 @@ static void _commonInit(OUIServerAccountSetupViewController *self)
         NSURL *documentsURL = [OFXServerAccount generateLocalDocumentsURLForNewAccount:&error];
         if (documentsURL == nil) {
             [self finishWithError:error];
-            OUI_PRESENT_ALERT(error);
+            OUI_PRESENT_ALERT_FROM(error, self);
             return;
         }
         
         _account = [[OFXServerAccount alloc] initWithType:_accountType usageMode:_usageModeToCreate remoteBaseURL:remoteBaseURL localDocumentsURL:documentsURL error:&error]; // New account instead of editing one.
         if (!_account) {
             [self finishWithError:error];
-            OUI_PRESENT_ALERT(error);
+            OUI_PRESENT_ALERT_FROM(error, self);
             return;
         }
         
@@ -380,7 +379,7 @@ static void _commonInit(OUIServerAccountSetupViewController *self)
         if (!cell)
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:DeletionCellIdentifier];
         cell.textLabel.text = NSLocalizedStringFromTableInBundle(@"Delete Account", @"OmniUIDocument", OMNI_BUNDLE, @"Server Account Setup button label");
-        cell.textLabel.textColor = [OUIAppearanceDefaultColors appearance].omniDeleteColor;
+        cell.textLabel.textColor = [OAAppearanceDefaultColors appearance].omniDeleteColor;
         cell.textLabel.textAlignment = NSTextAlignmentCenter;
         return cell;
     }
@@ -731,7 +730,7 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
     header.font = [UIFont systemFontOfSize:14];
     header.backgroundColor = [UIColor clearColor];
     header.opaque = NO;
-    header.textColor = [OUIAppearanceDefaultColors appearance].omniNeutralDeemphasizedColor;
+    header.textColor = [OAAppearanceDefaultColors appearance].omniNeutralDeemphasizedColor;
     header.numberOfLines = 0 /* no limit */;
     
     return header;
@@ -761,10 +760,10 @@ static const CGFloat OUIServerAccountSendSettingsFooterHeight = 120;
         [contents setObject:TEXT_AT(ServerAccountAddressSection, 0) forKey:@"location" defaultObject:nil];
     [contents setObject:TEXT_AT(ServerAccountDescriptionSection, 0) forKey:@"nickname" defaultObject:nil];
 
-    NSError *error;
+    __autoreleasing NSError *error;
     NSData *configData = [NSPropertyListSerialization dataWithPropertyList:contents format:NSPropertyListXMLFormat_v1_0 options:0 error:&error];
     if (!configData) {
-        OUI_PRESENT_ALERT(error);
+        OUI_PRESENT_ALERT_FROM(error, self);
         return;
     }
     

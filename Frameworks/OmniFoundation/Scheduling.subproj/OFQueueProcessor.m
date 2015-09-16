@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -95,6 +95,9 @@ static OFQueueProcessor *detachingQueueProcessor;
             }
             
             @autoreleasepool {
+                // Record a buffer with the selector name in case we crash here with a zombied object. The selector could help narrow down where this was queued.
+                OBRecordBacktraceWithContext(sel_getName(retainedInvocation.selector), OBBacktraceBuffer_PerformSelector, retainedInvocation);
+
                 [retainedInvocation invoke];
             }
             
@@ -178,11 +181,7 @@ static OFQueueProcessor *detachingQueueProcessor;
 {
     detachingQueueProcessor = self;
     for (;;) {
-        @try {
-            [self processQueueForever];
-        } @catch (NSException *exc) {
-            NSLog(@"%@", [exc reason]);
-        }
+        [self processQueueForever];
     }
 }
 

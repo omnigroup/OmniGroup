@@ -19,7 +19,6 @@
 #import <OmniFoundation/OFPreference.h>
 #import <OmniFoundation/OFRelativeDateFormatter.h>
 #import <OmniFoundation/OFVersionNumber.h>
-#import <OmniUI/OUIAlert.h>
 #import <OmniUIDocument/OUIDocumentPreview.h>
 #import <OmniUIDocument/OUIDocumentViewController.h>
 #import <OmniUI/OUIInspector.h>
@@ -55,6 +54,10 @@ static int32_t OUIDocumentInstanceCount = 0;
 @interface OUIDocument () <OUIShieldViewDelegate>
 @property (nonatomic, readwrite, copy) NSString *lastQueuedUpdateMessage;
 @property (nonatomic, strong) OUIShieldView *shieldView;
+@end
+
+@interface OUIDocument (/**NSUndoManager Observer*/)
+@property (strong,nonatomic) NSUndoManager *observedUndoManager;
 @end
 
 @implementation OUIDocument
@@ -163,19 +166,10 @@ static int32_t OUIDocumentInstanceCount = 0;
     
     NSUndoManager *undoManager = [[NSUndoManager alloc] init];
     
-    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-    
-    [center addObserver:self selector:@selector(_undoManagerDidUndo:) name:NSUndoManagerDidUndoChangeNotification object:undoManager];
-    [center addObserver:self selector:@selector(_undoManagerDidRedo:) name:NSUndoManagerDidRedoChangeNotification object:undoManager];
-    
-    [center addObserver:self selector:@selector(_undoManagerDidOpenGroup:) name:NSUndoManagerDidOpenUndoGroupNotification object:undoManager];
-    [center addObserver:self selector:@selector(_undoManagerWillCloseGroup:) name:NSUndoManagerWillCloseUndoGroupNotification object:undoManager];
-    [center addObserver:self selector:@selector(_undoManagerDidCloseGroup:) name:NSUndoManagerDidCloseUndoGroupNotification object:undoManager];
-    
-    [center addObserver:self selector:@selector(_inspectorDidEndChangingInspectedObjects:) name:OUIInspectorDidEndChangingInspectedObjectsNotification object:nil];
-    
     self.undoManager = undoManager;
-    
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_inspectorDidEndChangingInspectedObjects:) name:OUIInspectorDidEndChangingInspectedObjectsNotification object:nil];
+
     return self;
 }
 
@@ -227,8 +221,8 @@ static int32_t OUIDocumentInstanceCount = 0;
     // This is most likely being hit since we are creating a new document and we are about to set the file item's edit in -saveToURL:forSaveOperation:completionHandler:. So, leave the fileEdit nil on this transient item instead of hitting the assertion in ODSFileItem that it should only be created from a URL on a background thread.
 #if 1
     OFFileEdit *fileEdit = nil;
-    NSNumber *isDirectoryNumber = nil;
-    NSError *resourceError = nil;
+    __autoreleasing NSNumber *isDirectoryNumber = nil;
+    __autoreleasing NSError *resourceError = nil;
     if (![fileURL getResourceValue:&isDirectoryNumber forKey:NSURLIsDirectoryKey error:&resourceError]) {
 #ifdef DEBUG
         NSLog(@"Error getting directory key for %@: %@", fileURL, [resourceError toPropertyList]);
@@ -257,6 +251,37 @@ static int32_t OUIDocumentInstanceCount = 0;
 - (void)willEditDocumentTitle;
 {
     // Subclass for specific actions on title edit, such as dismiss inspectors.
+}
+
+- (void)setUndoManager:(NSUndoManager *)undoManager;
+{
+    NSUndoManager *oldUndoManager = self.observedUndoManager;
+    if (oldUndoManager) {
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+        [center removeObserver:self name:NSUndoManagerDidUndoChangeNotification object:oldUndoManager];
+        [center removeObserver:self name:NSUndoManagerDidRedoChangeNotification object:oldUndoManager];
+
+        [center removeObserver:self name:NSUndoManagerDidOpenUndoGroupNotification object:oldUndoManager];
+        [center removeObserver:self name:NSUndoManagerWillCloseUndoGroupNotification object:oldUndoManager];
+        [center removeObserver:self name:NSUndoManagerDidCloseUndoGroupNotification object:oldUndoManager];
+
+        self.observedUndoManager = nil;
+    }
+
+    [super setUndoManager:undoManager];
+
+    if (undoManager) {
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+        [center addObserver:self selector:@selector(_undoManagerDidUndo:) name:NSUndoManagerDidUndoChangeNotification object:undoManager];
+        [center addObserver:self selector:@selector(_undoManagerDidRedo:) name:NSUndoManagerDidRedoChangeNotification object:undoManager];
+
+        [center addObserver:self selector:@selector(_undoManagerDidOpenGroup:) name:NSUndoManagerDidOpenUndoGroupNotification object:undoManager];
+        [center addObserver:self selector:@selector(_undoManagerWillCloseGroup:) name:NSUndoManagerWillCloseUndoGroupNotification object:undoManager];
+        [center addObserver:self selector:@selector(_undoManagerDidCloseGroup:) name:NSUndoManagerDidCloseUndoGroupNotification object:undoManager];
+    }
+    self.observedUndoManager = undoManager;
 }
 
 - (void)finishUndoGroup;
@@ -833,7 +858,7 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 
     // Show any alert that was queued and display deferred since we were still in the middle of -relinquishPresentedItemToWriter:.
     // It might be better to set our own flag in a subclass implementation of -relinquishPresentedItemToWriter:, but this should be the same effect.
-    if (self.lastQueuedUpdateMessage != nil) {
+    if (self.lastQueuedUpdateMessage != nil && self.viewControllerToPresent.isViewLoaded) {
         [self displayLastQueuedUpdateMessage];
     }
     
@@ -931,14 +956,12 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
     // Incoming edit from the cloud, most likely. We should have been asked to save already via the coordinated write (might produce a conflict). Still, lets abort editing.
     [_documentViewController.view endEditing:YES];
     [self.defaultFirstResponder becomeFirstResponder]; // Likely the document view controller itself
-    
-    // Dismiss any open Popovers
-    [[OUIDocumentAppController controller] dismissPopoverAnimated:NO];
 
     // Forget our view controller since UIDocument's reloading will call -openWithCompletionHandler: again and we'll make a new view controller
     // Note; doing a view controller rebuild via -relinquishPresentedItemToWriter: seems hard/impossible not only due to the crazy spaghetti mess of blocks but also because it is invoked on UIDocument's background thread, while we need to mess with UIViews.
     UIViewController <OUIDocumentViewController> *oldDocumentViewController = _documentViewController;
     _documentViewController = nil;
+    [oldDocumentViewController.presentedViewController dismissViewControllerAnimated:NO completion:nil];
     oldDocumentViewController.document = nil;
     completionHandler = [completionHandler copy];
     
@@ -1153,7 +1176,13 @@ static OFPreference *LastEditsPreference;
 - (void)_recordLastEdit;
 {
     NSMutableDictionary *lastEdits = [self _lastEditsDictionary];
-    [lastEdits setObject:self.fileModificationDate forKey:[self _persistentPathForFile]];
+    NSDate *modDate = self.fileModificationDate;
+    if (!modDate) {
+        // New document; the code we are calling likes to have a placeholder date.
+        modDate = [NSDate date];
+    }
+
+    [lastEdits setObject:modDate forKey:[self _persistentPathForFile]];
     [LastEditsPreference setDictionaryValue:lastEdits];
 }
 
@@ -1162,7 +1191,7 @@ static OFPreference *LastEditsPreference;
     NSDate *lastRecordedEditDate = [self _lastRecordedEditDate];
     NSURL *url = self.fileURL;
     NSString *editDateString;
-    NSDate *editDate;
+    __autoreleasing NSDate *editDate;
     NSURL *securedURL = nil;
     if ([url startAccessingSecurityScopedResource])
         securedURL = url;
@@ -1465,7 +1494,7 @@ static OFPreference *LastEditsPreference;
         self.lastQueuedUpdateMessage = message;
         
         // Only displays new message if we aren't in the middle of -relinquishPresentedItemToWriter:. We'll try again in -enableEditing
-        if (self.editingDisabled == NO) {
+        if (self.editingDisabled == NO && self.viewControllerToPresent.isViewLoaded) {
             [self displayLastQueuedUpdateMessage];
         }
     }];

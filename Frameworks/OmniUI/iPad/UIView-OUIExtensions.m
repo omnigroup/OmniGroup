@@ -7,7 +7,6 @@
 
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUI/OUIDrawing.h>
-#import <OmniQuartz/OQDrawing.h>
 #import <UIKit/UIView.h>
 
 RCS_ID("$Id$");
@@ -478,7 +477,6 @@ static void OUIViewPerformPosingForThreading(void)
     }
     
     // Default to looking through our subviews, finding their effective border rects and unioning that.
-    [self layoutIfNeeded];
     for (UIView *subview in self.subviews) {
         if (subview.skipWhenComputingBorderEdgeInsets)
             continue;
@@ -511,6 +509,20 @@ static void OUIViewPerformPosingForThreading(void)
         .bottom = CGRectGetMaxY(bounds) - CGRectGetMaxY(unionBorderRect),
     };
 }
+
+#ifdef DEBUG
+- (void)expectDeallocationOfViewTreeSoon;
+{
+    [self applyToViewTree:^(UIView *view) {
+        OBExpectDeallocationWithPossibleFailureReason(view, ^NSString *(UIView *view){
+            if (view.superview)
+                return @"still has superview";
+            return nil;
+        });
+        return OUIViewVisitorResultContinue;
+    }];
+}
+#endif
 
 @end
 

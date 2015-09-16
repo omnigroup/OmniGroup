@@ -18,8 +18,16 @@ extern void OUILogAncestorViews(UIView *view);
 #endif
 
 // Convenience for UIGraphicsBegin/EndImageContext for resolution independent drawing
-extern void OUIGraphicsBeginImageContext(CGSize size);
-extern void OUIGraphicsEndImageContext(void); 
+static inline void OUIGraphicsBeginImageContext(CGSize size)
+{
+    // NO = we want a transparent context
+    // 0 = scale factor is set to the scale factor of the device's main screen
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
+}
+static inline void OUIGraphicsEndImageContext(void)
+{
+    UIGraphicsEndImageContext();
+}
 
 // For segmented contorls, stepper buttons, etc.
 

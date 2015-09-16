@@ -1,3 +1,6 @@
+/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
+" (Copy)" = " (copia)";
+
 /* bytes */
 "%@ B" = "%@ B";
 
@@ -43,9 +46,6 @@
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Ya existe un documento con el nombre “%@”. ¿Desea sustituirlo? Esta acción no se puede deshacer.";
 
-/* Error reason for a document operation failing due to a missing file. */
-"A file is missing or has been deleted." = "Falta un archivo o se ha eliminado.";
-
 /* Omni Sync Server account info button title */
 "Account Info" = "Información de la cuenta";
 
@@ -55,7 +55,8 @@
 /* Menu option in the document picker view */
 "Actions" = "Acciones";
 
-/* Cloud Setup button title to add a new account */
+/* Cloud Setup button title to add a new account
+   Cloud Setup button title to convert an existing account */
 
 "Add an Account" = "Añadir una cuenta";
 
@@ -64,7 +65,10 @@
 
 /* button title
    cancel button title
-   Discard unsynced edits dialog: cancel button label */
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 
 
@@ -95,6 +99,9 @@
 
 /* title view clear button accessibility label. */
 "Clear Title" = "Borrar título";
+
+/* Cloud Storage Providers preference nvigation bar title */
+"Cloud Storage Providers" = "Almacenamiento en la nube";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Conectado";
@@ -138,6 +145,9 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "¿Descartar las modificaciones no sincronizadas?";
 
+/* Message letting the user know that their document was moved from one folder to another. */
+"Document moved." = "Documento movido.";
+
 /* Title for alert informing user that the document has been reloaded with edits from another device */
 "Document Updated" = "Documento actualizado";
 
@@ -173,8 +183,7 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
 
 
 "Export" = "Exportar";
@@ -197,7 +206,7 @@
 /* doc picker folder type accessibility value */
 "Folder" = "Carpeta";
 
-/* Import section title */
+/* import sheet title */
 "Import" = "Importar";
 
 /* Info item accessibility label */
@@ -230,6 +239,9 @@
 /* modified date accessibility value */
 "Modified %@" = "Modificado %@";
 
+/* Cloud Storage Providers more information button title */
+"More Info…" = "Más información...";
+
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
 
@@ -243,15 +255,8 @@
 
 "Move to Trash" = "Trasladar a la Papelera";
 
-/* Action sheet button title
-   Menu popover title */
+/* Share menu title */
 "Move to..." = "Mover a…";
-
-/* Message format for alert informing user that the document has been moved out of a folder to the top level */
-"Moved out of folder %@." = "Retirado de la carpeta %@.";
-
-/* Message format for alert informing user that the document has been moved to a folder */
-"Moved to folder %@." = "Movido a la carpeta %@.";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mi documento";
@@ -284,8 +289,7 @@
 "Not uploaded" = "No se ha subido";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
 
 "OK" = "OK";
 
@@ -429,6 +433,9 @@
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Esta cuenta de la nube ya no existe.";
 
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Este documento no es accesible. Es posible que el archivo se haya eliminado, renombrado o desplazado vía iTunes u otro proveedor externo de documentos. Intente eliminar al archivo y añadirlo de nuevo.";
+
 /* item not fully downloaded error message */
 "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "No se puede duplicar el elemento porque no se ha descargado completamente. Toque el elemento y espere a que se descargue antes de intentarlo de nuevo.";
 
@@ -438,8 +445,14 @@
 /* sort by title */
 "Title" = "Título";
 
+/* Cloud Storage Providers preference informational description */
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Al activar la opción Almacenamiento en la nube se gana acceso a documentos almacenados en servicios en la nube, como iCloud Drive o Dropbox. La función Almacenamiento en la nube se encuentra en periodo de pruebas (BETA). Tenga cuidado al usar este servicio. Para más información, consulte la sección “Trabajar en la nube” de la documentación.";
+
 /* error title */
 "Unable to open file." = "No se ha podido abrir el archivo.";
 
+/* Cloud Storage Providers preference settings screen title */
+"Use Cloud Storage Providers" = "Usar almacenamiento en la nube";
+
 /* Account validation status string. */
-"Validating account..." = "Validando cuenta...";
+"Validating account..." = "Validando cuenta…";

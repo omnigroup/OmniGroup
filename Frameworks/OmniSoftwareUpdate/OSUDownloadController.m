@@ -197,7 +197,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         
     };
 
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     if (_installationDirectory == nil || ![OSUInstaller validateTargetFilesystem:_installationDirectory error:&error]) {
         // We should only have to prompt the user to pick a directory if both the application's directory and /Applications on the root filesystem both live on read-only filesystems.
         [OSUInstaller chooseInstallationDirectory:_installationDirectory modalForWindow:self.window completionHandler:^(NSError *error, NSString *result) {
@@ -521,7 +521,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         NSString *cachePath = [paths objectAtIndex:0];
         folder = [cachePath stringByAppendingPathComponent:OMNI_BUNDLE_IDENTIFIER];
         if (folder != nil && ![manager directoryExistsAtPath:folder]) {
-            NSError *error = nil;
+            __autoreleasing NSError *error = nil;
             if (![manager createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:&error]) {
 #ifdef DEBUG		
                 NSLog(@"Unable to create download directory at specified location '%@' -- %@", folder, error);
@@ -549,7 +549,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     _destinationFile = [path copy];
     
     // Quarantine the file. Later, after we verify its checksum, we can remove the quarantine.
-    NSError *qError = nil;
+    __autoreleasing NSError *qError = nil;
     NSFileManager *fm = [NSFileManager defaultManager];
     if ([fm quarantinePropertiesForItemAtPath:path error:&qError] != nil) {
         // It already has a quarantine (presumably we're running with LSFileQuarantineEnabled in our Info.plist)

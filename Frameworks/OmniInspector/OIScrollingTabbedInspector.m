@@ -7,6 +7,7 @@
 
 #import <OmniInspector/OIScrollingTabbedInspector.h>
 
+#import <OmniInspector/OIAppearance.h>
 #import <OmniInspector/OITabMatrix.h>
 #import <OmniInspector/OIInspectorTabController.h>
 
@@ -37,6 +38,11 @@ RCS_ID("$Id$")
     [super awakeFromNib];
     
     [self.buttonMatrix setTabMatrixHighlightStyle:OITabMatrixYosemiteHighlightStyle];
+    self.tabLabel.textColor = [OIAppearance appearance].InspectorTabOnStateTintColor;
+    
+    NSColor *inspectorBackgroundColor = [[OIAppearance appearance] colorForKeyPath:@"InspectorBackgroundColor"];
+    self.inspectorScrollView.backgroundColor = inspectorBackgroundColor;
+    self.inspectorScrollView.drawsBackground = YES;
 
     [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
 }
@@ -111,6 +117,7 @@ RCS_ID("$Id$")
     }
     
     self.view.superview.needsLayout = YES;
+    [self.view.window recalculateKeyViewLoop];
 }
 
 @end

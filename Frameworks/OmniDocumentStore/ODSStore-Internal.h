@@ -10,8 +10,10 @@
 #import <OmniDocumentStore/ODSStore.h>
 
 @interface ODSStore ()
+- (void)_fileItem:(ODSFileItem *)fileItem willMoveToURL:(NSURL *)newURL;
 - (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
 - (void)_fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
+- (void)_willRemoveFileItems:(NSSet *)fileItems;
 @end
 
 OB_HIDDEN NSString *ODSPathExtensionForFileType(NSString *fileType, BOOL *outIsPackage);

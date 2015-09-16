@@ -125,42 +125,43 @@ RCS_ID("$Id$");
 
         BOOL shouldConvert = NO;
         OUIDocumentPicker *docPicker = [OUIDocumentAppController controller].documentPicker;
-
-        if ([docPicker.delegate respondsToSelector:@selector(documentPickerAvailableUTTypesPredicate:)] && [docPicker.delegate respondsToSelector:@selector(documentPicker:saveNewFileIfAppropriateFromFile:completionHandler:)]) {
-            if (![[docPicker.delegate documentPickerAvailableUTTypesPredicate:docPicker] evaluateWithObject:OFUTIForFileExtensionPreferringNative([itemToMoveURL pathExtension], @(NO))]) {
-                shouldConvert = YES;
-            }
+        OBASSERT(docPicker);
+        if (docPicker && [docPicker.delegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [docPicker.delegate respondsToSelector:@selector(documentPicker:saveNewFileIfAppropriateFromFile:completionHandler:)]) {
+            BOOL isDirectory = NO;
+            [[NSFileManager defaultManager] fileExistsAtPath:[itemToMoveURL path] isDirectory:&isDirectory];
+            shouldConvert = [docPicker.delegate documentPickerShouldOpenButNotDisplayUTType:OFUTIForFileExtensionPreferringNative([itemToMoveURL pathExtension], @(isDirectory))];
 
             if (shouldConvert) { // convert files we claim to view, but do not display in our doc-picker?
-                [docPicker.delegate documentPicker:docPicker saveNewFileIfAppropriateFromFile:itemToMoveURL completionHandler:^(BOOL success, ODSFileItem *savedItem, ODSScope *currentScope) {
-                    [docPicker.documentStore moveItems:[NSSet setWithObject:savedItem] fromScope:currentScope toScope:scope inFolder:scope.rootFolder completionHandler:^(NSSet *movedFileItems, NSArray *errorsOrNil) {
-
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    [docPicker.delegate documentPicker:docPicker saveNewFileIfAppropriateFromFile:itemToMoveURL completionHandler:^(BOOL success, ODSFileItem *savedItem, ODSScope *currentScope) {
+                        [docPicker.documentStore moveItems:[NSSet setWithObject:savedItem] fromScope:currentScope toScope:scope inFolder:scope.rootFolder completionHandler:^(NSSet *movedFileItems, NSArray *errorsOrNil) {
+                            finishedBlock([movedFileItems anyObject], [errorsOrNil firstObject]);
+                        }];
                     }];
                 }];
+                return;
             }
-        } else {
-            [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-                [scope addDocumentInFolder:scope.rootFolder fromURL:itemToMoveURL option:ODSStoreAddByCopyingSourceToAvailableDestinationURL completionHandler:finishedBlock];
-            }];
         }
+
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            [scope addDocumentInFolder:scope.rootFolder fromURL:itemToMoveURL option:ODSStoreAddByCopyingSourceToAvailableDestinationURL completionHandler:finishedBlock];
+        }];
+
     }];
 }
 
-+ (BOOL)deleteInbox:(NSError **)outError;
++ (BOOL)coordinatedRemoveItemAtURL:(NSURL *)URL error:(NSError **)outError;
 {
-    // clean up by nuking the Inbox.
     __block BOOL success = NO;
     __block NSError *deleteError = nil;
     
     NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
     
-    NSURL *inboxURL = [[ODSLocalDirectoryScope userDocumentsDirectoryURL] URLByAppendingPathComponent:ODSDocumentInteractionInboxFolderName isDirectory:YES];
-    
-    [coordinator coordinateWritingItemAtURL:inboxURL options:NSFileCoordinatorWritingForDeleting error:outError byAccessor:^(NSURL *newURL) {
+    [coordinator coordinateWritingItemAtURL:URL options:NSFileCoordinatorWritingForDeleting error:outError byAccessor:^(NSURL *newURL) {
         __autoreleasing NSError *error = nil;
         if (![[NSFileManager defaultManager] removeItemAtURL:newURL error:&error]) {
-            // Deletion of zip file failed.
-            NSLog(@"Deletion of inbox file failed: %@", [error toPropertyList]);
+            // Deletion of item at URL failed
+            NSLog(@"Deletion of inbox item failed: %@", [error toPropertyList]);
             deleteError = error; // strong-ify
             return;
         }
@@ -170,7 +171,7 @@ RCS_ID("$Id$");
     
     if (!success && outError)
         *outError = deleteError;
-        
+    
     return success;
 }
 

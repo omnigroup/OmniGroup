@@ -5,7 +5,7 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import "OIAppearance.h"
+#import <OmniInspector/OIAppearance.h>
 
 RCS_ID("$Id$");
 
@@ -15,6 +15,12 @@ RCS_ID("$Id$");
 @dynamic InspectorSidebarWidth;
 @dynamic InspectorHeaderContentHeight;
 @dynamic InspectorHeaderSeparatorTopPadding;
+@dynamic InspectorHeaderSeparatorHeight;
+@dynamic InspectorHeaderSeparatorColor;
 @dynamic InspectorNoteTextInset;
 @dynamic InspectorBackgroundColor;
+@dynamic InspectorTabOnStateTintColor;
+@dynamic InspectorTabHighlightedTintColor;
+@dynamic InspectorTabNormalTintColor;
+
 @end

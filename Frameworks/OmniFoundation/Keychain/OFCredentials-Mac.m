@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,27 +24,25 @@ RCS_ID("$Id$")
 
 static inline void main_sync(void (^block)(void))
 {
-    // <bug:///98806> (Stop using deprecated dispatch_get_main_queue() in OFCredentials-Mac.m)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    dispatch_queue_t mainQueue = dispatch_get_main_queue();
-    if (dispatch_get_current_queue() == mainQueue)
-        block(); // else we'll deadlock since dispatch_sync doesn't check for this
-    else
-        dispatch_sync(mainQueue, block);
-#pragma clang diagnostic pop
+    OFMainThreadPerformBlockSynchronously(block);
 }
 
 static SecKeychainItemRef _OFKeychainItemForServiceIdentifier(NSString *serviceIdentifier, NSError **outError)
 {
     NSData *serviceIdentifierData = [serviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
     
+    // 22011331: SecKeychainFindGenericPassword has inconsistent/incorrect nullability annotations
+    // NOTE: If you pass a non-NULL password length parameter, then you must pass a non-NULL passwordBytes pointer too since it will get written. And, then you must free it, and maybe should zero it out first, and ... So for now disabling this warning until they fix the bad annotation.
+    
     SecKeychainItemRef itemRef = NULL;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
     OSStatus err = SecKeychainFindGenericPassword(NULL, // default keychain search list
                                                   (UInt32)[serviceIdentifierData length], [serviceIdentifierData bytes],
                                                   0, NULL, // username length and bytes -- we don't care
-                                                  0, NULL, // password length and bytes -- we'll get these via SecKeychainItemCopyAttributesAndData()
+                                                  NULL, NULL, // password length and bytes -- we'll get these via SecKeychainItemCopyAttributesAndData()
                                                   &itemRef);
+#pragma clang diagnostic pop
     if (err != errSecSuccess) {
         if (err == errSecItemNotFound) {
             if (outError)
@@ -129,12 +127,18 @@ BOOL OFWriteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSStrin
         NSData *passwordData = [password dataUsingEncoding:NSUTF8StringEncoding];
         NSData *serviceIdentifierData = [serviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
         
+        // 22011331: SecKeychainFindGenericPassword has inconsistent/incorrect nullability annotations
+        // NOTE: If you pass a non-NULL password length parameter, then you must pass a non-NULL passwordBytes pointer too since it will get written. And, then you must free it, and maybe should zero it out first, and ... So for now disabling this warning until they fix the bad annotation.
+        
         SecKeychainItemRef itemRef = NULL;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
         OSStatus err = SecKeychainFindGenericPassword(keychain,
                                                       (UInt32)[serviceIdentifierData length], [serviceIdentifierData bytes],
                                                       0, NULL, // username length and bytes -- we don't care
                                                       NULL, NULL, // password length and data
                                                       &itemRef);
+#pragma clang diagnostic pop
         if (err == errSecSuccess) {
             err = SecKeychainItemModifyAttributesAndData(itemRef, NULL/*attributes*/,
                                                          (UInt32)[passwordData length], [passwordData bytes]);
@@ -175,12 +179,18 @@ BOOL OFDeleteCredentialsForServiceIdentifier(NSString *serviceIdentifier, NSErro
         NSData *serviceIdentifierData = [serviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
         
         while (YES) {
+            // 22011331: SecKeychainFindGenericPassword has inconsistent/incorrect nullability annotations
+            // NOTE: If you pass a non-NULL password length parameter, then you must pass a non-NULL passwordBytes pointer too since it will get written. And, then you must free it, and maybe should zero it out first, and ... So for now disabling this warning until they fix the bad annotation.
+
             SecKeychainItemRef itemRef = NULL;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
             OSStatus err = SecKeychainFindGenericPassword(keychain,
                                                           (UInt32)[serviceIdentifierData length], [serviceIdentifierData bytes],
                                                           0, NULL, // username length and bytes -- we don't care
                                                           NULL, NULL, // password length and data
                                                           &itemRef);
+#pragma clang diagnostic pop
             if (err == errSecItemNotFound) {
                 success = YES;
                 break;

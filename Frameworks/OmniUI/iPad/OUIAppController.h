@@ -14,20 +14,31 @@
 
 @class UIBarButtonItem;
 
-#define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) file:__FILE__ line:__LINE__]
-#define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) file:__FILE__ line:__LINE__]
+#define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:__FILE__ line:__LINE__]
+#define OUI_PRESENT_ERROR_FROM(error, viewController) [[[OUIAppController controller] class] presentError:(error) fromViewController:(viewController) file:__FILE__ line:__LINE__]
+
+#define OUI_PRESENT_ALERT(error) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:__FILE__ line:__LINE__]
+#define OUI_PRESENT_ALERT_FROM(error, viewController) [[[OUIAppController controller] class] presentAlert:(error) fromViewController:(viewController) file:__FILE__ line:__LINE__]
 
 @interface OUIAppController : UIResponder <UIApplicationDelegate, MFMailComposeViewControllerDelegate>
 
-+ (instancetype)controller;
++ (instancetype)controller NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
+
+// +sharedController is a synonym for +controller.
+// The Swift bridge allows us to use +sharedController, but generates a compile error on +controller, suggesting we use a constructor instead.
++ (instancetype)sharedController NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 
 + (NSString *)applicationName;
 
 + (BOOL)canHandleURLScheme:(NSString *)urlScheme;
 
-+ (void)presentError:(NSError *)error;
-+ (void)presentError:(NSError *)error file:(const char *)file line:(int)line;
-+ (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
++ (void)presentError:(NSError *)error NS_EXTENSION_UNAVAILABLE_IOS("Use +presentError:fromViewController: or another variant instead.");
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;
+
++ (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line NS_EXTENSION_UNAVAILABLE_IOS("Use +presentAlert:fromViewController:file:line: instead.");  // 'OK' instead of 'Cancel' for the button title
+
++ (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 
 // Can be set by early startup code and queried by later startup code to determine whether to launch into a plain state (no inbox item opened, no last document opened, etc). This can be used by applications integrating crash reporting software when they detect a crash from a previous launch and want to report it w/o other launch-time activities.
 @property(nonatomic,assign) BOOL shouldPostponeLaunchActions;
@@ -35,17 +46,6 @@
 
 - (void)showAboutScreenInNavigationController:(UINavigationController *)navigationController;
 - (void)showOnlineHelp:(id)sender;
-
-// Popover Helpers
-// Present all popovers via this API to help avoid popovers having to know about one another to avoid multiple popovers on screen.
-@property(nonatomic,readonly) BOOL hasVisiblePopover;
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation; // Called by OUIMainViewController
-- (BOOL)presentPopover:(UIPopoverController *)popover fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
-- (BOOL)presentPopover:(UIPopoverController *)popover fromBarButtonItem:(UIBarButtonItem *)item permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
-- (BOOL)dismissPopover:(UIPopoverController *)popover animated:(BOOL)animated; // If the popover in question is not visible, does nothing. DOES send the 'did' delegate method, unlike the plain UIPopoverController method (see the implementation for reasoning). Returns YES if the popover was visible.
-- (void)dismissPopoverAnimated:(BOOL)animated; // Calls -dismissPopover:animated: with whatever popover is visible
-
-- (void)forgetPossiblyVisiblePopoverIfAlreadyHidden;
 
 // UIApplicationDelegate methods that we implement
 - (void)applicationWillTerminate:(UIApplication *)application;
@@ -62,7 +62,7 @@
 - (void)resetKeychain;
 
 - (BOOL)isRunningRetailDemo;
-- (BOOL)showFeatureDisabledForRetailDemoAlert; // Runs an alert and returns YES if running a retail demo.
+- (BOOL)showFeatureDisabledForRetailDemoAlertFromViewController:(UIViewController *)presentingViewController; // Runs an alert and returns YES if running a retail demo.
 
 @property(nonatomic,readonly) NSString *fullReleaseString;
 
@@ -87,10 +87,16 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (NSString *)feedbackMenuTitle;
 - (UIBarButtonItem *)newAppMenuBarButtonItem; // insert this into your view controllers; see -additionalAppMenuOptionsAtPosition: for customization
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions
-- (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString *)body;
+- (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString *)body NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
 
 @property(nonatomic,readonly) UIImage *settingsMenuImage;
 @property(nonatomic,readonly) UIImage *inAppPurchasesMenuImage;
+
+- (void)willWaitForSnapshots;
+- (void)didFinishWaitingForSnapshots;
+- (void)startNewSnapshotTimer;
+- (void)destroyCurrentSnapshotTimer;
+extern NSString * const OUISystemIsSnapshottingNotification;
 
 @end
 

@@ -25,6 +25,11 @@ RCS_ID("$Id$")
     [[OIInspectorRegistry inspectorRegistryForMainWindow] tabShowHidePanels];
 }
 
+- (void)revealEmbeddedInspectorFromMenuItem:(id)sender;
+{
+    [[OIInspectorRegistry inspectorRegistryForMainWindow] revealEmbeddedInspectorFromMenuItem:sender];
+}
+
 - (IBAction)toggleFrontColorPanel:(id)sender;
 {
     [[NSColorPanel sharedColorPanel] toggleWindow:nil];
@@ -54,7 +59,11 @@ RCS_ID("$Id$")
         }
         return YES;
     }
-    
+
+    if (action == @selector(revealEmbeddedInspectorFromMenuItem:)) {
+        return [[OIInspectorRegistry inspectorRegistryForMainWindow] validateMenuItem:item];
+    }
+
     return [super validateMenuItem:item];
 }
 

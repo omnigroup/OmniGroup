@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,6 +40,9 @@
 - (NSSet *)select:(OFPredicateBlock)predicate;
 
 - (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
+
+- (BOOL)containsObjectIdenticalTo:(id)anObject;
+- (BOOL)isIdenticalToSet:(NSSet *)otherSet;
 
 @end
 

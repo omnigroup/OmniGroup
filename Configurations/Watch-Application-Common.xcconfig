@@ -1,0 +1,19 @@
+// Copyright 2008-2015 Omni Development, Inc.  All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings for all watchOS targets
+#include "Target-Watch-Common.xcconfig"
+
+// Common settings for Application targets
+GCC_SYMBOLS_PRIVATE_EXTERN = NO
+
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUNDLE_IDENTIFIER="@\"$(OMNI_BUNDLE_IDENTIFIER)\""
+
+LD_RUNPATH_SEARCH_PATHS = $(value) @executable_path/Frameworks
+OTHER_LDFLAGS = $(value) -ObjC
+
+// Include all public headers vended by static library targets.
+// Since Applications get installed and Libraries don't, TARGET_BUILD_DIR can't be used.
+// BUILD_DIR is .../Products if you have intermediates going into the same directory as products, but if you don't you need OBJROOT.
+HEADER_SEARCH_PATHS = $(value) $(OBJROOT)/UninstalledProducts/include

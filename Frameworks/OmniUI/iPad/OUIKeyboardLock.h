@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -15,10 +15,10 @@
 // Usage: Construct a keyboard lock using the class method keyboardLockForView:keyboardType:. The lock's text field will become first responder before it is returned. Once you've established a first responder for your new activity, call the unlock method to clean up.
 @interface OUIKeyboardLock : NSObject
 
-+ (OUIKeyboardLock *)keyboardLockForView:(UIView *)parentView keyboardType:(UIKeyboardType)keyboardType;
++ (OUIKeyboardLock *)keyboardLockForView:(UIView *)parentView keyboardType:(UIKeyboardType)keyboardType NS_EXTENSION_UNAVAILABLE_IOS("Keyboard lock is not available in extensions");
 
-- (id)initWithParentView:(UIView *)parentView keyboardType:(UIKeyboardType)keyboardType;
+- (id)initWithParentView:(UIView *)parentView keyboardType:(UIKeyboardType)keyboardType NS_EXTENSION_UNAVAILABLE_IOS("Keyboard lock is not available in extensions");
 
-- (void)unlock;
+- (void)unlock NS_EXTENSION_UNAVAILABLE_IOS("Keyboard lock is not available in extensions");
 
 @end

@@ -36,18 +36,18 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 - (void)textViewMoveRightAtEnd:(OUITextView *)textView;
 - (void)textViewMoveLeftAtBeginning:(OUITextView *)textView;
 
+- (void)textView:(OUITextView *)textView didChangeAttributesInRange:(UITextRange*)range;
+
 @end
 
 @interface OUITextView : UITextView <OUIInspectorDelegate>
 
 + (OUITextView *)activeFirstResponderTextView;
 
-@property(nonatomic,assign) id <OUITextViewDelegate> delegate; // We'd like this to be weak, but the superclass declares it 'assign'.
+@property(nonatomic,weak) id <OUITextViewDelegate> delegate;
 
 // UITextView currently has top/bottom padding that we cannot turn off/change
 + (CGFloat)oui_defaultTopAndBottomPadding;
-
-- (void)replaceTextStorage:(NSTextStorage *)textStorage;
 
 @property(nonatomic,readonly) CGFloat textHeight;
 @property(nonatomic,readonly) CGSize textUsedSize;
@@ -73,8 +73,9 @@ extern NSString * const OUITextViewInsertionPointDidChangeNotification;
 - (OUITextSelectionSpan *)firstNonEmptyInspectableTextSpan; // Nil if there is no selection or the selection length is zero.
 - (BOOL)isEmptyInspectableTextSpans:(NSArray *)spans;
 
+- (OUIInspector *)textInspector;
 - (void)dismissInspectorImmediatelyIfVisible;
-- (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^)(OUIInspector *))setupBlock;
+- (void)inspectSelectedTextWithViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)barButtonItem withSetupBlock:(void (^)(OUIInspector *))setupBlock NS_EXTENSION_UNAVAILABLE_IOS("");
 
 - (void)selectAllShowingMenu:(BOOL)show;
 - (void)setSelectedTextRange:(UITextRange *)newRange showingMenu:(BOOL)show;

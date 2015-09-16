@@ -150,6 +150,8 @@ void OFAfterDelayPerformBlock(NSTimeInterval delay, void (^block)(void))
      dispatch_get_current_queue is deprecated, or this could be a bit simpler. Instead, we schedule a block on the main dispatch queue that will then send the original block back to the original operation queue. This requires the main queue to be unblocked (which it really should be anyway). All the current callers are from the main queue, anyway. Assert this is still true so that we can make sure to test the non-main caller case if/when it happens.
      */
     OBPRECONDITION([NSThread isMainThread]);
+
+    OBRecordBacktrace("Delayed block queued", OBBacktraceBuffer_Generic);
     
     NSOperationQueue *operationQueue = [NSOperationQueue currentQueue];
     
@@ -165,9 +167,14 @@ void OFAfterDelayPerformBlock(NSTimeInterval delay, void (^block)(void))
 
 void OFPerformInBackground(void (^block)(void))
 {
+    block = [block copy];
+    OBRecordBacktraceWithContext("Background block queued", OBBacktraceBuffer_Generic, block);
+
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     [queue addOperationWithBlock:^{
+        OBRecordBacktraceWithContext("Background block invoke", OBBacktraceBuffer_Generic, block);
         block();
+        [block release];
         [queue release];
     }];
 }
@@ -175,13 +182,35 @@ void OFPerformInBackground(void (^block)(void))
 #import <Foundation/NSThread.h>
 #import <dispatch/queue.h>
 
-void OFMainThreadPerformBlock(void (^block)(void)) {
+void OFMainThreadPerformBlock(void (^block)(void))
+{
     if ([NSThread isMainThread])
         block();
-    else
-        dispatch_async(dispatch_get_main_queue(), block);
+    else {
+        block = [block copy];
+        OBRecordBacktraceWithContext("Main thread block enqueued", OBBacktraceBuffer_Generic, block);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            OBRecordBacktraceWithContext("Main thread block invoked", OBBacktraceBuffer_Generic, block);
+            block();
+        });
+        [block release];
+    }
 }
 
+void OFMainThreadPerformBlockSynchronously(void (^block)(void))
+{
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        block = [block copy];
+        OBRecordBacktraceWithContext("Main thread block enqueued", OBBacktraceBuffer_Generic, block);
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            OBRecordBacktraceWithContext("Main thread block invoked", OBBacktraceBuffer_Generic, block);
+            block();
+        });
+        [block release];
+    }
+}
 
 // Inspired by <https://github.com/n-b/CTT2>, but redone to use a timer to avoid spinning the runloop as fast as possible when polling.
 

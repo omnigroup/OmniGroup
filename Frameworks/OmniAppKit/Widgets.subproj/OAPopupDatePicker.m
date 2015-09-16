@@ -82,7 +82,7 @@ static NSSize calendarImageSize;
 + (void)initialize;
 {
     OBINITIALIZE;
-    calendarImage = [[NSImage imageNamed:@"smallcalendar" inBundle:OMNI_BUNDLE] retain];
+    calendarImage = [[NSImage imageNamed:@"calendar" inBundle:OMNI_BUNDLE] retain];
     calendarImageSize = [calendarImage size];
 }
 
@@ -123,7 +123,7 @@ static NSSize calendarImageSize;
 + (NSRect)calendarRectForFrame:(NSRect)cellFrame;
 {
     CGFloat verticalEdgeGap = (CGFloat)floor((NSHeight(cellFrame) - calendarImageSize.height) / 2.0f);
-    const CGFloat horizontalEdgeGap = 2.0f;
+    const CGFloat horizontalEdgeGap = 3.0f;
     
     NSRect imageRect;
     imageRect.origin.x = NSMaxX(cellFrame) - calendarImageSize.width - horizontalEdgeGap;
@@ -238,8 +238,12 @@ static NSSize calendarImageSize;
         [_boundObject setValue:[datePicker objectValue] forKeyPath:_boundObjectKeyPath];
     }
     
-    if (!_boundObject && _dateUpdatedAction) {
-        [_control performSelector:_dateUpdatedAction withObject:_datePickerObjectValue];
+    if (!_boundObject) {
+        if (_dateUpdatedAction) {
+            [_control performSelector:_dateUpdatedAction withObject:_datePickerObjectValue];
+        } else {
+            [_control setObjectValue:_datePickerObjectValue];
+        }
     }
 }
 

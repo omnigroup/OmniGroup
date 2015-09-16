@@ -1,3 +1,6 @@
+/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
+" (Copy)" = " (Copier)";
+
 /* bytes */
 "%@ B" = "%@ o";
 
@@ -43,9 +46,6 @@
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Un document nommé “%@” existe déjà. Voulez-vous le remplacer ? Cette action ne peut pas être annulée.";
 
-/* Error reason for a document operation failing due to a missing file. */
-"A file is missing or has been deleted." = "Un fichier est manquant ou a été supprimé.";
-
 /* Omni Sync Server account info button title */
 "Account Info" = "Infos sur le compte";
 
@@ -55,7 +55,8 @@
 /* Menu option in the document picker view */
 "Actions" = "Actions";
 
-/* Cloud Setup button title to add a new account */
+/* Cloud Setup button title to add a new account
+   Cloud Setup button title to convert an existing account */
 
 "Add an Account" = "Ajouter un compte";
 
@@ -64,7 +65,10 @@
 
 /* button title
    cancel button title
-   Discard unsynced edits dialog: cancel button label */
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 
 
@@ -95,6 +99,9 @@
 
 /* title view clear button accessibility label. */
 "Clear Title" = "Effacer titre";
+
+/* Cloud Storage Providers preference nvigation bar title */
+"Cloud Storage Providers" = "Fournisseurs de stockage sur le cloud";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Connecté";
@@ -138,6 +145,9 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "Ignorer les modifications non synchronisées?";
 
+/* Message letting the user know that their document was moved from one folder to another. */
+"Document moved." = "Document déplacé.";
+
 /* Title for alert informing user that the document has been reloaded with edits from another device */
 "Document Updated" = "Document mis à jour";
 
@@ -173,8 +183,7 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
 
 
 "Export" = "Exporter";
@@ -197,7 +206,7 @@
 /* doc picker folder type accessibility value */
 "Folder" = "Dossier";
 
-/* Import section title */
+/* import sheet title */
 "Import" = "Importer";
 
 /* Info item accessibility label */
@@ -230,6 +239,9 @@
 /* modified date accessibility value */
 "Modified %@" = "Modifié %@";
 
+/* Cloud Storage Providers more information button title */
+"More Info…" = "Plus d’infos…";
+
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
 
@@ -243,15 +255,8 @@
 
 "Move to Trash" = "Placer dans la corbeille";
 
-/* Action sheet button title
-   Menu popover title */
-"Move to..." = "Placer dans...";
-
-/* Message format for alert informing user that the document has been moved out of a folder to the top level */
-"Moved out of folder %@." = "Placé hors du dossier %@.";
-
-/* Message format for alert informing user that the document has been moved to a folder */
-"Moved to folder %@." = "Placé dans le dossier %@.";
+/* Share menu title */
+"Move to..." = "Placer dans…";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mon document";
@@ -284,8 +289,7 @@
 "Not uploaded" = "Non chargé";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
 
 "OK" = "OK";
 
@@ -344,7 +348,7 @@
 "Restore Sample Documents" = "Restaurer les doc. d'exemple";
 
 /* Share menu title */
-"Restore to..." = "Restaurer dans...";
+"Restore to..." = "Restaurer dans…";
 
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "Réessayer la synchronisation";
@@ -429,6 +433,9 @@
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Ce compte de cloud n’existe plus.";
 
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Ce document n’est pas accessible. Il se peut que le fichier ait été supprimé, renommé ou déplacé via iTunes ou un fournisseur de documents externe. Essayez de supprimer le fichier puis de le rajouter à nouveau.";
+
 /* item not fully downloaded error message */
 "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Cet élément ne peut pas être dupliqué, car il n’a pas été complètement téléchargé. Touchez l’élément et attendez qu’il soit téléchargé avant de réessayer.";
 
@@ -438,8 +445,14 @@
 /* sort by title */
 "Title" = "Titre";
 
+/* Cloud Storage Providers preference informational description */
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "L’activation des fournisseurs de stockage sur le cloud donne accès à des documents stockés sur des services comme iCloud Drive ou Dropbox. L’accès aux fournisseurs de stockage sur le cloud que nous vous proposons est en phase de développement BÊTA ; soyez prudent lorsque vous activez ce service. Pour en savoir plus, consultez la section « Utilisation du cloud » dans la documentation.";
+
 /* error title */
 "Unable to open file." = "Impossible d’ouvrir le fichier.";
 
+/* Cloud Storage Providers preference settings screen title */
+"Use Cloud Storage Providers" = "Utiliser fournisseurs de stockage sur le cloud";
+
 /* Account validation status string. */
-"Validating account..." = "Validation du compte...";
+"Validating account..." = "Validation du compte…";

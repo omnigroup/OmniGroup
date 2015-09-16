@@ -1,5 +1,5 @@
 /* error reason */
-"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "zip ファイル内のエントリに、ファイルシステムのパスに変換できない名前がありました。";
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "zip ファイル内のエントリに、ファイルシステムのパスに変換できない名前があります。";
 
 /* error description */
 "Duplicate zip member name \"%@\"." = "zip メンバー名 “%@” が重複しています。";

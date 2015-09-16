@@ -312,6 +312,8 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
 
 - (NSMenuItem *)menuItemForTarget:(id)target action:(SEL)action;
 {
+    OBPRECONDITION(!target || [target respondsToSelector:action]);
+
     NSString *keyEquivalent = [self shortcutKey];
     if (keyEquivalent == nil)
 	keyEquivalent = @"";

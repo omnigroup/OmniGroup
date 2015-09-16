@@ -7,7 +7,7 @@
 
 #import <OmniUI/OUINavigationBarTextField.h>
 
-#import <OmniUI/OUIAppearance.h>
+#import <OmniAppKit/OAAppearance.h>
 
 RCS_ID("$Id$");
 
@@ -19,7 +19,7 @@ static void _commonInit(OUINavigationBarTextField *self)
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         UIImage *background = [UIImage imageNamed:@"OUINavigationBarTextFieldBackground" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
-        resizableImage = [background resizableImageWithCapInsets:[[OUIAppearance appearance] navigationBarTextFieldBackgroundImageInsets]];
+        resizableImage = [background resizableImageWithCapInsets:[[OAAppearance appearance] navigationBarTextFieldBackgroundImageInsets]];
     });
     
     self.background = resizableImage;
@@ -52,7 +52,7 @@ static void _commonInit(OUINavigationBarTextField *self)
     [super sizeToFit];
     
     CGRect bounds = self.bounds;
-    bounds.size.height = self.font.lineHeight * [[OUIAppearance appearance] navigationBarTextFieldLineHeightMultiplier];
+    bounds.size.height = self.font.lineHeight * [[OAAppearance appearance] navigationBarTextFieldLineHeightMultiplier];
     self.bounds = bounds;
 }
 

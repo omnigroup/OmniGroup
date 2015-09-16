@@ -9,7 +9,7 @@
 
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIInspectorWell.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 #import <OmniQuartz/OQDrawing.h>
 
 #import "OUIParameters.h"
@@ -18,7 +18,7 @@ RCS_ID("$Id$");
 
 @implementation OUIColorSwatch
 {
-    OQColor *_color;
+    OAColor *_color;
     BOOL _showNavigationArrow;
 }
 
@@ -91,7 +91,7 @@ static id _commonInit(OUIColorSwatch *self)
     return _commonInit(self);
 }
 
-- initWithColor:(OQColor *)color;
+- initWithColor:(OAColor *)color;
 {
     if (!(self = [self initWithFrame:CGRectZero]))
         return nil;

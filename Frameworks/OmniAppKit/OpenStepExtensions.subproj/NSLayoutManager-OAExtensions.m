@@ -130,9 +130,12 @@ RCS_ID("$Id$");
     }
     
     textContainer = [textContainers lastObject];
+    // CGSize originalSize = textContainer.size;
+    // textContainer.size = (CGSize){.width = originalSize.width, .height = 0.0};
     CGRect usedRect = [self usedRectForTextContainer:textContainer];
     totalHeight += usedRect.size.height;
-    
+    // textContainer.size = originalSize;
+
     return totalHeight;
 }
 

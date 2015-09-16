@@ -28,8 +28,10 @@
 
 - (void)documentStore:(ODSStore *)store addedFileItems:(NSSet *)addedFileItems;
 
+- (void)documentStore:(ODSStore *)store fileItem:(ODSFileItem *)fileItem willMoveToURL:(NSURL *)newURL;
 - (void)documentStore:(ODSStore *)store fileItemEdit:(ODSFileItemEdit *)fileItemEdit willCopyToURL:(NSURL *)newURL;
 - (void)documentStore:(ODSStore *)store fileItemEdit:(ODSFileItemEdit *)fileItemEdit finishedCopyToURL:(NSURL *)destinationURL withFileItemEdit:(ODSFileItemEdit *)destinationFileItemEditOrNil;
+- (void)documentStore:(ODSStore *)store willRemoveFileItemAtURL:(NSURL *)destinationURL;
 
 - (ODSFileItem *)documentStore:(ODSStore *)store preferredFileItemForNextAutomaticDownload:(NSSet *)fileItems;
 

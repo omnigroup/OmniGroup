@@ -84,7 +84,7 @@
 "Could not create directory" = "无法创建目录";
 
 /* time span formatter span */
-"d" = "天";
+"d" = "d";
 
 /* time span formatter span */
 "day" = "天";
@@ -108,7 +108,7 @@
 "Failed to write lock file.  %@" = "写入锁定文件失败。  %@";
 
 /* time span formatter span */
-"h" = "小时";
+"h" = "h";
 
 /* time span formatter span */
 "hour" = "小时";
@@ -123,7 +123,7 @@
 "local configuration file" = "本地配置文件";
 
 /* time span formatter span */
-"m" = "分钟";
+"m" = "m";
 
 /* time span formatter span */
 "minute" = "分钟";
@@ -132,7 +132,7 @@
 "minutes" = "分钟";
 
 /* time span formatter span */
-"mo" = "月";
+"mo" = "mo";
 
 /* time span formatter span */
 "month" = "月";
@@ -156,7 +156,7 @@
 "Restore all internal configuration settings to defaults" = "将所有内部配置设置还原为默认值";
 
 /* time span formatter span */
-"s" = "秒";
+"s" = "s";
 
 /* time span formatter span */
 "second" = "秒";
@@ -213,7 +213,7 @@
 "unrecognized compression format." = "无法识别的压缩格式。";
 
 /* time span formatter span */
-"w" = "周";
+"w" = "w";
 
 /* error description */
 "Warning encountered while loading XML." = "载入 XML 时遇到警告。";
@@ -225,7 +225,7 @@
 "weeks" = "周";
 
 /* time span formatter span */
-"y" = "年";
+"y" = "y";
 
 /* time span formatter span */
 "year" = "年";

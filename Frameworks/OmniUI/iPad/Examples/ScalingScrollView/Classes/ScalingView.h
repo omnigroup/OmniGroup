@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,15 @@
 //
 // $Id$
 
-#import <OmniUI/OUIScalingView.h>
+#import <OmniUI/OUITiledScalingView.h>
 
-@interface ScalingView : OUIScalingView
+@class Box;
+
+@interface ScalingView : OUITiledScalingView
+
+@property(nonatomic,copy) NSArray *boxes;
+
+- (void)boxBoundsWillChange:(Box *)box;
+- (void)boxBoundsDidChange:(Box *)box;
+
 @end

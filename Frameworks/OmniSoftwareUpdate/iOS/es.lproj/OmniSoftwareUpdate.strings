@@ -111,7 +111,7 @@
 "This version" = "Esta versión";
 
 /* error reason */
-"Timed out waiting for the software update service." = "Se ha excedido el tiempo de espera para el servicio de actualización de software.";
+"Timed out waiting for the software update service." = "Se ha agotado el tiempo de espera del servicio de actualización de software.";
 
 /* error reason - we ran a helper tool to fetch software update information, but it didn't return any information */
 "Tool returned no data" = "La herramienta no ha devuelto datos";

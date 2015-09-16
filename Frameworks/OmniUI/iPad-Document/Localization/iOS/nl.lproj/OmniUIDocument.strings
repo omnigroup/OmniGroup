@@ -1,3 +1,6 @@
+/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
+" (Copy)" = " (Kopieer)";
+
 /* bytes */
 "%@ B" = "%@ B";
 
@@ -43,9 +46,6 @@
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Er bestaat al een document met de naam “%@”. Wilt u dit vervangen? Dit kan niet ongedaan worden gemaakt.";
 
-/* Error reason for a document operation failing due to a missing file. */
-"A file is missing or has been deleted." = "Een bestand ontbreekt of is verwijderd.";
-
 /* Omni Sync Server account info button title */
 "Account Info" = "Accountinfo";
 
@@ -53,18 +53,22 @@
 "Account Name" = "Accountnaam";
 
 /* Menu option in the document picker view */
-"Actions" = "Taken";
+"Actions" = "Acties";
 
-/* Cloud Setup button title to add a new account */
+/* Cloud Setup button title to add a new account
+   Cloud Setup button title to convert an existing account */
 
 "Add an Account" = "Voeg een account toe";
 
 /* home screen button label */
-"Add OmniPresence Account" = "OmniPresence-account toevoegen";
+"Add OmniPresence Account" = "Voeg OmniPresence-account toe";
 
 /* button title
    cancel button title
-   Discard unsynced edits dialog: cancel button label */
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 
 
@@ -95,6 +99,9 @@
 
 /* title view clear button accessibility label. */
 "Clear Title" = "Wis titel";
+
+/* Cloud Storage Providers preference nvigation bar title */
+"Cloud Storage Providers" = "Leveranciers van cloudopslag";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Aangesloten";
@@ -138,6 +145,9 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "Niet-gesynchroniseerde bewerkingen wissen?";
 
+/* Message letting the user know that their document was moved from one folder to another. */
+"Document moved." = "Document verplaatst.";
+
 /* Title for alert informing user that the document has been reloaded with edits from another device */
 "Document Updated" = "Document bijgewerkt";
 
@@ -173,8 +183,7 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
 
 
 "Export" = "Exporteer";
@@ -197,7 +206,7 @@
 /* doc picker folder type accessibility value */
 "Folder" = "Map";
 
-/* Import section title */
+/* import sheet title */
 "Import" = "Importeer";
 
 /* Info item accessibility label */
@@ -230,6 +239,9 @@
 /* modified date accessibility value */
 "Modified %@" = "%@ is gewijzigd";
 
+/* Cloud Storage Providers more information button title */
+"More Info…" = "Meer info...";
+
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
 
@@ -243,15 +255,8 @@
 
 "Move to Trash" = "Verplaats naar prullenmand";
 
-/* Action sheet button title
-   Menu popover title */
-"Move to..." = "Verplaats naar...";
-
-/* Message format for alert informing user that the document has been moved out of a folder to the top level */
-"Moved out of folder %@." = "Verplaatst uit map %@.";
-
-/* Message format for alert informing user that the document has been moved to a folder */
-"Moved to folder %@." = "Verplaatst naar map %@.";
+/* Share menu title */
+"Move to..." = "Verplaats naar…";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Mijn document";
@@ -284,8 +289,7 @@
 "Not uploaded" = "Niet geüpload";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
 
 "OK" = "OK";
 
@@ -344,7 +348,7 @@
 "Restore Sample Documents" = "Herstel voorbeelddocumenten";
 
 /* Share menu title */
-"Restore to..." = "Herstel naar...";
+"Restore to..." = "Herstel naar…";
 
 /* When displaying a sync error, this is the option to retry syncing. */
 "Retry Sync" = "Probeer opnieuw te synchroniseren";
@@ -374,7 +378,7 @@
 "Send to App" = "Verstuur naar app";
 
 /* Menu option in the document picker view */
-"Send to Photos" = "Verstuur naar foto's";
+"Send to Photos" = "Verstuur naar Foto's";
 
 /* export options title
    Menu option in the document picker view */
@@ -429,6 +433,9 @@
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Deze Cloud-account bestaat niet meer.";
 
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Dit document is niet toegankelijk. Het is mogelijk dat het bestand is verwijderd, hernoemd of verplaatst via iTunes of een externe documentleverancier. Probeer het bestand te verwijderen en opnieuw toe te voegen.";
+
 /* item not fully downloaded error message */
 "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Dit onderdeel kan niet worden gedupliceerd omdat het niet volledig is gedownload. Tik op het onderdeel en wacht tot het is gedownload voordat u het opnieuw probeert.";
 
@@ -438,8 +445,14 @@
 /* sort by title */
 "Title" = "Titel";
 
+/* Cloud Storage Providers preference informational description */
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Het inschakelen van Leveranciers van cloudopslag biedt toegang tot documenten die zijn opgeslagen op de cloudservices, zoals iCloud Drive of Dropbox. We introduceren toegang tot Leveranciers van cloudopslag als een BETA-implementatie. Let op wanneer u deze service inschakelt. Zie \"Werken in de cloud\"' in de documentatie voor meer informatie.";
+
 /* error title */
 "Unable to open file." = "Kan bestand niet openen.";
 
+/* Cloud Storage Providers preference settings screen title */
+"Use Cloud Storage Providers" = "Leveranciers van cloudopslag gebruiken";
+
 /* Account validation status string. */
-"Validating account..." = "Bezig met valideren van de account...";
+"Validating account..." = "Bezig met valideren van de account…";

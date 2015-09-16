@@ -376,6 +376,8 @@ BOOL OBIsBeingDebugged(void)
     return (rc == 0 && (info.kp_proc.p_flag & P_TRACED) != 0);
 }
 
+#if !defined(TARGET_OS_WATCH) || !TARGET_OS_WATCH
+
 void _OBStopInDebugger(const char *file, unsigned int line, const char *function, const char *message)
 {
     NSLog(@"OBStopInDebugger at %s:%d in %s -- %s", file, line, function, message);
@@ -386,6 +388,8 @@ void _OBStopInDebugger(const char *file, unsigned int line, const char *function
         kill(getpid(), SIGTRAP);
     }
 }
+
+#endif
 
 DEFINE_NSSTRING(OBAbstractImplementation);
 DEFINE_NSSTRING(OBUnusedImplementation);

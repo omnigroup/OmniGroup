@@ -74,7 +74,7 @@ static NSURL *_makeLocalSnapshotURL(OFXContainerAgent *containerAgent, NSString 
 static BOOL _stringIsWebDAVSafe(NSString *string)
 {
     // Take a conservative approach to safety since so many WebDAV servers have problems with double-quoting, and quoting at all.
-    if (OFNOTEQUAL(string, [string stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]))
+    if (OFNOTEQUAL(string, [string stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]))
         return NO;
     if ([string rangeOfCharactersNotRepresentableInCFEncoding:kCFStringEncodingASCII].length > 0)
         return NO;
@@ -90,7 +90,7 @@ static BOOL _isValidIdentifier(NSString *identifier)
 {
     OBASSERT(![NSString isEmptyString:identifier]);
     OBASSERT([identifier containsString:OFXRemoteFileIdentifierToVersionSeparator] == NO, @"Should not contain our separator");
-    OBASSERT([[identifier stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding] isEqual:identifier], @"Should not require URL encoding");
+    OBASSERT([[identifier stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]] isEqual:identifier], @"Should not require URL encoding");
     return YES;
 }
 #endif

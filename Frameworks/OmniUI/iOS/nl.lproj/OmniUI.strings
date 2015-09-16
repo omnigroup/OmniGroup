@@ -26,7 +26,7 @@
 "Center text align" = "Tekst centreren";
 
 /* Certificate trust alert title */
-"Certificate Trust" = "Certificaattrust";
+"Certificate Trust" = "Certificaatvertrouwenslijst";
 
 /* alert message */
 "Changed the '%@' preference from '%@' to '%@'" = "De voorkeur '%1$@' is gewijzigd van '%2$@' naar '%3$@'";
@@ -61,7 +61,7 @@
 "Feature not enabled for this demo" = "Functie niet ingeschakeld voor deze demo";
 
 /* Overlay text when zoomed to fit screen */
-"Fit" = "Pas";
+"Fit" = "Pas aan";
 
 /* Help and Settings toolbar item accessibility label. */
 "Help and Settings" = "Help en instellingen";
@@ -73,7 +73,7 @@
 "Increment" = "Vermeerdering";
 
 /* default special URL confirm button title */
-"Invoke" = "Roep aan";
+"Invoke" = "Aanroepen";
 
 /* button title */
 "Invoke and Quit" = "Roep aan en stop";
@@ -100,7 +100,10 @@
 "Note" = "Notitie";
 
 /* button title
-   OK button label */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
 
 
 
@@ -128,7 +131,7 @@
 /* App menu item title
    release notes html screen title */
 
-"Release Notes" = "Opmerkingen bij deze versie";
+"Release Notes" = "Versiegegevens";
 
 /* No purchases found title */
 "Restore Complete" = "Herstel is voltooid";
@@ -176,4 +179,4 @@
 "You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "U hebt op een speciale URL van Omni getikt:\n\n“%@”\n\nDeze opdracht uitvoeren?";
 
 /* zoom label */
-"Zoom" = "Vergroot/verklein";
+"Zoom" = "Zoom";

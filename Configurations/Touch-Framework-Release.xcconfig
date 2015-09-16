@@ -5,10 +5,5 @@
 // Common settings for Framework targets
 #include "Touch-Framework-Common.xcconfig"
 
-// On iOS, frameworks have to get copied into the bundle for all builds, but we need to do the install anyway to get the dSYM packaged
-SKIP_INSTALL = NO
-COPY_PHASE_STRIP = NO
-STRIP_INSTALLED_PRODUCT = YES
-
 // iOS builds default to leaving these in Release-iphoneos, but our PackageApplication script likes them all at the same level with the app and app extension symbols
 DWARF_DSYM_FILE_SHOULD_ACCOMPANY_PRODUCT = YES

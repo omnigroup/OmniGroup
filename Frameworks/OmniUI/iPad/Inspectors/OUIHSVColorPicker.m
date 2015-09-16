@@ -8,7 +8,7 @@
 #import "OUIHSVColorPicker.h"
 
 #import <OmniUI/OUIColorComponentSlider.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 RCS_ID("$Id$");
 
@@ -22,9 +22,9 @@ RCS_ID("$Id$");
     return @"hsv";
 }
 
-- (OQColorSpace)colorSpace;
+- (OAColorSpace)colorSpace;
 {
-    return OQColorSpaceHSV;
+    return OAColorSpaceHSV;
 }
 
 - (NSArray *)makeComponentSliders;
@@ -56,28 +56,28 @@ RCS_ID("$Id$");
     return sliders;
 }
 
-- (void)extractComponents:(CGFloat *)components fromColor:(OQColor *)color;
+- (void)extractComponents:(CGFloat *)components fromColor:(OAColor *)color;
 {
-    OSHSV hsv = [color toHSV];
+    OAHSV hsv = [color toHSV];
     components[0] = hsv.h;
     components[1] = hsv.s;
     components[2] = hsv.v;
     components[3] = hsv.a;
 }
 
-- (OQColor *)makeColorWithComponents:(const CGFloat *)components;
+- (OAColor *)makeColorWithComponents:(const CGFloat *)components;
 {
-    return [OQColor colorWithHue:components[0] saturation:components[1] brightness:components[2] alpha:components[3]];
+    return [OAColor colorWithHue:components[0] saturation:components[1] brightness:components[2] alpha:components[3]];
 }
 
-static OQLinearRGBA _convertHSVAToRGBA(const CGFloat *input)
+static OALinearRGBA _convertHSVAToRGBA(const CGFloat *input)
 {
-    OSHSV hsva;
+    OAHSV hsva;
     hsva.h = input[0];
     hsva.s = input[1];
     hsva.v = input[2];
     hsva.a = input[3];
-    return OQHSVToRGB(hsva);
+    return OAHSVToRGB(hsva);
 }
 
 - (OUIComponentColorPickerConvertToRGB)rgbaComponentConverter;

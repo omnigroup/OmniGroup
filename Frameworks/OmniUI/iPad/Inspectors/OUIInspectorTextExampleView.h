@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,12 +9,12 @@
 
 #import <UIKit/UIView.h>
 
-@class OQColor;
+@class OAColor;
 @class NSAttributedString;
 
 @interface OUIInspectorTextExampleView : UIView
 
-@property(nonatomic,copy) OQColor *styleBackgroundColor;
+@property(nonatomic,copy) OAColor *styleBackgroundColor;
 @property(nonatomic,copy) NSAttributedString *attributedString;
 
 @end

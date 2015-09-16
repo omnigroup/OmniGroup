@@ -13,7 +13,7 @@ RCS_ID("$Id$");
 
 NSError *OFXMLCreateError(xmlErrorPtr error)
 {
-    // When parsing WebDAV results, we get a hojillion complaints that 'DAV:' is not a valid URI.  Nothing we can do about this as that's what Apache sends.  Sorry!
+    // When parsing WebDAV results, we get a hojillion complaints that 'DAV:' is not a valid URI.  Nothing we can do about this as that's what Apache sends (and what WebDAV requires).  Sorry!
     if (error->domain == XML_FROM_PARSER && error->code == XML_WAR_NS_URI)
         return nil;
     

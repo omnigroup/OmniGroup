@@ -1,17 +1,17 @@
 /* error reason */
-"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Une entrée du fichier zip possède un nom qui n'a pas pu être converti en chemin d'accès de système de fichiers.";
+"An entry in the zip file had a name that couldn't be converted to a filesystem path." = "Une entrée du fichier zip possède un nom qui n’a pas pu être converti en chemin d’accès de système de fichiers.";
 
 /* error description */
-"Duplicate zip member name \"%@\"." = "Nom de membre zip « %@ » en double.";
+"Duplicate zip member name \"%@\"." = "Nom de membre zip “%@” en double.";
 
 /* error reason */
-"The unzip library failed to open %@." = "La bibliothèque de décompression n'a pas pu ouvrir %@.";
+"The unzip library failed to open %@." = "La bibliothèque de décompression n’a pas pu ouvrir %@.";
 
 /* error reason */
 "The zip library function %s returned %d" = "La fonction de bibliothèque de compression %1$s a renvoyé %2$d";
 
 /* error reason */
-"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "La fonction de bibliothèque de compression %1$s a renvoyé %2$d lors de la tentative de lecture des données de l’entrée « %3$@ » de « %4$@ ».";
+"The zip library function %s returned %d when trying to read the data for entry \"%@\" in \"%@\"." = "La fonction de bibliothèque de compression %1$s a renvoyé %2$d lors de la tentative de lecture des données de l’entrée “%3$@” dans “%4$@”.";
 
 /* error reason */
 "Unable to close zip data." = "Impossible de fermer les données zip.";
@@ -23,7 +23,7 @@
 "Unable to create zip file." = "Impossible de créer le fichier zip.";
 
 /* error description */
-"Unable to open zip archive." = "Impossible d'ouvrir l'archive zip.";
+"Unable to open zip archive." = "Impossible d’ouvrir l’archive zip.";
 
 /* error description
    error reason */
@@ -34,4 +34,4 @@
 "Unable to read zip file." = "Impossible de lire le fichier zip.";
 
 /* error description */
-"Unable to write zip file." = "Impossible d'écrire le fichier zip.";
+"Unable to write zip file." = "Impossible d’écrire le fichier zip.";

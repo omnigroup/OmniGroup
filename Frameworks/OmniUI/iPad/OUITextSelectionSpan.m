@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniUI/OUITextView.h>
 #import <OmniUI/NSTextStorage-OUIExtensions.h>
 
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 #import <OmniAppKit/OAFontDescriptor.h>
 
 RCS_ID("$Id$");
@@ -34,16 +34,16 @@ RCS_ID("$Id$");
 
 #pragma mark - OUIColorInspection
 
-- (OQColor *)colorForInspectorSlice:(OUIInspectorSlice *)inspector;
+- (OAColor *)colorForInspectorSlice:(OUIInspectorSlice *)inspector;
 {
     UIColor *color = (UIColor *)[_textView attribute:NSForegroundColorAttributeName inRange:_range];
     if (color == nil)
         return nil;
 
-    return [OQColor colorWithPlatformColor:color];
+    return [OAColor colorWithPlatformColor:color];
 }
 
-- (void)setColor:(OQColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector;
+- (void)setColor:(OAColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector;
 {
     [_textView setValue:[color toColor] forAttribute:NSForegroundColorAttributeName inRange:_range];
 }

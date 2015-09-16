@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@
 
 - (void)showDocuments;
 - (void)navigateToFolder:(ODSFolderItem *)folderItem animated:(BOOL)animated;
-- (void)navigateToContainerForItem:(ODSItem *)item animated:(BOOL)animated;
+- (void)navigateToContainerForItem:(ODSItem *)item dismissingAnyOpenDocument:(BOOL)dismissOpenDocument animated:(BOOL)animated;
 - (void)navigateToScope:(ODSScope *)scope animated:(BOOL)animated;
 - (ODSScope *)localDocumentsScope;
 
@@ -31,4 +31,7 @@
 @property (nonatomic, readonly) OUIDocumentPickerViewController *selectedScopeViewController;
 
 - (void)enableAppMenuBarButtonItem:(BOOL)enable;
+
+- (UINavigationController *)topLevelNavigationController;
+
 @end

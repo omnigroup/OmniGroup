@@ -1,4 +1,4 @@
-// Copyright 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,7 @@
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIColorInspectorPaneParentSlice.h>
 
-@class OQColor;
+@class OAColor;
 @class OUIInspectorSelectionValue;
 
 @interface OUIAbstractColorInspectorSlice : OUIInspectorSlice <OUIColorInspectorPaneParentSlice>
@@ -19,14 +19,14 @@
     OUIInspectorSelectionValue *_selectionValue;
     BOOL _inContinuousChange;
     BOOL _allowsNone;
-    OQColor *_defaultColor;
+    OAColor *_defaultColor;
 }
 
 // Must be subclassed, in addition to -isAppropriateForInspectedObject:.
-- (OQColor *)colorForObject:(id)object;
-- (void)setColor:(OQColor *)color forObject:(id)object;
+- (OAColor *)colorForObject:(id)object;
+- (void)setColor:(OAColor *)color forObject:(id)object;
 
-- (void)handleColorChange:(OQColor *)color; // Hook so that Graffle can handle mass changes a little differently
+- (void)handleColorChange:(OAColor *)color; // Hook so that Graffle can handle mass changes a little differently
 
 @end
 

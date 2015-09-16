@@ -30,4 +30,5 @@ OMNI_MAC_CODE_SIGN_IDENTITY = Mac Developer:
 WARNING_CFLAGS = $(value) -DNSApp=Use_NSApplication_sharedApplication -Wno-error-deprecated-declarations -Wno-error-deprecated-implementations -Wno-error-unreachable-code -Wno-error-nonnull -Wno-error-objc-designated-initializers
 
 // For Info.plists in frameworks that are shared between Mac/iOS targets
-INFOPLIST_OTHER_PREPROCESSOR_FLAGS = $(value) -DOMNI_BUILDING_FOR_MAC
+OMNI_TARGET_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_MAC
+

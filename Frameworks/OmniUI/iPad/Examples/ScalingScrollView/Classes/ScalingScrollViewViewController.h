@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,12 +12,8 @@
 @class ScalingView;
 
 @interface ScalingScrollViewViewController : OUIScalingViewController
-{
-@private
-    ScalingView *_scalingView;
-}
 
-@property(retain,nonatomic) IBOutlet ScalingView *scalingView;
+@property(strong,nonatomic) IBOutlet ScalingView *scalingView;
 
 @end
 

@@ -180,7 +180,8 @@ static NSString *describeMethod(Method m, BOOL *nonSystem)
             ![path hasPrefix:@"/usr/lib/"] &&
             ([path rangeOfString:@"/Developer/Platforms/"].location == NSNotFound) && // iPhone simulator
             ![path hasSuffix:@"FBAccess"] && // Special case for FrontBase framework
-            ![path hasSuffix:@"Growl"]) // Special case for Growl framework
+            ![path hasSuffix:@"Growl"] && // Special case for Growl framework
+            ![path hasSuffix:@".app/Frameworks/libswiftCore.dylib"]) // Special case for embedded Swift runtime
             *nonSystem = YES;
     }
     

@@ -259,7 +259,7 @@ static id _commonInit(OUIUndoBarButtonItem *self)
     [menuPresenter presentMenuForUndoBarButtonItem:self];
 }
 
-- (OUIMenuController *)_menuControllerForRegularMenuPresentation;
+- (OUIMenuController *)_menuControllerForRegularMenuPresentation NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     if (!_menuController) {
         _menuController = [[OUIMenuController alloc] init];
@@ -364,9 +364,6 @@ static id _commonInit(OUIUndoBarButtonItem *self)
 
 - (void)_undoButtonTap:(id)sender;
 {
-    // Close any open popover if the undo toolbar item button is tapped. We can make popovers update themselves in many cases via KVO/notification/manual updating, but it isn't clear that this is useful (iWork closes the inspector popovers on undo). Also, there are cases where we can't update (for example, undoing past the creation of the inspected object) and would have to dismiss anyway.
-    [[OUIAppController controller] dismissPopoverAnimated:YES];
-    
     id <OUIUndoBarButtonItemTarget> target = _weak_undoBarButtonItemTarget;
     [target undo:self];
 }

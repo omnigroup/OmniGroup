@@ -29,8 +29,8 @@ static void OUIInspectorWellInitialize(void)
     if (InnerShadowColor)
         return;
     
-    InnerShadowColor = CGColorRetain([OQMakeUIColor(kOUIInspectorWellInnerShadowColor) CGColor]);
-    OuterShadowColor = CGColorRetain([OQMakeUIColor(kOUIInspectorWellOuterShadowColor) CGColor]);
+    InnerShadowColor = CGColorRetain([OAMakeUIColor(kOUIInspectorWellInnerShadowColor) CGColor]);
+    OuterShadowColor = CGColorRetain([OAMakeUIColor(kOUIInspectorWellOuterShadowColor) CGColor]);
 }
 
 static CGRect OUIInspectorWellBorderRect(CGRect frame)
@@ -203,8 +203,8 @@ static void _OUIInspectorWellDrawBorderAndInnerShadow(CGContextRef ctx, CGRect i
         CGContextRestoreGState(ctx);
     }
     
-    UIColor *borderGradientStartColor = (borderType == OUIInspectorWellBorderTypeLight) ? OQMakeUIColor(kOUIInspectorWellLightBorderGradientStartColor) : OQMakeUIColor(kOUIInspectorWellDarkBorderGradientStartColor);
-    UIColor *borderGradientEndColor = (borderType == OUIInspectorWellBorderTypeLight) ? OQMakeUIColor(kOUIInspectorWellLightBorderGradientEndColor) : OQMakeUIColor(kOUIInspectorWellDarkBorderGradientEndColor);
+    UIColor *borderGradientStartColor = (borderType == OUIInspectorWellBorderTypeLight) ? OAMakeUIColor(kOUIInspectorWellLightBorderGradientStartColor) : OAMakeUIColor(kOUIInspectorWellDarkBorderGradientStartColor);
+    UIColor *borderGradientEndColor = (borderType == OUIInspectorWellBorderTypeLight) ? OAMakeUIColor(kOUIInspectorWellLightBorderGradientEndColor) : OAMakeUIColor(kOUIInspectorWellDarkBorderGradientEndColor);
     
     NSArray *colors = [NSArray arrayWithObjects:(id)[borderGradientStartColor CGColor], (id)[borderGradientEndColor CGColor], nil];
     CGGradientRef borderGradient = CGGradientCreateWithColors(NULL, (CFArrayRef)colors, NULL);
@@ -293,18 +293,18 @@ static CGGradientRef HighlightedButtonGradient = NULL;
     OBINITIALIZE;
     
     {
-        UIColor *topColor = OQMakeUIColor(kOUIInspectorTextWellNormalGradientTopColor);
-        UIColor *bottomColor = OQMakeUIColor(kOUIInspectorTextWellNormalGradientBottomColor);
+        UIColor *topColor = OAMakeUIColor(kOUIInspectorTextWellNormalGradientTopColor);
+        UIColor *bottomColor = OAMakeUIColor(kOUIInspectorTextWellNormalGradientBottomColor);
         NormalGradient = CGGradientCreateWithColors(NULL/*colorSpace*/, (CFArrayRef)[NSArray arrayWithObjects:(id)[topColor CGColor], (id)[bottomColor CGColor], nil], NULL);
     }
     
     {
-        UIColor *topColor = OQMakeUIColor(kOUIInspectorTextWellHighlightedGradientTopColor);
-        UIColor *bottomColor = OQMakeUIColor(kOUIInspectorTextWellHighlightedGradientBottomColor);
+        UIColor *topColor = OAMakeUIColor(kOUIInspectorTextWellHighlightedGradientTopColor);
+        UIColor *bottomColor = OAMakeUIColor(kOUIInspectorTextWellHighlightedGradientBottomColor);
         HighlightedGradient = CGGradientCreateWithColors(NULL/*colorSpace*/, (CFArrayRef)[NSArray arrayWithObjects:(id)[topColor CGColor], (id)[bottomColor CGColor], nil], NULL);
         
-        topColor = OQMakeUIColor(kOUIInspectorTextWellButtonHighlightedGradientTopColor);
-        bottomColor = OQMakeUIColor(kOUIInspectorTextWellButtonHighlightedGradientBottomColor);
+        topColor = OAMakeUIColor(kOUIInspectorTextWellButtonHighlightedGradientTopColor);
+        bottomColor = OAMakeUIColor(kOUIInspectorTextWellButtonHighlightedGradientBottomColor);
         HighlightedButtonGradient = CGGradientCreateWithColors(NULL/*colorSpace*/, (CFArrayRef)[NSArray arrayWithObjects:(id)[topColor CGColor], (id)[bottomColor CGColor], nil], NULL);
     }
     
@@ -322,17 +322,17 @@ static CGGradientRef HighlightedButtonGradient = NULL;
 
 + (UIColor *)textColor;
 {
-    return OQMakeUIColor(kOUIInspectorTextWellTextColor);
+    return OAMakeUIColor(kOUIInspectorTextWellTextColor);
 }
 
 + (UIColor *)highlightedTextColor;
 {
-    return OQMakeUIColor(kOUIInspectorTextWellHighlightedTextColor);
+    return OAMakeUIColor(kOUIInspectorTextWellHighlightedTextColor);
 }
 
 + (UIColor *)highlightedButtonTextColor;
 {
-    return OQMakeUIColor(kOUIInspectorTextWellHighlightedButtonTextColor);
+    return OAMakeUIColor(kOUIInspectorTextWellHighlightedButtonTextColor);
 }
 
 + (UIImage *)navigationArrowImage;
@@ -476,7 +476,7 @@ static id _commonInit(OUIInspectorWell *self)
             CGGradientRef gradient = HighlightedButtonGradient;
             CGContextDrawLinearGradient(ctx, gradient, rect.origin, CGPointMake(rect.origin.x, CGRectGetMaxY(rect)), 0);
         } else {
-            UIColor *backgroundColor = OQMakeUIColor(kOUIInspectorTextWellNormalGradientBottomColor);
+            UIColor *backgroundColor = OAMakeUIColor(kOUIInspectorTextWellNormalGradientBottomColor);
             [backgroundColor set];
             UIRectFill(rect);
         }

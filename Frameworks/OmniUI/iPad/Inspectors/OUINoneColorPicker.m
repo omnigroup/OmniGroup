@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,7 @@
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIColorInspectorPane.h>
 #import <OmniUI/OUIColorInspectorPaneParentSlice.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 RCS_ID("$Id$");
 
@@ -24,7 +24,7 @@ RCS_ID("$Id$");
 
 - (void)loadView;
 {
-    OUIInspectorLabel *label = [[OUIInspectorLabel alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 5)];
+    OUIInspectorLabel *label = [[OUIInspectorLabel alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 5)];
     label.text = NSLocalizedStringFromTableInBundle(@"No color selected", @"OUIInspectors", OMNI_BUNDLE, @"Descriptive text on the no color pane of the color picker");
     
     label.textAlignment = NSTextAlignmentCenter;
@@ -53,7 +53,7 @@ RCS_ID("$Id$");
     return OUIColorPickerFidelityZero;
 }
 
-static void _sendColor(OUINoneColorPicker *self, OQColor *color, OUIColorInspectorPane *pane)
+static void _sendColor(OUINoneColorPicker *self, OAColor *color, OUIColorInspectorPane *pane) NS_EXTENSION_UNAVAILABLE_IOS("")
 {
     self->_selectedColor = [color copy];
 
@@ -61,20 +61,20 @@ static void _sendColor(OUINoneColorPicker *self, OQColor *color, OUIColorInspect
         OBASSERT_NOT_REACHED("Showing a color picker, but not interested in the result?");
 }
 
-- (void)wasDeselectedInColorInspectorPane:(OUIColorInspectorPane *)pane;
+- (void)wasDeselectedInColorInspectorPane:(OUIColorInspectorPane *)pane NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *slice = (OUIInspectorSlice <OUIColorInspectorPaneParentSlice> *)pane.parentSlice;
 
-    OQColor *color = slice.defaultColor;
+    OAColor *color = slice.defaultColor;
     if (!color) {
         OBASSERT_NOT_REACHED("Should have returned a default color");
-        color = [OQColor whiteColor];
+        color = [OAColor whiteColor];
     }
     
     _sendColor(self, color, pane);
 }
 
-- (void)wasSelectedInColorInspectorPane:(OUIColorInspectorPane *)pane;
+- (void)wasSelectedInColorInspectorPane:(OUIColorInspectorPane *)pane NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     _sendColor(self, nil, pane);
 }
@@ -82,7 +82,7 @@ static void _sendColor(OUINoneColorPicker *self, OQColor *color, OUIColorInspect
 #pragma mark -
 #pragma mark OUIColorValue
 
-- (OQColor *)color;
+- (OAColor *)color;
 {
     return _selectedColor;
 }

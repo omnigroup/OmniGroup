@@ -45,3 +45,8 @@ UIImage *OUIStepperPlusImage(void)
 {
     return [UIImage imageNamed:@"OUIStepperPlus" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
 }
+
+UIImage *OUIToolbarUndoImage(void)
+{
+    return [UIImage imageNamed:@"OUIToolbarUndo" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
+}

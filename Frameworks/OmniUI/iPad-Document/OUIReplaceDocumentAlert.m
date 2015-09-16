@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -29,22 +29,31 @@ RCS_ID("$Id$")
 }
 
 
-- (void)show;
+- (void)showFromViewController:(UIViewController *)presentingViewController;
 {
     NSString *urlName = [ODAVFileInfo nameForURL:_documentURL];
     NSString *message = [NSString stringWithFormat: NSLocalizedStringFromTableInBundle(@"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone.", @"OmniUIDocument", OMNI_BUNDLE, @"replace document description"), urlName];
-    UIAlertView *replaceDocumentAlert = [[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Replace document?", @"OmniUIDocument", OMNI_BUNDLE, @"replace document title") message:message delegate:self cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUIDocument", OMNI_BUNDLE, @"cancel button title") otherButtonTitles:NSLocalizedStringFromTableInBundle(@"Replace", @"OmniUIDocument", OMNI_BUNDLE, @"replace button title"), NSLocalizedStringFromTableInBundle(@"Rename",@"OmniUIDocument", OMNI_BUNDLE, @"rename button title"), nil];
-    [replaceDocumentAlert show];
-}
 
-#pragma mark -
-#pragma mark UIAlertViewDelegate
+    NSString *title = NSLocalizedStringFromTableInBundle(@"Replace document?", @"OmniUIDocument", OMNI_BUNDLE, @"replace document title");
 
-- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
-{
     id <OUIReplaceDocumentAlertDelegate> delegate = _weak_delegate;
 
-    [delegate replaceDocumentAlert:self didDismissWithButtonIndex:buttonIndex documentURL:[_documentURL copy]];
+    UIAlertController *replaceDocumentController = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+
+    [replaceDocumentController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUIDocument", OMNI_BUNDLE, @"cancel button title") style:UIAlertActionStyleCancel handler:^(UIAlertAction * __nonnull action) {
+        [delegate replaceDocumentAlert:self didDismissWithButtonIndex:0 documentURL:[_documentURL copy]];
+
+    }]];
+    [replaceDocumentController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Replace", @"OmniUIDocument", OMNI_BUNDLE, @"replace button title") style:UIAlertActionStyleDestructive handler:^(UIAlertAction * __nonnull action) {
+        [delegate replaceDocumentAlert:self didDismissWithButtonIndex:1 documentURL:[_documentURL copy]];
+
+    }]];
+    [replaceDocumentController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Rename",@"OmniUIDocument", OMNI_BUNDLE, @"rename button title") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {
+        [delegate replaceDocumentAlert:self didDismissWithButtonIndex:2 documentURL:[_documentURL copy]];
+
+    }]];
+
+    [presentingViewController presentViewController:replaceDocumentController animated:YES completion:^{}];
 }
      
 @end

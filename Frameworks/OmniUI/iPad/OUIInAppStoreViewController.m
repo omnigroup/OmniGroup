@@ -7,7 +7,7 @@
 
 #import <OmniUI/OUIInAppStoreViewController.h>
 
-#import <OmniUI/OUIAppearanceColors.h>
+#import <OmniAppKit/OAAppearanceColors.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIDrawing.h>
 #import <OmniUI/OUIInAppStoreObserver.h>
@@ -69,7 +69,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
 @property (nonatomic, assign) OUIInAppStoreViewState currentState;
 @property (nonatomic) NSDictionary *javascriptBindingsDictionary;
 
-// OUIAppearance Adjustable Constraits
+// OAAppearance Adjustable Constraits
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *captionLabelTopConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *captionLabelToDescriptionLabelConstraint;
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *descriptionLabelToPurchaseButtonsWrapperViewConstraint;
@@ -104,7 +104,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     OBRejectUnusedImplementation(self, _cmd);
 }
 
-- (void)viewDidLoad;
+- (void)viewDidLoad NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     [super viewDidLoad];
     
@@ -127,15 +127,15 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
                            forState:UIControlStateNormal];
     
     self.checkmarkImageView.image = [[UIImage imageNamed:@"OUITableViewItemSelection-Selected" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    self.checkmarkImageView.tintColor = [OUIAppearanceDefaultColors appearance].omniExplanotextColor;
+    self.checkmarkImageView.tintColor = [OAAppearanceDefaultColors appearance].omniExplanotextColor;
     
     CGFloat captionLabelFontSize = [[OUIInAppStoreViewControllerAppearance appearance] floatForKeyPath:@"CaptionLabelFontSize"];
     self.captionLabel.font = [[UIFont preferredFontForTextStyle:UIFontTextStyleCaption1] fontWithSize:captionLabelFontSize];
-    self.captionLabel.textColor = [OUIAppearanceDefaultColors appearance].omniExplanotextColor;
+    self.captionLabel.textColor = [OAAppearanceDefaultColors appearance].omniExplanotextColor;
 
     CGFloat descriptionLabelFontSize = [[OUIInAppStoreViewControllerAppearance appearance] floatForKeyPath:@"DescriptionLabelFontSize"];
     self.descriptionLabel.font = [[UIFont preferredFontForTextStyle:UIFontTextStyleCaption2] fontWithSize:descriptionLabelFontSize];
-    self.descriptionLabel.textColor = [OUIAppearanceDefaultColors appearance].omniExplanotextColor;
+    self.descriptionLabel.textColor = [OAAppearanceDefaultColors appearance].omniExplanotextColor;
 
     self.restoreButton = [OUIBorderedAuxiliaryButton buttonWithType:UIButtonTypeSystem];
     self.restoreButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -196,21 +196,21 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self _applyBestConstraintsForPurchaseButtonsWrapperView];
 }
 
-- (void)viewWillAppear:(BOOL)animated;
+- (void)viewWillAppear:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     [super viewWillAppear:animated];
     
     [self _switchToViewState:OUIInAppStoreViewStateInitialLoading];
 }
 
-- (void)viewDidAppear:(BOOL)animated;
+- (void)viewDidAppear:(BOOL)animated NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     [super viewDidAppear:animated];
     
     [self performInitialRequestOrStateTransition];
 }
 
-- (void)performInitialRequestOrStateTransition;
+- (void)performInitialRequestOrStateTransition NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     OBPRECONDITION(self.currentState == OUIInAppStoreViewStateInitialLoading);
     
@@ -250,7 +250,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
 }
 
 #pragma mark Actions
-- (void)priceCheckButtonTapped:(id)sender;
+- (void)priceCheckButtonTapped:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     NSString *description = [[OUIAppController controller] descriptionForPricingOptionSKU:self.upgradeDiscountProduct.productIdentifier];
     NSString *dismissAlertString = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Dismiss failed purchase alert");
@@ -269,7 +269,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self presentViewController:alertController animated:YES completion:nil];
 }
 
-- (void)buyButtonTapped:(id)sender;
+- (void)buyButtonTapped:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     OBASSERT(self.currentState == OUIInAppStoreViewStateUpgradeEligible || self.currentState == OUIInAppStoreViewStateUpgradeUnknown);
     
@@ -283,7 +283,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     }];
 }
 
-- (void)restoreButtonTapped:(id)sender;
+- (void)restoreButtonTapped:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     [self _switchToViewState:[self _processingStateForCurrentUpgradeState]];
     [self.paymentQueue restoreCompletedTransactions];
@@ -329,7 +329,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
 /*!
  @discussion Switches to Upgrade Eligible or Upgrade Unknown depending on [[OUIAppController controller] isEligibleForProUpgradeDiscount]
  */
-- (void)_switchToAppropriateUpgradeState;
+- (void)_switchToAppropriateUpgradeState NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     BOOL isEligibleForDiscount = [[OUIAppController controller] isEligibleForProUpgradeDiscount];
     
@@ -351,7 +351,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     return localizedPrice;
 }
 
-- (void)_validatedPurchaseWithProduct:(SKProduct *)product;
+- (void)_validatedPurchaseWithProduct:(SKProduct *)product NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     OBPRECONDITION(product != nil);
     SKPayment *payment = [SKPayment paymentWithProduct:product];
@@ -366,9 +366,12 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     NSString *dismissAlertString = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Dismiss failed purchase alert");
     
     [_buyButton setTitle:NSLocalizedStringFromTableInBundle(@"Error", @"OmniUI", OMNI_BUNDLE, @"In app Buy button error title") forState:UIControlStateDisabled];
-    
-    UIAlertView *cannotPurchaseAlert = [[UIAlertView alloc] initWithTitle:storeErrorAlertTitle message:storeErrorAlertDescription delegate:nil cancelButtonTitle:dismissAlertString otherButtonTitles:nil];
-    [cannotPurchaseAlert show];
+
+    UIAlertController *cannotPurchaseAlert = [UIAlertController alertControllerWithTitle:storeErrorAlertTitle message:storeErrorAlertDescription preferredStyle:UIAlertControllerStyleAlert];
+
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:dismissAlertString style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}];
+    [cannotPurchaseAlert addAction:okAction];
+    [self presentViewController:cannotPurchaseAlert animated:YES completion:^{}];
 }
 
 #pragma mark Constraints Helpers
@@ -398,14 +401,14 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
 }
 
 #pragma mark Observers
-- (void)appWillEnterForeground:(NSNotification *)notification;
+- (void)appWillEnterForeground:(NSNotification *)notification NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     [self _switchToViewState:OUIInAppStoreViewStateInitialLoading];
     [self performInitialRequestOrStateTransition];
 }
 
 #pragma mark - SKProductsRequestDelegate and Helpers
-- (void)_requestProductData;
+- (void)_requestProductData NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     OBASSERT(self.currentState == OUIInAppStoreViewStateInitialLoading);
     
@@ -418,7 +421,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self.request start];
 }
 
-- (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response;
+- (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     NSArray *pricingOptionSKUs = [[OUIAppController controller] pricingOptionSKUsForProductIdentifier:_productIdentifier];
     for (NSString *invalidIdentifier in response.invalidProductIdentifiers) {
@@ -447,13 +450,13 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self _switchToAppropriateUpgradeState];
 }
 
-- (void)requestDidFinish:(SKRequest *)request;
+- (void)requestDidFinish:(SKRequest *)request NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     OBPRECONDITION(_request == request);
     self.request = nil;
 }
 
-- (void)request:(SKRequest *)aRequest didFailWithError:(NSError *)error;
+- (void)request:(SKRequest *)aRequest didFailWithError:(NSError *)error NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     OBASSERT(_request == aRequest);
     OBASSERT(self.currentState == OUIInAppStoreViewStateInitialLoading);
@@ -466,7 +469,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
 }
 
 #pragma mark - OUIInAppStoreObserverDelegate
-- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue transactionsFailed:(NSArray *)failedTransactions;
+- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue transactionsFailed:(NSArray *)failedTransactions NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     NSString *message = [[failedTransactions valueForKeyPath:@"error.localizedDescription"] componentsJoinedByString:@"\n"];
     
@@ -482,7 +485,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self _switchToAppropriateUpgradeState];
 }
 
-- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueueRestoreCompletedTransactionsFinished:(SKPaymentQueue *)queue;
+- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueueRestoreCompletedTransactionsFinished:(SKPaymentQueue *)queue NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     OBASSERT(self.currentState == OUIInAppStoreViewStateUpgradeEligibleProcessing || self.currentState == OUIInAppStoreViewStateUpgradeUnknownProcessing);
     if (self.hasSuccessfulPurchase) {
@@ -494,15 +497,19 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
         NSString *noPurchasesFoundMessage = [NSString stringWithFormat:noPurchasesFoundMessageFormat, [[OUIAppController controller] sheetTitleForInAppStoreProductIdentifier:_productIdentifier]];
         NSString *dismissAlertString = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Dismiss alert");
 
-        UIAlertView *transactionFailedAlert = [[UIAlertView alloc] initWithTitle:noPurchasesFoundTitle message:noPurchasesFoundMessage delegate:nil cancelButtonTitle:dismissAlertString otherButtonTitles:nil, nil];
-        [transactionFailedAlert show];
+
+        UIAlertController *transactionFailedController = [UIAlertController alertControllerWithTitle:noPurchasesFoundTitle message:noPurchasesFoundMessage preferredStyle:UIAlertControllerStyleAlert];
+
+        [transactionFailedController addAction:[UIAlertAction actionWithTitle:dismissAlertString style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}]];
+
+         [self presentViewController:transactionFailedController animated:YES completion:^{}];
 
         [self _switchToViewState:OUIInAppStoreViewStateInitialLoading];
         [self _switchToAppropriateUpgradeState];
     }
 }
 
-- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue restoreCompletedTransactionsFailedWithError:(NSError *)error;
+- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue restoreCompletedTransactionsFailedWithError:(NSError *)error NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     NSLog(@"%@", error);
     NSString *restoreFailedString = NSLocalizedStringFromTableInBundle(@"Restore Failed", @"OmniUI", OMNI_BUNDLE, @"Restore failed alert title");
@@ -516,7 +523,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self _switchToAppropriateUpgradeState];
 }
 
-- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue successfullyPurchasedSKU:(NSString *)pricingSKU;
+- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue successfullyPurchasedSKU:(NSString *)pricingSKU NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     NSArray *pricingOptionSKUs = [[OUIAppController controller] pricingOptionSKUsForProductIdentifier:_productIdentifier];
     if (![pricingOptionSKUs containsObject:pricingSKU]) {
@@ -531,7 +538,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self _switchToViewState:OUIInAppStoreViewStateUpgradeInstalled];
 }
 
-- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue successfullyRestoredSKU:(NSString *)pricingSKU;
+- (void)storeObserver:(OUIInAppStoreObserver *)storeObserver paymentQueue:(SKPaymentQueue *)queue successfullyRestoredSKU:(NSString *)pricingSKU NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     NSArray *pricingOptionSKUs = [[OUIAppController controller] pricingOptionSKUsForProductIdentifier:_productIdentifier];
     if (![pricingOptionSKUs containsObject:pricingSKU]) {
@@ -547,7 +554,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
 }
 
 #pragma mark - Private View State Helpers
-- (void)_switchToViewState:(OUIInAppStoreViewState)toState;
+- (void)_switchToViewState:(OUIInAppStoreViewState)toState NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     if ([self _isValidTransitionFromState:self.currentState toState:toState] == NO) {
         DEBUG_STATE(@"Invalid transition from: %@ to: %@", [self _debugNameForState:self.currentState], [self _debugNameForState:toState]);
@@ -598,7 +605,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     return isValid;
 }
 
-- (void)_updateViewForCurrentState;
+- (void)_updateViewForCurrentState NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     DEBUG_STATE(@"Updating view for %@ State.", [self _debugNameForState:self.currentState]);
     switch (self.currentState) {
@@ -630,7 +637,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     }
 }
 
-- (void)_updateViewForInitialLoading;
+- (void)_updateViewForInitialLoading NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     _javascriptBindingsDictionary = [[OUIAppController controller] aboutScreenBindingsDictionary];
     [self.featureWebView loadRequest:[NSURLRequest requestWithURL:[[OUIAppController controller] descriptionURLForProductIdentifier:_productIdentifier]]];
@@ -668,7 +675,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self.initialLoadingSpinner stopAnimating];
 }
 
-- (void)_updateViewForUpgradeEligible;
+- (void)_updateViewForUpgradeEligible NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     self.captionLabel.hidden = NO;
     self.captionLabel.text = NSLocalizedStringFromTableInBundle(@"Eligible for free upgrade", @"OmniUI", OMNI_BUNDLE, @"Title explaining that user is eligible for discounted upgrade ");
@@ -693,7 +700,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self.initialLoadingSpinner stopAnimating];
 }
 
-- (void)_updateViewForUpgradeEligibleProcessing;
+- (void)_updateViewForUpgradeEligibleProcessing NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     self.captionLabel.hidden = NO;
     self.captionLabel.text = NSLocalizedStringFromTableInBundle(@"Eligible for free upgrade", @"OmniUI", OMNI_BUNDLE, @"Title explaining that user is eligible for discounted upgrade ");
@@ -711,7 +718,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     [self.initialLoadingSpinner stopAnimating];
 }
 
-- (void)_updateViewForUpgradeInstalled;
+- (void)_updateViewForUpgradeInstalled NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     [self.request cancel];
     self.request = nil;
@@ -826,7 +833,7 @@ typedef NS_ENUM(NSUInteger, OUIInAppStoreViewState) {
     if (_javascriptBindingsDictionary == nil)
         return @"";
 
-    NSError *jsonError = nil;
+    __autoreleasing NSError *jsonError = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:_javascriptBindingsDictionary options:0 error:&jsonError];
     assert(jsonData != nil);
 

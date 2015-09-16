@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,7 +11,7 @@
 #import <OmniUI/OUIColorValue.h>
 
 @class OUIInspectorSelectionValue;
-@class OQColor;
+@class OAColor;
 
 @protocol OUIColorInspectorPaneParentSlice <NSObject>
 
@@ -19,7 +19,7 @@
 @property(nonatomic,assign) BOOL allowsNone;
 
 // If allowsNone is YES, then this should also be implemented to return non-nil to get the color to use when switching away from nil.
-@property(nonatomic,copy) OQColor *defaultColor;
+@property(nonatomic,copy) OAColor *defaultColor;
 
 @property(readonly,nonatomic) OUIInspectorSelectionValue *selectionValue;
 

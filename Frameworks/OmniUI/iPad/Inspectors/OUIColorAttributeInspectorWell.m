@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,14 +9,14 @@
 #import <OmniUI/OUIInspector.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 #import <OmniQuartz/OQDrawing.h>
 
 RCS_ID("$Id$");
 
 
 @interface OUIColorAttributeInspectorWellButton : UIButton
-@property (nonatomic,retain) OQColor *color;
+@property (nonatomic,retain) OAColor *color;
 @end
 
 @implementation OUIColorAttributeInspectorWellButton
@@ -34,7 +34,7 @@ RCS_ID("$Id$");
 
 #pragma mark - API and Properties
 
-- (void)setColor:(OQColor *)color;
+- (void)setColor:(OAColor *)color;
 {
     if (OFISEQUAL(_color, color))
         return;
@@ -52,7 +52,7 @@ RCS_ID("$Id$");
     [path addClip];
     
     // Draw the fill
-    OQColor *fillColor = self.color;
+    OAColor *fillColor = self.color;
     if (fillColor != nil) {
         // Transparency? Draw a checkerboard background
         if ([fillColor alphaComponent] < 1) {
@@ -135,7 +135,7 @@ static id _commonInit(OUIColorAttributeInspectorWell *self)
     return _commonInit(self);
 }
 
-- (void)setColor:(OQColor *)color;
+- (void)setColor:(OAColor *)color;
 {
     if (OFISEQUAL(_color, color))
         return;

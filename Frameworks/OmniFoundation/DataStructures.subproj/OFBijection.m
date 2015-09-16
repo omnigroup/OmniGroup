@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,6 +40,11 @@ RCS_ID("$Id$");
     va_end(args);
     
     return bijection;
+}
+
++ (instancetype)bijectionWithDictionary:(NSDictionary *)dictionary;
+{
+    return [[[self alloc] initWithDictionary:dictionary] autorelease];
 }
 
 #pragma mark Instance initializers
@@ -126,6 +131,17 @@ RCS_ID("$Id$");
     }
     
     return [self initWithObjects:objects forKeys:keys];
+}
+
+- (id)initWithDictionary:(NSDictionary *)dictionary; // designated initializer
+{
+    NSMutableArray *orderedKeys = [NSMutableArray array];
+    NSMutableArray *orderedValues = [NSMutableArray array];
+    for (id key in dictionary) {
+        [orderedKeys addObject:key];
+        [orderedValues addObject:dictionary[key]];
+    }
+    return [self initWithObjects:orderedValues forKeys:orderedKeys];
 }
 
 - (void)dealloc;

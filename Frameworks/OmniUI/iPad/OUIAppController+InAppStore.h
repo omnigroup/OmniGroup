@@ -15,15 +15,15 @@
 
 - (BOOL)isPurchaseUnlocked:(NSString *)productIdentifier;
 
++ (BOOL)inSandboxStore;
 + (OFPreference *)vendorIDPreference;
 - (NSString *)vendorID;
 
 - (BOOL)addPurchasedProductToKeychain:(NSString *)productIdentifier;
-- (void)removePurchasedProductFromKeychain:(NSString *)productIdentifier;
 
-- (void)showInAppPurchases:(NSString *)productIdentifier viewController:(UIViewController *)viewController;
+- (void)showInAppPurchases:(NSString *)productIdentifier viewController:(UIViewController *)viewController NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
     // Present the In-App Purchase sheet from viewController.  If viewController is currently presenting another view controller, we call dismiss and then present the IAP sheet from within the completion handler.
-- (void)showInAppPurchases:(NSString *)productIdentifier navigationController:(UINavigationController *)navigationController;
+- (void)showInAppPurchases:(NSString *)productIdentifier navigationController:(UINavigationController *)navigationController NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
     // Push the In-App Purchase sheet into the current navigation controller. For this to look appropriate, the navigationController in question should be laid out with a width which matches what you would get with a presentation style of UIModalPresentationFormSheet.
 
 // for subclassers

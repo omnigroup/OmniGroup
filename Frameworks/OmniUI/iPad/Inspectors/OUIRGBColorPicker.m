@@ -8,7 +8,7 @@
 #import "OUIRGBColorPicker.h"
 
 #import <OmniUI/OUIColorComponentSlider.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 RCS_ID("$Id$");
 
@@ -22,9 +22,9 @@ RCS_ID("$Id$");
     return @"rgb";
 }
 
-- (OQColorSpace)colorSpace;
+- (OAColorSpace)colorSpace;
 {
-    return OQColorSpaceRGB;
+    return OAColorSpaceRGB;
 }
 
 - (NSArray *)makeComponentSliders;
@@ -55,23 +55,23 @@ RCS_ID("$Id$");
     return sliders;
 }
 
-- (void)extractComponents:(CGFloat *)components fromColor:(OQColor *)color;
+- (void)extractComponents:(CGFloat *)components fromColor:(OAColor *)color;
 {
-    OQLinearRGBA rgba = [color toRGBA];
+    OALinearRGBA rgba = [color toRGBA];
     components[0] = rgba.r;
     components[1] = rgba.g;
     components[2] = rgba.b;
     components[3] = rgba.a;
 }
 
-- (OQColor *)makeColorWithComponents:(const CGFloat *)components;
+- (OAColor *)makeColorWithComponents:(const CGFloat *)components;
 {
-    return [OQColor colorWithRed:components[0] green:components[1] blue:components[2] alpha:components[3]];
+    return [OAColor colorWithRed:components[0] green:components[1] blue:components[2] alpha:components[3]];
 }
 
-static OQLinearRGBA _convertRGBAToRGBA(const CGFloat *input)
+static OALinearRGBA _convertRGBAToRGBA(const CGFloat *input)
 {
-    OQLinearRGBA rgba;
+    OALinearRGBA rgba;
     rgba.r = input[0];
     rgba.g = input[1];
     rgba.b = input[2];

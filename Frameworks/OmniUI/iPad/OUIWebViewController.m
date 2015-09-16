@@ -8,10 +8,10 @@
 #import <OmniUI/OUIWebViewController.h>
 
 #import <MessageUI/MessageUI.h>
-#import <OmniUI/OUIAlert.h>
+#import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
-
+#import <OmniFoundation/OFVersionNumber.h>
 RCS_ID("$Id$")
 
 @interface OUIWebViewController () <MFMailComposeViewControllerDelegate>
@@ -43,7 +43,7 @@ RCS_ID("$Id$")
     }
 }
 
-- (IBAction)openInSafari:(id)sender;
+- (IBAction)openInSafari:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     [[UIApplication sharedApplication] openURL:[self URL]];
 }
@@ -100,7 +100,7 @@ RCS_ID("$Id$")
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType;
+- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     NSURL *requestURL = [request URL];
 
@@ -135,9 +135,12 @@ RCS_ID("$Id$")
             if ([[UIApplication sharedApplication] openURL:requestURL] == NO) {
                 NSString *alertTitle = NSLocalizedStringFromTableInBundle(@"Link could not be opened. Please check Safari restrictions in Settings.", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL title.");
 
-                OUIAlert *alert = [[OUIAlert alloc] initWithTitle:alertTitle message:nil cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL cancel button.") cancelAction:NULL];
+                UIAlertController *alertController = [UIAlertController alertControllerWithTitle:alertTitle message:nil preferredStyle:UIAlertControllerStyleAlert];
 
-                [alert show];
+                UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"Web view error opening URL cancel button.") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}];
+
+                [alertController addAction:okAction];
+                [self presentViewController:alertController animated:YES completion:^{}];
             }
 
             // The above call to -openURL can return no if Safari is off due to restriction. We still don't want to handle the URL.
@@ -145,7 +148,7 @@ RCS_ID("$Id$")
         }
 
         // Special URL
-        if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:[UIApplication sharedApplication] handleOpenURL:requestURL]) {
+        if ([OUIAppController canHandleURLScheme:scheme] && [[[UIApplication sharedApplication] delegate] application:[UIApplication sharedApplication] openURL:requestURL options:@{UIApplicationOpenURLOptionsOpenInPlaceKey : @(NO), UIApplicationOpenURLOptionsSourceApplicationKey : [[NSBundle mainBundle] bundleIdentifier]}]) {
             return NO; // Don't load this in the WebView
         }
     }

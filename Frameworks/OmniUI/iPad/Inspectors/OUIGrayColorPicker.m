@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,7 @@
 #import "OUIGrayColorPicker.h"
 
 #import <OmniUI/OUIColorComponentSlider.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 RCS_ID("$Id$");
 
@@ -22,9 +22,9 @@ RCS_ID("$Id$");
     return @"gray";
 }
 
-- (OQColorSpace)colorSpace;
+- (OAColorSpace)colorSpace;
 {
-    return OQColorSpaceWhite;
+    return OAColorSpaceWhite;
 }
 
 - (NSArray *)makeComponentSliders;
@@ -45,20 +45,20 @@ RCS_ID("$Id$");
     return sliders;
 }
 
-- (void)extractComponents:(CGFloat *)components fromColor:(OQColor *)color;
+- (void)extractComponents:(CGFloat *)components fromColor:(OAColor *)color;
 {
     components[0] = [color whiteComponent];
     components[1] = [color alphaComponent];
 }
 
-- (OQColor *)makeColorWithComponents:(const CGFloat *)components;
+- (OAColor *)makeColorWithComponents:(const CGFloat *)components;
 {
-    return [OQColor colorWithWhite:components[0] alpha:components[1]];
+    return [OAColor colorWithWhite:components[0] alpha:components[1]];
 }
 
-static OQLinearRGBA _convertGrayToRGBA(const CGFloat *input)
+static OALinearRGBA _convertGrayToRGBA(const CGFloat *input)
 {
-    OQLinearRGBA rgba;
+    OALinearRGBA rgba;
     CGFloat w = input[0];
     rgba.r = w;
     rgba.g = w;

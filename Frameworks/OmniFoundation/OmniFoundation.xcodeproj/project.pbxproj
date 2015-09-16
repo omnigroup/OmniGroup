@@ -1100,6 +1100,13 @@
 			remoteGlobalIDString = 4A4E05FE08AA72B10098FF0F;
 			remoteInfo = "OmniFoundation (Framework) (Upgraded)";
 		};
+		503D70D91B66FA9100EF5899 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 348628DF19C1F73200EAACD1 /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5FE81E171B62AE980056756C;
+			remoteInfo = "OmniBase-watchOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -2762,6 +2769,7 @@
 				348628F219C1F73200EAACD1 /* OBUnitTests.xctest */,
 				348628F419C1F73200EAACD1 /* OmniBase.framework */,
 				348628F619C1F73200EAACD1 /* OBUnitTests.xctest */,
+				503D70DA1B66FA9100EF5899 /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3977,6 +3985,13 @@
 			fileType = wrapper.cfbundle;
 			path = OBUnitTests.xctest;
 			remoteRef = 348628F519C1F73200EAACD1 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		503D70DA1B66FA9100EF5899 /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 503D70D91B66FA9100EF5899 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

@@ -13,13 +13,33 @@
 
 RCS_ID("$Id$");
 
-static NSString *keychainIdentifier = @"com.omnigroup.InAppPurchase";
+static NSString *storeKeychainIdentifier = @"com.omnigroup.InAppPurchase.live";
+static NSString *sandboxStoreKeychainIdentifier = @"com.omnigroup.InAppPurchase.sandbox";
 
 @implementation OUIAppController (InAppStore)
 
 - (BOOL)isPurchaseUnlocked:(NSString *)productIdentifier;
 {
     return [self _isPurchasedProductInKeychain:productIdentifier];
+}
+
++ (BOOL)inSandboxStore;
+{
+    static BOOL inSandboxStore;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *receiptName = [[[NSBundle mainBundle] appStoreReceiptURL] lastPathComponent];
+        inSandboxStore = OFISEQUAL(receiptName, @"sandboxReceipt");
+    });
+    return inSandboxStore;
+}
+
++ (NSString *)_keychainIdentifier;
+{
+    if ([self inSandboxStore])
+        return sandboxStoreKeychainIdentifier;
+    else
+        return storeKeychainIdentifier;
 }
 
 + (OFPreference *)vendorIDPreference;
@@ -49,7 +69,7 @@ static NSString *keychainIdentifier = @"com.omnigroup.InAppPurchase";
 - (BOOL)addPurchasedProductToKeychain:(NSString *)productIdentifier;
 {
     NSDictionary *query = @{
-        (__bridge id)kSecAttrGeneric : [keychainIdentifier dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecAttrGeneric : [[[self class] _keychainIdentifier] dataUsingEncoding:NSUTF8StringEncoding],
         (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
         (__bridge id)kSecAttrAccount : [productIdentifier dataUsingEncoding:NSUTF8StringEncoding],
     };
@@ -77,7 +97,7 @@ static NSString *keychainIdentifier = @"com.omnigroup.InAppPurchase";
 - (BOOL)_isPurchasedProductInKeychain:(NSString *)productIdentifier;
 {
     NSDictionary *query = @{
-        (__bridge id)kSecAttrGeneric : [keychainIdentifier dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecAttrGeneric : [[[self class] _keychainIdentifier] dataUsingEncoding:NSUTF8StringEncoding],
         (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
         (__bridge id)kSecAttrAccount : [productIdentifier dataUsingEncoding:NSUTF8StringEncoding],
         (__bridge id)kSecMatchLimit : (__bridge id)kSecMatchLimitAll, // only one result
@@ -99,31 +119,12 @@ static NSString *keychainIdentifier = @"com.omnigroup.InAppPurchase";
     return NO;
 }
 
-
-- (void)removePurchasedProductFromKeychain:(NSString *)productIdentifier;
-{
-    NSDictionary *query = @{
-        (__bridge id)kSecAttrGeneric : [keychainIdentifier dataUsingEncoding:NSUTF8StringEncoding],
-        (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
-        (__bridge id)kSecAttrAccount : [productIdentifier dataUsingEncoding:NSUTF8StringEncoding],
-    };
-
-    OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
-    if (status != errSecSuccess) {
-        UIAlertView *keychainResetFailedAlert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"Couldn't Re-Lock %@", [self sheetTitleForInAppStoreProductIdentifier:productIdentifier]] message:[NSString stringWithFormat:@"Keychain error: %ld", (long)status] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [keychainResetFailedAlert show];
-    } else {
-        UIAlertView *keychainResetSuccessAlert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"Re-Locked %@", [self sheetTitleForInAppStoreProductIdentifier:productIdentifier]] message:[NSString stringWithFormat:@"%@ is now re-locked", [self sheetTitleForInAppStoreProductIdentifier:productIdentifier]] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        [keychainResetSuccessAlert show];
-    }
-}
-
-- (void)_showInAppPurchases:(NSString *)productIdentifier viewController:(UIViewController *)viewController pushOntoNavigationStack:(BOOL)shouldPushOntoNavigationStack;
+- (void)_showInAppPurchases:(NSString *)productIdentifier viewController:(UIViewController *)viewController pushOntoNavigationStack:(BOOL)shouldPushOntoNavigationStack NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 {
     OBPRECONDITION(viewController != nil);
 
     if ([self isRunningRetailDemo]) {
-        [self showFeatureDisabledForRetailDemoAlert];
+        [self showFeatureDisabledForRetailDemoAlertFromViewController:viewController];
         return;
     }
 

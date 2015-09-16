@@ -1,4 +1,4 @@
-// Copyright 2010-2011 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,12 +22,12 @@ OBDEPRECATED_METHOD(-colorsForInspectorSlice:); // -> -colorForInspectorSlice:
     return [object shouldBeInspectedByInspectorSlice:self protocol:@protocol(OUIColorInspection)];
 }
 
-- (OQColor *)colorForObject:(id)object;
+- (OAColor *)colorForObject:(id)object;
 {
     return [(id <OUIColorInspection>)object colorForInspectorSlice:self];
 }
 
-- (void)setColor:(OQColor *)color forObject:(id)object;
+- (void)setColor:(OAColor *)color forObject:(id)object;
 {
     [(id <OUIColorInspection>)object setColor:color fromInspectorSlice:self];
 }

@@ -3,13 +3,13 @@
 
 /* title format for color component slider */
 
-"<alpha title+value>" = "Deckkraft: %d %%";
+"<alpha title+value>" = "Deckkraft: %d%%";
 
 /* title format for color component slider */
 "<blue title+value>" = "Blau: %d";
 
 /* title format for color component slider */
-"<brightness title+value>" = "Helligkeit: %d %%";
+"<brightness title+value>" = "Helligkeit: %d%%";
 
 /* title format for color component slider */
 "<green title+value>" = "Grün: %d";
@@ -21,10 +21,10 @@
 "<red title+value>" = "Rot: %d";
 
 /* title format for color component slider */
-"<saturation title+value>" = "Sättigung: %d %%";
+"<saturation title+value>" = "Sättigung: %d%%";
 
 /* title format for color component slider */
-"<white title+value>" = "Weiß: %d %%";
+"<white title+value>" = "Weiß: %d%%";
 
 /* Title for section of font list */
 "All Fonts" = "Alle Schriften";

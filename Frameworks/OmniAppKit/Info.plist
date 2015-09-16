@@ -42,6 +42,12 @@
 					<real>5</real>
 					<real>3</real>
 				</array>
+                                <key>OAMessageOfTheDaySignature</key>
+                                <data></data>
+                                <key>OAShowMessageOfTheDayOnFirstLaunch</key>
+                                <false/>
+                                <key>OAMessageOfTheDayCheckOnLaunch</key>
+                                <true/>
 				<key>ToolbarItemTint</key>
 				<string>default</string>
 			</dict>

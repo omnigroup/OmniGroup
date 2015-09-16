@@ -927,6 +927,19 @@ static NSString *_vibrancyInfo(NSView *view, NSUInteger level)
     NSLog(@"Vibrancy info for view tree starting at %@:\n%@", [self shortDescription], _vibrancyInfo(self, 0));
 }
 
+#ifdef DEBUG
+- (void)expectDeallocationOfViewTreeSoon;
+{
+    [self applyToViewTree:^(NSView *view) {
+        OBExpectDeallocationWithPossibleFailureReason(view, ^NSString *(NSView *view){
+            if (view.superview)
+                return @"still has superview";
+            return nil;
+        });
+    }];
+}
+#endif
+
 @end
 
 #if OF_TRANSIENT_OBJECTS_TRACKER_ENABLED

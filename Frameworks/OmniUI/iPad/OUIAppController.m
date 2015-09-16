@@ -37,17 +37,15 @@
 
 RCS_ID("$Id$");
 
+NSString * const OUISystemIsSnapshottingNotification = @"OUISystemIsSnapshottingNotification";
+
 @interface OUIAppController () <OUIWebViewControllerDelegate>
+@property(strong, nonatomic) NSTimer *timerForSnapshots;
 @end
 
 @implementation OUIAppController
 {
     NSMutableArray *_launchActions;
-    
-    UIPopoverController *_possiblyVisiblePopoverController;
-    UIPopoverArrowDirection _possiblyVisiblePopoverControllerArrowDirections;
-    UIBarButtonItem *_possiblyTappedButtonItem;
-    
     OUIMenuController *_appMenuController;
 }
 
@@ -122,32 +120,35 @@ static void __iOS7B5CleanConsoleOutput(void)
     __iOS7B5CleanConsoleOutput();
 #endif
     
-    // Poke OFPreference to get default values registered
+    @autoreleasepool {
+        
+        // Poke OFPreference to get default values registered
 #ifdef DEBUG
-    BOOL showNonLocalizedStrings = YES;
+        BOOL showNonLocalizedStrings = YES;
 #else
-    BOOL showNonLocalizedStrings = NO;
+        BOOL showNonLocalizedStrings = NO;
 #endif
-    NSDictionary *defaults = [NSDictionary dictionaryWithObjectsAndKeys:
-                              [NSNumber numberWithBool:showNonLocalizedStrings], @"NSShowNonLocalizableStrings",
-                              [NSNumber numberWithBool:showNonLocalizedStrings], @"NSShowNonLocalizedStrings",
-                              nil
-                              ];
-    [[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
-    [OFBundleRegistry registerKnownBundles];
-    [OFPreference class];
-    
-    // Ensure that OUIKeyboardNotifier instantiates the shared notifier before the keyboard is shown for the first time, otherwise `lastKnownKeyboardHeight` and `keyboardVisible` may be incorrect.
-    [OUIKeyboardNotifier sharedNotifier];
-    
-    OUIShouldLogPerformanceMetrics = [[NSUserDefaults standardUserDefaults] boolForKey:@"LogPerformanceMetrics"];
-
-    if (OUIShouldLogPerformanceMetrics)
-        NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
-
+        NSDictionary *defaults = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  [NSNumber numberWithBool:showNonLocalizedStrings], @"NSShowNonLocalizableStrings",
+                                  [NSNumber numberWithBool:showNonLocalizedStrings], @"NSShowNonLocalizedStrings",
+                                  nil
+                                  ];
+        [[NSUserDefaults standardUserDefaults] registerDefaults:defaults];
+        [OFBundleRegistry registerKnownBundles];
+        [OFPreference class];
+        
+        // Ensure that OUIKeyboardNotifier instantiates the shared notifier before the keyboard is shown for the first time, otherwise `lastKnownKeyboardHeight` and `keyboardVisible` may be incorrect.
+        [OUIKeyboardNotifier sharedNotifier];
+        
+        OUIShouldLogPerformanceMetrics = [[NSUserDefaults standardUserDefaults] boolForKey:@"LogPerformanceMetrics"];
+        
+        if (OUIShouldLogPerformanceMetrics)
+            NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
+        
 #ifdef OMNI_ASSERTIONS_ON
-    OBPerformRuntimeChecks();
+        OBPerformRuntimeChecks();
 #endif
+    }
 }
 
 + (instancetype)controller;
@@ -157,7 +158,12 @@ static void __iOS7B5CleanConsoleOutput(void)
     return controller;
 }
 
-- (id)init;
++ (instancetype)sharedController;
+{
+    return [self controller];
+}
+
+- (id)init NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where available instead.");
 {
     if (!(self = [super init])) {
         return nil;
@@ -201,10 +207,15 @@ static void __iOS7B5CleanConsoleOutput(void)
 // Very basic.
 + (void)presentError:(NSError *)error;
 {
-    [self presentError:error file:NULL line:0];
+    [self presentError:error fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:NULL line:0];
 }
 
-+ (void)_presentError:(NSError *)error file:(const char *)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle;
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
+{
+    [self presentError:error fromViewController:viewController file:NULL line:0];
+}
+
++ (void)_presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line cancelButtonTitle:(NSString *)cancelButtonTitle;
 {
     if (error == nil || [error causedByUserCancelling])
         return;
@@ -227,19 +238,28 @@ static void __iOS7B5CleanConsoleOutput(void)
         
         NSString *message = [messages componentsJoinedByString:@"\n"];
         
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:[error localizedDescription] message:message delegate:nil cancelButtonTitle:cancelButtonTitle otherButtonTitles:nil];
-        [alert show];
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[error localizedDescription] message:message preferredStyle:UIAlertControllerStyleAlert];
+
+        [alertController addAction:[UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}]];
+
+        [viewController presentViewController:alertController animated:YES completion:^{}];
+
     }];
 }
 
-+ (void)presentError:(NSError *)error file:(const char *)file line:(int)line;
++ (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;
 {
-    [self _presentError:error file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title")];
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title")];
 }
 
-+ (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line;
++ (void)presentAlert:(NSError *)error file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
 {
-    [self _presentError:error file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
+    [self _presentError:error fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
+}
+
++ (void)presentAlert:(NSError *)error fromViewController:(UIViewController *)viewController file:(const char *)file line:(int)line;  // 'OK' instead of 'Cancel' for the button title
+{
+    [self _presentError:error fromViewController:viewController file:file line:line cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title")];
 }
 
 - (void)resetKeychain;
@@ -295,166 +315,19 @@ static void __iOS7B5CleanConsoleOutput(void)
     return @[];
 }
 
-#pragma mark -
-#pragma mark Popover Helpers
-
-static void _forgetPossiblyVisiblePopoverIfAlreadyHidden(OUIAppController *self)
-{
-    if (self->_possiblyVisiblePopoverController && !self->_possiblyVisiblePopoverController.popoverVisible) {
-        // The user may have tapped outside the popover and dismissed it automatically (or it could have been dismissed in code without going through code). We'd have to interpose ourselves as the delegate to tell the difference to assert about it. Really, it seems like too much trouble since we just want to make sure multiple popovers aren't visible.
-        self->_possiblyVisiblePopoverController = nil;
-        self->_possiblyVisiblePopoverControllerArrowDirections = UIPopoverArrowDirectionUnknown;
-    }
-}
-    
-static void _performDismissPopover(UIPopoverController *dismissingPopover, BOOL animated)
-{
-    OBPRECONDITION(dismissingPopover);
-    
-    [dismissingPopover dismissPopoverAnimated:animated]; // Might always want to snap the old one out...
-    
-    // Like the normal case of popovers disappearing (when tapping out), we send this *before* the animation finishes.
-    id <UIPopoverControllerDelegate> delegate = dismissingPopover.delegate;
-    if ([delegate respondsToSelector:@selector(popoverControllerDidDismissPopover:)])
-        [delegate popoverControllerDidDismissPopover:dismissingPopover];
-}
-
-static BOOL _dismissVisiblePopoverInFavorOfPopover(OUIAppController *self, UIPopoverController *popoverToPresent, BOOL animated)
-{
-    _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
-    
-    UIPopoverController *possiblyVisblePopover = self->_possiblyVisiblePopoverController;
-    
-    // Hide the old popover if it is still visible (and we aren't re-presenting the same one).
-    if (possiblyVisblePopover && popoverToPresent != possiblyVisblePopover) {
-        // The popover dismissal delegate is called when your popover is implicitly hidden, but not when you dismiss it in code.
-        // We'll interpret the presentation of a different popover as an implicit dismissal that should tell the delegate.
-        id <UIPopoverControllerDelegate> delegate = possiblyVisblePopover.delegate;
-        if ([delegate respondsToSelector:@selector(popoverControllerShouldDismissPopover:)] && ![delegate popoverControllerShouldDismissPopover:possiblyVisblePopover])
-            // Nobody puts popover in the corner!
-            return NO;
-        
-        UIPopoverController *dismissingPopover = possiblyVisblePopover;
-        self->_possiblyVisiblePopoverController = nil;
-        self->_possiblyVisiblePopoverControllerArrowDirections = UIPopoverArrowDirectionUnknown;
-
-        _performDismissPopover(dismissingPopover, animated);
-    }
-    
-    return YES;
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
-    if (_possiblyTappedButtonItem && _possiblyVisiblePopoverController.popoverVisible) {
-        // Hiding a popover sets its allowed arrow directions to UIPopoverArrowDirectionUnknown under iOS 5, which causes an exception here on representation. So, we now remember the original argument passed in ourselves rather than calling -arrowDirections on the popover.
-        [self presentPopover:_possiblyVisiblePopoverController fromBarButtonItem:_possiblyTappedButtonItem permittedArrowDirections:_possiblyVisiblePopoverControllerArrowDirections animated:NO];
-    } else if (_possiblyVisiblePopoverController.popoverVisible) {
-        // popover was shown with -presentPopover:fromRect:inView:permittedArrowDirections:animated: which does not automatically reposition on rotation, so going to dismiss this popover
-        [self dismissPopoverAnimated:YES];
-    }
-}
-
-- (BOOL)hasVisiblePopover;
-{
-    _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
-    return _possiblyVisiblePopoverController != nil;
-}
-
-// Returns NO without displaying the popover, if a previously displayed popover refuses to be dismissed.
-- (BOOL)presentPopover:(UIPopoverController *)popover fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
-{
-    OBPRECONDITION(popover);
-    
-    // Treat a print sheet the same way as a popover and dismiss it when presenting something else. Sure would be nice if UIPrintInteractionController was a subclass of UIPopoverController as would make sense... 
-    [[UIPrintInteractionController sharedPrintController] dismissAnimated:animated];
-    
-    if (!_dismissVisiblePopoverInFavorOfPopover(self, popover, animated))
-        return NO;
-    
-    OBASSERT(_possiblyVisiblePopoverController == nil);
-    _possiblyVisiblePopoverController = popover;
-    _possiblyVisiblePopoverControllerArrowDirections = arrowDirections;
-    
-    [popover presentPopoverFromRect:rect inView:view permittedArrowDirections:arrowDirections animated:animated];
-    return YES;
-}
-
-- (BOOL)presentPopover:(UIPopoverController *)popover fromBarButtonItem:(UIBarButtonItem *)item permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections animated:(BOOL)animated;
-{
-    OBPRECONDITION(popover);
-
-    // Treat a print sheet the same way as a popover and dismiss it when presenting something else. Sure would be nice if UIPrintInteractionController was a subclass of UIPopoverController as would make sense...
-    [[UIPrintInteractionController sharedPrintController] dismissAnimated:animated];
-
-    if (!_dismissVisiblePopoverInFavorOfPopover(self, popover, animated))
-        return NO;
-    
-    if (_possiblyVisiblePopoverController != popover) { // Might be re-displaying a popover after an orientation change.
-        OBASSERT(_possiblyVisiblePopoverController == nil);
-        _possiblyVisiblePopoverController = popover;
-        _possiblyVisiblePopoverControllerArrowDirections = arrowDirections;
-    }
-
-    // This is here to fix <bug:///69210> (Weird alignment between icon and popover arrow for the contents popover).  When we have a UIBarButtonItem with a custom view the arrow on the popup does not align correctly.  A radar #9293627 has been filed against this.  When we have a UIBarButtonItem with a custom view we present it using presentPopoverFromRect:inView:permittedArrowDirections:animated: instead of the standard presentPopoverFromBarButtonItem:permittedArrowDirections:animated:, which will align the popover arrow in the correct place.  We have to adjust the rect height to get the popover to appear in the correct place, since our buttons view size is for the toolbar height and not the actual button.
-#define kOUIToolbarEdgePadding (5.0f)
-    if (item.customView) {
-        CGRect rect = [item.customView convertRect:item.customView.bounds toView:[item.customView superview]];
-        rect.size.height -= kOUIToolbarEdgePadding;
-        [popover presentPopoverFromRect:rect inView:[item.customView superview] permittedArrowDirections:arrowDirections animated:animated];
-    } else {
-        [popover presentPopoverFromBarButtonItem:item permittedArrowDirections:arrowDirections animated:animated];
-
-        // This automatically adds the containing navigation bar as a passthrough view. We don't want tapping on toolbar items to be enabled when a popover item is up. Otherwise, we have dimmed toolbar items that can be tapped and perform actions unexpectedly (or every action needs to check if there is a popover up and dismiss it instead).
-        popover.passthroughViews = nil;
-    }
-
-    _possiblyTappedButtonItem = item;
-    return YES;
-}
-
-- (BOOL)dismissPopover:(UIPopoverController *)popover animated:(BOOL)animated;
-{
-    // Treat a print sheet the same way as a popover and dismiss it when presenting something else. Sure would be nice if UIPrintInteractionController was a subclass of UIPopoverController as would make sense...
-    [[UIPrintInteractionController sharedPrintController] dismissAnimated:animated];
-    
-    // Unlike the plain UIPopoverController dismissal, this does send the 'did' hook. The reasoning here is that the caller doesn't necessarily know what popover it is dismissing.
-    // If you still want to avoid the delegate method, just call the UIPopoverController method directly on your popover.
-    
-    _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
-    _possiblyTappedButtonItem = nil;
-    
-    if (!_possiblyVisiblePopoverController || popover != _possiblyVisiblePopoverController)
-        return NO;
-    
-    UIPopoverController *dismissingPopover = _possiblyVisiblePopoverController;
-    _possiblyVisiblePopoverController = nil;
-    _possiblyVisiblePopoverControllerArrowDirections = UIPopoverArrowDirectionUnknown;
-
-    _performDismissPopover(dismissingPopover, animated);
-    return YES;
-}
-
-- (void)dismissPopoverAnimated:(BOOL)animated;
-{
-    [self dismissPopover:_possiblyVisiblePopoverController animated:animated];
-}
-
-- (void)forgetPossiblyVisiblePopoverIfAlreadyHidden;
-{
-    _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
-}
-
 - (BOOL)isRunningRetailDemo;
 {
     return [[OFPreference preferenceForKey:@"IPadRetailDemo"] boolValue];
 }
 
-- (BOOL)showFeatureDisabledForRetailDemoAlert;
+- (BOOL)showFeatureDisabledForRetailDemoAlertFromViewController:(UIViewController *)presentingViewController;
 {
     if ([self isRunningRetailDemo]) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Feature not enabled for this demo", @"OmniUI", OMNI_BUNDLE, @"disabled for demo") message:nil delegate:nil cancelButtonTitle:NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"Done") otherButtonTitles:nil];
-        [alert show];
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:NSLocalizedStringFromTableInBundle(@"Feature not enabled for this demo", @"OmniUI", OMNI_BUNDLE, @"disabled for demo") message:nil preferredStyle:UIAlertControllerStyleAlert];
+        [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Done", @"OmniUI", OMNI_BUNDLE, @"Done") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}]];
+
+        [presentingViewController presentViewController:alertController animated:YES completion:NULL];
+
         return YES;
     }
     
@@ -588,7 +461,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     }
 }
 
-- (void)_showAppMenu:(id)sender;
+- (void)_showAppMenu:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     if ([self.window.rootViewController presentedViewController]) {
         return;
@@ -601,12 +474,10 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     
     OBASSERT([sender isKindOfClass:[UIBarButtonItem class]]); // ...or we shouldn't be passing it as the bar item in the next call
     _appMenuController.popoverPresentationController.barButtonItem = sender;
-    [self.window.rootViewController presentViewController:_appMenuController animated:YES completion:^{
-        _appMenuController.popoverPresentationController.passthroughViews = nil;
-    }];
+    [self.window.rootViewController presentViewController:_appMenuController animated:YES completion:nil];
 }
 
-- (void)_sendFeedback:(id)sender;
+- (void)_sendFeedback:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     NSString *subject = [NSString stringWithFormat:@"%@ Feedback", self.fullReleaseString];
     
@@ -681,7 +552,7 @@ static UIImage *menuImage(NSString *name)
     return image;
 }
 
-- (NSArray *)_appMenuTopOptions;
+- (NSArray *)_appMenuTopOptions NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     NSMutableArray *options = [NSMutableArray array];
     OUIMenuOption *option;
@@ -796,8 +667,6 @@ static UIImage *menuImage(NSString *name)
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application;
 {
     [OAFontDescriptor forgetUnusedInstances];
-    
-    _forgetPossiblyVisiblePopoverIfAlreadyHidden(self);
 }
 
 #pragma mark -
@@ -808,6 +677,32 @@ static UIImage *menuImage(NSString *name)
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
         [controller.presentingViewController dismissViewControllerAnimated:YES completion:nil];
     }];
+}
+
+#pragma mark - Snapshots
+
+- (void)willWaitForSnapshots
+{
+    [self destroyCurrentSnapshotTimer];
+    [self startNewSnapshotTimer];
+}
+
+- (void)startNewSnapshotTimer
+{
+    NSTimeInterval secondsToWaitForSnapshots = 5.0;
+    NSTimer *newTimerForSnapshots = [NSTimer scheduledTimerWithTimeInterval:secondsToWaitForSnapshots target:self selector: @selector(didFinishWaitingForSnapshots) userInfo: nil repeats: NO];
+    [self setTimerForSnapshots:newTimerForSnapshots];
+}
+
+- (void)destroyCurrentSnapshotTimer
+{
+    [[self timerForSnapshots] invalidate];
+    [self setTimerForSnapshots:nil];
+}
+
+- (void)didFinishWaitingForSnapshots
+{
+    //Whatever work you want done after the app finishes waiting for Apple's snapshots, implement it inside this method in your subclasses.
 }
 
 @end

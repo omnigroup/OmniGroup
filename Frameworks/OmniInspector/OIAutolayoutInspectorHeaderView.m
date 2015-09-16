@@ -8,6 +8,7 @@
 #import "OIAutolayoutInspectorHeaderView.h"
 
 #import <OmniAppKit/OATrackingLoop.h>
+#import <OmniInspector/OIAppearance.h>
 
 RCS_ID("$Id$");
 
@@ -21,12 +22,22 @@ RCS_ID("$Id$");
 
 + (CGFloat)contentHeight;
 {
-    return 24; //[[OIAppearance appearance] CGFloatForKeyPath:@"InspectorHeaderContentHeight"];
+    return [[OIAppearance appearance] CGFloatForKeyPath:@"InspectorHeaderContentHeight"];
+}
+
++ (CGFloat)separatorHeight;
+{
+    return [[OIAppearance appearance] CGFloatForKeyPath:@"InspectorHeaderSeparatorHeight"];
 }
 
 + (CGFloat)separatorTopPadding;
 {
-    return 5; // [[OIAppearance appearance] CGFloatForKeyPath:@"InspectorHeaderSeparatorTopPadding"];
+    return [[OIAppearance appearance] CGFloatForKeyPath:@"InspectorHeaderSeparatorTopPadding"];
+}
+
++ (NSColor *)separatorColor;
+{
+    return [[OIAppearance appearance] colorForKeyPath:@"InspectorHeaderSeparatorColor"];
 }
 
 - (void)setDrawsSeparator:(BOOL)drawsSeparator;
@@ -36,7 +47,7 @@ RCS_ID("$Id$");
     
     _drawsSeparator = drawsSeparator;
     
-    self.verticalCenteringConstraint.constant = -1 * [[self class] separatorTopPadding] / (drawsSeparator ? 1 : 2);
+    self.verticalCenteringConstraint.constant = drawsSeparator ? -1 * ([[self class] separatorTopPadding] + [[self class] separatorHeight]) / 2 : 0.0f;
     [self invalidateIntrinsicContentSize];
 }
 
@@ -54,13 +65,14 @@ RCS_ID("$Id$");
     return [super hitTest:aPoint];
 }
 
+#if 0
+// Eventual support for dragging slices around and into detached inspector windows
 - (void)mouseDown:(NSEvent *)theEvent;
 {
     [self.disclosureButton.cell setHighlighted:YES];
 
     OATrackingLoop *loop = [self trackingLoopForMouseDown:theEvent];
     loop.hysteresisSize = 5.0f;
-
     loop.dragged = ^(OATrackingLoop *loop) {
         // Hide inspector contents, grab drag image
 //        NSPoint dragLocation = loop.currentMouseDraggedPointInView;
@@ -87,6 +99,7 @@ RCS_ID("$Id$");
     BOOL inBounds = NSPointInRect(viewPoint, [self bounds]);
     [self.disclosureButton.cell setHighlighted:inBounds];
 }
+#endif
 
 - (void)mouseUp:(NSEvent *)theEvent;
 {
@@ -106,7 +119,7 @@ RCS_ID("$Id$");
 {
     CGFloat desiredHeight = [[self class] contentHeight];
     if (self.drawsSeparator)
-        desiredHeight += [[self class] separatorTopPadding];
+        desiredHeight += [[self class] separatorTopPadding] + [[self class] separatorHeight];
     
     return (NSSize){
         .width = NSViewNoInstrinsicMetric,
@@ -123,22 +136,21 @@ RCS_ID("$Id$");
     if (self.drawsSeparator == NO)
         return;
     
-    CGFloat edgeInset = NSMinX(self.disclosureButton.frame);
-    CGFloat height = 1.0f;
+    CGFloat height = [[self class] separatorHeight];
     CGFloat topPadding = [[self class] separatorTopPadding];
     
     NSRect separatorRect = (NSRect){
         .origin = (NSPoint){
-            .x = edgeInset,
+            .x = 0,
             .y = [self isFlipped] ? NSMinY(self.bounds) + topPadding : NSMaxY(self.bounds) - height - topPadding,
         },
         .size = (NSSize){
-            .width = NSWidth(self.bounds) - 2 * edgeInset,
+            .width = NSWidth(self.bounds),
             .height = height,
         },
     };
     
-    [[NSColor colorWithCalibratedHue:0 saturation:0 brightness:0.75 alpha:1] setFill];
+    [[[self class] separatorColor] setFill];
     NSRectFill(separatorRect);
 }
 

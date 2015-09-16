@@ -171,7 +171,7 @@ static id _commonInit(OUIDocumentPickerScrollView *self)
     BOOL topControlsWereHidden = self.topControls.alpha < 0.7;
     [super setContentInset:contentInset];
     if (topControlsWereHidden) {
-        if (self.contentOffset.y < self.contentOffsetYToHideTopControls) {
+        if (self.contentOffset.y < [self contentOffsetYToHideCompactTitleBehindNavBar]) {
             self.contentOffset = CGPointMake(self.contentOffset.x, self.contentOffsetYToHideTopControls);
         }
     }
@@ -247,6 +247,18 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     } else {
         // the top controls should be invisible when they are fully off screen
         offset = CGRectGetMaxY(_topControls.frame) - self.contentInset.top;
+    }
+    return ceilf(offset);
+}
+
+- (CGFloat)contentOffsetYToHideCompactTitleBehindNavBar;
+{
+    CGFloat offset;
+    if ([self isShowingTitleLabel]) {
+        // the title view is overlaid on the top controls, so hide the top controls when the title view is at the top of the visible window
+        offset = CGRectGetMaxY(_topControls.frame) - self.contentInset.top;
+    } else {
+        offset = self.contentInset.top;
     }
     return ceilf(offset);
 }
@@ -791,9 +803,9 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
     NSUInteger itemsPerRow = gridSize.width;
     CGSize layoutSize = self.bounds.size;
     CGSize itemSize = CGSizeMake(kOUIDocumentPickerItemNormalSize, kOUIDocumentPickerItemNormalSize);
-;
+
     // For devices where screen sizes are too small for our preferred items, here's a smaller size
-    if (layoutSize.width / gridSize.width < (itemSize.width + kOUIDocumentPickerItemSmallHorizontalPadding)) {
+    if (layoutSize.width < (itemsPerRow * kOUIDocumentPickerItemNormalSize) + ((itemsPerRow - 1) * kOUIDocumentPickerItemHorizontalPadding)) {
         itemSize = CGSizeMake(kOUIDocumentPickerItemSmallSize, kOUIDocumentPickerItemSmallSize);
         self.isUsingSmallItems = YES;
     } else {
@@ -929,9 +941,6 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
 
     // Expand the visible content rect to preload nearby previews
     CGRect previewLoadingRect = CGRectInset(contentRect, 0, -contentRect.size.height);
-    
-    // We don't need this for the scroller and calling it causes our item views to layout their contents out before we've adjusted their frames (and we don't even want to layout the hidden views).
-    // [super layoutSubviews];
     
     // The newly created views need to get laid out the first time w/o animation on.
     OUIWithAnimationsDisabled(_flags.isAnimatingRotationChange, ^{
@@ -1105,6 +1114,7 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
                 [self.delegate documentPickerScrollView:self willEndDisplayingItemView:view];
         }
     });
+    [super layoutSubviews];
 }
 
 #pragma mark - NSObject (OUIDocumentPickerItemMetadataView)
@@ -1161,12 +1171,9 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
     if (layoutSize.width <= 0 || layoutSize.height <= 0)
         return CGSizeMake(1,1); // placeholder because layoutSize not set yet
 
-    // Adding a single kOUIDocumentPickerItemHorizontalPadding here because we want to compute the space for itemWidth*nItems + padding*(nItems-1), moving padding*1 to the other side of the equation simplifies everything else
-    layoutSize.width += [self _horizontalPadding];
-    
     CGFloat itemWidth = kOUIDocumentPickerItemNormalSize;
-    CGFloat itemsAcross = floor(layoutSize.width / (itemWidth + [self _horizontalPadding]));
-    CGFloat rotatedItemsAcross = floor(layoutSize.height / (itemWidth + [self _horizontalPadding]));
+    CGFloat itemsAcross = floor((layoutSize.width + kOUIDocumentPickerItemHorizontalPadding) / (itemWidth + kOUIDocumentPickerItemHorizontalPadding));
+    CGFloat rotatedItemsAcross = floor(layoutSize.height / (itemWidth + kOUIDocumentPickerItemHorizontalPadding));
 
     if (itemsAcross < 3 || rotatedItemsAcross < 3) {
         itemWidth = kOUIDocumentPickerItemSmallSize;

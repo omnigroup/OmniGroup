@@ -83,6 +83,33 @@
 		4A33D42008A0191B003A3FA5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00E51C3EFE8AAE2511C9CC38 /* Foundation.framework */; };
 		4DA2E34F17A064420073144A /* OBLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DA2E34D17A064420073144A /* OBLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4DA2E35117A064420073144A /* OBLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DA2E34E17A064420073144A /* OBLogger.m */; };
+		5FE81E1F1B62AF770056756C /* OBBacktraceBuffer-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = A2E007850E5CA926007709A5 /* OBBacktraceBuffer-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		5FE81E201B62AF8C0056756C /* OBObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C29FE8AAE2511C9CC38 /* OBObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E211B62AF930056756C /* OBLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DA2E34D17A064420073144A /* OBLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E231B62AFA00056756C /* OmniBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2CFE8AAE2511C9CC38 /* OmniBase.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E241B62AFA60056756C /* OBBacktraceBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34571D271AB1E9310072E0F0 /* OBBacktraceBuffer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E251B62AFAB0056756C /* NSError-OBExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 347049730CFB6612007025F7 /* NSError-OBExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E261B62AFB20056756C /* NSException-OBExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 07AA829000D177F4C697A14A /* NSException-OBExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E271B62AFBB0056756C /* OBExpectedDeallocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 344E67061845535E00BEFCE3 /* OBExpectedDeallocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E281B62AFC00056756C /* rcsid.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2DFE8AAE2511C9CC38 /* rcsid.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E291B62AFC60056756C /* OBUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2BFE8AAE2511C9CC38 /* OBUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E2A1B62AFCA0056756C /* assertions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C23FE8AAE2511C9CC38 /* assertions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E2B1B62AFD00056756C /* NSError-OBUtilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 3469EF080FEB5E29002FEBC5 /* NSError-OBUtilities.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E2C1B62AFD50056756C /* objc.h in Headers */ = {isa = PBXBuildFile; fileRef = 34BBACA80BA76AA2002DA71E /* objc.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E2D1B62AFDB0056756C /* macros.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C25FE8AAE2511C9CC38 /* macros.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E2E1B62AFDF0056756C /* system.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51C2EFE8AAE2511C9CC38 /* system.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		5FE81E771B62E33D0056756C /* OBLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 4DA2E34E17A064420073144A /* OBLogger.m */; };
+		5FE81E781B62E3420056756C /* OBExpectedDeallocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 344E67071845535E00BEFCE3 /* OBExpectedDeallocation.m */; };
+		5FE81E791B62E3470056756C /* assertions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C31FE8AAE2511C9CC38 /* assertions.m */; };
+		5FE81E7A1B62E34D0056756C /* NSError-OBExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 347049740CFB6612007025F7 /* NSError-OBExtensions.m */; };
+		5FE81E7B1B62E3520056756C /* OBBacktraceBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = A2581A620E2D36DD001ABDA6 /* OBBacktraceBuffer.m */; };
+		5FE81E7C1B62E3560056756C /* OBUtilities-NonARC.m in Sources */ = {isa = PBXBuildFile; fileRef = 3483FAE2192CFE140072D3FE /* OBUtilities-NonARC.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		5FE81E7D1B62E35A0056756C /* OBObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C20FE8AAE2511C9CC38 /* OBObject.m */; };
+		5FE81E7E1B62E3600056756C /* NSException-OBExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AA829100D177F4C697A14A /* NSException-OBExtensions.m */; };
+		5FE81E7F1B62E3640056756C /* OBUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51C32FE8AAE2511C9CC38 /* OBUtilities.m */; };
+		5FE81E801B62E3680056756C /* OBRuntimeCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 34172BA4119C88DB00F7FD6A /* OBRuntimeCheck.m */; };
+		5FE81E811B62E36D0056756C /* NSError-OBUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3469EF090FEB5E29002FEBC5 /* NSError-OBUtilities.m */; };
+		5FE81E821B62E4060056756C /* OBRuntimeCheck.h in Headers */ = {isa = PBXBuildFile; fileRef = 34172BA3119C88DB00F7FD6A /* OBRuntimeCheck.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A2581A630E2D36DD001ABDA6 /* OBBacktraceBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = A2581A620E2D36DD001ABDA6 /* OBBacktraceBuffer.m */; };
 		A2E007860E5CA926007709A5 /* OBBacktraceBuffer-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = A2E007850E5CA926007709A5 /* OBBacktraceBuffer-Internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
 /* End PBXBuildFile section */
@@ -321,6 +348,17 @@
 		4AB8F0F008AD0B7000DBB061 /* Omni-Tool-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Release.xcconfig"; sourceTree = "<group>"; };
 		4DA2E34D17A064420073144A /* OBLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OBLogger.h; sourceTree = "<group>"; };
 		4DA2E34E17A064420073144A /* OBLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OBLogger.m; sourceTree = "<group>"; };
+		5FE81E171B62AE980056756C /* OmniBase.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		5FE81E331B62B2C80056756C /* Target-Watch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Watch-Common.xcconfig"; sourceTree = "<group>"; };
+		5FE81E341B62B2D60056756C /* Watch-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		5FE81E351B62B2D60056756C /* Watch-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		5FE81E361B62B2D60056756C /* Watch-Application-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		5FE81E371B62B2D60056756C /* Watch-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		5FE81E381B62B2D60056756C /* Watch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		5FE81E391B62B2D60056756C /* Watch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
+		5FE81E401B62BA3A0056756C /* Watch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		5FE81E411B62BA3A0056756C /* Watch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		5FE81E421B62BA3A0056756C /* Watch-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
 		A2411319108D42AA00F8F1D5 /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
 		A2411320108D430A00F8F1D5 /* Omni-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Common.xcconfig"; sourceTree = "<group>"; };
 		A2411321108D430A00F8F1D5 /* Omni-Bundle-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
@@ -377,6 +415,13 @@
 			files = (
 				348A2FF31A646FC700D540F3 /* CFNetwork.framework in Frameworks */,
 				4A33D42008A0191B003A3FA5 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5FE81E131B62AE980056756C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -458,6 +503,7 @@
 				34EE20D114F0354300722491 /* OBUnitTests.xctest */,
 				34637CCC194F448F009B51C5 /* OmniBase.framework */,
 				34637CD6194F448F009B51C5 /* OBUnitTests.xctest */,
+				5FE81E171B62AE980056756C /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -555,6 +601,7 @@
 				4AB8F0F008AD0B7000DBB061 /* Omni-Tool-Release.xcconfig */,
 				34354D191190BFC700FE1BEB /* Target-Mac-Common.xcconfig */,
 				34354D1A1190BFC700FE1BEB /* Target-Touch-Common.xcconfig */,
+				5FE81E331B62B2C80056756C /* Target-Watch-Common.xcconfig */,
 				34354D1B1190BFC700FE1BEB /* Touch-Application-Common.xcconfig */,
 				34354D1D1190BFC700FE1BEB /* Touch-Application-Debug.xcconfig */,
 				34354D1E1190BFC700FE1BEB /* Touch-Application-Release.xcconfig */,
@@ -567,6 +614,15 @@
 				34354D1F1190BFC700FE1BEB /* Touch-Library-Common.xcconfig */,
 				34354D211190BFC700FE1BEB /* Touch-Library-Debug.xcconfig */,
 				34354D221190BFC700FE1BEB /* Touch-Library-Release.xcconfig */,
+				5FE81E341B62B2D60056756C /* Watch-Application-Common.xcconfig */,
+				5FE81E351B62B2D60056756C /* Watch-Application-Debug.xcconfig */,
+				5FE81E361B62B2D60056756C /* Watch-Application-Release.xcconfig */,
+				5FE81E401B62BA3A0056756C /* Watch-Bundle-Common.xcconfig */,
+				5FE81E411B62BA3A0056756C /* Watch-Bundle-Debug.xcconfig */,
+				5FE81E421B62BA3A0056756C /* Watch-Bundle-Release.xcconfig */,
+				5FE81E371B62B2D60056756C /* Watch-Framework-Common.xcconfig */,
+				5FE81E381B62B2D60056756C /* Watch-Framework-Debug.xcconfig */,
+				5FE81E391B62B2D60056756C /* Watch-Framework-Release.xcconfig */,
 			);
 			name = Configurations;
 			path = ../../Configurations;
@@ -621,6 +677,29 @@
 				A2E007860E5CA926007709A5 /* OBBacktraceBuffer-Internal.h in Headers */,
 				3469EF0A0FEB5E29002FEBC5 /* NSError-OBUtilities.h in Headers */,
 				34172BA5119C88DB00F7FD6A /* OBRuntimeCheck.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5FE81E141B62AE980056756C /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5FE81E2E1B62AFDF0056756C /* system.h in Headers */,
+				5FE81E2D1B62AFDB0056756C /* macros.h in Headers */,
+				5FE81E2C1B62AFD50056756C /* objc.h in Headers */,
+				5FE81E2B1B62AFD00056756C /* NSError-OBUtilities.h in Headers */,
+				5FE81E2A1B62AFCA0056756C /* assertions.h in Headers */,
+				5FE81E291B62AFC60056756C /* OBUtilities.h in Headers */,
+				5FE81E281B62AFC00056756C /* rcsid.h in Headers */,
+				5FE81E271B62AFBB0056756C /* OBExpectedDeallocation.h in Headers */,
+				5FE81E261B62AFB20056756C /* NSException-OBExtensions.h in Headers */,
+				5FE81E251B62AFAB0056756C /* NSError-OBExtensions.h in Headers */,
+				5FE81E241B62AFA60056756C /* OBBacktraceBuffer.h in Headers */,
+				5FE81E231B62AFA00056756C /* OmniBase.h in Headers */,
+				5FE81E211B62AF930056756C /* OBLogger.h in Headers */,
+				5FE81E821B62E4060056756C /* OBRuntimeCheck.h in Headers */,
+				5FE81E201B62AF8C0056756C /* OBObject.h in Headers */,
+				5FE81E1F1B62AF770056756C /* OBBacktraceBuffer-Internal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -734,6 +813,24 @@
 			productReference = 4A33D42808A0191B003A3FA5 /* OmniBase.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		5FE81E161B62AE980056756C /* OmniBase-watchOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5FE81E1E1B62AE980056756C /* Build configuration list for PBXNativeTarget "OmniBase-watchOS" */;
+			buildPhases = (
+				5FE81E121B62AE980056756C /* Sources */,
+				5FE81E131B62AE980056756C /* Frameworks */,
+				5FE81E141B62AE980056756C /* Headers */,
+				5FE81E151B62AE980056756C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "OmniBase-watchOS";
+			productName = "OmniBase-watchOS";
+			productReference = 5FE81E171B62AE980056756C /* OmniBase.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -753,6 +850,9 @@
 					34EE20D014F0354300722491 = {
 						TestTargetID = 4A33D40608A0191B003A3FA5;
 					};
+					5FE81E161B62AE980056756C = {
+						CreatedOnToolsVersion = 7.0;
+					};
 				};
 			};
 			buildConfigurationList = 4AA3CEDC08A01555004389CD /* Build configuration list for PBXProject "OmniBase" */;
@@ -771,6 +871,7 @@
 				34EE20D014F0354300722491 /* OBUnitTests */,
 				34637CCB194F448F009B51C5 /* OmniBase-iOS */,
 				34637CD5194F448F009B51C5 /* OBUnitTests-iOS */,
+				5FE81E161B62AE980056756C /* OmniBase-watchOS */,
 			);
 		};
 /* End PBXProject section */
@@ -800,6 +901,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4A33D41608A0191B003A3FA5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5FE81E151B62AE980056756C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -872,6 +980,24 @@
 				3483FAE3192CFE140072D3FE /* OBUtilities-NonARC.m in Sources */,
 				3469EF0B0FEB5E29002FEBC5 /* NSError-OBUtilities.m in Sources */,
 				34172BA6119C88DB00F7FD6A /* OBRuntimeCheck.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5FE81E121B62AE980056756C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5FE81E811B62E36D0056756C /* NSError-OBUtilities.m in Sources */,
+				5FE81E801B62E3680056756C /* OBRuntimeCheck.m in Sources */,
+				5FE81E7F1B62E3640056756C /* OBUtilities.m in Sources */,
+				5FE81E7E1B62E3600056756C /* NSException-OBExtensions.m in Sources */,
+				5FE81E7D1B62E35A0056756C /* OBObject.m in Sources */,
+				5FE81E7C1B62E3560056756C /* OBUtilities-NonARC.m in Sources */,
+				5FE81E7B1B62E3520056756C /* OBBacktraceBuffer.m in Sources */,
+				5FE81E7A1B62E34D0056756C /* NSError-OBExtensions.m in Sources */,
+				5FE81E791B62E3470056756C /* assertions.m in Sources */,
+				5FE81E781B62E3420056756C /* OBExpectedDeallocation.m in Sources */,
+				5FE81E771B62E33D0056756C /* OBLogger.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1147,6 +1273,36 @@
 			};
 			name = Release;
 		};
+		5FE81E1C1B62AE980056756C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5FE81E381B62B2D60056756C /* Watch-Framework-Debug.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;
+				PRODUCT_NAME = OmniBase;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos";
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		5FE81E1D1B62AE980056756C /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5FE81E391B62B2D60056756C /* Watch-Framework-Release.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				INFOPLIST_FILE = Info.plist;
+				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniBase;
+				PRODUCT_NAME = OmniBase;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos";
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1200,6 +1356,15 @@
 			buildConfigurations = (
 				4AA3CEDD08A01555004389CD /* Debug */,
 				4AA3CEDE08A01555004389CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5FE81E1E1B62AE980056756C /* Build configuration list for PBXNativeTarget "OmniBase-watchOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5FE81E1C1B62AE980056756C /* Debug */,
+				5FE81E1D1B62AE980056756C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

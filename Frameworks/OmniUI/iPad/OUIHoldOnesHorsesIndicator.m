@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -138,7 +138,7 @@ static UIColor *BackgroundWashColor;
     [self _startDelayUntilInitialSpinner];
 }
 
-- (void)_deactivateNow;
+- (void)_deactivateNow NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions");
 {
     DEBUG_HORSE(@"In %@", NSStringFromSelector(_cmd));
     self.stateChangeTimer = nil;
@@ -195,7 +195,7 @@ static UIColor *BackgroundWashColor;
     self.stateChangeTimer = [NSTimer scheduledTimerWithTimeInterval:delayUntilOKToClear target:self selector:@selector(_minimumDisplayTimeReached:) userInfo:nil repeats:NO];
 }
 
-- (void)_startDelayUntilDeactivate;
+- (void)_startDelayUntilDeactivate NS_EXTENSION_UNAVAILABLE_IOS("Hold One's Horses Indicator is not available in extensions");
 {
     OBASSERT(self.stateChangeTimer != nil);
     NSDate *okToDeactivateTime = self.stateChangeTimer.fireDate;

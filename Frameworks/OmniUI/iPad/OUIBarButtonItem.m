@@ -171,7 +171,7 @@ static void _commonInit(OUIBarButtonItem *self, UIColor *tintColor)
 #pragma mark -
 #pragma mark Private
 
-- (void)_buttonAction:(id)sender;
+- (void)_buttonAction:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     if (![[UIApplication sharedApplication] sendAction:self.action to:self.target from:self forEvent:nil])
         NSLog(@"Unable to send action %@ from %@ to %@", NSStringFromSelector(self.action), self, self.target);

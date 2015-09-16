@@ -839,6 +839,10 @@ static BOOL resetCryptor(CCCryptorRef cryptor, const uint8_t segmentIV[kCCBlockS
 /* There's no plausible reason for our bulk data encryption to fail--- there's no mallocing or anything variable happening in there. So just crash if any error is returned. */
 static void cryptOrCrash(CCCryptorRef cryptor, const void *dataIn, size_t dataLength, void *dataOut, int lineno)
 {
+    
+    /* The documentation says that the input and output buffers can be the same, but according to a March 2015 thread on the apple-cdsa list, the documentation is wrong. */
+    OBASSERT(dataIn != dataOut);
+    
     size_t actualAmountEncrypted = 0;
     CCCryptorStatus cerr = CCCryptorUpdate(cryptor,
                                            dataIn, dataLength,

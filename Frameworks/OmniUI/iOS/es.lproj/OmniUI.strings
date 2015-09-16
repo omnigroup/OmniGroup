@@ -46,7 +46,7 @@
 /* Done
    toolbar item title */
 
-"Done" = "Salir";
+"Done" = "Hecho";
 
 /* toolbar item title */
 "Edit" = "Editar";
@@ -149,13 +149,13 @@
 "Strike Through" = "Tachar";
 
 /* Alert description for error loading product information */
-"This device might not be connected to the Internet." = "Es posible que el dispositivo no esté conectado a Internet.";
+"This device might not be connected to the Internet." = "Es posible que este dispositivo no esté conectado a Internet.";
 
 /* Certificate trust alert button title */
 "Trust Always" = "Confiar siempre";
 
 /* Alert title for error loading product information */
-"Unable to reach App Store" = "Imposible acceder a la App Store";
+"Unable to reach App Store" = "No se puede conectar con la App Store";
 
 /* Underline button accessibility label */
 "Underline" = "Subrayar";

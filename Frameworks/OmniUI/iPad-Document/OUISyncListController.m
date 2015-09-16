@@ -80,7 +80,7 @@ RCS_ID("$Id$");
         .size.height = 32
     }];
     _connectingLabel.backgroundColor = [UIColor clearColor];
-    _connectingLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:20.0];
+    _connectingLabel.font = [UIFont systemFontOfSize:20.0];
     _connectingLabel.textColor = [UIColor blackColor];
     [_connectingView addSubview:_connectingLabel];
     
@@ -143,10 +143,10 @@ RCS_ID("$Id$");
             BOOL shouldConvert = NO;
 
             NSURL *documentToAddURL = downloadURL;
-            if ([docPicker.delegate respondsToSelector:@selector(documentPickerAvailableUTTypesPredicate:)] && [docPicker.delegate respondsToSelector:@selector(documentPicker:saveNewFileIfAppropriateFromFile:completionHandler:)]) {
-                if (![[docPicker.delegate documentPickerAvailableUTTypesPredicate:docPicker] evaluateWithObject:OFUTIForFileExtensionPreferringNative([downloadURL pathExtension], @(NO))]) {
-                    shouldConvert = YES;
-                }
+            if ([docPicker.delegate respondsToSelector:@selector(documentPickerShouldOpenButNotDisplayUTType:)] && [docPicker.delegate respondsToSelector:@selector(documentPicker:saveNewFileIfAppropriateFromFile:completionHandler:)]) {
+                BOOL isDirectory = NO;
+                [[NSFileManager defaultManager] fileExistsAtPath:[documentToAddURL path] isDirectory:&isDirectory];
+                shouldConvert = [docPicker.delegate documentPickerShouldOpenButNotDisplayUTType:OFUTIForFileExtensionPreferringNative([downloadURL pathExtension], @(isDirectory))];
 
                 if (shouldConvert) { // convert files we claim to view, but do not display in our doc-picker?
                     [docPicker.delegate documentPicker:docPicker saveNewFileIfAppropriateFromFile:documentToAddURL completionHandler:^(BOOL success, ODSFileItem *savedItem, ODSScope *currentScope) {
@@ -154,11 +154,10 @@ RCS_ID("$Id$");
 
                         }];
                     }];
+                    return;
                 }
-                
-            } else {
-                [scopeViewController addDocumentFromURL:documentToAddURL];
             }
+            [scopeViewController addDocumentFromURL:documentToAddURL];
         }
     }];
 }
@@ -224,7 +223,7 @@ RCS_ID("$Id$");
 {
     OBASSERT(_replaceDocumentAlert == nil); // this should never happen
     _replaceDocumentAlert = [[OUIReplaceDocumentAlert alloc] initWithDelegate:self documentURL:fileURL];
-    [_replaceDocumentAlert show];
+    [_replaceDocumentAlert showFromViewController:self];
 }
 
 - (void)_cancelDownloadEffectDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context;

@@ -65,7 +65,7 @@ RCS_ID("$Id$");
 
 + (UIColor *)defaultBackgroundColor;
 {
-    return OQMakeUIColor(kOUIDocumentPickerItemMetadataViewBackgroundColor);
+    return OAMakeUIColor(kOUIDocumentPickerItemMetadataViewBackgroundColor);
 }
 
 - initWithFrame:(CGRect)frame;
@@ -84,7 +84,7 @@ RCS_ID("$Id$");
     _nameTextField.textAlignment = NSTextAlignmentLeft;
     //_nameTextField.lineBreakMode = NSLineBreakByTruncatingTail;
     _nameTextField.font = [UIFont systemFontOfSize:[self _nameLabelFontSize]];
-    _nameTextField.textColor = OQMakeUIColor(kOUIDocumentPickerItemViewNameLabelColor);
+    _nameTextField.textColor = OAMakeUIColor(kOUIDocumentPickerItemViewNameLabelColor);
     _nameTextField.clearButtonMode = UITextFieldViewModeWhileEditing;
     _nameTextField.autocapitalizationType = UITextAutocapitalizationTypeWords;
     _nameTextField.spellCheckingType = UITextSpellCheckingTypeNo;
@@ -94,7 +94,7 @@ RCS_ID("$Id$");
     
     _dateLabel = [[UILabel alloc] init];
     _dateLabel.font = [UIFont systemFontOfSize:[self _detailLabelFontSize]];
-    _dateLabel.textColor = OQMakeUIColor(kOUIDocumentPickerItemViewDetailLabelColor);
+    _dateLabel.textColor = OAMakeUIColor(kOUIDocumentPickerItemViewDetailLabelColor);
     [self addSubview:_dateLabel];
     
     _nameBadgeImageView = [[UIImageView alloc] init];

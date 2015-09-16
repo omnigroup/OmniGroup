@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,9 +11,9 @@
 
 @interface OUIInteractionLock : NSObject
 
-+ (NSArray *)activeLocks;
-+ (instancetype)applicationLock;
++ (NSArray *)activeLocks NS_EXTENSION_UNAVAILABLE_IOS("Interaction lock is not available in extensions.");
++ (instancetype)applicationLock NS_EXTENSION_UNAVAILABLE_IOS("Interaction lock is not available in extensions.");
 
-- (void)unlock;
+- (void)unlock NS_EXTENSION_UNAVAILABLE_IOS("Interaction lock is not available in extensions.");
 
 @end

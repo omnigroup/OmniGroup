@@ -81,17 +81,18 @@ RCS_ID("$Id$");
     NSURL *fileURL = nil;
     
     OBFinishPortingLater("Why are we doing this instead of using the URL path utilities?");
-    // gotta use the CF version, beacuse it allows us to specify extra character's to escape, in this case '?'
-    CFStringRef tempString = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef )self.exportFileWrapper.preferredFilename, NULL, CFSTR("?"), kCFStringEncodingUTF8);
-    fileURL = OFURLRelativeToDirectoryURL(directoryURL, (__bridge NSString *)tempString);
-    CFRelease(tempString);
-    
+    NSMutableCharacterSet *allowedChars = [NSMutableCharacterSet characterSetWithCharactersInString:@"?"];
+    [allowedChars formUnionWithCharacterSet:[NSCharacterSet URLPathAllowedCharacterSet]];
+
+    NSString *tempString = [self.exportFileWrapper.preferredFilename stringByAddingPercentEncodingWithAllowedCharacters:allowedChars];
+    fileURL = OFURLRelativeToDirectoryURL(directoryURL, tempString);
+
     [_connection fileInfoAtURL:fileURL ETag:nil completionHandler:^(ODAVSingleFileInfoResult *result, NSError *error) {
         if (!self.parentViewController)
             return; // Cancelled
         
         if (!result) {
-            OUI_PRESENT_ALERT(error);
+            OUI_PRESENT_ALERT_FROM(error, self);
             return;
         }
         
@@ -134,9 +135,9 @@ RCS_ID("$Id$");
                 certAlert.cancelBlock = ^{
                     [self cancel:nil];
                 };
-                [certAlert show];
+                [certAlert showFromViewController:self];
             } else {
-                OUI_PRESENT_ALERT(errorOrNil);
+                OUI_PRESENT_ALERT_FROM(errorOrNil, self);
             }
             return;
         }
@@ -157,7 +158,7 @@ RCS_ID("$Id$");
             return; // Cancelled
         
         if (!properties) {
-            OUI_PRESENT_ALERT(errorOrNil);
+            OUI_PRESENT_ALERT_FROM(errorOrNil, self);
             return;
         }
             
@@ -180,7 +181,7 @@ RCS_ID("$Id$");
         __autoreleasing NSError *error = nil;
         OUIWebDAVSyncListController *subfolderController = [[OUIWebDAVSyncListController alloc] initWithServerAccount:self.serverAccount exporting:self.isExporting error:&error];
         if (!subfolderController) {
-            OUI_PRESENT_ERROR(error);
+            OUI_PRESENT_ERROR_FROM(error, self);
             return;
         }
         subfolderController.title = fileInfo.name;

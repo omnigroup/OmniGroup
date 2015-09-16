@@ -1,4 +1,4 @@
-// Copyright 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,7 @@
 
 #import <OmniUI/OUIPaletteTheme.h>
 
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 RCS_ID("$Id$");
 
@@ -21,7 +21,7 @@ RCS_ID("$Id$");
         return nil;
     }
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     NSData *data = [NSData dataWithContentsOfFile:path options:0 error:&error];
     if (!data) {
         NSLog(@"Unable to load theme file %@: %@", path, [error toPropertyList]);
@@ -63,9 +63,9 @@ RCS_ID("$Id$");
     NSMutableArray *colors = [NSMutableArray array];
     NSArray *colorPlists = [dict objectForKey:@"colors"];
     for (id colorPlist in colorPlists) {
-        OQColor *color = nil;
+        OAColor *color = nil;
         if ([colorPlist isKindOfClass:[NSString class]]) {
-            color = [OQColor colorFromRGBAString:colorPlist];
+            color = [OAColor colorFromRGBAString:colorPlist];
         } else {
             OBASSERT_NOT_REACHED("Don't understand this kind of plist for colors");
         }

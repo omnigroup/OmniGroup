@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,7 +42,7 @@ const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
     return self;
 }
 
-- (void)_runNextStep;
+- (void)_runNextStep NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     if (_stepIndex == 0) {
         // Done!
@@ -77,7 +77,7 @@ const NSTimeInterval OUIAnimationSequenceImmediateDuration = 0.0;
     }
 }
 
-- (void)_run;
+- (void)_run NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     DEBUG_SEQ(@"steps = %@", _steps);
     

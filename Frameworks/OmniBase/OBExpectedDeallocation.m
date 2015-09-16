@@ -29,12 +29,13 @@ RCS_ID("$Id$")
 #endif
 
 @interface _OBExpectedDeallocation : NSObject
-- initWithObject:(__unsafe_unretained id)object;
+- initWithObject:(__unsafe_unretained id)object possibleFailureReason:(OBExpectedDeallocationPossibleFailureReason)possibleFailureReason;
 @end
 
 @implementation _OBExpectedDeallocation
 {
     __unsafe_unretained id _object;
+    OBExpectedDeallocationPossibleFailureReason _possibleFailureReason;
     Class _originalClass;
     CFAbsoluteTime _originalTime;
     NSArray *_backtraceFrames;
@@ -53,12 +54,14 @@ static NSTimer *WarningTimer = nil;
     PendingDeallocations = CFArrayCreateMutable(kCFAllocatorDefault, 0, NULL); // non-retaining
 }
 
-- initWithObject:(__unsafe_unretained id)object;
+- initWithObject:(__unsafe_unretained id)object possibleFailureReason:(OBExpectedDeallocationPossibleFailureReason)possibleFailureReason;
 {
     if (!(self = [super init]))
         return nil;
     
     _object = object;
+    _possibleFailureReason = [possibleFailureReason copy];
+
     _originalClass = [object class];
     
     {
@@ -328,9 +331,20 @@ static float kExpectedWarningTimeout = 3.0;
             
             CFTimeInterval elapsedTime = currentTime - warning->_originalTime;
             if (!warning->_hasWarned && elapsedTime > kExpectedWarningTimeout) {
-                OBInvokeAssertionFailureHandler("DEALLOC", "", __FILE__, __LINE__, @"*** Expected deallocation of <%@:%p> %.2fs ago from:\n\t%@", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime, [warning->_backtraceFrames componentsJoinedByString:@"\t"]);
 
-#ifdef DEBUG_bungi
+                NSString *failureReason = nil;
+                if (warning->_possibleFailureReason) {
+                    // This is dangerous, but hopefully will usually be OK, and this is DEBUG only... we are on a background queue, and we don't have a strong reference to the object. So, it could get deallocated out from under us, or the block could do things that aren't thread-safe, etc. For example, when we notice that a view hasn't been deallocated, we check if it still has a superview. If so, the superview is the real problem.
+                    failureReason = warning->_possibleFailureReason(warning->_object);
+                }
+
+                if (failureReason) {
+                    OBInvokeAssertionFailureHandler("DEALLOC", "", __FILE__, __LINE__, @"*** Expected deallocation of <%@:%p> %.2fs ago, possibly failed due to: %@", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime, failureReason);
+                } else {
+                    OBInvokeAssertionFailureHandler("DEALLOC", "", __FILE__, __LINE__, @"*** Expected deallocation of <%@:%p> %.2fs ago from:\n\t%@", NSStringFromClass(warning->_originalClass), warning->_object, elapsedTime, [warning->_backtraceFrames componentsJoinedByString:@"\t"]);
+                }
+
+#if 0 && defined(DEBUG_bungi)
                 _searchAllRegionsForPointer((__bridge const void *)warning->_object);
 #else
                 (void)(_searchAllRegionsForPointer);
@@ -362,13 +376,18 @@ static unsigned DeallocationWarningKey;
 
 void OBExpectDeallocation(id object)
 {
+    OBExpectDeallocationWithPossibleFailureReason(object, nil);
+}
+
+void OBExpectDeallocationWithPossibleFailureReason(id object, OBExpectedDeallocationPossibleFailureReason possibleFailureReason)
+{
     if (!object)
         return;
-    
+
     if (objc_getAssociatedObject(object, &DeallocationWarningKey))
         return;
-    
-    _OBExpectedDeallocation *warning = [[_OBExpectedDeallocation alloc] initWithObject:object];
+
+    _OBExpectedDeallocation *warning = [[_OBExpectedDeallocation alloc] initWithObject:object possibleFailureReason:possibleFailureReason];
     objc_setAssociatedObject(object, &DeallocationWarningKey, warning, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 

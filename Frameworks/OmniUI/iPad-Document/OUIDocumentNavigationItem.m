@@ -318,8 +318,6 @@ NSString * const OUIDocumentNavigationItemOriginalDocumentNameUserInfoKey = @"OU
 
 - (void)documentTitleView:(OUIDocumentTitleView *)documentTitleView titleTapped:(id)sender;
 {
-    [[OUIAppController controller] dismissPopoverAnimated:NO];
-    
     _renaming = YES;
     [self _updateItemsForRenaming];
 }

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -42,7 +42,7 @@ typedef NS_ENUM(NSUInteger, ODSItemType) {
 
 @property(nonatomic,readonly) BOOL isValid; // Will return NO once this item has been forgotten by its scope, or its scope has been removed.
 
-@property(weak,readonly,nonatomic) ODSScope *scope;
+@property(weak,nonatomic) ODSScope *scope;
 @property(weak,readonly,nonatomic) ODSFolderItem *parentFolder;
 @property(nonatomic,readonly) NSUInteger depth;
 

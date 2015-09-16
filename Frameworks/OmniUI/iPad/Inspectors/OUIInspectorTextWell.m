@@ -464,10 +464,27 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     return drawRect;
 }
 
+- (void)_updateValueLabelFrameWithContentsRect:(CGRect)contentsRect labelFrame:(CGRect)labelFrame;
+{
+    CGRect valueFrame;
+    CGRectDivide(contentsRect, &labelFrame, &valueFrame, labelFrame.size.width + 8, CGRectMinXEdge);
+    UIView *rightView = self.rightView;
+    if (rightView != nil) {
+        valueFrame.size.width = CGRectGetMinX(rightView.frame) - CGRectGetMinX(valueFrame) - 8.0f /* padding between valueLabel and rightView */;
+        valueFrame.size.width = MAX(valueFrame.size.width, 0.0f); // Don't go negative, at least
+    }
+    _valueLabel.frame = valueFrame;
+
+    if (_focusIndicatorView) {
+        valueFrame.size.width += 8;
+        _focusIndicatorView.frame = CGRectInset(valueFrame, 0, 4);
+    }
+}
+
 - (void)layoutSubviews;
 {
     [super layoutSubviews];
-    
+
     switch (_style) {
         case OUIInspectorTextWellStyleSeparateLabelAndText: {
             CGRect contentsRect = self.contentsRect; // This already avoids the left/right view and does any needed insets
@@ -478,23 +495,17 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
             
             OBASSERT((_textField == nil) || (_focusIndicatorView == nil));
             if (_textField) {
+                if (CGRectEqualToRect(_valueLabel.frame, CGRectZero)) {
+                    [self _updateValueLabelFrameWithContentsRect:contentsRect labelFrame:labelFrame];
+                }
                 [self _updateEditorFrame];
                 _valueLabel.hidden = YES;
+                if (!_textField.isEditing) {
+                    [self startEditing];
+                }
             } else {
-                CGRect valueFrame;
-                CGRectDivide(contentsRect, &labelFrame, &valueFrame, labelFrame.size.width + 8, CGRectMinXEdge);
-                UIView *rightView = self.rightView;
-                if (rightView != nil) {
-                    valueFrame.size.width = CGRectGetMinX(rightView.frame) - CGRectGetMinX(valueFrame) - 8.0f /* padding between valueLabel and rightView */;
-                    valueFrame.size.width = MAX(valueFrame.size.width, 0.0f); // Don't go negative, at least
-                }
-                _valueLabel.frame = valueFrame;
+                [self _updateValueLabelFrameWithContentsRect:contentsRect labelFrame:labelFrame];
                 _valueLabel.hidden = NO;
-                
-                if (_focusIndicatorView) {
-                    valueFrame.size.width += 8;
-                    _focusIndicatorView.frame = CGRectInset(valueFrame, 0, 4);
-                }
             }
             break;
         }
@@ -533,7 +544,7 @@ static NSString *_getText(OUIInspectorTextWell *self, NSString *text, TextType *
     [self sendActionsForControlEvents:UIControlEventEditingChanged];
 }
 
-- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField;
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField NS_EXTENSION_UNAVAILABLE_IOS("");
 {
     textField.keyboardAppearance = [OUIAppController controller].defaultKeyboardAppearance;
     return YES;

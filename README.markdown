@@ -10,15 +10,14 @@ Checking out the source
 Xcode
 -------------------
 
-- We currently use Xcode 6.3 for iOS and Mac OS X. You'll probably have the best results if you do too. However, Xcode 7.0 (beta 2) should build this code fine as well for development purposes.
+- We currently use Xcode 7.0 for iOS, watchOS, and Mac OS X. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace.
-- If building for iOS, you need to edit your scheme to turn off implicit dependencies and parallel builds. Xcode doesn't understand implicit dependencies with static libraries, so you'll need to add the dependencies to your scheme in the right order. We're in the process of converting to iOS frameworks, which should help avoid this Xcode problem.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
 
 Supported Targets
 ----------------------
 
-- We require iOS 8.3 and Mac OS X 10.10.
+- We require iOS 9.0 and Mac OS X 10.10.
 
 Configuring the Source
 ----------------------

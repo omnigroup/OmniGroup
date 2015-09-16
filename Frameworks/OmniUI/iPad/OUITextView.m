@@ -23,8 +23,6 @@
 #import <OmniFoundation/OFGeometry.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
-#import "OUITextView-NoArc.h"
-
 RCS_ID("$Id$");
 
 // Deprecated methods from OUIEditableFrameDelegate
@@ -163,25 +161,24 @@ static NSString *_positionDescription(OUITextView *self, OUEFTextPosition *posit
     _textInspector.delegate = nil;
 }
 
-- (void)replaceTextStorage:(NSTextStorage *)textStorage;
+- (void)setFrame:(CGRect)frame
 {
-    NSTextStorage *oldTextStorage = self.textStorage;
-    OBPOSTCONDITION(self.layoutManager.textStorage == oldTextStorage);
+    NSTextContainer *textContainer = self.textContainer;
+    CGSize oldContainerSize = textContainer.size;
+    [super setFrame:frame];
+    CGSize updatedContainerSize = textContainer.size;
+    CGSize newContainerSize;
+    newContainerSize.width = textContainer.widthTracksTextView ? updatedContainerSize.width : oldContainerSize.width;
+    newContainerSize.height = textContainer.heightTracksTextView ? updatedContainerSize.height : oldContainerSize.height;
+    if (!CGSizeEqualToSize(newContainerSize, updatedContainerSize)) {
+        textContainer.size = newContainerSize;
+    }
 
-    if (oldTextStorage == textStorage)
-        return;
-    
-    NSLayoutManager *layoutManager = self.layoutManager;
-
-    // Have to remove the old one first. If we add the new one and then remove the old one, the layout manager's text storage gets set to nil.
-    [oldTextStorage removeLayoutManager:layoutManager];
-    [textStorage addLayoutManager:layoutManager];
-    
-    // ARC-unfriendly portion of this fix
-    OUITextViewFixTextStorageIvar(self, oldTextStorage, textStorage);
-
-    OBPOSTCONDITION(self.textStorage == textStorage);
-    OBPOSTCONDITION(self.layoutManager.textStorage == textStorage);
+    if (_selectedTextHighlightView) {
+        frame.origin = CGPointZero;
+        _selectedTextHighlightView.frame = frame;
+        [_selectedTextHighlightView setNeedsDisplay];
+    }
 }
 
 - (CGFloat)textHeight;
@@ -423,6 +420,11 @@ static void _scrollVerticallyInView(OUITextView *textView, CGRect viewRect, BOOL
     return firstSpan;
 }
 
+- (OUIInspector *)textInspector;
+{
+    return _textInspector;
+}
+
 - (void)dismissInspectorImmediatelyIfVisible;
 {
     [_textInspector dismissImmediatelyIfVisible];
@@ -516,6 +518,11 @@ static BOOL _rangeIsInsertionPoint(OUITextView  *self, UITextRange *r)
     else
         [textStorage removeAttribute:attr range:characterRange];
     [textStorage endEditing];
+    
+    if ([self.delegate respondsToSelector:@selector(textView:didChangeAttributesInRange:)]) {
+        [self.delegate textView:self didChangeAttributesInRange:range];
+        [_selectedTextHighlightView setNeedsDisplay];
+    }
 }
 
 - (void)insertAfterSelection:(NSAttributedString *)attributedString;

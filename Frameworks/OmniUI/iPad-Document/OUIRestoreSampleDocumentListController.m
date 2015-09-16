@@ -63,7 +63,7 @@ RCS_ID("$Id$");
     NSArray *propertyKeys = @[NSURLIsDirectoryKey, NSURLAttributeModificationDateKey, NSURLTotalFileSizeKey];
     NSArray *fileURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:self.sampleDocumentsURL includingPropertiesForKeys:propertyKeys options:0 error:&error];
     if (!fileURLs) {
-        OUI_PRESENT_ERROR(error);
+        OUI_PRESENT_ERROR_FROM(error, self);
         return;
     }
     
@@ -77,10 +77,10 @@ RCS_ID("$Id$");
         BOOL isDirectory;
         if (!OFGetBoolResourceValue(fileURL, NSURLIsDirectoryKey, &isDirectory, NULL))
             OBASSERT_NOT_REACHED("Should be able to read our samples");
-        NSDate *modificationDate = nil;
+        __autoreleasing NSDate *modificationDate = nil;
         if (![fileURL getResourceValue:&modificationDate forKey:NSURLAttributeModificationDateKey error:NULL])
             OBASSERT_NOT_REACHED("Should be able to read our samples");
-        NSNumber *fileSize;
+        __autoreleasing NSNumber *fileSize;
         if (![fileURL getResourceValue:&fileSize forKey:NSURLTotalFileSizeKey error:NULL])
             OBASSERT_NOT_REACHED("Should be able to read our samples");
         

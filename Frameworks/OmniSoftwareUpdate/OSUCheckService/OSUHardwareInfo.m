@@ -153,7 +153,7 @@ static NSDictionary *copySystemProfileForDataType(NSString *dataType)
     NSFileHandle *outputHandle = [pipe fileHandleForReading];
     NSData *output = [outputHandle readDataToEndOfFile];
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     id plist = [NSPropertyListSerialization propertyListWithData:output options:NSPropertyListImmutable format:NULL error:&error];
     if (!plist && error) {
 #ifdef DEBUG    
@@ -779,7 +779,7 @@ static NSString *clGetPlatformInfoString(cl_platform_id plat, cl_platform_info w
         size_t buf_used = 0;
         clErr = clGetPlatformInfo(plat, what, param_value_size, buf, &buf_used);
         if (clErr == CL_SUCCESS && buf_used <= param_value_size) {
-            if (buf_used > 0 && buf[buf_used] == 0)
+            if (buf_used > 0 && buf[buf_used - 1] == 0)
                 buf_used --;
             NSString *str = [[NSString alloc] initWithBytesNoCopy:buf length:buf_used encoding:NSISOLatin1StringEncoding freeWhenDone:YES];
             return str;

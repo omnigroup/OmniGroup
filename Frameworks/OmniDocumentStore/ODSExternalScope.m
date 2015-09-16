@@ -252,9 +252,9 @@ RCS_ID("$Id$")
     // This code works with iCloud Drive in the simulator, but not with iCloud Drive on an actual device (it returns an EPERM posix error).
     completionHandler = [completionHandler copy];
     NSURL *sourceURL = fileItem.fileURL;
-    NSURL *securedURL = sourceURL;
-    if (![securedURL startAccessingSecurityScopedResource])
-        securedURL = nil;
+    NSURL *securedURL = nil;
+    if ([sourceURL startAccessingSecurityScopedResource])
+        securedURL = sourceURL;
     void (^deferredCompletion)(NSURL *, NSError *) = ^(NSURL *destinationURL, NSError *errorOrNil) {
         [securedURL stopAccessingSecurityScopedResource];
         if (completionHandler == NULL)

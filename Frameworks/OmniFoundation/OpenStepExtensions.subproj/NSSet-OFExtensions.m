@@ -1,4 +1,4 @@
-// Copyright 2005-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2005-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -166,6 +166,31 @@ RCS_ID("$Id$");
     NSDictionary *result = [NSDictionary dictionaryWithDictionary:dict];
     [dict release];
     return result;
+}
+
+- (BOOL)containsObjectIdenticalTo:(id)anObject;
+{
+    for (id candidate in self) {
+        if (candidate == anObject) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+- (BOOL)isIdenticalToSet:(NSSet *)otherSet;
+{
+    if ([self count] != [otherSet count]) {
+        return NO;
+    }
+    
+    for (id anObject in self) {
+        if (![otherSet containsObjectIdenticalTo:anObject]) {
+            return NO;
+        }
+    }
+    
+    return YES;
 }
 
 @end

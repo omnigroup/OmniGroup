@@ -1,3 +1,6 @@
+/* Filename appendage to indicate file is a copy of a file that has been moved to a different location */
+" (Copy)" = " (Kopie)";
+
 /* bytes */
 "%@ B" = "%@ B";
 
@@ -43,11 +46,8 @@
 /* replace document description */
 "A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Ein Dokument namens „%@“ ist bereits vorhanden. Möchten Sie es ersetzen?Diese Aktion kann nicht widerrufen werden.";
 
-/* Error reason for a document operation failing due to a missing file. */
-"A file is missing or has been deleted." = "Eine Datei fehlt oder wurde gelöscht.";
-
 /* Omni Sync Server account info button title */
-"Account Info" = "Account-Informationen";
+"Account Info" = "Accountinformationen";
 
 /* Server Account Setup label: account name */
 "Account Name" = "Accountname";
@@ -55,7 +55,8 @@
 /* Menu option in the document picker view */
 "Actions" = "Aktionen";
 
-/* Cloud Setup button title to add a new account */
+/* Cloud Setup button title to add a new account
+   Cloud Setup button title to convert an existing account */
 
 "Add an Account" = "Account hinzufügen";
 
@@ -64,7 +65,10 @@
 
 /* button title
    cancel button title
-   Discard unsynced edits dialog: cancel button label */
+   delete confirmation cancel button
+   Discard unsynced edits dialog: cancel button label
+   Server account setup confirmation cancellation label
+   title for alert option cancel */
 
 
 
@@ -79,7 +83,7 @@
 "Cannot Export Item" = "Objekt kann nicht exportiert werden";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "Wählen Sie ein Format für das Versenden von „%@“ per E-Mail.";
+"Choose a format for emailing \"%@\":" = "Wählen Sie ein Format für das Versenden von „%@“ per E-Mail.:";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Vorlagenauswahl";
@@ -95,6 +99,9 @@
 
 /* title view clear button accessibility label. */
 "Clear Title" = "Titel löschen";
+
+/* Cloud Storage Providers preference nvigation bar title */
+"Cloud Storage Providers" = "Cloudspeicheranbieter";
 
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Verbunden";
@@ -138,6 +145,9 @@
 /* Lose unsynced changes warning: title */
 "Discard unsynced edits?" = "Nicht synchronisierte Änderungen verwerfen?";
 
+/* Message letting the user know that their document was moved from one folder to another. */
+"Document moved." = "Dokument wurde bewegt.";
+
 /* Title for alert informing user that the document has been reloaded with edits from another device */
 "Document Updated" = "Dokument aktualisiert";
 
@@ -173,8 +183,7 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
 
 
 "Export" = "Exportieren";
@@ -197,7 +206,7 @@
 /* doc picker folder type accessibility value */
 "Folder" = "Ordner";
 
-/* Import section title */
+/* import sheet title */
 "Import" = "Importieren";
 
 /* Info item accessibility label */
@@ -230,6 +239,9 @@
 /* modified date accessibility value */
 "Modified %@" = "Geändert am %@";
 
+/* Cloud Storage Providers more information button title */
+"More Info…" = "Weitere Informationen …";
+
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
 
@@ -243,15 +255,8 @@
 
 "Move to Trash" = "In den Papierkorb legen";
 
-/* Action sheet button title
-   Menu popover title */
-"Move to..." = "Verschieben nach ...";
-
-/* Message format for alert informing user that the document has been moved out of a folder to the top level */
-"Moved out of folder %@." = "Aus Ordner %@ verschoben.";
-
-/* Message format for alert informing user that the document has been moved to a folder */
-"Moved to folder %@." = "Nach Ordner %@ verschoben.";
+/* Share menu title */
+"Move to..." = "Bewegen …";
 
 /* Base name for newly created documents. This will have an number appended to it to make it unique. */
 "My Document" = "Eigenes Dokument";
@@ -275,7 +280,7 @@
 "No accounts are configured for importing." = "Für den Import sind keine Accounts konfiguriert.";
 
 /* doc picker no items accessibility value */
-"No items" = "Keine Objekte";
+"No items" = "Ohne Objekte";
 
 /* Not downloaded accessibility label. */
 "Not downloaded" = "Nicht heruntergeladen";
@@ -284,8 +289,7 @@
 "Not uploaded" = "Nicht hochgeladen";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
 
 "OK" = "OK";
 
@@ -302,7 +306,7 @@
 "Password" = "Kennwort";
 
 /* Photo Library permisssions error description. */
-"Photo Library permission denied." = "Die Zugriffsrechte auf das Fotoarchiv wurden verweigert.";
+"Photo Library permission denied." = "Die Zugriffsrechte auf die Fotos-Mediathek wurden verweigert.";
 
 /* Menu option in the document picker view */
 "Print" = "Drucken";
@@ -424,10 +428,13 @@
 "The zip archive must contain a single document." = "Das Zip-Archiv muss ein einzelnes Dokument enthalten.";
 
 /* Photo Library permisssions error suggestion. */
-"This app does not have access to your Photo Library." = "Diese App hat keinen Zugriff auf Ihr Fotoarchiv.";
+"This app does not have access to your Photo Library." = "Diese App hat keinen Zugriff auf Ihre Fotos-Mediathek.";
 
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Dieser Cloud-Account ist nicht mehr vorhanden.";
+
+/* Error reason for a document operation failing due to a missing file. */
+"This document is not accessible. It is possible the file was deleted, renamed or moved via iTunes or an external document provider. Please try removing the file and adding it again." = "Auf dieses Dokument kann nicht zugegriffen werden. Die Datei wurde eventuell über iTunes oder einen externen Dokumentanbieter gelöscht, umbenannt oder bewegt. Versuchen Sie, die Datei zu entfernen und sie erneut hinzuzufügen.";
 
 /* item not fully downloaded error message */
 "This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Dieses Objekt kann nicht dupliziert werden, weil es nicht vollständig geladen wurde. Tippen Sie auf das Objekt und warten Sie, bis es geladen wurde, bevor Sie es erneut versuchen.";
@@ -438,8 +445,14 @@
 /* sort by title */
 "Title" = "Titel";
 
+/* Cloud Storage Providers preference informational description */
+"Turning on Cloud Storage Providers gives access to documents stored on cloud services, such as iCloud Drive or Dropbox. We are introducing access to Cloud Storage Providers as a BETA implementation; use caution when enabling this service. To learn more, see “Working in the Cloud” in the documentation." = "Durch das Aktivieren von Cloudspeicheranbietern erhalten Sie Zugriff auf Dokumente, die bei Clouddiensten wie iCloud Drive oder Dropbox gespeichert sind. Wir führen den Zugriff auf Cloudspeicheranbieter als BETA-Implementierung ein; seien Sie vorsichtig, wenn Sie diesen Dienst aktivieren. Weitere Informationen finden Sie in der Dokumentation unter „Arbeiten in der Cloud“.";
+
 /* error title */
 "Unable to open file." = "Die Datei kann nicht geöffnet werden.";
 
+/* Cloud Storage Providers preference settings screen title */
+"Use Cloud Storage Providers" = "Cloudspeicheranbieter verwenden";
+
 /* Account validation status string. */
-"Validating account..." = "Account überprüfen ...";
+"Validating account..." = "Account überprüfen …";

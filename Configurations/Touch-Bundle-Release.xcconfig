@@ -4,6 +4,3 @@
 
 // Common settings for Bundle targets
 #include "Touch-Bundle-Common.xcconfig"
-
-// Common settings for Release configurations of Bundle targets
-DEPLOYMENT_LOCATION = NO

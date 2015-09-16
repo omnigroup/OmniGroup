@@ -1,0 +1,18 @@
+// Copyright 2006-2015 Omni Development, Inc.  All rights reserved.
+// This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
+// $Id$
+
+// Common settings for all watchOS targets
+#include "Target-Watch-Common.xcconfig"
+
+// Common settings for Framework targets
+DYLIB_CURRENT_VERSION = 1
+DYLIB_COMPATIBILITY_VERSION = 1
+FRAMEWORK_VERSION = A
+
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FRAMEWORK OMNI_BUNDLE_IDENTIFIER="@\"$(OMNI_BUNDLE_IDENTIFIER)\""
+OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FRAMEWORK
+
+// On iOS, frameworks have to get copied into the bundle for all builds
+OMNI_FRAMEWORK_TARGET_PATH = $(CONFIGURATION_BUILD_DIR)
+DYLIB_INSTALL_NAME_BASE = @rpath

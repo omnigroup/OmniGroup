@@ -13,8 +13,6 @@
 		3403FDB10A25117800395CC8 /* CIColor-OQExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 3403FDAF0A25117800395CC8 /* CIColor-OQExtensions.m */; };
 		3428501D107E5B720065B283 /* OQGradient.h in Headers */ = {isa = PBXBuildFile; fileRef = 3428501B107E5B720065B283 /* OQGradient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3428501E107E5B720065B283 /* OQGradient.m in Sources */ = {isa = PBXBuildFile; fileRef = 3428501C107E5B720065B283 /* OQGradient.m */; };
-		343C98BC117623F900CE0910 /* OQColor-Archiving.h in Headers */ = {isa = PBXBuildFile; fileRef = 343C98BA117623F900CE0910 /* OQColor-Archiving.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		343C98BD117623F900CE0910 /* OQColor-Archiving.m in Sources */ = {isa = PBXBuildFile; fileRef = 343C98BB117623F900CE0910 /* OQColor-Archiving.m */; };
 		343E50701046EF2F003EF9CD /* OQContentAnimatingLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 343E506E1046EF2F003EF9CD /* OQContentAnimatingLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		343E50711046EF2F003EF9CD /* OQContentAnimatingLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E506F1046EF2F003EF9CD /* OQContentAnimatingLayer.m */; };
 		344EEC180A06ABF500AC6AA0 /* OQAlphaScaleFilter.cikernel in Resources */ = {isa = PBXBuildFile; fileRef = 344EEC150A06ABF500AC6AA0 /* OQAlphaScaleFilter.cikernel */; };
@@ -39,16 +37,10 @@
 		34AA127119C2401100CD3406 /* CALayer-OQExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CEA14A10465F710016EC37 /* CALayer-OQExtensions.m */; };
 		34AA127219C2402B00CD3406 /* OQDrawing.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A28C22108ECB460054912D /* OQDrawing.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34AA127319C2402E00CD3406 /* OQDrawing.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A28C23108ECB460054912D /* OQDrawing.m */; };
-		34AA127419C2403A00CD3406 /* OQColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 34ABA7C11056F973007202DA /* OQColor.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34AA127519C2403E00CD3406 /* OQColor.m in Sources */ = {isa = PBXBuildFile; fileRef = 34ABA7C21056F973007202DA /* OQColor.m */; };
-		34AA127619C2404100CD3406 /* OQColor-Archiving.h in Headers */ = {isa = PBXBuildFile; fileRef = 343C98BA117623F900CE0910 /* OQColor-Archiving.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34AA127719C2404500CD3406 /* OQColor-Archiving.m in Sources */ = {isa = PBXBuildFile; fileRef = 343C98BB117623F900CE0910 /* OQColor-Archiving.m */; };
 		34AA127819C2405000CD3406 /* OQContentAnimatingLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 343E506E1046EF2F003EF9CD /* OQContentAnimatingLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34AA127919C2405400CD3406 /* OQContentAnimatingLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E506F1046EF2F003EF9CD /* OQContentAnimatingLayer.m */; };
 		34AA127A19C2406300CD3406 /* OmniQuartz.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DB34BD08C6374B00BC2748 /* OmniQuartz.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34AA127B19C2407200CD3406 /* OQDebug.h in Headers */ = {isa = PBXBuildFile; fileRef = 345F499611931C7600A131E7 /* OQDebug.h */; };
-		34ABA7C31056F973007202DA /* OQColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 34ABA7C11056F973007202DA /* OQColor.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		34ABA7C41056F973007202DA /* OQColor.m in Sources */ = {isa = PBXBuildFile; fileRef = 34ABA7C21056F973007202DA /* OQColor.m */; };
 		34CEA14B10465F710016EC37 /* CALayer-OQExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 34CEA14910465F710016EC37 /* CALayer-OQExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34CEA14C10465F710016EC37 /* CALayer-OQExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 34CEA14A10465F710016EC37 /* CALayer-OQExtensions.m */; };
 		34DA3504107E95F7003E5BB6 /* OQHoleLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 34DA3502107E95F7003E5BB6 /* OQHoleLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -221,6 +213,13 @@
 			remoteGlobalIDString = 342691D317C578F600B1372F;
 			remoteInfo = OFNetStateNotifier;
 		};
+		503D70C31B66FA9100EF5899 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3487749219C244D500AF3065 /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5FE81E171B62AE980056756C;
+			remoteInfo = "OmniBase-watchOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -252,8 +251,6 @@
 		34218E4A19C23ECE00899C9A /* OmniQuartz.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniQuartz.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3428501B107E5B720065B283 /* OQGradient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OQGradient.h; sourceTree = "<group>"; };
 		3428501C107E5B720065B283 /* OQGradient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OQGradient.m; sourceTree = "<group>"; };
-		343C98BA117623F900CE0910 /* OQColor-Archiving.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OQColor-Archiving.h"; sourceTree = "<group>"; };
-		343C98BB117623F900CE0910 /* OQColor-Archiving.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "OQColor-Archiving.m"; sourceTree = "<group>"; };
 		343E506E1046EF2F003EF9CD /* OQContentAnimatingLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OQContentAnimatingLayer.h; sourceTree = "<group>"; };
 		343E506F1046EF2F003EF9CD /* OQContentAnimatingLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OQContentAnimatingLayer.m; sourceTree = "<group>"; };
 		344EEC150A06ABF500AC6AA0 /* OQAlphaScaleFilter.cikernel */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = OQAlphaScaleFilter.cikernel; sourceTree = "<group>"; };
@@ -292,8 +289,6 @@
 		34A28C22108ECB460054912D /* OQDrawing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OQDrawing.h; sourceTree = "<group>"; };
 		34A28C23108ECB460054912D /* OQDrawing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OQDrawing.m; sourceTree = "<group>"; };
 		34AA127C19C2414100CD3406 /* OmniQuartz-iOS_Prefix.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OmniQuartz-iOS_Prefix.h"; sourceTree = "<group>"; };
-		34ABA7C11056F973007202DA /* OQColor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OQColor.h; sourceTree = "<group>"; };
-		34ABA7C21056F973007202DA /* OQColor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OQColor.m; sourceTree = "<group>"; };
 		34CEA14910465F710016EC37 /* CALayer-OQExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CALayer-OQExtensions.h"; sourceTree = "<group>"; };
 		34CEA14A10465F710016EC37 /* CALayer-OQExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CALayer-OQExtensions.m"; sourceTree = "<group>"; };
 		34DA3502107E95F7003E5BB6 /* OQHoleLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OQHoleLayer.h; sourceTree = "<group>"; };
@@ -482,6 +477,7 @@
 				3487749F19C244D500AF3065 /* OBUnitTests.xctest */,
 				348774A119C244D500AF3065 /* OmniBase.framework */,
 				348774A319C244D500AF3065 /* OBUnitTests.xctest */,
+				503D70C41B66FA9100EF5899 /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -543,10 +539,6 @@
 		34CEA13C10465F380016EC37 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				34ABA7C11056F973007202DA /* OQColor.h */,
-				34ABA7C21056F973007202DA /* OQColor.m */,
-				343C98BA117623F900CE0910 /* OQColor-Archiving.h */,
-				343C98BB117623F900CE0910 /* OQColor-Archiving.m */,
 				344EEC150A06ABF500AC6AA0 /* OQAlphaScaleFilter.cikernel */,
 				344EEC160A06ABF500AC6AA0 /* OQAlphaScaleFilter.h */,
 				344EEC170A06ABF500AC6AA0 /* OQAlphaScaleFilter.m */,
@@ -619,8 +611,6 @@
 			files = (
 				34AA127B19C2407200CD3406 /* OQDebug.h in Headers */,
 				34AA127819C2405000CD3406 /* OQContentAnimatingLayer.h in Headers */,
-				34AA127619C2404100CD3406 /* OQColor-Archiving.h in Headers */,
-				34AA127419C2403A00CD3406 /* OQColor.h in Headers */,
 				34AA127019C2401100CD3406 /* CALayer-OQExtensions.h in Headers */,
 				34AA127A19C2406300CD3406 /* OmniQuartz.h in Headers */,
 				34AA127219C2402B00CD3406 /* OQDrawing.h in Headers */,
@@ -644,12 +634,10 @@
 				34737816104666670065876F /* OQLayerRemovalAnimation.h in Headers */,
 				34737818104666670065876F /* OQSlideOutLayerRemovalAnimation.h in Headers */,
 				343E50701046EF2F003EF9CD /* OQContentAnimatingLayer.h in Headers */,
-				34ABA7C31056F973007202DA /* OQColor.h in Headers */,
 				3428501D107E5B720065B283 /* OQGradient.h in Headers */,
 				34F826FB107E8C0300458A71 /* OQFlipSwapViewAnimation.h in Headers */,
 				34DA3504107E95F7003E5BB6 /* OQHoleLayer.h in Headers */,
 				34A28C24108ECB460054912D /* OQDrawing.h in Headers */,
-				343C98BC117623F900CE0910 /* OQColor-Archiving.h in Headers */,
 				4230996311E51BDA007ACF5D /* OQAnimationGroup.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -869,6 +857,13 @@
 			remoteRef = 348774D019C244E300AF3065 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		503D70C41B66FA9100EF5899 /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 503D70C31B66FA9100EF5899 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -889,8 +884,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				34AA127919C2405400CD3406 /* OQContentAnimatingLayer.m in Sources */,
-				34AA127519C2403E00CD3406 /* OQColor.m in Sources */,
-				34AA127719C2404500CD3406 /* OQColor-Archiving.m in Sources */,
 				34AA127319C2402E00CD3406 /* OQDrawing.m in Sources */,
 				34AA127119C2401100CD3406 /* CALayer-OQExtensions.m in Sources */,
 			);
@@ -912,12 +905,10 @@
 				34737817104666670065876F /* OQLayerRemovalAnimation.m in Sources */,
 				34737819104666670065876F /* OQSlideOutLayerRemovalAnimation.m in Sources */,
 				343E50711046EF2F003EF9CD /* OQContentAnimatingLayer.m in Sources */,
-				34ABA7C41056F973007202DA /* OQColor.m in Sources */,
 				3428501E107E5B720065B283 /* OQGradient.m in Sources */,
 				34F826FC107E8C0300458A71 /* OQFlipSwapViewAnimation.m in Sources */,
 				34DA3505107E95F7003E5BB6 /* OQHoleLayer.m in Sources */,
 				34A28C25108ECB460054912D /* OQDrawing.m in Sources */,
-				343C98BD117623F900CE0910 /* OQColor-Archiving.m in Sources */,
 				4230996411E51BDA007ACF5D /* OQAnimationGroup.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

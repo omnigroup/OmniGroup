@@ -205,7 +205,7 @@ NSArray *OSUGetSignedPortionsOfAppcast(NSData *xmlData, NSString *pemFile, NSErr
         OFForEachObject([signatures objectEnumerator], OSUAppcastSignature *, signature) {
             [signature setTrustedKeys:trusts];
             
-            NSError *thisError = nil;
+            __autoreleasing NSError *thisError = nil;
             
             BOOL ok = [signature processSignatureElement:&thisError];
             if (ok) {

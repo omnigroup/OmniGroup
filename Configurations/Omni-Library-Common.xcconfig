@@ -8,11 +8,6 @@
 // Common settings for Library targets
 INFOPLIST_FILE = 
 
-// Libraries are linked into the main app and shouldn't be installed.
-SKIP_INSTALL = YES
-
-// Since we don't ship libraries, we don't need to strip them
-COPY_PHASE_STRIP = NO
 STRIP_INSTALLED_PRODUCT = NO
 
 // Publish all public header files for Foo to a common area as <Foo/header.h>
@@ -33,4 +28,5 @@ HEADER_SEARCH_PATHS = $(value) $(CONFIGURATION_BUILD_DIR)/private/$(PRODUCT_NAME
 
 // Claim that we are building a framework, though it is a 'static' framework.
 // The point of this is that OmniBase/macros.h will make errors if we use the main-bundle localized string lookup macros. Also set our bundle identifier so the bundle-specific, localized string lookup macros referencing OMNI_BUNDLE find the app bundle.
-OTHER_CFLAGS = $(value) -DOMNI_BUILDING_FRAMEWORK
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FRAMEWORK
+OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FRAMEWORK

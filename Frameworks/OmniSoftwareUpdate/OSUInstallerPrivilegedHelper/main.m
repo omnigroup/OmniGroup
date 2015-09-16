@@ -46,7 +46,7 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
     _activeConnectionCount++;
     
     @try {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         NSBundle *localizationBundle = [NSBundle bundleWithURL:bundleURL];
         
         if (![self _validateAuthorizationData:authorizationData forRightWithName:OSUInstallUpdateRightName error:&error]) {
@@ -66,7 +66,7 @@ static NSString * OSUInstallerPrivilegedHelperFileNameAndNumberErrorKey = @"com.
     _activeConnectionCount++;
     
     @try {
-        NSError *error = nil;
+        __autoreleasing NSError *error = nil;
         NSFileManager *fileManager = [NSFileManager defaultManager];
         
         // Use the same right as we use for updating, since we only ever do this as part of the update process.

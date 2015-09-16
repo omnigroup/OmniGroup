@@ -17,7 +17,7 @@
 "Please make sure that the account information is correct." = "アカウント情報が正しいことを確認してください。";
 
 /* error reason */
-"Please make sure that the destination folder exists." = "目的のフォルダが存在することを確認してください。";
+"Please make sure that the destination folder exists." = "移動先のフォルダが存在することを確認してください。";
 
 /* error reason */
 "The %@ server returned \"%@\" (%ld) in response to a request to \"%@ %@\"." = "“%4$@ %5$@” へのリクエストに対する応答として、%1$@ サーバが “%2$@”（%3$ld）を返しました。";

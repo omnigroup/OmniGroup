@@ -16,8 +16,8 @@ RCS_ID("$Id$");
 
 @implementation OUIScalingTextStorage
 {
-    NSTextStorage *_underlyingTextStorage;
-    NSMutableAttributedString *_backingStore;
+    NSTextStorage *_underlyingStorageWithTrueFontSizes;   // font sizes here are what should be saved and inspected
+    NSMutableAttributedString *_storageWithFontSizesScaledForDisplay;   // font sizes here have been scaled so the text view will display them at the correct relative size for the zoomed display, even though the text view knows nothing at all about scaling
     BOOL _isEditingUnderlyingTextStorage;
     NSInteger _fixAttributesNestingLevel;
     NSDictionary *_lastUsedAttributes;
@@ -55,8 +55,10 @@ static void _scaleAttributes(NSMutableDictionary *scaledAttributes, NSDictionary
     }
     if (!font) {
         font = [[fontDescriptor font] fontWithSize:pointSize*scale];
-        if (font == nil)
-            font = [UIFont fontWithName:@"Helvetica" size:pointSize*scale]; // Document default for nil.
+        if (font == nil){
+            // document default for nil
+            font = [UIFont fontWithName:@"Helvetica Neue" size:pointSize*scale];
+        }
     }
     
     if (font) // just in case the fallback path's scaling doesn't work. We'll get the wrong size text, but won't explode
@@ -105,13 +107,13 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
     if (!(self = [super init]))
         return nil;
     
-    _underlyingTextStorage = textStorage;
+    _underlyingStorageWithTrueFontSizes = textStorage;
     _scale = scale;
 
-    _backingStore = [[NSMutableAttributedString alloc] initWithAttributedString:_underlyingTextStorage];
-    [self invalidateAttributesInRange:NSMakeRange(0, [_backingStore length])]; // Make sure we fix stuff on the first pass
+    _storageWithFontSizesScaledForDisplay = [[NSMutableAttributedString alloc] initWithAttributedString:_underlyingStorageWithTrueFontSizes];
+    [self invalidateAttributesInRange:NSMakeRange(0, [_storageWithFontSizesScaledForDisplay length])]; // Make sure we fix stuff on the first pass
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_underlyingTextStorageDidProcessEditing:) name:NSTextStorageDidProcessEditingNotification object:_underlyingTextStorage];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_underlyingTextStorageDidProcessEditing:) name:NSTextStorageDidProcessEditingNotification object:_underlyingStorageWithTrueFontSizes];
     
     
     return self;
@@ -119,7 +121,7 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
 
 - (void)dealloc;
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSTextStorageDidProcessEditingNotification object:_underlyingTextStorage];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSTextStorageDidProcessEditingNotification object:_underlyingStorageWithTrueFontSizes];
 }
 
 - (void)setScale:(CGFloat)scale;
@@ -134,36 +136,37 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
 
 - (NSUInteger)length;
 {
-    return [_backingStore length];
+    return [_storageWithFontSizesScaledForDisplay length];
 }
 
 - (NSString *)string;
 {
-    return [_backingStore string];
+    return [_storageWithFontSizesScaledForDisplay string];
 }
 
 - (NSDictionary *)attributesAtIndex:(NSUInteger)location effectiveRange:(NSRangePointer)range;
 {
-    return [_backingStore attributesAtIndex:location effectiveRange:range];
+    return [_storageWithFontSizesScaledForDisplay attributesAtIndex:location effectiveRange:range];
 }
 
 - (void)replaceCharactersInRange:(NSRange)range withString:(NSString *)str;
 {
+    // This gets called by UITextView while editing.
+
     // if we are deleting text, save attributes here to use later in fixAttributes so we don't lose font size
     _useLastUsedAttributes = NO;
     if (str.length == 0 && range.length > 0) {
-        _lastUsedAttributes = [_underlyingTextStorage attributesAtIndex:range.location effectiveRange:NULL];
-    } else if (_underlyingTextStorage.length == 0) {
+        _lastUsedAttributes = [_underlyingStorageWithTrueFontSizes attributesAtIndex:range.location effectiveRange:NULL];
+    } else if (_underlyingStorageWithTrueFontSizes.length == 0) {
         _useLastUsedAttributes = YES;
     }
     
-    // This gets called by UITextView while editing.
-    [_backingStore replaceCharactersInRange:range withString:str];
+    [_storageWithFontSizesScaledForDisplay replaceCharactersInRange:range withString:str];
     [self edited:NSTextStorageEditedCharacters range:range changeInLength:[str length] - range.length];
 
     OBASSERT(_isEditingUnderlyingTextStorage == NO);
     _isEditingUnderlyingTextStorage = YES;
-    [_underlyingTextStorage replaceCharactersInRange:range withString:str];
+    [_underlyingStorageWithTrueFontSizes replaceCharactersInRange:range withString:str];
     _isEditingUnderlyingTextStorage = NO;
 }
 
@@ -177,7 +180,7 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
     OBPRECONDITION(OUIFontIsDynamicType([attributes[OAFontDescriptorAttributeName] font]) == NO);
     
     // This also gets called to set typing attributes, so we can't reject it. We want font edits to normally go through our text spans.
-    [_backingStore setAttributes:attributes range:attributeRange];
+    [_storageWithFontSizesScaledForDisplay setAttributes:attributes range:attributeRange];
     [self edited:NSTextStorageEditedAttributes range:attributeRange changeInLength:0];
 
     // If we are inside -fixAttributesInRange:, we are cleaning up our own attributes and don't want to push stuff down (as opposed to edits coming in from an external editor).
@@ -190,7 +193,7 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
     OBASSERT(_isEditingUnderlyingTextStorage == NO);
     _isEditingUnderlyingTextStorage = YES;
     __block NSMutableDictionary *attributesToSetOnUnderlyingTextStorage = [[NSMutableDictionary alloc] initWithDictionary:attributes];
-    [_underlyingTextStorage enumerateAttributesInRange:attributeRange options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary *originalUnderlyingAttributes, NSRange underlyingRange, BOOL *stop) {
+    [_underlyingStorageWithTrueFontSizes enumerateAttributesInRange:attributeRange options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary *originalUnderlyingAttributes, NSRange underlyingRange, BOOL *stop) {
         // If we are being told to set a font descriptor, then use it (for example, if the typing attributes have been changed to be a different font size and text is inserted).
         OAFontDescriptor *underlyingFontDescriptor = attributes[OAFontDescriptorAttributeName];
         if (!underlyingFontDescriptor)
@@ -206,7 +209,7 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
             } else {
                 [attributesToSetOnUnderlyingTextStorage removeObjectForKey:OAFontDescriptorAttributeName];
             }
-            [_underlyingTextStorage setAttributes:attributesToSetOnUnderlyingTextStorage range:underlyingRange];
+            [_underlyingStorageWithTrueFontSizes setAttributes:attributesToSetOnUnderlyingTextStorage range:underlyingRange];
             return;
         }
         
@@ -225,14 +228,14 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
             } else {
                 [attributesToSetOnUnderlyingTextStorage removeObjectForKey:NSFontAttributeName];
             }
-            [_underlyingTextStorage setAttributes:attributesToSetOnUnderlyingTextStorage range:underlyingRange];
+            [_underlyingStorageWithTrueFontSizes setAttributes:attributesToSetOnUnderlyingTextStorage range:underlyingRange];
             return;
         }
         
         OBASSERT(requestedFont == nil); // Fill in something?
         [attributesToSetOnUnderlyingTextStorage removeObjectForKey:OAFontDescriptorAttributeName];
         [attributesToSetOnUnderlyingTextStorage removeObjectForKey:NSFontAttributeName];
-        [_underlyingTextStorage setAttributes:attributesToSetOnUnderlyingTextStorage range:underlyingRange];
+        [_underlyingStorageWithTrueFontSizes setAttributes:attributesToSetOnUnderlyingTextStorage range:underlyingRange];
     }];
     
     _isEditingUnderlyingTextStorage = NO;
@@ -246,8 +249,8 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
     // Font substitution for Kanji, etc.
     [super fixAttributesInRange:range];
     
-    [[self class] _scaleAttributesBy:_scale fromAttributedString:_underlyingTextStorage range:range applier:^(NSDictionary *scaledAttributes, NSRange range){
-        [_backingStore setAttributes:scaledAttributes range:range];
+    [[self class] _scaleAttributesBy:_scale fromAttributedString:_underlyingStorageWithTrueFontSizes range:range applier:^(NSDictionary *scaledAttributes, NSRange range){
+        [_storageWithFontSizesScaledForDisplay setAttributes:scaledAttributes range:range];
         [self edited:NSTextStorageEditedAttributes range:range changeInLength:0];
     }];
     
@@ -260,12 +263,12 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
 // Inspect the underlying text storage
 - (NSArray *)textSpansInRange:(NSRange)range inTextView:(OUITextView *)textView;
 {
-    return [_underlyingTextStorage textSpansInRange:range inTextView:textView];
+    return [_underlyingStorageWithTrueFontSizes textSpansInRange:range inTextView:textView];
 }
 
 - (NSTextStorage *)underlyingTextStorage;
 {
-    return [_underlyingTextStorage underlyingTextStorage];
+    return [_underlyingStorageWithTrueFontSizes underlyingTextStorage];
 }
 
 #pragma mark - Private
@@ -283,21 +286,21 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
 {
     // If we are doing the mutation, our mutator should do any needed fixups. But if this is an edit by a third party, we need to adjust ourselves.
     if (_isEditingUnderlyingTextStorage) {
-        OBASSERT(OFISEQUAL(_backingStore.string, _underlyingTextStorage.string));
+        OBASSERT(OFISEQUAL(_storageWithFontSizesScaledForDisplay.string, _underlyingStorageWithTrueFontSizes.string));
         return;
     }
     
-    NSRange editedRange = _underlyingTextStorage.editedRange;
-    NSTextStorageEditActions editedMask = _underlyingTextStorage.editedMask;
+    NSRange editedRange = _underlyingStorageWithTrueFontSizes.editedRange;
+    NSTextStorageEditActions editedMask = _underlyingStorageWithTrueFontSizes.editedMask;
     
     //NSLog(@"processing third-party edit");
     
     // We assume that all *text* editing is done via us while we are alive. So, this just means that some attributes have been changed (probably by an inspector via -textSpansInRange:).
     if (editedMask & NSTextStorageEditedCharacters) {
-        NSInteger changeInLength = _underlyingTextStorage.changeInLength;
+        NSInteger changeInLength = _underlyingStorageWithTrueFontSizes.changeInLength;
         
         //NSLog(@"editedRange = %@", NSStringFromRange(editedRange));
-        //NSLog(@"changeInLength = %ld", _underlyingTextStorage.changeInLength);
+        //NSLog(@"changeInLength = %ld", _storageWithTrueFontSizes.changeInLength);
 
         // editedRange has the length *after* the changeInLength. (So select-all, delete, will end up with an editedRange of {0,0}).
         NSRange originalRange = NSMakeRange(editedRange.location, editedRange.length - changeInLength);
@@ -305,8 +308,8 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
         // This will cause attribute fixing on us in the edited range, so no need to do that too.
         [self beginEditing];
         {
-            [_backingStore replaceCharactersInRange:originalRange withAttributedString:[_underlyingTextStorage attributedSubstringFromRange:editedRange]];
-            OBASSERT(OFISEQUAL(_backingStore.string, _underlyingTextStorage.string));
+            [_storageWithFontSizesScaledForDisplay replaceCharactersInRange:originalRange withAttributedString:[_underlyingStorageWithTrueFontSizes attributedSubstringFromRange:editedRange]];
+            OBASSERT(OFISEQUAL(_storageWithFontSizesScaledForDisplay.string, _underlyingStorageWithTrueFontSizes.string));
             
             // Let any of *our* observers know -- we have to pass in our original length here.
             [self edited:editedMask range:originalRange changeInLength:changeInLength];
@@ -318,7 +321,7 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
         //NSLog(@"resulting editedMask:%ld editedRange:%@ changeInLength:%ld", self.editedMask, NSStringFromRange(self.editedRange), self.changeInLength);
         [self endEditing];
     } else {
-        OBASSERT(OFISEQUAL(_backingStore.string, _underlyingTextStorage.string));
+        OBASSERT(OFISEQUAL(_storageWithFontSizesScaledForDisplay.string, _underlyingStorageWithTrueFontSizes.string));
         [self invalidateAttributesInRange:editedRange];
     }
 }

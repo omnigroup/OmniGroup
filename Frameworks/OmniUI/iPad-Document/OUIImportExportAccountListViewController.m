@@ -11,7 +11,6 @@
 #import <OmniFileExchange/OFXServerAccount.h>
 #import <OmniFileExchange/OFXServerAccountType.h>
 #import <OmniFileExchange/OFXServerAccountRegistry.h>
-#import <OmniUI/OUIAlert.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIEmptyOverlayView.h>
 #import <OmniUI/UITableView-OUIExtensions.h>
@@ -150,7 +149,7 @@ static NSString *const AddAccountReuseIdentifier = @"addAccount";
 
 - (NSIndexPath *)tableView:(UITableView *)tableView willSelectRowAtIndexPath:(NSIndexPath *)indexPath;
 {
-    if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlert])
+    if ([[OUIAppController controller] showFeatureDisabledForRetailDemoAlertFromViewController:self])
         return nil;
     
     return indexPath;

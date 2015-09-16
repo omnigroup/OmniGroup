@@ -11,12 +11,22 @@
 
 RCS_ID("$Id$")
 
+@interface OUINavigationController ()
+
+@property (nonatomic, strong) NSArray *permanentConstraints;
+@property (nonatomic, strong) NSArray *constraintsWithAccessoryView;
+@property (nonatomic, strong) NSArray *constraintsWithNoAccessoryView;
+@property (nonatomic, strong) NSLayoutConstraint *heightConstraintOnAccessoryAndBackgroundView;
+@property (nonatomic, strong) UIView *accessoryViewConstrainedWith;
+
+@end
+
 @implementation OUINavigationController
 
 - (id)initWithRootViewController:(UIViewController *)rootViewController;
 {
     self = [super initWithNavigationBarClass:[OUINavigationBar class] toolbarClass:nil];
-    [self setViewControllers:[NSArray arrayWithObject:rootViewController] animated:NO];
+    [self setViewControllers:[NSArray arrayWithObject:rootViewController]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(navigationBarChangedHeight:) name:OUINavigationBarHeightChangedNotification object:self.navigationBar];
     return self;
 }
@@ -26,98 +36,170 @@ RCS_ID("$Id$")
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)viewDidLayoutSubviews{
+    // The accessoryAndBackgroundBar is an instance of UINavigationController which provides a place to put the (optional) accessory view provided by the displaying view controller and provides the appearance of a taller navigation bar.  The OUINavigationBar serves as our true navigation bar and is responsible for hiding its own background view.
+    
+    if (!_accessoryAndBackgroundBar) {
+        [self _updateAccessory:self.topViewController operation:UINavigationControllerOperationNone animated:NO];
+    }
+    
+#define UNDO_SUPERCLASS_MUNGING 44.0
+    
+    UIScrollView *content = (UIScrollView *)self.topViewController.view;
+    if ([content isKindOfClass:[UIScrollView class]] && [self.topViewController automaticallyAdjustsScrollViewInsets]) {
+        UIEdgeInsets insets = content.contentInset;
+        
+        if (!insets.top && self.accessory) {
+            insets.top = CGRectGetHeight(_accessoryAndBackgroundBar.frame) - UNDO_SUPERCLASS_MUNGING;
+            content.contentInset = insets;
+        } else {
+            // Further initial layout hackage for iOS 9
+            CGRect rect = _accessoryAndBackgroundBar.frame;
+            rect.size.height = insets.top;
+            _accessoryAndBackgroundBar.frame = rect;
+        }
+    }
+
+    [super viewDidLayoutSubviews];
+}
+
 #define BOTTOM_SPACING_BELOW_ACCESSORY 7.0
 
 - (void)_updateAccessory:(UIViewController *)viewController operation:(UINavigationControllerOperation)operation animated:(BOOL)animated;
-{    
+{
+    // For now, this is where all constraints get set (it's where we used to calculate and set frames).  Seems to be working fine.
+    
     UIView *newAccessory = nil;
  
     if ([viewController respondsToSelector:@selector(navigationBarAccessoryView)])
         newAccessory = [viewController navigationBarAccessoryView];
-
+    
+    
     CGRect newAccessoryFrame = newAccessory.frame;
-    CGRect barFrame = self.navigationBar.frame;
-    CGFloat accessoryY = CGRectGetMaxY(barFrame);
-    CGFloat barOriginY = CGRectGetMinY(barFrame);
-    
-    if (barOriginY) {
-        barFrame.size.height += barOriginY;
-        barFrame.origin.y = 0;
-    }
-    
-    if (newAccessory)
-        barFrame.size.height += CGRectGetHeight(newAccessoryFrame) + BOTTOM_SPACING_BELOW_ACCESSORY;
-
-    if (!_accessoryBar) {
-        _accessoryBar = [[UINavigationBar alloc] initWithFrame:barFrame];
-        _accessoryBar.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
-        _accessoryBar.autoresizesSubviews = YES;
-        [self.view addSubview:_accessoryBar];
-    }
-    
-#define UNDO_SUPERCLASS_MUNGING 44.0
-
-    UIScrollView *content = (UIScrollView *)viewController.view;
-    if ([content isKindOfClass:[UIScrollView class]] && [viewController automaticallyAdjustsScrollViewInsets]) {
-        UIEdgeInsets insets = content.contentInset;
+    if (!_accessoryAndBackgroundBar) {
+        CGRect barFrame = self.navigationBar.frame;
+        CGFloat accessoryY = CGRectGetMaxY(barFrame);
+        CGFloat barOriginY = CGRectGetMinY(barFrame);
         
-        if (!insets.top && newAccessory) {
-            insets.top = CGRectGetHeight(barFrame) - UNDO_SUPERCLASS_MUNGING;
-            content.contentInset = insets;
+        newAccessoryFrame.origin.y  = accessoryY;
+        
+        if (barOriginY) {
+            barFrame.size.height += barOriginY;
+            barFrame.origin.y = 0;
         }
+        
+        if (newAccessory)
+            barFrame.size.height += CGRectGetHeight(newAccessoryFrame) + BOTTOM_SPACING_BELOW_ACCESSORY;
+        
+        _accessoryAndBackgroundBar = [[UINavigationBar alloc] initWithFrame:barFrame];
+        _accessoryAndBackgroundBar.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.view addSubview:_accessoryAndBackgroundBar];
     }
-
-    if (_accessory != nil && _accessory == newAccessory)
-        return;
     
+    // set up constraints
+    if (!self.permanentConstraints) {
+        self.permanentConstraints = [self createPermanentConstraints];
+        [NSLayoutConstraint activateConstraints:self.permanentConstraints];
+    }
+    if (!self.heightConstraintOnAccessoryAndBackgroundView) {
+        self.heightConstraintOnAccessoryAndBackgroundView = [NSLayoutConstraint constraintWithItem:_accessoryAndBackgroundBar
+                                                                                         attribute:NSLayoutAttributeHeight
+                                                                                         relatedBy:NSLayoutRelationEqual
+                                                                                            toItem:nil
+                                                                                         attribute:NSLayoutAttributeNotAnAttribute
+                                                                                        multiplier:1.0f
+                                                                                          constant:self.navigationBar.frame.size.height];
+        [NSLayoutConstraint activateConstraints:@[self.heightConstraintOnAccessoryAndBackgroundView]];
+    }
     if (newAccessory) {
-        if ((newAccessory.autoresizingMask & UIViewAutoresizingFlexibleWidth) != 0) {
-            newAccessoryFrame.origin.x = 0.0;
-            newAccessoryFrame.size.width = _accessoryBar.frame.size.width;
-            newAccessory.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
-        } else {
-            newAccessoryFrame.origin.x = floor((CGRectGetWidth(barFrame) - CGRectGetWidth(newAccessoryFrame)) / 2.0);
-            newAccessory.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
+        newAccessory.translatesAutoresizingMaskIntoConstraints = NO;
+        if (newAccessory != self.accessoryViewConstrainedWith) {
+            self.constraintsWithAccessoryView = [self createConstraintsWithAccessoryView:newAccessory];
+            self.accessoryViewConstrainedWith = newAccessory;
         }
-        newAccessoryFrame.origin.y = accessoryY;
-        newAccessory.alpha = 0.1f;
-        
-        CGRect newStartFrame = newAccessoryFrame;
-        newStartFrame.origin.y -= CGRectGetHeight(newAccessoryFrame);
-        newAccessory.frame = newStartFrame;
-        [_accessoryBar addSubview:newAccessory];
+        [_accessoryAndBackgroundBar addSubview:newAccessory];
+        [NSLayoutConstraint activateConstraints:self.constraintsWithAccessoryView];
+        [NSLayoutConstraint deactivateConstraints:self.constraintsWithNoAccessoryView];
+        [self.accessoryAndBackgroundBar layoutIfNeeded];
+        self.heightConstraintOnAccessoryAndBackgroundView.constant = CGRectGetMaxY(self.navigationBar.frame) + newAccessory.frame.size.height + BOTTOM_SPACING_BELOW_ACCESSORY;
+    } else {
+        self.accessoryViewConstrainedWith = nil;
+        [NSLayoutConstraint activateConstraints:self.constraintsWithNoAccessoryView];
+        self.heightConstraintOnAccessoryAndBackgroundView.constant = CGRectGetMaxY(self.navigationBar.frame);
     }
-
-    if (animated) {
-        [UIView animateWithDuration:0.25 animations:^{
-            _accessoryBar.frame = barFrame;
-            newAccessory.frame = newAccessoryFrame;
+    
+    if (animated){
+        [[self transitionCoordinator] animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  __nonnull context) {
+            [self.accessoryAndBackgroundBar layoutIfNeeded];
             newAccessory.alpha = 1.0;
-
-            CGRect oldOutFrame = _accessory.frame;
-            oldOutFrame.origin.y -= CGRectGetHeight(oldOutFrame);
-            _accessory.frame = oldOutFrame;
             _accessory.alpha = 0.0;
-        } completion:^(BOOL finished) {
+        } completion:^(id<UIViewControllerTransitionCoordinatorContext>  __nonnull context) {
             [_accessory removeFromSuperview];
             self.accessory = newAccessory;
         }];
-    } else {
-        _accessoryBar.frame = barFrame;
-        newAccessory.frame = newAccessoryFrame;
+    }
+    else {
         newAccessory.alpha = 1.0f;
         [_accessory removeFromSuperview];
         self.accessory = newAccessory;
     }
-    [self.navigationBar.superview bringSubviewToFront:_accessoryBar];
+    
+    [self.navigationBar.superview bringSubviewToFront:_accessoryAndBackgroundBar];
     [self.navigationBar.superview bringSubviewToFront:self.navigationBar];
+}
+
+- (NSArray*)createPermanentConstraints{
+    return @[ [NSLayoutConstraint constraintWithItem:_accessoryAndBackgroundBar
+                                           attribute:NSLayoutAttributeLeft
+                                           relatedBy:NSLayoutRelationEqual
+                                              toItem:self.view
+                                           attribute:NSLayoutAttributeLeft
+                                          multiplier:1.0f
+                                            constant:0.0f],
+              
+              [NSLayoutConstraint constraintWithItem:_accessoryAndBackgroundBar
+                                           attribute:NSLayoutAttributeRight
+                                           relatedBy:NSLayoutRelationEqual
+                                              toItem:self.view
+                                           attribute:NSLayoutAttributeRight
+                                          multiplier:1.0f
+                                            constant:0.0f],
+              
+              [NSLayoutConstraint constraintWithItem:_accessoryAndBackgroundBar
+                                           attribute:NSLayoutAttributeTop
+                                           relatedBy:NSLayoutRelationEqual
+                                              toItem:self.view
+                                           attribute:NSLayoutAttributeTop
+                                          multiplier:1.0f
+                                            constant:0.0f]
+              ];
+}
+
+- (NSArray*)createConstraintsWithAccessoryView:(UIView*)accessoryView{
+    return @[ [NSLayoutConstraint constraintWithItem:_accessoryAndBackgroundBar
+                                           attribute:NSLayoutAttributeBottom
+                                           relatedBy:NSLayoutRelationEqual
+                                              toItem:accessoryView
+                                           attribute:NSLayoutAttributeBottom
+                                          multiplier:1.0f
+                                            constant:BOTTOM_SPACING_BELOW_ACCESSORY],
+              [NSLayoutConstraint constraintWithItem:accessoryView
+                                           attribute:NSLayoutAttributeCenterX
+                                           relatedBy:NSLayoutRelationEqual
+                                              toItem:_accessoryAndBackgroundBar
+                                           attribute:NSLayoutAttributeCenterX
+                                          multiplier:1.0f
+                                            constant:0.0f]
+              ];
 }
 
 - (void)navigationBarChangedHeight:(NSNotification *)notification;
 {
-    [_accessory removeFromSuperview];
-    self.accessory = nil;
-    [self _updateAccessory:[self.viewControllers lastObject] operation:UINavigationControllerOperationNone animated:NO];
+    if (self.accessoryViewConstrainedWith) {
+        self.heightConstraintOnAccessoryAndBackgroundView.constant = CGRectGetMaxY(self.navigationBar.frame) + self.accessoryViewConstrainedWith.frame.size.height + BOTTOM_SPACING_BELOW_ACCESSORY;
+    } else {
+        self.heightConstraintOnAccessoryAndBackgroundView.constant = CGRectGetMaxY(self.navigationBar.frame);
+    }
 }
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated;

@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,24 +12,10 @@ RCS_ID("$Id$")
 
 @implementation ScalingScrollViewAppDelegate
 
-@synthesize window;
-@synthesize viewController;
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {    
-    
-    // Override point for customization after app launch    
-    [window addSubview:viewController.view];
-    [window makeKeyAndVisible];
-
-	return YES;
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
+{
+    _window.rootViewController = _viewController;
+    return YES;
 }
-
-
-- (void)dealloc {
-    [viewController release];
-    [window release];
-    [super dealloc];
-}
-
 
 @end

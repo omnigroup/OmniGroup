@@ -26,7 +26,6 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 
 @interface OUIInspectorSlice ()
 @property(nonatomic,retain) UIView *sliceBackgroundView;
-@property (readwrite, weak, nonatomic) OUIStackedSlicesInspectorPane *lastValidContainingPane;
 @end
 
 
@@ -139,15 +138,6 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     _detailPane.parentSlice = nil;
 }
 
-- (OUIStackedSlicesInspectorPane *)containingPane;
-{
-    if (self.parentViewController) {
-        OBASSERT([self.parentViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]);
-        self.lastValidContainingPane = (OUIStackedSlicesInspectorPane *)self.parentViewController;
-    }
-    return self.lastValidContainingPane;
-}
-
 - (OUIInspector *)inspector;
 {
     OUIInspector *inspector = self.containingPane.inspector;
@@ -221,6 +211,9 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 
 - (BOOL)includesInspectorSliceGroupSpacerOnTop;
 {
+    if (!self.isViewLoaded) {
+        return NO;
+    }
     UIView *contentView = self.view;
     if ([contentView isKindOfClass:[UITableView class]]) {
         UITableView *tableView = (UITableView *)contentView;
@@ -233,6 +226,9 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
 
 - (BOOL)includesInspectorSliceGroupSpacerOnBottom;
 {
+    if (!self.isViewLoaded) {
+        return NO;
+    }
     UIView *contentView = self.view;
     if ([contentView isKindOfClass:[UITableView class]]) {
         UITableView *tableView = (UITableView *)contentView;
@@ -352,7 +348,8 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
 - (CGFloat)paddingToInspectorLeft;
 {
     // The goal is to match the inset of grouped table view cells (for cases where we have controls next to one), though individual inspectors may need to adjust this.
-    return self.alignmentInsets.left - _borderOffsetFromEdge(self.view, CGRectMinXEdge);
+    CGFloat padding = self.alignmentInsets.left - _borderOffsetFromEdge(self.view, CGRectMinXEdge);    
+    return padding;
 }
 
 - (CGFloat)paddingToInspectorRight;

@@ -25,7 +25,7 @@ static OFPreference *visibleTracks = nil;
 {
     OBINITIALIZE;
 
-#if MAC_APP_STORE
+#if MAC_APP_STORE || TARGET_OS_IPHONE
     automaticSoftwareUpdateCheckEnabled = [OFPreference preferenceForKey:@"OSUSendSystemInfoEnabled"];
 #else
     automaticSoftwareUpdateCheckEnabled = [OFPreference preferenceForKey:@"AutomaticSoftwareUpdateCheckEnabled"];

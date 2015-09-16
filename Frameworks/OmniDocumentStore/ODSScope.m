@@ -720,7 +720,7 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
             if (!destinationFileURL) {
                 // Top level file (instead of something nested in a folder) that needs uniquing based on the used filenames in the destination.
                 NSString *sourceFileName = [sourceFileURL lastPathComponent];
-                NSString *baseName = nil;
+                __autoreleasing NSString *baseName = nil;
                 NSUInteger counter;
                 [[sourceFileName stringByDeletingPathExtension] splitName:&baseName andCounter:&counter];
                 
@@ -1208,10 +1208,14 @@ static ODSScope *_templateScope = nil;
          }
          
          [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+             [self.documentStore _fileItem:sourceItemMotion.fileItem willMoveToURL:destinationFileURL];
+             
              // Make sure our file item knows it got moved w/o waiting for file presenter notifications so that the document picker's lookups can find the right file item for animations. This means that when doing coordinated file moves, we should try to avoid getting notified by passing a file presenter to the coordinator (either the OFXAccountAgent, or the ODSLocalDirectoryScope).
-             if (movingWithinSameScope) {
-                 [self completedMoveOfFileItem:sourceItemMotion.fileItem toURL:destinationFileURL];
+             if (!movingWithinSameScope) {
+                 sourceItemMotion.fileItem.scope = self;
              }
+             
+             [self completedMoveOfFileItem:sourceItemMotion.fileItem toURL:destinationFileURL];
          }];
          return result;
      }];
@@ -1322,6 +1326,7 @@ static ODSScope *_templateScope = nil;
 {
     OBPRECONDITION([NSThread isMainThread]);
     
+    [self.documentStore _fileItem:fileItem willMoveToURL:destinationURL];
     [fileItem didMoveToURL:destinationURL];
 
     // We don't call -_updateItemTree since this gets called for moves w/in a folder. The caller is responsible for handling this if needed.

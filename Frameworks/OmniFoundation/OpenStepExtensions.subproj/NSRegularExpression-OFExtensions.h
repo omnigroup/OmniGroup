@@ -21,6 +21,7 @@
 - (NSTextCheckingResult *)exactMatchInString:(NSString *)string;
 
 - (OFRegularExpressionMatch *)matchInScanner:(OFStringScanner *)stringScanner;
+- (OFRegularExpressionMatch *)matchInScanner:(OFStringScanner *)stringScanner advanceScanner:(BOOL)advanceScanner;
 
 @end
 

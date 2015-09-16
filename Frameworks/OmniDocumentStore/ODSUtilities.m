@@ -12,6 +12,7 @@ RCS_ID("$Id$")
 #import <MobileCoreServices/MobileCoreServices.h>
 
 NSString * const ODSDocumentInteractionInboxFolderName = @"Inbox";
+NSString * const ODSiCloudDriveInboxFolderSuffix = @"-Inbox";
 
 BOOL ODSIsInInbox(NSURL *url)
 {
@@ -25,8 +26,13 @@ BOOL ODSIsInInbox(NSURL *url)
     NSURL *pathURL = [url URLByDeletingLastPathComponent]; // Remove the filename.
     NSString *lastPathComponentString = [pathURL lastPathComponent];
     
-    BOOL isInInbox = (lastPathComponentString != nil && [lastPathComponentString caseInsensitiveCompare:ODSDocumentInteractionInboxFolderName] == NSOrderedSame);
-    return isInInbox;
+    BOOL isInDocumentInteractionInbox = (lastPathComponentString != nil && [lastPathComponentString caseInsensitiveCompare:ODSDocumentInteractionInboxFolderName] == NSOrderedSame);
+    
+    // When documents are shared via the iCloud Drive app on iOS 9+, they are placed in a [APP_CONTAINER]/tmp/[APP_BUNDLE_ID]-Inbox/ folder. I can't find any documentation about this, so we need to treat it similarly to the Document Interaction Inbox. ([APP_CONTAINER]/Documents/Inbox) Because this new folder is in /tmp, we're not going to worry about deleting the folder. We will just let our other 'move sutff out of an Inbox location' code delete the file from the 'Inbox'. This is why I'm not vending this new Inbox location out and only checking it here.
+    BOOL isIniCloudDriveInbox = (lastPathComponentString != nil && [lastPathComponentString hasSuffix:ODSiCloudDriveInboxFolderSuffix]);
+    
+    
+    return (isInDocumentInteractionInbox || isIniCloudDriveInbox);
 }
 
 BOOL ODSIsZipFileType(NSString *uti)

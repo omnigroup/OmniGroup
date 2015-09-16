@@ -7,9 +7,9 @@
 //
 // $Id$
 
-#import <OmniUI/OUIAppearance.h>
+#import <OmniAppKit/OAAppearance.h>
 
-@interface OmniUIDocumentAppearance : OUIAppearance
+@interface OmniUIDocumentAppearance : OAAppearance
 
 @property (readonly) CGFloat documentPickerLocationRowHeight;
 @property (readonly) CGFloat documentPickerAddAccountRowHeight;

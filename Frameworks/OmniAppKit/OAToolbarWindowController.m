@@ -366,6 +366,9 @@ static void copyProperty(NSToolbarItem *anItem,
         if (itemImageName)
             [newItem setUsesTintedImage:itemImageName optionKeyImage:itemOptionImageName inBundle:bundle];
     }
+    
+    [newItem.menuFormRepresentation setTarget:newItem.target];
+    [newItem.menuFormRepresentation setAction:newItem.action];
         
     if (helper)
         return [helper finishSetupForToolbarItem:newItem toolbar:toolbar willBeInsertedIntoToolbar:willInsert];

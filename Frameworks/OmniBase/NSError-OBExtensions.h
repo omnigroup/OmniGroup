@@ -21,7 +21,10 @@
 - (BOOL)causedByUserCancelling;
 - (BOOL)causedByMissingFile;
 - (BOOL)causedByUnreachableHost;
+
+#if !defined(TARGET_OS_WATCH) || !TARGET_OS_WATCH
 - (BOOL)causedByNetworkConnectionLost;
+#endif
 
 - initWithPropertyList:(NSDictionary *)propertyList;
 - (NSDictionary *)toPropertyList;

@@ -103,7 +103,7 @@
 "Sync failed: unable to update device registration." = "Сбой синхронизации: не удается обновить регистрацию устройства.";
 
 /* Account validation step description */
-"Testing Server for Compatibility" = "Тестовый сервер для проверки совместимости";
+"Testing Server for Compatibility" = "Проверка совместимости сервера";
 
 /* error reason */
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "Для облачной учетной записи требуется формат OmniPresence %1$@, а на этом устройстве используется формат %2$@. Обновите эту копию OmniPresence.";

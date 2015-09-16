@@ -377,9 +377,11 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
         // Selection
         CGFloat thickness = [self _borderWidth];
-        if (_selectionBorderView)
+        if (_selectionBorderView) {
             _selectionBorderView.frame = CGRectInset(bounds, thickness * -1, thickness * -1);
-        
+            _selectionBorderView.layer.borderWidth = thickness;
+        }
+
         if (_statusImageView) {
             _statusImageView.contentMode = UIViewContentModeScaleAspectFit;
 
@@ -778,7 +780,7 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
         OUIWithoutAnimating(^{
             _selectionBorderView = [[UIView alloc] init];
             _selectionBorderView.userInteractionEnabled = NO;
-            _selectionBorderView.layer.borderColor = [[OQMakeColor(kOUIDocumentPreviewViewSelectedBorderColor) toColor] CGColor];
+            _selectionBorderView.layer.borderColor = [[OAMakeColor(kOUIDocumentPreviewViewSelectedBorderColor) toColor] CGColor];
             _selectionBorderView.layer.borderWidth = [self _borderWidth];
             [self insertSubview:_selectionBorderView belowSubview:_hairlineBorderView];
         });

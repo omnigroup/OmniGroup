@@ -3,7 +3,7 @@
 
 /* Default title for the About menu item */
 
-"About %@" = "À propos d’%@";
+"About %@" = "À propos de %@";
 
 /* No purchases found message format */
 "All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Tous les achats de votre compte App Store ont été restaurés, mais %@ n’en faisait pas partie.";
@@ -29,7 +29,7 @@
 "Certificate Trust" = "Certificat de confiance";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Préférence '%1$@' modifiée de « %2$@ » à « %3$@ »";
+"Changed the '%@' preference from '%@' to '%@'" = "Préférence “%1$@” modifié de “%2$@” à “%3$@”";
 
 /* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
 "Check for Free Upgrade" = "Vérifier s’il y a une mise à niveau gratuite";
@@ -67,7 +67,7 @@
 "Help and Settings" = "Aide et réglages";
 
 /* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "L’achat intégré n’est pas disponible ni autorisé sur cet appareil. Pour activer l’achat, vérifiez les restrictions dans l’app Réglages.";
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "L’achat intégré n’est pas disponible ou autorisé sur cet appareil. Pour activer l’achat, vérifiez les restrictions dans l’app Réglages.";
 
 /* increment button accessibility label */
 "Increment" = "Augmenter";
@@ -100,7 +100,10 @@
 "Note" = "Note";
 
 /* button title
-   OK button label */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
 
 
 
@@ -167,7 +170,7 @@
 "username" = "nom d’utilisateur";
 
 /* alert message */
-"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Vous avez touché un lien qui modifiera les préférences suivantes :\n\n\« %@ »\n\nSouhaitez-vous accepter ces modifications ?";
+"You have tapped on a link which will change the following preferences:\n\n\"%@\"\n\nDo you wish to accept these changes?" = "Vous avez touché un lien qui modifiera les préférences suivantes :\n\n“%@”\n\nSouhaitez-vous accepter ces modifications ?";
 
 /* debug setting alert message */
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Vous avez touché un lien qui exécutera la commande de débogage suivante :\n\n“%@”\n\nSi cela ne vous a pas été recommandé par des techniciens d’assistance Omni, ne le faites pas.\nSouhaitez-vous exécuter cette commande ?";
@@ -176,4 +179,4 @@
 "You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Vous avez touché une URL spéciale Omni :\n\n« %@ »\n\nVoulez-vous exécuter cette commande ?";
 
 /* zoom label */
-"Zoom" = "Zoom";
+"Zoom" = "Réduire/agrandir";

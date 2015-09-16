@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,7 +20,7 @@ NSString *OUINavigationBarHeightChangedNotification = @"OUINavigationBarHeightCh
     for (UIView *subview in [self subviews]) {
         CGRect subviewFrame = subview.frame;
         if (CGRectGetHeight(subviewFrame) >= 39.0) {
-            // background view that resizes to our whole height, hidden so our new nav bar view shows instead
+            // Here is where we hide our background view so that the accessoryAndBackgroundView which our OUINavigationController will be adding to its view can be the one that shows.  Otherwise, we would see a hairline separator at the bottom of this OUINavigationBar and at the bottom of the (taller, if there is an accessory view) UINavigationBar accessoryAndBackgroundView that will be added beneath us.
             subview.hidden = YES;
         }
     }
@@ -28,14 +28,10 @@ NSString *OUINavigationBarHeightChangedNotification = @"OUINavigationBarHeightCh
 
 - (void)setFrame:(CGRect)frame;
 {
+    if (frame.size.height != self.frame.size.height || frame.origin.y != self.frame.origin.y) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:OUINavigationBarHeightChangedNotification object:self];
+    }
     [super setFrame:frame];
-    [[NSNotificationCenter defaultCenter] postNotificationName:OUINavigationBarHeightChangedNotification object:self];
-}
-
-- (void)setCenter:(CGPoint)center;
-{
-    [super setCenter:center];
-    [[NSNotificationCenter defaultCenter] postNotificationName:OUINavigationBarHeightChangedNotification object:self];
 }
 
 @end

@@ -81,7 +81,7 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(_tableView == nil);
     
-    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 420) style:[self tableViewStyle]];
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 420) style:[self tableViewStyle]];
     
     // Subclasses must implement these protocols -- this class just does the UIViewController and OUIInspectorSlice glue code dealing with the view property being a UITableView.
     OBASSERT([self conformsToProtocol:@protocol(UITableViewDataSource)]);

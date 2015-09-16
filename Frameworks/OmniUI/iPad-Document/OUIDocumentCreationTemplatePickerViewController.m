@@ -157,9 +157,9 @@ RCS_ID("$Id$");
         OBASSERT([fileItem isKindOfClass:[ODSFileItem class]]);
 
         if (fileItem.isDownloaded == NO) {
-            NSError *error = nil;
+            __autoreleasing NSError *error = nil;
             if (![fileItem requestDownload:&error]) {
-                OUI_PRESENT_ERROR(error);
+                OUI_PRESENT_ERROR_FROM(error, self);
             }
             return;
         }

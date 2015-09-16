@@ -103,7 +103,7 @@ RCS_ID("$Id$");
         return;
     }
     
-    NSError *error = nil;
+    __autoreleasing NSError *error = nil;
     if (![[OSUController sharedController] beginDownloadAndInstallFromPackageAtURL:downloadURL item:item error:&error])
         [[NSApplication sharedApplication] presentError:error];
     else

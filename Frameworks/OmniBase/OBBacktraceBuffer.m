@@ -30,13 +30,19 @@ const struct OBBacktraceBufferInfo OBBacktraceBufferInfo = {
     backtraces, &next_available_backtrace
 };
 
-void OBRecordBacktrace(const char *ctxt, unsigned int optype)
+void OBRecordBacktrace(const char *message, unsigned int optype)
+{
+    OBRecordBacktraceWithContext(message, optype, NULL);
+}
+
+void OBRecordBacktraceWithContext(const char *message, unsigned int optype, const void *context)
 {
     assert(optype != OBBacktraceBuffer_Unused && optype != OBBacktraceBuffer_Allocated); // 0 and 1 reserved for us
     
     struct OBBacktraceBuffer *buf = OBAcquireBacktraceBuffer();
     
-    buf->context = ctxt;
+    buf->message = message;
+    buf->context = context;
     int got = backtrace(buf->frames, OBBacktraceBufferAddressCount);
     if (got >= 0) {
         while (got < OBBacktraceBufferAddressCount)

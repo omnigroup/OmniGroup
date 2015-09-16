@@ -17,9 +17,9 @@
  */
 @interface OUIInAppStoreViewController : UIViewController <SKProductsRequestDelegate, OUIInAppStoreObserverDelegate>
 
-- (nonnull instancetype)initWithProductIdentifier:(nonnull NSString *)aProductID NS_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
-- (nullable instancetype)initWithCoder:(nonnull NSCoder *)aDecoder NS_UNAVAILABLE;
+- (nonnull instancetype)initWithProductIdentifier:(nonnull NSString *)aProductID NS_DESIGNATED_INITIALIZER NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
+- (nonnull instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
+- (nullable instancetype)initWithCoder:(nonnull NSCoder *)aDecoder NS_UNAVAILABLE NS_EXTENSION_UNAVAILABLE_IOS("In-app purchases should be done in app, not in extensions");
 
 #define OUIInAppStoreViewControllerUpgradeInstalledNotification @"OUIInAppStoreViewControllerUpgradeInstalled"
 

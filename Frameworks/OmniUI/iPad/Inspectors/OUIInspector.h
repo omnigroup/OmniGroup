@@ -39,6 +39,9 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 // Defaults to making a OUIStackedSlicesInspectorPane if mainPane is nil (or if -init is called).
 - initWithMainPane:(OUIInspectorPane *)mainPane height:(CGFloat)height;
 
++ (CGFloat)defaultInspectorContentWidth;
+@property(nonatomic) CGFloat defaultInspectorContentWidth;
+
 @property(readonly,nonatomic) OUIInspectorPane *mainPane;
 @property(readonly,nonatomic) CGFloat height;
 @property(assign,nonatomic) BOOL alwaysShowToolbar;
@@ -55,11 +58,11 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 
 @property(readonly,nonatomic,getter=isVisible) BOOL visible;
 
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact fromBarButtonItem:(UIBarButtonItem *)item;
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)item;
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
-- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections;
-- (void)redisplayInspectorForNewTraitCollection:(UITraitCollection *)traitsCollection;
+- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
+- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
+- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
+- (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController fromRect:(CGRect)rect inView:(UIView *)view permittedArrowDirections:(UIPopoverArrowDirection)arrowDirections NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
+- (void)redisplayInspectorForNewTraitCollection:(UITraitCollection *)traitsCollection NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason; // If you wrap edits in the will/did change methods below, this will be called automatically on the 'did'.
 - (void)dismissImmediatelyIfVisible;
 - (void)dismiss;
@@ -88,6 +91,7 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 @property (copy, nonatomic) void (^presentInspectorCompletion)(void);
 @property (copy, nonatomic) void (^animationsToPerformAlongsidePresentation)(id<UIViewControllerTransitionCoordinatorContext> context);
 @property (copy, nonatomic) void (^dismissInspectorCompletion)(void);
+/// There are times were you can request an animated dismissal but are dismissed non-animated anyway. Most people expect these to get called even if we don't dismiss animated. These are now called during a transition coordinator if one exists or immediately after dimissal.
 @property (copy, nonatomic) void (^animationsToPerformAlongsideDismissal)(id<UIViewControllerTransitionCoordinatorContext> context);
 
 @end
@@ -96,10 +100,10 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 - (BOOL)shouldBeInspectedByInspectorSlice:(OUIInspectorSlice *)inspector protocol:(Protocol *)protocol;
 @end
 
-@class OQColor;
+@class OAColor;
 @protocol OUIColorInspection <NSObject>
-- (OQColor *)colorForInspectorSlice:(OUIInspectorSlice *)inspector;
-- (void)setColor:(OQColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector;
+- (OAColor *)colorForInspectorSlice:(OUIInspectorSlice *)inspector;
+- (void)setColor:(OAColor *)color fromInspectorSlice:(OUIInspectorSlice *)inspector;
 - (NSString *)preferenceKeyForInspectorSlice:(OUIInspectorSlice *)inspector;
 @end
 

@@ -22,6 +22,7 @@ RCS_ID("$Id$");
 
 @interface OSUSystemConfigurationController ()
 @property(nonatomic,strong) IBOutlet WebView *systemConfigurationWebView;
+@property(assign) IBOutlet NSButton *okButton;
 @end
 
 @implementation OSUSystemConfigurationController
@@ -631,6 +632,14 @@ RCS_ID("$Id$");
 - (id)owner;
 {
     return self; // Used to find the nib
+}
+
+#pragma mark - NSNibAwaking
+
+- (void)awakeFromNib;
+{
+    [super awakeFromNib];
+    self.okButton.title = NSLocalizedStringFromTableInBundle(@"OK", @"OmniSoftwareUpdate", OMNI_BUNDLE, @"button title");
 }
 
 #pragma mark - WebPolicyDelegate

@@ -9,6 +9,7 @@
 
 #import <OmniUI/OUITextLayout.h>
 #import <Foundation/NSAttributedString.h>
+#import <OmniFoundation/OmniFoundation.h>
 
 RCS_ID("$Id$");
 
@@ -270,7 +271,7 @@ RCS_ID("$Id$");
     
     // setting defaults on nsattributedstring
     NSMutableAttributedString *mutableText = [aString mutableCopy];
-    [mutableText addAttribute:NSFontAttributeName value:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline] range:NSMakeRange(0, [mutableText length])];
+    [mutableText addAttribute:NSFontAttributeName value:[UIFont monospacedDigitSystemFontOfSize:17 weight:UIFontWeightRegular] range:NSMakeRange(0, [mutableText length])];
     self.attributedText = mutableText;
 }
 

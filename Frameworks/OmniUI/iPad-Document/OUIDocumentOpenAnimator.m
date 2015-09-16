@@ -82,7 +82,18 @@ RCS_ID("$Id$")
 
 - (void)animateOpenTransition:(id <UIViewControllerContextTransitioning>)transitionContext;
 {
-    OUIDocumentPickerViewController *pickerController = _documentPicker.selectedScopeViewController;
+    
+    OUIDocumentPickerViewController *pickerController = nil;
+    
+    id fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    if ([fromViewController isKindOfClass:[OUIDocumentPicker class]]) {
+        pickerController = ((OUIDocumentPicker*)fromViewController).selectedScopeViewController;
+    } else if ([fromViewController isKindOfClass:[OUIDocumentPickerViewController class]]){
+        pickerController = (OUIDocumentPickerViewController*)fromViewController;
+    } else {
+        OBASSERT_NOT_REACHED(@"Uh... what are we opening a document from?");
+        pickerController = _documentPicker.selectedScopeViewController;
+    }
     [pickerController.mainScrollView layoutIfNeeded];
 
     OUIDocumentPickerFileItemView *preview = [pickerController.mainScrollView fileItemViewForFileItem:_fileItem];
@@ -102,11 +113,13 @@ RCS_ID("$Id$")
     
     destinationView.tintColor = sourceView.window.tintColor; // set doc tint explicitly, otherwise snapshot will have default blue
     __block UIView *docSnapshot = nil;
-    UIView *previewSnapshot = [preview snapshotViewAfterScreenUpdates:YES];
+    __block UIView *previewSnapshot = nil;
     
     [UIView performWithoutAnimation:^{
         destinationView.frame = fromFrame;
         [transitionContext.containerView insertSubview:destinationView belowSubview:sourceView];
+        previewSnapshot = [preview snapshotViewAfterScreenUpdates:YES];
+
         docSnapshot = [destinationView snapshotViewAfterScreenUpdates:YES];
         [transitionContext.containerView insertSubview:shield aboveSubview:sourceView];
         
@@ -141,7 +154,18 @@ RCS_ID("$Id$")
 
 - (void)animateCloseTransition:(id <UIViewControllerContextTransitioning>)transitionContext;
 {
-    OUIDocumentPickerViewController *pickerController = _documentPicker.selectedScopeViewController;
+    OUIDocumentPickerViewController *pickerController = nil;
+    
+    id toViewController = [transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    if ([toViewController isKindOfClass:[OUIDocumentPicker class]]) {
+        pickerController = ((OUIDocumentPicker*)toViewController).selectedScopeViewController;
+    } else if ([toViewController isKindOfClass:[OUIDocumentPickerViewController class]]){
+        pickerController = (OUIDocumentPickerViewController*)toViewController;
+    } else {
+        OBASSERT_NOT_REACHED(@"Uh... what are we closing a document to?");
+        pickerController = _documentPicker.selectedScopeViewController;
+    }
+    [pickerController.mainScrollView layoutIfNeeded];
     
     ODSFileItem *fileItem = _actualFileItem ? _actualFileItem : _fileItem;
     if (![[pickerController filteredItems] containsObject:fileItem]) {
@@ -151,18 +175,20 @@ RCS_ID("$Id$")
 
     UIView *containerView = [transitionContext containerView];
     
-    UIViewController *destination = (UINavigationController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
-    
-    UIView *destinationView = [destination view];
+    UIView *destinationView = [transitionContext viewForKey:UITransitionContextToViewKey];
     [containerView addSubview:destinationView];
-    UIView *sourceView = [[transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey] view];
+    UIView *sourceView = [transitionContext viewForKey:UITransitionContextFromViewKey];
     CGRect fromFrame = sourceView.frame;
 
-    if (!pickerController.view.superview) // make sure vc view is loaded and in the nav controller
+    if (!destinationView.superview) // make sure vc view is loaded and in the nav controller
         [containerView addSubview:pickerController.view];
-    
+
+    if (!CGRectEqualToRect(destinationView.frame, destinationView.window.frame)) {  // this can happen if size transitions happen while the document is open.  should be a radar.
+        destinationView.frame = destinationView.window.frame;
+    }
+    [destinationView setNeedsLayout];
+    [destinationView layoutIfNeeded];
     [pickerController.mainScrollView scrollItemToVisible:fileItem animated:NO];
-    [pickerController.mainScrollView layoutIfNeeded];
     OUIDocumentPickerFileItemView *preview = [pickerController.mainScrollView fileItemViewForFileItem:fileItem];
 
     /*
@@ -191,11 +217,6 @@ RCS_ID("$Id$")
     
     NSTimeInterval duration = [self transitionDuration:transitionContext];
     
-    [UIView animateWithDuration:duration/4.0 delay:0 options:0 animations:^{
-        sourceSnapshot.alpha = 0.0;
-    } completion:^(BOOL finished) {
-    }];
-    
     [UIView animateWithDuration:duration delay:0 usingSpringWithDamping:0.75 initialSpringVelocity:0 options:0 animations:^{
         OUIDocumentPickerFileItemView *displayedPreview = [pickerController.mainScrollView fileItemViewForFileItem:fileItem];  // will have changed since last time we checked if this is a newly created document, so we need to get it again in order to have the correct frames to work with.
         displayedPreview.hidden = YES;
@@ -209,6 +230,11 @@ RCS_ID("$Id$")
         [sourceSnapshot removeFromSuperview];
         
         [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
+    }];
+    
+    [UIView animateWithDuration:duration*(.75) delay:0 options:0 animations:^{
+        sourceSnapshot.alpha = 0.0;
+    } completion:^(BOOL finished) {
     }];
 }
 

@@ -143,7 +143,7 @@ RCS_ID("$Id$");
 {
     OBPRECONDITION(_tableView == nil);
     
-    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 44) style:UITableViewStylePlain];
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 44) style:UITableViewStylePlain];
 
     // iOS 7 GM bug: separators are not reliably drawn. This doesn't actually fix the color after the first display, but at least it gets the separators to show up.
     _tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];

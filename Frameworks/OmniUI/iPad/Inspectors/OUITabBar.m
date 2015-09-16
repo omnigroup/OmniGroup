@@ -49,13 +49,13 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     font = [UIFont systemFontOfSize:14.0];
     [self setDefaultTabTitleFont:font];
     
-    font = [UIFont mediumSystemFontOfSize:14.0];
+    font = [UIFont systemFontOfSize:14.0 weight:UIFontWeightMedium];
     [self setDefaultSelectedTabTitleFont:font];
 
-    font = [UIFont mediumSystemFontOfSize:17.0];
+    font = [UIFont systemFontOfSize:17.0 weight:UIFontWeightMedium];
     [self setDefaultVerticalTabTitleFont:font];
     
-    font = [UIFont mediumSystemFontOfSize:17.0];
+    font = [UIFont systemFontOfSize:17.0 weight:UIFontWeightMedium];
     [self setDefaultSelectedVerticalTabTitleFont:font];
 }
 

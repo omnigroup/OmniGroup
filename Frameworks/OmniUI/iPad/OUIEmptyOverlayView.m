@@ -6,7 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIEmptyOverlayView.h>
-#import <OmniUI/OUIAppearanceColors.h>
+#import <OmniAppKit/OAAppearanceColors.h>
 
 RCS_ID(")$Id$");
 
@@ -50,7 +50,7 @@ RCS_ID(")$Id$");
 {
     OBASSERT_NOTNULL(_messageLabel);
     _messageLabel.text = message;
-    _messageLabel.textColor = [OUIAppearanceDefaultColors appearance].omniNeutralPlaceholderColor;
+    _messageLabel.textColor = [OAAppearanceDefaultColors appearance].omniNeutralPlaceholderColor;
     
     OBASSERT_NOTNULL(_button);
     [_button setTitle:buttonTitle forState:UIControlStateNormal];
@@ -76,7 +76,7 @@ RCS_ID(")$Id$");
 }
 
 - (CGFloat)preferredLayoutWidth{
-    return self.bounds.size.width * [OUIAppearance appearance].emptyOverlayViewLabelMaxWidthRatio;
+    return self.bounds.size.width * [OAAppearance appearance].emptyOverlayViewLabelMaxWidthRatio;
 }
 
 - (void)layoutSubviews;

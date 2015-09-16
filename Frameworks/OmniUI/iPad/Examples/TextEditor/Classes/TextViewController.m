@@ -210,12 +210,14 @@ RCS_ID("$Id$");
 {    
     UIImagePickerController *picker = [[UIImagePickerController alloc] init];
     picker.delegate = self;
+    picker.modalPresentationStyle = UIModalPresentationPopover;
 
-    UIPopoverController *popover = [[UIPopoverController alloc] initWithContentViewController:picker];
+    UIPopoverPresentationController *presentation = picker.popoverPresentationController;
+    presentation.barButtonItem = sender;
+    presentation.permittedArrowDirections = UIPopoverArrowDirectionAny;
+
+    [self presentViewController:picker animated:YES completion:nil];
     [picker release];
-        
-    [[OUIAppController controller] presentPopover:popover fromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-    [popover release];
 }
 
 #pragma mark - UIImagePickerControllerDelegate
@@ -283,13 +285,13 @@ RCS_ID("$Id$");
             failureBlock:^(NSError *error){
                 NSLog(@"error finding asset %@", [error toPropertyList]);
             }];
-    
-    [[OUIAppController controller] dismissPopoverAnimated:YES];
+
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker;
 {
-    [[OUIAppController controller] dismissPopoverAnimated:YES];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Private

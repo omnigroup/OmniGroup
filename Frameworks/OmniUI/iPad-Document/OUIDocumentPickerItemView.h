@@ -8,7 +8,8 @@
 // $Id$
 
 #import <UIKit/UIView.h>
-#import <OmniUI/OUIAppearance.h>
+#import <OmniAppKit/OAAppearance.h>
+#import <OmniUI/OUIDocumentPreviewArea.h>
 
 extern NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification;
 

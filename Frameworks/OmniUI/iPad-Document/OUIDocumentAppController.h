@@ -31,6 +31,8 @@
 
 @property(nonatomic,readonly) OFXAgentActivity *agentActivity;
 
+@property(nonatomic,retain) NSURL *searchResultsURL; // document URL from continue user activity
+
 - (NSArray *)editableFileTypes;
 - (BOOL)canViewFileTypeWithIdentifier:(NSString *)uti;
 
@@ -83,6 +85,7 @@
 
 // API for linking to external documents
 - (void)linkDocumentFromExternalContainer:(id)sender;
+- (NSURL *)documentProviderMoreInfoURL;
 
 // Subclass responsibility
 - (UIImage *)documentPickerBackgroundImage;
@@ -103,6 +106,11 @@
 + (NSDictionary *)documentStateForFileEdit:(OFFileEdit *)fileEdit;
 + (void)setDocumentState:(NSDictionary *)documentState forFileEdit:(OFFileEdit *)fileEdit;
 + (void)copyDocumentStateFromFileEdit:(OFFileEdit *)fromFileEdit toFileEdit:(OFFileEdit *)toFileEdit;
+
+// core spotlight
++ (void)registerSpotlightID:(NSString *)uniqueID forDocumentFileURL:(NSURL *)fileURL;
++ (NSString *)spotlightIDForFileURL:(NSURL *)fileURL;
++ (NSURL *)fileURLForSpotlightID:(NSString *)uniqueID;
 
 @end
 

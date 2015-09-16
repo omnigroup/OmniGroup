@@ -31,13 +31,12 @@
 /* Software update report entry name */
 "Device" = "Gerät";
 
-/* software update settings section title
-   software update settings title */
+/* software update settings title */
 
 "Device Information" = "Geräteinformationen";
 
 /* error description */
-"Error fetching software update information." = "Fehler beim Abfragen der Informationen zum Softwareupdate.";
+"Error fetching software update information." = "Fehler beim Abfragen der Softwareaktualisierungsinformationen.";
 
 /* error description */
 "Error while checking for updated version." = "Fehler bei der Suche nach aktualisierten Versionen.";
@@ -58,10 +57,10 @@
 "Language" = "Sprache";
 
 /* Software update report entry name */
-"Memory" = "Arbeitsspeicher";
+"Memory" = "Speicher";
 
 /* Software update report entry string for a single crash */
-"One crash" = "ein Absturz";
+"One crash" = "Ein Absturz";
 
 /* Software update report entry string for a single hour of use */
 "One hour" = "Eine Stunde";
@@ -70,7 +69,7 @@
 "One launch" = "Ein Start";
 
 /* Software update report entry string for a single minute of use */
-"One minute" = "eine Minute";
+"One minute" = "Eine Minute";
 
 /* error reason */
 "Please try again later or contact us to let us know this is broken." = "Versuchen Sie es bitte später noch einmal oder teilen Sie uns mit, dass dies nicht funktioniert.";
@@ -90,19 +89,19 @@
 "Settings" = "Einstellungen";
 
 /* Software update report entry name */
-"Storage" = "Speicher";
+"Storage" = "Gesamtspeicher";
 
 /* error reason */
 "The background software update service failed." = "Der Softwareaktualisierungsdienst im Hintergrund ist fehlgeschlagen.";
 
 /* error description */
-"The data returned from <%@> was not a valid XML document." = "Die von „%@“ zurückgegebenen Daten waren kein gültiges XML-Dokument.";
+"The data returned from <%@> was not a valid XML document." = "Die von <%@> zurückgegebenen Daten waren kein gültiges XML-Dokument.";
 
 /* Settings option title */
 "The following information will be sent:" = "Die folgenden Informationen werden gesendet:";
 
 /* error description - the update information wasn't signed at all, but we require it to be signed */
-"The update information is not signed." = "Die Updateinformationen sind nicht signiert.";
+"The update information is not signed." = "Die Aktualisierungsinformationen sind nicht signiert.";
 
 /* error description - the checksum or signature didn't match - more info in underlying error */
 "There was a problem checking the signature." = "Beim Prüfen der Signatur ist ein Problem aufgetreten.";
@@ -117,10 +116,10 @@
 "Tool returned no data" = "Hilfsprogramm gab keine Daten zurück";
 
 /* error description - we have some update information but it doesn't look authentic */
-"Unable to authenticate the response from the software update server." = "Die Identifizierung der Antwort vom Softwareupdateserver ist nicht möglich.";
+"Unable to authenticate the response from the software update server." = "Die Authentifizierung der Antwort vom Softwareaktualisierungsserver ist nicht möglich.";
 
 /* error description - will be followed by more detailed error reason */
-"Unable to fetch software update information." = "Die Informationen zum Softwareupdate konnten nicht abgerufen werden.";
+"Unable to fetch software update information." = "Die Aktualisierungsinformationen zur Software konnten nicht abgerufen werden.";
 
 /* error description */
-"Unable to parse response from the software update server." = "Die Analyse der Antwort vom Softwareupdateserver ist nicht möglich.";
+"Unable to parse response from the software update server." = "Die Analyse der Antwort vom Softwareaktualisierungsserver ist nicht möglich.";

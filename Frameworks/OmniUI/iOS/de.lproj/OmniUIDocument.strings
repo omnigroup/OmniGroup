@@ -47,7 +47,7 @@
 "A file is missing or has been deleted." = "Eine Datei fehlt oder wurde gelöscht.";
 
 /* Omni Sync Server account info button title */
-"Account Info" = "Account-Informationen";
+"Account Info" = "Accountinformationen";
 
 /* Server Account Setup label: account name */
 "Account Name" = "Accountname";
@@ -245,7 +245,7 @@
 
 /* Action sheet button title
    Menu popover title */
-"Move to..." = "Verschieben nach ...";
+"Move to..." = "Bewegen …";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
 "Moved out of folder %@." = "Aus Ordner %@ verschoben.";
@@ -275,7 +275,7 @@
 "No accounts are configured for importing." = "Für den Import sind keine Accounts konfiguriert.";
 
 /* doc picker no items accessibility value */
-"No items" = "Keine Objekte";
+"No items" = "Ohne Objekte";
 
 /* Not downloaded accessibility label. */
 "Not downloaded" = "Nicht heruntergeladen";
@@ -302,7 +302,7 @@
 "Password" = "Kennwort";
 
 /* Photo Library permisssions error description. */
-"Photo Library permission denied." = "Die Zugriffsrechte auf das Fotoarchiv wurden verweigert.";
+"Photo Library permission denied." = "Die Zugriffsrechte auf die Fotos-Mediathek wurden verweigert.";
 
 /* Menu option in the document picker view */
 "Print" = "Drucken";
@@ -424,7 +424,7 @@
 "The zip archive must contain a single document." = "Das Zip-Archiv muss ein einzelnes Dokument enthalten.";
 
 /* Photo Library permisssions error suggestion. */
-"This app does not have access to your Photo Library." = "Diese App hat keinen Zugriff auf Ihr Fotoarchiv.";
+"This app does not have access to your Photo Library." = "Diese App hat keinen Zugriff auf Ihre Fotos-Mediathek.";
 
 /* empty picker because of removed account text */
 "This Cloud Account no longer exists." = "Dieser Cloud-Account ist nicht mehr vorhanden.";

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,7 @@
 #import <OmniUI/UITableView-OUIExtensions.h>
 
 #import <OmniUI/OUIImages.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 RCS_ID("$Id$");
 
@@ -85,28 +85,28 @@ void OUITableViewCellShowSelection(UITableViewCell *cell, OUITableViewCellSelect
 }
 
 const OUITableViewCellBackgroundColors OUITableViewCellDefaultBackgroundColors = {
-    .normal = ((OSHSV){0.0/360.0, 0.0, 1.0, 1.0}),
-    .selected = ((OSHSV){216.0/360.0, 0.12, 1.0, 1.0}),
-    .highlighted = ((OSHSV){216.0/360.0, 0.18, 1.0, 1.0})
+    .normal = ((OAHSV){0.0/360.0, 0.0, 1.0, 1.0}),
+    .selected = ((OAHSV){216.0/360.0, 0.12, 1.0, 1.0}),
+    .highlighted = ((OAHSV){216.0/360.0, 0.18, 1.0, 1.0})
 };
 
 // For cases where you want to set the cell to show no selecton/highlight color of its own and control it yourself.
-OQColor *OUITableViewCellBackgroundColorForControlState(const OUITableViewCellBackgroundColors *colors, UIControlState state)
+OAColor *OUITableViewCellBackgroundColorForControlState(const OUITableViewCellBackgroundColors *colors, UIControlState state)
 {
     switch (state) {
         case UIControlStateHighlighted:
-            return [OQColor colorWithCalibratedHue:colors->highlighted.h saturation:colors->highlighted.s brightness:colors->highlighted.v alpha:colors->highlighted.a];
+            return [OAColor colorWithCalibratedHue:colors->highlighted.h saturation:colors->highlighted.s brightness:colors->highlighted.v alpha:colors->highlighted.a];
         case UIControlStateSelected:
-            return [OQColor colorWithCalibratedHue:colors->selected.h saturation:colors->selected.s brightness:colors->selected.v alpha:colors->selected.a];
+            return [OAColor colorWithCalibratedHue:colors->selected.h saturation:colors->selected.s brightness:colors->selected.v alpha:colors->selected.a];
         default:
             OBASSERT_NOT_REACHED("Unknown control state");
             // fall through
         case UIControlStateNormal:
-            return [OQColor colorWithCalibratedHue:colors->normal.h saturation:colors->normal.s brightness:colors->normal.v alpha:colors->normal.a];
+            return [OAColor colorWithCalibratedHue:colors->normal.h saturation:colors->normal.s brightness:colors->normal.v alpha:colors->normal.a];
     }
 }
 
-OQColor *OUITableViewCellBackgroundColorForCurrentState(const OUITableViewCellBackgroundColors *colors, UITableViewCell *cell)
+OAColor *OUITableViewCellBackgroundColorForCurrentState(const OUITableViewCellBackgroundColors *colors, UITableViewCell *cell)
 {
     // table view cells aren't controls... our use for this doesn't want both flags set
     UIControlState controlState = UIControlStateNormal;
@@ -121,6 +121,9 @@ OQColor *OUITableViewCellBackgroundColorForCurrentState(const OUITableViewCellBa
 // Assumes the table view has current contents
 void OUITableViewAdjustHeightToFitContents(UITableView *tableView)
 {
+    if (!tableView) {
+        return;
+    }
     OBPRECONDITION(tableView);
     OBPRECONDITION(tableView.autoresizingMask == 0);
     

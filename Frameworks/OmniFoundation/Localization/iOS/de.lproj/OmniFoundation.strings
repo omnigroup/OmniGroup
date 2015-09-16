@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "Die bzip2-Bibliothek gab beim Schreiben der Daten den Fehlercode %1$d zurück. %2$s.";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Cancel" = "Abbrechen";
 
 /* error recovery option */
@@ -108,7 +108,7 @@
 "Failed to write lock file.  %@" = "Sperrdatei konnte nicht geschrieben werden. %@";
 
 /* time span formatter span */
-"h" = "S.";
+"h" = "Std.";
 
 /* time span formatter span */
 "hour" = "Stunde";
@@ -122,7 +122,7 @@
 /* local bundle path readable string */
 "local configuration file" = "Lokale Konfigurationsdatei";
 
-/* time span formatter span */
+/* time span formatter span (minute) */
 "m" = "M.";
 
 /* time span formatter span */
@@ -131,7 +131,7 @@
 /* time span formatter span */
 "minutes" = "Minuten";
 
-/* time span formatter span */
+/* time span formatter span (month) */
 "mo" = "Mo";
 
 /* time span formatter span */
@@ -146,7 +146,7 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Kein gültiges Paket";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Override Lock" = "Sperre außer Kraft setzen";
 
 /* alert message format when clicking on a configuration value URL */
@@ -237,4 +237,4 @@
 "zlib returned error code %d." = "Zlib gab den Fehlercode %d zurück.";
 
 /* zlib error reason */
-"zlib returned error code %d. %s." = "Zlib gab den Fehlercode %1$d. %2$s zurück.";
+"zlib returned error code %d. %s." = "Zlib gab den Fehlercode %1$d zurück. %2$s.";

@@ -96,7 +96,7 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
     OBPRECONDITION(userModificationDate);
     OBPRECONDITION(scope.documentStore);
     OBPRECONDITION([scope isFileInContainer:fileURL] || scope.documentsURL == nil);
-    OBPRECONDITION(isDirectory == [[fileURL absoluteString] hasSuffix:@"/"]); // We can't compute isDirectory here based on the filesystem state since the file URL might not currently exist (if it represents a non-downloaded file in a cloud scope).
+    // OBPRECONDITION(isDirectory == [[fileURL absoluteString] hasSuffix:@"/"]); // We can't compute isDirectory here based on the filesystem state since the file URL might not currently exist (if it represents a non-downloaded file in a cloud scope). However, it's not clear that we can rely on always having a / suffix in our URLs either, since the URL might be a security scoped resource that we need to preserve in its original form.
     
     if (!fileURL) {
         OBASSERT_NOT_REACHED("Bad caller");
@@ -201,7 +201,7 @@ NSString * const ODSFileItemInfoKey = @"fileItem";
 
 - (NSData *)dataForWritingToExternalStorage
 {
-    return [self emailData];
+    return nil;
 }
 
 - (NSString *)editingName;

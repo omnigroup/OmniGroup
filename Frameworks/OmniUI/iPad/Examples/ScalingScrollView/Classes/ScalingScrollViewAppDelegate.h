@@ -1,4 +1,4 @@
-// Copyright 2010 The Omni Group.  All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,14 +12,9 @@
 @class ScalingScrollViewViewController;
 
 @interface ScalingScrollViewAppDelegate : NSObject <UIApplicationDelegate>
-{
-@private
-    UIWindow *window;
-    ScalingScrollViewViewController *viewController;
-}
 
-@property (nonatomic, retain) IBOutlet UIWindow *window;
-@property (nonatomic, retain) IBOutlet ScalingScrollViewViewController *viewController;
+@property (nonatomic, strong) IBOutlet UIWindow *window;
+@property (nonatomic, strong) IBOutlet ScalingScrollViewViewController *viewController;
 
 @end
 

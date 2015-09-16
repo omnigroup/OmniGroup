@@ -11,7 +11,7 @@
 #import <OmniUI/OUIDrawing.h>
 #import <OmniUI/OUIGradientView.h>
 #import <OmniQuartz/OQDrawing.h>
-#import <OmniQuartz/OQColor.h>
+#import <OmniAppKit/OAColor.h>
 
 RCS_ID("$Id$");
 
@@ -43,7 +43,7 @@ static id _commonInit(OUIInspectorTextExampleView *self)
     return _commonInit(self);
 }
 
-- (void)setStyleBackgroundColor:(OQColor *)color;
+- (void)setStyleBackgroundColor:(OAColor *)color;
 {
     if (OFISEQUAL(_styleBackgroundColor, color))
         return;

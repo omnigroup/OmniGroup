@@ -15,7 +15,7 @@ RCS_ID("$Id$");
 
 @implementation OUIInAppStoreObserver
 
-- (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions
+- (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions NS_EXTENSION_UNAVAILABLE_IOS("")
 {
     OUIAppController *appDelegate = [OUIAppController controller];
     

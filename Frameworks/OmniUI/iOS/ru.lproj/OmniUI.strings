@@ -6,13 +6,13 @@
 "About %@" = "О программе %@";
 
 /* No purchases found message format */
-"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Все покупки для текущей уч. записи App Store восстановлены, однако %@ отсутствует среди этих покупок.";
+"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Все покупки для текущей уч. записи App Store восстановлены, однако %@ в списке покупок отсутствует.";
 
 /* Bold button accessibility label */
 "Bold" = "Жирный";
 
 /* 'Buy' button title format. The currency symbol will be provided at run time. */
-"Buy %@" = "Купить %@";
+"Buy %@" = "Приобрести %@";
 
 /* button title
    cancel button title
@@ -32,7 +32,7 @@
 "Changed the '%@' preference from '%@' to '%@'" = "Значение параметра «%1$@»изменено с «%2$@» на «%3$@»";
 
 /* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
-"Check for Free Upgrade" = "Проверить право на бесплатное обновление";
+"Check for Free Upgrade" = "Право на беспл. обновление";
 
 /* Certificate trust alert button title */
 "Continue" = "Продолжить";
@@ -49,7 +49,7 @@
 "Done" = "Готово";
 
 /* toolbar item title */
-"Edit" = "Правка";
+"Edit" = "Изменить";
 
 /* Title explaining that user is eligible for discounted upgrade */
 "Eligible for free upgrade" = "Право на бесплатное обновление";
@@ -100,9 +100,9 @@
 "Note" = "Примечание";
 
 /* button title
-   Dismiss alert
    Dismiss failed purchase alert
    Dismiss failed restore alert
+   OK button label
    Web view error opening URL cancel button. */
 
 
@@ -152,7 +152,7 @@
 "Strike Through" = "Зачеркивание";
 
 /* Alert description for error loading product information */
-"This device might not be connected to the Internet." = "Этот устройство не может подключиться к Интернету.";
+"This device might not be connected to the Internet." = "Возможно, на устройстве подключение к Интернету.";
 
 /* Certificate trust alert button title */
 "Trust Always" = "Всегда доверять";
@@ -176,7 +176,7 @@
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Вы нажали ссылку, вызывающую следующую команду отладки:\n\n«%@»\n\nЕсли вы не получали такие инструкции от службы поддержки Omni, не делайте этого.\nЗапустить эту команду?";
 
 /* default special URL alert message */
-"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Вы коснулись ссылки настройки OmniFocus:\n\n«%@»\n\nВыполнить эту команду?";
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Вы коснулись специальной URL-ссылки Omni:\n\n«%@»\n\nВыполнить эту команду?";
 
 /* zoom label */
 "Zoom" = "Масштаб";

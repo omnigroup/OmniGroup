@@ -28,6 +28,7 @@ struct asnWalkerState {
     struct parsedTag v;              // Tag and length of the "current" object
     NSUInteger maxIndex;             // The end of the innermost definite-length object containing us (or the data buffer itself)
     BOOL containerIsIndefinite;      // YES if our immediate container is indefinite
+    BOOL requireDER;                 // YES to forbid some BER-only constructs
 };
 
 static enum OFASN1ErrorCodes nextObject(NSData *buffer, struct asnWalkerState *st);
@@ -35,7 +36,7 @@ static enum OFASN1ErrorCodes objectAt(NSData *buffer, NSUInteger pos, struct asn
 static enum OFASN1ErrorCodes enterObject(NSData *buffer, struct asnWalkerState *containerState, struct asnWalkerState *innerState);
 static enum OFASN1ErrorCodes exitObject(NSData *buffer, struct asnWalkerState *containerState, struct asnWalkerState *innerState, BOOL allowTrailing);
 
-static enum OFASN1ErrorCodes parseTagAndLength_(NSData *buffer, NSUInteger where, NSUInteger maxIndex, struct parsedTag *outTL)
+static enum OFASN1ErrorCodes parseTagAndLength_(NSData *buffer, NSUInteger where, NSUInteger maxIndex, BOOL requireDER, struct parsedTag *outTL)
 {
     unsigned char buf[16];
     
@@ -54,6 +55,9 @@ static enum OFASN1ErrorCodes parseTagAndLength_(NSData *buffer, NSUInteger where
         if (buf[1] & 0x80) {
             return OFASN1TagOverflow;
         }
+        if (requireDER)
+            return OFASN1UnexpectedType;
+        
         outTL->tag = buf[1];
         
         if (where+3 >= maxIndex) {
@@ -82,6 +86,10 @@ static enum OFASN1ErrorCodes parseTagAndLength_(NSData *buffer, NSUInteger where
             /* A non-constructed, indefinite-length object doesn't make any sense */
             return OFASN1InconsistentEncoding;
         }
+        
+        /* Indefinite lengths are forbidden in DER */
+        if (requireDER)
+            return OFASN1UnexpectedType;
         
         outTL->indefinite = YES;
         outTL->content.location = lengthStartIndex+1;
@@ -124,11 +132,11 @@ static enum OFASN1ErrorCodes parseTagAndLength_(NSData *buffer, NSUInteger where
 }
 
 #if 1
-#define parseTagAndLength(b,w,m,t) parseTagAndLength_(b,w,m,t)
+#define parseTagAndLength(b,w,m,d,t) parseTagAndLength_(b,w,m,d,t)
 #else
-static enum OFASN1ErrorCodes parseTagAndLength(NSData *buffer, NSUInteger where, NSUInteger maxIndex, struct parsedTag *outTL)
+static enum OFASN1ErrorCodes parseTagAndLength(NSData *buffer, NSUInteger where, NSUInteger maxIndex, BOOL requireDER, struct parsedTag *outTL)
 {
-    enum OFASN1ErrorCodes rc = parseTagAndLength_(buffer, where, maxIndex, outTL);
+    enum OFASN1ErrorCodes rc = parseTagAndLength_(buffer, where, maxIndex, requireDER, outTL);
     if (rc) {
         NSLog(@"Next object: pos=%lu err=%d", where, rc);
     } else {
@@ -139,15 +147,16 @@ static enum OFASN1ErrorCodes parseTagAndLength(NSData *buffer, NSUInteger where,
 #endif
 
 /* Set up the outermost walker state, and leave it pointing at the first (usually only) object in the buffer */
-static enum OFASN1ErrorCodes initializeWalker(NSData *buffer, struct asnWalkerState *st)
+static enum OFASN1ErrorCodes initializeWalker(NSData *buffer, BOOL requireDER, struct asnWalkerState *st)
 {
     *st = (struct asnWalkerState){
         .startPosition = 0,
         .maxIndex = [buffer length],
-        .containerIsIndefinite = NO
+        .containerIsIndefinite = NO,
+        .requireDER = requireDER
     };
     
-    return parseTagAndLength(buffer, 0, st->maxIndex, &(st->v));
+    return parseTagAndLength(buffer, 0, st->maxIndex, st->requireDER, &(st->v));
 }
 
 /* Advance the walker to the next object */
@@ -173,7 +182,7 @@ static enum OFASN1ErrorCodes objectAt(NSData *buffer, NSUInteger pos, struct asn
     } else if (pos >= st->maxIndex) {
         return OFASN1Truncated;
     } else {
-        enum OFASN1ErrorCodes rc = parseTagAndLength(buffer, pos, st->maxIndex, &(st->v));
+        enum OFASN1ErrorCodes rc = parseTagAndLength(buffer, pos, st->maxIndex, st->requireDER, &(st->v));
         st->startPosition = pos;
         return rc;
     }
@@ -215,8 +224,9 @@ static enum OFASN1ErrorCodes enterObject(NSData *buffer, struct asnWalkerState *
         assert(containerState->v.content.location + containerState->v.content.length <= containerState->maxIndex);
         innerState->maxIndex = NSMaxRange(containerState->v.content);
     }
+    innerState->requireDER = containerState->requireDER;
     
-    return parseTagAndLength(buffer, innerState->startPosition, innerState->maxIndex, &(innerState->v));
+    return parseTagAndLength(buffer, innerState->startPosition, innerState->maxIndex, innerState->requireDER, &(innerState->v));
 }
 
 /* Exit a sub-walker. The containerState will be left pointing to the object after the container we just exited. innerState should not be used after this function. */
@@ -253,14 +263,17 @@ static enum OFASN1ErrorCodes exitObject(NSData *buffer, struct asnWalkerState *c
         /* Our inner state's contentLength is valid: either it's definite-length, or we updated its indefinite length when we exited its contents. Our outer state's content length is also valid because it's a definite-length object. */
         nextReadPosition = NSMaxRange(innerState->v.content);
         NSUInteger positionAfterContainer = NSMaxRange(containerState->v.content);
-        
+    
+        if (positionAfterContainer < nextReadPosition)
+            return OFASN1InconsistentEncoding;
+
         if (!allowTrailing) {
             /* Make sure the object we just read was the last one in the container. */
-            if (positionAfterContainer < nextReadPosition)
+            if (positionAfterContainer != nextReadPosition)
                 return OFASN1UnexpectedType;
         }
-        if (positionAfterContainer > nextReadPosition)
-            return OFASN1InconsistentEncoding;
+        
+        nextReadPosition = positionAfterContainer;
     }
     
     return objectAt(buffer, nextReadPosition, containerState);
@@ -312,7 +325,7 @@ int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData *
     enum OFASN1ErrorCodes rc;
     struct asnWalkerState stx;
     
-    rc = initializeWalker(cert, &stx);
+    rc = initializeWalker(cert, YES, &stx);
     if (rc)
         return rc;
     
@@ -452,11 +465,34 @@ int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData *
             
             // Exit the TBSCertificate
             rc = exitObject(cert, &signatureFields, &tbsFields, YES);
-            if (rc != OFASN1EndOfObject && rc != OFASN1Success)
+            if (rc)
                 return rc;
         }
         
-        /* Still remaining in the Certificate are the signature algorithm identifier and the signature itself: we don't care. */
+        /* Still remaining in the Certificate are the signature algorithm identifier and the signature itself: we don't care what they contain, but let's validate that they exist. */
+        /* (This function is also used as a very simple validity check for certificates, because SecCertificate will accept some forms of garbage and then crash later: see RADAR 7514859) */
+        
+        /* AlgorithmIdentifier is a SEQUENCE starting with an OID */
+        EXPECT_TYPE(signatureFields, 0x20, 0x10); /* SEQUENCE*/
+        {
+            struct asnWalkerState algIdFields;
+            rc = enterObject(cert, &signatureFields, &algIdFields);
+            if (rc)
+                return rc;
+            
+            EXPECT_TYPE(algIdFields, 0x00, BER_TAG_OID);
+            
+            rc = exitObject(cert, &signatureFields, &algIdFields, YES);
+            if (rc)
+                return rc;
+        }
+        
+        /* The signature bitstring itself */
+        EXPECT_TYPE(signatureFields, 0x00, BER_TAG_BIT_STRING);
+        
+        rc = nextObject(cert, &stx);
+        if (rc != OFASN1EndOfObject)
+            return ( rc? rc : OFASN1UnexpectedType );
     }
     
     return OFASN1Success;
@@ -481,7 +517,7 @@ BOOL OFASN1EnumerateAVAsInName(NSData *rdnseq, void (^callback)(NSData *a, NSDat
     enum OFASN1ErrorCodes rc;
     struct asnWalkerState nameSt, rdnSt, avasSt, avaSt;
     
-    rc = initializeWalker(rdnseq, &nameSt);
+    rc = initializeWalker(rdnseq, YES, &nameSt);
     if (rc)
         return NO;
     
@@ -587,7 +623,7 @@ BOOL OFASN1EnumerateAppStoreReceiptAttributes(NSData *payload, void (^callback)(
     enum OFASN1ErrorCodes rc;
     struct asnWalkerState payloadSt, attrSt, valueSt;
     
-    rc = initializeWalker(payload, &payloadSt);
+    rc = initializeWalker(payload, NO, &payloadSt);
     if (rc)
         return NO;
     
@@ -677,7 +713,7 @@ static NSData *_pluckContents(NSData *pkcs7, NSData * __autoreleasing *contentTy
 {
     struct asnWalkerState pkcs7St, inner1St, inner2St, inner3St, inner4St, inner5St;
 
-    if (initializeWalker(pkcs7, &pkcs7St))
+    if (initializeWalker(pkcs7, NO, &pkcs7St))
         return nil;
     
     if (!IS_TYPE(pkcs7St, FLAG_CONSTRUCTED, BER_TAG_SEQUENCE))
@@ -735,7 +771,7 @@ NSString *OFASN1UnDERString(NSData *derString)
 {
     struct parsedTag tl;
     NSUInteger len = [derString length];
-    enum OFASN1ErrorCodes rc = parseTagAndLength(derString, 0, len, &tl);
+    enum OFASN1ErrorCodes rc = parseTagAndLength(derString, 0, len, NO, &tl);
     if (rc != OFASN1Success || tl.content.location + tl.content.length != len || tl.indefinite || (tl.classAndConstructed & FLAG_CONSTRUCTED))
         return nil;
     
@@ -906,9 +942,10 @@ void OFASN1AppendTagLength(NSMutableData *buffer, uint8_t tag, NSUInteger byteCo
         /* Longer lengths have a count-and-value representation */
         uint_fast8_t n;
         uint8_t bytebuf[ sizeof(NSUInteger) ];
+        NSUInteger value = byteCount;
         for(n = 0; n < sizeof(NSUInteger); n++) {
-            bytebuf[n] = ( byteCount & 0xFF );
-            byteCount >>= 8;
+            bytebuf[n] = ( value & 0xFF );
+            value >>= 8;
         }
         while(bytebuf[n-1] == 0)
             n--;

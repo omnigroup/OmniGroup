@@ -123,7 +123,7 @@
 "local configuration file" = "fichier de configuration locale";
 
 /* time span formatter span */
-"m" = "m";
+"m" = "min";
 
 /* time span formatter span */
 "minute" = "minute";

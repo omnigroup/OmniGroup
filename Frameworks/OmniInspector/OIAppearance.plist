@@ -18,10 +18,48 @@
 		<key>a</key>
 		<integer>1</integer>
 	</dict>
+	<key>InspectorTabOnStateTintColor</key>
+	<dict>
+		<key>r</key>
+		<real>0.1843</real>
+		<key>g</key>
+		<real>0.5137</real>
+		<key>b</key>
+		<string>0.98431373</string>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
+	<key>InspectorTabHighlightedTintColor</key>
+	<dict>
+		<key>r</key>
+		<real>0.098039216</real>
+		<key>g</key>
+		<real>0.25490196</real>
+		<key>b</key>
+		<real>0.58431373</real>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
+	<key>InspectorTabNormalTintColor</key>
+	<dict>
+		<key>w</key>
+		<real>0.33</real>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
 	<key>InspectorHeaderSeparatorTopPadding</key>
-	<integer>5</integer>
+	<integer>0</integer>
+	<key>InspectorHeaderSeparatorHeight</key>
+	<integer>4</integer>
 	<key>InspectorHeaderContentHeight</key>
-	<integer>24</integer>
+	<integer>35</integer>
+	<key>InspectorHeaderSeparatorColor</key>
+	<dict>
+		<key>w</key>
+		<real>0.92</real>
+		<key>a</key>
+		<integer>1</integer>
+	</dict>
 	<key>InspectorSnoozeButtonLabelBaselineAdjustment</key>
 	<integer>5</integer>
 </dict>

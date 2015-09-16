@@ -29,7 +29,7 @@
 "Certificate Trust" = "证书信任";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "已将“%1$@”预置从“%2$@”更改为“%3$@”";
+"Changed the '%@' preference from '%@' to '%@'" = "将“%1$@”预置从“%2$@”更改为“%3$@”";
 
 /* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
 "Check for Free Upgrade" = "检查免费升级";
@@ -58,13 +58,13 @@
 "Error" = "错误";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "对于此演示，功能未启用";
+"Feature not enabled for this demo" = "本试用版未启用此功能";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "适合";
 
 /* Help and Settings toolbar item accessibility label. */
-"Help and Settings" = "帮助和设置";
+"Help and Settings" = "帮助与设置";
 
 /* Purchasing is disabled details */
 "In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "此设备无法使用或不允许使用应用程序内购买。要启用购买，请查看设置应用程序中的限制。";
@@ -73,7 +73,7 @@
 "Increment" = "增加";
 
 /* default special URL confirm button title */
-"Invoke" = "调用";
+"Invoke" = "激活";
 
 /* button title */
 "Invoke and Quit" = "调用并退出";
@@ -82,7 +82,7 @@
 "Italic" = "斜体";
 
 /* Justified Text Align button accessibility label. */
-"Justified text align" = "调整文本对齐";
+"Justified text align" = "文本两边对齐";
 
 /* Left Text Align button accessibility label. */
 "Left text align" = "文本左对齐";
@@ -97,10 +97,13 @@
 "None" = "无";
 
 /* Full screen note editor title */
-"Note" = "备注";
+"Note" = "注释";
 
 /* button title
-   OK button label */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
 
 
 
@@ -128,7 +131,7 @@
 /* App menu item title
    release notes html screen title */
 
-"Release Notes" = "发布通告";
+"Release Notes" = "发行说明";
 
 /* No purchases found title */
 "Restore Complete" = "恢复完成";
@@ -146,7 +149,7 @@
 "Search" = "搜索";
 
 /* Strike Through button accessibility label */
-"Strike Through" = "删除";
+"Strike Through" = "删去";
 
 /* Alert description for error loading product information */
 "This device might not be connected to the Internet." = "该设备可能未连接到 Internet。";
@@ -155,7 +158,7 @@
 "Trust Always" = "总是信任";
 
 /* Alert title for error loading product information */
-"Unable to reach App Store" = "无法访问 App Store";
+"Unable to reach App Store" = "无法到达 App Store";
 
 /* Underline button accessibility label */
 "Underline" = "底线";

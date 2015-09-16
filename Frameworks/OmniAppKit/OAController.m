@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2011-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -216,8 +216,11 @@ RCS_ID("$Id$")
     if (path == nil)
         return;
 
+    OFPreferenceWrapper *defaults = [OFPreferenceWrapper sharedPreferenceWrapper];
+    if (![defaults boolForKey:@"OAMessageOfTheDayCheckOnLaunch"])
+        return;
+
     NSData *motdData = [NSData dataWithContentsOfFile:path];
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSData *seenSignature = [defaults objectForKey:@"OAMessageOfTheDaySignature"];
     if (motdData) {
         NSData *newSignature = NSMakeCollectable(OFDataCreateSHA1Digest(kCFAllocatorDefault, (CFDataRef)motdData));

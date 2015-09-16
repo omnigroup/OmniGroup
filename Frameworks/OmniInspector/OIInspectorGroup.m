@@ -1013,7 +1013,7 @@ static NSComparisonResult sortByGroupAndDisplayOrder(OIInspectorController *a, O
             lastGroupIdentifier = NSNotFound;
         } 
 
-        NSArray *items = [[controller inspector] menuItemsForTarget:[OIInspectorRegistry class] action:@selector(revealEmbeddedInspectorFromMenuItem:)];
+        NSArray *items = [[controller inspector] menuItemsForTarget:nil action:@selector(revealEmbeddedInspectorFromMenuItem:)];
         
         NSUInteger controllerItemCount = [items count], controllerItemIndex;
         for (controllerItemIndex = 0; controllerItemIndex < controllerItemCount; controllerItemIndex ++) {

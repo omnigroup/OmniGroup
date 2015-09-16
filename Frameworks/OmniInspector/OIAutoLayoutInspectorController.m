@@ -25,7 +25,7 @@ RCS_ID("$Id$");
 
 - (OIAutolayoutInspectorHeaderView *)newHeaderView;
 {
-    NSArray *topLevelObjects = nil;
+    __autoreleasing NSArray *topLevelObjects = nil;
     NSNib *nib = [[NSNib alloc] initWithNibNamed:@"OIAutolayoutInspectorHeaderView" bundle:OMNI_BUNDLE];
     if (!nib || ![nib instantiateWithOwner:self topLevelObjects:&topLevelObjects]) {
         OBASSERT_NOT_REACHED(@"Unable to load OIAutolayoutInspectorHeaderView");
@@ -52,16 +52,6 @@ RCS_ID("$Id$");
     [self toggleExpandednessWithNewTopLeftPoint:NSZeroPoint animate:YES];
 }
 
-- (BOOL)drawsHeaderSeparator;
-{
-    return self.headerView.drawsSeparator;
-}
-
-- (void)setDrawsHeaderSeparator:(BOOL)drawsHeaderSeparator;
-{
-    self.headerView.drawsSeparator = drawsHeaderSeparator;
-}
-
 #pragma mark - OIInspectorController subclass
 
 - (void)populateContainerView;
@@ -73,6 +63,7 @@ RCS_ID("$Id$");
     OIAutolayoutInspectorHeaderView *headerView = [self newHeaderView];
     [self.containerView addSubview:headerView];
     self.headerView = headerView;
+    headerView.drawsSeparator = self.drawsHeaderSeparator;
     
     NSView *inspectorView = [self.inspector view];
     [self.containerView addSubview:inspectorView];

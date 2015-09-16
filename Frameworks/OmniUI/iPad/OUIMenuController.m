@@ -213,10 +213,6 @@ RCS_ID("$Id$");
 - (void)popoverPresentationControllerDidDismissPopover:(UIPopoverPresentationController *)popoverPresentationController;
 {
     [self _discardMenu];
-
-    // Don't keep the popover controller alive needlessly.
-    [[OUIAppController controller] forgetPossiblyVisiblePopoverIfAlreadyHidden];
-    
     [self _didFinish];
 }
 

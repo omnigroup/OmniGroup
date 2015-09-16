@@ -19,6 +19,7 @@
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerViewController.h>
+#import <OmniUIDocument/OUIDocumentProviderPreferencesViewController.h>
 
 #import "OUIDocumentAppController-Internal.h"
 #import "OUIDocumentInbox.h"
@@ -57,9 +58,17 @@ RCS_ID("$Id$")
     _externalScopes = [[NSMutableDictionary alloc] init];
     
     [self _loadExternalScopes];
-
+    
+    OFPreference *shouldEnableDocumentProvidersPreference = [OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference];
+    if ([shouldEnableDocumentProvidersPreference boolValue] == YES) {
+        for (ODSScope *scope in [_externalScopes allValues]) {
+            [_documentStore addScope:scope];
+        }
+    }
+    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationWillEnterForeground:) name:UIApplicationWillEnterForegroundNotification object:nil];
+    [OFPreference addObserver:self selector:@selector(_shouldEnableDocumentProvidersPreferenceChanged:) forPreference:shouldEnableDocumentProvidersPreference];
 
     return self;
 }
@@ -123,7 +132,7 @@ RCS_ID("$Id$")
         isDirectory = fileEdit.isDirectory;
         userModificationDate = fileEdit.fileModificationDate;
         // Make sure the url is actually readable by us before we return a file item for it
-        NSError *readError = nil;
+        __autoreleasing NSError *readError = nil;
         NSFileWrapper *fileWrapper = [[NSFileWrapper alloc] initWithURL:url options:0 error:&readError];
         if (fileWrapper == nil) {
             NSLog(@"Cannot read %@%@: %@", url, (securedURL != nil ? @" [secured]" : @""), [readError toPropertyList]);
@@ -197,7 +206,7 @@ RCS_ID("$Id$")
         NSString *targetFileName = [baseName stringByAppendingPathExtension:extension];
         NSFileManager *manager = [NSFileManager defaultManager];
         NSString *temporaryPath = [NSTemporaryDirectory() stringByAppendingPathComponent:targetFileName];
-        NSError *uniqueFilenameError = nil;
+        __autoreleasing NSError *uniqueFilenameError = nil;
         temporaryPath = [manager uniqueFilenameFromName:temporaryPath allowOriginal:YES create:NO error:&uniqueFilenameError];
         if (temporaryPath == nil) {
             addDocumentCompletionBlock(nil, uniqueFilenameError);
@@ -219,8 +228,17 @@ RCS_ID("$Id$")
                                                                    fileEdit:nil
                                                        userModificationDate:[NSDate date]];
              NSData *flattenedData = [fileItemToFlatten dataForWritingToExternalStorage];
-             if (![[NSFileManager defaultManager] createFileAtPath:newWritingURL.path contents:flattenedData attributes:nil]) {
-                 NSLog(@"Could not save %@ to external scope %@", newWritingURL, weakScope);
+             if (flattenedData) {
+                 if (![[NSFileManager defaultManager] createFileAtPath:newWritingURL.path contents:flattenedData attributes:nil]) {
+                     NSLog(@"Could not save %@ to external scope %@", newWritingURL, weakScope);
+                 }
+             } else {
+                 __autoreleasing NSError *copyError = nil;
+                 if (![manager copyItemAtURL:newReadingURL toURL:newWritingURL error:&copyError]) {
+                     [copyError log:@"Error copying %@ to %@", newReadingURL, newWritingURL];
+                     innerError = copyError;
+                     return;
+                 }
              }
              
              writtenURL = newWritingURL;
@@ -245,8 +263,8 @@ RCS_ID("$Id$")
                 addDocumentCompletionBlock(fileItem, nil);
 
                 // Move the original document to the trash
-                NSError *trashError = nil;
-                NSURL *actualTrashURL;
+                __autoreleasing NSError *trashError = nil;
+                __autoreleasing NSURL *actualTrashURL;
                 if (![ODSScope trashItemAtURL:fromURL resultingItemURL:&actualTrashURL error:&trashError]) {
                     // Would be nice to explain why this copy didn't land in the trash, but we did copy the item and don't want to return failure.  We don't want to remove the file since we don't trust the external item to stay valid, so let's just log and leave it where it is.
                     NSLog(@"Unable to move original file at %@ to trash: %@", [fromURL absoluteString], trashError);
@@ -263,7 +281,7 @@ RCS_ID("$Id$")
                     NSString *pathToTrash = [actualTrashURL path];
                     pathToTrash = [pathToTrash stringByDeletingLastPathComponent];
                     pathToTrash = [pathToTrash stringByAppendingPathComponent:betterTrashFileName];
-                    NSError *moveError = nil;
+                    __autoreleasing NSError *moveError = nil;
                     [[NSFileManager defaultManager] moveItemAtURL:actualTrashURL toURL:[NSURL fileURLWithPath:pathToTrash] error:&moveError];
                 }
             } else {
@@ -278,7 +296,6 @@ RCS_ID("$Id$")
         [strongSelf _queueSaveExternalScopes];
     };
     
-    [_documentStore addScope:externalScope];
     _externalScopes[containerDisplayName] = externalScope;
     return externalScope;
 }
@@ -295,7 +312,7 @@ RCS_ID("$Id$")
     for (ODSExternalScope *externalScope in [_externalScopes objectEnumerator]) {
         for (ODSFileItem *fileItem in externalScope.fileItems) {
             NSURL *url = fileItem.fileURL;
-            NSError *bookmarkError = nil;
+            __autoreleasing NSError *bookmarkError = nil;
             NSURL *securedURL = nil;
             if ([url startAccessingSecurityScopedResource])
                 securedURL = url;
@@ -407,7 +424,7 @@ RCS_ID("$Id$")
     if (fileItem != nil) {
         OUIDocumentPicker *documentPicker = [OUIDocumentAppController controller].documentPicker;
         [documentPicker.selectedScopeViewController ensureSelectedFilterMatchesFileItem:fileItem];
-        [documentPicker navigateToContainerForItem:fileItem animated:YES];
+        [documentPicker navigateToContainerForItem:fileItem dismissingAnyOpenDocument:YES animated:YES];
     }
 }
 
@@ -422,6 +439,21 @@ RCS_ID("$Id$")
 - (void)_applicationWillEnterForeground:(NSNotification *)notification;
 {
     [self _loadExternalScopes];
+}
+
+- (void)_shouldEnableDocumentProvidersPreferenceChanged:(NSNotification *)notification;
+{
+    OBASSERT([notification object] == [OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference]);
+    if ([[OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference] boolValue] == YES) {
+        for (ODSScope *scope in [_externalScopes allValues]) {
+            [_documentStore addScope:scope];
+        }
+    }
+    else {
+        for (ODSScope *scope in [_externalScopes allValues]) {
+            [_documentStore removeScope:scope];
+        }
+    }
 }
 
 @end

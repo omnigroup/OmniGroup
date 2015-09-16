@@ -1,4 +1,4 @@
-// Copyright 2013 The Omni Group.  All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -73,7 +73,7 @@ int main(int argc, const char * argv[])
             NSString *toolPath = [fileManager stringWithFileSystemRepresentation:path length:strlen(path)];
             NSString *temporaryDirectoryPath = NSTemporaryDirectory();
             if ([toolPath hasPrefix:temporaryDirectoryPath]) {
-                NSError *error = nil;
+                __autoreleasing NSError *error = nil;
                 if (![fileManager removeItemAtPath:toolPath error:&error]) {
                     NSLog(@"Error removing temporary copy of OSULaunchTrampoline: %@", error);
                 }

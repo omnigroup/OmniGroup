@@ -111,12 +111,4 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     return YES;
 }
 
-- (void)willTransitionToTraitCollection:(UITraitCollection *)newCollection withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator NS_AVAILABLE_IOS(8_0);
-{
-    // no fancy logic just dismiss the inspector
-    [self.inspector dismiss];
-
-    [super willTransitionToTraitCollection:newCollection withTransitionCoordinator:coordinator];
-}
-
 @end

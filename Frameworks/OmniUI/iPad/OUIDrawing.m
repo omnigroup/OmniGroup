@@ -52,8 +52,8 @@ static void OUIDrawingInitialize(void)
 {
     if (OUILightContentOnDarkBackgroundShadowColor)
         return;
-    OUILightContentOnDarkBackgroundShadowColor = OQMakeUIColor(kOUILightContentOnDarkBackgroundShadowColor);
-    OUIDarkContentOnLightBackgroundShadowColor = OQMakeUIColor(kOUIDarkContentOnLightBackgroundShadowColor);
+    OUILightContentOnDarkBackgroundShadowColor = OAMakeUIColor(kOUILightContentOnDarkBackgroundShadowColor);
+    OUIDarkContentOnLightBackgroundShadowColor = OAMakeUIColor(kOUIDarkContentOnLightBackgroundShadowColor);
 }
 
 CGSize OUIShadowOffset(OUIShadowType type)
@@ -68,18 +68,6 @@ UIColor *OUIShadowColor(OUIShadowType type)
     UIColor *shadowColor = (type == OUIShadowTypeLightContentOnDarkBackground) ? OUILightContentOnDarkBackgroundShadowColor : OUIDarkContentOnLightBackgroundShadowColor;
     OBASSERT(shadowColor);
     return shadowColor;
-}
-
-void OUIGraphicsBeginImageContext(CGSize size)
-{
-    // NO = we want a transparent context
-    // 0 = scale factor is set to the scale factor of the device's main screen
-    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
-}
-
-void OUIGraphicsEndImageContext(void) 
-{
-    UIGraphicsEndImageContext();
 }
 
 // Shifts the content within the rect so that it looks centered with the shadow applied. Assumes there is enough padding already so that we aren't going to shift the content far enough to get clipped.

@@ -97,6 +97,10 @@
 - (void)logConstraintsInvolvingView;
 - (void)logVibrantViews;
 
+#ifdef DEBUG
+- (void)expectDeallocationOfViewTreeSoon;
+#endif
+
 @end
 
 #import <OmniFoundation/OFTransientObjectsTracker.h>

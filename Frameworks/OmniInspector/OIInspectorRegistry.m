@@ -66,7 +66,6 @@ static NSMutableArray *additionalPanels = nil;
     } registryFlags;
     
     NSMutableArray *inspectorControllers;
-    NSMutableDictionary *inspectorControllersById;
     float inspectorWidth;
     NSString *_currentInspectionIdentifier;
     
@@ -295,7 +294,12 @@ static NSMutableArray *hiddenPanels = nil;
 
 - (OIInspectorController *)controllerWithIdentifier:(NSString *)anIdentifier;
 {
-    return [inspectorControllersById objectForKey:anIdentifier];
+    OFForEachInArray(inspectorControllers, OIInspectorController *, anInspector, {
+        if ([[anInspector identifier] isEqualToString:anIdentifier])
+            return anInspector;
+    });
+    
+    return nil;
 }
 
 - (NSArray *)controllers;
@@ -369,7 +373,6 @@ static NSMutableArray *hiddenPanels = nil;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_applicationDidFinishRestoringWindowsNotification:) name:NSApplicationDidFinishRestoringWindowsNotification object:nil];
     
     inspectorControllers = [[NSMutableArray alloc] init];
-    inspectorControllersById = [[NSMutableDictionary alloc] init];
     
     _existingGroups = [[NSArray alloc] init];
     
@@ -517,7 +520,7 @@ static NSComparisonResult sortGroupByGroupNumber(OIInspectorGroup *a, OIInspecto
 {
     @autoreleasepool {
         NSArray *groups = [[OIWorkspace.sharedWorkspace objectForKey:@"_groups"] copy];
-        NSMutableDictionary *inspectorById = [inspectorControllersById mutableCopy];
+        NSMutableDictionary *inspectorById = [NSMutableDictionary dictionary];
         
         // Obsolete name of a method, make sure nobody's trying to override it
         OBASSERT_NOT_IMPLEMENTED(self, _adjustTopLeftDefaultPositioningPoint:);
@@ -1153,7 +1156,6 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
     OBPRECONDITION(inspector);
     OIInspectorController *controller = [self controllerWithInspector:inspector];    
     [inspectorControllers addObject:controller];
-    [inspectorControllersById setObject:controller forKey:controller.identifier];
     
     return controller;
 }

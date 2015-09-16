@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,7 @@ typedef NS_ENUM(NSInteger, OUIInspectorSliceGroupPosition) {
 + (UIColor *)sliceSeparatorColor; // Default color for slice separators
 + (CGFloat)paddingBetweenSliceGroups; // The space to leave between groups of inspector slices.
 
-@property(readonly,nonatomic) OUIStackedSlicesInspectorPane *containingPane; // Set by the containing inspector pane
+@property(nonatomic, weak) OUIStackedSlicesInspectorPane *containingPane; // Set by the containing inspector pane
 @property(readonly,nonatomic) OUIInspector *inspector;
 @property(nonatomic,assign) UIEdgeInsets alignmentInsets;
 @property(nonatomic,assign) OUIInspectorSliceGroupPosition groupPosition;

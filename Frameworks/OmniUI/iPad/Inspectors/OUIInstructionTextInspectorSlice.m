@@ -1,4 +1,4 @@
-// Copyright 2010-2014 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -85,7 +85,7 @@ RCS_ID("$Id$");
 
 - (void)loadView;
 {
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, OUIInspectorContentWidth, 0)];
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 0)];
     [label applyStyle:OUILabelStyleInspectorSliceInstructionText];
     
     label.numberOfLines = 0; // No limit

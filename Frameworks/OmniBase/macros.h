@@ -44,9 +44,11 @@
 #if defined(__has_feature) && __has_feature(objc_generics)
     #define OB_GENERIC1(t) <t>
     #define OB_GENERIC2(t1,t2) <t1,t2>
+    #define OB_GENERIC_ARG(t) t // Useful in a generic class for argument or return types
 #else
     #define OB_GENERIC1(t)
     #define OB_GENERIC2(t1,t2)
+    #define OB_GENERIC_ARG(t) id
 #endif
 
 #if !defined(SWAP)

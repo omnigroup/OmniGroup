@@ -1,4 +1,4 @@
-// Copyright 2004-2007, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,6 +30,7 @@ static inline OFBindingPoint * OFBindingPointMake(id object, NSString *keyPath)
 
 #define OFValidateKeyPath(object, keyPath) (NO && (object).keyPath ? @#keyPath : @#keyPath)
 #define OFKeyPathWithClass(cls, keyPath) OFValidateKeyPath((cls *)nil, keyPath)
+#define OFKeyPathWithProtocol(protocol, keyPath) OFValidateKeyPath((id <protocol>)nil, keyPath)
 #define OFBindingKeyPath(object, keyPath) OFBindingPointMake(object, OFValidateKeyPath(object, keyPath))
 
 extern BOOL OFBindingPointsEqual(OFBindingPoint *a, OFBindingPoint *b);

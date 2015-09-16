@@ -105,7 +105,7 @@ NSString * const OSUReleaseApplicationSummaryKey = @"applicationSummary";  //  D
         NSString *packageURLString = [[NSUserDefaults standardUserDefaults] stringForKey:@"OSUDownloadAndInstallFromURL"];
         if (![NSString isEmptyString:packageURLString]) {
             NSURL *packageURL = [NSURL URLWithString:packageURLString];
-            NSError *error = nil;
+            __autoreleasing NSError *error = nil;
             if (![[OSUController sharedController] beginDownloadAndInstallFromPackageAtURL:packageURL item:nil error:&error])
                 [[NSApplication sharedApplication] presentError:error];
         }

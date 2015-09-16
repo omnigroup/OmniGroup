@@ -6,7 +6,7 @@
 "About %@" = "Info su %@";
 
 /* No purchases found message format */
-"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Sono stati ripristinati tutti gli acquisti associati al tuo account App Store, ma %@ non era tra questi.";
+"All purchases for your current App Store account have been restored, but %@ wasn't one of those purchases." = "Tutti gli acquisti per l'account App Store corrente sono stati ripristinati, ma %@ non era incluso.";
 
 /* Bold button accessibility label */
 "Bold" = "Grassetto";
@@ -23,13 +23,13 @@
 "Cancel" = "Annulla";
 
 /* Center Text Align button accessibility label. */
-"Center text align" = "Allinea testo al centro";
+"Center text align" = "Testo allineato al centro";
 
 /* Certificate trust alert title */
-"Certificate Trust" = "Attendibilità certificata";
+"Certificate Trust" = "Certificati attendibili";
 
 /* alert message */
-"Changed the '%@' preference from '%@' to '%@'" = "Preferenza \"%1$@\" modificata da \"%2$@\" in \"%3$@\"";
+"Changed the '%@' preference from '%@' to '%@'" = "Preferenza “%1$@” modificata da “%2$@” a “%3$@”";
 
 /* Button title that, when tapped, will display an alert explaining to the user how to check to see if they are eligilbe for a free upgrade. */
 "Check for Free Upgrade" = "Cerca aggiornamento gratuito";
@@ -38,7 +38,7 @@
 "Continue" = "Continua";
 
 /* increment button accessibility label */
-"Decrement" = "Decremento";
+"Decrement" = "Riduci";
 
 /* Button is disabled due to purchase restrictions */
 "Disabled" = "Disattivato";
@@ -58,7 +58,7 @@
 "Error" = "Errore";
 
 /* disabled for demo */
-"Feature not enabled for this demo" = "Funzionalità non abilitata per questa demo";
+"Feature not enabled for this demo" = "Funzione non abilitata in questa demo";
 
 /* Overlay text when zoomed to fit screen */
 "Fit" = "Adatta";
@@ -67,10 +67,10 @@
 "Help and Settings" = "Aiuto e impostazioni";
 
 /* Purchasing is disabled details */
-"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "La possibilità di acquistare direttamente dall'app non è disponibile o non è consentita su questo dispositivo. Per abilitare l'acquisto, verifica le limitazioni nelle impostazioni dell'app.";
+"In-App Purchasing is unavailable or not allowed on this device. To enable purchasing, check Restrictions in the Settings app." = "L'acquisto dall'app non è disponibile o non è consentito su questo dispositivo. Per abilitare l'acquisto, verifica le restrizioni nelle impostazioni di iOS.";
 
 /* increment button accessibility label */
-"Increment" = "Incremento";
+"Increment" = "Aumenta";
 
 /* default special URL confirm button title */
 "Invoke" = "Richiama";
@@ -82,13 +82,13 @@
 "Italic" = "Corsivo";
 
 /* Justified Text Align button accessibility label. */
-"Justified text align" = "Allinea testo giustificato";
+"Justified text align" = "Testo giustificato";
 
 /* Left Text Align button accessibility label. */
-"Left text align" = "Allinea testo a sinistra";
+"Left text align" = "Testo allineato a sinistra";
 
 /* Web view error opening URL title. */
-"Link could not be opened. Please check Safari restrictions in Settings." = "Impossibile aprire il link. Verifica le limitazioni di Safari nelle impostazioni.";
+"Link could not be opened. Please check Safari restrictions in Settings." = "Impossibile aprire il link. Verifica le restrizioni di Safari nelle Impostazioni.";
 
 /* Button title that will launch safari to give the user more information about getting the disscounted/free upgrade. */
 "More Info" = "Ulteriori informazioni";
@@ -100,7 +100,10 @@
 "Note" = "Nota";
 
 /* button title
-   OK button label */
+   Dismiss failed purchase alert
+   Dismiss failed restore alert
+   OK button label
+   Web view error opening URL cancel button. */
 
 
 
@@ -117,10 +120,10 @@
 "Purchase Failed" = "Acquisto non riuscito";
 
 /* Buy button thank you message */
-"Purchased. Thank you!" = "Acquisto eseguito. Grazie.";
+"Purchased. Thank you!" = "Acquistato. Grazie.";
 
 /* Purchasing is disabled alert title */
-"Purchasing is Disabled" = "L'acquisto è disabilitato";
+"Purchasing is Disabled" = "Acquisto disabilitato";
 
 /* Redo button title */
 "Redo" = "Ripristina";
@@ -140,7 +143,7 @@
 "Restore Purchases" = "Ripristina acquisti";
 
 /* Right Text Align button accessibility label. */
-"Right text align" = "Allinea testo a destra";
+"Right text align" = "Testo allineato a destra";
 
 /* Search field placeholder text */
 "Search" = "Cerca";
@@ -149,7 +152,7 @@
 "Strike Through" = "Barrato";
 
 /* Alert description for error loading product information */
-"This device might not be connected to the Internet." = "Il dispositivo potrebbe non essere connesso a Internet.";
+"This device might not be connected to the Internet." = "Questo dispositivo potrebbe non essere connesso a Internet.";
 
 /* Certificate trust alert button title */
 "Trust Always" = "Ritieni sempre attendibile";
@@ -158,7 +161,7 @@
 "Unable to reach App Store" = "Impossibile connettersi all'App Store";
 
 /* Underline button accessibility label */
-"Underline" = "Sottolinea";
+"Underline" = "Sottolineato";
 
 /* Undo button title */
 "Undo" = "Annulla";
@@ -173,7 +176,7 @@
 "You have tapped on a link which will run the following debugging command:\n\n\"%@\"\n\nIf you weren’t instructed to do this by Omni Support Humans, please don’t.\nDo you wish to run this command?" = "Hai toccato un link che eseguirà il seguente comando di debug:\n\n“%@”\n\nSe non è stato il gruppo di supporto di Omni a consigliarti questa operazione, non proseguire.\nEseguire il comando?";
 
 /* default special URL alert message */
-"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Hai toccato un URL di Omni speciale:\n\n\"%@\"\n\nEseguire questo comando?";
+"You have tapped on an Omni special URL:\n\n\"%@\"\n\nRun this command?" = "Hai toccato un URL speciale di Omni:\n\n“%@”\n\nEseguire questo comando?";
 
 /* zoom label */
 "Zoom" = "Ridimensiona";

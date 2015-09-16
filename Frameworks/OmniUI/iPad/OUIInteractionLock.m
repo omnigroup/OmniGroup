@@ -93,7 +93,7 @@ static void _dumpImageInfo(void)
     NSLog(@"%@", report);
 }
     
-- (void)dealloc;
+- (void)dealloc NS_EXTENSION_UNAVAILABLE_IOS("Interaction lock is not available in extensions.");
 {
     DEBUG_INTERACTION_LOCK(@"self: %@", self);
     if (_locked) {
@@ -136,7 +136,7 @@ static void _dumpImageInfo(void)
     }
 }
 
-- (void)unlock;
+- (void)unlock NS_EXTENSION_UNAVAILABLE_IOS("Interaction lock is not available in extensions");
 {
     DEBUG_INTERACTION_LOCK(@"self: %@", self);
     OBPRECONDITION([NSThread isMainThread], "UIKit isn't guaranteed to be thread safe");
@@ -173,7 +173,7 @@ static void _dumpImageInfo(void)
     return @"Unknown";
 }
 
-- (id)_initApplicationLock;
+- (id)_initApplicationLock NS_EXTENSION_UNAVAILABLE_IOS("Interaction lock is not available in extensions.");
 {
     OBPRECONDITION([NSThread isMainThread], "UIKit isn't guaranteed to be thread safe");
 
@@ -200,7 +200,7 @@ static void _dumpImageInfo(void)
     return self;
 }
 
-+ (void)_activeLockTimerFired:(NSTimer *)timer;
++ (void)_activeLockTimerFired:(NSTimer *)timer NS_EXTENSION_UNAVAILABLE_IOS("Interaction lock is not available in extensions.");
 {
     OBPRECONDITION([NSThread isMainThread]);
     
