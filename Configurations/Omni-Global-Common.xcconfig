@@ -24,10 +24,6 @@ OTHER_SWIFT_FLAGS = $(OMNI_STORE_SWIFT_FLAGS) $(OMNI_GLOBAL_COMMON_SWIFT_FLAGS) 
 STRIP_INSTALLED_PRODUCT = NO
 COPY_PHASE_STRIP = NO
 
-// Enable Bitcode
-ENABLE_BITCODE = YES
-STRIP_BITCODE_FROM_COPIED_FILES = NO
-
 // Keep shared precompiled headers in our build area so we can clean them up. Without this, Xcode will put them in its own place and won't purge them reliably.
 SHARED_PRECOMPS_DIR = $(CONFIGURATION_BUILD_DIR)/SharedPrecompiledHeaders
 
