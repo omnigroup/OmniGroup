@@ -13,6 +13,9 @@ BZ2_LDFLAGS = -lbz2
 SDKROOT = macosx
 MACOSX_DEPLOYMENT_TARGET = 10.10
 
+// Disable Bitcode
+ENABLE_BITCODE = NO
+
 // Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.
 SKIP_INSTALL = YES
 
