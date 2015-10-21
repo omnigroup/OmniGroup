@@ -370,10 +370,10 @@ static OFEnumNameTable *OIVisibilityStateNameTable = nil;
         
     // Optional finer grain predicate.
     NSPredicate *predicate = [self shouldBeUsedForObjectPredicate];
-    if (predicate)
-        return [predicate evaluateWithObject:object];
-    
-    return NO;
+    if (predicate != nil && ![predicate evaluateWithObject:object])
+        return NO;
+
+    return YES;
 }
 
 - (NSPredicate *)shouldBeUsedForObjectPredicate;

@@ -78,6 +78,8 @@ extern NSString * const OUIDocumentPickerScrollViewItemsBinding;
 
 - (CGRect)frameForItem:(ODSItem *)item;
 
+/// - point: Expected to be in OUIDocumentPickerScrollView's coordinates.
+- (OUIDocumentPickerItemView *)itemViewForPoint:(CGPoint)point;
 - (OUIDocumentPickerItemView *)itemViewForItem:(ODSItem *)item;
 - (OUIDocumentPickerFileItemView *)fileItemViewForFileItem:(ODSFileItem *)fileItem;
 - (OUIDocumentPickerItemView *)itemViewHitByRecognizer:(UIGestureRecognizer *)recognizer;

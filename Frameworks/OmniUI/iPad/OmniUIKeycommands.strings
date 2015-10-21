@@ -1,0 +1,11 @@
+/*
+ This file is used to map discoverability identifiers representing key commands to their description for use with -[UIKeyCommand discoverabilityTitle].
+ 
+ The conventions to uphold are as follows:
+ 
+ - Filename — Use the name of the keycommands file appending "Keycommands" and an extension of .strings (e.g. `Foo.keycommands` key command discoverability titles live in `FooKeycommands.strings`
+ 
+ - Discoverability title identifier is configured in Foo.keycommands. If a discoverability title is desired for the key command, it should have an entry here.
+ */
+
+// Currently no discoverability titles for OmniUI.keycommmands.

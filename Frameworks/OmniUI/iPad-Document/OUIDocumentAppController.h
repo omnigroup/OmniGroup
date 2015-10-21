@@ -15,7 +15,7 @@
 
 @class ODSFileItem, OFFileEdit, ODSFileItemEdit, ODSScope;
 @class OFXAgentActivity, OFXServerAccount;
-@class OUIDocument, OUIDocumentPicker, OUIDocumentPickerViewController, OUIBarButtonItem, UIViewController;
+@class OUIDocument, OUIDocumentPicker, OUIDocumentPickerViewController, OUIDocumentOpenAnimator, OUIBarButtonItem, UIViewController;
 
 @interface OUIDocumentAppController : OUIAppController <OUIUndoBarButtonItemTarget, ODSStoreDelegate, ODSStoreDelegate>
 
@@ -46,11 +46,15 @@
 - (void)documentDidRebuildViewController:(OUIDocument *)document;
 
 - (void)openDocument:(ODSFileItem *)fileItem;
+- (void)openDocument:(ODSFileItem *)fileItem fromPeekWithWillPresentHandler:(void (^)(OUIDocumentOpenAnimator *openAnimator))willPresentHandler completionHandler:(void (^)(void))completionHandler;
 
 @property(nonatomic,readonly) OUIDocument *document;
 
 // This is for debugging and ninja use, not production
 - (void)invalidateDocumentPreviews;
+
+// For Quick Actions
+- (NSArray <ODSFileItem *>*)recentlyEditedFileItems;
 
 // Sample documents
 - (NSInteger)builtInResourceVersion;
@@ -88,6 +92,8 @@
 - (NSURL *)documentProviderMoreInfoURL;
 
 // Subclass responsibility
+- (NSString *)recentDocumentShortcutIconImageName;
+- (NSString *)newDocumentShortcutIconImageName;
 - (UIImage *)documentPickerBackgroundImage;
 - (Class)documentClassForURL:(NSURL *)url;
 - (UIView *)pickerAnimationViewForTarget:(OUIDocument *)document;

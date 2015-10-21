@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,6 +26,22 @@
     };
     
    return [self fontDescriptorByAddingAttributes:attributes];
+}
+
+- (UIFontDescriptor *)fontDescriptorByAddingMonospacedNumberAttributes
+{
+    NSArray *fontFeatureSettings = @[
+        @{
+            UIFontFeatureTypeIdentifierKey: @(kNumberSpacingType),
+            UIFontFeatureSelectorIdentifierKey: @(kMonospacedNumbersSelector),
+        },
+    ];
+    
+    NSDictionary *attributes = @{
+        UIFontDescriptorFeatureSettingsAttribute: fontFeatureSettings
+    };
+    
+    return [self fontDescriptorByAddingAttributes:attributes];
 }
 
 - (UIFontDescriptor *)fontDescriptorByAddingTimeAttributes;

@@ -95,6 +95,7 @@
 + (OUIDocumentPickerFilter *)selectedFilterForPicker:(OUIDocumentPicker *)picker;
 + (OFPreference *)sortPreference;
 + (NSArray *)sortDescriptors;
++ (NSArray *)sortDescriptorsForSortType:(OUIDocumentPickerItemSort)sortPreference;
 - (BOOL)supportsUpdatingSorting;
 
 - (void)ensureSelectedFilterMatchesFileURL:(NSURL *)fileURL;

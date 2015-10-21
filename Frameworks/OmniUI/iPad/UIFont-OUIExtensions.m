@@ -48,6 +48,12 @@ RCS_ID("$Id$");
     return [UIFont fontWithDescriptor:fontDescriptor size:0];
 }
 
+- (UIFont *)fontByAddingMonospacedNumberAttributes;
+{
+    UIFontDescriptor *fontDescriptor = [self.fontDescriptor fontDescriptorByAddingMonospacedNumberAttributes];
+    return [UIFont fontWithDescriptor:fontDescriptor size:0];
+}
+
 - (UIFont *)fontByAddingTimeAttributes;
 {
     UIFontDescriptor *fontDescriptor = [self.fontDescriptor fontDescriptorByAddingTimeAttributes];

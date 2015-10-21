@@ -14,8 +14,11 @@ OMNI_SDKROOT = iphoneos
 SDKROOT = $(OMNI_SDKROOT)$(OMNI_SDK_VERSION)
 
 IPHONEOS_DEPLOYMENT_TARGET = 9.0
-ENABLE_BITCODE = YES
+
+// Bitcode makes crash reports unreadable since Apple builds a new binary with a new uuid
+ENABLE_BITCODE = NO
 STRIP_BITCODE_FROM_COPIED_FILES = NO
+
 GCC_THUMB_SUPPORT = NO
 
 // Don't install every single thing we build. Lots of bundles and tools, in particular, are included as resources of frameworks and apps.

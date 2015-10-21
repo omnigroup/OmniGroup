@@ -61,6 +61,8 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
     if (!(self = original_initWithDomainCodeUserInfo(self, _cmd, domain, code, dict)))
         return nil;
     
+    OBRecordBacktraceWithContext("Error created", OBBacktraceBuffer_Generic, (__bridge const void *)self);
+
     if (OBLogErrorCreations)
         NSLog(@"Error created: %@", [self toPropertyList]);
     
@@ -71,9 +73,7 @@ static id _replacement_initWithDomain_code_userInfo(NSError *self, SEL _cmd, NSS
 {
     OBLogErrorCreations = [[NSUserDefaults standardUserDefaults] boolForKey:@"OBLogErrorCreations"];
     
-    if (OBLogErrorCreations || INCLUDE_BACKTRACE_IN_ERRORS) {
-        original_initWithDomainCodeUserInfo = (typeof(original_initWithDomainCodeUserInfo))OBReplaceMethodImplementation(self, @selector(initWithDomain:code:userInfo:), (IMP)_replacement_initWithDomain_code_userInfo);
-    }
+    original_initWithDomainCodeUserInfo = (typeof(original_initWithDomainCodeUserInfo))OBReplaceMethodImplementation(self, @selector(initWithDomain:code:userInfo:), (IMP)_replacement_initWithDomain_code_userInfo);
 }
 
 - (NSError *)underlyingErrorWithDomain:(NSString *)domain;

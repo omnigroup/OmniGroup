@@ -43,9 +43,7 @@ RCS_ID("$Id$");
                 if (![productIdentifiers containsObject:productIdentifier])
                     continue;
 
-                if (![appDelegate addPurchasedProductToKeychain:productIdentifier])
-                    continue;
-
+                [appDelegate addPurchasedProductToKeychain:productIdentifier];
                 [appDelegate didUnlockInAppPurchase:productIdentifier];
 
                 if (transaction.transactionState == SKPaymentTransactionStatePurchased)

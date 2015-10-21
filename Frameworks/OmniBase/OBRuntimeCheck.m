@@ -145,6 +145,12 @@ static BOOL _methodSignaturesCompatible(Class cls, SEL sel, const char *sig1, co
             _signaturesMatch(sig1, sig2, "v24@0:4@8{CGPoint=ff}12I20", "v24@0:4@8{CGPoint=ff}12L20"))
             return YES;
         
+        // <bug:///122392> (Bug: Swift subclass of Obj-C class:  .cxx_destruct has conflicting type signatures between class and its superclass)
+        // Swift generated code includes a cxx_destruct method that mismatches some superclasses (e.g. UIGestureRecognizer)
+        // This method shouldn't be our problem, regardless of where it appears or what signature it has
+        if (sel == FIND_SEL(.cxx_destruct))
+            return YES;
+        
     }
     return compatible;
 }
@@ -181,7 +187,7 @@ static NSString *describeMethod(Method m, BOOL *nonSystem)
             ([path rangeOfString:@"/Developer/Platforms/"].location == NSNotFound) && // iPhone simulator
             ![path hasSuffix:@"FBAccess"] && // Special case for FrontBase framework
             ![path hasSuffix:@"Growl"] && // Special case for Growl framework
-            ![path hasSuffix:@".app/Frameworks/libswiftCore.dylib"]) // Special case for embedded Swift runtime
+            ![path hasSuffix:@"libswiftCore.dylib"]) // Special case for embedded Swift runtime
             *nonSystem = YES;
     }
     
@@ -743,11 +749,13 @@ void OBPerformRuntimeChecks(void)
     NSString *executableName = [[[NSBundle mainBundle] executablePath] lastPathComponent];
     BOOL shouldCheck = ![@"ibtool" isEqualToString:executableName] && ![@"Interface Builder" isEqualToString:executableName] && ![@"IBCocoaSimulator" isEqualToString:executableName];
     if (shouldCheck) {
+        NSTimeInterval runtimeChecksStart = [NSDate timeIntervalSinceReferenceDate];
         _validateMethodSignatures();
         _checkForMethodsInDeprecatedProtocols();
 #ifdef OB_CHECK_COPY_WITH_ZONE
         _checkCopyWithZoneImplementations();
 #endif
+        NSLog(@"*** OBPerformRuntimeChecks finished in %.2f seconds.", [NSDate timeIntervalSinceReferenceDate] - runtimeChecksStart);
     }
 }
 

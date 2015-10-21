@@ -15,9 +15,6 @@
 @protocol OFSFileManagerDelegate <NSObject>
 @optional
 
-// No longer called -- this is managed by user preferences in Settings.app on iOS.
-- (BOOL)fileManagerShouldAllowCellularAccess:(OFSFileManager *)manager OB_DEPRECATED_ATTRIBUTE;
-
 // Invoked from our -[NSURLConnectionDelegate connectionShouldUseCredentialStorage:] implementation, which isn't called any more (especially since we've moved from NSURLConnection to NSURLSession), so this is never called either
 - (BOOL)fileManagerShouldUseCredentialStorage:(OFSFileManager *)manager;
 

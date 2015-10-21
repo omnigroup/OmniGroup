@@ -17,7 +17,8 @@
 + (UIFont *)preferredItalicFontForTextStyle:(NSString *)style;
 + (UIFont *)preferredBoldFontForTextStyle:(NSString *)style;
 
-- (UIFont *)fontByAddingProportionalNumberAttributes;
+- (UIFont *)fontByAddingProportionalNumberAttributes; // already default on iOS 9+
+- (UIFont *)fontByAddingMonospacedNumberAttributes;
 - (UIFont *)fontByAddingTimeAttributes;
 
 @end

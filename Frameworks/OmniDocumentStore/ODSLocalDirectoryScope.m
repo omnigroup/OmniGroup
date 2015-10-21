@@ -11,6 +11,7 @@
 #import <OmniDocumentStore/ODSScope-Subclass.h>
 #import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniDocumentStore/ODSUtilities.h>
+#import <OmniFoundation/NSArray-OFExtensions.h>
 #import <OmniFoundation/NSFileCoordinator-OFExtensions.h>
 #import <OmniFoundation/NSSet-OFExtensions.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
@@ -148,16 +149,21 @@ RCS_ID("$Id$");
         }
     }
 
-    NSMutableArray *deletions = [NSMutableArray new];
-    for (ODSItem *item in items) {
-        [item eachFile:^(ODSFileItem *file) {
-            [deletions addObject:[[ODSFileItemDeletion alloc] initWithFileItem:file]];
-        }];
+    NSArray *deletions;
+    {
+        NSMutableArray *collectingDeletions = [NSMutableArray new];
+        for (ODSItem *item in items) {
+            [item eachFile:^(ODSFileItem *file) {
+                [collectingDeletions addObject:[[ODSFileItemDeletion alloc] initWithFileItem:file]];
+            }];
+        }
+        deletions = [collectingDeletions copy];
     }
     DEBUG_STORE(@"Deletions %@", [deletions valueForKey:@"shortDescription"]);
     
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-        [self.documentStore _willRemoveFileItems:items];
+        NSArray *fileItems = [deletions arrayByPerformingBlock:^(ODSFileItemDeletion *deletion){ return deletion.fileItem; }];
+        [self.documentStore _willRemoveFileItems:fileItems];
     }];
     
     [self performAsynchronousFileAccessUsingBlock:^{

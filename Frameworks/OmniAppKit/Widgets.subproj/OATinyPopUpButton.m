@@ -1,4 +1,4 @@
-// Copyright 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,12 +34,14 @@ RCS_ID("$Id$");
 
 - (void)setMenu:(NSMenu *)menu;
 {
-    // assume that we want a blank item at the top, which would be the pull down title, if we were showing it, which we aren't
-    if([self menu] != menu)
-        [menu insertItemWithTitle:@"" action:NULL keyEquivalent:@"" atIndex:0];
+    if ([menu numberOfItems] == 0 || ![[menu itemAtIndex:0] isSeparatorItem]) {
+        // NSPopUpButton shows the first item it's title, but this subclass doesn't. To prevent it from vanishing, add a separator item at the top (but in case this is calls more than once for a given menu, check if there is one already).
+        NSMenuItem *separator = [NSMenuItem separatorItem];
+        [menu insertItem:separator atIndex:0];
+    }
+    
     [super setMenu:menu];
 }
-
 
 // NSView subclass
 

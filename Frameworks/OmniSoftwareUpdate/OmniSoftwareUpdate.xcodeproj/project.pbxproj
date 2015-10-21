@@ -409,8 +409,8 @@
 		3424EE381AB79C4F005DB3C9 /* Copy XPC Services */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = Versions/Current/XPCServices;
-			dstSubfolderSpec = 1;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/XPCServices";
+			dstSubfolderSpec = 16;
 			files = (
 				3424EE391AB79C76005DB3C9 /* com.omnigroup.OmniSoftwareUpdate.OSUCheckService.xpc in Copy XPC Services */,
 			);

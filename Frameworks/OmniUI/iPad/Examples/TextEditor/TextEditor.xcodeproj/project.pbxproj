@@ -377,6 +377,13 @@
 			remoteGlobalIDString = 348A79BA1B5849C70082D55D;
 			remoteInfo = "OmniUI-iOS";
 		};
+		34DB325A1BD71F0300DFD01E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 342721571194809800B39788 /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5FE81E171B62AE980056756C;
+			remoteInfo = "OmniBase-watchOS";
+		};
 		34EAF49E1509A6E00040030A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 342721571194809800B39788 /* OmniBase.xcodeproj */;
@@ -697,6 +704,7 @@
 				34EAF49F1509A6E00040030A /* OBUnitTests.xctest */,
 				343EB8261950A159000534A9 /* OmniBase.framework */,
 				343EB8281950A159000534A9 /* OBUnitTests.xctest */,
+				34DB325B1BD71F0300DFD01E /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1165,6 +1173,13 @@
 			fileType = wrapper.framework;
 			path = OmniUI.framework;
 			remoteRef = 34BCD8891B586C2700EBAA20 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		34DB325B1BD71F0300DFD01E /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 34DB325A1BD71F0300DFD01E /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34EAF49F1509A6E00040030A /* OBUnitTests.xctest */ = {

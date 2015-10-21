@@ -132,6 +132,8 @@ enum {
 - (NSString *)asRFC2047EncodedWord; /* Returns an 'encoded-word' representing the receiver */
 - (NSString *)asRFC2047Phrase;      /* Returns a sequence of atoms, quoted-strings, and encoded-words, as appropriate to represent the receiver in the syntax defined by RFC822 and RFC2047. */
 
+- (NSString *)stringByTruncatingToMaximumLength:(NSUInteger)maximumLength atSpaceAfterMinimumLength:(NSUInteger)minimumLength;
+
 @end
 
 /* Creating an ASCII representation of a floating-point number, without using exponential notation. */

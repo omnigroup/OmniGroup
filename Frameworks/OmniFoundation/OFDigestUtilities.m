@@ -1,4 +1,4 @@
-// Copyright 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,6 +7,8 @@
 
 #import <OmniFoundation/OFDigestUtilities.h>
 #import <OmniFoundation/OFErrors.h>
+
+#import <CommonCrypto/CommonDigest.h>
 
 RCS_ID("$Id$")
 
@@ -93,7 +95,10 @@ RCS_ID("$Id$")
 #define DO_CC_UPDATE(alg, ctxp) do { if (length > CC_LONG_MAX) { CC_ ## alg ## _Update(ctxp, buffer, CC_LONG_BLOCKSIZE); buffer += CC_LONG_BLOCKSIZE; length -= CC_LONG_BLOCKSIZE; } else { CC_ ## alg ## _Update(ctxp, buffer, (CC_LONG)length); break; } } while(length > 0)
 
 
-@implementation OFMD5DigestContext : OFCCDigestContext
+@implementation OFMD5DigestContext
+{
+    CC_MD5_CTX ctx;
+}
 
 + (unsigned int)outputLength;
 {
@@ -129,7 +134,10 @@ RCS_ID("$Id$")
 
 @end
 
-@implementation OFSHA1DigestContext : OFCCDigestContext
+@implementation OFSHA1DigestContext
+{
+    CC_SHA1_CTX ctx;
+}
 
 + (unsigned int)outputLength;
 {
@@ -165,7 +173,10 @@ RCS_ID("$Id$")
 
 @end
 
-@implementation OFSHA256DigestContext : OFCCDigestContext
+@implementation OFSHA256DigestContext
+{
+    CC_SHA256_CTX ctx;
+}
 
 + (unsigned int)outputLength;
 {
@@ -201,7 +212,10 @@ RCS_ID("$Id$")
 
 @end
 
-@implementation OFSHA512DigestContext : OFCCDigestContext
+@implementation OFSHA512DigestContext
+{
+    CC_SHA512_CTX ctx;
+}
 
 + (unsigned int)outputLength;
 {

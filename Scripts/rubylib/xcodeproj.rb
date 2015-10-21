@@ -267,6 +267,7 @@ end
 module Xcode
   class Project < Xcode::Object
     attr_reader :path, :checkout_location, :project, :root
+    attr_reader :configuration_list
     attr_reader :targets
     
     # nil if the path doesn't exist and there is no checkout_location for it either
@@ -313,6 +314,8 @@ module Xcode
 
       # Build source tree map
       @sourceTrees = {'SOURCE_ROOT' => File.dirname(@path)}
+
+      @configuration_list = self.get(@root['buildConfigurationList'], Xcode::XCConfigurationList)
 
       @targets = []
       @root['targets'].each {|targetID|
@@ -394,6 +397,10 @@ module Xcode
 
       @pathCache[key] = path
       return path;
+    end
+
+    def configurations
+      @configuration_list.configurations
     end
 
     # Calls a block for each item that is in the sidebar (groups and file references)

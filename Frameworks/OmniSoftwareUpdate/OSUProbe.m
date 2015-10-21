@@ -90,6 +90,10 @@ static NSMutableDictionary *ProbeByKey;
 {
     id value = self.value;
     
+    if ([value isKindOfClass:[NSString class]]) {
+        return value;
+    }
+    
     if (_options & OSUProbeOptionIsFileSize) {
         return [NSByteCountFormatter stringFromByteCount:[value longLongValue] countStyle:NSByteCountFormatterCountStyleFile];
     }
@@ -121,6 +125,14 @@ static NSMutableDictionary *ProbeByKey;
 {
     dispatch_async(ProbeQueue, ^{
         [self _setValue:[NSNumber numberWithInteger:value] action:@"Set"];
+    });
+}
+
+- (void)setStringValue:(NSString *)value;
+{
+    OBPRECONDITION(value != nil);
+    dispatch_async(ProbeQueue, ^{
+        [self _setValue:value action:@"Set"];
     });
 }
 

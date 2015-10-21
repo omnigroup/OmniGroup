@@ -107,10 +107,11 @@ RCS_ID("$Id$")
 
 - (NSPredicate *)inspectedObjectsPredicate;
 {
-    static NSPredicate *truePredicate = nil;
-    if (!truePredicate)
-        truePredicate = [NSPredicate predicateWithValue:YES];
-    return truePredicate;
+    NSMutableArray *slicePredicates = [NSMutableArray array];
+    for (OIInspectorTabController *slice in _sliceControllers) {
+        [slicePredicates addObjectIfAbsent:[slice.inspector inspectedObjectsPredicate]];
+    }
+    return [NSCompoundPredicate orPredicateWithSubpredicates:slicePredicates];
 }
 
 - (void)inspectObjects:(NSArray *)list

@@ -103,6 +103,22 @@ static int32_t OUIDocumentInstanceCount = 0;
 }
 #endif
 
+static NSString * const OUIDocumentUndoManagerRunLoopPrivateMode = @"com.omnigroup.OmniUIDocument.PrivateUndoMode";
+
++ (void)initialize;
+{
+    OBINITIALIZE;
+
+    // 22979440: NSUndoManager.runLoopModes is ineffective.
+    // We can hack around this by registering a timer in our private mode. That makes the mode 'real' enough that the NSUndoManager observer will actually fire.
+    NSTimer *timer = [NSTimer timerWithTimeInterval:DBL_MAX target:self selector:@selector(_privateUndoModeTimerFired:) userInfo:nil repeats:YES];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:OUIDocumentUndoManagerRunLoopPrivateMode];
+}
+
++ (void)_privateUndoModeTimerFired:(NSTimer *)timer
+{
+}
+
 + (BOOL)shouldShowAutosaveIndicator;
 {
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"OUIDocumentShouldShowAutosaveIndicator"];
@@ -280,6 +296,16 @@ static int32_t OUIDocumentInstanceCount = 0;
         [center addObserver:self selector:@selector(_undoManagerDidOpenGroup:) name:NSUndoManagerDidOpenUndoGroupNotification object:undoManager];
         [center addObserver:self selector:@selector(_undoManagerWillCloseGroup:) name:NSUndoManagerWillCloseUndoGroupNotification object:undoManager];
         [center addObserver:self selector:@selector(_undoManagerDidCloseGroup:) name:NSUndoManagerDidCloseUndoGroupNotification object:undoManager];
+
+        // Add a private runloop mode so that we can force the undo manager to close its undo group w/o letting other runloop observers fire. In particular, we don't want to let the CoreAnimation run loop observer fire when it shouldn't.
+        // <bug:///121879> (Crasher: Using Share menu on unsaved text - unexpected start state)
+        NSArray *undoModes = undoManager.runLoopModes;
+        if (![undoModes containsObject:OUIDocumentUndoManagerRunLoopPrivateMode]) {
+            OBASSERT([undoModes isEqual:@[NSDefaultRunLoopMode]]); // need to reevaluate this approach if the NSUndoManager's default configuration changes
+            NSMutableArray *modes = [[NSMutableArray alloc] initWithArray:undoModes];
+            [modes addObject:OUIDocumentUndoManagerRunLoopPrivateMode];
+            undoManager.runLoopModes = modes;
+        }
     }
     self.observedUndoManager = undoManager;
 }
@@ -308,7 +334,8 @@ static int32_t OUIDocumentInstanceCount = 0;
         OBASSERT([self.undoManager groupingLevel] == 1);
 
         // Terrible hack to let the by-event undo group close, plus a check that the hack worked...
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantPast]];
+        OBASSERT([self.undoManager.runLoopModes containsObject:OUIDocumentUndoManagerRunLoopPrivateMode]);
+        [[NSRunLoop currentRunLoop] runMode:OUIDocumentUndoManagerRunLoopPrivateMode beforeDate:[NSDate distantPast]];
     }
 
     OBPOSTCONDITION([self.undoManager groupingLevel] == 0);
@@ -1140,6 +1167,10 @@ static NSString * const OriginalChangeTokenKey = @"originalToken";
 - (NSString *)_persistentPathForFile;
 {
     ODSFileItem *fileItem = self.fileItem;
+    if (!fileItem) {
+        return nil;
+    }
+    
     ODSScope *scope = fileItem.scope;
     NSString *scopeIdentifier = scope.identifier;
     NSString *scopeRelativePath;
@@ -1170,7 +1201,10 @@ static OFPreference *LastEditsPreference;
 - (NSDate *)_lastRecordedEditDate;
 {
     NSMutableDictionary *lastEdits = [self _lastEditsDictionary];
-    return [lastEdits objectForKey:[self _persistentPathForFile]];
+    NSString *path = [self _persistentPathForFile];
+    if (!path)
+        return nil;
+    return [lastEdits objectForKey:path];
 }
 
 - (void)_recordLastEdit;
@@ -1182,7 +1216,9 @@ static OFPreference *LastEditsPreference;
         modDate = [NSDate date];
     }
 
-    [lastEdits setObject:modDate forKey:[self _persistentPathForFile]];
+    NSString *path = [self _persistentPathForFile];
+    if (path)
+        [lastEdits setObject:modDate forKey:path];
     [LastEditsPreference setDictionaryValue:lastEdits];
 }
 

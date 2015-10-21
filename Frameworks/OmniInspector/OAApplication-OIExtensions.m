@@ -52,7 +52,7 @@ RCS_ID("$Id$")
             hideString = NSLocalizedStringFromTableInBundle(@"Hide Inspectors", @"OmniInspector", [OIInspectorRegistry bundle], "menu title");
         }
 	
-        if ([[[OIInspectorRegistry inspectorRegistryForMainWindow] visibleGroups] count] > 0) {
+        if ([[OIInspectorRegistry inspectorRegistryForMainWindow] hasVisibleInspector]) {
             [item setTitle:hideString];
         } else {
             [item setTitle:showString];

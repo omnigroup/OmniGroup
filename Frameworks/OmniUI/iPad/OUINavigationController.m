@@ -128,20 +128,21 @@ RCS_ID("$Id$")
         self.heightConstraintOnAccessoryAndBackgroundView.constant = CGRectGetMaxY(self.navigationBar.frame);
     }
     
-    if (animated){
-        [[self transitionCoordinator] animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  __nonnull context) {
-            [self.accessoryAndBackgroundBar layoutIfNeeded];
-            newAccessory.alpha = 1.0;
-            _accessory.alpha = 0.0;
-        } completion:^(id<UIViewControllerTransitionCoordinatorContext>  __nonnull context) {
+    if (_accessory != newAccessory) {
+        if (animated) {
+            [[self transitionCoordinator] animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  __nonnull context) {
+                [self.accessoryAndBackgroundBar layoutIfNeeded];
+                newAccessory.alpha = 1.0;
+                _accessory.alpha = 0.0;
+            } completion:^(id<UIViewControllerTransitionCoordinatorContext>  __nonnull context) {
+               [_accessory removeFromSuperview];
+                self.accessory = newAccessory;
+            }];
+        } else {
+            newAccessory.alpha = 1.0f;
             [_accessory removeFromSuperview];
             self.accessory = newAccessory;
-        }];
-    }
-    else {
-        newAccessory.alpha = 1.0f;
-        [_accessory removeFromSuperview];
-        self.accessory = newAccessory;
+        }
     }
     
     [self.navigationBar.superview bringSubviewToFront:_accessoryAndBackgroundBar];

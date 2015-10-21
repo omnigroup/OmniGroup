@@ -1,4 +1,4 @@
-// Copyright 2001-2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -681,7 +681,11 @@ const int OACalendarViewMaxNumWeeksIntersectedByMonth = 6;
 	    weekRect.origin.x = rect.origin.x;
 	    weekRect.origin.y = rect.origin.y + (selectedRow * rowHeight);
 	    
-	    [[NSColor selectedTextBackgroundColor] set];
+            if ([self isOrContainsFirstResponder])
+                [[NSColor selectedTextBackgroundColor] set];
+            else
+                [[NSColor secondarySelectedControlColor] set];
+
 	    [NSBezierPath fillRect:weekRect];
 	    break;
 	} case OACalendarViewSelectByWeekday:

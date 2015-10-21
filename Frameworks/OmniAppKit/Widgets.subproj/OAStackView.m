@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -317,8 +317,10 @@ Goes through the subviews and finds the first subview that is willing to stretch
 {
     flags.needsLayout = YES;
 
-    [self.window beforeDisplayIfNeededPerformBlock:^{
-        [self _layoutSubviews];
+    [NSWindow beforeAnyDisplayIfNeededPerformBlock:^{
+        if (self.window != nil) {
+            [self _layoutSubviews];
+        }
     }];
 }
 

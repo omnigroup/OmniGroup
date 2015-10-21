@@ -1,4 +1,4 @@
-// Copyright 2006-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2006-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -796,6 +796,30 @@ do { \
     NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
     NSDate *expectedDate = _dateFromYear(2001, 1, 1, 12, 0, 0, calendar);
     parseDate( string, expectedDate, baseDate, @"MM/dd/yy", @"HH:mm" );
+}
+
+- (void)testNMonths
+{
+    NSDate *baseDate = _dateFromYear(2001, 1, 1, 0, 0, 0, calendar);
+    NSDate *expectedDate = _dateFromYear(2001, 2, 1, 0, 0, 0, calendar);
+
+    parseDate(@"1 month", expectedDate, baseDate, nil, nil);
+    parseDate(@"1 m", expectedDate, baseDate, nil, nil);
+
+    expectedDate = _dateFromYear(2001, 3, 1, 0, 0, 0, calendar);
+    parseDate(@"2 months", expectedDate, baseDate, nil, nil);
+    parseDate(@"2 month", expectedDate, baseDate, nil, nil);
+    parseDate(@"2months", expectedDate, baseDate, nil, nil);
+    parseDate(@"2m", expectedDate, baseDate, nil, nil);
+    parseDate(@"2 m", expectedDate, baseDate, nil, nil);
+
+    expectedDate = _dateFromYear(2002, 1, 1, 0, 0, 0, calendar);
+    parseDate(@"12 months", expectedDate, baseDate, nil, nil);
+    parseDate(@"12months", expectedDate, baseDate, nil, nil);
+    parseDate(@"12month", expectedDate, baseDate, nil, nil);
+    parseDate(@"12 month", expectedDate, baseDate, nil, nil);
+    parseDate(@"12 m", expectedDate, baseDate, nil, nil);
+    parseDate(@"12m", expectedDate, baseDate, nil, nil);
 }
 
 - (void)testRoundtripCommaFormat;

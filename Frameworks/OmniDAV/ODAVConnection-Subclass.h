@@ -7,6 +7,7 @@
 //
 // $Id$
 
+#import <Foundation/NSObjCRuntime.h> // For NS_ASSUME_NONNULL_BEGIN, END
 #import <OmniDAV/ODAVConnection.h>
 
 NS_ASSUME_NONNULL_BEGIN

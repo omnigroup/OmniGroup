@@ -175,11 +175,18 @@ static id _commonInit(OADatePickerTextField *self)
 - (void)setEditable:(BOOL)editable;
 {
     [super setEditable:editable];
+    [super setTextColor:editable ? [NSColor controlTextColor] : [NSColor disabledControlTextColor]];
     [calendarButton setEnabled:editable];
 }
     
 #pragma mark -
 #pragma mark NSView subclass
+
+// This empty implementation impacts the way the view is rendered in layer world, and works around <bug:///121230> (Bug: Calendar Icons are Not displayed until click in box)
+- (void)drawRect:(NSRect)dirtyRect
+{
+    [super drawRect:dirtyRect];
+}
 
 - (void)didAddSubview:(NSView *)subview;
 {

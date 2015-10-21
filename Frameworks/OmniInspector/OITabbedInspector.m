@@ -41,6 +41,9 @@ RCS_ID("$Id$")
 #pragma mark -
 
 @implementation OITabbedInspector
+{
+    NSMutableDictionary *_preferredTabIdentifierForInspectionIdentifier;
+}
 
 @synthesize buttonMatrix = buttonMatrix;
 
@@ -363,6 +366,7 @@ RCS_ID("$Id$")
     _autoSelection = [dict boolForKey:@"auto-selection" defaultValue:_singleSelection];
     _placesButtonsInTitlebar = [dict boolForKey:@"placesButtonsInTitlebar"];
     _placesButtonsInHeaderView = [dict boolForKey:@"placesButtonsInHeaderView"];
+    _preferredTabIdentifierForInspectionIdentifier = [[NSMutableDictionary alloc] init];
 
     OBASSERT_IF(_placesButtonsInHeaderView, !(self.isCollapsible), @"Support for both collapsable and placesButtonsInHeaderView are not fully implemented, please update code if this configuration needs to be used");
 
@@ -377,6 +381,11 @@ RCS_ID("$Id$")
         OIInspectorTabController *tabController = [[OIInspectorTabController alloc] initWithInspectorDictionary:tabPlist containingInspector:self inspectorRegistry:inspectorRegistry bundle:sourceBundle];
 	if (!tabController)
 	    continue;
+
+        NSString *inspectionIdentifier = [tabPlist objectForKey:@"preferredForInspectionIdentifier"];
+        if (inspectionIdentifier != nil) {
+            _preferredTabIdentifierForInspectionIdentifier[inspectionIdentifier] = tabController.identifier;
+        }
 
         [tabControllers addObject:tabController];
     }
@@ -530,18 +539,10 @@ RCS_ID("$Id$")
 
 - (void)_selectTabBasedOnObjects:(NSArray *)objects;
 {
-    // Find the 'most relevant' object that has an inspector that directly applies to it.  This depends on the objects getting added to the inspection set in the right order.
+    // Find the 'most relevant' object that has an inspector that directly applies to it.  You can either register a preferred tab identifier for an inspection identifier, or auto-select a tab based on the order in which objects were added to the inspection set.
     OIInspectionSet *inspectionSet = [_weak_inspectorController.inspectorRegistry inspectionSet];
     NSArray *sortedObjects = [inspectionSet objectsSortedByInsertionOrder:objects];
     
-    if (/* DISABLES CODE */ (0)) {
-        NSUInteger objectIndex, objectCount = [sortedObjects count];
-        for (objectIndex = 0; objectIndex < objectCount; objectIndex++) {
-            id object = [sortedObjects objectAtIndex:objectIndex];
-            NSLog(@"%ld - %@", [inspectionSet insertionOrderForObject:object], [object shortDescription]);
-        }
-    }
-
     NSString *inspectionIdentifier = [_weak_inspectorController.inspectorRegistry inspectionIdentifierForCurrentInspectionSet];
     if (_currentInspectionIdentifier || inspectionIdentifier) {
         // do not change the selected tab if the inspectionIdentifier has not changed.
@@ -550,20 +551,26 @@ RCS_ID("$Id$")
         _currentInspectionIdentifier = [inspectionIdentifier copy];
     }
 
-    NSArray *tabIdentifiers = [self tabIdentifiers];
-    
-    for (id object in sortedObjects) {
-        // Ask each of the tabs if this tab is the perfect match for the object
-        for (NSString *tabIdentifier in tabIdentifiers) {
-            OIInspector *inspector = [self inspectorWithIdentifier:tabIdentifier];
-            if ([inspector shouldBeUsedForObject:object]) {
-                [self setSelectedTabIdentifiers:[NSArray arrayWithObject:tabIdentifier] pinnedTabIdentifiers:[NSArray array]];
-                return;
+    NSString *preferredIdentifier = _currentInspectionIdentifier != nil ? _preferredTabIdentifierForInspectionIdentifier[_currentInspectionIdentifier] : nil;
+    if (preferredIdentifier == nil) {
+        NSArray *tabIdentifiers = [self tabIdentifiers];
+        for (id object in sortedObjects) {
+            // Ask each of the tabs if this tab is the perfect match for the object
+            for (NSString *tabIdentifier in tabIdentifiers) {
+                OIInspector *inspector = [self inspectorWithIdentifier:tabIdentifier];
+                if ([inspector shouldBeUsedForObject:object]) {
+                    preferredIdentifier = tabIdentifier;
+                    break;
+                }
             }
         }
     }
-    
-    // Nothing appropriate found; just leave it.
+
+    if (preferredIdentifier != nil) {
+        [self setSelectedTabIdentifiers:@[preferredIdentifier] pinnedTabIdentifiers:@[]];
+    } else {
+        // Nothing appropriate found; just leave it.
+    }
 }
 
 - (void)_updateSubInspectorObjects;

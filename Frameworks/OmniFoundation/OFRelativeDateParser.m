@@ -1239,6 +1239,49 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
     return returnValue;
 }
 
+- (BOOL)_nextTokenIsExactMatch:(NSScanner *)scanner string:(NSString *)string
+{
+    // It's an exact match if 1) can scan the string and 2) the scanner is at the end, or the string is followed by a digit or whitespace.
+    // Preserves scanner.scanLocation before returning.
+
+    if (scanner.isAtEnd) {
+        return NO;
+    }
+
+    NSInteger savedScanLocation = scanner.scanLocation;
+    BOOL foundExactMatch = NO;
+
+    if ([scanner scanString:string intoString:nil]) {
+
+        if (scanner.isAtEnd) {
+            foundExactMatch = YES;
+        } else {
+            if ([scanner scanInteger:NULL] || [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:nil]) {
+                foundExactMatch = YES;
+            }
+        }
+    }
+
+    scanner.scanLocation = savedScanLocation;
+    return foundExactMatch;
+}
+
+- (BOOL)_nextTokenHasExactMatch:(NSScanner *)scanner strings:(NSArray *)strings
+{
+    for (NSString *oneString in strings) {
+        if ([self _nextTokenIsExactMatch:scanner string:oneString]) {
+            return YES;
+        }
+    }
+
+    return NO;
+}
+
+- (BOOL)_nextTokenIsCode:(NSScanner *)scanner
+{
+    return [self _nextTokenHasExactMatch:scanner strings:_codes.allKeys];
+}
+
 - (NSDate *)_parseDateNaturalLanguage:(NSString *)dateString withDate:(NSDate *)date timeSpecific:(BOOL *)timeSpecific useEndOfDuration:(BOOL)useEndOfDuration calendar:(NSCalendar *)calendar relativeDateNames:(NSDictionary *)relativeDateNames error:(NSError **)outError;
 {
     DEBUG_DATE(@"Parse Natural Language Date String (before normalization): \"%@\"", dateString );
@@ -1434,8 +1477,8 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
         }
         [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
 
-	// scan short weekdays after codes to allow for months to be read instead of mon
-	if (weekday == -1) {
+        // Don't allow "month" to get matched by "mon"
+	if (weekday == -1 && ![self _nextTokenIsCode:scanner]) {
             for (NSString *name in _shortdays) {
 		NSString *match;
 		if ([scanner scanString:name intoString:&match]) {
@@ -1447,9 +1490,9 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
 	    }
 	}
 	[scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
-        
+
         // scan the alternate short weekdays (stripped of punctuation)
-	if (weekday == -1) {
+	if (weekday == -1 && ![self _nextTokenIsCode:scanner]) {
             for (NSString *name in _alternateShortdays) {
 		NSString *match;
 		if ([scanner scanString:name intoString:&match]) {
@@ -1487,8 +1530,8 @@ static NSString *PMSymbolForCalendar(NSCalendar *calendar)
             }
         }
         [scanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:NULL];
-	// scan english short weekdays after codes to allow for months to be read instead of mon
-	if (weekday == -1) {
+
+        if (weekday == -1 && ![self _nextTokenIsCode:scanner]) {
 	    NSEnumerator *shortdaysEnum = [englishShortdays objectEnumerator];
 	    NSString *name;
 	    while ((name = [shortdaysEnum nextObject])) {

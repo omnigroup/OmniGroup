@@ -206,6 +206,8 @@
 		4268E9300DBD5319002F30B1 /* OAColorProfile-Deprecated.m in Sources */ = {isa = PBXBuildFile; fileRef = 4268E92E0DBD5319002F30B1 /* OAColorProfile-Deprecated.m */; settings = {COMPILER_FLAGS = "-Wno-deprecated-declarations -fno-objc-arc"; }; };
 		4268E9CC0DBE6B03002F30B1 /* OAColorProfile-Deprecated.h in Headers */ = {isa = PBXBuildFile; fileRef = 4268E9990DBE52D2002F30B1 /* OAColorProfile-Deprecated.h */; };
 		42B9CE4D197871B700FDB1E6 /* OADocumentSubclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 42B9CE4C197871B700FDB1E6 /* OADocumentSubclass.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4980AFE11BBC9DF1002B43FE /* OAConstraintBasedStackView.h in Headers */ = {isa = PBXBuildFile; fileRef = 4980AFDF1BBC9DF0002B43FE /* OAConstraintBasedStackView.h */; settings = {ASSET_TAGS = (); }; };
+		4980AFE21BBC9DF1002B43FE /* OAConstraintBasedStackView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4980AFE01BBC9DF1002B43FE /* OAConstraintBasedStackView.m */; settings = {ASSET_TAGS = (); }; };
 		49B035B0161D02CE0097E384 /* OAGearTemplate.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */; };
 		49B035B1161D02CE0097E384 /* OAGearTemplate@2x.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 49B035AF161D02CE0097E384 /* OAGearTemplate@2x.tiff */; };
 		49EF503D15F6EAD000254849 /* OALabelField.h in Headers */ = {isa = PBXBuildFile; fileRef = 49EF503B15F6EAD000254849 /* OALabelField.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -244,12 +246,12 @@
 		4AA1E6A208AA764600E2FF6B /* NSAppleEventDescriptor-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 66D9C72A029F5AF60097A138 /* NSAppleEventDescriptor-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6A308AA764600E2FF6B /* NSAppleScript-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 66D9C71B029F51620097A138 /* NSAppleScript-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6A408AA764600E2FF6B /* NSApplication-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F35FE8AB2E911C9CC38 /* NSApplication-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6A508AA764600E2FF6B /* NSAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F36FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
+		4AA1E6A508AA764600E2FF6B /* NSAttributedString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F36FE8AB2E911C9CC38 /* NSAttributedString-OAExtensions.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
 		4AA1E6A608AA764600E2FF6B /* NSBezierPath-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 3F411EA1036D27330297A14E /* NSBezierPath-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6A808AA764600E2FF6B /* NSBundle-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F38FE8AB2E911C9CC38 /* NSBundle-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
+		4AA1E6A808AA764600E2FF6B /* NSBundle-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F38FE8AB2E911C9CC38 /* NSBundle-OAExtensions.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
 		4AA1E6A908AA764600E2FF6B /* NSCell-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F39FE8AB2E911C9CC38 /* NSCell-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6AA08AA764600E2FF6B /* NSColor-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 0145F2A9FFAFE867C697A15C /* NSColor-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6AB08AA764600E2FF6B /* NSControl-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F3AFE8AB2E911C9CC38 /* NSControl-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
+		4AA1E6AB08AA764600E2FF6B /* NSControl-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F3AFE8AB2E911C9CC38 /* NSControl-OAExtensions.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
 		4AA1E6AD08AA764600E2FF6B /* NSDocument-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 163F2FA8055776D80097A165 /* NSDocument-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6AE08AA764600E2FF6B /* NSDocumentController-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 000303DD014E0AC13997A12D /* NSDocumentController-OAExtensions.h */; };
 		4AA1E6AF08AA764600E2FF6B /* NSFileManager-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F500F43B0204C91901648025 /* NSFileManager-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -258,36 +260,36 @@
 		4AA1E6B208AA764600E2FF6B /* NSImage-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F3DFE8AB2E911C9CC38 /* NSImage-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6B308AA764600E2FF6B /* NSMenu-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 0B9399D6FFCA29A4C697A10E /* NSMenu-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6B408AA764600E2FF6B /* NSObject-NSDraggingInfo-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A0AC9D005F529440097A149 /* NSObject-NSDraggingInfo-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6B508AA764600E2FF6B /* NSOutlineView-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F3EFE8AB2E911C9CC38 /* NSOutlineView-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
+		4AA1E6B508AA764600E2FF6B /* NSOutlineView-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F3EFE8AB2E911C9CC38 /* NSOutlineView-OAExtensions.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
 		4AA1E6B608AA764600E2FF6B /* NSPasteboard-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F3FFE8AB2E911C9CC38 /* NSPasteboard-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6B708AA764600E2FF6B /* NSPopUpButton-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F40FE8AB2E911C9CC38 /* NSPopUpButton-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6B808AA764600E2FF6B /* NSScrollView-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F41FE8AB2E911C9CC38 /* NSScrollView-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
+		4AA1E6B808AA764600E2FF6B /* NSScrollView-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F41FE8AB2E911C9CC38 /* NSScrollView-OAExtensions.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
 		4AA1E6B908AA764600E2FF6B /* NSSliderCell-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F42FE8AB2E911C9CC38 /* NSSliderCell-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6BA08AA764600E2FF6B /* NSSplitView-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F43FE8AB2E911C9CC38 /* NSSplitView-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
-		4AA1E6BB08AA764600E2FF6B /* NSString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F44FE8AB2E911C9CC38 /* NSString-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
+		4AA1E6BA08AA764600E2FF6B /* NSSplitView-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F43FE8AB2E911C9CC38 /* NSSplitView-OAExtensions.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
+		4AA1E6BB08AA764600E2FF6B /* NSString-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F44FE8AB2E911C9CC38 /* NSString-OAExtensions.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
 		4AA1E6BC08AA764600E2FF6B /* NSTableView-OAColumnConfigurationExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = B594F4B70516718E0097A10E /* NSTableView-OAColumnConfigurationExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6BD08AA764600E2FF6B /* NSTableView-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 2EAA6AE5FF476391C697A12F /* NSTableView-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6BE08AA764600E2FF6B /* NSText-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F45FE8AB2E911C9CC38 /* NSText-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
+		4AA1E6BE08AA764600E2FF6B /* NSText-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F45FE8AB2E911C9CC38 /* NSText-OAExtensions.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
 		4AA1E6BF08AA764600E2FF6B /* NSTextField-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F46FE8AB2E911C9CC38 /* NSTextField-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6C008AA764600E2FF6B /* NSTextStorage-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F54F12680204F1370127B3D4 /* NSTextStorage-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6C108AA764600E2FF6B /* NSToolbar-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 66CD437A0132454A0097A13E /* NSToolbar-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6C208AA764600E2FF6B /* NSToolbarItem-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = F07B9A0D022AB6663897A113 /* NSToolbarItem-OAExtensions.h */; };
-		4AA1E6C308AA764600E2FF6B /* NSUserDefaults-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F47FE8AB2E911C9CC38 /* NSUserDefaults-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
-		4AA1E6C408AA764600E2FF6B /* NSView-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F48FE8AB2E911C9CC38 /* NSView-OAExtensions.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
+		4AA1E6C308AA764600E2FF6B /* NSUserDefaults-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F47FE8AB2E911C9CC38 /* NSUserDefaults-OAExtensions.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
+		4AA1E6C408AA764600E2FF6B /* NSView-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F48FE8AB2E911C9CC38 /* NSView-OAExtensions.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
 		4AA1E6C508AA764600E2FF6B /* NSWindow-OAExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F49FE8AB2E911C9CC38 /* NSWindow-OAExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6C708AA764600E2FF6B /* OAPreferenceClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F6DFE8AB2E911C9CC38 /* OAPreferenceClient.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
+		4AA1E6C708AA764600E2FF6B /* OAPreferenceClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F6DFE8AB2E911C9CC38 /* OAPreferenceClient.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
 		4AA1E6C808AA764600E2FF6B /* OAPreferenceClientRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F6EFE8AB2E911C9CC38 /* OAPreferenceClientRecord.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6C908AA764600E2FF6B /* OAPreferenceController.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F6FFE8AB2E911C9CC38 /* OAPreferenceController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6CA08AA764600E2FF6B /* OAPreferencesIconView.h in Headers */ = {isa = PBXBuildFile; fileRef = 01563696FFE9F5FAC697A14E /* OAPreferencesIconView.h */; };
 		4AA1E6CB08AA764600E2FF6B /* OAPreferencesToolbar.h in Headers */ = {isa = PBXBuildFile; fileRef = 6620D67A01335CA00097A13E /* OAPreferencesToolbar.h */; };
 		4AA1E6CC08AA764600E2FF6B /* OAPreferencesWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 6620D673013359840097A13E /* OAPreferencesWindow.h */; };
-		4AA1E6CF08AA764600E2FF6B /* OAAquaButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F9AFE8AB2E911C9CC38 /* OAAquaButton.h */; settings = {ATTRIBUTES = (Public, Private, Project, ); }; };
+		4AA1E6CF08AA764600E2FF6B /* OAAquaButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F9AFE8AB2E911C9CC38 /* OAAquaButton.h */; settings = {ATTRIBUTES = (Private, Project, Public, ); }; };
 		4AA1E6D008AA764600E2FF6B /* OABackgroundImageControl.h in Headers */ = {isa = PBXBuildFile; fileRef = B5FEDACF055862C20097A10E /* OABackgroundImageControl.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6D108AA764600E2FF6B /* OABrowserCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F89FE8AB2E911C9CC38 /* OABrowserCell.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
+		4AA1E6D108AA764600E2FF6B /* OABrowserCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F89FE8AB2E911C9CC38 /* OABrowserCell.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
 		4AA1E6D208AA764600E2FF6B /* OACalendarView.h in Headers */ = {isa = PBXBuildFile; fileRef = 114343E10066D6B4C697A12D /* OACalendarView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6D308AA764600E2FF6B /* OAChasingArrowsProgressIndicator.h in Headers */ = {isa = PBXBuildFile; fileRef = 6389AAF4FFFFE7FAC697A14E /* OAChasingArrowsProgressIndicator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6D408AA764600E2FF6B /* OAColorWell.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B14EF40573A3FF0097A113 /* OAColorWell.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6D508AA764600E2FF6B /* OAConfigurableColumnTableView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F8DFE8AB2E911C9CC38 /* OAConfigurableColumnTableView.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
+		4AA1E6D508AA764600E2FF6B /* OAConfigurableColumnTableView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F8DFE8AB2E911C9CC38 /* OAConfigurableColumnTableView.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
 		4AA1E6D608AA764600E2FF6B /* OAContextButton.h in Headers */ = {isa = PBXBuildFile; fileRef = B5C3F579050FE63D0097A10E /* OAContextButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6D708AA764600E2FF6B /* OAContextControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 345057E506F209090097A113 /* OAContextControl.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6D808AA764600E2FF6B /* OAContextPopUpButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 345057E106F207DD0097A113 /* OAContextPopUpButton.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -303,9 +305,9 @@
 		4AA1E6E808AA764600E2FF6B /* OAMouseTipWindow.h in Headers */ = {isa = PBXBuildFile; fileRef = 6C72445503E886EE00E7FE1C /* OAMouseTipWindow.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6EA08AA764600E2FF6B /* OAOutlineViewEnumerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 4006B5FCFF2D5911C697A12F /* OAOutlineViewEnumerator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6EB08AA764600E2FF6B /* OAPageSelectableDocumentProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F8CFE8AB2E911C9CC38 /* OAPageSelectableDocumentProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6ED08AA764600E2FF6B /* OAPopUpButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F8EFE8AB2E911C9CC38 /* OAPopUpButton.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
+		4AA1E6ED08AA764600E2FF6B /* OAPopUpButton.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F8EFE8AB2E911C9CC38 /* OAPopUpButton.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
 		4AA1E6EE08AA764600E2FF6B /* OAResizingByteFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = 1FF7E54AFF2C3BABC697A14E /* OAResizingByteFormatter.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6EF08AA764600E2FF6B /* OAScrollView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F90FE8AB2E911C9CC38 /* OAScrollView.h */; settings = {ATTRIBUTES = (Public, Private, ); }; };
+		4AA1E6EF08AA764600E2FF6B /* OAScrollView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F90FE8AB2E911C9CC38 /* OAScrollView.h */; settings = {ATTRIBUTES = (Private, Public, ); }; };
 		4AA1E6F008AA764600E2FF6B /* OASearchField.h in Headers */ = {isa = PBXBuildFile; fileRef = B50281E0055710210097A10E /* OASearchField.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6F108AA764600E2FF6B /* OAShrinkingTextDisplayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 13F8BB49FF32715FC697A13D /* OAShrinkingTextDisplayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6F208AA764600E2FF6B /* OAShrinkyTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = 3F51348101C5B6D40297A14E /* OAShrinkyTextField.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -314,9 +316,9 @@
 		4AA1E6F508AA764600E2FF6B /* OAStackView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00EC5D5DFF141372C697A12F /* OAStackView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6F808AA764600E2FF6B /* OASwoopView.h in Headers */ = {isa = PBXBuildFile; fileRef = A2177CD404FEC4FF0097A146 /* OASwoopView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6F908AA764600E2FF6B /* OATabbedWindowController.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F93FE8AB2E911C9CC38 /* OATabbedWindowController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AA1E6FA08AA764600E2FF6B /* OATabView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F94FE8AB2E911C9CC38 /* OATabView.h */; settings = {ATTRIBUTES = (Public, Private, Project, ); }; };
-		4AA1E6FB08AA764600E2FF6B /* OATabViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F95FE8AB2E911C9CC38 /* OATabViewController.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
-		4AA1E6FC08AA764600E2FF6B /* OATextField.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F96FE8AB2E911C9CC38 /* OATextField.h */; settings = {ATTRIBUTES = (Public, Project, ); }; };
+		4AA1E6FA08AA764600E2FF6B /* OATabView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F94FE8AB2E911C9CC38 /* OATabView.h */; settings = {ATTRIBUTES = (Private, Project, Public, ); }; };
+		4AA1E6FB08AA764600E2FF6B /* OATabViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F95FE8AB2E911C9CC38 /* OATabViewController.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
+		4AA1E6FC08AA764600E2FF6B /* OATextField.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F96FE8AB2E911C9CC38 /* OATextField.h */; settings = {ATTRIBUTES = (Project, Public, ); }; };
 		4AA1E6FD08AA764600E2FF6B /* OATextWithIconCell.h in Headers */ = {isa = PBXBuildFile; fileRef = 010A51C0005212DBC697A13D /* OATextWithIconCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6FE08AA764600E2FF6B /* OAThumbnailView.h in Headers */ = {isa = PBXBuildFile; fileRef = 00E51F98FE8AB2E911C9CC38 /* OAThumbnailView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AA1E6FF08AA764600E2FF6B /* OAToolbar.h in Headers */ = {isa = PBXBuildFile; fileRef = 34476AE306DF790B0097A113 /* OAToolbar.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -392,7 +394,7 @@
 		4AA1E7AB08AA764600E2FF6B /* NSWindow-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F33FE8AB2E911C9CC38 /* NSWindow-OAExtensions.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7AD08AA764600E2FF6B /* OAPreferenceClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F69FE8AB2E911C9CC38 /* OAPreferenceClient.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7AE08AA764600E2FF6B /* OAPreferenceClientRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F6AFE8AB2E911C9CC38 /* OAPreferenceClientRecord.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		4AA1E7AF08AA764600E2FF6B /* OAPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F6BFE8AB2E911C9CC38 /* OAPreferenceController.m */; settings = {ATTRIBUTES = (Optimize, ); COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		4AA1E7AF08AA764600E2FF6B /* OAPreferenceController.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E51F6BFE8AB2E911C9CC38 /* OAPreferenceController.m */; settings = {ATTRIBUTES = (Optimize, ); }; };
 		4AA1E7B008AA764600E2FF6B /* OAPreferencesIconView.m in Sources */ = {isa = PBXBuildFile; fileRef = 01563697FFE9F5FAC697A14E /* OAPreferencesIconView.m */; settings = {ATTRIBUTES = (); COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7B108AA764600E2FF6B /* OAPreferencesToolbar.m in Sources */ = {isa = PBXBuildFile; fileRef = 6620D67B01335CA00097A13E /* OAPreferencesToolbar.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		4AA1E7B208AA764600E2FF6B /* OAPreferencesWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 6620D674013359840097A13E /* OAPreferencesWindow.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -902,6 +904,8 @@
 		42D8B5981A37C35C002453BD /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/OACrayonNames.strings"; sourceTree = "<group>"; };
 		42D8B5991A37C36D002453BD /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/OACrayonNames.strings; sourceTree = "<group>"; };
 		42D8B59A1A37C37A002453BD /* nl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/OACrayonNames.strings; sourceTree = "<group>"; };
+		4980AFDF1BBC9DF0002B43FE /* OAConstraintBasedStackView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OAConstraintBasedStackView.h; sourceTree = "<group>"; };
+		4980AFE01BBC9DF1002B43FE /* OAConstraintBasedStackView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OAConstraintBasedStackView.m; sourceTree = "<group>"; };
 		49B035AE161D02CE0097E384 /* OAGearTemplate.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = OAGearTemplate.tiff; sourceTree = "<group>"; };
 		49B035AF161D02CE0097E384 /* OAGearTemplate@2x.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "OAGearTemplate@2x.tiff"; sourceTree = "<group>"; };
 		49EF503B15F6EAD000254849 /* OALabelField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OALabelField.h; sourceTree = "<group>"; };
@@ -1654,6 +1658,8 @@
 				5BEAF23F01FF6D7D0297A15C /* OADocumentPositioningView.m */,
 				00EB4311FEF05391C697A12D /* OAGridView.h */,
 				00EB4312FEF05391C697A12D /* OAGridView.m */,
+				4980AFDF1BBC9DF0002B43FE /* OAConstraintBasedStackView.h */,
+				4980AFE01BBC9DF1002B43FE /* OAConstraintBasedStackView.m */,
 				00EC5D5DFF141372C697A12F /* OAStackView.h */,
 				00EC5D5EFF141372C697A12F /* OAStackView.m */,
 				00E51F98FE8AB2E911C9CC38 /* OAThumbnailView.h */,
@@ -2589,6 +2595,7 @@
 				2730CF3B144E205B007C3A99 /* OADocument.h in Headers */,
 				271A9DA01533DA2800A78CCB /* OAAnimation.h in Headers */,
 				346A98A215903B0F00CA3359 /* NSAnimationContext-OAExtensions.h in Headers */,
+				4980AFE11BBC9DF1002B43FE /* OAConstraintBasedStackView.h in Headers */,
 				27AC122D15BA295400B726A7 /* NSView-OALayerBackedFix.h in Headers */,
 				E235B46415CC771600E162D6 /* OATrackingLoop.h in Headers */,
 				E235B69F15CC836000E162D6 /* OAToolbarButton.h in Headers */,
@@ -3135,6 +3142,7 @@
 				34F0990209322B800001D0D5 /* OAAboutPanelController.m in Sources */,
 				340DD56209AD38E900E8A437 /* NSFileWrapper-OAExtensions.m in Sources */,
 				3425E49109C5F2A3003140C9 /* NSLayoutManager-OAExtensions.m in Sources */,
+				4980AFE21BBC9DF1002B43FE /* OAConstraintBasedStackView.m in Sources */,
 				34471AC209D31320004C9DBA /* OAConstructionTitlebarAccessoryViewController.m in Sources */,
 				0AE262161AD49B3800C449C4 /* OAColorSpaceManager.m in Sources */,
 				342B41180A4C6B62002BFC4B /* NSWindowController-OAExtensions.m in Sources */,

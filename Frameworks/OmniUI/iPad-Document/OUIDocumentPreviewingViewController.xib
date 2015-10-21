@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9058" systemVersion="15A284" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9048"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="OUIDocumentPreviewingViewController">
+            <connections>
+                <outlet property="containerView" destination="wkv-K8-F0P" id="uwg-lk-vcV"/>
+                <outlet property="containerViewLeadingConstraint" destination="x7r-Mv-U7I" id="p6J-vl-04k"/>
+                <outlet property="containerViewTopConstraint" destination="IVw-8r-c7E" id="2Ix-gf-uvv"/>
+                <outlet property="containerViewTrailingConstraint" destination="WiF-kB-dfm" id="DqB-el-hiA"/>
+                <outlet property="documentInfoContainerView" destination="fOF-bU-aMN" id="nVK-BX-AkD"/>
+                <outlet property="documentNameLabel" destination="sP4-za-Jg4" id="7sz-bo-SVZ"/>
+                <outlet property="documentUserModifiedDateLabel" destination="gv5-tf-zPe" id="Kep-Jj-dLY"/>
+                <outlet property="navBar" destination="uH0-68-xtp" id="jsG-iC-5WX"/>
+                <outlet property="navBarHeightConstraint" destination="CBG-ZE-ycW" id="ElI-Aq-jRn"/>
+                <outlet property="previewView" destination="95L-xt-bAi" id="UgT-b3-Are"/>
+                <outlet property="view" destination="iN0-l3-epB" id="Lq9-JS-qqc"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="600" height="908"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="uH0-68-xtp">
+                    <rect key="frame" x="0.0" y="0.0" width="600" height="44"/>
+                    <animations/>
+                    <constraints>
+                        <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="44" id="CBG-ZE-ycW"/>
+                    </constraints>
+                </navigationBar>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wkv-K8-F0P" userLabel="Container View">
+                    <rect key="frame" x="0.0" y="109" width="600" height="690"/>
+                    <subviews>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="95L-xt-bAi" customClass="OUIDocumentPreviewView">
+                            <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                            <animations/>
+                            <color key="backgroundColor" red="1" green="0.073310331340000007" blue="0.98390428740000002" alpha="1" colorSpace="calibratedRGB"/>
+                            <constraints>
+                                <constraint firstAttribute="width" secondItem="95L-xt-bAi" secondAttribute="height" multiplier="1:1" id="VnF-Bj-mJQ"/>
+                            </constraints>
+                        </view>
+                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fOF-bU-aMN" userLabel="Document Info Container">
+                            <rect key="frame" x="0.0" y="600" width="600" height="90"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sP4-za-Jg4">
+                                    <rect key="frame" x="20" y="20" width="560" height="21"/>
+                                    <animations/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gv5-tf-zPe">
+                                    <rect key="frame" x="20" y="49" width="560" height="21"/>
+                                    <animations/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                            </subviews>
+                            <animations/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstItem="gv5-tf-zPe" firstAttribute="trailing" secondItem="fOF-bU-aMN" secondAttribute="trailingMargin" id="3ex-a9-i1B"/>
+                                <constraint firstItem="sP4-za-Jg4" firstAttribute="top" secondItem="fOF-bU-aMN" secondAttribute="topMargin" id="AGi-Y9-9aQ"/>
+                                <constraint firstItem="gv5-tf-zPe" firstAttribute="top" secondItem="sP4-za-Jg4" secondAttribute="bottom" constant="8" id="DVJ-KL-csv"/>
+                                <constraint firstItem="sP4-za-Jg4" firstAttribute="leading" secondItem="fOF-bU-aMN" secondAttribute="leadingMargin" id="lHL-gm-8KM"/>
+                                <constraint firstItem="sP4-za-Jg4" firstAttribute="trailing" secondItem="fOF-bU-aMN" secondAttribute="trailingMargin" id="mbb-qq-xpN"/>
+                                <constraint firstAttribute="bottomMargin" secondItem="gv5-tf-zPe" secondAttribute="bottom" id="qY6-4d-0w7"/>
+                                <constraint firstItem="gv5-tf-zPe" firstAttribute="leading" secondItem="fOF-bU-aMN" secondAttribute="leadingMargin" id="vI5-ho-HHn"/>
+                            </constraints>
+                            <edgeInsets key="layoutMargins" top="20" left="20" bottom="20" right="20"/>
+                        </view>
+                    </subviews>
+                    <animations/>
+                    <constraints>
+                        <constraint firstItem="95L-xt-bAi" firstAttribute="top" secondItem="wkv-K8-F0P" secondAttribute="top" id="3dl-sB-G6s"/>
+                        <constraint firstItem="fOF-bU-aMN" firstAttribute="leading" secondItem="wkv-K8-F0P" secondAttribute="leading" id="Cm5-aY-jJF"/>
+                        <constraint firstItem="fOF-bU-aMN" firstAttribute="top" secondItem="95L-xt-bAi" secondAttribute="bottom" id="b9I-FH-R46"/>
+                        <constraint firstAttribute="trailing" secondItem="95L-xt-bAi" secondAttribute="trailing" id="bjB-26-4L2"/>
+                        <constraint firstItem="95L-xt-bAi" firstAttribute="leading" secondItem="wkv-K8-F0P" secondAttribute="leading" id="iq1-HL-KCp"/>
+                        <constraint firstAttribute="trailing" secondItem="fOF-bU-aMN" secondAttribute="trailing" id="vTj-al-axP"/>
+                        <constraint firstAttribute="bottom" secondItem="fOF-bU-aMN" secondAttribute="bottom" id="xGJ-pW-H0E"/>
+                    </constraints>
+                    <edgeInsets key="layoutMargins" top="8" left="0.0" bottom="8" right="0.0"/>
+                </view>
+            </subviews>
+            <animations/>
+            <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="uH0-68-xtp" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" placeholder="YES" id="B4B-me-U66" userLabel="*Navigation Bar.top = top"/>
+                <constraint firstItem="wkv-K8-F0P" firstAttribute="top" relation="greaterThanOrEqual" secondItem="uH0-68-xtp" secondAttribute="bottom" id="IVw-8r-c7E"/>
+                <constraint firstItem="wkv-K8-F0P" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" priority="999" id="UpB-ep-dqw"/>
+                <constraint firstItem="wkv-K8-F0P" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="VQ4-LU-0M4"/>
+                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="wkv-K8-F0P" secondAttribute="trailing" priority="999" id="WiF-kB-dfm"/>
+                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="wkv-K8-F0P" secondAttribute="bottom" id="euV-47-bmV"/>
+                <constraint firstAttribute="trailing" secondItem="uH0-68-xtp" secondAttribute="trailing" id="hFb-Ox-l3g"/>
+                <constraint firstItem="uH0-68-xtp" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="mrS-sL-fAn"/>
+                <constraint firstItem="wkv-K8-F0P" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" priority="999" id="x7r-Mv-U7I"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="283" y="677"/>
+        </view>
+    </objects>
+</document>

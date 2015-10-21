@@ -72,6 +72,32 @@ static OAPreferenceClientRecord *_ClientRecordWithValueForKey(NSArray *records, 
 @end
 
 @implementation OAPreferenceController
+{
+    NSArray *_topLevelObjects;
+    
+    OAPreferencesWindow *_window;
+    NSView *_globalControlsView;
+    
+    NSView *showAllIconsView; // not to be confused with the "Show All" button
+    OAPreferencesIconView *multipleIconView;
+    
+    NSMutableArray *preferencesIconViews;
+    NSMutableDictionary <NSString *, NSMutableArray <OAPreferenceClientRecord *> *> *categoryNamesToClientRecordsArrays;
+    
+    NSArray <OAPreferenceClientRecord *> *_clientRecords;
+    NSMutableDictionary *_clientByRecordIdentifier;
+    NSString *_defaultKeySuffix;
+    
+    OAPreferencesViewStyle viewStyle;
+    
+    NSToolbar *toolbar;
+    NSArray *defaultToolbarItems;
+    NSArray *allowedToolbarItems;
+    
+    OAPreferenceClientRecord *nonretained_currentClientRecord;
+    OAPreferenceClient *nonretained_currentClient;
+    CGFloat idealWidth;
+}
 
 static NSMutableArray *AllClientRecords = nil;
 static NSMutableDictionary *LocalizedCategoryNames = nil;
@@ -200,25 +226,12 @@ static NSString *windowFrameSaveName = @"Preferences";
     return self;
 }
 
-- (void)dealloc;
+// Properties
+
+- (void)setHiddenPreferenceIdentifiers:(NSSet *)hiddenPreferenceIdentifiers;
 {
-    [_window release];
-    [_globalControlsView release]; // top level nib object
-    
-    [showAllIconsView release];
-    [multipleIconView release];
-    [preferencesIconViews release];
-    [categoryNamesToClientRecordsArrays release];
-    [_clientRecords release];
-    [_clientByRecordIdentifier release];
-    [_defaultKeySuffix release];
-    [toolbar release];
-    [defaultToolbarItems release];
-    [allowedToolbarItems release];
-    
-    [_topLevelObjects release];
-    
-    [super dealloc];
+    _hiddenPreferenceIdentifiers = hiddenPreferenceIdentifiers;
+    [self _resetInterface];
 }
 
 // API
@@ -237,15 +250,12 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (void)setWindow:(NSWindow *)window;
 {
-    OBPRECONDITION([window isKindOfClass:[OAPreferencesWindow class]]);
-    
     if (window != _window) {
-        [_window release];
-        _window = (OAPreferencesWindow *)[window retain];
+        _window = OB_CHECKED_CAST(OAPreferencesWindow, window);
     }
 }
 
-- (NSWindow *)windowIfLoaded; // doesn't for load the window
+- (NSWindow *)windowIfLoaded; // doesn't load the window
 {
     return _window;
 }
@@ -352,6 +362,18 @@ static NSString *windowFrameSaveName = @"Preferences";
     }
 }
 
+- (void)reloadCurrentClient;
+{
+    OBPRECONDITION(nonretained_currentClientRecord != nil);
+    if (nonretained_currentClientRecord == nil) {
+        return;
+    }
+
+    OAPreferenceClientRecord *currentClientRecord = nonretained_currentClientRecord;
+    nonretained_currentClientRecord = nil; // nil to avoid early out in setter
+    [self setCurrentClientRecord:currentClientRecord];
+}
+
 - (NSArray *)clientRecords;
 {
     return _clientRecords;
@@ -435,7 +457,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     if (([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask) && ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSShiftKeyMask)) {
         // warn & wipe the entire defaults domain
         NSBundle *bundle = [OAPreferenceClient bundle];
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        NSAlert *alert = [[NSAlert alloc] init];
         alert.messageText = NSLocalizedStringFromTableInBundle(@"Reset all preferences and other settings to their original values?", @"OmniAppKit", bundle, "message text for reset-to-defaults alert");
         alert.informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings (including options not in this Preferences window, such as window sizes and toolbars) to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
         [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button")];
@@ -450,7 +472,7 @@ static NSString *windowFrameSaveName = @"Preferences";
     } else if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask) {
         // warn & wipe all prefs shown in the panel
         NSBundle *bundle = [OAPreferenceClient bundle];
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        NSAlert *alert = [[NSAlert alloc] init];
         alert.messageText = NSLocalizedStringFromTableInBundle(@"Reset all preferences to their original values?", @"OmniAppKit", bundle, "message text for reset-to-defaults alert");
         alert.informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Choosing Reset will restore all settings in all preference panes to the state they were in when %@ was first installed.", @"OmniAppKit", bundle, "informative text for reset-to-defaults alert"), [[NSProcessInfo processInfo] processName]];
         [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"Reset", @"OmniAppKit", bundle, "alert panel button")];
@@ -528,7 +550,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 - (id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)client;
 {
     if ([nonretained_currentClient respondsToSelector:_cmd])
-	return [nonretained_currentClient performSelector:_cmd withObject:sender withObject:client];
+        return [nonretained_currentClient performSelector:@selector(windowWillReturnFieldEditor:toObject:) withObject:sender withObject:client];
     return nil;
 }
 
@@ -538,7 +560,7 @@ static NSString *windowFrameSaveName = @"Preferences";
 {
     NSToolbarItem *newItem;
 
-    newItem = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
+    newItem = [[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier];
     [newItem setTarget:self];
     if ([itemIdentifier isEqualToString:@"OAPreferencesShowAll"]) {
         [newItem setAction:@selector(_showAllIcons:)];
@@ -616,7 +638,8 @@ static NSString *windowFrameSaveName = @"Preferences";
     if (![[OAPreferenceController bundle] loadNibNamed:@"OAPreferences" owner:self topLevelObjects:&objects]) {
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Failed to load OAPreferences nib" userInfo:nil];
     }
-    _topLevelObjects = [objects retain];
+
+    _topLevelObjects = objects;
 
     // These don't seem to get set by the nib.  We want autosizing on so that clients can resize the window by a delta (though it'd be nicer for us to have API for that).
     [self.preferenceBox setAutoresizesSubviews:YES];
@@ -627,24 +650,30 @@ static NSString *windowFrameSaveName = @"Preferences";
     [_window center];
     [_window setFrameAutosaveName:windowFrameSaveName];
     [_window setFrameUsingName:windowFrameSaveName force:YES];
-    
-    if ([_clientRecords count] == 1) {
+    [self _resetInterface];
+}
+
+- (void)_resetInterface;
+{
+    NSArray *visibleClientRecordIdentifiers = [self _visibleClientRecordIdentifiers];
+    if (visibleClientRecordIdentifiers.count == 1) {
         viewStyle = OAPreferencesViewSingle;
         [toolbar setVisible:NO];
-    } else if ([_clientRecords count] > 10 || [[self _categoryNames] count] > 1) {
+    } else if (visibleClientRecordIdentifiers.count > 10 || [[self _categoryNames] count] > 1) {
         viewStyle = OAPreferencesViewCustomizable;
     } else {
         viewStyle = OAPreferencesViewMultiple;
     }
 
     // The previous call to -setCurrentClientRecord: won't have set up the UI since the UI wasn't loaded.  Also, since the UI wasn't loaded before, the client won't have received a -becomeCurrentPreferenceClient, so we don't need to worry about calling -resignCurrentPreferenceClient before setting this to nil to avoid a duplicate -becomeCurrentPreferenceClient.
-    OAPreferenceClientRecord *initialClientRecord = nonretained_currentClientRecord;
+    NSString *initialClientRecordIdentifier = nonretained_currentClientRecord.identifier;
     nonretained_currentClientRecord = nil;
+    if ([_hiddenPreferenceIdentifiers containsObject:initialClientRecordIdentifier])
+        initialClientRecordIdentifier = nil;
 
     switch (viewStyle) {
         case OAPreferencesViewSingle:
-	    if (!initialClientRecord)
-		initialClientRecord = [_clientRecords lastObject];
+            initialClientRecordIdentifier = visibleClientRecordIdentifiers[0];
             break;
         case OAPreferencesViewCustomizable:
             [self _createShowAllItemsView];
@@ -653,15 +682,13 @@ static NSString *windowFrameSaveName = @"Preferences";
             break;
 	default:
         case OAPreferencesViewMultiple:
-	    [_clientRecords autorelease];
-	    _clientRecords = [[_clientRecords sortedArrayUsingSelector:@selector(compareOrdering:)] retain];
             [self _setupMultipleToolbar];
-	    if (!initialClientRecord)
-		initialClientRecord = [_clientRecords objectAtIndex:0];
+	    if (initialClientRecordIdentifier == nil)
+                initialClientRecordIdentifier = visibleClientRecordIdentifiers[0];
             break;
     }
 
-    [self setCurrentClientRecord:initialClientRecord];
+    [self setCurrentClientRecord:[self clientRecordWithIdentifier:initialClientRecordIdentifier]];
 }
 
 - (void)_createShowAllItemsView;
@@ -675,16 +702,11 @@ static NSString *windowFrameSaveName = @"Preferences";
     NSArray *categoryNames = [self _categoryNames];
     NSUInteger categoryIndex = [categoryNames count];
     while (categoryIndex--) {
-        NSString *categoryName;
-        NSArray *categoryClientRecords;
-        OAPreferencesIconView *preferencesIconView;
-        NSTextField *categoryHeaderTextField;
-
-        categoryName = [categoryNames objectAtIndex:categoryIndex];
-        categoryClientRecords = [categoryNamesToClientRecordsArrays objectForKey:categoryName];
+        NSString *categoryName = [categoryNames objectAtIndex:categoryIndex];
+        NSArray *categoryClientRecords = [categoryNamesToClientRecordsArrays objectForKey:categoryName];
 
         // category preferences view
-        preferencesIconView = [[OAPreferencesIconView alloc] initWithFrame:[self.preferenceBox bounds]];
+        OAPreferencesIconView *preferencesIconView = [[OAPreferencesIconView alloc] initWithFrame:[self.preferenceBox bounds]];
         [preferencesIconView setPreferenceController:self];
         [preferencesIconView setPreferenceClientRecords:categoryClientRecords];
 
@@ -693,10 +715,9 @@ static NSString *windowFrameSaveName = @"Preferences";
         [preferencesIconViews addObject:preferencesIconView];
 
         boxHeight += NSHeight([preferencesIconView frame]);
-        [preferencesIconView release];
 
         // category header
-        categoryHeaderTextField = [[NSTextField alloc] initWithFrame:NSZeroRect];
+        NSTextField *categoryHeaderTextField = [[NSTextField alloc] initWithFrame:NSZeroRect];
         [categoryHeaderTextField setDrawsBackground:NO];
         [categoryHeaderTextField setBordered:NO];
         [categoryHeaderTextField setEditable:NO];
@@ -710,16 +731,12 @@ static NSString *windowFrameSaveName = @"Preferences";
         [categoryHeaderTextField setFrame:NSMakeRect(sideMargin, boxHeight + verticalSpaceBelowTextField, NSWidth([self.preferenceBox bounds]) - sideMargin, NSHeight([categoryHeaderTextField frame]))];
 
         boxHeight += NSHeight([categoryHeaderTextField frame]) + verticalSpaceAboveTextField;
-        [categoryHeaderTextField release];
 
         if (categoryIndex != 0) {
-            NSBox *separator;
             const unsigned int separatorMargin = 15;
-
-            separator = [[NSBox alloc] initWithFrame:NSMakeRect(separatorMargin, boxHeight + verticalSpaceBelowTextField, NSWidth([self.preferenceBox bounds]) - separatorMargin - separatorMargin, 1)];
+            NSBox *separator = [[NSBox alloc] initWithFrame:NSMakeRect(separatorMargin, boxHeight + verticalSpaceBelowTextField, NSWidth([self.preferenceBox bounds]) - separatorMargin - separatorMargin, 1)];
             [separator setBoxType:NSBoxSeparator];
             [showAllIconsView addSubview:separator];
-            [separator release];
             
             boxHeight += verticalSpaceAboveTextField + verticalSpaceBelowTextField;
         }
@@ -729,14 +746,21 @@ static NSString *windowFrameSaveName = @"Preferences";
     [showAllIconsView setFrameSize:NSMakeSize(NSWidth([self.preferenceBox bounds]), boxHeight)];
 }
 
+- (NSArray <NSString *> *)_visibleClientRecordIdentifiers;
+{
+    return [[_clientRecords sortedArrayUsingSelector:@selector(compareOrdering:)] arrayByPerformingBlock:^id(OAPreferenceClientRecord *record) {
+        NSString *identifier = record.identifier;
+        if ([_hiddenPreferenceIdentifiers containsObject:identifier])
+            return nil;
+        else
+            return identifier;
+    }];
+}
+
 - (void)_setupMultipleToolbar;
 {
-    NSMutableArray *allClients;
-
-    allClients = [[_clientRecords valueForKey:@"identifier"] copy];
-    allowedToolbarItems = [allClients retain];
-    defaultToolbarItems = [allClients retain];
-    [allClients release];
+    allowedToolbarItems = [self _visibleClientRecordIdentifiers];
+    defaultToolbarItems = allowedToolbarItems;
     
     toolbar = [[OAPreferencesToolbar alloc] initWithIdentifier:@"OAPreferences"];
     [toolbar setAllowsUserCustomization:NO];
@@ -747,18 +771,18 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (void)_setupShowAllToolbar;
 {
-    NSArray *constantToolbarItems, *defaultClients, *allClients;
+    NSArray *constantToolbarItems = @[
+        @"OAPreferencesShowAll",
+        @"OAPreferencesPrevious",
+        @"OAPreferencesNext",
+        // NSToolbarFlexibleSpaceItemIdentifier,
+        // @"OAPreferencesSearch",
+    ];
 
-    constantToolbarItems = [NSArray arrayWithObjects:
-        @"OAPreferencesShowAll", @"OAPreferencesPrevious", @"OAPreferencesNext", // NSToolbarFlexibleSpaceItemIdentifier, @"OAPreferencesSearch",
-        nil];
-
-    defaultClients = [[NSUserDefaults standardUserDefaults] arrayForKey:@"FavoritePreferenceIdentifiers"];
-
-    allClients = [_clientRecords valueForKey:@"identifier"];
-
-    defaultToolbarItems = [[constantToolbarItems arrayByAddingObjectsFromArray:defaultClients] retain];
-    allowedToolbarItems = [[constantToolbarItems arrayByAddingObjectsFromArray:allClients] retain];
+    NSArray *defaultClients = [[NSUserDefaults standardUserDefaults] arrayForKey:@"FavoritePreferenceIdentifiers"];
+    NSArray *allClients = [self _visibleClientRecordIdentifiers];
+    defaultToolbarItems = [constantToolbarItems arrayByAddingObjectsFromArray:defaultClients];
+    allowedToolbarItems = [constantToolbarItems arrayByAddingObjectsFromArray:allClients];
 
     toolbar = [[OAPreferencesToolbar alloc] initWithIdentifier:@"OAPreferenceIdentifiers"];
     [toolbar setAllowsUserCustomization:NO];
@@ -787,16 +811,15 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 - (OAPreferenceClient *)_clientForRecord:(OAPreferenceClientRecord *)record;
 {
-    OBPRECONDITION(record);
-    if (!record)
+    OBPRECONDITION(record != nil);
+    if (record == nil)
 	return nil;
     
     NSString *identifier = [record identifier];
     OAPreferenceClient *client = [_clientByRecordIdentifier objectForKey:identifier];
-    if (!client) {
+    if (client == nil) {
 	client = [record newClientInstanceInController:self];
 	[_clientByRecordIdentifier setObject:client forKey:identifier];
-	[client release];
     }
     return client;
 }
@@ -855,29 +878,25 @@ static NSString *windowFrameSaveName = @"Preferences";
 
 //
 
-static NSComparisonResult OAPreferenceControllerCompareCategoryNames(id name1, id name2, void *context)
-{
-    Class cls = context;
-    
-    float priority1 = [cls _priorityForCategoryName:name1];
-    float priority2 = [cls _priorityForCategoryName:name2];
-    if (priority1 == priority2)
-        return [[cls _localizedCategoryNameForCategoryName:name1] caseInsensitiveCompare:[cls _localizedCategoryNameForCategoryName:name2]];
-    else if (priority1 > priority2)
-        return NSOrderedAscending;
-    else // priority1 < priority2
-        return NSOrderedDescending;
-}
-
 - (NSArray *)_categoryNames;
 {
-    return [[categoryNamesToClientRecordsArrays allKeys] sortedArrayUsingFunction:OAPreferenceControllerCompareCategoryNames context:[self class]];
+    Class cls = [self class];
+    return [[categoryNamesToClientRecordsArrays allKeys] sortedArrayUsingComparator:^NSComparisonResult(NSString *name1, NSString *name2) {
+        float priority1 = [cls _priorityForCategoryName:name1];
+        float priority2 = [cls _priorityForCategoryName:name2];
+        if (priority1 == priority2)
+            return [[cls _localizedCategoryNameForCategoryName:name1] caseInsensitiveCompare:[cls _localizedCategoryNameForCategoryName:name2]];
+        else if (priority1 > priority2)
+            return NSOrderedAscending;
+        else // priority1 < priority2
+            return NSOrderedDescending;
+    }];
 }
 
 - (NSArray *)_sortedClientRecords;
 {
     NSMutableArray *sortedClientRecords = [NSMutableArray array];
-    for(NSString *categoryName in [self _categoryNames])
+    for (NSString *categoryName in [self _categoryNames])
         [sortedClientRecords addObjectsFromArray:[categoryNamesToClientRecordsArrays objectForKey:categoryName]];
     return sortedClientRecords;
 }
@@ -924,10 +943,8 @@ static NSComparisonResult OAPreferenceControllerCompareCategoryNames(id name1, i
 	OFVersionNumber *minimumOSVersion = [[OFVersionNumber alloc] initWithVersionString:minimumOSVersionString];
 	OFVersionNumber *currentOSVersion = [OFVersionNumber userVisibleOperatingSystemVersionNumber];
 	
-	BOOL yummy = ([currentOSVersion compareToVersionNumber:minimumOSVersion] != NSOrderedAscending);
-	
-	[minimumOSVersion release];
-	if (!yummy)
+	BOOL fulfillsMinimumRequirements = ([currentOSVersion compareToVersionNumber:minimumOSVersion] != NSOrderedAscending);
+	if (!fulfillsMinimumRequirements)
 	    return;
     }
     
@@ -938,7 +955,7 @@ static NSComparisonResult OAPreferenceControllerCompareCategoryNames(id name1, i
 
     if (!(className && title))
         return;
-
+    
     iconName = [description objectForKey:@"icon"];
     if (iconName == nil || [iconName isEqualToString:@""])
         iconName = className;
@@ -971,6 +988,17 @@ static NSComparisonResult OAPreferenceControllerCompareCategoryNames(id name1, i
             return;
     }
     
+    // If we got back a non-localized titles, remove the suffix if needed so that it never appears in the UI; it's a localization implementation detail
+    NSString *longTitleSuffix = @" [LONG]";
+    if ([title hasSuffix:longTitleSuffix]) {
+        title = [title substringToIndex:(title.length - longTitleSuffix.length)];
+    }
+
+    NSString *shortTitleSuffix = @" [SHORT]";
+    if ([shortTitle hasSuffix:shortTitleSuffix]) {
+        shortTitle = [shortTitle substringToIndex:(shortTitle.length - shortTitleSuffix.length)];
+    }
+
     newRecord = [[OAPreferenceClientRecord alloc] initWithCategoryName:categoryName];
     [newRecord setIdentifier:identifier];
     [newRecord setClassName:className];
@@ -983,9 +1011,7 @@ static NSComparisonResult OAPreferenceControllerCompareCategoryNames(id name1, i
     [newRecord setDefaultsDictionary:defaultsDictionary];
     [newRecord setDefaultsArray:[description objectForKey:@"defaultsArray"]];
 
-
     [AllClientRecords addObject:newRecord];
-    [newRecord release];
 }
 
 @end

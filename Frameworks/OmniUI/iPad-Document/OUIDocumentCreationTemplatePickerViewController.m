@@ -12,12 +12,12 @@
 #import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniFoundation/OFPreference.h>
 #import <OmniUI/OUIAppController.h>
+#import <OmniUI/OUIEmptyOverlayView.h>
 #import <OmniUIDocument/OUIDocumentPickerDelegate.h>
 #import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerItemView.h>
 #import <OmniUIDocument/OUIDocumentPickerFileItemView.h>
 #import <OmniUIDocument/OUIDocumentPickerFilter.h>
-#import <OmniUI/OUIEmptyOverlayView.h>
 
 RCS_ID("$Id$");
 
@@ -145,6 +145,15 @@ RCS_ID("$Id$");
         OUIDocumentPickerViewController *scopeViewController = OB_CHECKED_CAST(OUIDocumentPickerViewController, self.navigationController.topViewController);
         [scopeViewController ensureSelectedFilterMatchesFileItem:fileItem];
     }
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
+{
+    if (action == @selector(newDocument:)) {
+        return NO;
+    }
+
+    return [super canPerformAction:action withSender:sender];
 }
 
 #pragma mark -

@@ -28,6 +28,7 @@ static id _commonInit(OUIScalingViewTile *self)
 {
     self.contentMode = UIViewContentModeRedraw;
     self.layer.zPosition = -100;
+    self.opaque = NO;
     return self;
 }
 

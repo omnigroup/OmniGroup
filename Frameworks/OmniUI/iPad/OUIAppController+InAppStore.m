@@ -13,8 +13,8 @@
 
 RCS_ID("$Id$");
 
-static NSString *storeKeychainIdentifier = @"com.omnigroup.InAppPurchase.live";
-static NSString *sandboxStoreKeychainIdentifier = @"com.omnigroup.InAppPurchase.sandbox";
+static NSString *storeKeychainIdentifierSuffix = @".InAppPurchase.live";
+static NSString *sandboxStoreKeychainIdentifierSuffix = @".InAppPurchase.sandbox";
 
 @implementation OUIAppController (InAppStore)
 
@@ -25,6 +25,9 @@ static NSString *sandboxStoreKeychainIdentifier = @"com.omnigroup.InAppPurchase.
 
 + (BOOL)inSandboxStore;
 {
+#if TARGET_IPHONE_SIMULATOR
+    return YES;
+#else
     static BOOL inSandboxStore;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -32,14 +35,27 @@ static NSString *sandboxStoreKeychainIdentifier = @"com.omnigroup.InAppPurchase.
         inSandboxStore = OFISEQUAL(receiptName, @"sandboxReceipt");
     });
     return inSandboxStore;
+#endif
 }
 
 + (NSString *)_keychainIdentifier;
 {
-    if ([self inSandboxStore])
-        return sandboxStoreKeychainIdentifier;
-    else
-        return storeKeychainIdentifier;
+    static NSString *keychainIdentifier;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *storeSuffix;
+        if ([self inSandboxStore])
+            storeSuffix = sandboxStoreKeychainIdentifierSuffix;
+        else
+            storeSuffix = storeKeychainIdentifierSuffix;
+        keychainIdentifier = [[[NSBundle mainBundle] bundleIdentifier] stringByAppendingString:storeSuffix];
+    });
+    return keychainIdentifier;
+}
+
++ (NSString *)_serviceIdentifierForProductIdentifier:(NSString *)productIdentifier;
+{
+    return [NSString stringWithFormat:@"%@|%@", [self _keychainIdentifier], productIdentifier];
 }
 
 + (OFPreference *)vendorIDPreference;
@@ -66,40 +82,72 @@ static NSString *sandboxStoreKeychainIdentifier = @"com.omnigroup.InAppPurchase.
     return vendorID;
 }
 
-- (BOOL)addPurchasedProductToKeychain:(NSString *)productIdentifier;
+static NSMutableSet *_recordedPurchases(void) OB_HIDDEN;
+static NSMutableSet *_recordedPurchases(void)
 {
+    static NSMutableSet *recordedPurchases = nil;
+    static dispatch_once_t once = 0;
+    
+    dispatch_once(&once, ^{
+        recordedPurchases = [[NSMutableSet alloc] init];
+    });
+
+    return recordedPurchases;
+}
+
+- (void)addPurchasedProductToKeychain:(NSString *)productIdentifier;
+{
+    // The customer has purchased something. We need to track it even if keychain access fails for some reason (e.g. a spurious instances of -34018 "client has neither application-identifier nor keychain-access-groups entitlements")
+    [_recordedPurchases() addObject:productIdentifier];
+
     NSDictionary *query = @{
-        (__bridge id)kSecAttrGeneric : [[[self class] _keychainIdentifier] dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecAttrGeneric : [[self class] _keychainIdentifier],
         (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
-        (__bridge id)kSecAttrAccount : [productIdentifier dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecAttrService : [[self class] _serviceIdentifierForProductIdentifier:productIdentifier],
     };
 
     NSDictionary *updateAttributes = @{
         (__bridge id)kSecValueData : [[self vendorID] dataUsingEncoding:NSUTF8StringEncoding],
-        (__bridge id)kSecAttrAccessible : (__bridge id)kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+        (__bridge id)kSecAttrAccessible : (__bridge id)kSecAttrAccessibleAlwaysThisDeviceOnly,
     };
 
-    OSStatus result = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)updateAttributes);
-    if (result == errSecSuccess)
-        return YES;
+    OSStatus updateResult = SecItemUpdate((__bridge CFDictionaryRef)query, (__bridge CFDictionaryRef)updateAttributes);
+    if (updateResult == errSecSuccess)
+        return;
 
-    if (result == errSecItemNotFound) {
-        NSMutableDictionary *newAttributes = [updateAttributes mutableCopy];
-        [newAttributes addEntriesFromDictionary:query];
-        result = SecItemAdd((__bridge CFDictionaryRef)newAttributes, NULL);
-        if (result == errSecSuccess)
-            return YES;
+    if (updateResult != errSecItemNotFound) {
+        NSLog(@"Unable to record purchase for next session: SecItemUpdate -> %@", @(updateResult));
+        return;
     }
 
-    return NO;
+    NSMutableDictionary *newAttributes = [updateAttributes mutableCopy];
+    [newAttributes addEntriesFromDictionary:query];
+    OSStatus addResult = SecItemAdd((__bridge CFDictionaryRef)newAttributes, NULL);
+    if (addResult == errSecSuccess)
+        return;
+
+    if (addResult != errSecDuplicateItem) {
+        NSLog(@"Unable to record purchase for next session: SecItemUpdate -> %@, SecItemAdd -> %@", @(updateResult), @(addResult));
+        return;
+    }
+
+    OSStatus deleteResult = SecItemDelete((__bridge CFDictionaryRef)query);
+    addResult = SecItemAdd((__bridge CFDictionaryRef)newAttributes, NULL);
+    if (addResult == errSecSuccess)
+        return;
+
+    NSLog(@"Unable to record purchase for next session: SecItemUpdate -> %@, SecItemDelete -> %@, SecItemAdd -> %@", @(updateResult), @(deleteResult), @(addResult));
 }
 
 - (BOOL)_isPurchasedProductInKeychain:(NSString *)productIdentifier;
 {
+    if ([_recordedPurchases() containsObject:productIdentifier])
+        return YES;
+
     NSDictionary *query = @{
-        (__bridge id)kSecAttrGeneric : [[[self class] _keychainIdentifier] dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecAttrGeneric : [[self class] _keychainIdentifier],
         (__bridge id)kSecClass : (__bridge id)kSecClassGenericPassword,
-        (__bridge id)kSecAttrAccount : [productIdentifier dataUsingEncoding:NSUTF8StringEncoding],
+        (__bridge id)kSecAttrService : [[self class] _serviceIdentifierForProductIdentifier:productIdentifier],
         (__bridge id)kSecMatchLimit : (__bridge id)kSecMatchLimitAll, // only one result
         (__bridge id)kSecReturnAttributes : (id)kCFBooleanTrue, // return the attributes previously set
         (__bridge id)kSecReturnData : (id)kCFBooleanTrue, // and the payload data
@@ -112,7 +160,12 @@ static NSString *sandboxStoreKeychainIdentifier = @"com.omnigroup.InAppPurchase.
             NSData *passwordData = [item objectForKey:(__bridge id)kSecValueData];
             NSString *keychainUUID = [[NSString alloc] initWithData:passwordData encoding:NSUTF8StringEncoding];
             
-            return [keychainUUID isEqualToString:[self vendorID]];
+            if ([keychainUUID isEqualToString:[self vendorID]]) {
+                [_recordedPurchases() addObject:productIdentifier]; // Save ourselves a keychain lookup next time
+                return YES;
+            } else {
+                return NO;
+            }
         }
     }
 

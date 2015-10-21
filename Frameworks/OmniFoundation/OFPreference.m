@@ -102,6 +102,14 @@ static inline id _objectValue(OFPreference *self, id const *_value, NSString *ke
 
 static void _setValueUnderlyingValue(OFPreference *self, id controller, NSString *keyPath, NSString *key, id value)
 {
+    // Per discussion with tjw in <bug:///122290> (Bug: OFPreference deadlock), we should avoid writing to OFPreference from a background thread/queue.
+    // The original design of OFPreference was that it would be readable in a thread-safe way from any queue, but that writing to it should happen on the main queue.
+    //
+    // Assert that we are on the main thread, and we'll independently fix the call sites.
+    // It's possible that we may be able to relax this restriction to only preference instances associated with a controller, but we'd prefer to assert on all non-main-thread writes for now, and fix the fallout.
+    
+    OBPRECONDITION([NSThread isMainThread]);
+    
     if (self->_updatingController)
         controller = nil;
     
@@ -1032,8 +1040,28 @@ NSString * const OFChangeConfigurationValueURLPath = @"/change-configuration-val
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         ConfigurationValueRegistrations = [[NSMutableDictionary alloc] init];
-        UserDefaultsObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification object:[NSUserDefaults standardUserDefaults] queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
-            [self _updateAllConfigurationValues];
+        UserDefaultsObserver = [[NSNotificationCenter defaultCenter] addObserverForName:NSUserDefaultsDidChangeNotification object:[NSUserDefaults standardUserDefaults] queue:nil usingBlock:^(NSNotification *notification) {
+            // Make sure this work is performed on the main thread, asynchronously, if necessary, in the case that we get notified by a background thread.
+            //
+            // N.B. We do this instead of passing a queue when registering for the notification because if we do, that will block the posting thread until the main thread handles the notification. But in the case of handling NSUserDefaultsDidChangeNotification we can end up deadlocking for one of two reasons:
+            //
+            // - Because OFPreference holds a lock on the posting thread,
+            //   and we try to grab the lock on the main thread. See
+            //   <bug:///122290> (Bug: OFPreference deadlock).
+            //
+            // - Because of a deadlock in NSUserDefaults/CFPreferences itself.
+            //   Unfortunately Xcode terminated my debug session before I
+            //   could grab the backtraces. I think we were setting a
+            //   preference on the background thread, and the main thread
+            //   was blocked in _CFPREFERENCES_IS_WAITING_FOR_CFPREFSD.
+            //
+            //   I'll update this comment when that data becomes available.
+            //
+            // So we'll just receive the notification on whatever thread posted it, then ensure we handle it asynchronously on the main thread if needed.
+            
+            OFMainThreadPerformBlock(^{
+                [self _updateAllConfigurationValues];
+            });
         }];
     });
 }

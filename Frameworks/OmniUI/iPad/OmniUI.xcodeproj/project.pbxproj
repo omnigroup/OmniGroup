@@ -469,6 +469,8 @@
 		34D4F4251B6AA8F00003556D /* OUIDocumentPreviewArea.h in Headers */ = {isa = PBXBuildFile; fileRef = 34D4F41B1B6AA8B70003556D /* OUIDocumentPreviewArea.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FA8639A1B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.h in Headers */ = {isa = PBXBuildFile; fileRef = 5FA863981B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5FA8639B1B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5FA863991B5DAE0F00873A12 /* UIPopoverPresentationController-OUIExtensions.m */; };
+		D96A551F1BBF45DC0025623C /* OmniUIKeycommands.strings in Resources */ = {isa = PBXBuildFile; fileRef = D96A551E1BBF45DC0025623C /* OmniUIKeycommands.strings */; };
+		E27879721BD1C0C200B38C43 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E27879711BD1C0C200B38C43 /* WebKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1028,6 +1030,7 @@
 		AB69E41619D222A900F31468 /* OUIToolbarInfo@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarInfo@3x.png"; sourceTree = "<group>"; };
 		ABBCB4701A0AB6A700285862 /* OUIToolbarUndo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo@2x.png"; sourceTree = "<group>"; };
 		ABBCB4711A0AB6A700285862 /* OUIToolbarUndo@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarUndo@3x.png"; sourceTree = "<group>"; };
+		D96A551E1BBF45DC0025623C /* OmniUIKeycommands.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = OmniUIKeycommands.strings; sourceTree = "<group>"; };
 		D9ED40EE1B040E420084B622 /* OUIUndoBarButtonMenuAppearanceDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIUndoBarButtonMenuAppearanceDelegate.h; sourceTree = "<group>"; };
 		E215F45C16542E2000E2CD70 /* OUISegmentedControlInspectorSlice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUISegmentedControlInspectorSlice.h; sourceTree = "<group>"; };
 		E215F45D16542E2000E2CD70 /* OUISegmentedControlInspectorSlice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUISegmentedControlInspectorSlice.m; sourceTree = "<group>"; };
@@ -1037,6 +1040,7 @@
 		E25772D81456162900E0A716 /* OUICompletionMatchCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUICompletionMatchCell.m; sourceTree = "<group>"; };
 		E263D2A717DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIBorderedAuxiliaryButton.h; sourceTree = "<group>"; };
 		E263D2A817DE6FED0064BC3D /* OUIBorderedAuxiliaryButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIBorderedAuxiliaryButton.m; sourceTree = "<group>"; };
+		E27879711BD1C0C200B38C43 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.0.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
 		E2A001481835913F00B13EB7 /* OUIFullScreenNoteTextView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OUIFullScreenNoteTextView.xib; sourceTree = "<group>"; };
 		E2A001491835913F00B13EB7 /* OUIFullScreenNoteTextViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIFullScreenNoteTextViewController.h; sourceTree = "<group>"; };
 		E2A0014A1835913F00B13EB7 /* OUIFullScreenNoteTextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIFullScreenNoteTextViewController.m; sourceTree = "<group>"; };
@@ -1053,6 +1057,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E27879721BD1C0C200B38C43 /* WebKit.framework in Frameworks */,
 				348A7C131B584F7C0082D55D /* OmniQuartz.framework in Frameworks */,
 				348A7C1E1B584FF40082D55D /* OmniAppKit.framework in Frameworks */,
 				348A7C0E1B584F4E0082D55D /* OmniFoundation.framework in Frameworks */,
@@ -1113,6 +1118,7 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E27879711BD1C0C200B38C43 /* WebKit.framework */,
 				348A7C0F1B584F550082D55D /* Omni */,
 				348A7C101B584F5B0082D55D /* Apple */,
 			);
@@ -1467,6 +1473,7 @@
 				34FF3497178B150B005A4F1F /* OUIKeyCommands.h */,
 				34FF3498178B150B005A4F1F /* OUIKeyCommands.m */,
 				34FF349B178B20EF005A4F1F /* OmniUI.keycommands */,
+				D96A551E1BBF45DC0025623C /* OmniUIKeycommands.strings */,
 				343B4A1A176F915C00F3C725 /* Loupe */,
 			);
 			name = Text;
@@ -2224,6 +2231,7 @@
 				348A7BA41B584D4C0082D55D /* OUIToolbarInfo@2x.png in Resources */,
 				348A7AAB1B584C000082D55D /* OUIInAppStoreViewController.xib in Resources */,
 				348A7ACE1B584C650082D55D /* OUIRectangularOverlayFrame@2x.png in Resources */,
+				D96A551F1BBF45DC0025623C /* OmniUIKeycommands.strings in Resources */,
 				348A7B731B584D480082D55D /* OUITableViewItemSelection-Normal@3x.png in Resources */,
 				348A7A1F1B584AE90082D55D /* OUIColorSwatchTranslucentBackground@2x.png in Resources */,
 				348A7B371B584D0C0082D55D /* OUINumericFieldTableCell.xib in Resources */,

@@ -28,37 +28,38 @@ RCS_ID("$Id$");
 
 OB_REQUIRE_ARC
 
-#define FMT_V0_4_MAGIC_LEN 36
-// static const char magic_ver0_4[FMT_V0_4_MAGIC_LEN] = "OFSEncryptingFileManager STRAWMAN-4\n";
+#define FMT_V0_6_MAGIC_LEN 35
+static const char magic_ver0_6[FMT_V0_6_MAGIC_LEN] = "OmniFileStore encryption\x00STRAWMAN-6";
 
-#define SEGMENTED_INNER_VERSION 0     /* Version number in key information blob */
 #define SEGMENTED_IV_LEN 12           /* The length of the IV stored in front of each encrypted segment */
 #define SEGMENTED_MAC_LEN 20          /* The length of the HMAC value stored with each encrypted segment */
 #define SEGMENTED_MAC_KEY_LEN 16      /* The length of the HMAC key, stored in the file-key blob along with the AES key */
 #define SEGMENTED_PAGE_SIZE 65536     /* Size of one encrypted segment */
-#define SEGMENTED_INNER_LENGTH ( 1 + kCCKeySizeAES128 + SEGMENTED_MAC_KEY_LEN )  /* Size of the wrapped data for inner version 0 blob */
+#define SEGMENTED_INNER_LENGTH ( kCCKeySizeAES128 + SEGMENTED_MAC_KEY_LEN )  /* Size of the wrapped data for inner FMT_V0_6 blob */
 #define SEGMENTED_INNER_LENGTH_PADDED (((SEGMENTED_INNER_LENGTH + 15) / 16) * 16)
+#define SEGMENTED_FILE_MAC_VERSION_BYTE "\x01"
 #define SEGMENTED_FILE_MAC_LEN 32     /* Length of the whole-file MAC */
 
 #define SEGMENT_HEADER_LEN (SEGMENTED_IV_LEN + SEGMENTED_MAC_LEN)
-#define SEGMENT_UNDERLYING_PAGE_SIZE (SEGMENT_HEADER_LEN + SEGMENTED_PAGE_SIZE)
+#define SEGMENT_ENCRYPTED_PAGE_SIZE (SEGMENT_HEADER_LEN + SEGMENTED_PAGE_SIZE)
 
 /* We could use the derived key to simply wrap the bulk encryption keys themselves instead of having an intermediate document key, but that would make it difficult for the user to change their password without re-writing every encrypted file in the wrapper. This way we can simply wrap the same document key with a new password-derived key. It also leaves open the possibility of using keys on smartcards, phone TPMs, or whatever, to decrypt the document key, possibly with asymmetric crypto for least-authority background operation, and all that fun stuff. */
 
 /* Utility functions */
-static NSError *wrapCCError(CCCryptorStatus cerr, NSString *op, NSString *extra, NSObject *val); /* CommonCrypto errors fit in the OSStatus error domain */
+static NSError *wrapCCError(CCCryptorStatus cerr, NSString *op, NSString *extra, NSObject *val) __attribute__((cold)); /* CommonCrypto errors fit in the OSStatus error domain */
 #define wrapSecError(e,o,k,v) wrapCCError(e,o,k,v) /* Security.framework errors are also OSStatus error codes */
-static NSError *unsupportedError_(int lineno, NSString *detail);
+static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((cold));
 static BOOL randomBytes(uint8_t *buffer, size_t bufferLength, NSError **outError);
 static CCCryptorRef createCryptor(const uint8_t segmentIV[kCCBlockSizeAES128], const uint8_t key[kCCKeySizeAES128], NSError **outError);
 static BOOL resetCryptor(CCCryptorRef cryptor, const uint8_t segmentIV[kCCBlockSizeAES128], NSError **outError);
 static void cryptOrCrash(CCCryptorRef cryptor, const void *dataIn, size_t dataLength, void *dataOut, int lineno);
 static void hmacSegmentHeader(CCHmacContext *hashContext, const uint8_t *segmentIV, uint32_t order);
+static uint8_t finishAndVerifyHMAC256(CCHmacContext *hashContext, const uint8_t *expectedValue, unsigned hashLength) __attribute__((noinline));
 static BOOL verifySegment(const uint8_t *hmacKey, NSUInteger segmentNumber, const uint8_t *hdr, const uint8_t *ciphertext, size_t ciphertextLength);
 
 static dispatch_once_t testRADARsOnce;
 static BOOL canResetCTRIV = NO;
-static void testRADAR18222014(void *dummy);
+static void testRADAR18222014(void *dummy) __attribute__((cold));
 
 #define unsupportedError(e, t) do{ if(e) { *(e) = unsupportedError_(__LINE__, t); } }while(0)
 
@@ -84,17 +85,19 @@ static inline CCCryptorRef createOrResetCryptor(CCCryptorRef cryptor, const uint
 
  A file consists of a header, followed by a sequence of independently-encrypted segments.
  
+   See EncryptionFormat.md for more detailed description of the format.
+ 
    The header has this format:
  
    Magic bytes  (to identify an OFSEncryptingFileManager file)
    Key information length (2 bytes) - includes the diversification field and the wrapped blob
    Key diversification field (2 bytes)
    Wrapped key information: the following fields, wrapped using RFC3394 wrapping using the specified document key:
-      Version number (always SEGMENTED_INNER_VERSION = 0): 1 byte
       AES key ( kCCKeySizeAES128 = 16 bytes)
       HMAC key ( SEGMENTED_MAC_KEY_LEN = 16 bytes )
- 
-   Zero padding to a 16-byte boundary, then the file HMAC (SEGMENTED_FILE_MAC_LEN = 32 bytes) and the encrypted file segments.
+   Zero padding to a 16-byte boundary
+   The encrypted file segments
+   The file HMAC (SEGMENTED_FILE_MAC_LEN = 32 bytes)
  
    Each segment contains:
  
@@ -102,11 +105,9 @@ static inline CCCryptorRef createOrResetCryptor(CCCryptorRef cryptor, const uint
    Segment MAC (20 bytes)  ( a common size, but also IV+MAC length adds to a 16-byte boundary)
    Segment data (SEGMENTED_PAGE_SIZE = 64k bytes, except possibly for the last segment)
  
-   The MAC is the truncated HMAC-SHA256 of ( IV || segment number || encrypted data )
+   The segment MAC is the truncated HMAC-SHA256 of ( IV || segment number || encrypted data ), where ( IV || segment number ) is 16 bytes.
    The data is AES-CTR encrypted with initial IV of ( IV || zeroes )
    (The IV is constructed from some random bytes and a per-AES-key counter to eliminate the possibility of nonce reuse, but that's an implementation detail)
- 
-   NOTE: The MAC prevents many modifications of the ciphertext, but it is possible to truncate the file to a segment boundary without detection. For that, the file MAC is used: it is simply the HMAC-SHA256 of all the segments' MACs.
  
    Document key management is handled by the OFSDocumentKey class, which wraps and unwraps the key information and maintains expired keys as needed for key rollover.
 */
@@ -117,17 +118,23 @@ static inline CCCryptorRef createOrResetCryptor(CCCryptorRef cryptor, const uint
     NSCache *_pages;
     NSMutableIndexSet *_verifiedPages;
     
-    uint8_t _bulkKey[kCCKeySizeAES128];
-    uint8_t _hmacKey[SEGMENTED_MAC_KEY_LEN];
+    uint8_t _keyMaterial[kCCKeySizeAES128 + SEGMENTED_MAC_KEY_LEN];
+#define _bulkKey &(_keyMaterial[0])
+#define _hmacKey &(_keyMaterial[kCCKeySizeAES128])
     
     size_t _offset;       /* The offset of the beginning of the encrypted data segments (after the file MAC) */
+    size_t _segmentsLength;  /* The amount of backing store occupied by encrypted data segments */
     size_t _length;       /* The length we present to our callers */
+}
+
++ (NSInteger)version
+{
+    return 6;
 }
 
 /* We assume our caller has already verified the file magic. */
 - initWithByteProvider:(id <NSObject,OFByteProvider>)underlying
-                   key:(NSData *)unwrapped
-                offset:(size_t)offsetOfFileMAC
+                 range:(NSRange)segmentsAndFileMAC
                  error:(NSError **)outError;
 {
     if (!(self = [super init])) {
@@ -136,23 +143,15 @@ static inline CCCryptorRef createOrResetCryptor(CCCryptorRef cryptor, const uint
         return nil;
     }
     
-    NSUInteger uLength = [underlying length];
-    if (uLength < (offsetOfFileMAC + SEGMENTED_FILE_MAC_LEN + SEGMENT_HEADER_LEN)) {
+    if (segmentsAndFileMAC.length < (SEGMENTED_FILE_MAC_LEN + SEGMENT_HEADER_LEN)) {
         unsupportedError(outError, @"File is too short");
         return nil;
     }
     
-    const uint8_t *keyBytes = [unwrapped bytes];
-    if (unwrapped.length != SEGMENTED_INNER_LENGTH_PADDED ||
-        keyBytes[0] != SEGMENTED_INNER_VERSION) {
-        unsupportedError(outError, @"Incorrect inner key version");
-        return nil;
-    }
-    
-    size_t offsetOfFirstSegment = offsetOfFileMAC + SEGMENTED_FILE_MAC_LEN;
-    size_t segmentsLength = uLength - offsetOfFirstSegment;
-    size_t completeSegmentCount = segmentsLength / SEGMENT_UNDERLYING_PAGE_SIZE;
-    size_t remainder = segmentsLength - ( completeSegmentCount * SEGMENT_UNDERLYING_PAGE_SIZE );
+    size_t offsetOfFirstSegment = segmentsAndFileMAC.location;
+    size_t segmentsLength = segmentsAndFileMAC.length - SEGMENTED_FILE_MAC_LEN;
+    size_t completeSegmentCount = segmentsLength / SEGMENT_ENCRYPTED_PAGE_SIZE;
+    size_t remainder = segmentsLength - ( completeSegmentCount * SEGMENT_ENCRYPTED_PAGE_SIZE );
     
     _length = completeSegmentCount * SEGMENTED_PAGE_SIZE;
     if (remainder > SEGMENT_HEADER_LEN) {
@@ -165,17 +164,30 @@ static inline CCCryptorRef createOrResetCryptor(CCCryptorRef cryptor, const uint
     
     dispatch_once_f(&testRADARsOnce, NULL, testRADAR18222014);
         
-    memcpy(_bulkKey, keyBytes + 1, kCCKeySizeAES128);
-    memcpy(_hmacKey, keyBytes + 1 + kCCKeySizeAES128, SEGMENTED_MAC_KEY_LEN);
-    
     _backingStore = underlying;
     _pages = [[NSCache alloc] init];
     _pages.name = NSStringFromClass([self class]);
     _pages.countLimit = 5;
     _verifiedPages = [[NSMutableIndexSet alloc] init];
     _offset = offsetOfFirstSegment;
+    _segmentsLength = segmentsLength;
     
     return self;
+}
+
+- (BOOL)unwrapKey:(NSRange)wrappedBlob using:(OFSDocumentKey *)unwrapper error:(NSError **)outError;
+{
+    return withBackingRange(_backingStore, wrappedBlob, ^(const uint8_t *buffer){
+        ssize_t len = [unwrapper unwrapFileKey:buffer length:wrappedBlob.length into:_keyMaterial length:sizeof(_keyMaterial) error:outError];
+        if (len < 0)
+            return NO;
+        else if (len == sizeof(_keyMaterial)) {
+            return YES;
+        } else {
+            unsupportedError(outError, @"Incorrect inner key version");
+            return NO;
+        }
+    });
 }
 
 - (NSUInteger)length;
@@ -191,7 +203,7 @@ static BOOL withBackingRange(id <OFByteProvider, NSObject> backingStore, NSRange
         NSRange retrievedRange = backingRange;
         const uint8_t *backingBuffer = NULL;
         OFByteProviderBufferRelease releaser = [backingStore getBuffer:(const void **)&backingBuffer range:&retrievedRange];
-        if (releaser && OFRangeInRange(retrievedRange, backingRange)) {
+        if (releaser && OFRangeContainsRange(retrievedRange, backingRange)) {
             const uint8_t *retrievedSegmentBuffer = backingBuffer + (backingRange.location - retrievedRange.location);
             
             rv = doWork(retrievedSegmentBuffer);
@@ -219,41 +231,37 @@ static BOOL withBackingRange(id <OFByteProvider, NSObject> backingStore, NSRange
 {
     CCHmacContext ctxt, *ctxt_ptr;
     uint8_t expected[SEGMENTED_FILE_MAC_LEN];
-    uint8_t final[CC_SHA256_DIGEST_LENGTH];
     _Static_assert(CC_SHA256_DIGEST_LENGTH == SEGMENTED_FILE_MAC_LEN, "");
     
     ctxt_ptr = &ctxt;
     CCHmacInit(&ctxt, kCCHmacAlgSHA256, _hmacKey, SEGMENTED_MAC_KEY_LEN);
+    CCHmacUpdate(&ctxt, SEGMENTED_FILE_MAC_VERSION_BYTE, 1);
     
-    [_backingStore getBytes:expected range:(NSRange){ _offset - SEGMENTED_FILE_MAC_LEN, SEGMENTED_FILE_MAC_LEN }];
+    [_backingStore getBytes:expected range:(NSRange){ _offset + _segmentsLength, SEGMENTED_FILE_MAC_LEN }];
     
     uint32_t pageIndex = 0;
     size_t position = 0;
     while(position < _length) {
-        size_t underpos = _offset + ( pageIndex * (size_t)SEGMENT_UNDERLYING_PAGE_SIZE );
-        withBackingRange(_backingStore, (NSRange){ underpos, SEGMENT_HEADER_LEN }, ^(const uint8_t *buffer){
-            CCHmacUpdate(ctxt_ptr, buffer + SEGMENTED_IV_LEN, SEGMENTED_MAC_LEN);
+        size_t underpos = _offset + ( pageIndex * (size_t)SEGMENT_ENCRYPTED_PAGE_SIZE );
+        withBackingRange(_backingStore, (NSRange){ underpos + SEGMENTED_IV_LEN, SEGMENTED_MAC_LEN }, ^(const uint8_t *buffer){
+            CCHmacUpdate(ctxt_ptr, buffer, SEGMENTED_MAC_LEN);
             return YES;
         });
-        position += SEGMENT_UNDERLYING_PAGE_SIZE;
+        position += SEGMENT_ENCRYPTED_PAGE_SIZE;
         pageIndex ++;
     }
     
-    CCHmacFinal(&ctxt, final);
+    if (finishAndVerifyHMAC256(&ctxt, expected, SEGMENTED_FILE_MAC_LEN) != 0)
+        return NO;
     
-    uint8_t mismatch = 0;
-    for (int i = 0; i < SEGMENTED_FILE_MAC_LEN; i++) {
-        mismatch |= ( expected[i] ^ final[i] );
-    }
-    
-    return mismatch? NO : YES;
+    return YES;
 }
 
 /* Retrieve a segment from the backing store, verifying it if we haven't seen it before, and decrypting it into the provided buffer. thisPageSize will normally be equal to SEGMENTED_PAGE_SIZE unless this is the last segment in the file. */
 - (void)_faultPage:(NSUInteger)pageNumber size:(size_t)thisPageSize toBuffer:(uint8_t *)plaintextBuffer
 {
     withBackingRange(_backingStore,
-                     (NSRange){ _offset + ( pageNumber * (size_t)SEGMENT_UNDERLYING_PAGE_SIZE ), SEGMENT_HEADER_LEN + thisPageSize },
+                     (NSRange){ _offset + ( pageNumber * (size_t)SEGMENT_ENCRYPTED_PAGE_SIZE ), SEGMENT_HEADER_LEN + thisPageSize },
                      ^(const uint8_t *retrievedSegmentBuffer){
         BOOL verified = [_verifiedPages containsIndex:pageNumber];
         
@@ -383,7 +391,20 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
     return self;
 }
 
-/* Methods implemented by NSMutableData */
+- (void)dealloc
+{
+    CFIndex pageCount = CFArrayGetCount(_pageCache);
+    while (pageCount) {
+        struct pendingPage *lastPage = (struct pendingPage *)CFArrayGetValueAtIndex(_pageCache, pageCount-1);
+        CFArrayRemoveValueAtIndex(_pageCache, pageCount-1);
+        free(lastPage->buffer);
+        free(lastPage);
+        pageCount --;
+    }
+    CFRelease(_pageCache);
+    _pageCache = NULL;
+}
+
 - (void)setLength:(NSUInteger)length;
 {
 #ifndef __clang_analyzer__  /* RADAR 19406485 - clang-analyze's CFArrayGetValueAtIndex() checker doesn't understand mutable arrays? */
@@ -408,8 +429,9 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
     /* Remove pages as needed */
     while (pageCount > desiredPageCount) {
         struct pendingPage *lastPage = (struct pendingPage *)CFArrayGetValueAtIndex(_pageCache, pageCount-1);
-        free(lastPage->buffer);
         CFArrayRemoveValueAtIndex(_pageCache, pageCount-1);
+        free(lastPage->buffer);
+        free(lastPage);
         pageCount --;
     }
     
@@ -446,7 +468,7 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
         pagesSize = 0;
     else {
         struct pendingPage *lastPage = (struct pendingPage *)CFArrayGetValueAtIndex(_pageCache, pageCount-1);
-        pagesSize = ( SEGMENT_UNDERLYING_PAGE_SIZE * (pageCount-1) ) + SEGMENT_HEADER_LEN + lastPage->size;
+        pagesSize = ( SEGMENT_ENCRYPTED_PAGE_SIZE * (pageCount-1) ) + SEGMENT_HEADER_LEN + lastPage->size;
     }
 
     dispatch_async(writeQueue, ^{
@@ -463,7 +485,7 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
         memcpy(macs + SEGMENTED_MAC_LEN*pageIndex, segBuffer+SEGMENTED_IV_LEN, SEGMENTED_MAC_LEN);
 
         dispatch_async(writeQueue, ^{
-            [_backingStore replaceBytesInRange:(NSRange){ _offset + SEGMENTED_FILE_MAC_LEN + (SEGMENT_UNDERLYING_PAGE_SIZE*pageIndex), SEGMENT_HEADER_LEN + page->size }
+            [_backingStore replaceBytesInRange:(NSRange){ _offset + (SEGMENT_ENCRYPTED_PAGE_SIZE*pageIndex), SEGMENT_HEADER_LEN + page->size }
                                      withBytes:segBuffer];
             free(segBuffer);
         });
@@ -472,13 +494,14 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
     CCHmacContext fileMAC;
     [_encryptor fileMACContext:&fileMAC];
     CCHmacUpdate(&fileMAC, macs, SEGMENTED_MAC_LEN * pageCount);
-    uint8_t output[SEGMENTED_FILE_MAC_LEN];
+    uint8_t output[CC_SHA256_DIGEST_LENGTH];
+    _Static_assert(sizeof(output) >= SEGMENTED_FILE_MAC_LEN, "");
     uint8_t *output_p = output;
     CCHmacFinal(&fileMAC, output);
     free(macs);
     
     dispatch_sync(writeQueue, ^{
-        [_backingStore replaceBytesInRange:(NSRange){ _offset, SEGMENTED_FILE_MAC_LEN }
+        [_backingStore replaceBytesInRange:(NSRange){ _offset + pagesSize, SEGMENTED_FILE_MAC_LEN }
                                  withBytes:output_p];
         
         if ([_backingStore respondsToSelector:@selector(flushByteAcceptor)]) {
@@ -526,6 +549,7 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
 #define EW_KEYDATA_KEY_OFFSET 0
 #define EW_KEYDATA_MAC_OFFSET ( EW_KEYDATA_KEY_OFFSET + kCCKeySizeAES128 )
 #define EW_KEYDATA_IV_OFFSET  ( EW_KEYDATA_MAC_OFFSET + SEGMENTED_MAC_KEY_LEN )
+    BOOL         _forEncryption;
 }
 
 - (instancetype)init;
@@ -539,17 +563,18 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
         return nil;
     }
     
+    _forEncryption = YES;
+    
     return self;
 }
 
 - (NSData *)wrappedKeyWithDocumentKey:(OFSDocumentKey *)docKey error:(NSError **)outError
 {
     /* The IV isn't part of the wrapped key--- each segment's IV is stored with that segment. */
-    _Static_assert( 1+EW_KEYDATA_IV_OFFSET == SEGMENTED_INNER_LENGTH, "" );
+    _Static_assert( EW_KEYDATA_IV_OFFSET == SEGMENTED_INNER_LENGTH, "" );
     uint8_t buf[SEGMENTED_INNER_LENGTH_PADDED];
-    buf[0] = SEGMENTED_INNER_VERSION;
-    memcpy(buf + 1, _keydata, kCCKeySizeAES128 + SEGMENTED_MAC_KEY_LEN);
-    memset(buf + 1 + kCCKeySizeAES128 + SEGMENTED_MAC_KEY_LEN, 0, sizeof(buf) - (1 + kCCKeySizeAES128 + SEGMENTED_MAC_KEY_LEN));
+    memcpy(buf, _keydata, kCCKeySizeAES128 + SEGMENTED_MAC_KEY_LEN);
+    memset(buf + kCCKeySizeAES128 + SEGMENTED_MAC_KEY_LEN, 0, sizeof(buf) - (kCCKeySizeAES128 + SEGMENTED_MAC_KEY_LEN));
     NSData *res = [docKey wrapFileKey:buf length:sizeof(buf) error:outError];
     memset(buf, 0, sizeof(buf));
     return res;
@@ -558,6 +583,7 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
 - (void)fileMACContext:(CCHmacContext *)ctxt;
 {
     CCHmacInit(ctxt, kCCHmacAlgSHA256, _keydata + EW_KEYDATA_MAC_OFFSET, SEGMENTED_MAC_KEY_LEN);
+    CCHmacUpdate(ctxt, SEGMENTED_FILE_MAC_VERSION_BYTE, 1);
 }
 
 #if 0
@@ -720,6 +746,259 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
     return YES;
 }
 
+
+#pragma mark Encryption and decryption methods
+
+// These are here temporarily until we implement streaming or random-access encode/decode. There are two situations where we want to be able to encrypt or decrypt without pulling the entire thing into core:
+//   1. Reading and writing .zip files on the local disk, to support encrypted local databases. For this, we want the OFByteAcceptor/OFByteProvider protocol, which allows OUUnzip to perform random reads and writes. This
+//   2. Transferring a file to/from an encrypted remote database to a file on disk. For this, we want something more like a stream filter. Unfortunately, NSStream and CFStream are unusably buggy, and they're the only way to interact with NSURLSession. We'll need to figure out how to do that, but not today. (Perhaps we'll end up having to just buffer the encrypted data on disk.)
+
++ (NSData *)encryptData:(NSData *)plaintext withKey:(OFSDocumentKey *)kek error:(NSError * __autoreleasing *)outError;
+{
+    if (!plaintext)
+        return nil;
+    
+    size_t segmentCount = ( [plaintext length] + SEGMENTED_PAGE_SIZE - 1 ) / SEGMENTED_PAGE_SIZE;
+    
+    if (segmentCount >= UINT_MAX) {
+        return nil;
+    }
+    
+    OFSSegmentEncryptWorker *worker = [kek encryptionWorker];
+    
+    NSData *keyInfo = [worker wrappedKeyWithDocumentKey:kek error:outError];
+    if (!keyInfo)
+        return nil;
+    
+    // Ugly.
+    const void **segments = calloc(MAX((size_t)1, segmentCount), sizeof(void *));
+    
+    dispatch_apply(segmentCount, dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^(size_t segmentIndex){
+        size_t plaintextLength = [plaintext length];
+        size_t segmentBegins = segmentIndex * SEGMENTED_PAGE_SIZE;
+        size_t segmentLength = MIN((size_t)SEGMENTED_PAGE_SIZE, plaintextLength - segmentBegins);
+        void *buffer = malloc(SEGMENT_HEADER_LEN + segmentLength);
+        NSError *localError = nil;
+        
+        BOOL ok = [worker encryptBuffer:[plaintext bytes] + segmentBegins length:segmentLength
+                                  index:(uint32_t)segmentIndex
+                                   into:buffer + SEGMENT_HEADER_LEN header:buffer error:&localError];
+        
+        if (ok) {
+            segments[segmentIndex] = CFBridgingRetain(dispatch_data_create(buffer, SEGMENT_HEADER_LEN + segmentLength, NULL, DISPATCH_DATA_DESTRUCTOR_FREE));
+        } else {
+            free(buffer);
+#ifndef DEBUG
+#error do not commit this, wim
+            abort();
+#endif
+        }
+    });
+    
+    /* Header is: magic || infolength || info || padding */
+    size_t keyInfoLength = [keyInfo length];
+    size_t headerLength = FMT_V0_6_MAGIC_LEN + 2 + keyInfoLength;
+    headerLength = 16 * ((headerLength + 15)/16);
+    void *header = calloc(1, headerLength);
+    memcpy(header, magic_ver0_6, FMT_V0_6_MAGIC_LEN);
+    OSWriteBigInt16(header, FMT_V0_6_MAGIC_LEN, (uint16_t)keyInfoLength);
+    [keyInfo getBytes:header + (FMT_V0_6_MAGIC_LEN + 2) length:keyInfoLength];
+    dispatch_data_t result_data = dispatch_data_create(header, headerLength, NULL, DISPATCH_DATA_DESTRUCTOR_FREE);
+    
+    /* Concat the segments, and compute the file MAC */
+    
+    CCHmacContext fileMAC;
+    [worker fileMACContext:&fileMAC];
+    
+    for(size_t segmentIndex = 0; segmentIndex < segmentCount; segmentIndex ++) {
+        dispatch_data_t seg = CFBridgingRelease(segments[segmentIndex]);
+        segments[segmentIndex] = NULL;
+        CCHmacUpdate(&fileMAC, [(NSData *)seg bytes] + 12, 20);
+        result_data = dispatch_data_create_concat(result_data, seg);
+    }
+    
+    free(segments);
+    
+    /* Trailer is just the file MAC */
+    
+    char finalMAC[SEGMENTED_FILE_MAC_LEN];
+    CCHmacFinal(&fileMAC, finalMAC);
+    
+    dispatch_data_t final_block = dispatch_data_create(finalMAC, SEGMENTED_FILE_MAC_LEN, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
+    
+    dispatch_data_t final_result = dispatch_data_create_concat(result_data, final_block);
+    
+    return (NSData *)final_result;
+}
+
+static NSError *headerError(const char *msg)
+{
+    /* This error path is for errors which don't depend on knowing the file key: unknown magic, gross format errors, etc. */
+    
+    /* The user should not normally see these messages: they'll be wrapped in some higher level error message. */
+    
+    NSDictionary *uinfo;
+    if (msg) {
+        uinfo = @{ NSLocalizedFailureReasonErrorKey: [NSString stringWithUTF8String:msg] };
+    } else {
+        uinfo = nil;
+    }
+    
+    return [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileReadCorruptFileError userInfo:uinfo];
+}
+
+static uint16_t checkHeaderMagic(NSData * __nonnull ciphertext, size_t ciphertextLength, NSError **outError)
+{
+    char buffer[FMT_V0_6_MAGIC_LEN + 2];
+    
+    /* Look at the fixed-length portions of the header */
+    if (ciphertextLength < (FMT_V0_6_MAGIC_LEN + 2)) {
+        if (outError) *outError = headerError("file too short");
+        return 0;
+    }
+    
+    [ciphertext getBytes:buffer length:FMT_V0_6_MAGIC_LEN + 2];
+    
+    /* Check the file magic */
+    if (memcmp(buffer, magic_ver0_6, FMT_V0_6_MAGIC_LEN) != 0) {
+        if (outError) *outError = headerError("invalid encryption header");
+        return 0;
+    }
+    
+    /* Find the length of the header */
+    return OSReadBigInt16(buffer, FMT_V0_6_MAGIC_LEN);
+}
+
+static BOOL unwrappedKeyFromHeader(NSData *ciphertext, OFSDocumentKey *kek, size_t *headerLength, uint8_t unwrappedKey[SEGMENTED_INNER_LENGTH_PADDED], NSError **outError)
+{
+    if (!ciphertext) {
+        if (outError) *outError = headerError("missing ciphertext");
+        return NO;
+    }
+    size_t ciphertextLength = [ciphertext length];
+    
+    size_t const wrappedKeyBlobLocation = FMT_V0_6_MAGIC_LEN + 2;
+    uint16_t wrappedKeyBlobSize = checkHeaderMagic(ciphertext, ciphertextLength, outError);
+    if (!wrappedKeyBlobSize)
+        return NO;
+    
+    /* Read the variable-length portion of the header, which consists of the wrapped key blob, followed by zero-padding to a 16-byte boundary */
+    
+    size_t paddedLength = ((wrappedKeyBlobLocation + wrappedKeyBlobSize + 15) / 16) * 16;
+    
+    if (ciphertextLength < (paddedLength + SEGMENTED_FILE_MAC_LEN)) {
+        if (outError) *outError = headerError("file too short");
+        return NO;
+    }
+    
+    *headerLength = paddedLength;
+    
+    /* Safe alloca, since wrappedKeyBlobSize < 2^16 */
+    uint8_t *blobbuffer = alloca(paddedLength - wrappedKeyBlobLocation);
+    [ciphertext getBytes:blobbuffer range:(NSRange){wrappedKeyBlobLocation, paddedLength - wrappedKeyBlobLocation}];
+    // NSLog(@"Variable-length header: %@", [ciphertext subdataWithRange:(NSRange){wrappedKeyBlobLocation, paddedLength - wrappedKeyBlobLocation}]);
+    
+    /* Check the padding - we haven't touched our key yet, so no information leaks here */
+    for(size_t i = wrappedKeyBlobSize; i < (paddedLength - wrappedKeyBlobLocation); i++) {
+        if (blobbuffer[i] != 0) {
+            if (outError) *outError = headerError("invalid encryption header");
+            return NO;
+        }
+    }
+    
+    /* Finally, ask our document key manager to unwrap the file key */
+    ssize_t resultSize = [kek unwrapFileKey:blobbuffer length:wrappedKeyBlobSize into:unwrappedKey length:SEGMENTED_INNER_LENGTH_PADDED error:outError];
+    if (resultSize < 0)
+        return NO;
+    if (resultSize != SEGMENTED_INNER_LENGTH_PADDED) {
+        if (outError) *outError = headerError("invalid encryption header");
+        return NO;
+    }
+    
+    return YES;
+}
+
++ (NSData *)decryptData:(NSData *)ciphertext withKey:(OFSDocumentKey *)kek error:(NSError * __autoreleasing *)outError;
+{
+    size_t segmentsBegin;
+    uint8_t fileKey[SEGMENTED_INNER_LENGTH_PADDED];
+    
+    if (!unwrappedKeyFromHeader(ciphertext, kek, &segmentsBegin, fileKey, outError))
+        return nil;
+    
+    size_t segmentsLength = [ciphertext length] - segmentsBegin - SEGMENTED_FILE_MAC_LEN;
+    size_t segmentCount = ( segmentsLength + SEGMENT_ENCRYPTED_PAGE_SIZE - 1 ) / SEGMENT_ENCRYPTED_PAGE_SIZE;
+    size_t plaintextLength = segmentsLength - (SEGMENT_HEADER_LEN * segmentCount);
+    size_t lastSegmentLength = segmentsLength - (SEGMENT_ENCRYPTED_PAGE_SIZE * (segmentCount-1));
+    
+    if (lastSegmentLength < SEGMENT_HEADER_LEN) {
+        // Impossible file length
+        if (outError) *outError = headerError("file too short");
+        return nil;
+    }
+    
+    NSMutableData *plaintext = [NSMutableData dataWithLength:plaintextLength];
+
+    const uint8_t * const fileKeyBytes = fileKey;
+    char *plaintextBuffer = [plaintext mutableBytes];
+    __block uint32_t errorBits = 0;
+    
+    /* Check all the segment MACs, and decrypt */
+    dispatch_apply(segmentCount, dispatch_get_global_queue(QOS_CLASS_UNSPECIFIED, 0), ^(size_t segmentIndex){
+        if (errorBits != 0) {
+            // Early-out if a segment MAC fails.
+        }
+        
+        size_t segmentLength = SEGMENT_ENCRYPTED_PAGE_SIZE;
+        if (segmentIndex == segmentCount - 1)
+            segmentLength = lastSegmentLength;
+        NSData *subrange NS_VALID_UNTIL_END_OF_SCOPE = [ciphertext subdataWithRange:(NSRange){ segmentsBegin + (segmentIndex * SEGMENT_ENCRYPTED_PAGE_SIZE), segmentLength }];
+        const uint8_t *segmentBegins = [subrange bytes];
+
+        if (!verifySegment(fileKeyBytes + kCCKeySizeAES128, segmentIndex, segmentBegins, segmentBegins + SEGMENT_HEADER_LEN, segmentLength - SEGMENT_HEADER_LEN)) {
+            OSAtomicOr32(0x01, &errorBits);
+            return;
+        }
+        
+        CCCryptorRef ctrDecryptor;
+        {
+            uint8_t segmentIV[ kCCBlockSizeAES128 ];
+            memcpy(segmentIV, segmentBegins, SEGMENTED_IV_LEN);
+            memset(segmentIV + SEGMENTED_IV_LEN, 0, kCCBlockSizeAES128 - SEGMENTED_IV_LEN);
+            _Static_assert(kCCBlockSizeAES128 == SEGMENTED_IV_LEN + sizeof(uint32_t), "");
+            ctrDecryptor = createCryptor(segmentIV, (const uint8_t *)fileKeyBytes, NULL);
+        }
+        
+        cryptOrCrash(ctrDecryptor, segmentBegins + SEGMENT_HEADER_LEN, segmentLength - SEGMENT_HEADER_LEN, plaintextBuffer + (segmentIndex * SEGMENTED_PAGE_SIZE), __LINE__);
+        
+        CCCryptorRelease(ctrDecryptor);
+    });
+    
+    if (errorBits != 0) {
+        if (outError) *outError = headerError("encrypted file is corrupt");
+        return nil;
+    }
+    
+    /* Check the file MAC */
+    CCHmacContext fileMACContext;
+    CCHmacInit(&fileMACContext, kCCHmacAlgSHA256, fileKeyBytes + kCCKeySizeAES128, SEGMENTED_MAC_KEY_LEN);
+    CCHmacUpdate(&fileMACContext, SEGMENTED_FILE_MAC_VERSION_BYTE, 1);
+    for (size_t segmentIndex = 0; segmentIndex < segmentCount; segmentIndex ++) {
+        char segmentMAC[SEGMENTED_MAC_LEN];
+        [ciphertext getBytes:segmentMAC range:(NSRange){ segmentsBegin + (segmentIndex * SEGMENT_ENCRYPTED_PAGE_SIZE) + SEGMENTED_IV_LEN, SEGMENTED_MAC_LEN}];
+        CCHmacUpdate(&fileMACContext, segmentMAC, SEGMENTED_MAC_LEN);
+    }
+
+    uint8_t foundFileMAC[SEGMENTED_FILE_MAC_LEN];
+    [ciphertext getBytes:foundFileMAC range:(NSRange){ segmentsBegin + segmentsLength, SEGMENTED_FILE_MAC_LEN}];
+    if (finishAndVerifyHMAC256(&fileMACContext, foundFileMAC, SEGMENTED_FILE_MAC_LEN) != 0) {
+        if (outError) *outError = headerError("encrypted file is corrupt");
+        return nil;
+    }
+    
+    return plaintext;
+}
+
 @end
 
 #pragma mark Utility functions
@@ -734,6 +1013,22 @@ static void hmacSegmentHeader(CCHmacContext *hashContext, const uint8_t *segment
     CCHmacUpdate(hashContext, hashPrefix, kCCBlockSizeAES128);
 }
 
+static uint8_t finishAndVerifyHMAC256(CCHmacContext *hashContext, const uint8_t *expectedValue, unsigned hashLength)
+{
+    uint8_t mismatches = 0;
+    
+    uint8_t computedMac[CC_SHA256_DIGEST_LENGTH];
+    CCHmacFinal(hashContext, computedMac);
+    
+    memset(hashContext, 0, sizeof(*hashContext));
+    
+    /* Constant-time compare (this is why this function is marked noinline--- we can't control compiler settings, especially if we start distributing as bitcode, so this hopefully keeps the comparison hidden from the optimizer) */
+    for(unsigned i = 0; i < hashLength; i++)
+        mismatches |= (computedMac[i] ^ expectedValue[i]);
+    
+    return mismatches;
+}
+
 /* Verify the HMAC on an encrypted segment */
 static BOOL verifySegment(const uint8_t *hmacKey, NSUInteger segmentNumber, const uint8_t *hdr, const uint8_t *ciphertext, size_t ciphertextLength)
 {
@@ -745,19 +1040,7 @@ static BOOL verifySegment(const uint8_t *hmacKey, NSUInteger segmentNumber, cons
     hmacSegmentHeader(&hashContext, hdr, (uint32_t)segmentNumber);
     CCHmacUpdate(&hashContext, ciphertext, ciphertextLength);
     
-    uint8_t mismatches = 0;
-    
-    {
-        uint8_t computedMac[CC_SHA256_DIGEST_LENGTH];
-        CCHmacFinal(&hashContext, computedMac);
-        
-        memset(&hashContext, 0, sizeof(hashContext));
-        
-        for(unsigned i = 0; i < SEGMENTED_MAC_LEN; i++)
-            mismatches |= ( computedMac[i] ^ hdr[SEGMENTED_IV_LEN + i]);
-    }
-    
-    return (mismatches? NO : YES);
+    return (finishAndVerifyHMAC256(&hashContext, hdr + SEGMENTED_IV_LEN, SEGMENTED_MAC_LEN) == 0)? YES : NO;
 }
 
 static NSError *wrapCCError(CCCryptorStatus cerr, NSString *func, NSString *extra, NSObject *val)

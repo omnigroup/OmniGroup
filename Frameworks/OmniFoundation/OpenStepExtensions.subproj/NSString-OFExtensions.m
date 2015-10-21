@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -1157,6 +1157,26 @@ static inline unichar hex(int i)
         result = [self asRFC2047EncodedWord];
 
     return result;
+}
+
+- (NSString *)stringByTruncatingToMaximumLength:(NSUInteger)maximumLength atSpaceAfterMinimumLength:(NSUInteger)minimumLength;
+{
+    if (self.length <= maximumLength)
+        return self;
+    
+    NSRange truncatedRange = (NSRange){.location = 0, .length = maximumLength};
+    truncatedRange = [self rangeOfComposedCharacterSequencesForRange:truncatedRange];
+    
+    NSRange breakRange = [self rangeOfCharacterFromSet:[NSCharacterSet whitespaceAndNewlineCharacterSet] options:NSBackwardsSearch range:truncatedRange];
+    
+    NSRange chosenRange;
+    if (breakRange.location == NSNotFound || breakRange.location < minimumLength) {
+        chosenRange = (NSRange){.location = 0, .length = maximumLength - 1}; // subtract to make room for ellipsis
+    } else {
+        chosenRange = (NSRange){.location = 0, .length = breakRange.location};
+    }
+    
+    return [NSString stringWithFormat:@"%@…", [self substringWithRange:chosenRange]];
 }
 
 /* Routines for generating non-exponential decimal representations of floats. */

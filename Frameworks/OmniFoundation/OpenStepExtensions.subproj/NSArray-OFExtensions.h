@@ -57,6 +57,7 @@
 - (NSSet *)setByPerformingSelector:(SEL)aSelector;
 
 - (NSArray *)arrayByPerformingBlock:(OFObjectToObjectBlock)blk;
+- (NSArray *)flattenedArrayByPerformingBlock:(OFObjectToObjectBlock)blk;
 - (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)blk;
 - (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
 

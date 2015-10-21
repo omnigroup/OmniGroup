@@ -50,6 +50,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 @implementation OIInspectorController
 {
     NSArray *currentlyInspectedObjects;
+    NSString *currentInspectionIdentifier;
     OIInspector *inspector;
     OIInspectorWindow *window;
     OIInspectorHeaderView *headingButton;
@@ -338,14 +339,14 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
     if (!_isExpanded)
         return;
 
-    NSArray *list = nil;
     NSResponder *oldResponder = nil;
-    NS_DURING {
+    @try {
         
         // Don't update the inspector if the list of objects to inspect hasn't changed. -inspectedObjectsOfClass: returns a pointer-sorted list of objects, so we can just to 'identical' on the array.
-        list = [self.inspectorRegistry copyObjectsInterestingToInspector:inspector];
-        if ((!list && !currentlyInspectedObjects) || [list isIdenticalToArray:currentlyInspectedObjects]) {
-            NS_VOIDRETURN;
+        NSArray *newInspectedObjects = [self.inspectorRegistry copyObjectsInterestingToInspector:inspector];
+        NSString *newInspectionIdentifier = [self.inspectorRegistry inspectionIdentifierForCurrentInspectionSet];
+        if (OFISEQUAL(currentInspectionIdentifier, newInspectionIdentifier) && ((newInspectedObjects == nil && currentlyInspectedObjects == nil) || [newInspectedObjects isIdenticalToArray:currentlyInspectedObjects])) {
+            return;
         }
         
         // Record what was first responder in the inspector before we clear it.  We want to clear it since resigning first responder can cause controls to send actions and thus we want this happen *before* we change what would be affected by the action!
@@ -371,13 +372,14 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
             OBASSERT([window firstResponder] == window);
         }
         
-        currentlyInspectedObjects = list; // takes ownership of the reference
-        list = nil;
+        currentInspectionIdentifier = newInspectionIdentifier;
+        currentlyInspectedObjects = newInspectedObjects; // takes ownership of the reference
+        newInspectedObjects = nil;
         [inspector inspectObjects:currentlyInspectedObjects];
-    } NS_HANDLER {
+    } @catch (NSException *localException) {
         NSLog(@"-[%@ %@]: *** %@", [self class], NSStringFromSelector(_cmd), localException);
         [self inspectNothing];
-    } NS_ENDHANDLER;
+    };
 
     // Restore the old first responder, unless it was a view that is no longer in the view hierarchy
     if ([oldResponder isKindOfClass:[NSView class]]) {
@@ -385,13 +387,15 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         if ([view window] != window)
             oldResponder = nil;
     }
-    if (oldResponder)
+
+    if (oldResponder != nil)
         [window makeFirstResponder:oldResponder];
 }
 
 - (void)inspectNothing;
 {
     currentlyInspectedObjects = nil;
+    currentInspectionIdentifier = nil;
     [inspector inspectObjects:nil];
 }
 
@@ -637,7 +641,6 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
 
 - (void)_setEmbeddedExpandedness:(BOOL)expanded updateInspector:(BOOL)updateInspector;
 {
-    OBFinishPortingLater("Add back animated argument?");
     OBPRECONDITION(self.interfaceType == OIInspectorInterfaceTypeEmbedded);
     
     if (expanded == _isExpanded)

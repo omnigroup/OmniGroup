@@ -23,15 +23,19 @@
 //- (BOOL)decryptBuffer:(const uint8_t *)ciphertext range:(NSRange)r index:(uint32_t)order into:(uint8_t *)plaintext header:(const uint8_t *)hdr error:(NSError **)outError;  // Not currently used
 - (void)fileMACContext:(CCHmacContext *)ctxt;
 
+
+// Temporary non-incremental encrypt and decrypt methods
++ (NSData *)encryptData:(NSData *)plaintext withKey:(OFSDocumentKey *)kek error:(NSError * __autoreleasing *)outError;
++ (NSData *)decryptData:(NSData *)ciphertext withKey:(OFSDocumentKey *)kek error:(NSError * __autoreleasing *)outError;
+
 @end
 
 @interface OFSSegmentDecryptingByteProvider : NSObject <OFByteProvider>
 
 - (instancetype)initWithByteProvider:(id <NSObject,OFByteProvider>)underlying
-                                 key:(NSData *)keyData
-                              offset:(size_t)segmentsBegin
+                               range:(NSRange)segmentsAndFileMAC
                                error:(NSError **)outError;
-
+- (BOOL)unwrapKey:(NSRange)wrappedBlob using:(OFSDocumentKey *)unwrapper error:(NSError **)outError;
 - (BOOL)verifyFileMAC;
 
 @end

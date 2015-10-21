@@ -635,6 +635,29 @@ static CGPoint _contentOffsetForCenteringItem(OUIDocumentPickerScrollView *self,
     return _frameForPositionAtIndex(positionIndex, layoutInfo);
 }
 
+- (OUIDocumentPickerItemView *)itemViewForPoint:(CGPoint)point;
+{
+    for (OUIDocumentPickerItemView *itemView in _fileItemViews) {
+        // The -hitTest:withEvent: below doesn't consider ancestor isHidden flags.
+        if (itemView.hidden)
+            continue;
+        UIView *hitView = [itemView hitTest:[itemView convertPoint:point fromView:self] withEvent:nil];
+        if (hitView)
+            return itemView;
+    }
+
+    for (OUIDocumentPickerItemView *itemView in _groupItemViews) {
+        // The -hitTest:withEvent: below doesn't consider ancestor isHidden flags.
+        if (itemView.hidden)
+            continue;
+        UIView *hitView = [itemView hitTest:[itemView convertPoint:point fromView:self] withEvent:nil];
+        if (hitView)
+            return itemView;
+    }
+
+    return nil;
+}
+
 - (OUIDocumentPickerItemView *)itemViewForItem:(ODSItem *)item;
 {
     for (OUIDocumentPickerFileItemView *itemView in _fileItemViews) {
@@ -802,6 +825,7 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
         
     NSUInteger itemsPerRow = gridSize.width;
     CGSize layoutSize = self.bounds.size;
+    layoutSize.height -= self.contentInset.top;
     CGSize itemSize = CGSizeMake(kOUIDocumentPickerItemNormalSize, kOUIDocumentPickerItemNormalSize);
 
     // For devices where screen sizes are too small for our preferred items, here's a smaller size

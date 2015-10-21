@@ -13,7 +13,6 @@
 #import <OmniUI/OUIInspectorSlice.h>
 #import <OmniUI/OUIStackedSlicesInspectorPane.h>
 #import <OmniUI/UIView-OUIExtensions.h>
-#import <OmniUI/OUINavigationController.h>
 
 #import "OUIParameters.h"
 
@@ -24,13 +23,6 @@ OBDEPRECATED_METHOD(-inspectorTitle:); // --> inspector:titleForPane:, taking an
 OBDEPRECATED_METHOD(-inspectorSlices:); // --> inspector:makeAvailableSlicesForStackedSlicesPane:, taking an OUIStackedSlicesInspectorPane
 OBDEPRECATED_METHOD(-inspector:slicesForStackedSlicesPane:); // -> -inspector:makeAvailableSlicesForStackedSlicesPane:
 OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfaceFromInspectedObjects:
-
-@interface OUIInspectorNavigationController : OUINavigationController
-
-@property (nonatomic, weak) UIView *gesturePassThroughView;
-@property BOOL willDismissInspector;
-
-@end
 
 @implementation OUIInspectorNavigationController
 
@@ -70,16 +62,18 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
         OUIInspectorPresentationController *presentationController = (OUIInspectorPresentationController *)self.presentationController;
         NSNumber *duration = note.userInfo[UIKeyboardAnimationDurationUserInfoKey];
         NSNumber *curve = note.userInfo[UIKeyboardAnimationCurveUserInfoKey];
+        NSValue *frame = note.userInfo[UIKeyboardFrameEndUserInfoKey];
+        CGFloat height = [frame CGRectValue].size.height;
         UIViewAnimationOptions options = (curve.integerValue << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
-        self.gesturePassThroughView.hidden = YES;
         __weak OUIInspectorNavigationController *weakSelf = self;
         if (!self.willDismissInspector){
-            [presentationController presentedViewNowNeedsFullHeight:YES withAnimationDuration:duration.floatValue options:options completion:^{
+            [presentationController presentedViewNowNeedsToGrowForKeyboardHeight:height withAnimationDuration:duration.floatValue options:options completion:^{
                 OUIInspectorNavigationController *strongSelf = weakSelf;
                 if (strongSelf) {
                     if ([strongSelf.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
                         [(OUIStackedSlicesInspectorPane*)strongSelf.topViewController updateContentInsetsForKeyboard];
                     }
+                    [strongSelf adjustHeightOfGesturePassThroughView];
                 }
             }];
         }
@@ -88,6 +82,13 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
             [(OUIStackedSlicesInspectorPane*)self.topViewController updateContentInsetsForKeyboard];
         }
     }
+}
+
+- (void)adjustHeightOfGesturePassThroughView
+{
+    CGRect frameOfGesturePassThrough = self.gesturePassThroughView.frame;
+    frameOfGesturePassThrough.size.height = self.view.window.frame.size.height - self.view.frame.size.height;
+    self.gesturePassThroughView.frame = frameOfGesturePassThrough;
 }
 
 - (void)keyboardWillHide:(NSNotification*)note
@@ -100,11 +101,12 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
         UIViewAnimationOptions options = (curve.integerValue << 16) | UIViewAnimationOptionBeginFromCurrentState;  // http://macoscope.com/blog/working-with-keyboard-on-ios/  (Dec 20, 2013)
         self.gesturePassThroughView.hidden = NO;
         __weak OUIInspectorNavigationController *weakSelf = self;
-        [presentationController presentedViewNowNeedsFullHeight:NO withAnimationDuration:duration.integerValue options:options completion:^{
+        [presentationController presentedViewNowNeedsToGrowForKeyboardHeight:0 withAnimationDuration:duration.integerValue options:options completion:^{
             OUIInspectorNavigationController *strongSelf = weakSelf;
             if (strongSelf) {
                 if ([strongSelf.topViewController isKindOfClass:[OUIStackedSlicesInspectorPane class]]) {
                     [(OUIStackedSlicesInspectorPane*)strongSelf.topViewController updateContentInsetsForKeyboard];
+                    [strongSelf adjustHeightOfGesturePassThroughView];
                 }
             }
         }];
@@ -333,6 +335,12 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
     return self.navigationController.presentingViewController != nil;
 }
 
+/*
+- (UIStatusBarStyle)preferredStatusBarStyle;
+{
+    return UIStatusBarStyleDefault;
+}*/
+
 - (BOOL)inspectObjects:(NSArray *)objects withViewController:(UIViewController *)viewController useFullScreenOnHorizontalCompact:(BOOL)useFullScreenOnHorizontalCompact traitCollection:(UITraitCollection *)traitCollection fromBarButtonItem:(UIBarButtonItem *)item NS_EXTENSION_UNAVAILABLE_IOS("Inspection is not available in extensions.");
 {
     OBASSERT(viewController, @"Must provide a valid viewController");
@@ -364,7 +372,6 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
             _presentInspectorCompletion();
         }
     }];
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault animated:YES];
     if (_animationsToPerformAlongsidePresentation) {
         [self.navigationController.transitionCoordinator animateAlongsideTransition:_animationsToPerformAlongsidePresentation completion:nil];
     }
@@ -545,6 +552,10 @@ static CGFloat _currentDefaultInspectorContentWidth = 320;
         pane.inspector = self;
     }
     freshInspector.navigationController.delegate = self;
+    freshInspector.gesturePassThroughView = self.gesturePassThroughView;
+    if ([freshInspector.navigationController isKindOfClass:[OUIInspectorNavigationController class]]) {
+        ((OUIInspectorNavigationController*)freshInspector.navigationController).gesturePassThroughView = self.gesturePassThroughView;
+    }
     self.navigationController = freshInspector.navigationController;
     freshInspector.navigationController = nil;
     self.navigationController.viewControllers = existingNavStack;

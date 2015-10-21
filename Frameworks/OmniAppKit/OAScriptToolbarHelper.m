@@ -189,6 +189,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         }
     };
     
+    // TODO: We seem to always be sandboxed now? If so, the unsandboxed paths below could go away, taking a deprecation warning along with them. <bug:///122264> (Unassigned: Remove the non-sandboxed code path from -[OAScriptToolbarHelper executeScriptItem:]). 
     BOOL isSandboxed = [[NSProcessInfo processInfo] isSandboxed];
     NSString *itemPath = [[self pathForItem:sender] stringByExpandingTildeInPath];
     NSString *typename = [[NSWorkspace sharedWorkspace] typeOfFile:itemPath error:NULL];

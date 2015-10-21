@@ -32,5 +32,6 @@ typedef NS_OPTIONS(NSUInteger, OSUProbeOption) {
 - (void)reset;
 - (void)increment;
 - (void)setIntegerValue:(NSInteger)value;
+- (void)setStringValue:(NSString *)value;
 
 @end

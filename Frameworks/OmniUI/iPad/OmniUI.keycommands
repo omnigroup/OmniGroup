@@ -1,26 +1,20 @@
 {
-    /*
+    // Consult OUIKeyCommands for formatting options
 
-    $ = shift
-    ^ = control
-    ~ = option
-    @ = command
-
-    */
-    "text" = {
-        "up" = "moveUpAtTop:";
-        "^p" = "moveUpAtTop:";
-        "down" = "moveDownAtBottom:";
-        "^n" = "moveDownAtBottom:";
-        "right" = "moveRightAtEnd:";
-        "^f" = "moveRightAtEnd:";
-        "left" = "moveLeftAtBeginning:";
-        "^b" = "moveLeftAtBeginning:";
+    "text" = (
+        ("up","moveUpAtTop:"),
+        ("^p","moveUpAtTop:"),
+        ("down","moveDownAtBottom:"),
+        ("^n","moveDownAtBottom:"),
+        ("right","moveRightAtEnd:"),
+        ("^f","moveRightAtEnd:"),
+        ("left","moveLeftAtBeginning:"),
+        ("^b","moveLeftAtBeginning:"),
         
         // 14357300: TextKit: Emacs key bindings only half implemented and sometimes buggy
-        "^a" = "moveToBeginningOfParagraph:";
-        "$^a" = "moveToBeginningOfParagraphAndModifySelection:";
-        "^e" = "moveToEndOfParagraph:";
-        "$^e" = "moveToEndOfParagraphAndModifySelection:";
-    };
+        ("^a","moveToBeginningOfParagraph:"),
+        ("$^a","moveToBeginningOfParagraphAndModifySelection:"),
+        ("^e","moveToEndOfParagraph:"),
+        ("$^e","moveToEndOfParagraphAndModifySelection:"),
+    );
 }

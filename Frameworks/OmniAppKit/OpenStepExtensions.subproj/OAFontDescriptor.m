@@ -360,9 +360,10 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
         attributes[(NSString *)kCTFontNameAttribute] = name;
         
         self = [self initWithFontAttributes:attributes];
+
+#ifdef OMNI_ASSERTIONS_ON
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-//        OBASSERT(OFISEQUAL(self.font, font));
-        
+
         if (!OFISEQUAL(self.font, font)) {
             
             if (!OFISEQUAL(family, self.family) || !OFISEQUAL(name, self.fontName) || size != self.font.pointSize || isItalic != self.italic || isCondensed != self.condensed || isFixedPitch != self.fixedPitch || fontManagerWeight != self.weight) {
@@ -379,7 +380,6 @@ static void _setWeightInTraitsDictionary(NSMutableDictionary *traits, CTFontSymb
 
         }
 #else
-#ifdef OMNI_ASSERTIONS_ON
         if (!OFISEQUAL(self.font, font)) {
 
             // <bug:///118944> (Bug: Frequent assertion failures 'OFISEQUAL(self.font, font)' in OAFontDescriptor.m:363)

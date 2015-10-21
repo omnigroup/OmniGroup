@@ -32,6 +32,12 @@ RCS_ID("$Id$");
 
 NSString *OUIStackedSlicesInspectorContentViewDidChangeFrameNotification = @"OUIStackedSlicesInspectorContentViewDidChangeFrame";
 
+static CGFloat _widthForSlice(UIScrollView *self, OUIInspectorSlice *slice)
+{
+    CGFloat width = CGRectGetWidth(self.bounds) - [slice paddingToInspectorLeft] - [slice paddingToInspectorRight];
+    return fmin(width, CGRectGetWidth(self.bounds));
+}
+
 static CGFloat _setSliceSizes(UIScrollView *self, NSArray *_slices, NSSet *slicesToPostponeFrameSetting)
 {
     CGFloat yOffset = 0.0;
@@ -62,7 +68,7 @@ static CGFloat _setSliceSizes(UIScrollView *self, NSArray *_slices, NSSet *slice
         if (previousSlice)
             totalHeight += [slice paddingToPreviousSlice:previousSlice remainingHeight:bounds.size.height - totalHeight];
 
-        CGFloat sliceWidth = CGRectGetWidth(bounds) - [slice paddingToInspectorLeft] - [slice paddingToInspectorRight];
+        CGFloat sliceWidth = _widthForSlice(self, slice);
         CGFloat minimumContentHeight = [slice minimumHeightForWidth:sliceWidth];
         CGFloat minimumSliceHeight = minimumContentHeight;
         if (sliceBackgroundView != nil) {
@@ -105,6 +111,7 @@ static CGFloat _setSliceSizes(UIScrollView *self, NSArray *_slices, NSSet *slice
     
     CGFloat extraFlexibleHeight = remainingHeight - totalFlexibleSliceMinimumHeight;
     
+    // now, actually assign frames
     previousSlice = nil;
     for (OUIInspectorSlice *slice in _slices) {
         UIView *sliceView = slice.view;
@@ -113,7 +120,7 @@ static CGFloat _setSliceSizes(UIScrollView *self, NSArray *_slices, NSSet *slice
         
         UIView *sliceBackgroundView = slice.sliceBackgroundView;
         
-        CGFloat sliceWidth = CGRectGetWidth(bounds) - [slice paddingToInspectorLeft] - [slice paddingToInspectorRight];
+        CGFloat sliceWidth = _widthForSlice(self, slice);
         CGFloat sliceContentHeight = CGRectGetHeight(sliceView.frame);
         CGFloat sliceTotalHeight = sliceContentHeight;
         if (sliceBackgroundView != nil) {

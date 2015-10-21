@@ -1,4 +1,4 @@
-// Copyright 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,5 +19,10 @@
 @property (nonatomic) OUIDocumentPicker *documentPicker;
 @property (nonatomic) ODSFileItem *fileItem;
 @property (nonatomic) ODSFileItem *actualFileItem;
+
+@property (nonatomic, assign) BOOL isOpeningFromPeek;
+@property (nonatomic, strong) UIView *backgroundSnapshotView;
+@property (nonatomic, strong) UIView *previewSnapshotView;
+@property (nonatomic, assign) CGRect previewRect;
 
 @end

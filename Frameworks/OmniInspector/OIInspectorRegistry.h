@@ -133,3 +133,8 @@ extern NSString * const OIWorkspacesHelpURLKey;
 /// Implement this method on your application delegate to support embedded inspectors. Do not call super in your implementation. Your app may decide to return either a window (indicating an embedded inspector registry) or nil (for floating inspectors).
 - (NSWindow *)windowForInspectorRegistry:(OIInspectorRegistry *)inspectorRegistry;
 @end
+
+@interface NSWindowController (OIInspectorRegistryWindowControllerDelegate)
+// Implement this method on the window controller of your embedded inspectors to do anything required to show the inspectors when the user has explicitly chosen one from the menubar
+- (void)inspectorRegistryDidRevealEmbeddedInspectorFromMenuItem:(OIInspectorRegistry *)registry;
+@end

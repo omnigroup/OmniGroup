@@ -207,11 +207,14 @@ static void __iOS7B5CleanConsoleOutput(void)
 // Very basic.
 + (void)presentError:(NSError *)error;
 {
-    [self presentError:error fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:NULL line:0];
+    UIViewController *viewController = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+    OBASSERT(viewController.presentedViewController == nil, "Error presentation is unlikely to work; the +presentError:fromViewController: method is preferred.");
+    [self presentError:error fromViewController:viewController file:NULL line:0];
 }
 
 + (void)presentError:(NSError *)error fromViewController:(UIViewController *)viewController;
 {
+    OBASSERT(viewController.presentedViewController == nil);
     [self presentError:error fromViewController:viewController file:NULL line:0];
 }
 
@@ -337,7 +340,8 @@ static void __iOS7B5CleanConsoleOutput(void)
 - (NSString *)fullReleaseString;
 {
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    return [NSString stringWithFormat:@"%@ %@ (v%@)", [infoDictionary objectForKey:@"CFBundleName"], [infoDictionary objectForKey:@"CFBundleShortVersionString"], [infoDictionary objectForKey:@"CFBundleVersion"]];
+    NSString *testFlightString = [OUIAppController inSandboxStore] ? @" TestFlight" : @"";
+    return [NSString stringWithFormat:@"%@ %@%@ (v%@)", [OUIAppController applicationName], [infoDictionary objectForKey:@"CFBundleShortVersionString"], testFlightString, [infoDictionary objectForKey:@"CFBundleVersion"]];
 }
 
 

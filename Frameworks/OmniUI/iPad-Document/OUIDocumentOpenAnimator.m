@@ -80,12 +80,68 @@ RCS_ID("$Id$")
     }];
 }
 
+- (void)_doPopOpen:(id <UIViewControllerContextTransitioning>)transitionContext;
+{
+    NSTimeInterval duration = [self transitionDuration:transitionContext];
+    
+    UIView *containerView = transitionContext.containerView;
+    
+    UIView *sourceView = [[transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey] view];
+    CGRect sourceViewFrame = sourceView.frame;
+    
+    UIView *destinationView = [[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey] view];
+    destinationView.tintColor = sourceView.window.tintColor; // set doc tint explicitly, otherwise snapshot will have default blue
+    
+    [UIView performWithoutAnimation:^{
+        self.backgroundSnapshotView.translatesAutoresizingMaskIntoConstraints = NO;
+        [containerView addSubview:self.backgroundSnapshotView];
+        [containerView sendSubviewToBack:self.backgroundSnapshotView];
+        
+        [self.backgroundSnapshotView.topAnchor constraintEqualToAnchor:containerView.topAnchor].active = YES;
+        [self.backgroundSnapshotView.rightAnchor constraintEqualToAnchor:containerView.rightAnchor].active = YES;
+        [self.backgroundSnapshotView.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor].active = YES;
+        [self.backgroundSnapshotView.leftAnchor constraintEqualToAnchor:containerView.leftAnchor].active = YES;
+        
+        self.previewSnapshotView.translatesAutoresizingMaskIntoConstraints = YES;
+        CGRect pr = [containerView convertRect:self.previewRect fromView:nil];
+        self.previewSnapshotView.frame = pr;
+        [containerView insertSubview:self.previewSnapshotView aboveSubview:self.backgroundSnapshotView];
+        
+        destinationView.alpha = 0.0;
+        destinationView.frame = sourceViewFrame;
+        [containerView insertSubview:destinationView aboveSubview:self.previewSnapshotView];
+        
+        [sourceView removeFromSuperview];
+    }];
+    
+    CGFloat scaleValue = 1.2;
+    [UIView animateWithDuration:duration animations:^{
+        self.previewSnapshotView.transform = CGAffineTransformScale(self.previewSnapshotView.transform, scaleValue, scaleValue);
+        destinationView.alpha = 1.0;
+    } completion:^(BOOL finished) {
+        if (finished) {
+            [self.previewSnapshotView removeFromSuperview];
+            [self.backgroundSnapshotView removeFromSuperview];
+            [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
+        }else{
+            OBASSERT_NOT_REACHED("we were expecting the transition animation to have finished.  UI may be in unreasonable state.");
+        }
+    }];
+}
+
 - (void)animateOpenTransition:(id <UIViewControllerContextTransitioning>)transitionContext;
 {
+    if (self.isOpeningFromPeek) {
+        [self _doPopOpen:transitionContext];
+        return;
+    }
     
     OUIDocumentPickerViewController *pickerController = nil;
     
-    id fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    __kindof UIViewController *fromViewController = [transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
+    OBASSERT([fromViewController isViewLoaded]);
+    OBASSERT(fromViewController.view.window != nil); // Animating from something that isn't visible?
+
     if ([fromViewController isKindOfClass:[OUIDocumentPicker class]]) {
         pickerController = ((OUIDocumentPicker*)fromViewController).selectedScopeViewController;
     } else if ([fromViewController isKindOfClass:[OUIDocumentPickerViewController class]]){

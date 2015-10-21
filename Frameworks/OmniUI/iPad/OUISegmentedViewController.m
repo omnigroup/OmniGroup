@@ -26,6 +26,9 @@ RCS_ID("$Id$")
 @end
 
 @implementation OUISegmentedViewController
+{
+    BOOL _invalidated;
+}
 
 - (void)awakeFromNib;
 {
@@ -36,6 +39,8 @@ RCS_ID("$Id$")
 
 - (void)viewDidLoad
 {
+    OBPRECONDITION(_invalidated == NO);
+
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
@@ -52,11 +57,21 @@ RCS_ID("$Id$")
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:self.navigationBar attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.topLayoutGuide attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0.0]];
 }
 
+- (void)viewDidDisappear:(BOOL)animated;
+{
+    [super viewDidDisappear:animated];
+
+    if (_invalidated) {
+        // If we do this in -oui_invalidate, we can be in the middle of an appearance transition. This can cause <bug:///121483> (Crasher: Crash (sometimes) tapping 'Documents' to close document) by removing the selected view controller from its parent while in the middle of an appearance transition.
+        self.viewControllers = @[];
+    }
+}
+
 #pragma mark - Public API
 
 - (void)oui_invalidate;
 {
-    self.viewControllers = @[];
+    _invalidated = YES;
 
     [self.navigationBar popNavigationItemAnimated:NO];
     [self.navigationBar removeFromSuperview];
@@ -85,15 +100,20 @@ RCS_ID("$Id$")
 - (void)setSelectedViewController:(UIViewController *)selectedViewController;
 {
     OBPRECONDITION(!selectedViewController || [_viewControllers containsObject:selectedViewController]);
-    
+
     if (_selectedViewController == selectedViewController) {
         return;
     }
     
     // Remove currently selected view controller.
     if (_selectedViewController) {
+          // we used to try to only send appearance transitions if we were "on screen".  But that dropped some on the floor when this controller is in a splitview sidebar.  So now we send them always.  Which sometimes results in child view controllers getting doubled appearance messages.  So we deal with that.
+        BOOL performTransition = [self isViewLoaded] && !_invalidated;
+
         [_selectedViewController willMoveToParentViewController:nil];
-        [_selectedViewController beginAppearanceTransition:NO animated:NO];  // we used to try to only send appearance transitions if we were "on screen".  But that dropped some on the floor when this controller is in a splitview sidebar.  So now we send them always.  Which sometimes results in child view controllers getting doubled appearance messages.  So we deal with that.
+
+        if (performTransition)
+            [_selectedViewController beginAppearanceTransition:NO animated:NO];
         
         if ([_selectedViewController isKindOfClass:[UINavigationController class]]) {
             UINavigationController *selectedNavigationController = (UINavigationController *)_selectedViewController;
@@ -102,7 +122,8 @@ RCS_ID("$Id$")
         [_selectedViewController.view removeFromSuperview];
         
         [_selectedViewController removeFromParentViewController];
-        [_selectedViewController endAppearanceTransition];
+        if (performTransition)
+            [_selectedViewController endAppearanceTransition];
         
         _selectedViewController = nil;
     }
@@ -155,7 +176,8 @@ RCS_ID("$Id$")
         _selectedIndex = NSNotFound;
     }
 
-    [self.view bringSubviewToFront:self.navigationBar];
+    if (self.isViewLoaded && !_invalidated)
+        [self.view bringSubviewToFront:self.navigationBar];
 }
 
 - (void)setSelectedIndex:(NSUInteger)selectedIndex;
@@ -171,6 +193,7 @@ RCS_ID("$Id$")
 }
 
 #pragma mark - Private API
+
 - (void)_setupSegmentedControl;
 {
     NSMutableArray *segmentTitles = [NSMutableArray array];
@@ -226,6 +249,7 @@ RCS_ID("$Id$")
 }
 
 #pragma mark - UINavigationBarDelegate
+
 - (UIBarPosition)positionForBar:(id <UIBarPositioning>)bar;
 {
     if (bar == self.navigationBar) {

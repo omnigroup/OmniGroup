@@ -381,6 +381,25 @@ static NSComparisonResult compareWithSelector(id obj1, id obj2, void *context)
     return result;
 }
 
+- (NSArray *)flattenedArrayByPerformingBlock:(OFObjectToObjectBlock)blk;
+{
+    NSMutableArray *result = [[NSMutableArray new] autorelease];
+    for (id singleObject in self) {
+        id selectorResult = blk(singleObject);
+        if (selectorResult == nil) {
+            continue;
+        }
+        
+        if ([selectorResult isKindOfClass:[NSArray class]]) {
+            [result addObjectsFromArray:selectorResult];
+        } else {
+            [result addObject:selectorResult];
+        }
+    }
+    
+    return result;
+}
+
 - (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)blk;
 {
     id singleResult = nil;

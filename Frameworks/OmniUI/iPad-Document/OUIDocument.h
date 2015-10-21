@@ -12,6 +12,7 @@
 #import <OmniFoundation/OFSaveType.h>
 #import <OmniUIDocument/OUIDocumentPreview.h> // OUIDocumentPreviewArea
 
+@class UIResponder, UIView, UIViewController;
 @class ODSFileItem, OUIDocumentViewController, OUIDocumentPreview;
 
 @protocol OUIDocumentViewController;

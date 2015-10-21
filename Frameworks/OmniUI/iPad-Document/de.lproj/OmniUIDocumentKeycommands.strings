@@ -1,0 +1,14 @@
+/*
+ This file is used to map generic strings representing key commands to their description for use with -[UIKeyCommand discoverabilityTitle].
+ 
+ The conventions to uphold are as follows:
+ 
+ - Filename — Use the name of the keycommands file appending "Keycommands" and an extension of .strings (e.g. `Foo.keycommands` key command discoverability titles live in `FooKeycommands.strings`
+ 
+ - Key identifier is the name of the selector that key command will call with any trailing method signature syntax striped (e.g. @selector(foo:) becomes "foo")
+ 
+ // TODO: Would need to extend OUIKeyCommands implementation and keycommands files to include and extract an identifier if we need to use the same selector with a different discoverability title based on category.
+ */
+
+"makeNewDocument" = "Neues Dokument";
+"closeDocument" = "Schließen";

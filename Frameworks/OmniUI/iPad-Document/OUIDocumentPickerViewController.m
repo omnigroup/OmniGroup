@@ -71,7 +71,9 @@
 #import <OmniUnzip/OUZipArchive.h>
 #import <OmniUI/UIScrollView-OUIExtensions.h>
 #import <OmniUI/UINavigationController-OUIExtensions.h>
+#import <OmniUIDocument/OUIDocumentPreviewingViewController.h>
 
+#import "OUIDocumentOpenAnimator.h"
 #import "OUIDocumentParameters.h"
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentPicker-Internal.h"
@@ -105,7 +107,7 @@ static NSString * const kActionSheetDeleteIdentifier = @"com.omnigroup.OmniUI.OU
 
 static NSString * const FilteredItemsBinding = @"filteredItems";
 
-@interface OUIDocumentPickerViewController () <MFMailComposeViewControllerDelegate, OUIDocumentTitleViewDelegate>
+@interface OUIDocumentPickerViewController () <MFMailComposeViewControllerDelegate, OUIDocumentTitleViewDelegate, UIViewControllerPreviewingDelegate>
 
 @property(nonatomic,copy) NSSet *filteredItems;
 @property(nonatomic,strong) NSMutableDictionary *openInMapCache;
@@ -124,6 +126,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 @property (nonatomic, strong) UIBarButtonItem *deleteBarButtonItem;
 
 @property (nonatomic, weak) OUIMenuController *restoreToMenuController;
+
+@property (nonatomic, strong) id <UIViewControllerPreviewing>previewingContext;
 
 @end
 
@@ -486,7 +490,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 {
     OBPRECONDITION(_renameSession == nil); // Can't be renaming right now, so need to try to stop
 
-    if (!self.canPerformActions || !self.selectedScope.canRenameDocuments)
+    if (![self canPerformAction:_cmd withSender:sender])
         return;
     
     id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
@@ -1833,9 +1837,14 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 
 + (NSArray *)sortDescriptors;
 {
+    return [self sortDescriptorsForSortType:[[self sortPreference] enumeratedValue]];
+}
+
++ (NSArray *)sortDescriptorsForSortType:(OUIDocumentPickerItemSort)sortPreference
+{
     NSMutableArray *descriptors = [NSMutableArray array];
     
-    if ([[self sortPreference] enumeratedValue] == OUIDocumentPickerItemSortByDate) {
+    if (sortPreference == OUIDocumentPickerItemSortByDate) {
         NSSortDescriptor *dateSort = [[NSSortDescriptor alloc] initWithKey:ODSItemUserModificationDateBinding ascending:NO];
         [descriptors addObject:dateSort];
     }
@@ -2160,7 +2169,10 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 {
     [super viewDidAppear:animated];
     [self _updateEmptyViewControlVisibility];
-
+    
+    if (self.traitCollection.forceTouchCapability) {
+        self.previewingContext = [self registerForPreviewingWithDelegate:self sourceView:self.view];
+    }
 
     OFPreference *folderPreference = [[self class] folderPreference];
     [folderPreference setStringValue:_folderItem.relativePath];
@@ -2192,6 +2204,17 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     }];
 }
 
+- (void)viewDidDisappear:(BOOL)animated;
+{
+    [super viewDidDisappear:animated];
+    
+    // Not deciding based on traitCollection.forceTouchCapability because technically that could change and we'd still want to unregister when this view goes away.
+    if (self.previewingContext != nil) {
+        [self unregisterForPreviewingWithContext:self.previewingContext];
+        self.previewingContext = nil;
+    }
+}
+
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 {
     [super setEditing:editing animated:animated];
@@ -2218,12 +2241,97 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     }
 }
 
+#pragma mark UIViewControllerPreviewingDelegate
+- (nullable UIViewController *)previewingContext:(id <UIViewControllerPreviewing>)previewingContext viewControllerForLocation:(CGPoint)location;
+{
+    OBASSERT(self.previewingContext == previewingContext);
+    
+    if (self.isEditing || _documentScope.isTrash) {
+        return nil;
+    }
+    
+    CGPoint pointToPreview = [self.mainScrollView convertPoint:location fromCoordinateSpace:self.view];
+    OUIDocumentPickerItemView *itemView = [self.mainScrollView itemViewForPoint:pointToPreview];
+    if (itemView == nil) {
+        return nil;
+    }
+    
+    ODSItem *item = itemView.item;
+    
+    if ([item isKindOfClass:[ODSFileItem class]]) {
+        ODSFileItem *fileItem = (ODSFileItem *)item;
+        NSURL *fileURL = fileItem.fileURL;
+        
+        Class cls = [[OUIDocumentAppController controller] documentClassForURL:fileURL];
+        OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
+        
+        OUIDocumentPreview *documentPreview = [OUIDocumentPreview makePreviewForDocumentClass:cls fileItem:fileItem withArea:OUIDocumentPreviewAreaLarge];
+        
+        OUIDocumentPreviewingViewController *documentPreviewingViewController = [[OUIDocumentPreviewingViewController alloc] initWithFileItem:fileItem preview:documentPreview];
+        
+        previewingContext.sourceRect = [self.view convertRect:itemView.frame fromView:self.mainScrollView];
+        
+        return documentPreviewingViewController;
+    }
+    else if ([item isKindOfClass:[ODSFolderItem class]]) {
+        // TODO: Will eventually provide a peek/pop, but not yet.
+        return nil;
+    }
+    
+    return nil;
+}
+
+- (void)previewingContext:(id <UIViewControllerPreviewing>)previewingContext commitViewController:(UIViewController *)viewControllerToCommit;
+{
+    OBASSERT(self.previewingContext == previewingContext);
+    OBASSERT([viewControllerToCommit isKindOfClass:[OUIDocumentPreviewingViewController class]]);
+    
+    OUIDocumentPreviewingViewController *documentPreviewingViewController = (OUIDocumentPreviewingViewController *)viewControllerToCommit;
+    
+    
+    UIView *snapshotView = [self.view snapshotViewAfterScreenUpdates:NO];
+    snapshotView.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [documentPreviewingViewController prepareForCommitWithBackgroundView:snapshotView];
+    
+    [self presentViewController:documentPreviewingViewController animated:NO completion:nil];
+    
+    __block UIView *documentPreviewingSnapshotView = nil;
+    ODSFileItem *fileItem = documentPreviewingViewController.fileItem;
+    [[OUIDocumentAppController controller] openDocument:fileItem fromPeekWithWillPresentHandler:^(OUIDocumentOpenAnimator *openAnimator) {
+        // Timing matters here. We need to make sure to take the snapshot of the documentPreviewingViewController's view before asking for its previewingSnapshotView later because when we ask for the previewingSnapshotView, the act of asking for the snapshot (in that method) seems to pull it from the view hirarchy (or something) and would cause it not to be included in this snapshot (if this were below that call).
+        documentPreviewingSnapshotView = [documentPreviewingViewController.view snapshotViewAfterScreenUpdates:NO];
+        [self.view addSubview:documentPreviewingSnapshotView];
+        [self.view bringSubviewToFront:documentPreviewingSnapshotView];
+        self.navigationController.navigationBarHidden = YES;
+        
+        openAnimator.backgroundSnapshotView = [documentPreviewingViewController backgroundSnapshotView];
+        openAnimator.previewSnapshotView = [documentPreviewingViewController previewSnapshotView];
+        openAnimator.previewRect = [documentPreviewingViewController previewRect];
+
+        [documentPreviewingViewController dismissViewControllerAnimated:NO completion:nil];
+    } completionHandler:^{
+        [documentPreviewingSnapshotView removeFromSuperview];
+        self.navigationController.navigationBarHidden = NO;
+    }];
+}
+
+
 #pragma mark - UIResponder subclass
 
 // Allow this so that when a document is closed we don't have a nil first responder (which would mean that the cmd-n key command on the document controller wouldn't fire).
 - (BOOL)canBecomeFirstResponder;
 {
     return YES;
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
+{
+    if (action == @selector(newDocument:)) {
+        return self.canPerformActions && self.selectedScope.canRenameDocuments && !self.selectedScope.isTrash;
+    }
+
+    return [super canPerformAction:action withSender:sender];
 }
 
 #pragma mark - UITextInputTraits

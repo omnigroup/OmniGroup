@@ -7,8 +7,9 @@
     @ = command
 
     */
-    "document-controller" = {
-        "@n" = "makeNewDocument:";
-        "@w" = "closeDocument:";
-    };
+
+    "document-controller" = (
+        ("@n","makeNewDocument:","makeNewDocument"),
+        ("@w","closeDocument:","closeDocument"),
+    );
 }

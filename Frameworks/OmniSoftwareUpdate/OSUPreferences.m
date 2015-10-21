@@ -36,6 +36,28 @@ static OFPreference *visibleTracks = nil;
     visibleTracks = [OFPreference preferenceForKey:@"OSUVisibleTracks"];
 }
 
+// This provides the capability to do a one-time migration of a persistent value from AutomaticSoftwareUpdateCheckEnabled to OSUSendSystemInfoEnabled for relevant platforms.
+// r240736 changed the automaticSoftwareUpdateCheckEnabled key from AutomaticSoftwareUpdateCheckEnabled to OSUSendSystemInfoEnabled for <bug:///119795> (Bug: Send Anonymous Data needs to be off by default) when building for iOS.
+//
+// In the case of OmniFocus-iOS, we prompt in first run for permission to collect system info. In versions <= 2.8, the persistent values was stored in AutomaticSoftwareUpdateCheckEnabled.
+// Upon upgrading to 2.8, the user's preference was lost and we'd like to retrieve the prior setting as appropriate using this helper.
+#if MAC_APP_STORE || TARGET_OS_IPHONE
++ (void)performOneTimeSendSystemInfoPreferenceMigrationIfNecessary;
+{
+    OFPreference *oldSendSystemInfoEnabledPreference = [OFPreference preferenceForKey:@"AutomaticSoftwareUpdateCheckEnabled"];
+    if (![oldSendSystemInfoEnabledPreference hasPersistentValue]) {
+        return;
+    }
+    
+    OFPreference *automaticSoftwareUpdateCheckEnabled = [self automaticSoftwareUpdateCheckEnabled];
+    if (![automaticSoftwareUpdateCheckEnabled hasPersistentValue]) {
+        [automaticSoftwareUpdateCheckEnabled setBoolValue:[oldSendSystemInfoEnabledPreference boolValue]];
+    }
+    
+    [oldSendSystemInfoEnabledPreference restoreDefaultValue];
+}
+#endif
+
 + (OFPreference *)automaticSoftwareUpdateCheckEnabled;
 {
     return automaticSoftwareUpdateCheckEnabled;

@@ -13,6 +13,7 @@
 #import <OmniUI/OUIInspectorUpdateReason.h>
 #import <OmniAppKit/OATextAttributes.h>
 #import <CoreGraphics/CGBase.h>
+#import <OmniUI/OUINavigationController.h>
 
 @class OUIStackedSlicesInspectorPane, OUIInspectorPane, OUIInspectorSlice, OUIBarButtonItem;
 @class UIBarButtonItem, UINavigationController;
@@ -129,3 +130,9 @@ extern NSString * const OUIInspectorPopoverDidDismissNotification;
 @end
 
 
+@interface OUIInspectorNavigationController : OUINavigationController
+
+@property (nonatomic, weak) UIView *gesturePassThroughView;
+@property BOOL willDismissInspector;
+
+@end

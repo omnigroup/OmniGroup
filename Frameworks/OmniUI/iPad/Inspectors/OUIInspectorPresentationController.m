@@ -6,6 +6,7 @@
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
 #import <OmniUI/OUIInspectorPresentationController.h>
+#import <OmniUI/OUIInspector.h>
 #import <OmniAppKit/OAAppearance.h>
 
 RCS_ID("$Id$")
@@ -83,20 +84,31 @@ RCS_ID("$Id$")
 }
 
 - (void)commonInit{
+    if ([self.presentedViewController isKindOfClass:[OUIInspectorNavigationController class]]) {
+        self.gesturePassThroughView = ((OUIInspectorNavigationController*)self.presentedViewController).gesturePassThroughView;
+    }
     _initialDisplayRect = CGRectZero;
 }
 
-- (void)presentedViewNowNeedsFullHeight:(BOOL)needsFullHeight withAnimationDuration:(CGFloat)duration options:(UIViewAnimationOptions)options completion:(void (^)())completion{
+- (void)presentedViewNowNeedsToGrowForKeyboardHeight:(CGFloat)keyboardHeight withAnimationDuration:(CGFloat)duration options:(UIViewAnimationOptions)options completion:(void (^)())completion
+{
     if (CGRectEqualToRect(_initialDisplayRect, CGRectZero)) {
         _initialDisplayRect = [self frameOfPresentedViewInContainerView];
     }
-    if (needsFullHeight) {
+    if (keyboardHeight > 0) {
         [UIView animateWithDuration:duration
                               delay:0.0
                             options:options
                          animations:^{
-                             CGRect fullScreenFrame = [self presentedView].window.frame;
-                             [self presentedView].frame = fullScreenFrame;
+                             CGRect bigFrame = [self presentedView].window.frame;
+                             CGFloat minimumNeededHeight = _initialDisplayRect.size.height + keyboardHeight;
+                             CGFloat diff = bigFrame.size.height - minimumNeededHeight;
+                             if (diff > 300) {
+                                 // if there's enough space left to be meaningful, we don't have to go full screen
+                                 bigFrame.size.height = minimumNeededHeight;
+                                 bigFrame.origin.y += diff;
+                             }
+                             [self presentedView].frame = bigFrame;
                          }
                          completion:^(BOOL finished) {
                              if (completion) {
@@ -118,14 +130,24 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)updateFrameForPresentingViewTransitionToSize:(CGSize)newSize{
+- (void)updateForPresentingViewTransitionToSize:(CGSize)newSize{
+    // the inspector needs a new frame and the gesture pass through gets the remaining space
     
-    CGRect newFrame = self.presentedView.frame;
-    newFrame.size.width = newSize.width;
-    newFrame.size.height = fmin(self.presentedView.frame.size.height, newSize.height * [[OAAppearance appearance] overlayInspectorWindowHeightFraction]);
-    newFrame.size.height = fmin(newFrame.size.height, [[OAAppearance appearance] overlayInspectorWindowMaxHeight]);
-    newFrame.origin.y = newSize.height - newFrame.size.height;
-    [self presentedView].frame = newFrame;
+    CGRect newFrame = CGRectMake(0, 0, newSize.width, newSize.height);
+    CGFloat newInspectorHeight = fmin(self.presentedView.frame.size.height, newSize.height * [[OAAppearance appearance] overlayInspectorWindowHeightFraction]);
+    
+   newInspectorHeight = fmin(newInspectorHeight, [[OAAppearance appearance] overlayInspectorWindowMaxHeight]);
+    
+    CGRect newInspectorFrame = CGRectZero;
+    CGRect newGesturePassthroughFrame = CGRectZero;
+    CGRectDivide(newFrame, &newInspectorFrame, &newGesturePassthroughFrame, newInspectorHeight, CGRectMaxYEdge);
+    
+    
+    [self presentedView].frame = newInspectorFrame;
+    self.gesturePassThroughView.frame = newGesturePassthroughFrame;
+
+    // and we have to remember this new rect in case of keyboard stuff later
+    _initialDisplayRect = newInspectorFrame;
 }
 
 - (void)_setTintAdjustmentMode:(UIViewTintAdjustmentMode)mode forView:(UIView *)view;

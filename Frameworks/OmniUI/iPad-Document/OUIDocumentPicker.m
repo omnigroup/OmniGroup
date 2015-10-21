@@ -171,14 +171,22 @@ RCS_ID("$Id$")
     NSMutableArray *newViewControllers = [[NSMutableArray alloc] init];
     
     NSArray *existingViewControllers = self.topLevelNavigationController.viewControllers;
+    if ([existingViewControllers count] == 0) {
+        OBASSERT_NOT_REACHED("How can this happen? Cold launch of some sort?");
+        [self _setUpNavigationControllerForTraitCollection:self.traitCollection unconditionally:YES];
+    }
+    existingViewControllers = self.topLevelNavigationController.viewControllers;
+
     while (folderItem) {
         OUIDocumentPickerViewController *viewController = nil;
         for (NSUInteger i = 1; i < existingViewControllers.count; i++) {
-            OUIDocumentPickerViewController *candidateViewController = existingViewControllers[i];
-            OBASSERT([candidateViewController isKindOfClass:[OUIDocumentPickerViewController class]]);
-            if (candidateViewController.folderItem == folderItem) {
-                viewController = candidateViewController;
-                break;
+            // This won't be a OUIDocumentPickerViewController in the case that you've navigated into something like settings or OUIAddCloudAccountViewController.
+            __kindof UIViewController *candidateViewController = existingViewControllers[i];
+            if ([candidateViewController isKindOfClass:[OUIDocumentPickerViewController class]]) {
+                if ([candidateViewController folderItem] == folderItem) {
+                    viewController = candidateViewController;
+                    break;
+                }
             }
         }
         
@@ -194,9 +202,14 @@ RCS_ID("$Id$")
         folderItem = folderItem.parentFolder;
     }
 
-    UIViewController *firstExistingViewController = [existingViewControllers firstObject];
-    OBASSERT(firstExistingViewController != nil);
-    [newViewControllers insertObject:firstExistingViewController atIndex:0];
+    // <bug:///121867> (Crasher: Crash launching from Spotlight or 3D Touch to a document save in a subfolder -[__NSArrayM insertObject:atIndex:]: object cannot be nil)
+    // This is not actually true when launching from a shortcut. It would be good to make this true in another way (since other code might depend on it being in the stack), but for now, we'll just use the home screen controller directly.
+    UIViewController *homeViewController = [existingViewControllers firstObject];
+    OBASSERT(homeViewController == self.homeScreenViewController || homeViewController == self.homeScreenContainer);
+
+    if (homeViewController)
+        [newViewControllers insertObject:homeViewController atIndex:0];
+
     [self.topLevelNavigationController setViewControllers:newViewControllers animated:animated];
 }
 

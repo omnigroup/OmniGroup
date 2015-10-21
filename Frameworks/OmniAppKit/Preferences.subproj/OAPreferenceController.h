@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,35 +24,6 @@ typedef enum OAPreferencesViewStyle {
 } OAPreferencesViewStyle;
 
 @interface OAPreferenceController : OFObject <NSToolbarDelegate>
-{
-    NSArray *_topLevelObjects;
-    
-    OAPreferencesWindow *_window;
-    NSBox *_nonretained_preferenceBox;
-    NSView *_globalControlsView;
-    NSButton *_nonretained_helpButton;
-    NSButton *_nonretained_returnToOriginalValuesButton;
-    
-    NSView *showAllIconsView; // not to be confused with the "Show All" button
-    OAPreferencesIconView *multipleIconView;
-    
-    NSMutableArray *preferencesIconViews;
-    NSMutableDictionary *categoryNamesToClientRecordsArrays;
-    
-    NSArray *_clientRecords;
-    NSMutableDictionary *_clientByRecordIdentifier;
-    NSString *_defaultKeySuffix;
-    
-    OAPreferencesViewStyle viewStyle;
-    
-    NSToolbar *toolbar;
-    NSArray *defaultToolbarItems;
-    NSArray *allowedToolbarItems;
-
-    OAPreferenceClientRecord *nonretained_currentClientRecord;
-    OAPreferenceClient *nonretained_currentClient;
-    CGFloat idealWidth;
-}
 
 + (OAPreferenceController *)sharedPreferenceController;
 + (NSArray *)allClientRecords;
@@ -63,7 +34,9 @@ typedef enum OAPreferencesViewStyle {
 + (NSString *)overrideNameForCategoryName:(NSString *)categoryName;
 + (NSString *)overrideLocalizedNameForCategoryName:(NSString *)categoryName bundle:(NSBundle *)bundle;
 
-- initWithClientRecords:(NSArray *)clientRecords defaultKeySuffix:(NSString *)defaultKeySuffix;
+- (instancetype)initWithClientRecords:(NSArray *)clientRecords defaultKeySuffix:(NSString *)defaultKeySuffix;
+
+@property (nonatomic, copy) NSSet <NSString *> *hiddenPreferenceIdentifiers;
 
 // API
 - (void)close;
@@ -72,7 +45,8 @@ typedef enum OAPreferencesViewStyle {
 - (void)setTitle:(NSString *)title;
 - (void)setCurrentClientByClassName:(NSString *)name;
 - (void)setCurrentClientRecord:(OAPreferenceClientRecord *)clientRecord;
-- (NSArray *)clientRecords;
+- (void)reloadCurrentClient;
+- (NSArray <OAPreferenceClientRecord *> *)clientRecords;
 - (NSString *)defaultKeySuffix;
 - (OAPreferenceClientRecord *)clientRecordWithShortTitle:(NSString *)shortTitle;
 - (OAPreferenceClientRecord *)clientRecordWithIdentifier:(NSString *)identifier;

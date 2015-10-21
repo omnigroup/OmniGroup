@@ -36,11 +36,13 @@
 - (void)reset; // Sets the document key to a new, randomly generated value. This is only a useful operation when you're creating a new document--- any existing items will become inaccessible.
 
 - (BOOL)setPassword:(NSString *)password error:(NSError **)outError;
+#if TARGET_OS_IPHONE
 - (BOOL)storeInKeychainWithAttributes:(NSDictionary *)attrs error:(NSError **)outError;
+#endif
 
 - (OFSSegmentEncryptWorker *)encryptionWorker;
 - (NSData *)wrapFileKey:(const uint8_t *)fileKeyInfo length:(size_t)len error:(NSError **)outError;
-- (NSData *)unwrapFileKey:(const uint8_t *)fileKeyInfo length:(size_t)len error:(NSError **)outError;
+- (ssize_t)unwrapFileKey:(const uint8_t *)wrappedFileKeyInfo length:(size_t)wrappedFileKeyInfoLen into:(uint8_t *)buffer length:(size_t)unwrappedKeyBufferLength error:(NSError **)outError;
 
 @end
 

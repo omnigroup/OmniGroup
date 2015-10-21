@@ -596,7 +596,7 @@ static unsigned ScopeContext;
         [delegate documentStore:self fileItemEdit:fileItemEdit finishedCopyToURL:destinationURL withFileItemEdit:destinationFileItemEditOrNil];
 }
 
-- (void)_willRemoveFileItems:(NSSet *)fileItems;
+- (void)_willRemoveFileItems:(NSArray <ODSFileItem *> *)fileItems;
 {
     OBPRECONDITION([NSThread isMainThread]);
 

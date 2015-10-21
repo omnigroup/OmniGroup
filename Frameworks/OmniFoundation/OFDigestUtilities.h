@@ -1,4 +1,4 @@
-// Copyright 2011-2012 Omni Development, Inc.  All rights reserved.
+// Copyright 2011-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,6 @@
 // $Id$
 
 #import <Foundation/NSObject.h>
-#import <CommonCrypto/CommonDigest.h>
 
 @class NSData, NSError;
 
@@ -56,31 +55,15 @@
 @end
 
 @interface OFMD5DigestContext : OFCCDigestContext
-{
-    CC_MD5_CTX ctx;
-}
-
 @end
 
 @interface OFSHA1DigestContext : OFCCDigestContext
-{
-    CC_SHA1_CTX ctx;
-}
-
 @end
 
 @interface OFSHA256DigestContext : OFCCDigestContext
-{
-    CC_SHA256_CTX ctx;
-}
-
 @end
 
 @interface OFSHA512DigestContext : OFCCDigestContext
-{
-    CC_SHA512_CTX ctx;
-}
-
 @end
 
 /* There are two common representations for discrete-logarithm schemes like DSA and ECDSA: most APIs use an ASN.1 SEQUENCE of two INTEGERs encoded using DER, but the DSIG specification uses the (very slightly more compact) representation of two fixed-length integers concatenated with no headers. These functions help convert. */

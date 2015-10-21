@@ -17,6 +17,8 @@
 RCS_ID("$Id$");
 
 NSString * const OFDirectoryPathExtension = @"folder";
+NSString * const OFExportOnlyDeclaration = @"OFExportOnlyDeclaration";
+NSString * const OFTUTIDeclarationUsageType = @"OFTUTIDeclarationUsageType";
 
 // These dictionaries map from tag class (NSString *) to a dictionary whose keys are tag values (NSString *) and whose values are arrays of type identifiers (NSString *) that have claimed that tag.
 // Note that it is a bad idea in general for multiple types to claim the same tag, but we have existing apps that declare multiple types with the same file extension (package vs. flat files). This data structure doesn't prohibit inadvisable scenarios, but the lookup and/or creation functions will warn if multiple directory or flat file types are declared for the same tag, or if a type is declared for a tag that conforms to neither public.data or public.directory.
@@ -49,7 +51,7 @@ static BOOL OFUTIDiagnosticsEmitted = NO;
     } while (0)
 
 // Returns a +1 retained NSDictionary transformation of the provided array of type declarations (kUT{Exported,Imported}TypeDeclarationsKey) into the form described above.
-static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclarations)
+static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclarations, NSString *declarationType)
 {
     NSMutableDictionary *result = [[NSMutableDictionary alloc] init];
     
@@ -114,7 +116,13 @@ static NSDictionary *CreateTagDictionaryFromTypeDeclarations(NSArray *typeDeclar
                     } else if (conformsToPublicData && conformsToPublicDirectory) {
                         OFUTI_DIAG(@"Type declaration for type \"%@\" conforms to both \"%@\" and \"%@\"; it should conform to exactly one", identifier, (NSString *)kUTTypeData, (NSString *)kUTTypeDirectory);
                     }
-                    
+
+                    // This allows an Application to define a specific UTI for export only which is not declared in UTExportedTypeDeclarations.  This allows an application to register multiple UTIs for say HTML, without generating an error.
+                    NSString *declarationUsageType = [declaration objectForKey:OFTUTIDeclarationUsageType];
+                    if ([declarationType isEqualToString:(NSString *)kUTImportedTypeDeclarationsKey] && ![NSString isEmptyString:declarationUsageType] && [declarationUsageType isEqualToString:OFExportOnlyDeclaration]) {
+                        conformsToPublicData = NO;
+                        conformsToPublicDirectory = NO;
+                    }
                     // Enumerate the existing types declared for this tag and warn if they share the same conformance to the flat-file (public.data) or directory (public.directory) physical type trees.
                     for (NSString *existingIdentifier in mappedIdentifiers) {
                         if ((conformsToPublicData && UTTypeConformsTo((__bridge CFStringRef)existingIdentifier, kUTTypeData))
@@ -145,8 +153,8 @@ static void InitializeKnownTypeDictionaries()
 #endif
         NSDictionary *infoDictionary = [controllingBundle infoDictionary];
         
-        MainBundleExportedTypeDeclarationsByTag = CreateTagDictionaryFromTypeDeclarations([infoDictionary objectForKey:(NSString *)kUTExportedTypeDeclarationsKey]);
-        MainBundleImportedTypeDeclarationsByTag = CreateTagDictionaryFromTypeDeclarations([infoDictionary objectForKey:(NSString *)kUTImportedTypeDeclarationsKey]);
+        MainBundleExportedTypeDeclarationsByTag = CreateTagDictionaryFromTypeDeclarations([infoDictionary objectForKey:(NSString *)kUTExportedTypeDeclarationsKey], (NSString *)kUTExportedTypeDeclarationsKey);
+        MainBundleImportedTypeDeclarationsByTag = CreateTagDictionaryFromTypeDeclarations([infoDictionary objectForKey:(NSString *)kUTImportedTypeDeclarationsKey], (NSString *)kUTImportedTypeDeclarationsKey);
         
         // Warn if both the exported and imported type dictionaries both declared types for the same tag.
         NSArray *allTagClasses = [[MainBundleExportedTypeDeclarationsByTag allKeys] arrayByAddingObjectsFromArray:[MainBundleImportedTypeDeclarationsByTag allKeys]];

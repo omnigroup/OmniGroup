@@ -11,8 +11,8 @@
 
 @interface OUIInspectorPresentationController : UIPresentationController
 
-- (void)presentedViewNowNeedsFullHeight:(BOOL)needsFullHeight withAnimationDuration:(CGFloat)duration options:(UIViewAnimationOptions)options completion:(void (^)())completion;
-- (void)updateFrameForPresentingViewTransitionToSize:(CGSize)newSize;
+- (void)presentedViewNowNeedsToGrowForKeyboardHeight:(CGFloat)keyboardHeight withAnimationDuration:(CGFloat)duration options:(UIViewAnimationOptions)options completion:(void (^)())completion;
+- (void)updateForPresentingViewTransitionToSize:(CGSize)newSize;
 @property (nonatomic, weak) UIView *gesturePassThroughView;
 
 @end

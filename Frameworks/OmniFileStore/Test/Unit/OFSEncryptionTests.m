@@ -95,7 +95,7 @@ static const char *thing3 = "Thing three\n";
         
         OBShouldNotError(blob = [cryptWorker wrappedKeyWithDocumentKey:docKey error:&error]);
         
-        // [backing appendData:blob];
+        [backing appendData:blob];
         prefixLen = [backing length];
         
         OFSSegmentEncryptingByteAcceptor *writer = [[OFSSegmentEncryptingByteAcceptor alloc] initWithByteAcceptor:backing cryptor:cryptWorker offset:prefixLen];
@@ -108,13 +108,10 @@ static const char *thing3 = "Thing three\n";
    // NSLog(@"Encrypted data is %@", backing);
     
     {
-        NSData *unwrapped;
         OFSSegmentDecryptingByteProvider *reader;
         
-        OBShouldNotError(unwrapped = [docKey unwrapFileKey:[blob bytes] length:[blob length] error:&error]);
-      //  NSLog(@"Unwrapped keyblob: %@", unwrapped);
-        
-        OBShouldNotError(reader = [[OFSSegmentDecryptingByteProvider alloc] initWithByteProvider:backing key:unwrapped offset:prefixLen error:&error]);
+        OBShouldNotError(reader = [[OFSSegmentDecryptingByteProvider alloc] initWithByteProvider:backing range:((NSRange){ prefixLen, [backing length] - prefixLen }) error:&error]);
+        OBShouldNotError([reader unwrapKey:((NSRange){0, prefixLen}) using:docKey error:&error]);
         XCTAssertTrue([reader verifyFileMAC]);
         [self readThings:reader];
     }
@@ -145,8 +142,11 @@ static const char *thing3 = "Thing three\n";
         
         OBShouldNotError(blob = [cryptWorker wrappedKeyWithDocumentKey:docKey error:&error]);
         
-        // [backing appendData:blob];
+        [backing setLength:[blob length]];
+        [backing replaceBytesInRange:(NSRange){0, [blob length]} withBytes:[blob bytes]];
+
         prefixLen = [backing length];
+        XCTAssertEqual(prefixLen, [blob length]);
         
         OFSSegmentEncryptingByteAcceptor *writer = [[OFSSegmentEncryptingByteAcceptor alloc] initWithByteAcceptor:backing cryptor:cryptWorker offset:prefixLen];
         [self writeThings:writer];
@@ -160,16 +160,14 @@ static const char *thing3 = "Thing three\n";
     // NSLog(@"Encrypted data is %@", backing);
     
     {
-        NSData *unwrapped;
         OFSSegmentDecryptingByteProvider *reader;
 
         int fd = open([fm fileSystemRepresentationWithPath:fpath], O_RDONLY);
         OFSFileByteAcceptor *backing = [[OFSFileByteAcceptor alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
 
-        OBShouldNotError(unwrapped = [docKey unwrapFileKey:[blob bytes] length:[blob length] error:&error]);
-        //  NSLog(@"Unwrapped keyblob: %@", unwrapped);
+        OBShouldNotError(reader = [[OFSSegmentDecryptingByteProvider alloc] initWithByteProvider:backing range:((NSRange){ prefixLen, [backing length] - prefixLen }) error:&error]);
+        OBShouldNotError([reader unwrapKey:((NSRange){0, prefixLen}) using:docKey error:&error]);
         
-        OBShouldNotError(reader = [[OFSSegmentDecryptingByteProvider alloc] initWithByteProvider:backing key:unwrapped offset:prefixLen error:&error]);
         XCTAssertTrue([reader verifyFileMAC]);
         
         [self readThings:reader];
@@ -255,8 +253,9 @@ static BOOL checkLongBlob(const char *ident, NSRange blobR, const char *found, N
         
         OBShouldNotError(blob = [cryptWorker wrappedKeyWithDocumentKey:docKey error:&error]);
         
-        // [backing appendData:blob];
-        prefixLen = [backing length];
+        prefixLen = [blob length];
+        [backing setLength:prefixLen];
+        [backing replaceBytesInRange:(NSRange){0, prefixLen} withBytes:[blob bytes]];
         
         OFSSegmentEncryptingByteAcceptor *writer = [[OFSSegmentEncryptingByteAcceptor alloc] initWithByteAcceptor:backing cryptor:cryptWorker offset:prefixLen];
         [writer setLength:64*1024];
@@ -275,16 +274,14 @@ static BOOL checkLongBlob(const char *ident, NSRange blobR, const char *found, N
     NSLog(@"Wrote to: %@", fpath);
     
     {
-        NSData *unwrapped;
         OFSSegmentDecryptingByteProvider *reader;
         
         int fd = open([fm fileSystemRepresentationWithPath:fpath], O_RDONLY);
         OFSFileByteAcceptor *backing = [[OFSFileByteAcceptor alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
         
-        OBShouldNotError(unwrapped = [docKey unwrapFileKey:[blob bytes] length:[blob length] error:&error]);
-        //  NSLog(@"Unwrapped keyblob: %@", unwrapped);
-        
-        OBShouldNotError(reader = [[OFSSegmentDecryptingByteProvider alloc] initWithByteProvider:backing key:unwrapped offset:prefixLen error:&error]);
+        OBShouldNotError(reader = [[OFSSegmentDecryptingByteProvider alloc] initWithByteProvider:backing range:((NSRange){ prefixLen, [backing length] - prefixLen }) error:&error]);
+        OBShouldNotError([reader unwrapKey:((NSRange){0, prefixLen}) using:docKey error:&error]);
+
         XCTAssertTrue([reader verifyFileMAC]);
         
         char *rbuffer = malloc(160*1024);
@@ -336,8 +333,9 @@ static void wrXY(char *into, int x, int y)
         
         OBShouldNotError(blob = [cryptWorker wrappedKeyWithDocumentKey:docKey error:&error]);
         
-        // [backing appendData:blob];
-        prefixLen = [backing length];
+        prefixLen = [blob length];
+        [backing setLength:prefixLen];
+        [backing replaceBytesInRange:(NSRange){0, prefixLen} withBytes:[blob bytes]];
         
         OFSSegmentEncryptingByteAcceptor *writer = [[OFSSegmentEncryptingByteAcceptor alloc] initWithByteAcceptor:backing cryptor:cryptWorker offset:prefixLen];
         
@@ -360,16 +358,14 @@ static void wrXY(char *into, int x, int y)
     NSLog(@"Wrote to: %@", fpath);
     
     {
-        NSData *unwrapped;
         OFSSegmentDecryptingByteProvider *reader;
         
         int fd = open([fm fileSystemRepresentationWithPath:fpath], O_RDONLY);
         OFSFileByteAcceptor *backing = [[OFSFileByteAcceptor alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
         
-        OBShouldNotError(unwrapped = [docKey unwrapFileKey:[blob bytes] length:[blob length] error:&error]);
-        //  NSLog(@"Unwrapped keyblob: %@", unwrapped);
-        
-        OBShouldNotError(reader = [[OFSSegmentDecryptingByteProvider alloc] initWithByteProvider:backing key:unwrapped offset:prefixLen error:&error]);
+        OBShouldNotError(reader = [[OFSSegmentDecryptingByteProvider alloc] initWithByteProvider:backing range:((NSRange){ prefixLen, [backing length] - prefixLen }) error:&error]);
+        OBShouldNotError([reader unwrapKey:((NSRange){0, prefixLen}) using:docKey error:&error]);
+
         XCTAssertTrue([reader verifyFileMAC]);
         
         char *rbuffer = malloc(10000);
@@ -399,5 +395,107 @@ static void wrXY(char *into, int x, int y)
     }
     
 }
+
+- (void)testOneShotSmall
+{
+    NSError * __autoreleasing error = nil;
+    
+    OFSDocumentKey *docKey, *otherDocKey;
+    
+    OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    [docKey reset];
+    
+    OBShouldNotError(otherDocKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    [otherDocKey reset];
+    
+    for (int whichCiphertext = 0; whichCiphertext < 3; whichCiphertext ++) {
+        NSData *plaintext, *ciphertext, *decrypted;
+        
+        switch (whichCiphertext) {
+            case 0:
+                plaintext = [NSData data];
+                break;
+            case 1:
+                plaintext = [@"This is my super secret message! Remember to drink your squeamish ossifrage, kids! And stay in school!" dataUsingEncoding:NSASCIIStringEncoding];
+                break;
+            case 2:
+                plaintext = [NSData dataWithBytes:"?" length:1];
+                break;
+        }
+        
+        OBShouldNotError(ciphertext = [OFSSegmentEncryptWorker encryptData:plaintext withKey:docKey error:&error]);
+        
+        // Assert that encryption grew the ciphertext by a reasonable amount. We have two 128-bit session keys, a 96-bit IV, a 160-bit segment MAC, and a 256-bit file MAC: 96 bytes. There's also the magic number, key diversification, and padding overhead.
+        XCTAssertGreaterThanOrEqual([ciphertext length], [plaintext length] + 96);
+        
+        // We should be able to decrypt the ciphertext.
+        OBShouldNotError(decrypted = [OFSSegmentEncryptWorker decryptData:ciphertext withKey:docKey error:&error]);
+        XCTAssertEqualObjects(plaintext, decrypted);
+        
+        // No byte should be changeable and still allow decryption to succeed.
+        for (size_t ix = 0; ix <= [ciphertext length]; ix ++) {
+            NSMutableData *damagedCiphertext = [ciphertext mutableCopy];
+            if (ix < [ciphertext length]) {
+                uint8_t *p = [damagedCiphertext mutableBytes];
+                p[ix] ^= 0x02;
+            } else {
+                [damagedCiphertext appendBytes:"\x00" length:1];
+            }
+            
+            error = nil;
+            decrypted = [OFSSegmentEncryptWorker decryptData:damagedCiphertext withKey:docKey error:&error];
+            XCTAssertNil(decrypted, @"Decryption should fail: damage at index %zu undetected", ix);
+        }
+        
+        // Also verify failure when decrypting with a different document key
+        decrypted = [OFSSegmentEncryptWorker decryptData:ciphertext withKey:otherDocKey error:&error];
+        XCTAssertNil(decrypted, @"Decryption should fail: wrong key");
+    }
+}
+
+
+
+- (void)testOneShotMed
+{
+    /* This test is similar to -testOneShotSmall, but makes sure we have correct behavior near the edges of segment boundaries. */
+#define SEGMENTED_PAGE_SIZE 65536     /* From OFSSegmentedEncryption - Size of one encrypted segment */
+
+    NSError * __autoreleasing error = nil;
+    
+    OFSDocumentKey *docKey;
+    
+    OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    [docKey reset];
+    
+
+    for (unsigned  npages = 1; npages < 4; npages ++) {
+        size_t previousCiphertextLength = 0;
+        int sizeJumps = 0;
+        for (int delta = -2; delta < 3; delta ++) {
+            size_t plaintextLength = ( SEGMENTED_PAGE_SIZE * npages ) + delta;
+            
+            NSData *plaintext = OFRandomCreateDataOfLength(plaintextLength);
+            NSData *ciphertext, *decrypted;
+
+            OBShouldNotError(ciphertext = [OFSSegmentEncryptWorker encryptData:plaintext withKey:docKey error:&error]);
+            XCTAssertGreaterThanOrEqual([ciphertext length], [plaintext length] + 96);
+            
+            if (previousCiphertextLength != 0) {
+                NSInteger growth = [ciphertext length] - previousCiphertextLength;
+                XCTAssertGreaterThanOrEqual(growth, 1);
+                if (growth > 1)
+                    sizeJumps ++;
+            }
+            
+            // We should be able to decrypt the ciphertext.
+            OBShouldNotError(decrypted = [OFSSegmentEncryptWorker decryptData:ciphertext withKey:docKey error:&error]);
+            XCTAssertEqualObjects(plaintext, decrypted);
+            
+            previousCiphertextLength = [ciphertext length];
+        }
+        XCTAssertEqual(sizeJumps, 1);
+    }
+}
+
 
 @end

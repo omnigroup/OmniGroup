@@ -8,17 +8,18 @@
 // $Id$
 
 #import <UIKit/UIViewController.h>
+#import <WebKit/WKNavigationDelegate.h>
 
 @protocol OUIWebViewControllerDelegate;
 
-@interface OUIWebViewController : UIViewController <UIWebViewDelegate>
+@interface OUIWebViewController : UIViewController <WKNavigationDelegate>
 {
 }
 
 @property (nonatomic, weak) id<OUIWebViewControllerDelegate> delegate;
 
 @property (strong) NSURL *URL;
-@property (nonatomic, readonly, strong) UIWebView *webView;
+@property (nonatomic, readonly, strong) WKWebView *webView;
 
 - (void)loadData:(NSData *)data ofType:(NSString *)mimeType;
 
