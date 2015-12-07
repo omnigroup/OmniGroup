@@ -568,7 +568,7 @@ static BOOL _canEditScope(ODSScope <ODSConcreteScope> *scope)
 - (void)_editAccountSettings:(OFXServerAccount *)account sender:(id)sender;
 {
     OUIServerAccountSetupViewController *setupController = [[OUIServerAccountSetupViewController alloc] initWithAccount:account];
-    setupController.finished = ^(id account, NSError *error) { };
+    setupController.finished = ^(id viewController, NSError *error) { };
     [self showViewController:setupController sender:sender];
 }
 

@@ -62,7 +62,7 @@ static void replacement_didAddSubview(NSView *self, SEL _cmd, NSView *subview)
 {
     OBPRECONDITION(ViewsBeingDrawn);
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(!isDrawing(self));
+    // OBPRECONDITION(!isDrawing(self)); AppKit does this quite a bit.
     
     [subview applyToViewTree:^(NSView *treeView){
         OBPRECONDITION(!isDrawing(treeView));
@@ -77,8 +77,8 @@ static void replacement_willRemoveSubview(NSView *self, SEL _cmd, NSView *subvie
     OBPRECONDITION([NSThread isMainThread]);
 
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(!isDrawing(self));
-    
+    // OBPRECONDITION(!isDrawing(self)); AppKit does this quite a bit.
+
     [subview applyToViewTree:^(NSView *treeView){
         OBPRECONDITION(!isDrawing(treeView));
     }];
@@ -930,9 +930,9 @@ static NSString *_vibrancyInfo(NSView *view, NSUInteger level)
 #ifdef DEBUG
 - (void)expectDeallocationOfViewTreeSoon;
 {
-    [self applyToViewTree:^(NSView *view) {
-        OBExpectDeallocationWithPossibleFailureReason(view, ^NSString *(NSView *view){
-            if (view.superview)
+    [self applyToViewTree:^(NSView *treeView) {
+        OBExpectDeallocationWithPossibleFailureReason(treeView, ^NSString *(NSView *remainingView){
+            if (remainingView.superview)
                 return @"still has superview";
             return nil;
         });

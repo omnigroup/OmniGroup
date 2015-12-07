@@ -635,7 +635,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
 }
 
 // Snapshots the current state of the local document, uploads it to the server, replaces the previous local snapshot, and updates the {Info,Version}.plist on the receiver.
-- (OFXFileSnapshotTransfer *)prepareUploadTransferWithConnection:(ODAVConnection *)connection error:(NSError **)outError;
+- (OFXFileSnapshotTransfer *)prepareUploadTransferWithConnection:(ODAVConnection *)connection error:(NSError **)outPrepareUploadError;
 {
     OBPRECONDITION([self _checkInvariants]);
     OBPRECONDITION(_currentTransfer == nil, "Shouldn't start an upload while still doing another transfer");
@@ -659,24 +659,24 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
     
     DEBUG_CONTENT(1, @"Starting upload with content \"%@\"", OFXLookupDisplayNameForContentIdentifier(_snapshot.currentContentIdentifier));
     
-    OFXFileSnapshotUploadTransfer *transfer;
+    OFXFileSnapshotUploadTransfer *uploadTransfer;
     if (localState.missing && localState.userMoved)
         // Doing a rename of a file that hasn't been downloaded. In this case, we don't have a local copy of the document to use as the basis for an upload (and there is no chance of its contents having been changed).
-        transfer = [[OFXFileSnapshotUploadRenameTransfer alloc] initWithConnection:connection currentSnapshot:_snapshot remoteTemporaryDirectory:containerAgent.remoteTemporaryDirectory currentRemoteSnapshotURL:currentRemoteSnapshotURL error:outError];
+        uploadTransfer = [[OFXFileSnapshotUploadRenameTransfer alloc] initWithConnection:connection currentSnapshot:_snapshot remoteTemporaryDirectory:containerAgent.remoteTemporaryDirectory currentRemoteSnapshotURL:currentRemoteSnapshotURL error:outPrepareUploadError];
     else
-        transfer = [[OFXFileSnapshotUploadContentsTransfer alloc] initWithConnection:connection currentSnapshot:_snapshot forUploadingVersionOfDocumentAtURL:_localDocumentURL localRelativePath:_localRelativePath remoteTemporaryDirectory:containerAgent.remoteTemporaryDirectory error:outError];
-    if (!transfer)
+        uploadTransfer = [[OFXFileSnapshotUploadContentsTransfer alloc] initWithConnection:connection currentSnapshot:_snapshot forUploadingVersionOfDocumentAtURL:_localDocumentURL localRelativePath:_localRelativePath remoteTemporaryDirectory:containerAgent.remoteTemporaryDirectory error:outPrepareUploadError];
+    if (!uploadTransfer)
         return nil;
-    transfer.debugName = self.debugName;
+    uploadTransfer.debugName = self.debugName;
 
-    __weak OFXFileSnapshotUploadTransfer *weakTransfer = transfer;
+    __weak OFXFileSnapshotUploadTransfer *weakTransfer = uploadTransfer;
     
-    [self _transferStarted:transfer];
+    [self _transferStarted:uploadTransfer];
 
-    transfer.transferProgress = ^{
+    uploadTransfer.transferProgress = ^{
         [self _updatedMetadata];
     };
-    transfer.commit = ^BOOL(NSError **outError){
+    uploadTransfer.commit = ^BOOL(NSError **outCommitError){
 #ifdef OMNI_ASSERTIONS_ON
         BOOL movedWhileUploading = NO;
         BOOL moveWhileUploadingIsAutomatic = NO;
@@ -687,8 +687,8 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
             OFXFileSnapshotUploadTransfer *strongTransfer = weakTransfer;
             if (!strongTransfer) {
                 OBASSERT_NOT_REACHED("Shouldn't be invoked after transfer is deallocated");
-                if (outError)
-                    *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
+                if (outCommitError)
+                    *outCommitError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
                 return NO;
             }
 
@@ -726,9 +726,9 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
                 [connection deleteURL:temporaryRemoteSnapshotURL withETag:nil completionHandler:nil];
                 cleanup();
                 
-                if (outError)
-                    *outError = moveError;
-                OBChainError(outError);
+                if (outCommitError)
+                    *outCommitError = moveError;
+                OBChainError(outCommitError);
                 return NO;
             }
             
@@ -779,9 +779,9 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
                 if (deleteError) {
                     cleanup();
 
-                    if (outError)
-                        *outError = deleteError;
-                    OBChainError(outError);
+                    if (outCommitError)
+                        *outCommitError = deleteError;
+                    OBChainError(outCommitError);
                     return NO;
                 }
             }
@@ -797,9 +797,9 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
                 if (![uploadingSnapshot markAsLocallyMovedToRelativePath:_snapshot.localRelativePath isAutomaticMove:NO error:&markError]) {
                     [markError log:@"Error marking uploading snapshot as moved to %@", _snapshot.localRelativePath];
                     cleanup();
-                    if (outError)
-                        *outError = markError;
-                    OBChainError(outError);
+                    if (outCommitError)
+                        *outCommitError = markError;
+                    OBChainError(outCommitError);
                     return NO;
                 }
             }
@@ -808,9 +808,9 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
             __autoreleasing NSError *replaceError;
             if (![[NSFileManager defaultManager] replaceItemAtURL:_snapshot.localSnapshotURL withItemAtURL:uploadingSnapshot.localSnapshotURL backupItemName:nil options:0 resultingItemURL:NULL error:&replaceError]) {
                 [replaceError log:@"Error replacing %@ with %@", _snapshot.localSnapshotURL, uploadingSnapshot.localSnapshotURL];
-                if (outError)
-                    *outError = replaceError;
-                OBChainError(outError);
+                if (outCommitError)
+                    *outCommitError = replaceError;
+                OBChainError(outCommitError);
                 cleanup();
                 OBFinishPorting; // Not sure how to provoke this case to test it or what could be happening.
                 return NO;
@@ -850,7 +850,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
         return YES;
     };
     
-    [transfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
+    [uploadTransfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
         OBINVARIANT([self _checkInvariants]);
         
         OBASSERT(self.isUploading);
@@ -874,7 +874,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
         return errorOrNil;
     }];
 
-    return transfer;
+    return uploadTransfer;
 }
 
 // Downloads the metadata from the remote snapshot (which is expected to have changed), and possibly the contents. If the contents are downloaded, this will unpack it into the proper structure and update the local published document.
@@ -925,24 +925,24 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
 
     DEBUG_CONTENT(2, @"Starting download with local content \"%@\"", OFXLookupDisplayNameForContentIdentifier(_snapshot.currentContentIdentifier));
     
-    OFXFileSnapshotDownloadTransfer *transfer = [[OFXFileSnapshotDownloadTransfer alloc] initWithConnection:connection remoteSnapshotURL:targetRemoteSnapshotURL localTemporaryDocumentContentsURL:localTemporaryDocumentContentsURL currentSnapshot:_snapshot];
-    transfer.debugName = self.debugName;
+    OFXFileSnapshotDownloadTransfer *downloadTransfer = [[OFXFileSnapshotDownloadTransfer alloc] initWithConnection:connection remoteSnapshotURL:targetRemoteSnapshotURL localTemporaryDocumentContentsURL:localTemporaryDocumentContentsURL currentSnapshot:_snapshot];
+    downloadTransfer.debugName = self.debugName;
 
-    __weak OFXFileSnapshotDownloadTransfer *weakTransfer = transfer;
+    __weak OFXFileSnapshotDownloadTransfer *weakTransfer = downloadTransfer;
 
-    [self _transferStarted:transfer];
+    [self _transferStarted:downloadTransfer];
     
-    transfer.started = ^{
+    downloadTransfer.started = ^{
         OFXFileSnapshotDownloadTransfer *strongTransfer = weakTransfer;
         if (strongTransfer.isContentDownload) {
             // Looks like we do need to report a download in our metadata (_makeMetadata avoids doing so until this is YES).
             [self _updatedMetadata];
         }
     };
-    transfer.transferProgress = ^{
+    downloadTransfer.transferProgress = ^{
         [self _updatedMetadata];
     };
-    transfer.commit = ^BOOL(NSError **outError){
+    downloadTransfer.commit = ^BOOL(NSError **outError){
         OBASSERT(self.hasBeenLocallyDeleted == NO);
 
         OFXFileSnapshotDownloadTransfer *strongTransfer = weakTransfer;
@@ -1023,7 +1023,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
         return YES;
     };
     
-    [transfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
+    [downloadTransfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
         OBINVARIANT([self _checkInvariants]);
         
         OBASSERT(self.isDownloading == YES);
@@ -1048,15 +1048,15 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
         return errorOrNil;
     }];
     
-    return transfer;
+    return downloadTransfer;
 }
 
-- (BOOL)_validateDownloadCommitToURL:(NSURL *)_updatedLocalDocumentURL contentSame:(BOOL)contentSame coordinator:(NSFileCoordinator *)coordinator error:(NSError **)outError;
+- (BOOL)_validateDownloadCommitToURL:(NSURL *)_updatedLocalDocumentURL contentSame:(BOOL)contentSame coordinator:(NSFileCoordinator *)coordinator error:(NSError **)outValidateError;
 {
     // TODO: Validate that the updated local document URL is missing too?
     
     // We pass NSFileCoordinatorWritingForMerging in the 'prepare' in our caller, which should force other presenters to relinquish and save, but experimentally it does not. We have to do an explicit read withChanges:YES here to provoke -[OFXTestSaveFilePresenter savePresentedItemChangesWithCompletionHandler:] in -[OFXConflictTestCase testIncomingCreationVsLocalAutosaveCreation].
-    return [coordinator readItemAtURL:_localDocumentURL withChanges:YES error:outError byAccessor:^BOOL(NSURL *newReadingURL, NSError *__autoreleasing *outError) {
+    return [coordinator readItemAtURL:_localDocumentURL withChanges:YES error:outValidateError byAccessor:^BOOL(NSURL *newReadingURL, NSError *__autoreleasing *outError) {
         if (self.localState.missing) {
             // If this is the first download of a new file, and something is sleeping in our bed, then we may have created a local document while the download was going on or while we were offline. Or perhaps two files on the server have specified they want the same location and the user san't resolved the conflict yet. We cannot publish the content from this download to the original URL, but we can publish it to a automatically chosen conflict URL.
             __autoreleasing NSError *existsError;
@@ -1266,12 +1266,12 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
     }
     OBASSERT(container.filePresenter == filePresenter); // Maybe don't need to pass this down...
     
-    OFXFileSnapshotDeleteTransfer *transfer = [[OFXFileSnapshotDeleteTransfer alloc] initWithConnection:connection fileIdentifier:_identifier snapshot:_snapshot remoteContainerURL:container.remoteContainerDirectory remoteTemporaryDirectoryURL:container.remoteTemporaryDirectory];
-    transfer.debugName = self.debugName;
+    OFXFileSnapshotDeleteTransfer *deleteTransfer = [[OFXFileSnapshotDeleteTransfer alloc] initWithConnection:connection fileIdentifier:_identifier snapshot:_snapshot remoteContainerURL:container.remoteContainerDirectory remoteTemporaryDirectoryURL:container.remoteTemporaryDirectory];
+    deleteTransfer.debugName = self.debugName;
     
-    __weak OFXFileSnapshotDeleteTransfer *weakTransfer = transfer;
+    __weak OFXFileSnapshotDeleteTransfer *weakTransfer = deleteTransfer;
     
-    [self _transferStarted:transfer];
+    [self _transferStarted:deleteTransfer];
     
     BOOL (^removeSnapshot)(NSError **outError) = [^BOOL(NSError **outError){
         // Remove the local snapshot. If this fails, we'll be doomed to do the delete again and again... Hopefully the move portion of the atomic delete happens so that we don't see the snapshot on the next run.
@@ -1290,7 +1290,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
         return YES;
     } copy];
     
-    transfer.commit = ^BOOL(NSError **outError){
+    deleteTransfer.commit = ^BOOL(NSError **outError){
         OBASSERT(self.hasBeenLocallyDeleted == YES, @"Cannot resurrect now that the delete has happened on the server"); //
         
         OFXFileSnapshotDeleteTransfer *strongTransfer = weakTransfer;
@@ -1303,7 +1303,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
         return removeSnapshot(outError);
     };
     
-    [transfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
+    [deleteTransfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
         OBASSERT(self.isDeleting);
         [self _transferFinished:transfer withError:errorOrNil];
         
@@ -1325,11 +1325,11 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
         return errorOrNil;
     }];
     
-    return transfer;
+    return deleteTransfer;
 }
 
 // We've noticed a delete from the server and need to remove our published document
-- (BOOL)handleIncomingDeleteWithFilePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outError;
+- (BOOL)handleIncomingDeleteWithFilePresenter:(id <NSFilePresenter>)filePresenter error:(NSError **)outIncomingDeleteError;
 {
     // We might have a pending transfer. If we get here, it should end up failing due to the incoming delete (the validateCommit blocks on those transfers check for deletion and bail).
     //OBPRECONDITION(self.isDownloading == NO);
@@ -1338,7 +1338,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
     
     OBINVARIANT([self _checkInvariants]);
     
-    if (![self markAsRemotelyDeleted:outError])
+    if (![self markAsRemotelyDeleted:outIncomingDeleteError])
         return NO;
     
     // If we die between marking the snapshot as remotely deleted and performing the delete locally, we'll currently re-upload the file to the server on the next run. This isn't terrible, but we could re-process the incoming delete on the next launch by first verifying that the local document reports @YES from -hasSameContentsAsSnapshot: for the deleted snapshot.
@@ -1360,7 +1360,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
         NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:filePresenter];
         
         // Can only use one writing option at a time, so first we specify a write-with-merge to provoke a save, see if anything happened, and if not, delete.
-        BOOL success = [coordinator writeItemAtURL:_localDocumentURL withChanges:YES error:&error byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
+        BOOL success = [coordinator writeItemAtURL:_localDocumentURL withChanges:YES error:&error byAccessor:^BOOL(NSURL *newURL, NSError **outWriteItemError) {
             __autoreleasing NSError *sameError;
             NSNumber *same = [_snapshot hasSameContentsAsLocalDocumentAtURL:newURL coordinator:coordinator withChanges:NO/*should already be saved*/ error:&sameError];
             if (same == nil) {
@@ -1372,7 +1372,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
             }
             if (hasLocalEdit)
                 return NO;
-            return [coordinator removeItemAtURL:newURL error:outError byAccessor:^BOOL(NSURL *newURL2, NSError **outError) {
+            return [coordinator removeItemAtURL:newURL error:outWriteItemError byAccessor:^BOOL(NSURL *newURL2, NSError **outError) {
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
                 // On iOS, we have to handle our own trash
                 if (![ODSScope trashItemAtURL:newURL2 resultingItemURL:NULL error:outError])
@@ -1392,8 +1392,8 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
                 DEBUG_TRANSFER(1, @"Local edit conflicts with incoming delete -- will resurrect document under the same name");
             } else {
                 NSLog(@"Error handling incoming delete. Cannot delete %@: %@", _localDocumentURL, [error toPropertyList]);
-                if (outError)
-                    *outError = error;
+                if (outIncomingDeleteError)
+                    *outIncomingDeleteError = error;
                 return NO;
             }
         }
@@ -1406,8 +1406,8 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
             OBASSERT_NOT_REACHED("Someone poked our snapshot?");
             
             NSLog(@"Error removing local snapshot at %@: %@", _snapshot.localSnapshotURL, [removeError toPropertyList]);
-            if (outError)
-                *outError = removeError;
+            if (outIncomingDeleteError)
+                *outIncomingDeleteError = removeError;
             
             return NO; // ... we could maybe let this slide if the removeError as NSPOSIXErrorDomain/ENOENT, but since we shouldn't get here, lets just fail.
         }
@@ -1715,7 +1715,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
 }
 
 // Assumes the passed in coordinator has a proper file presenter and has been prepared or otherwise is ready to write to the localDocumentURL (nested write).
-- (BOOL)_publishContentsFromTemporaryDocumentURL:(NSURL *)temporaryDocumentURL toLocalDocumentURL:(NSURL *)localDocumentURL snapshot:(OFXFileSnapshot *)snapshot coordinator:(NSFileCoordinator *)coordinator error:(NSError **)outError;
+- (BOOL)_publishContentsFromTemporaryDocumentURL:(NSURL *)temporaryDocumentURL toLocalDocumentURL:(NSURL *)localDocumentURL snapshot:(OFXFileSnapshot *)snapshot coordinator:(NSFileCoordinator *)coordinator error:(NSError **)outPublishContentsError;
 {
     OBPRECONDITION(temporaryDocumentURL);
     OBPRECONDITION([temporaryDocumentURL checkResourceIsReachableAndReturnError:NULL]);
@@ -1733,7 +1733,7 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
     });
     
     // We should be able to pass withChanges=NO here since our 'prepare' already did NSFileCoordinatorWritingForMerging and we don't want to force save again. But, experimentally this doesn't work. We have to pass withChanges:YES to provoke -[OFXTestSaveFilePresenter savePresentedItemChangesWithCompletionHandler:] in -[OFXConflictTestCase testIncomingCreationVsLocalAutosaveCreation].
-    return [coordinator writeItemAtURL:localDocumentURL withChanges:YES error:outError byAccessor:^BOOL(NSURL *newWriteURL, NSError **outError) {
+    return [coordinator writeItemAtURL:localDocumentURL withChanges:YES error:outPublishContentsError byAccessor:^BOOL(NSURL *newWriteURL, NSError **outWriteItemError) {
         
         /*
          HACK HACK HACK: Radar 13167947: Coordinated write to flat file will sometimes not reload NSDocument
@@ -1768,16 +1768,16 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
         
         // Create the folder for this item, which might be the first thing in the folder that has been downloaded
         // It would be nice to have a version of this that will refuse to create the *entire* path. We do *NOT* want to create the account documents directory. There is something terrible going on if that is missing, and if we create it, that could be interpreted as deleting all the other documents in the account.
-        if (![[NSFileManager defaultManager] createDirectoryAtURL:[newWriteURL URLByDeletingLastPathComponent] withIntermediateDirectories:YES attributes:nil error:outError]) {
-            OBChainError(outError);
+        if (![[NSFileManager defaultManager] createDirectoryAtURL:[newWriteURL URLByDeletingLastPathComponent] withIntermediateDirectories:YES attributes:nil error:outWriteItemError]) {
+            OBChainError(outWriteItemError);
             return NO;
         }
         
-        BOOL (^tryReplace)(NSError **outError) = ^BOOL(NSError **outError){
+        BOOL (^tryReplace)(NSError **outTryReplaceError) = ^BOOL(NSError **outTryReplaceError){
             DEBUG_TRANSFER(2, @"  replace %@ with %@", newWriteURL, temporaryDocumentURL);
-            if ([[NSFileManager defaultManager] replaceItemAtURL:newWriteURL withItemAtURL:temporaryDocumentURL backupItemName:nil options:0 resultingItemURL:NULL error:outError])
+            if ([[NSFileManager defaultManager] replaceItemAtURL:newWriteURL withItemAtURL:temporaryDocumentURL backupItemName:nil options:0 resultingItemURL:NULL error:outTryReplaceError])
                 return YES;
-            OBChainError(outError);
+            OBChainError(outTryReplaceError);
             return NO;
         };
         
@@ -1798,17 +1798,17 @@ static NSURL *_makeRemoteSnapshotURL(OFXContainerAgent *containerAgent, ODAVConn
             }
         }
         if (!replaced) {
-            if (outError)
-                *outError = replaceError;
-            OBChainError(outError);
+            if (outWriteItemError)
+                *outWriteItemError = replaceError;
+            OBChainError(outWriteItemError);
             return NO;
         }
         
         OFXNoteContentChanged(self, newWriteURL);
         
         DEBUG_TRANSFER(2, @"  did publish to %@", newWriteURL);
-        if (![snapshot didPublishContentsToLocalDocumentURL:newWriteURL error:outError]) {
-            OBChainError(outError);
+        if (![snapshot didPublishContentsToLocalDocumentURL:newWriteURL error:outWriteItemError]) {
+            OBChainError(outWriteItemError);
             return NO;
         }
         

@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2011, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -134,12 +134,10 @@ RCS_ID("$Id$");
 {
     if (self.isInsideApplicationWrapper) {
         NSError *error = nil;
-        NSBundle *bundle = [NSBundle bundleWithIdentifier:OMNI_BUNDLE_IDENTIFIER];
-        OBASSERT(bundle);
 
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniAppKit", bundle, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Cannot lock a document inside the application package.", @"OmniAppKit", bundle, @"error message");
-        _OBError(&error, OMNI_BUNDLE_IDENTIFIER, 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to lock document.", @"OmniAppKit", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Cannot lock a document inside the application package.", @"OmniAppKit", OMNI_BUNDLE, @"error message");
+        _OBError(&error, [OMNI_BUNDLE bundleIdentifier], 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
 
         completionHandler(error);
     } else
@@ -158,12 +156,10 @@ RCS_ID("$Id$");
 {
     if (self.isInsideApplicationWrapper) {
         NSError *error = nil;
-        NSBundle *bundle = [NSBundle bundleWithIdentifier:OMNI_BUNDLE_IDENTIFIER];
-        OBASSERT(bundle);
 
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to unlock document.", @"OmniAppKit", bundle, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Cannot unlock a document inside the application package.", @"OmniAppKit", bundle, @"error message");
-        _OBError(&error, OMNI_BUNDLE_IDENTIFIER, 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to unlock document.", @"OmniAppKit", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Cannot unlock a document inside the application package.", @"OmniAppKit", OMNI_BUNDLE, @"error message");
+        _OBError(&error, [OMNI_BUNDLE bundleIdentifier], 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
 
         completionHandler(error);
     } else
@@ -202,12 +198,9 @@ RCS_ID("$Id$");
 - (BOOL)canSaveToURL:(NSURL *)url error:(NSError **)error;
 {
     if ([self.class isFileURLInApplicationWrapper:url]) {
-        NSBundle *bundle = [NSBundle bundleWithIdentifier:OMNI_BUNDLE_IDENTIFIER];
-        OBASSERT(bundle);
-
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save document.", @"OmniAppKit", bundle, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Documents cannot be saved inside the application package.", @"OmniAppKit", bundle, @"error message");
-        _OBError(error, OMNI_BUNDLE_IDENTIFIER, 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to save document.", @"OmniAppKit", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Documents cannot be saved inside the application package.", @"OmniAppKit", OMNI_BUNDLE, @"error message");
+        _OBError(error, [OMNI_BUNDLE bundleIdentifier], 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
 
         return NO;
     }
@@ -218,12 +211,9 @@ RCS_ID("$Id$");
 - (BOOL)canMoveToURL:(NSURL *)url error:(NSError **)error;
 {
     if ([self.class isFileURLInApplicationWrapper:url]) {
-        NSBundle *bundle = [NSBundle bundleWithIdentifier:OMNI_BUNDLE_IDENTIFIER];
-        OBASSERT(bundle);
-
-        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to move document.", @"OmniAppKit", bundle, @"error description");
-        NSString *reason = NSLocalizedStringFromTableInBundle(@"Documents cannot be moved inside the application package.", @"OmniAppKit", bundle, @"error message");
-        _OBError(error, OMNI_BUNDLE_IDENTIFIER, 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
+        NSString *description = NSLocalizedStringFromTableInBundle(@"Unable to move document.", @"OmniAppKit", OMNI_BUNDLE, @"error description");
+        NSString *reason = NSLocalizedStringFromTableInBundle(@"Documents cannot be moved inside the application package.", @"OmniAppKit", OMNI_BUNDLE, @"error message");
+        _OBError(error, [OMNI_BUNDLE bundleIdentifier], 1, __FILE__, __LINE__, NSLocalizedDescriptionKey, description, NSLocalizedRecoverySuggestionErrorKey, (reason), nil);
 
         return NO;
     }

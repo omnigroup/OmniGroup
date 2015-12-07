@@ -125,6 +125,16 @@ RCS_ID("$Id$");
                     
                     break;
                 }
+                case 8:
+                {
+                    if (hardwareInfo.minorHardwareIdentifier == 2) {    // iPhone 6s+
+                        ppi = 401;
+                    } else {    // iPhone 6s
+                        ppi = 326;
+                    }
+                    
+                    break;
+                }
                 default:
                 {
                     OBASSERT_NOT_REACHED("Unknown iPhone hardware model");
@@ -180,6 +190,11 @@ RCS_ID("$Id$");
                     break;
                 }
                 case 5: // iPad Air 2
+                {
+                    ppi = 264;
+                    break;
+                }
+                case 6: // iPad Pro
                 {
                     ppi = 264;
                     break;

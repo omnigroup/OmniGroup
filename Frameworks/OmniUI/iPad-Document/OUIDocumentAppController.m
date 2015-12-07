@@ -89,8 +89,8 @@ OBDEPRECATED_METHOD(-conflictResolutionFinished:);
 
 static NSString * const OpenAction = @"open";
 
-static NSString * const ODSShortcutTypeNewDocument = OMNI_BUNDLE_IDENTIFIER @".shortcut-items.new-document";
-static NSString * const ODSShortcutTypeOpenRecent = OMNI_BUNDLE_IDENTIFIER @".shortcut-items.open-recent";
+static NSString * const ODSShortcutTypeNewDocument = @"com.omnigroup.framework.OmniUIDocument.shortcut-items.new-document";
+static NSString * const ODSShortcutTypeOpenRecent = @"com.omnigroup.framework.OmniUIDocument.shortcut-items.open-recent";
 
 static NSString * const ODSOpenRecentDocumentShortcutFileKey = @"ODSFileItemURLStringKey";
 
@@ -231,6 +231,10 @@ static unsigned SyncAgentRunningAccountsContext;
 
 - (void)closeDocument:(id)sender;
 {
+    if ([sender isKindOfClass:[UIKeyCommand class]] && [[UIMenuController sharedMenuController] isMenuVisible]) {
+        [[UIMenuController sharedMenuController] setMenuVisible:NO animated:YES];
+    }
+    
     [self closeDocumentWithCompletionHandler:^{
         [_documentPicker dismissViewControllerAnimated:YES completion:nil];
     }];
@@ -368,28 +372,28 @@ static unsigned SyncAgentRunningAccountsContext;
     [self _openDocument:fileItem fileItemToRevealFrom:nil isOpeningFromPeek:YES willPresentHandler:willPresentHandler completionHandler:completionHandler];
 }
 
-- (void)_openDocument:(ODSFileItem *)fileItem fileItemToRevealFrom:(nullable ODSFileItem *)fileItemToRevealFrom isOpeningFromPeek:(BOOL)isOpeningFromPeek willPresentHandler:(void (^)(OUIDocumentOpenAnimator *openAnimator))willPresentHandler completionHandler:(void (^)(void))completionHandler;
+- (void)_openDocument:(ODSFileItem *)fileItemToOpen fileItemToRevealFrom:(nullable ODSFileItem *)fileItemToRevealFrom isOpeningFromPeek:(BOOL)isOpeningFromPeek willPresentHandler:(void (^)(OUIDocumentOpenAnimator *openAnimator))willPresentHandler completionHandler:(void (^)(void))completionHandler;
 {
     OBPRECONDITION([NSThread isMainThread]);
-    OBPRECONDITION(fileItem);
-    OBPRECONDITION(fileItem.isDownloaded);
+    OBPRECONDITION(fileItemToOpen);
+    OBPRECONDITION(fileItemToOpen.isDownloaded);
     
     if (!isOpeningFromPeek) {
-        [_documentPicker navigateToContainerForItem:fileItem dismissingAnyOpenDocument:YES animated:NO];
+        [_documentPicker navigateToContainerForItem:fileItemToOpen dismissingAnyOpenDocument:YES animated:NO];
         [_documentPicker.selectedScopeViewController _applicationWillOpenDocument];
     }
     
     void (^onFail)(void) = ^{
         if (!isOpeningFromPeek) {
-            [self _fadeInDocumentPickerScrollingToFileItem:fileItem];
+            [self _fadeInDocumentPickerScrollingToFileItem:fileItemToOpen];
         }
         _isOpeningURL = NO;
     };
     onFail = [onFail copy];
 
-    NSString *symlinkDestination = [[NSFileManager defaultManager] destinationOfSymbolicLinkAtPath:[fileItem.fileURL path] error:NULL];
+    NSString *symlinkDestination = [[NSFileManager defaultManager] destinationOfSymbolicLinkAtPath:[fileItemToOpen.fileURL path] error:NULL];
     if (symlinkDestination != nil) {
-        NSString *originalPath = [fileItem.fileURL path];
+        NSString *originalPath = [fileItemToOpen.fileURL path];
         NSString *targetPath = [originalPath stringByResolvingSymlinksInPath];
         if (targetPath == nil || OFISEQUAL(targetPath, originalPath)) {
             onFail();
@@ -398,7 +402,7 @@ static unsigned SyncAgentRunningAccountsContext;
 
         // Look for the target in the fileItem's scope
         NSURL *targetURL = [NSURL fileURLWithPath:targetPath];
-        ODSScope *originalScope = fileItem.scope;
+        ODSScope *originalScope = fileItemToOpen.scope;
         if (![originalScope isFileInContainer:targetURL]) {
             onFail();
             return;
@@ -425,11 +429,11 @@ static unsigned SyncAgentRunningAccountsContext;
     completionHandler = [completionHandler copy];
     
     void (^doOpen)(void) = ^{
-        Class cls = [self documentClassForURL:fileItem.fileURL];
+        Class cls = [self documentClassForURL:fileItemToOpen.fileURL];
         OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
 
         __autoreleasing NSError *error = nil;
-        OUIDocument *document = [[cls alloc] initWithExistingFileItem:fileItem error:&error];
+        OUIDocument *document = [[cls alloc] initWithExistingFileItem:fileItemToOpen error:&error];
         if (!document) {
             OUI_PRESENT_ERROR_FROM(error, self.window.rootViewController);
             onFail();
@@ -567,7 +571,13 @@ static unsigned SyncAgentRunningAccountsContext;
 - (BOOL)shouldOpenOnlineHelpOnFirstLaunch;
 {
     // Apps may wish to override this behavior in a subclass
-    return YES;
+    
+    // Screenshot automation should pass a launch arg to request special behavior—in this case, not showing the help on very first launch, to keep it more consistent with subsequent launches and give us one less thing to special case.
+     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"TAKING_SCREENSHOTS"]) {
+         return NO;
+     } else {
+         return YES;
+     }
 }
 
 #pragma mark -
@@ -619,10 +629,10 @@ static unsigned SyncAgentRunningAccountsContext;
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
-    __autoreleasing NSError *error = nil;
-    NSArray *sampleURLs = [fileManager contentsOfDirectoryAtURL:sampleDocumentsDirectoryURL includingPropertiesForKeys:nil options:0 error:&error];
+    __autoreleasing NSError *directoryContentsError = nil;
+    NSArray *sampleURLs = [fileManager contentsOfDirectoryAtURL:sampleDocumentsDirectoryURL includingPropertiesForKeys:nil options:0 error:&directoryContentsError];
     if (!sampleURLs) {
-        NSLog(@"Unable to find sample documents at %@: %@", sampleDocumentsDirectoryURL, [error toPropertyList]);
+        NSLog(@"Unable to find sample documents at %@: %@", sampleDocumentsDirectoryURL, [directoryContentsError toPropertyList]);
         if (completionHandler)
             completionHandler(nil);
         return;
@@ -1280,6 +1290,11 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     return nil;
 }
 
+- (Class)documentExporterClass
+{
+    OBRequestConcreteImplementation(self, _cmd);
+}
+
 - (Class)documentClassForURL:(NSURL *)url;
 {
     OBRequestConcreteImplementation(self, _cmd);
@@ -1802,12 +1817,12 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     setup.password = [config objectForKey:@"password" defaultObject:setup.password];
     setup.nickname = [config objectForKey:@"nickname" defaultObject:setup.nickname];
 
-    UIViewController *vc = nil;
+    UIViewController *presentFromViewController = nil;
     if (self.document) {
-        vc = self.document.viewControllerToPresent;
+        presentFromViewController = self.document.viewControllerToPresent;
     }
     else {
-        vc = _documentPicker;
+        presentFromViewController = _documentPicker;
     }
 
     setup.finished = ^(OUIServerAccountSetupViewController *vc, NSError *errorOrNil) {
@@ -1836,7 +1851,7 @@ static NSMutableArray *_arrayByRemovingBookmarksMatchingURL(NSArray <NSData *> *
     navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
     navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     
-    [vc presentViewController:navigationController animated:YES completion:nil];
+    [presentFromViewController presentViewController:navigationController animated:YES completion:nil];
 
     return YES;
 }

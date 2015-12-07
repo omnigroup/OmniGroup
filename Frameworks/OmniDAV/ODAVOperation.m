@@ -147,9 +147,12 @@ static OFCharacterSet *TokenDelimiterSet = nil;
                 reason = NSLocalizedStringFromTableInBundle(@"Please make sure that the destination folder exists.", @"OmniDAV", OMNI_BUNDLE, @"error reason");
                 break;
         }
-        NSMutableDictionary *info = [NSMutableDictionary dictionaryWithObjectsAndKeys:description, NSLocalizedDescriptionKey, reason, NSLocalizedRecoverySuggestionErrorKey, nil];
-        [info setObject:davError forKey:NSUnderlyingErrorKey];
-        
+
+        NSDictionary *info = @{
+                 NSLocalizedDescriptionKey: description,
+                 NSLocalizedRecoverySuggestionErrorKey: reason,
+                 NSUnderlyingErrorKey: davError
+        };
         return [NSError errorWithDomain:ODAVHTTPErrorDomain code:code userInfo:info];
     }
     

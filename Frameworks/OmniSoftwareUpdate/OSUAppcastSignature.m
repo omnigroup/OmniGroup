@@ -10,6 +10,7 @@
 #import <OmniFoundation/OFErrors.h>
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/OFXMLSignature.h>
+#import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/OFSecurityUtilities.h>
 #import <Foundation/Foundation.h>
 #import <OmniBase/rcsid.h>

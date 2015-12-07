@@ -934,7 +934,7 @@ static NSSet *_lowercasePathExtensions(id <NSFastEnumeration> pathExtensions)
     return [self containerNeedsFileTransfer:container requestRecorded:nil];
 }
 
-- (void)containerNeedsFileTransfer:(OFXContainerAgent *)container requestRecorded:(void (^)(void))requestRecorded;
+- (void)containerNeedsFileTransfer:(OFXContainerAgent *)transferContainer requestRecorded:(void (^)(void))requestRecorded;
 {
     OBPRECONDITION([NSOperationQueue currentQueue] == _operationQueue);
     

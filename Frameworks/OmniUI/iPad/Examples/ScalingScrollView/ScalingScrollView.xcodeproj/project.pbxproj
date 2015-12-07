@@ -1025,7 +1025,7 @@
 				);
 				INFOPLIST_FILE = "ScalingScrollView-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.ScalingScrollView;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.ScalingScrollView;
 				PRODUCT_NAME = ScalingScrollView;
 				TARGETED_DEVICE_FAMILY = 2;
 			};
@@ -1039,7 +1039,7 @@
 				GCC_PREFIX_HEADER = ScalingScrollView_Prefix.pch;
 				INFOPLIST_FILE = "ScalingScrollView-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.ScalingScrollView;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.ScalingScrollView;
 				PRODUCT_NAME = ScalingScrollView;
 				TARGETED_DEVICE_FAMILY = 2;
 			};

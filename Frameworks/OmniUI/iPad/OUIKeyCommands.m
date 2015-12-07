@@ -56,29 +56,29 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
     NSCharacterSet *nonModifierCharacterSet = [[NSCharacterSet characterSetWithCharactersInString:@"^$@~"] invertedSet];
 
     NSMutableArray *result = [NSMutableArray new];
-    for (NSArray *command in commands) {
+    for (NSArray *commandComponents in commands) {
         
-        NSUInteger componentCount = [command count];
+        NSUInteger componentCount = [commandComponents count];
         OBASSERT(componentCount >= 2 && componentCount <= 3);
         if (componentCount < 2 || componentCount > 3) {
 #ifdef DEBUG
-            NSLog(@"Skipping command %@ due to incorrect formatting in keycommands document.", command);
+            NSLog(@"Skipping command %@ due to incorrect formatting in keycommands document.", commandComponents);
 #endif
             continue;
         }
         
         BOOL hasDiscoverabilityTitleIdentifier = componentCount == 3;
-        NSString *shortcut = [command firstObject];
+        NSString *shortcut = [commandComponents firstObject];
         NSString *selectorName = nil;
         NSString *discoverabilityTitle = nil;
         if (hasDiscoverabilityTitleIdentifier) {
-            selectorName = [command objectAtIndex:1];
-            NSString *discoverabilityTitleIdentifer = [command lastObject];
+            selectorName = [commandComponents objectAtIndex:1];
+            NSString *discoverabilityTitleIdentifer = [commandComponents lastObject];
             OBASSERT(![NSString isEmptyString:discoverabilityTitleIdentifer]);
 
             discoverabilityTitle = [bundle localizedStringForKey:discoverabilityTitleIdentifer value:@"" table:tableName];
         } else {
-            selectorName = [command lastObject];
+            selectorName = [commandComponents lastObject];
         }
         OBASSERT([selectorName rangeOfString:@":"].location == [selectorName length] - 1, "Selector \"%@\" should have one \":\" at the end.", selectorName);
         
@@ -109,10 +109,10 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
                 NSLog(@"Unknown key command modifier flag \"%@\".", substring);
         }];
         
-        NSString *input = [shortcut substringFromIndex:inputStart];
+        NSString *inputString = [shortcut substringFromIndex:inputStart];
         
-        if ([input hasPrefix:@"*"]) {
-            NSString *variableInput = [input substringFromIndex:1];
+        if ([inputString hasPrefix:@"*"]) {
+            NSString *variableInput = [inputString substringFromIndex:1];
             if ([variableInput hasPrefix:@"("] && [variableInput hasSuffix:@")"]) {
                 NSIndexSet *dynamicInputIndexSet = [NSIndexSet indexSetWithRangeString:[variableInput substringWithRange:NSMakeRange(1, [variableInput length] - 1)]];
                 
@@ -127,20 +127,20 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
                 OBASSERT_NOT_REACHED("What kind of dynamic key command is this? Unrecognized syntax.");
             }
         } else {
-            if ([input isEqualToString:@"up"])
-                input = UIKeyInputUpArrow;
-            else if ([input isEqualToString:@"down"])
-                input = UIKeyInputDownArrow;
-            else if ([input isEqualToString:@"left"])
-                input = UIKeyInputLeftArrow;
-            else if ([input isEqualToString:@"right"])
-                input = UIKeyInputRightArrow;
-            else if ([input isEqualToString:@"escape"])
-                input = UIKeyInputEscape;
+            if ([inputString isEqualToString:@"up"])
+                inputString = UIKeyInputUpArrow;
+            else if ([inputString isEqualToString:@"down"])
+                inputString = UIKeyInputDownArrow;
+            else if ([inputString isEqualToString:@"left"])
+                inputString = UIKeyInputLeftArrow;
+            else if ([inputString isEqualToString:@"right"])
+                inputString = UIKeyInputRightArrow;
+            else if ([inputString isEqualToString:@"escape"])
+                inputString = UIKeyInputEscape;
             else
-                OBASSERT([input length] == 1, "Input portion of key command string \"%@\" should be a single character", shortcut);
+                OBASSERT([inputString length] == 1, "Input portion of key command string \"%@\" should be a single character", shortcut);
             
-            UIKeyCommand *command = [UIKeyCommand keyCommandWithInput:input modifierFlags:flags action:NSSelectorFromString(selectorName) discoverabilityTitle:discoverabilityTitle];
+            UIKeyCommand *command = [UIKeyCommand keyCommandWithInput:inputString modifierFlags:flags action:NSSelectorFromString(selectorName) discoverabilityTitle:discoverabilityTitle];
             [result addObject:command];
         }
     }
@@ -171,13 +171,13 @@ static NSArray *_parseKeyCommands(NSArray *commands, NSBundle *bundle, NSString 
             }
             
             error = nil;
-            NSDictionary *keyCommands = [NSPropertyListSerialization propertyListWithData:keyCommandData options:0 format:NULL error:&error];
-            if (!keyCommands) {
+            NSDictionary *keyCommandsPlist = [NSPropertyListSerialization propertyListWithData:keyCommandData options:0 format:NULL error:&error];
+            if (!keyCommandsPlist) {
                 [error log:@"Error deserializing data from %@", keyCommandFileURL];
                 continue;
             }
             
-            [keyCommands enumerateKeysAndObjectsUsingBlock:^(NSString *categoryName, NSArray *keyCommandDescriptions, BOOL *stop) {
+            [keyCommandsPlist enumerateKeysAndObjectsUsingBlock:^(NSString *categoryName, NSArray *keyCommandDescriptions, BOOL *stop) {
                 NSString *tableName = [[keyCommandFileURL lastPathComponent] stringByDeletingPathExtension];
                 NSArray *keyCommands = _parseKeyCommands(keyCommandDescriptions, bundle, tableName);
                 

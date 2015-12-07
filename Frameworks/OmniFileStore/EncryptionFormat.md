@@ -19,10 +19,10 @@ The design is broken into three parts:
 
 * Individual file encryption. Encrypts an individual file, given a
   key provided by the document key management system.
-* Document key management. Allows a device to obtain a files' keys given
-  a password or other authenticator.
+* Document key management. Allows a device to obtain a file's keys given
+  a password or other authenticator for its document.
 * Group membership. A non-password-based authentication method for
-  document keys.
+  document keys. (Future work.)
 
 
 Threat model
@@ -51,12 +51,12 @@ state without having access to any document keys.
 We do not currently have any integrity checks on the *set of files*
 available, although individual files' integrity is checked.
 
-Concern: Depending on our implementation of 'write-only' access, an attacker
-may be able to add arbitrary files, in which case they are probably
-able to *replace* arbitrary files with content of their choosing; if
-so this makes our file integrity fairly weak (but still prevents an
-attacker from replacing part of a file while leaving the rest
-unchanged).
+Concern: Depending on our implementation of a future 'write-only'
+access feature (for e.g. MailDrop), an attacker may be able to add
+arbitrary files, in which case they are probably able to *replace*
+arbitrary files with content of their choosing; if so this makes our
+file integrity fairly weak (but still prevents an attacker from
+replacing part of a file while leaving the rest unchanged).
 
 Concern: We don't authenticate (or encrypt) filenames at all, currently. Should we? They are significant for both OF and OP.
 
@@ -66,8 +66,8 @@ Document Key Management
 This is only partly fleshed out. Document key management must provide
 the following functions:
 
-* Given a key index, provide a file key.
-* Create new file keys as needed, and garbage-collect old ones when no longer used.
+* Given a key index (a small integer), provide a file key (128 or 256 bits of AES key).
+* Create new file keys as needed, and garbage-collect old ones when no longer used. This will require hooks into the application which is using OFS.
 * The information needed to do the above will be protected using a passphrase.
 
 Group Membership
@@ -86,7 +86,7 @@ Concrete File Formats
 Segmented (Random-Access) File Encryption
 -----------------------------------------
 
-Implemented by OFSSegmentedEncryption.{h,m}
+Implemented by `OFSSegmentedEncryption.{h,m}`
 
 This format was designed for on-disk encryption of local content,
 which requires the ability to efficiently read subranges of the encrypted data
@@ -103,7 +103,7 @@ A file consists of:
     * Encrypted file key, wrapped using RFC3394 AESWRAP. Contains:
         * AES key ( kCCKeySizeAES128 = 16 bytes)
         * HMAC key ( SEGMENTED\_MAC\_KEY\_LEN = 16 bytes )
-        * Zero-padding to boundary as needed by AESWRAP
+        * Zero-padding to boundary as needed by AESWRAP (zero bytes)
     * Padding to a 16-byte boundary. Must be zero; must be checked by reader.
 * Variable-length array of encrypted segments
     * Segment IV (12 bytes = block size minus the 32-bit AES-CTR counter)
@@ -156,7 +156,7 @@ are chacha/salsa/poly1305 outside of the djb fan club, anyway?
 
 The IV is constructed from some random bytes and a per-AES-key counter to eliminate the possibility of nonce reuse, but that's an implementation detail.
 (Concern: We currently generate IVs as a combination of random data and a monotonic counter; this means that the order of blocks written is visible in the encrypted file. This probably reveals no useful information, but we could pass the counter through a guaranteed-1:1 transformation, [see][ro1])
- 
+
 NOTE: The segment MAC prevents many modifications of the ciphertext,
 but it is possible to truncate the file to a segment boundary without
 detection. For that, the file MAC is used: it is simply the

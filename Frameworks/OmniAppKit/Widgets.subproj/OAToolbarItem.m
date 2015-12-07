@@ -18,6 +18,19 @@
 RCS_ID("$Id$");
 
 @implementation OAToolbarItem
+{
+    NSImage *_optionKeyImage;
+    NSString *_optionKeyLabel;
+    NSString *_optionKeyToolTip;
+    SEL _optionKeyAction;
+
+    BOOL inOptionKeyState;
+    BOOL observingTintOverrideChanges;
+
+    // If these are non-nil, we'll change our image when the control tint changes.
+    NSString *tintedImageStem, *tintedOptionImageStem;
+    NSBundle *tintedImageBundle;
+}
 
 #define TINT_PREFERENCE ([OFPreference preferenceForKey:OAToolbarItemTintOverridePreference enumeration:[NSImage tintNameEnumeration]])
 
@@ -75,8 +88,9 @@ RCS_ID("$Id$");
 - (void)validate;
 {
     [super validate];
-    if (self.delegate) {
-        self.enabled = [self.delegate validateToolbarItem:self];
+    NSObject *myDelegate = self.delegate;
+    if (myDelegate) {
+        self.enabled = [myDelegate validateToolbarItem:self];
     }
 }
 
@@ -188,3 +202,10 @@ RCS_ID("$Id$");
 
 @end
 
+OB_REQUIRE_ARC // Since we're using weak
+
+@implementation OAToolbarItemButton
+
+@synthesize toolbarItem = _weak_toolbarItem;
+
+@end

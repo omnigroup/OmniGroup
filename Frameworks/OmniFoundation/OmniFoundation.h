@@ -49,6 +49,7 @@
 #import <OmniFoundation/OFNetStateRegistration.h>
 #import <OmniFoundation/OFNull.h>
 #import <OmniFoundation/OFObject.h>
+#import <OmniFoundation/OFObservation.h>
 #import <OmniFoundation/OFOrderedMutableDictionary.h>
 #import <OmniFoundation/OFPerformanceMeasurement.h>
 #import <OmniFoundation/OFPoint.h>
@@ -59,7 +60,9 @@
 #import <OmniFoundation/OFRegularExpressionMatch.h>
 #import <OmniFoundation/OFRelativeDateFormatter.h>
 #import <OmniFoundation/OFRelativeDateParser.h>
+#import <OmniFoundation/OFResultHolder.h>
 #import <OmniFoundation/OFSaveType.h>
+#import <OmniFoundation/OFSelectionSet.h>
 #import <OmniFoundation/OFStringDecoder.h>
 #import <OmniFoundation/OFStringScanner.h>
 #import <OmniFoundation/OFSyncClient.h>
@@ -98,12 +101,10 @@
 	#import <OmniFoundation/OFObject-Queue.h>
 	#import <OmniFoundation/OFOffsetMutableArray.h>
 	#import <OmniFoundation/OFQueueProcessor.h>
-	#import <OmniFoundation/OFResultHolder.h>
 	#import <OmniFoundation/OFRunLoopQueueProcessor.h>
 	#import <OmniFoundation/OFScheduledEvent.h>
 	#import <OmniFoundation/OFScheduler.h>
 	#import <OmniFoundation/OFScratchFile.h>
-	#import <OmniFoundation/OFSecurityUtilities.h>
 	#import <OmniFoundation/OFSignature.h>
 	#import <OmniFoundation/OFSparseArray.h>
 	#import <OmniFoundation/OFSubjectTargettingScriptCommand.h>
@@ -160,6 +161,7 @@
 #import <OmniFoundation/NSAttributedString-OFExtensions.h>
 #import <OmniFoundation/NSData-OFCompression.h>
 #import <OmniFoundation/NSData-OFEncoding.h>
+#import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSData-OFSignature.h>
 #import <OmniFoundation/NSDate-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
@@ -189,7 +191,6 @@
     #import <OmniFoundation/NSBundle-OFExtensions.h>
     #import <OmniFoundation/NSCalendarDate-OFExtensions.h>
     #import <OmniFoundation/NSComparisonPredicate-OFExtensions.h>
-    #import <OmniFoundation/NSData-OFExtensions.h>
     #import <OmniFoundation/NSData-OFFileIO.h>
     #import <OmniFoundation/NSDecimalNumber-OFExtensions.h>
     #import <OmniFoundation/NSException-OFExtensions.h>

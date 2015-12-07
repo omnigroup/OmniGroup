@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,20 +49,13 @@ NSString * const OATextWithIconCellImageKey = @"image";
     return self;
 }
 
-- (void)dealloc;
-{
-    [icon release];
-    
-    [super dealloc];
-}
-
 // NSCopying protocol
 
 - (id)copyWithZone:(NSZone *)zone;
 {
     OATextWithIconCell *copy = [super copyWithZone:zone];
     
-    copy->icon = [icon retain];
+    copy->icon = icon;
     copy->_oaFlags.drawsHighlight = _oaFlags.drawsHighlight;
     
     return copy;
@@ -157,8 +150,7 @@ NSString * const OATextWithIconCellImageKey = @"image";
     
     [label addAttribute:NSParagraphStyleAttributeName value:OATextWithIconCellParagraphStyle range:labelRange];
     [label drawInRect:textRect];
-    [label release];
-    
+
     // Draw the image
     imageRect.size = imageSize;
     imageRect.origin.y += (CGFloat)ceil((NSHeight(aRect) - imageSize.height) / 2.0f);
@@ -219,8 +211,7 @@ NSString * const OATextWithIconCellImageKey = @"image";
 {
     if (anIcon == icon)
         return;
-    [icon release];
-    icon = [anIcon retain];
+    icon = anIcon;
 }
 
 - (NSCellImagePosition)imagePosition;

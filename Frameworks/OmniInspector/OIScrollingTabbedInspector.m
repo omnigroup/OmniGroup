@@ -15,6 +15,7 @@ RCS_ID("$Id$")
 
 @interface OITabbedInspector (PrivateParts)
 - (void)_layoutSelectedTabs;
+- (void)_scrollerStyleDidChange:(NSNotification *)notification;
 @end
 
 @interface OIScrollingTabbedInspector ()
@@ -43,6 +44,7 @@ RCS_ID("$Id$")
     NSColor *inspectorBackgroundColor = [[OIAppearance appearance] colorForKeyPath:@"InspectorBackgroundColor"];
     self.inspectorScrollView.backgroundColor = inspectorBackgroundColor;
     self.inspectorScrollView.drawsBackground = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_scrollerStyleDidChange:) name:NSPreferredScrollerStyleDidChangeNotification object:nil];
 
     [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
 }
@@ -118,6 +120,12 @@ RCS_ID("$Id$")
     
     self.view.superview.needsLayout = YES;
     [self.view.window recalculateKeyViewLoop];
+}
+
+- (void)_scrollerStyleDidChange:(NSNotification *)notification
+{
+    // We don't really need to redo all the layout, but we do want to maybe adjust the width based on [verticalScroller scrollerStyle]
+    [self _layoutSelectedTabs];
 }
 
 @end

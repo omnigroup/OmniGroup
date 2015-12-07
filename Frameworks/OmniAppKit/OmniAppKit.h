@@ -84,8 +84,10 @@
 #import <OmniAppKit/OACloseButtonOverlay.h>
 #import <OmniAppKit/OAColorPalette.h>
 #import <OmniAppKit/OAColorProfile.h>
+#import <OmniAppKit/OAColorSpaceManager.h>
 #import <OmniAppKit/OAColorWell.h>
 #import <OmniAppKit/OACompositeColorProfile.h>
+#import <OmniAppKit/OAConstraintBasedStackView.h>
 #import <OmniAppKit/OAConfigurableColumnTableView.h>
 #import <OmniAppKit/OAContextButton.h>
 #import <OmniAppKit/OAContextControl.h>
@@ -130,6 +132,7 @@
 #import <OmniAppKit/OASpringLoadHelper.h>
 #import <OmniAppKit/OAStackView.h>
 #import <OmniAppKit/OASteppableTextField.h>
+#import <OmniAppKit/OAStepperTextField.h>
 #import <OmniAppKit/OASubtleScroller.h>
 #import <OmniAppKit/OASwoopView.h>
 #import <OmniAppKit/OATabView.h>

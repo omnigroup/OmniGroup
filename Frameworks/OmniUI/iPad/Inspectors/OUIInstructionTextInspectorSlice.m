@@ -65,34 +65,36 @@ RCS_ID("$Id$");
     return YES;
 }
 
-- (CGFloat)minimumHeightForWidth:(CGFloat)width;
+- (UIColor *)sliceBackgroundColor;
 {
-    UILabel *label = (UILabel *)self.view;
-    return [label sizeThatFits:CGSizeMake(width, 0)].height;
-}
-
-- (UIView *)makeSliceBackgroundView;
-{
-    return nil;
-}
-
-- (CGFloat)paddingToInspectorLeft;
-{
-    return [super paddingToInspectorLeft] - 6;
+    return [UIColor clearColor];
 }
 
 #pragma mark - UIViewController subclass
 
 - (void)loadView;
 {
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 0)];
-    [label applyStyle:OUILabelStyleInspectorSliceInstructionText];
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 0)];
+    self.label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 0)];
+    [self.label applyStyle:OUILabelStyleInspectorSliceInstructionText];
     
-    label.numberOfLines = 0; // No limit
-    label.text = _instructionText;
-    label.lineBreakMode = NSLineBreakByWordWrapping;
-    
-    self.view = label;
+    self.label.numberOfLines = 0; // No limit
+    self.label.text = _instructionText;
+    self.label.lineBreakMode = NSLineBreakByWordWrapping;
+
+    [containerView addSubview:self.label];
+
+    //constraints
+    containerView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.label.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [NSLayoutConstraint activateConstraints:@[
+                                              [self.label.leftAnchor constraintEqualToAnchor:containerView.leftAnchor constant:self.class.sliceAlignmentInsets.left],
+                                              [self.label.rightAnchor constraintEqualToAnchor:containerView.rightAnchor constant:self.class.sliceAlignmentInsets.right * -1],
+                                              [self.label.topAnchor constraintEqualToAnchor:containerView.topAnchor],
+                                              [self.label.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor]]];
+
+    self.view = containerView;
     
     [self sizeChanged];
 }

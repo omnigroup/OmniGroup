@@ -563,6 +563,9 @@ RCS_ID("$Id$")
                     break;
                 }
             }
+            if (preferredIdentifier != nil) {
+                break;
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -186,10 +186,10 @@ RCS_ID("$Id$");
     
     CGPoint currentPoint = bounds.origin;
     OBASSERT([_layoutManager.textContainers count] == 1);
-    NSRange glyphRange = [_layoutManager glyphRangeForTextContainer:_textContainer];
+    NSRange entireGlyphRange = [_layoutManager glyphRangeForTextContainer:_textContainer];
     
     if (shouldDrawBackground)
-        [_layoutManager drawBackgroundForGlyphRange:glyphRange atPoint:currentPoint];
+        [_layoutManager drawBackgroundForGlyphRange:entireGlyphRange atPoint:currentPoint];
     
     if (extraBackgroundRangesAndColors) {
         extraBackgroundRangesAndColors(ctx, ^(NSRange range, CGColorRef color){
@@ -211,7 +211,7 @@ RCS_ID("$Id$");
     }
     
     if (shouldDrawForeground)
-        [_layoutManager drawGlyphsForGlyphRange:glyphRange atPoint:currentPoint];
+        [_layoutManager drawGlyphsForGlyphRange:entireGlyphRange atPoint:currentPoint];
     
     if (!shouldFlip) {
         CGContextRestoreGState(ctx);

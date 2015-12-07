@@ -389,6 +389,7 @@
 		349E084617B0CEE100495835 /* OFXPropertyListCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXPropertyListCache.h; sourceTree = SOURCE_ROOT; };
 		349E084717B0CEE100495835 /* OFXPropertyListCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXPropertyListCache.m; sourceTree = SOURCE_ROOT; };
 		34A270741731C5A300C00438 /* OFXRemotePackageTypeTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXRemotePackageTypeTestCase.m; sourceTree = "<group>"; };
+		34A302D01BDEAFA500E862B9 /* OmniFileExchange.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = OmniFileExchange.modulemap; sourceTree = "<group>"; };
 		34A847DA16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OFXFileSnapshotRemoteEncoding.h; sourceTree = SOURCE_ROOT; };
 		34A847DB16B98D5400ACDB6C /* OFXFileSnapshotRemoteEncoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OFXFileSnapshotRemoteEncoding.m; sourceTree = SOURCE_ROOT; };
 		34AFACE2164B0E70009E39AB /* OmniFileExchange.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniFileExchange.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -866,6 +867,7 @@
 			isa = PBXGroup;
 			children = (
 				34824CBB1742E8FC00253D52 /* OmniFileExchange.h */,
+				34A302D01BDEAFA500E862B9 /* OmniFileExchange.modulemap */,
 				34AFACED164B0E70009E39AB /* OmniFileExchange-Info.plist */,
 				34AFACF1164B0E70009E39AB /* OmniFileExchange_Prefix.h */,
 				34BAF4C3164B95C9001BC4B0 /* OmniFileExchange.defaults */,
@@ -1153,7 +1155,7 @@
 		34AFACD8164B0E70009E39AB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = "The Omni Group";
 				TargetAttributes = {
 					343682781B58284500BC25E6 = {
@@ -1459,7 +1461,8 @@
 			baseConfigurationReference = 3436828C1B58285E00BC25E6 /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = "OmniFileExchange-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileExchange;
+				MODULEMAP_FILE = OmniFileExchange.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileExchange;
 				PRODUCT_NAME = OmniFileExchange;
 			};
 			name = Debug;
@@ -1469,7 +1472,8 @@
 			baseConfigurationReference = 3436828D1B58285E00BC25E6 /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = "OmniFileExchange-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileExchange;
+				MODULEMAP_FILE = OmniFileExchange.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileExchange;
 				PRODUCT_NAME = OmniFileExchange;
 			};
 			name = Release;
@@ -1513,7 +1517,8 @@
 			baseConfigurationReference = 34AFAD09164B0E8C009E39AB /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = "OmniFileExchange-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileExchange;
+				MODULEMAP_FILE = OmniFileExchange.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileExchange;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -1523,7 +1528,8 @@
 			baseConfigurationReference = 34AFAD0A164B0E8C009E39AB /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = "OmniFileExchange-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileExchange;
+				MODULEMAP_FILE = OmniFileExchange.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniFileExchange;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -1536,7 +1542,6 @@
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Test/OFXUnitTests/OFXUnitTests-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
 					"$(value)",
@@ -1547,7 +1552,7 @@
 					../OmniBase,
 				);
 				INFOPLIST_FILE = "Test/OFXUnitTests/OFXUnitTests-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OFXUnitTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OFXUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1561,7 +1566,6 @@
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Test/OFXUnitTests/OFXUnitTests-Prefix.pch";
 				HEADER_SEARCH_PATHS = (
 					"$(value)",
@@ -1572,7 +1576,7 @@
 					../OmniBase,
 				);
 				INFOPLIST_FILE = "Test/OFXUnitTests/OFXUnitTests-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OFXUnitTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OFXUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
 			};

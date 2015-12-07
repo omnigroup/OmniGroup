@@ -248,8 +248,7 @@ RCS_ID("$Id$");
     UILabel *label = cell.textLabel;
     label.text = option.title;
     
-    UIImage *image = [option.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    cell.imageView.image = image;
+    cell.imageView.image = [option.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     
     OBASSERT_IF(option.destructive, option.action, "Cannot have a disabled destructive action");
     if (option.destructive) {
@@ -319,8 +318,9 @@ RCS_ID("$Id$");
     OUIMenuOptionAction action = option.action;
     if (action) {
         [_weak_controller dismissAndInvokeOption:option];
-    } else
+    } else {
         [self _showSubmenuForParentOption:option];
+    }
 }
 
 #pragma mark - Private

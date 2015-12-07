@@ -11,6 +11,7 @@
 #import <OmniUIDocument/OUIDocumentPickerScrollView.h>
 #import <OmniUIDocument/OUIReplaceDocumentAlert.h>
 #import <OmniUIDocument/OUIExportOptionsType.h>
+#import <OmniUIDocument/OUIDocumentExporter.h>
 
 @class NSFileWrapper;
 @class ODSScope, ODSItem, ODSFileItem, ODSFolderItem, OUIDocumentPicker, OUIDocumentPickerScrollView, OUIDocumentPickerFilter, ODSFilter, OFXServerAccount;
@@ -18,7 +19,7 @@
 
 @protocol OUIDocumentPickerDelegate;
 
-@interface OUIDocumentPickerViewController : UIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate, OUIReplaceDocumentAlertDelegate>
+@interface OUIDocumentPickerViewController : UIViewController <UIGestureRecognizerDelegate, OUIDocumentPickerScrollViewDelegate, UIDocumentInteractionControllerDelegate, OUIReplaceDocumentAlertDelegate, OUIDocumentExporterHost>
 
 - (instancetype)initWithDocumentPicker:(OUIDocumentPicker *)picker scope:(ODSScope *)scope;
 - (instancetype)initWithDocumentPicker:(OUIDocumentPicker *)picker folderItem:(ODSFolderItem *)folderItem;
@@ -51,8 +52,7 @@
 @property(nonatomic,readonly) NSSet *selectedItems;
 @property(nonatomic,readonly) NSSet *selectedFolders;
 
-- (void)clearSelection:(BOOL)shouldEndEditing;
-@property(nonatomic,readonly) ODSFileItem *singleSelectedFileItem;
+- (void)clearSelectionAndEndEditing;
 
 - (void)addDocumentFromURL:(NSURL *)url completionHandler:(void (^)(void))completionHandler;
 - (void)addDocumentFromURL:(NSURL *)url;
@@ -61,17 +61,6 @@
     // For exports to iTunes, it's possible that we'll want to show the result of the export in our document picker, e.g., Outliner can export to OPML or plain text, but can also work with those document types. This method is called after a successful export to give the picker a chance to update if necessary.
 
 - (NSArray *)availableFilters;
-- (NSArray *)availableExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType;
-- (NSArray *)availableImageExportTypesForFileItem:(ODSFileItem *)fileItem;
-- (void)exportFileWrapperOfType:(NSString *)exportType forFileItem:(ODSFileItem *)fileItem withCompletionHandler:(void (^)(NSFileWrapper *fileWrapper, NSError *error))completionHandler;
-
-- (UIImage *)iconForUTI:(NSString *)fileUTI;
-- (UIImage *)exportIconForUTI:(NSString *)fileUTI;
-- (NSString *)exportLabelForUTI:(NSString *)fileUTI;
-
-- (NSArray *)availableInAppPurchaseExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType;
-- (NSString *)purchaseDescriptionForExportType:(NSString *)fileUTI;
-- (void)purchaseExportType:(NSString *)fileUTI navigationController:(UINavigationController *)navigationController;
 
 - (void)scrollToTopAnimated:(BOOL)animated;
 - (void)scrollItemToVisible:(ODSItem *)item animated:(BOOL)animated;
@@ -82,11 +71,7 @@
 - (void)newDocumentWithTemplateFileItem:(ODSFileItem *)templateFileItem;
 - (IBAction)duplicateDocument:(id)sender;
 - (IBAction)deleteDocument:(id)sender;
-- (IBAction)export:(id)sender;
-- (IBAction)emailDocument:(id)sender;
 - (IBAction)sortSegmentChanged:(id)sender;
-- (void)emailExportType:(NSString *)exportType;
-- (void)sendEmailWithFileWrapper:(NSFileWrapper *)fileWrapper forExportType:(NSString *)exportType;
 
 + (OFPreference *)scopePreference;
 + (OFPreference *)folderPreference;

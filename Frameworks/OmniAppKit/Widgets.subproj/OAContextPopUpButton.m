@@ -1,4 +1,4 @@
-// Copyright 2004-2006, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,7 +26,7 @@ RCS_ID("$Id$");
 {
     static NSImage *gearImage = nil;
     if (gearImage == nil) {
-        gearImage = [[NSImage imageNamed:@"OAGearTemplate" inBundle:OMNI_BUNDLE] retain];
+        gearImage = [NSImage imageNamed:@"OAGearTemplate" inBundle:OMNI_BUNDLE];
         OBASSERT(gearImage != nil);
     }
 
@@ -67,12 +67,6 @@ RCS_ID("$Id$");
     [self _commonInit];
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [gearItem release];
-    [super dealloc];
 }
 
 - (void)awakeFromNib

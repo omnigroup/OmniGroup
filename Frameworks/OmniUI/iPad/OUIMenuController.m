@@ -152,16 +152,18 @@ RCS_ID("$Id$");
 // Called by OUIMenuOptionsController
 - (void)dismissAndInvokeOption:(OUIMenuOption *)option;
 {
-    {
-        if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionDismiss) {
-            [_menuNavigationController dismissViewControllerAnimated:YES completion:^{if (option.action != nil) option.action();}];
-        } else if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionReload) {
-            if ((option.action != nil) && option.isEnabled) {
+    if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionDismiss) {
+        [_menuNavigationController dismissViewControllerAnimated:YES completion:^{
+            if (option.action != nil) {
                 option.action();
             }
-            
-            _menuNavigationController.viewControllers = @[[self _makeTopMenu]];
+        }];
+    } else if (_optionInvocationAction == OUIMenuControllerOptionInvocationActionReload) {
+        if ((option.action != nil) && option.isEnabled) {
+            option.action();
         }
+        
+        _menuNavigationController.viewControllers = @[[self _makeTopMenu]];
     }
 }
 

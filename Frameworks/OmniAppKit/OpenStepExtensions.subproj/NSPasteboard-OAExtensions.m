@@ -18,7 +18,7 @@ RCS_ID("$Id$")
 
 - (NSParagraphStyle *)paragraphStyleForType:(NSString *)type;
 {
-    NSAttributedString *attributedString = [[[NSAttributedString alloc] initWithRTF:[self dataForType:type] documentAttributes:NULL] autorelease];
+    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithRTF:[self dataForType:type] documentAttributes:NULL];
     if ([attributedString length] == 0)
         return nil;
     return [attributedString attribute:NSParagraphStyleAttributeName atIndex:0 effectiveRange:NULL];
@@ -29,7 +29,7 @@ RCS_ID("$Id$")
     if (paragraphStyle == nil)
         return NO;
     NSDictionary *attributes = [NSDictionary dictionaryWithObject:paragraphStyle forKey:NSParagraphStyleAttributeName];
-    NSMutableAttributedString *attributedString = [[[NSMutableAttributedString alloc] initWithString:@" " attributes:attributes] autorelease];
+    NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:@" " attributes:attributes];
     return [self setData:[attributedString RTFFromRange:NSMakeRange(0,[attributedString length]) documentAttributes:@{}] forType:type];
 }
 

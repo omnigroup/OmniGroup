@@ -111,13 +111,13 @@ RCS_ID("$Id$");
     __block BOOL longPress = NO;
     
     OATrackingLoop *loop = [self trackingLoopForMouseDown:mouseDownEvent];
-    loop.insideVisibleRectChanged = ^(OATrackingLoop *loop){
-        [self highlight:loop.insideVisibleRect];
+    loop.insideVisibleRectChanged = ^(OATrackingLoop *trackingLoop){
+        [self highlight:trackingLoop.insideVisibleRect];
     };
-    loop.longPress = ^(OATrackingLoop *loop){
+    loop.longPress = ^(OATrackingLoop *trackingLoop){
         [self _showMenu];
         longPress = YES;
-        [loop stop];
+        [trackingLoop stop];
     };
     [loop run];
     

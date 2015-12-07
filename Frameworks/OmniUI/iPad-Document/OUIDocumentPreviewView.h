@@ -16,6 +16,7 @@ extern void OUIDocumentPreviewViewSetLightBorder(UIView *view);
 
 @interface OUIDocumentPreviewView : UIView
 
+@property(nonatomic,retain) IBOutlet UIImageView *imageView;
 @property(assign,nonatomic) BOOL draggingSource;
 @property(assign,nonatomic) BOOL highlighted;
 

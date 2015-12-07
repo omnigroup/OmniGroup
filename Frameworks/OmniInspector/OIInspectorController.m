@@ -535,7 +535,7 @@ NSComparisonResult OISortByDefaultDisplayOrderInGroup(OIInspectorController *a, 
         }
         
 	NSSize size = [inspectorView frame].size;
-	OBASSERT(size.width <= [self.inspectorRegistry inspectorWidth]); // OK to make inspectors wider, but probably indicates a problem if the nib is wider than the global inspector width
+	OBASSERT(size.width <= [self.inspectorRegistry inspectorWidth], @"size is %1.2f, inspector registry wants %1.2f", size.width, [self.inspectorRegistry inspectorWidth]); // OK to make inspectors wider, but probably indicates a problem if the nib is wider than the global inspector width
         if (size.width > [self.inspectorRegistry inspectorWidth]) {
             NSLog(@"Inspector %@ is wider (%g) than grouped width (%g)", [self identifier], size.width, [self.inspectorRegistry inspectorWidth]);
         }

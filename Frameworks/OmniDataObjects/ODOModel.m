@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,10 +9,10 @@
 
 #import <OmniDataObjects/ODOObject.h>
 #import <OmniDataObjects/ODOModel-Creation.h>
-#import <OmniDataObjects/ODOObject-Accessors.h>
 
 #import "ODOEntity-Internal.h"
 #import "ODODatabase-Internal.h"
+#import "ODOObject-Accessors.h"
 
 RCS_ID("$Id$")
 
@@ -44,7 +44,7 @@ static CFMutableDictionaryRef EntityToClass = nil;
     return (ODOEntity *)CFDictionaryGetValue(ClassToEntity, cls);
 }
 
-ODOModel *ODOModelCreate(NSString *name, NSArray *entities)
+ODOModel *ODOModelCreate(NSString *modelName, NSArray *entities)
 {
     ODOModel *model;
     
@@ -57,15 +57,15 @@ ODOModel *ODOModelCreate(NSString *name, NSArray *entities)
 #endif
         model = [[ODOModel alloc] init];
         
-        model->_name = [name copy];
+        model->_name = [modelName copy];
         
         NSMutableDictionary *entitiesByName = [NSMutableDictionary dictionary];
         for (ODOEntity *entity in entities) {
-            NSString *name = [entity name];
+            NSString *entityName = [entity name];
             
-            OBASSERT(![name hasPrefix:@"ODO"]); // All entity names beginning with ODO are reserved
-            OBASSERT([entitiesByName objectForKey:name] == nil);
-            [entitiesByName setObject:entity forKey:name];
+            OBASSERT(![entityName hasPrefix:@"ODO"]); // All entity names beginning with ODO are reserved
+            OBASSERT([entitiesByName objectForKey:entityName] == nil);
+            [entitiesByName setObject:entity forKey:entityName];
         }
         model->_entitiesByName = [[NSDictionary alloc] initWithDictionary:entitiesByName];
 #ifdef OMNI_ASSERTIONS_ON

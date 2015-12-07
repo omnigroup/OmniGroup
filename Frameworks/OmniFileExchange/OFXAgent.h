@@ -9,7 +9,9 @@
 
 #import <OmniBase/OBObject.h>
 #import <OmniFileExchange/OFXSyncSchedule.h>
+#import <Foundation/NSEnumerator.h> // NSFastEnumeration
 
+@class NSOperation;
 @class OFPreference, OFFileMotionResult;
 @class ODAVConnectionConfiguration;
 @class OFXServerAccountRegistry, OFXServerAccount, OFXRegistrationTable, OFXAccountClientParameters, OFXFileMetadata;

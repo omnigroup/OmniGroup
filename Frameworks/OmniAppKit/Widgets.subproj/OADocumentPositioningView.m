@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -36,7 +36,6 @@ RCS_ID("$Id$");
 - (void)dealloc;
 {
     [self _setDocumentView:nil];
-    [super dealloc];
 }
 
 // API
@@ -187,12 +186,11 @@ RCS_ID("$Id$");
     if (documentView != nil) {
         [[NSNotificationCenter defaultCenter] removeObserver:self  name:NSViewFrameDidChangeNotification object:documentView];
         [documentView removeFromSuperview];
-        [documentView release];
         documentView = nil;
     }
 
     if (value != nil) {
-        documentView = [value retain];
+        documentView = value;
         [self addSubview:documentView];
         [documentView setAutoresizingMask:NSViewNotSizable];	// so we will be told when our superview changes size, which might impact our frame
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_documentViewFrameChangedNotification:) name:NSViewFrameDidChangeNotification object:documentView];	// so we know when the document view changes size, which might impact our frame and/or the document view's position, and may mean we need to redisplay regardless

@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,13 +39,6 @@ static NSView *_emptyView = nil;
     return self;
 }
 
-- (void)dealloc;
-{
-    [backgroundColor release];
-    [rows release];
-    [super dealloc];
-}
-
 //
 // Accessors
 //
@@ -69,7 +62,6 @@ static NSView *_emptyView = nil;
                 [rowViews addObject:_emptyView];
             }
             [rows addObject:rowViews];
-            [rowViews release];
         }
 
         rowCount = newRowCount;
@@ -294,8 +286,7 @@ static NSView *_emptyView = nil;
     if (newBackgroundColor == backgroundColor)
         return;
 
-    [backgroundColor release];
-    backgroundColor = [newBackgroundColor retain];
+    backgroundColor = newBackgroundColor;
     [self setNeedsDisplay:YES];
 }
 

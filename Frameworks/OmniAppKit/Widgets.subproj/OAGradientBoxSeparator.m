@@ -1,4 +1,4 @@
-// Copyright 2012-2014 The Omni Group. All rights reserved.
+// Copyright 2012-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,14 +10,6 @@
 RCS_ID("$Id$");
 
 @implementation OAGradientBoxSeparator
-
-- (void)dealloc;
-{
-    [_lineGradient release];
-    [_backgroundGradient release];
-    
-    [super dealloc];
-}
 
 #pragma mark - OABoxSeparator subclass
 
@@ -53,10 +45,10 @@ RCS_ID("$Id$");
 
 - (NSGradient *)defaultGradientWithColor:(NSColor *)color;
 {
-    NSColor *solidColor = [[color copy] autorelease];
+    NSColor *solidColor = [color copy];
     NSColor *transparentColor = [color colorWithAlphaComponent:0.0f];
     
-    return [[[NSGradient alloc] initWithColors:@[transparentColor, solidColor, transparentColor]] autorelease];
+    return [[NSGradient alloc] initWithColors:@[transparentColor, solidColor, transparentColor]];
 }
 
 - (void)drawGradient:(NSGradient *)gradient clippingToRect:(NSRect)rect;

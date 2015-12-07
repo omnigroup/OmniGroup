@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,21 +18,21 @@
 
 @class NSMutableArray;
 
-@interface NSDictionary (OFExtensions)
+@interface NSDictionary<__covariant KeyType, __covariant ObjectType> (OFExtensions)
 
-- (NSDictionary *)dictionaryWithPossiblyRemovedObject:(id)anObj forKey:(NSString *)key;
-- (NSDictionary *)dictionaryWithObject:(id)anObj forKey:(NSString *)key;
+- (NSDictionary *)dictionaryWithPossiblyRemovedObject:(ObjectType)anObj forKey:(NSString *)key;
+- (NSDictionary *)dictionaryWithObject:(ObjectType)anObj forKey:(NSString *)key;
 - (NSDictionary *)dictionaryWithObjectRemovedForKey:(NSString *)key;
 - (NSDictionary *)dictionaryByAddingObjectsFromDictionary:(NSDictionary *)otherDictionary;
 
-- (id)anyObject;
+- (ObjectType)anyObject;
 - (NSString *)keyForObjectEqualTo:(id)anObj;
 
 - (NSString *)stringForKey:(NSString *)key defaultValue:(NSString *)defaultValue;
 - (NSString *)stringForKey:(NSString *)key;
 
-- (NSArray *)stringArrayForKey:(NSString *)key defaultValue:(NSArray *)defaultValue;
-- (NSArray *)stringArrayForKey:(NSString *)key;
+- (NSArray<NSString *> *)stringArrayForKey:(NSString *)key defaultValue:(NSArray<NSString *> *)defaultValue;
+- (NSArray<NSString *> *)stringArrayForKey:(NSString *)key;
 
 // ObjC methods to nil have undefined results for non-id values (though ints happen to currently work)
 - (float)floatForKey:(NSString *)key defaultValue:(float)defaultValue;
@@ -70,14 +70,14 @@
 - (void)makeValuesPerformSelector:(SEL)sel;
 
     // This seems more convenient than having to write your own if statement a zillion times
-- (id)objectForKey:(NSString *)key defaultObject:(id)defaultObject;
+- (ObjectType)objectForKey:(KeyType)key defaultObject:(ObjectType)defaultObject;
 
-- (NSMutableDictionary *)deepMutableCopy NS_RETURNS_RETAINED;
+- (NSMutableDictionary<KeyType,ObjectType> *)deepMutableCopy NS_RETURNS_RETAINED;
 
-- (NSArray *)copyKeys;
-- (NSMutableArray *)mutableCopyKeys;
+- (NSArray<KeyType> *)copyKeys;
+- (NSMutableArray<KeyType> *)mutableCopyKeys;
 
-- (NSSet *)copyKeySet;
-- (NSMutableSet *)mutableCopyKeySet;
+- (NSSet<KeyType> *)copyKeySet;
+- (NSMutableSet<KeyType> *)mutableCopyKeySet;
 
 @end

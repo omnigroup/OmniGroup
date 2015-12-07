@@ -9,6 +9,8 @@
 
 #import <XCTest/XCTest.h>
 
+#import <OmniBase/OmniBase.h>
+
 @interface OBTestCase : XCTestCase
 + (BOOL)shouldRunSlowUnitTests;
 @end

@@ -7,6 +7,9 @@
 //
 // $Id$
 
+#import <Foundation/Foundation.h>
+#import <OmniFoundation/OFSecurityUtilities.h>
+
 /* These routines parse out interesting parts of some common DER/BER-encoded objects, which is especially useful on iOS where we can't rely on Security.framework to do it for us. */
 int OFASN1CertificateExtractFields(NSData *cert, NSData **serialNumber, NSData **issuer, NSData **subject, NSData **subjectKeyInformation, void (^extensions_cb)(NSData *oid, BOOL critical, NSData *value));
 BOOL OFASN1EnumerateAVAsInName(NSData *rdnseq, void (^callback)(NSData *a, NSData *v, unsigned ix, BOOL *stop));
@@ -22,6 +25,9 @@ NSData *OFASN1EnDERString(NSString *str);
 /* OIDs */
 NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len); // Textual description for debugging
 NSData *OFASN1OIDFromString(NSString *s);  // Return DER-encoded OID from a dotted-integers string - not really intended for user-supplied strings
+
+/* This determines the algorithm and key size from an X.509 public key info structure */
+extern enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int *outKeySize, unsigned int *outOtherSize);
 
 /* Used for constructing DER-encoded objects */
 void OFASN1AppendTagLength(NSMutableData *buffer, uint8_t tag, NSUInteger byteCount);

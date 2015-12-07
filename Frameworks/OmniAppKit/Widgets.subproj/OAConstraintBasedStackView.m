@@ -82,7 +82,7 @@ static void _commonInit(OAConstraintBasedStackView *self)
         @"left" : @(0.0),
         @"right" : @(0.0),
         @"vspace" : @(0.0),
-        @"priority" : @(250.0),
+        @"priority" : @(750.0),
     };
     for (NSView *subview in self.orderedSubviews) {
         OBASSERT(subview.superview == self);

@@ -148,9 +148,9 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 }
 #endif
 
-+ (BOOL)validateLocalDocumentsURL:(NSURL *)documentsURL reason:(OFXServerAccountLocalDirectoryValidationReason)reason error:(NSError **)outError;
++ (BOOL)validateLocalDocumentsURL:(NSURL *)documentsURL reason:(OFXServerAccountLocalDirectoryValidationReason)validationReason error:(NSError **)outError;
 {
-    if (reason == OFXServerAccountValidateLocalDirectoryForAccountCreation) {
+    if (validationReason == OFXServerAccountValidateLocalDirectoryForAccountCreation) {
         // The directory needs to be empty since we don't want to spuriously generate conflicts/deletions when attaching a folder with gunk in it.
         __autoreleasing NSError *contentsError;
         NSArray *existingURLs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:documentsURL includingPropertiesForKeys:nil options:NSDirectoryEnumerationSkipsSubdirectoryDescendants error:&contentsError];
@@ -170,7 +170,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
             return NO;
         }
     } else {
-        OBASSERT(reason == OFXServerAccountValidateLocalDirectoryForSyncing);
+        OBASSERT(validationReason == OFXServerAccountValidateLocalDirectoryForSyncing);
     }
     
     // Make sure the proposed URL isn't located inside other synchronized folders.
@@ -580,6 +580,7 @@ static BOOL _validateLocalFileSystem(NSURL *url, NSError **outError)
 
     DEBUG_BOOKMARK(1, @"Resolved bookmark data to %@", _localDocumentsBookmarkURL);
     if (!_localDocumentsBookmarkURL) {
+        DEBUG_BOOKMARK(2, @"Bookmark data was %@", _localDocumentsBookmarkData);
         OFXError(outError, OFXCannotResolveLocalDocumentsURL,
                  ERROR_DESCRIPTION,
                  NSLocalizedStringFromTableInBundle(@"Could not resolve archived bookmark for synchronized documents folder.", @"OmniFileExchange", OMNI_BUNDLE, @"error reason"));

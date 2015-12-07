@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,7 +39,8 @@ RCS_ID("$Id$")
 {
     OUIEmptyPaddingInspectorSlice *slice = [[[self class] alloc] init];
     slice.isGroupSpacer = YES;
-    slice.view.autoresizingMask = UIViewAutoresizingNone;
+    slice.view.translatesAutoresizingMaskIntoConstraints = NO;
+    [slice.view.heightAnchor constraintEqualToConstant:46].active = YES;
     return slice;
 }
 
@@ -69,18 +70,9 @@ RCS_ID("$Id$")
     return YES;
 }
 
-- (UIView *)makeSliceBackgroundView;
+- (UIColor *)sliceBackgroundColor;
 {
-    // We don't want a background view.
-    return nil;
-}
-
-- (CGFloat)minimumHeightForWidth:(CGFloat)width;
-{
-    if (self.isGroupSpacer) {
-        return [[self class] paddingBetweenSliceGroups]; // An attempt to match the space that UITableView leaves between groups
-    }
-    return 0;
+    return [UIColor clearColor];
 }
 
 - (BOOL)isAppropriateForInspectedObject:(id)object;

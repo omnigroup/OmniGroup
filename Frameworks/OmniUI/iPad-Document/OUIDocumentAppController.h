@@ -92,6 +92,7 @@
 - (NSURL *)documentProviderMoreInfoURL;
 
 // Subclass responsibility
+- (Class)documentExporterClass;
 - (NSString *)recentDocumentShortcutIconImageName;
 - (NSString *)newDocumentShortcutIconImageName;
 - (UIImage *)documentPickerBackgroundImage;

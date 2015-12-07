@@ -30,8 +30,8 @@ HEADER_SEARCH_PATHS = $(value) $(CONFIGURATION_BUILD_DIR)/include $(CONFIGURATIO
 // Claim that we are building a framework, though it is a 'static' framework.
 // The point of this is that OmniBase/macros.h will make errors if we use the
 // main-bundle localized string lookup macros.
-OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FRAMEWORK
-OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FRAMEWORK
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FRAMEWORK_OR_BUNDLE
+OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FRAMEWORK_OR_BUNDLE
 
 // This isn't defined for the library target for some reason
 TEST_FRAMEWORK_SEARCH_PATHS=$(PLATFORM_DIR)/Developer/Library/Frameworks $(SDKROOT)/Developer/Library/Frameworks

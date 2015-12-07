@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,24 +43,14 @@ RCS_ID("$Id$")
 - (void)setReplacementString:(NSString *)aString;
 {
     if (aString != _replacementString) {
-        [_replacementString release];
         _replacementString = [aString copy];
     }
-}
-
-- (void)dealloc;
-{
-    [_regularExpression release];
-    [_lastMatch release];
-    [_replacementString release];
-    [super dealloc];
 }
 
 #pragma mark - OAFindPattern protocol
 
 - (BOOL)findInString:(NSString *)aString foundRange:(NSRangePointer)rangePtr;
 {
-    [_lastMatch release];
     _lastMatch = nil;
     
     if (aString == nil)
@@ -83,7 +73,7 @@ RCS_ID("$Id$")
             *rangePtr = [match rangeOfCaptureGroupAtIndex:_selectedCaptureGroup];
     }
     
-    _lastMatch = [match retain];
+    _lastMatch = match;
     return YES;
 }
 
@@ -156,7 +146,6 @@ RCS_ID("$Id$")
             [interpolatedString appendString:subString];
         } 
     }
-    [scanner release];
     return interpolatedString;
 }
 

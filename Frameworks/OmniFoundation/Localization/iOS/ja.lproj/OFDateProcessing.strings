@@ -1,92 +1,92 @@
-/* modifier */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "-" = "-";
 
-/* modifier */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "+" = "+";
 
-/* modifier */
+/* modifier, used for scanning user input. Do NOT add whitespace */
 "~" = "~";
 
-/* the first letter of \"day\" */
+/* one-letter abbreviation for day or days, used for scanning user input. Do NOT add whitespace */
 "d" = "日";
 
-/* days */
+/* day, singular, used for scanning user input. Do NOT add whitespace */
 "day" = "日";
 
-/* days */
-"days" = "日間";
+/* days, plural, used for scanning user input. Do NOT add whitespace */
+"days" = "日";
 
-/* the first letter of \"hour\" */
-"h" = "時";
+/* one-letter abbreviation for hour or hours, used for scanning user input. Do NOT add whitespace */
+"h" = "時間";
 
-/* hours */
-"hour" = "時";
+/* hour, singular, used for scanning user input. Do NOT add whitespace */
+"hour" = "時間";
 
-/* hours */
+/* hours, plural, used for scanning user input. Do NOT add whitespace */
 "hours" = "時間";
 
-/* modifier */
-"last" = "最後の";
+/* modifier, used for scanning user input. Do NOT add whitespace */
+"last" = "先";
 
-/* last month */
+/* last month, used for scanning user input. Do NOT add whitespace */
 "last month" = "先月";
 
-/* time */
+/* time, used for scanning user input. Do NOT add whitespace */
 "last week" = "先週";
 
-/* last year */
+/* last year, used for scanning user input. Do NOT add whitespace */
 "last year" = "昨年";
 
-/* the first letter of \"month\" */
-"m" = "月";
+/* one-letter abbreviation for month or months, used for scanning user input. Do NOT add whitespace */
+"m" = "カ月";
 
-/* month */
-"month" = "月";
+/* month, singular, used for scanning user input. Do NOT add whitespace */
+"month" = "カ月";
 
-/* months */
-"months" = "ヶ月";
+/* months, plural, used for scanning user input. Do NOT add whitespace */
+"months" = "カ月";
 
-/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\" */
-"next" = "次";
+/* modifier, the most commonly used translation of \"next\", or some other shorthand way of saying things like \"next week\", used for scanning user input. Do NOT add whitespace */
+"next" = "来";
 
-/* next month */
+/* next month, used for scanning user input. Do NOT add whitespace */
 "next month" = "来月";
 
-/* time */
+/* time, used for scanning user input. Do NOT add whitespace */
 "next week" = "来週";
 
-/* next year */
+/* next year, used for scanning user input. Do NOT add whitespace */
 "next year" = "来年";
 
-/* noon */
+/* noon, used for scanning user input. Do NOT add whitespace */
 "noon" = "正午";
 
-/* now */
+/* now, used for scanning user input. Do NOT add whitespace */
 "now" = "現在";
 
-/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\" */
+/* modifier, the most commonly used translation of \"this\", or some other shorthand way of saying things like \"this week\", used for scanning user input. Do NOT add whitespace */
 "this" = "今";
 
-/* this month */
+/* this month, used for scanning user input. Do NOT add whitespace */
 "this month" = "今月";
 
-/* time */
+/* time, used for scanning user input. Do NOT add whitespace */
 "this week" = "今週";
 
-/* this year */
+/* this year, used for scanning user input. Do NOT add whitespace */
 "this year" = "今年";
 
-/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language */
-"tod" = "今";
+/* \"tod\" this should be an abbreviation for \"today\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"tod" = "今日";
 
-/* today */
+/* today, used for scanning user input. Do NOT add whitespace */
 "today" = "今日";
 
 /* Today */
 "Today" = "今日";
 
-/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language */
-"tom" = "明";
+/* \"tom\" this should be an abbreviation for \"tomorrow\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
+"tom" = "明日";
 
 /* tomorrow */
 "tomorrow" = "明日";
@@ -94,31 +94,31 @@
 /* Tomorrow */
 "Tomorrow" = "明日";
 
-/* tonight */
+/* tonight, used for scanning user input. Do NOT add whitespace */
 "tonight" = "今夜";
 
-/* weeks */
-"w" = "週";
+/* one-letter abbreviation for week or weeks, used for scanning user input. Do NOT add whitespace */
+"w" = "週間";
 
-/* weeks */
-"week" = "週";
+/* week, singular, used for scanning user input. Do NOT add whitespace */
+"week" = "週間";
 
-/* weeks */
+/* weeks, plural, used for scanning user input. Do NOT add whitespace */
 "weeks" = "週間";
 
-/* the first letter of \"year\" */
+/* one-letter abbreviation for year or years, used for scanning user input. Do NOT add whitespace */
 "y" = "年";
 
-/* years */
+/* year, singular, used for scanning user input. Do NOT add whitespace */
 "year" = "年";
 
-/* years */
-"years" = "年間";
+/* years, plural, used for scanning user input. Do NOT add whitespace */
+"years" = "年";
 
-/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language */
+/* \"yes\" this should be an abbreviation for \"yesterday\" that makes sense for the given language, used for scanning user input. Do NOT add whitespace */
 "yes" = "はい";
 
-/* yesterday */
+/* yesterday, used for scanning user input. Do NOT add whitespace */
 "yesterday" = "昨日";
 
 /* Yesterday */

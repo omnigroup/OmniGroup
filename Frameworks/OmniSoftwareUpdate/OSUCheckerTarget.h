@@ -1,4 +1,4 @@
-// Copyright 2001-2008,2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,7 +8,7 @@
 // $Id$
 
 @class NSArray;
-@class OSUChecker, OSUCheckOperation;
+@class OSUChecker, OSUCheckOperation, OSUItem;
 
 typedef enum _OSUPrivacyNoticeResult {
     OSUPrivacyNoticeResultOK,
@@ -35,7 +35,7 @@ typedef enum _OSUPrivacyNoticeResult {
 - (void)checker:(OSUChecker *)checker check:(OSUCheckOperation *)op failedWithError:(NSError *)error;
 
 /* Callback for when we determine there are new versions available -- presumably you want to notify the user of this. */
-- (void)checker:(OSUChecker *)checker newVersionsAvailable:(NSArray *)items /* NSArray of OSUItem */ fromCheck:(OSUCheckOperation *)op;
+- (void)checker:(OSUChecker *)checker newVersionsAvailable:(NSArray<OSUItem *> *)items /* NSArray of OSUItem */ fromCheck:(OSUCheckOperation *)op;
 
 @end
 

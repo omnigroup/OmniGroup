@@ -31,5 +31,19 @@ static inline NSData *OFCreateNSDataFromPropertyList(id plist, CFPropertyListFor
     return nil;
 }
 
+static inline id OFCreatePropertyListFromNSData(NSData *data, NSError **outError) NS_RETURNS_RETAINED;
+static inline id OFCreatePropertyListFromNSData(NSData *data, NSError **outError)
+{
+    CFErrorRef cfError = nil;
+    CFPropertyListRef propList = CFPropertyListCreateWithData(NULL, (__bridge CFDataRef)data, 0, NULL, &cfError);
+    if (propList == NULL) {
+        OB_CFERROR_TO_NS(outError, cfError);
+        return nil;
+    }
+    
+    return (OB_BRIDGE_TRANSFER id)propList;
+}
+
+
 extern id OFReadNSPropertyListFromURL(NSURL *fileURL, NSError **outError);
 extern BOOL OFWriteNSPropertyListToURL(id plist, NSURL *fileURL, NSError **outError);

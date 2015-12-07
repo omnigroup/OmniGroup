@@ -94,7 +94,6 @@ NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDoc
     OUIDocumentPickerItemMetadataView *_metadataView;
     UIView *_hairlineBorderView;
     UIView *_selectionBorderView;
-    UIImageView *_statusImageView;
 
     OUIDocumentPickerItemViewDraggingState _draggingState;
     
@@ -107,24 +106,25 @@ NSString * const OUIDocumentPickerItemViewPreviewsDidLoadNotification = @"OUIDoc
 
 static id _commonInit(OUIDocumentPickerItemView *self)
 {
+    if (!self.metadataView) {
+        [self createSubviews];
+    }
+    [self.metadataView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(metaDataTapped:)]];
+    [self applyToViewTree:^OUIViewVisitorResult(UIView *view) {
+        if (view != self) {
+            view.translatesAutoresizingMaskIntoConstraints = NO;
+        }
+        return OUIViewVisitorResultContinue;
+    }];
+    [NSLayoutConstraint activateConstraints:[self constraintsForBasicLayout]];
+    
     self.isAccessibilityElement = YES;
-    
-    OUIDocumentPickerPreviewViewContainer *contentView = [[OUIDocumentPickerPreviewViewContainer alloc] initWithFrame:self.bounds];
-    contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-    [self addSubview:contentView];
-    self->_contentView = contentView;
-    contentView.userInteractionEnabled = NO;
-    
-    self->_metadataView = [[OUIDocumentPickerItemMetadataView alloc] initWithFrame:CGRectZero];
-    [self insertSubview:self->_metadataView aboveSubview:self->_contentView];
-    
-    // We set the border on this view rather than the whole view so that it doesn't draw atop the status image (the layer's border goes above all the sublayers instead of just with the layer's content, which is silly, but...)
-    self->_hairlineBorderView = [[UIView alloc] init];
-    self->_hairlineBorderView.userInteractionEnabled = NO;
+    self.contentView.userInteractionEnabled = NO;
     OUIDocumentPreviewViewSetNormalBorder(self->_hairlineBorderView);
-    [self insertSubview:self->_hairlineBorderView aboveSubview:self->_metadataView];
+    self->_hairlineBorderView.userInteractionEnabled = NO;
     
     [self->_metadataView.nameTextField addTarget:self action:@selector(_nameTextFieldEditingDidBegin:) forControlEvents:UIControlEventEditingDidBegin];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_keyboardWillShow) name:UIKeyboardWillShowNotification object:nil];
     [self->_metadataView.nameTextField addTarget:self action:@selector(_nameTextFieldEndedEditing:) forControlEvents:UIControlEventEditingDidEnd];
 
     [self _updateRasterizesLayer];
@@ -133,10 +133,23 @@ static id _commonInit(OUIDocumentPickerItemView *self)
     return self;
 }
 
+- (void)metaDataTapped:(id)sender
+{
+    if ([self.metadataView isEditing]) {
+        return;
+    } else {
+        [self detachMetaDataView];
+        [self.superview setNeedsLayout];
+        [self.superview layoutIfNeeded];  // without forcing layout, the becomeFirstResponder call will crash
+        [self.metadataView.nameTextField becomeFirstResponder];
+    }
+}
+
 - (id)initWithFrame:(CGRect)frame;
 {
     if (!(self = [super initWithFrame:frame]))
         return nil;
+    [self createSubviews];
     return _commonInit(self);
 }
 
@@ -145,6 +158,27 @@ static id _commonInit(OUIDocumentPickerItemView *self)
     if (!(self = [super initWithCoder:aDecoder]))
         return nil;
     return _commonInit(self);
+}
+
+- (void)createSubviews
+{
+    OUIDocumentPickerPreviewViewContainer *contentView = [[OUIDocumentPickerPreviewViewContainer alloc] initWithFrame:self.bounds];
+        contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+    [self addSubview:contentView];
+    self->_contentView = contentView;
+    
+    self->_metadataView = [[OUIDocumentPickerItemMetadataView alloc] initWithFrame:CGRectZero];
+    self->_metadataView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+
+    [self insertSubview:self->_metadataView aboveSubview:self->_contentView];
+
+    _statusImageView = [[UIImageView alloc] initWithImage:nil];
+    _statusImageView.userInteractionEnabled = NO;
+    [self addSubview:_statusImageView];
+    
+    // We set the border on this view rather than the whole view so that it doesn't draw atop the status image (the layer's border goes above all the sublayers instead of just with the layer's content, which is silly, but...)
+    self->_hairlineBorderView = [[UIView alloc] init];
+    [self insertSubview:self->_hairlineBorderView aboveSubview:self->_metadataView];
 }
 
 - (void)dealloc;
@@ -235,17 +269,10 @@ static unsigned ItemContext;
         return;
     
     if (image) {
-        if (!_statusImageView) {
-            _statusImageView = [[UIImageView alloc] initWithImage:nil];
-            _statusImageView.userInteractionEnabled = NO;
-            [self addSubview:_statusImageView];
-        }
         _statusImageView.image = image;
+        _statusImageView.hidden = NO;
     } else {
-        if (_statusImageView) {
-            [_statusImageView removeFromSuperview];
-            _statusImageView = nil;
-        }
+        _statusImageView.hidden = YES;
     }
     
     [self setNeedsLayout];
@@ -320,9 +347,17 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (void)setIsSmallSize:(BOOL)isSmallSize;
 {
-    _isSmallSize = isSmallSize;
-    self.metadataView.isSmallSize = isSmallSize;
-
+    if (isSmallSize != _isSmallSize) {
+        _isSmallSize = isSmallSize;
+        if (isSmallSize) {
+            [NSLayoutConstraint deactivateConstraints:@[self.metaDataBigHeight]];
+            [NSLayoutConstraint activateConstraints:@[self.metaDataSmallHeight]];
+        } else {
+            [NSLayoutConstraint deactivateConstraints:@[self.metaDataSmallHeight]];
+            [NSLayoutConstraint activateConstraints:@[self.metaDataBigHeight]];
+        }
+        self.metadataView.isSmallSize = isSmallSize;
+    }
 }
 
 #pragma mark -
@@ -364,14 +399,6 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
     
     OUIWithoutAnimating(^{
         CGRect bounds = self.bounds;
-        CGRect previewFrame = bounds;
-        {
-            CGSize metadataSize = [_metadataView sizeThatFits:bounds.size];
-            metadataSize.height = floor(metadataSize.height);
-            
-            CGRect metadataFrame = CGRectMake(CGRectGetMinX(previewFrame), CGRectGetMaxY(previewFrame) - metadataSize.height, CGRectGetWidth(previewFrame), metadataSize.height);
-            _metadataView.frame = metadataFrame;
-        }
         
         _hairlineBorderView.frame = bounds;
 
@@ -387,7 +414,6 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
             UIImage *statusImage = _statusImageView.image;
             if (statusImage) {
-                CGFloat positionFactor = 0.1;
                 CGSize statusImageSize = statusImage.size;
 
                 if (self.isSmallSize) {
@@ -396,16 +422,79 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
                     statusImageSize.height *= decreaseFactor;
                     statusImageSize.width *= decreaseFactor;
                 }
-
-                CGPoint center = CGPointMake(CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
-                center.x = center.x - statusImageSize.width*positionFactor;
-                center.y = center.y + statusImageSize.height*positionFactor;
-                
-                _statusImageView.frame = CGRectMake(floor(center.x - statusImageSize.width/2), floor(center.y - statusImageSize.height/2), statusImageSize.width, statusImageSize.height);
             }
         }
         
     });
+}
+
+- (void)detachMetaDataView
+{
+    OUIDocumentPickerItemMetadataView *metaData = self.metadataView;
+    CGRect frame = metaData.frame;
+    frame = [metaData.superview convertRect:frame toView:self.superview];
+    [metaData removeFromSuperview];
+    metaData.translatesAutoresizingMaskIntoConstraints = YES;
+    metaData.frame = frame;
+    [self.superview addSubview:metaData];
+    [NSLayoutConstraint deactivateConstraints:@[self.metaDataBigHeight, self.metaDataSmallHeight]];
+}
+
+- (void)reattachMetaDataView
+{
+    self.metadataView.translatesAutoresizingMaskIntoConstraints = NO;
+    // and reset constraints
+    [self insertSubview:self.metadataView aboveSubview:self.contentView];
+    [NSLayoutConstraint activateConstraints:[self constraintsToPositionMetaDataView]];
+}
+
+- (NSArray *)constraintsForBasicLayout
+{
+    if (!self.metaDataBigHeight) {
+        // this constraint we create now to use if we need it, but don't return it in the array because we don't want it activated right now
+        self.metaDataSmallHeight = [NSLayoutConstraint constraintWithItem:self.contentView
+                                                                attribute:NSLayoutAttributeHeight
+                                                                relatedBy:NSLayoutRelationEqual
+                                                                   toItem:self.metadataView
+                                                                attribute:NSLayoutAttributeHeight
+                                                               multiplier:kOUIDocumentPickerMetaDataSmallSizeRatio
+                                                                 constant:0];
+        // this is the one we'll use right away
+        self.metaDataBigHeight = [NSLayoutConstraint constraintWithItem:self.contentView
+                                                              attribute:NSLayoutAttributeHeight
+                                                              relatedBy:NSLayoutRelationEqual
+                                                                 toItem:self.metadataView
+                                                              attribute:NSLayoutAttributeHeight
+                                                             multiplier:kOUIDocumentPickerMetaDataNormalSizeRatio
+                                                               constant:0];
+    }
+    
+    NSArray *constraints = @[
+                             // content view all edges to superview
+                             [self.contentView.topAnchor constraintEqualToAnchor:self.contentView.superview.topAnchor],
+                             [self.contentView.rightAnchor constraintEqualToAnchor:self.contentView.superview.rightAnchor],
+                             [self.contentView.bottomAnchor constraintEqualToAnchor:self.contentView.superview.bottomAnchor],
+                             [self.contentView.leftAnchor constraintEqualToAnchor:self.contentView.superview.leftAnchor],
+                             
+                             [self.statusImageView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:8],
+                             [self.statusImageView.rightAnchor constraintEqualToAnchor:self.contentView.rightAnchor constant:-8],
+                             
+                             self.metaDataBigHeight
+                             ];
+    
+    constraints = [constraints arrayByAddingObjectsFromArray:[self constraintsToPositionMetaDataView]];
+
+    return constraints;
+}
+
+- (NSArray*)constraintsToPositionMetaDataView
+{
+    return @[
+             // metadata view side and bottom edges to superview
+             [self.metadataView.rightAnchor constraintEqualToAnchor:self.metadataView.superview.rightAnchor],
+             [self.metadataView.bottomAnchor constraintEqualToAnchor:self.metadataView.superview.bottomAnchor],
+             [self.metadataView.leftAnchor constraintEqualToAnchor:self.metadataView.superview.leftAnchor],
+             ];
 }
 
 #pragma mark -
@@ -733,10 +822,15 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
         [_metadataView setNeedsLayout];
         [_metadataView layoutIfNeeded];
     }];
-   
-    id target = [self targetForAction:@selector(documentPickerItemNameStartedEditing:) withSender:self];
-    OBASSERT(target);
-    [target documentPickerItemNameStartedEditing:self];
+}
+
+- (void)_keyboardWillShow
+{
+    if (_isEditingName) {
+        id target = [self targetForAction:@selector(documentPickerItemNameStartedEditing:) withSender:self];
+        OBASSERT(target);
+        [target documentPickerItemNameStartedEditing:self];
+    }
 }
 
 - (void)_nameTextFieldEndedEditing:(id)sender;
@@ -862,7 +956,11 @@ static NSString * const EditingAnimationKey = @"editingAnimation";
 
 - (CGFloat)_borderWidth;
 {
-    return self.isSmallSize ? kOUIDocumentPreviewViewSmallSelectedBorderThickness : kOUIDocumentPreviewViewSelectedBorderThickness;
+    CGFloat width = self.isSmallSize ? kOUIDocumentPreviewViewSmallSelectedBorderThickness : kOUIDocumentPreviewViewSelectedBorderThickness;
+    if (self.metadataView.doubleSizeFonts) {
+        width *= 2;
+    }
+    return width;
 }
 
 @end

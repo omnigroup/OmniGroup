@@ -144,6 +144,9 @@ NSString *ODSScopeCacheKeyForURL(NSURL *url)
         OBASSERT([self isFileInContainer:fileItem.fileURL]); // should have a URL we claim
     }
 #endif
+    fileItems = [fileItems filteredSetUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(ODSFileItem *  _Nonnull evaluatedObject, NSDictionary<NSString *,id> * _Nullable bindings) {
+        return evaluatedObject.scope == self && [self isFileInContainer:evaluatedObject.fileURL];
+    }]];
     
     BOOL changed = NO;
     if (![_fileItems isEqual:fileItems]) {
@@ -709,8 +712,8 @@ static OFFileEdit *_performAdd(ODSScope *scope, NSURL *fromURL, NSURL *toURL, Ad
         NSMutableSet *createdFileItems = [NSMutableSet new];
         
         NSMutableSet *usedFilenames = nil;
-        BOOL isDirectory;
-        if ([[NSFileManager defaultManager] fileExistsAtPath:parentFolderURL.path isDirectory:&isDirectory] && isDirectory)
+        BOOL parentIsDirectory;
+        if ([[NSFileManager defaultManager] fileExistsAtPath:parentFolderURL.path isDirectory:&parentIsDirectory] && parentIsDirectory)
             usedFilenames = [self copyCurrentlyUsedFileNamesInFolderAtURL:parentFolderURL ignoringFileURL:nil];
         
         for (ODSFileItemMotion *motion in motions) {
@@ -1432,6 +1435,7 @@ NSString *ODSScopeFindAvailableName(NSSet *usedFileNames, NSString *baseName, NS
 
 static void _addChildItem(NSMutableDictionary *folderItemByRelativePath, NSMutableDictionary *folderItemToChildItems, ODSFolderItem *parent, ODSItem *childItem)
 {
+    OBASSERT(parent != childItem, @"can't add parent as a child of itself!  we'll crash eventually in a KVO loop!");
     NSMutableSet *childItems = folderItemToChildItems[parent];
     if (!childItems) {
         childItems = [NSMutableSet new];

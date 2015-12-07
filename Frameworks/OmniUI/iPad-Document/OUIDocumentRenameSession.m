@@ -7,13 +7,12 @@
 
 #import "OUIDocumentRenameSession.h"
 
+@import OmniUI;
+
 #import <OmniUIDocument/OUIDocumentPickerItemMetadataView.h>
 #import <OmniDocumentStore/ODSErrors.h>
 #import <OmniDocumentStore/ODSFileItem.h>
 #import <OmniDocumentStore/ODSFolderItem.h>
-#import <OmniUI/OUIInteractionLock.h>
-#import <OmniUI/OUIKeyboardNotifier.h>
-#import <OmniUI/OUIShieldView.h>
 
 #import "OUIDocumentPickerViewController-Internal.h"
 #import "OUIDocumentPickerItemView-Internal.h"
@@ -35,6 +34,7 @@ RCS_ID("$Id$");
     UITextField *_nameTextField;
     ODSItem *_item;
     OUIShieldView *_dimmingView;
+    UIView *_animatingView;
     
     NSString *_originalName;
     NSOperationQueue *_filePresenterQueue;
@@ -66,20 +66,56 @@ RCS_ID("$Id$");
     _nameTextField = _itemView.metadataView.nameTextField;
     _nameTextField.delegate = self;
     
-    // Kinda gross...
+    CGRect endingMetadataFrame = [self _frameForMetaDataViewForRenamingItemView:itemView];
+    
+    // Put up a dimming view and animate the item view to twice its size so the text is easier to read
+    self.origFrame = itemView.metadataView.frame;
     UIView *superview = _itemView.superview;
-    _dimmingView = [OUIShieldView shieldViewWithView:superview];
-    _dimmingView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight; // Match on device rotation
-    _dimmingView.opaque = NO;
-    _dimmingView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.2];
-    _dimmingView.alpha = 0;
-    _dimmingView.delegate = self;
-    [superview bringSubviewToFront:_itemView];
-    [superview insertSubview:_dimmingView belowSubview:_itemView];
+    [UIView performWithoutAnimation:^{
+        _animatingView = [_itemView.metadataView viewForScalingStartFrame:self.origFrame endFrame:endingMetadataFrame];
+        _dimmingView = [OUIShieldView shieldViewWithView:superview];
+        _dimmingView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight; // Match on device rotation
+        _dimmingView.opaque = NO;
+        _dimmingView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.4];
+        _dimmingView.alpha = 0;
+        _dimmingView.delegate = self;
+        [superview bringSubviewToFront:_itemView];
+        [superview insertSubview:_dimmingView belowSubview:_itemView];
+        _animatingView.frame = self.origFrame;
+        _itemView.metadataView.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin;
+        [superview bringSubviewToFront:_itemView.metadataView];
+        [superview insertSubview:_animatingView aboveSubview:_itemView.metadataView];
+        [itemView.superview setNeedsLayout];
+        [itemView.superview layoutIfNeeded];
+        itemView.metadataView.alpha = 0.0f;
+        itemView.metadataView.frame = endingMetadataFrame;
+    }];
     
     OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
+
+    // start a scroll if the ending frame will be behind the keyboard
+    if ([superview isKindOfClass:[UIScrollView class]]) {
+        [(UIScrollView*)superview scrollRectToVisibleAboveLastKnownKeyboard:endingMetadataFrame animated:YES completion:nil];
+    }
+    
     [UIView animateWithDuration:notifier.lastAnimationDuration animations:^{
+        [UIView setAnimationCurve:notifier.lastAnimationCurve];
         _dimmingView.alpha = 1;
+        _animatingView.frame = endingMetadataFrame;
+        [itemView.metadataView animationsToPerformAlongsideScalingToHeight:endingMetadataFrame.size.height];
+        [_animatingView setNeedsLayout];
+    } completion:^(BOOL mainFinished) {
+        [UIView performWithoutAnimation:^{
+            itemView.metadataView.backgroundColor = [UIColor clearColor];
+        }];
+        [UIView animateWithDuration:0.1 animations:^{
+            [UIView setAnimationCurve:UIViewAnimationCurveLinear];
+            itemView.metadataView.alpha = 1.0f;
+        } completion:^(BOOL secondFinished) {
+            itemView.metadataView.backgroundColor = [OUIDocumentPickerItemMetadataView defaultEditingBackgroundColor];
+            [_animatingView removeFromSuperview];
+            _animatingView = nil;
+        }];
     }];
     
     _originalName = [_nameTextField.text copy];
@@ -106,6 +142,44 @@ RCS_ID("$Id$");
     _isRegisteredAsFilePresenter = YES;
     
     return self;
+}
+
+- (CGRect)_frameForMetaDataViewForRenamingItemView:(OUIDocumentPickerItemView *)itemView
+{
+    CGRect frame = itemView.metadataView.frame;
+    // make it twice as tall and as wide as needed to fit the title (but no more than 75% of the screen width)
+    frame.size.height *= 2;
+    frame.size.width = itemView.superview.bounds.size.width * .6;
+    
+    // center it on the item view, preferably
+    frame.origin.x -= (frame.size.width - itemView.frame.size.width) / 2.0;
+    if (frame.origin.x < 0) {
+        // centered shoved it off the left edge of the screen, so align left edge with the item view instead
+        frame.origin.x = itemView.frame.origin.x;
+    }
+    if (CGRectGetMaxX(frame) > itemView.superview.frame.size.width) {
+        // opposite problem.  align right edges.docpic
+        frame.origin.x = CGRectGetMaxX(itemView.frame) - frame.size.width;
+    }
+    return frame;
+}
+
+- (CGRect)_frameForRenamingItemView:(OUIDocumentPickerItemView *)itemView
+{
+    OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
+    
+    CGRect frame = itemView.frame;
+    frame.size = CGSizeMake(frame.size.width * 2, frame.size.height * 2);  // make the item view twice as big
+    frame.origin.x = (_picker.view.bounds.size.width - frame.size.width) / 2;  // center it horizontally
+    
+    // make sure we won't be going below the keyboard
+    CGFloat bottomOfLargeFrame = CGRectGetMaxY(frame);
+    CGFloat lowerBoundOkForLargeFrame = [notifier getMinYOfLastKnownKeyboardInView:itemView.superview];
+    CGFloat diff = bottomOfLargeFrame - lowerBoundOkForLargeFrame;
+    if (diff > 0) {
+        frame.origin.y -= diff;
+    }
+    return frame;
 }
 
 - (void)dealloc;
@@ -284,6 +358,11 @@ RCS_ID("$Id$");
     [self _done:shieldView];
 }
 
+- (void)endRenaming
+{
+    [self _done:nil];
+}
+
 #pragma mark - Private
 
 - (void)_done:(id)sender;
@@ -291,16 +370,42 @@ RCS_ID("$Id$");
     // Let the keyboard drive the animation
     RENAME_DEBUG(@"-_done: calling -endEditing:");
     RENAME_DEBUG(@"  _isAttemptingRename %d", _isAttemptingRename);
-    
+
     UIView *dimmingView = _dimmingView;
+    
     OUIKeyboardNotifier *notifier = [OUIKeyboardNotifier sharedNotifier];
-    [UIView animateWithDuration:notifier.lastAnimationDuration animations:^{
+    
+    // get the animating view on screen
+    [UIView performWithoutAnimation:^{
+        CGRect startFrame = _itemView.metadataView.frame;
+        _animatingView = [_itemView.metadataView viewForScalingStartFrame:startFrame endFrame:self.origFrame];
+        _itemView.frame = self.origFrame;
+        _itemView.metadataView.backgroundColor = [UIColor clearColor];
+        _itemView.metadataView.alpha = 0.0f;
+        [_itemView.metadataView.superview addSubview:_animatingView];
+    }];
+
+    // animate the frame change
+    [UIView animateWithDuration:notifier.lastAnimationDuration delay:0 usingSpringWithDamping:0.75 initialSpringVelocity:0 options:0 animations:^{
         [UIView setAnimationCurve:notifier.lastAnimationCurve];
         dimmingView.alpha = 0;
-    } completion:^(BOOL finished){
+        _animatingView.frame = self.origFrame;
+        [_itemView.metadataView animationsToPerformAlongsideScalingToHeight:self.origFrame.size.height];
+    } completion:^(BOOL mainFinished){
+        _itemView.metadataView.frame = self.origFrame;
         [dimmingView removeFromSuperview];
+        _dimmingView = nil;
+        [_itemView.metadataView.superview bringSubviewToFront:_itemView.metadataView];
+        [UIView animateWithDuration:0.1
+                         animations:^{
+                             _itemView.metadataView.alpha = 1.0f;
+                         }
+                         completion:^(BOOL secondFinished) {
+                             _itemView.metadataView.backgroundColor = [OUIDocumentPickerItemMetadataView defaultBackgroundColor];
+                             [_animatingView removeFromSuperview];
+                             [_itemView reattachMetaDataView];
+                         }];
     }];
-    _dimmingView = nil;
     
     // Depending on how the user ends editing, we can get called first or -textFieldShouldEndEditing:.
     _isEndingEditing = YES;

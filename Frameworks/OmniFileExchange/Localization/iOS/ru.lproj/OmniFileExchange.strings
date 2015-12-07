@@ -17,7 +17,7 @@
 "Account not configured" = "Учетная запись не настроена";
 
 /* Add server account title */
-"Add Omni Sync Server Account" = "Добавить уч. запись Omni Sync";
+"Add Omni Sync Server Account" = "Добавить учетную запись сервера Omni Sync";
 
 /* Add server account type */
 "Add WebDAV Server" = "Добавить сервер WebDAV";
@@ -29,7 +29,7 @@
 "Cannot locate synchronized documents folder." = "Не удается найти папку синхронизированных документов.";
 
 /* Error description */
-"Cannot move document." = "Не удается переместить документ.";
+"Cannot move document." = "не удается переместить документ.";
 
 /* Error description */
 "Cannot start account agent." = "Не удалось запустить агент учетных записей.";
@@ -56,10 +56,10 @@
 "Documents" = "Документы";
 
 /* Add server account description */
-"Easily sync Omni documents. Signup is free!" = "Простая беспл. синхрониз. док-в Omni.";
+"Easily sync Omni documents. Signup is free!" = "Cинхронизация документов Omni. Бесплатная регистрация!";
 
 /* Server account export title format */
-"Export to \"%@\"" = "Экспортировать в %@";
+"Export to \"%@\"" = "Экспортировать в «%@»";
 
 /* iTunes export title */
 "Export to iTunes" = "Экспортировать в iTunes";
@@ -97,19 +97,19 @@
 "Sync failed: cloud account needs to be upgraded." = "Сбой синхронизации: необходимо обновить облачную учетную запись.";
 
 /* error description */
-"Sync failed: OmniPresence upgrade required." = "Сбой синхронизации: Необходимо обновить OmniPresence.";
+"Sync failed: OmniPresence upgrade required." = "Сбой синхронизации: необходимо обновить OmniPresence.";
 
 /* error description */
 "Sync failed: unable to update device registration." = "Сбой синхронизации: не удается обновить регистрацию устройства.";
 
 /* Account validation step description */
-"Testing Server for Compatibility" = "Проверка совместимости сервера";
+"Testing Server for Compatibility" = "Тестовый сервер для проверки совместимости";
 
 /* error reason */
 "The cloud account requires OmniPresence format %@, but this device is using format %@. Please upgrade this copy of OmniPresence." = "Для облачной учетной записи требуется формат OmniPresence %1$@, а на этом устройстве используется формат %2$@. Обновите эту копию OmniPresence.";
 
 /* Error description */
-"The document \"%@\" is not fully downloaded." = "Документ %@ загружен неполностью.";
+"The document \"%@\" is not fully downloaded." = "Документ «%@» загружен неполностью.";
 
 /* error description */
 "The proposed local documents folder already contains files. Please specify an empty folder or one that doesn't yet exist." = "Предложенная папка локальных документов уже содержит файлы. Укажите пустую или несуществующую папку.";
@@ -148,7 +148,7 @@
 "Unable to verify login credentials at this time." = "Не удалось проверить учетные данные входа.";
 
 /* Add server account description */
-"Use your own WebDAV space." = "Собственный сервер WebDAV.";
+"Use your own WebDAV space." = "Используйте собственное пространство на сервере WebDAV.";
 
 /* Account validation step description */
 "Validating Account..." = "Проверка учетной записи…";

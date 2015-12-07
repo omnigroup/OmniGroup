@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,11 +9,15 @@
 
 #import <OmniUnzip/OUZipMember.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUZipFileMember : OUZipMember
 
-- initWithName:(NSString *)name date:(NSDate *)date contents:(NSData *)contents;
-- initWithName:(NSString *)name date:(NSDate *)date mappedFilePath:(NSString *)filePath;
+- (instancetype)initWithName:(NSString *)name date:(NSDate *)date contents:(NSData *)contents;
+- (instancetype)initWithName:(NSString *)name date:(NSDate *)date mappedFilePath:(NSString *)filePath;
 
 - (NSData *)contents;
 
 @end
+
+NS_ASSUME_NONNULL_END

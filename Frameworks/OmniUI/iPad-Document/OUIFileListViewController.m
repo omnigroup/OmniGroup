@@ -9,8 +9,6 @@
 
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
-#import <OmniUIDocument/OUIDocumentPicker.h>
-#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 
 RCS_ID("$Id$");
 
@@ -103,8 +101,7 @@ RCS_ID("$Id$");
     
     UIImage *icon = nil;
     if (isDocument) {
-        OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
-        icon = [picker iconForUTI:[fileInfo UTI]];
+        icon = [[OUIDocumentExporter exporterForViewController:self] iconForUTI:[fileInfo UTI]];
         OBASSERT(icon);
     }
     if (isFolder) {
@@ -116,6 +113,18 @@ RCS_ID("$Id$");
     cell.imageView.image = icon;
     
     return cell;
+}
+
+#pragma mark - OUIDocumentExporterHost
+
+- (ODSFileItem *)fileItemToExport
+{
+    return nil;
+}
+
+- (UIColor *)tintColorForExportMenu
+{
+    return self.view.tintColor;
 }
 
 #pragma mark - UIViewController

@@ -10,16 +10,22 @@
 #import <Foundation/NSObject.h>
 
 @class NSURLCredential, NSURLAuthenticationChallenge;
-@class OFSFileManager;
+@class ODAVFileInfo, OFSFileManager, OFSDocumentKey;
 
 @protocol OFSFileManagerDelegate <NSObject>
 @optional
 
 // Invoked from our -[NSURLConnectionDelegate connectionShouldUseCredentialStorage:] implementation, which isn't called any more (especially since we've moved from NSURLConnection to NSURLSession), so this is never called either
-- (BOOL)fileManagerShouldUseCredentialStorage:(OFSFileManager *)manager;
+- (BOOL)fileManagerShouldUseCredentialStorage:(OFSFileManager * __nonnull)manager;
 
 // These are called to satisfy NSURLSession's authentication delegate methods
-- (NSURLCredential *)fileManager:(OFSFileManager *)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge *)challenge;
-- (void)fileManager:(OFSFileManager *)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge *)challenge;
+- (NSURLCredential * __nullable)fileManager:(OFSFileManager * __nonnull)manager findCredentialsForChallenge:(NSURLAuthenticationChallenge * __nonnull)challenge;
+- (void)fileManager:(OFSFileManager * __nonnull)manager validateCertificateForChallenge:(NSURLAuthenticationChallenge * __nonnull)challenge;
+
+// This is called to satisfy client-side-encryption challenges
+- (OFSDocumentKey * __nullable)fileManager:(OFSFileManager * __nonnull)fileManager
+                                    getKey:(ODAVFileInfo * __nonnull)encryptionInfo
+                                     error:(NSError * __nullable * __nullable)outError;
+- (OFSDocumentKey * __nullable)fileManager:(OFSFileManager * __nonnull)underlyingFileManager initialKeyWithError:(NSError * __nullable * __nullable)outError;
 
 @end

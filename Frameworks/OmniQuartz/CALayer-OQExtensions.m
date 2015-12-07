@@ -625,6 +625,10 @@ static void _writeString(NSString *str)
         
         CGRect localBounds = self.bounds;
         DEBUG_RENDER(@"    bounds %@", NSStringFromRect(localBounds));
+#if DEBUG_RENDER_ON
+        CGRect frame = self.frame;
+        DEBUG_RENDER(@"    frame %@", NSStringFromRect(frame));
+#endif
         if (self.masksToBounds) {
             CGContextAddRect(ctx, localBounds);
             CGContextClip(ctx);
@@ -670,7 +674,7 @@ static void _writeString(NSString *str)
             {
                 CGRect clip = CGContextGetClipBoundingBox(ctx);
                 DEBUG_RENDER(@"    effective clip %@", NSStringFromRect(clip));
-                NSRect inter = NSIntersectionRect(clip, localBounds);
+                CGRect inter = CGRectIntersection(clip, localBounds);
                 DEBUG_RENDER(@"    inter %@", NSStringFromRect(inter));
                 
                 NSMutableString *colorString = [NSMutableString string];

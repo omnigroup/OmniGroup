@@ -19,6 +19,7 @@
 
 - (instancetype)initWithFileItem:(ODSFileItem *)fileItem preview:(OUIDocumentPreview *)preview;
 
+- (void)addPreviewAction:(UIPreviewAction *)previewAction;
 - (void)prepareForCommitWithBackgroundView:(UIView *)backgroundView;
 
 - (UIView *)backgroundSnapshotView;

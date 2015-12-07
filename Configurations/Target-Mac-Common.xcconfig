@@ -27,7 +27,7 @@ IBC_FLATTEN_NIBS = NO
 OMNI_MAC_CODE_SIGN_IDENTITY = Mac Developer:
 
 // Temporary while getting OS X 10.10 builds working
-WARNING_CFLAGS = $(value) -DNSApp=Use_NSApplication_sharedApplication -Wno-error-deprecated-declarations -Wno-error-deprecated-implementations -Wno-error-unreachable-code -Wno-error-nonnull -Wno-error-objc-designated-initializers
+WARNING_CFLAGS = $(value) -DNSApp=Use_NSApplication_sharedApplication -Wno-error-deprecated-declarations -Wno-error-deprecated-implementations -Wno-error-unreachable-code -Wno-error-objc-designated-initializers
 
 // For Info.plists in frameworks that are shared between Mac/iOS targets
 OMNI_TARGET_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FOR_MAC

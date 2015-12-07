@@ -9,6 +9,8 @@
 
 #import <OmniInspector/OAApplication-OIExtensions.h>
 #import <OmniInspector/OAToolbarWindowController-OIExtensions.h>
+
+#import <OmniInspector/OIAppearance.h>
 #import <OmniInspector/OIButtonMatrixBackgroundView.h>
 #import <OmniInspector/OIInspectableControllerProtocol.h>
 #import <OmniInspector/OIInspectionSet.h>

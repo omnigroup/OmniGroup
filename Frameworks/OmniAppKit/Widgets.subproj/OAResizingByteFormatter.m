@@ -1,4 +1,4 @@
-// Copyright 2000-2007, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,7 +23,6 @@ static void _addFormatter(NSMutableArray *results, NSString *formatString)
     NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
     [formatter setFormat:formatString];
     [results addObject:formatter];
-    [formatter release];
 }
 
 + (void)initialize;
@@ -40,7 +39,6 @@ static void _addFormatter(NSMutableArray *results, NSString *formatString)
     _addFormatter(results, NSLocalizedStringFromTableInBundle(@"#,##0.0 PB", @"OmniAppKit", bundle, "resizing bytes formatter petabytes format"));
     
     formatters = [results copy];
-    [results release];
 }
 
 - initWithNonretainedTableColumn:(NSTableColumn *)tableColumn;
@@ -88,7 +86,7 @@ static void _addFormatter(NSMutableArray *results, NSString *formatString)
 
 - (NSAttributedString *)attributedStringForObjectValue:(id)obj withDefaultAttributes:(NSDictionary *)attrs;
 {
-    return [[[NSAttributedString alloc] initWithString:[self stringForObjectValue:obj] attributes:attrs] autorelease];
+    return [[NSAttributedString alloc] initWithString:[self stringForObjectValue:obj] attributes:attrs];
 }
 
 

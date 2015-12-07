@@ -231,7 +231,7 @@ static void OSUAtExitHandler(void)
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:(id)self];
+    [[OFController sharedController] addStatusObserver:(id)self];
 }
 #endif
 
@@ -524,7 +524,7 @@ static NSString *OSUBundleVersionForBundle(NSBundle *bundle)
 }
 
 #pragma mark -
-#pragma mark NSObject (OFControllerObserver)
+#pragma mark NSObject (OFControllerStatusObserver)
 
 // On the Mac, we'll automatically start when OFController gets running. On iOS we don't have OBPostLoader or OFController and apps must call +startWithTarget: and +shutdown
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE

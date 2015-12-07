@@ -18,6 +18,7 @@
 #import <OmniAppKit/NSPopUpButton-OAExtensions.h>
 #import <OmniAppKit/NSTextField-OAExtensions.h>
 #import <OmniAppKit/NSView-OAExtensions.h>
+#import <OmniAppKit/OAConstraintBasedStackView.h>
 #import <OmniAppKit/OAPreferenceController.h>
 #import <OmniAppKit/OAPreferenceClientRecord.h>
 #import <OmniAppKit/OAVersion.h>
@@ -42,14 +43,54 @@ NSString * const OSUAvailableUpdateControllerLastCheckUserInitiatedBinding = @"l
 
 RCS_ID("$Id$");
 
+
+@interface OSUAvailableUpdateControllerMessageTextField : NSTextField
+// This text field subclass is required in order to get the vertical resizing behavior we want. (Which is nothing special — we just want it to be tall enough to accommodate its content, and no taller. I was unable to accomplish that with a standard text field and layout constraints:
+// • When configured appropriately (set to wrap and to not use its initial layout width; no border or background), the field will size vertically as if it were the width it is in the nib: it will clip or leave extraneous vertical space if resized so that the content needs more or less vertical space. This is despite content hugging and compression settings which should cause it to grow vertically and prevent it from clipping vertically. (If the field's content is changed programmatically, it will again resize to the height needed to encompass its content at the field's width in the nib.)
+// • When the field is configured to draw its border or a background color (which is inconvenient, but usually not a show-stopper), it *does* grow and shrink as appropriate. Indeed, it almost works correctly: unfortunately, when the string value (and thus length) is changed programmatically at runtime, the field does not resize to reflect this until some other action (such as resizing the window) forces a layout.
+@end
+
+@implementation OSUAvailableUpdateControllerMessageTextField
+
+- (void)x_drawRect:(NSRect)rect;
+{
+    [super drawRect:rect];
+    [[NSColor redColor] set];
+    NSFrameRect(self.bounds);
+}
+
+- (void)setFrame:(NSRect)newValue;
+{
+    super.frame = newValue;
+    // When a text field is not set to draw its background/border, it doesn't update its intrinsicContentSize as it resizes, so we have to tell it to do so.
+    [self invalidateIntrinsicContentSize];
+}
+
+- (CGFloat)preferredMaxLayoutWidth;
+{
+    if (self.cell.wraps) {
+        // If we're configured to prioritize minimizing vertical compression (vs horizontal compression), use the current bounds width as our preferred content width, so that we will grow/shrink vertically as appropriate for our content.
+        NSLayoutPriority horizontalPriority = [self contentCompressionResistancePriorityForOrientation:NSLayoutConstraintOrientationHorizontal];
+        NSLayoutPriority verticalPriority = [self contentCompressionResistancePriorityForOrientation:NSLayoutConstraintOrientationVertical];
+        if (verticalPriority >= horizontalPriority) {
+            return self.bounds.size.width;
+        }
+    }
+    
+    return super.preferredMaxLayoutWidth;
+}
+
+@end
+
+
 @interface OSUAvailableUpdateController ()
 
 @property(nonatomic,strong) IBOutlet NSArrayController *availableItemController;
 @property(nonatomic,strong) IBOutlet NSTextField *titleTextField;
 @property(nonatomic,strong) IBOutlet NSTextField *messageTextField;
 @property(nonatomic,strong) IBOutlet NSProgressIndicator *spinner;
-@property(nonatomic,strong) IBOutlet NSSplitView *itemsAndReleaseNotesSplitView;
 @property(nonatomic,strong) IBOutlet NSTableView *itemTableView;
+@property(nonatomic,strong) IBOutlet NSLayoutConstraint *itemTableViewHeightConstraint;
 @property(nonatomic,strong) IBOutlet WebView *releaseNotesWebView;
 @property(nonatomic,strong) IBOutlet NSImageView *appIconImageView;
 @property(nonatomic,strong) IBOutlet NSButton *installButton;
@@ -58,7 +99,7 @@ RCS_ID("$Id$");
 @property(nonatomic,strong) IBOutlet NSView *itemAlertPane;
 @property(nonatomic,strong) IBOutlet NSTextField *itemAlertMessage;
 
-- (void)_resizeInterface:(BOOL)resetDividerPosition;
+- (void)_resizeInterface;
 - (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
 - (void)_refreshDefaultAction;
 - (void)_loadReleaseNotes;
@@ -179,7 +220,7 @@ RCS_ID("$Id$");
     [_availableItemController bind:NSContentArrayBinding toObject:self withKeyPath:OSUAvailableUpdateControllerAvailableItemsBinding options:nil];
     [self didChangeValueForKey:OSUAvailableUpdateControllerMessageBinding];
 
-    [self _resizeInterface:YES];
+    [self _resizeInterface];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_adjustViewLayout:) name:NSViewFrameDidChangeNotification object:[_messageTextField superview]];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_refreshSelectedItem:) name:OSUTrackInformationChangedNotification object:nil];
     [self _refreshDefaultAction];
@@ -230,7 +271,7 @@ RCS_ID("$Id$");
 
 + (NSSet *)keyPathsForValuesAffectingDetails;
 {
-    return [NSSet setWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, OSUAvailableUpdateControllerLastCheckUserInitiatedBinding, nil];
+    return [NSSet setWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, OSUAvailableUpdateControllerLastCheckUserInitiatedBinding, OSUAvailableUpdateControllerCheckInProgressBinding, nil];
 }
 
 - (NSAttributedString *)details;
@@ -282,7 +323,7 @@ RCS_ID("$Id$");
         NSRange between;
         between.location = NSMaxRange(leftBracket);
         between.length = rightBracket.location - between.location;
-        OAPreferenceClientRecord *rec = [OAPreferenceController clientRecordWithIdentifier:[OMNI_BUNDLE_IDENTIFIER stringByAppendingString:@".preferences"]];
+        OAPreferenceClientRecord *rec = [OAPreferenceController clientRecordWithIdentifier:[[OMNI_BUNDLE bundleIdentifier] stringByAppendingString:@".preferences"]];
         OBASSERT(rec != nil);
         if (rec) {
             // The link URL doesn't actually matter; we'll always just display the prefs pane if we get a click.
@@ -316,7 +357,7 @@ RCS_ID("$Id$");
     OFForEachInArray(_availableItems, OSUItem *, anItem, { if([anItem price] != nil) haveAnyPrices = YES; });
     [[_itemTableView tableColumnWithIdentifier:@"price"] setHidden:([_availableItems count] > 0 && !haveAnyPrices)];
     
-    [self _resizeInterface:YES];
+    [self _resizeInterface];
     
     /* Select the first available update */
     NSArray *nonIgnoredItems = [_availableItems filteredArrayUsingPredicate:[OSUItem availableAndNotSupersededIgnoredOrOldPredicate]];
@@ -329,6 +370,16 @@ RCS_ID("$Id$");
     [self _refreshSelectedItem:nil];
 }
 
++ (NSSet *)keyPathsForValuesAffectingUpdatesAreAvailable;
+{
+    return [NSSet setWithObjects:OSUAvailableUpdateControllerAvailableItemsBinding, OSUAvailableUpdateControllerCheckInProgressBinding, nil];
+}
+
+- (BOOL)updatesAreAvailable;
+{
+    return (_availableItems.count > 0) && ![[self valueForKey:OSUAvailableUpdateControllerCheckInProgressBinding] boolValue];
+}
+
 - (void)setCheckInProgress:(BOOL)yn
 {
     if (yn == _checkInProgress)
@@ -337,7 +388,7 @@ RCS_ID("$Id$");
     [self willChangeValueForKey:OSUAvailableUpdateControllerCheckInProgressBinding];
     _checkInProgress = yn;
     [self didChangeValueForKey:OSUAvailableUpdateControllerCheckInProgressBinding];
-    [self _resizeInterface:NO];
+    [self _resizeInterface];
     [self _refreshDefaultAction];
 }
 
@@ -511,7 +562,7 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
 - (BOOL)textView:(NSTextView *)aView clickedOnLink:(id)aLink atIndex:(NSUInteger)idx
 {
     // The only time we're interested in this is when the user clicks on the hyperlink we set up in -details
-    OAPreferenceClientRecord *rec = [OAPreferenceController clientRecordWithIdentifier:[OMNI_BUNDLE_IDENTIFIER stringByAppendingString:@".preferences"]];
+    OAPreferenceClientRecord *rec = [OAPreferenceController clientRecordWithIdentifier:[[OMNI_BUNDLE bundleIdentifier] stringByAppendingString:@".preferences"]];
     if (!rec)
         return NO;
     OAPreferenceController *prefController = [OAPreferenceController sharedPreferenceController];
@@ -519,105 +570,6 @@ decisionListener:(id<WebPolicyDecisionListener>)listener;
     [prefController showPreferencesPanel:aView];
     return YES;
 }
-
-#pragma mark NSSplitView delegates
-
-static CGFloat minHeightOfItemTableView(NSTableView *itemTableView)
-{
-    // Note- This is returning bounds coordinates but the caller is using it as frame coordinates.  Unlikely this will be scaled relative to its superview, but still...
-    CGFloat rowsHigh = [itemTableView numberOfRows];
-    // We want at least 3 rows shown so that the scroller doesn't get smooshed.
-    // We include a half-row to make it super extra obvious that there's something there if you scroll down.
-    if (rowsHigh > 3)
-        rowsHigh = (CGFloat)3.5;
-    if (rowsHigh < 1)
-        rowsHigh = 1;
-    return rowsHigh * ([itemTableView rowHeight] + [itemTableView intercellSpacing].height);
-}
-
-static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
-{
-    NSScrollView *scrollView = [itemTableView enclosingScrollView];
-    NSSize contentSize;
-    contentSize.width = 100;
-    contentSize.height = ceil(minHeightOfItemTableView(itemTableView));
-    NSScroller *horizontalScroller = [scrollView horizontalScroller];
-    NSScroller *verticalScroller = [scrollView verticalScroller];
-    NSControlSize controlSize = verticalScroller != nil ? verticalScroller.controlSize : (horizontalScroller != nil ? horizontalScroller.controlSize : NSRegularControlSize);
-    NSSize frame = [NSScrollView frameSizeForContentSize:contentSize horizontalScrollerClass:[horizontalScroller class] verticalScrollerClass:[verticalScroller class] borderType:[scrollView borderType] controlSize:controlSize scrollerStyle:scrollView.scrollerStyle];
-    return frame.height;
-}
-
-- (void)_resizeSplitViewViewsWithTablePaneExistingHeight:(CGFloat)height;
-{
-    // Give/take all the side on the web view side, leaving the item list the same height as it was.  Also, constrain the release list height to a minimum value.
-    NSRect bounds = [_itemsAndReleaseNotesSplitView bounds];
-    
-    CGFloat dividerHeight = [_itemsAndReleaseNotesSplitView dividerThickness];
-    
-    NSScrollView *scrollView = [_itemTableView enclosingScrollView];
-    NSView *borderView = [_itemsAndReleaseNotesSplitView subviewContainingView:_releaseNotesWebView];
-    if (!borderView) {
-        // We're in the middle of rejiggering subviews. Punt.
-        [_itemsAndReleaseNotesSplitView adjustSubviews];
-        return;
-    }
-    
-    NSRect scrollViewFrame = [scrollView frame];
-    NSRect borderViewFrame = [borderView frame];
-    
-    scrollViewFrame.origin = bounds.origin;
-    scrollViewFrame.size.height = MAX(height, minHeightOfItemTableScrollView(_itemTableView));
-    scrollViewFrame.size.width = NSWidth(bounds);
-    
-    borderViewFrame.origin.x = NSMinX(bounds);
-    borderViewFrame.origin.y = NSMaxY(scrollViewFrame) + dividerHeight;
-    borderViewFrame.size.width = NSWidth(bounds);
-    borderViewFrame.size.height = MAX(0.0f, NSMaxY(bounds) - borderViewFrame.origin.y);
-    
-    [scrollView setFrame:scrollViewFrame];
-    [borderView setFrame:borderViewFrame];
-}
-
-- (CGFloat)splitView:(NSSplitView *)splitView constrainMinCoordinate:(CGFloat)proposedMinimumPosition ofSubviewAt:(NSInteger)dividerIndex;
-{
-    CGFloat myMinimum = proposedMinimumPosition;
-    if (dividerIndex == 0)
-        myMinimum = minHeightOfItemTableScrollView(_itemTableView);
-    // NSLog(@"splitView constrainMinCoordinate:%.1f ofSubviewAt:%d  -->  %.1f", proposedMinimumPosition, (int)dividerIndex, MAX(myMinimum, proposedMinimumPosition));
-    return MAX(myMinimum, proposedMinimumPosition);
-}
-
-- (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMaximumPosition ofSubviewAt:(NSInteger)dividerIndex;
-{
-    CGFloat constrained;
-    
-    if (dividerIndex == 0) {
-        CGFloat minimumHeight = 10; // Don't let them completely hide the release-notes pane
-        if (_displayingWarningPane)
-            minimumHeight += NSHeight([_itemAlertPane frame]);
-        constrained = proposedMaximumPosition - minimumHeight;
-    } else {
-        constrained = proposedMaximumPosition;
-    }
-    // NSLog(@"splitView constrainMaxCoordinate:%.1f ofSubviewAt:%d  -->  %.1f", proposedMaximumPosition, (int)dividerIndex, constrained);
-    return constrained;
-}
-
-/*
-- (CGFloat)splitView:(NSSplitView *)splitView constrainSplitPosition:(CGFloat)proposedPosition ofSubviewAt:(NSInteger)dividerIndex;
-{
-    if (dividerIndex == 0)
-        return MAX(proposedPosition, minHeightOfItemTableScrollView(_itemTableView));
-    return proposedPosition;
-}
-
-- (void)splitView:(NSSplitView *)splitView resizeSubviewsWithOldSize:(NSSize)oldSize;
-{
-    CGFloat tableViewHeight = NSHeight([[_itemTableView enclosingScrollView] frame]);
-    [self _resizeSplitViewViewsWithTablePaneExistingHeight:tableViewHeight];
-}
-*/
 
 #pragma mark NSTableView Delegate
 
@@ -640,154 +592,40 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
 #pragma mark -
 #pragma mark Private
 
-#define INTER_ELEMENT_GAP (12.0f)
-
-#define TEXT_BUTTONS_GAP (6.0f)
-
-- (void)_resizeInterface:(BOOL)resetDividerPosition;
+static CGFloat _heightOfItemTableViewForRowCount(NSTableView *itemTableView, NSUInteger rowCount)
 {
+    rowCount = MAX(rowCount, (NSUInteger)1);
+    CGFloat height = rowCount * (itemTableView.rowHeight + itemTableView.intercellSpacing.height); // Seems like we should need one fewer intercell spacings than rows (no spacing if just one row, for instance), but that results in a scrollbar.
+    if (rowCount < (NSUInteger)itemTableView.numberOfRows) {
+        height += (itemTableView.rowHeight / 2.0);
+    }
+    return height;
+}
+
+static CGFloat _heightOfItemTableScrollViewForRowCount(NSTableView *itemTableView)
+{
+    NSUInteger rowCount = MAX(1, itemTableView.numberOfRows);
+    rowCount = MIN((NSUInteger) 5, rowCount);
+    NSScrollView *scrollView = itemTableView.enclosingScrollView;
+    NSSize contentSize = NSMakeSize(100.0, ceil(_heightOfItemTableViewForRowCount(itemTableView, rowCount)));
+    NSScroller *horizontalScroller = nil;
+    NSScroller *verticalScroller = [scrollView verticalScroller];
+    if (rowCount >= (NSUInteger)itemTableView.numberOfRows) {
+        verticalScroller = nil;
+    }
+    NSControlSize controlSize = verticalScroller != nil ? verticalScroller.controlSize : (horizontalScroller != nil ? horizontalScroller.controlSize : NSRegularControlSize);
+    NSSize frame = [NSScrollView frameSizeForContentSize:contentSize horizontalScrollerClass:[horizontalScroller class] verticalScrollerClass:[verticalScroller class] borderType:[scrollView borderType] controlSize:controlSize scrollerStyle:scrollView.scrollerStyle];
+    return frame.height;
+}
+
+- (void)_resizeInterface;
+{
+    _itemAlertPane.hidden = !_displayingWarningPane;
     if (![self isWindowLoaded])
         return;
-    
-    // We have a flipped container view for all these views.  This makes layout easier, but it also means that when we first load the nib, the views will be upside down (since IB archives the view's frames as if the container were not flipped).  So, we have to manually stack the views.
-    CGFloat yOffset = 0;
-    
-    NSRect oldSplitViewFrame = [_itemsAndReleaseNotesSplitView frame];
-    NSRect oldAppIconImageFrame = [_appIconImageView frame];
-    NSRect containerBounds = [[_appIconImageView superview] bounds];
-    
-    // Icon on the left
-    NSRect newAppIconImageFrame = (NSRect){NSMakePoint(oldAppIconImageFrame.origin.x, 0), [_appIconImageView frame].size};
-    [_appIconImageView setFrame:newAppIconImageFrame];
-    
-    // Progress indicator
-    NSRect spinnerFrame = [_spinner frame];
-    // Put its centerline on the same line as the app icon
-    spinnerFrame.origin.y = newAppIconImageFrame.origin.y - (spinnerFrame.size.height - newAppIconImageFrame.size.height)/2;
-    spinnerFrame.origin.x = NSMaxX(containerBounds) - (CGFloat)1.5 * NSWidth(spinnerFrame);
-    spinnerFrame = [[_spinner superview] centerScanRect:spinnerFrame];
-    [_spinner setFrame:spinnerFrame];
-    
-    NSRect oldTitleFrame = [_titleTextField frame];
-    NSRect oldMessageFrame = [_messageTextField frame];
 
-    // Title
-    NSRect newTitleFrame;
-    newTitleFrame.origin.x = oldTitleFrame.origin.x;
-    newTitleFrame.origin.y = yOffset;
-    newTitleFrame.size.height = oldTitleFrame.size.height;
-    newTitleFrame.size.width = NSMaxX(spinnerFrame) - NSMinX(oldTitleFrame);
-    [_titleTextField setFrame:newTitleFrame];
-    newTitleFrame.size = [_titleTextField desiredFrameSize:NSViewHeightSizable];
-    [_titleTextField setFrame:newTitleFrame];
-    yOffset = NSMaxY(newTitleFrame) + INTER_ELEMENT_GAP;
-
-    // Message
-    NSRect newMessageFrame;
-    newMessageFrame = oldMessageFrame;
-    if ([_spinner isHiddenOrHasHiddenAncestor])
-        newMessageFrame.size.width = NSMaxX(spinnerFrame) - NSMinX(oldMessageFrame);
-    else
-        newMessageFrame.size.width = NSMinX(spinnerFrame) - INTER_ELEMENT_GAP - NSMinX(oldMessageFrame);
-    [_messageTextField setFrameSize:newMessageFrame.size];
-    newMessageFrame.size = [_messageTextField desiredFrameSize:NSViewHeightSizable];
-    newMessageFrame.origin.y = yOffset;
-    [_messageTextField setFrame:newMessageFrame];
-    yOffset = MAX(NSMaxY(newAppIconImageFrame), NSMaxY(newMessageFrame)) + INTER_ELEMENT_GAP;
-
-    CGFloat oldTablePaneHeight = [[_itemTableView enclosingScrollView] frame].size.height;
-    
-    // Splitview -- any extra space gets taking/given here.  We're assuming that the delta between the minimum window size and the growth of the other fields is small enough to make this reasonable.  We could adjust the window size, but we want to allow the user to set it via the frame autosave.  If this becomes a problem, we could look at the resulting size for the split view and it it is too small, force the window to be bigger.        
-    NSRect newSplitViewFrame = oldSplitViewFrame;
-    newSplitViewFrame.origin.y = yOffset;
-    newSplitViewFrame.size.height = NSMaxY([[_itemsAndReleaseNotesSplitView superview] bounds]) - yOffset;
-    [_itemsAndReleaseNotesSplitView setFrame:newSplitViewFrame];
-    
-    [[_messageTextField superview] setNeedsDisplay:YES];
-    
-    if (!_selectedItem)
-        _displayingWarningPane = NO;
-    if (_displayingWarningPane) {
-        NSView *interView = [_itemsAndReleaseNotesSplitView subviewContainingView:_itemAlertPane];
-        NSView *borderView = [interView subviewContainingView:_releaseNotesWebView];
-        NSButton *ignoreMostTracks = [_itemAlertPane viewWithTag:itemAlertPane_IgnoreAllTracksTag];
-        
-        if (!interView || !borderView) {
-            NSLog(@"Can't find child of splitview.");
-            return;
-        }
-        
-        NSRect alertFrame = [_itemAlertPane frame];
-        NSRect notesFrame = [borderView frame];
-        NSRect boundary = [interView bounds];
-        alertFrame.origin = boundary.origin;
-        alertFrame.size.width = boundary.size.width;
-        
-        [_itemAlertPane setFrame:alertFrame]; // Resize the alert pane, and therefore its content views
-        NSRect textFrame = [_itemAlertMessage frame];
-        NSSize textFullSize = [_itemAlertMessage desiredFrameSize:NSViewHeightSizable];
-        // Consider adjusting the alert pane to make the message text meet the tops of the buttons
-        NSRect buttonFrame = [ignoreMostTracks frame];
-        CGFloat newAlertPaneHeight = ceil(alertFrame.size.height + ( NSMaxY(buttonFrame) - floor(NSMaxY(textFrame) - textFullSize.height- TEXT_BUTTONS_GAP) ));
-        if(newAlertPaneHeight < _minimumAlertPaneHeight)
-            newAlertPaneHeight = _minimumAlertPaneHeight;
-        if (newAlertPaneHeight != alertFrame.size.height) {
-            alertFrame.size.height = newAlertPaneHeight;
-            [_itemAlertPane setFrame:alertFrame];
-        }
-        
-        notesFrame.origin.x = boundary.origin.x;
-        notesFrame.origin.y = NSMaxY(alertFrame);
-        notesFrame.size.width = boundary.size.width;
-        notesFrame.size.height = NSMaxY(boundary) - notesFrame.origin.y;
-        
-        [borderView setFrame:notesFrame];
-        
-        [_itemAlertPane setHidden:NO];
-        
-        NSButton *ignoreSelectedTrack = [_itemAlertPane viewWithTag:itemAlertPane_IgnoreOneTrackTag];
-        if (ignoreSelectedTrack) {
-            NSRect oldFrame = [ignoreSelectedTrack frame];
-            [ignoreSelectedTrack sizeToFit];
-            NSRect newFrame = [ignoreSelectedTrack frame];
-            if (fabs(NSMaxX(oldFrame) - NSMaxX(newFrame)) > 0.1) {
-                newFrame.origin.x = NSMaxX(oldFrame) - newFrame.size.width;
-                [[ignoreSelectedTrack superview] centerScanRect:newFrame];
-                [ignoreSelectedTrack setFrame:newFrame];
-            }
-        }
-    } else {
-        [_itemAlertPane setHidden:YES];
-        NSView *interView = [_releaseNotesWebView ancestorSharedWithView:_itemAlertPane];
-        NSView *borderView = [interView subviewContainingView:_releaseNotesWebView];
-        [borderView setFrame:[interView bounds]];
-    }
-    
-    if (resetDividerPosition) {
-        // Start with the splitter as tight up against the limit as possible (3 rows currently)
-        [self _resizeSplitViewViewsWithTablePaneExistingHeight:0.0f];
-    } else {
-        [self _resizeSplitViewViewsWithTablePaneExistingHeight:oldTablePaneHeight];
-    }
-    
-    // Make room for title of install/info button
-    {
-        NSRect oldFrame = [_installButton frame];
-        [_installButton sizeToFit];
-        NSRect newFrame = [_installButton frame];
-        newFrame.size.width += _buttonExtraSize.width;
-        newFrame.size.height += _buttonExtraSize.height;
-        newFrame.origin.x = NSMaxX(oldFrame) - newFrame.size.width;
-        [_installButton setFrame:newFrame];
-        CGFloat delta = newFrame.origin.x - oldFrame.origin.x;
-        if (fabs(delta) > 0.25) {
-            NSRect oldCancelFrame = [_cancelButton frame];
-            oldCancelFrame.origin.x += delta;
-            [_cancelButton setFrameOrigin:oldCancelFrame.origin];
-            [_cancelButton setNeedsDisplay:YES];
-        }
-        [_installButton setNeedsDisplay:YES];
-    }
+    _itemTableViewHeightConstraint.constant = _heightOfItemTableScrollViewForRowCount(_itemTableView);
+    return;
 }
 
 - (void)_refreshSelectedItem:(NSNotification *)dummyNotification;
@@ -860,7 +698,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
     [_installButton setEnabled:installButtonEnable];
     
     if (shouldResizeUI)
-        [self _resizeInterface:NO];
+        [self _resizeInterface];
     
     [self _refreshDefaultAction];
     [self _loadReleaseNotes];
@@ -908,7 +746,7 @@ static CGFloat minHeightOfItemTableScrollView(NSTableView *itemTableView)
 
 - (void)_adjustViewLayout:(NSNotification *)note
 {
-    [self _resizeInterface:NO];
+    [self _resizeInterface];
 }
 
 @end

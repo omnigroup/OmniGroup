@@ -11,39 +11,37 @@
 #import <Foundation/NSData.h>
 #import <Foundation/NSDictionary.h>
 
+@class NSIndexSet;
 @class OFSSegmentEncryptWorker;
 
+NS_ASSUME_NONNULL_BEGIN
+
+/* An OFSDocumentKey represents a set of subkeys protected by a user-relevant mechanism like a passphrase. */
 @interface OFSDocumentKey : NSObject
-{
-    NSMutableDictionary *derivations;
-    OFSSegmentEncryptWorker *reusableEncryptionWorker;
- 
-    BOOL valid;
-    
-    uint8_t _key[16 /* kCCKeySizeAES128 */];
-}
 
-- initWithData:(NSData *)finfo error:(NSError **)outError;
-
-@property (readonly,nonatomic) BOOL hasPassword;
-@property (readonly,nonatomic) BOOL hasKeychainItem;
-@property (readonly,nonatomic) BOOL valid;
-
-- (BOOL)deriveWithOptions:(unsigned)opts password:(NSString *)password error:(NSError **)outError;
-
+- (instancetype __nullable)initWithData:(NSData * __nullable)finfo error:(NSError **)outError;
 - (NSData *)data;
 
-- (void)reset; // Sets the document key to a new, randomly generated value. This is only a useful operation when you're creating a new document--- any existing items will become inaccessible.
+@property (readonly,nonatomic) NSInteger changeCount;  // For detecting (semantically significant) changes to -data. Starts at 0 and increases. Not (currently) KVOable.
 
+@property (readonly,nonatomic) BOOL valid;  // =YES if we have successfully derived our unwrapping key and have access to the key slots
+
+/* Password-based encryption */
+@property (readonly,nonatomic) BOOL hasPassword;
+- (BOOL)deriveWithPassword:(NSString *)password error:(NSError **)outError;
 - (BOOL)setPassword:(NSString *)password error:(NSError **)outError;
-#if TARGET_OS_IPHONE
-- (BOOL)storeInKeychainWithAttributes:(NSDictionary *)attrs error:(NSError **)outError;
-#endif
 
+/* Key rollover: this updates the receiver to garbage-collect any slots not mentioned in keepThese, and if retireCurrent=YES, mark any active keys as inactive (and generate new active keys as needed). */
+- (void)discardKeysExceptSlots:(NSIndexSet * __nullable)keepThese retireCurrent:(BOOL)retire;
+
+/* Return an encryption worker for the current active key slot. */
 - (OFSSegmentEncryptWorker *)encryptionWorker;
-- (NSData *)wrapFileKey:(const uint8_t *)fileKeyInfo length:(size_t)len error:(NSError **)outError;
+
+// These methods are called by OFSSegmentEncryptWorker
+- (NSData * __nullable)wrapFileKey:(const uint8_t *)fileKeyInfo length:(size_t)len error:(NSError **)outError;
 - (ssize_t)unwrapFileKey:(const uint8_t *)wrappedFileKeyInfo length:(size_t)wrappedFileKeyInfoLen into:(uint8_t *)buffer length:(size_t)unwrappedKeyBufferLength error:(NSError **)outError;
 
 @end
 
 
+NS_ASSUME_NONNULL_END

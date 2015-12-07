@@ -2,23 +2,26 @@
 // This software may only be used and reproduced according to the terms in the file OmniSourceLicense.html, which should be distributed with this project and can also be found at <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 // $Id$
 
+// Include private configuration variables for Omni-local builds
+#include "Omni-Global-Private.xcconfig"
+
 // Build setting overrides for the current store target
 #include "Omni-Global-Common-Store.xcconfig"
 
 // Common settings
 
 // NS_BUILD_32_LIKE_64 makes CG and NS geometry types be the same. Mostly doesn't matter on iPhone, but this also makes NSInteger types be defined based on 'long' consistently, which avoids conflicting warnings from clang + llvm 2.7 about printf format checking
-// Also, define a few useful macros for making configuration-specific builds. We do NOT append OMNI_BUILD_IDENTIFIER_SUFFIX on OMNI_BUNDLE_IDENTIFIER here, but we would in the end application.
+// Also, define a few useful macros for making configuration-specific builds.
 // Note that the OMNI_BUILD_IDENTIFIER_SUFFIX and OMNI_BUILD_FILE_SUFFIX are declared in the individual specific configuration files Omni-Global-{Debug,Release}.xcconfig, which seems to work fine.
 // Targets still need to use these in their configurations in their bundle identifier, product name and in the source where needed.
 // Can add this when building with custom clang to avoid ARC writeback bugs: -fobjc-arc-disable-writeback
 
 OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS = NS_BUILD_32_LIKE_64 OBJC_OLD_DISPATCH_PROTOTYPES=0 OMNI_BUILD_IDENTIFIER_SUFFIX="@\"$(OMNI_BUILD_IDENTIFIER_SUFFIX)\"" OMNI_BUILD_FILE_SUFFIX="@\"$(OMNI_BUILD_FILE_SUFFIX)\""
 
-GCC_PREPROCESSOR_DEFINITIONS = $(OMNI_STORE_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_PER_CONFIGURATION_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_PER_CONFIGURATION_PREPROCESSOR_DEFINITIONS)
-INFOPLIST_PREPROCESSOR_DEFINITIONS = $(OMNI_GLOBAL_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_PER_CONFIGURATION_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_PER_CONFIGURATION_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_STORE_PREPROCESSOR_DEFINITIONS)
+GCC_PREPROCESSOR_DEFINITIONS = $(OMNI_GLOBAL_PRIVATE_PREPROCESSOR_DEFINITIONS) $(OMNI_STORE_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_COMMON_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_PER_CONFIGURATION_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_PER_CONFIGURATION_PREPROCESSOR_DEFINITIONS)
+INFOPLIST_PREPROCESSOR_DEFINITIONS = $(OMNI_GLOBAL_PRIVATE_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_GLOBAL_PER_CONFIGURATION_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_COMMON_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_TARGET_PER_CONFIGURATION_INFOPLIST_PREPROCESSOR_DEFINITIONS) $(OMNI_STORE_PREPROCESSOR_DEFINITIONS)
 
-OTHER_SWIFT_FLAGS = $(OMNI_STORE_SWIFT_FLAGS) $(OMNI_GLOBAL_COMMON_SWIFT_FLAGS) $(OMNI_GLOBAL_PER_CONFIGURATION_SWIFT_FLAGS) $(OMNI_TARGET_COMMON_SWIFT_FLAGS) $(OMNI_TARGET_PER_CONFIGURATION_SWIFT_FLAGS)
+OTHER_SWIFT_FLAGS = $(OMNI_STORE_SWIFT_FLAGS) $(OMNI_GLOBAL_PRIVATE_SWIFT_FLAGS) $(OMNI_GLOBAL_COMMON_SWIFT_FLAGS) $(OMNI_GLOBAL_PER_CONFIGURATION_SWIFT_FLAGS) $(OMNI_TARGET_COMMON_SWIFT_FLAGS) $(OMNI_TARGET_PER_CONFIGURATION_SWIFT_FLAGS)
 
 // Xcode doesn't need to strip anything, we'll do that ourselves using Scripts/StripApplication
 STRIP_INSTALLED_PRODUCT = NO
@@ -28,12 +31,11 @@ COPY_PHASE_STRIP = NO
 ENABLE_BITCODE = NO
 STRIP_BITCODE_FROM_COPIED_FILES = NO
 
-// Keep shared precompiled headers in our build area so we can clean them up. Without this, Xcode will put them in its own place and won't purge them reliably.
-SHARED_PRECOMPS_DIR = $(CONFIGURATION_BUILD_DIR)/SharedPrecompiledHeaders
-
 GCC_PREFIX_HEADER = $(PROJECT_NAME)_Prefix.h
-// Trying to reenable this with Xcode 6.3...
-GCC_PRECOMPILE_PREFIX_HEADER = YES
+
+// Radar 22784786, mentioned in the Xcode 7.1b2 release notes says that setting this to NO is recommended to avoid "Include of non-modular header inside framework module"
+ALWAYS_SEARCH_USER_PATHS = NO
+
 
 YACC = $(DT_TOOLCHAIN_DIR)/usr/bin/bison
 YACCFLAGS = -y
@@ -46,7 +48,6 @@ GCC_GENERATE_DEBUGGING_SYMBOLS = YES
 GCC_C_LANGUAGE_STANDARD = gnu99
 GCC_ENABLE_OBJC_EXCEPTIONS = YES
 GCC_NO_COMMON_BLOCKS = YES
-
 
 //
 // Warnings
@@ -65,7 +66,7 @@ GCC_WARN_CHECK_SWITCH_STATEMENTS = YES
 GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = YES
 CLANG_WARN_EMPTY_BODY = YES
 GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO
-// GCC_WARN_SHADOW = YES
+GCC_WARN_SHADOW = YES
 CLANG_WARN_BOOL_CONVERSION = YES
 CLANG_WARN_CONSTANT_CONVERSION = YES
 GCC_WARN_64_TO_32_BIT_CONVERSION = YES
@@ -147,6 +148,9 @@ CLANG_ANALYZER_SECURITY_INSECUREAPI_VFORK = YES
 
 INSTALL_MODE_FLAG = a+rX
 
+// Modules
+CLANG_ENABLE_MODULES = YES
+
 // We generally want our debug information format to be dwarf-with-dsym (and valgrind likes it best too), except when using OOM which only understands the older stabs format
 DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
 // DEBUG_INFORMATION_FORMAT = stabs
@@ -158,7 +162,8 @@ INFOPLIST_PREPROCESS = YES
 
 // Make sure we look for the built SVNVersions.h in the right spot
 // Also, look for <foo/bar.h> headers that other projects have installed
-HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR" "$CONFIGURATION_BUILD_DIR" "$(TARGET_BUILD_DIR)/include" "$(OBJROOT)/UninstalledProducts/include"
+// As of Xcode 7.1, headers for static libraries are installed in UninstalledProducts/$(PLATFORM_NAME)/include; may be able to get rid of UninstalledProducts/include before too long.
+HEADER_SEARCH_PATHS = $(value) "$PROJECT_DERIVED_FILE_DIR" "$CONFIGURATION_BUILD_DIR" "$(TARGET_BUILD_DIR)/include" "$(OBJROOT)/UninstalledProducts/$(PLATFORM_NAME)/include" "$(OBJROOT)/UninstalledProducts/include"
 
 GCC_VERSION = com.apple.compilers.llvm.clang.1_0
 //CC[sdk=iphone*]=/Users/bungi/Source/LLVM/llvm-build/Release+Asserts/bin/clang

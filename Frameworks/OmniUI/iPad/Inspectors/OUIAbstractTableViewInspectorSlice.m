@@ -62,12 +62,24 @@ RCS_ID("$Id$");
 
 #pragma mark - OUIInspectorSlice subclass
 
+- (void)_reloadTableAndResize;
+{
+    [_tableView reloadData];
+    OUITableViewAdjustHeightToFitContents(_tableView);
+    CGFloat currentHeight = self.tableView.contentSize.height;
+    OBASSERT(currentHeight > 0.0);
+    if (self.heightConstraint == nil) {
+        self.heightConstraint = [self.tableView.heightAnchor constraintEqualToConstant:currentHeight];
+        self.heightConstraint.active = YES;
+    } else {
+        self.heightConstraint.constant = currentHeight;
+    }
+}
+
 - (void)updateInterfaceFromInspectedObjects:(OUIInspectorUpdateReason)reason;
 {
     [super updateInterfaceFromInspectedObjects:reason];
-    
-    [_tableView reloadData];
-    OUITableViewAdjustHeightToFitContents(_tableView);
+    [self _reloadTableAndResize];
 }
 
 #pragma mark - UIViewController subclass
@@ -104,8 +116,7 @@ RCS_ID("$Id$");
     [super viewWillAppear:animated];
     
     // Might be coming back from a detail pane that edited a displayed value
-    [_tableView reloadData];
-    OUITableViewAdjustHeightToFitContents(_tableView);
+    [self _reloadTableAndResize];
 }
 
 - (void)viewDidDisappear:(BOOL)animated;
@@ -120,6 +131,11 @@ RCS_ID("$Id$");
 {
     [super setEditing:editing animated:animated]; // updates our editingButtonItem
     [_tableView setEditing:editing animated:animated];
+}
+
+-(UIColor *)sliceBackgroundColor;
+{
+    return [UIColor clearColor];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;

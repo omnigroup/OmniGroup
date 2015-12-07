@@ -1062,14 +1062,15 @@ BOOL OAOpenSystemPreferencePane(NSString *paneIdentifier, NSString *tabIdentifie
     NSData *prefsBundleID = [systemPreferencesBundleID dataUsingEncoding:NSUTF8StringEncoding];
 
     OSErr err;
+    OSStatus osst;
     AppleEvent reveal, reply;
     
-    err = AEBuildAppleEvent('misc','mvis',
+    osst = AEBuildAppleEvent('misc','mvis',
                       typeApplicationBundleID, [prefsBundleID bytes], [prefsBundleID length],
                       kAutoGenerateReturnID,
                       kAnyTransactionID,
                       &reveal, NULL, "'----':@", [target aeDesc]);
-    if (err !=  aeBuildSyntaxNoErr)
+    if (osst !=  aeBuildSyntaxNoErr)
         return NO;
     
     // Send the event with a timeout of 5 seconds. That should be long enough to get a failure response, but not so long that it'll be really annoying if there's a holdup for some reason.

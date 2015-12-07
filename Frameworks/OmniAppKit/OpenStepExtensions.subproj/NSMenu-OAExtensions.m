@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,14 +39,14 @@ static NSString *OAContextMenuLayoutDefaultKey = @"OAContextMenuLayout";
     [[NSUserDefaults standardUserDefaults] setInteger:newValue forKey:OAContextMenuLayoutDefaultKey];
 }
 
-+ (OAContextMenuLayout) contextMenuLayoutForScreen: (NSScreen *) screen;
++ (OAContextMenuLayout) contextMenuLayoutForScreen: (NSScreen *) originalScreen;
 {
     OAContextMenuLayout layout = [self contextMenuLayoutDefaultValue];
     
     if (layout == OAAutodetectContextMenuLayout) {
         NSArray *screens;        
-        if (screen)
-            screens = [NSArray arrayWithObject: screen];
+        if (originalScreen)
+            screens = [NSArray arrayWithObject: originalScreen];
         else
             screens = [NSScreen screens];
 

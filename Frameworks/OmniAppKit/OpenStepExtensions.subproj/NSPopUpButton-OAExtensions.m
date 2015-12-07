@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,13 +33,12 @@ RCS_ID("$Id$")
     NSMenu *menu = [self menu];
 
     for (id object in objects) {
-        NSString *title = [object performSelector:titleSelector];
-        
+        NSString *title = OBSendObjectReturnMessage(object, titleSelector);
+
         NSMenuItem *newItem = [[NSMenuItem alloc] initWithTitle:title action:NULL keyEquivalent:@""];
         [newItem setRepresentedObject:object];
         [menu addItem:newItem];
-        [newItem release];
-    }
+     }
 }
 
 - (void)addRepresentedObjects:(NSArray *)objects titleKeyPath:(NSString *)keyPath;
@@ -52,7 +51,6 @@ RCS_ID("$Id$")
         NSMenuItem *newItem = [[NSMenuItem alloc] initWithTitle:title action:NULL keyEquivalent:@""];
         [newItem setRepresentedObject:object];
         [menu addItem:newItem];
-        [newItem release];
     }
 }
 

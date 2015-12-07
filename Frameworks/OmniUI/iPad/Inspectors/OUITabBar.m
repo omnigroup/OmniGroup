@@ -150,7 +150,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
 {
     if (_usesVerticalLayout != usesVerticalLayout) {
         _usesVerticalLayout = usesVerticalLayout;
-
+        _showsTabImage = _usesVerticalLayout;
         [self invalidateTabButtons];
         [self setNeedsLayout];
         [self setNeedsDisplay];
@@ -218,7 +218,11 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
     self.tabImages[index] = image ?: [NSNull null];
     if (self.tabButtons != nil) {
         OBASSERT(index < [self.tabButtons count]);
-        [self.tabButtons[index] setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+        OUITabBarButton *button = self.tabButtons[index];
+        [UIView performWithoutAnimation:^{
+            [button setImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
+            [button layoutIfNeeded];
+        }];
     }
 }
 
@@ -251,6 +255,7 @@ static UIFont *_DefaultVerticalSelectedTabTitleFont;
         [self.tabTitles enumerateObjectsUsingBlock:^(NSString *title, NSUInteger index, BOOL *stop) {
             OUITabBarButton *button = (_usesVerticalLayout ? [OUITabBarButton verticalTabBarButton] : [OUITabBarButton tabBarButton]);
             button.appearanceDelegate = self.appearanceDelegate;
+            button.showButtonImage = self.showsTabImage;
             
             [button setTitle:title forState:UIControlStateNormal];
             [button addTarget:self action:@selector(selectTab:) forControlEvents:UIControlEventTouchUpInside];

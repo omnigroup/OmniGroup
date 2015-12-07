@@ -21,6 +21,17 @@ RCS_ID("$Id$");
 
 @implementation OFVersionNumber
 
++ (OFVersionNumber *)mainBundleVersionNumber;
+{
+    static OFVersionNumber *mainBundleVersionNumber = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *versionString = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+        mainBundleVersionNumber = [[OFVersionNumber alloc] initWithVersionString:versionString];
+    });
+    return mainBundleVersionNumber;
+}
+
 + (OFVersionNumber *)userVisibleOperatingSystemVersionNumber;
 {
     static OFVersionNumber *userVisibleOperatingSystemVersionNumber = nil;

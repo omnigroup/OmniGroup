@@ -55,7 +55,7 @@ RCS_ID("$Id$")
     NSDictionary *viewDict = @{@"wrappedView" : wrappedView};
     [NSLayoutConstraint activateConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[wrappedView]|" options:0 metrics:nil views:viewDict]];
     [NSLayoutConstraint activateConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[wrappedView]|" options:0 metrics:nil views:viewDict]];
-    wrappedView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+    wrappedView.translatesAutoresizingMaskIntoConstraints = NO;
 }
 
 #pragma mark - UIViewController subclass
@@ -65,7 +65,7 @@ RCS_ID("$Id$")
     UIView *thisView = self.view;
     UIView *containerView = self.containerView;
     
-    if (containerView) {
+    if (containerView != nil) {
         OBASSERT([containerView isDescendantOfView:thisView], "containerView should be a descendant of self.view");
     } else {
         containerView = [[UIView alloc] init];
@@ -79,9 +79,10 @@ RCS_ID("$Id$")
         _containerView = containerView;
     }
     
-    if (_wrappedViewController)
+    if (_wrappedViewController != nil) {
         [self _addWrappedViewControllerView];
-    
+    }
+
     [super viewDidLoad];
 }
 

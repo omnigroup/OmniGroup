@@ -48,8 +48,8 @@ static OFPreference *visibleTracks = nil;
     if (![oldSendSystemInfoEnabledPreference hasPersistentValue]) {
         return;
     }
-    
-    OFPreference *automaticSoftwareUpdateCheckEnabled = [self automaticSoftwareUpdateCheckEnabled];
+
+    OBASSERT(automaticSoftwareUpdateCheckEnabled);
     if (![automaticSoftwareUpdateCheckEnabled hasPersistentValue]) {
         [automaticSoftwareUpdateCheckEnabled setBoolValue:[oldSendSystemInfoEnabledPreference boolValue]];
     }

@@ -675,7 +675,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 				TargetAttributes = {
 					34D621AE1B38807700DCE250 = {
 						CreatedOnToolsVersion = 7.0;
@@ -897,7 +897,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
 				PRODUCT_NAME = OmniDAV;
 				SDKROOT = macosx;
 			};
@@ -909,7 +909,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
 				PRODUCT_NAME = OmniDAV;
 				SDKROOT = macosx;
 			};
@@ -923,7 +923,6 @@
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_SHADOW = YES;
 			};
 			name = Debug;
 		};
@@ -935,7 +934,6 @@
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_SHADOW = YES;
 			};
 			name = Release;
 		};
@@ -948,7 +946,6 @@
 					"$(value)",
 					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
 				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Test/ODAVUnitTests/ODAVUnitTests-Prefix.pch";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -971,7 +968,6 @@
 					"$(value)",
 					"$(TEST_FRAMEWORK_SEARCH_PATHS)",
 				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Test/ODAVUnitTests/ODAVUnitTests-Prefix.pch";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
@@ -992,7 +988,7 @@
 				);
 				GCC_PREFIX_HEADER = "Test/ODAVUnitTests/ODAVUnitTests-Prefix.pch";
 				INFOPLIST_FILE = "Test/ODAVUnitTests/ODAVUnitTests-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.ODAVUnitTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.ODAVUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1009,7 +1005,7 @@
 				);
 				GCC_PREFIX_HEADER = "Test/ODAVUnitTests/ODAVUnitTests-Prefix.pch";
 				INFOPLIST_FILE = "Test/ODAVUnitTests/ODAVUnitTests-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.ODAVUnitTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.ODAVUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1041,7 +1037,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
 				PRODUCT_NAME = OmniDAV;
 			};
 			name = Debug;
@@ -1052,7 +1048,7 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDAV;
 				PRODUCT_NAME = OmniDAV;
 			};
 			name = Release;

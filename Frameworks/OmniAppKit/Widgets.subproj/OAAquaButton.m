@@ -1,4 +1,4 @@
-// Copyright 2000-2007, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,12 +34,6 @@ RCS_ID("$Id$")
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    [clearImage release];
-    [aquaImage release];
-    [graphiteImage release];
-    
-    [super dealloc];
 }
 
 //
@@ -54,12 +48,9 @@ RCS_ID("$Id$")
 
 - (void)setImageName:(NSString *)anImageName inBundle:(NSBundle *)aBundle;
 {
-    [clearImage release];
-    [aquaImage release];
-    [graphiteImage release];
-    clearImage = [[NSImage imageNamed:anImageName inBundle:aBundle] retain];
-    aquaImage = [[NSImage imageNamed:[anImageName stringByAppendingString:OAAquaImageTintSuffix] inBundle:aBundle] retain];
-    graphiteImage = [[NSImage imageNamed:[anImageName stringByAppendingString:OAGraphiteImageTintSuffix] inBundle:aBundle] retain];
+    clearImage = [NSImage imageNamed:anImageName inBundle:aBundle];
+    aquaImage = [NSImage imageNamed:[anImageName stringByAppendingString:OAAquaImageTintSuffix] inBundle:aBundle];
+    graphiteImage = [NSImage imageNamed:[anImageName stringByAppendingString:OAGraphiteImageTintSuffix] inBundle:aBundle];
     
     [self _setButtonImages];
 }

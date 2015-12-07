@@ -1,4 +1,4 @@
-// Copyright 2004-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,11 +8,13 @@
 // $Id$
 
 #import <Foundation/NSString.h>
-#import <OmniBase/objc.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class NSData;
 
-extern BOOL OFXMLIsValidID(NSString *identifier);
+extern BOOL OFXMLIsValidID(NSString * _Nullable identifier);
 extern NSString *OFXMLCreateID(void) NS_RETURNS_RETAINED;
 extern NSString *OFXMLCreateIDFromData(NSData *data) NS_RETURNS_RETAINED;
 
+NS_ASSUME_NONNULL_END

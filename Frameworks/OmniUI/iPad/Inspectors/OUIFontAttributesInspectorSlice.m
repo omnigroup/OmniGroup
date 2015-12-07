@@ -122,8 +122,24 @@ RCS_ID("$Id$");
         [_strikethroughFontAttributeButton addTarget:self action:@selector(_toggleStrikethrough:)];
         _strikethroughFontAttributeButton.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Strike Through", @"OmniUI", OMNI_BUNDLE, @"Strike Through button accessibility label");
     }
-    
-    self.view = _fontAttributeSegmentedControl;
+
+    UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 46)];
+
+    [containerView addSubview: _fontAttributeSegmentedControl];
+
+    containerView.translatesAutoresizingMaskIntoConstraints = NO;
+    _fontAttributeSegmentedControl.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [NSLayoutConstraint activateConstraints:
+     @[
+       [_fontAttributeSegmentedControl.leftAnchor constraintEqualToAnchor:containerView.leftAnchor constant:[OUIInspectorSlice sliceAlignmentInsets].left],
+       [_fontAttributeSegmentedControl.rightAnchor constraintEqualToAnchor:containerView.rightAnchor constant:[OUIInspectorSlice sliceAlignmentInsets].right * -1],
+       [_fontAttributeSegmentedControl.centerYAnchor constraintEqualToAnchor:containerView.centerYAnchor],
+       [containerView.heightAnchor constraintEqualToConstant:46.0],
+       ]
+     ];
+
+    self.view = containerView;
 }
 
 #pragma mark - OUIInspectorSlice subclass

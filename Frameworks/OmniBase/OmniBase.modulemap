@@ -1,0 +1,12 @@
+framework module OmniBase {
+    umbrella header "OmniBase.h"
+	
+    // This imports non-module headers
+    exclude header "system.h"
+
+    // This is only needed in very rare cases (in OmniGroupCrashCatcher.app)
+    exclude header "OBPatchTrap.h"
+
+    export *
+    module * { export * }
+}

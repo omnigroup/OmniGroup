@@ -67,10 +67,10 @@ if [ $#source_files -gt 0 ]; then
 fi
 
 # Build English strings for every xib using base localizations
-$SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" xib "$PROJECT_FILE_PATH" | while read x; do
+$SCRIPTS_DIR/ListSourceFilesInTarget "$TARGET_NAME" xib,storyboard "$PROJECT_FILE_PATH" | while read x; do
     xib_basename=`basename $x`
     if [[ "$x" =~ "Base.lproj/$xib_basename\$" ]]; then
-        string_table_name="${xib_basename%.xib}"
+        string_table_name="${xib_basename%.*}"
         echo "Creating string table '$string_table_name' from $x" # without this line here, zsh segfaults. (!?)
         ibtool --output-format human-readable-text --export-strings-file "$TMP_OUTPUT/${string_table_name}.strings" "$SRCROOT/$x"
         echo "$x" >> "$LOCALIZABLE_FILE_LIST"-tmp

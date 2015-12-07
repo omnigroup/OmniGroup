@@ -1,4 +1,4 @@
-// Copyright 2009-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2009-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,6 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFXMLSignature.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
+#import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/OFSecurityUtilities.h>
 #import <OmniFoundation/OFUtilities.h>
 #import <OmniFoundation/NSData-OFExtensions.h>

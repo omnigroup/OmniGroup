@@ -104,7 +104,7 @@ RCS_ID("$Id$")
         shield.alpha = 0;
     }];
     
-    id finished = ^(BOOL finished) {
+    id finished = ^(BOOL didFinish) {
         [shield removeFromSuperview];
         [border removeFromSuperview];
         [snapshots makeObjectsPerformSelector:@selector(removeFromSuperview)];

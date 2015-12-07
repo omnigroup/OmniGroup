@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -328,16 +328,19 @@ RCS_ID("$Id$")
     // Then, download the file and make sure we see some partial percentages.
     {
         OFXAgent *agent = self.agentB;
-        [agent sync:nil];
-        OFXFileMetadata *metadata = [self waitForFileMetadata:self.agentB where:nil];
-        
-        XCTAssertFalse(metadata.downloaded);
-        XCTAssertFalse(metadata.downloading);
-        
-        [self.agentB requestDownloadOfItemAtURL:metadata.fileURL completionHandler:^(NSError *errorOrNil) {
-            XCTAssertNil(errorOrNil);
-        }];
-        
+
+        {
+            [agent sync:nil];
+            OFXFileMetadata *metadata = [self waitForFileMetadata:self.agentB where:nil];
+
+            XCTAssertFalse(metadata.downloaded);
+            XCTAssertFalse(metadata.downloading);
+
+            [self.agentB requestDownloadOfItemAtURL:metadata.fileURL completionHandler:^(NSError *errorOrNil) {
+                XCTAssertNil(errorOrNil);
+            }];
+        }
+
         NSMutableArray *percentages = [NSMutableArray array];
         [self waitForFileMetadata:agent where:^BOOL(OFXFileMetadata *metadata) {
             float percentDownloaded = metadata.percentDownloaded;
@@ -508,11 +511,10 @@ RCS_ID("$Id$")
     [self waitForAgentsEditsToAgree];
     [self requireAgentsToHaveSameFilesByName];
     
-    NSSet *metadataItems = [self metadataItemsForAgent:agentA];
-    XCTAssertTrue([metadataItems count] == 2);
     {
         NSSet *metadataItems = [self metadataItemsForAgent:agentA];
-        
+        XCTAssertTrue([metadataItems count] == 2);
+
         OFXFileMetadata *finalMetadataA = [metadataItems any:^BOOL(OFXFileMetadata *metadata) {
             return [[metadata.fileURL lastPathComponent] isEqual:@"test-A.package"];
         }];

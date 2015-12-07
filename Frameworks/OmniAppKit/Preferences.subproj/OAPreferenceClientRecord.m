@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,201 +20,72 @@ RCS_ID("$Id$")
 
 @implementation OAPreferenceClientRecord
 
-- (id)initWithCategoryName:(NSString *)newName;
+@synthesize iconImage = _iconImage;
+@synthesize ordering = _ordering;
+
+#pragma mark - Init
+
+- (instancetype)initWithCategoryName:(NSString *)newName;
 {
     if (!(self = [super init]))
         return nil;
 
-    categoryName = [newName retain];
+    _categoryName = newName;
     [self setOrdering:nil];
     return self;
 }
 
-- (void)dealloc;
-{
-    [categoryName release];
-    [identifier release];
-    [className release];
-    [title release];
-    [shortTitle release];
-    [iconName release];
-    [nibName release];
-    [helpURL release];
-    [defaultsDictionary release];
-    [defaultsArray release];
-    [iconImage release];
-    
-    [super dealloc];
-}
-
-
-//
+#pragma mark - Accessors
 
 static NSString * const OAPreferenceClientRecordIconNameAppPrefix = @"app:"; // For example, you could use "app:com.apple.Mail" to use Mail's icon.
 
 - (NSImage *)iconImage;
 {
-    if (iconImage != nil)
-        return iconImage;
+    if (_iconImage != nil)
+        return _iconImage;
 
-    if ([iconName hasPrefix:OAPreferenceClientRecordIconNameAppPrefix]) {
-        NSString *appIdentifier = [iconName stringByRemovingPrefix:OAPreferenceClientRecordIconNameAppPrefix];
+    if ([self.iconName hasPrefix:OAPreferenceClientRecordIconNameAppPrefix]) {
+        NSString *appIdentifier = [self.iconName stringByRemovingPrefix:OAPreferenceClientRecordIconNameAppPrefix];
         NSString *appPath = [[NSWorkspace sharedWorkspace] absolutePathForAppBundleWithIdentifier:appIdentifier];
         if ([NSString isEmptyString:appPath]) {
             NSLog(@"%s: Cannot find '%@'", __PRETTY_FUNCTION__, appIdentifier);
         } else {
-            iconImage = [[[NSWorkspace sharedWorkspace] iconForFile:appPath] retain];
+            _iconImage = [[NSWorkspace sharedWorkspace] iconForFile:appPath];
         }
     } else {
-        NSBundle *bundle = [OFBundledClass bundleForClassNamed:className];
-        iconImage = [[NSImage imageNamed:iconName inBundle:bundle] retain];
+        NSBundle *bundle = [OFBundledClass bundleForClassNamed:self.className];
+        _iconImage = [NSImage imageNamed:self.iconName inBundle:bundle];
     }
 
 #ifdef DEBUG
-    if (iconImage == nil)
-        NSLog(@"OAPreferenceClientRecord '%@' is missing its icon (%@)", identifier, iconName);
+    if (_iconImage == nil)
+        NSLog(@"OAPreferenceClientRecord '%@' is missing its icon (%@)", self.identifier, self.iconName);
 #endif
 
-    return iconImage;
-}
-
-- (NSString *)categoryName;
-{
-    return categoryName;
-}
-
-- (NSString *)identifier;
-{
-    return identifier;
-}
-
-- (NSString *)className;
-{
-    return className;
-}
-
-- (NSString *)title;
-{
-    return title;
+    return _iconImage;
 }
 
 - (NSString *)shortTitle;
 {
-    return shortTitle ? shortTitle : title;
-}
-
-- (NSString *)iconName;
-{
-    return iconName;
-}
-
-- (NSString *)nibName;
-{
-    return nibName;
-}
-
-- (NSString *)helpURL;
-{
-    return helpURL;
+    return _shortTitle ? _shortTitle : _title;
 }
 
 - (NSNumber *)ordering;
 {
-    OBASSERT(ordering != nil);
-    return ordering;
-}
-
-- (NSDictionary *)defaultsDictionary;
-{
-    return defaultsDictionary;
-}
-
-- (NSArray *)defaultsArray;
-{
-    return defaultsArray;
-}
-
-- (void)setIdentifier:(NSString *)newIdentifier;
-{
-    if (identifier == newIdentifier)
-        return;
-    [identifier release];
-    identifier = [newIdentifier retain];
-}
-
-- (void)setClassName:(NSString *)newClassName;
-{
-    if (className == newClassName)
-        return;
-    [className release];
-    className = [newClassName retain];
-}
-
-- (void)setTitle:(NSString *)newTitle;
-{
-    if (title == newTitle)
-        return;
-    [title release];
-    title = [newTitle retain];
-}
-
-- (void)setShortTitle:(NSString *)newShortTitle;
-{
-    if (shortTitle == newShortTitle)
-        return;
-    [shortTitle release];
-    shortTitle = [newShortTitle retain];
-}
-
-- (void)setIconName:(NSString *)newIconName;
-{
-    if (iconName == newIconName)
-        return;
-    [iconName release];
-    iconName = [newIconName retain];
-}
-
-- (void)setNibName:(NSString *)newNibName;
-{
-    if (nibName == newNibName)
-        return;
-    [nibName release];
-    nibName = [newNibName retain];
-}
-
-- (void)setHelpURL:(NSString *)newHelpURL;
-{
-    if (helpURL == newHelpURL)
-        return;
-    [helpURL release];
-    helpURL = [newHelpURL retain];
+    OBASSERT(_ordering != nil);
+    return _ordering;
 }
 
 - (void)setOrdering:(NSNumber *)newOrdering;
 {
     if (newOrdering == nil)
         newOrdering = [NSNumber numberWithInt:0];
-    if (ordering == newOrdering)
+    if (_ordering == newOrdering)
         return;
-    [ordering release];
-    ordering = [newOrdering retain];
+    _ordering = newOrdering;
 }
 
-- (void)setDefaultsDictionary:(NSDictionary *)newDefaultsDictionary;
-{
-    if (defaultsDictionary == newDefaultsDictionary)
-        return;
-    [defaultsDictionary release];
-    defaultsDictionary = [newDefaultsDictionary retain];
-}
-
-- (void)setDefaultsArray:(NSArray *)newDefaultsArray;
-{
-    if (defaultsArray == newDefaultsArray)
-        return;
-    [defaultsArray release];
-    defaultsArray = [newDefaultsArray retain];
-}
+#pragma mark - API
 
 - (NSComparisonResult)compare:(OAPreferenceClientRecord *)other;
 {
@@ -239,9 +110,9 @@ static NSString * const OAPreferenceClientRecordIconNameAppPrefix = @"app:"; // 
 
 - (OAPreferenceClient *)newClientInstanceInController:(OAPreferenceController *)controller;
 {
-    [controller setTitle:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Loading %@...", @"OmniAppKit", [OAPreferenceClientRecord bundle], "preference bundle loading message format"), title]];
+    [controller setTitle:[NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Loading %@...", @"OmniAppKit", [OAPreferenceClientRecord bundle], "preference bundle loading message format"), self.title]];
 
-    Class clientClass = [OFBundledClass classNamed:className];
+    Class clientClass = [OFBundledClass classNamed:self.className];
 
     OAPreferenceClient *clientInstance =  [[clientClass alloc] initWithPreferenceClientRecord:self controller:controller];
 
@@ -255,26 +126,23 @@ static NSString * const OAPreferenceClientRecordIconNameAppPrefix = @"app:"; // 
     return clientInstance;
 }
 
-
-//
-// Debugging
-//
+#pragma mark - Debugging
 
 - (NSMutableDictionary *) debugDictionary;
 {
     NSMutableDictionary *dict = [super debugDictionary];
-    [dict setObject:categoryName forKey:@"01_categoryName" defaultObject:nil];
-    [dict setObject:identifier forKey:@"02_identifier" defaultObject:nil];
-    [dict setObject:className forKey:@"03_className" defaultObject:nil];
-    [dict setObject:title forKey:@"04_title" defaultObject:nil];
-    [dict setObject:shortTitle forKey:@"05_shortTitle" defaultObject:nil];
-    [dict setObject:iconName forKey:@"06_iconName" defaultObject:nil];
-    [dict setObject:nibName forKey:@"07_nibName" defaultObject:nil];
-    [dict setObject:helpURL forKey:@"08_helpURL" defaultObject:nil];
-    [dict setObject:ordering forKey:@"09_ordering" defaultObject:nil];
-    [dict setObject:defaultsDictionary forKey:@"10_defaultsDictionary" defaultObject:nil];
-    [dict setObject:defaultsArray forKey:@"11_defaultsArray" defaultObject:nil];
-    [dict setObject:iconImage forKey:@"12_iconImage" defaultObject:nil];
+    [dict setObject:self.categoryName forKey:@"01_categoryName" defaultObject:nil];
+    [dict setObject:self.identifier forKey:@"02_identifier" defaultObject:nil];
+    [dict setObject:self.className forKey:@"03_className" defaultObject:nil];
+    [dict setObject:self.title forKey:@"04_title" defaultObject:nil];
+    [dict setObject:self.shortTitle forKey:@"05_shortTitle" defaultObject:nil];
+    [dict setObject:self.iconName forKey:@"06_iconName" defaultObject:nil];
+    [dict setObject:self.nibName forKey:@"07_nibName" defaultObject:nil];
+    [dict setObject:self.helpURL forKey:@"08_helpURL" defaultObject:nil];
+    [dict setObject:self.ordering forKey:@"09_ordering" defaultObject:nil];
+    [dict setObject:self.defaultsDictionary forKey:@"10_defaultsDictionary" defaultObject:nil];
+    [dict setObject:self.defaultsArray forKey:@"11_defaultsArray" defaultObject:nil];
+    [dict setObject:self.iconImage forKey:@"12_iconImage" defaultObject:nil];
     return dict;
 }
 

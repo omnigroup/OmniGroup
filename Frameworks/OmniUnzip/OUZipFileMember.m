@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,13 +13,15 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OUZipFileMember
 {
     NSData *_contents;
     NSString *_filePath;
 }
 
-- initWithName:(NSString *)name date:(NSDate *)date contents:(NSData *)contents;
+- (instancetype)initWithName:(NSString *)name date:(NSDate *)date contents:(NSData *)contents;
 {
     if (!(self = [super initWithName:name date:date]))
         return nil;
@@ -29,7 +31,7 @@ RCS_ID("$Id$");
     return self;
 }
 
-- initWithName:(NSString *)name date:(NSDate *)date mappedFilePath:(NSString *)filePath;
+- (instancetype)initWithName:(NSString *)name date:(NSDate *)date mappedFilePath:(NSString *)filePath;
 {
     if (!(self = [super initWithName:name date:date]))
         return nil;
@@ -53,8 +55,7 @@ RCS_ID("$Id$");
     }
 }
 
-#pragma mark -
-#pragma mark OUZipMember subclass
+#pragma mark - OUZipMember subclass
 
 - (NSFileWrapper *)fileWrapperRepresentation;
 {
@@ -64,10 +65,9 @@ RCS_ID("$Id$");
     return wrapper;
 }
 
-#pragma mark -
-#pragma mark OUZipMember subclass
+#pragma mark - OUZipMember subclass
 
-- (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString *)fileNamePrefix error:(NSError **)outError;
+- (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString * _Nullable)fileNamePrefix error:(NSError **)outError;
 {
     NSString *name = [self name];
     if (![NSString isEmptyString:fileNamePrefix])
@@ -77,3 +77,5 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

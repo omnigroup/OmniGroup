@@ -44,6 +44,43 @@ RCS_ID("$Id$")
 #pragma mark -
 #pragma mark API
 
++ (BOOL)handleChangePreferenceURL:(NSURL *)url error:(NSError **)outError;
+{
+    OFMultiValueDictionary *parameters = [[url query] parametersFromQueryString];
+    NSLog(@"Changing preferences for URL <%@>: parameters=%@", [url absoluteString], parameters);
+    OFPreferenceWrapper *preferences = [OFPreferenceWrapper sharedPreferenceWrapper];
+    NSEnumerator *keyEnumerator = [parameters keyEnumerator];
+    NSString *key = nil;
+    while ((key = [keyEnumerator nextObject]) != nil) {
+        id defaultValue = [[preferences preferenceForKey:key] defaultObjectValue];
+        id oldValue = [preferences valueForKey:key];
+        NSString *stringValue = [parameters lastObjectForKey:key];
+        if ([stringValue isNull])
+            stringValue = nil;
+        
+        id coercedValue = [OFPreference coerceStringValue:stringValue toTypeOfPropertyListValue:defaultValue];
+        if (coercedValue == nil) {
+            NSLog(@"Unable to update %@: failed to convert '%@' to the same type as '%@' (%@)", key, stringValue, defaultValue, [defaultValue class]);
+            return NO;
+        } else if ([coercedValue isNull]) {
+            // Reset this setting
+            [preferences removeObjectForKey:key];
+        } else {
+            // Set this setting
+            [preferences setObject:coercedValue forKey:key];
+        }
+        id updatedValue = [preferences valueForKey:key];
+        NSLog(@"... %@: %@ (%@) -> %@ (%@)", key, oldValue, [oldValue class], updatedValue, [updatedValue class]);
+        
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = NSLocalizedStringFromTableInBundle(@"Preference changed", @"OmniAppKit", OMNI_BUNDLE, @"alert title");
+        alert.informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Changed the '%@' preference from '%@' to '%@'", @"OmniAppKit", OMNI_BUNDLE, @"alert message"), key, oldValue, updatedValue];
+        [alert addButtonWithTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", OMNI_BUNDLE, @"button title")];
+        (void)[alert runModal];
+    }
+    return YES;
+}
+
 - (OAAboutPanelController *)aboutPanelController;
 {
     if (!aboutPanelController) {
@@ -66,10 +103,7 @@ RCS_ID("$Id$")
 
 - (NSString *)appName;
 {
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSString *appName = [infoDictionary objectForKey:@"CFBundleName"];
-    appName = appName ? appName : @"CFBundleName not set!";
-    return appName;
+    return [NSBundle mainBundle].displayName;
 }
 
 - (void)getFeedbackAddress:(NSString **)feedbackAddress andSubject:(NSString **)subjectLine;
@@ -96,13 +130,13 @@ RCS_ID("$Id$")
 {
     // Application developers should enter the feedback address in their main bundle's info dictionary.
     if (!feedbackAddress) {
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+        NSAlert *alert = [[NSAlert alloc] init];
         alert.messageText = @"Unable to send feedback email.";
         alert.informativeText = @"No support email address configured in this application.";
         [alert addButtonWithTitle:@"Cancel"];
         [alert runModal];
     } else {
-        OAInternetConfig *internetConfig = [[[OAInternetConfig alloc] init] autorelease];
+        OAInternetConfig *internetConfig = [[OAInternetConfig alloc] init];
         
         NSError *error = nil;
         if (![internetConfig launchMailTo:feedbackAddress carbonCopy:nil subject:subjectLine body:body error:&error])
@@ -223,7 +257,7 @@ RCS_ID("$Id$")
     NSData *motdData = [NSData dataWithContentsOfFile:path];
     NSData *seenSignature = [defaults objectForKey:@"OAMessageOfTheDaySignature"];
     if (motdData) {
-        NSData *newSignature = NSMakeCollectable(OFDataCreateSHA1Digest(kCFAllocatorDefault, (CFDataRef)motdData));
+        NSData *newSignature = CFBridgingRelease(OFDataCreateSHA1Digest(kCFAllocatorDefault, (__bridge CFDataRef)motdData));
 	if (OFNOTEQUAL(newSignature, seenSignature)) {
 	    [defaults setObject:newSignature forKey:@"OAMessageOfTheDaySignature"];
 
@@ -235,7 +269,6 @@ RCS_ID("$Id$")
                 [self showMessageOfTheDay:nil];
             }
 	}
-        [newSignature release];
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -181,26 +181,6 @@ static mode_t permissionsMask = 0022;
     // APIs.
     int rc = rename([tmpPath UTF8String], [path UTF8String]);
     return rc == 0;
-}
-
-- (NSArray *) directoryContentsAtPath: (NSString *) path havingExtension: (NSString *) extension  error:(NSError **)outError;
-{
-    NSArray *children;
-    NSError *error = nil;
-    if (!(children = [self contentsOfDirectoryAtPath:path error:&error])) {
-        if (outError)
-            *outError = error;
-        // Return nil in exactly the cases that -directoryContentsAtPath: does (rather than returning an empty array).
-        return nil;
-    }
-    
-    NSMutableArray *filteredChildren = [NSMutableArray array];
-    for (NSString *child in children) {
-        if ([[child pathExtension] isEqualToString: extension])
-            [filteredChildren addObject: child];
-    }
-    
-    return filteredChildren;
 }
 
 // File locking

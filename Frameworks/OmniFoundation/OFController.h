@@ -1,4 +1,4 @@
-// Copyright 1998-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1998-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -33,6 +33,7 @@ typedef enum _OFControllerTerminateReply {
 @protocol OFNotificationOwner <NSUserNotificationCenterDelegate>
 - (BOOL)ownsNotification:(NSUserNotification *)notification;
 @end
+@protocol OFControllerStatusObserver;
 
 @interface OFController : NSObject <NSUserNotificationCenterDelegate>
 
@@ -44,8 +45,8 @@ typedef enum _OFControllerTerminateReply {
 - (OFControllerStatus)status;
 
 // Only a weak reference is made to the observer via OFWeakReference
-- (void)addObserver:(id)observer;
-- (void)removeObserver:(id)observer;
+- (void)addStatusObserver:(id <OFControllerStatusObserver>)observer;
+- (void)removeStatusObserver:(id <OFControllerStatusObserver>)observer;
 
 // A simplified way to perform an action at a specific point in the app's lifecycle without going to the trouble of being an observer
 - (void)queueSelector:(SEL)message forObject:(NSObject *)receiver whenStatus:(OFControllerStatus)state;
@@ -93,9 +94,12 @@ typedef enum _OFControllerTerminateReply {
 
 @end
 
-@interface NSObject (OFControllerObserver)
+@protocol OFControllerStatusObserver <NSObject>
+
+@optional
+
 /*"
-The OFControllerObserver informal protocol describes the methods that will be called on an object if it subscribes to OFController notifications by calling -addObserver: on OFController.
+The OFControllerStatusObserver informal protocol describes the methods that will be called on an object if it subscribes to OFController notifications by calling -addObserver: on OFController.
 */
 
 - (void)controllerDidInitialize:(OFController *)controller;

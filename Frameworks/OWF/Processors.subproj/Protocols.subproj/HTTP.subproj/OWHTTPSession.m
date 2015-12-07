@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -108,7 +108,7 @@ static OWContentType *textPlainContentType;
 static OWContentType *textXMLContentType;
 static OWContentType *applicationXMLContentType;
 static OWContentType *applicationOctetStreamContentType;
-static OWContentType *wildcardContentType;
+static OWContentType *WildcardContentType;
 static NSDictionary *browserIdentDict = nil;
 static NSMutableDictionary *encodingPriorityDictionary = nil;
 static const float encodingPriorityDictionaryDefaultValue = 0.1f;
@@ -131,7 +131,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
     textXMLContentType = [OWContentType contentTypeForString:@"text/xml"];
     applicationXMLContentType = [OWContentType contentTypeForString:@"application/xml"];
     applicationOctetStreamContentType = [OWContentType contentTypeForString:@"application/octet-stream"];
-    wildcardContentType = [OWContentType contentTypeForString:@"*/*"];
+    WildcardContentType = [OWContentType contentTypeForString:@"*/*"];
     
     // Ensure that even if there isn't a processor for this encoding, we still know about it so that -acceptHeadersStringForTarget: can give it a quality factor
     [OWContentType contentTypeForString:@"encoding/gzip"];
@@ -167,7 +167,7 @@ static const float encodingPriorityDictionaryDefaultValue = 0.1f;
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:(id)self];
+    [[OFController sharedController] addStatusObserver:(id)self];
 }
 
 + (void)controllerDidInitialize:(OFController *)controller;
@@ -411,16 +411,16 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
 {
     do {
         NSException *sessionException = nil;
-        OWHTTPProcessor *aProcessor;
 
-        OMNI_POOL_START {
+        @autoreleasepool {
             NS_DURING {
                 BOOL continueSession = NO;
 
                 do {
-                    OMNI_POOL_START {
+                    @autoreleasepool {
                         continueSession = [self sendRequest];
                         if (continueSession) {
+                            OWHTTPProcessor *aProcessor;
                             [processorQueueLock lock];
                             aProcessor = [processorQueue objectAtIndex:0];
                             [processorQueueLock unlock];
@@ -442,7 +442,7 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
                                     continueSession = NO;
                             }
                         }
-                    } OMNI_POOL_END;
+                    }
                 } while (continueSession);
                 [self disconnectAndRequeueProcessors];
             } NS_HANDLER {
@@ -462,12 +462,13 @@ static NSComparisonResult acceptEncodingHeaderOrdering(id a, id b, void *ctxt)
                 [self disconnectAndRequeueProcessors]; // Note:  We don't really have any processors to requeue, we're just disconnecting
                 if (requestsSentThisConnection == 0) {
                     // -sendRequest raised an exception before we even started looking for processors (e.g., when trying to connect to a server which is down or doesn't exist).  Send the exception to all queued processors.
+                    OWHTTPProcessor *aProcessor;
                     while ((aProcessor = [queue nextProcessor])) {
                         [self notifyProcessor:aProcessor ofSessionException:sessionException];
                     }
                 }
             }
-        } OMNI_POOL_END;
+        }
     } while (![queue sessionIsIdle:self]);
     
     // At this point we are idle. If we've gotten to this point without ever sending any requests (due to the race condition in the above loop), disconnect from the server. The reason for this is that HTTP/1.0 servers are not allowed to drop connections except after a response, and if we haven't sent any requests, the server does not know our version and must assume we are HTTP/1.0. 
@@ -1815,7 +1816,7 @@ processStatus:
 
         parameterizedContentType = [headerDictionary parameterizedContentType];
         testContentType = [parameterizedContentType contentType];
-        if (kludge.distrustContentType && (testContentType == textPlainContentType || testContentType == textXMLContentType || testContentType == applicationOctetStreamContentType || testContentType == applicationXMLContentType || testContentType == wildcardContentType)) {
+        if (kludge.distrustContentType && (testContentType == textPlainContentType || testContentType == textXMLContentType || testContentType == applicationOctetStreamContentType || testContentType == applicationXMLContentType || testContentType == WildcardContentType)) {
             // Treat text/plain and application/octet-stream as www/unknown.  A lot of web servers out there use these as default content types, which means they end up claiming that, say, .gnutar.gz files are text/plain, or ReadMe is application/octet-stream.  So...if we see a suspicious content type, let's just run it through our data detector and see whether it really is what it claims to be.  (Some HTML pages are also served as text/plain, but IE displays them as HTML even though they're valid plain text.  This also makes us compatible with that behavior.)
             [headerDictionary addString:[[OWContentType unknownContentType] contentTypeString] forKey:@"Content-Type"];
         }

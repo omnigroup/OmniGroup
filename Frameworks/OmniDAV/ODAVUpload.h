@@ -11,6 +11,8 @@
 
 #import <OmniDAV/ODAVConnection.h>
 
+@class NSURL, NSFileWrapper;
+
 @interface ODAVUpload : NSObject
 
 + (void)uploadFileWrapper:(NSFileWrapper *)fileWrapper toURL:(NSURL *)toURL createParentCollections:(BOOL)createParentCollections connection:(ODAVConnection *)connection completionHandler:(ODAVConnectionURLCompletionHandler)completionHandler;

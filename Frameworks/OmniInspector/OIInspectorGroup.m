@@ -808,11 +808,11 @@ static BOOL useASeparateMenuForWorkspaces = NO;
     }];
 }
 
-- (void)restoreFromIdentifier:(NSString *)identifier withInspectors:(NSMutableDictionary *)inspectorsById;
+- (void)restoreFromIdentifier:(NSString *)restoreIdentifier withInspectors:(NSMutableDictionary *)inspectorsById;
 {
     OIWorkspace *sharedWorkspace = OIWorkspace.sharedWorkspace;
-    NSArray *identifiers = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Order", identifier]];
-    BOOL willBeVisible = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Visible", identifier]] != nil;
+    NSArray *identifiers = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Order", restoreIdentifier]];
+    BOOL willBeVisible = [sharedWorkspace objectForKey:[NSString stringWithFormat:@"%@-Visible", restoreIdentifier]] != nil;
     
     NSUInteger index, count = [identifiers count];
     for (index = 0; index < count; index++) {

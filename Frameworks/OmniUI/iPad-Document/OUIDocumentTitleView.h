@@ -20,7 +20,7 @@
 @property (nonatomic, strong) OFXAccountActivity *syncAccountActivity;
 
 @property (nonatomic, copy) NSString *title;
-@property UIColor *titleColor;
+@property (nonatomic,strong) UIColor *titleColor;
 @property BOOL titleCanBeTapped;
 @property BOOL hideTitle;
 

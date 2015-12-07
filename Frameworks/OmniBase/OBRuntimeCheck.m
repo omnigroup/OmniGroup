@@ -24,6 +24,7 @@
 #endif
 
 #import <dlfcn.h>
+#import <mach/mach.h>
 
 RCS_ID("$Id$");
 
@@ -39,7 +40,14 @@ OBDEPRECATED_METHOD(-deprecatedInstanceMethod);
 OBDEPRECATED_METHOD(+deprecatedClassMethod);
 
 // Avoid unknown selector warnings from -Wundeclared-selector.  The selectors we are checking are often in other frameworks.
-#define FIND_SEL(x) sel_getUid(#x)
+#define FIND_SEL(x) ({ \
+    static dispatch_once_t _FIND_SEL_once; \
+    static SEL _FIND_SEL_cache = NULL; \
+    dispatch_once(&_FIND_SEL_once, ^{ \
+        _FIND_SEL_cache = sel_getUid(#x); \
+    }); \
+    _FIND_SEL_cache; \
+})
 
 static BOOL OBReportWarningsInSystemLibraries = NO;
 static unsigned MethodSignatureConflictCount = 0;
@@ -475,75 +483,151 @@ static void _checkSignaturesVsProtocols(Class cls)
     }
 }
 
-// Validate type signatures across inheritance and protocol conformance. For this to work in the most cases, delegates need to be implemented as conforming to protocols, possibly with @optional methods.  We can't check a class vs. everything it might conform to (for example -length returns signed in some protcols and unsigned int others).
-static void _validateMethodSignatures(void)
-{
-    // Reset this to zero to avoid double-counting errors if we get called again due to bundle loading.
-    MethodSignatureConflictCount = 0;
-    MethodMultipleImplementationCount = 0;
-    SuppressedConflictCount = 0;
-    
-    int classIndex, classCount = 0, newClassCount;
-    Class *classes = NULL;
-    
-    newClassCount = objc_getClassList(NULL, 0);
-    while (classCount < newClassCount) {
-        classCount = newClassCount;
-        classes = (Class *)realloc(classes, sizeof(Class) * classCount);
-        newClassCount = objc_getClassList(classes, classCount);
-    }
-    
-    for (classIndex = 0; classIndex < classCount; classIndex++) {
-        Class cls = classes[classIndex];
-        
-#define CLASSNAME_HAS_PREFIX(className, prefix) (strncmp(className, prefix, strlen(prefix)) == 0)
+#define HAS_PREFIX(className, prefix) (strncmp(className, prefix, strlen(prefix)) == 0)
 
-        /* Some classes (that aren't our problem) asplode when they try to dynamically create getters/setters. */
+static BOOL _uncached_isSystemClass(Class cls)
+{
+    // Report some runtime generated classes as being 'system' classes so they'll be ignored.
+    const char *className = class_getName(cls);
+    if (HAS_PREFIX(className, "NSKVONotifying_"))
+        return YES;
+    if (HAS_PREFIX(className, "_NSZombie_"))
+        return YES;
+    if (HAS_PREFIX(className, "__PrivateReifying_")) // OUIAppearance
+        return YES;
+    if (HAS_PREFIX(className, "_NSObjectID_")) // No idea.
+        return YES;
+    if (HAS_PREFIX(className, "CalManaged")) // Not ours at any rate
+        return YES;
+    if (HAS_PREFIX(className, "_CDSnapshot_")) // CoreData for Calendar stuff, it looks like
+        return YES;
+    if (HAS_PREFIX(className, "NSTemporaryObjectID_")) // CoreData
+        return YES;
+    if (HAS_PREFIX(className, "_NSViewAnimator_"))
+        return YES;
+    if (HAS_PREFIX(className, "_TtGCSs")) // Swift standard library stuff that gets specialized at runtime?
+        return YES;
+
+    // It is an implementation detail whether the class structure is embedded in the library or whether a new block of memory in the heap is registered, but for now this works.
+    Dl_info info;
+    if (dladdr((__bridge const void *)cls, &info) == 0) {
+
+#ifdef DEBUG_bungi
+        NSLog(@"Cannot determine library path for class %s", class_getName(cls));
+#endif
+        return NO;
+    }
+
+    const char *libraryPath = info.dli_fname;
+
+    // Sandboxed iOS app container
+    if (strstr(libraryPath, "/Containers/Bundle/Application/"))
+        return NO;
+
+    // System frameworks
+    if (HAS_PREFIX(libraryPath, "/System/Library/Frameworks/"))
+        return YES;
+    if (HAS_PREFIX(libraryPath, "/System/Library/PrivateFrameworks/"))
+        return YES;
+    if (HAS_PREFIX(libraryPath, "/usr/lib/"))
+        return YES;
+    if (HAS_PREFIX(libraryPath, "/Developer/Library/PrivateFrameworks/"))
+        return YES;
+    if (HAS_PREFIX(libraryPath, "/System/Library/CoreServices/"))
+        return YES;
+    if (HAS_PREFIX(libraryPath, "/System/Library/Extensions/"))
+        return YES;
+
+    // Running in the iOS simulator
+    if (strstr(libraryPath, "/iPhoneSimulator.platform/"))
+        return YES;
+
+    // Personal build output
+    if (strstr(libraryPath, "/Library/Developer/Xcode/DerivedData/"))
+        return NO;
+
+    // Running OS X debugger
+    if (strstr(libraryPath, "/Contents/PlugIns/DebuggerUI.ideplugin/"))
+        return YES;
+
+#ifdef DEBUG_bungi
+    NSLog(@"Don't know whether class %s is from a system framework or not (it is in %s)", class_getName(cls), info.dli_fname);
+#endif
+    
+    return NO;
+}
+
+static BOOL _isSystemClass(Class cls)
+{
+    // dladdr() is relatively expensive. But class structs often appear on the same vm page, so we can cache results (we could also look at the mach header and add is ranges...)
+    vm_address_t classPage = mach_vm_trunc_page(cls);
+
+    OBPRECONDITION([NSThread isMainThread]); // using mutable state here
+
+    static NSMutableIndexSet *systemClassPageIndexSet;
+    static NSMutableIndexSet *appClassPageIndexSet;
+
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        systemClassPageIndexSet = [[NSMutableIndexSet alloc] init];
+        appClassPageIndexSet = [[NSMutableIndexSet alloc] init];
+    });
+
+    if ([systemClassPageIndexSet containsIndex:classPage])
+        return YES;
+    if ([appClassPageIndexSet containsIndex:classPage])
+        return NO;
+
+    BOOL uncachedResult = _uncached_isSystemClass(cls);
+    if (uncachedResult)
+        [systemClassPageIndexSet addIndex:classPage];
+    else
+        [appClassPageIndexSet addIndex:classPage];
+
+    return uncachedResult;
+}
+
+// Validate type signatures across inheritance and protocol conformance. For this to work in the most cases, delegates need to be implemented as conforming to protocols, possibly with @optional methods.  We can't check a class vs. everything it might conform to (for example -length returns signed in some protcols and unsigned int others).
+static void _validateMethodSignatures(Class cls, BOOL isSystemClass)
+{
+    // Don't poke system classes unless we are explicitly looking at them. For one thing, this can cause +initialize on things that aren't expecting it.
+    if (OBReportWarningsInSystemLibraries) {
+        // Skip some classes anyway which explode when they try to dynamically create getters/setters this early.
         const char *clsName = class_getName(cls);
-        if (CLASSNAME_HAS_PREFIX(clsName, "NS") ||
-            CLASSNAME_HAS_PREFIX(clsName, "_NS") ||
-            CLASSNAME_HAS_PREFIX(clsName, "__NS") ||
-            CLASSNAME_HAS_PREFIX(clsName, "__CF") ||
-            CLASSNAME_HAS_PREFIX(clsName, "CA") ||
-            CLASSNAME_HAS_PREFIX(clsName, "_CN") ||
-            CLASSNAME_HAS_PREFIX(clsName, "VGL") ||
-            CLASSNAME_HAS_PREFIX(clsName, "VK") ||
+        if (HAS_PREFIX(clsName, "NS") ||
+            HAS_PREFIX(clsName, "_NS") ||
+            HAS_PREFIX(clsName, "__NS") ||
+            HAS_PREFIX(clsName, "__CF") ||
+            HAS_PREFIX(clsName, "CA") ||
+            HAS_PREFIX(clsName, "_CN") ||
+            HAS_PREFIX(clsName, "VGL") ||
+            HAS_PREFIX(clsName, "VK") ||
             strcmp(clsName, "DRDevice") == 0 ||
             strcmp(clsName, "OMUUID") == 0 /* TextExpander bundles an old version of OMUUID that incorrectly declares -hash. Ignore it. */
             ) {
             /* In particular, _NS[View]Animator chokes in this case. But we don't really need to check any _NS classes. */
-            continue;
+            return;
         }
+    } else if (isSystemClass)
+        return;
 
-#undef CLASSNAME_HAS_PREFIX
+    unsigned int methodIndex = 0;
+    Method *methods = class_copyMethodList(cls, &methodIndex);
+    _checkSignaturesVsSuperclass(cls, methods, methodIndex); // instance methods
+    // _checkSignaturesWithinClass(cls, methods, methodIndex);
+    free(methods);
 
-        unsigned int methodIndex = 0;
-        Method *methods = class_copyMethodList(cls, &methodIndex);
-        _checkSignaturesVsSuperclass(cls, methods, methodIndex); // instance methods
-        // _checkSignaturesWithinClass(cls, methods, methodIndex); 
-        free(methods);
-        
-        methodIndex = 0;
-        Class metaClass = object_getClass(cls);
-        methods = class_copyMethodList(metaClass, &methodIndex);
-        _checkSignaturesVsSuperclass(metaClass, methods, methodIndex); // ... and class methods
-        // _checkSignaturesWithinClass(metaClass, methods, methodIndex);
-        _checkForCommonClassMethodNameTypos(metaClass, cls, methods, methodIndex);
-        free(methods);
-        
-        _checkSignaturesVsProtocols(cls); // checks instance and class and methods, so don't call with the metaclass
-    }
-    
-    // TODO: Check that protocols done conform to other protocols and then change the signature.  Less important since most cases will actually involve a class conforming.
-    
-    // We should find zero conflicts!
-    OBASSERT(MethodSignatureConflictCount == 0);
-    OBASSERT(MethodMultipleImplementationCount == 0);
-    
-    if (SuppressedConflictCount && getenv("OB_SUPPRESS_SUPPRESSED_CONFLICT_COUNT") == NULL)
-        NSLog(@"Warning: Suppressed %u messages about problems in system frameworks", SuppressedConflictCount);
-    
-    free(classes);
+    methodIndex = 0;
+    Class metaClass = object_getClass(cls);
+    methods = class_copyMethodList(metaClass, &methodIndex);
+    _checkSignaturesVsSuperclass(metaClass, methods, methodIndex); // ... and class methods
+    // _checkSignaturesWithinClass(metaClass, methods, methodIndex);
+    _checkForCommonClassMethodNameTypos(metaClass, cls, methods, methodIndex);
+    free(methods);
+
+    _checkSignaturesVsProtocols(cls); // checks instance and class and methods, so don't call with the metaclass
+
+    // TODO: Check that protocols don't conform to other protocols and then change the signature.  Less important since most cases will actually involve a class conforming.
 }
 
 /*
@@ -602,49 +686,32 @@ void OBRuntimeCheckRegisterDeprecatedMethodWithName(const char *name)
         CFSetAddValue(DeprecatedInstanceSelectors, sel);
 }
     
-static void _checkForMethodsInDeprecatedProtocols(void)
+static void _checkForMethodsInDeprecatedProtocols(Class cls, BOOL isSystemClass)
 {
-    // Reset this to zero to avoid double-counting errors if we get called again due to bundle loading.
-    DeprecatedMethodImplementationCount = 0;
-    
-    // Check that the macro actually worked and that (at least some of) the __attribute__((constructor)) invocations have run.
-    OBASSERT(DeprecatedClassSelectors && CFSetGetCount(DeprecatedClassSelectors) > 0);
-    OBASSERT(DeprecatedInstanceSelectors && CFSetGetCount(DeprecatedInstanceSelectors) > 0);
-        
     // Check that classes don't implement any of the deprecated methods.
-    int classIndex, classCount = 0, newClassCount;
-    Class *classes = NULL;
-    
-    newClassCount = objc_getClassList(NULL, 0);
-    while (classCount < newClassCount) {
-        classCount = newClassCount;
-        classes = (Class *)realloc(classes, sizeof(Class) * classCount);
-        newClassCount = objc_getClassList(classes, classCount);
+
+    // Don't poke system classes unless we are explicitly looking at them. For one thing, this can cause +initialize on things that aren't expecting it.
+    if (OBReportWarningsInSystemLibraries) {
+
+    } else if (isSystemClass) {
+        return;
     }
-    
-    for (classIndex = 0; classIndex < classCount; classIndex++) {
-        Class cls = classes[classIndex];
-	
-	// Several Cocoa classes have problems.  Radar 6333766.
-        const char *name = class_getName(cls);
-        if (strcmp(name, "ISDComplainer") == 0 ||
-            strcmp(name, "ILMediaObjectsViewController") == 0 ||
-            strcmp(name, "ABBackupManager") == 0 ||
-            strcmp(name, "ABPeopleController") == 0 ||
-            strcmp(name, "ABAddressBook") == 0 ||
-            strcmp(name, "ABPhoneFormatsPreferencesModule") == 0 ||
-            strcmp(name, "GFNodeManagerView") == 0 ||
-            strcmp(name, "FileReference") == 0 || // IOBluetooth has non-prefixed class that implements deprecated API, 17362328
-            strcmp(name, "QCPatchActor") == 0)
-	    continue;
-        
-        _checkForDeprecatedMethodsInClass(cls, DeprecatedInstanceSelectors, NO/*isClassMethod*/);
-        _checkForDeprecatedMethodsInClass(object_getClass(cls), DeprecatedClassSelectors, YES/*isClassMethod*/);
-    }
-    
-    free(classes);
-    
-    OBASSERT(DeprecatedMethodImplementationCount == 0);
+
+    //        // Several Cocoa classes have problems.  Radar 6333766.
+    //        const char *name = class_getName(cls);
+    //        if (strcmp(name, "ISDComplainer") == 0 ||
+    //            strcmp(name, "ILMediaObjectsViewController") == 0 ||
+    //            strcmp(name, "ABBackupManager") == 0 ||
+    //            strcmp(name, "ABPeopleController") == 0 ||
+    //            strcmp(name, "ABAddressBook") == 0 ||
+    //            strcmp(name, "ABPhoneFormatsPreferencesModule") == 0 ||
+    //            strcmp(name, "GFNodeManagerView") == 0 ||
+    //            strcmp(name, "FileReference") == 0 || // IOBluetooth has non-prefixed class that implements deprecated API, 17362328
+    //            strcmp(name, "QCPatchActor") == 0)
+    //	    continue;
+    //
+    _checkForDeprecatedMethodsInClass(cls, DeprecatedInstanceSelectors, NO/*isClassMethod*/);
+    _checkForDeprecatedMethodsInClass(object_getClass(cls), DeprecatedClassSelectors, YES/*isClassMethod*/);
 }
 
 #if defined(OB_CHECK_COPY_WITH_ZONE)
@@ -744,19 +811,80 @@ static void _checkCopyWithZoneImplementations(void)
 }
 #endif // defined(OB_CHECK_COPY_WITH_ZONE)
 
-void OBPerformRuntimeChecks(void)
+// We don't need these to happen immediately, and they can happen multiple times while bundles are loading, so we queue them up.
+static void _OBPerformRuntimeChecks(void)
 {
+    NSLog(@"*** Starting OBPerformRuntimeChecks");
+
     NSString *executableName = [[[NSBundle mainBundle] executablePath] lastPathComponent];
     BOOL shouldCheck = ![@"ibtool" isEqualToString:executableName] && ![@"Interface Builder" isEqualToString:executableName] && ![@"IBCocoaSimulator" isEqualToString:executableName];
     if (shouldCheck) {
         NSTimeInterval runtimeChecksStart = [NSDate timeIntervalSinceReferenceDate];
-        _validateMethodSignatures();
-        _checkForMethodsInDeprecatedProtocols();
+
+        // Reset this to zero to avoid double-counting errors if we get called again due to bundle loading.
+        MethodSignatureConflictCount = 0;
+        MethodMultipleImplementationCount = 0;
+        SuppressedConflictCount = 0;
+
+        // Reset this to zero to avoid double-counting errors if we get called again due to bundle loading.
+        DeprecatedMethodImplementationCount = 0;
+
+        // Check that the macro actually worked and that (at least some of) the __attribute__((constructor)) invocations have run.
+        OBASSERT(DeprecatedClassSelectors && CFSetGetCount(DeprecatedClassSelectors) > 0);
+        OBASSERT(DeprecatedInstanceSelectors && CFSetGetCount(DeprecatedInstanceSelectors) > 0);
+        
+        int classIndex, classCount = 0, newClassCount;
+        Class *classes = NULL;
+
+        newClassCount = objc_getClassList(NULL, 0);
+        while (classCount < newClassCount) {
+            classCount = newClassCount;
+            classes = (Class *)realloc(classes, sizeof(Class) * classCount);
+            newClassCount = objc_getClassList(classes, classCount);
+        }
+
+        for (classIndex = 0; classIndex < classCount; classIndex++) {
+            Class cls = classes[classIndex];
+
+            BOOL isSystemClass = _isSystemClass(cls);
+
+            _validateMethodSignatures(cls, isSystemClass);
+            _checkForMethodsInDeprecatedProtocols(cls, isSystemClass);
 #ifdef OB_CHECK_COPY_WITH_ZONE
-        _checkCopyWithZoneImplementations();
+            _checkCopyWithZoneImplementations(cls, isSystemClass);
 #endif
+        }
+
+
+        // We should find zero conflicts!
+        OBASSERT(MethodSignatureConflictCount == 0);
+        OBASSERT(MethodMultipleImplementationCount == 0);
+
+        if (SuppressedConflictCount && getenv("OB_SUPPRESS_SUPPRESSED_CONFLICT_COUNT") == NULL)
+            NSLog(@"Warning: Suppressed %u messages about problems in system frameworks", SuppressedConflictCount);
+
+        OBASSERT(DeprecatedMethodImplementationCount == 0);
+
+        free(classes);
+
         NSLog(@"*** OBPerformRuntimeChecks finished in %.2f seconds.", [NSDate timeIntervalSinceReferenceDate] - runtimeChecksStart);
     }
+}
+
+void OBRequestRuntimeChecks(void)
+{
+    // Not super safe in terms of ensuring that each call will result in a new scan if the previous one has already started, but this is debugging code...
+    static BOOL requestQueued;
+
+    if (requestQueued)
+        return;
+    requestQueued = YES;
+
+    // Wait a little bit to let following requests get rejected.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        requestQueued = NO;
+        _OBPerformRuntimeChecks();
+    });
 }
 
 static void OBPerformRuntimeChecksOnLoad(void) __attribute__((constructor));
@@ -766,7 +894,7 @@ static void OBPerformRuntimeChecksOnLoad(void)
     
     if (getenv("OBPerformRuntimeChecksOnLoad")) {
         @autoreleasepool {
-            OBPerformRuntimeChecks();
+            OBRequestRuntimeChecks();
         }
     }
 }

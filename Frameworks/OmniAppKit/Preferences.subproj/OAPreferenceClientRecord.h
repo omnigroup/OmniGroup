@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,48 +14,22 @@
 @class OAPreferenceClient, OAPreferenceController;
 
 @interface OAPreferenceClientRecord : OFObject
-{
-    NSString *categoryName;
-    NSString *identifier;
-    NSString *className;
-    NSString *title;
-    NSString *shortTitle;
-    NSString *iconName;
-    NSString *nibName;
-    NSString *helpURL;
-    NSNumber *ordering;
-    NSDictionary *defaultsDictionary;
-    NSArray *defaultsArray;
-    NSImage *iconImage;
-}
 
-- (id)initWithCategoryName:(NSString *)newName;
+- (instancetype)initWithCategoryName:(NSString *)newName;
     // Designated initializer.
 
-- (NSImage *)iconImage;
-
-- (NSString *)categoryName;
-- (NSString *)identifier;
-- (NSString *)className;
-- (NSString *)title;
-- (NSString *)shortTitle;
-- (NSString *)iconName;
-- (NSString *)nibName;
-- (NSString *)helpURL;
-- (NSNumber *)ordering;
-- (NSDictionary *)defaultsDictionary;
-- (NSArray *)defaultsArray;
-
-- (void)setIdentifier:(NSString *)newIdentifier;
-- (void)setClassName:(NSString *)newClassName;
-- (void)setTitle:(NSString *)newTitle;
-- (void)setShortTitle:(NSString *)newShortTitle;
-- (void)setIconName:(NSString *)newIconName;
-- (void)setNibName:(NSString *)newNibName;
-- (void)setHelpURL:(NSString *)newHelpURL;
-- (void)setOrdering:(NSNumber *)newOrdering;
-- (void)setDefaultsDictionary:(NSDictionary *)newDefaultsDictionary;
-- (void)setDefaultsArray:(NSArray *)newDefaultsArray;
+@property (nonatomic, strong, readonly) NSImage *iconImage;
+@property (nonatomic, strong, readonly) NSString *categoryName;
+@property (nonatomic, strong) NSString *identifier;
+@property (nonatomic, strong) NSString *className;
+@property (nonatomic, strong) NSString *title;
+@property (nonatomic, strong) NSString *shortTitle;
+@property (nonatomic, strong) NSString *iconName;
+@property (nonatomic, strong) NSString *nibName;
+@property (nonatomic, strong) NSString *helpURL;
+@property (nonatomic, strong) NSNumber *ordering;
+@property (nonatomic, strong) NSDictionary *defaultsDictionary;
+@property (nonatomic, strong) NSArray *defaultsArray;
 
 - (NSComparisonResult)compare:(OAPreferenceClientRecord *)other;
 - (NSComparisonResult)compareOrdering:(OAPreferenceClientRecord *)other;

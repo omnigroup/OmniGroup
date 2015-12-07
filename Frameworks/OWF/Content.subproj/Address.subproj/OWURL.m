@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -175,7 +175,7 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:(id)self];
+    [[OFController sharedController] addStatusObserver:(id)self];
 }
 
 + (void)readDefaults;
@@ -579,38 +579,39 @@ static NSRegularExpression *newlinesAndSurroundingWhitespaceRegularExpression;
 - (NSURL *)NSURL;
 {
     NSMutableString *compositeString = (NSMutableString *)[self _newURLStringWithEncodedHostname:YES];
-    NSURL *url = (NSURL *)CFURLCreateWithString(NULL, (CFStringRef)compositeString, NULL);
-    if(url) {
-    [compositeString release];
-        return [url autorelease];
-    } else {
-        
-        //fix my %'s here
-        NSCharacterSet *hexDigits = [NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefABCDEF"];
-        NSRange percentRange = [compositeString rangeOfString:@"%" options:NSLiteralSearch];
-        NSUInteger stringLength = [compositeString length];
-
-        while (percentRange.location != NSNotFound) {
-            NSUInteger lastPosition = NSMaxRange(percentRange);
-            if (stringLength < lastPosition + 2 || ![hexDigits characterIsMember:[compositeString characterAtIndex:lastPosition]] || ![hexDigits characterIsMember:[compositeString characterAtIndex:lastPosition + 1]]) { 
-                // fix bad %
-                [compositeString insertString:@"25" atIndex:lastPosition];
-                stringLength = [compositeString length];
-                lastPosition += 2;
-            }
-            percentRange = [compositeString rangeOfString:@"%" options:NSLiteralSearch range:NSMakeRange(lastPosition, stringLength-lastPosition)];
+    {
+        NSURL *url = (NSURL *)CFURLCreateWithString(NULL, (CFStringRef)compositeString, NULL);
+        if (url) {
+            [compositeString release];
+            return [url autorelease];
         }
-        
-        //escape any other characters that ought to be escaped
-        CFStringRef percentEscapedString = CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)compositeString, CFSTR("%"), NULL, kCFStringEncodingUTF8);
-        NSURL *url = (NSURL *)CFURLCreateWithString(NULL, percentEscapedString, NULL);
-        
-        [compositeString release];
-        CFRelease(percentEscapedString);
-        
+    }
+
+    //fix my %'s here
+    NSCharacterSet *hexDigits = [NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefABCDEF"];
+    NSRange percentRange = [compositeString rangeOfString:@"%" options:NSLiteralSearch];
+    NSUInteger stringLength = [compositeString length];
+
+    while (percentRange.location != NSNotFound) {
+        NSUInteger lastPosition = NSMaxRange(percentRange);
+        if (stringLength < lastPosition + 2 || ![hexDigits characterIsMember:[compositeString characterAtIndex:lastPosition]] || ![hexDigits characterIsMember:[compositeString characterAtIndex:lastPosition + 1]]) {
+            // fix bad %
+            [compositeString insertString:@"25" atIndex:lastPosition];
+            stringLength = [compositeString length];
+            lastPosition += 2;
+        }
+        percentRange = [compositeString rangeOfString:@"%" options:NSLiteralSearch range:NSMakeRange(lastPosition, stringLength-lastPosition)];
+    }
+
+    //escape any other characters that ought to be escaped
+    CFStringRef percentEscapedString = CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)compositeString, CFSTR("%"), NULL, kCFStringEncodingUTF8);
+    NSURL *url = (NSURL *)CFURLCreateWithString(NULL, percentEscapedString, NULL);
+
+    [compositeString release];
+    CFRelease(percentEscapedString);
+
     OBPOSTCONDITION(url != nil);
     return [url autorelease];
-    }
 }
 
 - (NSString *)scheme;

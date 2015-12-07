@@ -182,12 +182,12 @@ RCS_ID("$Id$");
             NSUInteger buttonWidth = floor(width / numberOfColumnsInRow);
             
             NSUInteger yOrigin = MAX(0, (NSInteger)((row - 1) * buttonHeight));
-            CGRect lineRect = CGRectMake(column * buttonWidth, yOrigin, 0.5, row * buttonHeight - yOrigin + 1);
+            CGRect buttonRect = CGRectMake(column * buttonWidth, yOrigin, 0.5, row * buttonHeight - yOrigin + 1);
             if (hasHeightRemainder) {
-                lineRect.size.height += buttonHeightRemainder;
+                buttonRect.size.height += buttonHeightRemainder;
             }
             
-            _DrawButtonBorder(ctx, lineRect);
+            _DrawButtonBorder(ctx, buttonRect);
         }
     }
 }

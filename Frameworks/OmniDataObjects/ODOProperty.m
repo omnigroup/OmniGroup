@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,10 +9,10 @@
 
 #import <OmniDataObjects/ODOModel.h>
 #import <OmniDataObjects/ODOAttribute.h>
-#import <OmniDataObjects/ODOObject-Accessors.h>
 #import <OmniDataObjects/ODOModel-Creation.h>
 
 #import "ODOEntity-Internal.h"
+#import "ODOObject-Accessors.h"
 #import "ODOProperty-Internal.h"
 
 RCS_ID("$Id$")

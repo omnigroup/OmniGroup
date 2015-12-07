@@ -44,11 +44,11 @@ void OUITableViewFinishedReactingToSelection(UITableView *tableView, OUITableVie
 #ifdef NS_BLOCKS_AVAILABLE
 void OUITableViewFinishedReactingToSelectionWithPredicate(UITableView *tableView, OUITableViewCellSelectionType type, BOOL (^predicate)(NSIndexPath *indexPath))
 {
-    NSIndexPath *indexPath = [tableView indexPathForSelectedRow];
-    OBASSERT(indexPath);
+    NSIndexPath *selectedIndexPath = [tableView indexPathForSelectedRow];
+    OBASSERT(selectedIndexPath);
     
     // Clear the selection
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    [tableView deselectRowAtIndexPath:selectedIndexPath animated:YES];
     
     // Update the checkmarks on all the visible cells.    
     for (UITableViewCell *cell in [tableView visibleCells]) {

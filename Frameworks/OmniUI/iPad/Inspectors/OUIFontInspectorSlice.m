@@ -245,17 +245,6 @@ static CGFloat _normalizeFontSize(CGFloat fontSize)
     return [object shouldBeInspectedByInspectorSlice:self protocol:@protocol(OUIFontInspection)];
 }
 
-
-- (CGFloat)paddingToInspectorLeft;
-{
-    return 0.0f; // Stretch all the way to the left
-}
-
-- (CGFloat)paddingToInspectorRight;
-{
-    return 0.0f; // stretch all the way to the right
-}
-
 static void _configureTextWellDisplay(OUIInspectorTextWell *textWell, OUIFontInspectorSliceFontDisplay *display)
 {
     textWell.text = display.text;

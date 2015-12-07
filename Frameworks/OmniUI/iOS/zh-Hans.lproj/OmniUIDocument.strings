@@ -4,14 +4,8 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ 无法打开此类型文件。";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@文稿";
-
 /* gigabytes */
 "%@ GB" = "%@ GB";
-
-/* doc picker multiple items accessibility value */
-"%@ items" = "%@ 个项";
 
 /* kilobytes */
 "%@ KB" = "%@ KB";
@@ -34,14 +28,11 @@
 /* Main toolbar title for a single selected document. */
 "1 Document Selected" = "已选择 1 个文稿";
 
-/* doc picker single item accessibility value */
-"1 item" = "1 个项";
-
 /* Main toolbar title for a single selected folder. */
 "1 Item Selected" = "已选择 1 个项目";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "已存在名称为“%@”的附件。是否要予以替换？此操作无法撤销。";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "已存在名称为“%@”的附件。 是否要予以替换？ 此操作无法撤销。";
 
 /* Error reason for a document operation failing due to a missing file. */
 "A file is missing or has been deleted." = "缺少文件或文件已删除。";
@@ -59,8 +50,8 @@
 
 "Add an Account" = "添加帐户";
 
-/* home screen button label */
-"Add OmniPresence Account" = "添加 OmniPresence 帐户";
+/* Cloud setup modal sheet title */
+"Add Cloud Account" = "添加云帐户";
 
 /* button title
    cancel button title
@@ -90,12 +81,6 @@
 /* export options title */
 "Choose Format" = "选择格式";
 
-/* doc picker custom accessibility action name */
-"Clear name field" = "清空名称字段";
-
-/* title view clear button accessibility label. */
-"Clear Title" = "清除标题";
-
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "已连接";
 
@@ -105,17 +90,8 @@
 /* Menu option in the document picker view */
 "Copy as Image" = "复制为图像";
 
-/* gear menu item */
-"Copy from WebDAV" = "从 WebDAV 复制";
-
-/* gear menu item */
-"Copy from…" = "复制自…";
-
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ 自定义";
-
-/* sort by date */
-"Date" = "日期";
 
 /* Delete toolbar item accessibility label. */
 "Delete" = "删除";
@@ -159,12 +135,6 @@
 /* When displaying a sync error, this is the option to change the username and password. */
 "Edit Credentials" = "编辑凭据";
 
-/* doc picker custom accessibility action name */
-"Edit name" = "编辑名称";
-
-/* title view edit button item accessibility hint. */
-"Edits the document's title." = "编辑文稿标题。";
-
 /* empty trash button title */
 "Empty Trash" = "清空废纸篓";
 
@@ -173,14 +143,10 @@
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
 
 
 "Export" = "输出";
-
-/* export to description */
-"Export \"%@\" as:" = "将“%@”导出为:";
 
 /* export action description */
 "Export \"%@\" to %@ as:" = "将“%1$@”输出至 %2$@ 的方式：";
@@ -188,16 +154,12 @@
 /* Menu option in the document picker view */
 "Export to WebDAV" = "导出至 WebDAV";
 
-/* Menu option in the document picker view */
-"Export to…" = "输出至...";
-
 /* finished */
 "Finished" = "已完成";
 
-/* doc picker folder type accessibility value */
-"Folder" = "文件夹";
+/* gear menu item
+   Import WebDAV server account list */
 
-/* Import section title */
 "Import" = "输入";
 
 /* Info item accessibility label */
@@ -206,29 +168,14 @@
 /* error title */
 "Invalid Zip Archive" = "无效的 Zip 归档文件";
 
-/* doc picker title label editing accessibility value */
-"Is editing" = "编辑";
-
-/* Notice for the user about the last edit to a document (unknown device) */
-"Last edit: %@" = "上次编辑: %@";
-
-/* Notice for the user about the last edit to a document (another device) */
-"Last edit: %@ on another device" = "上次编辑: 在其他设备上编辑 %@";
-
-/* Notice for the user about the last edit to a document (this device) */
-"Last edit: %@ on this device" = "上次编辑: 在本设备上编辑 %@";
-
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "链接外部文稿";
+/* Message format for alert informing user that the document has been reloaded with cloud edits from another device */
+"Last edited on %@." = "上次于 %@ 编辑。";
 
 /* Server Account Setup label: location */
 "Location" = "位置";
 
 /* top level doc picker title */
 "Locations" = "位置";
-
-/* modified date accessibility value */
-"Modified %@" = "已修改 %@";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -243,8 +190,7 @@
 
 "Move to Trash" = "移至废纸篓";
 
-/* Action sheet button title
-   Menu popover title */
+/* Share menu title */
 "Move to..." = "移至…";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
@@ -274,9 +220,6 @@
 /* Import message for empty table view */
 "No accounts are configured for importing." = "未针对导入配置帐户";
 
-/* doc picker no items accessibility value */
-"No items" = "无项";
-
 /* Not downloaded accessibility label. */
 "Not downloaded" = "未下载";
 
@@ -284,8 +227,7 @@
 "Not uploaded" = "未上传";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
 
 "OK" = "好";
 
@@ -295,9 +237,6 @@
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "在其他设备上打开此文件，以配置那里的 OmniPresence。";
 
-/* Generic name for location of external documents */
-"Other" = "其他";
-
 /* Server Account Setup label: password */
 "Password" = "密码";
 
@@ -306,18 +245,6 @@
 
 /* Menu option in the document picker view */
 "Print" = "打印";
-
-/* purchase now button title */
-"Purchase Now." = "立即购买。";
-
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "删除";
-
-/* remove button title */
-"Remove %ld Documents" = "删除 %ld 个文稿";
-
-/* remove button title */
-"Remove Document" = "删除文稿";
 
 /* rename button title */
 "Rename" = "重命名";
@@ -351,9 +278,6 @@
 
 /* Account setup toolbar button title to save account settings */
 "Save" = "存储";
-
-/* document picker compact title view accessibility hint */
-"Scroll down to show sort and filter controls" = "向下滚动，显示排序和筛选控件";
 
 /* document picker button label */
 "Search" = "搜索";
@@ -390,8 +314,11 @@
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "注册新帐户";
 
-/* sort by accessibility label */
-"Sort by %@" = "按 %@ 排序";
+/* sort by date */
+"Sort by date" = "按日期排序";
+
+/* sort by title */
+"Sort by title" = "按标题排序";
 
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "立即同步";
@@ -402,17 +329,14 @@
 /* empty picker button text */
 "Tap here, or on the + in the toolbar, to add a document." = "轻按此处或工具栏中的 +，添加文稿。";
 
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "轻按工具栏上的 + 来添加存储在 iCloud Drive 上的或由其他应用程序所提供的文稿。";
-
 /* file name label for template filte types */
 "Template:" = "模板：";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@”帐户拥有 %2$ld 篇未同步至云的已编辑文稿。您是否希望放弃这些编辑？";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%1$@”帐户拥有 %2$ld 篇未同步至云的已编辑文稿。 您是否希望放弃这些编辑？";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@”帐户拥有一篇未同步至云的已编辑文稿。您是否希望放弃这些编辑？";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "“%@”帐户拥有一篇未同步至云的已编辑文稿。 您是否希望放弃这些编辑？";
 
 /* Discard unsynced edits dialog: message format */
 "The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "“%@”帐户可能已编辑过未同步至云的文稿。您是否希望放弃所有本地编辑？";
@@ -434,9 +358,6 @@
 
 /* item not fully downloaded error message */
 "This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "此项目未完全下载，因而无法输出。 再次尝试前，请轻按项目并等待下载。";
-
-/* sort by title */
-"Title" = "标题";
 
 /* error title */
 "Unable to open file." = "无法打开文件。";

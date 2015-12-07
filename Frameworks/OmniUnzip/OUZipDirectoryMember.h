@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,14 +9,16 @@
 
 #import <OmniUnzip/OUZipMember.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface OUZipDirectoryMember : OUZipMember
 
-- initRootDirectoryWithChildren:(NSArray *)children;
-- initWithName:(NSString *)name date:(NSDate *)date children:(NSArray *)children archive:(BOOL)shouldArchive;
+- (instancetype)initRootDirectoryWithChildren:(NSArray <OUZipMember *> * _Nullable)children;
+- (instancetype)initWithName:(NSString *)name date:(NSDate * _Nullable)date children:(NSArray <OUZipMember *> * _Nullable)children archive:(BOOL)shouldArchive;
 
 - (BOOL)isRootDirectory;
-- (NSArray *)children;
-- (OUZipMember *)childNamed:(NSString *)childName;
+- (NSArray <OUZipMember *> *)children;
+- (OUZipMember * _Nullable)childNamed:(NSString *)childName;
 - (void)addChild:(OUZipMember *)child;
 - (void)prependChild:(OUZipMember *)child;
 
@@ -24,3 +26,4 @@
 
 @end
 
+NS_ASSUME_NONNULL_END

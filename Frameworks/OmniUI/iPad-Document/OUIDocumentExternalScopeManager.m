@@ -121,34 +121,36 @@ RCS_ID("$Id$")
     if (existingFileItem != nil)
         return existingFileItem;
     
-    BOOL isDirectory;
-    NSDate *userModificationDate;
-    
-    NSURL *securedURL = nil;
-    if ([url startAccessingSecurityScopedResource])
-        securedURL = url;
-    OFFileEdit *fileEdit = [[OFFileEdit alloc] initWithFileURL:url error:NULL];
-    if (fileEdit != nil) {
-        isDirectory = fileEdit.isDirectory;
-        userModificationDate = fileEdit.fileModificationDate;
-        // Make sure the url is actually readable by us before we return a file item for it
-        __autoreleasing NSError *readError = nil;
-        NSFileWrapper *fileWrapper = [[NSFileWrapper alloc] initWithURL:url options:0 error:&readError];
-        if (fileWrapper == nil) {
-            NSLog(@"Cannot read %@%@: %@", url, (securedURL != nil ? @" [secured]" : @""), [readError toPropertyList]);
-            [securedURL stopAccessingSecurityScopedResource];
-            return nil;
+    BOOL originalIsDirectory;
+    NSDate *originalUserModificationDate;
+    OFFileEdit *originalFileEdit;
+    {
+        NSURL *securedURL = nil;
+        if ([url startAccessingSecurityScopedResource])
+            securedURL = url;
+        originalFileEdit = [[OFFileEdit alloc] initWithFileURL:url error:NULL];
+        if (originalFileEdit != nil) {
+            originalIsDirectory = originalFileEdit.isDirectory;
+            originalUserModificationDate = originalFileEdit.fileModificationDate;
+            // Make sure the url is actually readable by us before we return a file item for it
+            __autoreleasing NSError *readError = nil;
+            NSFileWrapper *fileWrapper = [[NSFileWrapper alloc] initWithURL:url options:0 error:&readError];
+            if (fileWrapper == nil) {
+                NSLog(@"Cannot read %@%@: %@", url, (securedURL != nil ? @" [secured]" : @""), [readError toPropertyList]);
+                [securedURL stopAccessingSecurityScopedResource];
+                return nil;
+            }
+        } else {
+            // File hasn't been downloaded yet
+            originalIsDirectory = NO;
+            originalUserModificationDate = [NSDate date];
         }
-    } else {
-        // File hasn't been downloaded yet
-        isDirectory = NO;
-        userModificationDate = [NSDate date];
+        [securedURL stopAccessingSecurityScopedResource];
     }
-    [securedURL stopAccessingSecurityScopedResource];
-    
+
     Class fileItemClass = [[OUIDocumentAppController controller] documentStore:nil fileItemClassForURL:url];
-    ODSFileItem *fileItem = [[fileItemClass alloc] initWithScope:externalScope fileURL:url isDirectory:isDirectory fileEdit:fileEdit userModificationDate:userModificationDate];
-    if (fileEdit == nil) {
+    ODSFileItem *fileItem = [[fileItemClass alloc] initWithScope:externalScope fileURL:url isDirectory:originalIsDirectory fileEdit:originalFileEdit userModificationDate:originalUserModificationDate];
+    if (originalFileEdit == nil) {
         // File hasn't been downloaded yet
         fileItem.isDownloaded = NO;
         fileItem.isDownloading = YES;
@@ -202,15 +204,19 @@ RCS_ID("$Id$")
         if (!baseName)
             baseName = [[fromURL lastPathComponent] stringByDeletingPathExtension];
 
-        NSString *extension = OFPreferredPathExtensionForUTI(fileType);
-        NSString *targetFileName = [baseName stringByAppendingPathExtension:extension];
         NSFileManager *manager = [NSFileManager defaultManager];
-        NSString *temporaryPath = [NSTemporaryDirectory() stringByAppendingPathComponent:targetFileName];
-        __autoreleasing NSError *uniqueFilenameError = nil;
-        temporaryPath = [manager uniqueFilenameFromName:temporaryPath allowOriginal:YES create:NO error:&uniqueFilenameError];
-        if (temporaryPath == nil) {
-            addDocumentCompletionBlock(nil, uniqueFilenameError);
-            return;
+
+        NSString *temporaryPath;
+        {
+            NSString *extension = OFPreferredPathExtensionForUTI(fileType);
+            NSString *targetFileName = [baseName stringByAppendingPathExtension:extension];
+            temporaryPath = [NSTemporaryDirectory() stringByAppendingPathComponent:targetFileName];
+            __autoreleasing NSError *uniqueFilenameError = nil;
+            temporaryPath = [manager uniqueFilenameFromName:temporaryPath allowOriginal:YES create:NO error:&uniqueFilenameError];
+            if (temporaryPath == nil) {
+                addDocumentCompletionBlock(nil, uniqueFilenameError);
+                return;
+            }
         }
 
         NSURL *moveSourceURL = [NSURL fileURLWithPath:temporaryPath];

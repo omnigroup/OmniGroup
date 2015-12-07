@@ -18,9 +18,12 @@
 #define kOUIDocumentPickerItemViewDetailLabelSmallFontSize (8.0)
 #define kOUIDocumentPickerItemViewDetailLabelColor ((OAWhiteAlpha){0.4, 1.0})
 #define kOUIDocumentPickerItemMetadataViewBackgroundColor ((OAWhiteAlpha){1.0, 0.9})
+#define kOUIDocumentPickerItemMetadataViewEditingBackgroundColor ((OAWhiteAlpha){1.0, 1.0})
 #define kOUIDocumentPickerItemViewNameToPreviewPadding (7.0)
 #define kOUIDocumentPickerItemSmallViewNameToPreviewPadding (2.0)
 #define kOUIDocumentPickerItemViewNameToDatePadding (0.0)
+#define kOUIDocumentPickerItemViewNameToTopPaddingSmallSize (1.0)
+#define kOUIDocumentPickerItemViewNameToTopPaddingLargeSize (4.0)
 #define kOUIDocumentPickerItemViewLabelShadowColor ((OAWhiteAlpha){0.0, 0.66})
 #define kOUIDocumentPickerItemViewProgressTintColor ((OALinearRGBA){0.5, 0.5, 0.85, 1.0})
 
@@ -42,6 +45,8 @@
 #define kOUIDocumentPickerItemNormalSize (220.0)
 #define kOUIDocumentPickerItemSmallSize (104.0)
 
+#define kOUIDocumentPickerMetaDataNormalSizeRatio (4.0)  // metadata view will be 1/4 the total height of the item view
+#define kOUIDocumentPickerMetaDataSmallSizeRatio (3.5)
 
 // Animations
 #define kOUIDocumentPickerTemplateAnimationDuration (0.25f)

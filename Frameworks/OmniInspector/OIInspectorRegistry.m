@@ -67,8 +67,7 @@ static NSMutableArray *additionalPanels = nil;
     
     NSMutableArray *inspectorControllers;
     float inspectorWidth;
-    NSString *_currentInspectionIdentifier;
-    
+
     BOOL _applicationDidFinishRestoringWindows;	// for document based app on 10.7, this means that the app has loaded its documents
     NSMutableArray *_groupsToShowAfterWindowRestoration;
 }
@@ -426,7 +425,7 @@ static NSMutableArray *hiddenPanels = nil;
     
     OFController *appController = [OFController sharedController];
     if ([appController status] < OFControllerRunningStatus)
-        [appController addObserver:self];
+        [appController addStatusObserver:self];
     else
         [self queueSelectorOnce:@selector(controllerStartedRunning:) withObject:nil];
     
@@ -470,7 +469,7 @@ static NSMutableArray *hiddenPanels = nil;
 
 - (NSString *)inspectionIdentifierForCurrentInspectionSet;
 {
-    return _currentInspectionIdentifier;
+    return inspectionSet.inspectionIdentifier;
 }
 
 - (OIInspectionSet *)inspectionSet;
@@ -1240,15 +1239,20 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
             [window orderFront:self];
     }
 
-    // Clear the old inspection
-    inspectionSet = [[OIInspectionSet alloc] init];
-
-    // Fill the inspection set across all inspectable controllers in the responder chain, starting from the 'oldest' (probably the app delegate) to 'newest' the first responder.  This allows responders that are 'closer' to the user to override inspection from 'further' responders.
     NSResponder *responder = [window firstResponder];
     if (!responder)
         responder = window;
+
+    inspectionSet = [[self class] newInspectionSetForResponder:responder];
+}
+
++ (OIInspectionSet *)newInspectionSetForResponder:(NSResponder *)responder;
+{
+    OIInspectionSet *inspectionSet = [[OIInspectionSet alloc] init];
+
+    // Fill the inspection set across all inspectable controllers in the responder chain, starting from the 'oldest' (probably the app delegate) to 'newest' the first responder.  This allows responders that are 'closer' to the user to override inspection from 'further' responders.
     NSMutableSet *seenControllers = [NSMutableSet set];
-    [responder applyToResponderChain: ^ BOOL (id target) {
+    [responder applyToResponderChain: ^ BOOL (id responderChainItem) {
         // Create a block with this behavior so that we can then apply the exact same behavior to both our target and its delegate (if it has a delegate)
         OAResponderChainApplier addInspectedObjects = ^ BOOL (id target) {
             if ([target conformsToProtocol:@protocol(OIInspectableController)]) {
@@ -1256,28 +1260,29 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
                 if ([seenControllers member:target] == nil) {
                     [seenControllers addObject:target];
                     [(id <OIInspectableController>)target addInspectedObjects:inspectionSet];
-                    if ([target respondsToSelector:@selector(inspectionIdentifierForInspectionSet:)] && _currentInspectionIdentifier == nil) {
-                        _currentInspectionIdentifier = [[target inspectionIdentifierForInspectionSet:inspectionSet] copy];
+                    if ([target respondsToSelector:@selector(inspectionIdentifierForInspectionSet:)] && inspectionSet.inspectionIdentifier == nil) {
+                        inspectionSet.inspectionIdentifier = [[target inspectionIdentifierForInspectionSet:inspectionSet] copy];
                     }
                 }
             }
             return YES; // continue searching
         };
-        
-        if (!addInspectedObjects(target)) {
+
+        if (!addInspectedObjects(responderChainItem)) {
             return NO;
         }
-        if ([target respondsToSelector:@selector(delegate)] && !addInspectedObjects([(id)target delegate])) {
+        if ([responderChainItem respondsToSelector:@selector(delegate)] && !addInspectedObjects([(id)responderChainItem delegate])) {
             return NO;
         }
         return YES;
     }];
+
+    return inspectionSet;
 }
 
 - (void)_recalculateInspectionSetIfVisible:(BOOL)onlyIfVisible updateInspectors:(BOOL)updateInspectors;
 {
     registryFlags.isInspectionQueued = NO;
-    _currentInspectionIdentifier = nil;
 
     // Don't calculate inspection set if it would be pointless
     if (onlyIfVisible && ![self hasVisibleInspector]) {
@@ -1346,7 +1351,7 @@ static NSString *OIWorkspaceOrderPboardType = @"OIWorkspaceOrder";
 - (void)controllerStartedRunning:(OFController *)controller;
 {
     if (controller != nil)
-        [controller removeObserver:self];
+        [controller removeStatusObserver:self];
     
     if (!registryFlags.isListeningForNotifications) {
         NSNotificationCenter *defaultNotificationCenter = [NSNotificationCenter defaultCenter];

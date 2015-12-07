@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,7 @@ RCS_ID("$Id$")
 
 static OFDatedMutableDictionary *queues;
 static NSLock *queueLock;
-static NSTimeInterval timeout;
+static NSTimeInterval sessionTimeout;
 
 + (void)initialize;
 {
@@ -47,7 +47,7 @@ static NSTimeInterval timeout;
         return;
     initialized = YES;
 
-    timeout = [[NSUserDefaults standardUserDefaults] floatForKey:@"OWHTTPSessionTimeout"];
+    sessionTimeout = [[NSUserDefaults standardUserDefaults] floatForKey:@"OWHTTPSessionTimeout"];
     queues = [[OFDatedMutableDictionary alloc] init];
     queueLock = [[NSLock alloc] init];
 }
@@ -309,12 +309,12 @@ static NSTimeInterval timeout;
 
     // TODO: lastCleanDate is local to this class, but we need to clean up the HTTPS cache also.  Maybe we should just have a single cache with modified keys for each protocol, rather than maintaining separate caches.
     currentDate = [[NSDate alloc] init];
-    if (lastCleanDate != nil && [currentDate timeIntervalSinceDate:lastCleanDate] < timeout) {
+    if (lastCleanDate != nil && [currentDate timeIntervalSinceDate:lastCleanDate] < sessionTimeout) {
         [currentDate release];
         return;
     }
 
-    [self _lockedFlushSessionQueuesOlderThanDate:[NSDate dateWithTimeIntervalSinceNow:-timeout] excludingQueue:excludedQueue];
+    [self _lockedFlushSessionQueuesOlderThanDate:[NSDate dateWithTimeIntervalSinceNow:-sessionTimeout] excludingQueue:excludedQueue];
     [lastCleanDate release];
     lastCleanDate = currentDate;
 }

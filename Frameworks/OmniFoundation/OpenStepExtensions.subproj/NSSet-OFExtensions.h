@@ -13,18 +13,18 @@
 #import <OmniFoundation/OFUtilities.h>
 #import <Foundation/NSObjCRuntime.h> // for NSComparator
 
-@interface NSSet (OFExtensions)
+@interface NSSet<ObjectType> (OFExtensions)
 
 /// Returns YES if set is nil or is empty.
 + (BOOL)isEmptySet:(NSSet *)set;
 
-- (NSSet *)setByPerformingSelector:(SEL)aSelector;
-- (NSSet *)setByPerformingBlock:(OFObjectToObjectBlock)block;
+- (NSSet<ObjectType> *)setByPerformingSelector:(SEL)aSelector;
+- (NSSet<ObjectType> *)setByPerformingBlock:(OFObjectToObjectBlock)block;
 
-- (NSSet *)setByRemovingObject:(id)anObject;
+- (NSSet<ObjectType> *)setByRemovingObject:(id)anObject;
 
-- (NSArray *)sortedArrayUsingSelector:(SEL)comparator;
-- (NSArray *)sortedArrayUsingComparator:(NSComparator)comparator;
+- (NSArray<ObjectType> *)sortedArrayUsingSelector:(SEL)comparator;
+- (NSArray<ObjectType> *)sortedArrayUsingComparator:(NSComparator)comparator;
 
 - (void)applyFunction:(CFSetApplierFunction)applier context:(void *)context;
 
@@ -37,7 +37,7 @@
 - (id)minValueForKey:(NSString *)key comparator:(NSComparator)comparator;
 - (id)maxValueForKey:(NSString *)key comparator:(NSComparator)comparator;
 
-- (NSSet *)select:(OFPredicateBlock)predicate;
+- (NSSet<ObjectType> *)select:(OFPredicateBlock)predicate;
 
 - (NSDictionary *)indexByBlock:(OFObjectToObjectBlock)blk;
 

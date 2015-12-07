@@ -12,19 +12,6 @@
 #define OAToolbarItemTintOverridePreference (@"ToolbarItemTint")
 
 @interface OAToolbarItem : NSToolbarItem
-{
-    NSImage *_optionKeyImage;
-    NSString *_optionKeyLabel;
-    NSString *_optionKeyToolTip;
-    SEL _optionKeyAction;
-    
-    BOOL inOptionKeyState;
-    BOOL observingTintOverrideChanges;
-    
-    // If these are non-nil, we'll change our image when the control tint changes.
-    NSString *tintedImageStem, *tintedOptionImageStem;
-    NSBundle *tintedImageBundle;
-}
 
 @property(nonatomic,weak) id delegate;
     // Right now, the only thing we're doing with our delegate is using it as a validator; AppKit's auto-validation scheme can be useful for changing more attributes than just enabled/disabled, but it currently only works for items that have a target and action, which many custom toolbar items don't.
@@ -40,4 +27,9 @@
 - (void)setUsesTintedImage:(NSString *)imageName inBundle:(NSBundle *)imageBundle;
 - (void)setUsesTintedImage:(NSString *)imageName optionKeyImage:(NSString *)alternateImageName inBundle:(NSBundle *)imageBundle;
 
+@end
+
+// Used as the custom view when the toolbar item info 'hasButton' is set.
+@interface OAToolbarItemButton : NSButton
+@property(nonatomic,weak) OAToolbarItem *toolbarItem;
 @end

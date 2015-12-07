@@ -1,4 +1,4 @@
-// Copyright 2000-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -103,20 +103,20 @@ static struct pointInfo getCurvePoint(const NSPoint *c, CGFloat u) NONNULL_ARGS;
 static struct pointInfo getLinePoint(const NSPoint *a, CGFloat position) NONNULL_ARGS;
 
 // Returns a point offset to the left (in an increasing-Y-upwards coordinate system, if up==NO) or towards increasing Y (if up==YES)
-static inline NSPoint offsetPoint(struct pointInfo pi, CGFloat offset, BOOL up)
+static inline NSPoint offsetPoint(struct pointInfo pInfo, CGFloat offset, BOOL up)
 {
-    double length = hypot(pi.tangentX, pi.tangentY);
+    double length = hypot(pInfo.tangentX, pInfo.tangentY);
     if (length < 1e-15)
-        return pi.pt;  // sigh
+        return pInfo.pt;  // sigh
     
-    if (up && pi.tangentX < 0) {
-        pi.tangentX = -pi.tangentX;
-        pi.tangentY = -pi.tangentY;
+    if (up && pInfo.tangentX < 0) {
+        pInfo.tangentX = -pInfo.tangentX;
+        pInfo.tangentY = -pInfo.tangentY;
     }
     
     return (NSPoint){
-        .x = (CGFloat)(pi.pt.x - pi.tangentY * offset / length),
-        .y = (CGFloat)(pi.pt.y + pi.tangentX * offset / length)
+        .x = (CGFloat)(pInfo.pt.x - pInfo.tangentY * offset / length),
+        .y = (CGFloat)(pInfo.pt.y + pInfo.tangentX * offset / length)
     };
 }
 
@@ -273,7 +273,7 @@ static struct pointInfo getLinePoint(const NSPoint *a, CGFloat position) {
     needANewStartPoint = NO;
     
     for(i=1;i<count;i++) {
-        NSBezierPathElement element = [self elementAtIndex:i associatedPoints:points];
+        element = [self elementAtIndex:i associatedPoints:points];
         switch(element) {
             case NSMoveToBezierPathElement:
                 currentPoint = points[0];
@@ -1111,8 +1111,8 @@ void splitBezierCurveTo(const NSPoint *c, CGFloat t, NSPoint *l, NSPoint *r)
 // NOTE: Graffle used to rely on this method always returning the "upwards" normal for the line; it no longer does (Graffle performs the upwards constraint itself).
 // So this method has been changed to return the "left" normal, since that provides more information to the caller.
 - (CGFloat)getNormalForPosition:(CGFloat)position {
-    struct pointInfo pi = [self _getPointInfoForPosition:position];
-    return (CGFloat)(atan2(pi.tangentX, - pi.tangentY) * 180.0/M_PI);
+    struct pointInfo pInfo = [self _getPointInfoForPosition:position];
+    return (CGFloat)(atan2(pInfo.tangentX, - pInfo.tangentY) * 180.0/M_PI);
 }
 
 // These use a different interpretation of position than above

@@ -32,144 +32,12 @@ RCS_ID("$Id$");
 
 NSString *OUIStackedSlicesInspectorContentViewDidChangeFrameNotification = @"OUIStackedSlicesInspectorContentViewDidChangeFrame";
 
-static CGFloat _widthForSlice(UIScrollView *self, OUIInspectorSlice *slice)
-{
-    CGFloat width = CGRectGetWidth(self.bounds) - [slice paddingToInspectorLeft] - [slice paddingToInspectorRight];
-    return fmin(width, CGRectGetWidth(self.bounds));
-}
-
-static CGFloat _setSliceSizes(UIScrollView *self, NSArray *_slices, NSSet *slicesToPostponeFrameSetting)
-{
-    CGFloat yOffset = 0.0;
-    CGRect bounds = self.bounds;
-
-    if (!self || [_slices count] == 0)
-        return yOffset;
-    
-    // Spacing between the header of the popover and the first slice (our slice nibs have their content jammed to the top, typically).
-    yOffset += [[_slices objectAtIndex:0] paddingToInspectorTop];
-
-    // 1) add up the total height requirements of all paddings and slices that aren't UIViewAutoresizingFlexibleHeight
-    OUIInspectorSlice *previousSlice = nil;
-    CGFloat totalHeight = yOffset, totalFlexibleSliceMinimumHeight = 0;
-    NSMutableSet *resizableSlices = [NSMutableSet set];
-    for (OUIInspectorSlice *slice in _slices) {
-        // Don't fiddle with slices that have been stolen by embedding inspectors (OmniGraffle).
-        UIView *sliceView = slice.view;
-        if (sliceView.superview != self)
-            continue;
-        
-        UIView *sliceBackgroundView = slice.sliceBackgroundView;
-        OBASSERT_IF(sliceBackgroundView != nil, sliceBackgroundView.superview == self);
-        if ((sliceBackgroundView != nil) && [sliceBackgroundView respondsToSelector:@selector(setInspectorSliceGroupPosition:)]) {
-            [(id)sliceBackgroundView setInspectorSliceGroupPosition:slice.groupPosition];
-        }
-
-        if (previousSlice)
-            totalHeight += [slice paddingToPreviousSlice:previousSlice remainingHeight:bounds.size.height - totalHeight];
-
-        CGFloat sliceWidth = _widthForSlice(self, slice);
-        CGFloat minimumContentHeight = [slice minimumHeightForWidth:sliceWidth];
-        CGFloat minimumSliceHeight = minimumContentHeight;
-        if (sliceBackgroundView != nil) {
-            minimumSliceHeight += slice.topInsetFromSliceBackgroundView + slice.bottomInsetFromSliceBackgroundView;
-            minimumSliceHeight = MAX(kOUIInspectorWellHeight, minimumSliceHeight);
-        }
-        
-        if (sliceView.autoresizingMask & UIViewAutoresizingFlexibleHeight) {
-            [resizableSlices addObject:slice];
-            totalFlexibleSliceMinimumHeight += minimumSliceHeight;
-        } else {
-            // Otherwise the slice should be a fixed height and we should use it.
-            totalHeight += minimumSliceHeight;
-            
-            // Only height-resizable slices will have their height adjusted below (based on how much space is left). This slice might not be stretchable, but just have a computed height based on contents that changes as its width (for example, OUIInstructionTextInspectorSlice).
-            CGRect sliceFrame = sliceView.frame;
-            if (sliceFrame.size.height != minimumContentHeight) {
-                sliceFrame.size.height = minimumContentHeight;
-                sliceView.frame = sliceFrame;
-            }
-            if (sliceBackgroundView != nil) {
-                CGRect sliceBackgroundFrame = slice.sliceBackgroundView.frame;
-                if (sliceBackgroundFrame.size.height != minimumSliceHeight) {
-                    sliceBackgroundFrame.size.height = minimumSliceHeight;
-                    sliceBackgroundView.frame = sliceBackgroundFrame;
-                }
-            }
-        }
-        previousSlice = slice;
-    }
-    totalHeight += [[_slices lastObject] paddingToInspectorBottom];
-    
-    // 2) set the height of all UIViewAutoresizingFlexibleHeight slice views and set the yOffset of each slice
-    UIEdgeInsets contentInset = self.contentInset;
-    CGFloat remainingHeight = bounds.size.height - totalHeight - contentInset.top - contentInset.bottom;
-    NSUInteger resizableSliceCount = resizableSlices.count;
-
-    // Make sure we have enough to hand out to the slices that want it.
-    remainingHeight = MAX(remainingHeight, totalFlexibleSliceMinimumHeight);
-    
-    CGFloat extraFlexibleHeight = remainingHeight - totalFlexibleSliceMinimumHeight;
-    
-    // now, actually assign frames
-    previousSlice = nil;
-    for (OUIInspectorSlice *slice in _slices) {
-        UIView *sliceView = slice.view;
-        if (sliceView.superview != self)
-            continue;
-        
-        UIView *sliceBackgroundView = slice.sliceBackgroundView;
-        
-        CGFloat sliceWidth = _widthForSlice(self, slice);
-        CGFloat sliceContentHeight = CGRectGetHeight(sliceView.frame);
-        CGFloat sliceTotalHeight = sliceContentHeight;
-        if (sliceBackgroundView != nil) {
-            sliceTotalHeight = CGRectGetHeight(sliceBackgroundView.frame);
-            OBASSERT(sliceTotalHeight >= sliceContentHeight);
-        }
-        if ([resizableSlices member:slice]) {
-            // Rather than sharing the extra height evenly on the resizable slices, we might want to come up with some kind of API to offer them space and let them set min/max constraints and workout how to share amongst themselves.
-            sliceContentHeight = [slice minimumHeightForWidth:sliceWidth] + floor(extraFlexibleHeight / resizableSliceCount);
-            if (sliceContentHeight > sliceTotalHeight) {
-                sliceTotalHeight = sliceContentHeight;
-            }
-            remainingHeight -= sliceTotalHeight;
-        } 
-        
-        if (previousSlice && sliceTotalHeight > 0) // OUIEmptyPaddingInspectorSlice can shrink to zero -- don't give it padding.
-            yOffset += [slice paddingToPreviousSlice:previousSlice remainingHeight:bounds.size.height - yOffset];
-                
-        if (!slicesToPostponeFrameSetting || [slicesToPostponeFrameSetting member:slice] == nil) {
-            CGFloat topContentOffset = slice.topInsetFromSliceBackgroundView;
-            CGFloat bottomContentOffset = slice.bottomInsetFromSliceBackgroundView;
-            CGFloat sliceVerticalPadding = sliceTotalHeight - topContentOffset - bottomContentOffset - sliceContentHeight;
-            CGFloat sliceViewOffset = topContentOffset + floor(sliceVerticalPadding / 2.0f);
-            
-            sliceView.frame = CGRectMake(CGRectGetMinX(bounds) + [slice paddingToInspectorLeft], yOffset + sliceViewOffset, sliceWidth, sliceContentHeight);
-            if (sliceBackgroundView != nil) {
-                sliceBackgroundView.frame = CGRectMake(CGRectGetMinX(bounds), yOffset, CGRectGetWidth(bounds), sliceTotalHeight);
-            }
-        }
-
-        yOffset += sliceTotalHeight;
-        
-        if (sliceTotalHeight > 0)
-            previousSlice = slice;
-    }
-
-    yOffset += [[_slices lastObject] paddingToInspectorBottom];
-    
-    return yOffset;
-}
-
 @interface OUIStackedSlicesInspectorPaneContentView : UIScrollView
 {
 @private
     OUIInspectorBackgroundView *_backgroundView;
-    NSArray *_slices;
 }
 - (UIColor *)inspectorBackgroundViewColor;
-@property(nonatomic,copy) NSArray *slices;
 @end
 
 @implementation OUIStackedSlicesInspectorPaneContentView
@@ -201,15 +69,6 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
     return [_backgroundView inspectorBackgroundViewColor];
 }
 
-@synthesize slices = _slices;
-- (void)setSlices:(NSArray *)slices;
-{
-    if (OFISEQUAL(_slices, slices))
-        return;
-    
-    _slices = [slices copy];
-    
-}
 
 - (void)setFrame:(CGRect)frame{
     [super setFrame:frame];
@@ -220,25 +79,8 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 {
     [super layoutSubviews]; // Scroller
 
-    NSUInteger sliceCount = [_slices count];
-    if (sliceCount == 0) {
-        // Should only get zero slices if the inspector is closed.
-        OBASSERT(self.window == nil);
-        return;
-    }
-    
-    const CGRect bounds = self.bounds;
-    
-    CGFloat yOffset = _setSliceSizes(self, _slices, nil);
-    
-    self.contentSize = CGSizeMake(bounds.size.width, yOffset + 50);
-
     // Have to do this after the previous adjustments or the background view can get stuck scrolled part way down when we become unscrollable.
     _backgroundView.frame = self.bounds;
-    
-    // Terrible, but none of the other callbacks are timed so that the slices can alter the scroll position (since the content size isn't updated yet).
-    for (OUIInspectorSlice *slice in _slices)
-        [slice containingPaneDidLayout];
 }
 
 @end
@@ -249,6 +91,7 @@ static id _commonInit(OUIStackedSlicesInspectorPaneContentView *self)
 @property(nonatomic, readonly) BOOL needsSliceLayout;
 @property(nonatomic) BOOL maintainHeirarchyOnNextSliceLayout;
 @property(nonatomic, strong) NSSet *oldSlicesForMaintainingHierarchy;
+@property(nonatomic) UIStackView *sliceStackView;
 
 @end
 
@@ -435,135 +278,24 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     if (!self.oldSlicesForMaintainingHierarchy) {  // this will get cleared out when the change is actually commited to the view hierarchy.  if it hasn't been cleared yet, the current _slices aren't really our current slices so we don't want to remember them as our old slices.
         self.oldSlicesForMaintainingHierarchy = [NSSet setWithArray:self.slices];
     }
+    for (OUIInspectorSlice *slice in self.slices) {
+        [slice willMoveToParentViewController:nil];
+        [self.sliceStackView removeArrangedSubview:slice.view];
+        [slice.view removeFromSuperview];
+        [slice removeFromParentViewController];
+    }
+    // view controllers need to be told they're being added & removed from each other.
     _slices = slices;
     [self setNeedsSliceLayout];
     self.maintainHeirarchyOnNextSliceLayout = maintainHierarchy;
-    
     for (OUIInspectorSlice *slice in slices) {
         slice.containingPane = self;
-    }
-}
+        slice.view.backgroundColor = [slice sliceBackgroundColor];
+        [self addChildViewController:slice];
+        [self.sliceStackView addArrangedSubview:slice.view];
 
-- (void)layoutSlicesMaintainingViewHeirarchy:(BOOL)maintainHierarchy
-{
-    DEBUG_ANIM(@"In setSlices on thread %@", [NSThread currentThread]);
-    // TODO: Might want an 'animate' variant later. 
-    if (OFISEQUAL([NSSet setWithArray:self.slices], self.oldSlicesForMaintainingHierarchy))
-        return;
-    
-    OUIStackedSlicesInspectorPaneContentView *view = (OUIStackedSlicesInspectorPaneContentView *)self.contentView;
-    
-    // Establish view and view controller containment
-    NSSet *oldSlices = self.oldSlicesForMaintainingHierarchy;
-    self.oldSlicesForMaintainingHierarchy = nil;
-    NSSet *newSlices = [NSSet setWithArray:self.slices];
-    NSMutableSet *toBeOrphanedSlices = [NSMutableSet setWithSet:oldSlices];
-    [toBeOrphanedSlices minusSet:newSlices];
-    NSMutableSet *toBeAdoptedSlices = [NSMutableSet setWithSet:newSlices];
-    [toBeAdoptedSlices minusSet:oldSlices];
-    
-    // Tell the slices what position they are in - this impacts how they draw
-    OUIInspectorSlice *previousSlice = nil;
-    OUIInspectorSlice *currentSlice = nil;
-    for (OUIInspectorSlice *nextSlice in _slices) {
-        if (currentSlice != nil) {
-            currentSlice.groupPosition = [OUIStackedSlicesInspectorPane _sliceGroupPositionForSlice:currentSlice precededBySlice:previousSlice followedBySlice:nextSlice];
-        }
-        previousSlice = currentSlice;
-        currentSlice = nextSlice;
-    }
-    currentSlice.groupPosition = [OUIStackedSlicesInspectorPane _sliceGroupPositionForSlice:currentSlice precededBySlice:previousSlice followedBySlice:nil]; // The loop above doesn't process the last slice, just leaves us in a position to process it.
-
-    if (maintainHierarchy) {
-        for (OUIInspectorSlice *slice in toBeOrphanedSlices) {
-            [slice willMoveToParentViewController:nil];
-        }
     }
 
-    // Don't completely zero the alphas, or some slices will expect to be skipped when setting slice sizes.
-    CGFloat newSliceInitialAlpha = [oldSlices count] > 0 ? 0.01 : 1.0; // Don't fade in on first display.
-    for (OUIInspectorSlice *slice in toBeAdoptedSlices) {
-        if (maintainHierarchy) {
-            [self addChildViewController:slice];
-            // Add this once up front, but only if an embedding inspector hasn't stolen it from us (OmniGraffle). Not pretty, but that's how it is right now.
-            UIView *sliceView = slice.view;
-            if (sliceView.superview == nil) {
-                sliceView.alpha = newSliceInitialAlpha;
-                
-                [slice beginAppearanceTransition:YES animated:NO];
-                
-                [view addSubview:sliceView];
-                UIView *sliceBackgroundView = slice.sliceBackgroundView;
-                OBASSERT(sliceBackgroundView.superview == nil); // If a slice has a background view, the background view needs to be added to and removed from our view at the same time as the slice's content view.
-                if (sliceBackgroundView != nil) {
-                    [view insertSubview:sliceBackgroundView belowSubview:sliceView];
-                }
-                
-                [slice endAppearanceTransition];
-            }
-        }
-    }
-    
-    _setSliceSizes(view, _slices, oldSlices); // any slices that are sticking around keep their old frames, so we can animate them to their new positions
-    
-    // Telling the view about the slices triggers [view setNeedsLayout]. The view's layoutSubviews loops over the slices in order and sets their frames.
-    view.slices = _slices;
-        
-    void (^animationHandler)(void) = ^{
-        DEBUG_ANIM(@"enqueuing began");
-        _isAnimating = YES;
-
-        // animate position of slices that were already showing (whose frames were left unchanged above)
-        _setSliceSizes(view, _slices, nil);
-
-        for (OUIInspectorSlice *slice in toBeOrphanedSlices) {
-            if ([slice isViewLoaded] && slice.view.superview == view)
-                slice.view.alpha = 0.0;
-        }
-        for (OUIInspectorSlice *slice in toBeAdoptedSlices) {
-            slice.view.alpha = 1.0;
-        }
-    };
-    
-    BOOL shouldAnimate = [UIView areAnimationsEnabled] && [_slices count] > 0;
-    
-    void (^completionHandler)(BOOL finished) = ^(BOOL finished){
-        for (OUIInspectorSlice *slice in toBeOrphanedSlices) {
-            if ([slice isViewLoaded] && slice.view.superview == view) {
-                
-                [slice beginAppearanceTransition:NO animated:shouldAnimate];
-                
-                [slice.view removeFromSuperview]; // Only remove it if it is loaded and wasn't stolen by an embedding inspector (OmniGraffle).
-                UIView *sliceBackgroundView = slice.sliceBackgroundView;
-                if (sliceBackgroundView != nil) {
-                    [sliceBackgroundView removeFromSuperview];
-                }
-                
-                [slice endAppearanceTransition];
-            }
-            [slice removeFromParentViewController];
-        }
-        
-        if (maintainHierarchy) {
-            for (OUIInspectorSlice *slice in toBeAdoptedSlices) {
-                [slice didMoveToParentViewController:self];
-            }
-        }
-        
-        _isAnimating = NO;
-        DEBUG_ANIM(@"Animation completed");
-    };
-    
-    if (shouldAnimate) {
-        UIViewAnimationOptions options = UIViewAnimationOptionTransitionNone |UIViewAnimationOptionAllowAnimatedContent;
-        [UIView animateWithDuration:OUICrossFadeDuration delay:0 options:options animations:animationHandler completion:completionHandler];
-    } else {
-        animationHandler();
-        completionHandler(NO);
-    }
-    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
-    
-    [self setNeedsSliceLayout];
 }
 
 - (void)setSlices:(NSArray *)slices;
@@ -668,10 +400,7 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
             _removeSlice(self, view, slice);
         
         _slices = nil;
-        
-        // Make sure this doesn't hold onto these for its next -layoutSubviews
-        view.slices = nil;
-        
+
         // Tell all our available slices about this tradegy now that they aren't children view controllers.
         [_availableSlices makeObjectsPerformSelector:@selector(fakeDidReceiveMemoryWarning)];
         
@@ -691,32 +420,36 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
 {
     OUIStackedSlicesInspectorPaneContentView *view = [[OUIStackedSlicesInspectorPaneContentView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], self.inspector.mainPane.preferredContentSize.height)];
     _lastLayoutSize = view.frame.size;
-    [[NSNotificationCenter defaultCenter] addObserverForName:OUIStackedSlicesInspectorContentViewDidChangeFrameNotification
-                                                      object:nil
-                                                       queue:[NSOperationQueue mainQueue]
-                                                  usingBlock:^(NSNotification * _Nonnull note) {
-                                                      if ([self _viewSizeHasChangedSinceLastLayout]) {
-                                                          [self.view setNeedsLayout];
-                                                      }
-                                                  }];
-    
+
     if (!_scrollNotifier)
         _scrollNotifier = [[OUIMinimalScrollNotifierImplementation alloc] init];
     view.delegate = _scrollNotifier;
-    
+
+    self.sliceStackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
+    self.sliceStackView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.sliceStackView.alignment = UIStackViewAlignmentFill;
+    self.sliceStackView.axis = UILayoutConstraintAxisVertical;
+    self.sliceStackView.distribution = UIStackViewDistributionEqualSpacing;
+    self.sliceStackView.spacing = 1;
+    [view addSubview:self.sliceStackView];
+
+    // set up constraints so that the stackView is as big as the scrollview.
+    [self.sliceStackView.leftAnchor constraintEqualToAnchor:view.leftAnchor].active = YES;
+    [self.sliceStackView.rightAnchor constraintEqualToAnchor: view.rightAnchor].active = YES;
+    [self.sliceStackView.topAnchor constraintEqualToAnchor:view.topAnchor].active = YES;
+    [self.sliceStackView.bottomAnchor constraintEqualToAnchor:view.bottomAnchor].active = YES;
+    [self.sliceStackView.widthAnchor constraintEqualToAnchor:view.widthAnchor].active = YES; // this is required in addition to the left & right pins, because the stackSliceView doesn't have an intrinsic content size, so, like a scroll view, it needs 6 points of definition. 
+
     // If we are getting our view reloaded after a memory warning, we might already have slices. They should be mostly set up, but their superview needs fixing.
     for (OUIInspectorSlice *slice in _slices) {
         OBASSERT(slice.containingPane == self);
         OBASSERT([self isChildViewController:slice]);
         UIView *sliceView = slice.view;
-        [view addSubview:sliceView];
-        UIView *sliceBackgroundView = slice.sliceBackgroundView;
-        if (sliceBackgroundView != nil) {
-            [view insertSubview:sliceBackgroundView belowSubview:sliceView];
-        }
+        [sliceView.widthAnchor constraintEqualToAnchor:self.sliceStackView.widthAnchor].active = YES;
+        sliceView.backgroundColor = [slice sliceBackgroundColor];
+        [self.sliceStackView addArrangedSubview:sliceView];
     }
-    view.slices = _slices;
-    
+
     self.view = view;
 }
 
@@ -732,26 +465,6 @@ static void _removeSlice(OUIStackedSlicesInspectorPane *self, OUIStackedSlicesIn
     scrollview.contentInset = defaultInsets;
 
     [super viewWillAppear:animated];
-}
-
-- (void)viewDidLayoutSubviews
-{
-    [super viewDidLayoutSubviews];
-    if (self.needsSliceLayout || [self _viewSizeHasChangedSinceLastLayout]) {
-        [self layoutSlicesMaintainingViewHeirarchy:self.maintainHeirarchyOnNextSliceLayout];
-        _needsSliceLayout = NO;
-        self.maintainHeirarchyOnNextSliceLayout = NO;
-    }
-    _initialLayoutHasBeenDone = YES;
-    _lastLayoutSize = self.view.frame.size;
-}
-
-- (BOOL)_viewSizeHasChangedSinceLastLayout{
-    if (!CGSizeEqualToSize(self.view.frame.size, _lastLayoutSize)) {
-        return YES;
-    } else {
-        return NO;
-    }
 }
 
 - (void)viewDidAppear:(BOOL)animated;

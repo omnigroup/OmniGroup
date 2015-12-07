@@ -55,13 +55,6 @@ static NSFont *labelFont = nil;
     return self;
 }
 
-- (void)dealloc;
-{
-    [provider release];
-    [super dealloc];
-}
-
-
 // NSView subclass
 
 - (void)setFrameSize:(NSSize)_newSize
@@ -85,19 +78,19 @@ static NSFont *labelFont = nil;
     [super setFrameSize:NSMakeSize(NSWidth(superBounds), rowCount * cellSize.height)];
 }
 
-- (void)drawRect:(NSRect)rect
+- (void)drawRect:(NSRect)dirtyRect
 {
     // We calculate the start row/column by dividing and storing into unsigned.
-    OBPRECONDITION(NSMinX(rect) >= 0);
-    OBPRECONDITION(NSMinY(rect) >= 0);
+    OBPRECONDITION(NSMinX(dirtyRect) >= 0);
+    OBPRECONDITION(NSMinY(dirtyRect) >= 0);
     
     [[NSColor controlBackgroundColor] set];
-    NSRectFill(rect);
+    NSRectFill(dirtyRect);
 
     NSUInteger thumbnailCount = [provider thumbnailCount];
     
-    NSUInteger startRow = NSMinY(rect) / cellSize.height;
-    NSUInteger endRow = MIN(NSMaxY(rect) / cellSize.height, rowCount);
+    NSUInteger startRow = NSMinY(dirtyRect) / cellSize.height;
+    NSUInteger endRow = MIN(NSMaxY(dirtyRect) / cellSize.height, rowCount);
 
     for (NSUInteger row = startRow; row <= endRow; row++) {
 	CGFloat y = cellSize.height * row;
@@ -121,7 +114,7 @@ static NSFont *labelFont = nil;
 
             BOOL isSelected = [provider isThumbnailSelectedAtIndex:thumbnailIndex];
 	    if (isSelected) {
-                rect = NSMakeRect(x, y, cellSize.width, cellSize.height);
+                NSRect rect = NSMakeRect(x, y, cellSize.width, cellSize.height);
                 [self drawRoundedRect:rect cornerRadius:12 color:[NSColor selectedControlColor]];
 	    }
 
@@ -187,8 +180,7 @@ static NSFont *labelFont = nil;
     if (provider == newThumbnailsProvider)
 	return;
 
-    [provider autorelease];
-    provider = [newThumbnailsProvider retain];
+    provider = newThumbnailsProvider;
 
     [self sizeToFit];  
     [self scrollSelectionToVisible];

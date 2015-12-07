@@ -1,0 +1,7 @@
+framework module OmniFileExchange {
+    // Needed for the iOS framework, since Xcode defaults to the target's name, not the product's name.
+    umbrella header "OmniFileExchange.h"
+
+    export *
+    module * { export * }
+}

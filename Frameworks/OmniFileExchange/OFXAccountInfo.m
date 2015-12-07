@@ -335,10 +335,10 @@ static NSTimeInterval _fileInfoAge(ODAVFileInfo *fileInfo, NSDate *serverDateNow
             continue;
         }
         
-        __autoreleasing NSError *clientError;
-        OFXPropertyListCacheEntry *cacheEntry = [propertyListCache cacheEntryWithFileInfo:clientFileInfo serverDate:serverDate connection:connection error:&clientError];
+        __autoreleasing NSError *cacheError;
+        OFXPropertyListCacheEntry *cacheEntry = [propertyListCache cacheEntryWithFileInfo:clientFileInfo serverDate:serverDate connection:connection error:&cacheError];
         if (!cacheEntry) {
-            [clientError log:@"Error fetching client data from %@", clientURL];
+            [cacheError log:@"Error fetching client data from %@", clientURL];
             continue;
         }
         

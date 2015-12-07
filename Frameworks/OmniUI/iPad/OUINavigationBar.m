@@ -19,7 +19,7 @@ NSString *OUINavigationBarHeightChangedNotification = @"OUINavigationBarHeightCh
     
     for (UIView *subview in [self subviews]) {
         CGRect subviewFrame = subview.frame;
-        if (CGRectGetHeight(subviewFrame) >= 39.0) {
+        if (ceilf(subviewFrame.size.height) >= self.frame.size.height) {
             // Here is where we hide our background view so that the accessoryAndBackgroundView which our OUINavigationController will be adding to its view can be the one that shows.  Otherwise, we would see a hairline separator at the bottom of this OUINavigationBar and at the bottom of the (taller, if there is an accessory view) UINavigationBar accessoryAndBackgroundView that will be added beneath us.
             subview.hidden = YES;
         }

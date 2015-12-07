@@ -28,5 +28,5 @@ HEADER_SEARCH_PATHS = $(value) $(CONFIGURATION_BUILD_DIR)/private/$(PRODUCT_NAME
 
 // Claim that we are building a framework, though it is a 'static' framework.
 // The point of this is that OmniBase/macros.h will make errors if we use the main-bundle localized string lookup macros. Also set our bundle identifier so the bundle-specific, localized string lookup macros referencing OMNI_BUNDLE find the app bundle.
-OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FRAMEWORK
-OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FRAMEWORK
+OMNI_TARGET_COMMON_PREPROCESSOR_DEFINITIONS = OMNI_BUILDING_FRAMEWORK_OR_BUNDLE
+OMNI_TARGET_COMMON_SWIFT_FLAGS = -DOMNI_BUILDING_FRAMEWORK_OR_BUNDLE

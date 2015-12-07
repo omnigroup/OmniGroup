@@ -186,7 +186,7 @@ static BOOL LongOperationIndicatorEnabledForWindow(NSWindow *window)
     return _progressIndicator;
 }
 
-- (void)drawRect:(NSRect)rect;
+- (void)drawRect:(NSRect)dirtyRect;
 {
     NSRect bounds = [self bounds];
 
@@ -352,6 +352,7 @@ static NSWindow *RootlessProgressWindow = nil;
     }
          
     [RootlessProgressWindow center];
+    [RootlessProgressWindow displayIfNeeded]; // Make sure the window backing store is clear before we put it on screen, so it doesn't flicker up (or get stuck) and then get redrawn clear.
     [RootlessProgressWindow orderFront:nil];
 
     [self startingLongOperation:operationDescription controlSize:controlSize progressStyle:progressStyle inWindow:RootlessProgressWindow automaticallyEnds:shouldAutomaticallyEnd];

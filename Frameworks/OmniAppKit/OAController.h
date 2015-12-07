@@ -1,4 +1,4 @@
-// Copyright 2004-2008, 2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2004-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,6 +19,8 @@
 @private
     OAAboutPanelController *aboutPanelController;
 }
+
++ (BOOL)handleChangePreferenceURL:(NSURL *)url error:(NSError **)outError;
 
 - (OAAboutPanelController *)aboutPanelController;
 

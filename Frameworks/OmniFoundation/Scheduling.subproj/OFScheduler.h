@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -8,13 +8,14 @@
 // $Id$
 
 #import <OmniFoundation/OFObject.h>
+#import <OmniFoundation/OFController.h>
 
 @class NSDate, NSRecursiveLock, NSMutableArray;
 @class OFDedicatedThreadScheduler, OFInvocation, OFScheduledEvent;
 
 #import <Foundation/NSDate.h> // For NSTimeInterval
 
-@interface OFScheduler : NSObject
+@interface OFScheduler : NSObject <OFControllerStatusObserver>
 {
     NSMutableArray *scheduleQueue;
     NSRecursiveLock *scheduleLock;
@@ -31,9 +32,7 @@
 - (OFScheduler *)subscheduler;
 - (NSDate *)dateOfFirstEvent;
 
-@end
-
-@interface OFScheduler (OFConvenienceMethods)
+// Convenience Methods
 - (OFScheduledEvent *)scheduleInvocation:(OFInvocation *)anInvocation atDate:(NSDate *)date;
 - (OFScheduledEvent *)scheduleInvocation:(OFInvocation *)anInvocation afterTime:(NSTimeInterval)time;
 - (OFScheduledEvent *)scheduleSelector:(SEL)selector onObject:(id)anObject atDate:(NSDate *)date;
@@ -42,15 +41,8 @@
 - (OFScheduledEvent *)scheduleSelector:(SEL)selector onObject:(id)anObject afterTime:(NSTimeInterval)time;
 - (OFScheduledEvent *)scheduleSelector:(SEL)selector onObject:(id)anObject withObject:(id)anArgument afterTime:(NSTimeInterval)time;
 - (OFScheduledEvent *)scheduleSelector:(SEL)selector onObject:(id)anObject withBool:(BOOL)anArgument afterTime:(NSTimeInterval)time;
-@end
 
-@interface OFScheduler (SubclassesOnly)
-- (void)invokeScheduledEvents;
-    // Subclasses call this method to invoke all events scheduled to happen up to the current time
-- (void)scheduleEvents;
-    // Subclasses override this method to schedule their events
-- (void)cancelScheduledEvents;
-    // Subclasses override this method to cancel their previously scheduled events.
-@end
+// OFControllerStatusObserver methods implemented
+- (void)controllerWillTerminate:(OFController *)controller NS_REQUIRES_SUPER;
 
-extern BOOL OFSchedulerDebug;
+@end

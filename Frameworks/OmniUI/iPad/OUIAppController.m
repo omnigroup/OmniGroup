@@ -146,7 +146,7 @@ static void __iOS7B5CleanConsoleOutput(void)
             NSLog(@"-[%@ %@]", OBShortObjectDescription(self), NSStringFromSelector(_cmd));
         
 #ifdef OMNI_ASSERTIONS_ON
-        OBPerformRuntimeChecks();
+        OBRequestRuntimeChecks();
 #endif
     }
 }
@@ -488,10 +488,10 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     [self sendFeedbackWithSubject:subject body:nil];
 }
 
-- (void)_showWebViewWithURL:(NSURL *)url title:(NSString *)title;
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString *)title;
 {
     if (url == nil)
-        return;
+        return nil;
     
     OUIWebViewController *webController = [[OUIWebViewController alloc] init];
     webController.delegate = self;
@@ -501,6 +501,7 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
     webNavigationController.navigationBar.barStyle = UIBarStyleDefault;
     
     [self.window.rootViewController presentViewController:webNavigationController animated:YES completion:nil];
+    return webController;
 }
 
 - (void)showAboutScreenInNavigationController:(UINavigationController *)navigationController;
@@ -527,21 +528,88 @@ NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey = @"feedbackA
 
 - (void)_showReleaseNotes:(id)sender;
 {
-    [self _showWebViewWithURL:[[NSBundle mainBundle] URLForResource:@"MessageOfTheDay" withExtension:@"html"] title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"release notes html screen title")];
+    [self showWebViewWithURL:[[NSBundle mainBundle] URLForResource:@"MessageOfTheDay" withExtension:@"html"] title:NSLocalizedStringFromTableInBundle(@"Release Notes", @"OmniUI", OMNI_BUNDLE, @"release notes html screen title")];
+}
+
+static NSString * const OUIHelpBookNameKey = @"OUIHelpBookName";
+
+- (NSURL *)_onlineHelpURL;
+{
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *helpBookName = [mainBundle objectForInfoDictionaryKey:OUIHelpBookNameKey];
+    if ([NSString isEmptyString:helpBookName])
+        return nil;
+    
+    NSString *helpBookFolder = [mainBundle objectForInfoDictionaryKey:@"OUIHelpBookFolder"];
+    NSURL *helpIndexURL = [mainBundle URLForResource:@"index" withExtension:@"html" subdirectory:helpBookFolder];
+    
+    if (helpIndexURL == nil) {
+        helpIndexURL = [mainBundle URLForResource:@"contents" withExtension:@"html" subdirectory:helpBookFolder];
+    }
+    
+    if (helpIndexURL == nil) {
+        helpIndexURL = [mainBundle URLForResource:@"top" withExtension:@"html" subdirectory:helpBookFolder];
+    }
+    
+    OBASSERT(helpIndexURL != nil);
+    return helpIndexURL;
+}
+
+- (NSString *)_onlineHelpTitle;
+{
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *helpBookName = [mainBundle objectForInfoDictionaryKey:OUIHelpBookNameKey];
+    if ([NSString isEmptyString:helpBookName])
+        return nil;
+    
+    return [mainBundle localizedStringForKey:OUIHelpBookNameKey value:helpBookName table:@"InfoPlist"];
 }
 
 - (void)_showOnlineHelp:(id)sender;
 {
-    NSString *helpBookName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"];
-    OBASSERT(helpBookName != nil);
-    NSString *webViewTitle = [[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:helpBookName table:@"InfoPlist"];
+    NSURL *helpIndexURL = [self _onlineHelpURL];
+    if (!helpIndexURL) {
+        OBASSERT_NOT_REACHED("Action should not have been enabled");
+        return;
+    }
+    
+    NSString *webViewTitle = [self _onlineHelpTitle];
+    
+    OUIWebViewController *webController = [self showWebViewWithURL:helpIndexURL title:webViewTitle];
+    [webController invokeJavaScriptAfterLoad:[self _rewriteHelpURLJavaScript] completionHandler:nil];
+}
 
-    NSString *helpBookFolder = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookFolder"];
-    NSURL *helpIndexURL = [[NSBundle mainBundle] URLForResource:@"index" withExtension:@"html" subdirectory:helpBookFolder];
-    if (!helpIndexURL)
-        helpIndexURL = [[NSBundle mainBundle] URLForResource:@"top" withExtension:@"html" subdirectory:helpBookFolder];
-    OBASSERT(helpIndexURL != nil);
-    [self _showWebViewWithURL:helpIndexURL title:webViewTitle];
+- (NSString *)_rewriteHelpURLJavaScript;
+{
+    NSString *helpForwardString = [[self _helpForwardURL] absoluteString];
+    return [NSString stringWithFormat:@"\
+            var a = document.getElementById(\"OUIHelpLinkTag\");\
+            a.setAttribute(\"href\", \"%@\")",
+            helpForwardString];
+}
+
+- (NSURL *)_helpForwardURL;
+{
+    NSURLComponents *components = [[NSURLComponents alloc] init];
+    components.scheme = @"https";
+    components.host = @"www.omnigroup.com";
+
+    NSString *path = @"/forward/documentation/html";
+    
+    // Deliberately use the app bundle, not OMNI_BUNDLE – we want to redirect to the running app's documentation
+    path = [path stringByAppendingPathComponent:[[NSBundle mainBundle] bundleIdentifier]];
+    
+    // Only use language codes we localize into, and when all else fails, fall back to English
+    NSString *languageCode = [[[NSBundle mainBundle] preferredLocalizations] firstObject] ?: @"en";
+    path = [path stringByAppendingPathComponent:languageCode];
+    
+    // Clean the version string through OFVersionNumber so that it doesn't include "private test" or other suffixes
+    NSString *versionString = OB_CHECKED_CAST(NSString, [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
+    OFVersionNumber *versionNumber = [[OFVersionNumber alloc] initWithVersionString:versionString];
+    path = [path stringByAppendingPathComponent:[versionNumber cleanVersionString]];
+    
+    components.path = path;
+    return [components URL];
 }
 
 #pragma mark - OUIMenuControllerDelegate
@@ -568,10 +636,12 @@ static UIImage *menuImage(NSString *name)
         [options addObject:option];
     }
 
-    option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showOnlineHelp:)
-                                                       title:[[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"] table:@"InfoPlist"]
-                                                       image:menuImage(@"OUIMenuItemHelp.png")];
-    [options addObject:option];
+    if ([self _onlineHelpURL]) {
+        option = [OUIMenuOption optionWithFirstResponderSelector:@selector(_showOnlineHelp:)
+                                                           title:[[NSBundle mainBundle] localizedStringForKey:@"OUIHelpBookName" value:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"OUIHelpBookName"] table:@"InfoPlist"]
+                                                           image:menuImage(@"OUIMenuItemHelp.png")];
+        [options addObject:option];
+    }
     
     NSString *feedbackMenuTitle = [self feedbackMenuTitle];
     if (![NSString isEmptyString:feedbackMenuTitle] && ![self isRunningRetailDemo]) {

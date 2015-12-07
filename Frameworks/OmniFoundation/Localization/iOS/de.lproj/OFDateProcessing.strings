@@ -8,7 +8,7 @@
 "~" = "~";
 
 /* one-letter abbreviation for day or days, used for scanning user input. Do NOT add whitespace */
-"d" = "T.";
+"d" = "d";
 
 /* day, singular, used for scanning user input. Do NOT add whitespace */
 "day" = "Tag";
@@ -17,7 +17,7 @@
 "days" = "Tage";
 
 /* one-letter abbreviation for hour or hours, used for scanning user input. Do NOT add whitespace */
-"h" = "S.";
+"h" = "h";
 
 /* hour, singular, used for scanning user input. Do NOT add whitespace */
 "hour" = "Stunde";
@@ -38,7 +38,7 @@
 "last year" = "letztes Jahr";
 
 /* one-letter abbreviation for month or months, used for scanning user input. Do NOT add whitespace */
-"m" = "M.";
+"m" = "min";
 
 /* month, singular, used for scanning user input. Do NOT add whitespace */
 "month" = "Monat";
@@ -98,7 +98,7 @@
 "tonight" = "heute Abend";
 
 /* one-letter abbreviation for week or weeks, used for scanning user input. Do NOT add whitespace */
-"w" = "W.";
+"w" = "W";
 
 /* week, singular, used for scanning user input. Do NOT add whitespace */
 "week" = "Woche";
@@ -107,7 +107,7 @@
 "weeks" = "Wochen";
 
 /* one-letter abbreviation for year or years, used for scanning user input. Do NOT add whitespace */
-"y" = "J.";
+"y" = "J";
 
 /* year, singular, used for scanning user input. Do NOT add whitespace */
 "year" = "Jahr";

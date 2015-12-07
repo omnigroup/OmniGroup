@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,7 @@
 @property(nonatomic,readonly) NSString *name;
 @property(nonatomic,readonly) BOOL exists;
 @property(nonatomic,readonly) BOOL isDirectory;
-@property(nonatomic,readonly) off_t size;
+@property(nonatomic,readonly) off_t size; // May be inaccurate for encrypted files (includes encryption overhead)
 @property(nonatomic,readonly) NSDate *lastModifiedDate;
 @property(nonatomic,readonly) NSString *ETag; // Only set for files returned from WebDAV
 

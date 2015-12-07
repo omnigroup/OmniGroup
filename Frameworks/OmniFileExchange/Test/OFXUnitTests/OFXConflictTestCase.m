@@ -435,7 +435,6 @@ static OFXFileMetadata *_fileWithIdentifier(OFXConflictTestCase *self, NSSet *me
         
         XCTAssertTrue(ITEM_MATCHES_FIXTURE(finalMetadata, @"test2.package"), @"Rename conflict should have kept edited contents");
     } else {
-        NSSet *metadataItems = [self metadataItemsForAgent:agentA];
         XCTAssertEqual([metadataItems count], 2UL, @"Expecting rename conflict to keep both files");
         
         OFXFileMetadata *finalMetadataA = [metadataItems any:^BOOL(OFXFileMetadata *metadata) {
@@ -652,9 +651,11 @@ static void _waitForAndResolveLateConflictByRenaming(OFXConflictTestCase *self,
     }];
     
     // Resolve the conflict by moving aside two of the files. The third should automatically resolve to the original name
-    NSSet *metadataItems = [self metadataItemsForAgent:agentA];
-    [self movePath:[_fileWithContents(self, metadataItems, random1).fileURL lastPathComponent] toPath:@"test1.txt" ofAccount:[self singleAccountInAgent:agentA]];
-    [self movePath:[_fileWithContents(self, metadataItems, random2).fileURL lastPathComponent] toPath:@"test2.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    {
+        NSSet *metadataItems = [self metadataItemsForAgent:agentA];
+        [self movePath:[_fileWithContents(self, metadataItems, random1).fileURL lastPathComponent] toPath:@"test1.txt" ofAccount:[self singleAccountInAgent:agentA]];
+        [self movePath:[_fileWithContents(self, metadataItems, random2).fileURL lastPathComponent] toPath:@"test2.txt" ofAccount:[self singleAccountInAgent:agentA]];
+    }
     
     // Wait for A to upload its changes so that the 'wait to agree' is on the new state, not old.
     [self waitForFileMetadataItems:agentA where:^BOOL(NSSet *metadataItems) {

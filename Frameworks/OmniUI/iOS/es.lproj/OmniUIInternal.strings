@@ -15,3 +15,4 @@
 
 /* crash report alert message */
 "The last time you used %@, it unexpectedly quit. Submitting a report will help us fix the problem in future releases." = "La última vez que utilizó %@, se cerró inesperadamente. Si nos envía un informe, nos ayudará a corregir el problema en versiones futuras.";
+

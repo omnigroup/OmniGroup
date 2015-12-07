@@ -1,4 +1,4 @@
-// Copyright 2002-2005, 2007-2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2002-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -35,7 +35,7 @@ RCS_ID("$Id$");
 - (NSData *)compiledData;
 {
     AEDesc descriptor;
-    OSErr error;
+    OSAError error;
 
     error = OSAStore([[self class] _defaultScriptingComponent], [self _compiledScriptID], typeOSAGenericStorage, kOSAModeNull, &descriptor);
     if (error != noErr)
@@ -43,8 +43,7 @@ RCS_ID("$Id$");
     
     NSAppleEventDescriptor *desc = [NSAppleEventDescriptor newDescriptorWithAEDescNoCopy:(&descriptor)];
     NSData *result = [desc data];
-    [desc release];
-    
+
     return result;
 }
 

@@ -9,13 +9,15 @@
 
 #import <AvailabilityMacros.h>
 
+
 #import <Foundation/Foundation.h>
 
 #import <OmniBase/assertions.h>
 #import <OmniBase/macros.h>
 #import <OmniBase/rcsid.h>
-#import <OmniBase/OBUtilities.h>
 #import <OmniBase/OBBacktraceBuffer.h>
+#import <OmniBase/OBBundle.h>
+#import <OmniBase/OBUtilities.h>
 #import <OmniBase/OBExpectedDeallocation.h>
 
 #import <OmniBase/OBObject.h>
@@ -35,6 +37,3 @@
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #import <OmniBase/OBRuntimeCheck.h>
 #endif
-
-// Can't import this since it imports non-module headers
-// #import <OmniBase/system.h>

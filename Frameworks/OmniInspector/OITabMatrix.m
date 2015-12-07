@@ -141,7 +141,7 @@ RCS_ID("$Id$");
     oldSelection = nil;
 }
 
-- (void)drawRect:(NSRect)rect;
+- (void)drawRect:(NSRect)dirtyRect;
 {
     NSArray *tabCells = [self cells];
     NSUInteger cellCount = [tabCells count];
@@ -170,7 +170,7 @@ RCS_ID("$Id$");
         }
     }
     
-    [super drawRect:rect];
+    [super drawRect:dirtyRect];
     
     if (highlightStyle == OITabMatrixCellsHighlightStyle) {
         /* Simply draw a frame around each selected cell */

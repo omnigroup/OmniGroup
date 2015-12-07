@@ -197,8 +197,8 @@ static void _FillOutDownloadInProgressError(NSError **outError)
         
     };
 
-    __autoreleasing NSError *error = nil;
-    if (_installationDirectory == nil || ![OSUInstaller validateTargetFilesystem:_installationDirectory error:&error]) {
+    __autoreleasing NSError *validateError = nil;
+    if (_installationDirectory == nil || ![OSUInstaller validateTargetFilesystem:_installationDirectory error:&validateError]) {
         // We should only have to prompt the user to pick a directory if both the application's directory and /Applications on the root filesystem both live on read-only filesystems.
         [OSUInstaller chooseInstallationDirectory:_installationDirectory modalForWindow:self.window completionHandler:^(NSError *error, NSString *result) {
             if (result == nil) {
@@ -519,7 +519,7 @@ static void _FillOutDownloadInProgressError(NSError **outError)
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES /* expand tilde */);
     if ([paths count] > 0) {
         NSString *cachePath = [paths objectAtIndex:0];
-        folder = [cachePath stringByAppendingPathComponent:OMNI_BUNDLE_IDENTIFIER];
+        folder = [cachePath stringByAppendingPathComponent:[OMNI_BUNDLE bundleIdentifier]];
         if (folder != nil && ![manager directoryExistsAtPath:folder]) {
             __autoreleasing NSError *error = nil;
             if (![manager createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:&error]) {

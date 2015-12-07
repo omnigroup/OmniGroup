@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2011 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,6 +10,10 @@
 RCS_ID("$Id$")
 
 @implementation OFResultHolder
+{
+    id _result;
+    NSConditionLock *_resultLock;
+}
 
 enum {RESULT_NOT_AVAILABLE, RESULT_AVAILABLE};
 
@@ -18,42 +22,39 @@ enum {RESULT_NOT_AVAILABLE, RESULT_AVAILABLE};
     if (!(self = [super init]))
         return nil;
 
-    result = nil;
-    resultLock = [[NSConditionLock alloc] initWithCondition:RESULT_NOT_AVAILABLE];
+    _resultLock = [[NSConditionLock alloc] initWithCondition:RESULT_NOT_AVAILABLE];
     return self;
 }
 
 - (void)dealloc;
 {
-    [result release];
-    [resultLock release];
+    [_result release];
+    [_resultLock release];
     [super dealloc];
 }
 
-- (void)setResult:(id)newResult;
+- (void)setResult:(id)result;
 {
-    [resultLock lock];
-    if (result != newResult) {
-        [result release];
-        result = [newResult retain];
+    if ([result conformsToProtocol:@protocol(NSCopying)]) {
+        result = [[result copy] autorelease];
     }
-    [resultLock unlockWithCondition:RESULT_AVAILABLE];
+
+    [_resultLock lock];
+    if (_result != result) {
+        [_result release];
+        _result = [result retain];
+    }
+    [_resultLock unlockWithCondition:RESULT_AVAILABLE];
 }
 
 - (id)result;
 {
-    id resultSnapshot;
+    id _resultSnapshot;
 
-    [resultLock lockWhenCondition:RESULT_AVAILABLE];
-    resultSnapshot = [result retain];
-    [resultLock unlock];
-    return [resultSnapshot autorelease];
-}
-
-- (id)getResult;
-    // Deprecated API
-{
-    return [self result];
+    [_resultLock lockWhenCondition:RESULT_AVAILABLE];
+    _resultSnapshot = [_result retain];
+    [_resultLock unlock];
+    return [_resultSnapshot autorelease];
 }
 
 @end

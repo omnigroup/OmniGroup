@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,9 +39,7 @@ RCS_ID("$Id$");
 
 - (void)dealloc;
 {    
-    [searchMode release];
     searchMode = nil;
-    [super dealloc];
 }
 
 #pragma mark -
@@ -111,7 +109,7 @@ RCS_ID("$Id$");
     if (selectedItemIndex == NSNotFound)
         return;
         
-    id oldSearchMode = [searchMode retain];
+    id oldSearchMode = searchMode;
         
     NSArray *items = [menu itemArray];
     NSInteger itemIndex, itemCount = [items count];
@@ -121,15 +119,13 @@ RCS_ID("$Id$");
             [item setState:(itemIndex == selectedItemIndex)];
     }
     
-    [searchMode release];
-    searchMode = [newSearchMode retain];
+    searchMode = newSearchMode;
     
     // If the old search mode is no longer in the menu, and the user is not editing the search field, update its search mode string
     if (oldSearchMode == nil || ![searchMode isEqual:oldSearchMode]) {
         [self updateSearchModeString];
     }
     
-    [oldSearchMode release];
     [[self cell] setSearchMenuTemplate:menu];
 }
 

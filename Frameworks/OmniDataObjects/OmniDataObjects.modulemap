@@ -1,0 +1,8 @@
+framework module OmniDataObjects {
+    umbrella header "OmniDataObjects.h"
+
+    exclude header "ODOModel-Creation.h"
+
+    export *
+    module * { export * }
+}

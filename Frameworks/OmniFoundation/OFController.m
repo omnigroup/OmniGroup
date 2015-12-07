@@ -26,12 +26,14 @@ RCS_ID("$Id$")
 @property (nonatomic, assign) OFControllerStatus status;
 @end
 
+typedef OFWeakReference <id <OFControllerStatusObserver>> *OFControllerStatusObserverReference;
+
 /*" OFController is used to represent the current state of the application and to receive notifications about changes in that state. "*/
 @implementation OFController
 {
     OFControllerStatus _status;
     NSLock *observerLock;
-    NSMutableArray *_observerReferences; // OFWeakReferences holding the observers
+    NSMutableArray <OFControllerStatusObserverReference> *_observerReferences; // OFWeakReferences holding the observers
     NSMutableSet *postponingObservers;
     NSMutableDictionary *queues;
     
@@ -269,13 +271,13 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
 
 - (NSUInteger)_locked_indexOfObserver:(id)observer;
 {
-    return [_observerReferences indexOfObjectPassingTest:^BOOL(OFWeakReference *ref, NSUInteger idx, BOOL *stop) {
+    return [_observerReferences indexOfObjectPassingTest:^BOOL(OFControllerStatusObserverReference ref, NSUInteger idx, BOOL *stop) {
         return [ref referencesObject:(OB_BRIDGE void *)observer];
     }];
 }
 
-/*" Subscribes the observer to a set of notifications based on the methods that it implements in the OFControllerObserver informal protocol.  Classes can register for these notifications in their +didLoad methods (and those +didLoad methods probably shouldn't do much else, since defaults aren't yet registered during +didLoad). "*/
-- (void)addObserver:(id)observer;
+/*" Subscribes the observer to a set of notifications based on the methods that it implements in the OFControllerStatusObserver informal protocol.  Classes can register for these notifications in their +didLoad methods (and those +didLoad methods probably shouldn't do much else, since defaults aren't yet registered during +didLoad). "*/
+- (void)addStatusObserver:(id <OFControllerStatusObserver>)observer;
 {
     OBPRECONDITION(observer != nil);
     
@@ -283,7 +285,7 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
     
     OBASSERT([self _locked_indexOfObserver:observer] == NSNotFound, "Adding the same observer twice is very likely a bug");
     
-    OFWeakReference *ref = [[OFWeakReference alloc] initWithObject:observer];
+    OFControllerStatusObserverReference ref = [[OFWeakReference alloc] initWithObject:observer];
     [_observerReferences addObject:ref];
     [ref release];
         
@@ -291,8 +293,8 @@ static void _replacement_userNotificationCenterSetDelegate(id self, SEL _cmd, id
 }
 
 
-/*" Unsubscribes the observer to a set of notifications based on the methods that it implements in the OFControllerObserver informal protocol. "*/
-- (void)removeObserver:(id)observer;
+/*" Unsubscribes the observer to a set of notifications based on the methods that it implements in the OFControllerStatusObserver informal protocol. "*/
+- (void)removeStatusObserver:(id <OFControllerStatusObserver>)observer;
 {
     [observerLock lock];
     
@@ -529,6 +531,7 @@ static NSString *OFSymbolicBacktrace(NSException *exception) {
     if ([exception.name isEqual:@"SenTestFailureException"]) {
         return NO;
     }
+    
     if ([self _isDictionaryDefinitionException:exception]) {
         return NO;
     }
@@ -706,7 +709,9 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
         if ([self _isDictionaryDefinitionException:exception]) {
             return NO;
         }
+        
         [self crashWithException:exception mask:aMask];
+        
         return YES; // normal handler; we shouldn't get here, though.
     }
 
@@ -754,7 +759,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     
     OBASSERT([self _locked_indexOfNotificationOwner:notificationOwner] == NSNotFound, "Adding the same notification owner twice is very likely a bug");
     
-    OFWeakReference *ref = [[OFWeakReference alloc] initWithObject:notificationOwner];
+    OFControllerStatusObserverReference ref = [[OFWeakReference alloc] initWithObject:notificationOwner];
     [_locked_notificationOwnerReferences addObject:ref];
     [ref release];
     
@@ -871,7 +876,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 
     [observerLock lock];
     {
-        for (OFWeakReference *ref in _observerReferences) {
+        for (OFControllerStatusObserverReference ref in _observerReferences) {
             id object = ref.object;
             if (object)
                 [observers addObject:object];
@@ -914,7 +919,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
 {
     OBPRECONDITION(_locked_notificationOwnerReferences);
     
-    return [_locked_notificationOwnerReferences indexOfObjectPassingTest:^BOOL(OFWeakReference *ref, NSUInteger idx, BOOL *stop) {
+    return [_locked_notificationOwnerReferences indexOfObjectPassingTest:^BOOL(OFControllerStatusObserverReference ref, NSUInteger idx, BOOL *stop) {
         return [ref referencesObject:(OB_BRIDGE void *)owner];
     }];
 }
@@ -927,7 +932,7 @@ static NSString * const OFControllerAssertionHandlerException = @"OFControllerAs
     
     [_noficiationOwnersLock lock];
     {
-        for (OFWeakReference *ref in _locked_notificationOwnerReferences) {
+        for (OFControllerStatusObserverReference ref in _locked_notificationOwnerReferences) {
             id object = ref.object;
             if (object)
                 [owners addObject:object];

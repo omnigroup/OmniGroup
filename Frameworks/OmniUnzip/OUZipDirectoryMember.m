@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -23,21 +23,23 @@ RCS_ID("$Id$");
     #define DEBUG_ZIP_FILES(format, ...)
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
+
 static NSString * const OUZipRootDirectoryName = @".";  // We'll want to strip this when writing so we write "foo" instead of "./foo"
 
 @implementation OUZipDirectoryMember
 {
-    NSMutableArray *_children;
-    NSMutableDictionary *_childrenByName;
+    NSMutableArray <OUZipMember *> *_children;
+    NSMutableDictionary <NSString *, OUZipMember *> *_childrenByName;
     BOOL _shouldArchive;
 }
 
-- initRootDirectoryWithChildren:(NSArray *)children;
+- initRootDirectoryWithChildren:(NSArray <OUZipMember *> * _Nullable)children;
 {
     return [self initWithName:OUZipRootDirectoryName date:nil children:children archive:NO];
 }
 
-- initWithName:(NSString *)name date:(NSDate *)date children:(NSArray *)children archive:(BOOL)shouldArchive;
+- initWithName:(NSString *)name date:(NSDate * _Nullable)date children:(NSArray <OUZipMember *> * _Nullable)children archive:(BOOL)shouldArchive;
 {
     if (!(self = [super initWithName:name date:date]))
         return nil;
@@ -62,12 +64,12 @@ static NSString * const OUZipRootDirectoryName = @".";  // We'll want to strip t
     return [[self name] isEqualToString:OUZipRootDirectoryName];
 }
 
-- (NSArray *)children;
+- (NSArray <OUZipMember *> *)children;
 {
     return _children;
 }
 
-- (OUZipMember *)childNamed:(NSString *)childName;
+- (OUZipMember * _Nullable)childNamed:(NSString *)childName;
 {
     return [_childrenByName objectForKey:childName];
 }
@@ -92,10 +94,9 @@ static NSString * const OUZipRootDirectoryName = @".";  // We'll want to strip t
     return [self appendToZipArchive:zip fileNamePrefix:@"" error:outError];
 }
 
-#pragma mark -
-#pragma mark OUZipMember subclass
+#pragma mark - OUZipMember subclass
 
-- (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString *)fileNamePrefix error:(NSError **)outError;
+- (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString * _Nullable)fileNamePrefix error:(NSError **)outError;
 {
     // TODO: Create a directory entry to store attributes?  The zip command line tool has a mode which skips this...
 
@@ -125,4 +126,6 @@ static NSString * const OUZipRootDirectoryName = @".";  // We'll want to strip t
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
 

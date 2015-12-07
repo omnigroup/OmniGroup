@@ -20,6 +20,8 @@
 + (instancetype)tabBarButton;
 + (instancetype)verticalTabBarButton;
 
+@property (nonatomic) BOOL showButtonImage; // default is YES for vertical buttons, NO for horizontal buttons.
+
 - (void)appearanceDidChange;
 @property (nonatomic, weak) id <OUITabBarAppearanceDelegate> appearanceDelegate;
 

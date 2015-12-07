@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -39,9 +39,9 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
 
 #endif
 
-+ (OAInternetConfig *)internetConfig;
++ (instancetype)internetConfig;
 {
-    return [[[self alloc] init] autorelease];
+    return [[self alloc] init];
 }
 
 + (FourCharCode)applicationSignature;
@@ -64,11 +64,11 @@ static NSString *OAFragmentedAppleScriptStringForString(NSString *string);
         scheme = [scheme stringByAppendingString:@":"];
     }
     
-    CFURLRef schemeURL = (CFURLRef)[NSURL URLWithString:scheme];
-    CFURLRef helperApplicationURL = LSCopyDefaultApplicationURLForURL(schemeURL, kLSRolesAll, NULL);
+    NSURL *schemeURL = [NSURL URLWithString:scheme];
+    CFURLRef helperApplicationURL = LSCopyDefaultApplicationURLForURL((__bridge CFURLRef)schemeURL, kLSRolesAll, NULL);
     if (helperApplicationURL != NULL) {
         // Check to make sure the registered helper application isn't us
-        NSString *helperApplicationPath = [(NSURL *)helperApplicationURL path];
+        NSString *helperApplicationPath = [(__bridge NSURL *)helperApplicationURL path];
         NSString *helperApplicationName = [[NSFileManager defaultManager] displayNameAtPath:helperApplicationPath];
 
         CFRelease(helperApplicationURL);
@@ -119,7 +119,7 @@ static void HandleAppleScriptError(NSString *source, NSString *message, NSDictio
 
 static BOOL _executeScript(NSString *source, NSError **outError)
 {
-    NSAppleScript *runner = [[[NSAppleScript alloc] initWithSource:source] autorelease];
+    NSAppleScript *runner = [[NSAppleScript alloc] initWithSource:source];
     NSDictionary *errorInfo = nil;
     if (![runner compileAndReturnError:&errorInfo]) {
         HandleAppleScriptError(source, @"Error compiling mail script", errorInfo, outError);

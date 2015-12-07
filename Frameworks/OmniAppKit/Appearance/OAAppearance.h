@@ -122,7 +122,11 @@ extern NSString * const OAAppearanceAliasesKey;
 /// API for use by subclasses
 @interface OAAppearance (Subclasses)
 /// Returns the singleton instance of the given appearance subclass. Any overrides must call super and should vend the returned result. The default implementation dynamically creates classes that are necessary for correct subclassing behavior of dynamic accessors.
-+ (OAAppearance *)appearanceForClass:(Class)cls NS_REQUIRES_SUPER;
++ (instancetype)appearanceForClass:(Class)cls NS_REQUIRES_SUPER;
+
+/// Subclasses may override this method to return a URL in which vended subclass appearance singletons will look for their backing plists. The default implementation returns nil, signifying that the backing plist should be found in the app bundle's resources. It's expected that any vended URL points to a folder to which the app already has sandbox access, typically a folder within the app bundle or container.
+/// N.B., this method is consulted whenever a client asks for the singleton instance of the subclass. If the returned value is different than the last time the singleton was vended, appearance change notifications for the instance and for all subclasses will be fired. Clients that wish to control the timing of these notifications should request their own singleton instance when the value that will be returned by this method changes.
++ (NSURL *)directoryURLForSwitchablePlist;
 @end
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
@@ -134,6 +138,8 @@ extern NSString * const OAAppearanceAliasesKey;
 
 + (NSColor *)OASelectionBorderColor;
 + (NSColor *)OAInactiveSelectionBorderColor;
+
+- (BOOL)isLightColor;
 
 @end
 

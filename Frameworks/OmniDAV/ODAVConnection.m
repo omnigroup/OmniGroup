@@ -111,14 +111,24 @@ static NSString *StandardUserAgentString;
     NSString *osVersionString = [[OFVersionNumber userVisibleOperatingSystemVersionNumber] originalVersionString];
     NSDictionary *bundleInfo = [[NSBundle mainBundle] infoDictionary];
     
-    NSString *appName = [bundleInfo objectForKey:(NSString *)kCFBundleNameKey];
+    NSString *appName = [bundleInfo objectForKey:@"ODAVUserAgentBasename"];
+    if ([NSString isEmptyString:appName])
+        appName = [bundleInfo objectForKey:(NSString *)kCFBundleNameKey]; // use bundle name
+
     if ([NSString isEmptyString:appName])
         appName = [[NSProcessInfo processInfo] processName]; // command line tool?
-    
+
     NSString *appInfo = appName;
     NSString *appVersionString = [bundleInfo objectForKey:(NSString *)kCFBundleVersionKey];
-    if (![NSString isEmptyString:appVersionString])
+    if (![NSString isEmptyString:appVersionString]) {
+        NSString *marketingVersionString = [bundleInfo objectForKey:@"CFBundleShortVersionString"];
+        if (![NSString isEmptyString:marketingVersionString]) {
+            marketingVersionString = [marketingVersionString stringByReplacingOccurrencesOfString:@" " withString:@"-"];
+            appVersionString = [appVersionString stringByAppendingFormat:@"/v%@", marketingVersionString];
+        }
+        
         appInfo = [appInfo stringByAppendingFormat:@"/%@", appVersionString];
+    }
     
     NSString *hardwareModel = [NSString encodeURLString:ODAVHardwareModel() asQuery:NO leaveSlashes:YES leaveColons:YES];
     NSString *clientName = [NSString encodeURLString:ClientComputerName() asQuery:NO leaveSlashes:YES leaveColons:YES];

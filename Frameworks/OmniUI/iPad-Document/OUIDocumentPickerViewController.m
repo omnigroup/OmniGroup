@@ -5,56 +5,20 @@
 // distributed with this project and can also be found at
 // <http://www.omnigroup.com/developer/sourcecode/sourcelicense/>.
 
-#import <OmniUIDocument/OUIDocumentPickerViewController.h>
+@import OmniBase;
+@import OmniDAV;
+@import OmniDocumentStore;
+@import OmniFileExchange;
+@import OmniFoundation;
+@import OmniQuartz;
+@import OmniUI;
+@import OmniAppKit;
+@import OmniUnzip;
 
-#import <Photos/Photos.h>
-#import <MessageUI/MFMailComposeViewController.h>
-#import <MobileCoreServices/UTCoreTypes.h>
-#import <MobileCoreServices/UTType.h>
-#import <OmniBase/OmniBase.h>
-#import <OmniDAV/ODAVErrors.h>
-#import <OmniDAV/ODAVFileInfo.h>
-#import <OmniDocumentStore/ODSExternalScope.h>
-#import <OmniDocumentStore/ODSFileItem.h>
-#import <OmniDocumentStore/ODSFilter.h>
-#import <OmniDocumentStore/ODSFolderItem.h>
-#import <OmniDocumentStore/ODSLocalDirectoryScope.h>
-#import <OmniDocumentStore/ODSScope.h>
-#import <OmniDocumentStore/ODSStore.h>
-#import <OmniFileExchange/OmniFileExchange.h>
-#import <OmniFoundation/NSDictionary-OFExtensions.h>
-#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
-#import <OmniFoundation/NSFileManager-OFSimpleExtensions.h>
-#import <OmniFoundation/NSInvocation-OFExtensions.h>
-#import <OmniFoundation/NSMutableArray-OFExtensions.h>
-#import <OmniFoundation/NSSet-OFExtensions.h>
-#import <OmniFoundation/OFBinding.h>
-#import <OmniFoundation/OFEnumNameTable.h>
-#import <OmniFoundation/OFPreference.h>
-#import <OmniFoundation/OFUTI.h>
-#import <OmniFoundation/OmniFoundation.h>
-#import <OmniQuartz/CALayer-OQExtensions.h>
-#import <OmniQuartz/OQDrawing.h>
-#import <OmniUI/OUIActivityIndicator.h>
-#import <OmniUI/OUIAnimationSequence.h>
-#import <OmniUI/OUIAppController.h>
-#import <OmniAppKit/OAAppearanceColors.h>
-#import <OmniUI/OUIBarButtonItem.h>
-#import <OmniUI/OUIEmptyOverlayView.h>
-#import <OmniUI/OUIFeatures.h>
-#import <OmniUI/OUIInteractionLock.h>
-#import <OmniUI/OUIKeyboardNotifier.h>
-#import <OmniUI/OUIMenuController.h>
-#import <OmniUI/OUIMenuOption.h>
-#import <OmniUI/OUIToolbarButton.h>
-#import <OmniUI/UIGestureRecognizer-OUIExtensions.h>
-#import <OmniUI/UITableView-OUIExtensions.h>
-#import <OmniUI/UIView-OUIExtensions.h>
-#import <OmniUI/UIViewController-OUIExtensions.h>
+#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 #import <OmniUIDocument/OUIDocument.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentCreationTemplatePickerViewController.h>
-#import <OmniUIDocument/OUIDocumentPicker.h>
 #import <OmniUIDocument/OUIDocumentPickerDelegate.h>
 #import <OmniUIDocument/OUIDocumentPickerFileItemView.h>
 #import <OmniUIDocument/OUIDocumentPickerFilter.h>
@@ -68,18 +32,13 @@
 #import <OmniUIDocument/OUIErrors.h>
 #import <OmniUIDocument/OUIToolbarTitleButton.h>
 #import <OmniUIDocument/OmniUIDocumentAppearance.h>
-#import <OmniUnzip/OUZipArchive.h>
-#import <OmniUI/UIScrollView-OUIExtensions.h>
-#import <OmniUI/UINavigationController-OUIExtensions.h>
 #import <OmniUIDocument/OUIDocumentPreviewingViewController.h>
-
 #import "OUIDocumentOpenAnimator.h"
 #import "OUIDocumentParameters.h"
 #import "OUIDocument-Internal.h"
 #import "OUIDocumentPicker-Internal.h"
 #import "OUIDocumentPickerViewController-Internal.h"
 #import "OUIDocumentRenameSession.h"
-#import "OUIExportOptionsController.h"
 #import "OUIDocumentAppController-Internal.h"
 #import "OUIImportExportAccountListViewController.h"
 
@@ -94,12 +53,6 @@ RCS_ID("$Id$");
 
 OBDEPRECATED_METHOD(-documentPicker:toolbarPromptForRenamingFileItem:);
 
-typedef NS_ENUM(NSInteger, OUIIconSize) {
-    OUIIconSizeNormal,
-    OUIIconSizeLarge,
-    OUIIconSizeCompact
-};
-
 #define GENERATE_DEFAULT_PNG 0
 
 static NSString * const kActionSheetPickMoveDestinationScopeIdentifier = @"com.omnigroup.OmniUI.OUIDocumentPicker.PickMoveDestinationScope";
@@ -107,10 +60,11 @@ static NSString * const kActionSheetDeleteIdentifier = @"com.omnigroup.OmniUI.OU
 
 static NSString * const FilteredItemsBinding = @"filteredItems";
 
-@interface OUIDocumentPickerViewController () <MFMailComposeViewControllerDelegate, OUIDocumentTitleViewDelegate, UIViewControllerPreviewingDelegate>
+@interface OUIDocumentPickerViewController () <OUIDocumentTitleViewDelegate, UIViewControllerPreviewingDelegate>
+
+@property(nonatomic,readonly) ODSFileItem *singleSelectedFileItem;
 
 @property(nonatomic,copy) NSSet *filteredItems;
-@property(nonatomic,strong) NSMutableDictionary *openInMapCache;
 
 @property(nonatomic,strong) UISegmentedControl *filtersSegmentedControl;
 @property(nonatomic,strong) UISegmentedControl *sortSegmentedControl;
@@ -134,9 +88,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 @implementation OUIDocumentPickerViewController
 {
     OUIReplaceDocumentAlert *_replaceDocumentAlert;
-    
-    // Used to map between an exportType (UTI string) and BOOL indicating if an app exists that we can send it to via Document Interaction.
-    NSMutableDictionary *_openInMapCache;
  
     UILabel *_titleLabelToUseInCompactWidth;
     UIToolbar *_toolbar;
@@ -338,8 +289,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     [self deleteDocument:sender];
 }
 
-@synthesize openInMapCache = _openInMapCache;
-
 - (void)setRenameSession:(OUIDocumentRenameSession *)renameSession;
 {
     _renameSession = renameSession;
@@ -387,17 +336,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     [self rescanDocumentsScrollingToURL:nil];
 }
 
-- (NSSet *)recursivelySelectedFileItems;
-{
-    NSMutableSet *fileItems = [NSMutableSet new];
-    NSSet *candidates = _folderItem.childItems;
-    for (ODSItem *item in candidates) {
-        if (item.selected)
-            [item addFileItems:fileItems];
-    }
-    return fileItems;
-}
-
 - (NSSet *)selectedItems;
 {
     NSSet *candidates = _folderItem.childItems;
@@ -433,6 +371,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     return [candidates any:^BOOL(ODSItem *item){
         return item.selected && [item isKindOfClass:[ODSFolderItem class]];
     }] != nil;
+}
+
+- (void)clearSelectionAndEndEditing
+{
+    [self clearSelection:YES];
 }
 
 - (void)clearSelection:(BOOL)shouldEndEditing;
@@ -556,17 +499,17 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     
     NSOperationQueue *queue = [[NSOperationQueue alloc] init];
     [queue addOperationWithBlock:^{
-        __autoreleasing NSError *error;
         Class cls = [[OUIDocumentAppController controller] documentClassForURL:temporaryURL];
         
         // This reads the document immediately, which is why we dispatch to a background queue before calling it. We do file coordination on behalf of the document here since we don't get the benefit of UIDocument's efforts during our synchronous read.
         
         __block OUIDocument *document;
-        
+        __autoreleasing NSError *readError;
+
         if (templateFileItem != nil) {
             NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
             NSURL *templateURL = templateFileItem.fileURL;
-            [coordinator readItemAtURL:templateURL withChanges:YES error:&error byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
+            [coordinator readItemAtURL:templateURL withChanges:YES error:&readError byAccessor:^BOOL(NSURL *newURL, NSError **outError) {
                 NSURL *securedURL = nil;
                 if ([newURL startAccessingSecurityScopedResource])
                     securedURL = newURL;
@@ -575,11 +518,11 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
                 return (document != nil);
             }];
         } else {
-            document = [[cls alloc] initWithContentsOfTemplateAtURL:nil toBeSavedToURL:temporaryURL error:&error];
+            document = [[cls alloc] initWithContentsOfTemplateAtURL:nil toBeSavedToURL:temporaryURL error:&readError];
         }
         
         if (!document) {
-            finish(nil, error);
+            finish(nil, readError);
             return;
         }
         
@@ -675,7 +618,7 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (IBAction)duplicateDocument:(id)sender;
 {
     // Validate each file item down the selected files and groups
-    for (ODSFileItem *fileItem in self.recursivelySelectedFileItems) {
+    for (ODSFileItem *fileItem in self.selectedItems) {
         
         // Make sure the item is fully downloaded.
         if (!fileItem.isDownloaded) {
@@ -890,323 +833,8 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     return [_documentPicker availableFiltersForScope:_documentScope];
 }
 
-- (NSArray *)availableExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType;
-{
-    NSMutableArray *exportTypes = [NSMutableArray array];
-    
-    // Get All Available Export Types
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    if ([delegate respondsToSelector:@selector(documentPicker:availableExportTypesForFileItem:serverAccount:exportOptionsType:)]) {
-        [exportTypes addObjectsFromArray:[delegate documentPicker:_documentPicker availableExportTypesForFileItem:fileItem serverAccount:serverAccount exportOptionsType:exportOptionsType]];
-    } else {
-        // Add the 'native' marker
-        [exportTypes insertObject:[NSNull null] atIndex:0];
 
-        // PDF PNG Fallbacks
-        BOOL canMakePDF = [delegate respondsToSelector:@selector(documentPicker:PDFDataForFileItem:error:)];
-        BOOL canMakePNG = [delegate respondsToSelector:@selector(documentPicker:PNGDataForFileItem:error:)];
-        if (canMakePDF)
-            [exportTypes addObject:(NSString *)kUTTypePDF];
-        if (canMakePNG)
-            [exportTypes addObject:(NSString *)kUTTypePNG];
-    }
-    
-    if ((serverAccount == nil) &&
-        (exportOptionsType == OUIExportOptionsNone)) {
-        // We're just looking for a rough count of how export types are available. Let's just return what we have.
-        return exportTypes;
-    }
-    
-    // Using Send To App
-    if (exportOptionsType == OUIExportOptionsSendToApp) {
-        NSMutableArray *docInteractionExportTypes = [NSMutableArray array];
-        
-        // check our own type here
-        if ([self _canUseOpenInWithExportType:fileItem.fileType]) 
-            [docInteractionExportTypes addObject:[NSNull null]];
-        
-        for (NSString *exportType in exportTypes) {
-            if (OFNOTNULL(exportType) &&
-                [self _canUseOpenInWithExportType:exportType]) {
-                    [docInteractionExportTypes addObject:exportType];
-            }
-        }
-        
-        return docInteractionExportTypes;
-    }
-    
-    return exportTypes;
-}
-
-- (NSArray *)availableImageExportTypesForFileItem:(ODSFileItem *)fileItem;
-{
-    NSMutableArray *imageExportTypes = [NSMutableArray array];
-    NSArray *exportTypes = [self availableExportTypesForFileItem:fileItem serverAccount:nil exportOptionsType:OUIExportOptionsNone];
-    for (NSString *exportType in exportTypes) {
-        if (OFNOTNULL(exportType) &&
-            OFTypeConformsTo(exportType, kUTTypeImage)) {
-                [imageExportTypes addObject:exportType];
-        }
-    }
-    return imageExportTypes;
-}
-
-- (NSArray *)availableInAppPurchaseExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType;
-{
-    NSMutableArray *exportTypes = [NSMutableArray array];
-    
-    // Get All Available Export Types
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    if ([delegate respondsToSelector:@selector(documentPicker:availableInAppPurchaseExportTypesForFileItem:serverAccount:exportOptionsType:)]) {
-        [exportTypes addObjectsFromArray:[delegate documentPicker:_documentPicker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:serverAccount exportOptionsType:exportOptionsType]];
-    }
-    
-    return exportTypes;
-}
-
-// Helper method for -availableDocuentInteractionExportTypesForFileItem:
-- (BOOL)_canUseOpenInWithExportType:(NSString *)exportType;
-{
-    NSNumber *value = [self.openInMapCache objectForKey:exportType];
-    if (value) {
-        // We have a cached value, so immediately return it.
-        return [value boolValue];
-    }
-
-    BOOL success = YES;
-#if 0 // UNDONE
-    // We don't have a cache for this exportType. We need to do our Doc Interaction hack to find out if this export type has an available app to send to.
-    OUIDocumentAppController *sharedAppDelegate = (OUIDocumentAppController *)[UIApplication sharedApplication].delegate;
-    UIWindow *mainWindow = sharedAppDelegate.window;
-    
-    NSString *tempDirectory = NSTemporaryDirectory();
-    
-    __autoreleasing NSError *error = nil;
-    OFSFileManager *tempFileManager = [[OFSFileManager alloc] initWithBaseURL:[NSURL fileURLWithPath:tempDirectory isDirectory:YES] delegate:nil error:&error];
-    if (error) {
-        OUI_PRESENT_ERROR(error);
-        return NO;
-    }
-
-    NSString *dummyPath = [tempDirectory stringByAppendingPathComponent:@"dummy"];
-    BOOL isDirectory = OFTypeConformsTo(exportType, kUTTypeDirectory);
-    
-    NSString *owned_UTIExtension = OFPreferredPathExtensionForUTI(exportType);
-    
-    if (owned_UTIExtension) {
-        dummyPath = [dummyPath stringByAppendingPathExtension:owned_UTIExtension];
-    }
-    
-    
-    // First check to see if the dummyURL already exists.
-    NSURL *dummyURL = [NSURL fileURLWithPath:dummyPath isDirectory:isDirectory];
-    ODAVFileInfo *dummyInfo = [tempFileManager fileInfoAtURL:dummyURL error:&error];
-    if (error) {
-        OUI_PRESENT_ERROR(error);
-        return NO;
-    }
-    if ([dummyInfo exists] == NO) {
-        if (isDirectory) {
-            // Create dummy dir.
-            [tempFileManager createDirectoryAtURL:dummyURL attributes:nil error:&error];
-            if (error) {
-                OUI_PRESENT_ERROR(error);
-                return NO;
-            }
-        }
-        else {
-            // Create dummy file.
-            [tempFileManager writeData:nil toURL:dummyURL atomically:YES error:&error];
-            if (error) {
-                OUI_PRESENT_ERROR(error);
-                return NO;
-            }
-        }
-    }
-    
-    // Try to popup UIDocumentInteractionController
-    UIDocumentInteractionController *documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:dummyURL];
-    BOOL success = [documentInteractionController presentOpenInMenuFromRect:CGRectZero inView:mainWindow animated:YES];
-    if (success == YES) {
-        [documentInteractionController dismissMenuAnimated:NO];
-    }
-    
-    // Time to cache the result.
-    [self.openInMapCache setObject:[NSNumber numberWithBool:success] forKey:exportType];
-#endif
-    return success;
-}
-
-- (void)exportFileWrapperOfType:(NSString *)exportType forFileItem:(ODSFileItem *)fileItem withCompletionHandler:(void (^)(NSFileWrapper *fileWrapper, NSError *error))completionHandler;
-{
-    completionHandler = [completionHandler copy]; // preserve scope
-    
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    if ([delegate respondsToSelector:@selector(documentPicker:exportFileWrapperOfType:forFileItem:withCompletionHandler:)]) {
-        [delegate documentPicker:_documentPicker exportFileWrapperOfType:exportType forFileItem:fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
-            if (completionHandler) {
-                completionHandler(fileWrapper, error);
-            }
-        }];
-        return;
-    }
-    
-    if (OFISNULL(exportType)) {
-        // The 'nil' type is always first in our list of types, so we can eport the original file as is w/o going through any app specific exporter.
-        // NOTE: This is important for OO3 where the exporter has the ability to rewrite the document w/o hidden columns, in sorted order, with summary values (and eventually maybe with filtering). If we want to support untransformed exporting through the OO XML exporter, it will need to be configurable via settings on the OOXSLPlugin it uses. For now it assumes all 'exports' want all the transformations.
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0),
-                       ^{
-                           __autoreleasing NSError *error = nil;
-                           NSFileWrapper *fileWrapper = [[NSFileWrapper alloc] initWithURL:fileItem.fileURL options:0 error:&error];
-                           
-                           if (completionHandler) {
-                               completionHandler(fileWrapper, error);
-                           }
-
-                       });
-        return;
-    }
-
-    
-    // If the delegate doesn't implement the new file wrapper export API, try the older NSData API
-    NSData *fileData = nil;
-    NSString *pathExtension = nil;
-    __autoreleasing NSError *error = nil;
-    
-    if (OFTypeConformsTo(exportType, kUTTypePDF) && [delegate respondsToSelector:@selector(documentPicker:PDFDataForFileItem:error:)]) {
-        fileData = [delegate documentPicker:_documentPicker PDFDataForFileItem:fileItem error:&error];
-        pathExtension = @"pdf";
-    } else if (OFTypeConformsTo(exportType, kUTTypePNG) && [delegate respondsToSelector:@selector(documentPicker:PNGDataForFileItem:error:)]) {
-        fileData = [delegate documentPicker:_documentPicker PNGDataForFileItem:fileItem error:&error];
-        pathExtension = @"png";
-    }
-    
-    if (fileData == nil)
-        completionHandler(nil, error);
-    
-    NSFileWrapper *fileWrapper = [[NSFileWrapper alloc] initRegularFileWithContents:fileData];
-    fileWrapper.preferredFilename = [fileItem.name stringByAppendingPathExtension:pathExtension];
-    
-    if (completionHandler) {
-        completionHandler(fileWrapper, error);
-    }
-}
-
-- (UIImage *)_iconForUTI:(NSString *)fileUTI size:(OUIIconSize)iconSize cache:(NSCache *)cache;
-{
-    static NSDictionary *imageUTIMap;
-    static dispatch_once_t imageUTIMapdispatchOnceToken;
-    dispatch_once(&imageUTIMapdispatchOnceToken, ^{
-        NSArray *imageUTINormaliedMappings = [NSArray arrayWithContentsOfURL:[[NSBundle mainBundle] URLForResource:@"OUIDocumentImageUTIMap" withExtension:@"plist"]];
-        assert(imageUTINormaliedMappings); // will need updating when OmniUI-Internal becomes a framework
-        
-        NSMutableDictionary *mutableImageUTIMap = [NSMutableDictionary dictionary];
-        for (NSDictionary *imageUTINormalizedMapping in imageUTINormaliedMappings) {
-            NSString *normalImageName = imageUTINormalizedMapping[@"normalImageName"];
-            NSArray *UTIs = imageUTINormalizedMapping[@"UTIs"];
-            
-            for (NSString *UTI in UTIs) {
-                [mutableImageUTIMap setObject:normalImageName forKey:UTI];
-            }
-        }
-        imageUTIMap = [NSDictionary dictionaryWithDictionary:mutableImageUTIMap];
-    });
-    
-    NSString *imageName = nil;
-    switch (iconSize) {
-        case OUIIconSizeNormal:
-            imageName = imageUTIMap[fileUTI];
-            break;
-        case OUIIconSizeLarge:
-            imageName = [NSString stringWithFormat:@"%@-Large", imageUTIMap[fileUTI]];
-            break;
-        case OUIIconSizeCompact:
-            imageName = [NSString stringWithFormat:@"%@-Compact", imageUTIMap[fileUTI]];
-            break;
-        default:
-            OBASSERT_NOT_REACHED("Unknown icon size.");
-            break;
-    }
-    
-    UIImage *resultImage = [UIImage imageNamed:imageName]; // Allow main bundle to override?
-    if (!resultImage)
-        resultImage = [UIImage imageNamed:imageName inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];
-    
-    OBASSERT_NOTNULL(resultImage);
-    
-    return resultImage;
-}
-
-- (UIImage *)iconForUTI:(NSString *)fileUTI;
-{
-    UIImage *icon = nil;
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    if ([delegate respondsToSelector:@selector(documentPicker:iconForUTI:)])
-        icon = [delegate documentPicker:_documentPicker iconForUTI:(CFStringRef)fileUTI];
-    if (icon == nil) {
-        static NSCache *cache = nil;
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            cache = [[NSCache alloc] init];
-            [cache setName:@"OUIDocumentPicker iconForUTI:"];
-        });
-        icon = [self _iconForUTI:fileUTI size:OUIIconSizeNormal cache:cache];
-    }
-    return icon;
-}
-
-- (UIImage *)exportIconForUTI:(NSString *)fileUTI;
-{
-    UIImage *icon = nil;
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    if ([delegate respondsToSelector:@selector(documentPicker:exportIconForUTI:)])
-        icon = [delegate documentPicker:_documentPicker exportIconForUTI:(CFStringRef)fileUTI];
-    if (icon == nil) {
-        static NSCache *cache = nil;
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            cache = [[NSCache alloc] init];
-            [cache setName:@"OUIDocumentPicker exportIconForUTI:"];
-        });
-        icon = [self _iconForUTI:fileUTI size:OUIIconSizeCompact cache:cache];
-    }
-    return icon;
-}
-
-- (NSString *)exportLabelForUTI:(NSString *)fileUTI;
-{
-    NSString *customLabel = nil;
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    if ([delegate respondsToSelector:@selector(documentPicker:labelForUTI:)])
-        customLabel = [delegate documentPicker:_documentPicker labelForUTI:(CFStringRef)fileUTI];
-    if (customLabel != nil)
-        return customLabel;
-    if (OFTypeConformsTo(fileUTI, kUTTypePDF))
-        return @"PDF";
-    if (OFTypeConformsTo(fileUTI, kUTTypePNG))
-        return @"PNG";
-    return nil;
-}
-
-- (NSString *)purchaseDescriptionForExportType:(NSString *)fileUTI;
-{
-    NSString *customLabel = nil;
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    if ([delegate respondsToSelector:@selector(documentPicker:purchaseDescriptionForExportType:)])
-        customLabel = [delegate documentPicker:_documentPicker purchaseDescriptionForExportType:(__bridge CFStringRef)fileUTI];
-    if (customLabel != nil)
-        return customLabel;
-    
-    return nil;
-}
-
-- (void)purchaseExportType:(NSString *)fileUTI navigationController:(UINavigationController *)navigationController;
-{
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    [delegate documentPicker:_documentPicker purchaseExportType:(__bridge CFStringRef)fileUTI navigationController:navigationController];
-}
-
-- (NSString *)deleteDocumentTitle:(NSUInteger)count;
+- (NSString *)_deleteDocumentTitle:(NSUInteger)count;
 {
     OBPRECONDITION(count > 0);
     
@@ -1225,62 +853,67 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     }
 }
 
-- (IBAction)deleteDocument:(id)sender;
+- (void)_deleteItems:(NSSet <ODSItem *> *)items sender:(id)sender;
 {
     if (!self.canPerformActions)
         return;
-
-    NSSet *selectedItems = self.selectedItems;
-    NSUInteger selectedItemCount = [selectedItems count];
     
-    if (selectedItemCount == 0) {
+    NSUInteger itemCount = [items count];
+    
+    if (itemCount == 0) {
         OBASSERT_NOT_REACHED("Delete toolbar item shouldn't have been enabled");
         return;
     }
     
     UIAlertController *deleteAlert = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-    deleteAlert.modalPresentationStyle = UIModalPresentationPopover;
-    UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:[self deleteDocumentTitle:selectedItemCount]
+    UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:[self _deleteDocumentTitle:itemCount]
                                                            style:UIAlertActionStyleDestructive
                                                          handler:^(UIAlertAction *action) {
-                                                                     [self _deleteWithoutConfirmation:selectedItems];
-                                                                 }];
+                                                             [self _deleteWithoutConfirmation:items];
+                                                         }];
     [deleteAlert addAction:deleteAction];
     [deleteAlert addAction:[UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUIDocument", OMNI_BUNDLE, @"delete confirmation cancel button") style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
         [deleteAlert dismissViewControllerAnimated:YES completion:nil];
     }]];
+    
+    deleteAlert.modalPresentationStyle = UIModalPresentationPopover;
+    
+    if ([sender isKindOfClass:[UIBarButtonItem class]]) {
     deleteAlert.popoverPresentationController.barButtonItem = sender;
+    }
+    else if ([sender isKindOfClass:[UIView class]]) {
+        deleteAlert.popoverPresentationController.sourceView = [(UIView *)sender superview];
+        deleteAlert.popoverPresentationController.sourceRect = [(UIView *)sender frame];
+    }
+    else {
+        deleteAlert.modalPresentationStyle = UIModalPresentationFullScreen;
+    }
+    
     [self presentViewController:deleteAlert animated:YES completion:^{
         deleteAlert.popoverPresentationController.passthroughViews = nil;
     }];
 }
 
-- (NSString *)printTitle;
-// overridden by Graffle to return "Print (landscape) or Print (portrait)"
+- (IBAction)deleteDocument:(id)sender;
 {
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    if ([delegate respondsToSelector:@selector(documentPicker:printButtonTitleForFileItem:)]) {
-        return [delegate documentPicker:_documentPicker printButtonTitleForFileItem:self.singleSelectedFileItem];
-    }
-    
-    return NSLocalizedStringFromTableInBundle(@"Print", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view");
+    [self _deleteItems:self.selectedItems sender:sender];
 }
 
-- (IBAction)move:(id)sender;
+- (void)_moveWithDidFinishHandler:(void (^)(void))didFinishHandler;
 {
     if (!self.canPerformActions)
         return;
     
     ODSScope *currentScope = self.selectedScope;
-
+    
     BOOL willAddNewFolder = currentScope.canCreateFolders;
     
     NSString *topLevelMenuTitle;
     NSMutableArray *topLevelMenuOptions = [NSMutableArray array];
-
+    
     // "Move" options
     NSMutableArray *moveOptions = [[NSMutableArray alloc] init];
-    NSString *moveMenuTitle = [self _menuTitleAfterAddingMoveOptions:moveOptions fromCurrentScope:currentScope willAddOtherOptions:willAddNewFolder];
+    NSString *moveMenuTitle = [self _menuTitleAfterAddingMoveOptions:moveOptions fromCurrentScope:currentScope];
     
     // Move submenu
     if (willAddNewFolder && [moveOptions count] > 0) {
@@ -1307,122 +940,16 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         menu.title = topLevelMenuTitle;
     menu.tintColor = self.navigationController.navigationBar.tintColor;
     menu.popoverPresentationController.barButtonItem = _moveBarButtonItem;
+    menu.didFinish = didFinishHandler;
     
     [self presentViewController:menu animated:YES completion:^{
         menu.popoverPresentationController.passthroughViews = nil;
     }];
 }
 
-- (IBAction)export:(id)sender;
+- (IBAction)move:(id)sender;
 {
-    if (!self.canPerformActions)
-        return;
-
-    ODSScope *currentScope = self.selectedScope;
-    ODSFileItem *exportableFileItem;
-    if (!currentScope.isTrash && self.selectedItemCount == 1 && !self.hasSelectedFolder) {
-        // Single file selected. Early out here if the file isn't downloaded. We *can* move undownloaded files with OmniPresence, but this gives the user an indication of why the other sharing operations aren't listed.
-        exportableFileItem = self.singleSelectedFileItem;
-        OBASSERT(exportableFileItem);
-        
-        // Make sure selected item is fully downloaded.
-        if (!exportableFileItem.isDownloaded) {
-            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:NSLocalizedStringFromTableInBundle(@"Cannot Export Item", @"OmniUIDocument", OMNI_BUNDLE, @"item not fully downloaded error title") message:NSLocalizedStringFromTableInBundle(@"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again.", @"OmniUIDocument", OMNI_BUNDLE, @"item not fully downloaded error message") preferredStyle:UIAlertControllerStyleAlert];
-            UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUIDocument", OMNI_BUNDLE, @"button title") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}];
-            [alertController addAction:okAction];
-
-            [self presentViewController:alertController animated:YES completion:^{}];
-            return;
-        }
-    }
-    
-    NSMutableArray *topLevelMenuOptions;
-    NSString *topLevelMenuTitle;
-    
-    if (!exportableFileItem) {
-        OBASSERT_NOT_REACHED("Should be disabled");
-        return;
-    } else {
-        // Single file export options
-        topLevelMenuTitle = NSLocalizedStringFromTableInBundle(@"Actions", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view");
-        topLevelMenuOptions = [[NSMutableArray alloc] init];
-        
-        id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-        
-        BOOL canExport = [[OFPreferenceWrapper sharedPreferenceWrapper] boolForKey:@"OUIExportEnabled"];
-        NSArray *availableExportTypes = [self availableExportTypesForFileItem:exportableFileItem serverAccount:nil exportOptionsType:OUIExportOptionsNone];
-        NSArray *availableImageExportTypes = [self availableImageExportTypesForFileItem:exportableFileItem];
-        BOOL canSendToCameraRoll = [delegate respondsToSelector:@selector(documentPicker:cameraRollImageForFileItem:)];
-        BOOL canPrint = [delegate respondsToSelector:@selector(documentPicker:printFileItem:fromButton:)] && [UIPrintInteractionController isPrintingAvailable];
-        BOOL canUseOpenIn = [self _canUseOpenInWithFileItem:exportableFileItem];
-        
-        OB_UNUSED_VALUE(availableExportTypes); // http://llvm.org/bugs/show_bug.cgi?id=11576 Use in block doesn't count as use to prevent dead store warning
-        
-        if ([MFMailComposeViewController canSendMail]) {
-            // All email options should go here (within the test for whether we can send email)
-            // more than one option? Display the 'export options sheet'
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send via Mail", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToMail" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
-                if (availableExportTypes.count > 0)
-                    [self emailDocumentChoice:self];
-                else
-                    [self emailDocument:self];
-            }]];
-        }
-        
-        if (canExport) {
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to WebDAV", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
-                [self exportDocument:self];
-            }]];
-            
-            if ([[OUIDocumentProviderPreferencesViewController shouldEnableDocumentProvidersPreference] boolValue]) {
-                [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Export to…", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemExportToWebDAV" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
-                    [self exportDocumentToService:self];
-                }]];
-            }
-        }
-        
-        if (canUseOpenIn) {
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to App", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToApp" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
-                [self sendToApp:self];
-            }]];
-        }
-        
-        if (availableImageExportTypes.count > 0) {
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Copy as Image", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemCopyAsImage" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
-                [self copyAsImage:self];
-            }]];
-        }
-        
-        if (canSendToCameraRoll) {
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:NSLocalizedStringFromTableInBundle(@"Send to Photos", @"OmniUIDocument", OMNI_BUNDLE, @"Menu option in the document picker view") image:[UIImage imageNamed:@"OUIMenuItemSendToPhotos" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
-                [self sendToCameraRoll:self];
-            }]];
-        }
-        
-        if (canPrint) {
-            NSString *printTitle = [self printTitle];
-            [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:printTitle image:[UIImage imageNamed:@"OUIMenuItemPrint" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] action:^{
-                [self printDocument:self];
-            }]];
-        }
-        
-        if ([delegate respondsToSelector:@selector(documentPicker:addExportActions:)]) {
-            [delegate documentPicker:_documentPicker addExportActions:^(NSString *title, UIImage *image, void (^action)(void)){
-                [topLevelMenuOptions addObject:[OUIMenuOption optionWithTitle:title image:image action:action]];
-            }];
-        }
-    }
-    
-    OUIMenuController *menu = [[OUIMenuController alloc] init];
-    menu.topOptions = topLevelMenuOptions;
-    if (topLevelMenuTitle)
-        menu.title = topLevelMenuTitle;
-    menu.tintColor = self.navigationController.navigationBar.tintColor;
-    menu.popoverPresentationController.barButtonItem = _exportBarButtonItem;
-    
-    [self presentViewController:menu animated:YES completion:^{
-        menu.popoverPresentationController.passthroughViews = nil;
-    }];
+    [self _moveWithDidFinishHandler:nil];
 }
 
 - (void)_addMoveToFolderOptions:(NSMutableArray *)options candidateParentFolder:(ODSFolderItem *)candidateParentFolder currentFolder:(ODSFolderItem *)currentFolder excludedTreeFolders:(NSSet *)excludedTreeFolders;
@@ -1464,279 +991,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
         OBASSERT(candidateParentFolder.depth > 0, "The root is depth zero, and top level items are depth 1");
         [options insertObject:option atIndex:startingOptionCount];
     }
-}
-
-- (IBAction)emailDocument:(id)sender;
-{
-    ODSFileItem *fileItem = self.singleSelectedFileItem;
-    if (!fileItem) {
-        OBASSERT_NOT_REACHED("button should have been disabled");
-        return;
-    }
-
-    NSData *documentData = [fileItem emailData];
-    NSString *documentFilename = [fileItem emailFilename];
-    OBFinishPortingLater("<bug:///75843> (Add a UTI property to ODSFileItem)");
-    NSString *documentType = OFUTIForFileExtensionPreferringNative([documentFilename pathExtension], nil); // NSString *documentType = [ODAVFileInfo UTIForFilename:documentFilename];
-    OBASSERT(documentType != nil); // UTI should be registered in the Info.plist under CFBundleDocumentTypes
-
-    [self _sendEmailWithSubject:[fileItem name] messageBody:nil isHTML:NO attachmentName:documentFilename data:documentData fileType:documentType];
-}
-
-- (BOOL)_canUseEmailBodyForExportType:(NSString *)exportType;
-{
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    return ![delegate respondsToSelector:@selector(documentPicker:canUseEmailBodyForType:)] || [delegate documentPicker:_documentPicker canUseEmailBodyForType:exportType];
-}
-
-- (void)sendEmailWithFileWrapper:(NSFileWrapper *)fileWrapper forExportType:(NSString *)exportType;
-{
-    ODSFileItem *fileItem = self.singleSelectedFileItem;
-    if (!fileItem) {
-        OBASSERT_NOT_REACHED("button should have been disabled");
-        return;
-    }
-    
-    if ([fileWrapper isDirectory]) {
-        NSDictionary *childWrappers = [fileWrapper fileWrappers];
-        if ([childWrappers count] == 1) {
-            NSFileWrapper *childWrapper = [childWrappers anyObject];
-            if ([childWrapper isRegularFile]) {
-                // File wrapper with just one file? Let's see if it's HTML which we can send as the message body (rather than as an attachment)
-                NSString *documentType = OFUTIForFileExtensionPreferringNative(childWrapper.preferredFilename.pathExtension, [NSNumber numberWithBool:childWrapper.isDirectory]);
-                if (OFTypeConformsTo(documentType, kUTTypeHTML)) {
-                    if ([self _canUseEmailBodyForExportType:exportType]) {
-                        NSString *messageBody = [[NSString alloc] initWithData:[childWrapper regularFileContents] encoding:NSUTF8StringEncoding];
-                        if (messageBody != nil) {
-                            [self _sendEmailWithSubject:fileItem.name messageBody:messageBody isHTML:YES attachmentName:nil data:nil fileType:nil];
-                            return;
-                        }
-                    } else {
-                        // Though we're not sending this as the HTML body, we really only need to attach the HTML itself
-                        // When we try to change the preferredFilename on the childWrapper we are getting a '*** Collection <NSConcreteHashTable: 0x58b59b0> was mutated while being enumerated.' error. Tim and I tried a few things to get past this but decided to create a new NSFileWrapper.
-                        NSFileWrapper *singleChildFileWrapper = [[NSFileWrapper alloc] initRegularFileWithContents:[childWrapper regularFileContents]];
-                        singleChildFileWrapper.preferredFilename = [fileWrapper.preferredFilename stringByAppendingPathExtension:[childWrapper.preferredFilename pathExtension]];
-                        fileWrapper = singleChildFileWrapper;
-                    }
-                }
-            }
-        }
-    }
-    
-    NSData *emailData;
-    NSString *emailType;
-    NSString *emailName;
-    if ([fileWrapper isRegularFile]) {
-        emailName = fileWrapper.preferredFilename;
-        emailType = exportType;
-        emailData = [fileWrapper regularFileContents];
-        
-        NSString *emailType = OFUTIForFileExtensionPreferringNative(fileWrapper.preferredFilename.pathExtension, nil);
-        if (OFTypeConformsTo(emailType, kUTTypePlainText)) {
-            // Plain text? Let's send that as the message body
-            if ([self _canUseEmailBodyForExportType:exportType]) {
-                NSString *messageBody = [[NSString alloc] initWithData:emailData encoding:NSUTF8StringEncoding];
-                if (messageBody != nil) {
-                    [self _sendEmailWithSubject:fileItem.name messageBody:messageBody isHTML:NO attachmentName:nil data:nil fileType:nil];
-                    return;
-                }
-            }
-        }
-    } else {
-        emailName = [fileWrapper.preferredFilename stringByAppendingPathExtension:@"zip"];
-        emailType = OFUTIForFileExtensionPreferringNative(@"zip", nil);
-        NSString *zipPath = [NSTemporaryDirectory() stringByAppendingPathComponent:emailName];
-        @autoreleasepool {
-            __autoreleasing NSError *error = nil;
-            if (![OUZipArchive createZipFile:zipPath fromFileWrappers:[NSArray arrayWithObject:fileWrapper] error:&error]) {
-                OUI_PRESENT_ERROR_FROM(error, self);
-                return;
-            }
-        };
-        __autoreleasing NSError *error = nil;
-        emailData = [NSData dataWithContentsOfFile:zipPath options:NSDataReadingMappedAlways error:&error];
-        if (emailData == nil) {
-            OUI_PRESENT_ERROR_FROM(error, self);
-            return;
-        }
-    }
-    
-    [self _sendEmailWithSubject:fileItem.name messageBody:nil isHTML:NO attachmentName:emailName data:emailData fileType:emailType];
-}
-
-- (void)emailExportType:(NSString *)exportType;
-{
-    @autoreleasepool {
-        [self exportFileWrapperOfType:exportType forFileItem:self.singleSelectedFileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
-            if (fileWrapper == nil) {
-                OUI_PRESENT_ERROR_FROM(error, self);
-                return;
-            }
-            [self sendEmailWithFileWrapper:fileWrapper forExportType:exportType];
-        }];
-    }
-}
-
-- (void)exportDocument:(id)sender;
-{
-    OUIImportExportAccountListViewController *accountList = [[OUIImportExportAccountListViewController alloc] initForExporting:YES];
-    accountList.title = NSLocalizedStringFromTableInBundle(@"Export", @"OmniUIDocument", OMNI_BUNDLE, @"export options title");
-    
-    UINavigationController *containingNavigationController = [[UINavigationController alloc] initWithRootViewController:accountList];
-    
-    accountList.finished = ^(OFXServerAccount *accountOrNil){
-        [containingNavigationController dismissViewControllerAnimated:YES completion:^{
-            if (!accountOrNil)
-                return;
-            
-            OUIExportOptionsController *exportController = [[OUIExportOptionsController alloc] initWithServerAccount:accountOrNil exportType:OUIExportOptionsExport];
-            
-            UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:exportController];
-            navController.modalPresentationStyle = UIModalPresentationFormSheet;
-            [self presentViewController:navController animated:YES completion:nil];
-            
-            // We don't actually have to provide the export controller with which item to export because it grabs our singleSelectedFileItem via the global document app controller! (Yes, it's crazy.)
-        }];
-    };
-    
-    containingNavigationController.modalPresentationStyle = UIModalPresentationFormSheet;
-    [self presentViewController:containingNavigationController animated:YES completion:nil];
-}
-
-- (void)exportDocumentToService:(id)sender;
-{
-    OUIExportOptionsController *exportOptionsController = [[OUIExportOptionsController alloc] initWithServerAccount:nil exportType:OUIExportOptionsSendToService];
-    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:exportOptionsController];
-    navController.modalPresentationStyle = UIModalPresentationFormSheet;
-    navController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    
-    [self presentViewController:navController animated:YES completion:nil];
-}
-
-- (void)emailDocumentChoice:(id)sender;
-{
-    OUIExportOptionsController *exportController = [[OUIExportOptionsController alloc] initWithServerAccount:nil exportType:OUIExportOptionsEmail];
-    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:exportController];
-    navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
-    navigationController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    
-    [self presentViewController:navigationController animated:YES completion:nil];
-    
-}
-
-- (void)sendToApp:(id)sender;
-{
-    OUIExportOptionsController *exportOptionsController = [[OUIExportOptionsController alloc] initWithServerAccount:nil exportType:OUIExportOptionsSendToApp];
-    UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:exportOptionsController];
-    navController.modalPresentationStyle = UIModalPresentationFormSheet;
-    navController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    
-    [self presentViewController:navController animated:YES completion:nil];
-}
-
-- (void)printDocument:(id)sender;
-{
-    ODSFileItem *fileItem = self.singleSelectedFileItem;
-    if (!fileItem) {
-        OBASSERT_NOT_REACHED("button should have been disabled");
-        return;
-    }
-
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    [delegate documentPicker:_documentPicker printFileItem:fileItem fromButton:_exportBarButtonItem];
-}
-
-- (void)copyAsImage:(id)sender;
-{
-    ODSFileItem *fileItem = self.singleSelectedFileItem;
-    if (!fileItem) {
-        OBASSERT_NOT_REACHED("button should have been disabled");
-        return;
-    }
-
-    UIPasteboard *pboard = [UIPasteboard generalPasteboard];
-    NSMutableArray *items = [NSMutableArray array];
-
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    BOOL canMakeCopyAsImageSpecificPDF = [delegate respondsToSelector:@selector(documentPicker:copyAsImageDataForFileItem:error:)];
-    BOOL canMakePDF = [delegate respondsToSelector:@selector(documentPicker:PDFDataForFileItem:error:)];
-    BOOL canMakePNG = [delegate respondsToSelector:@selector(documentPicker:PNGDataForFileItem:error:)];
-
-    //- (NSData *)documentPicker:(OUIDocumentPicker *)picker copyAsImageDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
-    if (canMakeCopyAsImageSpecificPDF) {
-        __autoreleasing NSError *error = nil;
-        NSData *pdfData = [delegate documentPicker:_documentPicker copyAsImageDataForFileItem:fileItem error:&error];
-        if (!pdfData)
-            OUI_PRESENT_ERROR_FROM(error, self);
-        else
-            [items addObject:[NSDictionary dictionaryWithObject:pdfData forKey:(id)kUTTypePDF]];
-    } else if (canMakePDF) {
-        __autoreleasing NSError *error = nil;
-        NSData *pdfData = [delegate documentPicker:_documentPicker PDFDataForFileItem:fileItem error:&error];
-        if (!pdfData)
-            OUI_PRESENT_ERROR_FROM(error, self);
-        else
-            [items addObject:[NSDictionary dictionaryWithObject:pdfData forKey:(id)kUTTypePDF]];
-    }
-    
-    // Don't put more than one image format on the pasteboard, because both will get pasted into iWork.  <bug://bugs/61070>
-    if (!canMakeCopyAsImageSpecificPDF &&!canMakePDF && canMakePNG) {
-        __autoreleasing NSError *error = nil;
-        NSData *pngData = [delegate documentPicker:_documentPicker PNGDataForFileItem:fileItem error:&error];
-        if (!pngData) {
-            OUI_PRESENT_ERROR_FROM(error, self);
-        }
-        else {
-            // -setImage: will register our image as being for the JPEG type. But, our image isn't a photo.
-            [items addObject:[NSDictionary dictionaryWithObject:pngData forKey:(id)kUTTypePNG]];
-        }
-    }
-    
-    // -setImage: also puts a title on the pasteboard, so we might as well. They append .jpg, but it isn't clear whether we should append .pdf or .png. Appending nothing.
-    NSString *title = fileItem.name;
-    if (![NSString isEmptyString:title])
-        [items addObject:[NSDictionary dictionaryWithObject:title forKey:(id)kUTTypeUTF8PlainText]];
-    
-    if ([items count] > 0)
-        pboard.items = items;
-    else
-        OBASSERT_NOT_REACHED("No items?");
-    
-    [self clearSelection:YES];
-}
-
-- (void)sendToCameraRoll:(id)sender;
-{
-    PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
-    if (status == PHAuthorizationStatusRestricted || status == PHAuthorizationStatusDenied) {
-        
-        NSDictionary *userInfo = @{
-                                   NSLocalizedDescriptionKey : NSLocalizedStringFromTableInBundle(@"Photo Library permission denied.", @"OmniUIDocument", OMNI_BUNDLE, @"Photo Library permisssions error description."),
-                                   NSLocalizedRecoverySuggestionErrorKey : NSLocalizedStringFromTableInBundle(@"This app does not have access to your Photo Library.", @"OmniUIDocument", OMNI_BUNDLE, @"Photo Library permisssions error suggestion.")
-                                   };
-
-        NSError *permissionError = [NSError errorWithDomain:OUIDocumentErrorDomain code:OUIPhotoLibraryAccessRestrictedOrDenied userInfo:userInfo];
-        OUI_PRESENT_ALERT_FROM(permissionError, self);
-        return;
-    }
-
-    ODSFileItem *fileItem = self.singleSelectedFileItem;
-    if (!fileItem) {
-        OBASSERT_NOT_REACHED("button should have been disabled");
-        return;
-    }
-
-    id <OUIDocumentPickerDelegate> delegate = _documentPicker.delegate;
-    UIImage *image = [delegate documentPicker:_documentPicker cameraRollImageForFileItem:fileItem];
-    OBASSERT(image); // There is no default implementation -- the delegate should return something.
-
-    if (image)
-        UIImageWriteToSavedPhotosAlbum(image, self, @selector(_sendToCameraRollImage:didFinishSavingWithError:contextInfo:), NULL);
-}
-
-- (void)_sendToCameraRollImage:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo;
-{
-    OUI_PRESENT_ERROR_FROM(error, self);
 }
 
 + (OFPreference *)scopePreference;
@@ -2029,8 +1283,35 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     return nameLabel;
 }
 
-#pragma mark -
-#pragma mark UIViewController subclass
+#pragma mark - OUIDocumentExporterHost protocol
+
+- (ODSFileItem *)fileItemToExport
+{
+    ODSFileItem *selectedItem = self.singleSelectedFileItem;
+    if (!selectedItem || !self.canPerformActions) {
+        return nil;
+    }
+    
+    // Make sure selected item is fully downloaded.
+    if (!selectedItem.isDownloaded) {
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:NSLocalizedStringFromTableInBundle(@"Cannot Export Item", @"OmniUIDocument", OMNI_BUNDLE, @"item not fully downloaded error title") message:NSLocalizedStringFromTableInBundle(@"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again.", @"OmniUIDocument", OMNI_BUNDLE, @"item not fully downloaded error message") preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"OK", @"OmniUIDocument", OMNI_BUNDLE, @"button title") style:UIAlertActionStyleDefault handler:^(UIAlertAction * __nonnull action) {}];
+        [alertController addAction:okAction];
+        
+        [self presentViewController:alertController animated:YES completion:^{}];
+        return nil;
+    }
+    
+    
+    return selectedItem;
+}
+
+- (UIColor *)tintColorForExportMenu
+{
+    return self.navigationController.navigationBar.tintColor;
+}
+
+#pragma mark - UIViewController subclass
 
 - (BOOL)automaticallyAdjustsScrollViewInsets;
 {
@@ -2260,21 +1541,71 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
     
     if ([item isKindOfClass:[ODSFileItem class]]) {
         ODSFileItem *fileItem = (ODSFileItem *)item;
-        NSURL *fileURL = fileItem.fileURL;
         
+        if (fileItem.isDownloaded == NO) {
+            return nil;
+        }
+        
+        NSURL *fileURL = fileItem.fileURL;
         Class cls = [[OUIDocumentAppController controller] documentClassForURL:fileURL];
         OBASSERT(OBClassIsSubclassOfClass(cls, [OUIDocument class]));
         
         OUIDocumentPreview *documentPreview = [OUIDocumentPreview makePreviewForDocumentClass:cls fileItem:fileItem withArea:OUIDocumentPreviewAreaLarge];
         
         OUIDocumentPreviewingViewController *documentPreviewingViewController = [[OUIDocumentPreviewingViewController alloc] initWithFileItem:fileItem preview:documentPreview];
+        if (self.canPerformActions) {
+            if (fileItem.scope.isTrash == NO) {
+                // Export
+                UIPreviewAction *exportAction = [UIPreviewAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Export…", @"OmniUIDocument", OMNI_BUNDLE, @"Export document preview action title.")
+                                                                           style:UIPreviewActionStyleDefault
+                                                                         handler:^(UIPreviewAction * _Nonnull action, UIViewController * _Nonnull previewViewController) {
+                                                                             [[OUIDocumentExporter exporterForViewController:self] exportItem:fileItem];
+                                                                         }];
+                [documentPreviewingViewController addPreviewAction:exportAction];
+                
+                if (fileItem.scope.isExternal == NO) {
+                    // Move
+                    UIPreviewAction *moveAction = [UIPreviewAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Move…", @"OmniUIDocument", OMNI_BUNDLE, @"Move document preview action title.")
+                                                                             style:UIPreviewActionStyleDefault
+                                                                           handler:^(UIPreviewAction * _Nonnull action, UIViewController * _Nonnull previewViewController) {
+                                                                               // The move menu acts on the selected items
+                                                                               [self setEditing:YES animated:YES];
+                                                                               _setItemSelectedAndBounceView(self, itemView, YES);
+                                                                               
+                                                                               [self _moveWithDidFinishHandler:^{
+                                                                                   [self setEditing:NO animated:NO];
+                                                                               }];
+                                                                           }];
+                    [documentPreviewingViewController addPreviewAction:moveAction];
+                }
+            }
+            
+            if ((fileItem.isDownloaded) && (fileItem.scope.isExternal == NO)) {
+                // Duplicte
+                UIPreviewAction *duplicateAction = [UIPreviewAction actionWithTitle:NSLocalizedStringFromTableInBundle(@"Duplicate", @"OmniUIDocument", OMNI_BUNDLE, @"Duplicate document preview action title.")
+                                                                              style:UIPreviewActionStyleDefault
+                                                                            handler:^(UIPreviewAction * _Nonnull action, UIViewController * _Nonnull previewViewController) {
+                                                                                [self _duplicateItemsWithoutConfirmation:[NSSet setWithObject:fileItem]];
+                                                                            }];
+                [documentPreviewingViewController addPreviewAction:duplicateAction];
+            }
+            
+            // Delete
+            NSSet <ODSItem *> *itemsToDelete = [NSSet <ODSItem *> setWithObject:fileItem];
+            UIPreviewAction *deleteAction = [UIPreviewAction actionWithTitle:[self _deleteDocumentTitle:itemsToDelete.count]
+                                                                       style:UIPreviewActionStyleDestructive
+                                                                     handler:^(UIPreviewAction * _Nonnull action, UIViewController * _Nonnull previewViewController) {
+                                                                         [self _deleteItems:itemsToDelete sender:itemView];
+                                                                     }];
+            [documentPreviewingViewController addPreviewAction:deleteAction];
+        }
         
         previewingContext.sourceRect = [self.view convertRect:itemView.frame fromView:self.mainScrollView];
         
         return documentPreviewingViewController;
     }
     else if ([item isKindOfClass:[ODSFolderItem class]]) {
-        // TODO: Will eventually provide a peek/pop, but not yet.
+        // TODO: Might eventually provide a peek/pop for folder items, but not yet.
         return nil;
     }
     
@@ -2340,16 +1671,6 @@ static NSString * const FilteredItemsBinding = @"filteredItems";
 - (UIKeyboardAppearance)keyboardAppearance;
 {
     return UIKeyboardAppearanceLight;
-}
-
-#pragma mark -
-#pragma mark MFMailComposeViewControllerDelegate
-
-- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error;
-{
-    [self clearSelection:YES];
-    
-    [controller.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark -
@@ -2461,8 +1782,16 @@ static void _setItemSelectedAndBounceView(OUIDocumentPickerViewController *self,
 
 - (void)documentPickerScrollView:(OUIDocumentPickerScrollView *)scrollView itemViewTapped:(OUIDocumentPickerItemView *)itemView;
 {
-    if (!self.canPerformActions || _renameSession) // Another rename might be starting (we don't have a spot to start/stop ignore user interaction there since the keyboard drives the animation).
+    if (!self.canPerformActions)
         return;
+    if (_renameSession){
+        if (_renameSession.itemView == itemView) {
+            [_renameSession endRenaming];
+            return;
+        } else {
+            return; // Another rename might be starting (we don't have a spot to start/stop ignore user interaction there since the keyboard drives the animation).
+        }
+    }
     
     ODSItem *item = itemView.item;
     if (self.editing) {
@@ -2475,7 +1804,7 @@ static void _setItemSelectedAndBounceView(OUIDocumentPickerViewController *self,
 
     if (_documentScope.isTrash) {
         NSMutableArray *options = [NSMutableArray new];
-        NSString *menuTitle = [self _menuTitleAfterAddingMoveOptions:options fromCurrentScope:_documentScope willAddOtherOptions:NO];
+        NSString *menuTitle = [self _menuTitleAfterAddingMoveOptions:options fromCurrentScope:_documentScope];
         
         // The move menu acts on the selected items
         [self setEditing:YES animated:YES];
@@ -2547,7 +1876,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     }
 }
 
-- (NSString *)_menuTitleAfterAddingMoveOptions:(NSMutableArray *)options fromCurrentScope:(ODSScope *)currentScope willAddOtherOptions:(BOOL)willAddOtherOptions;
+- (NSString *)_menuTitleAfterAddingMoveOptions:(NSMutableArray *)options fromCurrentScope:(ODSScope *)currentScope;
 {
     NSMutableArray *destinationScopes = [_documentStore.scopes mutableCopy];
     [destinationScopes removeObject:_documentStore.trashScope];
@@ -2906,8 +2235,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
     if (editing) {
         if (!_exportBarButtonItem) {
             // We keep pointers to a few toolbar items that we need to update enabledness on.
-            _exportBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIDocumentExport" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(export:)];
-            _exportBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Export", @"OmniUIDocument", OMNI_BUNDLE, @"Export toolbar item accessibility label.");
+            _exportBarButtonItem = [[OUIDocumentExporter exporterForViewController:self] barButtonItem];
             
             _moveBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"OUIMenuItemFolder" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(move:)];
             _moveBarButtonItem.accessibilityLabel = NSLocalizedStringFromTableInBundle(@"Move", @"OmniUIDocument", OMNI_BUNDLE, @"Move toolbar item accessibility label.");
@@ -3027,7 +2355,7 @@ static UIImage *ImageForScope(ODSScope *scope) {
             // Disable the export option while in the trash. We also don't support exporting multiple documents at the same time.
             BOOL canExport = !isViewingTrash && (singleSelectedFileItem != nil);
             if (canExport)
-                canExport = ([[self availableExportTypesForFileItem:singleSelectedFileItem serverAccount:nil exportOptionsType:OUIExportOptionsNone] count] > 0);
+                canExport = [[OUIDocumentExporter exporterForViewController:self] canExportFileItem:singleSelectedFileItem];
             
             BOOL canMove;
             if (isViewingTrash)
@@ -3195,6 +2523,10 @@ static UIImage *ImageForScope(ODSScope *scope) {
 -(void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator;
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    
+    if (_renameSession) {
+        [_renameSession endRenaming];
+    }
     
     if (!self.isTransitioningTraitCollection) {
         self.wasShowingTopControlsBeforeTransition = [self _isShowingTopControls];
@@ -3452,25 +2784,6 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
 #pragma mark - 
 
-- (void)_sendEmailWithSubject:(NSString *)subject messageBody:(NSString *)messageBody isHTML:(BOOL)isHTML attachmentName:(NSString *)attachmentFileName data:(NSData *)attachmentData fileType:(NSString *)fileType;
-{
-    MFMailComposeViewController *controller = [[MFMailComposeViewController alloc] init];
-    controller.mailComposeDelegate = self;
-    [controller setSubject:subject];
-    if (messageBody != nil)
-        [controller setMessageBody:messageBody isHTML:isHTML];
-    if (attachmentData != nil) {
-        NSString *mimeType = (NSString *)CFBridgingRelease(UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)fileType, kUTTagClassMIMEType));
-        OBASSERT(mimeType != nil); // The UTI's mime type should be registered in the Info.plist under UTExportedTypeDeclarations:UTTypeTagSpecification
-        if (mimeType == nil)
-            mimeType = @"application/octet-stream"; 
-
-        [controller addAttachmentData:attachmentData mimeType:mimeType fileName:attachmentFileName];
-    }
-    
-    [self presentViewController:controller animated:YES completion:nil];
-}
-
 - (void)_deleteWithoutConfirmation:(NSSet *)selectedItems;
 {
     BOOL controlsWereHiddenBeforeDeletion = self.mainScrollView.contentOffset.y >= self.mainScrollView.contentOffsetYToHideTopControls;
@@ -3504,30 +2817,6 @@ static UIImage *ImageForScope(ODSScope *scope) {
 #endif
 }
 
-- (NSMutableDictionary *)openInMapCache;
-{
-    if (_openInMapCache == nil) {
-        _openInMapCache = [NSMutableDictionary dictionary];
-    }
-    
-    return _openInMapCache;
-}
-
-
-- (BOOL)_canUseOpenInWithFileItem:(ODSFileItem *)fileItem;
-{
-    // Check current type.
-    OBFinishPortingLater("<bug:///75843> (Add a UTI property to ODSFileItem)");
-    NSString *fileType = OFUTIForFileExtensionPreferringNative(fileItem.fileURL.pathExtension, nil); // NSString *fileType = [ODAVFileInfo UTIForURL:fileItem.fileURL];
-    BOOL canUseOpenInWithCurrentType = [self _canUseOpenInWithExportType:fileType];
-    if (canUseOpenInWithCurrentType) {
-        return YES;
-    }
-    
-    NSArray *types = [self availableExportTypesForFileItem:fileItem serverAccount:nil exportOptionsType:OUIExportOptionsSendToApp];
-    return ([types count] > 0) ? YES : NO;
-}
-
 - (void)_applicationDidEnterBackground:(NSNotification *)note;
 {
     OBPRECONDITION(self.visibility == OUIViewControllerVisibilityVisible); // We only subscribe when we are visible
@@ -3537,9 +2826,6 @@ static UIImage *ImageForScope(ODSScope *scope) {
     if (self.editing && !self.presentedViewController) {
         [self setEditing:NO];
     }
-    
-    // Reset openInMapCache incase someone adds or delets an app.
-    [self.openInMapCache removeAllObjects];
 }
 
  - (void)_keyboardHeightWillChange:(NSNotification *)note;
@@ -3562,6 +2848,9 @@ static UIImage *ImageForScope(ODSScope *scope) {
 
 - (void)_startedRenamingInItemView:(OUIDocumentPickerItemView *)itemView;
 {
+    if (self.renameSession) {
+        return;  // because this will get called on any size change
+    }
     // Higher level code should have already checked this.
     OBPRECONDITION(_renameSession == nil);
     OBPRECONDITION(itemView);

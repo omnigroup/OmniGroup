@@ -34,6 +34,7 @@
 - (id)initWithDefaultInspectorControllerClass:(Class)controllerClass;
 - (void)invalidate;
 
++ (OIInspectionSet *)newInspectionSetForResponder:(NSResponder *)responder;
 - (void)updateInspectorForWindow:(NSWindow *)window;
 - (void)updateInspectionSetImmediatelyAndUnconditionallyForWindow:(NSWindow *)window;
 - (void)clearInspectionSet;
@@ -105,6 +106,13 @@
 @property (nonatomic, readonly) BOOL applicationDidFinishRestoringWindows;
 - (void)addGroupToShowAfterWindowRestoration:(OIInspectorGroup *)group;
 
+@end
+
+// Declare the part of OFControllerStatusObserver that we implement, so we can require subclasses to call super.
+#import <OmniFoundation/OFController.h>
+
+@interface OIInspectorRegistry () <OFControllerStatusObserver>
+- (void)controllerStartedRunning:(OFController *)controller NS_REQUIRES_SUPER;
 @end
 
 // In general, class methods in this category call through to their instance method counterparts on the shared registry

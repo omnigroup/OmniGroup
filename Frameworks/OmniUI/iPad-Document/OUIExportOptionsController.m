@@ -20,9 +20,8 @@
 #import <OmniUI/OUIOverlayView.h>
 #import <OmniUI/UIView-OUIExtensions.h>
 #import <OmniUIDocument/OUIDocumentAppController.h>
-#import <OmniUIDocument/OUIDocumentPicker.h>
-#import <OmniUIDocument/OUIDocumentPickerViewController.h>
 #import <OmniUnzip/OUZipArchive.h>
+#import <OmniUIDocument/OUIDocumentExporter.h>
 
 #import "OUIWebDAVSyncListController.h"
 #import "OUIExportOptionViewCell.h"
@@ -62,6 +61,7 @@ RCS_ID("$Id$")
 @implementation OUIExportOptionsController
 {
     OFXServerAccount *_serverAccount;
+    ODSFileItem *_fileItem;
     OUIExportOptionsType _exportType;
     
     // Model level objects to represent options in collection view.
@@ -71,6 +71,8 @@ RCS_ID("$Id$")
     CGRect _rectForExportOptionButtonChosen;
     
     BOOL _needsToCheckInAppPurchaseAvailability;
+    
+    OUIDocumentExporter *_exporter;
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
@@ -83,15 +85,16 @@ RCS_ID("$Id$")
     OBRejectUnusedImplementation(self, _cmd);
 }
 
-- (id)initWithServerAccount:(OFXServerAccount *)serverAccount exportType:(OUIExportOptionsType)exportType;
+- (id)initWithServerAccount:(OFXServerAccount *)serverAccount fileItem:(ODSFileItem *)fileItem exportType:(OUIExportOptionsType)exportType exporter:(OUIDocumentExporter *)exporter;
 {
     if (!(self = [super initWithNibName:@"OUIExportOptions" bundle:OMNI_BUNDLE]))
         return nil;
     
     self.automaticallyAdjustsScrollViewInsets = YES;
     _serverAccount = serverAccount;
+    _fileItem = fileItem;
     _exportType = exportType;
-    
+    _exporter = exporter;
     return self;
 }
 
@@ -132,10 +135,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 {
     [super viewWillAppear:animated];
 
-    OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
-    ODSFileItem *fileItem = picker.singleSelectedFileItem;
-    OBASSERT(fileItem != nil);
-    NSString *docName = fileItem.name;
+    NSString *docName = _fileItem.name;
     
     NSString *actionDescription = nil;
     switch (_exportType) {
@@ -214,7 +214,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 
 #pragma mark - API
 
-- (void)exportFileWrapper:(NSFileWrapper *)fileWrapper;
+- (void)_exportFileWrapper:(NSFileWrapper *)fileWrapper;
 {
     [self _foreground_enableInterfaceAfterExportConversion];
     
@@ -257,12 +257,10 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     
     OUIExportOption *selectedOption = _exportOptions[indexPath.item];
     
+
+    NSArray *inAppPurchaseExportTypes = [_exporter availableInAppPurchaseExportTypesForFileItem:_fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
     
     NSString *storeIdentifier = nil;
-    OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
-    ODSFileItem *fileItem = picker.singleSelectedFileItem;
-    OBASSERT(fileItem != nil);
-    NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
     if ([inAppPurchaseExportTypes count] > 0) {
         OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
         storeIdentifier = [inAppPurchaseExportTypes objectAtIndex:0];
@@ -292,7 +290,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
             OBASSERT_NOT_REACHED("We shouldn't have built a file wrapper if we're not exporting");
             break;
         case OUIExportOptionsExport:
-            [self exportFileWrapper:fileWrapper];
+            [self _exportFileWrapper:fileWrapper];
             break;
         case OUIExportOptionsEmail:
             OBASSERT_NOT_REACHED("The email option takes another path: -_performActionForExportOption: calls -_foreground_emailExportOfType: directly");
@@ -389,15 +387,14 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 {
     OBPRECONDITION([NSThread isMainThread]);
     @autoreleasepool {
-        OUIDocumentPickerViewController *documentPickerController = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
-        ODSFileItem *fileItem = documentPickerController.singleSelectedFileItem;
-        if (!fileItem) {
+
+        if (!_fileItem) {
             OBASSERT_NOT_REACHED("no selected document");
             [self _foreground_enableInterfaceAfterExportConversion];
             return;
         }
         
-        [documentPickerController exportFileWrapperOfType:fileType forFileItem:fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
+        [_exporter exportFileWrapperOfType:fileType forFileItem:_fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
             // Need to make sure all of this happens on the main thread.
             main_async(^{
                 if (fileWrapper == nil) {
@@ -469,8 +466,7 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     
     if (fileWrapper) {
         [self.navigationController dismissViewControllerAnimated:YES completion:^{
-            OUIDocumentPickerViewController *documentPicker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
-            [documentPicker sendEmailWithFileWrapper:fileWrapper forExportType:exportType];
+            [_exporter sendEmailWithFileWrapper:fileWrapper forExportType:exportType fileName:_fileItem.name];
         }];
     }
 }
@@ -480,23 +476,23 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
     OBPRECONDITION([NSThread isMainThread]);
     
     @autoreleasepool {
+
         if (OFISNULL(exportType)) {
             // The fileType being null means that the user selected the OO3 file. This does not require a conversion.
             [self.navigationController dismissViewControllerAnimated:YES completion:^{
-                [[[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController] emailDocument:nil];
+                [_exporter emailFileItem:_fileItem];
             }];
             return;
         }
         
-        OUIDocumentPickerViewController *documentPicker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
-        ODSFileItem *fileItem = documentPicker.singleSelectedFileItem;
-        if (!fileItem) {
+
+        if (!_fileItem) {
             OBASSERT_NOT_REACHED("no selected document");
             [self _foreground_enableInterfaceAfterExportConversion];
             return;
         }
         
-        [documentPicker exportFileWrapperOfType:exportType forFileItem:fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
+        [_exporter exportFileWrapperOfType:exportType forFileItem:_fileItem withCompletionHandler:^(NSFileWrapper *fileWrapper, NSError *error) {
             if (fileWrapper == nil) {
                 OUI_PRESENT_ERROR_FROM(error, self);
                 [self _foreground_enableInterfaceAfterExportConversion];
@@ -526,18 +522,17 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 - (void)_performActionForInAppPurchaseExportOption:(id)sender;
 {
     _needsToCheckInAppPurchaseAvailability = YES;
-    OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_reloadExportTypes:) name:OUIInAppStoreViewControllerUpgradeInstalledNotification object:nil];
     
     if ([sender isKindOfClass:[OUIExportOption class]]) {
         OUIExportOption *option = (OUIExportOption *)sender;
-        [picker purchaseExportType:option.exportType navigationController:self.navigationController];
+        [_exporter purchaseExportType:option.exportType navigationController:self.navigationController];
     } else if (sender == _inAppPurchaseButton) {
-        ODSFileItem *fileItem = picker.singleSelectedFileItem;
-        NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
+        NSArray *inAppPurchaseExportTypes = [_exporter availableInAppPurchaseExportTypesForFileItem:_fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
         OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
         NSString *exportType = [inAppPurchaseExportTypes objectAtIndex:0];
-        [picker purchaseExportType:exportType navigationController:self.navigationController];
+        [_exporter purchaseExportType:exportType navigationController:self.navigationController];
     } else {
         OBASSERT_NOT_REACHED("unknown sender");
     }
@@ -546,13 +541,9 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 - (void)_reloadExportTypes;
 {
     
-    OUIDocumentPickerViewController *picker = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
-    
-    ODSFileItem *fileItem = picker.singleSelectedFileItem;
-    
     [_exportOptions removeAllObjects];
     
-    NSArray *exportTypes = [picker availableExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
+    NSArray *exportTypes = [_exporter availableExportTypesForFileItem:_fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
     for (NSString *exportType in exportTypes) {
         
         UIImage *iconImage = nil;
@@ -561,19 +552,19 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
         
         if (OFISNULL(exportType)) {
             // NOTE: Adding the native type first with a null (instead of a its non-null actual type) is important for doing exports of documents exactly as they are instead of going through the exporter. Ideally both cases would be the same, but in OO/iPad the OO3 "export" path (as opposed to normal "save") has the ability to strip hidden columns, sort sorts, calculate summary values and so on for the benefit of the XSL-based exporters. If we want "export" to the OO file format to not perform these transformations, we'll need to add flags on the OOXSLPlugin to say whether the target wants them pre-applied or not.
-            NSURL *documentURL = fileItem.fileURL;
+            NSURL *documentURL = _fileItem.fileURL;
             OBFinishPortingLater("<bug:///75843> (Add a UTI property to ODSFileItem)");
             NSString *fileUTI = OFUTIForFileExtensionPreferringNative([documentURL pathExtension], nil); // NSString *fileUTI = [ODAVFileInfo UTIForURL:documentURL];
-            iconImage = [picker exportIconForUTI:fileUTI];
+            iconImage = [_exporter exportIconForUTI:fileUTI];
             
-            label = [picker exportLabelForUTI:fileUTI];
+            label = [_exporter exportLabelForUTI:fileUTI];
             if (label == nil) {
                 label = [[documentURL path] pathExtension];
             }
         }
         else {
-            iconImage = [picker exportIconForUTI:exportType];
-            label = [picker exportLabelForUTI:exportType];
+            iconImage = [_exporter exportIconForUTI:exportType];
+            label = [_exporter exportLabelForUTI:exportType];
         }
         
         OUIExportOption *option = [[OUIExportOption alloc] init];
@@ -584,12 +575,12 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
         [_exportOptions addObject:option];
     }
     
-    NSArray *inAppPurchaseExportTypes = [picker availableInAppPurchaseExportTypesForFileItem:fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
+    NSArray *inAppPurchaseExportTypes = [_exporter availableInAppPurchaseExportTypesForFileItem:_fileItem serverAccount:_serverAccount exportOptionsType:_exportType];
     if ([inAppPurchaseExportTypes count] > 0) {
         OBASSERT([inAppPurchaseExportTypes count] == 1);    // only support for one in-app export type
         NSString *exportType = [inAppPurchaseExportTypes objectAtIndex:0];
         
-        NSString *label = [picker purchaseDescriptionForExportType:exportType];
+        NSString *label = [_exporter purchaseDescriptionForExportType:exportType];
         NSString *purchaseNowLocalized = NSLocalizedStringFromTableInBundle(@"Purchase Now.", @"OmniUIDocument", OMNI_BUNDLE, @"purchase now button title");
         NSString *buttonTitle = [NSString stringWithFormat:@"%@ %@", label, purchaseNowLocalized];
         [_inAppPurchaseButton setTitle:buttonTitle forState:UIControlStateNormal];
@@ -613,9 +604,8 @@ static NSString * const exportOptionCellReuseIdentifier = @"exportOptionCell";
 
 - (void)documentInteractionController:(UIDocumentInteractionController *)controller willBeginSendingToApplication:(NSString *)application;
 {
-    OUIDocumentPickerViewController *documentPickerController = [[[OUIDocumentAppController controller] documentPicker] selectedScopeViewController];
     main_async(^{
-        [documentPickerController clearSelection:YES];
+        [_exporter clearSelection];
     });
     [self dismissViewControllerAnimated:NO completion:nil];
 }

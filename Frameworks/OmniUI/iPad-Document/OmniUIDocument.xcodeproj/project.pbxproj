@@ -365,6 +365,7 @@
 		3458F1211B5D75DF000011A6 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1201B5D75DF000011A6 /* ImageIO.framework */; };
 		3458F1231B5D75EC000011A6 /* OmniAppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1221B5D75EC000011A6 /* OmniAppKit.framework */; };
 		3458F1251B5D75F3000011A6 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3458F1241B5D75F3000011A6 /* MessageUI.framework */; };
+		3470A40D1BDEC0AF00D14049 /* OmniUIDocument.h in Headers */ = {isa = PBXBuildFile; fileRef = 3470A40C1BDEC0AF00D14049 /* OmniUIDocument.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		423F4FA91BD6DC8B0038F957 /* OmniUIDocumentKeycommands.strings in Resources */ = {isa = PBXBuildFile; fileRef = 423F4FAB1BD6DC8B0038F957 /* OmniUIDocumentKeycommands.strings */; };
 		428A2C221B87B1B10020C024 /* OUIDocument-PPTX-Compact.png in Resources */ = {isa = PBXBuildFile; fileRef = 428A2C191B87B1B10020C024 /* OUIDocument-PPTX-Compact.png */; };
 		428A2C231B87B1B10020C024 /* OUIDocument-PPTX-Compact@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 428A2C1A1B87B1B10020C024 /* OUIDocument-PPTX-Compact@2x.png */; };
@@ -376,6 +377,8 @@
 		428A2C291B87B1B10020C024 /* OUIDocument-PPTX@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 428A2C201B87B1B10020C024 /* OUIDocument-PPTX@2x.png */; };
 		428A2C2A1B87B1B10020C024 /* OUIDocument-PPTX@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 428A2C211B87B1B10020C024 /* OUIDocument-PPTX@3x.png */; };
 		6C34CDC81B73DB1200692269 /* CoreSpotlight.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C34CDC71B73DB1200692269 /* CoreSpotlight.framework */; };
+		FB847DAF1BED5C65004E6BD7 /* OUIDocumentExporter.h in Headers */ = {isa = PBXBuildFile; fileRef = FB847DAD1BED5C65004E6BD7 /* OUIDocumentExporter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB847DB01BED5C65004E6BD7 /* OUIDocumentExporter.m in Sources */ = {isa = PBXBuildFile; fileRef = FB847DAE1BED5C65004E6BD7 /* OUIDocumentExporter.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -630,6 +633,8 @@
 		3458F1221B5D75EC000011A6 /* OmniAppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OmniAppKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3458F1241B5D75F3000011A6 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		346BF491179495E800E6890A /* OmniUIDocument.keycommands */ = {isa = PBXFileReference; explicitFileType = text.plist; fileEncoding = 4; path = OmniUIDocument.keycommands; sourceTree = SOURCE_ROOT; };
+		3470A40C1BDEC0AF00D14049 /* OmniUIDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUIDocument.h; sourceTree = SOURCE_ROOT; };
+		3470A40E1BDEC0F000D14049 /* OmniUIDocument.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = OmniUIDocument.modulemap; sourceTree = SOURCE_ROOT; };
 		34C1BC01179DD5600095744C /* OUIErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIErrors.h; sourceTree = SOURCE_ROOT; };
 		34C1BC02179DD5600095744C /* OUIErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIErrors.m; sourceTree = SOURCE_ROOT; };
 		34CA25CB1A5DA282000FBEC1 /* OmniPresenceToolbarIcon-Active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniPresenceToolbarIcon-Active.png"; sourceTree = "<group>"; };
@@ -816,6 +821,8 @@
 		AB69E3FC19D2228900F31468 /* OUIToolbarTitleDisclosureButton@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarTitleDisclosureButton@3x.png"; sourceTree = "<group>"; };
 		ABC8940D1A0AB2B500AF92D8 /* OUIToolbarDocumentClose@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarDocumentClose@2x.png"; sourceTree = "<group>"; };
 		ABC8940E1A0AB2B500AF92D8 /* OUIToolbarDocumentClose@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OUIToolbarDocumentClose@3x.png"; sourceTree = "<group>"; };
+		FB847DAD1BED5C65004E6BD7 /* OUIDocumentExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OUIDocumentExporter.h; sourceTree = SOURCE_ROOT; };
+		FB847DAE1BED5C65004E6BD7 /* OUIDocumentExporter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OUIDocumentExporter.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1172,6 +1179,8 @@
 			isa = PBXGroup;
 			children = (
 				342F48C8167799AC007C5FFB /* OmniUIDocument_Prefix.h */,
+				3470A40C1BDEC0AF00D14049 /* OmniUIDocument.h */,
+				3470A40E1BDEC0F000D14049 /* OmniUIDocument.modulemap */,
 				34C1BC01179DD5600095744C /* OUIErrors.h */,
 				34C1BC02179DD5600095744C /* OUIErrors.m */,
 				3416F25A1757B83B0093B4DA /* OmniUIDocument.defaults */,
@@ -1415,6 +1424,8 @@
 				342F490816779B89007C5FFB /* OUIDocument-Internal.h */,
 				342F490916779B89007C5FFB /* OUIDocument.h */,
 				342F490A16779B89007C5FFB /* OUIDocument.m */,
+				FB847DAD1BED5C65004E6BD7 /* OUIDocumentExporter.h */,
+				FB847DAE1BED5C65004E6BD7 /* OUIDocumentExporter.m */,
 			);
 			name = Document;
 			sourceTree = "<group>";
@@ -1453,6 +1464,7 @@
 				3458F0501B5D7026000011A6 /* OUIDocumentPickerViewController.h in Headers */,
 				3458F08E1B5D70B1000011A6 /* OUIFullWidthNavigationItemTitleView.h in Headers */,
 				3458F0541B5D7026000011A6 /* OUIDocumentSubfolderAnimator.h in Headers */,
+				FB847DAF1BED5C65004E6BD7 /* OUIDocumentExporter.h in Headers */,
 				3458F0581B5D7026000011A6 /* OUIDocumentPickerFileItemView.h in Headers */,
 				3458F05A1B5D7026000011A6 /* OUIDocumentPickerFilter.h in Headers */,
 				3458F0641B5D7026000011A6 /* OUIDocumentPickerScrollView.h in Headers */,
@@ -1464,6 +1476,7 @@
 				3458F0431B5D7018000011A6 /* OUIDocument.h in Headers */,
 				3458F0451B5D7026000011A6 /* OUIDocumentPicker.h in Headers */,
 				3458EF441B5D6FB3000011A6 /* OUIDocumentParameters.h in Headers */,
+				3470A40D1BDEC0AF00D14049 /* OmniUIDocument.h in Headers */,
 				3458F06A1B5D7064000011A6 /* OUIDocumentPreviewView.h in Headers */,
 				3458F05E1B5D7026000011A6 /* OUIDocumentPickerItemMetadataView.h in Headers */,
 				3458F0661B5D7064000011A6 /* OUIDocumentPreview.h in Headers */,
@@ -1499,7 +1512,7 @@
 		342F48B8167799AC007C5FFB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = "The Omni Group";
 				TargetAttributes = {
 					3458EF301B5D6ED0000011A6 = {
@@ -1849,6 +1862,7 @@
 				3458F0471B5D7026000011A6 /* OUIDocumentPicker.m in Sources */,
 				3458F0961B5D70E1000011A6 /* OmniUIDocumentAppearance.m in Sources */,
 				3458F05D1B5D7026000011A6 /* OUIDocumentPickerGroupItemView.m in Sources */,
+				FB847DB01BED5C65004E6BD7 /* OUIDocumentExporter.m in Sources */,
 				3458F04A1B5D7026000011A6 /* OUIDocumentPickerAdaptableContainerViewController.m in Sources */,
 				3458F07C1B5D7078000011A6 /* OUIFileListViewController.m in Sources */,
 				3458F0531B5D7026000011A6 /* OUIDocumentCreationTemplatePickerViewController.m in Sources */,
@@ -1904,6 +1918,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 342F48F316779A46007C5FFB /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1.0;
 				GCC_DYNAMIC_NO_PIC = NO;
 			};
 			name = Debug;
@@ -1912,6 +1927,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 342F48F416779A46007C5FFB /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1.0;
 			};
 			name = Release;
 		};
@@ -1921,8 +1937,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUIDocument;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(OMNI_BUNDLE_IDENTIFIER)";
+				MODULEMAP_FILE = OmniUIDocument.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUIDocument;
 				PRODUCT_NAME = OmniUIDocument;
 			};
 			name = Debug;
@@ -1933,8 +1949,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUIDocument;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(OMNI_BUNDLE_IDENTIFIER)";
+				MODULEMAP_FILE = OmniUIDocument.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniUIDocument;
 				PRODUCT_NAME = OmniUIDocument;
 			};
 			name = Release;

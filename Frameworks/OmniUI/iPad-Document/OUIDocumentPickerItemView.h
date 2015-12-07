@@ -28,11 +28,11 @@ typedef enum {
  */
 @interface OUIDocumentPickerItemView : UIControl
 
-@property(retain,nonatomic) ODSItem *item; // either a file or group
+@property(nonatomic,retain) ODSItem *item; // either a file or group
+@property(nonatomic,retain) IBOutlet UIImageView *statusImageView;
+@property(nonatomic,retain) IBOutlet UIView *contentView; // Subclasses should add OUIDocumentPreviewView instances as subviews. Previews are assigned by tag; the lowest tag gets the first preview, etc. They can do this in -layoutSubviews, or in -init.
 
-@property(readonly) UIView *contentView; // Subclasses should add OUIDocumentPreviewView instances as subviews. Previews are assigned by tag; the lowest tag gets the first preview, etc. They can do this in -layoutSubviews, or in -init.
-
-@property(readonly,nonatomic) OUIDocumentPickerItemMetadataView *metadataView;
+@property(readonly,nonatomic) IBOutlet OUIDocumentPickerItemMetadataView *metadataView;
 @property(nonatomic,readonly) OUIDocumentPreviewArea previewArea;
 @property(assign,nonatomic) OUIDocumentPickerItemViewDraggingState draggingState;
 
@@ -41,6 +41,8 @@ typedef enum {
 @property(nonatomic,assign) double progress;
 @property(nonatomic,assign) BOOL isReadOnly;
 @property(nonatomic,assign) BOOL isSmallSize;
+@property(nonatomic,retain) IBOutlet NSLayoutConstraint *metaDataBigHeight;
+@property(nonatomic,retain) IBOutlet NSLayoutConstraint *metaDataSmallHeight;
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 
@@ -49,5 +51,7 @@ typedef enum {
 - (void)startRenaming;
 
 - (void)bounceDown;
+- (void)detachMetaDataView;
+- (void)reattachMetaDataView;
 
 @end

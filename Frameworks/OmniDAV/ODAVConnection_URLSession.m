@@ -23,7 +23,7 @@ RCS_ID("$Id$")
     NSOperationQueue *_delegateQueue;
     
     // Accessed both on the delegate queue and on calling queues that are making new requests, so access to this needs to be serialized.
-    NSMutableDictionary *_locked_runningOperationByTask;
+    NSMutableDictionary<NSURLSessionTask *, ODAVOperation *> *_locked_runningOperationByTask;
 }
 
 - initWithSessionConfiguration:(ODAVConnectionConfiguration *)configuration baseURL:(NSURL *)baseURL;

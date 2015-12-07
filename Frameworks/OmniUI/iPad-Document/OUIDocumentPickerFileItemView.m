@@ -28,9 +28,22 @@ static id _commonInit(OUIDocumentPickerFileItemView *self)
     
     UIView *contentView = self.contentView;
     OUIDocumentPreviewView *previewView = [[OUIDocumentPreviewView alloc] initWithFrame:contentView.bounds];
-    previewView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+    previewView.translatesAutoresizingMaskIntoConstraints = self.translatesAutoresizingMaskIntoConstraints;
     [contentView addSubview:previewView];
-
+    if (self.translatesAutoresizingMaskIntoConstraints) {
+        previewView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+    } else {
+        NSMutableArray *constraints = [NSMutableArray array];
+        [constraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[previewView]|"
+                                                                                 options:kNilOptions
+                                                                                 metrics:nil
+                                                                                   views:NSDictionaryOfVariableBindings(previewView)]];
+        [constraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[previewView]|"
+                                                                                 options:kNilOptions
+                                                                                 metrics:nil
+                                                                                   views:NSDictionaryOfVariableBindings(previewView)]];
+        [NSLayoutConstraint activateConstraints:constraints];
+    }
     return self;
 }
 

@@ -171,7 +171,7 @@ static id _commonInit(OUIColorSwatch *self)
         
     } else {
         [_borderColor() set];
-        UIBezierPath *path = [UIBezierPath bezierPath];
+        path = [UIBezierPath bezierPath];
         CGRect noColorRect = CGRectInset(interiorRect, 5.0f, 5.0f);
         [path moveToPoint:(CGPoint){ .x = MAX(0.0f, CGRectGetMinX(noColorRect)), .y = MAX(0.0, CGRectGetMaxY(noColorRect)), }];
         [path addLineToPoint:(CGPoint){ .x = CGRectGetMaxX(noColorRect), .y = CGRectGetMinY(noColorRect), }];

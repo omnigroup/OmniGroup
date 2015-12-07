@@ -13,6 +13,7 @@
 #import <OmniFileStore/OFSDocumentKey.h>
 #import <OmniFileStore/OFSSegmentedEncryption.h>
 #import <OmniFileStore/OFSFileByteAcceptor.h>
+#import <OmniFileStore/Errors.h>
 
 RCS_ID("$Id$");
 
@@ -84,7 +85,7 @@ static const char *thing3 = "Thing three\n";
     OFSDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey reset];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
     
     NSMutableData *backing = [NSMutableData data];
     size_t prefixLen;
@@ -125,7 +126,7 @@ static const char *thing3 = "Thing three\n";
     OFSDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey reset];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
     
     
     NSString *fpath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFSEncryptionTests-test2"];
@@ -236,7 +237,7 @@ static BOOL checkLongBlob(const char *ident, NSRange blobR, const char *found, N
     OFSDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey reset];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
     
     
     NSString *fpath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFSEncryptionTests-test2Large"];
@@ -316,7 +317,7 @@ static void wrXY(char *into, int x, int y)
     OFSDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey reset];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
     
     
     NSString *fpath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"OFSEncryptionTests-test3Large"];
@@ -403,10 +404,10 @@ static void wrXY(char *into, int x, int y)
     OFSDocumentKey *docKey, *otherDocKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey reset];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
     
     OBShouldNotError(otherDocKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [otherDocKey reset];
+    [otherDocKey discardKeysExceptSlots:nil retireCurrent:YES];
     
     for (int whichCiphertext = 0; whichCiphertext < 3; whichCiphertext ++) {
         NSData *plaintext, *ciphertext, *decrypted;
@@ -465,7 +466,7 @@ static void wrXY(char *into, int x, int y)
     OFSDocumentKey *docKey;
     
     OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
-    [docKey reset];
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
     
 
     for (unsigned  npages = 1; npages < 4; npages ++) {
@@ -497,5 +498,146 @@ static void wrXY(char *into, int x, int y)
     }
 }
 
+- (void)testRollover
+{
+    OFSDocumentKey *docKey, *intermediateDocKey, *otherDocKey, *futureDocKey;
+    NSData *intermediateData = nil;
+    NSIndexSet *intermediateIndices;
+    NSError * __autoreleasing error = nil;
+    NSString *passwd = @"pass blah";
+    const char *sekrit = "DOOMDOOMDOOMDOOM";
+    
+    OBShouldNotError(docKey = [[OFSDocumentKey alloc] initWithData:nil error:&error]);
+    [docKey discardKeysExceptSlots:nil retireCurrent:YES];
+
+    OBShouldNotError([docKey setPassword:passwd error:&error]);
+    
+    /* Generate a bunch of wrapped keys, keeping track of the slot numbers they have */
+    NSMutableArray *keyblobs = [NSMutableArray array];
+    NSMutableIndexSet *indices = [NSMutableIndexSet indexSet];
+    for(int i = 0; i < 25; i ++) {
+        for(int j = 0; j < 2; j++) {
+            NSData *kb;
+            OBShouldNotError(kb = [docKey wrapFileKey:(const void *)sekrit length:16 error:&error]);
+            [keyblobs addObject:kb];
+            uint16_t theIndex = OSReadBigInt16([kb bytes], 0);
+            if (j == 0) {
+                XCTAssertFalse([indices containsIndex:theIndex]);
+                [indices addIndex:theIndex];
+            } else {
+                XCTAssertTrue([indices containsIndex:theIndex]);
+            }
+        }
+        
+        if (i == 10) {
+            intermediateData = [docKey data];
+            intermediateIndices = [indices copy];
+        }
+        
+        [docKey discardKeysExceptSlots:indices retireCurrent:YES];
+    }
+    
+    XCTAssertNotNil(intermediateData);
+    
+    /* Verify that the wrapped keys can all be unwrapped by a doc key restored from saved state, but that a doc key restored from an earlier state can only unwrap the keys it should be able to unwrap */
+    OBShouldNotError(otherDocKey = [[OFSDocumentKey alloc] initWithData:[docKey data] error:&error]);
+    OBShouldNotError([otherDocKey deriveWithPassword:passwd error:&error]);
+    OBShouldNotError(intermediateDocKey = [[OFSDocumentKey alloc] initWithData:intermediateData error:&error]);
+    OBShouldNotError([intermediateDocKey deriveWithPassword:passwd error:&error]);
+    for(NSData *kb in keyblobs) {
+        uint16_t thisBlobIndex = OSReadBigInt16([kb bytes], 0);
+        uint8_t obuf[32];
+        ssize_t unw;
+        
+        /* Should succeed */
+        memset(obuf, '*', 32);
+        error = nil;
+        unw = [otherDocKey unwrapFileKey:[kb bytes] length:[kb length] into:obuf length:sizeof(obuf) error:&error];
+        XCTAssertTrue(unw == 16, @"outError = %@", error);
+        if (unw != 16)
+            break;
+        XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);
+        
+        /* Should succeed */
+        memset(obuf, '*', 32);
+        error = nil;
+        unw = [docKey unwrapFileKey:[kb bytes] length:[kb length] into:obuf length:sizeof(obuf) error:&error];
+        XCTAssertTrue(unw == 16, @"outError = %@", error);
+        if (unw != 16)
+            break;
+        XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);
+
+        /* May succeed or fail */
+        memset(obuf, '*', 32);
+        error = nil;
+        unw = [intermediateDocKey unwrapFileKey:[kb bytes] length:[kb length] into:obuf length:sizeof(obuf) error:&error];
+        if ([intermediateIndices containsIndex:thisBlobIndex]) {
+            XCTAssertTrue(unw == 16, @"outError = %@", error);
+            if (unw != 16)
+                break;
+            XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);
+        } else {
+            XCTAssertTrue(unw < 0);
+            if (unw < 0) {
+                XCTAssertTrue([[error domain] isEqualToString:OFSErrorDomain] && [error code] == OFSEncryptionNeedAuth,
+                              @"outError = %@", error);
+            }
+        }
+    }
+    
+    /* And generate a doc key in The Future sometime with some garbage-collected keys */
+    NSMutableIndexSet *keptSlots = [NSMutableIndexSet indexSet];
+    [indices enumerateIndexesUsingBlock:^(NSUInteger keyslot, BOOL *stop){
+        if (OFRandomNext32() % 3 == 0) {
+            [keptSlots addIndex:keyslot];
+        }
+    }];
+    
+    /* Check that behavior */
+    [docKey discardKeysExceptSlots:keptSlots retireCurrent:NO];
+    OBShouldNotError(futureDocKey = [[OFSDocumentKey alloc] initWithData:[docKey data] error:&error]);
+    OBShouldNotError([futureDocKey deriveWithPassword:passwd error:&error]);
+    for(NSData *kb in keyblobs) {
+        uint16_t thisBlobIndex = OSReadBigInt16([kb bytes], 0);
+        uint8_t obuf[32];
+        ssize_t unw;
+        
+        memset(obuf, '*', 32);
+        error = nil;
+        unw = [docKey unwrapFileKey:[kb bytes] length:[kb length] into:obuf length:sizeof(obuf) error:&error];
+        if ([keptSlots containsIndex:thisBlobIndex]) {
+            /* Should succeed */
+            XCTAssertTrue(unw == 16, @"outError = %@", error);
+            if (unw != 16)
+                break;
+            XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);
+        } else {
+            /* Should fail */
+            XCTAssertTrue(unw < 0);
+            if (unw < 0) {
+                XCTAssertTrue([[error domain] isEqualToString:OFSErrorDomain] && [error code] == OFSEncryptionNeedAuth,
+                              @"outError = %@", error);
+            }
+        }
+        
+        memset(obuf, '*', 32);
+        error = nil;
+        unw = [futureDocKey unwrapFileKey:[kb bytes] length:[kb length] into:obuf length:sizeof(obuf) error:&error];
+        if ([keptSlots containsIndex:thisBlobIndex]) {
+            /* Should succeed */
+            XCTAssertTrue(unw == 16, @"outError = %@", error);
+            if (unw != 16)
+                break;
+            XCTAssertTrue(memcmp(obuf, sekrit, 16) == 0);
+        } else {
+            /* Should fail */
+            XCTAssertTrue(unw < 0);
+            if (unw < 0) {
+                XCTAssertTrue([[error domain] isEqualToString:OFSErrorDomain] && [error code] == OFSEncryptionNeedAuth,
+                              @"outError = %@", error);
+            }
+        }
+    }
+}
 
 @end

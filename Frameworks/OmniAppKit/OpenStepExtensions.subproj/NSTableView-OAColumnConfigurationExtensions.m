@@ -265,13 +265,11 @@ static NSTableColumn *(*originalTableColumnWithIdentifier)(NSTableView *self, SE
         menuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Auto Size Column", @"OmniAppKit", bundle, "autosize column contextual menu item") action:@selector(autosizeColumn:) keyEquivalent:@""];
         [menuItem setTarget:self];
         [columnsMenu addItem:menuItem];
-        [menuItem release];
-    
+
         menuItem = [[NSMenuItem alloc] initWithTitle:NSLocalizedStringFromTableInBundle(@"Auto Size All Columns", @"OmniAppKit", bundle, "autosize all columns contextual menu item") action:@selector(autosizeAllColumns:) keyEquivalent:@""];
         [menuItem setTarget:self];
         [columnsMenu addItem:menuItem];
-        [menuItem release];
-        
+
         [columnsMenu addItem:[NSMenuItem separatorItem]];
     }
     
@@ -288,7 +286,6 @@ static NSTableColumn *(*originalTableColumnWithIdentifier)(NSTableView *self, SE
     [self sizeToFit];
         
     [[self headerView] setMenu:columnsMenu];
-    [columnsMenu release];
 }
 
 - (void)_addItemWithTableColumn:(NSTableColumn *)column toMenu:(NSMenu *)menu;
@@ -306,7 +303,6 @@ static NSTableColumn *(*originalTableColumnWithIdentifier)(NSTableView *self, SE
     [item setState:[self isTableColumnActive:column]];
     [item setRepresentedObject:column];
     [menu addItem:item];
-    [item release];
     
     if ([self _shouldAddMenuSeparatorAfterColumn:column])
         [menu addItem:[NSMenuItem separatorItem]];

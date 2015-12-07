@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -12,9 +12,11 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OUZipLinkMember
 
-- initWithName:(NSString *)name date:(NSDate *)date destination:(NSString *)destination;
+- (instancetype)initWithName:(NSString *)name date:(NSDate *)date destination:(NSString *)destination;
 {
     OBPRECONDITION(![NSString isEmptyString:destination]); // TODO: Convert to an error or exception?
                      
@@ -38,7 +40,7 @@ RCS_ID("$Id$");
 
 #pragma mark - OUZipMember subclass
 
-- (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString *)fileNamePrefix error:(NSError **)outError;
+- (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString * _Nullable)fileNamePrefix error:(NSError **)outError;
 {
     NSString *name = [self name];
     if (![NSString isEmptyString:fileNamePrefix])
@@ -48,3 +50,5 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -502,7 +502,7 @@
 		00E51E85FE8AB1FF11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 			};
 			buildConfigurationList = 4A07274708A02D1300A31187 /* Build configuration list for PBXProject "OmniNetworking" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -644,7 +644,7 @@
 			baseConfigurationReference = 4AFE72F908A02F7F00ED9F2D /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking;
 				PRODUCT_NAME = OmniNetworking;
 				SECTORDER_FLAGS = (
 					"-sectorder",
@@ -660,7 +660,7 @@
 			baseConfigurationReference = 4AFE72FA08A02F7F00ED9F2D /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking;
 				PRODUCT_NAME = OmniNetworking;
 				SECTORDER_FLAGS = (
 					"-sectorder",
@@ -681,7 +681,7 @@
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				INFOPLIST_FILE = "Info-ONUnitTests.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
 				WRAPPER_EXTENSION = xctest;
@@ -698,7 +698,7 @@
 					"$(DEVELOPER_FRAMEWORKS_DIR)",
 				);
 				INFOPLIST_FILE = "Info-ONUnitTests.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniNetworking.UnitTests;
 				PRODUCT_NAME = ONUnitTests;
 				SDKROOT_ppc = "";
 				SKIP_INSTALL = YES;

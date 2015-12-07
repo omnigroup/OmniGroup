@@ -10,6 +10,7 @@
 @class UIImage;
 
 extern UIImage *OUITableViewItemSelectionImage(UIControlState state);
+extern UIImage *OUITableViewItemSelectionMixedImage(void);
 
 extern UIImage *OUIStepperMinusImage(void);
 extern UIImage *OUIStepperPlusImage(void);

@@ -307,6 +307,13 @@
 			remoteGlobalIDString = 34F16B24194F6C3200AD9C4D;
 			remoteInfo = "OFUnitTests-iOS";
 		};
+		3442ADB31BD944FA003CE384 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 342721571194809800B39788 /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5FE81E171B62AE980056756C;
+			remoteInfo = "OmniBase-watchOS";
+		};
 		345E345117E2D40100389481 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34272163119480A700B39788 /* OmniFoundation.xcodeproj */;
@@ -376,13 +383,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 348A79BA1B5849C70082D55D;
 			remoteInfo = "OmniUI-iOS";
-		};
-		34DB325A1BD71F0300DFD01E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 342721571194809800B39788 /* OmniBase.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 5FE81E171B62AE980056756C;
-			remoteInfo = "OmniBase-watchOS";
 		};
 		34EAF49E1509A6E00040030A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -704,7 +704,7 @@
 				34EAF49F1509A6E00040030A /* OBUnitTests.xctest */,
 				343EB8261950A159000534A9 /* OmniBase.framework */,
 				343EB8281950A159000534A9 /* OBUnitTests.xctest */,
-				34DB325B1BD71F0300DFD01E /* OmniBase.framework */,
+				3442ADB41BD944FA003CE384 /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -834,7 +834,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TextEditor" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1119,6 +1119,13 @@
 			remoteRef = 343EB8441950A159000534A9 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		3442ADB41BD944FA003CE384 /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 3442ADB31BD944FA003CE384 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		345E345217E2D40100389481 /* OFNetStateNotifierTest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
@@ -1173,13 +1180,6 @@
 			fileType = wrapper.framework;
 			path = OmniUI.framework;
 			remoteRef = 34BCD8891B586C2700EBAA20 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		34DB325B1BD71F0300DFD01E /* OmniBase.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = OmniBase.framework;
-			remoteRef = 34DB325A1BD71F0300DFD01E /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		34EAF49F1509A6E00040030A /* OBUnitTests.xctest */ = {
@@ -1298,7 +1298,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
 				);
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniTextEdit.iPad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniTextEdit.iPad;
 				PRODUCT_NAME = TextEditor;
 				TARGETED_DEVICE_FAMILY = 2;
 			};
@@ -1319,7 +1319,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
 				);
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniTextEdit.iPad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniTextEdit.iPad;
 				PRODUCT_NAME = TextEditor;
 				TARGETED_DEVICE_FAMILY = 2;
 				VALIDATE_PRODUCT = YES;

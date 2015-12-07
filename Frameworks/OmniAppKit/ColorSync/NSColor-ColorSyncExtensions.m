@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -88,7 +88,6 @@ static void (*originalDeviceCMYKImp)(NSColor *color, SEL _cmd);
         [newImage convertFromProfile:profile toProfile:[OAColorProfile defaultDisplayProfile]];
         NSColor *convertedPatternColor = [NSColor colorWithPatternImage:newImage];
         originalPatternImp(convertedPatternColor, @selector(set));
-        [newImage autorelease];
     } else
         originalPatternImp(self, @selector(set));
 }

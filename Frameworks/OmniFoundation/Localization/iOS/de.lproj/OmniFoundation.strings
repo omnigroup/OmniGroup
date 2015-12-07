@@ -84,7 +84,7 @@
 "Could not create directory" = "Verzeichnis konnte nicht erstellt werden";
 
 /* time span formatter span */
-"d" = "T.";
+"d" = "d";
 
 /* time span formatter span */
 "day" = "Tag";
@@ -108,7 +108,7 @@
 "Failed to write lock file.  %@" = "Sperrdatei konnte nicht geschrieben werden. %@";
 
 /* time span formatter span */
-"h" = "Std.";
+"h" = "h";
 
 /* time span formatter span */
 "hour" = "Stunde";
@@ -123,7 +123,7 @@
 "local configuration file" = "Lokale Konfigurationsdatei";
 
 /* time span formatter span (minute) */
-"m" = "M.";
+"m" = "min";
 
 /* time span formatter span */
 "minute" = "Minute";
@@ -213,7 +213,7 @@
 "unrecognized compression format." = "Das Komprimierungsformat wurde nicht erkannt.";
 
 /* time span formatter span */
-"w" = "W.";
+"w" = "W";
 
 /* error description */
 "Warning encountered while loading XML." = "Beim Laden von XML wurde eine Warnmeldung ausgegeben.";
@@ -225,7 +225,7 @@
 "weeks" = "Wochen";
 
 /* time span formatter span */
-"y" = "J.";
+"y" = "J";
 
 /* time span formatter span */
 "year" = "Jahr";
@@ -237,4 +237,4 @@
 "zlib returned error code %d." = "Zlib gab den Fehlercode %d zurück.";
 
 /* zlib error reason */
-"zlib returned error code %d. %s." = "Zlib gab den Fehlercode %1$d zurück. %2$s.";
+"zlib returned error code %d. %s." = "Zlib gab den Fehlercode %1$d. %2$s zurück.";

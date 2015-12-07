@@ -260,12 +260,12 @@ RCS_ID("$Id$");
 {    
     _file = aFile;
         
-    __autoreleasing NSError *error;
     NSString *localFilePath = [self _downloadLocation];
     NSString *localFileDirectory = [localFilePath stringByDeletingLastPathComponent];
     
-    if (![[NSFileManager defaultManager] createDirectoryAtPath:localFileDirectory withIntermediateDirectories:YES attributes:nil error:&error]) {
-        OUI_PRESENT_ALERT(error);
+    __autoreleasing NSError *createDirectoryError;
+    if (![[NSFileManager defaultManager] createDirectoryAtPath:localFileDirectory withIntermediateDirectories:YES attributes:nil error:&createDirectoryError]) {
+        OUI_PRESENT_ALERT(createDirectoryError);
         [self cancelDownload:nil];
         return;
     }

@@ -1,4 +1,4 @@
-// Copyright 2008-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -9,7 +9,7 @@
 
 #import <Foundation/NSObject.h>
 
-@class NSURL;
+@class NSURL, NSOperationQueue;
 
 // NSCopying should be implemented to just return self, so that operations can be used as dictionary keys.
 @protocol ODAVAsynchronousOperation <NSObject, NSCopying>

@@ -53,8 +53,8 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
 {
     OBINITIALIZE;
     
-    enableTipsWhileResizingPreference = [[OFPreference preferenceForKey:OAMouseTipsEnabledPreferenceKey] retain];
-    enableNotesTipsPreference = [[OFPreference preferenceForKey:OAMouseTipsNotesEnabledPreferenceKey] retain];
+    enableTipsWhileResizingPreference = [OFPreference preferenceForKey:OAMouseTipsEnabledPreferenceKey];
+    enableNotesTipsPreference = [OFPreference preferenceForKey:OAMouseTipsNotesEnabledPreferenceKey];
 }
 
 - (id)init;
@@ -130,7 +130,6 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
     OAMouseTipWindow *instance = sharedMouseTipInstance();
     NSAttributedString *attributedTitle = [[NSAttributedString alloc] initWithString:aTitle attributes:[instance textAttributes]];
     [self showMouseTipWithAttributedTitle:attributedTitle];
-    [attributedTitle release];
 }
 
 + (void)showMouseTipWithTitle:(NSString *)aTitle activeRect:(NSRect)activeRect edge:(NSRectEdge)onEdge delay:(CGFloat)delay;
@@ -138,7 +137,6 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
     OAMouseTipWindow *instance = sharedMouseTipInstance();
     NSAttributedString *title = [[NSAttributedString alloc] initWithString:aTitle attributes:[instance textAttributes]];
     [self showMouseTipWithAttributedTitle:title activeRect:activeRect maxWidth:0.0f edge:onEdge delay:delay];
-    [title release];
 }
 
 + (void)showMouseTipWithAttributedTitle:(NSAttributedString *)aTitle;
@@ -242,7 +240,7 @@ static OAMouseTipWindow *sharedMouseTipInstance(void)
 - (id)copyWithZone:(NSZone *)zone;
 {
     OBASSERT_NOT_REACHED("Should be using the class methods and be unable to copy.");
-    return [self retain];
+    return self;
 }
 
 #pragma mark -

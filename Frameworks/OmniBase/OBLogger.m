@@ -26,6 +26,10 @@ inline void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ..
     va_end(args);
 }
 
+inline void OBLogS(OBLogger *logger, NSInteger messageLevel, NSString *message) {
+    OBLog(logger, messageLevel, message);
+}
+
 void _OBLoggerInitializeLogLevel(OBLogger * __strong *outLogger, NSString *name, BOOL useFile)
 {
     OBLogger *logger = [[OBLogger alloc] initWithName:name shouldLogToFile:useFile];

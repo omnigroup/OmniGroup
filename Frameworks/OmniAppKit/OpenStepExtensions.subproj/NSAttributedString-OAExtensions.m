@@ -16,7 +16,7 @@ RCS_ID("$Id$")
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 @interface OAInlineImageTextAttachmentCell : NSImageCell /* <NSTextAttachmentCell> */
-@property (nonatomic,assign) OATextAttachment *attachment;
+@property (nonatomic,weak) OATextAttachment *attachment;
 @end
 #endif
 
@@ -110,10 +110,8 @@ static NSString *blackColorString;
     OAInlineImageTextAttachmentCell *imageCell = [[OAInlineImageTextAttachmentCell alloc] initImageCell:anImage];
     OATextAttachment *attach = [[OATextAttachment alloc] initWithFileWrapper:nil];
     [attach setAttachmentCell:(id <NSTextAttachmentCell>)imageCell];
-    [imageCell release];
-    
+
     NSAttributedString *result = [self attributedStringWithAttachment:attach];
-    [attach release];
     return result;
 }
 #endif
@@ -602,9 +600,6 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
 
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
 @implementation OAInlineImageTextAttachmentCell
-{
-    OATextAttachment *_nonretained_attachment;
-}
 
 // Many of the NSTextAttachmentCell protocol's methods are supplied by NSCell.
 // - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
@@ -625,8 +620,6 @@ NSString *attributeTagString(NSDictionary *effectiveAttributes)
         return (NSPoint){0, 0};
     }
 }
-
-@synthesize attachment = _nonretained_attachment;
 
 - (NSSize)cellSize
 {

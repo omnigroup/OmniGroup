@@ -212,7 +212,7 @@ static NSArray *_newItemViews(OUIDocumentPickerScrollView *self, Class itemViewC
     NSUInteger neededItemViewCount = _itemViewsForGridSize([self _gridSize]);
     while (neededItemViewCount--) {
 
-        OUIDocumentPickerItemView *itemView = [[itemViewClass alloc] initWithFrame:CGRectMake(0, 0, 1, 1)];
+        OUIDocumentPickerItemView *itemView = [[itemViewClass alloc] initWithFrame:CGRectMake(0, 0, 200, 200)];
         itemView.isReadOnly = isReadOnly;
         
         [itemViews addObject:itemView];
@@ -890,6 +890,9 @@ static LayoutInfo _updateLayout(OUIDocumentPickerScrollView *self)
 
 - (void)layoutSubviews;
 {
+    if (_renameSession) {
+        return;
+    }
     LayoutInfo layoutInfo = _updateLayout(self);
     CGSize itemSize = layoutInfo.itemSize;
     CGRect contentRect = layoutInfo.contentRect;

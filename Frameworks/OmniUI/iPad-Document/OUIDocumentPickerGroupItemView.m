@@ -13,6 +13,7 @@
 #import <OmniDocumentStore/ODSFolderItem.h>
 #import <OmniDocumentStore/ODSScope.h>
 #import <OmniDocumentStore/ODSStore.h>
+#import <OmniUIDocument/OUIDocumentPickerItemMetaDataView.h>
 
 #import <OmniUIDocument/OUIDocumentAppController.h>
 #import <OmniUIDocument/OUIDocumentPickerFilter.h>
@@ -27,6 +28,7 @@ RCS_ID("$Id$");
 
 static id _commonInit(OUIDocumentPickerGroupItemView *self)
 {
+    self.contentView.translatesAutoresizingMaskIntoConstraints = YES;
     self.backgroundColor = [UIColor lightGrayColor];
     self->_lastKnownBoundsSize = self.contentView.bounds.size;
     return self;
@@ -109,6 +111,15 @@ static unsigned GroupItemContext;
             miniPreviewSize = kOUIDocumentPickerFolderItemMiniPreviewSize;
             miniPreviewInsets = kOUIDocumentPickerFolderItemMiniPreviewInsets;
             spacing = kOUIDocumentPickerFolderItemMiniPreviewSpacing;
+        }
+        if (self.metadataView.doubleSizeFonts) {
+            miniPreviewSize.width *= 2;
+            miniPreviewSize.height *= 2;
+            miniPreviewInsets.top *= 2;
+            miniPreviewInsets.bottom *= 2;
+            miniPreviewInsets.left *= 2;
+            miniPreviewInsets.right *= 2;
+            spacing *= 2;
         }
 
         NSUInteger tag = 0;

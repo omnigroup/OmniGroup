@@ -40,7 +40,7 @@
 		34019F991B62ED9B003A5BE4 /* ODOEditingContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1BD0D89979200AA63FE /* ODOEditingContext.m */; };
 		34019F9A1B62ED9B003A5BE4 /* ODOObject-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B6880D8C625700390D08 /* ODOObject-Internal.h */; };
 		34019F9B1B62ED9B003A5BE4 /* ODOObject-Internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 348E07220D904E99003C22D6 /* ODOObject-Internal.m */; };
-		34019F9C1B62ED9B003A5BE4 /* ODOObject-Accessors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C25F7E0EAE61C300F5FC90 /* ODOObject-Accessors.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34019F9C1B62ED9B003A5BE4 /* ODOObject-Accessors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C25F7E0EAE61C300F5FC90 /* ODOObject-Accessors.h */; };
 		34019F9D1B62ED9B003A5BE4 /* ODOObject-Accessors.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C25F7F0EAE61C300F5FC90 /* ODOObject-Accessors.m */; };
 		34019F9E1B62ED9B003A5BE4 /* ODOObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1AA0D89973500AA63FE /* ODOObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		34019F9F1B62ED9B003A5BE4 /* ODOObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 344FB1BC0D89979200AA63FE /* ODOObject.m */; };
@@ -102,7 +102,7 @@
 		3441C4BF19C8E66800A2FAAE /* ODOModel-SQL.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B9CDCE0D8B1954001A5AB1 /* ODOModel-SQL.h */; };
 		3441C4C119C8E67600A2FAAE /* ODOEditingContext-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B7D30D8C7BA300390D08 /* ODOEditingContext-Internal.h */; };
 		3441C4C319C8E67D00A2FAAE /* ODOObject-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 3400B6880D8C625700390D08 /* ODOObject-Internal.h */; };
-		3441C4C519C8E68200A2FAAE /* ODOObject-Accessors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C25F7E0EAE61C300F5FC90 /* ODOObject-Accessors.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3441C4C519C8E68200A2FAAE /* ODOObject-Accessors.h in Headers */ = {isa = PBXBuildFile; fileRef = 34C25F7E0EAE61C300F5FC90 /* ODOObject-Accessors.h */; };
 		3441C4C819C8E6A400A2FAAE /* ODODatabase-Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 34B9CDBD0D8B1893001A5AB1 /* ODODatabase-Internal.h */; };
 		344E7E871042FD6700C55C19 /* ODOInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 344E7E861042FD6700C55C19 /* ODOInternal.h */; };
 		344FB1B00D89973500AA63FE /* ODOAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 344FB1A70D89973500AA63FE /* ODOAttribute.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -214,6 +214,19 @@
 		340D5F390DAAD71B00BF27F8 /* ODOTests-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "ODOTests-Info.plist"; sourceTree = "<group>"; };
 		340DD2EA0D89A3090049D65E /* ODOObjectID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODOObjectID.h; sourceTree = "<group>"; };
 		340DD2EB0D89A3090049D65E /* ODOObjectID.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOObjectID.m; sourceTree = "<group>"; };
+		340E2C481C125EB600178E72 /* Target-Watch-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Target-Watch-Common.xcconfig"; sourceTree = "<group>"; };
+		340E2C491C125EB600178E72 /* Touch-XCTest-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Common.xcconfig"; sourceTree = "<group>"; };
+		340E2C4A1C125EB600178E72 /* Touch-XCTest-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Debug.xcconfig"; sourceTree = "<group>"; };
+		340E2C4B1C125EB600178E72 /* Touch-XCTest-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Touch-XCTest-Release.xcconfig"; sourceTree = "<group>"; };
+		340E2C4C1C125EB600178E72 /* Watch-Application-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Common.xcconfig"; sourceTree = "<group>"; };
+		340E2C4D1C125EB600178E72 /* Watch-Application-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Debug.xcconfig"; sourceTree = "<group>"; };
+		340E2C4E1C125EB600178E72 /* Watch-Application-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Application-Release.xcconfig"; sourceTree = "<group>"; };
+		340E2C4F1C125EB600178E72 /* Watch-Bundle-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Common.xcconfig"; sourceTree = "<group>"; };
+		340E2C501C125EB600178E72 /* Watch-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
+		340E2C511C125EB600178E72 /* Watch-Bundle-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
+		340E2C521C125EB600178E72 /* Watch-Framework-Common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Common.xcconfig"; sourceTree = "<group>"; };
+		340E2C531C125EB600178E72 /* Watch-Framework-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Debug.xcconfig"; sourceTree = "<group>"; };
+		340E2C541C125EB600178E72 /* Watch-Framework-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Watch-Framework-Release.xcconfig"; sourceTree = "<group>"; };
 		341646D70E97015D006BF255 /* ODOAttributeTypeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOAttributeTypeTests.m; sourceTree = "<group>"; };
 		341647610E971390006BF255 /* ODODynamicPropertyTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODODynamicPropertyTests.m; sourceTree = "<group>"; };
 		341FC8170FDF203E0097EA13 /* ODOStringCompareFunctionTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODOStringCompareFunctionTest.m; sourceTree = "<group>"; };
@@ -295,6 +308,7 @@
 		34B9CDD20D8B19BC001A5AB1 /* ODOModel-SQL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOModel-SQL.m"; sourceTree = "<group>"; };
 		34B9CDD70D8B1A4E001A5AB1 /* ODOEntity-SQL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOEntity-SQL.h"; sourceTree = "<group>"; };
 		34B9CDD80D8B1A4E001A5AB1 /* ODOEntity-SQL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOEntity-SQL.m"; sourceTree = "<group>"; };
+		34BC306C1BDEF55F00F7E2DF /* OmniDataObjects.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = OmniDataObjects.modulemap; sourceTree = "<group>"; };
 		34C25F7E0EAE61C300F5FC90 /* ODOObject-Accessors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOObject-Accessors.h"; sourceTree = "<group>"; };
 		34C25F7F0EAE61C300F5FC90 /* ODOObject-Accessors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ODOObject-Accessors.m"; sourceTree = "<group>"; };
 		34D5FB1B0E9F20890055E958 /* ODOModel-Creation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ODOModel-Creation.h"; sourceTree = "<group>"; };
@@ -457,6 +471,7 @@
 				348409510D89F5EF00E74C9D /* ODOVersion.h */,
 				348409520D89F5EF00E74C9D /* ODOVersion.m */,
 				3481A9B30D899C210050FC54 /* OmniDataObjects.h */,
+				34BC306C1BDEF55F00F7E2DF /* OmniDataObjects.modulemap */,
 				32DBCF5E0370ADEE00C91783 /* OmniDataObjects_Prefix.h */,
 			);
 			name = Misc;
@@ -559,6 +574,7 @@
 				34A5E1360D89940F0006DF9F /* Omni-Tool-Release.xcconfig */,
 				34D94D5011A1AD5600A9ACC1 /* Target-Mac-Common.xcconfig */,
 				34D94D5111A1AD5600A9ACC1 /* Target-Touch-Common.xcconfig */,
+				340E2C481C125EB600178E72 /* Target-Watch-Common.xcconfig */,
 				34D94D5211A1AD5600A9ACC1 /* Touch-Application-Common.xcconfig */,
 				34D94D5411A1AD5600A9ACC1 /* Touch-Application-Debug.xcconfig */,
 				34D94D5511A1AD5600A9ACC1 /* Touch-Application-Release.xcconfig */,
@@ -570,8 +586,20 @@
 				34019F7C1B62ECC8003A5BE4 /* Touch-Framework-Release.xcconfig */,
 				3EE8E4DA1937FDCB00616F0E /* Touch-Library-Common.xcconfig */,
 				3EE8E4DC1937FDCB00616F0E /* Touch-Library-Debug.xcconfig */,
-				34019F711B62ECC8003A5BE4 /* Omni-Application-Common-AppStore.xcconfig */,
 				3EE8E4DD1937FDCB00616F0E /* Touch-Library-Release.xcconfig */,
+				340E2C491C125EB600178E72 /* Touch-XCTest-Common.xcconfig */,
+				340E2C4A1C125EB600178E72 /* Touch-XCTest-Debug.xcconfig */,
+				340E2C4B1C125EB600178E72 /* Touch-XCTest-Release.xcconfig */,
+				340E2C4C1C125EB600178E72 /* Watch-Application-Common.xcconfig */,
+				340E2C4D1C125EB600178E72 /* Watch-Application-Debug.xcconfig */,
+				340E2C4E1C125EB600178E72 /* Watch-Application-Release.xcconfig */,
+				340E2C4F1C125EB600178E72 /* Watch-Bundle-Common.xcconfig */,
+				340E2C501C125EB600178E72 /* Watch-Bundle-Debug.xcconfig */,
+				340E2C511C125EB600178E72 /* Watch-Bundle-Release.xcconfig */,
+				340E2C521C125EB600178E72 /* Watch-Framework-Common.xcconfig */,
+				340E2C531C125EB600178E72 /* Watch-Framework-Debug.xcconfig */,
+				340E2C541C125EB600178E72 /* Watch-Framework-Release.xcconfig */,
+				34019F711B62ECC8003A5BE4 /* Omni-Application-Common-AppStore.xcconfig */,
 				34019F761B62ECC8003A5BE4 /* Omni-Global-Common-AppStore.xcconfig */,
 				34D94D5611A1AD5600A9ACC1 /* Touch-Library-Common.xcconfig */,
 				34D94D5811A1AD5600A9ACC1 /* Touch-Library-Debug.xcconfig */,
@@ -838,7 +866,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 				TargetAttributes = {
 					34019F641B62ECB4003A5BE4 = {
 						CreatedOnToolsVersion = 7.0;
@@ -1139,7 +1167,8 @@
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
+				MODULEMAP_FILE = OmniDataObjects.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
 			};
 			name = Debug;
@@ -1150,7 +1179,8 @@
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
+				MODULEMAP_FILE = OmniDataObjects.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
 			};
 			name = Release;
@@ -1174,8 +1204,8 @@
 			baseConfigurationReference = 34019F7B1B62ECC8003A5BE4 /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(OMNI_BUNDLE_IDENTIFIER)";
+				MODULEMAP_FILE = OmniDataObjects.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
 			};
 			name = Debug;
@@ -1185,8 +1215,8 @@
 			baseConfigurationReference = 34019F7C1B62ECC8003A5BE4 /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(OMNI_BUNDLE_IDENTIFIER)";
+				MODULEMAP_FILE = OmniDataObjects.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects;
 				PRODUCT_NAME = OmniDataObjects;
 			};
 			name = Release;
@@ -1201,7 +1231,7 @@
 				);
 				GCC_PREFIX_HEADER = OmniDataObjects.h;
 				INFOPLIST_FILE = "Tests/ODOTests-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
 				PRODUCT_NAME = ODOTests;
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1217,7 +1247,7 @@
 				);
 				GCC_PREFIX_HEADER = OmniDataObjects.h;
 				INFOPLIST_FILE = "Tests/ODOTests-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
 				PRODUCT_NAME = ODOTests;
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1225,7 +1255,7 @@
 		};
 		343BD2E01B62F35D002D09C6 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34019F781B62ECC8003A5BE4 /* Touch-Bundle-Debug.xcconfig */;
+			baseConfigurationReference = 340E2C4A1C125EB600178E72 /* Touch-XCTest-Debug.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
@@ -1233,8 +1263,7 @@
 				);
 				GCC_PREFIX_HEADER = OmniDataObjects.h;
 				INFOPLIST_FILE = "Tests/ODOTests-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(OMNI_BUNDLE_IDENTIFIER)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
 				PRODUCT_NAME = ODOTests;
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1242,7 +1271,7 @@
 		};
 		343BD2E11B62F35D002D09C6 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34019F791B62ECC8003A5BE4 /* Touch-Bundle-Release.xcconfig */;
+			baseConfigurationReference = 340E2C4B1C125EB600178E72 /* Touch-XCTest-Release.xcconfig */;
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(value)",
@@ -1250,8 +1279,7 @@
 				);
 				GCC_PREFIX_HEADER = OmniDataObjects.h;
 				INFOPLIST_FILE = "Tests/ODOTests-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(OMNI_BUNDLE_IDENTIFIER)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDataObjects.UnitTests;
 				PRODUCT_NAME = ODOTests;
 				WRAPPER_EXTENSION = xctest;
 			};
@@ -1336,6 +1364,7 @@
 				343BD2E11B62F35D002D09C6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		34A77A060D89D55E0037DE8C /* Build configuration list for PBXNativeTarget "xcd2odo" */ = {
 			isa = XCConfigurationList;

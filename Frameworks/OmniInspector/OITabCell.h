@@ -9,6 +9,8 @@
 
 #import <AppKit/NSButtonCell.h>
 
+@class NSImageCell;
+
 extern NSString *TabTitleDidChangeNotification;
 
 @interface OITabCell : NSButtonCell

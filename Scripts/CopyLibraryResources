@@ -17,6 +17,10 @@
 require 'fileutils'
 require 'optparse'
 
+if ENV['TARGET_INTERFACE_BUILDER'] == '1'
+    exit 0
+end
+
 ExcludePatterns = []
 SkipFixStringsFiles = []
 

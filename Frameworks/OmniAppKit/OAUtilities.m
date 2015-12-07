@@ -1,4 +1,4 @@
-// Copyright 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -22,7 +22,7 @@ BOOL OAPushValueThroughBinding(id self, id objectValue, NSString *binding)
     } else {
         NSString *transformerName = [bindingOptions objectForKey:NSValueTransformerNameBindingOption];
         if (!OFISNULL(transformerName)) {
-            NSValueTransformer *transformer = [NSValueTransformer valueTransformerForName:transformerName];
+            transformer = [NSValueTransformer valueTransformerForName:transformerName];
             OBASSERT(transformer);
             if (transformer)
                 objectValue = [transformer reverseTransformedValue:objectValue]; // don't nullify the value if the transformer name references something that doesn't exist

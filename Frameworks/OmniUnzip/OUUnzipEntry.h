@@ -1,4 +1,4 @@
-// Copyright 2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,33 +7,26 @@
 //
 // $Id$
 
-#import <OmniFoundation/OFObject.h>
+#import <Foundation/NSObject.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class NSDate;
 
-@interface OUUnzipEntry : OFObject
-{
-    NSString *_name;
-    NSString *_fileType;
-    NSDate *_date;
-    unsigned long _positionInFile;
-    unsigned long _fileNumber;
-    size_t _compressedSize;
-    size_t _uncompressedSize;
-    unsigned long _compressionMethod;
-    unsigned long _crc;
-}
+@interface OUUnzipEntry : NSObject
 
 - initWithName:(NSString *)name fileType:(NSString *)fileType date:(NSDate *)date positionInFile:(unsigned long)positionInFile fileNumber:(unsigned long)fileNumber compressionMethod:(unsigned long)compressionMethod compressedSize:(size_t)compressedSize uncompressedSize:(size_t)uncompressedSize crc:(unsigned long)crc;
 
-- (NSString *)name;
-- (NSString *)fileType;
-- (NSDate *)date;
-- (unsigned long)positionInFile;
-- (unsigned long)fileNumber;
-- (unsigned long)compressionMethod;
-- (size_t)compressedSize;
-- (size_t)uncompressedSize;
-- (unsigned long)crc;
+@property(nonatomic,readonly) NSString *name;
+@property(nonatomic,readonly) NSString *fileType;
+@property(nonatomic,readonly) NSDate *date;
+@property(nonatomic,readonly) unsigned long positionInFile;
+@property(nonatomic,readonly) unsigned long fileNumber;
+@property(nonatomic,readonly) unsigned long compressionMethod;
+@property(nonatomic,readonly) size_t compressedSize;
+@property(nonatomic,readonly) size_t uncompressedSize;
+@property(nonatomic,readonly) unsigned long crc;
 
 @end
+
+NS_ASSUME_NONNULL_END

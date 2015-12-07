@@ -25,6 +25,11 @@ RCS_ID("$Id$")
 typedef void (^_RunItemCompletionHandler)(OAToolbarItem *toolbarItem, NSError *error);
 
 @implementation OAScriptToolbarHelper
+{
+@private
+    NSMutableDictionary *_pathForItemDictionary;
+    NSMutableDictionary *_cachedScriptInfoDictionaries;
+}
 
 static BOOL OAScriptToolbarItemsDisabled = NO;
 
@@ -42,14 +47,6 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     _cachedScriptInfoDictionaries = [[NSMutableDictionary alloc] init];
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [_pathForItemDictionary release];
-    [_cachedScriptInfoDictionaries release];
-    
-    [super dealloc];
 }
 
 - (NSString *)itemIdentifierExtension;
@@ -173,12 +170,13 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 
 - (void)executeScriptItem:(id)sender;
 {
-    OAToolbarItem *toolbarItem = [[sender retain] autorelease];
+    OBRetainAutorelease(sender);
+    OAToolbarItem *toolbarItem = sender;
     
     OAToolbarWindowController *windowController = (OAToolbarWindowController *)[[toolbarItem toolbar] delegate];
     OBASSERT(!windowController || [windowController isKindOfClass:[OAToolbarWindowController class]]);
-    [[windowController retain] autorelease]; // The script may cause the window to be closed
-    
+    OBRetainAutorelease(windowController);  // The script may cause the window to be closed
+
     if ([windowController respondsToSelector:@selector(scriptToolbarItemShouldExecute:)] && ![windowController scriptToolbarItemShouldExecute:sender]) {
 	return;
     }
@@ -239,7 +237,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     NSDictionary *cachedScriptInfoDictionary = [_cachedScriptInfoDictionaries objectForKey:path];
     if (cachedScriptInfoDictionary == nil || OFNOTEQUAL(scriptModificationDate, [cachedScriptInfoDictionary objectForKey:ScriptInfoModificationDateKey])) {
         // We don't have a cached script yet, or the script has been modified since it was cached
-        OSAScript *compiledScript = [[[OSAScript alloc] initWithContentsOfURL:[NSURL fileURLWithPath:path] error:errorInfo] autorelease];
+        OSAScript *compiledScript = [[OSAScript alloc] initWithContentsOfURL:[NSURL fileURLWithPath:path] error:errorInfo];
         NSMutableDictionary *scriptInfoDictionary = [NSMutableDictionary dictionary];
         [scriptInfoDictionary setObject:compiledScript forKey:ScriptInfoCompiledScriptKey defaultObject:nil];
         [scriptInfoDictionary setObject:scriptModificationDate forKey:ScriptInfoModificationDateKey defaultObject:nil];
@@ -265,7 +263,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
 	    // Don't register more than one script with the same name.
             // This means you won't be able to have toolbar items of different script types with the same name.
             NSString *itemName = [self _stringByRemovingScriptFilenameExtension:filename];
-            NSString *itemIdentifier = [itemName stringByAppendingPathExtension:@"osascript"];
+            NSString *itemIdentifier = [itemName stringByAppendingPathExtension:[self itemIdentifierExtension]];
             if ([_pathForItemDictionary objectForKey:itemIdentifier] == nil) {
                 NSString *path = [[scriptFolder stringByAppendingPathComponent:filename] stringByAbbreviatingWithTildeInPath];
                 [_pathForItemDictionary setObject:path forKey:itemIdentifier];
@@ -285,7 +283,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
         
         CFArrayRef scriptBundleUTIs = UTTypeCreateAllIdentifiersForTag(kUTTagClassFilenameExtension, CFSTR("scptd"), NULL);
         if (scriptBundleUTIs != NULL) {
-            [types addObjectsFromArray:(NSArray *)scriptBundleUTIs];
+            [types addObjectsFromArray:(__bridge NSArray *)scriptBundleUTIs];
             CFRelease(scriptBundleUTIs);
         }
         
@@ -328,11 +326,11 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     NSString *path = [[self pathForItem:toolbarItem] stringByExpandingTildeInPath];
     NSURL *url = [NSURL fileURLWithPath:path];
     
-    NSError *error = nil;
-    NSUserAutomatorTask *task = [[NSUserAutomatorTask alloc] initWithURL:url error:&error];
+    NSError *taskError = nil;
+    NSUserAutomatorTask *task = [[NSUserAutomatorTask alloc] initWithURL:url error:&taskError];
     if (task == nil) {
-        [self _handleAutomatorWorkflowLoadErrorForToolbarItem:toolbarItem inWindowController:windowController errorText:[error localizedDescription]];
-        completionHandler(toolbarItem, error);
+        [self _handleAutomatorWorkflowLoadErrorForToolbarItem:toolbarItem inWindowController:windowController errorText:[taskError localizedDescription]];
+        completionHandler(toolbarItem, taskError);
         return;
     }
     
@@ -344,8 +342,6 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
             completionHandler(toolbarItem, error);
         }];
     }];
-    
-    [task release];
 }
 
 - (void)_sandboxedExecuteOSAScriptForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
@@ -359,11 +355,11 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     }
     NSURL *url = [NSURL fileURLWithPath:path];
     
-    NSError *error = nil;
-    NSUserAppleScriptTask *task = [[NSUserAppleScriptTask alloc] initWithURL:url error:&error];
+    NSError *taskError = nil;
+    NSUserAppleScriptTask *task = [[NSUserAppleScriptTask alloc] initWithURL:url error:&taskError];
     if (task == nil) {
-        [self _handleOSAScriptLoadErrorForToolbarItem:toolbarItem inWindowController:windowController errorText:[error localizedDescription]];
-        completionHandler(toolbarItem, error);
+        [self _handleOSAScriptLoadErrorForToolbarItem:toolbarItem inWindowController:windowController errorText:[taskError localizedDescription]];
+        completionHandler(toolbarItem, taskError);
         return;
     }
     
@@ -392,8 +388,6 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
             completionHandler(toolbarItem, error);
         }];
     }];
-    
-    [task release];
 }
 
 - (void)_unsandboxedExecuteAutomatorWorkflowForToolbarItem:(OAToolbarItem *)toolbarItem inWindowController:(OAToolbarWindowController *)windowController completionHandler:(_RunItemCompletionHandler)completionHandler;
@@ -452,7 +446,11 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     
     // This might fail for a variety of reasons, but we don't consider that fatal
     if ([script isCompiled]) {
+        // <bug:///124065> (Unassigned: Update saving of script toolbar items to pass the right storage type)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
         [script writeToURL:[NSURL fileURLWithPath:path] ofType:nil error:&errorDictionary];
+#pragma clang diagnostic pop
     }
 
     completionHandler(toolbarItem, nil);
@@ -467,7 +465,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     NSString *informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"Automator reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "Automator Workflow error message"), errorText];
     NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = messageText;
     alert.informativeText = informativeText;
     [alert addButtonWithTitle:OKButtonTitle];
@@ -484,7 +482,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     NSString *editButtonTitle = NSLocalizedStringFromTableInBundle(@"Edit Workflow", @"OmniAppKit", [OAScriptToolbarHelper bundle], "Automatork workflow error panel button");
     
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = messageText;
     alert.informativeText = informativeText;
     [alert addButtonWithTitle:OKButtonTitle];
@@ -506,7 +504,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     NSString *informativeText = [NSString stringWithFormat:NSLocalizedStringFromTableInBundle(@"AppleScript reported the following error:\n%@", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script loading error message"), errorText];
     NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = messageText;
     alert.informativeText = informativeText;
     [alert addButtonWithTitle:OKButtonTitle];
@@ -523,7 +521,7 @@ static BOOL OAScriptToolbarItemsDisabled = NO;
     NSString *OKButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     NSString *editButtonTitle = NSLocalizedStringFromTableInBundle(@"Edit Script", @"OmniAppKit", [OAScriptToolbarHelper bundle], "script error panel button");
     
-    NSAlert *alert = [[[NSAlert alloc] init] autorelease];
+    NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = messageText;
     alert.informativeText = informativeText;
     [alert addButtonWithTitle:OKButtonTitle];

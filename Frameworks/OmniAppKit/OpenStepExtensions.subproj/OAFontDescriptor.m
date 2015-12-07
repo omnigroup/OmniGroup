@@ -159,9 +159,9 @@ static NSInteger _weightToFontManagerWeight(CGFloat weight)
     if (weight < -0.8)
         return 1;
     else if (weight <= 0.2)
-        return round(5.0 * weight + 5.0 );
+        return (NSInteger)round(5.0 * weight + 5.0 );
     else if (weight <= 0.8)
-        return round(8.0 * weight / 0.6 + 10.0 / 3.0);
+        return (NSInteger)round(8.0 * weight / 0.6 + 10.0 / 3.0);
     else
         return 14;
 }

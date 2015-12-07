@@ -9,6 +9,8 @@
 
 #import <Foundation/NSObject.h>
 
+@class NSMutableArray;
+
 @protocol ODAVAsynchronousOperation;
 @protocol OFByteProvider;
 

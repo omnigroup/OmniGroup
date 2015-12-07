@@ -688,7 +688,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 				TargetAttributes = {
 					34218E4919C23ECE00899C9A = {
 						CreatedOnToolsVersion = 6.1;
@@ -934,7 +934,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				GCC_PREFIX_HEADER = "$(TARGET_NAME)_Prefix.h";
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniQuartz;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniQuartz;
 				PRODUCT_NAME = OmniQuartz;
 			};
 			name = Debug;
@@ -946,7 +946,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				GCC_PREFIX_HEADER = "$(TARGET_NAME)_Prefix.h";
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniQuartz;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniQuartz;
 				PRODUCT_NAME = OmniQuartz;
 			};
 			name = Release;
@@ -957,7 +957,7 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniQuartz;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniQuartz;
 				PRODUCT_NAME = OmniQuartz;
 			};
 			name = Debug;
@@ -968,7 +968,7 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniQuartz;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniQuartz;
 				PRODUCT_NAME = OmniQuartz;
 			};
 			name = Release;

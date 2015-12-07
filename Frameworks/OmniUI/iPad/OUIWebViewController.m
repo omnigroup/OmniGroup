@@ -10,44 +10,53 @@
 #import <MessageUI/MessageUI.h>
 #import <WebKit/WebKit.h>
 
+#import <OmniFoundation/OFOrderedMutableDictionary.h>
 #import <OmniFoundation/OFVersionNumber.h>
 #import <OmniUI/OUIAppController.h>
 #import <OmniUI/OUIBarButtonItem.h>
-#import <OmniFoundation/OFVersionNumber.h>
-
 
 RCS_ID("$Id$")
 
 @interface OUIWebViewController () <MFMailComposeViewControllerDelegate>
+
+@property (nonatomic, strong) OFOrderedMutableDictionary *onLoadJavaScripts;
+
 @end
 
 @implementation OUIWebViewController
 
-- (void)loadView 
-{
-    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
-    webView.navigationDelegate = self;
-
-    self.view = webView;
-}
-
 - (void)dealloc;
 {
     if ([self isViewLoaded]) {
-        WKWebView *webView = (WKWebView *)self.view;
-        webView.navigationDelegate = nil;
+        self.webView.navigationDelegate = nil;
     }
 }
 
-- (IBAction)openInSafari:(id)sender NS_EXTENSION_UNAVAILABLE_IOS("");
+#pragma mark - Actions
+
+- (IBAction)openInSafari:(id)sender;
 {
     [[UIApplication sharedApplication] openURL:[self URL]];
 }
 
 - (IBAction)goBack:(id)sender;
 {
-    UIWebView *webView = (UIWebView *)self.view;
-    [webView goBack];
+    [self.webView goBack];
+}
+
+- (IBAction)goForward:(id)sender;
+{
+    [self.webView goForward];
+}
+
+- (IBAction)stopLoading:(id)sender;
+{
+    [self.webView stopLoading];
+}
+
+- (IBAction)reload:(id)sender;
+{
+    [self.webView reload];
 }
 
 - (IBAction)close:(id)sender;
@@ -57,6 +66,8 @@ RCS_ID("$Id$")
     }
 }
 
+#pragma mark - API
+
 - (void)_updateBarButtonItemForURL:(NSURL *)aURL;
 {
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close:)];
@@ -65,36 +76,55 @@ RCS_ID("$Id$")
 - (void)setURL:(NSURL *)aURL;
 {
     NSURLRequest *request = [[NSURLRequest alloc] initWithURL:aURL];
-    [(UIWebView *)self.view loadRequest:request];
+    [self.webView loadRequest:request];
     [self _updateBarButtonItemForURL:aURL];
 }
 
 - (NSURL *)URL;
 {
-    return [[(UIWebView *)self.view request] URL];
+    return [self.webView URL];
 }
 
-- (UIWebView *)webView;
+- (WKWebView *)webView;
 {
-    return (UIWebView *)self.view;
+    return OB_CHECKED_CAST(WKWebView, self.view);
 }
 
 - (void)loadData:(NSData *)data ofType:(NSString *)mimeType;
 {
-    UIWebView *webView = OB_CHECKED_CAST(UIWebView, self.view);
     NSURL *baseURL = [NSURL URLWithString:@"x-invalid:"];
     
     if (data == nil) {
         data = [NSData data];
     }
     
-    [webView loadData:data MIMEType:mimeType textEncodingName:@"utf-8" baseURL:baseURL];
+    [self.webView loadData:data MIMEType:mimeType characterEncodingName:@"utf-8" baseURL:baseURL];
 }
+
+- (void)invokeJavaScriptAfterLoad:(NSString *)javaScript completionHandler:(void (^)(id, NSError *))completionHandler;
+{
+    OBPRECONDITION(javaScript != nil);
+    if (javaScript == nil) {
+        return;
+    }
+    
+    if (![self.webView isLoading] && self.webView.URL != nil) {
+        [self.webView evaluateJavaScript:javaScript completionHandler:completionHandler];
+        return;
+    }
+    
+    // Still loading, or no URL yet – hang on to the script and handler for later
+    self.onLoadJavaScripts[javaScript] = [completionHandler copy] ?: [NSNull null];
+}
+
+#pragma mark - MFMailComposeViewControllerDelegate
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error;
 {
     [self dismissViewControllerAnimated:YES completion:nil];
 }
+
+#pragma mark - WKNavigationDelegate
 
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler NS_EXTENSION_UNAVAILABLE_IOS("");
 {
@@ -161,11 +191,59 @@ RCS_ID("$Id$")
     decisionHandler(WKNavigationActionPolicyAllow);
 }
 
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation;
+{
+    [self _runOnLoadJavaScripts];
+}
+
 #pragma mark - UIViewController subclass
+
+- (void)loadView
+{
+    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, 320, 100)];
+    webView.navigationDelegate = self;
+    
+    self.view = webView;
+}
 
 - (BOOL)shouldAutorotate;
 {
     return YES;
+}
+
+#pragma mark - Private
+
+- (OFOrderedMutableDictionary *)onLoadJavaScripts;
+{
+    if (_onLoadJavaScripts == nil) {
+        _onLoadJavaScripts = [OFOrderedMutableDictionary dictionary];
+    }
+    return _onLoadJavaScripts;
+}
+
+- (void)_runOnLoadJavaScripts;
+{
+    if ([self.onLoadJavaScripts count] == 0) {
+        // Nothing to do? Break the recursion
+        return;
+    }
+    
+    if ([self.webView isLoading] || self.webView.URL == nil) {
+        // Shouldn't invoke JavaScript now – wait for the next time a URL is fully loaded
+        return;
+    }
+    
+    NSString *javaScript = OB_CHECKED_CAST(NSString, [self.onLoadJavaScripts keyAtIndex:0]);
+    [self.webView evaluateJavaScript:javaScript completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+        void (^completionHandler)(id, NSError*) = self.onLoadJavaScripts[javaScript];
+        [self.onLoadJavaScripts removeObjectForKey:javaScript];
+        
+        if (!OFISNULL(completionHandler)) {
+            completionHandler(result, error);
+        }
+        
+        [self _runOnLoadJavaScripts];
+    }];
 }
 
 @end

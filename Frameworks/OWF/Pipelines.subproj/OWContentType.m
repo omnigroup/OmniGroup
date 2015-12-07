@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -138,7 +138,7 @@ static NSString *privateSupertypes[] = {
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:(id)self];
+    [[OFController sharedController] addStatusObserver:(id)self];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadExpirationTimeIntervals:) name:OWContentTypeReloadExpirationTimeIntervalsNotificationName object:nil];
 }
 

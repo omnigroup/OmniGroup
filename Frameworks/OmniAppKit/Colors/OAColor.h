@@ -101,7 +101,7 @@ typedef struct {
 extern OAHSV OARGBToHSV(OALinearRGBA c);
 extern OALinearRGBA OAHSVToRGB(OAHSV c);
 
-@interface OAColor : OFObject <NSCopying>
+@interface OAColor : NSObject <NSCopying>
 {
     OA_PLATFORM_COLOR_CLASS *_platformColor;
 }

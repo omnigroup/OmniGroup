@@ -150,19 +150,19 @@ RCS_ID("$Id$")
     NSURL *temporaryRemoteSnapshotURL = self.temporaryRemoteSnapshotURL;
     
     ODAVSyncOperation(__FILE__, __LINE__, ^(ODAVOperationDone done){
-        [connection makeCollectionAtURL:temporaryRemoteSnapshotURL completionHandler:^(ODAVURLResult *createResult, NSError *createError) {
-            if (createResult) {
-                result = createResult; // Yay!
+        [connection makeCollectionAtURL:temporaryRemoteSnapshotURL completionHandler:^(ODAVURLResult *singleCreateResult, NSError *singleCreateError) {
+            if (singleCreateResult) {
+                result = singleCreateResult; // Yay!
                 done();
                 return;
             }
             
             // Try creating the whole directory path.
-            [connection makeCollectionAtURLIfMissing:temporaryRemoteSnapshotURL baseURL:connection.baseURL completionHandler:^(ODAVURLResult *createResult, NSError *createError) {
-                if (createResult)
-                    result = createResult; // Yay!
+            [connection makeCollectionAtURLIfMissing:temporaryRemoteSnapshotURL baseURL:connection.baseURL completionHandler:^(ODAVURLResult *fullCreateResult, NSError *fullCreateError) {
+                if (fullCreateResult)
+                    result = fullCreateResult; // Yay!
                 else
-                    resultError = createError;
+                    resultError = fullCreateError;
                 done();
             }];
         }];

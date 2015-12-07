@@ -4,14 +4,8 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ не может открыть файл этого типа.";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@ документов";
-
 /* gigabytes */
 "%@ GB" = "%@ ГБ";
-
-/* doc picker multiple items accessibility value */
-"%@ items" = "%@ об.";
 
 /* kilobytes */
 "%@ KB" = "%@ KБ";
@@ -34,9 +28,6 @@
 /* Main toolbar title for a single selected document. */
 "1 Document Selected" = "Выбран 1 документ";
 
-/* doc picker single item accessibility value */
-"1 item" = "1 объект";
-
 /* Main toolbar title for a single selected folder. */
 "1 Item Selected" = "Выбран 1 элемент";
 
@@ -55,18 +46,16 @@
 /* Menu option in the document picker view */
 "Actions" = "Действия";
 
-/* Cloud Setup button title to add a new account
-   Cloud Setup button title to convert an existing account */
+/* Cloud Setup button title to add a new account */
 
 "Add an Account" = "Добавить учетную запись";
 
-/* home screen button label */
-"Add OmniPresence Account" = "Добавить уч. запись OmniPresence";
+/* Cloud setup modal sheet title */
+"Add Cloud Account" = "Добавить облачную учетную запись";
 
 /* button title
    cancel button title
-   Discard unsynced edits dialog: cancel button label
-   Server account setup confirmation cancellation label */
+   Discard unsynced edits dialog: cancel button label */
 
 
 
@@ -84,7 +73,7 @@
 "Choose a format for emailing \"%@\":" = "Выберите формат для отправки по эл. почте «%@»:";
 
 /* toolbar prompt when choosing a template */
-"Choose a Template" = "Выбор шаблона";
+"Choose a Template" = "Выбрать шаблон";
 
 /* Cloud setup modal sheet title */
 "Choose Account Type" = "Выберите тип уч. записи";
@@ -92,32 +81,17 @@
 /* export options title */
 "Choose Format" = "Выберите формат";
 
-/* doc picker custom accessibility action name */
-"Clear name field" = "Очистить поле имени";
-
-/* title view clear button accessibility label. */
-"Clear Title" = "Очистить заголовок";
-
 /* Success label when connecting to an OmniPresence or WebDAV server account */
-"Connected" = "Подключено";
+"Connected" = "Связанные";
 
 /* webdav connecting label */
 "Connecting" = "Подключение";
 
 /* Menu option in the document picker view */
-"Copy as Image" = "Копировать изображение";
-
-/* gear menu item */
-"Copy from WebDAV" = "Копировать с WebDAV";
-
-/* gear menu item */
-"Copy from…" = "Копировать из…";
+"Copy as Image" = "Копировать как изображение";
 
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ настроено";
-
-/* sort by date */
-"Date" = "Дата";
 
 /* Delete toolbar item accessibility label. */
 "Delete" = "Удалить";
@@ -156,16 +130,10 @@
 "Duplicate %ld Items" = "Дублировать элементы: %ld";
 
 /* omni sync server setup help */
-"Easily sync Omni documents between devices. Signup is free!" = "Простая синхронизация документов Omni между устройствами. Бесплатная регистрация!";
+"Easily sync Omni documents between devices. Signup is free!" = "Cинхронизация документов между устройствами. Бесплатная регистрация!";
 
 /* When displaying a sync error, this is the option to change the username and password. */
 "Edit Credentials" = "Изменить уч. данные";
-
-/* doc picker custom accessibility action name */
-"Edit name" = "Переименовать";
-
-/* title view edit button item accessibility hint. */
-"Edits the document's title." = "Редактирование заголовка документа.";
 
 /* empty trash button title */
 "Empty Trash" = "Очистить корзину";
@@ -180,26 +148,18 @@
 
 "Export" = "Экспорт";
 
-/* export to description */
-"Export \"%@\" as:" = "Экспортировать «%@» как:";
-
 /* export action description */
 "Export \"%@\" to %@ as:" = "Экспортировать «%1$@» в «%2$@» как:";
 
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Экспортировать в WebDAV";
 
-/* Menu option in the document picker view */
-"Export to…" = "Экспортировать в…";
-
 /* finished */
 "Finished" = "Завершено";
 
-/* doc picker folder type accessibility value */
-"Folder" = "Папка";
-
 /* gear menu item
-   import sheet title */
+   Import WebDAV server account list */
+
 "Import" = "Импорт";
 
 /* Info item accessibility label */
@@ -208,29 +168,14 @@
 /* error title */
 "Invalid Zip Archive" = "Недопустимый Zip-архив";
 
-/* doc picker title label editing accessibility value */
-"Is editing" = "Редактирует";
-
-/* Notice for the user about the last edit to a document (unknown device) */
-"Last edit: %@" = "Последняя правка: %@";
-
-/* Notice for the user about the last edit to a document (another device) */
-"Last edit: %@ on another device" = "Последняя правка: %@ на другом устройстве";
-
-/* Notice for the user about the last edit to a document (this device) */
-"Last edit: %@ on this device" = "Последняя правка: %@ на этом устройстве";
-
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "Связь с внешним документом";
+/* Message format for alert informing user that the document has been reloaded with cloud edits from another device */
+"Last edited on %@." = "Последнее изменение %@.";
 
 /* Server Account Setup label: location */
 "Location" = "Место";
 
 /* top level doc picker title */
-"Locations" = "Размещения";
-
-/* modified date accessibility value */
-"Modified %@" = "Изменено %@";
+"Locations" = "Места";
 
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
@@ -275,9 +220,6 @@
 /* Import message for empty table view */
 "No accounts are configured for importing." = "Уч. записи для импорта не настроены.";
 
-/* doc picker no items accessibility value */
-"No items" = "Нет объектов";
-
 /* Not downloaded accessibility label. */
 "Not downloaded" = "Не загружено";
 
@@ -287,16 +229,13 @@
 /* button title
    When displaying a sync error, this is the option to ignore the error. */
 
-"OK" = "OK";
+"OK" = "ОК";
 
 /* Omni Presence config email subject format */
 "OmniPresence Configuration: %@" = "Конфигурация OmniPresence: %@";
 
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Откройте этот файл на другом устройстве, чтобы настроить там OmniPresence.";
-
-/* Generic name for location of external documents */
-"Other" = "Прочее";
 
 /* Server Account Setup label: password */
 "Password" = "Пароль";
@@ -306,18 +245,6 @@
 
 /* Menu option in the document picker view */
 "Print" = "Печать";
-
-/* purchase now button title */
-"Purchase Now." = "Купить сейчас.";
-
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "Удалить";
-
-/* remove button title */
-"Remove %ld Documents" = "Удалить документы: %ld";
-
-/* remove button title */
-"Remove Document" = "Удалить документ";
 
 /* rename button title */
 "Rename" = "Переименовать";
@@ -338,10 +265,10 @@
 "Replace document?" = "Заменить документ?";
 
 /* When displaying a sync error, this is the option to report the error. */
-"Report Error" = "Сообщить об ошибке";
+"Report Error" = "Сообщи. ошибке";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Восстановить образцы документов";
+"Restore Sample Documents" = "Восстановить образцы";
 
 /* Share menu title */
 "Restore to..." = "Восстановить в…";
@@ -351,9 +278,6 @@
 
 /* Account setup toolbar button title to save account settings */
 "Save" = "Сохранить";
-
-/* document picker compact title view accessibility hint */
-"Scroll down to show sort and filter controls" = "Прокрутите вниз, чтобы увидеть функции сортировки и фильтрации";
 
 /* document picker button label */
 "Search" = "Поиск";
@@ -365,7 +289,7 @@
 "Select a Document" = "Выбрать документ";
 
 /* send to app description */
-"Send \"%@\" to app as:" = "Отправить «%@» в приложение в виде:";
+"Send \"%@\" to app as:" = "Отправить «%@» в программу в виде:";
 
 /* Omni Sync Server send settings button title */
 "Send Settings via Email" = "Отправка настроек по эл. почте";
@@ -388,10 +312,13 @@
 "Setting up \"%@\"" = "Настроить «%@»";
 
 /* Omni Sync Server sign up button title */
-"Sign Up For a New Account" = "Завести новую учетную запись";
+"Sign Up For a New Account" = "Создать новую учетную запись";
 
-/* sort by accessibility label */
-"Sort by %@" = "Сортировать по %@";
+/* sort by date */
+"Sort by date" = "Сортировать по дате";
+
+/* sort by title */
+"Sort by title" = "Сортировать по названию";
 
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "Синхронизировать сейчас";
@@ -401,9 +328,6 @@
 
 /* empty picker button text */
 "Tap here, or on the + in the toolbar, to add a document." = "Нажмите здесь или нажмите кнопку + на панели, чтобы добавить документ.";
-
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Нажмите значок + на панели, чтобы добавить документ из iCloud Drive или другой программы.";
 
 /* file name label for template filte types */
 "Template:" = "Шаблон:";
@@ -430,13 +354,10 @@
 "This Cloud Account no longer exists." = "Эта облачная учетная запись больше не существует.";
 
 /* item not fully downloaded error message */
-"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Этот элемент нельзя дублировать, так как он загружен не полностью. Перед повторением попытки коснитесь элемента и дождитесь его загрузки.";
+"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Этот элемент нельзя дублировать, так как он загружен не полностью. Коснитесь элемента и дождитесь полной загрузки, затем попробуйте снова.";
 
 /* item not fully downloaded error message */
-"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Этот элемент нельзя экспортировать, так как он загружен не полностью. Перед повторением попытки коснитесь элемента и дождитесь его загрузки.";
-
-/* sort by title */
-"Title" = "Заголовок";
+"This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Этот элемент нельзя экспортировать, так как он загружен не полностью. Коснитесь элемента и дождитесь полной загрузки, затем попробуйте снова.";
 
 /* error title */
 "Unable to open file." = "Не удается открыть файл.";

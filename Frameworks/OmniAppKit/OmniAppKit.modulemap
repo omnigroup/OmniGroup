@@ -1,0 +1,9 @@
+framework module OmniAppKit {
+    umbrella header "OmniAppKit.h"
+    
+    // Only subclasses should import this
+    exclude header "OADocumentSubclass.h"
+
+    export *
+    module * { export * }
+}

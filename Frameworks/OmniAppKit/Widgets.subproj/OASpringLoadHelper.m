@@ -1,4 +1,4 @@
-// Copyright 2003-2009, 2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,6 +13,7 @@
 RCS_ID("$Id$");
 
 @interface OASpringLoadHelper (/*Private*/)
+@property (nonatomic, weak) id <OASpringLoadHelper> delegate;
 - (id)_initWithDelegate:(id <OASpringLoadHelper>)aDelegate;
 - (void)_startSpringTimer;
 - (BOOL)_shouldFlash;
@@ -26,16 +27,14 @@ RCS_ID("$Id$");
 
 + (OASpringLoadHelper *)springLoadHelperWithDelegate:(id <OASpringLoadHelper>)aDelegate;
 {
-    return [[[OASpringLoadHelper alloc] _initWithDelegate:aDelegate] autorelease];
+    return [[OASpringLoadHelper alloc] _initWithDelegate:aDelegate];
 }
 
 - (void)dealloc;
 {
     [self _stopSpringTimer];
 
-    nonretainedDelegate = nil;
-
-    [super dealloc];
+    _delegate = nil;
 }
 
 #pragma mark API
@@ -70,7 +69,7 @@ RCS_ID("$Id$");
     if (!(self = [super init]))
         return nil;
 
-    nonretainedDelegate = aDelegate;
+    _delegate = aDelegate;
 
     return self;
 }
@@ -100,15 +99,15 @@ RCS_ID("$Id$");
 #endif
 
     if ([self _shouldFlash]) {
-        springTimer = [[NSTimer scheduledTimerWithTimeInterval:springingDelaySeconds target:self selector:@selector(_startFlashing) userInfo:nil repeats:NO] retain];
+        springTimer = [NSTimer scheduledTimerWithTimeInterval:springingDelaySeconds target:self selector:@selector(_startFlashing) userInfo:nil repeats:NO];
     } else {
-        springTimer = [[NSTimer scheduledTimerWithTimeInterval:springingDelaySeconds target:self selector:@selector(_springLoad) userInfo:nil repeats:NO] retain];
+        springTimer = [NSTimer scheduledTimerWithTimeInterval:springingDelaySeconds target:self selector:@selector(_springLoad) userInfo:nil repeats:NO];
     }
 }
 
 - (BOOL)_shouldFlash;
 {
-    return [nonretainedDelegate springLoadHelperShouldFlash:self];
+    return [self.delegate springLoadHelperShouldFlash:self];
 }
 
 - (void)_startFlashing;
@@ -122,7 +121,7 @@ RCS_ID("$Id$");
     if (springTimer != nil)
         [self _stopSpringTimer];
 
-    springTimer = [[NSTimer scheduledTimerWithTimeInterval:0.075 target:self selector:@selector(_flash) userInfo:nil repeats:YES] retain];
+    springTimer = [NSTimer scheduledTimerWithTimeInterval:0.075 target:self selector:@selector(_flash) userInfo:nil repeats:YES];
 }
 
 - (void)_flash;
@@ -133,10 +132,10 @@ RCS_ID("$Id$");
 
     if (flashCount++ == 4) {
         // The spring load action invoked by -springLoadHelperWantsSpringLoad: may leave the target selected, but we don't necessarily want to leave the flash on since the delegate might not actually select the target on spring load (OmniOutliner might focus or expand a row, for example).
-        [nonretainedDelegate springLoadHelper:self wantsFlash:NO];
+        [self.delegate springLoadHelper:self wantsFlash:NO];
         [self _springLoad];
     } else {
-        [nonretainedDelegate springLoadHelper:self wantsFlash:!(flashCount % 2 == 0)];
+        [self.delegate springLoadHelper:self wantsFlash:!(flashCount % 2 == 0)];
     }
 }
 
@@ -147,7 +146,6 @@ RCS_ID("$Id$");
 #endif
 
     [springTimer invalidate];
-    [springTimer release];
     springTimer = nil;
 }
 
@@ -160,7 +158,7 @@ RCS_ID("$Id$");
     if (springTimer != nil)
         [self _stopSpringTimer];
 
-    [nonretainedDelegate springLoadHelperWantsSpringLoad:self];
+    [self.delegate springLoadHelperWantsSpringLoad:self];
 }
 
 @end

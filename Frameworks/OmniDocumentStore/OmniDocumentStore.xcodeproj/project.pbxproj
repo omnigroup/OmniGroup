@@ -40,6 +40,7 @@
 		344F78F21B56FD5B003BB98D /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 344F78F11B56FD5B003BB98D /* OmniFoundation.framework */; };
 		344F78F41B56FD60003BB98D /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 344F78F31B56FD60003BB98D /* OmniBase.framework */; };
 		344F78F61B56FD8A003BB98D /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 344F78F51B56FD8A003BB98D /* MobileCoreServices.framework */; };
+		34A302CE1BDEAE6400E862B9 /* OmniDocumentStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 34A302CD1BDEAE6400E862B9 /* OmniDocumentStore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -123,6 +124,8 @@
 		348969D4179D9C90007978EC /* OmniDocumentStore_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDocumentStore_Prefix.h; sourceTree = SOURCE_ROOT; };
 		348969E0179D9FD4007978EC /* ODSUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODSUtilities.h; sourceTree = SOURCE_ROOT; };
 		348969E1179D9FD4007978EC /* ODSUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODSUtilities.m; sourceTree = SOURCE_ROOT; };
+		34A302CD1BDEAE6400E862B9 /* OmniDocumentStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniDocumentStore.h; sourceTree = SOURCE_ROOT; };
+		34A302CF1BDEAEED00E862B9 /* OmniDocumentStore.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = OmniDocumentStore.modulemap; sourceTree = SOURCE_ROOT; };
 		34C1BBFD179DCF710095744C /* ODSErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODSErrors.h; sourceTree = SOURCE_ROOT; };
 		34C1BBFF179DCF890095744C /* ODSErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ODSErrors.m; sourceTree = SOURCE_ROOT; };
 		4A1A46681AE860A200A23C29 /* ODSExternalScope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ODSExternalScope.h; sourceTree = SOURCE_ROOT; };
@@ -207,6 +210,8 @@
 			children = (
 				344F78BE1B56F9C1003BB98D /* Info.plist */,
 				348969D4179D9C90007978EC /* OmniDocumentStore_Prefix.h */,
+				34A302CD1BDEAE6400E862B9 /* OmniDocumentStore.h */,
+				34A302CF1BDEAEED00E862B9 /* OmniDocumentStore.modulemap */,
 			);
 			name = "Supporting Files";
 			path = OmniDocumentStore;
@@ -323,6 +328,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34A302CE1BDEAE6400E862B9 /* OmniDocumentStore.h in Headers */,
 				344F78D71B56FAD5003BB98D /* ODSFilter.h in Headers */,
 				344F78D21B56FABE003BB98D /* ODSScope.h in Headers */,
 				344F78D91B56FADB003BB98D /* ODSUtilities.h in Headers */,
@@ -366,7 +372,7 @@
 		3489691D179D99DD007978EC /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = "The Omni Group";
 				TargetAttributes = {
 					344F78B51B56F98A003BB98D = {
@@ -454,8 +460,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDocumentStore;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(OMNI_BUNDLE_IDENTIFIER)";
+				MODULEMAP_FILE = OmniDocumentStore.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDocumentStore;
 				PRODUCT_NAME = OmniDocumentStore;
 			};
 			name = Debug;
@@ -466,8 +472,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDocumentStore;
-				PRODUCT_BUNDLE_IDENTIFIER = "$(OMNI_BUNDLE_IDENTIFIER)";
+				MODULEMAP_FILE = OmniDocumentStore.modulemap;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniDocumentStore;
 				PRODUCT_NAME = OmniDocumentStore;
 			};
 			name = Release;
@@ -476,6 +482,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 348969AC179D9A1C007978EC /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1.0;
 			};
 			name = Debug;
 		};
@@ -483,6 +490,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 348969AD179D9A1C007978EC /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1.0;
 			};
 			name = Release;
 		};

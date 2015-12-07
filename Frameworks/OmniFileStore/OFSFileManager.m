@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,14 +10,14 @@
 #import <OmniDAV/ODAVFileInfo.h>
 #import <OmniFileStore/Errors.h>
 #import <OmniFileStore/OFSDAVFileManager.h>
-#import <OmniFileStore/OFSFileFileManager.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
-#import <OmniBase/macros.h>
+#import <OmniBase/OmniBase.h>
 #import <OmniFoundation/NSString-OFPathExtensions.h>
 #import <OmniFoundation/NSString-OFSimpleMatching.h>
 #import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFPreference.h>
 
+#import "OFSFileFileManager.h"
 #import "OFSFileOperation.h"
 
 RCS_ID("$Id$");

@@ -241,15 +241,15 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
     _isEditingUnderlyingTextStorage = NO;
 }
 
-- (void)fixAttributesInRange:(NSRange)range;
+- (void)fixAttributesInRange:(NSRange)entireRange;
 {
     // This gets called recursively when further changes are made, so we can't just have a flag.
     _fixAttributesNestingLevel++;
     
     // Font substitution for Kanji, etc.
-    [super fixAttributesInRange:range];
+    [super fixAttributesInRange:entireRange];
     
-    [[self class] _scaleAttributesBy:_scale fromAttributedString:_underlyingStorageWithTrueFontSizes range:range applier:^(NSDictionary *scaledAttributes, NSRange range){
+    [[self class] _scaleAttributesBy:_scale fromAttributedString:_underlyingStorageWithTrueFontSizes range:entireRange applier:^(NSDictionary *scaledAttributes, NSRange range){
         [_storageWithFontSizesScaledForDisplay setAttributes:scaledAttributes range:range];
         [self edited:NSTextStorageEditedAttributes range:range changeInLength:0];
     }];
@@ -273,9 +273,9 @@ NSDictionary *OUICopyScaledTextAttributes(NSDictionary *textAttributes, CGFloat 
 
 #pragma mark - Private
 
-+ (void)_scaleAttributesBy:(CGFloat)scale fromAttributedString:(NSAttributedString *)originalAttributedString range:(NSRange)range applier:(void (^)(NSDictionary *scaledAttributes, NSRange range))applier;
++ (void)_scaleAttributesBy:(CGFloat)scale fromAttributedString:(NSAttributedString *)originalAttributedString range:(NSRange)entireRange applier:(void (^)(NSDictionary *scaledAttributes, NSRange range))applier;
 {
-    [originalAttributedString enumerateAttributesInRange:range options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary *attrs, NSRange range, BOOL *stop) {
+    [originalAttributedString enumerateAttributesInRange:entireRange options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSDictionary *attrs, NSRange range, BOOL *stop) {
         NSMutableDictionary *scaledAttributes = [[NSMutableDictionary alloc] initWithDictionary:attrs];
         _scaleAttributes(scaledAttributes, attrs, scale);
         applier(scaledAttributes, range);

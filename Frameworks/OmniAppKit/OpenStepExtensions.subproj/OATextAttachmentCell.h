@@ -40,7 +40,7 @@
 @property(nonatomic,readonly) CGSize cellSize;
 - (CGPoint)cellBaselineOffset;
 
-@property(nonatomic,assign) OATextAttachment *attachment;
+@property(nonatomic,weak) OATextAttachment *attachment;
 
 #if 0
 // Sophisticated cells should implement these in addition to the simpler methods, above.  The class NSTextAttachmentCell implements them to simply call the simpler methods; more complex conformers should implement the simpler methods to call these.
@@ -58,12 +58,8 @@
 
 // Subclasses NSCell on the Mac, but no such thing here.
 @interface OATextAttachmentCell : NSObject <OATextAttachmentCell>
-{
-@private
-    OATextAttachment *_nonretained_attachment;
-}
 
-@property(nonatomic,assign) OATextAttachment *attachment;
+@property(nonatomic,weak) OATextAttachment *attachment;
 
 @end
 

@@ -334,7 +334,8 @@ static NSString *_normalizedPath(NSString *path)
     NSEnumerator *frameworkEnumerator = [[NSBundle allFrameworks] objectEnumerator];
     NSBundle *framework;
     while ((framework = [frameworkEnumerator nextObject])) {
-        [linkedBundles addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:framework, @"bundle", @"YES", @"loaded", @"YES", @"preloaded", nil]];
+        if (framework.bundleIdentifier != nil)
+            [linkedBundles addObject:[NSMutableDictionary dictionaryWithObjectsAndKeys:framework, @"bundle", @"YES", @"loaded", @"YES", @"preloaded", nil]];
     }
     
 #ifdef OF_BUNDLE_REGISTRY_DYNAMIC_BUNDLE_LOADING

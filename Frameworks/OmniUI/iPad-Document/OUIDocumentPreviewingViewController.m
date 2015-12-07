@@ -19,6 +19,8 @@ RCS_ID("$Id$");
 @property (nonatomic, strong, readwrite) ODSFileItem *fileItem;
 @property (nonatomic, strong) OUIDocumentPreview *preview;
 
+@property (nonatomic, strong) NSMutableArray <id <UIPreviewActionItem>> *previewActions;
+
 @property (weak, nonatomic) IBOutlet UINavigationBar *navBar;
 @property (weak, nonatomic) IBOutlet UIView *containerView;
 @property (weak, nonatomic) IBOutlet OUIDocumentPreviewView *previewView;
@@ -41,6 +43,7 @@ RCS_ID("$Id$");
     if (self != nil) {
         _fileItem = fileItem;
         _preview = preview;
+        _previewActions = [[NSMutableArray <id <UIPreviewActionItem>> alloc] init];
     }
     
     return self;
@@ -110,6 +113,13 @@ RCS_ID("$Id$");
     return pr;
 }
 
+- (void)addPreviewAction:(UIPreviewAction *)previewAction;
+{
+    if (previewAction) {
+        [self.previewActions addObject:previewAction];
+    }
+}
+
 - (void)prepareForCommitWithBackgroundView:(UIView *)backgroundView;
 {
     self.navBarHeightConstraint.constant = 44.0;
@@ -124,7 +134,7 @@ RCS_ID("$Id$");
         [backgroundView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor].active = YES;
         [backgroundView.leftAnchor constraintEqualToAnchor:self.view.leftAnchor].active = YES;
         
-        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+        UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
         UIVisualEffectView *visualEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
         visualEffectView.translatesAutoresizingMaskIntoConstraints = NO;
         
@@ -149,6 +159,11 @@ RCS_ID("$Id$");
         self.containerViewLeadingConstraint.constant = leftRightPadding;
         self.containerViewTrailingConstraint.constant = leftRightPadding;
     }
+}
+
+- (NSArray <id <UIPreviewActionItem>> *)previewActionItems;
+{
+    return [self.previewActions copy];
 }
 
 #pragma mark Private API

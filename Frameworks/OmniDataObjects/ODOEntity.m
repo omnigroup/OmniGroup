@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -293,14 +293,14 @@ static CFComparisonResult _compareByName(const void *val1, const void *val2, voi
 }
 #endif
 
-extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString *updateKey, NSString *deleteKey, NSString *pkQueryKey,
+extern ODOEntity *ODOEntityCreate(NSString *entityName, NSString *insertKey, NSString *updateKey, NSString *deleteKey, NSString *pkQueryKey,
                                   NSString *instanceClassName, NSArray *properties)
 {
     ODOEntity *entity = [[ODOEntity alloc] init];
     entity->_nonretained_model = (id)0xdeadbeef; // TODO: Hook this up
 
-    OBASSERT([name length] > 0);
-    entity->_name = [name copy];
+    OBASSERT([entityName length] > 0);
+    entity->_name = [entityName copy];
 
     OBASSERT(insertKey);
     OBASSERT(updateKey);
@@ -349,24 +349,24 @@ extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString 
     
     for (ODOProperty *prop in entity->_properties) {
         struct _ODOPropertyFlags flags = ODOPropertyFlags(prop);
-        NSString *name = [prop name];
+        NSString *propertyName = [prop name];
         
-        OBASSERT([propertiesByName objectForKey:name] == nil);
-        OBASSERT([attributesByName objectForKey:name] == nil);
-        OBASSERT([relationshipsByName objectForKey:name] == nil);
+        OBASSERT([propertiesByName objectForKey:propertyName] == nil);
+        OBASSERT([attributesByName objectForKey:propertyName] == nil);
+        OBASSERT([relationshipsByName objectForKey:propertyName] == nil);
         
-        [propertiesByName setObject:prop forKey:name];
+        [propertiesByName setObject:prop forKey:propertyName];
         if (flags.relationship) {
             ODORelationship *rel = (ODORelationship *)prop;
             
             [relationships addObject:rel];
             [flags.toMany ? toManyRelationships : toOneRelationships addObject:rel];
-            [relationshipsByName setObject:rel forKey:name];
+            [relationshipsByName setObject:rel forKey:propertyName];
         } else {
             ODOAttribute *attr = (ODOAttribute *)prop;
             
             [attributes addObject:attr];
-            [attributesByName setObject:attr forKey:name];
+            [attributesByName setObject:attr forKey:propertyName];
             if ([attr isPrimaryKey]) {
                 OBASSERT(entity->_primaryKeyAttribute == nil);
                 entity->_primaryKeyAttribute = [attr retain];
@@ -393,10 +393,10 @@ extern ODOEntity *ODOEntityCreate(NSString *name, NSString *insertKey, NSString 
     
     // Make immutable CFArrays that do NOT use CFEqual for equality, but just pointer equality (since we've interned our property names and selectors are pointer-uniqued).
     {
-        CFIndex propertyIndex, propertyCount = [entity->_properties count];
+        CFIndex propertyCount = [entity->_properties count];
         NSString **propertyNamesCArray = malloc(sizeof(NSString *) * propertyCount);
 
-        for (propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
+        for (CFIndex propertyIndex = 0; propertyIndex < propertyCount; propertyIndex++)
             propertyNamesCArray[propertyIndex] = [[entity->_properties objectAtIndex:propertyIndex] name];
                 
         CFArrayCallBacks callbacks;

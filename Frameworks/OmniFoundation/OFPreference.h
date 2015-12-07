@@ -25,7 +25,7 @@ extern NSString * const OFPreferenceObjectValueBinding;
 + (OFPreference *)preferenceForKey:(NSString *)key enumeration:(OFEnumNameTable *)enumeration;
 + (OFPreference *)preferenceForKey:(NSString *)key defaultValue:(id)value;
 
-+ (NSSet *)registeredKeys;
++ (NSSet <NSString *> *)registeredKeys;
 + (void)recacheRegisteredKeys;
 
 + (void)addObserver:(id)anObserver selector:(SEL)aSelector forPreference:(OFPreference *)aPreference;
@@ -33,7 +33,7 @@ extern NSString * const OFPreferenceObjectValueBinding;
 
 + (id)coerceStringValue:(NSString *)stringValue toTypeOfPropertyListValue:(id)propertyListValue;
 
-- (NSString *) key;
+@property(nonatomic,readonly) NSString *key;
 - (OFEnumNameTable *) enumeration;
 
 - (id)controller;

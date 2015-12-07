@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -350,10 +350,10 @@ static unsigned AccountContext;
     }
 
     // Atomically remove the account directory now that any syncing on this account is done.
-    __autoreleasing NSError *removeError;
+    __autoreleasing NSError *removeAccountError;
     NSURL *accountStoreDirectory = [self localStoreURLForAccount:account];
-    if (![[NSFileManager defaultManager] atomicallyRemoveItemAtURL:accountStoreDirectory error:&removeError]) {
-        [removeError log:@"Error removing local account store %@", accountStoreDirectory];
+    if (![[NSFileManager defaultManager] atomicallyRemoveItemAtURL:accountStoreDirectory error:&removeAccountError]) {
+        [removeAccountError log:@"Error removing local account store %@", accountStoreDirectory];
         return;
     }
     
@@ -366,8 +366,6 @@ static unsigned AccountContext;
     // On the Mac, we'll leave the synchronized files around since they are in a user-visible location and the user may have just decided to stop using our service. On iOS, there is no other way to get to the files, so we need to clean up after ourselves.
 #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
     if (account.usageMode == OFXServerAccountUsageModeCloudSync) {
-        removeError = nil;
-
         // Go through this helper method to make sure we delete the right ancestory URL (since there is an extra 'Documents' component). This does some other checks to make sure we are deleting the right thing.
         [OFXServerAccount deleteGeneratedLocalDocumentsURL:account.localDocumentsURL completionHandler:^(NSError *removeError) {
             if (removeError)

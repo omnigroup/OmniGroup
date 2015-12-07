@@ -1,4 +1,4 @@
-// Copyright 2008, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,9 +14,11 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OUZipRawFileMember
 
-- initWithName:(NSString *)name entry:(OUUnzipEntry *)entry archive:(OUUnzipArchive *)archive;
+- (instancetype)initWithName:(NSString *)name entry:(OUUnzipEntry *)entry archive:(OUUnzipArchive *)archive;
 {
     OBPRECONDITION(![NSString isEmptyString:name]);
     OBPRECONDITION(entry);
@@ -32,7 +34,7 @@ RCS_ID("$Id$");
     return self;
 }
 
-- initWithEntry:(OUUnzipEntry *)entry archive:(OUUnzipArchive *)archive;
+- (instancetype)initWithEntry:(OUUnzipEntry *)entry archive:(OUUnzipArchive *)archive;
 {
     return [self initWithName:[entry name] entry:entry archive:archive];
 }
@@ -40,7 +42,7 @@ RCS_ID("$Id$");
 #pragma mark -
 #pragma mark OUZipMember subclass
 
-- (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString *)fileNamePrefix error:(NSError **)outError;
+- (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString * _Nullable)fileNamePrefix error:(NSError **)outError;
 {
     BOOL result;
     NSError *resultError = nil;
@@ -69,3 +71,5 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

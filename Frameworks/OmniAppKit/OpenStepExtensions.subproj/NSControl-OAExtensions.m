@@ -1,4 +1,4 @@
-// Copyright 1998-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1998-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,24 +41,16 @@ RCS_ID("$Id$")
 
     if (![attributedString isEqual:[self attributedStringValue]])
         [self setAttributedStringValue:attributedString];
-
-    [attributedString release];
 }
 
 - (NSMutableDictionary *)attributedStringDictionaryWithCharacterWrapping;
 {
-    NSMutableParagraphStyle *paragraphStyle;
-    NSMutableDictionary *attributes;
-
-    paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
     [paragraphStyle setLineBreakMode:NSLineBreakByCharWrapping];
     [paragraphStyle setAlignment:[self alignment]];
-    
-    attributes = [[NSMutableDictionary alloc] initWithObjectsAndKeys:paragraphStyle,
-        NSParagraphStyleAttributeName, [self font], NSFontAttributeName, nil];
-    [paragraphStyle release];
 
-    return [attributes autorelease];
+    return [[NSMutableDictionary alloc] initWithObjectsAndKeys:paragraphStyle,
+        NSParagraphStyleAttributeName, [self font], NSFontAttributeName, nil];
 }
 
 

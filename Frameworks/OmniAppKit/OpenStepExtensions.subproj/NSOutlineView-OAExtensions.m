@@ -17,18 +17,15 @@
 
 RCS_ID("$Id$")
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSTableView (OAKeyDownExtensions)
 - (BOOL)_processKeyDownCharacter:(unichar)character;
 @end
 
-@interface NSOutlineView (OAExtensionsPrivate)
-- (void)_expandItems:(NSArray *)items andChildren:(BOOL)andChildren;
-- (void)_collapseItems:(NSArray *)items andChildren:(BOOL)andChildren;
-@end
-
 @implementation NSOutlineView (OAExtensions)
 
-- (id)selectedItem;
+- (nullable id)selectedItem;
 {
     if ([self numberOfSelectedRows] != 1)
         return nil;
@@ -36,12 +33,12 @@ RCS_ID("$Id$")
     return [self itemAtRow: [self selectedRow]];
 }
 
-- (void)setSelectedItem:(id)item;
+- (void)setSelectedItem:(nullable id)item;
 {
     [self setSelectedItem: item visibility: OATableViewRowVisibilityLeaveUnchanged];
 }
 
-- (void)setSelectedItem:(id)item visibility:(OATableViewRowVisibility)visibility;
+- (void)setSelectedItem:(nullable id)item visibility:(OATableViewRowVisibility)visibility;
 {
     if (item == nil) {
         [self deselectAll:nil];
@@ -71,7 +68,7 @@ RCS_ID("$Id$")
     return items;
 }
 
-- (void)setSelectedItems:(NSArray *)items visibility:(OATableViewRowVisibility)visibility;
+- (void)setSelectedItems:(nullable NSArray *)items visibility:(OATableViewRowVisibility)visibility;
 {
     NSUInteger itemCount = [items count];
     if (!itemCount)
@@ -104,12 +101,12 @@ RCS_ID("$Id$")
     [self scrollSelectedRowsToVisibility: visibility];
 }
 
-- (void)setSelectedItems:(NSArray *)items;
+- (void)setSelectedItems:(nullable NSArray *)items;
 {
     [self setSelectedItems: items visibility: OATableViewRowVisibilityLeaveUnchanged];
 }
 
-- (id)firstItem;
+- (nullable id)firstItem;
 {
     id <NSOutlineViewDataSource> dataSource = self.dataSource;
     NSInteger count = [dataSource outlineView:self numberOfChildrenOfItem:nil];
@@ -132,7 +129,7 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)expandItemAndChildren:(id)item;
+- (void)expandItemAndChildren:(nullable id)item;
 {
     id <NSOutlineViewDataSource> dataSource = self.dataSource;
     if (item == nil || [dataSource outlineView:self isItemExpandable:item]) {
@@ -145,7 +142,7 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)collapseItemAndChildren:(id)item;
+- (void)collapseItemAndChildren:(nullable id)item;
 {
     id <NSOutlineViewDataSource> dataSource = self.dataSource;
     if (item == nil || [dataSource outlineView:self isItemExpandable:item]) {
@@ -164,12 +161,12 @@ RCS_ID("$Id$")
 // NSResponder subclass
 //
 
-- (void)moveLeft:(id)sender
+- (void)moveLeft:(nullable id)sender
 {
     [self _collapseItems:[self selectedItems] andChildren:NO];
 }
 
-- (void)moveRight:(id)sender;
+- (void)moveRight:(nullable id)sender;
 {
     [self _expandItems:[self selectedItems] andChildren:NO];
 }
@@ -206,25 +203,23 @@ RCS_ID("$Id$")
 // Actions
 //
 
-- (IBAction)expandAll:(id)sender;
+- (IBAction)expandAll:(nullable id)sender;
 {
     NSArray *selectedItems = [self selectedItems];
     [self expandItemAndChildren:nil];
     [self setSelectedItems:selectedItems];
 }
 
-- (IBAction)contractAll:(id)sender;
+- (IBAction)contractAll:(nullable id)sender;
 {
     NSArray *selectedItems = [self selectedItems];
     [self collapseItemAndChildren:nil];
     [self setSelectedItems:selectedItems];
 }
 
-@end
+#pragma mark - Private
 
-@implementation NSOutlineView (OAExtensionsPrivate)
-
-- (void)_expandItems:(NSArray *)items andChildren:(BOOL)andChildren;
+- (void)_expandItems:(nullable NSArray *)items andChildren:(BOOL)andChildren;
 {
     id <NSOutlineViewDataSource> dataSource = self.dataSource;
     NSInteger itemCount = [items count];
@@ -239,7 +234,7 @@ RCS_ID("$Id$")
     }
 }
 
-- (void)_collapseItems:(NSArray *)items andChildren:(BOOL)andChildren;
+- (void)_collapseItems:(nullable NSArray *)items andChildren:(BOOL)andChildren;
 {
     id <NSOutlineViewDataSource> dataSource = self.dataSource;
     NSInteger itemCount = [items count];
@@ -255,3 +250,5 @@ RCS_ID("$Id$")
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

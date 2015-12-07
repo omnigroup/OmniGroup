@@ -1,0 +1,6 @@
+framework module OmniUIDocument {
+    umbrella header "OmniUIDocument.h"
+
+    export *
+    module * { export * }
+}

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -24,7 +24,7 @@ typedef enum _OAContextMenuLayout {
 + (OAContextMenuLayout) contextMenuLayoutDefaultValue;
 + (void) setContextMenuLayoutDefaultValue: (OAContextMenuLayout) newValue;
 
-+ (OAContextMenuLayout) contextMenuLayoutForScreen: (NSScreen *) screen;
++ (OAContextMenuLayout) contextMenuLayoutForScreen: (NSScreen *) originalScreen;
 + (NSString *) lengthAdjustedContextMenuLabel: (NSString *) label layout: (OAContextMenuLayout) layout;
 
 - (NSMenuItem *)itemWithAction:(SEL)action;

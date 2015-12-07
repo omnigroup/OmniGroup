@@ -190,7 +190,7 @@ static void EnumerateIdentifiersForTagInDictionary(NSDictionary *dictionary, NSS
 
 #pragma mark - Public API
 
-NSString *OFUTIForFileURLPreferringNative(NSURL *fileURL, NSError **outError)
+NSString * _Nullable OFUTIForFileURLPreferringNative(NSURL *fileURL, NSError **outError)
 {
     if (![fileURL isFileURL])
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"Argument to OFUTIForFileURL must be a file URL, not %@", [fileURL absoluteString]] userInfo:nil];
@@ -202,10 +202,12 @@ NSString *OFUTIForFileURLPreferringNative(NSURL *fileURL, NSError **outError)
     return OFUTIForFileExtensionPreferringNative([fileURL pathExtension], isDirectory);
 }
 
-NSString *OFUTIForFileExtensionPreferringNative(NSString *extension, NSNumber *isDirectory)
+NSString *OFUTIForFileExtensionPreferringNative(NSString *extension, NSNumber * _Nullable isDirectory)
 {
-    if (isDirectory && [extension isEqualToString:OFDirectoryPathExtension])
+    if (isDirectory && [extension isEqualToString:OFDirectoryPathExtension]) {
+        OBASSERT([isDirectory boolValue]); // BUG: The 'if' above should be checking this, but wasn't. The Swift version does and if this assertion doesn't fail in long enough, we should here too (or fix callers that fail it).
         return (OB_BRIDGE NSString *)kUTTypeFolder;
+    }
     
     CFStringRef conformingUTI = NULL;
     if (isDirectory && [isDirectory boolValue])
@@ -216,7 +218,7 @@ NSString *OFUTIForFileExtensionPreferringNative(NSString *extension, NSNumber *i
     return OFUTIForTagPreferringNative(kUTTagClassFilenameExtension, extension, conformingUTI);
 }
 
-NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tagValue, CFStringRef conformingToUTIOrNull)
+NSString *OFUTIForTagPreferringNative(CFStringRef tagClass, NSString *tagValue, CFStringRef _Nullable conformingToUTIOrNull)
 {
     __block NSString *resolvedType = nil;
     
@@ -306,4 +308,3 @@ BOOL _OFTypeConformsToOneOfTypes(NSString *type, ...)
     va_end(args);
     return conforms;
 }
-

@@ -15,6 +15,7 @@
 #import <OmniFoundation/OFByteProviderProtocol.h>
 #import <OmniFileStore/OFSFileManagerDelegate.h>
 #import <OmniFileStore/OFSDocumentKey.h>
+#import <OmniFileStore/OFSEncryptionConstants.h>
 #import <OmniFileStore/Errors.h>
 #import <OmniDAV/ODAVFileInfo.h>
 #import <dispatch/dispatch.h>
@@ -31,24 +32,12 @@ OB_REQUIRE_ARC
 #define FMT_V0_6_MAGIC_LEN 35
 static const char magic_ver0_6[FMT_V0_6_MAGIC_LEN] = "OmniFileStore encryption\x00STRAWMAN-6";
 
-#define SEGMENTED_IV_LEN 12           /* The length of the IV stored in front of each encrypted segment */
-#define SEGMENTED_MAC_LEN 20          /* The length of the HMAC value stored with each encrypted segment */
-#define SEGMENTED_MAC_KEY_LEN 16      /* The length of the HMAC key, stored in the file-key blob along with the AES key */
-#define SEGMENTED_PAGE_SIZE 65536     /* Size of one encrypted segment */
-#define SEGMENTED_INNER_LENGTH ( kCCKeySizeAES128 + SEGMENTED_MAC_KEY_LEN )  /* Size of the wrapped data for inner FMT_V0_6 blob */
-#define SEGMENTED_INNER_LENGTH_PADDED (((SEGMENTED_INNER_LENGTH + 15) / 16) * 16)
-#define SEGMENTED_FILE_MAC_VERSION_BYTE "\x01"
-#define SEGMENTED_FILE_MAC_LEN 32     /* Length of the whole-file MAC */
-
-#define SEGMENT_HEADER_LEN (SEGMENTED_IV_LEN + SEGMENTED_MAC_LEN)
-#define SEGMENT_ENCRYPTED_PAGE_SIZE (SEGMENT_HEADER_LEN + SEGMENTED_PAGE_SIZE)
-
 /* We could use the derived key to simply wrap the bulk encryption keys themselves instead of having an intermediate document key, but that would make it difficult for the user to change their password without re-writing every encrypted file in the wrapper. This way we can simply wrap the same document key with a new password-derived key. It also leaves open the possibility of using keys on smartcards, phone TPMs, or whatever, to decrypt the document key, possibly with asymmetric crypto for least-authority background operation, and all that fun stuff. */
 
 /* Utility functions */
 static NSError *wrapCCError(CCCryptorStatus cerr, NSString *op, NSString *extra, NSObject *val) __attribute__((cold)); /* CommonCrypto errors fit in the OSStatus error domain */
 #define wrapSecError(e,o,k,v) wrapCCError(e,o,k,v) /* Security.framework errors are also OSStatus error codes */
-static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((cold));
+static NSError *unsupportedError_(int lineno, NSString *detail) __attribute__((cold,unused));
 static BOOL randomBytes(uint8_t *buffer, size_t bufferLength, NSError **outError);
 static CCCryptorRef createCryptor(const uint8_t segmentIV[kCCBlockSizeAES128], const uint8_t key[kCCKeySizeAES128], NSError **outError);
 static BOOL resetCryptor(CCCryptorRef cryptor, const uint8_t segmentIV[kCCBlockSizeAES128], NSError **outError);
@@ -80,6 +69,8 @@ static inline CCCryptorRef createOrResetCryptor(CCCryptorRef cryptor, const uint
     
     return createCryptor(segmentIV, key, outError);
 }
+
+#if WITH_ACCEPTOR_PROVIDER_API
 
 /*
 
@@ -540,6 +531,7 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
 }
 
 @end
+#endif
 
 @implementation OFSSegmentEncryptWorker
 {
@@ -788,10 +780,10 @@ static const CFArrayCallBacks pageCacheArrayCallbacks = {
             segments[segmentIndex] = CFBridgingRetain(dispatch_data_create(buffer, SEGMENT_HEADER_LEN + segmentLength, NULL, DISPATCH_DATA_DESTRUCTOR_FREE));
         } else {
             free(buffer);
-#ifndef DEBUG
-#error do not commit this, wim
-            abort();
+#ifdef DEBUG_wiml
+#error fix this, wim
 #endif
+            OBFinishPorting;
         }
     });
     
@@ -896,7 +888,6 @@ static BOOL unwrappedKeyFromHeader(NSData *ciphertext, OFSDocumentKey *kek, size
     /* Safe alloca, since wrappedKeyBlobSize < 2^16 */
     uint8_t *blobbuffer = alloca(paddedLength - wrappedKeyBlobLocation);
     [ciphertext getBytes:blobbuffer range:(NSRange){wrappedKeyBlobLocation, paddedLength - wrappedKeyBlobLocation}];
-    // NSLog(@"Variable-length header: %@", [ciphertext subdataWithRange:(NSRange){wrappedKeyBlobLocation, paddedLength - wrappedKeyBlobLocation}]);
     
     /* Check the padding - we haven't touched our key yet, so no information leaks here */
     for(size_t i = wrappedKeyBlobSize; i < (paddedLength - wrappedKeyBlobLocation); i++) {

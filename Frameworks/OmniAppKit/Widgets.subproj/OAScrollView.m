@@ -41,7 +41,7 @@ static NSFont *smallSystemFont;
 {
     OBINITIALIZE;
 
-    smallSystemFont = [[NSFont systemFontOfSize:10.0f] retain];
+    smallSystemFont = [NSFont systemFontOfSize:10.0f];
 }
 
 - initWithFrame:(NSRect)theFrame;
@@ -70,21 +70,12 @@ static NSFont *smallSystemFont;
 
     [self removeFromSuperview];
     [horizontalWidgetsBox removeFromSuperview];
-    [horizontalWidgetsBox release];
     [pageUpButton removeFromSuperview];
-    [pageUpButton release];
     [pageDownButton removeFromSuperview];
-    [pageDownButton release];
     [scalePopUpButton removeFromSuperview];
-    [scalePopUpButton release];
     [pagePromptTextField removeFromSuperview];
-    [pagePromptTextField release];
     [pageNumberTextField removeFromSuperview];
-    [pageNumberTextField release];
     [pagesCountTextField removeFromSuperview];
-    [pagesCountTextField release];
-
-    [super dealloc];
 }
 
 - (NSSize)contentSizeForFrameSize:(NSSize)frameSize hasHorizontalScroller:(BOOL)hasHorizontalScroller hasVerticalScroller:(BOOL)hasVerticalScroller;
@@ -198,13 +189,10 @@ static NSFont *smallSystemFont;
 	[horizontalWidgetsBox addSubview:pagesCountTextField];
     } else {
 	[pagePromptTextField removeFromSuperview];
-	[pagePromptTextField release];
 	pagePromptTextField = nil;
 	[pageNumberTextField removeFromSuperview];
-	[pageNumberTextField release];
 	pageNumberTextField = nil;
 	[pagesCountTextField removeFromSuperview];
-	[pagesCountTextField release];
 	pagesCountTextField = nil;
     }
 
@@ -353,8 +341,6 @@ static NSFont *smallSystemFont;
         if (verticalWidget)
             [verticalWidget removeFromSuperview];
 
-        [newVerticalWidget retain];
-        [verticalWidget release];
         verticalWidget = newVerticalWidget;
 
         [self tile];
@@ -426,7 +412,6 @@ static NSFont *smallSystemFont;
 	[horizontalWidgetsBox addSubview:scalePopUpButton];
     } else {
 	[scalePopUpButton removeFromSuperview];
-	[scalePopUpButton release];
 	scalePopUpButton = nil;
     }
 

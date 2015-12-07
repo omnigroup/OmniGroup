@@ -1,4 +1,4 @@
-// Copyright 2003-2006, 2010-2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -34,7 +34,7 @@ RCS_ID("$Id$");
 {
     static NSImage *OAActionImage = nil;
     if (OAActionImage == nil) {
-        OAActionImage = [[NSImage imageNamed:@"OAAction" inBundle:OMNI_BUNDLE] retain];
+        OAActionImage = [NSImage imageNamed:@"OAAction" inBundle:OMNI_BUNDLE];
         OBASSERT(OAActionImage != nil);
     }
 
@@ -45,7 +45,7 @@ RCS_ID("$Id$");
 {
     static NSImage *OAMiniActionImage = nil;
     if (OAMiniActionImage == nil) {
-        OAMiniActionImage = [[NSImage imageNamed:@"OAMiniAction" inBundle:OMNI_BUNDLE] retain];
+        OAMiniActionImage = [NSImage imageNamed:@"OAMiniAction" inBundle:OMNI_BUNDLE];
         OBASSERT(OAMiniActionImage != nil);
     }
 
@@ -177,8 +177,7 @@ RCS_ID("$Id$");
     if (_shownMenu)
         [[NSNotificationCenter defaultCenter] removeObserver:self name:NSMenuDidEndTrackingNotification object:_shownMenu];
     
-    [_shownMenu release];
-    _shownMenu = [menu retain];
+    _shownMenu = menu;
     
     if (_shownMenu)
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_shownMenuDidEndTracking:) name:NSMenuDidEndTrackingNotification object:_shownMenu];
@@ -197,7 +196,6 @@ RCS_ID("$Id$");
     NSAccessibilityPostNotification(_shownMenu, NSAccessibilityUIElementDestroyedNotification);
 
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSMenuDidEndTrackingNotification object:_shownMenu];
-    [_shownMenu release];
     _shownMenu = nil;
 }
 

@@ -36,6 +36,11 @@ UIImage *OUITableViewItemSelectionImage(UIControlState state)
     return image;
 }
 
+UIImage *OUITableViewItemSelectionMixedImage(void)
+{
+    return [[UIImage imageNamed:@"OUITableViewItemSelection-Mixed" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+}
+
 UIImage *OUIStepperMinusImage(void)
 {
     return [UIImage imageNamed:@"OUIStepperMinus" inBundle:OMNI_BUNDLE compatibleWithTraitCollection:nil];

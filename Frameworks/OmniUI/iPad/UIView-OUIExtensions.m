@@ -513,9 +513,9 @@ static void OUIViewPerformPosingForThreading(void)
 #ifdef DEBUG
 - (void)expectDeallocationOfViewTreeSoon;
 {
-    [self applyToViewTree:^(UIView *view) {
-        OBExpectDeallocationWithPossibleFailureReason(view, ^NSString *(UIView *view){
-            if (view.superview)
+    [self applyToViewTree:^(UIView *treeView) {
+        OBExpectDeallocationWithPossibleFailureReason(treeView, ^NSString *(UIView *remainingView){
+            if (remainingView.superview)
                 return @"still has superview";
             return nil;
         });

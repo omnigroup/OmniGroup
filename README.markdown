@@ -10,7 +10,7 @@ Checking out the source
 Xcode
 -------------------
 
-- We currently use Xcode 7.0 for iOS, watchOS, and Mac OS X. You'll probably have the best results if you do too.
+- We currently use Xcode 7.1 for iOS, watchOS, and Mac OS X. You'll probably have the best results if you do too.
 - Add the projects you want to your workspace.
 - Take a look in the Workspaces directory for a sample workspace for the TextEditor iPad example app.
 

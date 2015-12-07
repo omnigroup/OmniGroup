@@ -38,7 +38,7 @@
 + (void)setDynamicMenuPlaceholder:(NSMenuItem *)placeholder;
 + (void)updateMenuForControllers:(NSArray *)controllers;
 
-- (void)restoreFromIdentifier:(NSString *)identifier withInspectors:(NSMutableDictionary *)inspectorsById;
+- (void)restoreFromIdentifier:(NSString *)restoreIdentifier withInspectors:(NSMutableDictionary *)inspectorsById;
 - (void)setInitialBottommostInspector;
 
 @property (nonatomic, weak) OIInspectorRegistry *inspectorRegistry;

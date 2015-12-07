@@ -64,7 +64,7 @@
 /* compression error reason */
 "bzip2 library returned error code %d when writing data. %s." = "bzip2-bibliotheek heeft een foutcode %1$d geretourneerd bij het schrijven van de gegevens. %2$s.";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Cancel" = "Annuleer";
 
 /* error recovery option */
@@ -122,7 +122,7 @@
 /* local bundle path readable string */
 "local configuration file" = "lokaal configuratiebestand";
 
-/* time span formatter span */
+/* time span formatter span (minute) */
 "m" = "m";
 
 /* time span formatter span */
@@ -131,7 +131,7 @@
 /* time span formatter span */
 "minutes" = "minuten";
 
-/* time span formatter span */
+/* time span formatter span (month) */
 "mo" = "md";
 
 /* time span formatter span */
@@ -146,7 +146,7 @@
 /* invalid bundle reason */
 "Not a valid bundle" = "Geen geldige bundel";
 
-/* OFMLockfile recovery option */
+/* OFLockFile recovery option */
 "Override Lock" = "Hef vergrendeling op";
 
 /* alert message format when clicking on a configuration value URL */

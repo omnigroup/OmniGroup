@@ -9,20 +9,25 @@
 
 #import <OmniFoundation/OFObject.h>
 
+@class NSFileWrapper;
 @protocol OFByteAcceptor;
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface OUZipArchive : OFObject
 
-+ (BOOL)createZipFile:(NSString *)zipPath fromFilesAtPaths:(NSArray *)paths error:(NSError **)outError;
-+ (BOOL)createZipFile:(NSString *)zipPath fromFileWrappers:(NSArray *)fileWrappers error:(NSError **)outError;
-+ (NSData *)zipDataFromFileWrappers:(NSArray *)fileWrappers error:(NSError **)outError;
++ (BOOL)createZipFile:(NSString *)zipPath fromFilesAtPaths:(NSArray <NSString *> *)paths error:(NSError **)outError;
++ (BOOL)createZipFile:(NSString *)zipPath fromFileWrappers:(NSArray <NSFileWrapper *> *)fileWrappers error:(NSError **)outError;
++ (NSData *)zipDataFromFileWrappers:(NSArray <NSFileWrapper *> *)fileWrappers error:(NSError **)outError;
 
-- initWithPath:(NSString *)path error:(NSError **)outError;
-- initWithByteAcceptor:(NSObject <OFByteAcceptor> *)fh error:(NSError **)outError;
+- (instancetype _Nullable)initWithPath:(NSString *)path error:(NSError **)outError;
+- (instancetype _Nullable)initWithByteAcceptor:(NSObject <OFByteAcceptor> *)fh error:(NSError **)outError;
 
-- (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents raw:(BOOL)raw compressionMethod:(unsigned long)comparessionMethod uncompressedSize:(size_t)uncompressedSize crc:(unsigned long)crc date:(NSDate *)date error:(NSError **)outError;
-- (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents date:(NSDate *)date error:(NSError **)outError;
+- (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents raw:(BOOL)raw compressionMethod:(unsigned long)comparessionMethod uncompressedSize:(size_t)uncompressedSize crc:(unsigned long)crc date:(NSDate * _Nullable)date error:(NSError **)outError;
+- (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents date:(NSDate * _Nullable)date error:(NSError **)outError;
 
 - (BOOL)close:(NSError **)outError;
 
 @end
+
+NS_ASSUME_NONNULL_END

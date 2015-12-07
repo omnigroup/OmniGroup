@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2008, 2010-2011, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -52,15 +52,13 @@ static const CGFloat iconBaseline = 36;
 
 - (void)setPreferenceController:(OAPreferenceController *)newPreferenceController;
 {
-    [preferenceController autorelease];
-    preferenceController = [newPreferenceController retain];
+    preferenceController = newPreferenceController;
     [self setNeedsDisplay:YES];
 }
 
 - (void)setPreferenceClientRecords:(NSArray *)newPreferenceClientRecords;
 {
-    [preferenceClientRecords autorelease];
-    preferenceClientRecords = [newPreferenceClientRecords retain];
+    preferenceClientRecords = newPreferenceClientRecords;
     [self _sizeToFit];
     [self setNeedsDisplay:YES];
 }
@@ -248,7 +246,6 @@ static const CGFloat iconBaseline = 36;
         
         [darkImage drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:1.0f];
         [image drawFlippedInRect:destinationRect operation:NSCompositeSourceOver fraction:0.6666f];
-        [darkImage release];
     }
     
     // Draw text

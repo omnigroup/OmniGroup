@@ -1,4 +1,4 @@
-// Copyright 2003-2006,2008, 2010, 2012-2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -26,8 +26,6 @@ static unsigned int _OAVectorViewObservationContext;
 - (void)dealloc
 {
     [self unbind:@"vector"];
-    
-    [super dealloc];
 }
 
 //
@@ -179,8 +177,7 @@ static unsigned int _OAVectorViewObservationContext;
 
     pointValue = [[OFPoint alloc] initWithPoint:point];
     [self setObjectValue:pointValue];
-    [pointValue release];
-    
+
     OAVectorCell *cell = [self cell];
     [self sendAction:[cell action] to:[cell target]];
 }
@@ -226,13 +223,13 @@ static unsigned int _OAVectorViewObservationContext;
         
         // Register what object and what keypath are
         // associated with this binding
-        observedObjectForVector = [observable retain];
+        observedObjectForVector = observable;
         observedKeyPathForVector = [keyPath copy];
         
         // Record the value transformer, if there is one
         NSString *vtName = [options objectForKey:@"NSValueTransformerName"];
         if (vtName != nil) 
-            vectorValueTransformer = [[NSValueTransformer valueTransformerForName:vtName] retain];
+            vectorValueTransformer = [NSValueTransformer valueTransformerForName:vtName];
         
         [self setObjectValue:[observable valueForKeyPath:keyPath]];
     }
@@ -244,13 +241,8 @@ static unsigned int _OAVectorViewObservationContext;
     
     [observedObjectForVector removeObserver:self forKeyPath:observedKeyPathForVector context:&_OAVectorViewObservationContext];
 
-    [observedObjectForVector release];
     observedObjectForVector = nil;
-    
-    [observedKeyPathForVector release];
     observedKeyPathForVector = nil;
-    
-    [vectorValueTransformer release];
     vectorValueTransformer = nil;
 }
 

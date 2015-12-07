@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -88,12 +88,12 @@ RCS_ID("$Id$");
 
 - (OWFileInfo *)fileInfoForLine:(NSString *)line;
 {
-    NSRange separator = [line rangeOfString:@" "];
-    if (separator.length == 0) {
+    NSRange spaceSeparator = [line rangeOfString:@" "];
+    if (spaceSeparator.length == 0) {
         [NSException raise:@"ListAborted" reason:NSLocalizedStringFromTableInBundle(@"Incorrect response to MLST command", @"OWF", [OWMLSTFTPProcessor bundle], @"ftpsession error - MLST (directory listing) command returned invalid data")];
     }
-    NSArray *facts = [[line substringToIndex:separator.location] componentsSeparatedByString:@";"];
-    NSString *filename = [line substringFromIndex:NSMaxRange(separator)];
+    NSArray *facts = [[line substringToIndex:spaceSeparator.location] componentsSeparatedByString:@";"];
+    NSString *filename = [line substringFromIndex:NSMaxRange(spaceSeparator)];
 
     /* Ignore entries with zero-length names. */
     if ([filename isEqual:@""])

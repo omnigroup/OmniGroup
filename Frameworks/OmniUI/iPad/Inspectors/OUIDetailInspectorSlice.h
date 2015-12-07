@@ -1,4 +1,4 @@
-// Copyright 2010-2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -30,6 +30,7 @@
 
 // Defaults to 1
 @property(nonatomic,readonly) NSUInteger itemCount;
+@property(nonatomic,readonly,strong) UITableView *tableView;
 
 // Passed an item with default values. Don't need to implement if the receiver has a title and doesn't want a value. Don't need to call super in your subclass method (defaults are filled in by the caller).
 - (void)updateItem:(OUIDetailInspectorSliceItem *)item atIndex:(NSUInteger)itemIndex;

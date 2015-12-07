@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -16,12 +16,14 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OUZipArchive
 {
     struct TagzipFile__ *_zip;
 }
 
-+ (BOOL)createZipFile:(NSString *)zipPath fromFilesAtPaths:(NSArray *)paths error:(NSError **)outError;
++ (BOOL)createZipFile:(NSString *)zipPath fromFilesAtPaths:(NSArray <NSString *> *)paths error:(NSError **)outError;
 {
     OUZipArchive *zip = [[OUZipArchive alloc] initWithPath:zipPath error:outError];
     if (!zip) {
@@ -42,7 +44,7 @@ RCS_ID("$Id$");
     return [zip close:outError];
 }
 
-+ (BOOL)createZipFile:(NSString *)zipPath fromFileWrappers:(NSArray *)fileWrappers error:(NSError **)outError;
++ (BOOL)createZipFile:(NSString *)zipPath fromFileWrappers:(NSArray <NSFileWrapper *> *)fileWrappers error:(NSError **)outError;
 {
     OUZipArchive *zip = [[OUZipArchive alloc] initWithPath:zipPath error:outError];
     if (!zip) {
@@ -62,7 +64,7 @@ RCS_ID("$Id$");
     return [zip close:outError];
 }
 
-+ (NSData *)zipDataFromFileWrappers:(NSArray *)fileWrappers error:(NSError **)outError;
++ (NSData *)zipDataFromFileWrappers:(NSArray <NSFileWrapper *> *)fileWrappers error:(NSError **)outError;
 {
     NSString *temporaryZipPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[[NSUUID UUID] UUIDString]];
     
@@ -82,7 +84,7 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- initWithPath:(NSString *)path error:(NSError **)outError;
+- (instancetype _Nullable)initWithPath:(NSString *)path error:(NSError **)outError;
 {
     OBPRECONDITION(![NSString isEmptyString:path]);
     
@@ -100,7 +102,7 @@ RCS_ID("$Id$");
     return self;
 }
 
-- initWithByteAcceptor:(NSObject <OFByteAcceptor> *)fh error:(NSError **)outError;
+- (instancetype _Nullable)initWithByteAcceptor:(NSObject <OFByteAcceptor> *)fh error:(NSError **)outError;
 {
     if (!fh)
         OBRejectInvalidCall(self, _cmd, @"Byte acceptor must not be nil");
@@ -144,7 +146,7 @@ static BOOL _zipError(id self, const char *func, int err, NSError **outError)
 }
 #define ZIP_ERROR(f) _zipError(self, #f, err, outError)
 
-- (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents raw:(BOOL)raw compressionMethod:(unsigned long)comparessionMethod uncompressedSize:(size_t)uncompressedSize crc:(unsigned long)crc date:(NSDate *)date error:(NSError **)outError;
+- (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents raw:(BOOL)raw compressionMethod:(unsigned long)comparessionMethod uncompressedSize:(size_t)uncompressedSize crc:(unsigned long)crc date:(NSDate * _Nullable)date error:(NSError **)outError;
 {
     if (date == nil)
         date = [NSDate date];
@@ -204,7 +206,7 @@ static BOOL _zipError(id self, const char *func, int err, NSError **outError)
     return YES;
 }
 
-- (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents date:(NSDate *)date error:(NSError **)outError;
+- (BOOL)appendEntryNamed:(NSString *)name fileType:(NSString *)fileType contents:(NSData *)contents date:(NSDate * _Nullable)date error:(NSError **)outError;
 {
     // This forces everything to be compressed, even if doing so would make it bigger or yield little gain...
     return [self appendEntryNamed:name fileType:fileType contents:contents raw:NO compressionMethod:Z_DEFLATED uncompressedSize:0 crc:0 date:date error:outError];
@@ -236,3 +238,4 @@ static BOOL _zipError(id self, const char *func, int err, NSError **outError)
 
 @end
 
+NS_ASSUME_NONNULL_END

@@ -16,7 +16,9 @@
 #endif
 
 #import <OmniFoundation/NSDictionary-OFExtensions.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/NSNumber-OFExtensions-CGTypes.h>
+#import <OmniFoundation/NSURL-OFExtensions.h>
 #import <OmniFoundation/OFBinding.h> // for OFKeysForKeyPath()
 #import <OmniFoundation/OFEnumNameTable.h>
 #import <OmniAppKit/OAColor-Archiving.h>
@@ -62,6 +64,7 @@ static NSMapTable *PrivateReifyingClassToAppearanceMap = nil;
 
 @property (nonatomic, copy) NSString *plistName;
 @property (nonatomic, strong) NSBundle *plistBundle;
+@property (nonatomic, strong) NSURL *optionalPlistDirectoryURL;
 
 /// A collection of weak pointers to known subclass singletons. Used to propagate invalidations when a superclass plist changes.
 @property (nonatomic, strong) NSPointerArray *subclassSingletons;
@@ -79,6 +82,7 @@ static NSMapTable *PrivateReifyingClassToAppearanceMap = nil;
 
     _plistName = [plistName copy];
     _plistBundle = bundle;
+    _optionalPlistDirectoryURL = [[self class] directoryURLForSwitchablePlist];
     
     [self recachePlistFromFile];
 
@@ -159,6 +163,38 @@ void OAAppearanceSetUserOverrideFolder(NSString *userOverrideFolder)
 #endif
 }
 
+static NSURL *urlIfExists(NSURL *url)
+{
+    NSError *existanceCheckError = nil;
+    if (![url checkResourceIsReachableAndReturnError:&existanceCheckError]) {
+        url = nil;
+    }
+    return url;
+}
+
+- (NSURL *)_plistURL
+{
+    NSArray <NSString *> *possibleNames = @[[_plistName stringByAppendingString:@"Appearance"], _plistName];
+    NSURL *plistURL = nil;
+    if (_optionalPlistDirectoryURL != nil) {
+        for (NSString *name in possibleNames) {
+            plistURL = urlIfExists([[_optionalPlistDirectoryURL URLByAppendingPathComponent:name] URLByAppendingPathExtension:OAAppearancePlistExtension].filePathURL);
+            if (plistURL != nil) {
+                return plistURL;
+            }
+        }
+    }
+    
+    for (NSString *name in possibleNames) {
+        plistURL = [_plistBundle URLForResource:name withExtension:OAAppearancePlistExtension];
+        if (plistURL != nil) {
+            return plistURL;
+        }
+    }
+    
+    return nil;
+}
+
 - (void)recachePlistFromFile;
 {
     if (_plistName == nil) {
@@ -167,11 +203,9 @@ void OAAppearanceSetUserOverrideFolder(NSString *userOverrideFolder)
         return;
     }
     
-    NSURL *plistURL = [_plistBundle URLForResource:[_plistName stringByAppendingString:@"Appearance"] withExtension:OAAppearancePlistExtension];
-    if (!plistURL)
-        plistURL = [_plistBundle URLForResource:_plistName withExtension:OAAppearancePlistExtension];
+    NSURL *plistURL = [self _plistURL];
     
-    if (plistURL) {
+    if (plistURL != nil) {
         OB_AUTORELEASING NSError *error;
         _plist = [NSPropertyListSerialization propertyListWithData:[NSData dataWithContentsOfURL:plistURL] options:0 format:NULL error:&error];
         
@@ -859,7 +893,7 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
             [superAppearance registerSubclassSingleton:appearance];
             
             if (reifyingInstance) {
-                IMP performRelatedInvalidationOverride = imp_implementationWithBlock(^(id self) {
+                IMP performRelatedInvalidationOverride = imp_implementationWithBlock(^(id _self) {
                     // N.B., private reifying instances need to defer to the public instance so we can walk down the real subclass tree.
                     [superAppearance invalidateCachedValues];
                 });
@@ -877,6 +911,13 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
         [appearance beginPresentingUserPlistIfNecessary];
         
         [mapTable setObject:appearance forKey:cls];
+    }
+    
+    NSURL *directoryURLForSwitchablePlist = [[appearance class] directoryURLForSwitchablePlist];
+    if (!OFURLEqualsURL(appearance.optionalPlistDirectoryURL, directoryURLForSwitchablePlist)) {
+        appearance.optionalPlistDirectoryURL = directoryURLForSwitchablePlist;
+        [appearance invalidateCachedValues];
+        // Note that we do not currently use file presenters to track our base plist. We only track the user override plist. Therefore, we don't need to end/begin presenting here.
     }
     
     return appearance;
@@ -913,10 +954,15 @@ static Class GetPrivateReifyingClassForPublicClass(Class cls)
 
 @implementation OAAppearance (Subclasses)
 
-+ (OAAppearance *)appearanceForClass:(Class)cls;
++ (instancetype)appearanceForClass:(Class)cls;
 {
     OAAppearance *appearance = [self _appearanceForClass:cls reifyingInstance:YES];
     return appearance;
+}
+
++ (NSURL *)directoryURLForSwitchablePlist;
+{
+    return nil;
 }
 
 @end
@@ -987,7 +1033,26 @@ static void EnsureSystemColorsObserver(OAAppearance *self)
     return color;
 }
 
+- (BOOL)isLightColor;
+{
+    static CGFloat lightColorLimit;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        OAAppearance *appearance = [OAAppearance appearance];
+        lightColorLimit = ([appearance CGFloatForKeyPath:@"OALightColorLumaLimit"]);
+    });
+    
+    OAColor *aColor = [OAColor colorWithPlatformColor:self];
+    CGFloat luma = OAGetRGBAColorLuma([aColor toRGBA]);
+    
+    if (luma < lightColorLimit)
+        return NO;
+    else
+        return YES;
+}
+
 @end
+
 
 #else // defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -7,7 +7,6 @@
 
 #import <OmniFoundation/CFString-OFExtensions.h>
 #import <Foundation/NSObjCRuntime.h> // for BOOL
-#import <OmniFoundation/NSString-OFCharacterEnumeration.h> // for OFStringStartLoopThroughCharacters/OFStringEndLoopThroughCharacters
 #import <OmniFoundation/OFUnicodeUtilities.h>
 #import <OmniBase/rcsid.h>
 #import <string.h>
@@ -171,7 +170,7 @@ CFIndex OFAppendStringBytesToBuffer(CFMutableDataRef buffer, CFStringRef source,
     return convertedChars;
 }
 
-unsigned long OFStringHash_djb2(CFStringRef string)
+CFHashCode OFStringHash_djb2(CFStringRef string)
 {
     /*
      From <http://www.cs.yorku.ca/~oz/hash.html>
@@ -188,26 +187,50 @@ unsigned long OFStringHash_djb2(CFStringRef string)
      The related Fowler-Noll-Vo hash:
         http://www.isthe.com/chongo/tech/comp/fnv/
     */
-    unsigned long hash = 5381;
-    const UniChar *characterPointer;
+#define HASH_INIT CFHashCode hash = 5381
+#define HASH_UPDATE(value) hash = ((hash << 5) + hash) + (value) /* hash * 33 + character */
 
-    characterPointer = CFStringGetCharactersPtr(string);
-    if (characterPointer) {
-        /* If the string already has a unichar-based representation, use it */
-        CFIndex count = CFStringGetLength(string);
-        while(count --) {
-            UniChar character = *characterPointer++;
-            hash = ((hash << 5) + hash) + character; /* hash * 33 + character */
-        }
-    } else {
-        /* Otherwise, use a character buffer */
-        OFStringStartLoopThroughCharacters((OB_BRIDGE NSString *)string, character) {
-            hash = ((hash << 5) + hash) + character; /* hash * 33 + character */
-        } OFStringEndLoopThroughCharacters;
+    HASH_INIT;
+
+    CFStringInlineBuffer buffer;
+    CFIndex stringLength = CFStringGetLength(string);
+    CFStringInitInlineBuffer(string, &buffer, CFRangeMake(0, stringLength));
+
+    for (CFIndex stringIndex = 0; stringIndex < stringLength; stringIndex++) {
+        UniChar character = CFStringGetCharacterFromInlineBuffer(&buffer, stringIndex);
+        HASH_UPDATE(character);
     }
-    
+
     return hash;
 }
+
+CFHashCode OFCharactersHash_djb2(const UniChar *characters, NSUInteger characterCount)
+{
+    HASH_INIT;
+
+    for (NSUInteger characterIndex = 0; characterIndex < characterCount; characterIndex++) {
+        UniChar character = characters[characterIndex];
+        HASH_UPDATE(character);
+    }
+
+    return hash;
+}
+
+CFHashCode OFBytesHash_djb2(const void *bytes, NSUInteger byteCount)
+{
+    HASH_INIT;
+
+    NSUInteger byteIndex = 0;
+    while (byteIndex < byteCount) {
+        // We could probably load multiple bytes out of the pointer at a time, which might be worth it for performance (but we'd need more code for handling various sizes modulo the word size we used).
+        NSUInteger byte = ((const char *)bytes)[byteIndex];
+        byteIndex++;
+
+        HASH_UPDATE(byte);
+    }
+    return hash;
+}
+
 
 BOOL OFStringContainsInvalidSequences(CFStringRef str)
 {

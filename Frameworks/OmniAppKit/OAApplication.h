@@ -14,11 +14,14 @@
 
 @class NSDate;
 @class NSPanel;
+@class OFVersionNumber;
 @class OADocument;
 
 @interface OAApplication : NSApplication
 
 + (instancetype)sharedApplication;
+
+@property(nonatomic,readonly) OFVersionNumber *buildVersionNumber;
 
 - (NSWindow *)frontWindowForMouseLocation;
 

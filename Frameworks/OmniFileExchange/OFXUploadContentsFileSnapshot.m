@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -53,7 +53,7 @@ RCS_ID("$Id$")
         // We pass NSFileCoordinatorReadingWithoutChanges to avoid triggering autosave. We want to let editors save at their own rate (though this might mean we'll need to upload again when we wouldn't have to otherwise).
         NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] initWithFilePresenter:nil];
         
-        BOOL success = [coordinator readItemAtURL:localDocumentURL withChanges:NO error:&error byAccessor:^BOOL(NSURL *newReadingURL, NSError **outError){
+        BOOL success = [coordinator readItemAtURL:localDocumentURL withChanges:NO error:&error byAccessor:^BOOL(NSURL *newReadingURL, NSError **outCoordinatorError){
             // This should mostly be OK, but we'll maybe get a different contents recorded by OFXFileItemRecordContents() below if this happens and if NSFileCoordinator doesn't preserve inodes at the eventual end state. In this case, once our upload finishes, we'll notice that our document has different inodes and so might have changed. If this happens too often, it will be terrible, but hopefully this should be a rare occurrence if at all.
             // NOTE: I've seen this happen in one case -- case-only renames. In this case if we have renamed "foo" to "Foo" and pass in "Foo" to NSFileCoordinator, it can hand back "foo". Perhaps if we wait a bit before starting uploads to let the file coordination system simmer down, it would flush out its notes about in-flight renames. Note this doesn't happen for other renames like "foo" to "bar", so this may be something specific to their case-insensitivity code or our rename extension in NSFileCoordinator(OFExtensions) that attempts to paper over them.
             // UPDATE: Have also seen this on other very quick moves (we do this for our case-only rename support), but -testMultipleQuickRenamesOfFlatFile hits it too.
@@ -65,12 +65,12 @@ RCS_ID("$Id$")
                 // If the file is quickly added and then removed before we can upload it, we should just bail.
                 if ([copyError hasUnderlyingErrorDomain:NSPOSIXErrorDomain code:ENOENT]) {
                     DEBUG_TRANSFER(1, @"Local document disappeared before it could be uploaded %@", localDocumentURL);
-                    if (outError)
-                        *outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
+                    if (outCoordinatorError)
+                        *outCoordinatorError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSUserCancelledError userInfo:nil];
                 } else {
                     [copyError log:@"Error copying contents from %@ to new snapshot at %@", newReadingURL, _documentVersionContentsURL];
-                    if (outError)
-                        *outError = copyError;
+                    if (outCoordinatorError)
+                        *outCoordinatorError = copyError;
                 }
                 return NO;
             }
@@ -85,8 +85,8 @@ RCS_ID("$Id$")
             if (!attributes) {
                 OBASSERT_NOT_REACHED("shouldn't fail since we just copied this URL, but maybe someone is doing uncoordinated file access");
                 [attributesError log:@"Error getting attributes of %@", newReadingURL];
-                if (outError)
-                    *outError = attributesError;
+                if (outCoordinatorError)
+                    *outCoordinatorError = attributesError;
                 return NO;
             }
             modificationDate = attributes.fileModificationDate;
@@ -94,8 +94,8 @@ RCS_ID("$Id$")
             // Read the information about the version of the document we are uploading (including the inodes and modification dates). We can't record this on the copy, but must do it on the original or we can't validate whether the original has changed.
             __autoreleasing NSError *childError;
             if (!OFXFileItemRecordContents(OFXVersionContentsType, versionContents, newReadingURL, &childError)) {
-                if (outError)
-                    *outError = childError;
+                if (outCoordinatorError)
+                    *outCoordinatorError = childError;
                 return NO;
             }
             

@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -19,13 +19,9 @@
 #import <OmniFoundation/OFChildScheduler.h>
 #import <OmniFoundation/OFRunLoopScheduler.h>
 
-RCS_ID("$Id$")
+#import "OFScheduler-Subclass.h"
 
-@interface OFScheduler (Private)
-+ (void)setDebug:(BOOL)newDebug;
-- (void)invokeEvents:(NSArray *)events;
-- (void)controllerWillTerminate:(OFController *)controller;
-@end
+RCS_ID("$Id$")
 
 @implementation OFScheduler
 
@@ -77,7 +73,7 @@ static NSLock *instanceCountLock;
     scheduleQueue = [[NSMutableArray alloc] init];
     scheduleLock = [[NSRecursiveLock alloc] init];
 
-    [[OFController sharedController] addObserver:self];
+    [[OFController sharedController] addStatusObserver:self];
 
     return self;
 }
@@ -169,7 +165,7 @@ static NSLock *instanceCountLock;
     return [dateOfFirstEvent autorelease];
 }
 
-// OBObject subclass
+#pragma mark - NSObject (OBExtensions)
 
 - (NSMutableDictionary *)debugDictionary;
 {
@@ -183,9 +179,7 @@ static NSLock *instanceCountLock;
     return debugDictionary;
 }
 
-@end
-
-@implementation OFScheduler (OFConvenienceMethods)
+#pragma mark - Convenience Methods
 
 - (OFScheduledEvent *)scheduleInvocation:(OFInvocation *)anInvocation atDate:(NSDate *)date;
 {
@@ -249,9 +243,7 @@ static NSLock *instanceCountLock;
     return [self scheduleSelector:selector onObject:anObject withBool:anArgument atDate:[NSDate dateWithTimeIntervalSinceNow:timeInterval]];
 }
 
-@end
-
-@implementation OFScheduler (SubclassesOnly)
+#pragma mark - Subclasses Only
 
 - (void)invokeScheduledEvents;
 {
@@ -285,9 +277,7 @@ static NSLock *instanceCountLock;
     OBRequestConcreteImplementation(self, _cmd);
 }
 
-@end
-
-@implementation OFScheduler (Private)
+#pragma mark - Private
 
 + (void)setDebug:(BOOL)newDebug;
 {
@@ -304,6 +294,8 @@ static NSLock *instanceCountLock;
         }
     }
 }
+
+#pragma mark - OFControllerStatusObserver 
 
 - (void)controllerWillTerminate:(OFController *)controller;
 {

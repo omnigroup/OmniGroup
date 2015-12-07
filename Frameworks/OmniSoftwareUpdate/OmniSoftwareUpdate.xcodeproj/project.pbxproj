@@ -23,6 +23,9 @@
 
 /* Begin PBXBuildFile section */
 		3409FDF812664BD600BA898D /* OSUCheckerTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 3409FDF712664BD600BA898D /* OSUCheckerTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34127E921BAA192000C33C0E /* OmniSoftwareUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */; };
+		34127E931BAA192400C33C0E /* OmniSoftwareUpdate.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */; };
+		34127E951BAA1A7200C33C0E /* OmniSystemInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 34127E941BAA1A7200C33C0E /* OmniSystemInfo.h */; };
 		3416044C0C6913CC002839DF /* OSUCheckOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 3416044A0C6913CC002839DF /* OSUCheckOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3416044D0C6913CC002839DF /* OSUCheckOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 3416044B0C6913CC002839DF /* OSUCheckOperation.m */; };
 		341605EC0C693324002839DF /* OSUItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 341605EA0C693324002839DF /* OSUItem.h */; };
@@ -479,6 +482,8 @@
 		1E095D891613C5B000D78179 /* OmniAppKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = OmniAppKit.xcodeproj; path = ../OmniAppKit/OmniAppKit.xcodeproj; sourceTree = SOURCE_ROOT; };
 		32DBCF5E0370ADEE00C91783 /* OmniSoftwareUpdate_Prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniSoftwareUpdate_Prefix.h; sourceTree = "<group>"; };
 		3409FDF712664BD600BA898D /* OSUCheckerTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUCheckerTarget.h; sourceTree = "<group>"; };
+		34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniSoftwareUpdate.h; sourceTree = "<group>"; };
+		34127E941BAA1A7200C33C0E /* OmniSystemInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniSystemInfo.h; sourceTree = "<group>"; };
 		3416017B0C67E838002839DF /* OSUHardwareInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUHardwareInfo.m; sourceTree = "<group>"; };
 		3416044A0C6913CC002839DF /* OSUCheckOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUCheckOperation.h; sourceTree = "<group>"; };
 		3416044B0C6913CC002839DF /* OSUCheckOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUCheckOperation.m; sourceTree = "<group>"; };
@@ -569,7 +574,6 @@
 		34A5F559184E62E500E8BA9A /* OSUFeatures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUFeatures.h; sourceTree = "<group>"; };
 		34A5F55D184E64EE00E8BA9A /* OmniSystemInfo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = OmniSystemInfo.png; sourceTree = "<group>"; };
 		34A5F55E184E64EE00E8BA9A /* OmniSystemInfo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "OmniSystemInfo@2x.png"; sourceTree = "<group>"; };
-		34A5F562184E66DC00E8BA9A /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/OmniSystemInfoPreferences.xib; sourceTree = "<group>"; };
 		34A5F565184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniSystemInfoPreferenceClient.h; sourceTree = "<group>"; };
 		34A5F566184E671C00E8BA9A /* OmniSystemInfoPreferenceClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OmniSystemInfoPreferenceClient.m; sourceTree = "<group>"; };
 		34A5F569184E67C700E8BA9A /* OSUSystemConfigurationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUSystemConfigurationController.h; sourceTree = "<group>"; };
@@ -606,6 +610,7 @@
 		491215FC09DA08FB003DC19F /* Omni-Global-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Common.xcconfig"; sourceTree = "<group>"; };
 		491215FF09DA0907003DC19F /* Omni-Tool-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Tool-Common.xcconfig"; sourceTree = "<group>"; };
 		4951AEBB1B82941500AAF366 /* OSUSystemConfiguration.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OSUSystemConfiguration.xib; sourceTree = "<group>"; };
+		49DC54F21B82A0AC006A5AC3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OSUAvailableUpdateController.xib; sourceTree = "<group>"; };
 		49E586BB09EC853000F3BFA7 /* OSUTAChecker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSUTAChecker.h; sourceTree = "<group>"; };
 		49E586BC09EC853000F3BFA7 /* OSUTAChecker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUTAChecker.m; sourceTree = "<group>"; };
 		4A102C1508AB00D00059F5BD /* Omni-Application-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Application-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -618,7 +623,6 @@
 		4A40EC0B08AB009A00E1769D /* OmniSoftwareUpdate.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OmniSoftwareUpdate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A40EC1F08AB009A00E1769D /* OmniSoftwareUpdateCheck */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OmniSoftwareUpdateCheck; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AA5E8F6148D5F7F00633311 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/OSUDownloadController.xib; sourceTree = "<group>"; };
-		4AA5E8FA148D601500633311 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/OSUAvailableUpdateController.xib; sourceTree = "<group>"; };
 		4AB8F42A08AD27BF00DBB061 /* Omni-Bundle-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Debug.xcconfig"; sourceTree = "<group>"; };
 		4AB8F42B08AD27BF00DBB061 /* Omni-Bundle-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Bundle-Release.xcconfig"; sourceTree = "<group>"; };
 		4AB8F42D08AD27BF00DBB061 /* Omni-Global-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Global-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -641,6 +645,7 @@
 		5F6DF87A16DFEDFD00C524A6 /* OSUInstallerServiceProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUInstallerServiceProtocol.m; sourceTree = "<group>"; };
 		5F6DF88116E0115F00C524A6 /* OSUInstaller.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; name = OSUInstaller.sh; path = ../Common/OSUInstaller.sh; sourceTree = "<group>"; };
 		5F7DE65716EFF3E70072E86C /* OSUInstallerPrivilegedHelperProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSUInstallerPrivilegedHelperProtocol.m; sourceTree = "<group>"; };
+		5F9568571C0E4D7100DBA34D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/OmniSystemInfoPreferences.xib; sourceTree = "<group>"; };
 		5FAF8F6616F2916100BFFE55 /* OSUInstallerScript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OSUInstallerScript.h; path = Common/OSUInstallerScript.h; sourceTree = SOURCE_ROOT; };
 		5FAF8F6716F2916100BFFE55 /* OSUInstallerScript.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OSUInstallerScript.m; path = Common/OSUInstallerScript.m; sourceTree = SOURCE_ROOT; };
 		5FF0FACA16E7E83D00F87CB7 /* com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = com.omnigroup.OmniSoftwareUpdate.OSUInstallerPrivilegedHelper.6; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1051,6 +1056,7 @@
 			children = (
 				34A5F50D184E474C00E8BA9A /* OmniSystemInfo-Info.plist */,
 				34A5F511184E474C00E8BA9A /* OmniSystemInfo-Prefix.pch */,
+				34127E941BAA1A7200C33C0E /* OmniSystemInfo.h */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -1097,6 +1103,7 @@
 			children = (
 				34775A231266672800FCDD2D /* InfoPlist.h */,
 				32DBCF5E0370ADEE00C91783 /* OmniSoftwareUpdate_Prefix.h */,
+				34127E911BAA192000C33C0E /* OmniSoftwareUpdate.h */,
 				34821EFD063407360097A113 /* Checking */,
 				08FB77AEFE84172EC02AAC07 /* Mac */,
 				34A2E0DD184F91B9009E0D9F /* iOS */,
@@ -1278,6 +1285,7 @@
 				348A789C1B583DA60082D55D /* OSUPreferencesViewController.h in Headers */,
 				348A78921B583D500082D55D /* OSUCheckOperation.h in Headers */,
 				348A79081B5847BF0082D55D /* OSUReportKeys.h in Headers */,
+				34127E931BAA192400C33C0E /* OmniSoftwareUpdate.h in Headers */,
 				348A788A1B583D2C0082D55D /* OSUFeatures.h in Headers */,
 				348A788F1B583D440082D55D /* OSUCheckerTarget.h in Headers */,
 				348A79091B5847CC0082D55D /* OSURunOperation.h in Headers */,
@@ -1303,6 +1311,7 @@
 				34A5F552184E555100E8BA9A /* OSUChecker.h in Headers */,
 				3479A3991AB8D8590077BB01 /* OSURunOperationParameters.h in Headers */,
 				34469269186284E200FBDD73 /* OSUPrivacyAlertWindowController.h in Headers */,
+				34127E951BAA1A7200C33C0E /* OmniSystemInfo.h in Headers */,
 				34972BC91AC1ECDB00D2DC2D /* OSULookupCredentialProtocol.h in Headers */,
 				34A5F55C184E62E500E8BA9A /* OSUFeatures.h in Headers */,
 				34A5F553184E555400E8BA9A /* OSUCheckOperation.h in Headers */,
@@ -1350,6 +1359,7 @@
 				3409FDF812664BD600BA898D /* OSUCheckerTarget.h in Headers */,
 				34775A241266672800FCDD2D /* InfoPlist.h in Headers */,
 				5F234F4916EAAF4B000E2C0E /* OSUInstallerPrivilegedHelperRights.h in Headers */,
+				34127E921BAA192000C33C0E /* OmniSoftwareUpdate.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1545,7 +1555,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 				TargetAttributes = {
 					3489E8BF1AD56BA10039E24D = {
 						CreatedOnToolsVersion = 6.2;
@@ -2067,7 +2077,7 @@
 		34A5F561184E66DC00E8BA9A /* OmniSystemInfoPreferences.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				34A5F562184E66DC00E8BA9A /* en */,
+				5F9568571C0E4D7100DBA34D /* Base */,
 			);
 			name = OmniSystemInfoPreferences.xib;
 			sourceTree = "<group>";
@@ -2107,7 +2117,7 @@
 		4AA5E8F9148D601500633311 /* OSUAvailableUpdateController.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				4AA5E8FA148D601500633311 /* en */,
+				49DC54F21B82A0AC006A5AC3 /* Base */,
 			);
 			name = OSUAvailableUpdateController.xib;
 			sourceTree = "<group>";
@@ -2142,11 +2152,11 @@
 			baseConfigurationReference = 348A78871B583C830082D55D /* Touch-Framework-Debug.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
 				OTHER_CFLAGS = (
 					"-DOSU_FULL=0",
 					"$(value)",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
 				PRODUCT_NAME = OmniSoftwareUpdate;
 			};
 			name = Debug;
@@ -2156,11 +2166,11 @@
 			baseConfigurationReference = 348A78881B583C830082D55D /* Touch-Framework-Release.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
 				OTHER_CFLAGS = (
 					"-DOSU_FULL=0",
 					"$(value)",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
 				PRODUCT_NAME = OmniSoftwareUpdate;
 			};
 			name = Release;
@@ -2171,10 +2181,11 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = OSUCheckService/OSUCheckService.entitlements;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				GCC_PREFIX_HEADER = "OSUCheckService/OSUCheckService-Prefix.pch";
 				INFOPLIST_FILE = OSUCheckService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
-				OMNI_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
+				PRODUCT_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
 				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier)";
 				SKIP_INSTALL = YES;
 			};
@@ -2186,10 +2197,11 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = OSUCheckService/OSUCheckService.entitlements;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				GCC_PREFIX_HEADER = "OSUCheckService/OSUCheckService-Prefix.pch";
 				INFOPLIST_FILE = OSUCheckService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
-				OMNI_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
+				PRODUCT_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
 				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier)";
 				SKIP_INSTALL = YES;
 			};
@@ -2200,7 +2212,6 @@
 			baseConfigurationReference = 4A102C1808AB00D00059F5BD /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = "OmniSystemInfo/OmniSystemInfo-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSystemInfo;
 				OTHER_CFLAGS = (
 					"-DOSU_FULL=0",
 					"$(value)",
@@ -2209,6 +2220,7 @@
 					"$(OTHER_LDFLAGS)",
 					"$(OMNIWEB_WEBKIT_LDFLAGS)",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSystemInfo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -2218,7 +2230,6 @@
 			baseConfigurationReference = 4A102C1908AB00D00059F5BD /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = "OmniSystemInfo/OmniSystemInfo-Info.plist";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSystemInfo;
 				OTHER_CFLAGS = (
 					"-DOSU_FULL=0",
 					"$(value)",
@@ -2227,6 +2238,7 @@
 					"$(OTHER_LDFLAGS)",
 					"$(OMNIWEB_WEBKIT_LDFLAGS)",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSystemInfo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -2237,7 +2249,7 @@
 			buildSettings = {
 				INFOPLIST_FILE = "OSUTestApp/OSUTestApp-Info.plist";
 				INSTALL_PATH = "";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OSUTestApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OSUTestApp;
 				PRODUCT_NAME = OSUTestApp;
 			};
 			name = Debug;
@@ -2248,7 +2260,7 @@
 			buildSettings = {
 				INFOPLIST_FILE = "OSUTestApp/OSUTestApp-Info.plist";
 				INSTALL_PATH = "";
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OSUTestApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OSUTestApp;
 				PRODUCT_NAME = OSUTestApp;
 			};
 			name = Release;
@@ -2290,7 +2302,6 @@
 			baseConfigurationReference = 4A102C1808AB00D00059F5BD /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
 				OTHER_CFLAGS = (
 					"-DOSU_FULL=1",
 					"$(value)",
@@ -2299,6 +2310,7 @@
 					"$(OTHER_LDFLAGS)",
 					"$(OMNIWEB_WEBKIT_LDFLAGS)",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
 				PRODUCT_NAME = OmniSoftwareUpdate;
 			};
 			name = Debug;
@@ -2308,7 +2320,6 @@
 			baseConfigurationReference = 4A102C1908AB00D00059F5BD /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
 				OTHER_CFLAGS = (
 					"-DOSU_FULL=1",
 					"$(value)",
@@ -2317,6 +2328,7 @@
 					"$(OTHER_LDFLAGS)",
 					"$(OMNIWEB_WEBKIT_LDFLAGS)",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.OmniSoftwareUpdate;
 				PRODUCT_NAME = OmniSoftwareUpdate;
 			};
 			name = Release;
@@ -2341,32 +2353,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1B08AB00D00059F5BD /* Omni-Tool-Debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREFIX_HEADER = "";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -2374,25 +2362,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1C08AB00D00059F5BD /* Omni-Tool-Release.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_PREFIX_HEADER = "";
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
 			};
 			name = Release;
 		};
@@ -2400,44 +2371,19 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1508AB00D00059F5BD /* Omni-Application-Debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				GCC_PREFIX_HEADER = "OSUInstallerService/OSUInstallerService-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = OSUInstallerService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
 				MACH_O_TYPE = mh_execute;
-				OMNI_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
-				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,
 					__installer_sh,
 					Common/OSUInstaller.sh,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
 				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier)";
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = xpc;
 			};
 			name = Debug;
@@ -2446,37 +2392,19 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A102C1608AB00D00059F5BD /* Omni-Application-Release.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = NO;
 				GCC_PREFIX_HEADER = "OSUInstallerService/OSUInstallerService-Prefix.pch";
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = OSUInstallerService/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(value) @loader_path/../../../../../../../";
 				MACH_O_TYPE = mh_execute;
-				OMNI_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,
 					__installer_sh,
 					Common/OSUInstaller.sh,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "${PRODUCT_NAME}";
 				PRODUCT_NAME = "com.omnigroup.OmniSoftwareUpdate.$(TARGET_NAME:rfc1034identifier)";
-				SDKROOT = macosx;
-				SKIP_INSTALL = YES;
 				WRAPPER_EXTENSION = xpc;
 			};
 			name = Release;

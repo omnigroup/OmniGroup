@@ -1,4 +1,4 @@
-// Copyright 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,7 +13,8 @@ RCS_ID("$Id$");
 
 NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
-@interface OUIPasswordAlert () <UITextFieldDelegate> {
+@interface OUIPasswordAlert () <UITextFieldDelegate>
+{
   @private
     NSString *_username;
     NSString *_password;
@@ -74,7 +75,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     if (showUsername && allowEditingUsername) {
         [_alertController addTextFieldWithConfigurationHandler:^(UITextField *textField) {
             weakSelf.usernameTextField = textField;
-            weakSelf.usernameTextField.placeholder = NSLocalizedStringFromTableInBundle(@"username", @"OmniUI", OMNI_BUNDLE, @"placeholder text");
+            weakSelf.usernameTextField.placeholder = NSLocalizedStringFromTableInBundle(@"username", @"OmniUI", OMNI_BUNDLE, @"placeholder text - username field of login/password prompt");
         }];
     }
     
@@ -84,13 +85,13 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
         OBASSERT(weakSelf.passwordTextField.delegate == nil);
         weakSelf.passwordTextField.delegate = weakSelf;
         weakSelf.passwordTextField.secureTextEntry = YES;
-        weakSelf.passwordTextField.placeholder = NSLocalizedStringFromTableInBundle(@"password", @"OmniUI", OMNI_BUNDLE, @"placeholder text");
+        weakSelf.passwordTextField.placeholder = NSLocalizedStringFromTableInBundle(@"password", @"OmniUI", OMNI_BUNDLE, @"placeholder text - password/passphrase field of login/password prompt");
     }];
     
     // Buttons
     
-    NSString *cancelButtonTitle = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title");
-    NSString *logInButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title");
+    NSString *cancelButtonTitle = NSLocalizedStringFromTableInBundle(@"Cancel", @"OmniUI", OMNI_BUNDLE, @"button title - password/passphrase prompt");
+    NSString *logInButtonTitle = NSLocalizedStringFromTableInBundle(@"OK", @"OmniUI", OMNI_BUNDLE, @"button title - password/passphrase prompt");
     
     // See discussion around dismiss timing in -_didDismissWithAction:.
     [_alertController addAction:[UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
@@ -112,6 +113,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 }
 
 @synthesize delegate = _weak_delegate;
+@synthesize finished = _finished_callback;
 
 - (NSString *)username;
 {
@@ -171,6 +173,7 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
 
 - (void)showFromController:(UIViewController *)controller;
 {
+    OBPRECONDITION(self.delegate || _finished_callback); // Otherwise there's no point
     [[OUIPasswordAlert _visibleAlerts] addObject:self]; // we hold a reference to ourselves until -_didDismissWithAction:
     [controller presentViewController:_alertController animated:YES completion:nil];
 }
@@ -234,6 +237,10 @@ NSString * const OUIPasswordAlertObfuscatedPasswordPlaceholder = @"********";
     
     _flags.dismissed = 1;
 
+    if (_finished_callback) {
+        _finished_callback(self, action);
+        _finished_callback = nil;
+    }
     [self.delegate passwordAlert:self didDismissWithAction:action];
 
     [[OUIPasswordAlert _visibleAlerts] removeObject:self]; // balance the retain in -show

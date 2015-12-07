@@ -1309,11 +1309,11 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
         NSMutableAttributedString *result = [NSMutableAttributedString new];
         _enumerateBestDataForTypes(pasteboard, _readableTypes(), ^(NSData *data){
             __autoreleasing NSError *error = nil;
-            NSAttributedString *attributedString = [[NSAttributedString alloc] initWithData:data options:@{} documentAttributes:NULL error:&error];
-            if (!attributedString)
+            NSAttributedString *str = [[NSAttributedString alloc] initWithData:data options:@{} documentAttributes:NULL error:&error];
+            if (!str)
                 [error log:@"Error reading pasteboard item"];
             else {
-                [result appendAttributedString:attributedString];
+                [result appendAttributedString:str];
             }
         });
         
@@ -1345,7 +1345,6 @@ static void _copyAttribute(NSMutableDictionary *dest, NSDictionary *src, NSStrin
     if ([attributedString length] > 0) {
         NSRange range = self.selectedRange;
 
-        id <OUITextViewDelegate> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:)] &&
             ![delegate textView:self shouldChangeTextInRange:range replacementText:[attributedString string]])
             return;

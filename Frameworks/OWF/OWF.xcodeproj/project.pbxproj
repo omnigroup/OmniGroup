@@ -257,6 +257,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3416C6041BD942A400CDDA7F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34D029CE167E5CB8005E680B /* OmniBase.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5FE81E171B62AE980056756C;
+			remoteInfo = "OmniBase-watchOS";
+		};
 		343EB4B419509EFE000534A9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34D029CE167E5CB8005E680B /* OmniBase.xcodeproj */;
@@ -1196,6 +1203,7 @@
 				344B89DD16C9A2BD004C709D /* OBUnitTests.xctest */,
 				343EB4B519509EFE000534A9 /* OmniBase.framework */,
 				343EB4B719509EFE000534A9 /* OBUnitTests.xctest */,
+				3416C6051BD942A400CDDA7F /* OmniBase.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1679,7 +1687,7 @@
 		00E52059FE8AB39F11C9CC38 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 			};
 			buildConfigurationList = 4AA5356908B27DCF00F0872D /* Build configuration list for PBXProject "OWF" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1721,6 +1729,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		3416C6051BD942A400CDDA7F /* OmniBase.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = OmniBase.framework;
+			remoteRef = 3416C6041BD942A400CDDA7F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		343EB4B519509EFE000534A9 /* OmniBase.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -2129,6 +2144,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5357A08B27DDC00F0872D /* Omni-Framework-Debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
+				DEFINES_MODULE = NO;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = OWF;
 			};
@@ -2138,6 +2155,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4AA5357B08B27DDC00F0872D /* Omni-Framework-Release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
+				DEFINES_MODULE = NO;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = OWF;
 			};

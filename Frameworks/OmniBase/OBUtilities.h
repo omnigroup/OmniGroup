@@ -79,25 +79,7 @@ extern void OBObjectGetUnsafeObjectIvar(id object, const char *ivarName, __unsaf
 // ARC doesn't allow casting between 'void **' and '__unsafe_unretained id *' for some reason.
 extern __unsafe_unretained id *OBCastMemoryBufferToUnsafeObjectArray(void *buffer);
 
-// iOS 8 adds frameworks/bundles.
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE && !defined(OMNI_BUNDLE_IDENTIFIER)
-    #define OMNI_BUNDLE [NSBundle mainBundle]
-#else
-    // This uses the OMNI_BUNDLE_IDENTIFIER compiler define set by the OmniGroup/Configurations/*Global*.xcconfig to look up the bundle for the calling code.
-    #define OMNI_BUNDLE _OBBundleWithIdentifier(OMNI_BUNDLE_IDENTIFIER)
-    static inline NSBundle *_OBBundleWithIdentifier(NSString *identifier)
-    {
-        OBPRECONDITION([identifier length] > 0); // Did you forget to set OMNI_BUNDLE_IDENTIFIER in your target?
-        NSBundle *bundle = nil;
-        if ([identifier isEqualToString:@"MAIN-BUNDLE"]) {
-            bundle = [NSBundle mainBundle];
-        } else {
-            bundle = [NSBundle bundleWithIdentifier:identifier];
-        }
-        OBPOSTCONDITION(bundle); // Did you set it to the wrong thing?
-        return bundle;
-    }
-#endif
+#import <OmniBase/OBBundle.h>
     
 extern void _OBRequestConcreteImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;
 extern void _OBRejectUnusedImplementation(id self, SEL _cmd, const char *file, unsigned int line) NORETURN;

@@ -270,19 +270,16 @@ static CGFloat _bottomHeightToAvoidForEndingKeyboardFrame(OUIKeyboardNotifier *s
     DEBUG_KEYBOARD("screenBounds: %@", NSStringFromCGRect(screenBounds));
     
     CGFloat keyboardHeight = CGRectGetHeight(keyboardEndFrame);
-    BOOL isDocked = (screenBounds.size.height - keyboardEndFrame.size.height) == keyboardEndFrame.origin.y;
-    
+
     OB_UNUSED_VALUE(keyboardHeight);
     DEBUG_KEYBOARD("keyboardHeight: %f", keyboardHeight);
     DEBUG_KEYBOARD("isDocked: %@", isDocked ? @"YES" : @"NO");
 
     CGFloat heightToAvoid = 0;
-    if (isDocked) {
-        CGRect intersectionRect = CGRectIntersection(screenBounds, keyboardEndFrame);
-        OBASSERT(!CGRectIsNull(intersectionRect));
-        if (!CGRectIsNull(intersectionRect)) {
-            heightToAvoid = CGRectGetHeight(intersectionRect);
-        }
+    CGRect intersectionRect = CGRectIntersection(screenBounds, keyboardEndFrame);
+    OBASSERT(!CGRectIsNull(intersectionRect));
+    if (!CGRectIsNull(intersectionRect)) {
+        heightToAvoid = CGRectGetHeight(intersectionRect);
     }
     DEBUG_KEYBOARD("heightToAvoid: %f", heightToAvoid);
     

@@ -10,6 +10,7 @@
 #import <Foundation/NSObject.h>
 #import <OmniDAV/ODAVFeatures.h>
 
+@class NSURLCredential, NSURLAuthenticationChallenge;
 @class ODAVMultipleFileInfoResult, ODAVSingleFileInfoResult, ODAVFileInfo, ODAVOperation, ODAVURLResult, ODAVURLAndDataResult;
 
 typedef void (^ODAVConnectionBasicCompletionHandler)(NSError *errorOrNil);

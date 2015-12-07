@@ -10,7 +10,7 @@
 #import <Foundation/NSObject.h>
 #import <Foundation/NSDate.h> // NSTimeInterval
 
-@class NSArray, NSBundle, NSMutableDictionary, NSSet;
+@class NSArray, NSBundle, NSMutableDictionary;
 
 @interface NSObject (OFExtensions)
 
@@ -20,7 +20,7 @@
 
 - (BOOL)satisfiesCondition:(SEL)sel withObject:(id)object;
 
-- (NSMutableDictionary *)dictionaryWithNonNilValuesForKeys:(NSArray *)keys;
+- (NSMutableDictionary *)dictionaryWithNonNilValuesForKeys:(NSArray<NSString *> *)keys;
 
 @end
 

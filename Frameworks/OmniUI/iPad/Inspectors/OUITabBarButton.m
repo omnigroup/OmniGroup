@@ -29,7 +29,7 @@ RCS_ID("$Id$");
 {
     OUITabBarButton *button = [self buttonWithType:UIButtonTypeCustom];
     button->_isVerticalTabButton = YES;
-    
+    button.showButtonImage = YES;
     return button;
 }
 
@@ -65,6 +65,8 @@ RCS_ID("$Id$");
 
 - (void)OUITabBarButton_commonInit;
 {
+    self.showButtonImage = _isVerticalTabButton;
+    self.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     [self appearanceDidChange];
 }
 
@@ -87,6 +89,15 @@ RCS_ID("$Id$");
     if (self.appearanceDelegate != nil && self.selected) {
         tintColor = [self.appearanceDelegate selectedTabTintColor];
     }
+    
+    // Don't adjust the image when the tab is selected.
+    // -updateTitleColors uses the same title color for UIControlStateSelected and UIControlStateHighlighted, we should behave the same way.
+    //
+    // For the record, I would have expected that we darken in response to taps (even when selected).
+    // However, a sample application shows that when a button is selected, the UIControlStateHighlighted titleColor is ignored.
+    // The UIControlStateNormal titleColor is used instead when the button is selected.
+    // We could workaround this, but the tediousness of doing so and comparison with a stock tab-based application (which doesn't highlight the selected tab) suggest this is correct for a tabbed interface on iOS.
+    self.adjustsImageWhenHighlighted = !self.selected;
 
     self.imageView.tintColor = tintColor;
 }
@@ -104,7 +115,6 @@ RCS_ID("$Id$");
     }
     
     [self setTitleColor:self.tintColor forState:UIControlStateNormal];
-    [self setTitleColor:[self.tintColor colorWithAlphaComponent:0.2] forState:UIControlStateHighlighted];
 
     [self setTitleColor:selectedTitleColor forState:UIControlStateSelected];
     [self setTitleColor:selectedTitleColor forState:(UIControlStateSelected | UIControlStateHighlighted)];
@@ -114,12 +124,23 @@ RCS_ID("$Id$");
 
 - (CGRect)titleRectForContentRect:(CGRect)contentRect;
 {
-    CGRect titleRect = [super titleRectForContentRect:contentRect];
-
     // N.B. We'll need to adjust this logic once we allow for indicators to indicate tab content
     if (_isVerticalTabButton) {
+        CGRect titleRect = [super titleRectForContentRect:contentRect];
         titleRect.origin.x = self.bounds.origin.x;
         titleRect.size.width = [self _xOffsetDividingTitleAndImage];
+        return titleRect;
+    }
+    
+    // only adjust our image origin.x if label overlaps the image and we are showing an image.
+    CGRect titleRect = [super titleRectForContentRect:CGRectInset(contentRect, 4, 0)];
+    CGRect imageRect = [self imageRectForContentRect:contentRect];
+
+    if (self.showButtonImage && CGRectIntersectsRect(titleRect, imageRect)) {
+        titleRect.origin.x = MAX(contentRect.origin.x, titleRect.origin.x - imageRect.size.width);
+        if (CGRectGetMaxX(titleRect) > CGRectGetMinX(imageRect) - 10) {
+            titleRect.size.width = CGRectGetMinX(imageRect) - 10;
+        }
     }
 
     return titleRect;
@@ -127,19 +148,19 @@ RCS_ID("$Id$");
 
 - (CGRect)imageRectForContentRect:(CGRect)contentRect;
 {
-    if (!_isVerticalTabButton) {
+    if (! self.showButtonImage) {
         // No images for horizontal buttons
         return CGRectZero;
     }
     
     CGRect imageRect = [super imageRectForContentRect:contentRect];
     CGSize imageSize = [[self imageForState:UIControlStateNormal] size];
-    
-    if (_isVerticalTabButton) {
+
+    if (self.showButtonImage) {
         imageRect = (CGRect){
             .origin = (CGPoint){
                 .x = [self _xOffsetDividingTitleAndImage],
-                .y = (CGRectGetHeight(contentRect) - imageSize.height) / 2.0,
+                .y = ceilf((CGRectGetHeight(contentRect) - imageSize.height) / 2.0),
             },
             .size = imageSize,
         };
@@ -151,7 +172,7 @@ RCS_ID("$Id$");
 - (CGFloat)_xOffsetDividingTitleAndImage;
 {
     CGSize imageSize = [[self imageForState:UIControlStateNormal] size];
-    return CGRectGetWidth([self bounds]) - imageSize.width - 18.0;
+    return CGRectGetWidth([self bounds]) - imageSize.width - 10;
 }
 
 #pragma mark Appearance

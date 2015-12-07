@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,9 +14,11 @@
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OUZipMember
 
-- (id)_initWithFileWrapper:(NSFileWrapper *)fileWrapper name:(NSString *)name;
+- (instancetype)_initWithFileWrapper:(NSFileWrapper *)fileWrapper name:(NSString *)name;
 {
     // This shouldn't be called on a concrete class.  That would imply the caller knew the type of the file wrapper, which it shouldn't bother with.
     OBPRECONDITION([self class] == [OUZipMember class]);
@@ -30,8 +32,8 @@ RCS_ID("$Id$");
     
     if ([fileWrapper isDirectory]) {
         OUZipDirectoryMember *directory = [[OUZipDirectoryMember alloc] initWithName:name date:[[fileWrapper fileAttributes] fileModificationDate] children:nil archive:YES];
-        NSDictionary *childWrappers = [fileWrapper fileWrappers];
-        NSArray *childKeys = [[childWrappers allKeys] sortedArrayUsingSelector:@selector(compare:)];
+        NSDictionary<NSString *, NSFileWrapper *> *childWrappers = [fileWrapper fileWrappers];
+        NSArray <NSString *> *childKeys = [[childWrappers allKeys] sortedArrayUsingSelector:@selector(compare:)];
         
         for (NSString *childKey in childKeys) {
             NSFileWrapper *childWrapper = [childWrappers objectForKey:childKey];
@@ -46,7 +48,7 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- initWithFileWrapper:(NSFileWrapper *)fileWrapper;
+- (instancetype)initWithFileWrapper:(NSFileWrapper *)fileWrapper;
 {
     return [self _initWithFileWrapper:fileWrapper name:[fileWrapper preferredFilename]];
 }
@@ -58,7 +60,7 @@ RCS_ID("$Id$");
     return nil;
 }
 
-- initWithPath:(NSString *)path fileManager:(NSFileManager *)fileManager;
+- (instancetype)initWithPath:(NSString *)path fileManager:(NSFileManager *)fileManager;
 {
     // This shouldn't be called on a concrete class.  That would imply the caller knew the type of the file wrapper, which it shouldn't bother with.
     OBPRECONDITION([self class] == [OUZipMember class]);
@@ -66,7 +68,7 @@ RCS_ID("$Id$");
 
     NSString *preferredFilename = [path lastPathComponent];
     
-    NSDictionary *fileAttributes = [fileManager attributesOfItemAtPath:path error:NULL];
+    NSDictionary <NSString *, id> *fileAttributes = [fileManager attributesOfItemAtPath:path error:NULL];
     if (!fileAttributes)
         return nil;
     
@@ -84,7 +86,7 @@ RCS_ID("$Id$");
     
     if ([fileType isEqualToString:NSFileTypeDirectory]) {
         OUZipDirectoryMember *directory = [[OUZipDirectoryMember alloc] initWithName:preferredFilename date:[fileAttributes fileModificationDate] children:nil archive:YES];
-        NSArray *childNames = [fileManager contentsOfDirectoryAtPath:path error:NULL];
+        NSArray<NSString *> *childNames = [fileManager contentsOfDirectoryAtPath:path error:NULL];
         NSUInteger childIndex, childCount = [childNames count];
         for (childIndex = 0; childIndex < childCount; childIndex++) {
             NSString *childName = [childNames objectAtIndex:childIndex];
@@ -116,7 +118,7 @@ RCS_ID("$Id$");
     return self;
 }
 
-- (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString *)fileNamePrefix error:(NSError **)outError;
+- (BOOL)appendToZipArchive:(OUZipArchive *)zip fileNamePrefix:(NSString * _Nullable)fileNamePrefix error:(NSError **)outError;
 {
     OBRequestConcreteImplementation(self, _cmd);
     return NO;
@@ -128,3 +130,5 @@ RCS_ID("$Id$");
 }
 
 @end
+
+NS_ASSUME_NONNULL_END

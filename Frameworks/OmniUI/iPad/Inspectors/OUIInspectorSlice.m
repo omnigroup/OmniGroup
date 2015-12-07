@@ -23,16 +23,19 @@ RCS_ID("$Id$");
 // OUIInspectorSlice
 OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfaceFromInspectedObjects:
 
-
-@interface OUIInspectorSlice ()
-@property(nonatomic,retain) UIView *sliceBackgroundView;
-@end
-
+// these should all be done via constraints now
+OBDEPRECATED_METHOD(-paddingToInspectorTop);
+OBDEPRECATED_METHOD(-paddingToInspectorBottom);
+OBDEPRECATED_METHOD(-paddingToInspectorLeft);
+OBDEPRECATED_METHOD(-paddingToInspectorRight);
+OBDEPRECATED_METHOD(-paddingToPreviousSlice:remainingHeight:);
+OBDEPRECATED_METHOD(-topInsetFromSliceBackgroundView);
+OBDEPRECATED_METHOD(-bottomInsetFromSliceBackgroundView);
+OBDEPRECATED_METHOD(-minimumHeightForWidth:);
 
 @implementation OUIInspectorSlice
 {
     OUIInspectorPane *_detailPane;
-    UIView *_sliceBackgroundView;
 }
 
 + (void)initialize;
@@ -66,7 +69,7 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     return alignmentInsets;
 }
 
-+ (UIColor *)sliceBackgroundColor;
+- (UIColor *)sliceBackgroundColor;
 {
     return [UIColor whiteColor];
 }
@@ -188,10 +191,6 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
             [(UITableView *)view setSeparatorColor:_separatorColor];
         }
         
-        view = self.sliceBackgroundView;
-        if ([view respondsToSelector:@selector(setInspectorSliceSeparatorColor:)]) {
-            [(id)view setInspectorSliceSeparatorColor:_separatorColor];
-        }
         if ([view isKindOfClass:[UITableView class]]) {
             [(UITableView *)view setSeparatorColor:_separatorColor];
         }
@@ -239,29 +238,6 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     return NO;
 }
 
-- (UIView *)sliceBackgroundView;
-{
-    if (!self.isViewLoaded) {
-        (void)[self view]; // The background view normally gets loaded when the content view does, so if that's not loaded yet, do so now.
-    }
-    OBASSERT(_sliceBackgroundView != self.view);
-    return _sliceBackgroundView;
-}
-
-- (UIView *)makeSliceBackgroundView;
-{
-    // If we're already providing group spacers on top and bottom, we won't need a slice background
-    if (self.includesInspectorSliceGroupSpacerOnTop && self.includesInspectorSliceGroupSpacerOnBottom) {
-        return nil;
-    }
-    
-    OUIInspectorSliceView *view = [[OUIInspectorSliceView alloc] init];
-#if DEBUG_OUIINSPECTORSLICEVIEW
-    view.debugIdentifier = NSStringFromClass([self class]);
-#endif // DEBUG_OUIINSPECTORSLICEVIEW
-    return view;
-}
-
 + (void)configureTableViewBackground:(UITableView *)tableView;
 {
     // Assume that this table view is going to become part of our slice and that it should get the background from the stack.
@@ -273,110 +249,10 @@ OBDEPRECATED_METHOD(-updateInterfaceFromInspectedObjects); // -> -updateInterfac
     [[self class] configureTableViewBackground:tableView];
 }
 
-// Uses -[UIView(OUIExtensions) borderEdgeInsets] to find out what adjustment to make to the nominal spacing to make things *look* like they are spaced that way.
-static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
-{
-    UIEdgeInsets insets = view.borderEdgeInsets;
-    
-    switch (fromEdge) {
-        case CGRectMinXEdge:
-            return insets.left;
-        case CGRectMinYEdge:
-            return insets.top;
-        case CGRectMaxXEdge:
-            return insets.right;
-        case CGRectMaxYEdge:
-            return insets.bottom;
-        default:
-            OBASSERT_NOT_REACHED("Bad edge enum");
-            return 0;
-    }
-}
-
 // If we have a background view, we want to use it instead of the content view when calculating vertical spacing.
 - (UIView *)_viewForVerticalPaddingCalculations;
 {
-    UIView *backgroundView = self.sliceBackgroundView;
-    OBASSERT_IF(backgroundView != nil, self.view != nil);
-    return (backgroundView != nil) ? backgroundView : self.view;
-}
-
-- (CGFloat)paddingToInspectorTop;
-{
-    CGFloat padding = 0.0f;
-    if (!self.includesInspectorSliceGroupSpacerOnTop) {
-        padding += [[self class] paddingBetweenSliceGroups];
-    }
-    padding -= _borderOffsetFromEdge(self._viewForVerticalPaddingCalculations, CGRectMinYEdge);
-    return padding;
-}
-
-- (CGFloat)paddingToInspectorBottom;
-{
-    CGFloat padding = 30 - _borderOffsetFromEdge(self._viewForVerticalPaddingCalculations, CGRectMaxYEdge);
-    if (self.includesInspectorSliceGroupSpacerOnBottom) {
-        padding -= [[self class] paddingBetweenSliceGroups];
-    }
-    return padding;
-}
-
-- (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice remainingHeight:(CGFloat)remainingHeight;
-{
-    OBPRECONDITION(previousSlice);
-    
-    // If we're in the middle / at the end of a group, we don't want any padding between us and the previous slice.
-    OUIInspectorSliceGroupPosition groupPosition = self.groupPosition;
-    if ((groupPosition == OUIInspectorSliceGroupPositionCenter) || (groupPosition == OUIInspectorSliceGroupPositionLast)) {
-        return _borderOffsetFromEdge(self._viewForVerticalPaddingCalculations, CGRectMinYEdge);
-    }
-    
-    // Padding slices and background slice views are assumed to have no padding, and we assume we don't want any default padding between them and their bordering slices.
-    if (previousSlice.includesInspectorSliceGroupSpacerOnBottom || (previousSlice.sliceBackgroundView != nil)) {
-        return _borderOffsetFromEdge(self._viewForVerticalPaddingCalculations, CGRectMinYEdge);
-    }
-    if (self.includesInspectorSliceGroupSpacerOnTop || (self.sliceBackgroundView != nil)) {
-        return _borderOffsetFromEdge(previousSlice._viewForVerticalPaddingCalculations, CGRectMaxYEdge);
-    }
-    
-    // Otherwise, we assume 14 points between slices, and adjust as appropriate based on the border offsets for the slices to get the right visual spacing.
-    CGFloat result = 14 - _borderOffsetFromEdge(self.view, CGRectMinYEdge) - _borderOffsetFromEdge(previousSlice.view, CGRectMaxYEdge);
-    
-    OBASSERT(result >= -14.0); // if the combined border of the views is too large, we can end up overlapping content and causing badness
-    return result;    
-}
-
-- (CGFloat)paddingToInspectorLeft;
-{
-    // The goal is to match the inset of grouped table view cells (for cases where we have controls next to one), though individual inspectors may need to adjust this.
-    CGFloat padding = self.alignmentInsets.left - _borderOffsetFromEdge(self.view, CGRectMinXEdge);    
-    return padding;
-}
-
-- (CGFloat)paddingToInspectorRight;
-{
-    // The goal is to match the inset of grouped table view cells (for cases where we have controls next to one), though individual inspectors may need to adjust this.
-    return self.alignmentInsets.right - _borderOffsetFromEdge(self.view, CGRectMaxXEdge);
-}
-
-- (CGFloat)topInsetFromSliceBackgroundView;
-{
-    return (_sliceBackgroundView != nil) ? _sliceBackgroundView.inspectorSliceTopBorderHeight : 0.0f;
-}
-
-- (CGFloat)bottomInsetFromSliceBackgroundView;
-{
-    return (_sliceBackgroundView != nil) ? _sliceBackgroundView.inspectorSliceBottomBorderHeight : 0.0f;
-}
-
-// Called on both height-resizable and non-resizable slices. Subclasses must implement this to be height sizeable. The default implementation is to just return the current view height (assuming a fixed height view). For backwards compatibility, if the view *is* height sizeable, we use kOUIInspectorWellHeight.
-- (CGFloat)minimumHeightForWidth:(CGFloat)width;
-{
-    // Shouldn't be called unless we have a height sizeable view.
-    OBPRECONDITION([self isViewLoaded]);
-    
-    if (self.view.autoresizingMask & UIViewAutoresizingFlexibleHeight)
-        return kOUIInspectorWellHeight;
-    return CGRectGetHeight(self.view.bounds);
+    return self.view;
 }
 
 - (void)sizeChanged;
@@ -548,12 +424,6 @@ static CGFloat _borderOffsetFromEdge(UIView *view, CGRectEdge fromEdge)
     [super setView:newValue];
     
     UIView *view = self.view;
-    if (view == nil) {
-        self.sliceBackgroundView = nil;
-    } else if (_sliceBackgroundView == nil) {
-        self.sliceBackgroundView = [self makeSliceBackgroundView];
-    }
-    
     if ([view respondsToSelector:@selector(setInspectorSliceAlignmentInsets:)]) {
         [(id)view setInspectorSliceAlignmentInsets:_alignmentInsets];
     }

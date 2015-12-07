@@ -7,9 +7,12 @@
 //
 // $Id$
 
+#import <UIKit/UIViewController.h>
+
 #import <OmniUI/OUIInspectorUpdateReason.h>
 #import <UIKit/UINibDeclarations.h>
 
+@class UITableView;
 @class OUIInspector, OUIInspectorPane, OUIStackedSlicesInspectorPane;
 
 
@@ -27,7 +30,6 @@ typedef NS_ENUM(NSInteger, OUIInspectorSliceGroupPosition) {
 + (instancetype)slice;
 
 + (UIEdgeInsets)sliceAlignmentInsets; // Default alignment insets for a slice
-+ (UIColor *)sliceBackgroundColor; // Default color for the slice background
 + (UIColor *)sliceSeparatorColor; // Default color for slice separators
 + (CGFloat)paddingBetweenSliceGroups; // The space to leave between groups of inspector slices.
 
@@ -38,21 +40,11 @@ typedef NS_ENUM(NSInteger, OUIInspectorSliceGroupPosition) {
 @property(nonatomic,copy) UIColor *separatorColor;
 @property(nonatomic,readonly) BOOL includesInspectorSliceGroupSpacerOnTop;
 @property(nonatomic,readonly) BOOL includesInspectorSliceGroupSpacerOnBottom;
-@property(nonatomic,readonly) UIView *sliceBackgroundView;
-- (UIView *)makeSliceBackgroundView; // You should not call this directly, but subclasses can override it if they want a custom slice background view or if they don't want/need one at all.
+
+- (UIColor *)sliceBackgroundColor; // Default color for the slice background
 
 + (void)configureTableViewBackground:(UITableView *)tableView;
 - (void)configureTableViewBackground:(UITableView *)tableView;
-
-// Methods used in OUIStackSlicesInspector layout to determine how to space slices
-- (CGFloat)paddingToInspectorTop; // For the top slice
-- (CGFloat)paddingToInspectorBottom; // For the bottom slice
-- (CGFloat)paddingToPreviousSlice:(OUIInspectorSlice *)previousSlice remainingHeight:(CGFloat)remainingHeight;
-- (CGFloat)paddingToInspectorLeft;
-- (CGFloat)paddingToInspectorRight;
-- (CGFloat)topInsetFromSliceBackgroundView; // Subclass if you need to add padding between the top of the content view and the top of the background view, or if you need to prevent the top border of the background view from being exposed above the content view.
-- (CGFloat)bottomInsetFromSliceBackgroundView; // Subclass if you need to add padding between the top of the content view and the top of the background view, or if you need to prevent the top border of the background view from being exposed above the content view.
-- (CGFloat)minimumHeightForWidth:(CGFloat)width; // The minimum height the slice can have. Defaults to kOUIInspectorWellHeight for height-sizeable views, or the view's current height for non-sizeable views.
 
 - (void)sizeChanged;
 

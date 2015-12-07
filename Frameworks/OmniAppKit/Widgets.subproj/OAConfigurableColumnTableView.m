@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -48,12 +48,6 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
     [self _commonInit];
 
     return self;
-}
-
-- (void)dealloc;
-{
-    [configurationMenu release];
-    [super dealloc];
 }
 
 //
@@ -230,7 +224,6 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
 
 - (void)_buildConfigurationMenu;
 {
-    [configurationMenu release];
     configurationMenu = nil;
     
     id dataSource = [self dataSource];
@@ -260,7 +253,6 @@ Also note that this class doesn't subclass -addTableColumn: and -removeTableColu
     [item setState:[self isTableColumnActive:column]];
     [item setRepresentedObject:column];
     [configurationMenu addItem: item];
-    [item release];
     
     if (confDataSourceFlags.addSeparator && [dataSource configurableColumnTableView:self shouldAddSeparatorAfterColumn:column])
         [configurationMenu addItem: [NSMenuItem separatorItem]];

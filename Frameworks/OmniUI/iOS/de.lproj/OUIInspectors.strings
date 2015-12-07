@@ -1,9 +1,9 @@
 /* font size label format string in points */
-"%@ points" = "%@ Punkt";
+"%@ points" = "%@ Punkte";
 
 /* title format for color component slider */
 
-"<alpha title+value>" = "Deckkraft: %d%%";
+"<alpha title+value>" = "Opazität: %d%%";
 
 /* title format for color component slider */
 "<blue title+value>" = "Blau: %d";
@@ -15,7 +15,7 @@
 "<green title+value>" = "Grün: %d";
 
 /* title format for color component slider */
-"<hue title+value>" = "Farbton: %d°";
+"<hue title+value>" = "Farbton: %d";
 
 /* title format for color component slider */
 "<red title+value>" = "Rot: %d";

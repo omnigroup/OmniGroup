@@ -8,7 +8,7 @@
 "%@ on %@" = "%2$@上の%1$@";
 
 /* Conflict file regular expression */
-"^(.*) \\(conflict( [0-9+])? from .*\\)$" = "^(.*) \\(conflict( [0-9+])? from .*\\)$";
+"^(.*) \\(conflict( [0-9+])? from .*\\)$" = "^(.*) \\(.* からの競合( [0-9+])?\\)$";
 
 /* account credentials missing suggestion */
 "Account is missing login credentials." = "アカウントにログイン資格情報がありません。";

@@ -96,7 +96,7 @@
 "Duplicate bundle name" = "Nombre de paquete duplicado";
 
 /* exception reason */
-"Element '%@' not allowed at path: %@" = "El elemento '%1$@' no se admite en la ruta: %2$@";
+"Element '%@' not allowed at path: %@" = "Elemento '%1$@' no admitido en la ruta: %2$@";
 
 /* error reason */
 "Failed to create directory for lock file at \"%@\"." = "No se ha podido crear el directorio del archivo de bloqueo en “%@”.";
@@ -165,7 +165,7 @@
 "seconds" = "segundos";
 
 /* alert message format when clicking on a configuration value URL */
-"Set \"%@\" to \"%@\"" = "Ajustar “%1$@” a “%2$@";
+"Set \"%@\" to \"%@\"" = "Ajustar “%1$@” a “%2$@”";
 
 /* server certificate rejected */
 "The server certificate for \"%@\" does not seem to be valid. This site may not be trustworthy. Would you like to connect anyway?" = "Parece que el certificado de servidor para “%@” no es válido. Puede que este sitio no sea de confianza. ¿Desea conectarse de todos modos?";

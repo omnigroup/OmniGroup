@@ -14,10 +14,10 @@
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
 #import <OmniDataObjects/ODOModel.h>
 #import <OmniDataObjects/Errors.h>
-#import <OmniDataObjects/ODOObject-Accessors.h>
 
 #import "ODOProperty-Internal.h"
 #import "ODOEditingContext-Internal.h"
+#import "ODOObject-Accessors.h"
 #import "ODOObject-Internal.h"
 #import "ODODatabase-Internal.h"
 #import "ODOEntity-SQL.h"
@@ -490,10 +490,10 @@ static void _removeDenyApplier(const void *value, void *context)
     [denyObjectIDToReferer removeObjectForKey:[deletedObject objectID]];
 }
 
-static void _nullifyRelationships(const void *key, const void *value, void *context)
+static void _nullifyRelationships(const void *dictKey, const void *dictValue, void *context)
 {
-    ODOObjectID *objectID = (ODOObjectID *)key;
-    NSArray *toOneKeys = (NSArray *)value;
+    ODOObjectID *objectID = (ODOObjectID *)dictKey;
+    NSArray *toOneKeys = (NSArray *)dictValue;
     TraceForDeletionContext *ctx = context;
     
     DEBUG_DELETE(@"DELETE: nullify %@ %@", [objectID shortDescription], toOneKeys);

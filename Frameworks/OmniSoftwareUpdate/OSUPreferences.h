@@ -36,7 +36,7 @@
 + (OFPreference *)includeHardwareDetails;
 + (OFPreference *)ignoredUpdates;
 
-+ (NSArray *)visibleTracks;
-+ (void)setVisibleTracks:(NSArray *)orderedTrackList;
++ (NSArray<NSString *> *)visibleTracks;
++ (void)setVisibleTracks:(NSArray<NSString *> *)orderedTrackList;
 
 @end

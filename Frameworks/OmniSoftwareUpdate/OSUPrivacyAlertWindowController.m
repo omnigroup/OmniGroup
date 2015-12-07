@@ -58,9 +58,9 @@ RCS_ID("$Id$");
     _enableHardwareCollectionButton.title = NSLocalizedStringFromTableInBundle(@"Send anonymous system information to The Omni Group", @"OmniSystemInfo", OMNI_BUNDLE, "MAS-only: label for switch in privacy alert to specify whether to send system info");
 #endif
 
-    NSString *bundleName = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
-    [_privacyNoticeTitleTextField setStringValue:[NSString stringWithFormat:titleFormat, bundleName]];
-    [_privacyNoticeMessageTextField setStringValue:[NSString stringWithFormat:[_privacyNoticeMessageTextField stringValue], bundleName]];
+    NSString *appName = [[OAController sharedController] appName];
+    [_privacyNoticeTitleTextField setStringValue:[NSString stringWithFormat:titleFormat, appName]];
+    [_privacyNoticeMessageTextField setStringValue:[NSString stringWithFormat:[_privacyNoticeMessageTextField stringValue], appName]];
     [_privacyNoticeAppIconImageView setImage:[[NSApplication sharedApplication] applicationIconImage]];
 
     // Prepopulate the checkbox with your current setting.

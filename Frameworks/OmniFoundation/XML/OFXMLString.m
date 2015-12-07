@@ -1,4 +1,4 @@
-// Copyright 2003-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -181,6 +181,19 @@ static NSString *_OFXMLCreateStringWithEntityReferences(NSString *sourceString, 
 		CFStringAppendCharacters(result, &c, 1);
 	} else if (c == '\t' || c == '\r') { // 0x9 || 0xD
             CFStringAppendCharacters(result, &c, 1);
+        } else if (OFCharacterIsSurrogate(c) == OFIsSurrogate_HighSurrogate) {
+            // This claims it will return 0 if we ask for a character at an index outside the original range, and that'll fail the …IsSurrogate() check below
+            charIndex++;
+            unichar low = CFStringGetCharacterFromInlineBuffer(&charBuffer, charIndex);
+            
+            OBASSERT(OFCharacterIsSurrogate(low) == OFIsSurrogate_LowSurrogate);
+            if (OFCharacterIsSurrogate(low) == OFIsSurrogate_LowSurrogate) {
+                UnicodeScalarValue scalar = OFCharacterFromSurrogatePair(c, low);
+                // We can't fit a Unicode scalar into a unichar (21 vs 16 bits), so just pass 0 for the encoding character and make sure we're using the given entity representation
+                _OFXMLAppendCharacterEntityWithOptions(result, OFXMLCharacterFlagWriteCharacterEntity, 0, (CFStringRef)[NSString stringWithFormat:@"&#x%X;", (unsigned int)scalar], NULL);
+            } else {
+                // We found only the first half of a surrogate pair, which we don't care to encode – drop it on the floor
+            }
 	} else if (CFCharacterSetIsCharacterMember(entityCharacters, c)) {
 	    // This is a low-ascii, non-whitespace byte and isn't allowed in XML character at all.  Drop it.
 	    OBASSERT(c < 0x20 && c != 0x9 && c != 0xA && c != 0xD);

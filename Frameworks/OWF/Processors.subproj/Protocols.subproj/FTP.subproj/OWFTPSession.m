@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -76,7 +76,7 @@ static BOOL OWFTPSessionDebug = NO;
 
 static NSMutableDictionary *openSessions;
 static NSLock *openSessionsLock;
-static NSTimeInterval timeout;
+static NSTimeInterval sessionTimeout;
 static NSString *asciiTransferType = @"A";
 static NSString *imageTransferType = @"I";
 static NSData *crlf, *aSingleSpace;
@@ -91,7 +91,7 @@ static NSString *defaultPassword = nil;
 
     openSessions = [[NSMutableDictionary alloc] init];
     openSessionsLock = [[NSLock alloc] init];
-    timeout = 120.0; // Overridden in +readDefaults
+    sessionTimeout = 120.0; // Overridden in +readDefaults
     crlf = [[NSData alloc] initWithBytesNoCopy:(void *)crlf_bytes length:2 freeWhenDone:NO];
     aSingleSpace = [[NSData alloc] initWithBytesNoCopy:(void *)space_byte length:1 freeWhenDone:NO];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contentCacheFlushedNotification:) name:OWContentCacheFlushNotification object:nil];
@@ -99,7 +99,7 @@ static NSString *defaultPassword = nil;
 
 + (void)didLoad;
 {
-    [[OFController sharedController] addObserver:(id)self];
+    [[OFController sharedController] addStatusObserver:(id)self];
 }
 
 + (void)controllerDidInitialize:(OFController *)controller;
@@ -115,7 +115,7 @@ static NSString *defaultPassword = nil;
     defaultPassword = [[userDefaults stringForKey:@"OWFTPAnonymousPassword"] retain];
     if (defaultPassword == nil || [defaultPassword isEqualToString:@""])
 	defaultPassword = [[NSString alloc] initWithFormat:@"%@@%@", [[NSProcessInfo processInfo] processName], [ONHost domainName]];
-    timeout = [userDefaults floatForKey:@"OWFTPSessionTimeout"];
+    sessionTimeout = [userDefaults floatForKey:@"OWFTPSessionTimeout"];
 }
 
 + (OWFTPSession *)ftpSessionForNetLocation:(NSString *)aNetLocation;

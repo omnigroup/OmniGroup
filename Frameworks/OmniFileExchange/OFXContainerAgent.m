@@ -200,11 +200,11 @@ tryAgain:
     
     // Ensure we create the container directory so that other clients will know that this path extension signifies a wrapper file type (rather than waiting for a file of this type to be uploaded).
     // TODO: If we have local snapshots, but the remote directory has been deleted, should we interpret that the same as the individual files being deleted? Or should we treat it as some sort of error/reset and instead upload all our documents? If two clients are out in the world, the second client will treat missing server documents as deletes for local documents. For now, treating removal of the container as removal of all the files w/in it.
-    __autoreleasing NSError *error;
-    NSArray *fileInfos = OFXFetchDocumentFileInfos(connection, remoteContainerDirectory, nil/*identifier*/, &error);
+    __autoreleasing NSError *fetchError;
+    NSArray *fileInfos = OFXFetchDocumentFileInfos(connection, remoteContainerDirectory, nil/*identifier*/, &fetchError);
     if (!fileInfos) {
         if (outError)
-            *outError = error;
+            *outError = fetchError;
         OBChainError(outError);
         return NO;
     }
@@ -501,14 +501,17 @@ tryAgain:
     
     DEBUG_SYNC(1, @"Preparing upload of %@, connection baseURL %@", fileItem, connection.baseURL);
         
-    __autoreleasing NSError *error;
-    OFXFileSnapshotTransfer *transfer = [fileItem prepareUploadTransferWithConnection:connection error:&error];
-    if (!transfer)
+    __autoreleasing NSError *prepareUploadError;
+    OFXFileSnapshotTransfer *uploadTransfer = [fileItem prepareUploadTransferWithConnection:connection error:&prepareUploadError];
+    if (!uploadTransfer) {
+        if (outError)
+            *outError = prepareUploadError;
         return nil;
+    }
 
     OBASSERT(fileItem.isUploading); // should be set even before the operation starts so that our queue won't start more.
     
-    transfer.validateCommit = ^NSError *{
+    uploadTransfer.validateCommit = ^NSError *{
         OBPRECONDITION([self _runningOnAccountAgentQueue]);
         
         // Bail if we've been stopped since starting the transfer or if the file has been locally deleted
@@ -518,7 +521,7 @@ tryAgain:
         return nil;
     };
     
-    [transfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
+    [uploadTransfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
         DEBUG_SYNC(1, @"Finished upload of %@", fileItem);
         
         OBASSERT([self _runningOnAccountAgentQueue]);
@@ -532,13 +535,13 @@ tryAgain:
             // Note that we don't check whether the file is at the same path. The move path should start a transfer even if there are no changes in content.
             if (!fileItem.hasBeenLocallyDeleted && !fileItem.localState.missing) {
                 BOOL hasBeenEdited = NO;
-                __autoreleasing NSError *error;
-                NSNumber *same = [fileItem hasSameContentsAsLocalDocumentAtURL:fileItem.localDocumentURL error:&error];
+                __autoreleasing NSError *sameContentsError;
+                NSNumber *same = [fileItem hasSameContentsAsLocalDocumentAtURL:fileItem.localDocumentURL error:&sameContentsError];
                 if (!same) {
-                    if ([error causedByMissingFile]) {
+                    if ([sameContentsError causedByMissingFile]) {
                         // Race between uploading and a local deletion. We should have a scan queued now or soon that will set fileItem.hasBeenLocallyDeleted.
                     } else
-                        NSLog(@"At end of transfer, error checking for changes in contents for %@: %@", fileItem.localDocumentURL, [error toPropertyList]);
+                        NSLog(@"At end of transfer, error checking for changes in contents for %@: %@", fileItem.localDocumentURL, [sameContentsError toPropertyList]);
                 } else {
                     if ([same boolValue] == NO) {
                         __autoreleasing NSError *error;
@@ -565,7 +568,7 @@ tryAgain:
         return nil;
     }];
     
-    return transfer;
+    return uploadTransfer;
 }
 
 - (OFXFileSnapshotTransfer *)prepareDownloadTransferForFileItem:(OFXFileItem *)fileItem error:(NSError **)outError;
@@ -601,10 +604,10 @@ tryAgain:
     
     id <NSFilePresenter> filePresenter = _weak_filePresenter;
     
-    OFXFileSnapshotTransfer *transfer = [fileItem prepareDownloadTransferWithConnection:connection filePresenter:filePresenter];
+    OFXFileSnapshotTransfer *downloadTransfer = [fileItem prepareDownloadTransferWithConnection:connection filePresenter:filePresenter];
     OBASSERT(fileItem.isDownloading); // should be set even before the operation starts so that our queue won't start more.
     
-    transfer.validateCommit = ^NSError *{
+    downloadTransfer.validateCommit = ^NSError *{
         OBPRECONDITION([self _runningOnAccountAgentQueue]);
         // Bail if we've been stopped since starting the transfer
         if (!_started)
@@ -621,7 +624,7 @@ tryAgain:
     };
     
     NSString *originalLocalRelativePath = fileItem.localRelativePath;
-    [transfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
+    [downloadTransfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
         OBPRECONDITION([self _runningOnAccountAgentQueue]);
         DEBUG_SYNC(1, @"Finished download of %@ (committed:%d)", fileItem, (errorOrNil == nil));
         
@@ -655,7 +658,7 @@ tryAgain:
         return nil;
     }];
     
-    return transfer;
+    return downloadTransfer;
 }
 
 - (OFXFileSnapshotTransfer *)prepareDeleteTransferForFileItem:(OFXFileItem *)fileItem error:(NSError **)outError;
@@ -689,10 +692,10 @@ tryAgain:
     DEBUG_SYNC(1, @"Preparing delete of %@", fileItem);
     
     id <NSFilePresenter> filePresenter = _weak_filePresenter;
-    OFXFileSnapshotTransfer *transfer = [fileItem prepareDeleteTransferWithConnection:connection filePresenter:filePresenter];
+    OFXFileSnapshotTransfer *deleteTransfer = [fileItem prepareDeleteTransferWithConnection:connection filePresenter:filePresenter];
     OBASSERT(fileItem.isDeleting); // should be set even before the operation starts so that our queue won't start more.
     
-    transfer.validateCommit = ^NSError *{
+    deleteTransfer.validateCommit = ^NSError *{
         OBPRECONDITION([self _runningOnAccountAgentQueue]);
         OBPRECONDITION(fileItem.hasBeenLocallyDeleted, @"We do not resurrect file items on delete vs. edit conflict."); // Rather, we let the delete commit locally w/o committing remotely and then rescan the server. The edit then appears as a 'new' item and we treat it as such.
         
@@ -703,7 +706,7 @@ tryAgain:
         return nil;
     };
     
-    [transfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
+    [deleteTransfer addDone:^NSError *(OFXFileSnapshotTransfer *transfer, NSError *errorOrNil){
         OBPRECONDITION([self _runningOnAccountAgentQueue]);
         DEBUG_SYNC(1, @"Finished delete of %@", fileItem);
         
@@ -737,7 +740,7 @@ tryAgain:
         return nil;
     }];
     
-    return transfer;
+    return deleteTransfer;
 }
 
 - (void)addRecentTransferErrorsByLocalRelativePath:(NSMutableDictionary *)recentErrorsByLocalRelativePath;
@@ -873,11 +876,11 @@ tryAgain:
             // Don't try to upload if this is a new stub, new uploading document, or previously edited document that is still uploading.
             // We might also be in the middle of downloading and shouldn't start an upload. In this case, we may have been notified of a remote edit and have locally saved in the mean time (most commonly in test cases that are intentionally racing). In this case, when the download completes, the commit validation in the download transfer operation will notice a conflict.
             if (!fileItem.remoteState.missing && fileItem.isValidToUpload && !fileItem.isUploading && !fileItem.isDownloading) {
-                __autoreleasing NSError *error;
-                NSNumber *same = [fileItem hasSameContentsAsLocalDocumentAtURL:fileURL error:&error];
+                __autoreleasing NSError *hasSameContentsError;
+                NSNumber *same = [fileItem hasSameContentsAsLocalDocumentAtURL:fileURL error:&hasSameContentsError];
                 if (!same) {
                     // The file might have been renamed or deleted and we need to rescan. Or, there might be a sandbox-induced permission error, in which case we should hopefully pause on the next rescan due to the error.
-                    [error log:@"While scanning, error checking for changes in contents for %@", fileURL];
+                    [hasSameContentsError log:@"While scanning, error checking for changes in contents for %@", fileURL];
 
                     NSString *reason = [NSString stringWithFormat:@"Error checking for changes in local file at %@.", fileURL];
                     OFXError(outError, OFXLocalAccountDirectoryPossiblyModifiedWhileScanning, @"Local account directory may been modified since scan began.", reason);

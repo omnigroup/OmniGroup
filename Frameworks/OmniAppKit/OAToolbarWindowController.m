@@ -21,13 +21,11 @@ OB_REQUIRE_ARC
 
 RCS_ID("$Id$")
 
-@interface OAToolbarWindowController ()
-
-+ (void)_loadToolbarNamed:(NSString *)toolbarName;
-
-@end
-
 @implementation OAToolbarWindowController
+{
+    OAToolbar *_toolbar;
+    BOOL _isCreatingToolbar;
+}
 
 static NSMutableDictionary *ToolbarItemInfo = nil;
 static NSMutableDictionary *allowedToolbarItems = nil;
@@ -78,7 +76,7 @@ static NSMutableDictionary *helpersByExtension = nil;
 }
 
 
-// NSWindowController subclass
+#pragma mark - NSWindowController subclass
 
 - (void)windowDidLoad; // Setup the toolbar and handle its delegate messages
 {
@@ -171,7 +169,7 @@ static NSMutableDictionary *helpersByExtension = nil;
     return [NSDictionary dictionaryWithDictionary:localizedToolbarItemInfo];
 }
 
-// Implement in subclasses
+#pragma mark - Implement in subclasses
 
 - (NSString *)toolbarConfigurationName;
 {
@@ -327,23 +325,27 @@ static void copyProperty(NSToolbarItem *anItem,
 
         // Yosemite-style toolbar buttons
         NSSize buttonSize = NSMakeSize(44, 32); //Matches Apple's size in Numbers and Pages as of 14 Nov. 2014
-        NSButton *button = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, buttonSize.width, buttonSize.height)];
+        OAToolbarItemButton *button = [[OAToolbarItemButton alloc] initWithFrame:NSMakeRect(0, 0, buttonSize.width, buttonSize.height)];
         button.buttonType = NSMomentaryChangeButton;
         button.bezelStyle = NSTexturedRoundedBezelStyle;
         button.buttonType = NSMomentaryLightButton;
+
+        button.toolbarItem = newItem;
 
         newItem.view = button;
         newItem.minSize = buttonSize;
         newItem.maxSize = buttonSize;
     }
 
+    id newItemTarget;
     if ((value = [itemInfo objectForKey:@"target"])) {
         if ([value isEqualToString:@"firstResponder"])
-            [newItem setTarget:nil];
+            newItemTarget = nil;
         else 
-            [newItem setTarget:[self valueForKeyPath:value]];
+            newItemTarget = [self valueForKeyPath:value];
     } else
-        [newItem setTarget:self];
+        newItemTarget = self;
+    [newItem setTarget:newItemTarget];
 
     if ((value = [itemInfo objectForKey:@"action"]))
         [newItem setAction:NSSelectorFromString(value)];
@@ -367,7 +369,7 @@ static void copyProperty(NSToolbarItem *anItem,
             [newItem setUsesTintedImage:itemImageName optionKeyImage:itemOptionImageName inBundle:bundle];
     }
     
-    [newItem.menuFormRepresentation setTarget:newItem.target];
+    [newItem.menuFormRepresentation setTarget:newItemTarget];
     [newItem.menuFormRepresentation setAction:newItem.action];
         
     if (helper)
@@ -376,11 +378,11 @@ static void copyProperty(NSToolbarItem *anItem,
         return newItem;
 }
 
-- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar;
+- (NSArray<NSString *> *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar;
 {
     NSEnumerator *enumerator;
     NSObject <OAToolbarHelper> *helper;
-    NSMutableArray *results;
+    NSMutableArray <NSString *> *results;
     
     results = [NSMutableArray arrayWithArray:[allowedToolbarItems objectForKey:[self toolbarConfigurationName]]];
     enumerator = [helpersByExtension objectEnumerator];

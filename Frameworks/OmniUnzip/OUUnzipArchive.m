@@ -1,4 +1,4 @@
-// Copyright 2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,7 +10,9 @@
 #import <OmniUnzip/OUUnzipEntry.h>
 #import <OmniUnzip/OUErrors.h>
 #import <OmniBase/system.h> // S_IFMT, etc
-#import <OmniFoundation/OFByteProviderProtocol.h>
+
+@import OmniFoundation;
+
 #include "OUUtilities.h"
 #include "unzip.h"
 
@@ -26,7 +28,14 @@ OB_REQUIRE_ARC
 
 RCS_ID("$Id$");
 
+NS_ASSUME_NONNULL_BEGIN
+
 @implementation OUUnzipArchive
+{
+    NSString *_path;
+    NSObject <OFByteProvider> *_store;
+    NSArray <OUUnzipEntry *> *_entries;
+}
 
 static id _unzipError(id self, const char *func, int err, NSError **outError)
 {
@@ -46,7 +55,7 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
 }
 
 // Zip has no real notion of directories, so we just have a flat list of files, like it does.  Some will have slashes in their names.  Some might end in '/' and have directory flags set in their attributes.  We could probably just ignore those (unless they have interesting properties, like finder info or other custom metadata, once we start handling that).
-- initWithPath:(NSString *)path data:(NSObject <OFByteProvider> *)store error:(NSError **)outError;
+- initWithPath:(NSString *)path data:(NSObject <OFByteProvider> * _Nullable)store error:(NSError **)outError;
 {
     _path = [path copy];
     
@@ -66,7 +75,7 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
         return nil;
     }
     
-    NSMutableArray *entries = [NSMutableArray array];
+    NSMutableArray <OUUnzipEntry *> *entries = [NSMutableArray array];
     
     @try {
         while (YES) {
@@ -165,11 +174,8 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
 }
 #undef UNZIP_ERROR
 
-@synthesize path = _path;
-@synthesize entries = _entries;
-
 // TODO: Add case sensitivity control?
-- (OUUnzipEntry *)entryNamed:(NSString *)name;
+- (OUUnzipEntry * _Nullable)entryNamed:(NSString *)name;
 {
     // Looping from the beginning, assuming that the first entry (typically contents.xml) is what we'll usually want.
     for (OUUnzipEntry *entry in _entries)
@@ -179,12 +185,12 @@ static id _unzipError(id self, const char *func, int err, NSError **outError)
     return nil;
 }
 
-- (NSArray *)entriesWithNamePrefix:(NSString *)prefix;
+- (NSArray <OUUnzipEntry *> *)entriesWithNamePrefix:(NSString * _Nullable)prefix;
 {
     if (prefix == nil || [prefix isEqualToString:@""])
         return _entries;
 
-    NSMutableArray *matches = [NSMutableArray array];
+    NSMutableArray <OUUnzipEntry *> *matches = [NSMutableArray array];
     
     for (OUUnzipEntry *entry in _entries)
         if ([[entry name] hasPrefix:prefix])
@@ -205,7 +211,7 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
 #define UNZIP_DATA_ERROR(f) _unzipDataError(self, entry, #f, err, outError)
 
 // We might want to return a read-stream later, but for now all the callers want a data.  This method should only be called for resources that can be opened on the device.  If you attach a 70MB satellite image and try to open it on your phone, you'll be sad (on many fronts).  So, returning a data here should be OK since we'll not create datas for every entry in the zip file.
-- (NSData *)dataForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
+- (NSData * _Nullable)dataForEntry:(OUUnzipEntry *)entry raw:(BOOL)raw error:(NSError **)outError;
 {
     OBPRECONDITION(entry);
     
@@ -288,18 +294,18 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
 }
 #undef UNZIP_DATA_ERROR
 
-- (NSData *)dataForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
+- (NSData * _Nullable)dataForEntry:(OUUnzipEntry *)entry error:(NSError **)outError;
 {
     return [self dataForEntry:entry raw:NO error:outError];
 }
 
-- (BOOL)_writeEntriesWithPrefix:(NSString *)prefix toURL:(NSURL *)writeURL error:(NSError **)outError;
+- (BOOL)_writeEntriesWithPrefix:(NSString * _Nullable)prefix toURL:(NSURL *)writeURL error:(NSError **)outError;
 {
     NSFileManager *defaultManager = [NSFileManager defaultManager];
     if (![defaultManager createDirectoryAtURL:writeURL withIntermediateDirectories:NO attributes:nil error:outError])
         return NO;
 
-    NSArray *entries = [self entriesWithNamePrefix:prefix];
+    NSArray <OUUnzipEntry *> *entries = [self entriesWithNamePrefix:prefix];
     for (OUUnzipEntry *entry in entries) {
         NSString *entryName = [entry name];
         if ([entryName hasPrefix:@"__MACOSX/"])
@@ -336,7 +342,7 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
     return [self _writeEntriesWithPrefix:nil toURL:targetURL error:outError];
 }
 
-- (NSURL *)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)topLevelEntryName error:(NSError **)outError;
+- (NSURL * _Nullable)URLByWritingTemporaryCopyOfTopLevelEntryNamed:(NSString *)topLevelEntryName error:(NSError **)outError;
 {
     NSFileManager *defaultManager = [NSFileManager defaultManager];
     NSString *writeFileName = [NSString stringWithFormat:@"%@_temp", [topLevelEntryName stringByDeletingPathExtension]];
@@ -352,4 +358,6 @@ static id _unzipDataError(id self, OUUnzipEntry *entry, const char *func, int er
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
 

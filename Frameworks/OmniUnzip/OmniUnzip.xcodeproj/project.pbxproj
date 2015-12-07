@@ -52,6 +52,8 @@
 		34800E591B19255A0008DC9E /* OmniBase.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 424183550F44C9940029B4DA /* OmniBase.framework */; };
 		34800E5A1B1925640008DC9E /* OmniFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 424182A20F44BBD70029B4DA /* OmniFoundation.framework */; };
 		34800E5C1B1925760008DC9E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34800E5B1B1925760008DC9E /* UIKit.framework */; };
+		34E104081BD8098D00022255 /* OmniUnzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E104071BD8098D00022255 /* OmniUnzip.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		34E104091BD8098D00022255 /* OmniUnzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 34E104071BD8098D00022255 /* OmniUnzip.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4241822E0F44B55E0029B4DA /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4241822D0F44B55E0029B4DA /* libz.dylib */; };
 		424182530F44B7930029B4DA /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 424182440F44B7930029B4DA /* ioapi.c */; };
 		4241825C0F44B7930029B4DA /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 4241824D0F44B7930029B4DA /* unzip.c */; };
@@ -115,6 +117,7 @@
 		34C63DEE10DA9C69004889BB /* Omni-Library-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Common.xcconfig"; sourceTree = "<group>"; };
 		34C63DF010DA9C69004889BB /* Omni-Library-Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Debug.xcconfig"; sourceTree = "<group>"; };
 		34C63DF110DA9C69004889BB /* Omni-Library-Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Omni-Library-Release.xcconfig"; sourceTree = "<group>"; };
+		34E104071BD8098D00022255 /* OmniUnzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OmniUnzip.h; sourceTree = "<group>"; };
 		34E20FBA119314BE00ECA875 /* Target-Mac-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Mac-Common.xcconfig"; sourceTree = "<group>"; };
 		34E20FBB119314BE00ECA875 /* Target-Touch-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Target-Touch-Common.xcconfig"; sourceTree = "<group>"; };
 		34E20FBC119314BE00ECA875 /* Touch-Application-Common.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = "Touch-Application-Common.xcconfig"; sourceTree = "<group>"; };
@@ -298,6 +301,7 @@
 			isa = PBXGroup;
 			children = (
 				32DBCF5E0370ADEE00C91783 /* OmniUnzip_Prefix.pch */,
+				34E104071BD8098D00022255 /* OmniUnzip.h */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -422,6 +426,7 @@
 				34800E4E1B1924D00008DC9E /* OUZipFileMember.h in Headers */,
 				34800E461B1924C10008DC9E /* OUUnzipArchive.h in Headers */,
 				34800E411B1924980008DC9E /* OUUtilities.h in Headers */,
+				34E104091BD8098D00022255 /* OmniUnzip.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -439,6 +444,7 @@
 				4241829E0F44BAF00029B4DA /* OUZipMember.h in Headers */,
 				424182A00F44BAF00029B4DA /* OUZipRawFileMember.h in Headers */,
 				4241834D0F44C9390029B4DA /* OUErrors.h in Headers */,
+				34E104081BD8098D00022255 /* OmniUnzip.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -490,7 +496,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 				TargetAttributes = {
 					34800E111B19233E0008DC9E = {
 						CreatedOnToolsVersion = 6.3.1;
@@ -631,10 +637,9 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
-				GCC_WARN_SHADOW = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
 				PRODUCT_NAME = OmniUnzip;
 			};
 			name = Debug;
@@ -645,10 +650,9 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
-				GCC_WARN_SHADOW = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
 				PRODUCT_NAME = OmniUnzip;
 			};
 			name = Release;
@@ -657,11 +661,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 424183BC0F44CF990029B4DA /* Omni-Global-Debug.xcconfig */;
 			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(value)",
-					NOCRYPT,
-					"VERSIONMADEBY=0x0300",
-				);
 			};
 			name = Debug;
 		};
@@ -669,11 +668,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 424183BD0F44CF990029B4DA /* Omni-Global-Release.xcconfig */;
 			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(value)",
-					NOCRYPT,
-					"VERSIONMADEBY=0x0300",
-				);
 			};
 			name = Release;
 		};
@@ -684,10 +678,9 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(value)";
-				GCC_WARN_SHADOW = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
 				PRODUCT_NAME = OmniUnzip;
 			};
 			name = Debug;
@@ -699,10 +692,9 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PREFIX_HEADER = OmniUnzip_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(value)";
-				GCC_WARN_SHADOW = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_PREPROCESS = YES;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.framework.omniunzip;
 				PRODUCT_NAME = OmniUnzip;
 			};
 			name = Release;

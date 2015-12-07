@@ -58,6 +58,7 @@ RCS_ID("$Id$");
 
 @interface OUIDetailInspectorSlice()
 @property(nonatomic,strong) UITableView *tableView;
+@property(nonatomic) NSLayoutConstraint *heightConstraint;
 @end
 
 @implementation OUIDetailInspectorSlice
@@ -119,11 +120,6 @@ RCS_ID("$Id$");
 
 #pragma mark - OUIInspectorSlice subclass
 
-- (CGFloat)bottomInsetFromSliceBackgroundView;
-{
-    return 0.0f; // We provide our own bottom separator
-}
-
 - (void)showDetails:(id)sender;
 {
     OBFinishPorting;
@@ -144,6 +140,7 @@ RCS_ID("$Id$");
     OBPRECONDITION(_tableView == nil);
     
     _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], 44) style:UITableViewStylePlain];
+    _tableView.translatesAutoresizingMaskIntoConstraints = NO;
 
     // iOS 7 GM bug: separators are not reliably drawn. This doesn't actually fix the color after the first display, but at least it gets the separators to show up.
     _tableView.separatorColor = [OUIInspectorSlice sliceSeparatorColor];
@@ -163,10 +160,20 @@ RCS_ID("$Id$");
 - (void)viewWillAppear:(BOOL)animated;
 {
     [super viewWillAppear:animated];
-    
+
+    [self updateInterfaceFromInspectedObjects:OUIInspectorUpdateReasonDefault];
+
     // Might be coming back from a detail pane that edited a displayed value
     [_tableView reloadData];
     OUITableViewAdjustHeightToFitContents(_tableView);
+    CGFloat currentHeight = _tableView.contentSize.height;
+    OBASSERT(currentHeight > 0.0);
+    if (self.heightConstraint == nil) {
+        self.heightConstraint = [_tableView.heightAnchor constraintEqualToConstant:currentHeight];
+        self.heightConstraint.active = YES;
+    } else {
+        self.heightConstraint.constant = currentHeight;
+    }
 }
 
 #pragma mark - UITableViewDataSource
@@ -206,7 +213,7 @@ RCS_ID("$Id$");
         placeholder = YES;
         title = [self placeholderTitleForItemAtIndex:itemIndex];
     }
-    cell.backgroundColor = [OUIInspectorSlice sliceBackgroundColor];
+    cell.backgroundColor = [self sliceBackgroundColor];
     cell.textLabel.text = title;
     cell.textLabel.textColor = placeholder ? [OUIInspector disabledLabelTextColor] : nil;
     cell.textLabel.font = [OUIInspectorTextWell defaultLabelFont];

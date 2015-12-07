@@ -11,6 +11,7 @@
 #import <OmniBase/OmniBase.h>
 #import <OmniFoundation/OFCDSAUtilities.h>
 #import <OmniFoundation/OFErrors.h>
+#import <OmniFoundation/OFASN1Utilities.h>
 #import <OmniFoundation/OFSecurityUtilities.h>
 #import <OmniFoundation/NSData-OFExtensions.h>
 #import <OmniFoundation/NSDictionary-OFExtensions.h>

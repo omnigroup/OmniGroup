@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -43,9 +43,6 @@ RCS_ID("$Id$")
 - (void)dealloc;
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [positionAutosaveName release];
-    
-    [super dealloc];
 }
 
 // TODO: only handle clicks which are actually in the divider (currently if a subview doesn't fill the area left for it, we handle clicks there).
@@ -64,8 +61,7 @@ RCS_ID("$Id$")
 - (void)setPositionAutosaveName:(NSString *)name;
 {
     if (OFNOTEQUAL(positionAutosaveName, name)) {
-        [positionAutosaveName release];
-        positionAutosaveName = [name retain];
+        positionAutosaveName = name;
         [self restoreAutosavedPositions];
     }
 }

@@ -10,8 +10,10 @@
 @class NSFileWrapper;
 @class OUIDocumentPicker, OUIDocumentPickerHomeScreenViewController, OUIDocumentPickerFilter, ODSItem, ODSFileItem, ODSScope, OFXServerAccount;
 
+#import <OmniUI/OUIMenuOption.h>
 #import <OmniUIDocument/OUIExportOptionsType.h>
 #import <OmniUIDocument/OUIDocumentPickerItemView.h>
+#import <OmniBase/OBUtilities.h> // OB_DEPRECATED_ATTRIBUTE
 
 @protocol OUIDocumentPickerDelegate <NSObject>
 
@@ -52,37 +54,6 @@
 
 // Conversion
 - (void)documentPicker:(OUIDocumentPicker *)picker saveNewFileIfAppropriateFromFile:(NSURL *)fileURL completionHandler:(void (^)(BOOL success, ODSFileItem *savedItem, ODSScope *currentScope))completionBlock;
-
-// Export
-- (NSArray *)documentPicker:(OUIDocumentPicker *)picker availableExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType;
-- (void)documentPicker:(OUIDocumentPicker *)picker exportFileWrapperOfType:(NSString *)fileType forFileItem:(ODSFileItem *)fileItem withCompletionHandler:(void (^)(NSFileWrapper *fileWrapper, NSError *error))completionHandler;
-- (BOOL)documentPicker:(OUIDocumentPicker *)picker canUseEmailBodyForType:(NSString *)fileType;
-- (NSArray *)documentPicker:(OUIDocumentPicker *)picker availableInAppPurchaseExportTypesForFileItem:(ODSFileItem *)fileItem serverAccount:(OFXServerAccount *)serverAccount exportOptionsType:(OUIExportOptionsType)exportOptionsType; // these would be the export types that have not been purchased yet so that we can offer the user access to the store
-
-// Specific export types (for backwards compatibility)
-- (NSData *)documentPicker:(OUIDocumentPicker *)picker PDFDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
-- (NSData *)documentPicker:(OUIDocumentPicker *)picker PNGDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
-
-- (NSData *)documentPicker:(OUIDocumentPicker *)picker copyAsImageDataForFileItem:(ODSFileItem *)fileItem error:(NSError **)outError;
-
-// For the export button. If implemented, a 'Send to Camera Roll' item will be in the menu. Can return nil to have a default implementation of using the document's preview, scaled to fit the current device orientation.
-- (UIImage *)documentPicker:(OUIDocumentPicker *)picker cameraRollImageForFileItem:(ODSFileItem *)fileItem;
-
-// On the iPad, it won't let you show the print panel form a sheet, so we go from the action sheet to another popover
-- (void)documentPicker:(OUIDocumentPicker *)picker printFileItem:(ODSFileItem *)fileItem fromButton:(UIBarButtonItem *)aButton;
-
-// Title of the print button in the action menu
-- (NSString *)documentPicker:(OUIDocumentPicker *)picker printButtonTitleForFileItem:(ODSFileItem *)fileItem;
-
-// Hook for custom export options
-- (void)documentPicker:(OUIDocumentPicker *)picker addExportActions:(void (^)(NSString *title, UIImage *image, void (^action)(void)))addAction;
-
-- (UIImage *)documentPicker:(OUIDocumentPicker *)picker iconForUTI:(CFStringRef)fileUTI;        // used by the export file browser
-- (UIImage *)documentPicker:(OUIDocumentPicker *)picker exportIconForUTI:(CFStringRef)fileUTI;  // used by the large export options buttons; should be 128 x 96 and appropriate @[2,3]x
-- (NSString *)documentPicker:(OUIDocumentPicker *)picker labelForUTI:(CFStringRef)fileUTI;
-
-- (NSString *)documentPicker:(OUIDocumentPicker *)picker purchaseDescriptionForExportType:(CFStringRef)fileUTI;
-- (void)documentPicker:(OUIDocumentPicker *)picker purchaseExportType:(CFStringRef)fileUTI navigationController:(UINavigationController *)navigationController;
 
 - (NSString *)documentPicker:(OUIDocumentPicker *)picker toolbarPromptForRenamingItem:(ODSItem *)item;
 

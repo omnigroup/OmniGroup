@@ -170,7 +170,7 @@ RCS_ID("$Id$")
         // Delay a bit to let the progress bar be triumphantly at 100% for a bit. If we add the account to the registery and *then* delay, our dismissal animation can wedge (possibly due to the animations on the home screen/preview generation)
         [_progressView setProgress:1];
         [_progressView layoutIfNeeded];
-    } completion:^(BOOL finished) {
+    } completion:^(BOOL mainFinished) {
         [UIView animateWithDuration:0.20 animations:^{
             _statusView.alpha = 0;
         }];
@@ -178,7 +178,7 @@ RCS_ID("$Id$")
             _successView.hidden = NO;
             _successView.alpha = 1;
             _successView.transform = CGAffineTransformIdentity;
-        } completion:^(BOOL finished) {
+        } completion:^(BOOL secondFinished) {
             OFAfterDelayPerformBlock(0.8750, ^{
                 // Determine if this is a new account or if we are changing the configuration on an existing one. We have to be careful of the case where our first attempt fails (invalid credentials, server down). In this case, _account will be non-nil on entry to this method.
                 OFXServerAccountRegistry *registry = [OFXServerAccountRegistry defaultAccountRegistry];

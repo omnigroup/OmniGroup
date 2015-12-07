@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -172,7 +172,7 @@ RCS_ID("$Id$")
     OBASSERT(account);
 
     // Make a large random file, and start uploading it. Our local deletion is racing against this, so if it is too small we can get random failures below where we check that we didn't commit the upload.
-    [self copyRandomTextFileOfLength:64*1024*1024 toPath:@"random.txt" ofAccount:account];
+    [self copyRandomTextFileOfLength:256*1024*1024 toPath:@"random.txt" ofAccount:account];
 
     // Wait for the file to make some progress, so we know the transfer was really going.
     [self waitForFileMetadata:agent where:^BOOL(OFXFileMetadata *metadata) {

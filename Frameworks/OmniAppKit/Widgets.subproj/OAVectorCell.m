@@ -1,4 +1,4 @@
-// Copyright 2003-2005, 2010, 2012 Omni Development, Inc. All rights reserved.
+// Copyright 2003-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -20,12 +20,6 @@ static inline CGFloat _scaling(NSRect frame)
 }
 
 @implementation OAVectorCell
-
-- (void)dealloc;
-{
-    [_imageCell release];
-    [super dealloc];
-}
 
 #pragma mark NSCell subclass
 
@@ -88,8 +82,8 @@ static inline CGFloat _scaling(NSRect frame)
     NSRect bounds = NSInsetRect(cellFrame, inset , inset);
     NSPoint center = (NSPoint){NSMidX(bounds), NSMidY(bounds)};
 
-    OFPoint *pointValue = [self objectValue];
-    NSPoint point = pointValue ? [pointValue point] : NSZeroPoint;
+    OFPoint *originalValue = [self objectValue];
+    NSPoint point = originalValue ? [originalValue point] : NSZeroPoint;
 
     NSPoint lastPoint = point;
     do {
@@ -126,10 +120,9 @@ static inline CGFloat _scaling(NSRect frame)
             lastPoint  = point;
 
             // Calling up the the control view (probably a OAVectorView) to allow it to update other UI (X/Y fields).
-            OFPoint *pointValue = [[OFPoint alloc] initWithPoint:point];
-            [(NSControl *)controlView setObjectValue:pointValue];
-            OBASSERT([(OFPoint *)[self objectValue] isEqual:pointValue]); // control better have updated us too
-            [pointValue release];
+            OFPoint *updatedValue = [[OFPoint alloc] initWithPoint:point];
+            [(NSControl *)controlView setObjectValue:updatedValue];
+            OBASSERT([(OFPoint *)[self objectValue] isEqual:updatedValue]); // control better have updated us too
 
             // We are ignoring -sendActionOn: and -setContinuous: right now.
             [(NSControl *)controlView sendAction:[self action] to:[self target]];

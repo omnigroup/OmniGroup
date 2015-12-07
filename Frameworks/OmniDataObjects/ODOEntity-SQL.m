@@ -11,8 +11,8 @@
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOEditingContext.h>
 #import <OmniDataObjects/NSPredicate-ODOExtensions.h>
-#import <OmniDataObjects/ODOObject-Accessors.h>
 
+#import "ODOObject-Accessors.h"
 #import "ODOProperty-Internal.h"
 #import "ODODatabase-Internal.h"
 #import "ODOSQLStatement.h"
@@ -272,7 +272,8 @@ static BOOL _bindInsertSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
     OBPRECONDITION(sqlite);
     OBPRECONDITION(database);
     OBPRECONDITION(object);
-    
+    OBPRECONDITION([[object editingContext] database] == database);
+
     ODOSQLStatement *insertStatement = [database _cachedStatementForKey:_insertStatementKey];
     if (!insertStatement) {
         NSMutableString *sql = [[NSMutableString alloc] initWithFormat:@"INSERT INTO %@ VALUES (", _name];
@@ -285,7 +286,6 @@ static BOOL _bindInsertSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
         }
         [sql appendString:@")"];
         
-        ODODatabase *database = [[object editingContext] database];
         insertStatement = [[ODOSQLStatement alloc] initWithDatabase:database sql:sql error:outError];
         [sql release];
         if (!insertStatement)
@@ -334,6 +334,7 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
     OBPRECONDITION(sqlite);
     OBPRECONDITION(database);
     OBPRECONDITION(object);
+    OBPRECONDITION([[object editingContext] database] == database);
 
     ODOSQLStatement *updateStatement = [database _cachedStatementForKey:_updateStatementKey];
     if (!updateStatement) {
@@ -353,7 +354,6 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
         }
         [sql appendFormat:@" WHERE %@ = ?", [_primaryKeyAttribute name]];
         
-        ODODatabase *database = [[object editingContext] database];
         updateStatement = [[ODOSQLStatement alloc] initWithDatabase:database sql:sql error:outError];
         [sql release];
         if (!updateStatement)
@@ -378,12 +378,12 @@ static BOOL _bindUpdateSchemaProperties(struct sqlite3 *sqlite, ODOSQLStatement 
     OBPRECONDITION(sqlite);
     OBPRECONDITION(database);
     OBPRECONDITION(object);
-    
+    OBPRECONDITION([[object editingContext] database] == database);
+
     ODOSQLStatement *statement = [database _cachedStatementForKey:_deleteStatementKey];
     if (!statement) {
         NSMutableString *sql = [[NSMutableString alloc] initWithFormat:@"DELETE FROM %@ WHERE %@ = ?", _name, [_primaryKeyAttribute name]];
         
-        ODODatabase *database = [[object editingContext] database];
         statement = [[ODOSQLStatement alloc] initWithDatabase:database sql:sql error:outError];
         [sql release];
         if (!statement)

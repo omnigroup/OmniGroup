@@ -26,7 +26,7 @@
 + (void)setDefaultSelectedVerticalTabTitleFont:(UIFont *)font;
 
 @property (nonatomic) BOOL usesVerticalLayout;
-
+@property (nonatomic) BOOL showsTabImage;
 @property (nonatomic, copy) UIFont *tabTitleFont;
 @property (nonatomic, copy) UIFont *selectedTabTitleFont;
 

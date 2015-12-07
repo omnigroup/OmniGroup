@@ -167,21 +167,21 @@ static NSMutableArray *blocksWhileDisabled = nil;
 
 #pragma mark - Private
 
-static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileEdit *fileEdit)
+static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileEdit *originalFileEdit)
 {
-    NSURL *fileURL = fileEdit.originalFileURL;
+    NSURL *fileURL = originalFileEdit.originalFileURL;
     
     id <OUIDocumentPreviewGeneratorDelegate> delegate = self->_weak_delegate;
     
     if (![delegate previewGenerator:self shouldGeneratePreviewForURL:fileURL]) {
-        [OUIDocumentPreview writeEmptyPreviewsForFileEdit:fileEdit];
+        [OUIDocumentPreview writeEmptyPreviewsForFileEdit:originalFileEdit];
         [self _finishedUpdatingPreview];
         return;
     }
 
     Class documentClass = [delegate previewGenerator:self documentClassForFileURL:fileURL];
     if (documentClass == nil) {
-        [OUIDocumentPreview writeEmptyPreviewsForFileEdit:fileEdit];
+        [OUIDocumentPreview writeEmptyPreviewsForFileEdit:originalFileEdit];
         [self _finishedUpdatingPreview];
         return;
     }
@@ -194,20 +194,20 @@ static void _writePreviewsForFileItem(OUIDocumentPreviewGenerator *self, OFFileE
         NSLog(@"Error opening document at %@ to rebuild its preview: %@", fileURL, [error toPropertyList]);
     }
     
-    DEBUG_PREVIEW_GENERATION(1, @"Starting preview update of %@ / %@", [fileURL lastPathComponent], [fileEdit.fileModificationDate xmlString]);
+    DEBUG_PREVIEW_GENERATION(1, @"Starting preview update of %@ / %@", [fileURL lastPathComponent], [originalFileEdit.fileModificationDate xmlString]);
 
     // Let the document know that it is only going to be used to generate previews.
     document.forPreviewGeneration = YES;
     
     // Write blank previews before we start the opening process in case it crashes. Without this we could get into a state where launching the app would crash over and over. Now we should only crash once per bad document (still bad, but recoverable for the user). In addition to caching placeholder previews, this will write the empty marker preview files too.
     [OUIDocumentPreview cachePreviewImages:^(OUIDocumentPreviewCacheImage cacheImage) {
-        cacheImage(fileEdit, NULL);
+        cacheImage(originalFileEdit, NULL);
     }];
     
-    [document openWithCompletionHandler:^(BOOL success){
+    [document openWithCompletionHandler:^(BOOL openSuccess){
         OBASSERT([NSThread isMainThread]);
         
-        if (success) {
+        if (openSuccess) {
             OFFileEdit *fileEdit = document.fileItem.fileEdit;
             OBASSERT(fileEdit);
             

@@ -59,15 +59,15 @@ OB_HIDDEN extern BOOL OSUItemDebug;
     BOOL _olderStable;
 }
 
-+ (void)setSupersededFlagForItems:(NSArray *)items;
++ (void)setSupersededFlagForItems:(NSArray<OSUItem *> *)items;
 + (NSPredicate *)availableAndNotSupersededPredicate;
 + (NSPredicate *)availableAndNotSupersededIgnoredOrOldPredicate;
 + (NSPredicate *)availableOldStablePredicate;
 
 + (enum OSUTrackComparison)compareTrack:(NSString *)aTrack toTrack:(NSString *)otherTrack;
-+ (NSArray *)dominantTracks:(id <NSFastEnumeration>)someTracks;
-+ (NSArray *)elaboratedTracks:(id <NSFastEnumeration>)someTracks;
-+ (BOOL)isTrack:(NSString *)aTrack includedIn:(NSArray *)someTracks;
++ (NSArray<NSString *> *)dominantTracks:(id <NSFastEnumeration>)someTracks;
++ (NSArray<NSString *> *)elaboratedTracks:(id <NSFastEnumeration>)someTracks;
++ (BOOL)isTrack:(NSString *)aTrack includedIn:(NSArray<NSString *> *)someTracks;
 + (void)processTrackInformation:(NSXMLDocument *)allTracks;
 + (NSDictionary *)informationForTrack:(NSString *)trackName;
 

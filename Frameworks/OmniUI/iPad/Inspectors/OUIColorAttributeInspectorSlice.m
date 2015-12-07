@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,7 +40,8 @@ RCS_ID("$Id$")
 - (void)loadView;
 {
     CGRect textWellFrame = CGRectMake(0, 0, 100, kOUIInspectorWellHeight); // Width doesn't matter; we'll get width-resized as we get put in the stack.
-    
+    UIView *containerView = [[UIView alloc] initWithFrame:textWellFrame];
+
     _textWell = [[OUIColorAttributeInspectorWell alloc] initWithFrame:textWellFrame];
     _textWell.style = OUIInspectorTextWellStyleSeparateLabelAndText;
     _textWell.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -49,8 +50,24 @@ RCS_ID("$Id$")
     _textWell.label = self.title;
     
     [_textWell addTarget:self action:@selector(showDetails:) forControlEvents:UIControlEventTouchUpInside];
-    
-    self.view = _textWell;
+
+    [containerView addSubview:_textWell];
+
+    _textWell.translatesAutoresizingMaskIntoConstraints = NO;
+    containerView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    CGFloat buffer = [OUIInspectorSlice sliceAlignmentInsets].left;
+
+    NSMutableArray *constraintsToActivate = [NSMutableArray array];
+    [constraintsToActivate addObject:[containerView.heightAnchor constraintEqualToConstant:kOUIInspectorWellHeight]];
+    [constraintsToActivate addObject:[_textWell.leftAnchor constraintEqualToAnchor:containerView.leftAnchor constant:buffer]];
+    [constraintsToActivate addObject:[_textWell.rightAnchor constraintEqualToAnchor:containerView.rightAnchor constant:buffer * -1]];
+    [constraintsToActivate addObject:[_textWell.topAnchor constraintEqualToAnchor:containerView.topAnchor]];
+    [constraintsToActivate addObject:[_textWell.bottomAnchor constraintEqualToAnchor:containerView.bottomAnchor]];
+
+    [NSLayoutConstraint activateConstraints:constraintsToActivate];
+
+    self.view = containerView;
 }
 
 #pragma mark -

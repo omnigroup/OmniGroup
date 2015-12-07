@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007, 2010, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,7 +38,7 @@ RCS_ID("$Id$")
 
 static OWContentType *textPlainContentType;
 static OWContentType *applicationOctetStreamContentType;
-static NSMutableArray *guessList;
+static NSMutableArray *GuessList;
 
 @implementation OWUnknownDataStreamProcessor
 
@@ -46,7 +46,7 @@ static NSMutableArray *guessList;
 {
     OBINITIALIZE;
 
-    guessList = [[NSMutableArray alloc] init];
+    GuessList = [[NSMutableArray alloc] init];
 
     textPlainContentType = [OWContentType contentTypeForString:@"text/plain"];
     applicationOctetStreamContentType = [OWContentType contentTypeForString:@"application/octet-stream"];
@@ -116,8 +116,8 @@ readGuessesIntoList(NSMutableArray *guessList, id guessObject, OWContentType *co
         lookahead = [guessDictionary objectForKey:@"lookahead"];
         mask = [guessDictionary objectForKey:@"mask"];
 
-	readGuessesIntoList(guessList, [guessDictionary objectForKey:@"prefix"], contentType, NO, nil, mask);
-	readGuessesIntoList(guessList, [guessDictionary objectForKey:@"anywhere"], contentType, YES, lookahead, mask);
+	readGuessesIntoList(GuessList, [guessDictionary objectForKey:@"prefix"], contentType, NO, nil, mask);
+	readGuessesIntoList(GuessList, [guessDictionary objectForKey:@"anywhere"], contentType, YES, lookahead, mask);
     }
 }
 
@@ -157,7 +157,7 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
 {
     NSData *peekedData = nil;
 
-    for (NSDictionary *guess in guessList) {
+    for (NSDictionary *guess in GuessList) {
         NSData *bytes = [guess objectForKey:@"bytes"];
         if (!bytes)
             continue;
@@ -210,7 +210,7 @@ static const char *OW_memfind(const char *buf, unsigned buflen, const char *pat,
 {
     NSMutableString *beginning = [NSMutableString string];
 
-    for (NSDictionary *guess in guessList) {
+    for (NSDictionary *guess in GuessList) {
         NSString *pattern = [guess objectForKey:@"string"];
         if (!pattern)
             continue;

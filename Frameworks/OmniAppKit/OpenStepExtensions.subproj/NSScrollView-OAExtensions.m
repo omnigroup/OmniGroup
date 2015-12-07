@@ -1,4 +1,4 @@
-// Copyright 1997-2006, 2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -40,14 +40,12 @@ RCS_ID("$Id$")
     
     // if it's not a positioning view, insert one
     if (![positioningView isKindOfClass:[OADocumentPositioningView class]]) {
-        NSView *oldDocumentView;
-        
-        oldDocumentView = [positioningView retain];	// retain the old document view so it won't disappear while we're inserting the positining view into the view hierarchy
+
+        NSView *oldDocumentView = positioningView;
+        OBRetainAutorelease(oldDocumentView); // retain the old document view so it won't disappear while we're inserting the positining view into the view hierarchy
         positioningView = [[OADocumentPositioningView alloc] initWithFrame:[[self contentView] bounds]];
         [self setDocumentView:positioningView];
         [positioningView setDocumentView:oldDocumentView];
-        [oldDocumentView release];
-        [positioningView release];
     }
 
     [positioningView setDocumentViewAlignment:value];

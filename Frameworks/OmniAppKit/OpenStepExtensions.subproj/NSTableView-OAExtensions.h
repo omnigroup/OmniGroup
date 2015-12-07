@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2008, 2010-2012 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -18,6 +18,8 @@ typedef enum _OATableViewRowVisibility {
 
 #import <OmniAppKit/OAFindControllerTargetProtocol.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSTableView (OAExtensions) <OAFindControllerTarget>
 
 - (NSRect)rectOfSelectedRows;
@@ -25,15 +27,15 @@ typedef enum _OATableViewRowVisibility {
 - (void)scrollSelectedRowsToVisibility:(OATableViewRowVisibility)visibility;
     // Calls -rectOfSelectedRows and then scrolls it to visible.
 
-- (NSFont *)font;
+- (nullable NSFont *)font;
 - (void)setFont:(NSFont *)font;
 
 // Actions
-- (IBAction)copy:(id)sender; // If you support dragging out, you'll automatically support copy.
-- (IBAction)delete:(id)sender; // Data source must support -tableView:deleteRowsAtIndexes:.
-- (IBAction)cut:(id)sender; // cut == copy + delete
-- (IBAction)paste:(id)sender; // Data source must support -tableView:addItemsFromPasteboard:.
-- (IBAction)duplicate:(id)sender; // duplicate == copy + paste (without using the general pasteboard)
+- (IBAction)copy:(nullable id)sender; // If you support dragging out, you'll automatically support copy.
+- (IBAction)delete:(nullable id)sender; // Data source must support -tableView:deleteRowsAtIndexes:.
+- (IBAction)cut:(nullable id)sender; // cut == copy + delete
+- (IBAction)paste:(nullable id)sender; // Data source must support -tableView:addItemsFromPasteboard:.
+- (IBAction)duplicate:(nullable id)sender; // duplicate == copy + paste (without using the general pasteboard)
 
 @end
 
@@ -67,3 +69,5 @@ typedef enum _OATableViewRowVisibility {
 - (NSMenu *)tableView:(NSTableView *)tableView contextMenuForRow:(NSInteger)row column:(NSInteger)column;
 
 @end
+
+NS_ASSUME_NONNULL_END

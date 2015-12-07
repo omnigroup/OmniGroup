@@ -28,9 +28,9 @@ RCS_ID("$Id$");
 //#define DEBUG_PREFERENCES
 
 static NSUserDefaults *standardUserDefaults;
-static NSMutableDictionary *preferencesByKey;
+static NSMutableDictionary <NSString *, OFPreference *> *preferencesByKey;
 static NSLock *preferencesLock;
-static NSSet *registeredKeysCache;
+static NSSet <NSString *> *registeredKeysCache;
 static NSObject *unset = nil;
 static volatile unsigned registrationGeneration = 1;
 static NSNotificationCenter *preferenceNotificationCenter = nil;
@@ -195,9 +195,9 @@ static void _setValue(OFPreference *self, OB_STRONG id *_value, NSString *key, i
     preferenceNotificationCenter = [[NSNotificationCenter alloc] init];
 }
 
-+ (NSSet *)registeredKeys
++ (NSSet <NSString *> *)registeredKeys;
 {
-    NSSet *result;
+    NSSet <NSString *> *result;
 
     [preferencesLock lock];
 

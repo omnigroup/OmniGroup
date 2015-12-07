@@ -1,4 +1,4 @@
-// Copyright 2013-2014 The Omni Group. All rights reserved.
+// Copyright 2013-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -38,6 +38,9 @@
  \param ... additional arguments to format string
  */
 extern void OBLog(OBLogger *logger, NSInteger messageLevel, NSString *format, ...);
+
+/// Log just the given message, without any format arguments. (Useful for Swift compatibility.)
+extern void OBLogS(OBLogger *logger, NSInteger messageLevel, NSString *message);
 
 /// Helper for initializing log level globals. Invokes -[OBLogger initWithName:shouldLogToFile] and sets outLogger to point to the result.
 extern void _OBLoggerInitializeLogLevel(OBLogger * __strong *outLogger, NSString *name, BOOL useFile);

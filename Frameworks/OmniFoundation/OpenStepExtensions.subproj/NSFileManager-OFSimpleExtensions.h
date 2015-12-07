@@ -18,6 +18,8 @@
 - (BOOL)directoryExistsAtPath:(NSString *)path;
 - (BOOL)directoryExistsAtPath:(NSString *)path traverseLink:(BOOL)traverseLink;
 
+- (NSArray <NSString *> *)directoryContentsAtPath:(NSString *)path havingExtension:(NSString *)extension  error:(NSError **)outError;
+
 - (BOOL)createPathToFile:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
 // Creates any directories needed to be able to create a file at the specified path.
 

@@ -1,4 +1,4 @@
-// Copyright 1999-2007, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -25,10 +25,6 @@
 #import "OWURL.h"
 
 RCS_ID("$Id$")
-
-@interface OWAddress (Private)
-+ (void)_readDefaults;
-@end
 
 NSString *OWAddressContentDataMethodKey = @"Content-Data";
 NSString *OWAddressContentAdditionalHeadersMethodKey = @"Additional-Headers";
@@ -85,7 +81,7 @@ static OFPreference *directoryIndexFilenamePreference = nil;
     [lowercaseEffectNameDictionary setObject:[NSNumber numberWithInt:OWAddressEffectNewBrowserWindow] forKey:@"x-popup"];
     [lowercaseEffectNameDictionary setObject:[NSNumber numberWithInt:OWAddressEffectOpenBookmarksWindow] forKey:@"x-as-list"];
     
-    [[OFController sharedController] addObserver:self];
+    [[OFController sharedController] addStatusObserver:(id <OFControllerStatusObserver>)self];
 }
 
 + (void)controllerDidInitialize:(OFController *)controller;
@@ -1145,9 +1141,7 @@ addressForNotSoObviousHostname(NSString *string)
     return request;
 }
 
-@end
-
-@implementation OWAddress (Private)
+#pragma mark -
 
 + (void)_readDefaults;
 {

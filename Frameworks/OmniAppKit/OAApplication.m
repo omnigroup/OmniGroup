@@ -58,6 +58,11 @@ OBDEPRECATED_METHOD(-currentRunExceptionPanel)
     launchModifierFlags = [NSEvent modifierFlags];
 }
 
+- (OFVersionNumber *)buildVersionNumber;
+{
+    return [OFVersionNumber mainBundleVersionNumber];
+}
+
 static NSImage *CautionIcon = nil;
 
 #pragma mark -
@@ -249,8 +254,6 @@ static NSArray *flagsChangedRunLoopModes;
             [localException raise];
         [self reportException:localException];
     }
-
-    [[OFScheduler mainSchedulerIfCreated] scheduleEvents]; // Ping the scheduler, in case the system clock changed
 }
 
 BOOL OADebugTargetSelection = NO;
@@ -802,7 +805,7 @@ static void _applyFullSearch(OAApplication *self, SEL theAction, id theTarget, i
 
 #pragma mark - AppleScript
 
-- (NSArray *)scriptPreferences;
+- (NSArray <OFPreference *> *)scriptPreferences;
 {
     NSMutableArray *scriptPreferences = [NSMutableArray array];
     NSArray *registeredKeys = [[[OFPreference registeredKeys] allObjects] sortedArrayUsingSelector:@selector(compare:)];

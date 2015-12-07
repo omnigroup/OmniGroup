@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2009-2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,5 +10,5 @@
 #import <OmniBase/assertions.h>
 
 #ifdef OMNI_ASSERTIONS_ON
-extern void OBPerformRuntimeChecks(void);
+extern void OBRequestRuntimeChecks(void);
 #endif

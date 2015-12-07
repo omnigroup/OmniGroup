@@ -89,7 +89,7 @@ RCS_ID("$Id$");
     // If necessary, draw the slash (same color as the border)
     if (fillColor == nil) {
         CGRect bounds = CGRectInset(self.bounds, 6.0f, 6.0f);
-        UIBezierPath *path = [UIBezierPath bezierPath];
+        path = [UIBezierPath bezierPath];
         [path moveToPoint:(CGPoint){ .x = CGRectGetMinX(bounds), .y = CGRectGetMaxY(bounds), }];
         [path addLineToPoint:(CGPoint){ .x = CGRectGetMaxX(bounds), .y = CGRectGetMinY(bounds), }];
         [path stroke];

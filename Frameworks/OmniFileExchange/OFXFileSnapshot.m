@@ -240,9 +240,9 @@ static NSDictionary *_recordVersionContents(NSURL *localDocumentURL, NSFileCoord
     __autoreleasing NSError *error;
     
     BOOL success = [coordinator readItemAtURL:localDocumentURL withChanges:withChanges error:&error byAccessor:
-     ^BOOL (NSURL *newReadingURL, NSError **outError) {
+     ^BOOL (NSURL *newReadingURL, NSError **outCoordinatorError) {
          // Read the information about the version of the document we are uploading (including the inodes and modification dates). We can't record this on the copy, but must do it on the original or we can't validate whether the original has changed.
-         return OFXFileItemRecordContents(OFXVersionContentsType, versionContents, newReadingURL, outError);
+         return OFXFileItemRecordContents(OFXVersionContentsType, versionContents, newReadingURL, outCoordinatorError);
      }];
     
     if (!success) {

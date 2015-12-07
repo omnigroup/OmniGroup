@@ -1,4 +1,4 @@
-// Copyright 1997-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,7 +72,9 @@ This method makes several passes, each time invoking a different selector.  On t
         [self _becomingMultiThreaded:nil];
 
 #ifdef OMNI_ASSERTIONS_ON
-    OBPerformRuntimeChecks();
+    dispatch_async(dispatch_get_main_queue(), ^{
+        OBRequestRuntimeChecks();
+    });
 #endif
 }
 

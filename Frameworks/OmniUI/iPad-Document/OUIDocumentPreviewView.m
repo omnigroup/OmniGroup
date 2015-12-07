@@ -30,7 +30,6 @@ void OUIDocumentPreviewViewSetLightBorder(UIView *view)
 
 @implementation OUIDocumentPreviewView
 {
-    UIImageView *_imageView;
     BOOL _draggingSource;
     BOOL _highlighted;
     BOOL _downloadRequested;
@@ -40,21 +39,43 @@ static id _commonInit(OUIDocumentPreviewView *self)
 {
     // Our containing OUIDocumentPickerItemView should get taps that hit us.
     self.userInteractionEnabled = NO;
-    
-    
-    UIImageView *imageView = [[UIImageView alloc] initWithFrame:self.bounds];
-    imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-    imageView.hidden = YES;
-    self->_imageView = imageView;
-    [self addSubview:imageView];
+    if (!self.imageView) {
+        [self createSubviews];
+    }
+    self.imageView.hidden = YES;
     
     return self;
+}
+
+- (void)createSubviews
+{
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:self.bounds];
+    self->_imageView = imageView;
+    [self addSubview:imageView];
+
+    if (self.translatesAutoresizingMaskIntoConstraints) {
+        imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+    } else {
+        self.translatesAutoresizingMaskIntoConstraints = NO;
+        imageView.translatesAutoresizingMaskIntoConstraints = NO;
+        NSMutableArray *constraints = [NSMutableArray array];
+        [constraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[imageView]|"
+                                                                                 options:kNilOptions
+                                                                                 metrics:nil
+                                                                                   views:NSDictionaryOfVariableBindings(imageView)]];
+        [constraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[imageView]|"
+                                                                                 options:kNilOptions
+                                                                                 metrics:nil
+                                                                                   views:NSDictionaryOfVariableBindings(imageView)]];
+        [NSLayoutConstraint activateConstraints:constraints];
+    }    
 }
 
 - initWithFrame:(CGRect)frame;
 {
     if (!(self = [super initWithFrame:frame]))
         return nil;
+    [self createSubviews];
     return _commonInit(self);
 }
 

@@ -18,8 +18,6 @@ RCS_ID("$Id$");
 
 @implementation OATextAttachmentCell
 
-@synthesize attachment = _nonretained_attachment;
-
 - (void)drawWithFrame:(CGRect)cellFrame inView:(UIView *)controlView characterIndex:(NSUInteger)charIndex layoutManager:(NSLayoutManager *)layoutManager;
 {
     OBRequestConcreteImplementation(self, _cmd);

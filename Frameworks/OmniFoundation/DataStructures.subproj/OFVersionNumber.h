@@ -19,6 +19,7 @@
     NSUInteger *_components;
 }
 
++ (OFVersionNumber *)mainBundleVersionNumber;
 + (OFVersionNumber *)userVisibleOperatingSystemVersionNumber;
 
 // Convenience methods for testing the current operating system.  One nice thing about using these (rather than looking up the operating system and comparing it by hand) is that we can remove these methods when they become irrelevant (e.g. when we require Snow Leopard), helping us find and update any code which is unnecessarily trying to support an older operating system.

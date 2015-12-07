@@ -12,6 +12,7 @@
 #import <MessageUI/MFMailComposeViewController.h>
 #import <OmniUI/OUIFeatures.h>
 
+@class OUIWebViewController;
 @class UIBarButtonItem;
 
 #define OUI_PRESENT_ERROR(error) [[[OUIAppController controller] class] presentError:(error) fromViewController:[[[[UIApplication sharedApplication] delegate] window] rootViewController] file:__FILE__ line:__LINE__]
@@ -88,6 +89,9 @@ extern NSString *const OUIAboutScreenBindingsDictionaryFeedbackAddressKey; // @"
 - (UIBarButtonItem *)newAppMenuBarButtonItem; // insert this into your view controllers; see -additionalAppMenuOptionsAtPosition: for customization
 - (NSArray *)additionalAppMenuOptionsAtPosition:(OUIAppMenuOptionPosition)position; // override to supplement super's return value with additional OUIMenuOptions
 - (void)sendFeedbackWithSubject:(NSString *)subject body:(NSString *)body NS_EXTENSION_UNAVAILABLE_IOS("Feedback cannot be sent from extensions.");
+
+/// Presents a view controller displaying the contents of the given URL in an in-app web view. The view controller is wrapped in a UINavigationController instance; if non-nil, the given title is shown in the navigation bar of this controller. Returns the web view controller being used to show the URL's content.
+- (OUIWebViewController *)showWebViewWithURL:(NSURL *)url title:(NSString *)title;
 
 @property(nonatomic,readonly) UIImage *settingsMenuImage;
 @property(nonatomic,readonly) UIImage *inAppPurchasesMenuImage;

@@ -477,13 +477,11 @@ CFMutableDictionaryRef OSUCopyHardwareInfo(NSString *applicationIdentifier, NSSt
         CGDirectDisplayID displays[4];
         CGDisplayCount displayIndex, displayCount;
         
-        CGDisplayErr err = CGGetActiveDisplayList(4, displays, &displayCount);
-        if (err == CGDisplayNoErr) {
+        if (CGGetActiveDisplayList(4, displays, &displayCount) == CGDisplayNoErr) {
         
             // CGL video memory size for all accelerated renders.  As noted above, we don't have a good way of associating this with the actual hardware above, but really what we mostly care about is the actual sizes across the cards, not which card has how much.
             // The display mask given to CGLQueryRendererInfo means "make sure the renderer applies to ALL these displays".  We'll only worry about up to four displays.
             {
-                unsigned int displayIndex;
                 CFMutableStringRef rendererMem = CFStringCreateMutable(kCFAllocatorDefault, 0);
                 
                 for (displayIndex = 0; displayIndex < displayCount; displayIndex++) {

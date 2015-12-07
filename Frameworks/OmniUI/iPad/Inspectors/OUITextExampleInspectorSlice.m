@@ -34,6 +34,9 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
     CGRect frame = CGRectMake(0, 0, [OUIInspector defaultInspectorContentWidth], kOUIInspectorWellHeight); // The height will be preserved, but the rest will be munged by the stacking.
     
     self.view = [[OUIInspectorTextExampleView alloc] initWithFrame:frame];
+    NSMutableArray *constraintsToActivate = [NSMutableArray array];
+    [constraintsToActivate addObject:[self.view.heightAnchor constraintEqualToConstant:kOUIInspectorWellHeight]];
+    [NSLayoutConstraint activateConstraints:constraintsToActivate];
 }
 
 // Subclassing point; we handle text selection ranges in OUITextView, but things that inspect objects of other types will need to subclass this and -isAppropriateForInspectedObject:.
@@ -66,12 +69,6 @@ NSString * const OUITextExampleInspectorSliceExmapleString = @"Hwæt! We Gardena
 }
 
 #pragma mark - OUIInspectorSlice subclass
-
-- (CGFloat)paddingToInspectorTop;
-{
-    // When we are the first slice, we should be all the way at the top of the view w/o any padding.
-    return 0;
-}
 
 - (BOOL)isAppropriateForInspectedObject:(id)object;
 {

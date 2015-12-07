@@ -159,6 +159,31 @@ static enum OFASN1ErrorCodes initializeWalker(NSData *buffer, BOOL requireDER, s
     return parseTagAndLength(buffer, 0, st->maxIndex, st->requireDER, &(st->v));
 }
 
+/* Assuming the walker is pointing at a BIT STRING, start a sub-walker pointing at the ASN.1 encoded object inside the BIT STRING (as if the BIT STRING were a SEQUENCE or other container) */
+static enum OFASN1ErrorCodes enterBitString(NSData *buffer, const struct asnWalkerState *st, struct asnWalkerState *innerSt)
+{
+    if (st->v.classAndConstructed != (CLASS_UNIVERSAL|FLAG_PRIMITIVE) ||
+        st->v.tag != BER_TAG_BIT_STRING ||
+        st->v.content.length < 1)
+        return OFASN1UnexpectedType;
+    
+    uint8_t unusedBits;
+    [buffer getBytes:&unusedBits range:(NSRange){ st->v.content.location, 1 }];
+    if (unusedBits != 0) {
+        /* A DER-encoded BIT STRING containing another DER-encoded value will never have any unused bits, because DER always encodes to a whole number of octets */
+        return OFASN1UnexpectedType;
+    }
+    
+    *innerSt = (struct asnWalkerState){
+        .startPosition = st->v.content.location + 1,
+        .maxIndex = st->v.content.location + st->v.content.length,
+        .containerIsIndefinite = NO,
+        .requireDER = st->requireDER
+    };
+    
+    return parseTagAndLength(buffer, innerSt->startPosition, innerSt->maxIndex, innerSt->requireDER, &(innerSt->v));
+}
+
 /* Advance the walker to the next object */
 static enum OFASN1ErrorCodes nextObject(NSData *buffer, struct asnWalkerState *st)
 {
@@ -888,7 +913,7 @@ NSString *OFASN1DescribeOID(const unsigned char *bytes, size_t len)
 /* Convert a textual numeric OID to its DER-encoded form */
 NSData *OFASN1OIDFromString(NSString *s)
 {
-    NSArray *parts = [s componentsSeparatedByString:@"."];
+    NSArray<NSString *> *parts = [s componentsSeparatedByString:@"."];
     NSUInteger partCount = [parts count];
     
     
@@ -923,6 +948,187 @@ NSData *OFASN1OIDFromString(NSString *s)
     [result appendBytes:encoded length:encodedLen];
     free(encoded);
     return result;
+}
+
+static uint8_t id_rsaEncryption_der[]    = { 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01 };  /* RFC 2313 aka PKCS#1 - 1.2.840.113549.1.1.1 */
+static uint8_t id_dsa_der[]              = { 0x2A, 0x86, 0x48, 0xCE, 0x38, 0x04, 0x01 };    /* RFC 3279 [2.3.2] - 1.2.840.10040.4.1 */
+static uint8_t id_ecPublicKey_der[]      = { 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01 };    /* RFC 5480 [2.1.1] - 1.2.840.10045.2.1 - unrestricted key usage */
+static uint8_t id_ecDH_der[]             = { 0x2B, 0x81, 0x04, 0x01, 0x0C };                /* RFC 5480 [2.1.2] - 1.3.132.1.12 - ECDH only */
+
+static unsigned bitSizeOfInteger(NSData *buffer, const struct parsedTag *st)
+{
+    NSRange r = st->content;
+    if (!r.length) {
+        return 0;
+    }
+    if (r.length > (UINT_MAX/8)) {
+        return UINT_MAX;
+    }
+    
+    uint8_t msb;
+    [buffer getBytes:&msb range:(NSRange){ r.location, 1 }];
+    int ix;
+    if (msb & 0x80) {
+        /* A negative integer? Okay... */
+        ix = fls( ~(int)msb );
+    } else {
+        ix = fls( (int)msb );
+    }
+    
+    return ( 8 * (unsigned int)(r.length - 1) ) + ix;
+}
+
+/* This determines the type and the key size of a key in an X.509 PublicKeyInfo structure. The type is returned (or ka_Failure if something went wrong). The outKeySize pointer gets the key's size which corresponds to its cryptographic strength. 
+ 
+ For RSA keys: outKeySize is the bit size of the modulus. outOtherSize is unused.
+ 
+ For DSA keys: the outKeySize gets parameter L (e.g. 1024 or 3072). outOtherSize gets the size of parameter N; this is equal to the size of the hash that shoud be used with this key, and is roughly half the size of a signature value computed using this key. For classic DSA keys this is 160.
+ 
+ For ECDSA/ECDH keys: 
+ 
+ DSA and ECDSA keys are allowed to inherit key parameters from their CA's key. In that case we just return (0, 0).
+ If an elliptic curve key has explicit curve parameters or a named curve which we don't recognize, we just return (0, 0). These situations are forbidden by PKIX, though.
+
+*/
+enum OFKeyAlgorithm OFASN1KeyInfoGetAlgorithm(NSData *publicKeyInformation, unsigned int *outKeySize, unsigned int *outOtherSize)
+{
+    /*  Like this (expanded):
+        subjectPublicKeyInfo  :=    SEQUENCE {
+            algorithm                 SEQUENCE {
+                algorithm               OBJECT IDENTIFIER,
+                parameters              ANY DEFINED BY algorithm OPTIONAL
+            },
+            subjectPublicKey          BIT STRING
+        }
+     */
+
+    
+    enum OFASN1ErrorCodes rc, savedAlgidParamRc;
+    struct asnWalkerState st, spkiSt, savedAlgParamSt;
+    const void *oidPtr;
+    size_t oidLen;
+    
+    rc = initializeWalker(publicKeyInformation, YES, &st);
+    if (rc || !IS_TYPE(st, FLAG_CONSTRUCTED, BER_TAG_SEQUENCE))
+        return ka_Failure;
+    
+    /* Enter the outermost SEQUENCE */
+    rc = enterObject(publicKeyInformation, &st, &spkiSt);
+    if (rc || !IS_TYPE(spkiSt, FLAG_CONSTRUCTED, BER_TAG_SEQUENCE))
+        return ka_Failure;
+    
+    {
+        struct asnWalkerState algidSt;
+        
+        /* Enter the AlgorithmIdentifier's SEQUENCE */
+        rc = enterObject(publicKeyInformation, &spkiSt, &algidSt);
+        if (rc || !IS_TYPE(algidSt, FLAG_PRIMITIVE, BER_TAG_OID))
+            return ka_Failure;
+        
+        oidPtr = [publicKeyInformation bytes] + algidSt.v.content.location;
+        oidLen = algidSt.v.content.length;
+        
+        savedAlgidParamRc = nextObject(publicKeyInformation, &algidSt);
+        savedAlgParamSt = algidSt;
+        
+        if (savedAlgidParamRc != OFASN1Success && savedAlgidParamRc != OFASN1EndOfObject)
+            return ka_Failure;
+        
+        rc = exitObject(publicKeyInformation, &spkiSt, &algidSt, YES);
+        if (rc)
+            return ka_Failure;
+    }
+    /* spkiSt, after exiting from the algorithm identifier, should be looking at the BIT STRING which contains the actual public key */
+    if (!IS_TYPE(spkiSt, FLAG_PRIMITIVE, BER_TAG_BIT_STRING))
+        return ka_Failure;
+    
+#define IS_OID(o) (oidLen == sizeof(o) && !memcmp(oidPtr, (o), sizeof(o)))
+    
+    if (IS_OID(id_rsaEncryption_der)) {
+        if (outKeySize) {
+            /*
+             RSAPublicKey ::= SEQUENCE {
+               modulus            INTEGER,    -- n
+               publicExponent     INTEGER  }  -- e
+             */
+            
+            struct asnWalkerState rsaPubKeySt, rsaPubKeyInner;
+            if (enterBitString(publicKeyInformation, &spkiSt, &rsaPubKeySt) ||
+                !IS_TYPE(rsaPubKeySt, CLASS_UNIVERSAL|FLAG_CONSTRUCTED, BER_TAG_SEQUENCE))
+                return ka_Failure;
+            if (enterObject(publicKeyInformation, &rsaPubKeySt, &rsaPubKeyInner) ||
+                !IS_TYPE(rsaPubKeyInner, CLASS_UNIVERSAL|FLAG_PRIMITIVE, BER_TAG_INTEGER))
+                return ka_Failure;
+            *outKeySize = bitSizeOfInteger(publicKeyInformation, &rsaPubKeyInner.v);
+        }
+        return ka_RSA;
+    }
+    
+    if (IS_OID(id_dsa_der)) {
+        if (outKeySize || outOtherSize) {
+            
+            /*
+             Dss-Parms  ::=  SEQUENCE  {
+               p             INTEGER,
+               q             INTEGER,
+               g             INTEGER  }
+             */
+            
+            if (savedAlgidParamRc == OFASN1Success &&
+                IS_TYPE(savedAlgParamSt, CLASS_UNIVERSAL|FLAG_CONSTRUCTED, BER_TAG_SEQUENCE)) {
+                struct asnWalkerState dsaParams;
+                if (enterObject(publicKeyInformation, &savedAlgParamSt, &dsaParams) ||
+                    !IS_TYPE(dsaParams, CLASS_UNIVERSAL|FLAG_PRIMITIVE, BER_TAG_INTEGER))
+                    return ka_Failure;
+                if (outKeySize)
+                    *outKeySize = bitSizeOfInteger(publicKeyInformation, &dsaParams.v);
+                if (outOtherSize) {
+                    if (nextObjectExpecting(publicKeyInformation, &dsaParams, CLASS_UNIVERSAL|FLAG_PRIMITIVE, BER_TAG_INTEGER))
+                        return ka_Failure;
+                    *outOtherSize = bitSizeOfInteger(publicKeyInformation, &dsaParams.v);
+                }
+            } else {
+                if (outKeySize) *outKeySize = 0;
+                if (outOtherSize) *outOtherSize = 0;
+            }
+        }
+        return ka_DSA;
+    }
+    
+    if (IS_OID(id_ecPublicKey_der) || IS_OID(id_ecDH_der)) {
+        if (outKeySize || outOtherSize) {
+            
+            /*
+            EcpkParameters ::= CHOICE {
+                ecParameters  ECParameters,
+                namedCurve    OBJECT IDENTIFIER,
+                implicitlyCA  NULL }
+             */
+            
+            if (outKeySize) *outKeySize = 0;
+            if (outOtherSize) *outOtherSize = 0;
+            
+            if (savedAlgidParamRc == OFASN1Success && IS_TYPE(savedAlgParamSt, FLAG_PRIMITIVE|CLASS_UNIVERSAL, BER_TAG_OID)) {
+                /* OBJECT IDENTIFIER identifying a named curve */
+                NSRange fullOidRange = DER_FIELD_RANGE(savedAlgParamSt);
+                if (fullOidRange.length > INT_MAX)
+                    return ka_Failure;
+                const void *pkiCurveOid = [publicKeyInformation bytes] + fullOidRange.location;
+                for (const struct OFNamedCurveInfo *curve = _OFEllipticCurveInfoTable;
+                     curve->derOid; curve ++) {
+                    if (curve->derOidLength == fullOidRange.length &&
+                        memcmp(curve->derOid, pkiCurveOid, fullOidRange.length) == 0) {
+                        if (outKeySize) *outKeySize = curve->generatorSize;
+                        if (outOtherSize) *outOtherSize = curve->generatorSize;
+                        break;
+                    }
+                }
+            }
+        }
+        return ka_EC;
+    }
+    
+    return ka_Other;
 }
 
 /*" Formats the tag byte and length field of an ASN.1 item and appends the result to the passed-in buffer. Currently the 'tag' is the whole tag+class+constructed field--- we don't handle multibyte tags at all (since they don't appear in any PKIX structures). "*/
@@ -1118,7 +1324,7 @@ NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...
                 summedLength += pieces[ci].length;
             }
             pieces[pieceIndex].contentLength = summedLength;
-            pieces[pieceIndex].length = OFASN1SizeOfTagLength(pieces[pieceIndex].tagAndClass, summedLength + pieces[pieceIndex].stuffing) + pieces[pieceIndex].stuffing;
+            pieces[pieceIndex].length = OFASN1SizeOfTagLength((uint8_t)pieces[pieceIndex].tagAndClass, summedLength + pieces[pieceIndex].stuffing) + pieces[pieceIndex].stuffing;
         }
         totalLength += pieces[pieceIndex].length;
     }
@@ -1129,7 +1335,7 @@ NSMutableData *OFASN1AppendStructure(NSMutableData *buffer, const char *fmt, ...
     
     for (int pieceIndex = 0; pieceIndex < pieceCount; pieceIndex ++) {
         if (pieces[pieceIndex].tagAndClass) {
-            OFASN1AppendTagLength(buffer, pieces[pieceIndex].tagAndClass, pieces[pieceIndex].contentLength + pieces[pieceIndex].stuffing);
+            OFASN1AppendTagLength(buffer, (uint8_t)pieces[pieceIndex].tagAndClass, pieces[pieceIndex].contentLength + pieces[pieceIndex].stuffing);
             if (pieces[pieceIndex].stuffing)
                 [buffer appendBytes:"" length:1];
         } else if (pieces[pieceIndex].rawBytes) {

@@ -175,9 +175,9 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
 
     // Extract the update
     
-    __autoreleasing NSError *error = nil;
-    if (![self extract:&error]) {
-        if ([[error domain] isEqualToString:OSUErrorDomain] && [error code] == OSUBadInstallationDirectory && !_hasAskedForInstallLocation) {
+    __autoreleasing NSError *extractError = nil;
+    if (![self extract:&extractError]) {
+        if ([[extractError domain] isEqualToString:OSUErrorDomain] && [extractError code] == OSUBadInstallationDirectory && !_hasAskedForInstallLocation) {
             if ([self chooseInstallationDirectory:nil]) {
                 OBASSERT(_hasAskedForInstallLocation);
                 [self run];
@@ -197,11 +197,11 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
             }
         }
         
-        if ([error recoveryAttempter] == nil) {
-            error = [OFMultipleOptionErrorRecovery errorRecoveryErrorWithError:error object:self options:[OSUChooseLocationErrorRecovery class], [OSUSendFeedbackErrorRecovery class], [OFCancelErrorRecovery class], nil];
+        if ([extractError recoveryAttempter] == nil) {
+            extractError = [OFMultipleOptionErrorRecovery errorRecoveryErrorWithError:extractError object:self options:[OSUChooseLocationErrorRecovery class], [OSUSendFeedbackErrorRecovery class], [OFCancelErrorRecovery class], nil];
         }
         
-        [self _presentError:error];
+        [self _presentError:extractError];
         return;
     }
     
@@ -217,9 +217,9 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     OBStrongRetain(self);
 
     NSDictionary *installerArguments = [self _installerArguments];
-    [remoteObjectProxy preflightUpdate:installerArguments reply:^(BOOL success, NSError *error, NSData *authorizationData) {
+    [remoteObjectProxy preflightUpdate:installerArguments reply:^(BOOL success, NSError *preflightError, NSData *authorizationData) {
         if (!success) {
-            [self _presentError:error];
+            [self _presentError:preflightError];
             OBStrongRelease(self);
             return;
         } else {
@@ -409,7 +409,7 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
     return (chosenDirectory != nil);
 }
 
-+ (NSString *)chooseInstallationDirectory:(NSString *)initialDirectoryPath error:(NSError **)error;
++ (NSString *)chooseInstallationDirectory:(NSString *)initialDirectoryPath error:(NSError **)outError;
 {
     __block NSString *localResult = nil;
     __block NSError *localError = nil;
@@ -419,8 +419,8 @@ static BOOL _isApplicationSuperficiallyValid(NSString *path, NSError **outError)
         localError = [error copy];
     }];
 
-    if (localResult == nil && error != NULL) {
-        *error = localError;
+    if (localResult == nil && outError != NULL) {
+        *outError = localError;
     }
     
     return localResult;

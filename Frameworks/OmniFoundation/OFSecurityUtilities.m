@@ -56,7 +56,6 @@ static const struct { enum OFKeyAlgorithm algid; const char *name; } algnames[] 
 //  { CSSM_ALGID_ECMQV,    "ECMQV" },
     
     { ka_AES,              "AES" },
-    { ka_DES,              "DES" },
 };
 
 #define arraycount(a) (sizeof(a)/sizeof(a[0]))
@@ -816,5 +815,4 @@ const struct OFNamedCurveInfo _OFEllipticCurveInfoTable[] = {
     { NULL, NULL, NULL, 0, 0 }
 #undef ENTRY
 };
-/* Other elliptic curve identifiers of interest: the Brainpool curves assigned in RFC5639? */
 

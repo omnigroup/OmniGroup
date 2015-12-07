@@ -542,7 +542,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0710;
 			};
 			buildConfigurationList = 34B253C308D0D6AD00DD2070 /* Build configuration list for PBXProject "OmniInspector" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -695,7 +695,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
 				PRODUCT_NAME = OmniInspector;
 			};
 			name = Debug;
@@ -707,7 +707,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = Info.plist;
-				OMNI_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omnigroup.OmniInspector;
 				PRODUCT_NAME = OmniInspector;
 				SECTORDER_FLAGS = (
 					"-sectorder",

@@ -1,4 +1,4 @@
-// Copyright 2010-2013 The Omni Group. All rights reserved.
+// Copyright 2010-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -17,7 +17,9 @@
 - initWithDocumentPicker:(OUIDocumentPickerViewController *)picker itemView:(OUIDocumentPickerItemView *)itemView;
 
 @property(nonatomic,readonly) OUIDocumentPickerItemView *itemView;
+@property(nonatomic) CGRect origFrame;
 
+- (void)endRenaming;
 - (void)cancelRenaming;
 - (void)layoutDimmingView;
 

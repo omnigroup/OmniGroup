@@ -35,7 +35,6 @@ static NSParagraphStyle *mousetipParagrphStyle;
     mutableParaStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
     [mutableParaStyle setAlignment:NSCenterTextAlignment];
     mousetipParagrphStyle = [mutableParaStyle copy];
-    [mutableParaStyle release];
 }
 
 // API
@@ -51,10 +50,8 @@ static NSParagraphStyle *mousetipParagrphStyle;
 
     style = aStyle;
     
-    [backgroundColor release];
     backgroundColor = nil;
     cornerRadius = 0.0f;
-    [_textAttributes release];
     _textAttributes = nil;
     
     NSMutableDictionary *newTextAttributes = [[NSMutableDictionary alloc] init];
@@ -64,9 +61,9 @@ static NSParagraphStyle *mousetipParagrphStyle;
         case OAMouseTipTooltipStyle:
             
             if ([NSColor respondsToSelector:@selector(toolTipColor)])
-                backgroundColor = [[[NSColor toolTipColor] colorWithAlphaComponent:0.9f] retain];
+                backgroundColor = [[NSColor toolTipColor] colorWithAlphaComponent:0.9f];
             else
-                backgroundColor = [OARGBA(1.0, 0.98, 0.83, 0.9) retain]; // light yellow to match standard tooltip color
+                backgroundColor = OARGBA(1.0, 0.98, 0.83, 0.9); // light yellow to match standard tooltip color
             
             cornerRadius = 0.0f;
             
@@ -79,7 +76,7 @@ static NSParagraphStyle *mousetipParagrphStyle;
             break;
             
         case OAMouseTipExposeStyle:
-            backgroundColor = [[NSColor colorWithCalibratedWhite:0.2f alpha:0.85f] retain];
+            backgroundColor = [NSColor colorWithCalibratedWhite:0.2f alpha:0.85f];
             cornerRadius = 5.0f;
             [newTextAttributes setObject:[NSFont boldSystemFontOfSize:[NSFont labelFontSize]] forKey:NSFontAttributeName];
             [newTextAttributes setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
@@ -97,7 +94,6 @@ static NSParagraphStyle *mousetipParagrphStyle;
             [dockStyleTextShadow setShadowBlurRadius:5];
             [dockStyleTextShadow setShadowColor:[NSColor blackColor]];
             [newTextAttributes setObject:dockStyleTextShadow forKey:NSShadowAttributeName];
-            [dockStyleTextShadow release];
             CGFloat strokeWidthPercent = 2.0f;
             [newTextAttributes setObject:[NSNumber numberWithCGFloat:-strokeWidthPercent] forKey:NSStrokeWidthAttributeName];
             [newTextAttributes setObject:[NSColor blackColor] forKey:NSStrokeColorAttributeName];
@@ -106,15 +102,14 @@ static NSParagraphStyle *mousetipParagrphStyle;
     }
     
     _textAttributes = [newTextAttributes copy];
-    [newTextAttributes release];
-    
+
     [self setNeedsDisplay:YES];
 }
 
 - (void)setAttributedTitle:(NSAttributedString *)aTitle;
 {
     if (aTitle == nil)
-        aTitle = [[[NSAttributedString alloc] init] autorelease];
+        aTitle = [[NSAttributedString alloc] init];
     
     NSTextStorage *titleStorage = [titleView textStorage];
 
@@ -158,14 +153,6 @@ static NSParagraphStyle *mousetipParagrphStyle;
     style = OAMouseTipUnsetStyle;
     
     return self;
-}
-
-- (void)dealloc
-{
-    [titleView release];
-    [_textAttributes release];
-    [backgroundColor release];
-    [super dealloc];
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize

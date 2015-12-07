@@ -4,14 +4,8 @@
 /* error description */
 "%@ cannot open this type of file." = "%@ non può aprire questo tipo di documento.";
 
-/* Location label format for external documents */
-"%@ Documents" = "%@ documenti";
-
 /* gigabytes */
 "%@ GB" = "%@ GB";
-
-/* doc picker multiple items accessibility value */
-"%@ items" = "%@ elementi";
 
 /* kilobytes */
 "%@ KB" = "%@ KB";
@@ -34,14 +28,11 @@
 /* Main toolbar title for a single selected document. */
 "1 Document Selected" = "1 documento selezionato";
 
-/* doc picker single item accessibility value */
-"1 item" = "1 elemento";
-
 /* Main toolbar title for a single selected folder. */
 "1 Item Selected" = "1 elemento selezionato";
 
 /* replace document description */
-"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Esiste già un documento denominato \"%@\". Sostituirlo? L'operazione non potrà essere annullata.";
+"A document with the name \"%@\" already exists. Do you want to replace it? This cannot be undone." = "Esiste già un documento denominato “%@”. Sostituirlo? L'operazione non potrà essere annullata.";
 
 /* Error reason for a document operation failing due to a missing file. */
 "A file is missing or has been deleted." = "Un documento manca o è stato eliminato.";
@@ -59,8 +50,8 @@
 
 "Add an Account" = "Aggiungi un account";
 
-/* home screen button label */
-"Add OmniPresence Account" = "Aggiungi account OmniPresence";
+/* Cloud setup modal sheet title */
+"Add Cloud Account" = "Aggiungi un account cloud";
 
 /* button title
    cancel button title
@@ -79,7 +70,7 @@
 "Cannot Export Item" = "Impossibile esportare l'elemento";
 
 /* email action description */
-"Choose a format for emailing \"%@\":" = "Scegli un formato per inviare via e-mail \"%@\":";
+"Choose a format for emailing \"%@\":" = "Scegli un formato per inviare via e-mail “%@”:";
 
 /* toolbar prompt when choosing a template */
 "Choose a Template" = "Scegli un modello";
@@ -90,12 +81,6 @@
 /* export options title */
 "Choose Format" = "Scegli formato";
 
-/* doc picker custom accessibility action name */
-"Clear name field" = "Cancella campo nome";
-
-/* title view clear button accessibility label. */
-"Clear Title" = "Cancella titolo";
-
 /* Success label when connecting to an OmniPresence or WebDAV server account */
 "Connected" = "Connesso";
 
@@ -105,17 +90,8 @@
 /* Menu option in the document picker view */
 "Copy as Image" = "Copia come immagine";
 
-/* gear menu item */
-"Copy from WebDAV" = "Copia da WebDAV";
-
-/* gear menu item */
-"Copy from…" = "Copia da…";
-
 /* moved aside custom sample document name */
 "CustomizedSampleDocumentName" = "%@ personalizzato";
-
-/* sort by date */
-"Date" = "Data";
 
 /* Delete toolbar item accessibility label. */
 "Delete" = "Elimina";
@@ -159,45 +135,31 @@
 /* When displaying a sync error, this is the option to change the username and password. */
 "Edit Credentials" = "Modifica credenziali";
 
-/* doc picker custom accessibility action name */
-"Edit name" = "Modifica nome";
-
-/* title view edit button item accessibility hint. */
-"Edits the document's title." = "Modifica il titolo del documento.";
-
 /* empty trash button title */
-"Empty Trash" = "Svuota cestino";
+"Empty Trash" = "Vuota il Cestino";
 
 /* webdav help */
 "Enter the location of your WebDAV space." = "Immetti l'indirizzo del tuo spazio WebDAV.";
 
 /* export button title
    export options title
-   Export toolbar item accessibility label.
-   Menu option in the document picker view */
+   Export toolbar item accessibility label. */
 
 
 "Export" = "Esporta";
 
-/* export to description */
-"Export \"%@\" as:" = "Esporta \"%@\" come:";
-
 /* export action description */
-"Export \"%@\" to %@ as:" = "Esporta \"%1$@\" in %2$@ come:";
+"Export \"%@\" to %@ as:" = "Esporta “%1$@” in %2$@ come:";
 
 /* Menu option in the document picker view */
 "Export to WebDAV" = "Esporta in WebDAV";
 
-/* Menu option in the document picker view */
-"Export to…" = "Esporta in…";
-
 /* finished */
 "Finished" = "Fine";
 
-/* doc picker folder type accessibility value */
-"Folder" = "Cartella";
+/* gear menu item
+   Import WebDAV server account list */
 
-/* Import section title */
 "Import" = "Importa";
 
 /* Info item accessibility label */
@@ -206,20 +168,8 @@
 /* error title */
 "Invalid Zip Archive" = "Archivio compresso non valido";
 
-/* doc picker title label editing accessibility value */
-"Is editing" = "Sta modificando";
-
-/* Notice for the user about the last edit to a document (unknown device) */
-"Last edit: %@" = "Ultima modifica: %@";
-
-/* Notice for the user about the last edit to a document (another device) */
-"Last edit: %@ on another device" = "Ultima modifica: %@ su un altro dispositivo";
-
-/* Notice for the user about the last edit to a document (this device) */
-"Last edit: %@ on this device" = "Ultima modifica: %@ su questo dispositivo";
-
-/* Link External Document toolbar item accessibility label. */
-"Link External Document" = "Collega documento esterno";
+/* Message format for alert informing user that the document has been reloaded with cloud edits from another device */
+"Last edited on %@." = "Ultima modifica il %@.";
 
 /* Server Account Setup label: location */
 "Location" = "Posizione";
@@ -227,25 +177,21 @@
 /* top level doc picker title */
 "Locations" = "Posizioni";
 
-/* modified date accessibility value */
-"Modified %@" = "Modificato il %@";
-
 /* Menu option in the document picker view
    Move toolbar item accessibility label. */
 
 "Move" = "Sposta";
 
 /* move to trash button title */
-"Move %ld Items to Trash" = "Sposta %ld elementi nel cestino";
+"Move %ld Items to Trash" = "Sposta %ld elementi nel Cestino:";
 
 /* move to trash button title
    Move to Trash toolbar item accessibility label. */
 
-"Move to Trash" = "Sposta nel cestino";
+"Move to Trash" = "Sposta nel Cestino";
 
-/* Action sheet button title
-   Menu popover title */
-"Move to..." = "Sposta in...";
+/* Share menu title */
+"Move to..." = "Sposta in…";
 
 /* Message format for alert informing user that the document has been moved out of a folder to the top level */
 "Moved out of folder %@." = "Spostato dalla cartella %@.";
@@ -274,9 +220,6 @@
 /* Import message for empty table view */
 "No accounts are configured for importing." = "Nessun account configurato per l'importazione.";
 
-/* doc picker no items accessibility value */
-"No items" = "Nessun elemento";
-
 /* Not downloaded accessibility label. */
 "Not downloaded" = "Non scaricato";
 
@@ -284,8 +227,7 @@
 "Not uploaded" = "Non caricato";
 
 /* button title
-   Dismiss failed purchase alert
-   Dismiss failed restore alert */
+   When displaying a sync error, this is the option to ignore the error. */
 
 "OK" = "OK";
 
@@ -295,9 +237,6 @@
 /* Omni Presence config email body */
 "Open this file on another device to configure OmniPresence there." = "Apri questo documento su un altro dispositivo per configurarvi OmniPresence.";
 
-/* Generic name for location of external documents */
-"Other" = "Altri";
-
 /* Server Account Setup label: password */
 "Password" = "Password";
 
@@ -306,18 +245,6 @@
 
 /* Menu option in the document picker view */
 "Print" = "Stampa";
-
-/* purchase now button title */
-"Purchase Now." = "Acquista ora.";
-
-/* Remove from external container toolbar item accessibility label. */
-"Remove" = "Rimuovi";
-
-/* remove button title */
-"Remove %ld Documents" = "Rimuovi %ld documenti";
-
-/* remove button title */
-"Remove Document" = "Rimuovi documento";
 
 /* rename button title */
 "Rename" = "Rinomina";
@@ -341,7 +268,7 @@
 "Report Error" = "Segnala errore";
 
 /* Restore Sample Documents Title */
-"Restore Sample Documents" = "Ripristina doc. esempio";
+"Restore Sample Documents" = "Ripristina doc. di esempio";
 
 /* Share menu title */
 "Restore to..." = "Ripristina in…";
@@ -350,10 +277,7 @@
 "Retry Sync" = "Ritenta sincronizzazione";
 
 /* Account setup toolbar button title to save account settings */
-"Save" = "Registra";
-
-/* document picker compact title view accessibility hint */
-"Scroll down to show sort and filter controls" = "Scorri verso il basso per mostrare i controlli di ordinamento e filtro";
+"Save" = "Salva";
 
 /* document picker button label */
 "Search" = "Cerca";
@@ -365,7 +289,7 @@
 "Select a Document" = "Seleziona un documento";
 
 /* send to app description */
-"Send \"%@\" to app as:" = "Invia \"%@\" all'app come:";
+"Send \"%@\" to app as:" = "Invia “%@” all'app come:";
 
 /* Omni Sync Server send settings button title */
 "Send Settings via Email" = "Registra impostazioni tramite e-mail";
@@ -385,13 +309,16 @@
 "Server address: %@" = "Indirizzo server: %@";
 
 /* Label format when setting up an OmniPresence or WebDAV server account */
-"Setting up \"%@\"" = "Imposto \"%@\"";
+"Setting up \"%@\"" = "Imposto “%@”";
 
 /* Omni Sync Server sign up button title */
 "Sign Up For a New Account" = "Registra nuovo account";
 
-/* sort by accessibility label */
-"Sort by %@" = "Ordina per %@";
+/* sort by date */
+"Sort by date" = "Ordina per data";
+
+/* sort by title */
+"Sort by title" = "Ordina per titolo";
 
 /* Presence toolbar item accessibility label. */
 "Sync Now" = "Sincronizza ora";
@@ -400,22 +327,19 @@
 "Tap here to add a document without a template." = "Tocca qui per aggiungere un documento senza un modello.";
 
 /* empty picker button text */
-"Tap here, or on the + in the toolbar, to add a document." = "Tocca qui o su + nella barra degli strumenti per aggiungere un documento.";
-
-/* empty picker text for Other Documents */
-"Tap on the + in the toolbar to add a document stored on iCloud Drive or provided by another app." = "Tocca la + nella barra degli strumenti per aggiungere un documento archiviato su iCloud Drive o fornito da un'altra app.";
+"Tap here, or on the + in the toolbar, to add a document." = "Tocca qui, o su + nella barra degli strumenti, per aggiungere un documento.";
 
 /* file name label for template filte types */
 "Template:" = "Modello:";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account \"%1$@\" sono presenti %2$ld documenti modificati che non sono stati ancora sincronizzati nel cloud. Ignorare tali modifiche?";
+"The \"%@\" account has %ld edited documents which have not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account “%1$@” sono presenti %2$ld documenti modificati che non sono stati ancora sincronizzati nel cloud. Ignorare tali modifiche?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account \"%@\" è presente un documento modificato che non è stato ancora sincronizzato nel cloud. Ignorare tali modifiche?";
+"The \"%@\" account has an edited document which has not yet been synced up to the cloud. Do you wish to discard those edits?" = "Nell'account “%@” è presente un documento modificato che non è stato ancora sincronizzato nel cloud. Ignorare tali modifiche?";
 
 /* Discard unsynced edits dialog: message format */
-"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "L'account \"%@\" può aver modificato documenti non ancora sincronizzati con il cloud. Ignorare le modifiche locali?";
+"The \"%@\" account may have edited documents which have not yet been synced up to the cloud. Do you wish to discard any local edits?" = "L'account “%@” potrebbe aver modificato documenti non ancora sincronizzati nel cloud. Ignorare eventuali modifiche locali?";
 
 /* Error description for a document operation failing due to a missing file. */
 "The operation couldn't be completed." = "Impossibile completare l'operazione.";
@@ -430,13 +354,10 @@
 "This Cloud Account no longer exists." = "Questo account cloud non esiste più.";
 
 /* item not fully downloaded error message */
-"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Impossibile duplicare l'elemento perché non è stato completamente scaricato. Tocca l'elemento e attendi che venga scaricato prima di riprovare.";
+"This item cannot be duplicated because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Impossibile duplicare l'elemento perché non è stato scaricato completamente. Tocca l'elemento e attendi che venga scaricato prima di riprovare.";
 
 /* item not fully downloaded error message */
 "This item cannot be exported because it is not fully downloaded. Please tap the item and wait for it to download before trying again." = "Impossibile esportare l'elemento perché non è stato scaricato completamente. Tocca l'elemento e attendi che venga scaricato prima di riprovare.";
-
-/* sort by title */
-"Title" = "Titolo";
 
 /* error title */
 "Unable to open file." = "Impossibile aprire il documento.";

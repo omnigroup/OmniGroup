@@ -8,10 +8,15 @@
 // $Id$
 
 
-#import <OmniFoundation/OFByteProviderProtocol.h>
 #import <Foundation/NSObject.h>
 #import <CommonCrypto/CommonHMAC.h>
 #include <stdint.h>
+
+// #define WITH_ACCEPTOR_PROVIDER_API 1
+
+#if WITH_ACCEPTOR_PROVIDER_API
+#import <OmniFoundation/OFByteProviderProtocol.h>
+#endif
 
 @class OFSDocumentKey;
 @class NSData, NSError;
@@ -30,6 +35,8 @@
 
 @end
 
+#if WITH_ACCEPTOR_PROVIDER_API
+
 @interface OFSSegmentDecryptingByteProvider : NSObject <OFByteProvider>
 
 - (instancetype)initWithByteProvider:(id <NSObject,OFByteProvider>)underlying
@@ -47,4 +54,6 @@
                               offset:(size_t)segmentsBegin;
 
 @end
+
+#endif
 

@@ -274,7 +274,7 @@ CGColorRef OACreateCompositeColorFromColors(CGColorSpaceRef destinationColorSpac
     CGRect pixelRect = CGRectMake(0, 0, 1, 1);
     
     for (id obj in colors) {
-        CGColorRef color = (CGColorRef)obj;
+        CGColorRef color = (__bridge CGColorRef)obj;
         CGContextSetFillColorWithColor(ctx, color);
         CGContextFillRect(ctx, pixelRect);
     };
@@ -448,7 +448,6 @@ static void _addComponent(NSAppleEventDescriptor *record, FourCharCode code, CGF
     double d = component;
     NSAppleEventDescriptor *desc = [[NSAppleEventDescriptor alloc] initWithDescriptorType:typeIEEE64BitFloatingPoint bytes:&d length:(sizeof(d))];
     [record setDescriptor:desc forKeyword:code];
-    [desc release];
 }
 #endif
 
@@ -491,11 +490,11 @@ static OAColor *OARGBAColorCreate(OALinearRGBA rgba)
         return self;
     if (colorSpace == OAColorSpaceHSV) {
         OAHSV hsva = OARGBToHSV(_rgba);
-        return [OAHSVAColorCreate(hsva) autorelease];
+        return OAHSVAColorCreate(hsva);
     }
     if (colorSpace == OAColorSpaceWhite) {
         CGFloat luma = OAGetRGBAColorLuma(_rgba);
-        return [OAWhiteColorCreate(luma, _rgba.a) autorelease];
+        return OAWhiteColorCreate(luma, _rgba.a);
     }
     OBRequestConcreteImplementation(self, _cmd);
 }
@@ -531,14 +530,14 @@ static OALinearRGBA interpRGBA(OALinearRGBA c0, OALinearRGBA c1, CGFloat t)
         return otherColor;
     
     OALinearRGBA rgba = interpRGBA(otherRGBA->_rgba, _rgba, fraction); // the fraction is "of the other color"
-    return [OARGBAColorCreate(rgba) autorelease];
+    return OARGBAColorCreate(rgba);
 }
 
 - (OAColor *)colorWithAlphaComponent:(CGFloat)fraction;
 {
     OALinearRGBA rgba = _rgba;
     rgba.a = fraction; // TODO: The naming of this argument makes it sound like this should be '*=', but the docs make it sound like '=' is right.
-    return [OARGBAColorCreate(rgba) autorelease];
+    return OARGBAColorCreate(rgba);
 }
 
 - (CGFloat)whiteComponent;
@@ -624,7 +623,7 @@ static OALinearRGBA interpRGBA(OALinearRGBA c0, OALinearRGBA c1, CGFloat t)
 
 - (NSAppleEventDescriptor *)scriptingColorDescriptor;
 {
-    NSAppleEventDescriptor *result = [[[NSAppleEventDescriptor alloc] initRecordDescriptor] autorelease];
+    NSAppleEventDescriptor *result = [[NSAppleEventDescriptor alloc] initRecordDescriptor];
     
     // The order is significant when the result is coerced to a list.
     _addComponent(result, 'OSrv', _rgba.r);
@@ -668,12 +667,12 @@ static OAColor *OAHSVAColorCreate(OAHSV hsva)
         return self;
     if (colorSpace == OAColorSpaceRGB) {
         OALinearRGBA rgba = OAHSVToRGB(_hsva);
-        return [OARGBAColorCreate(rgba) autorelease];
+        return OARGBAColorCreate(rgba);
     }
     if (colorSpace == OAColorSpaceWhite) {
         OALinearRGBA rgba = OAHSVToRGB(_hsva);
         CGFloat w = OAGetRGBAColorLuma(rgba);
-        return [OAWhiteColorCreate(w, _hsva.a) autorelease];
+        return OAWhiteColorCreate(w, _hsva.a);
     }
     
     OBRequestConcreteImplementation(self, _cmd);
@@ -689,7 +688,7 @@ static OAColor *OAHSVAColorCreate(OAHSV hsva)
 {
     OAHSV hsva = _hsva;
     hsva.a = fraction; // TODO: The naming of this argument makes it sound like this should be '*=', but the docs make it sound like '=' is right.
-    return [OAHSVAColorCreate(hsva) autorelease];
+    return OAHSVAColorCreate(hsva);
 }
 
 - (CGFloat)whiteComponent;
@@ -782,7 +781,7 @@ static OAColor *OAHSVAColorCreate(OAHSV hsva)
 }
 - (NSAppleEventDescriptor *)scriptingColorDescriptor;
 {
-    NSAppleEventDescriptor *result = [[[NSAppleEventDescriptor alloc] initRecordDescriptor] autorelease];
+    NSAppleEventDescriptor *result = [[NSAppleEventDescriptor alloc] initRecordDescriptor];
     
     // The order is significant when the result is coerced to a list.
     _addComponent(result, 'OShv', _hsva.h);
@@ -825,12 +824,12 @@ static OAColor *OAWhiteColorCreate(CGFloat white, CGFloat alpha)
         return self;
     if (colorSpace == OAColorSpaceRGB) {
         // Cache constants for black and white?
-        return [OARGBAColorCreate((OALinearRGBA){_white, _white, _white, _alpha}) autorelease];
+        return OARGBAColorCreate((OALinearRGBA){_white, _white, _white, _alpha});
     }
     if (colorSpace == OAColorSpaceHSV) {
         OALinearRGBA rgba = (OALinearRGBA){_white, _white, _white, _alpha};
         OAHSV hsv = OARGBToHSV(rgba);
-        return [OAHSVAColorCreate(hsv) autorelease];
+        return OAHSVAColorCreate(hsv);
     }
     
     OBRequestConcreteImplementation(self, _cmd);
@@ -843,7 +842,7 @@ static OAColor *OAWhiteColorCreate(CGFloat white, CGFloat alpha)
 
 - (OAColor *)colorWithAlphaComponent:(CGFloat)fraction;
 {
-    return [OAWhiteColorCreate(_white, fraction) autorelease];
+    return OAWhiteColorCreate(_white, fraction);
 }
 
 - (CGFloat)whiteComponent;
@@ -935,7 +934,7 @@ static OAColor *OAWhiteColorCreate(CGFloat white, CGFloat alpha)
 
 - (NSAppleEventDescriptor *)scriptingColorDescriptor;
 {
-    NSAppleEventDescriptor *result = [[[NSAppleEventDescriptor alloc] initRecordDescriptor] autorelease];
+    NSAppleEventDescriptor *result = [[NSAppleEventDescriptor alloc] initRecordDescriptor];
     
     // The order is significant when the result is coerced to a list.
     _addComponent(result, 'OSwv', _white);
@@ -950,12 +949,6 @@ static OAColor *OAWhiteColorCreate(CGFloat white, CGFloat alpha)
 
 
 @implementation OAColor
-
-- (void)dealloc;
-{
-    [_platformColor release];
-    [super dealloc];
-}
 
 static OAColor *_colorWithCGColorRef(CGColorRef cgColor)
 {
@@ -1010,14 +1003,14 @@ static OAColor *_colorWithCGColorRef(CGColorRef cgColor)
         ([colorSpaceName isEqualToString:NSNamedColorSpace] && (toConvert = [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace]))) {
         OALinearRGBA rgba;
         [toConvert getRed:&rgba.r green:&rgba.g blue:&rgba.b alpha:&rgba.a];
-        return [OARGBAColorCreate(rgba) autorelease]; // TODO: Could reuse the input color here for the platform color.
+        return OARGBAColorCreate(rgba); // TODO: Could reuse the input color here for the platform color.
     }
     
     if (([colorSpaceName isEqualToString:NSCalibratedWhiteColorSpace] && (toConvert = color)) ||
         ([colorSpaceName isEqualToString:NSDeviceWhiteColorSpace] && (toConvert = [color colorUsingColorSpaceName:NSCalibratedWhiteColorSpace]))) {
         CGFloat white, alpha;
         [toConvert getWhite:&white alpha:&alpha];
-        return [OAWhiteColorCreate(white, alpha) autorelease];
+        return OAWhiteColorCreate(white, alpha);
     }
     
     OBASSERT_NOT_REACHED("Unknown color space");
@@ -1031,7 +1024,7 @@ static OAColor *_colorWithCGColorRef(CGColorRef cgColor)
     UIImage *image = [UIImage imageWithData:imageData];
     return [OAColor colorWithPlatformColor:[UIColor colorWithPatternImage:image]];
 #else
-    NSImage *image = [[[NSImage alloc] initWithData:imageData] autorelease];
+    NSImage *image = [[NSImage alloc] initWithData:imageData];
     return [OAColor colorWithPlatformColor:[NSColor colorWithPatternImage:image]];
 #endif
 }
@@ -1063,7 +1056,7 @@ static NSString *rgbaStringFromRGBAColor(OALinearRGBA rgba)
 static void OAColorInitPlatformColor(OAColor *self)
 {
     OBPRECONDITION(self->_platformColor == nil);
-    self->_platformColor = [self.toColor retain]; // UIColor isn't copyable. -retain is good enough since all colors are immutable anyway.
+    self->_platformColor = self.toColor; // UIColor isn't copyable. -retain is good enough since all colors are immutable anyway.
     OBPOSTCONDITION(self->_platformColor != nil);
 }
 
@@ -1073,7 +1066,7 @@ static void OAColorInitPlatformColor(OAColor *self)
     if (!parseRGBAString(rgbaString, &rgba))
         return nil;
     
-    return [OARGBAColorCreate(rgba) autorelease];
+    return OARGBAColorCreate(rgba);
 }
 
 - (NSString *)rgbaString;
@@ -1103,7 +1096,7 @@ static void OAColorInitPlatformColor(OAColor *self)
     rgba.g = green;
     rgba.b = blue;
     rgba.a = alpha;
-    return [OARGBAColorCreate(rgba) autorelease];
+    return OARGBAColorCreate(rgba);
 }
 
 + (OAColor *)colorWithHue:(CGFloat)hue saturation:(CGFloat)saturation brightness:(CGFloat)brightness alpha:(CGFloat)alpha;
@@ -1113,13 +1106,13 @@ static void OAColorInitPlatformColor(OAColor *self)
     hsva.s = saturation;
     hsva.v = brightness;
     hsva.a = alpha;
-    return [OAHSVAColorCreate(hsva) autorelease];
+    return OAHSVAColorCreate(hsva);
 }
 
 + (OAColor *)colorWithWhite:(CGFloat)white alpha:(CGFloat)alpha;
 {
     // Use +blackColor or +whiteColor for 0/1?
-    return [OAWhiteColorCreate(white, alpha) autorelease];
+    return OAWhiteColorCreate(white, alpha);
 }
 
 + (OAColor *)colorWithCalibratedRed:(CGFloat)red green:(CGFloat)green blue:(CGFloat)blue alpha:(CGFloat)alpha;
@@ -1251,7 +1244,7 @@ static void OAColorInitPlatformColor(OAColor *self)
 
 - (id)copyWithZone:(NSZone *)zone;
 {
-    return [self retain];
+    return self;
 }
 
 @end

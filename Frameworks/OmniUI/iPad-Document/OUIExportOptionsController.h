@@ -13,14 +13,14 @@
 
 @class NSFileWrapper;
 @class OFXServerAccount;
+@class ODSFileItem;
+@class OUIDocumentExporter;
 
 @interface OUIExportOptionsController : UIViewController <UIDocumentInteractionControllerDelegate>
 
-- (id)initWithServerAccount:(OFXServerAccount *)serverAccount exportType:(OUIExportOptionsType)exportType NS_DESIGNATED_INITIALIZER;
+- (id)initWithServerAccount:(OFXServerAccount *)serverAccount fileItem:(ODSFileItem *)fileItem exportType:(OUIExportOptionsType)exportType exporter:(OUIDocumentExporter*)exporter NS_DESIGNATED_INITIALIZER;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (id)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
-
-- (void)exportFileWrapper:(NSFileWrapper *)fileWrapper;
 
 @end

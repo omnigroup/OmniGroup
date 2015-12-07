@@ -22,22 +22,22 @@ RCS_ID("$Id$")
 
 @interface OAFindController ()
 
-@property (nonatomic, retain) IBOutlet NSTextField *searchTextField;
-@property (nonatomic, retain) IBOutlet NSTextField *replaceTextField;
+@property (nonatomic, strong) IBOutlet NSTextField *searchTextField;
+@property (nonatomic, strong) IBOutlet NSTextField *replaceTextField;
 
-@property (nonatomic, retain) IBOutlet NSButton *ignoreCaseButton;
-@property (nonatomic, retain) IBOutlet NSButton *wholeWordButton;
-@property (nonatomic, retain) IBOutlet NSButton *findNextButton;
-@property (nonatomic, retain) IBOutlet NSButton *findPreviousButton;
-@property (nonatomic, retain) IBOutlet NSButton *replaceAllButton;
-@property (nonatomic, retain) IBOutlet NSButton *replaceButton;
-@property (nonatomic, retain) IBOutlet NSButton *replaceAndFindButton;
-@property (nonatomic, retain) IBOutlet NSMatrix *findTypeMatrix;
-@property (nonatomic, retain) IBOutlet NSPopUpButton *captureGroupPopUp;
-@property (nonatomic, retain) IBOutlet NSButton *replaceInSelectionCheckbox;
-@property (nonatomic, retain) IBOutlet NSBox *additionalControlsBox;
-@property (nonatomic, retain) IBOutlet NSView *stringControlsView;
-@property (nonatomic, retain) IBOutlet NSView *regularExpressionControlsView;
+@property (nonatomic, strong) IBOutlet NSButton *ignoreCaseButton;
+@property (nonatomic, strong) IBOutlet NSButton *wholeWordButton;
+@property (nonatomic, strong) IBOutlet NSButton *findNextButton;
+@property (nonatomic, strong) IBOutlet NSButton *findPreviousButton;
+@property (nonatomic, strong) IBOutlet NSButton *replaceAllButton;
+@property (nonatomic, strong) IBOutlet NSButton *replaceButton;
+@property (nonatomic, strong) IBOutlet NSButton *replaceAndFindButton;
+@property (nonatomic, strong) IBOutlet NSMatrix *findTypeMatrix;
+@property (nonatomic, strong) IBOutlet NSPopUpButton *captureGroupPopUp;
+@property (nonatomic, strong) IBOutlet NSButton *replaceInSelectionCheckbox;
+@property (nonatomic, strong) IBOutlet NSBox *additionalControlsBox;
+@property (nonatomic, strong) IBOutlet NSView *stringControlsView;
+@property (nonatomic, strong) IBOutlet NSView *regularExpressionControlsView;
 
 - (id <OAFindPattern>)currentPatternWithBackwardsFlag:(BOOL)backwardsFlag;
 - (BOOL)findStringWithBackwardsFlag:(BOOL)backwardsFlag;
@@ -50,32 +50,9 @@ RCS_ID("$Id$")
     id <OAFindPattern> _currentPattern;
 }
 
-- init;
+- (instancetype)init;
 {
     return [super initWithWindowNibName:@"OAFindPanel"];
-}
-
-- (void)dealloc;
-{
-    [_searchTextField release];
-    [_replaceTextField release];
-    [_ignoreCaseButton release];
-    [_wholeWordButton release];
-    [_findNextButton release];
-    [_findPreviousButton release];
-    [_replaceAllButton release];
-    [_replaceButton release];
-    [_replaceAndFindButton release];
-    [_findTypeMatrix release];
-    [_captureGroupPopUp release];
-    [_replaceInSelectionCheckbox release];
-    [_additionalControlsBox release];
-    [_stringControlsView release];
-    [_regularExpressionControlsView release];
-
-    [_currentPattern release];
-
-    [super dealloc];
 }
 
 #pragma mark - Menu Actions
@@ -212,8 +189,7 @@ RCS_ID("$Id$")
     NSRegularExpression *expression = [[NSRegularExpression alloc] initWithPattern:[_searchTextField stringValue] options:0 error:NULL];
     if (expression != nil) {
         NSUInteger captureGroupCount = [expression numberOfCaptureGroups];
-        [expression release];
-        
+
         NSUInteger popupItemCount = [_captureGroupPopUp numberOfItems];
         
         while (popupItemCount > 1 + captureGroupCount)
@@ -369,14 +345,16 @@ RCS_ID("$Id$")
 
     (void)[self window]; // Load interface if needed
     if ([[_findTypeMatrix selectedCell] tag] == 0) {
-        pattern = [[OAFindPattern alloc] initWithString:findString ignoreCase:[_ignoreCaseButton state] wholeWord:[_wholeWordButton state] backwards:backwardsFlag];
+        pattern = [[OAFindPattern alloc] initWithString:findString
+                                             ignoreCase:([_ignoreCaseButton state] != NSOffState)
+                                              wholeWord:([_wholeWordButton state] != NSOffState)
+                                              backwards:backwardsFlag];
     } else {
         [self _updateCaptureGroupsPopUp];
         NSInteger captureGroup = [_captureGroupPopUp indexOfSelectedItem] - 1;
         pattern = [[OARegExFindPattern alloc] initWithPattern:findString selectedCaptureGroup:captureGroup backwards:backwardsFlag];
     }
     
-    [_currentPattern release];
     _currentPattern = pattern;
     return pattern;
 }

@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -72,7 +72,6 @@ static NSString *rgbaStringFromNSColor(NSColor *color)
     [[gray colorUsingColorSpaceName:NSCalibratedWhiteColorSpace] getWhite:&grayFloat alpha:NULL];
     NSNumber *grayNumber = [[NSNumber alloc] initWithCGFloat:grayFloat];
     [self setObject:grayNumber forKey:defaultName];
-    [grayNumber release];
 }
 
 @end
@@ -136,7 +135,6 @@ static NSString *rgbaStringFromNSColor(NSColor *color)
     [[gray colorUsingColorSpaceName:NSCalibratedWhiteColorSpace] getWhite:&grayFloat alpha:NULL];
     NSNumber *grayNumber = [[NSNumber alloc] initWithCGFloat:grayFloat];
     [self setObject:grayNumber forKey:defaultName];
-    [grayNumber release];
 }
 
 @end

@@ -1,4 +1,4 @@
-// Copyright 1999-2007, 2011, 2013-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1999-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -10,17 +10,9 @@
 #import <OmniFoundation/NSDate-OFExtensions.h>
 #import <OmniFoundation/OFObject-Queue.h>
 
-RCS_ID("$Id$")
+#import "OFScheduler-Subclass.h"
 
-@interface OFDedicatedThreadScheduler (Private)
-- (void)notifyDedicatedThreadIfFirstEventIsSoonerThanWakeDate;
-- (void)notifyDedicatedThreadThatItNeedsToWakeSooner;
-- (void)mainThreadInvokeScheduledEvents;
-- (void)runScheduleInCurrentThreadUntilEmpty:(BOOL)onlyUntilEmpty;
-- (void)synchronouslyInvokeScheduledEvents;
-- (NSDate *)wakeDate;
-- (void)setWakeDate:(NSDate *)newWakeDate;
-@end
+RCS_ID("$Id$")
 
 enum {
     SCHEDULE_STABLE_CONDITION,
@@ -72,12 +64,16 @@ static OFDedicatedThreadScheduler *dedicatedThreadSchedulerIfCreated(Class self,
     wakeDate = nil;
     wakeDateLock = [[NSLock alloc] init];
     flags.invokesEventsInMainThread = YES;
-    
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_systemClockChanged:) name:NSSystemClockDidChangeNotification object:nil];
+
     return self;
 }
 
 - (void)dealloc;
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSSystemClockDidChangeNotification object:nil];
+
     [scheduleConditionLock release];
     [mainThreadSynchronizationLock release];
     [wakeDate release];
@@ -117,7 +113,7 @@ static OFDedicatedThreadScheduler *dedicatedThreadSchedulerIfCreated(Class self,
     // No need to wake our dedicated thread, that'll just make it consume CPU sooner than it was already planning to do (when it was going to wake up to process the event).
 }
 
-// OBObject subclass
+#pragma mark - NSObject (OBExtensions)
 
 - (NSMutableDictionary *)debugDictionary;
 {
@@ -133,9 +129,12 @@ static OFDedicatedThreadScheduler *dedicatedThreadSchedulerIfCreated(Class self,
     return debugDictionary;
 }
 
-@end
+#pragma mark - Private
 
-@implementation OFDedicatedThreadScheduler (Private)
+- (void)_systemClockChanged:(NSNotification *)note;
+{
+    [self scheduleEvents];
+}
 
 - (void)notifyDedicatedThreadIfFirstEventIsSoonerThanWakeDate;
 {

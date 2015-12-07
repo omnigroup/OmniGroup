@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2010, 2012, 2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -31,7 +31,9 @@ CFIndex OFAppendStringBytesToBuffer(CFMutableDataRef buffer, CFStringRef source,
 
 /* The built-in hash function on NSString/CFString behaves astoundingly poorly on certain classes of input (such as URLs). This is an alternative hash which gives better results on our test data sets (and is quick to compute). */
 /* Note that the hash depends on the string's representation as a sequence of UTF-16 points, and unicode normalization may be necessary before hashing depending on how you're using the strings. */
-unsigned long OFStringHash_djb2(CFStringRef string);
+extern CFHashCode OFStringHash_djb2(CFStringRef string);
+extern CFHashCode OFCharactersHash_djb2(const UniChar *characters, NSUInteger characterCount);
+extern CFHashCode OFBytesHash_djb2(const void *bytes, NSUInteger byteCount);
 
 /* Checks for some completely-invalid UTF-16 sequences; returns YES if it finds one */
 BOOL OFStringContainsInvalidSequences(CFStringRef aString);

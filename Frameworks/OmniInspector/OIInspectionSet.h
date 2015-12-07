@@ -7,30 +7,10 @@
 //
 // $Id$
 
-#import <Foundation/NSObject.h>
+#import <OmniFoundation/OFSelectionSet.h>
 
-#import <OmniFoundation/OFUtilities.h> // OFPredicateBlock
+@interface OIInspectionSet : OFSelectionSet
 
-@class NSArray, NSPredicate;
-
-@interface OIInspectionSet : NSObject
-
-- (void)addObject:(id)object;
-- (void)addObjectsFromArray:(NSArray *)objects;
-- (void)removeObject:(id)object;
-- (void)removeObjectsInArray:(NSArray *)toRemove;
-- (void)removeAllObjects;
-
-- (BOOL)containsObject:(id)object;
-- (NSUInteger)count;
-
-- (NSArray *)allObjects;
-
-- (NSArray *)copyObjectsSatisfyingPredicateBlock:(OFPredicateBlock)predicate;
-- (NSArray *)copyObjectsSatisfyingPredicate:(NSPredicate *)predicate;
-- (void)removeObjectsSatisfyingPredicate:(NSPredicate *)predicate;
-
-- (NSArray *)objectsSortedByInsertionOrder:(NSArray *)someObjects;
-- (NSUInteger)insertionOrderForObject:(id)object; // NSNotFound if not present
+@property(nonatomic,copy) NSString *inspectionIdentifier;
 
 @end

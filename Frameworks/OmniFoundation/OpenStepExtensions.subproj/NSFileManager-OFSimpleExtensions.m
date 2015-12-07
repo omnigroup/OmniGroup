@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010-2014 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -65,6 +65,20 @@ RCS_ID("$Id$")
 - (BOOL)directoryExistsAtPath:(NSString *)path;
 {
     return [self directoryExistsAtPath:path traverseLink:NO];
+}
+
+- (NSArray <NSString *> *)directoryContentsAtPath:(NSString *)path havingExtension:(NSString *)extension  error:(NSError **)outError;
+{
+    NSArray <NSString *> *children;
+    NSError *error = nil;
+    if (!(children = [self contentsOfDirectoryAtPath:path error:&error])) {
+        if (outError)
+            *outError = error;
+        // Return nil in exactly the cases that -directoryContentsAtPath: does (rather than returning an empty array).
+        return nil;
+    }
+
+    return [children pathsMatchingExtensions:@[extension]];
 }
 
 - (BOOL)createPathToFile:(NSString *)path attributes:(NSDictionary *)attributes error:(NSError **)outError;
@@ -335,7 +349,7 @@ static void _appendPropertiesOfTreeAtURL(NSFileManager *self, NSMutableString *s
     
     NSURL *containerURL = [self containerURLForSecurityApplicationGroupIdentifier:groupContainerIdentifier];
     if (!containerURL) {
-        OBASSERT_NOT_REACHED("Unable to determine container for OmniSoftwareUpdate settings");
+        OBASSERT_NOT_REACHED("Unable to determine shared container location for identifier \"%@\"", groupContainerIdentifier);
         return nil;
     }
     

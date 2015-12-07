@@ -1,4 +1,4 @@
-// Copyright 1997-2008, 2010, 2014 Omni Development, Inc.  All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -49,7 +49,7 @@ static NSDictionary *OAFontFamilySubstitutionDictionary = nil;
     fontMapTable = NSCreateMapTable(keyCallBacks, NSObjectMapValueCallBacks, 32);
     fontMapTableLock = [[NSLock alloc] init];
     fontManager = [[NSFontManager sharedFontManager] retain];
-    [[OFController sharedController] addObserver:(id)self];
+    [[OFController sharedController] addStatusObserver:(id)self];
 }
 
 + (void)controllerDidInitialize:(OFController *)controller;

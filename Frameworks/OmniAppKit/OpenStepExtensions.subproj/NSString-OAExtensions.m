@@ -1,4 +1,4 @@
-// Copyright 1997-2005, 2007-2008, 2010-2011, 2013 Omni Development, Inc. All rights reserved.
+// Copyright 1997-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -41,7 +41,6 @@ RCS_ID("$Id$")
     
     attributedString = [[NSAttributedString alloc] initWithString:self attributes:attributes];
     [attributedString drawInRectangle:rectangle alignment:alignment verticallyCentered:verticallyCenter];
-    [attributedString release];
 }
 
 - (void)drawWithFont:(NSFont *)font color:(NSColor *)color alignment:(NSTextAlignment)alignment verticallyCenter:(BOOL)verticallyCenter inRectangle:(NSRect)rectangle;
@@ -55,7 +54,6 @@ RCS_ID("$Id$")
         [attributes setObject:color forKey:NSForegroundColorAttributeName];
 
     [self drawWithFontAttributes:attributes alignment:alignment verticallyCenter:verticallyCenter inRectangle:rectangle];
-    [attributes release];
 }
 
 - (void)drawWithFontAttributes:(NSDictionary *)attributes alignment:(NSTextAlignment)alignment rectangle:(NSRect)rectangle;

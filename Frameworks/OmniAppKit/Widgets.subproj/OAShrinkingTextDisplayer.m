@@ -1,4 +1,4 @@
-// Copyright 2000-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 2000-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -28,7 +28,7 @@ static NSFont *defaultFont;
 {
     OBINITIALIZE;
 
-    defaultFont = [[NSFont messageFontOfSize:11.0f] retain];
+    defaultFont = [NSFont messageFontOfSize:11.0f];
 }
 
 
@@ -39,8 +39,7 @@ static NSFont *defaultFont;
     if (font == baseFont)
         return;
         
-    [baseFont release];
-    baseFont = [font retain];
+    baseFont = font;
 
     [self _resetBounds];
     
@@ -56,7 +55,6 @@ static NSFont *defaultFont;
     if (newString == string)
         return;
         
-    [string release];
     string = [newString copy];
 
     [self _resetBounds];

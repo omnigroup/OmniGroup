@@ -1,4 +1,4 @@
-// Copyright 2008-2014 Omni Development, Inc. All rights reserved.
+// Copyright 2008-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -11,9 +11,9 @@
 #import <OmniDataObjects/ODORelationship.h>
 #import <OmniDataObjects/ODOAttribute.h>
 #import <OmniDataObjects/ODOModel.h>
-#import <OmniDataObjects/ODOObject-Accessors.h>
 
 #import "ODOEntity-Internal.h"
+#import "ODOObject-Accessors.h"
 #import "ODOObject-Internal.h"
 #import "ODOEditingContext-Internal.h"
 #import "ODODatabase-Internal.h"
@@ -739,9 +739,10 @@ static void _validateRelatedObjectClass(const void *value, void *context)
             if (flags.toMany)
                 continue;
             
-            // For to-one relationships, the internal value could be a raw primary key value or a fault.  Upscale to faults if we only have pks.  New values really shouldn't be pks.
-            if (newValue && ![newValue isKindOfClass:[ODOObject class]])
-                OBRejectInvalidCall(self, _cmd, @"%@.%@ is not a ODOObject but a %@ (%@)", [self shortDescription], [prop name], [newValue class], newValue);
+            // For to-one relationships, the internal value could be a raw primary key value or a fault.  Upscale to faults if we only have pks.  New values really shouldn't be pks (unless we're undoing), but even if they are, fall back on -primitiveValueForProperty: to get a real value instead of (presumably) the pk.
+            if (newValue && ![newValue isKindOfClass:[ODOObject class]]) {
+                newValue = ODOObjectPrimitiveValueForProperty(self, prop);
+            }
 
             if (oldValue && ![oldValue isKindOfClass:[ODOObject class]]) {
                 ODOEntity *destEntity = [(ODORelationship *)prop destinationEntity];

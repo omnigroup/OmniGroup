@@ -1,4 +1,4 @@
-// Copyright 2001-2005, 2010-2011 Omni Development, Inc.  All rights reserved.
+// Copyright 2001-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -14,12 +14,12 @@ RCS_ID("$Id$")
 
 @implementation OAFindPattern
  
-- initWithString:(NSString *)aString ignoreCase:(BOOL)ignoreCase wholeWord:(BOOL)isWholeWord backwards:(BOOL)backwards;
+- (instancetype)initWithString:(NSString *)aString ignoreCase:(BOOL)ignoreCase wholeWord:(BOOL)isWholeWord backwards:(BOOL)backwards;
 {
     if (!(self = [super init]))
         return nil;
 
-    pattern = [aString retain];
+    pattern = [aString copy];
     optionsMask = 0;
     if (ignoreCase)
         optionsMask |= NSCaseInsensitiveSearch;
@@ -31,17 +31,7 @@ RCS_ID("$Id$")
 
 - (void)setReplacementString:(NSString *)aString;
 {
-    if (aString != replacementString) {
-        [replacementString release];
-        replacementString = [aString retain];
-    }
-}
-
-- (void)dealloc;
-{
-    [pattern release];
-    [replacementString release];
-    [super dealloc];
+    replacementString = [aString copy];
 }
 
 //

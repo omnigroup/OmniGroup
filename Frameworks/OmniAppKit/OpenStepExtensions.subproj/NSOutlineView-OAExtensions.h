@@ -1,4 +1,4 @@
-// Copyright 1999-2005, 2010 Omni Development, Inc.  All rights reserved.
+// Copyright 1999-2015 Omni Development, Inc. All rights reserved.
 //
 // This software may only be used and reproduced according to the
 // terms in the file OmniSourceLicense.html, which should be
@@ -13,26 +13,30 @@
 #import <OmniAppKit/NSTableView-OAExtensions.h>
 #import <AppKit/NSNibDeclarations.h> // For IBAction, IBOutlet
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSOutlineView (OAExtensions)
 
-- (id)selectedItem;
-- (NSArray *)selectedItems;
+@property(nullable,nonatomic,readonly) id selectedItem;
+@property(nonatomic,readonly) NSArray *selectedItems;
 
 // Requires the parent(s) of the selected item to already be expanded. 
-- (void)setSelectedItem:(id)item;
-- (void)setSelectedItem:(id)item visibility:(OATableViewRowVisibility)visibility;
-- (void)setSelectedItems:(NSArray *)items;
-- (void)setSelectedItems:(NSArray *)items visibility:(OATableViewRowVisibility)visibility;
+- (void)setSelectedItem:(nullable id)item;
+- (void)setSelectedItem:(nullable id)item visibility:(OATableViewRowVisibility)visibility;
+- (void)setSelectedItems:(nullable NSArray *)items;
+- (void)setSelectedItems:(nullable NSArray *)items visibility:(OATableViewRowVisibility)visibility;
 
-- (id)firstItem;
+@property(nullable,nonatomic,readonly) id firstItem;
 
 - (void)expandAllItemsAtLevel:(NSInteger)level;
 
-- (void)expandItemAndChildren:(id)item;
-- (void)collapseItemAndChildren:(id)item;
+- (void)expandItemAndChildren:(nullable id)item;
+- (void)collapseItemAndChildren:(nullable id)item;
 
 // Actions
-- (IBAction)expandAll:(id)sender;
-- (IBAction)contractAll:(id)sender;
+- (IBAction)expandAll:(nullable id)sender;
+- (IBAction)contractAll:(nullable id)sender;
 
 @end
+
+NS_ASSUME_NONNULL_END
