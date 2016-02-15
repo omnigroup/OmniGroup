@@ -28,10 +28,8 @@ RCS_ID("$Id$");
 
 - (ColorSyncProfileRef)_anyProfile;
 - (void)_updateConversionCacheForOutput:(OAColorProfile *)outputProfile;
-#if OA_USE_COLOR_MANAGER
-- (NSData *)_dataForRawProfile:(CMProfileRef)rawProfile;
-- (BOOL)_addProfile:(CMProfileRef)cmProfile toPropertyList:(NSMutableDictionary *)dict keyStem:(NSString *)spaceName;
-#endif
+- (NSData *)_dataForRawProfile:(ColorSyncProfileRef)rawProfile;
+- (BOOL)_addProfile:(ColorSyncProfileRef)cmProfile toPropertyList:(NSMutableDictionary *)dict keyStem:(NSString *)spaceName;
 - (void)_profileLoadError:(int)errorCode defaultColorSpace:(NSColorSpace *)colorSpace;
 
 @end
@@ -918,42 +916,30 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         return grayProfile;
 }
 
-#if OA_USE_COLOR_MANAGER
-- (NSData *)_dataForRawProfile:(CMProfileRef)rawProfile;
+- (NSData *)_dataForRawProfile:(ColorSyncProfileRef)rawProfile;
 {
-    CMProfileRef targetRef;
-    CMAppleProfileHeader header;
-    CMProfileLocation profileLocation;
-    NSMutableData *data;
-
-    CMError err = CMGetProfileHeader(rawProfile, &header);
-    if (err != noErr) {
-        NSLog(@"Cannot copy color profile %p: CMError %ld", rawProfile, (long)err);
-        return nil;
-    }
-    
-    data = [[NSMutableData alloc] initWithLength:header.cm2.size];
-    profileLocation.locType = cmBufferBasedProfile;
-    profileLocation.u.bufferLoc.buffer = [data mutableBytes];
-    profileLocation.u.bufferLoc.size = header.cm2.size;
-    CMCopyProfile(&targetRef, &profileLocation, rawProfile);
-    
-#ifdef OMNI_ASSERTIONS_ON
-    CFDataRef iccData = CMProfileCopyICCData(kCFAllocatorDefault, rawProfile);
-    OBASSERT([data isEqual:(id)iccData]);
-    CFRelease(iccData);
-#endif
-    
-    return [data autorelease];
+    return CFBridgingRelease(ColorSyncProfileCopyData(rawProfile, NULL));
 }
 
-- (BOOL)_addProfile:(CMProfileRef)cmProfile
+//ColorSyncProfileGetMD5 returns an invalid hash if all the bytes are 0.
+static BOOL isValidHash(ColorSyncMD5 hash)
+{
+    for (int i = 0; i < COLORSYNC_MD5_LENGTH; i++) {
+        if (hash.digest[i] != 0) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+- (BOOL)_addProfile:(ColorSyncProfileRef)cmProfile
      toPropertyList:(NSMutableDictionary *)dict
             keyStem:(NSString *)spaceName
 {
-    CMProfileMD5 hash;
-    if (CMGetProfileMD5(cmProfile, hash) == noErr) {
-        [dict setObject:[NSData dataWithBytes:hash length:sizeof(hash)] forKey:[spaceName stringByAppendingString:@"Digest"]];
+    ColorSyncMD5 hash = ColorSyncProfileGetMD5(cmProfile);
+    
+    if (isValidHash(hash)) {
+        [dict setObject:[NSData dataWithBytes:&hash length:sizeof(hash)] forKey:[spaceName stringByAppendingString:@"Digest"]];
     }
 
     if (![self _rawProfileIsBuiltIn:cmProfile]) {
@@ -972,7 +958,6 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     
     return NO;
 }
-#endif
 
 - (void)_profileLoadError:(int)errorCode defaultColorSpace:(NSColorSpace *)colorSpace;
 {

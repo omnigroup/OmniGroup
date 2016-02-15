@@ -13,7 +13,5 @@
 
 
 @interface OAColorProfile (Deprecated)
-#if OA_USE_COLOR_MANAGER
-- (BOOL)_rawProfileIsBuiltIn:(CMProfileRef)rawProfile;
-#endif
+- (BOOL)_rawProfileIsBuiltIn:(ColorSyncProfileRef)rawProfile;
 @end
