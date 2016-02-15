@@ -20,13 +20,13 @@ RCS_ID("$Id$");
 
 @interface OAColorProfile (Private)
 + (void)_deviceNotification:(NSNotification *)notification;
-- initDefaultDocumentProfile;
-- initDefaultProofProfile;
-- initDefaultDisplayProfile;
+- (instancetype)initDefaultDocumentProfile;
+- (instancetype)initDefaultProofProfile;
+- (instancetype)initDefaultDisplayProfile;
 
-- (NSString *)_getProfileName:(void *)aProfile;
+- (NSString *)_getProfileName:(ColorSyncProfileRef)aProfile;
 
-- (void *)_anyProfile;
+- (ColorSyncProfileRef)_anyProfile;
 - (void)_updateConversionCacheForOutput:(OAColorProfile *)outputProfile;
 #if OA_USE_COLOR_MANAGER
 - (NSData *)_dataForRawProfile:(CMProfileRef)rawProfile;
@@ -41,23 +41,23 @@ NSString * const OAColorProofingDevicesDidChangeNotification = @"OAColorProofing
 
 @implementation OAColorProfile
 
-#if OA_USE_COLOR_MANAGER
+//#if OA_USE_COLOR_MANAGER
 static BOOL resetProfileLists = YES;
-#endif
+//#endif
 static NSMutableDictionary *rgbProfileDictionary = nil;
 static NSMutableDictionary *cmykProfileDictionary = nil;
 static NSMutableDictionary *grayProfileDictionary = nil;
-#if OA_USE_COLOR_MANAGER
+//#if OA_USE_COLOR_MANAGER
 static BOOL resetDeviceList = YES;
-#endif
+//#endif
 static NSMutableDictionary *deviceProfileDictionary = nil;
 static NSMutableDictionary *deviceNameDictionary = nil;
 static OAColorProfile *currentColorProfile = nil;
 static NSView *focusedViewForCurrentColorProfile = nil;
 
-#if OA_USE_COLOR_MANAGER
 static OAColorProfile *lastInProfile = nil;
 static OAColorProfile *lastOutProfile = nil;
+#if OA_USE_COLOR_MANAGER
 static CMWorldRef rgbColorWorld = NULL;
 static CMWorldRef cmykColorWorld = NULL;
 static CMWorldRef grayColorWorld = NULL;
@@ -125,91 +125,89 @@ static CMWorldRef grayColorWorld = NULL;
     return nil;
 }
 
-#if OA_USE_COLOR_MANAGER
-static OSErr deviceListIterator(const CMDeviceInfo *deviceInfo, const NCMDeviceProfileInfo *profileInfo, void *refCon)
+static bool deviceListIterator(CFDictionaryRef deviceInfo,
+                               void* refCon)
 {
-    CMProfileRef cmProfile;
+	ColorSyncProfileRef cmProfile;
     CMAppleProfileHeader header;
-    OAColorProfile *profile;
-    CMError err;
-    NSString *deviceName, *profileName;
-    
-    if (resetDeviceList) {
-        [deviceProfileDictionary release];
-        [deviceNameDictionary release];
-        deviceProfileDictionary = [[NSMutableDictionary alloc] init];
-        deviceNameDictionary = [[NSMutableDictionary alloc] init];
-        resetDeviceList = NO;
+	OAColorProfile *profile;
+	NSString *deviceName, *profileName;
+	
+	if (resetDeviceList) {
+		[deviceProfileDictionary release];
+		[deviceNameDictionary release];
+		deviceProfileDictionary = [[NSMutableDictionary alloc] init];
+		deviceNameDictionary = [[NSMutableDictionary alloc] init];
+		resetDeviceList = NO;
+	}
+	
+    CFStringRef deviceClass = CFDictionaryGetValue(deviceInfo, kColorSyncDeviceClass);
+    if (!CFEqual(deviceClass, kColorSyncPrinterDeviceClass) && !CFEqual(deviceClass, CFSTR("pruf"))) {
+        return true;
     }
+    CFURLRef profileURL = CFDictionaryGetValue(deviceInfo, kColorSyncDeviceProfileURL);
     
-    if (deviceInfo->deviceClass != cmPrinterDeviceClass && deviceInfo->deviceClass != cmProofDeviceClass)
-        return 0;
-    
-    err = CMOpenProfile(&cmProfile, &profileInfo->profileLoc);
-    if (err != noErr)
-        return 0;
-    
-    err = CMGetProfileHeader(cmProfile, &header);
-    if (err != noErr) {
-        CMCloseProfile(cmProfile);
-        return 0;
-    }
-    
-    profile = [[OAColorProfile alloc] init];
+    cmProfile = ColorSyncProfileCreateWithURL(profileURL, NULL);
+    if (cmProfile == NULL)
+		return true;
+	
+    CFDataRef cfHeader = ColorSyncProfileCopyHeader(cmProfile);
+    if (cfHeader == NULL) {
+        CFRelease(cmProfile);
+		return 0;
+	}
+	
+	profile = [[OAColorProfile alloc] init];
+    CFDataGetBytes(cfHeader, CFRangeMake(0, sizeof(CMAppleProfileHeader)), (UInt8*)&header);
+    CFRelease(cfHeader);
+
     switch(header.cm2.dataColorSpace) {
-        case cmRGBData:
-            profile->rgbProfile = cmProfile;
-            break;
-        case cmCMYKData:
-            profile->cmykProfile = cmProfile;
-            break;
-        case cmGrayData:
-            profile->grayProfile = cmProfile;
-            break;
-        default:
-            CMCloseProfile(cmProfile);
-            [profile release];
-            return 0;
-    }
-    
-    if (deviceInfo->deviceName) {
-        NSDictionary *nameDictionary = (NSDictionary *)*(deviceInfo->deviceName);
-        NSArray *languages = [NSBundle preferredLocalizationsFromArray:[nameDictionary allKeys]];
-        
-        if ([languages count])
-            deviceName = [nameDictionary objectForKey:[languages objectAtIndex:0]];
-        else if ([nameDictionary count])
-            deviceName = [[nameDictionary allValues] lastObject]; // any random language, if none match
-        else
-            deviceName = nil;
-    } else
-        deviceName = nil;
-    
-    profileName = [profile _getProfileName:cmProfile];
-    if (deviceName != nil) {
-        deviceName = [[deviceName componentsSeparatedByString:@"_"] componentsJoinedByString:@" "];
-        if (![deviceName isEqualToString:profileName])
-            profileName = [NSString stringWithFormat:@"%@: %@", deviceName, profileName];
-    }    
-    [deviceProfileDictionary setObject:profile forKey:profileName];
-    if (deviceName)
-        [deviceNameDictionary setObject:profile forKey:deviceName];
-    [profile release];
-    return 0;
+		case cmRGBData:
+			profile->rgbProfile = cmProfile;
+			break;
+		case cmCMYKData:
+			profile->cmykProfile = cmProfile;
+			break;
+		case cmGrayData:
+			profile->grayProfile = cmProfile;
+			break;
+		default:
+			CFRelease(cmProfile);
+			[profile release];
+			return 0;
+	}
+	
+	if (CFDictionaryGetValue(deviceInfo, kColorSyncDeviceDescription) || CFDictionaryGetValue(deviceInfo, kColorSyncDeviceDescriptions)) {
+		NSDictionary *nameDictionary = CFDictionaryGetValue(deviceInfo, kColorSyncDeviceDescriptions);
+		NSArray *languages = [NSBundle preferredLocalizationsFromArray:[nameDictionary allKeys]];
+		
+		if ([languages count])
+			deviceName = [nameDictionary objectForKey:[languages objectAtIndex:0]];
+		else if ([nameDictionary count])
+			deviceName = [[nameDictionary allValues] lastObject]; // any random language, if none match
+		else
+			deviceName = nil;
+	} else
+		deviceName = nil;
+	
+	profileName = [profile _getProfileName:cmProfile];
+	if (deviceName != nil) {
+		deviceName = [[deviceName componentsSeparatedByString:@"_"] componentsJoinedByString:@" "];
+		if (![deviceName isEqualToString:profileName])
+			profileName = [NSString stringWithFormat:@"%@: %@", deviceName, profileName];
+	}
+	[deviceProfileDictionary setObject:profile forKey:profileName];
+	if (deviceName)
+		[deviceNameDictionary setObject:profile forKey:deviceName];
+	[profile release];
+	return 0;
 }
-#endif
 
 + (NSArray *)proofingDeviceProfileNames;
 {
-#if OA_USE_COLOR_MANAGER
-    static UInt32 seed = 0;
-    
     resetDeviceList = YES;
-    CMIterateDeviceProfiles(deviceListIterator, &seed, NULL, cmIterateCurrentDeviceProfiles, NULL);
+	ColorSyncIterateDeviceProfiles(deviceListIterator, NULL);
     return [deviceProfileDictionary allKeys];
-#else
-    OBFinishPorting;
-#endif
 }
 
 + (OAColorProfile *)proofProfileForDeviceProfileName:(NSString *)deviceProfileName;
@@ -231,8 +229,7 @@ static OSErr deviceListIterator(const CMDeviceInfo *deviceInfo, const NCMDeviceP
     return result;
 }
 
-#if OA_USE_COLOR_MANAGER
-static OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
+static bool nameListIterator(CFDictionaryRef profileInfo, void *refCon)
 {
     if (resetProfileLists) {
         [rgbProfileDictionary release];
@@ -243,54 +240,47 @@ static OSErr nameListIterator(CMProfileIterateData *iterateData, void *refCon)
         grayProfileDictionary = [[NSMutableDictionary alloc] init];
         resetProfileLists = NO;
     }
-       
-    if (iterateData->uniCodeNameCount <= 1) // null terminated
-        return cmProfileError;
     
-    NSString *name = [NSString stringWithCharacters:iterateData->uniCodeName length:iterateData->uniCodeNameCount - 1]; // -1 because iterateData includes null on end
-
-    CMProfileRef cmProfile = NULL;
-    CMError err = CMOpenProfile((CMProfileRef *)&cmProfile, &iterateData->location);
-    if (err != noErr) {
-        NSLog(@"CMOpenProfile() for '%@' returns %ld", name, (long)err);
-        return err;
+    //if (iterateData->uniCodeNameCount <= 1) // null terminated
+    //    return cmProfileError;
+    
+    NSString *name = CFDictionaryGetValue(profileInfo, CFSTR("com.apple.ColorSync.ProfileASCIIDescription"));
+    
+    CFURLRef profileURL = CFDictionaryGetValue(profileInfo, kColorSyncProfileURL);
+    ColorSyncProfileRef cmProfile = NULL;
+    
+    cmProfile = ColorSyncProfileCreateWithURL(profileURL, NULL);
+    if (cmProfile == NULL) {
+        NSLog(@"ColorSyncProfileCreateWithURL() for '%@' returns nil", name);
+        return true;
     }
     
     OAColorProfile *profile = [[OAColorProfile alloc] init];
     
     // NSLog(@"Profile name %@ (v %08x) = %p", name, iterateData->dataVersion, cmProfile);
-    switch(iterateData->header.dataColorSpace) {
-        case cmRGBData:
-            profile->rgbProfile = cmProfile;
-            [rgbProfileDictionary setObject:profile forKey:name];
-            break;
-        case cmCMYKData:
-            profile->cmykProfile = cmProfile;
-            [cmykProfileDictionary setObject:profile forKey:name];
-            break;
-        case cmGrayData:
-            profile->grayProfile = cmProfile;
-            [grayProfileDictionary setObject:profile forKey:name];
-            break;
-        default:
-            CMCloseProfile(cmProfile);
-            break;
+    CFStringRef colorSpace = CFDictionaryGetValue(profileInfo, kColorSyncProfileColorSpace);
+    if (CFEqual(colorSpace, kColorSyncSigRgbData)) {
+        profile->rgbProfile = (void*)cmProfile;
+        [rgbProfileDictionary setObject:profile forKey:name];
+    } else if(CFEqual(colorSpace, kColorSyncSigCmykData)) {
+        profile->cmykProfile = (void*)cmProfile;
+        [rgbProfileDictionary setObject:profile forKey:name];
+    } else if(CFEqual(colorSpace, kColorSyncSigGrayData)) {
+        profile->grayProfile = (void*)cmProfile;
+        [rgbProfileDictionary setObject:profile forKey:name];
+    } else {
+        CFRelease(cmProfile);
     }
     [profile release];
-    return 0;
+    return true;
 }
-#endif
 
 + (void)_iterateAvailableProfiles;
 {
-#if OA_USE_COLOR_MANAGER
     static UInt32 seed = 0;
     
     resetProfileLists = YES;
-    CMIterateColorSyncFolder (nameListIterator, &seed, NULL, NULL);
-#else
-    OBFinishPorting;
-#endif
+    ColorSyncIterateInstalledProfiles(nameListIterator, &seed, NULL, NULL);
 }
 
 + (NSArray *)rgbProfileNames;
@@ -436,13 +426,20 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
         CMCloseProfile(grayProfile);
     [super dealloc];
 #else
-    OBFinishPorting;
-    // rdar:///21697606: Unreachable code fails with missing super call error
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunreachable-code"
-    // OBFinishPorting aborts, so the dealloc call here is unreachable; however, clang warns that we're missing a call to [super dealloc] if we remove it.
+    if (currentColorProfile == self)
+        currentColorProfile = nil;
+    if (lastInProfile == self)
+        lastInProfile = nil;
+    if (lastOutProfile == self)
+        lastOutProfile = nil;
+    
+    if (rgbProfile)
+        CFRelease(rgbProfile);
+    if (cmykProfile)
+        CFRelease(cmykProfile);
+    if (grayProfile)
+        CFRelease(grayProfile);
     [super dealloc];
-#pragma clang diagnostic pop
 #endif
 }
 
@@ -468,7 +465,11 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     } else
         return [self retain];
 #else
-    OBFinishPorting;
+    if (isMutable) {
+        OBFinishPorting;
+    } else {
+        return [self retain];
+    }
 #endif
 }
 
@@ -662,17 +663,17 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 #endif
 }
 
-- (void *)_rgbProfile;
+- (ColorSyncProfileRef)_rgbProfile;
 {
     return rgbProfile ? rgbProfile : [self _anyProfile];
 }
 
-- (void *)_cmykProfile;
+- (ColorSyncProfileRef)_cmykProfile;
 {
     return cmykProfile ? cmykProfile : [self _anyProfile];
 }
 
-- (void *)_grayProfile;
+- (ColorSyncProfileRef)_grayProfile;
 {
     return grayProfile ? grayProfile : [self _anyProfile];
 }
@@ -743,49 +744,27 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 }
 
 // TODO: This function returns the localized string, which is not very useful for storing in plists!
-- (NSString *)_getProfileName:(void *)aProfile;
+- (NSString *)_getProfileName:(ColorSyncProfileRef)aProfile;
 {
-#if OA_USE_COLOR_MANAGER
-    // TODO: This leaks.
-
-    CFStringRef string = nil;
-    CMError error;
-    
-    error = CMCopyProfileDescriptionString((CMProfileRef)aProfile, &string);
-    if (error == noErr)
-        return (NSString *)string;
-    
-    error = CMCopyProfileLocalizedString((CMProfileRef)aProfile, cmProfileDescriptionTag, 0, 0, &string);
-    if (error == noErr)
-        return (NSString *)string;
-    
-    error = CMCopyProfileLocalizedString((CMProfileRef)aProfile, cmProfileDescriptionMLTag, 0,0, &string);
-    if (error == noErr)
-        return (NSString *)string;
-    
-    return nil; // everything errored out
-#else
-    OBFinishPorting;
-#endif
+    return CFBridgingRelease(ColorSyncProfileCopyDescriptionString(aProfile));
 }
 
 - (void)colorProfileDidChange:(NSNotification *)notification;
 {
-#if OA_USE_COLOR_MANAGER
     lastInProfile = nil;
     lastOutProfile = nil;
 
+#if OA_USE_COLOR_MANAGER
     CMCloseProfile(rgbProfile);
     CMCloseProfile(cmykProfile);
     CMCloseProfile(grayProfile);
     CMGetDefaultProfileBySpace(cmRGBData, (CMProfileRef *)&rgbProfile);
     CMGetDefaultProfileBySpace(cmCMYKData, (CMProfileRef *)&cmykProfile);
     CMGetDefaultProfileBySpace(cmGrayData, (CMProfileRef *)&grayProfile);
+#endif
     
     [[NSNotificationCenter defaultCenter] postNotificationName:OADefaultDocumentColorProfileDidChangeNotification object:nil]; 
-#else
     OBFinishPorting;
-#endif
 }
 
 - initDefaultDocumentProfile;
@@ -929,7 +908,7 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 #endif
 }
 
-- (void *)_anyProfile;
+- (ColorSyncProfileRef)_anyProfile;
 {
     if (rgbProfile)
         return rgbProfile;

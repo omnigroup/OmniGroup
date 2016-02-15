@@ -17,25 +17,25 @@
 @interface OAColorProfile : NSObject <NSCopying>
 {
     BOOL isMutable;
-    void *rgbProfile, *cmykProfile, *grayProfile;
+    ColorSyncProfileRef rgbProfile, cmykProfile, grayProfile;
 }
 
-+ (OAColorProfile *)defaultDocumentProfile;
-+ (OAColorProfile *)defaultDisplayProfile;
-+ (OAColorProfile *)currentProfile;
++ (instancetype)defaultDocumentProfile;
++ (instancetype)defaultDisplayProfile;
++ (instancetype)currentProfile;
 
-+ (OAColorProfile *)defaultProofProfile;
-+ (OAColorProfile *)workingCMYKProfile;
++ (instancetype)defaultProofProfile;
++ (instancetype)workingCMYKProfile;
 + (NSArray *)proofingDeviceProfileNames;
-+ (OAColorProfile *)proofProfileForDeviceProfileName:(NSString *)deviceProfileName;
-+ (OAColorProfile *)proofProfileForPrintInfo:(NSPrintInfo *)printInfo;
++ (instancetype)proofProfileForDeviceProfileName:(NSString *)deviceProfileName;
++ (instancetype)proofProfileForPrintInfo:(NSPrintInfo *)printInfo;
 
 + (NSArray *)rgbProfileNames;
 + (NSArray *)cmykProfileNames;
 + (NSArray *)grayProfileNames;
-+ (OAColorProfile *)colorProfileWithRGBNamed:(NSString *)rgbName cmykNamed:(NSString *)cmykName grayNamed:(NSString *)grayName;
++ (instancetype)colorProfileWithRGBNamed:(NSString *)rgbName cmykNamed:(NSString *)cmykName grayNamed:(NSString *)grayName;
 
-+ (OAColorProfile *)colorProfileFromPropertyListRepresentation:(NSDictionary *)dict;
++ (instancetype)colorProfileFromPropertyListRepresentation:(NSDictionary *)dict;
 - (NSMutableDictionary *)propertyListRepresentation;
 
 - (void)set;
@@ -65,9 +65,9 @@
 - (void **)_cachedRGBColorWorldForOutput:(OAColorProfile *)aProfile;
 - (void **)_cachedCMYKColorWorldForOutput:(OAColorProfile *)aProfile;
 - (void **)_cachedGrayColorWorldForOutput:(OAColorProfile *)aProfile;
-- (void *)_rgbProfile;
-- (void *)_cmykProfile;
-- (void *)_grayProfile;
+- (ColorSyncProfileRef)_rgbProfile;
+- (ColorSyncProfileRef)_cmykProfile;
+- (ColorSyncProfileRef)_grayProfile;
 @end
 
 extern NSString * const OADefaultDocumentColorProfileDidChangeNotification;
