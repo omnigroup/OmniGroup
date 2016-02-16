@@ -55,11 +55,11 @@ static NSView *focusedViewForCurrentColorProfile = nil;
 
 static OAColorProfile *lastInProfile = nil;
 static OAColorProfile *lastOutProfile = nil;
-#if OA_USE_COLOR_MANAGER
-static CMWorldRef rgbColorWorld = NULL;
-static CMWorldRef cmykColorWorld = NULL;
-static CMWorldRef grayColorWorld = NULL;
-#endif
+//#if OA_USE_COLOR_MANAGER
+static ColorSyncTransformRef rgbColorWorld = NULL;
+static ColorSyncTransformRef cmykColorWorld = NULL;
+static ColorSyncTransformRef grayColorWorld = NULL;
+//#endif
 
 + (void)initialize;
 {
@@ -408,22 +408,6 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 
 - (void)dealloc;
 {
-#if OA_USE_COLOR_MANAGER
-    if (currentColorProfile == self)
-        currentColorProfile = nil;
-    if (lastInProfile == self)
-        lastInProfile = nil;
-    if (lastOutProfile == self)
-        lastOutProfile = nil;
-    
-    if (rgbProfile) 
-        CMCloseProfile(rgbProfile);
-    if (cmykProfile)
-        CMCloseProfile(cmykProfile);
-    if (grayProfile)
-        CMCloseProfile(grayProfile);
-    [super dealloc];
-#else
     if (currentColorProfile == self)
         currentColorProfile = nil;
     if (lastInProfile == self)
@@ -438,7 +422,6 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
     if (grayProfile)
         CFRelease(grayProfile);
     [super dealloc];
-#endif
 }
 
 - (id)copyWithZone:(NSZone *)zone;
@@ -844,23 +827,26 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
 #endif
 }
 
-- initDefaultDisplayProfile;
+- (instancetype)initDefaultDisplayProfile;
 {
-#if OA_USE_COLOR_MANAGER
     if (!(self = [super init]))
         return nil;
     
-    CMProfileRef profile;
+    ColorSyncProfileRef profile = ColorSyncProfileCreateWithDisplayID(0);
     CMAppleProfileHeader header;
     
-    int errorCode = CMGetDefaultProfileByUse(cmDisplayUse, &profile);
+    int errorCode = -1;
     if (profile == NULL || errorCode != noErr) {
         NSColorSpace *colorSpace = [NSColorSpace genericRGBColorSpace];
-        profile = [colorSpace colorSyncProfile];
+        profile = (ColorSyncProfileRef)CFRetain([colorSpace colorSyncProfile]);
         [self _profileLoadError:errorCode defaultColorSpace:colorSpace];
     }
     
-    CMGetProfileHeader(profile, &header);
+    {
+        CFDataRef headerData = ColorSyncProfileCopyHeader(profile);
+        CFDataGetBytes(headerData, CFRangeMake(0, sizeof(header)), (UInt8 *)&header);
+        CFRelease(headerData);
+    }
     switch(header.cm2.dataColorSpace) {
         case cmRGBData:
             rgbProfile = profile;
@@ -872,38 +858,32 @@ static BOOL loadProfileData(CMProfileRef *cmProfilePointer, NSData *data, OSType
             grayProfile = profile;
             break;
         default:
+            CFRelease(profile);
             [self release];
             return nil;
     }
     isMutable = YES;
     return self;
-#else
-    OBFinishPorting;
-#endif
 }
 
 - (void)_updateConversionCacheForOutput:(OAColorProfile *)aProfile;
 {
-#if OA_USE_COLOR_MANAGER
     if (self != lastInProfile || aProfile != lastOutProfile) {
         if (rgbColorWorld != NULL) {
-            CWDisposeColorWorld(rgbColorWorld);
+            CFRelease(rgbColorWorld);
             rgbColorWorld = NULL;
         }
         if (cmykColorWorld != NULL) {
-            CWDisposeColorWorld(cmykColorWorld);
+            CFRelease(cmykColorWorld);
             cmykColorWorld = NULL;
         }
         if (grayColorWorld != NULL) {
-            CWDisposeColorWorld(grayColorWorld);
+            CFRelease(grayColorWorld);
             grayColorWorld = NULL;
         }
         lastInProfile = self;
         lastOutProfile = aProfile;
     }
-#else
-    OBFinishPorting;
-#endif
 }
 
 - (ColorSyncProfileRef)_anyProfile;
